@@ -1,0 +1,39 @@
+ * add rule
+ *  p = direct literal; always < 0 for installed rpm rules
+ *  d, if < 0 direct literal, if > 0 offset into whatprovides, if == 0 rule is assertion (look at p only)
+ *
+ *
+ * A requires b, b provided by B1,B2,B3 => (-A|B1|B2|B3)
+ *
+ * p < 0 : pkg id of A
+ * d > 0 : Offset in whatprovidesdata (list of providers of b)
+ *
+ * A conflicts b, b provided by B1,B2,B3 => (-A|-B1), (-A|-B2), (-A|-B3)
+ * p < 0 : pkg id of A
+ * d < 0 : Id of solvable (e.g. B1)
+ *
+ * d == 0: unary rule, assertion => (A) or (-A)
+ *
+ *   Install:    p > 0, d = 0   (A)             user requested install
+ *   Remove:     p < 0, d = 0   (-A)            user requested remove (also: uninstallable)
+ *   Requires:   p < 0, d > 0   (-A|B1|B2|...)  d: <list of providers for requirement of p>
+ *   Updates:    p > 0, d > 0   (A|B1|B2|...)   d: <list of updates for solvable p>
+ *   Conflicts:  p < 0, d < 0   (-A|-B)         either p (conflict issuer) or d (conflict provider) (binary rule)
+ *                                              also used for obsoletes
+ *   ?:          p > 0, d < 0   (A|-B)
+ *   No-op ?:    p = 0, d = 0   (null)          (used as policy rule placeholder)
+ *
+ *   resulting watches:
+ *   ------------------
+ *   Direct assertion (no watch needed)( if d <0 ) --> d = 0, w1 = p, w2 = 0
+ *   Binary rule: p = first literal, d = 0, w2 = second literal, w1 = p
+ *   every other : w1 = p, w2 = whatprovidesdata[d];
+ *   Disabled rule: w1 = 0
+ *
+ *   always returns a rule for non-rpm rules
+
+
+
+p > 0, d = 0, (A), w1 = p, w2 = 0
+p < 0, d = 0, (-A), w1 = p, w2 = 0
+p !=0, d = 0, (p|q), w1 = p, w2 = q
