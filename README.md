@@ -18,6 +18,8 @@ Author
 ------
 
 Nils Adermann - <naderman@naderman.de> - <http://twitter.com/naderman> - <http://www.naderman.de><br />
+Jordi Boggiano - <j.boggiano@seld.be> - <http://twitter.com/seldaek> - <http://seld.be><br />
+
 See also the list of [contributors](https://github.com/naderman/composer/contributors) who participated in this project.
 
 License
