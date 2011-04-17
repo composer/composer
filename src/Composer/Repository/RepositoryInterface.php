@@ -10,7 +10,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\DependencyResolver;
+namespace Composer\Repository;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>

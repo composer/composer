@@ -20,8 +20,8 @@ namespace Composer\Package;
 class MemoryPackage extends BasePackage
 {
     protected $type;
-    protected $repositoryType;
-    protected $repositoryUrl;
+    protected $sourceType;
+    protected $sourceUrl;
     protected $releaseType;
     protected $version;
     protected $license;
@@ -67,33 +67,33 @@ class MemoryPackage extends BasePackage
     /**
      * @param string $type
      */
-    public function setRepositoryType($type)
+    public function setSourceType($type)
     {
-        $this->repositoryType = $type;
+        $this->sourceType = $type;
     }
 
     /**
      * {@inheritDoc}
      */
-    public function getRepositoryType()
+    public function getSourceType()
     {
-        return $this->repositoryType;
+        return $this->sourceType;
     }
 
     /**
      * @param string $url
      */
-    public function setRepositoryUrl($url)
+    public function setSourceUrl($url)
     {
-        $this->repositoryUrl = $url;
+        $this->sourceUrl = $url;
     }
 
     /**
      * {@inheritDoc}
      */
-    public function getRepositoryUrl()
+    public function getSourceUrl()
     {
-        return $this->repositoryUrl;
+        return $this->sourceUrl;
     }
 
     /**
