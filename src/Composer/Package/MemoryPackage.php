@@ -9,14 +9,14 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\DependencyResolver;
+namespace Composer\Package;
 
 /**
  * A package with setters for all members to create it dynamically in memory
  *
  * @author Nils Adermann <naderman@naderman.de>
  */
-class MemoryPackage extends Package
+class MemoryPackage extends BasePackage
 {
     protected $releaseType;
     protected $version;

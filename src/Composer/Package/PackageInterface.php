@@ -9,57 +9,21 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\DependencyResolver;
+namespace Composer\Package;
 
 use Composer\DependencyResolver\RelationConstraint\RelationConstraintInterface;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
  */
-abstract class Package
+interface PackageInterface
 {
-    protected $name;
-    protected $id;
-
-    static public $incremental_id = 1;
-
-    /**
-     * All descendents' constructors should call this parent constructor
-     *
-     * @param string $name The package's name
-     * @param int    $id   A positive unique id, zero to auto generate
-     */
-    public function __construct($name, $id = 0)
-    {
-        $this->name = $name;
-
-        if (!$id) {
-            $this->id = self::$incremental_id++;
-        } else {
-            $this->id = $id;
-            self::$incremental_id = $id + 1;
-        }
-    }
-
-    /**
-     * Returns the package's identifier
-     *
-     * @return int Package id - a unique positive number
-     */
-    public function getId()
-    {
-        return $this->id;
-    }
-
     /**
      * Returns the package's name without version info, thus not a unique identifier
      *
      * @return string package name
      */
-    public function getName()
-    {
-        return $this->name;
-    }
+    function getName();
 
     /**
      * Returns a set of names that could refer to this package
@@ -69,22 +33,7 @@ abstract class Package
      *
      * @return array An array of strings refering to this package
      */
-    public function getNames()
-    {
-        $names = array(
-            $this->getName(),
-        );
-
-        foreach ($this->getProvides() as $relation) {
-            $names[] = $relation->getToPackageName();
-        }
-
-        foreach ($this->getReplaces() as $relation) {
-            $names[] = $relation->getToPackageName();
-        }
-
-        return $names;
-    }
+    function getNames();
 
     /**
      * Checks if the package matches the given constraint directly or through
@@ -94,40 +43,21 @@ abstract class Package
      * @param RelationConstraintInterface $constraint The constraint to verify
      * @return bool                                   Whether this package matches the name and constraint
      */
-    public function matches($name, RelationConstraintInterface $constraint)
-    {
-        if ($this->name === $name) {
-            return $constraint->matches($this->getReleaseType(), $this->getVersion());
-        }
-
-        foreach ($this->getProvides() as $relation) {
-            if ($relation->getToPackageName() === $name) {
-                return $constraint->matches($relation->getToReleaseType(), $relation->getToVersion());
-            }
-        }
-
-        foreach ($this->getReplaces() as $relation) {
-            if ($relation->getToPackageName() === $name) {
-                return $constraint->matches($relation->getToReleaseType(), $relation->getToVersion());
-            }
-        }
-
-        return false;
-    }
+    function matches($name, RelationConstraintInterface $constraint);
 
     /**
      * Returns the release type of this package, e.g. stable or beta
      *
      * @return string The release type
      */
-    abstract public function getReleaseType();
+    function getReleaseType();
 
     /**
      * Returns the version of this package
      *
      * @return string version
      */
-    abstract public function getVersion();
+    function getVersion();
 
     /**
      * Returns a set of relations to packages which need to be installed before
@@ -135,7 +65,7 @@ abstract class Package
      *
      * @return array An array of package relations defining required packages
      */
-    abstract public function getRequires();
+    function getRequires();
 
     /**
      * Returns a set of relations to packages which must not be installed at the
@@ -143,7 +73,7 @@ abstract class Package
      *
      * @return array An array of package relations defining conflicting packages
      */
-    abstract public function getConflicts();
+    function getConflicts();
 
     /**
      * Returns a set of relations to virtual packages that are provided through
@@ -151,7 +81,7 @@ abstract class Package
      *
      * @return array An array of package relations defining provided packages
      */
-    abstract public function getProvides();
+    function getProvides();
 
     /**
      * Returns a set of relations to packages which can alternatively be
@@ -159,7 +89,7 @@ abstract class Package
      *
      * @return array An array of package relations defining replaced packages
      */
-    abstract public function getReplaces();
+    function getReplaces();
 
     /**
      * Returns a set of relations to packages which are recommended in
@@ -167,7 +97,7 @@ abstract class Package
      *
      * @return array An array of package relations defining recommended packages
      */
-    abstract public function getRecommends();
+    function getRecommends();
 
     /**
      * Returns a set of relations to packages which are suggested in combination
@@ -175,15 +105,12 @@ abstract class Package
      *
      * @return array An array of package relations defining suggested packages
      */
-    abstract public function getSuggests();
+    function getSuggests();
 
     /**
      * Converts the package into a readable and unique string
      *
      * @return string
      */
-    public function __toString()
-    {
-        return $this->getName().'-'.$this->getReleaseType().'-'.$this->getVersion();
-    }
+    function __toString();
 }
