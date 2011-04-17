@@ -19,6 +19,9 @@ namespace Composer\Package;
  */
 class MemoryPackage extends BasePackage
 {
+    protected $type;
+    protected $repositoryType;
+    protected $repositoryUrl;
     protected $releaseType;
     protected $version;
 
@@ -43,6 +46,54 @@ class MemoryPackage extends BasePackage
 
         $this->releaseType = $releaseType;
         $this->version = $version;
+    }
+
+    /**
+     * @param string $type
+     */
+    public function setType($type)
+    {
+        $this->type = $type;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getType()
+    {
+        return $this->type ?: 'library';
+    }
+
+    /**
+     * @param string $type
+     */
+    public function setRepositoryType($type)
+    {
+        $this->repositoryType = $type;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getRepositoryType()
+    {
+        return $this->repositoryType;
+    }
+
+    /**
+     * @param string $url
+     */
+    public function setRepositoryUrl($url)
+    {
+        $this->repositoryUrl = $url;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getRepositoryUrl()
+    {
+        return $this->repositoryUrl;
     }
 
     /**

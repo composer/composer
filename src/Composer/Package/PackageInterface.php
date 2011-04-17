@@ -4,6 +4,7 @@
  * This file is part of Composer.
  *
  * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -44,6 +45,27 @@ interface PackageInterface
      * @return bool                                   Whether this package matches the name and constraint
      */
     function matches($name, RelationConstraintInterface $constraint);
+
+    /**
+     * Returns the package type of this package, e.g. library
+     *
+     * @return string The package type
+     */
+    function getType();
+
+    /**
+     * Returns the repository type of this package, e.g. git, svn, tar
+     *
+     * @return string The repository type
+     */
+    function getRepositoryType();
+
+    /**
+     * Returns the repository url of this package, e.g. git://github.com/naderman/composer.git
+     *
+     * @return string The repository url
+     */
+    function getRepositoryUrl();
 
     /**
      * Returns the release type of this package, e.g. stable or beta
