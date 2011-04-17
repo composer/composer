@@ -21,7 +21,7 @@ use Composer\Package\PackageInterface;
  */
 class ArrayRepository implements RepositoryInterface
 {
-    protected $packages = array();
+    protected $packages;
 
     /**
      * Adds a new package to the repository
@@ -41,6 +41,9 @@ class ArrayRepository implements RepositoryInterface
      */
     public function getPackages()
     {
+        if (null === $this->packages) {
+            $this->initialize();
+        }
         return $this->packages;
     }
 
@@ -52,5 +55,13 @@ class ArrayRepository implements RepositoryInterface
     public function count()
     {
         return count($this->packages);
+    }
+
+    /**
+     * Initializes the packages array. Mostly meant as an extension point.
+     */
+    protected function initialize()
+    {
+        $this->packages = array();
     }
 }
