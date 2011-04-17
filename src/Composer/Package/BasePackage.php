@@ -100,68 +100,6 @@ abstract class Package implements PackageInterface
     }
 
     /**
-     * Returns the release type of this package, e.g. stable or beta
-     *
-     * @return string The release type
-     */
-    abstract public function getReleaseType();
-
-    /**
-     * Returns the version of this package
-     *
-     * @return string version
-     */
-    abstract public function getVersion();
-
-    /**
-     * Returns a set of relations to packages which need to be installed before
-     * this package can be installed
-     *
-     * @return array An array of package relations defining required packages
-     */
-    abstract public function getRequires();
-
-    /**
-     * Returns a set of relations to packages which must not be installed at the
-     * same time as this package
-     *
-     * @return array An array of package relations defining conflicting packages
-     */
-    abstract public function getConflicts();
-
-    /**
-     * Returns a set of relations to virtual packages that are provided through
-     * this package
-     *
-     * @return array An array of package relations defining provided packages
-     */
-    abstract public function getProvides();
-
-    /**
-     * Returns a set of relations to packages which can alternatively be
-     * satisfied by installing this package
-     *
-     * @return array An array of package relations defining replaced packages
-     */
-    abstract public function getReplaces();
-
-    /**
-     * Returns a set of relations to packages which are recommended in
-     * combination with this package.
-     *
-     * @return array An array of package relations defining recommended packages
-     */
-    abstract public function getRecommends();
-
-    /**
-     * Returns a set of relations to packages which are suggested in combination
-     * with this package.
-     *
-     * @return array An array of package relations defining suggested packages
-     */
-    abstract public function getSuggests();
-
-    /**
      * Converts the package into a readable and unique string
      *
      * @return string
