@@ -13,6 +13,7 @@
 namespace Composer\Package;
 
 use Composer\DependencyResolver\RelationConstraint\RelationConstraintInterface;
+use Composer\DependencyResolver\RepositoryInterface;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -135,6 +136,20 @@ interface PackageInterface
      * @return array An array of package relations defining suggested packages
      */
     function getSuggests();
+
+    /**
+     * Stores a reference to the repository that owns the package
+     *
+     * @param RepositoryInterface $repository
+     */
+    function setRepository(RepositoryInterface $repository);
+
+    /**
+     * Returns a reference to the repository that owns the package
+     *
+     * @return RepositoryInterface
+     */
+    function getRepository();
 
     /**
      * Converts the package into a readable and unique string

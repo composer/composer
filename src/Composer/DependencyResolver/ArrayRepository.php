@@ -12,6 +12,8 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\Package\PackageInterface;
+
 /**
  * A repository implementation that simply stores packages in an array
  *
@@ -24,11 +26,12 @@ class ArrayRepository implements RepositoryInterface
     /**
      * Adds a new package to the repository
      *
-     * @param Package $package
+     * @param PackageInterface $package
      */
-    public function addPackage(Package $package)
+    public function addPackage(PackageInterface $package)
     {
-        $this->packages[$package->getId()] = $package;
+        $package->setRepository($this);
+        $this->packages[] = $package;
     }
 
     /**
@@ -39,16 +42,6 @@ class ArrayRepository implements RepositoryInterface
     public function getPackages()
     {
         return $this->packages;
-    }
-
-    /**
-     * Checks if a package is contained in this repository
-     *
-     * @return bool
-     */
-    public function contains(Package $package)
-    {
-        return isset($this->packages[$package->getId()]);
     }
 
     /**

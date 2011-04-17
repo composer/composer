@@ -255,7 +255,7 @@ class Solver
             $this->addedMap[$package->getId()] = true;
 
             $dontFix = 0;
-            if ($this->installed->contains($package) && !isset($this->fixMap[$package->getId()])) {
+            if ($this->installed === $package->getRepository() && !isset($this->fixMap[$package->getId()])) {
                 $dontFix = 1;
             }
 
@@ -274,7 +274,7 @@ class Solver
                 if ($dontFix) {
                     $foundInstalled = false;
                     foreach ($possibleRequires as $require) {
-                        if ($this->installed->contains($require)) {
+                        if ($this->installed === $require->getRepository()) {
                             $foundInstalled = true;
                             break;
                         }
@@ -297,7 +297,7 @@ class Solver
                 $possibleConflicts = $this->pool->whatProvides($relation->getToPackageName(), $relation->getConstraint());
 
                 foreach ($possibleConflicts as $conflict) {
-                    if ($dontfix && $this->installed->contains($conflict)) {
+                    if ($dontfix && $this->installed === $conflict->getRepository()) {
                         continue;
                     }
 
@@ -457,12 +457,12 @@ class Solver
             foreach ($job['packages'] as $package) {
                 switch ($job['cmd']) {
                     case 'fix':
-                        if ($this->installed->contains($package)) {
+                        if ($this->installed === $package->getRepository()) {
                             $this->fixMap[$package->getId()] = true;
                         }
                         break;
                     case 'update':
-                        if ($this->installed->contains($package)) {
+                        if ($this->installed === $package->getRepository()) {
                             $this->updateMap[$package->getId()] = true;
                         }
                         break;
@@ -547,7 +547,7 @@ class Solver
                     break;
                 case 'lock':
                     foreach ($job['packages'] as $package) {
-                        if ($this->installed->contains($package)) {
+                        if ($this->installed === $package->getRepository()) {
                             $rule = $this->createInstallRule($package, self::RULE_JOB_LOCK);
                         } else {
                             $rule = $this->createRemoveRule($package, self::RULE_JOB_LOCK);
@@ -762,7 +762,7 @@ class Solver
         $minimizationsteps = 0;
         $installedPos = 0;
 
-        $this->installedPackages = array_values($this->installed->getPackages());
+        $this->installedPackages = $this->installed->getPackages();
 
         while (true) {
 
@@ -798,7 +798,7 @@ class Solver
                             if (count($this->installed) != count($this->updateMap)) {
                                 $prunedQueue = array();
                                 foreach ($decisionQueue as $literal) {
-                                    if ($this->installed->contains($literal->getPackage())) {
+                                    if ($this->installed === $literal->getPackage()->getRepository()) {
                                         $prunedQueue[] = $literal;
                                         if (isset($this->updateMap[$literal->getPackageId()])) {
                                             $prunedQueue = $decisionQueue;

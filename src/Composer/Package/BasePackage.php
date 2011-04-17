@@ -13,6 +13,7 @@
 namespace Composer\Package;
 
 use Composer\DependencyResolver\RelationConstraint\RelationConstraintInterface;
+use Composer\DependencyResolver\RepositoryInterface;
 
 /**
  * Base class for packages providing name storage and default match implementation
@@ -22,6 +23,7 @@ use Composer\DependencyResolver\RelationConstraint\RelationConstraintInterface;
 abstract class BasePackage implements PackageInterface
 {
     protected $name;
+    protected $repository;
 
     /**
      * All descendents' constructors should call this parent constructor
@@ -95,6 +97,19 @@ abstract class BasePackage implements PackageInterface
         }
 
         return false;
+    }
+
+    public function getRepository()
+    {
+        return $this->repository;
+    }
+
+    public function setRepository(RepositoryInterface $repository)
+    {
+        if ($this->repository) {
+            throw new \LogicException('A package can only be added to one repository');
+        }
+        $this->repository = $repository;
     }
 
     /**

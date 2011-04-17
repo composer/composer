@@ -18,5 +18,4 @@ namespace Composer\DependencyResolver;
 interface RepositoryInterface extends \Countable
 {
     function getPackages();
-    function contains(Package $package);
 }
