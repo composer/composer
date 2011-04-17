@@ -19,7 +19,7 @@ use Composer\DependencyResolver\RelationConstraint\RelationConstraintInterface;
  *
  * @author Nils Adermann <naderman@naderman.de>
  */
-abstract class Package implements PackageInterface
+abstract class BasePackage implements PackageInterface
 {
     protected $name;
     protected $id;
