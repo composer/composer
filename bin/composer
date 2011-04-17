@@ -1,0 +1,16 @@
+#!/bin/env php
+<?php
+
+require __DIR__.'/../tests/bootstrap.php';
+
+use Composer\Composer;
+use Composer\Downloader\GitDownloader;
+use Composer\Command\InstallCommand;
+use Composer\Installer\LibraryInstaller;
+
+$composer = new Composer();
+$composer->addDownloader('git', new GitDownloader);
+$composer->addInstaller('library', new LibraryInstaller);
+
+$cmd = new InstallCommand();
+$cmd->install($composer);
