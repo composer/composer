@@ -153,7 +153,7 @@ class MemoryPackage extends BasePackage
     /**
      * Set the required packages
      *
-     * @param array $requires A set of package relations
+     * @param array $requires A set of package links
      */
     public function setRequires(array $requires)
     {
@@ -171,7 +171,7 @@ class MemoryPackage extends BasePackage
     /**
      * Set the conflicting packages
      *
-     * @param array $conflicts A set of package relations
+     * @param array $conflicts A set of package links
      */
     public function setConflicts(array $conflicts)
     {
@@ -189,7 +189,7 @@ class MemoryPackage extends BasePackage
     /**
      * Set the provided virtual packages
      *
-     * @param array $conflicts A set of package relations
+     * @param array $conflicts A set of package links
      */
     public function setProvides(array $provides)
     {
@@ -207,7 +207,7 @@ class MemoryPackage extends BasePackage
     /**
      * Set the packages this one replaces
      *
-     * @param array $conflicts A set of package relations
+     * @param array $conflicts A set of package links
      */
     public function setReplaces(array $replaces)
     {
@@ -225,7 +225,7 @@ class MemoryPackage extends BasePackage
     /**
      * Set the recommended packages
      *
-     * @param array $conflicts A set of package relations
+     * @param array $conflicts A set of package links
      */
     public function setRecommends(array $recommends)
     {
@@ -243,7 +243,7 @@ class MemoryPackage extends BasePackage
     /**
      * Set the suggested packages
      *
-     * @param array $conflicts A set of package relations
+     * @param array $conflicts A set of package links
      */
     public function setSuggests(array $suggests)
     {

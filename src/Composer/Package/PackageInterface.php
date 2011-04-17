@@ -12,7 +12,7 @@
 
 namespace Composer\Package;
 
-use Composer\DependencyResolver\RelationConstraint\RelationConstraintInterface;
+use Composer\Package\LinkConstraint\LinkConstraintInterface;
 use Composer\Repository\RepositoryInterface;
 
 /**
@@ -41,11 +41,11 @@ interface PackageInterface
      * Checks if the package matches the given constraint directly or through
      * provided or replaced packages
      *
-     * @param string                      $name       Name of the package to be matched
-     * @param RelationConstraintInterface $constraint The constraint to verify
-     * @return bool                                   Whether this package matches the name and constraint
+     * @param string                  $name       Name of the package to be matched
+     * @param LinkConstraintInterface $constraint The constraint to verify
+     * @return bool                               Whether this package matches the name and constraint
      */
-    function matches($name, RelationConstraintInterface $constraint);
+    function matches($name, LinkConstraintInterface $constraint);
 
     /**
      * Returns the package type, e.g. library
@@ -90,50 +90,50 @@ interface PackageInterface
     function getLicense();
 
     /**
-     * Returns a set of relations to packages which need to be installed before
+     * Returns a set of links to packages which need to be installed before
      * this package can be installed
      *
-     * @return array An array of package relations defining required packages
+     * @return array An array of package links defining required packages
      */
     function getRequires();
 
     /**
-     * Returns a set of relations to packages which must not be installed at the
+     * Returns a set of links to packages which must not be installed at the
      * same time as this package
      *
-     * @return array An array of package relations defining conflicting packages
+     * @return array An array of package links defining conflicting packages
      */
     function getConflicts();
 
     /**
-     * Returns a set of relations to virtual packages that are provided through
+     * Returns a set of links to virtual packages that are provided through
      * this package
      *
-     * @return array An array of package relations defining provided packages
+     * @return array An array of package links defining provided packages
      */
     function getProvides();
 
     /**
-     * Returns a set of relations to packages which can alternatively be
+     * Returns a set of links to packages which can alternatively be
      * satisfied by installing this package
      *
-     * @return array An array of package relations defining replaced packages
+     * @return array An array of package links defining replaced packages
      */
     function getReplaces();
 
     /**
-     * Returns a set of relations to packages which are recommended in
+     * Returns a set of links to packages which are recommended in
      * combination with this package.
      *
-     * @return array An array of package relations defining recommended packages
+     * @return array An array of package links defining recommended packages
      */
     function getRecommends();
 
     /**
-     * Returns a set of relations to packages which are suggested in combination
+     * Returns a set of links to packages which are suggested in combination
      * with this package.
      *
-     * @return array An array of package relations defining suggested packages
+     * @return array An array of package links defining suggested packages
      */
     function getSuggests();
 

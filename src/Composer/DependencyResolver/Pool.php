@@ -12,7 +12,7 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\DependencyResolver\RelationConstraint\RelationConstraintInterface;
+use Composer\Package\LinkConstraint\LinkConstraintInterface;
 use Composer\Repository\RepositoryInterface;
 
 /**
@@ -47,12 +47,12 @@ class Pool
     /**
      * Searches all packages providing the given package name and match the constraint
      *
-     * @param string                     $name        The package name to be searched for
-     * @param RelationConstraintInterface $constraint A constraint that all returned
-     *                                                packages must match or null to return all
-     * @return array                                  A set of packages
+     * @param string                  $name       The package name to be searched for
+     * @param LinkConstraintInterface $constraint A constraint that all returned
+     *                                            packages must match or null to return all
+     * @return array                              A set of packages
      */
-    public function whatProvides($name, RelationConstraintInterface $constraint = null)
+    public function whatProvides($name, LinkConstraintInterface $constraint = null)
     {
         if (!isset($this->packageByName[$name])) {
             return array();

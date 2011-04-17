@@ -12,7 +12,7 @@
 
 namespace Composer\Package;
 
-use Composer\DependencyResolver\RelationConstraint\RelationConstraintInterface;
+use Composer\Package\LinkConstraint\LinkConstraintInterface;
 use Composer\Repository\RepositoryInterface;
 
 /**
@@ -59,12 +59,12 @@ abstract class BasePackage implements PackageInterface
             $this->getName(),
         );
 
-        foreach ($this->getProvides() as $relation) {
-            $names[] = $relation->getToPackageName();
+        foreach ($this->getProvides() as $link) {
+            $names[] = $link->getTarget();
         }
 
-        foreach ($this->getReplaces() as $relation) {
-            $names[] = $relation->getToPackageName();
+        foreach ($this->getReplaces() as $link) {
+            $names[] = $link->getTarget();
         }
 
         return $names;
@@ -74,25 +74,25 @@ abstract class BasePackage implements PackageInterface
      * Checks if the package matches the given constraint directly or through
      * provided or replaced packages
      *
-     * @param string                      $name       Name of the package to be matched
-     * @param RelationConstraintInterface $constraint The constraint to verify
-     * @return bool                                   Whether this package matches the name and constraint
+     * @param string                  $name       Name of the package to be matched
+     * @param LinkConstraintInterface $constraint The constraint to verify
+     * @return bool                               Whether this package matches the name and constraint
      */
-    public function matches($name, RelationConstraintInterface $constraint)
+    public function matches($name, LinkConstraintInterface $constraint)
     {
         if ($this->name === $name) {
             return $constraint->matches($this->getReleaseType(), $this->getVersion());
         }
 
-        foreach ($this->getProvides() as $relation) {
-            if ($relation->getToPackageName() === $name) {
-                return $constraint->matches($relation->getToReleaseType(), $relation->getToVersion());
+        foreach ($this->getProvides() as $link) {
+            if ($link->getTarget() === $name) {
+                return $constraint->matches($link->getConstraint());
             }
         }
 
-        foreach ($this->getReplaces() as $relation) {
-            if ($relation->getToPackageName() === $name) {
-                return $constraint->matches($relation->getToReleaseType(), $relation->getToVersion());
+        foreach ($this->getReplaces() as $link) {
+            if ($link->getTarget() === $name) {
+                return $constraint->matches($link->getConstraint());
             }
         }
 

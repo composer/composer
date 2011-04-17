@@ -264,8 +264,8 @@ class Solver
                 continue;
             }
 
-            foreach ($package->getRequires() as $relation) {
-                $possibleRequires = $this->pool->whatProvides($relation->getToPackageName(), $relation->getConstraint());
+            foreach ($package->getRequires() as $link) {
+                $possibleRequires = $this->pool->whatProvides($link->getTarget(), $link->getConstraint());
 
                 // the strategy here is to not insist on dependencies
                 // that are already broken. so if we find one provider
@@ -286,33 +286,33 @@ class Solver
                     }
                 }
 
-                $this->addRule(self::TYPE_PACKAGE, $this->createRequireRule($package, $possibleRequires, self::RULE_PACKAGE_REQUIRES, (string) $relation));
+                $this->addRule(self::TYPE_PACKAGE, $this->createRequireRule($package, $possibleRequires, self::RULE_PACKAGE_REQUIRES, (string) $link));
 
                 foreach ($possibleRequires as $require) {
                     $workQueue->enqueue($require);
                 }
             }
 
-            foreach ($package->getConflicts() as $relation) {
-                $possibleConflicts = $this->pool->whatProvides($relation->getToPackageName(), $relation->getConstraint());
+            foreach ($package->getConflicts() as $link) {
+                $possibleConflicts = $this->pool->whatProvides($link->getTarget(), $link->getConstraint());
 
                 foreach ($possibleConflicts as $conflict) {
                     if ($dontfix && $this->installed === $conflict->getRepository()) {
                         continue;
                     }
 
-                    $this->addRule(self::TYPE_PACKAGE, $this->createConflictRule($package, $conflict, self::RULE_PACKAGE_CONFLICT, (string) $relation));
+                    $this->addRule(self::TYPE_PACKAGE, $this->createConflictRule($package, $conflict, self::RULE_PACKAGE_CONFLICT, (string) $link));
                 }
             }
 
-            foreach ($package->getRecommends() as $relation) {
-                foreach ($this->pool->whatProvides($relation->getToPackageName(), $relation->getConstraint()) as $recommend) {
+            foreach ($package->getRecommends() as $link) {
+                foreach ($this->pool->whatProvides($link->getTarget(), $link->getConstraint()) as $recommend) {
                     $workQueue->enqueue($recommend);
                 }
             }
 
-            foreach ($package->getSuggests() as $relation) {
-                foreach ($this->pool->whatProvides($relation->getToPackageName(), $relation->getConstraint()) as $suggest) {
+            foreach ($package->getSuggests() as $link) {
+                foreach ($this->pool->whatProvides($link->getTarget(), $link->getConstraint()) as $suggest) {
                     $workQueue->enqueue($suggest);
                 }
             }

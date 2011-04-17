@@ -10,13 +10,15 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\DependencyResolver\RelationConstraint;
+namespace Composer\Package\LinkConstraint;
 
 /**
+ * Defines a constraint on a link between two packages.
+ *
  * @author Nils Adermann <naderman@naderman.de>
  */
-interface RelationConstraintInterface
+interface LinkConstraintInterface
 {
-    function matches($releaseType, $version);
+    function matches(LinkConstraintInterface $provider);
     function __toString();
 }

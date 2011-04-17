@@ -10,16 +10,16 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\DependencyResolver\RelationConstraint;
+namespace Composer\Package\LinkConstraint;
 
 /**
- * Constrains a package relation based on package version
+ * Constrains a package link based on package version
  *
  * Version numbers must be compatible with version_compare
  *
  * @author Nils Adermann <naderman@naderman.de>
  */
-class VersionConstraint implements RelationConstraintInterface
+class VersionConstraint extends SpecificConstraint
 {
     private $operator;
     private $version;
@@ -36,9 +36,9 @@ class VersionConstraint implements RelationConstraintInterface
         $this->version = $version;
     }
 
-    public function matches($releaseType, $version)
+    public function matchSpecific(VersionConstraint $provider)
     {
-        return version_compare($version, $this->version, $this->operator);
+        return version_compare($provider->version, $this->version, $this->operator);
     }
 
     public function __toString()
