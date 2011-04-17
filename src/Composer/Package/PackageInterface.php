@@ -47,7 +47,7 @@ interface PackageInterface
     function matches($name, RelationConstraintInterface $constraint);
 
     /**
-     * Returns the package type of this package, e.g. library
+     * Returns the package type, e.g. library
      *
      * @return string The package type
      */
@@ -80,6 +80,13 @@ interface PackageInterface
      * @return string version
      */
     function getVersion();
+
+    /**
+     * Returns the package license, e.g. MIT, BSD, GPL
+     *
+     * @return string The package license
+     */
+    function getLicense();
 
     /**
      * Returns a set of relations to packages which need to be installed before

@@ -24,6 +24,7 @@ class MemoryPackage extends BasePackage
     protected $repositoryUrl;
     protected $releaseType;
     protected $version;
+    protected $license;
 
     protected $requires = array();
     protected $conflicts = array();
@@ -37,12 +38,11 @@ class MemoryPackage extends BasePackage
      *
      * @param string $name        The package's name
      * @param string $version     The package's version
-     * @param string $releaseType The package's release type (beta/rc/stable)
-     * @param int    $id          A positive unique id, zero to auto generate
+     * @param string $releaseType The package's release type (beta/rc/stable/dev)
      */
-    public function __construct($name, $version, $releaseType = 'stable', $id = 0)
+    public function __construct($name, $version, $releaseType = 'stable')
     {
-        parent::__construct($name, $id);
+        parent::__construct($name);
 
         $this->releaseType = $releaseType;
         $this->version = $version;
@@ -130,6 +130,24 @@ class MemoryPackage extends BasePackage
     public function getVersion()
     {
         return $this->version;
+    }
+
+    /**
+     * Set the license
+     *
+     * @param string $license
+     */
+    public function setLicense($license)
+    {
+        $this->license = $license;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getLicense()
+    {
+        return $this->license;
     }
 
     /**

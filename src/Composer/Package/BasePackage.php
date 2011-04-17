@@ -22,7 +22,6 @@ use Composer\DependencyResolver\RelationConstraint\RelationConstraintInterface;
 abstract class BasePackage implements PackageInterface
 {
     protected $name;
-    protected $id;
 
     /**
      * All descendents' constructors should call this parent constructor
@@ -32,7 +31,6 @@ abstract class BasePackage implements PackageInterface
     public function __construct($name)
     {
         $this->name = $name;
-
     }
 
     /**
