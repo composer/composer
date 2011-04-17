@@ -12,6 +12,8 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\Package\PackageInterface;
+
 /**
  * @author Nils Adermann <naderman@naderman.de>
  */
@@ -19,7 +21,7 @@ class Literal
 {
     protected $wanted;
 
-    public function __construct(Package $package, $wanted)
+    public function __construct(PackageInterface $package, $wanted)
     {
         $this->package = $package;
         $this->wanted = $wanted;

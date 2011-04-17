@@ -13,8 +13,8 @@
 namespace Composer\Test\DependencyResolver;
 
 use Composer\DependencyResolver\Pool;
-use Composer\DependencyResolver\ArrayRepository;
-use Composer\DependencyResolver\MemoryPackage;
+use Composer\Repository\ArrayRepository;
+use Composer\Package\MemoryPackage;
 
 class PoolTest extends \PHPUnit_Framework_TestCase
 {

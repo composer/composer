@@ -14,9 +14,9 @@ namespace Composer\Test\DependencyResolver;
 
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Pool;
-use Composer\DependencyResolver\ArrayRepository;
+use Composer\Repository\ArrayRepository;
 use Composer\DependencyResolver\Literal;
-use Composer\DependencyResolver\MemoryPackage;
+use Composer\Package\MemoryPackage;
 
 class RequestTest extends \PHPUnit_Framework_TestCase
 {

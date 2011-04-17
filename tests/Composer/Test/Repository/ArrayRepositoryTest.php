@@ -10,10 +10,10 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Test\DependencyResolver;
+namespace Composer\Test\Repository;
 
-use Composer\DependencyResolver\ArrayRepository;
-use Composer\DependencyResolver\MemoryPackage;
+use Composer\Repository\ArrayRepository;
+use Composer\Package\MemoryPackage;
 
 class ArrayRepositoryTest extends \PHPUnit_Framework_TestCase
 {

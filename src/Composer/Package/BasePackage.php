@@ -13,7 +13,7 @@
 namespace Composer\Package;
 
 use Composer\DependencyResolver\RelationConstraint\RelationConstraintInterface;
-use Composer\DependencyResolver\RepositoryInterface;
+use Composer\Repository\RepositoryInterface;
 
 /**
  * Base class for packages providing name storage and default match implementation

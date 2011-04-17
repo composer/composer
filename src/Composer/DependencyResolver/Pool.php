@@ -13,6 +13,7 @@
 namespace Composer\DependencyResolver;
 
 use Composer\DependencyResolver\RelationConstraint\RelationConstraintInterface;
+use Composer\Repository\RepositoryInterface;
 
 /**
  * A package pool contains repositories that provide packages.
@@ -35,13 +36,9 @@ class Pool
         $this->repositories[] = $repo;
 
         foreach ($repo->getPackages() as $package) {
-            $this->packages[$package->getId()] = $package;
+            $this->packages[] = $package;
 
             foreach ($package->getNames() as $name) {
-                if (!isset($this->packageByName[$name])) {
-                    $this->packageByNameByName[$name] = array();
-                }
-
                 $this->packageByName[$name][] = $package;
             }
         }

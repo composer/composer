@@ -13,7 +13,7 @@
 namespace Composer\Test\DependencyResolver;
 
 use Composer\DependencyResolver\Literal;
-use Composer\DependencyResolver\MemoryPackage;
+use Composer\Package\MemoryPackage;
 
 class SolvableTest extends \PHPUnit_Framework_TestCase
 {

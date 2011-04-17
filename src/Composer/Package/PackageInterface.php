@@ -13,7 +13,7 @@
 namespace Composer\Package;
 
 use Composer\DependencyResolver\RelationConstraint\RelationConstraintInterface;
-use Composer\DependencyResolver\RepositoryInterface;
+use Composer\Repository\RepositoryInterface;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -59,14 +59,14 @@ interface PackageInterface
      *
      * @return string The repository type
      */
-    function getRepositoryType();
+    function getSourceType();
 
     /**
      * Returns the repository url of this package, e.g. git://github.com/naderman/composer.git
      *
      * @return string The repository url
      */
-    function getRepositoryUrl();
+    function getSourceUrl();
 
     /**
      * Returns the release type of this package, e.g. stable or beta

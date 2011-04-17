@@ -10,20 +10,19 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Test\DependencyResolver;
+namespace Composer\Test\Package;
 
-use Composer\DependencyResolver\MemoryPackage;
+use Composer\Package\MemoryPackage;
 
 class PackageTest extends \PHPUnit_Framework_TestCase
 {
     public function testPackage()
     {
-        $package = new MemoryPackage('foo', '1', 'beta', 21);
+        $package = new MemoryPackage('foo', '1', 'beta');
 
         $this->assertEquals('foo', $package->getName());
         $this->assertEquals('1', $package->getVersion());
         $this->assertEquals('beta', $package->getReleaseType());
-        $this->assertEquals(21, $package->getId());
 
         $this->assertEquals('foo-beta-1', (string) $package);
     }
