@@ -31,7 +31,7 @@ class ComposerRepository extends ArrayRepository
         parent::initialize();
         $packages = @json_decode(file_get_contents($this->url.'/packages.json'), true);
         if (!$packages) {
-            throw new \UnexpectedValueException('Could not parse package list from the '.$this->url.' registry');
+            throw new \UnexpectedValueException('Could not parse package list from the '.$this->url.' repository');
         }
 
         foreach ($packages as $data) {
