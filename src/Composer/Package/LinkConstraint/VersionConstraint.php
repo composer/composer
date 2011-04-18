@@ -36,9 +36,32 @@ class VersionConstraint extends SpecificConstraint
         $this->version = $version;
     }
 
+    /**
+     *
+     * @param VersionConstraint $provider
+     */
     public function matchSpecific(VersionConstraint $provider)
     {
-        return version_compare($provider->version, $this->version, $this->operator);
+        $noEqualOp = str_replace('=', '', $this->operator);
+        $providerNoEqualOp = str_replace('=', '', $provider->operator);
+
+        // an example for the condition is <= 2.0 & < 1.0
+        // these kinds of comparisons always have a solution
+        if ($this->operator != '==' && $noEqualOp == $providerNoEqualOp) {
+            return true;
+        }
+
+        if (version_compare($provider->version, $this->version, $this->operator)) {
+            // special case, e.g. require >= 1.0 and provide < 1.0
+            // 1.0 >= 1.0 but 1.0 is outside of the provided interval
+            if ($provider->version == $this->version && $provider->operator == $providerNoEqualOp && $this->operator != $noEqualOp) {
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     public function __toString()
