@@ -14,9 +14,9 @@ namespace Composer\Test\Package;
 
 use Composer\Package\MemoryPackage;
 
-class PackageTest extends \PHPUnit_Framework_TestCase
+class MemoryPackageTest extends \PHPUnit_Framework_TestCase
 {
-    public function testPackage()
+    public function testMemoryPackage()
     {
         $package = new MemoryPackage('foo', '1', 'beta');
 
