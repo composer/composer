@@ -17,21 +17,21 @@ namespace Composer\Package\LinkConstraint;
  *
  * @author Nils Adermann <naderman@naderman.de>
  */
-class SpecificConstraint implements LinkConstraintInterface
+abstract class SpecificConstraint implements LinkConstraintInterface
 {
     public function matches(LinkConstraintInterface $provider)
     {
         if ($provider instanceof MultiConstraint) {
             // turn matching around to find a match
             return $provider->matches($this);
-        } else if ($provider instanceof get_class($this)) {
+        } else if ($provider instanceof $this) {
             return $this->matchSpecific($provider);
         }
 
         return true;
     }
 
-    abstract public function matchSpecific($provider);
-
-    abstract public function __toString();
+    // implementations must implement a method of this format:
+    // not declared abstract here because type hinting violates parameter coherence (TODO right word?)
+    // public function matchSpecific(<SpecificConstraintType> $provider);
 }
