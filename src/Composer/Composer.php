@@ -13,6 +13,7 @@
 namespace Composer;
 
 use Composer\Repository\ComposerRepository;
+use Composer\Repository\PlatformRepository;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -26,6 +27,7 @@ class Composer
     public function __construct()
     {
         $this->addRepository('Packagist', array('composer' => 'http://packagist.org'));
+        $this->addRepository('Platform', array('platform' => ''));
     }
 
     public function addDownloader($type, $downloader)
@@ -81,9 +83,11 @@ class Composer
             throw new \Exception($type.' repositories not supported yet');
             break;
 
+        case 'platform':
+            return new PlatformRepository;
+
         case 'composer':
             return new ComposerRepository($url);
-            break;
         }
     }
 }

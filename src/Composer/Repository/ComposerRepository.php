@@ -13,6 +13,7 @@
 namespace Composer\Repository;
 
 use Composer\Package\MemoryPackage;
+use Composer\Package\BasePackage;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -42,7 +43,7 @@ class ComposerRepository extends ArrayRepository
     protected function createPackages($data)
     {
         foreach ($data['versions'] as $rev) {
-            $version = $this->parseVersion($rev['version']);
+            $version = BasePackage::parseVersion($rev['version']);
 
             $package = new MemoryPackage($rev['name'], $version['version'], $version['type']);
             $package->setSourceType($rev['source']['type']);
@@ -71,19 +72,5 @@ class ComposerRepository extends ArrayRepository
             //}
             $this->addPackage($package);
         }
-    }
-
-    protected function parseVersion($version)
-    {
-        if (!preg_match('#^v?(\d+)(\.\d+)?(\.\d+)?-?(beta|RC\d+|alpha|dev)?$#i', $version, $matches)) {
-            throw new \UnexpectedValueException('Invalid version string '.$version);
-        }
-
-        return array(
-            'version' => $matches[1]
-                .(!empty($matches[2]) ? $matches[2] : '.0')
-                .(!empty($matches[3]) ? $matches[3] : '.0'),
-            'type' => strtolower(!empty($matches[4]) ? $matches[4] : 'stable'),
-        );
     }
 }

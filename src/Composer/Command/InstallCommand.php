@@ -25,11 +25,16 @@ class InstallCommand
 
         $config = $this->loadConfig();
 
+        foreach ($config['repositories'] as $name => $spec) {
+            $composer->addRepository($name, $spec);
+        }
+
         // TODO this should just do dependency solving based on all repositories
         $packages = array();
         foreach ($composer->getRepositories() as $repository) {
-            $packages = array_merge($packages, $repository->getPackages());
+            $packages[] = $repository->getPackages();
         }
+        $packages = call_user_func_array('array_merge', $packages);
 
         $lock = array();
 

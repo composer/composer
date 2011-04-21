@@ -121,4 +121,25 @@ abstract class BasePackage implements PackageInterface
     {
         return $this->getName().'-'.$this->getReleaseType().'-'.$this->getVersion();
     }
+
+    /**
+     * Parses a version string and returns an array with the version and its type (dev, alpha, beta, RC, stable)
+     *
+     * @param string $version
+     * @return array
+     */
+    public static function parseVersion($version)
+    {
+        if (!preg_match('#^v?(\d+)(\.\d+)?(\.\d+)?-?(?:(beta|RC\d+|alpha|dev)?\d*)$#i', $version, $matches)) {
+            throw new \UnexpectedValueException('Invalid version string '.$version);
+        }
+
+        return array(
+            'version' => $matches[1]
+                .(!empty($matches[2]) ? $matches[2] : '.0')
+                .(!empty($matches[3]) ? $matches[3] : '.0'),
+            'type' => strtolower(!empty($matches[4]) ? $matches[4] : 'stable'),
+        );
+    }
+
 }
