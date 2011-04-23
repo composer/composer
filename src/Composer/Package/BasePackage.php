@@ -130,7 +130,7 @@ abstract class BasePackage implements PackageInterface
      */
     public static function parseVersion($version)
     {
-        if (!preg_match('#^v?(\d+)(\.\d+)?(\.\d+)?-?(?:(beta|RC\d+|alpha|dev)?\d*)$#i', $version, $matches)) {
+        if (!preg_match('#^v?(\d+)(\.\d+)?(\.\d+)?-?((?:beta|RC\d+|alpha|dev)\d*)?$#i', $version, $matches)) {
             throw new \UnexpectedValueException('Invalid version string '.$version);
         }
 
