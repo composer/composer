@@ -14,6 +14,8 @@ namespace Composer\Repository;
 
 use Composer\Package\MemoryPackage;
 use Composer\Package\BasePackage;
+use Composer\Package\Link;
+use Composer\Package\LinkConstraint\VersionConstraint;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -52,25 +54,36 @@ class ComposerRepository extends ArrayRepository
             if (isset($rev['license'])) {
                 $package->setLicense($rev['license']);
             }
-            //if (isset($rev['require'])) {
-            //    $package->setRequires($rev['require']);
-            //}
-            //if (isset($rev['conflict'])) {
-            //    $package->setConflicts($rev['conflict']);
-            //}
-            //if (isset($rev['provide'])) {
-            //    $package->setProvides($rev['provide']);
-            //}
-            //if (isset($rev['replace'])) {
-            //    $package->setReplaces($rev['replace']);
-            //}
-            //if (isset($rev['recommend'])) {
-            //    $package->setRecommends($rev['recommend']);
-            //}
-            //if (isset($rev['suggest'])) {
-            //    $package->setSuggests($rev['suggest']);
-            //}
+
+            $links = array(
+                'require',
+                'conflict',
+                'provide',
+                'replace',
+                'recommend',
+                'suggest',
+            );
+            foreach ($links as $link) {
+                if (isset($rev[$link])) {
+                    $method = 'set'.$link.'s';
+                    $package->{$method}($this->createLinks($rev['name'], $link.'s', $rev[$link]));
+                }
+            }
             $this->addPackage($package);
         }
+    }
+
+    protected function createLinks($name, $description, $linkSpecs)
+    {
+        $links = array();
+        foreach ($linkSpecs as $dep => $ver) {
+            preg_match('#^([>=<~]*)([\d.]+.*)$#', $ver, $match);
+            if (!$match[1]) {
+                $match[1] = '=';
+            }
+            $constraint = new VersionConstraint($match[1], $match[2]);
+            $links[] = new Link($name, $dep, $constraint, $description);
+        }
+        return $links;
     }
 }
