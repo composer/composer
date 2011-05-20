@@ -574,8 +574,24 @@ class Solver
 
         //findrecommendedsuggested(solv);
         //solver_prepare_solutions(solv);
-        //transaction_calculate(&solv->trans, &solv->decisionq, &solv->noobsoletes);
 
+        $transaction = array();
+
+        foreach ($this->decisionQueue as $literal) {
+            $package = $literal->getPackage();
+
+            // wanted & installed || !wanted & !installed
+            if ($literal->isWanted() == ($this->installed == $package->getRepository())) {
+                continue;
+            }
+
+            $transaction[] = array(
+                'job' => ($literal->isWanted()) ? 'install' : 'remove',
+                'package' => $package,
+            );
+        }
+
+        return $transaction;
     }
 
     public function printRules()
