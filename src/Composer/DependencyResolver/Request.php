@@ -25,24 +25,24 @@ class Request
         $this->pool = $pool;
     }
 
-    public function install($packageName)
+    public function install($packageName, LinkConstraintInterface $constraint = null)
     {
-        $this->addJob($packageName, 'install');
+        $this->addJob($packageName, $constraint, 'install');
     }
 
-    public function update($packageName)
+    public function update($packageName, LinkConstraintInterface $constraint = null)
     {
-        $this->addJob($packageName, 'update');
+        $this->addJob($packageName, $constraint, 'update');
     }
 
-    public function remove($packageName)
+    public function remove($packageName, LinkConstraintInterface $constraint = null)
     {
-        $this->addJob($packageName, 'remove');
+        $this->addJob($packageName, $constraint, 'remove');
     }
 
-    protected function addJob($packageName, $cmd)
+    protected function addJob($packageName, LinkConstraintInterface $constraint, $cmd)
     {
-        $packages = $this->pool->whatProvides($packageName);
+        $packages = $this->pool->whatProvides($packageName, $constraint);
 
         $this->jobs[] = array(
             'packages' => $packages,
