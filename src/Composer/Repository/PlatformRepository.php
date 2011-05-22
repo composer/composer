@@ -32,6 +32,13 @@ class PlatformRepository extends ArrayRepository
         $php = new MemoryPackage('php', $version['version'], $version['type']);
         $this->addPackage($php);
 
-        // TODO check for php extensions
+        foreach (get_loaded_extensions() as $ext) {
+            if (in_array($ext, array('standard', 'Core'))) {
+                continue;
+            }
+            // TODO maybe we could parse versions from phpinfo(INFO_MODULES)
+            $ext = new MemoryPackage('ext/'.strtolower($ext), '0', 'stable');
+            $this->addPackage($ext);
+        }
     }
 }
