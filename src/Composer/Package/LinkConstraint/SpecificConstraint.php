@@ -24,7 +24,7 @@ abstract class SpecificConstraint implements LinkConstraintInterface
         if ($provider instanceof MultiConstraint) {
             // turn matching around to find a match
             return $provider->matches($this);
-        } else if ($provider instanceof $this) {
+        } elseif ($provider instanceof $this) {
             return $this->matchSpecific($provider);
         }
 
