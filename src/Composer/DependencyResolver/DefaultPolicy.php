@@ -12,6 +12,9 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\Repository\RepositoryInterface;
+use Composer\Package\PackageInterface;
+
 /**
  * @author Nils Adermann <naderman@naderman.de>
  */
@@ -27,12 +30,12 @@ class DefaultPolicy implements PolicyInterface
         return false;
     }
 
-    public function versionCompare(Package $a, Package $b, $operator)
+    public function versionCompare(PackageInterface $a, PackageInterface $b, $operator)
     {
         return version_compare($a->getVersion(), $b->getVersion(), $operator);
     }
 
-    public function findUpdatePackages(Solver $solver, Pool $pool, RepositoryInterface $repo, Package $package, $allowAll = false)
+    public function findUpdatePackages(Solver $solver, Pool $pool, RepositoryInterface $repo, PackageInterface $package, $allowAll = false)
     {
         $packages = array();
 
@@ -50,7 +53,7 @@ class DefaultPolicy implements PolicyInterface
         return $packages;
     }
 
-    public function installable(Solver $solver, Pool $pool, RepositoryInterface $repo, Package $package)
+    public function installable(Solver $solver, Pool $pool, RepositoryInterface $repo, PackageInterface $package)
     {
         // todo: package blacklist?
         return true;
