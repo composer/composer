@@ -120,7 +120,7 @@ abstract class BasePackage implements PackageInterface
      */
     public function __toString()
     {
-        return $this->getName().'-'.$this->getReleaseType().'-'.$this->getVersion();
+        return $this->getName().'-'.$this->getVersion().'-'.$this->getReleaseType();
     }
 
     /**
