@@ -44,12 +44,12 @@ class Literal
 
     public function getId()
     {
-        return (($this->wanted) ? 1 : -1) * spl_object_hash($this->package);
+        return ($this->wanted ? '' : '-') . spl_object_hash($this->package);
     }
 
     public function __toString()
     {
-        return ($this->isWanted() ? '+' : '-').$this->getPackage();
+        return ($this->wanted ? '+' : '-') . $this->getPackage();
     }
 
     public function inverted()
