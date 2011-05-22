@@ -12,6 +12,9 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\Repository\RepositoryInterface;
+use Composer\Package\PackageInterface;
+
 /**
  * @author Nils Adermann <naderman@naderman.de>
  */
@@ -68,7 +71,7 @@ class Solver
      * This rule is of the form (-A|B|C), where B and C are the providers of
      * one requirement of the package A.
      *
-     * @param Package $package    The package with a requirement
+     * @param PackageInterface $package    The package with a requirement
      * @param array   $providers  The providers of the requirement
      * @param int     $reason     A RULE_* constant describing the reason for
      *                            generating this rule
@@ -76,7 +79,7 @@ class Solver
      *                            the reason
      * @return Rule               The generated rule or null if tautological
      */
-    public function createRequireRule(Package $package, array $providers, $reason, $reasonData = null)
+    public function createRequireRule(PackageInterface $package, array $providers, $reason, $reasonData = null)
     {
         $literals = array(new Literal($package, false));
 
@@ -96,7 +99,7 @@ class Solver
      *
      * If package A1 can be updated to A2 or A3 the rule is (A1|A2|A3).
      *
-     * @param Package $package    The package to be updated
+     * @param PackageInterface $package    The package to be updated
      * @param array   $updates    An array of update candidate packages
      * @param int     $reason     A RULE_* constant describing the reason for
      *                            generating this rule
@@ -104,7 +107,7 @@ class Solver
      *                            the reason
      * @return Rule               The generated rule or null if tautology
      */
-    protected function createUpdateRule(Package $package, array $updates, $reason, $reasonData = null)
+    protected function createUpdateRule(PackageInterface $package, array $updates, $reason, $reasonData = null)
     {
         $literals = array(new Literal($package, true));
 
@@ -120,14 +123,14 @@ class Solver
      *
      * The rule is simply (A) for a package A to be installed.
      *
-     * @param Package $package    The package to be installed
+     * @param PackageInterface $package    The package to be installed
      * @param int     $reason     A RULE_* constant describing the reason for
      *                            generating this rule
      * @param mixed   $reasonData Any data, e.g. the package name, that goes with
      *                            the reason
      * @return Rule               The generated rule
      */
-    public function createInstallRule(Package $package, $reason, $reasonData = null)
+    public function createInstallRule(PackageInterface $package, $reason, $reasonData = null)
     {
         return new Rule(new Literal($package, true));
     }
@@ -164,14 +167,14 @@ class Solver
      *
      * The rule for a package A is (-A).
      *
-     * @param Package $package    The package to be removed
+     * @param PackageInterface $package    The package to be removed
      * @param int     $reason     A RULE_* constant describing the reason for
      *                            generating this rule
      * @param mixed   $reasonData Any data, e.g. the package name, that goes with
      *                            the reason
      * @return Rule               The generated rule
      */
-    public function createRemoveRule(Package $package, $reason, $reasonData = null)
+    public function createRemoveRule(PackageInterface $package, $reason, $reasonData = null)
     {
         return new Rule(array(new Literal($package, false)), $reason, $reasonData);
     }
@@ -241,7 +244,7 @@ class Solver
         }
     }
 
-    public function addRulesForPackage(Package $package)
+    public function addRulesForPackage(PackageInterface $package)
     {
         $workQueue = new \SPLQueue;
         $workQueue->enqueue($package);
@@ -322,10 +325,10 @@ class Solver
     /**
      * Adds all rules for all update packages of a given package
      *
-     * @param Package $package  Rules for this package's updates are to be added
+     * @param PackageInterface $package  Rules for this package's updates are to be added
      * @param bool    $allowAll Whether downgrades are allowed
      */
-    private function addRulesForUpdatePackages(Package $package, $allowAll)
+    private function addRulesForUpdatePackages(PackageInterface $package, $allowAll)
     {
         $updates = $this->policy->findUpdatePackages($this, $this->pool, $this->installed, $package, $allowAll);
 
@@ -371,7 +374,7 @@ class Solver
         }
     }
 
-    private function findDecisionRule(Package $package)
+    private function findDecisionRule(PackageInterface $package)
     {
         foreach ($this->decisionQueue as $i => $literal) {
             if ($package === $literal->getPackage()) {

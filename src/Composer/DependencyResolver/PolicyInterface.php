@@ -12,6 +12,9 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\Repository\RepositoryInterface;
+use Composer\Package\PackageInterface;
+
 /**
  * @author Nils Adermann <naderman@naderman.de>
  */
@@ -19,8 +22,8 @@ interface PolicyInterface
 {
     function allowUninstall();
     function allowDowngrade();
-    function versionCompare(Package $a, Package $b, $operator);
-    function findUpdatePackages(Solver $solver, Pool $pool, RepositoryInterface $repo, Package $package, $allowAll);
-    function installable(Solver $solver, Pool $pool, RepositoryInterface $repo, Package $package);
+    function versionCompare(PackageInterface $a, PackageInterface $b, $operator);
+    function findUpdatePackages(Solver $solver, Pool $pool, RepositoryInterface $repo, PackageInterface $package, $allowAll);
+    function installable(Solver $solver, Pool $pool, RepositoryInterface $repo, PackageInterface $package);
     function selectPreferedPackages(array $literals);
 }
