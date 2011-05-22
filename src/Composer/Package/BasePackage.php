@@ -13,6 +13,7 @@
 namespace Composer\Package;
 
 use Composer\Package\LinkConstraint\LinkConstraintInterface;
+use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Repository\RepositoryInterface;
 
 /**
@@ -81,7 +82,7 @@ abstract class BasePackage implements PackageInterface
     public function matches($name, LinkConstraintInterface $constraint)
     {
         if ($this->name === $name) {
-            return $constraint->matches($this->getReleaseType(), $this->getVersion());
+            return $constraint->matches(new VersionConstraint('=', $this->getVersion(), $this->getReleaseType()));
         }
 
         foreach ($this->getProvides() as $link) {
