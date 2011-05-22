@@ -30,6 +30,9 @@ class ArrayRepository implements RepositoryInterface
      */
     public function addPackage(PackageInterface $package)
     {
+        if (null === $this->packages) {
+            $this->initialize();
+        }
         $package->setRepository($this);
         $this->packages[] = $package;
     }
