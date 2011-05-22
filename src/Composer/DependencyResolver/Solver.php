@@ -251,14 +251,14 @@ class Solver
 
         while (!$workQueue->isEmpty()) {
             $package = $workQueue->dequeue();
-            if (isset($this->addedMap[$package->getId()])) {
+            if (isset($this->addedMap[$this->getId($package)])) {
                 continue;
             }
 
-            $this->addedMap[$package->getId()] = true;
+            $this->addedMap[$this->getId($package)] = true;
 
             $dontFix = 0;
-            if ($this->installed === $package->getRepository() && !isset($this->fixMap[$package->getId()])) {
+            if ($this->installed === $package->getRepository() && !isset($this->fixMap[$this->getId($package)])) {
                 $dontFix = 1;
             }
 
@@ -451,13 +451,13 @@ class Solver
             switch ($job['cmd']) {
                 case 'update-all':
                     foreach ($installedPackages as $package) {
-                        $this->updateMap[$package->getId()] = true;
+                        $this->updateMap[$this->getId($package)] = true;
                     }
                 break;
 
                 case 'fix-all':
                     foreach ($installedPackages as $package) {
-                        $this->fixMap[$package->getId()] = true;
+                        $this->fixMap[$this->getId($package)] = true;
                     }
                 break;
             }
@@ -466,12 +466,12 @@ class Solver
                 switch ($job['cmd']) {
                     case 'fix':
                         if ($this->installed === $package->getRepository()) {
-                            $this->fixMap[$package->getId()] = true;
+                            $this->fixMap[$this->getId($package)] = true;
                         }
                         break;
                     case 'update':
                         if ($this->installed === $package->getRepository()) {
-                            $this->updateMap[$package->getId()] = true;
+                            $this->updateMap[$this->getId($package)] = true;
                         }
                         break;
                 }
@@ -491,7 +491,7 @@ class Solver
             foreach ($job['packages'] as $package) {
                 switch ($job['cmd']) {
                     case 'install':
-                        $this->installCandidateMap[$package->getId()] = true;
+                        $this->installCandidateMap[$this->getId($package)] = true;
                         $this->addRulesForPackage($package);
                     break;
                 }
@@ -646,22 +646,22 @@ class Solver
         ));
     }
 
-    protected function decided(Package $p)
+    protected function decided(PackageInterface $package)
     {
-        return isset($this->decisionMap[$p->getId()]);
+        return isset($this->decisionMap[$this->getId($package)]);
     }
 
-    protected function undecided(Package $p)
+    protected function undecided(PackageInterface $package)
     {
-        return !isset($this->decisionMap[$p->getId()]);
+        return !isset($this->decisionMap[$this->getId($package)]);
     }
 
-    protected function decidedInstall(Package $p) {
-        return isset($this->decisionMap[$p->getId()]) && $this->decisionMap[$p->getId()] > 0;
+    protected function decidedInstall(PackageInterface $package) {
+        return isset($this->decisionMap[$this->getId($package)]) && $this->decisionMap[$this->getId($package)] > 0;
     }
 
-    protected function decidedRemove(Package $p) {
-        return isset($this->decisionMap[$p->getId()]) && $this->decisionMap[$p->getId()] < 0;
+    protected function decidedRemove(PackageInterface $package) {
+        return isset($this->decisionMap[$this->getId($package)]) && $this->decisionMap[$this->getId($package)] < 0;
     }
 
     /**
@@ -733,6 +733,11 @@ class Solver
         }
 
         return null;
+    }
+
+    private function getId($package)
+    {
+        return spl_object_hash($package);
     }
 
     private function setPropagateLearn($level, Literal $literal, $disableRules, Rule $rule)
