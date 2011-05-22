@@ -37,6 +37,16 @@ class Solver
     const TYPE_WEAK = 4;
     const TYPE_LEARNED = 5;
 
+    protected static $types = array(
+        -1 => 'UNKNOWN',
+        self::TYPE_PACKAGE => 'PACKAGE',
+        self::TYPE_FEATURE => 'FEATURE',
+        self::TYPE_UPDATE => 'UPDATE',
+        self::TYPE_JOB => 'JOB',
+        self::TYPE_WEAK => 'WEAK',
+        self::TYPE_LEARNED => 'LEARNED',
+    );
+
     protected $policy;
     protected $pool;
     protected $installed;
@@ -602,7 +612,7 @@ class Solver
     {
         print "\n";
         foreach ($this->rules as $type => $rules) {
-            print $type . ": ";
+            print str_pad(self::$types[$type], 8, ' ') . ": ";
             foreach ($rules as $rule) {
                 print $rule;
             }
