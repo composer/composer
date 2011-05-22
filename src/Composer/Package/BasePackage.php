@@ -142,5 +142,4 @@ abstract class BasePackage implements PackageInterface
             'type' => strtolower(!empty($matches[4]) ? $matches[4] : 'stable'),
         );
     }
-
 }
