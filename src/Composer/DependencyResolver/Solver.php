@@ -434,6 +434,11 @@ class Solver
         }
     }
 
+    public function unifyRules()
+    {
+
+    }
+
     public function solve(Request $request)
     {
         $this->jobs = $request->getJobs();
@@ -500,11 +505,7 @@ class Solver
         */
         // solver_unifyrules(solv);                          /* remove duplicate rpm rules */
 
-// no idea what this is
-//   /* create dup maps if needed. We need the maps early to create our
-//    * update rules */
-//   if (hasdupjob)
-//     solver_createdupmaps(solv);
+        $this->unifyRules();
 
         foreach ($installedPackages as $package) {
             // create a feature rule which allows downgrades
