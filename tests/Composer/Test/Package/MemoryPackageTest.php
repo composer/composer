@@ -24,6 +24,6 @@ class MemoryPackageTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('1', $package->getVersion());
         $this->assertEquals('beta', $package->getReleaseType());
 
-        $this->assertEquals('foo-beta-1', (string) $package);
+        $this->assertEquals('foo-1-beta', (string) $package);
     }
 }
