@@ -12,22 +12,19 @@
 
 namespace Composer\Test\DependencyResolver;
 
-use Composer\DependencyResolver\ArrayRepository;
+use Composer\Repository\ArrayRepository;
 use Composer\DependencyResolver\DefaultPolicy;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
-use Composer\DependencyResolver\MemoryPackage;
-use Composer\DependencyResolver\PackageRelation;
 use Composer\DependencyResolver\Solver;
-use Composer\DependencyResolver\RelationConstraint\VersionConstraint;
+use Composer\Package\MemoryPackage;
+use Composer\Package\Link;
+use Composer\Package\LinkConstraint\VersionConstraint;
 
 class SolverTest extends \PHPUnit_Framework_TestCase
 {
     public function testSolver()
     {
-        $this->markTestIncomplete('incomplete');
-        return;
-
         $pool = new Pool;
 
         $repoInstalled = new ArrayRepository;
@@ -40,7 +37,7 @@ class SolverTest extends \PHPUnit_Framework_TestCase
         $repo->addPackage($newPackageB = new MemoryPackage('B', '1.1'));
         $repo->addPackage($packageC = new MemoryPackage('C', '1.0'));
         $repo->addPackage($oldPackage = new MemoryPackage('old', '1.0'));
-        $packageA->setRequires(array(new PackageRelation('A', 'B', new VersionConstraint('<', '1.1'), 'requires')));
+        $packageA->setRequires(array(new Link('A', 'B', new VersionConstraint('<', '1.1'), 'requires')));
 
         $pool->addRepository($repoInstalled);
         $pool->addRepository($repo);
