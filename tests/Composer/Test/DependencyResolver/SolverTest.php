@@ -51,9 +51,25 @@ class SolverTest extends \PHPUnit_Framework_TestCase
         $solver = new Solver($policy, $pool, $repoInstalled);
         $result = $solver->solve($request);
 
-        $this->assertTrue($result, 'Request could be solved');
+        $expected = array(
+            array(
+                'job' => 'install',
+                'package' => $packageA,
+            ),
+            array(
+                'job' => 'install',
+                'package' => $newPackageB,
+            ),
+            array(
+                'job' => 'update',
+                'package' => $packageC,
+            ),
+            array(
+                'job' => 'remove',
+                'package' => $oldPackage,
+            ),
+        );
 
-        //$transaction = $solver->getTransaction();
-        // assert ...
+        $this->assertEquals($expected, $result);
     }
 }
