@@ -82,12 +82,12 @@ class Solver
      * one requirement of the package A.
      *
      * @param PackageInterface $package    The package with a requirement
-     * @param array   $providers  The providers of the requirement
-     * @param int     $reason     A RULE_* constant describing the reason for
-     *                            generating this rule
-     * @param mixed   $reasonData Any data, e.g. the requirement name, that goes with
-     *                            the reason
-     * @return Rule               The generated rule or null if tautological
+     * @param array            $providers  The providers of the requirement
+     * @param int              $reason     A RULE_* constant describing the
+     *                                     reason for generating this rule
+     * @param mixed            $reasonData Any data, e.g. the requirement name,
+     *                                     that goes with the reason
+     * @return Rule                        The generated rule or null if tautological
      */
     public function createRequireRule(PackageInterface $package, array $providers, $reason, $reasonData = null)
     {
@@ -110,12 +110,12 @@ class Solver
      * If package A1 can be updated to A2 or A3 the rule is (A1|A2|A3).
      *
      * @param PackageInterface $package    The package to be updated
-     * @param array   $updates    An array of update candidate packages
-     * @param int     $reason     A RULE_* constant describing the reason for
-     *                            generating this rule
-     * @param mixed   $reasonData Any data, e.g. the package name, that goes with
-     *                            the reason
-     * @return Rule               The generated rule or null if tautology
+     * @param array            $updates    An array of update candidate packages
+     * @param int              $reason     A RULE_* constant describing the
+     *                                     reason for generating this rule
+     * @param mixed            $reasonData Any data, e.g. the package name, that
+     *                                     goes with the reason
+     * @return Rule                        The generated rule or null if tautology
      */
     protected function createUpdateRule(PackageInterface $package, array $updates, $reason, $reasonData = null)
     {
@@ -134,11 +134,11 @@ class Solver
      * The rule is simply (A) for a package A to be installed.
      *
      * @param PackageInterface $package    The package to be installed
-     * @param int     $reason     A RULE_* constant describing the reason for
-     *                            generating this rule
-     * @param mixed   $reasonData Any data, e.g. the package name, that goes with
-     *                            the reason
-     * @return Rule               The generated rule
+     * @param int              $reason     A RULE_* constant describing the
+     *                                     reason for generating this rule
+     * @param mixed            $reasonData Any data, e.g. the package name, that
+     *                                     goes with the reason
+     * @return Rule                        The generated rule
      */
     public function createInstallRule(PackageInterface $package, $reason, $reasonData = null)
     {
@@ -151,7 +151,7 @@ class Solver
      * The rule is (A|B|C) with A, B and C different packages. If the given
      * set of packages is empty an impossible rule is generated.
      *
-     * @param array $packages The set of packages to choose from
+     * @param array   $packages   The set of packages to choose from
      * @param int     $reason     A RULE_* constant describing the reason for
      *                            generating this rule
      * @param mixed   $reasonData Any data, e.g. the package name, that goes with
@@ -178,11 +178,11 @@ class Solver
      * The rule for a package A is (-A).
      *
      * @param PackageInterface $package    The package to be removed
-     * @param int     $reason     A RULE_* constant describing the reason for
-     *                            generating this rule
-     * @param mixed   $reasonData Any data, e.g. the package name, that goes with
-     *                            the reason
-     * @return Rule               The generated rule
+     * @param int              $reason     A RULE_* constant describing the
+     *                                     reason for generating this rule
+     * @param mixed            $reasonData Any data, e.g. the package name, that
+     *                                     goes with the reason
+     * @return Rule                        The generated rule
      */
     public function createRemoveRule(PackageInterface $package, $reason, $reasonData = null)
     {
@@ -195,15 +195,15 @@ class Solver
      * The rule for conflicting packages A and B is (-A|-B). A is called the issuer
      * and B the provider.
      *
-     * @param Package $issuer   The package declaring the conflict
-     * @param Package $provider The package causing the conflict
-     * @param int     $reason     A RULE_* constant describing the reason for
-     *                            generating this rule
-     * @param mixed   $reasonData Any data, e.g. the package name, that goes with
-     *                            the reason
-     * @return Rule               The generated rule
+     * @param PackageInterface $issuer     The package declaring the conflict
+     * @param Package          $provider   The package causing the conflict
+     * @param int              $reason     A RULE_* constant describing the
+     *                                     reason for generating this rule
+     * @param mixed            $reasonData Any data, e.g. the package name, that
+     *                                     goes with the reason
+     * @return Rule                        The generated rule
      */
-    public function createConflictRule(Package $issuer, Package $provider, $reason, $reasonData = null)
+    public function createConflictRule(PackageInterface $issuer, Package $provider, $reason, $reasonData = null)
     {
         // ignore self conflict
         if ($issuer === $provider) {
@@ -261,14 +261,14 @@ class Solver
 
         while (!$workQueue->isEmpty()) {
             $package = $workQueue->dequeue();
-            if (isset($this->addedMap[$this->getId($package)])) {
+            if (isset($this->addedMap[$package->getId()])) {
                 continue;
             }
 
-            $this->addedMap[$this->getId($package)] = true;
+            $this->addedMap[$package->getId()] = true;
 
             $dontFix = 0;
-            if ($this->installed === $package->getRepository() && !isset($this->fixMap[$this->getId($package)])) {
+            if ($this->installed === $package->getRepository() && !isset($this->fixMap[$package->getId()])) {
                 $dontFix = 1;
             }
 
@@ -335,8 +335,9 @@ class Solver
     /**
      * Adds all rules for all update packages of a given package
      *
-     * @param PackageInterface $package  Rules for this package's updates are to be added
-     * @param bool    $allowAll Whether downgrades are allowed
+     * @param PackageInterface $package  Rules for this package's updates are to
+     *                                   be added
+     * @param bool             $allowAll Whether downgrades are allowed
      */
     private function addRulesForUpdatePackages(PackageInterface $package, $allowAll)
     {
@@ -427,7 +428,7 @@ class Solver
                 $conflict = $this->findDecisionRule($literal->getPackage());
                 // todo: handle conflict with systemsolvable?
 
-                if (self::TYPE_PACKAGE === $conflict->getType()) {
+                if ($conflict && self::TYPE_PACKAGE === $conflict->getType()) {
 
                 }
             }
@@ -456,13 +457,13 @@ class Solver
             switch ($job['cmd']) {
                 case 'update-all':
                     foreach ($installedPackages as $package) {
-                        $this->updateMap[$this->getId($package)] = true;
+                        $this->updateMap[$package->getId()] = true;
                     }
                 break;
 
                 case 'fix-all':
                     foreach ($installedPackages as $package) {
-                        $this->fixMap[$this->getId($package)] = true;
+                        $this->fixMap[$package->getId()] = true;
                     }
                 break;
             }
@@ -471,12 +472,12 @@ class Solver
                 switch ($job['cmd']) {
                     case 'fix':
                         if ($this->installed === $package->getRepository()) {
-                            $this->fixMap[$this->getId($package)] = true;
+                            $this->fixMap[$package->getId()] = true;
                         }
                         break;
                     case 'update':
                         if ($this->installed === $package->getRepository()) {
-                            $this->updateMap[$this->getId($package)] = true;
+                            $this->updateMap[$package->getId()] = true;
                         }
                         break;
                 }
@@ -496,7 +497,7 @@ class Solver
             foreach ($job['packages'] as $package) {
                 switch ($job['cmd']) {
                     case 'install':
-                        $this->installCandidateMap[$this->getId($package)] = true;
+                        $this->installCandidateMap[$package->getId()] = true;
                         $this->addRulesForPackage($package);
                     break;
                 }
@@ -641,22 +642,22 @@ class Solver
         ));
     }
 
-    protected function decided(PackageInterface $package)
+    protected function decided(PackageInterface $p)
     {
-        return isset($this->decisionMap[$this->getId($package)]);
+        return isset($this->decisionMap[$p->getId()]);
     }
 
-    protected function undecided(PackageInterface $package)
+    protected function undecided(PackageInterface $p)
     {
-        return !isset($this->decisionMap[$this->getId($package)]);
+        return !isset($this->decisionMap[$p->getId()]);
     }
 
-    protected function decidedInstall(PackageInterface $package) {
-        return isset($this->decisionMap[$this->getId($package)]) && $this->decisionMap[$this->getId($package)] > 0;
+    protected function decidedInstall(PackageInterface $p) {
+        return isset($this->decisionMap[$p->getId()]) && $this->decisionMap[$p->getId()] > 0;
     }
 
-    protected function decidedRemove(PackageInterface $package) {
-        return isset($this->decisionMap[$this->getId($package)]) && $this->decisionMap[$this->getId($package)] < 0;
+    protected function decidedRemove(PackageInterface $p) {
+        return isset($this->decisionMap[$p->getId()]) && $this->decisionMap[$p->getId()] < 0;
     }
 
     /**
@@ -728,11 +729,6 @@ class Solver
         }
 
         return null;
-    }
-
-    private function getId($package)
-    {
-        return spl_object_hash($package);
     }
 
     private function setPropagateLearn($level, Literal $literal, $disableRules, Rule $rule)
