@@ -447,11 +447,6 @@ class Solver
         }
     }
 
-    public function unifyRules()
-    {
-
-    }
-
     public function solve(Request $request)
     {
         $this->jobs = $request->getJobs();
@@ -509,16 +504,6 @@ class Solver
         }
 
         // solver_addrpmrulesforweak(solv, &addedmap);
-        /*
-        * first pass done, we now have all the rpm rules we need.
-        * unify existing rules before going over all job rules and
-        * policy rules.
-        * at this point the system is always solvable,
-        * as an empty system (remove all packages) is a valid solution
-        */
-        // solver_unifyrules(solv);                          /* remove duplicate rpm rules */
-
-        $this->unifyRules();
 
         foreach ($installedPackages as $package) {
             // create a feature rule which allows downgrades
