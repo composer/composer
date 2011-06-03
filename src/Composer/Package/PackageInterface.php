@@ -38,6 +38,20 @@ interface PackageInterface
     function getNames();
 
     /**
+    * Allows the solver to set an id for this package to refer to it.
+    *
+    * @param int $id
+    */
+    function setId($id);
+
+    /**
+    * Retrieves the package's id set through setId
+    *
+    * @return int The previously set package id
+    */
+    function getId();
+
+    /**
      * Checks if the package matches the given constraint directly or through
      * provided or replaced packages
      *

@@ -72,8 +72,9 @@ class Rule
         $this->type = $type;
     }
 
-    public function getType($type)
+    public function getType()
     {
+        return $this->type;
     }
 
     public function disable()

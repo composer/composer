@@ -25,6 +25,7 @@ abstract class BasePackage implements PackageInterface
 {
     protected $name;
     protected $repository;
+    protected $id;
 
     /**
      * All descendents' constructors should call this parent constructor
@@ -34,6 +35,7 @@ abstract class BasePackage implements PackageInterface
     public function __construct($name)
     {
         $this->name = $name;
+        $this->id = -1;
     }
 
     /**
@@ -69,6 +71,22 @@ abstract class BasePackage implements PackageInterface
         }
 
         return $names;
+    }
+
+    /**
+    * {@inheritDoc}
+    */
+    public function setId($id)
+    {
+        $this->id = $id;
+    }
+
+    /**
+    * {@inheritDoc}
+    */
+    public function getId()
+    {
+        return $this->id;
     }
 
     /**
