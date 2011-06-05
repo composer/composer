@@ -41,7 +41,7 @@ class InstallCommand
         // TODO this should use the transaction returned by the solver
         foreach ($config['require'] as $name => $version) {
             foreach ($packages as $pkg) {
-                if ($pkg->getName() === $name) {
+                if (strtolower($pkg->getName()) === strtolower($name)) {
                     $package = $pkg;
                     break;
                 }
