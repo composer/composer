@@ -52,6 +52,7 @@ class InstallCommand
             $downloader = $composer->getDownloader($package->getSourceType());
             $installer = $composer->getInstaller($package->getType());
             $lock[$name] = $installer->install($package, $downloader);
+            echo '> '.$name.' installed'.PHP_EOL;
         }
 
         $this->storeLockFile($lock);
@@ -71,6 +72,7 @@ class InstallCommand
 
     protected function storeLockFile(array $content)
     {
-        file_put_contents('composer.lock', json_encode($content));
+        file_put_contents('composer.lock', json_encode($content)."\n");
+        echo '> composer.lock dumped'.PHP_EOL;
     }
 }
