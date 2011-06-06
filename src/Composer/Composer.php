@@ -14,6 +14,7 @@ namespace Composer;
 
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\PlatformRepository;
+use Composer\Repository\GitRepository;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -72,22 +73,27 @@ class Composer
         return $this->repositories;
     }
 
-    public function createRepository($type, $url)
+    public function createRepository($type, $spec)
     {
-        $url = rtrim($url, '/');
+        if (is_string($spec)) {
+            $spec = array('url' => $spec);
+        }
+        $spec['url'] = rtrim($spec['url'], '/');
 
         switch ($type) {
         case 'git-bare':
-        case 'git-package':
         case 'git-multi':
             throw new \Exception($type.' repositories not supported yet');
             break;
+
+        case 'git':
+            return new GitRepository($spec['url']);
 
         case 'platform':
             return new PlatformRepository;
 
         case 'composer':
-            return new ComposerRepository($url);
+            return new ComposerRepository($spec['url']);
         }
     }
 }
