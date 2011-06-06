@@ -28,7 +28,6 @@ class GitDownloader
 
     public function download(PackageInterface $package, $path)
     {
-        $oldDir = getcwd();
         if (!is_dir($path)) {
             if (file_exists($path)) {
                 throw new \UnexpectedValueException($path.' exists and is not a directory.');
@@ -37,12 +36,10 @@ class GitDownloader
                 throw new \UnexpectedValueException($path.' does not exist and could not be created.');
             }
         }
-        chdir($path);
         if ($this->clone) {
-            exec('git clone '.escapeshellarg($package->getSourceUrl()).' -b master '.escapeshellarg($package->getName()));
+            system('git clone '.escapeshellarg($package->getSourceUrl()).' -b master '.escapeshellarg($path.'/'.$package->getName()));
         } else {
-            exec('git archive --format=tar --prefix='.escapeshellarg($package->getName()).' --remote='.escapeshellarg($package->getSourceUrl()).' master | tar -xf -');
+            system('git archive --format=tar --prefix='.escapeshellarg($package->getName()).' --remote='.escapeshellarg($package->getSourceUrl()).' master | tar -xf -');
         }
-        chdir($oldDir);
     }
 }
