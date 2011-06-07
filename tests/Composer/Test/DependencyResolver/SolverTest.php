@@ -28,15 +28,15 @@ class SolverTest extends \PHPUnit_Framework_TestCase
         $pool = new Pool;
 
         $repoInstalled = new ArrayRepository;
-        $repoInstalled->addPackage(new MemoryPackage('old', '1.0'));
+        $repoInstalled->addPackage($oldPackage = new MemoryPackage('old', '1.0'));
         $repoInstalled->addPackage(new MemoryPackage('C', '1.0'));
 
         $repo = new ArrayRepository;
         $repo->addPackage($packageA = new MemoryPackage('A', '2.0'));
         $repo->addPackage($packageB = new MemoryPackage('B', '1.0'));
         $repo->addPackage($newPackageB = new MemoryPackage('B', '1.1'));
-        $repo->addPackage($packageC = new MemoryPackage('C', '1.0'));
-        $repo->addPackage($oldPackage = new MemoryPackage('old', '1.0'));
+        $repo->addPackage($packageC = new MemoryPackage('C', '1.1'));
+        $repo->addPackage(new MemoryPackage('old', '1.0'));
         $packageA->setRequires(array(new Link('A', 'B', new VersionConstraint('<', '1.1'), 'requires')));
 
         $pool->addRepository($repoInstalled);
@@ -57,17 +57,17 @@ class SolverTest extends \PHPUnit_Framework_TestCase
                 'package' => $packageA,
             ),
             array(
-                'job' => 'install',
-                'package' => $newPackageB,
-            ),
-            array(
-                'job' => 'update',
-                'package' => $packageC,
-            ),
-            array(
                 'job' => 'remove',
                 'package' => $oldPackage,
             ),
+            array(
+                'job' => 'install',
+                'package' => $newPackageB,
+            ),
+/*            array(
+                'job' => 'update',
+                'package' => $packageC,
+            ),*/
         );
 
         $this->assertEquals($expected, $result);
