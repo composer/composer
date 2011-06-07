@@ -17,7 +17,7 @@ use Composer\Package\PackageInterface;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class ZipDownloader
+class ZipDownloader extends AbstractDownloader
 {
     public function download(PackageInterface $package, $path)
     {
@@ -40,25 +40,6 @@ class ZipDownloader
             $zipArchive->close();
         } else {
             throw new \UnexpectedValueException($tmpName.' is not a valid zip archive, got error code '.$retval);
-        }
-    }
-
-    protected function downloadFile ($url, $path)
-    {
-        $file = fopen($url, "rb");
-        if ($file) {
-            $newf = fopen($path, "wb");
-            if ($newf) {
-                while (!feof($file)) {
-                    fwrite($newf, fread($file, 1024 * 8), 1024 * 8);
-                }
-            }
-        }
-        if ($file) {
-            fclose($file);
-        }
-        if ($newf) {
-            fclose($newf);
         }
     }
 }
