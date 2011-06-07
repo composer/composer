@@ -39,12 +39,12 @@ class Literal
 
     public function getPackageId()
     {
-        return spl_object_hash($this->package);
+        return $this->package->getId();
     }
 
     public function getId()
     {
-        return ($this->wanted ? '' : '-') . spl_object_hash($this->package);
+        return ($this->wanted ? '' : '-') . $this->package->getId();
     }
 
     public function __toString()

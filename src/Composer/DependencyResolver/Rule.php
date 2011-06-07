@@ -109,7 +109,7 @@ class Rule
 
     public function getNext(Literal $literal)
     {
-        if ($this->watch1->equals($literal)) {
+        if ($this->watch1 == $literal->getId()) {
             return $this->next1;
         } else {
             return $this->next2;
@@ -118,7 +118,7 @@ class Rule
 
     public function getOtherWatch(Literal $literal)
     {
-        if ($this->watch1->equals($literal)) {
+        if ($this->watch1 == $literal->getId()) {
             return $this->watch2;
         } else {
             return $this->watch1;
@@ -132,7 +132,7 @@ class Rule
      */
     public function __toString()
     {
-        $result = '(';
+        $result = ($this->isDisabled()) ? 'disabled(' : '(';
 
         foreach ($this->literals as $i => $literal) {
             if ($i != 0) {

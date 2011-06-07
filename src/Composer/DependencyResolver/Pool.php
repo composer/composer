@@ -46,6 +46,17 @@ class Pool
     }
 
     /**
+    * Retrieves the package object for a given package id.
+    *
+    * @param int $id
+    * @return PackageInterface
+    */
+    public function packageById($id)
+    {
+        return $this->packages[$id];
+    }
+
+    /**
      * Searches all packages providing the given package name and match the constraint
      *
      * @param string                  $name       The package name to be searched for
