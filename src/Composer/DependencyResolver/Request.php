@@ -12,6 +12,8 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\Package\LinkConstraint\LinkConstraintInterface;
+
 /**
  * @author Nils Adermann <naderman@naderman.de>
  */
