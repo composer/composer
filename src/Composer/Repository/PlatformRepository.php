@@ -26,7 +26,11 @@ class PlatformRepository extends ArrayRepository
     {
         parent::initialize();
 
-        $version = BasePackage::parseVersion(PHP_VERSION);
+        try {
+            $version = BasePackage::parseVersion(PHP_VERSION);
+        } catch (\UnexpectedValueException $e) {
+            $version = BasePackage::parseVersion(preg_replace('#^(.+?)(-.+)?#', '$1', PHP_VERSION));
+        }
 
         // TODO mark as type platform and create a special installer that skips it + one that throws an exception
         $php = new MemoryPackage('php', $version['version'], $version['type']);
