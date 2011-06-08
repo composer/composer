@@ -30,7 +30,7 @@ class PearDownloader extends AbstractDownloader
                 throw new \UnexpectedValueException($path.' does not exist and could not be created.');
             }
         }
-        
+
         $tmpName = tempnam(sys_get_temp_dir(), '');
         $this->downloadFile($package->getSourceUrl(), $tmpName);
 
