@@ -36,8 +36,15 @@ class PlatformRepository extends ArrayRepository
             if (in_array($ext, array('standard', 'Core'))) {
                 continue;
             }
-            // TODO maybe we could parse versions from phpinfo(INFO_MODULES)
-            $ext = new MemoryPackage('ext/'.strtolower($ext), '0', 'stable');
+
+            $reflExt = new \ReflectionExtension($ext);
+            try {
+                $version = BasePackage::parseVersion($reflExt->getVersion());
+            } catch (\UnexpectedValueException $e) {
+                $version = array('version' => '0', 'type' => 'stable');
+            }
+
+            $ext = new MemoryPackage('ext/'.strtolower($ext), $version['version'], $version['type']);
             $this->addPackage($ext);
         }
     }
