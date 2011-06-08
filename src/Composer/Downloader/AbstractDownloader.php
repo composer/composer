@@ -20,7 +20,7 @@ use Composer\Package\PackageInterface;
  */
 abstract class AbstractDownloader
 {
-    protected function downloadFile ($url, $path)
+    protected function downloadFile($url, $path)
     {
         $file = fopen($url, "rb");
         if ($file) {
@@ -29,13 +29,9 @@ abstract class AbstractDownloader
                 while (!feof($file)) {
                     fwrite($newf, fread($file, 1024 * 8), 1024 * 8);
                 }
+                fclose($newf);
             }
-        }
-        if ($file) {
             fclose($file);
-        }
-        if ($newf) {
-            fclose($newf);
         }
     }
 }
