@@ -30,23 +30,6 @@ class Solver
     const RULE_PACKAGE_NOT_EXIST = 8;
     const RULE_PACKAGE_REQUIRES = 9;
 
-    const TYPE_PACKAGE = 0;
-    const TYPE_FEATURE = 1;
-    const TYPE_UPDATE = 2;
-    const TYPE_JOB = 3;
-    const TYPE_WEAK = 4;
-    const TYPE_LEARNED = 5;
-
-    protected static $types = array(
-        -1 => 'UNKNOWN',
-        self::TYPE_PACKAGE => 'PACKAGE',
-        self::TYPE_FEATURE => 'FEATURE',
-        self::TYPE_UPDATE => 'UPDATE',
-        self::TYPE_JOB => 'JOB',
-        self::TYPE_WEAK => 'WEAK',
-        self::TYPE_LEARNED => 'LEARNED',
-    );
-
     protected $policy;
     protected $pool;
     protected $installed;
@@ -64,15 +47,7 @@ class Solver
         $this->policy = $policy;
         $this->pool = $pool;
         $this->installed = $installed;
-        $this->rules = array(
-            // order matters here! further down => higher priority
-            self::TYPE_LEARNED => array(),
-            self::TYPE_WEAK => array(),
-            self::TYPE_FEATURE => array(),
-            self::TYPE_UPDATE => array(),
-            self::TYPE_JOB => array(),
-            self::TYPE_PACKAGE => array(),
-        );
+        $this->rules = new RuleSet;
     }
 
     /**
@@ -241,16 +216,13 @@ class Solver
      */
     private function addRule($type, Rule $newRule = null) {
         if ($newRule) {
-            foreach ($this->rules as $rules) {
-                foreach ($rules as $rule) {
-                    if ($rule->equals($newRule)) {
-                        return;
-                    }
+            foreach ($this->rules->getIterator() as $rule) {
+                if ($rule->equals($newRule)) {
+                    return;
                 }
             }
 
-            $newRule->setType($type);
-            $this->rules[$type][] = $newRule;
+            $this->rules->add($newRule, $type);
         }
     }
 
@@ -273,7 +245,7 @@ class Solver
             }
 
             if (!$dontFix && !$this->policy->installable($this, $this->pool, $this->installed, $package)) {
-                $this->addRule(self::TYPE_PACKAGE, $this->createRemoveRule($package, self::RULE_NOT_INSTALLABLE, (string) $package));
+                $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRemoveRule($package, self::RULE_NOT_INSTALLABLE, (string) $package));
                 continue;
             }
 
@@ -299,7 +271,7 @@ class Solver
                     }
                 }
 
-                $this->addRule(self::TYPE_PACKAGE, $this->createRequireRule($package, $possibleRequires, self::RULE_PACKAGE_REQUIRES, (string) $link));
+                $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRequireRule($package, $possibleRequires, self::RULE_PACKAGE_REQUIRES, (string) $link));
 
                 foreach ($possibleRequires as $require) {
                     $workQueue->enqueue($require);
@@ -314,7 +286,7 @@ class Solver
                         continue;
                     }
 
-                    $this->addRule(self::TYPE_PACKAGE, $this->createConflictRule($package, $conflict, self::RULE_PACKAGE_CONFLICT, (string) $link));
+                    $this->addRule(RuleSet::TYPE_PACKAGE, $this->createConflictRule($package, $conflict, self::RULE_PACKAGE_CONFLICT, (string) $link));
                 }
             }
 
@@ -359,29 +331,25 @@ class Solver
      */
     private function makeWatches()
     {
-        foreach ($this->rules as $type => $rules) {
-            foreach ($rules as $i => $rule) {
-
-                // skip simple assertions of the form (A) or (-A)
-                if ($rule->isAssertion()) {
-                    continue;
-                }
-
-                if (!isset($this->watches[$rule->watch1])) {
-                    $this->watches[$rule->watch1] = null;
-                }
-
-                $rule->next1 = $this->watches[$rule->watch1];
-                $this->watches[$rule->watch1] = $rule;
-
-                if (!isset($this->watches[$rule->watch2])) {
-                    $this->watches[$rule->watch2] = null;
-                }
-
-                $rule->next2 = $this->watches[$rule->watch2];
-                $this->watches[$rule->watch2] = $rule;
-
+        foreach ($this->rules as $rule) {
+            // skip simple assertions of the form (A) or (-A)
+            if ($rule->isAssertion()) {
+                continue;
             }
+
+            if (!isset($this->watches[$rule->watch1])) {
+                $this->watches[$rule->watch1] = null;
+            }
+
+            $rule->next1 = $this->watches[$rule->watch1];
+            $this->watches[$rule->watch1] = $rule;
+
+            if (!isset($this->watches[$rule->watch2])) {
+                $this->watches[$rule->watch2] = null;
+            }
+
+            $rule->next2 = $this->watches[$rule->watch2];
+            $this->watches[$rule->watch2] = $rule;
         }
     }
 
@@ -400,44 +368,39 @@ class Solver
     {
         // do we need to decide a SYSTEMSOLVABLE at level 1?
 
-        foreach ($this->rules as $type => $rules) {
-            if (self::TYPE_WEAK === $type) {
+        foreach ($this->rules->getIteratorWithout(RuleSet::TYPE_WEAK) as $rule) {
+            if (!$rule->isAssertion() || $rule->isDisabled()) {
                 continue;
             }
-            foreach ($rules as $rule) {
-                if (!$rule->isAssertion() || $rule->isDisabled()) {
-                    continue;
-                }
 
-                $literals = $rule->getLiterals();
-                $literal = $literals[0];
+            $literals = $rule->getLiterals();
+            $literal = $literals[0];
 
-                if (!$this->decided($literal->getPackage())) {
-                    $this->decisionQueue[] = $literal;
-                    $this->decisionQueueWhy[] = $rule;
-                    $this->addDecision($literal, 1);
-                    continue;
-                }
+            if (!$this->decided($literal->getPackage())) {
+                $this->decisionQueue[] = $literal;
+                $this->decisionQueueWhy[] = $rule;
+                $this->addDecision($literal, 1);
+                continue;
+            }
 
-                if ($this->decisionsSatisfy($literal)) {
-                    continue;
-                }
+            if ($this->decisionsSatisfy($literal)) {
+                continue;
+            }
 
-                // found a conflict
-                if (self::TYPE_LEARNED === $type) {
-                    $rule->disable();
-                }
+            // found a conflict
+            if (RuleSet::TYPE_LEARNED === $rule->getType()) {
+                $rule->disable();
+            }
 
-                $conflict = $this->findDecisionRule($literal->getPackage());
-                // todo: handle conflict with systemsolvable?
+            $conflict = $this->findDecisionRule($literal->getPackage());
+            // todo: handle conflict with systemsolvable?
 
-                if ($conflict && self::TYPE_PACKAGE === $conflict->getType()) {
+            if ($conflict && RuleSet::TYPE_PACKAGE === $conflict->getType()) {
 
-                }
             }
         }
 
-        foreach ($this->rules[self::TYPE_WEAK] as $rule) {
+        foreach ($this->rules->getIteratorFor(RuleSet::TYPE_WEAK) as $rule) {
             if (!$rule->isAssertion() || $rule->isDisabled()) {
                 continue;
             }
@@ -520,13 +483,13 @@ class Solver
 
             if ($rule->equals($featureRule)) {
                 if ($this->policy->allowUninstall()) {
-                    $this->addRule(self::TYPE_WEAK, $featureRule);
+                    $this->addRule(RuleSet::TYPE_WEAK, $featureRule);
                 } else {
-                    $this->addRule(self::TYPE_UPDATE, $rule);
+                    $this->addRule(RuleSet::TYPE_UPDATE, $rule);
                 }
             } else if ($this->policy->allowUninstall()) {
-                $this->addRule(self::TYPE_WEAK, $featureRule);
-                $this->addRule(self::TYPE_WEAK, $rule);
+                $this->addRule(RuleSet::TYPE_WEAK, $featureRule);
+                $this->addRule(RuleSet::TYPE_WEAK, $rule);
             }
         }
 
@@ -534,7 +497,7 @@ class Solver
             switch ($job['cmd']) {
                 case 'install':
                     $rule = $this->createInstallOneOfRule($job['packages'], self::RULE_JOB_INSTALL, $job['packageName']);
-                    $this->addRule(self::TYPE_JOB, $rule);
+                    $this->addRule(RuleSet::TYPE_JOB, $rule);
                     //$this->ruleToJob[$rule] = $job;
                     break;
                 case 'remove':
@@ -544,7 +507,7 @@ class Solver
                     // todo: cleandeps
                     foreach ($job['packages'] as $package) {
                         $rule = $this->createRemoveRule($package, self::RULE_JOB_REMOVE);
-                        $this->addRule(self::TYPE_JOB, $rule);
+                        $this->addRule(RuleSet::TYPE_JOB, $rule);
                         //$this->ruleToJob[$rule] = $job;
                     }
                     break;
@@ -555,7 +518,7 @@ class Solver
                         } else {
                             $rule = $this->createRemoveRule($package, self::RULE_JOB_LOCK);
                         }
-                        $this->addRule(self::TYPE_JOB, $rule);
+                        $this->addRule(RuleSet::TYPE_JOB, $rule);
                         //$this->ruleToJob[$rule] = $job;
                     }
                 break;
@@ -595,18 +558,6 @@ class Solver
         }
 
         return $transaction;
-    }
-
-    public function printRules()
-    {
-        print "\n";
-        foreach ($this->rules as $type => $rules) {
-            print str_pad(self::$types[$type], 8, ' ') . ": ";
-            foreach ($rules as $rule) {
-                print $rule;
-            }
-            print "\n";
-        }
     }
 
     protected $decisionQueue = array();
@@ -718,6 +669,10 @@ class Solver
 
             // /* foreach rule where 'pkg' is now FALSE */
             //for (rp = watches + pkg; *rp; rp = next_rp)
+            if (!isset($this->watches[$literal->getId()])) {
+                continue;
+            }
+
             for ($rule = $this->watches[$literal->getId()]; $rule !== null; $rule = $nextRule) {
                 $nextRule = $rule->getNext($literal);
 
@@ -790,9 +745,63 @@ class Solver
         return $this->setPropagateLearn($level, $literals[0], $disableRules, $rule);
     }
 
+    private function analyzeUnsolvableRule($rule, &$lastWeak)
+    {
+        //if ($this->learntRules &&
+
+/*
+  Pool *pool = solv->pool;
+  int i;
+  Id why = r - solv->rules;
+
+  IF_POOLDEBUG (SAT_DEBUG_UNSOLVABLE)
+    solver_printruleclass(solv, SAT_DEBUG_UNSOLVABLE, r);
+  if (solv->learntrules && why >= solv->learntrules)
+    {
+      for (i = solv->learnt_why.elements[why - solv->learntrules]; solv->learnt_pool.elements[i]; i++)
+    if (solv->learnt_pool.elements[i] > 0)
+      analyze_unsolvable_rule(solv, solv->rules + solv->learnt_pool.elements[i], lastweakp);
+      return;
+    }
+  if (MAPTST(&solv->weakrulemap, why))
+    if (!*lastweakp || why > *lastweakp)
+      *lastweakp = why;
+  /* do not add rpm rules to problem *
+  if (why < solv->rpmrules_end)
+    return;
+  /* turn rule into problem *
+  if (why >= solv->jobrules && why < solv->jobrules_end)
+    why = -(solv->ruletojob.elements[why - solv->jobrules] + 1);
+  /* normalize dup/infarch rules *
+  if (why > solv->infarchrules && why < solv->infarchrules_end)
+    {
+      Id name = pool->solvables[-solv->rules[why].p].name;
+      while (why > solv->infarchrules && pool->solvables[-solv->rules[why - 1].p].name == name)
+    why--;
+    }
+  if (why > solv->duprules && why < solv->duprules_end)
+    {
+      Id name = pool->solvables[-solv->rules[why].p].name;
+      while (why > solv->duprules && pool->solvables[-solv->rules[why - 1].p].name == name)
+    why--;
+    }
+
+  /* return if problem already countains our rule *
+  if (solv->problems.count)
+    {
+      for (i = solv->problems.count - 1; i >= 0; i--)
+    if (solv->problems.elements[i] == 0)    /* end of last problem reached? *
+      break;
+    else if (solv->problems.elements[i] == why)
+      return;
+    }
+  queue_push(&solv->problems, why);
+*/
+    }
+
     private function analyzeUnsolvable($conflictRule, $disableRules)
     {
-        return false;
+        $this->analyzeUnsolvableRule($conflictRule, $lastWeak);
     }
 
     private function runSat($disableRules = true, $installRecommended = false)
@@ -836,8 +845,8 @@ class Solver
 
             // handle job rules
             if ($level < $systemLevel) {
-                $ruleIndex = 0;
-                foreach ($this->rules[self::TYPE_JOB] as $ruleIndex => $rule) {
+                $iterator = $this->rules->getIteratorFor(RuleSet::TYPE_JOB);
+                foreach ($iterator as $rule) {
                     if ($rule->isEnabled()) {
                         $decisionQueue = array();
                         $noneSatisfied = true;
@@ -886,7 +895,8 @@ class Solver
                 $systemLevel = $level + 1;
 
                 // jobs left
-                if ($ruleIndex + 1 < count($this->rules[Solver::TYPE_JOB])) {
+                $iterator->next();
+                if ($iterator->valid()) {
                     continue;
                 }
             }
@@ -916,13 +926,14 @@ class Solver
                         }
 
                         $rule = null;
+                        /** TODO: huh at package id?!?
                         if (isset($this->rules[Solver::TYPE_UPDATE][$literal->getPackageId()])) {
                             $rule = $this->rules[Solver::TYPE_UPDATE][$literal->getPackageId()];
                         }
 
                         if ((!$rule || $rule->isDisabled()) && isset($this->rules[Solver::TYPE_FEATURE][$literal->getPackageId()])) {
                             $rule = $this->rules[Solver::TYPE_FEATURE][$literal->getPackageId()];
-                        }
+                        }**/
 
                         if (!$rule || $rule->isDisabled()) {
                             continue;
@@ -1016,14 +1027,12 @@ class Solver
                 $systemLevel = $level;
             }
 
-            foreach ($this->rules as $ruleType => $rules) {
-                foreach ($rules as $rule) {
-                    if ($rule->isEnabled()) {
-                        $decisionQueue = array();
-                    }
+            foreach ($this->rules->getIterator() as $rule) {
+                if ($rule->isEnabled()) {
+                    $decisionQueue = array();
                 }
             }
-
+echo $this->rules;
 //
 //       /*
 //        * decide
