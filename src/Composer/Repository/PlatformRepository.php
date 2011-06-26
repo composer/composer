@@ -29,7 +29,7 @@ class PlatformRepository extends ArrayRepository
         try {
             $version = BasePackage::parseVersion(PHP_VERSION);
         } catch (\UnexpectedValueException $e) {
-            $version = BasePackage::parseVersion(preg_replace('#^(.+?)(-.+)?#', '$1', PHP_VERSION));
+            $version = BasePackage::parseVersion(preg_replace('#^(.+?)(-.+)?$#', '$1', PHP_VERSION));
         }
 
         // TODO mark as type platform and create a special installer that skips it + one that throws an exception
