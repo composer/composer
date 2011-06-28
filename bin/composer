@@ -6,12 +6,14 @@ require __DIR__.'/../tests/bootstrap.php';
 use Composer\Composer;
 use Composer\Downloader\GitDownloader;
 use Composer\Downloader\PearDownloader;
+use Composer\Downloader\ZipDownloader;
 use Composer\Command\InstallCommand;
 use Composer\Installer\LibraryInstaller;
 
 $composer = new Composer();
 $composer->addDownloader('git', new GitDownloader);
 $composer->addDownloader('pear', new PearDownloader);
+$composer->addDownloader('zip', new ZipDownloader);
 $composer->addInstaller('library', new LibraryInstaller);
 
 $cmd = new InstallCommand();
