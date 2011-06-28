@@ -66,7 +66,27 @@ class InstallCommand
         }
         $config = json_decode(file_get_contents('composer.json'), true);
         if (!$config) {
-            throw new \UnexpectedValueException('Incorrect composer.json file');
+            switch (json_last_error()) {
+            case JSON_ERROR_NONE:
+                $msg = 'No error has occurred, is your composer.json file empty?';
+                break;
+            case JSON_ERROR_DEPTH:
+                $msg = 'The maximum stack depth has been exceeded';
+                break;
+            case JSON_ERROR_STATE_MISMATCH:
+                $msg = 'Invalid or malformed JSON';
+                break;
+            case JSON_ERROR_CTRL_CHAR:
+                $msg = 'Control character error, possibly incorrectly encoded';
+                break;
+            case JSON_ERROR_SYNTAX:
+                $msg = 'Syntax error';
+                break;
+            case JSON_ERROR_UTF8:
+                $msg = 'Malformed UTF-8 characters, possibly incorrectly encoded';
+                break;
+            }
+            throw new \UnexpectedValueException('Incorrect composer.json file: '.$msg);
         }
         return $config;
     }
