@@ -63,7 +63,7 @@ class Composer
             unset($this->repositories[$name]);
         }
         if (is_array($spec) && count($spec)) {
-            return $this->repositories[$name] = $this->createRepository(key($spec), current($spec));
+            return $this->repositories[$name] = $this->createRepository($name, key($spec), current($spec));
         }
         throw new \UnexpectedValueException('Invalid repositories specification '.var_export($spec, true));
     }
@@ -73,7 +73,7 @@ class Composer
         return $this->repositories;
     }
 
-    public function createRepository($type, $spec)
+    public function createRepository($name, $type, $spec)
     {
         if (is_string($spec)) {
             $spec = array('url' => $spec);
@@ -94,6 +94,8 @@ class Composer
 
         case 'composer':
             return new ComposerRepository($spec['url']);
+        case 'pear':
+            return new Repository\PearRepository($spec['url'], isset($spec['name']) ? $spec['name'] : $name);
         }
     }
 }
