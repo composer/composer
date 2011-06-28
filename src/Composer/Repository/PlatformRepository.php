@@ -32,7 +32,6 @@ class PlatformRepository extends ArrayRepository
             $version = BasePackage::parseVersion(preg_replace('#^(.+?)(-.+)?$#', '$1', PHP_VERSION));
         }
 
-        // TODO mark as type platform and create a special installer that skips it + one that throws an exception
         $php = new MemoryPackage('php', $version['version'], $version['type']);
         $this->addPackage($php);
 
