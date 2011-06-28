@@ -63,10 +63,10 @@ class Composer
         if (null === $spec) {
             unset($this->repositories[$name]);
         }
-        if (is_array($spec) && count($spec)) {
+        if (is_array($spec) && count($spec) === 1) {
             return $this->repositories[$name] = $this->createRepository($name, key($spec), current($spec));
         }
-        throw new \UnexpectedValueException('Invalid repositories specification '.var_export($spec, true));
+        throw new \UnexpectedValueException('Invalid repositories specification '.json_encode($spec).', should be: {"type": "url"}');
     }
 
     public function getRepositories()
