@@ -32,13 +32,13 @@ class PearDownloader extends AbstractDownloader
         }
 
         $tmpName = tempnam(sys_get_temp_dir(), '');
-        $this->downloadFile($package->getSourceUrl(), $tmpName);
+        copy($package->getSourceUrl(), $tmpName);
 
         if (!file_exists($tmpName)) {
             throw new \UnexpectedValueException($package->getName().' could not be saved into '.$tmpName.', make sure the'
                 .' directory is writable and you have internet connectivity.');
         }
-        
+
         $cwd = getcwd();
         chdir($path);
         system('tar xzf '.escapeshellarg($tmpName));
