@@ -15,6 +15,7 @@ namespace Composer;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\GitRepository;
+use Composer\Repository\PearRepository;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -94,8 +95,12 @@ class Composer
 
         case 'composer':
             return new ComposerRepository($spec['url']);
+
         case 'pear':
-            return new Repository\PearRepository($spec['url'], isset($spec['name']) ? $spec['name'] : $name);
+            return new PearRepository($spec['url'], $name);
+
+        default:
+            throw new \UnexpectedValueException('Unknown repository type: '.$type.', could not create repository '.$name);
         }
     }
 }

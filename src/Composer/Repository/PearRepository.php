@@ -19,46 +19,30 @@ use Composer\Package\LinkConstraint\VersionConstraint;
 
 /**
  * @author Benjamin Eberlei <kontakt@beberlei.de>
+ * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 class PearRepository extends ArrayRepository
 {
     private $name;
     private $url;
 
-    public function __construct($url)
+    public function __construct($url, $name = '')
     {
-        $this->url = $url;
-
-        if (!filter_var($this->url, FILTER_VALIDATE_URL)) {
-            throw new \UnexpectedValueException("Invalid url given for PEAR repository " . $name);
+        if (!filter_var($url, FILTER_VALIDATE_URL)) {
+            throw new \UnexpectedValueException('Invalid url given for PEAR repository "'.$name.'": '.$url);
         }
+
+        $this->url = $url;
     }
 
-    /**
-     * @param  string $url
-     * @return DOMDocument
-     */
-    private function requestXml($url)
-    {
-        $content = file_get_contents($url);
-        $dom = new \DOMDocument('1.0', 'UTF-8');
-        $dom->loadXML($content);
-
-        return $dom;
-    }
-    
     protected function initialize()
     {
         parent::initialize();
 
         set_error_handler(function($severity, $message, $file, $line) {
-            throw new ErrorException($message, $severity, $severity, $file, $line);
+            throw new \ErrorException($message, $severity, $severity, $file, $line);
         });
-        try {
-            $this->fetchFromServer();
-        } catch(ErrorException $e) {
-
-        }
+        $this->fetchFromServer();
         restore_error_handler();
     }
 
@@ -80,7 +64,7 @@ class PearRepository extends ArrayRepository
                 $releaseLink = $this->url . str_replace("/rest/p/", "/rest/r/", $packageLink);
                 $allReleasesLink = $releaseLink . "/allreleases2.xml";
                 $releasesXML = $this->requestXml($allReleasesLink);
-                
+
                 $releases = $releasesXML->getElementsByTagName('r');
 
                 foreach ($releases as $release) {
@@ -102,8 +86,14 @@ class PearRepository extends ArrayRepository
                     }
                     $deps = unserialize($deps);
                     if (isset($deps['required']['package'])) {
+                        $requires = array();
                         foreach ($deps['required']['package'] as $dependency) {
-                            $requires[$dependency['name']] = $dependency['min'];
+                            if (isset($dependency['min'])) {
+                                $constraint = new VersionConstraint('>=', $dependency['min']);
+                            } else {
+                                $constraint = new VersionConstraint('>=', '0.0.0');
+                            }
+                            $requires[] = new Link($packageName, $dependency['name'], $constraint, 'requires');
                         }
                         $package->setRequires($requires);
                     }
@@ -112,5 +102,21 @@ class PearRepository extends ArrayRepository
                 }
             }
         }
+    }
+
+    /**
+     * @param  string $url
+     * @return DOMDocument
+     */
+    private function requestXml($url)
+    {
+        $content = file_get_contents($url);
+        if (!$content) {
+            throw new \UnexpectedValueException('The PEAR channel at '.$url.' did not respond.');
+        }
+        $dom = new \DOMDocument('1.0', 'UTF-8');
+        $dom->loadXML($content);
+
+        return $dom;
     }
 }
