@@ -17,7 +17,7 @@ use Composer\Package\PackageInterface;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class ZipDownloader extends AbstractDownloader
+class ZipDownloader
 {
     public function download(PackageInterface $package, $path)
     {

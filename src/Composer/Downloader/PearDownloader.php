@@ -16,32 +16,51 @@ use Composer\Package\PackageInterface;
 
 /**
  * @author Benjamin Eberlei <kontakt@beberlei.de>
+ * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class PearDownloader extends AbstractDownloader
+class PearDownloader
 {
     public function download(PackageInterface $package, $path)
     {
-        $path = $path . "/" . $package->getName();
-        if (!is_dir($path)) {
-            if (file_exists($path)) {
-                throw new \UnexpectedValueException($path.' exists and is not a directory.');
+        $targetPath = $path . "/" . $package->getName();
+        if (!is_dir($targetPath)) {
+            if (file_exists($targetPath)) {
+                throw new \UnexpectedValueException($targetPath.' exists and is not a directory.');
             }
-            if (!mkdir($path, 0777, true)) {
-                throw new \UnexpectedValueException($path.' does not exist and could not be created.');
+            if (!mkdir($targetPath, 0777, true)) {
+                throw new \UnexpectedValueException($targetPath.' does not exist and could not be created.');
             }
-        }
-
-        $tmpName = tempnam(sys_get_temp_dir(), '');
-        copy($package->getSourceUrl(), $tmpName);
-
-        if (!file_exists($tmpName)) {
-            throw new \UnexpectedValueException($package->getName().' could not be saved into '.$tmpName.', make sure the'
-                .' directory is writable and you have internet connectivity.');
         }
 
         $cwd = getcwd();
-        chdir($path);
-        system('tar xzf '.escapeshellarg($tmpName));
+        chdir($targetPath);
+
+        $source = $package->getSourceUrl();
+        $tarName = basename($source);
+
+        echo 'Downloading '.$source.' to '.$targetPath.'/'.$tarName.PHP_EOL;
+        copy($package->getSourceUrl(), './'.$tarName);
+
+        if (!file_exists($tarName)) {
+            throw new \UnexpectedValueException($package->getName().' could not be saved into '.$tarName.', make sure the'
+                .' directory is writable and you have internet connectivity.');
+        }
+
+        echo 'Unpacking archive'.PHP_EOL;
+        exec('tar -xzf "'.escapeshellarg($tarName).'"');
+
+        echo 'Cleaning up'.PHP_EOL;
+        unlink('./'.$tarName);
+        @unlink('./package.sig');
+        @unlink('./package.xml');
+        if (list($dir) = glob('./'.$package->getName().'-*', GLOB_ONLYDIR)) {
+            foreach (array_merge(glob($dir.'/.*'), glob($dir.'/*')) as $file) {
+                if (trim(basename($file), '.')) {
+                    rename($file, './'.basename($file));
+                }
+            }
+            rmdir($dir);
+        }
         chdir($cwd);
     }
 }
