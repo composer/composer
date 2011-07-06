@@ -69,7 +69,7 @@ interface PackageInterface
     function getType();
 
     /**
-     * Returns the repository type of this package, e.g. git, svn, tar
+     * Returns the repository type of this package, e.g. git, svn
      *
      * @return string The repository type
      */
@@ -81,6 +81,27 @@ interface PackageInterface
      * @return string The repository url
      */
     function getSourceUrl();
+
+    /**
+     * Returns the type of the distribution archive of this version, e.g. zip, tarball
+     *
+     * @return string The repository type
+     */
+    function getDistType();
+
+    /**
+     * Returns the url of the distribution archive of this version
+     *
+     * @return string
+     */
+    function getDistUrl();
+
+    /**
+     * Returns the sha1 checksum for the distribution archive of this version
+     *
+     * @return string
+     */
+    function getDistSha1Checksum();
 
     /**
      * Returns the release type of this package, e.g. stable or beta
