@@ -26,7 +26,7 @@ class GitDownloader
         $this->clone = $clone;
     }
 
-    public function download(PackageInterface $package, $path)
+    public function download(PackageInterface $package, $path, $url, $checksum = null)
     {
         if (!is_dir($path)) {
             if (file_exists($path)) {
@@ -37,9 +37,9 @@ class GitDownloader
             }
         }
         if ($this->clone) {
-            system('git clone '.escapeshellarg($package->getSourceUrl()).' -b master '.escapeshellarg($path.'/'.$package->getName()));
+            system('git clone '.escapeshellarg($url).' -b master '.escapeshellarg($path.'/'.$package->getName()));
         } else {
-            system('git archive --format=tar --prefix='.escapeshellarg($package->getName()).' --remote='.escapeshellarg($package->getSourceUrl()).' master | tar -xf -');
+            system('git archive --format=tar --prefix='.escapeshellarg($package->getName()).' --remote='.escapeshellarg($url).' master | tar -xf -');
         }
     }
 }

@@ -18,6 +18,8 @@ use Composer\Package\Link;
 use Composer\Package\LinkConstraint\VersionConstraint;
 
 /**
+ * FIXME This is majorly broken and incomplete, it was an experiment
+ *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 class GitRepository extends ArrayRepository

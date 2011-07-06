@@ -23,6 +23,9 @@ class InstallCommand
     {
         $this->composer = $composer;
 
+        // TODO this needs a parameter to enable installing from source (i.e. git clone, instead of downloading archives)
+        $sourceInstall = false;
+
         $config = $this->loadConfig();
 
         foreach ($config['repositories'] as $name => $spec) {
@@ -50,11 +53,25 @@ class InstallCommand
             if (!isset($package)) {
                 throw new \UnexpectedValueException('Could not find package '.$name.' in any of your repositories');
             }
-            $downloader = $composer->getDownloader($package->getSourceType());
-            $installer = $composer->getInstaller($package->getType());
-            $lock[$name] = $installer->install($package, $downloader);
-            echo '> '.$name.' installed'.PHP_EOL;
+            echo '> Installing '.$package->getName().PHP_EOL;
+            if ($sourceInstall) {
+                // TODO
+            } else {
+                if ($package->getDistType()) {
+                    $downloader = $composer->getDownloader($package->getDistType());
+                    $type = 'dist';
+                } elseif ($package->getSourceType()) {
+                    echo 'Package '.$package->getName().' has no dist url, installing from source instead.';
+                    $downloader = $composer->getDownloader($package->getSourceType());
+                    $type = 'source';
+                } else {
+                    throw new \UnexpectedValueException('Package '.$package->getName().' has no source or dist URL.');
+                }
+                $installer = $composer->getInstaller($package->getType());
+                $lock[$name] = $installer->install($package, $downloader, $type);
+            }
         }
+        echo '> Done'.PHP_EOL;
 
         $this->storeLockFile($lock);
     }
