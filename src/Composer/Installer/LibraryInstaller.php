@@ -26,9 +26,15 @@ class LibraryInstaller
         $this->dir = $dir;
     }
 
-    public function install(PackageInterface $package, $downloader)
+    public function install(PackageInterface $package, $downloader, $type)
     {
-        $downloader->download($package, $this->dir);
+        if ($type === 'dist') {
+            $downloader->download($package, $this->dir, $package->getDistUrl(), $package->getDistSha1Checksum());
+        } elseif ($type === 'source') {
+            $downloader->download($package, $this->dir, $package->getSourceUrl());
+        } else {
+            throw new \InvalidArgumentException('Type must be one of (dist, source), '.$type.' given.');
+        }
         return array('version' => $package->getVersion());
     }
 }

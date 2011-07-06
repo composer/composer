@@ -74,8 +74,8 @@ class PearRepository extends ArrayRepository
                     $version = BasePackage::parseVersion($pearVersion);
 
                     $package = new MemoryPackage($packageName, $version['version'], $version['type']);
-                    $package->setSourceType('pear');
-                    $package->setSourceUrl($this->url.'/get/'.$packageName.'-'.$pearVersion.".tgz");
+                    $package->setDistType('pear');
+                    $package->setDistUrl($this->url.'/get/'.$packageName.'-'.$pearVersion.".tgz");
 
                     $depsLink = $releaseLink . "/deps.".$pearVersion.".txt";
                     $deps = file_get_contents($depsLink);

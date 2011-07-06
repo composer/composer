@@ -20,7 +20,7 @@ use Composer\Package\PackageInterface;
  */
 class PearDownloader
 {
-    public function download(PackageInterface $package, $path)
+    public function download(PackageInterface $package, $path, $url, $checksum = null)
     {
         $targetPath = $path . "/" . $package->getName();
         if (!is_dir($targetPath)) {
@@ -35,15 +35,18 @@ class PearDownloader
         $cwd = getcwd();
         chdir($targetPath);
 
-        $source = $package->getSourceUrl();
-        $tarName = basename($source);
+        $tarName = basename($url);
 
-        echo 'Downloading '.$source.' to '.$targetPath.'/'.$tarName.PHP_EOL;
-        copy($package->getSourceUrl(), './'.$tarName);
+        echo 'Downloading '.$url.' to '.$targetPath.'/'.$tarName.PHP_EOL;
+        copy($url, './'.$tarName);
 
         if (!file_exists($tarName)) {
             throw new \UnexpectedValueException($package->getName().' could not be saved into '.$tarName.', make sure the'
                 .' directory is writable and you have internet connectivity.');
+        }
+
+        if ($checksum && hash_file('sha1', './'.$tarName) !== $checksum) {
+            throw new \UnexpectedValueException('The checksum verification failed for the '.$package->getName().' archive (downloaded from '.$url.'). Installation aborted.');
         }
 
         echo 'Unpacking archive'.PHP_EOL;
