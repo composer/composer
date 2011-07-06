@@ -142,14 +142,14 @@ abstract class BasePackage implements PackageInterface
     }
 
     /**
-     * Parses a version string and returns an array with the version and its type (dev, alpha, beta, RC, stable)
+     * Parses a version string and returns an array with the version, its type (alpha, beta, RC, stable) and a dev flag (for development branches tracking)
      *
      * @param string $version
      * @return array
      */
     public static function parseVersion($version)
     {
-        if (!preg_match('#^v?(\d+)(\.\d+)?(\.\d+)?-?((?:beta|RC\d+|alpha|dev)\d*)?$#i', $version, $matches)) {
+        if (!preg_match('#^v?(\d+)(\.\d+)?(\.\d+)?-?((?:beta|RC\d+|alpha)\d*)?-?(dev)?$#i', $version, $matches)) {
             throw new \UnexpectedValueException('Invalid version string '.$version);
         }
 
@@ -158,6 +158,7 @@ abstract class BasePackage implements PackageInterface
                 .(!empty($matches[2]) ? $matches[2] : '.0')
                 .(!empty($matches[3]) ? $matches[3] : '.0'),
             'type' => strtolower(!empty($matches[4]) ? $matches[4] : 'stable'),
+            'dev' => !empty($matches[5]),
         );
     }
 }
