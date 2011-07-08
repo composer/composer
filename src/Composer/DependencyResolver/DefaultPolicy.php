@@ -59,9 +59,41 @@ class DefaultPolicy implements PolicyInterface
         return true;
     }
 
-    public function selectPreferedPackages(array $literals)
+    public function selectPreferedPackages(Solver $solver, Pool $pool, RepositoryInterface $installed, array $literals)
     {
-        // todo: prefer installed, recommended, highest priority repository, ...
-        return array($literals[0]);
+        // prefer installed, newest version, recommended, highest priority repository, ...
+        $newest = $this->selectNewestPackages($installed, $literals);
+
+        $selected = array();
+        foreach ($newest as $literal) {
+            if ($literal->getPackage()->getRepository() === $installed) {
+                $selected[] = $literal;
+            }
+        }
+        if (count($selected)) {
+            return $selected;
+        }
+
+        return $newest;
+    }
+
+    public function selectNewestPackages(RepositoryInterface $installed, array $literals)
+    {
+        $maxLiterals = array($literals[0]);
+        $maxPackage = $literals[0]->getPackage();
+        foreach ($literals as $i => $literal) {
+            if (0 === $i) {
+                continue;
+            }
+
+            if ($this->versionCompare($literal->getPackage(), $maxPackage, '>')) {
+                $maxPackage = $literal->getPackage();
+                $maxLiterals = array($literal);
+            } else if ($this->versionCompare($literal->getPackage(), $maxPackage, '==')) {
+                $maxLiterals[] = $literal;
+            }
+        }
+
+        return $maxLiterals;
     }
 }

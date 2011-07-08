@@ -21,7 +21,6 @@ class RuleSetIterator implements \Iterator
     protected $types;
 
     protected $currentOffset;
-    protected $currentTotalOffset;
     protected $currentType;
     protected $currentTypeOffset;
 
@@ -44,14 +43,8 @@ class RuleSetIterator implements \Iterator
         return $this->currentType;
     }
 
-    public function getId()
-    {
-        return $this->currentTotalOffset;
-    }
-
     public function next()
     {
-        $this->currentTotalOffset++;
         $this->currentOffset++;
 
         if (!isset($this->rules[$this->currentType])) {
@@ -77,7 +70,6 @@ class RuleSetIterator implements \Iterator
     public function rewind()
     {
         $this->currentOffset = 0;
-        $this->currentTotalOffset = 0;
 
         $this->currentTypeOffset = -1;
         $this->currentType = -1;

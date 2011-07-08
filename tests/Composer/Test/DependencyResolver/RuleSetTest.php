@@ -29,8 +29,8 @@ class RuleSetTest extends \PHPUnit_Framework_TestCase
                 new Rule(array(), 'update1', null),
             ),
             RuleSet::TYPE_FEATURE => array(),
-            RuleSet::TYPE_WEAK => array(),
             RuleSet::TYPE_LEARNED => array(),
+            RuleSet::TYPE_CHOICE => array(),
         );
 
         $ruleSet = new RuleSet;

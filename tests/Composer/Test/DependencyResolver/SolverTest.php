@@ -13,6 +13,7 @@
 namespace Composer\Test\DependencyResolver;
 
 use Composer\Repository\ArrayRepository;
+use Composer\Repository\PlatformRepository;
 use Composer\DependencyResolver\DefaultPolicy;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
@@ -29,7 +30,7 @@ class SolverTest extends \PHPUnit_Framework_TestCase
 
         $repoInstalled = new ArrayRepository;
         $repoInstalled->addPackage($oldPackage = new MemoryPackage('old', '1.0'));
-        $repoInstalled->addPackage(new MemoryPackage('C', '1.0'));
+        $repoInstalled->addPackage($oldPackageC = new MemoryPackage('C', '1.0'));
 
         $repo = new ArrayRepository;
         $repo->addPackage($packageA = new MemoryPackage('A', '2.0'));
@@ -44,8 +45,8 @@ class SolverTest extends \PHPUnit_Framework_TestCase
 
         $request = new Request($pool);
         $request->install('A');
-        $request->update('C');
-        $request->remove('old');
+        //$request->update('C');
+        //$request->remove('old');
 
         $policy = new DefaultPolicy;
         $solver = new Solver($policy, $pool, $repoInstalled);
@@ -56,15 +57,15 @@ class SolverTest extends \PHPUnit_Framework_TestCase
                 'job' => 'install',
                 'package' => $packageA,
             ),
-            array(
+            /*array(
                 'job' => 'remove',
                 'package' => $oldPackage,
-            ),
+            ),*/
             array(
                 'job' => 'install',
-                'package' => $newPackageB,
-            ),
-/*            array(
+                'package' => $packageB,
+            ),/*
+            array(
                 'job' => 'update',
                 'package' => $packageC,
             ),*/

@@ -20,6 +20,8 @@ class Rule
     protected $disabled;
     protected $literals;
     protected $type;
+    protected $id;
+    protected $weak;
 
     public $watch1;
     public $watch2;
@@ -37,11 +39,22 @@ class Rule
         $this->reasonData = $reasonData;
 
         $this->disabled = false;
+        $this->weak = false;
 
         $this->watch1 = (count($this->literals) > 0) ? $literals[0]->getId() : 0;
         $this->watch2 = (count($this->literals) > 1) ? $literals[1]->getId() : 0;
 
         $this->type = -1;
+    }
+
+    public function setId($id)
+    {
+        $this->id = $id;
+    }
+
+    public function getId()
+    {
+        return $this->id;
     }
 
     /**
@@ -95,6 +108,16 @@ class Rule
     public function isEnabled()
     {
         return !$this->disabled;
+    }
+
+    public function isWeak()
+    {
+        return $this->weak;
+    }
+
+    public function setWeak($weak)
+    {
+        $this->weak = $weak;
     }
 
     public function getLiterals()
