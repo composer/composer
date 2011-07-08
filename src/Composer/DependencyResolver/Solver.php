@@ -36,11 +36,15 @@ class Solver
     protected $rules;
     protected $updateAll;
 
+    protected $ruleToJob = array();
     protected $addedMap = array();
     protected $fixMap = array();
     protected $updateMap = array();
     protected $watches = array();
     protected $removeWatches = array();
+
+    protected $packageToUpdateRule = array();
+    protected $packageToFeatureRule = array();
 
     public function __construct(PolicyInterface $policy, Pool $pool, RepositoryInterface $installed)
     {
@@ -323,33 +327,58 @@ class Solver
     }
 
     /**
-     * Sets up watch chains for all rules.
+     * Alters watch chains for a rule.
      *
      * Next1/2 always points to the next rule that is watching the same package.
      * The watches array contains rules to start from for each package
      *
      */
-    private function makeWatches()
+    private function addWatchesToRule(Rule $rule)
     {
-        foreach ($this->rules as $rule) {
-            // skip simple assertions of the form (A) or (-A)
-            if ($rule->isAssertion()) {
-                continue;
+        // skip simple assertions of the form (A) or (-A)
+        if ($rule->isAssertion()) {
+            return;
+        }
+
+        if (!isset($this->watches[$rule->watch1])) {
+            $this->watches[$rule->watch1] = null;
+        }
+
+        $rule->next1 = $this->watches[$rule->watch1];
+        $this->watches[$rule->watch1] = $rule;
+
+        if (!isset($this->watches[$rule->watch2])) {
+            $this->watches[$rule->watch2] = null;
+        }
+
+        $rule->next2 = $this->watches[$rule->watch2];
+        $this->watches[$rule->watch2] = $rule;
+    }
+
+    /**
+     * Put watch2 on rule's literal with highest level
+     */
+    private function watch2OnHighest(Rule $rule)
+    {
+        $literals = $rule->getLiterals();
+
+        // if there are only 2 elements, both are being watched anyway
+        if ($literals < 3) {
+            return;
+        }
+
+        $watchLevel = 0;
+
+        foreach ($literals as $literal) {
+            $level = $this->decisionsMap[$literal->getPackageId()];
+            if ($level < 0) {
+                $level = -$level;
             }
 
-            if (!isset($this->watches[$rule->watch1])) {
-                $this->watches[$rule->watch1] = null;
+            if ($level > $watchLevel) {
+                $rule->watch2 = $literal->getId();
+                $watchLevel = $level;
             }
-
-            $rule->next1 = $this->watches[$rule->watch1];
-            $this->watches[$rule->watch1] = $rule;
-
-            if (!isset($this->watches[$rule->watch2])) {
-                $this->watches[$rule->watch2] = null;
-            }
-
-            $rule->next2 = $this->watches[$rule->watch2];
-            $this->watches[$rule->watch2] = $rule;
         }
     }
 
@@ -364,12 +393,17 @@ class Solver
         return null;
     }
 
+    // aka solver_makeruledecisions
     private function makeAssertionRuleDecisions()
     {
         // do we need to decide a SYSTEMSOLVABLE at level 1?
 
-        foreach ($this->rules->getIteratorWithout(RuleSet::TYPE_WEAK) as $rule) {
-            if (!$rule->isAssertion() || $rule->isDisabled()) {
+        $decisionStart = count($this->decisionQueue);
+
+        for ($ruleIndex = 0; $ruleIndex < count($this->rules); $ruleIndex++) {
+            $rule = $this->rules->ruleById($ruleIndex);
+
+            if ($rule->isWeak() || !$rule->isAssertion() || $rule->isDisabled()) {
                 continue;
             }
 
@@ -390,18 +424,77 @@ class Solver
             // found a conflict
             if (RuleSet::TYPE_LEARNED === $rule->getType()) {
                 $rule->disable();
+                continue;
             }
 
             $conflict = $this->findDecisionRule($literal->getPackage());
-            // todo: handle conflict with systemsolvable?
+            /** TODO: handle conflict with systemsolvable? */
+
+            $this->learnedPool[] = array($rule, $conflict);
 
             if ($conflict && RuleSet::TYPE_PACKAGE === $conflict->getType()) {
 
+                if ($rule->getType() == RuleSet::TYPE_JOB) {
+                    $why = $this->ruleToJob[$rule->getId()];
+                } else {
+                    $why = $rule;
+                }
+                $this->problems[] = array($why);
+
+                $this->disableProblem($why);
+                continue;
             }
+
+            // conflict with another job or update/feature rule
+
+            $this->problems[] = array();
+
+            // push all of our rules (can only be feature or job rules)
+            // asserting this literal on the problem stack
+            foreach ($this->rules->getIteratorFor(array(RuleSet::TYPE_JOB, RuleSet::TYPE_UPDATE, RuleSet::TYPE_FEATURE)) as $assertRule) {
+                if ($assertRule->isDisabled() || !$assertRule->isAssertion() || $assertRule->isWeak()) {
+                    continue;
+                }
+
+                $assertRuleLiterals = $assertRule->getLiterals();
+                $assertRuleLiteral = $assertRuleLiterals[0];
+
+                if  ($literal->getPackageId() !== $assertRuleLiteral->getPackageId()) {
+                    continue;
+                }
+
+                if ($assertRule->getType() === RuleSet::TYPE_JOB) {
+                    $why = $this->ruleToJob[$assertRule->getId()];
+                } else {
+                    $why = $assertRule;
+                }
+                $this->problems[count($this->problems) - 1][] = $why;
+
+                $this->disableProblem($why);
+            }
+
+            // start over
+            while (count($this->decisionQueue) > $decisionStart) {
+                $decisionLiteral = array_pop($this->decisionQueue);
+                array_pop($this->decisionQueueWhy);
+                unset($this->decisionQueueFree[count($this->decisionQueue)]);
+                unset($this->decisionMap[$decisionLiteral->getPackageId()]);
+            }
+            $ruleIndex = -1;
         }
 
-        foreach ($this->rules->getIteratorFor(RuleSet::TYPE_WEAK) as $rule) {
-            if (!$rule->isAssertion() || $rule->isDisabled()) {
+        foreach ($this->rules as $rule) {
+            if (!$rule->isWeak() || !$rule->isAssertion() || $rule->isDisabled()) {
+                continue;
+            }
+
+            $literals = $rule->getLiterals();
+            $literal = $literals[0];
+
+            if (!isset($this->decisionMap[$literal->getPackageId()])) {
+                $this->decisionQueue[] = $literal;
+                $this->decisionQueueWhy[] = $rule;
+                $this->addDecision($literal, 1);
                 continue;
             }
 
@@ -410,8 +503,183 @@ class Solver
             }
 
             // conflict, but this is a weak rule => disable
-            $rule->disable();
+            if ($rule->getType() == RuleSet::TYPE_JOB) {
+                $why = $this->ruleToJob[$rule->getId()];
+            } else {
+                $why = $rule;
+            }
+
+            $this->disableProblem($why);
+            /** TODO solver_reenablepolicyrules(solv, -(v + 1)); */
         }
+    }
+
+    public function addChoiceRules()
+    {
+
+// void
+// solver_addchoicerules(Solver *solv)
+// {
+//   Pool *pool = solv->pool;
+//   Map m, mneg;
+//   Rule *r;
+//   Queue q, qi;
+//   int i, j, rid, havechoice;
+//   Id p, d, *pp;
+//   Id p2, pp2;
+//   Solvable *s, *s2;
+//
+//   solv->choicerules = solv->nrules;
+//   if (!pool->installed)
+//     {
+//       solv->choicerules_end = solv->nrules;
+//       return;
+//     }
+//   solv->choicerules_ref = sat_calloc(solv->rpmrules_end, sizeof(Id));
+//   queue_init(&q);
+//   queue_init(&qi);
+//   map_init(&m, pool->nsolvables);
+//   map_init(&mneg, pool->nsolvables);
+//   /* set up negative assertion map from infarch and dup rules */
+//   for (rid = solv->infarchrules, r = solv->rules + rid; rid < solv->infarchrules_end; rid++, r++)
+//     if (r->p < 0 && !r->w2 && (r->d == 0 || r->d == -1))
+//       MAPSET(&mneg, -r->p);
+//   for (rid = solv->duprules, r = solv->rules + rid; rid < solv->duprules_end; rid++, r++)
+//     if (r->p < 0 && !r->w2 && (r->d == 0 || r->d == -1))
+//       MAPSET(&mneg, -r->p);
+//   for (rid = 1; rid < solv->rpmrules_end ; rid++)
+//     {
+//       r = solv->rules + rid;
+//       if (r->p >= 0 || ((r->d == 0 || r->d == -1) && r->w2 < 0))
+//     continue;   /* only look at requires rules */
+//       // solver_printrule(solv, SAT_DEBUG_RESULT, r);
+//       queue_empty(&q);
+//       queue_empty(&qi);
+//       havechoice = 0;
+//       FOR_RULELITERALS(p, pp, r)
+//     {
+//       if (p < 0)
+//         continue;
+//       s = pool->solvables + p;
+//       if (!s->repo)
+//         continue;
+//       if (s->repo == pool->installed)
+//         {
+//           queue_push(&q, p);
+//           continue;
+//         }
+//       /* check if this package is "blocked" by a installed package */
+//       s2 = 0;
+//       FOR_PROVIDES(p2, pp2, s->name)
+//         {
+//           s2 = pool->solvables + p2;
+//           if (s2->repo != pool->installed)
+//         continue;
+//           if (!pool->implicitobsoleteusesprovides && s->name != s2->name)
+//             continue;
+//           if (pool->obsoleteusescolors && !pool_colormatch(pool, s, s2))
+//             continue;
+//           break;
+//         }
+//       if (p2)
+//         {
+//           /* found installed package p2 that we can update to p */
+//           if (MAPTST(&mneg, p))
+//         continue;
+//           if (policy_is_illegal(solv, s2, s, 0))
+//         continue;
+//           queue_push(&qi, p2);
+//           queue_push(&q, p);
+//           continue;
+//         }
+//       if (s->obsoletes)
+//         {
+//           Id obs, *obsp = s->repo->idarraydata + s->obsoletes;
+//           s2 = 0;
+//           while ((obs = *obsp++) != 0)
+//         {
+//           FOR_PROVIDES(p2, pp2, obs)
+//             {
+//               s2 = pool->solvables + p2;
+//               if (s2->repo != pool->installed)
+//             continue;
+//               if (!pool->obsoleteusesprovides && !pool_match_nevr(pool, pool->solvables + p2, obs))
+//             continue;
+//               if (pool->obsoleteusescolors && !pool_colormatch(pool, s, s2))
+//             continue;
+//               break;
+//             }
+//           if (p2)
+//             break;
+//         }
+//           if (obs)
+//         {
+//           /* found installed package p2 that we can update to p */
+//           if (MAPTST(&mneg, p))
+//             continue;
+//           if (policy_is_illegal(solv, s2, s, 0))
+//             continue;
+//           queue_push(&qi, p2);
+//           queue_push(&q, p);
+//           continue;
+//         }
+//         }
+//       /* package p is independent of the installed ones */
+//       havechoice = 1;
+//     }
+//       if (!havechoice || !q.count)
+//     continue;   /* no choice */
+//
+//       /* now check the update rules of the installed package.
+//        * if all packages of the update rules are contained in
+//        * the dependency rules, there's no need to set up the choice rule */
+//       map_empty(&m);
+//       FOR_RULELITERALS(p, pp, r)
+//         if (p > 0)
+//       MAPSET(&m, p);
+//       for (i = 0; i < qi.count; i++)
+//     {
+//       if (!qi.elements[i])
+//         continue;
+//       Rule *ur = solv->rules + solv->updaterules + (qi.elements[i] - pool->installed->start);
+//       if (!ur->p)
+//         ur = solv->rules + solv->featurerules + (qi.elements[i] - pool->installed->start);
+//       if (!ur->p)
+//         continue;
+//       FOR_RULELITERALS(p, pp, ur)
+//         if (!MAPTST(&m, p))
+//           break;
+//       if (p)
+//         break;
+//       for (j = i + 1; j < qi.count; j++)
+//         if (qi.elements[i] == qi.elements[j])
+//           qi.elements[j] = 0;
+//     }
+//       if (i == qi.count)
+//     {
+// #if 0
+//       printf("skipping choice ");
+//       solver_printrule(solv, SAT_DEBUG_RESULT, solv->rules + rid);
+// #endif
+//       continue;
+//     }
+//       d = q.count ? pool_queuetowhatprovides(pool, &q) : 0;
+//       solver_addrule(solv, r->p, d);
+//       queue_push(&solv->weakruleq, solv->nrules - 1);
+//       solv->choicerules_ref[solv->nrules - 1 - solv->choicerules] = rid;
+// #if 0
+//       printf("OLD ");
+//       solver_printrule(solv, SAT_DEBUG_RESULT, solv->rules + rid);
+//       printf("WEAK CHOICE ");
+//       solver_printrule(solv, SAT_DEBUG_RESULT, solv->rules + solv->nrules - 1);
+// #endif
+//     }
+//   queue_free(&q);
+//   queue_free(&qi);
+//   map_free(&m);
+//   map_free(&mneg);
+//   solv->choicerules_end = solv->nrules;
+// }
     }
 
     public function solve(Request $request)
@@ -483,13 +751,22 @@ class Solver
 
             if ($rule->equals($featureRule)) {
                 if ($this->policy->allowUninstall()) {
-                    $this->addRule(RuleSet::TYPE_WEAK, $featureRule);
+                    $featureRule->setWeak(true);
+                    $this->addRule(RuleSet::TYPE_FEATURE, $featureRule);
+                    $this->packageToFeatureRule[$package->getId()] = $rule;
                 } else {
                     $this->addRule(RuleSet::TYPE_UPDATE, $rule);
+                    $this->packageToUpdateRule[$package->getId()] = $rule;
                 }
             } else if ($this->policy->allowUninstall()) {
-                $this->addRule(RuleSet::TYPE_WEAK, $featureRule);
-                $this->addRule(RuleSet::TYPE_WEAK, $rule);
+                $featureRule->setWeak(true);
+                $rule->setWeak(true);
+
+                $this->addRule(RuleSet::TYPE_FEATURE, $featureRule);
+                $this->addRule(RuleSet::TYPE_UPDATE, $rule);
+
+                $this->packageToFeatureRule[$package->getId()] = $rule;
+                $this->packageToUpdateRule[$package->getId()] = $rule;
             }
         }
 
@@ -498,7 +775,7 @@ class Solver
                 case 'install':
                     $rule = $this->createInstallOneOfRule($job['packages'], self::RULE_JOB_INSTALL, $job['packageName']);
                     $this->addRule(RuleSet::TYPE_JOB, $rule);
-                    //$this->ruleToJob[$rule] = $job;
+                    $this->ruleToJob[$rule->getId()] = $job;
                     break;
                 case 'remove':
                     // remove all packages with this name including uninstalled
@@ -508,7 +785,7 @@ class Solver
                     foreach ($job['packages'] as $package) {
                         $rule = $this->createRemoveRule($package, self::RULE_JOB_REMOVE);
                         $this->addRule(RuleSet::TYPE_JOB, $rule);
-                        //$this->ruleToJob[$rule] = $job;
+                        $this->ruleToJob[$rule->getId()] = $job;
                     }
                     break;
                 case 'lock':
@@ -519,15 +796,17 @@ class Solver
                             $rule = $this->createRemoveRule($package, self::RULE_JOB_LOCK);
                         }
                         $this->addRule(RuleSet::TYPE_JOB, $rule);
-                        //$this->ruleToJob[$rule] = $job;
+                        $this->ruleToJob[$rule->getId()] = $job;
                     }
                 break;
             }
         }
 
-        // solver_addchoicerules(solv);
+        $this->addChoiceRules();
 
-        $this->makeWatches();
+        foreach ($this->rules as $rule) {
+            $this->addWatchesToRule($rule);
+        }
 
         /* disable update rules that conflict with our job */
         //solver_disablepolicyrules(solv);
@@ -537,7 +816,7 @@ class Solver
 
         $installRecommended = 0;
         $this->runSat(true, $installRecommended);
-
+        //$this->printDecisionMap();
         //findrecommendedsuggested(solv);
         //solver_prepare_solutions(solv);
 
@@ -561,9 +840,13 @@ class Solver
     }
 
     protected $decisionQueue = array();
+    protected $decisionQueueWhy = array();
+    protected $decisionQueueFree = array();
     protected $propagateIndex;
     protected $decisionMap = array();
     protected $branches = array();
+    protected $problems = array();
+    protected $learnedPool = array();
 
     protected function literalFromId($id)
     {
@@ -723,15 +1006,77 @@ class Solver
         return null;
     }
 
+    /**-------------------------------------------------------------------
+     *
+     * setpropagatelearn
+     *
+     * add free decision (solvable to install) to decisionq
+     * increase level and propagate decision
+     * return if no conflict.
+     *
+     * in conflict case, analyze conflict rule, add resulting
+     * rule to learnt rule set, make decision from learnt
+     * rule (always unit) and re-propagate.
+     *
+     * returns the new solver level or 0 if unsolvable
+     *
+     */
     private function setPropagateLearn($level, Literal $literal, $disableRules, Rule $rule)
     {
-        return 0;
+        assert($rule != null);
+        assert($literal != null);
+
+        $level++;
+
+        $this->addDecision($literal, $level);
+        $this->decisionQueue[] = $literal;
+        $this->decisionQueueWhy[] = $rule;
+        $this->decisionQueueFree[count($this->decisionQueueWhy) - 1] = true;
+
+        while (true) {
+            $rule = $this->propagate($level);
+
+            if (!$rule) {
+                break;
+            }
+
+            if ($level == 1) {
+                return $this->analyze_unsolvable($rule, $disableRules);
+            }
+
+            // conflict
+            $learnedRule = null;
+            $why = null;
+            $newLevel = $this->analyze($level, $rule, $learnedRule, $why);
+
+            assert($newLevel > 0);
+            assert($newLevel < $level);
+
+            $level = $newLevel;
+
+            $this->revert($level);
+
+            assert($newRule != null);
+            $this->addRule(RuleSet::TYPE_LEARNED, $newRule);
+
+            $this->learnedWhy[] = $why;
+
+            $this->watch2OnHighest($newRule);
+            $this->addWatchesToRule($newRule);
+
+            $literals = $newRule->getLiterals();
+            $this->addDecision($literals[0], $level);
+            $this->decisionQueue[] = $literals[0];
+            $this->decisionQueueWhy[] = $newRule;
+        }
+
+        return $level;
     }
 
     private function selectAndInstall($level, array $decisionQueue, $disableRules, Rule $rule)
     {
         // choose best package to install from decisionQueue
-        $literals = $this->policy->selectPreferedPackages($decisionQueue);
+        $literals = $this->policy->selectPreferedPackages($this, $this->pool, $this->installed, $decisionQueue);
 
         // if there are multiple candidates, then branch
         if (count($literals) > 1) {
@@ -745,63 +1090,200 @@ class Solver
         return $this->setPropagateLearn($level, $literals[0], $disableRules, $rule);
     }
 
-    private function analyzeUnsolvableRule($rule, &$lastWeak)
+    private function analyzeUnsolvableRule($conflictRule, &$lastWeakWhy)
     {
-        //if ($this->learntRules &&
+        $why = $conflictRule->getId();
 
-/*
-  Pool *pool = solv->pool;
-  int i;
-  Id why = r - solv->rules;
-
-  IF_POOLDEBUG (SAT_DEBUG_UNSOLVABLE)
-    solver_printruleclass(solv, SAT_DEBUG_UNSOLVABLE, r);
-  if (solv->learntrules && why >= solv->learntrules)
-    {
+        if ($conflictRule->getType() == RuleSet::TYPE_LEARNED) {
+                /** TODO:
       for (i = solv->learnt_why.elements[why - solv->learntrules]; solv->learnt_pool.elements[i]; i++)
     if (solv->learnt_pool.elements[i] > 0)
       analyze_unsolvable_rule(solv, solv->rules + solv->learnt_pool.elements[i], lastweakp);
       return;
-    }
-  if (MAPTST(&solv->weakrulemap, why))
-    if (!*lastweakp || why > *lastweakp)
-      *lastweakp = why;
-  /* do not add rpm rules to problem *
-  if (why < solv->rpmrules_end)
-    return;
-  /* turn rule into problem *
-  if (why >= solv->jobrules && why < solv->jobrules_end)
-    why = -(solv->ruletojob.elements[why - solv->jobrules] + 1);
-  /* normalize dup/infarch rules *
-  if (why > solv->infarchrules && why < solv->infarchrules_end)
-    {
-      Id name = pool->solvables[-solv->rules[why].p].name;
-      while (why > solv->infarchrules && pool->solvables[-solv->rules[why - 1].p].name == name)
-    why--;
-    }
-  if (why > solv->duprules && why < solv->duprules_end)
-    {
-      Id name = pool->solvables[-solv->rules[why].p].name;
-      while (why > solv->duprules && pool->solvables[-solv->rules[why - 1].p].name == name)
-    why--;
-    }
-
-  /* return if problem already countains our rule *
-  if (solv->problems.count)
-    {
-      for (i = solv->problems.count - 1; i >= 0; i--)
-    if (solv->problems.elements[i] == 0)    /* end of last problem reached? *
-      break;
-    else if (solv->problems.elements[i] == why)
-      return;
-    }
-  queue_push(&solv->problems, why);
 */
+        }
+
+        if ($conflictRule->getType() == RuleSet::TYPE_PACKAGE) {
+            // package rules cannot be part of a problem
+            return;
+        }
+
+        if ($conflictRule->isWeak()) {
+            /** TODO why > or < lastWeakProblem? */
+            if (!$lastWeakWhy || $why > $lastWeakWhy) {
+                $lastWeakProblem = $why;
+            }
+        }
+
+        if ($conflictRule->getType() == RuleSet::TYPE_JOB) {
+            $why = $this->ruleToJob[$conflictRule->getId()];
+        }
+
+        // if this problem was already found skip it
+        if (in_array($why, $this->problems[count($this->problems) - 1], true)) {
+            return;
+        }
+
+        $this->problems[count($this->problems) - 1][] = $why;
     }
 
     private function analyzeUnsolvable($conflictRule, $disableRules)
     {
-        $this->analyzeUnsolvableRule($conflictRule, $lastWeak);
+        $lastWeakWhy = null;
+        $this->problems[] = array();
+        $this->learnedPool[] = array($conflictRule);
+
+        $this->analyzeUnsolvableRule($conflictRule, $lastWeakWhy);
+
+        $seen = array();
+        $literals = $conflictRule->getLiterals();
+
+/* unecessary because unlike rule.d, watch2 == 2nd literal, unless watch2 changed
+        if (sizeof($literals) == 2) {
+            $literals[1] = $this->literalFromId($conflictRule->watch2);
+        }
+*/
+
+        foreach ($literals as $literal) {
+            // skip the one true literal
+            if ($this->decisionsSatisfy($literal)) {
+                continue;
+            }
+            $seen[$literal->getPackageId()] = true;
+        }
+
+        $decisionId = count($this->decisionQueue);
+
+        while ($decisionId > 0) {
+            $decisionId--;
+
+            $literal = $this->decisionQueue[$decisionId];
+
+            // skip literals that are not in this rule
+            if (!isset($seen[$literal->getPackageId()])) {
+                continue;
+            }
+
+            $why = $this->decisionQueueWhy[$decisionId];
+            $this->learnedPool[count($this->learnedPool) - 1][] = $why;
+
+            $this->analyzeUnsolvableRule($why, $lastWeakWhy);
+
+            $literals = $why->getLiterals();
+/* unecessary because unlike rule.d, watch2 == 2nd literal, unless watch2 changed
+            if (sizeof($literals) == 2) {
+                $literals[1] = $this->literalFromId($why->watch2);
+            }
+*/
+
+            foreach ($literals as $literal) {
+                // skip the one true literal
+                if ($this->decisionsSatisfy($literal)) {
+                    continue;
+                }
+                $seen[$literal->getPackageId()] = true;
+            }
+        }
+
+        if ($lastWeakWhy) {
+            array_pop($this->problems);
+            array_pop($this->learnedPool);
+
+            if ($lastWeakWhy->getType() === RuleSet::TYPE_JOB) {
+                $why = $this->ruleToJob[$lastWeakWhy];
+            } else {
+                $why = $lastWeakWhy;
+            }
+
+            if ($lastWeakWhy->getType() == RuleSet::TYPE_CHOICE) {
+                $this->disableChoiceRules($lastWeakWhy);
+            }
+
+            $this->disableProblem($why);
+
+            /**
+@TODO what does v < 0 mean here? ($why == v)
+      if (v < 0)
+    solver_reenablepolicyrules(solv, -(v + 1));
+*/
+            $this->resetSolver();
+
+            return true;
+        }
+
+        if ($disableRules) {
+            foreach ($this->problems[count($this->problems) - 1] as $why) {
+                $this->disableProblem($why);
+            }
+
+            $this->resetSolver();
+            return true;
+        }
+
+        return false;
+    }
+
+    private function disableProblem($why)
+    {
+        if ($why instanceof Rule) {
+            $why->disable();
+        } else if (is_array($why)) {
+
+            // disable all rules of this job
+            foreach ($this->ruleToJob as $ruleId => $job) {
+                if ($why === $job) {
+                    $this->rules->ruleById($ruleId)->disable();
+                }
+            }
+        }
+    }
+
+    private function resetSolver()
+    {
+        while ($literal = array_pop($this->decisionQueue)) {
+            if (isset($this->decisionMap[$literal->getPackageId()])) {
+                unset($this->decisionMap[$literal->getPackageId()]);
+            }
+        }
+
+        $this->decisionQueueWhy = array();
+        $this->decisionQueueFree = array();
+        $this->recommendsIndex = -1;
+        $this->propagateIndex = 0;
+        $this->recommendations = array();
+        $this->branches = array();
+
+        $this->enableDisableLearnedRules();
+        $this->makeAssertionRuleDecisions();
+    }
+
+    /*-------------------------------------------------------------------
+    * enable/disable learnt rules
+    *
+    * we have enabled or disabled some of our rules. We now reenable all
+    * of our learnt rules except the ones that were learnt from rules that
+    * are now disabled.
+    */
+    private function enableDisableLearnedRules()
+    {
+        foreach ($this->rules->getIteratorFor(RuleSet::TYPE_LEARNED) as $rule) {
+            $why = $this->learnedWhy[$rule->getId()];
+            $problem = $this->learnedPool[$why];
+
+            $foundDisabled = false;
+            foreach ($problem as $problemRule) {
+                if ($problemRule->disabled()) {
+                    $foundDisabled = true;
+                    break;
+                }
+            }
+
+            if ($foundDisabled && $rule->isEnabled()) {
+                $rule->disable();
+            } else if (!$foundDisabled && $rule->isDisabled()) {
+                $rule->enable();
+            }
+        }
     }
 
     private function runSat($disableRules = true, $installRecommended = false)
@@ -835,7 +1317,6 @@ class Solver
 
             $conflictRule = $this->propagate($level);
             if ($conflictRule !== null) {
-//              if (analyze_unsolvable(solv, r, disablerules))
                 if ($this->analyzeUnsolvable($conflictRule, $disableRules)) {
                     continue;
                 } else {
@@ -921,31 +1402,33 @@ class Solver
 
                         // only process updates in first pass
                         /** TODO: && or || ? **/
-                        if (0 === $pass || !isset($this->updateMap[$literal->getPackageId()])) {
+                        if (0 === $pass && !isset($this->updateMap[$literal->getPackageId()])) {
                             continue;
                         }
 
                         $rule = null;
-                        /** TODO: huh at package id?!?
-                        if (isset($this->rules[Solver::TYPE_UPDATE][$literal->getPackageId()])) {
-                            $rule = $this->rules[Solver::TYPE_UPDATE][$literal->getPackageId()];
+
+                        if (isset($this->packageToUpdateRule[$literal->getPackageId()])) {
+                            $rule = $this->packageToUpdateRule[$literal->getPackageId()];
                         }
 
-                        if ((!$rule || $rule->isDisabled()) && isset($this->rules[Solver::TYPE_FEATURE][$literal->getPackageId()])) {
-                            $rule = $this->rules[Solver::TYPE_FEATURE][$literal->getPackageId()];
-                        }**/
+                        if ((!$rule || $rule->isDisabled()) && isset($this->packageToFeatureRule[$literal->getPackageId()])) {
+                            $rule = $this->packageToFeatureRule[$literal->getPackageId()];
+                        }
 
                         if (!$rule || $rule->isDisabled()) {
                             continue;
                         }
 
+                        $updateRuleLiterals = $rule->getLiterals();
+
                         $decisionQueue = array();
                         if (!isset($this->noUpdate[$literal->getPackageId()]) && (
                             $this->decidedRemove($literal->getPackage()) ||
                             isset($this->updateMap[$literal->getPackageId()]) ||
-                            !$literal->equals($rule->getFirstLiteral())
+                            !$literal->equals($updateRuleLiterals[0])
                         )) {
-                            foreach ($rule->getLiterals() as $ruleLiteral) {
+                            foreach ($updateRuleLiterals as $ruleLiteral) {
                                 if ($this->decidedInstall($ruleLiteral->getPackage())) {
                                     // already fulfilled
                                     break;
@@ -1027,103 +1510,132 @@ class Solver
                 $systemLevel = $level;
             }
 
-            foreach ($this->rules->getIterator() as $rule) {
-                if ($rule->isEnabled()) {
-                    $decisionQueue = array();
+            for ($i = 0, $n = 0; $n < count($this->rules); $i++, $n++) {
+                if ($i == count($this->rules)) {
+                    $i = 0;
                 }
+
+                $rule = $this->rules->ruleById($i);
+                $literals = $rule->getLiterals();
+
+                if ($rule->isDisabled()) {
+                    continue;
+                }
+
+                $decisionQueue = array();
+
+                // make sure that
+                // * all negative literals are installed
+                // * no positive literal is installed
+                // i.e. the rule is not fulfilled and we
+                // just need to decide on the positive literals
+                //
+                foreach ($literals as $literal) {
+                    if (!$literal->isWanted()) {
+                        if (!$this->decidedInstall($literal->getPackage())) {
+                            continue 2; // next rule
+                        }
+                    } else {
+                        if ($this->decidedInstall($literal->getPackage())) {
+                            continue 2; // next rule
+                        }
+                        if ($this->undecided($literal->getPackage())) {
+                            $decisionQueue[] = $literal;
+                        }
+                    }
+                }
+
+                // need to have at least 2 item to pick from
+                if (count($decisionQueue) < 2) {
+                    continue;
+                }
+
+                $oLevel = $level;
+                $level = $this->selectAndInstall($level, $decisionQueue, $disableRules, $rule);
+
+                if (0 === $level) {
+                    return;
+                }
+
+                if ($level < $systemLevel || $level == 1) {
+                    break; // trouble
+                }
+
+                // something changed, so look at all rules again
+                $n = -1;
             }
-echo $this->rules;
-//
-//       /*
-//        * decide
-//        */
-//       POOL_DEBUG(SAT_DEBUG_POLICY, "deciding unresolved rules\n");
-//       for (i = 1, n = 1; n < solv->nrules; i++, n++)
+
+//            $this->printDecisionMap();
+//            $this->printDecisionQueue();
+
+            if (count($this->branches)) {
+                die("minimization unimplemented");
+//       /* minimization step */
+//      if (solv->branches.count)
 //     {
-//       if (i == solv->nrules)
-//         i = 1;
-//       r = solv->rules + i;
-//       if (r->d < 0)     /* ignore disabled rules */
-//         continue;
-//       queue_empty(&dq);
-//       if (r->d == 0)
-//         {
-//           /* binary or unary rule */
-//           /* need two positive undecided literals */
-//           if (r->p < 0 || r->w2 <= 0)
-//         continue;
-//           if (solv->decisionmap[r->p] || solv->decisionmap[r->w2])
-//         continue;
-//           queue_push(&dq, r->p);
-//           queue_push(&dq, r->w2);
-//         }
-//       else
-//         {
-//           /* make sure that
-//                * all negative literals are installed
-//                * no positive literal is installed
-//            * i.e. the rule is not fulfilled and we
-//                * just need to decide on the positive literals
-//                */
-//           if (r->p < 0)
-//         {
-//           if (solv->decisionmap[-r->p] <= 0)
-//             continue;
-//         }
-//           else
-//         {
-//           if (solv->decisionmap[r->p] > 0)
-//             continue;
-//           if (solv->decisionmap[r->p] == 0)
-//             queue_push(&dq, r->p);
-//         }
-//           dp = pool->whatprovidesdata + r->d;
-//           while ((p = *dp++) != 0)
-//         {
-//           if (p < 0)
-//             {
-//               if (solv->decisionmap[-p] <= 0)
-//             break;
-//             }
-//           else
-//             {
-//               if (solv->decisionmap[p] > 0)
-//             break;
-//               if (solv->decisionmap[p] == 0)
-//             queue_push(&dq, p);
-//             }
-//         }
-//           if (p)
-//         continue;
-//         }
-//       IF_POOLDEBUG (SAT_DEBUG_PROPAGATE)
-//         {
-//           POOL_DEBUG(SAT_DEBUG_PROPAGATE, "unfulfilled ");
-//           solver_printruleclass(solv, SAT_DEBUG_PROPAGATE, r);
-//         }
-//       /* dq.count < 2 cannot happen as this means that
-//        * the rule is unit */
-//       assert(dq.count > 1);
+//       int l = 0, lasti = -1, lastl = -1;
+//       Id why;
 //
-//       olevel = level;
-//       level = selectandinstall(solv, level, &dq, disablerules, r - solv->rules);
-//       if (level == 0)
+//       p = 0;
+//       for (i = solv->branches.count - 1; i >= 0; i--)
+//         {
+//           p = solv->branches.elements[i];
+//           if (p < 0)
+//         l = -p;
+//           else if (p > 0 && solv->decisionmap[p] > l + 1)
+//         {
+//           lasti = i;
+//           lastl = l;
+//         }
+//         }
+//       if (lasti >= 0)
+//         {
+//           /* kill old solvable so that we do not loop */
+//           p = solv->branches.elements[lasti];
+//           solv->branches.elements[lasti] = 0;
+//           POOL_DEBUG(SAT_DEBUG_SOLVER, "minimizing %d -> %d with %s\n", solv->decisionmap[p], lastl, solvid2str(pool, p));
+//           minimizationsteps++;
+//
+//           level = lastl;
+//           revert(solv, level);
+//           why = -solv->decisionq_why.elements[solv->decisionq_why.count];
+//           assert(why >= 0);
+//           olevel = level;
+//           level = setpropagatelearn(solv, level, p, disablerules, why);
+//           if (level == 0)
 //         {
 //           queue_free(&dq);
 //           queue_free(&dqs);
 //           return;
 //         }
-//       if (level < systemlevel || level == 1)
-//         break;      /* trouble */
-//       /* something changed, so look at all rules again */
-//       n = 0;
+//           continue;     /* back to main loop */
+//         }
 //     }
-//
-//       if (n != solv->nrules)    /* ran into trouble, restart */
-//     continue;
-//
-//       /* at this point we have a consistent system. now do the extras... */
-//
+            }
+
+            break;
         }
+    }
+
+    public function printDecisionMap()
+    {
+        echo "DecisionMap: \n";
+        foreach ($this->decisionMap as $packageId => $level) {
+            if ($level > 0) {
+                echo '    +' . $this->pool->packageById($packageId) . "\n";
+            } else {
+                echo '    -' . $this->pool->packageById($packageId) . "\n";
+            }
+        }
+        echo "\n";
+    }
+
+    public function printDecisionQueue()
+    {
+        echo "DecisionQueue: \n";
+        foreach ($this->decisionQueue as $i => $literal) {
+            echo '    ' . $literal . ' ' . $this->decisionQueueWhy[$i] . "\n";
+        }
+        echo "\n";
     }
 }
