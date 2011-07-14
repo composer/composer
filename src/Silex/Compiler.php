@@ -12,7 +12,6 @@
 namespace Silex;
 
 use Symfony\Component\Finder\Finder;
-use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Process\Process;
 
 /**
@@ -24,7 +23,7 @@ class Compiler
 {
     protected $version;
 
-    public function compile($pharFile = 'silex.phar')
+    public function compile($pharFile = 'composer.phar')
     {
         if (file_exists($pharFile)) {
             unlink($pharFile);
@@ -36,7 +35,7 @@ class Compiler
         }
         $this->version = trim($process->getOutput());
 
-        $phar = new \Phar($pharFile, 0, 'silex.phar');
+        $phar = new \Phar($pharFile, 0, 'composer.phar');
         $phar->setSignatureAlgorithm(\Phar::SHA1);
 
         $phar->startBuffering();
@@ -46,31 +45,24 @@ class Compiler
             ->ignoreVCS(true)
             ->name('*.php')
             ->notName('Compiler.php')
-            ->in(__DIR__.'/..')
-            ->in(__DIR__.'/../../vendor/pimple/lib')
-            ->in(__DIR__.'/../../vendor/Symfony/Component/ClassLoader')
-            ->in(__DIR__.'/../../vendor/Symfony/Component/EventDispatcher')
-            ->in(__DIR__.'/../../vendor/Symfony/Component/HttpFoundation')
-            ->in(__DIR__.'/../../vendor/Symfony/Component/HttpKernel')
-            ->in(__DIR__.'/../../vendor/Symfony/Component/Routing')
-            ->in(__DIR__.'/../../vendor/Symfony/Component/BrowserKit')
-            ->in(__DIR__.'/../../vendor/Symfony/Component/CssSelector')
-            ->in(__DIR__.'/../../vendor/Symfony/Component/DomCrawler')
+            ->in(__DIR__.'/../Composer')
         ;
 
         foreach ($finder as $file) {
             $this->addFile($phar, $file);
         }
 
-        $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../LICENSE'), false);
-        $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../autoload.php'));
+        $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../tests/bootstrap.php'));
+        $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../bin/composer'));
 
         // Stubs
         $phar->setStub($this->getStub());
 
         $phar->stopBuffering();
 
-        // $phar->compressFiles(\Phar::GZ);
+        $phar->compressFiles(\Phar::GZ);
+
+        $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../LICENSE'), false);
 
         unset($phar);
     }
@@ -78,9 +70,11 @@ class Compiler
     protected function addFile($phar, $file, $strip = true)
     {
         $path = str_replace(dirname(dirname(__DIR__)).DIRECTORY_SEPARATOR, '', $file->getRealPath());
-        $content = file_get_contents($file);
+
         if ($strip) {
-            $content = Kernel::stripComments($content);
+            $content = php_strip_whitespace($file);
+        } else {
+   		    $content = "\n".file_get_contents($file)."\n";
         }
 
         $content = str_replace('@package_version@', $this->version, $content);
@@ -101,39 +95,9 @@ class Compiler
  * with this source code in the file LICENSE.
  */
 
-Phar::mapPhar('silex.phar');
+Phar::mapPhar('composer.phar');
 
-require_once 'phar://silex.phar/autoload.php';
-
-if ('cli' === php_sapi_name() && isset($argv[1])) {
-    switch ($argv[1]) {
-        case 'update':
-            $remoteFilename = 'http://silex-project.org/get/silex.phar';
-            $localFilename = __DIR__.'/silex.phar';
-
-            file_put_contents($localFilename, file_get_contents($remoteFilename));
-            break;
-
-        case 'check':
-            $latest = trim(file_get_contents('http://silex-project.org/get/version'));
-
-            if ($latest != Silex\Application::VERSION) {
-                printf("A newer Silex version is available (%s).\n", $latest);
-            } else {
-                print("You are using the latest Silex version.\n");
-            }
-            break;
-
-        case 'version':
-            printf("Silex version %s\n", Silex\Application::VERSION);
-            break;
-
-        default:
-            printf("Unkown command '%s' (available commands: version, check, and update).\n", $argv[1]);
-    }
-
-    exit(0);
-}
+require 'phar://composer.phar/bin/composer';
 
 __HALT_COMPILER();
 EOF;
