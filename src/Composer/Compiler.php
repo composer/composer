@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Silex;
+namespace Composer;
 
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
@@ -87,12 +87,13 @@ class Compiler
         return <<<'EOF'
 <?php
 /*
- * This file is part of the Silex framework.
+ * This file is part of Composer.
  *
- * (c) Fabien Potencier <fabien@symfony.com>
+ * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * For the full copyright and license information, please view
+ * the license that is located at the bottom of this file.
  */
 
 Phar::mapPhar('composer.phar');

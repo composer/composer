@@ -3,7 +3,7 @@
 
 require __DIR__.'/../tests/bootstrap.php';
 
-use Silex\Compiler;
+use Composer\Compiler;
 
 $compiler = new Compiler();
 $compiler->compile();
