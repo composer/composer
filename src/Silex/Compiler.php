@@ -1,16 +1,15 @@
 <?php
 
 /*
- * This file is part of Composer.
+ * This file is part of the Silex framework.
  *
- * (c) Nils Adermann <naderman@naderman.de>
- *     Jordi Boggiano <j.boggiano@seld.be>
+ * (c) Fabien Potencier <fabien@symfony.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 
-namespace Composer;
+namespace Silex;
 
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
@@ -75,7 +74,7 @@ class Compiler
         if ($strip) {
             $content = php_strip_whitespace($file);
         } else {
-            $content = "\n".file_get_contents($file)."\n";
+   		    $content = "\n".file_get_contents($file)."\n";
         }
 
         $content = str_replace('@package_version@', $this->version, $content);
@@ -88,13 +87,12 @@ class Compiler
         return <<<'EOF'
 <?php
 /*
- * This file is part of Composer.
+ * This file is part of the Silex framework.
  *
- * (c) Nils Adermann <naderman@naderman.de>
- *     Jordi Boggiano <j.boggiano@seld.be>
+ * (c) Fabien Potencier <fabien@symfony.com>
  *
- * For the full copyright and license information, please view
- * the license that is located at the bottom of this file.
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
  */
 
 Phar::mapPhar('composer.phar');
