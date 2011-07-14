@@ -30,4 +30,3 @@ Composer is licensed under the MIT License - see the LICENSE file for details
 Acknowledgements
 ----------------
 This project started out as a PHP port of openSUSE's [Libzypp satsolver](http://en.opensuse.org/openSUSE:Libzypp_satsolver).
- 
