@@ -14,6 +14,7 @@ namespace Composer\Test\DependencyResolver;
 
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\PlatformRepository;
+use Composer\Repository\ComposerRepository;
 use Composer\DependencyResolver\DefaultPolicy;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
@@ -28,7 +29,7 @@ class SolverTest extends \PHPUnit_Framework_TestCase
     {
         $pool = new Pool;
 
-        $repoInstalled = new ArrayRepository;
+        $repoInstalled = new PlatformRepository;
         $repoInstalled->addPackage($oldPackage = new MemoryPackage('old', '1.0'));
         $repoInstalled->addPackage($oldPackageC = new MemoryPackage('C', '1.0'));
 
@@ -69,6 +70,34 @@ class SolverTest extends \PHPUnit_Framework_TestCase
                 'job' => 'update',
                 'package' => $packageC,
             ),*/
+        );
+
+        $this->assertEquals($expected, $result);
+    }
+
+    public function testSolverWithComposerRepo()
+    {
+        $pool = new Pool;
+        $repoInstalled = new PlatformRepository;
+        $repo = new ComposerRepository('http://packagist.org');
+        list($monolog) = $repo->getPackages();
+
+        $pool->addRepository($repoInstalled);
+        $pool->addRepository($repo);
+
+        $request = new Request($pool);
+
+        $request->install('Monolog');
+
+        $policy = new DefaultPolicy;
+        $solver = new Solver($policy, $pool, $repoInstalled);
+        $result = $solver->solve($request);
+
+        $expected = array(
+            array(
+                'job' => 'install',
+                'package' => $monolog,
+            ),
         );
 
         $this->assertEquals($expected, $result);
