@@ -36,8 +36,8 @@ class Pool
         $this->repositories[] = $repo;
 
         foreach ($repo->getPackages() as $package) {
+            $package->setId(count($this->packages));
             $this->packages[] = $package;
-            $package->setId(sizeof($this->packages) - 1);
 
             foreach ($package->getNames() as $name) {
                 $this->packageByName[$name][] = $package;
