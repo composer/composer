@@ -15,11 +15,10 @@ namespace Composer\Test\DependencyResolver;
 use Composer\DependencyResolver\Literal;
 use Composer\Package\MemoryPackage;
 
-class LiteralTest extends \PHPUnit_Framework_TestCase
+class SolvableTest extends \PHPUnit_Framework_TestCase
 {
-    public function testLiteral()
+    public function testSolvable()
     {
         $literal = new Literal(new MemoryPackage('foo', '1'), true);
-        $this->markTestIncomplete('Eh?');
     }
 }
