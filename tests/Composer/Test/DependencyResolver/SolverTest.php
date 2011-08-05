@@ -161,6 +161,23 @@ class SolverTest extends \PHPUnit_Framework_TestCase
         ));
     }
 
+    public function testSolverWithComposerRepo()
+    {
+        $this->markTestIncomplete();
+
+        $this->repoInstalled = new PlatformRepository;
+        $this->repo = new ComposerRepository('http://packagist.org');
+        list($monolog) = $this->repo->getPackages();
+
+        $this->reposComplete();
+
+        $this->request->install('Monolog');
+
+        $this->checkSolverResult(array(
+            array('job' => 'install', 'package' => $monolog),
+        ));
+    }
+
     protected function reposComplete()
     {
         $this->pool->addRepository($this->repoInstalled);
@@ -173,31 +190,4 @@ class SolverTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $result);
     }
 
-    public function testSolverWithComposerRepo()
-    {
-        $pool = new Pool;
-        $repoInstalled = new PlatformRepository;
-        $repo = new ComposerRepository('http://packagist.org');
-        list($monolog) = $repo->getPackages();
-
-        $pool->addRepository($repoInstalled);
-        $pool->addRepository($repo);
-
-        $request = new Request($pool);
-
-        $request->install('Monolog');
-
-        $policy = new DefaultPolicy;
-        $solver = new Solver($policy, $pool, $repoInstalled);
-        $result = $solver->solve($request);
-
-        $expected = array(
-            array(
-                'job' => 'install',
-                'package' => $monolog,
-            ),
-        );
-
-        $this->assertEquals($expected, $result);
-    }
 }
