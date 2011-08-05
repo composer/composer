@@ -25,53 +25,151 @@ use Composer\Package\LinkConstraint\VersionConstraint;
 
 class SolverTest extends \PHPUnit_Framework_TestCase
 {
-    public function testSolver()
+    protected $pool;
+    protected $repo;
+    protected $repoInstalled;
+    protected $request;
+    protected $policy;
+
+    public function setUp()
     {
-        $pool = new Pool;
+        $this->pool = new Pool;
+        $this->repo = new ArrayRepository;
+        $this->repoInstalled = new ArrayRepository;
 
-        $repoInstalled = new PlatformRepository;
-        $repoInstalled->addPackage($oldPackage = new MemoryPackage('old', '1.0'));
-        $repoInstalled->addPackage($oldPackageC = new MemoryPackage('C', '1.0'));
+        $this->request = new Request($this->pool);
+        $this->policy = new DefaultPolicy;
+        $this->solver = new Solver($this->policy, $this->pool, $this->repoInstalled);
+    }
 
-        $repo = new ArrayRepository;
-        $repo->addPackage($packageA = new MemoryPackage('A', '2.0'));
-        $repo->addPackage($packageB = new MemoryPackage('B', '1.0'));
-        $repo->addPackage($newPackageB = new MemoryPackage('B', '1.1'));
-        $repo->addPackage($packageC = new MemoryPackage('C', '1.1'));
-        $repo->addPackage(new MemoryPackage('old', '1.0'));
+    public function testSolverInstallSingle()
+    {
+        $this->repo->addPackage($packageA = new MemoryPackage('A', '1.0'));
+        $this->reposComplete();
+
+        $this->request->install('A');
+
+        $this->checkSolverResult(array(
+            array('job' => 'install', 'package' => $packageA),
+        ));
+    }
+
+    public function testSolverInstallWithDeps()
+    {
+        $this->repo->addPackage($packageA = new MemoryPackage('A', '1.0'));
+        $this->repo->addPackage($packageB = new MemoryPackage('B', '1.0'));
+        $this->repo->addPackage($newPackageB = new MemoryPackage('B', '1.1'));
+
         $packageA->setRequires(array(new Link('A', 'B', new VersionConstraint('<', '1.1'), 'requires')));
 
-        $pool->addRepository($repoInstalled);
-        $pool->addRepository($repo);
+        $this->reposComplete();
 
-        $request = new Request($pool);
-        $request->install('A');
-        //$request->update('C');
-        //$request->remove('old');
+        $this->request->install('A');
 
-        $policy = new DefaultPolicy;
-        $solver = new Solver($policy, $pool, $repoInstalled);
-        $result = $solver->solve($request);
+        $this->checkSolverResult(array(
+            array('job' => 'install', 'package' => $packageB),
+            array('job' => 'install', 'package' => $packageA),
+        ));
+    }
 
-        $expected = array(
-            array(
-                'job' => 'install',
-                'package' => $packageA,
-            ),
-            /*array(
-                'job' => 'remove',
-                'package' => $oldPackage,
-            ),*/
-            array(
-                'job' => 'install',
-                'package' => $packageB,
-            ),/*
-            array(
-                'job' => 'update',
-                'package' => $packageC,
-            ),*/
-        );
+    public function testSolverInstallInstalled()
+    {
+        $this->repo->addPackage(new MemoryPackage('A', '1.0'));
+        $this->repoInstalled->addPackage(new MemoryPackage('A', '1.0'));
+        $this->reposComplete();
 
+        $this->request->install('A');
+
+        $this->checkSolverResult(array());
+    }
+
+    public function testSolverRemoveSingle()
+    {
+        $this->markTestIncomplete();
+
+        $this->repoInstalled->addPackage($packageA = new MemoryPackage('A', '1.0'));
+        $this->reposComplete();
+
+        $this->request->remove('A');
+
+        $this->checkSolverResult(array(
+            array('job' => 'remove', 'package' => $packageA),
+        ));
+    }
+
+    public function testSolverRemoveUninstalled()
+    {
+        $this->repo->addPackage(new MemoryPackage('A', '1.0'));
+        $this->reposComplete();
+
+        $this->request->remove('A');
+
+        $this->checkSolverResult(array());
+    }
+
+    public function testSolverUpdateSingle()
+    {
+        $this->markTestIncomplete();
+
+        $this->repoInstalled->addPackage($packageA = new MemoryPackage('A', '1.0'));
+        $this->repo->addPackage($newPackageA = new MemoryPackage('A', '1.1'));
+        $this->reposComplete();
+
+        $this->request->update('A');
+
+        $this->checkSolverResult(array(
+            array('job' => 'update', 'package' => $newPackageA),
+        ));
+    }
+
+    public function testSolverUpdateCurrent()
+    {
+        $this->repoInstalled->addPackage(new MemoryPackage('A', '1.0'));
+        $this->repo->addPackage(new MemoryPackage('A', '1.0'));
+        $this->reposComplete();
+
+        $this->request->update('A');
+
+        $this->checkSolverResult(array());
+    }
+
+    public function testSolverFull()
+    {
+        $this->markTestIncomplete();
+
+        $this->repoInstalled->addPackage($packageD = new MemoryPackage('D', '1.0'));
+        $this->repoInstalled->addPackage($oldPackageC = new MemoryPackage('C', '1.0'));
+
+        $this->repo->addPackage($packageA = new MemoryPackage('A', '2.0'));
+        $this->repo->addPackage($packageB = new MemoryPackage('B', '1.0'));
+        $this->repo->addPackage($newPackageB = new MemoryPackage('B', '1.1'));
+        $this->repo->addPackage($packageC = new MemoryPackage('C', '1.1'));
+        $this->repo->addPackage(new MemoryPackage('D', '1.0'));
+        $packageA->setRequires(array(new Link('A', 'B', new VersionConstraint('<', '1.1'), 'requires')));
+
+        $this->reposComplete();
+
+        $this->request->install('A');
+        $this->request->update('C');
+        $this->request->remove('D');
+
+        $this->checkSolverResult(array(
+            array('job' => 'install', 'package' => $packageB),
+            array('job' => 'install', 'package' => $packageA),
+            array('job' => 'remove',  'package' => $packageD),
+            array('job' => 'update',  'package' => $packageC),
+        ));
+    }
+
+    protected function reposComplete()
+    {
+        $this->pool->addRepository($this->repoInstalled);
+        $this->pool->addRepository($this->repo);
+    }
+
+    protected function checkSolverResult(array $expected)
+    {
+        $result = $this->solver->solve($this->request);
         $this->assertEquals($expected, $result);
     }
 
