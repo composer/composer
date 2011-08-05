@@ -836,7 +836,7 @@ class Solver
             );
         }
 
-        return $transaction;
+        return array_reverse($transaction);
     }
 
     protected $decisionQueue = array();
