@@ -45,7 +45,7 @@ class DefaultPolicy implements PolicyInterface
                 continue;
             }
 
-            if ($candidate != $package) {
+            if ($candidate !== $package) {
                 $packages[] = $candidate;
             }
         }
