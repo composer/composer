@@ -695,244 +695,27 @@ class Solver
 #define DISABLE_INFARCH 2
 #define DISABLE_DUP 3
 */
-    protected function jobToDisableList(array $job, array $queue)
+    protected function jobToDisableQueue(array $job, array $disableQueue)
     {
         switch ($job['cmd']) {
             case 'install':
-                throw new \RuntimeException("jobToDisableList with install job not implemented");
+                foreach ($job['packages'] as $package) {
+                    if ($this->installed === $package->getRepository()) {
+                        $disableQueue[] = array('type' => 'update', 'package' => $package);
+                    }
+                }
+            break;
 
             case 'remove':
                 foreach ($job['packages'] as $package) {
                     if ($this->installed === $package->getRepository()) {
-                        $queue[] = array('type' => 'update', 'package' => $package);
+                        $disableQueue[] = array('type' => 'update', 'package' => $package);
                     }
                 }
             break;
         }
 
-        return $queue;
-
-/*
-static void
-jobtodisablelist(Solver *solv, Id how, Id what, Queue *q)
-{
-  Pool *pool = solv->pool;
-  Id select, p, pp;
-  Repo *installed;
-  Solvable *s;
-  int i, j, set, qstart, pass;
-  Map omap;
-
-  installed = solv->installed;
-  select = how & SOLVER_SELECTMASK;
-  switch (how & SOLVER_JOBMASK)
-    {
-    case SOLVER_INSTALL:
-      set = how & SOLVER_SETMASK;
-      if (!(set & SOLVER_NOAUTOSET))
-    {
-      /* automatically add set bits by analysing the job * /
-      if (select == SOLVER_SOLVABLE)
-        set |= SOLVER_SETARCH | SOLVER_SETVENDOR | SOLVER_SETREPO | SOLVER_SETEVR;
-      else if ((select == SOLVER_SOLVABLE_NAME || select == SOLVER_SOLVABLE_PROVIDES) && ISRELDEP(what))
-        {
-          Reldep *rd = GETRELDEP(pool, what);
-          if (rd->flags == REL_EQ && select == SOLVER_SOLVABLE_NAME)
-        {
-#if !defined(DEBIAN_SEMANTICS)
-          const char *evr = id2str(pool, rd->evr);
-          if (strchr(evr, '-'))
-            set |= SOLVER_SETEVR;
-          else
-            set |= SOLVER_SETEV;
-#else
-          set |= SOLVER_SETEVR;
-#endif
-        }
-          if (rd->flags <= 7 && ISRELDEP(rd->name))
-        rd = GETRELDEP(pool, rd->name);
-          if (rd->flags == REL_ARCH)
-        set |= SOLVER_SETARCH;
-        }
-    }
-      else
-    set &= ~SOLVER_NOAUTOSET;
-      if (!set)
-    return;
-      if ((set & SOLVER_SETARCH) != 0 && solv->infarchrules != solv->infarchrules_end)
-    {
-      if (select == SOLVER_SOLVABLE)
-        queue_push2(q, DISABLE_INFARCH, pool->solvables[what].name);
-      else
-        {
-          int qcnt = q->count;
-          FOR_JOB_SELECT(p, pp, select, what)
-        {
-          s = pool->solvables + p;
-          /* unify names * /
-          for (i = qcnt; i < q->count; i += 2)
-            if (q->elements[i + 1] == s->name)
-              break;
-          if (i < q->count)
-            continue;
-          queue_push2(q, DISABLE_INFARCH, s->name);
-        }
-        }
-    }
-      if ((set & SOLVER_SETREPO) != 0 && solv->duprules != solv->duprules_end)
-    {
-      if (select == SOLVER_SOLVABLE)
-        queue_push2(q, DISABLE_DUP, pool->solvables[what].name);
-      else
-        {
-          int qcnt = q->count;
-          FOR_JOB_SELECT(p, pp, select, what)
-        {
-          s = pool->solvables + p;
-          /* unify names * /
-          for (i = qcnt; i < q->count; i += 2)
-            if (q->elements[i + 1] == s->name)
-              break;
-          if (i < q->count)
-            continue;
-          queue_push2(q, DISABLE_DUP, s->name);
-        }
-        }
-    }
-      if (!installed)
-    return;
-      /* now the hard part: disable some update rules * /
-
-      /* first check if we have noobs or installed packages in the job * /
-      FOR_JOB_SELECT(p, pp, select, what)
-    {
-      if (pool->solvables[p].repo == installed)
-        {
-          if (select == SOLVER_SOLVABLE)
-            queue_push2(q, DISABLE_UPDATE, what);
-          return;
-        }
-      if (solv->noobsoletes.size && MAPTST(&solv->noobsoletes, p))
-        return;
-    }
-
-      /* all job packages obsolete * /
-      qstart = q->count;
-      pass = 0;
-      memset(&omap, 0, sizeof(omap));
-      FOR_JOB_SELECT(p, pp, select, what)
-    {
-      Id p2, pp2;
-
-      if (pass == 1)
-        map_grow(&omap, installed->end - installed->start);
-      s = pool->solvables + p;
-      if (s->obsoletes)
-        {
-          Id obs, *obsp;
-          obsp = s->repo->idarraydata + s->obsoletes;
-          while ((obs = *obsp++) != 0)
-        FOR_PROVIDES(p2, pp2, obs)
-          {
-            Solvable *ps = pool->solvables + p2;
-            if (ps->repo != installed)
-              continue;
-            if (!pool->obsoleteusesprovides && !pool_match_nevr(pool, ps, obs))
-              continue;
-            if (pool->obsoleteusescolors && !pool_colormatch(pool, s, ps))
-              continue;
-            if (pass)
-              MAPSET(&omap, p2 - installed->start);
-            else
-              queue_push2(q, DISABLE_UPDATE, p2);
-          }
-        }
-      FOR_PROVIDES(p2, pp2, s->name)
-        {
-          Solvable *ps = pool->solvables + p2;
-          if (ps->repo != installed)
-        continue;
-          if (!pool->implicitobsoleteusesprovides && ps->name != s->name)
-        continue;
-          if (pool->obsoleteusescolors && !pool_colormatch(pool, s, ps))
-        continue;
-          if (pass)
-            MAPSET(&omap, p2 - installed->start);
-              else
-            queue_push2(q, DISABLE_UPDATE, p2);
-        }
-      if (pass)
-        {
-          for (i = j = qstart; i < q->count; i += 2)
-        {
-          if (MAPTST(&omap, q->elements[i + 1] - installed->start))
-            {
-              MAPCLR(&omap, q->elements[i + 1] - installed->start);
-              q->elements[j + 1] = q->elements[i + 1];
-              j += 2;
-            }
-        }
-          queue_truncate(q, j);
-        }
-      if (q->count == qstart)
-        break;
-      pass++;
-    }
-      if (omap.size)
-        map_free(&omap);
-
-      if (qstart == q->count)
-    return;     / * nothing to prune * /
-      if ((set & (SOLVER_SETEVR | SOLVER_SETARCH | SOLVER_SETVENDOR)) == (SOLVER_SETEVR | SOLVER_SETARCH | SOLVER_SETVENDOR))
-    return;     /* all is set * /
-
-      /* now that we know which installed packages are obsoleted check each of them * /
-      for (i = j = qstart; i < q->count; i += 2)
-    {
-      Solvable *is = pool->solvables + q->elements[i + 1];
-      FOR_JOB_SELECT(p, pp, select, what)
-        {
-          int illegal = 0;
-          s = pool->solvables + p;
-          if ((set & SOLVER_SETEVR) != 0)
-        illegal |= POLICY_ILLEGAL_DOWNGRADE;    /* ignore * /
-          if ((set & SOLVER_SETARCH) != 0)
-        illegal |= POLICY_ILLEGAL_ARCHCHANGE;   /* ignore * /
-          if ((set & SOLVER_SETVENDOR) != 0)
-        illegal |= POLICY_ILLEGAL_VENDORCHANGE; /* ignore * /
-          illegal = policy_is_illegal(solv, is, s, illegal);
-          if (illegal && illegal == POLICY_ILLEGAL_DOWNGRADE && (set & SOLVER_SETEV) != 0)
-        {
-          /* it's ok if the EV is different * /
-          if (evrcmp(pool, is->evr, s->evr, EVRCMP_COMPARE_EVONLY) != 0)
-            illegal = 0;
-        }
-          if (illegal)
-        break;
-        }
-      if (!p)
-        {
-          /* no package conflicts with the update rule */
-          /* thus keep the DISABLE_UPDATE * /
-          q->elements[j + 1] = q->elements[i + 1];
-          j += 2;
-        }
-    }
-      queue_truncate(q, j);
-      return;
-
-    case SOLVER_ERASE:
-      if (!installed)
-    break;
-      FOR_JOB_SELECT(p, pp, select, what)
-    if (pool->solvables[p].repo == installed)
-      queue_push2(q, DISABLE_UPDATE, p);
-      return;
-    default:
-      return;
-    }
-}*/
-
+        return $disableQueue;
     }
 
     protected function disableUpdateRule($package)
@@ -969,7 +752,7 @@ jobtodisablelist(Solver *solv, Id how, Id what, Queue *q)
 
             $lastJob = $job;
 
-            $allQueue = $this->jobToDisableList($job, $allQueue);
+            $allQueue = $this->jobToDisableQueue($job, $allQueue);
         }
 
         foreach ($allQueue as $disable) {
