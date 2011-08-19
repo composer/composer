@@ -44,6 +44,8 @@ class SolverTest extends \PHPUnit_Framework_TestCase
 
     public function testSolverInstallSingle()
     {
+        $this->markTestIncomplete();
+
         $this->repo->addPackage($packageA = new MemoryPackage('A', '1.0'));
         $this->reposComplete();
 
@@ -56,6 +58,8 @@ class SolverTest extends \PHPUnit_Framework_TestCase
 
     public function testSolverInstallWithDeps()
     {
+        $this->markTestIncomplete();
+
         $this->repo->addPackage($packageA = new MemoryPackage('A', '1.0'));
         $this->repo->addPackage($packageB = new MemoryPackage('B', '1.0'));
         $this->repo->addPackage($newPackageB = new MemoryPackage('B', '1.1'));
@@ -85,8 +89,6 @@ class SolverTest extends \PHPUnit_Framework_TestCase
 
     public function testSolverRemoveSingle()
     {
-        $this->markTestIncomplete();
-
         $this->repoInstalled->addPackage($packageA = new MemoryPackage('A', '1.0'));
         $this->reposComplete();
 
