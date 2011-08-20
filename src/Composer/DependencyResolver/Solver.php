@@ -1187,7 +1187,7 @@ class Solver
             assert($newRule != null);
             $this->addRule(RuleSet::TYPE_LEARNED, $newRule);
 
-            $this->learnedWhy[] = $why;
+            $this->learnedWhy[$newRule->getId()] = $why;
 
             $this->watch2OnHighest($newRule);
             $this->addWatchesToRule($newRule);
@@ -1304,7 +1304,7 @@ class Solver
             }
         }
 
-        $why = $this->learnedPool[count($this->learnedPool) - 1];
+        $why = count($this->learnedPool) - 1;
 
         $newRule = new Rule($learnedLiterals, self::RULE_LEARNED, $why);
 
@@ -1316,13 +1316,14 @@ class Solver
         $why = $conflictRule->getId();
 
         if ($conflictRule->getType() == RuleSet::TYPE_LEARNED) {
-            throw new \RuntimeException("handling conflicts with learned rules unimplemented");
-                /** TODO:
-      for (i = solv->learnt_why.elements[why - solv->learntrules]; solv->learnt_pool.elements[i]; i++)
-    if (solv->learnt_pool.elements[i] > 0)
-      analyze_unsolvable_rule(solv, solv->rules + solv->learnt_pool.elements[i], lastweakp);
-      return;
-*/
+
+            $learnedWhy = $this->learnedWhy[$why];
+            $problem = $this->learnedPool[$learnedWhy];
+
+            foreach ($problem as $problemRule) {
+                $this->analyzeUnsolvableRule($problemRule, $lastWeakWhy);
+            }
+            return;
         }
 
         if ($conflictRule->getType() == RuleSet::TYPE_PACKAGE) {
