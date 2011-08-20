@@ -934,7 +934,7 @@ class Solver
 
     protected function literalFromId($id)
     {
-        $package = $this->pool->packageById($id);
+        $package = $this->pool->packageById(abs($id));
         return new Literal($package, $id > 0);
     }
 
