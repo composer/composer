@@ -124,9 +124,7 @@ class SolverTest extends \PHPUnit_Framework_TestCase
         $this->request->update('A');
 
         $this->checkSolverResult(array(
-            //array('job' => 'update', 'from' => $packageA, 'to' => $newPackageA),
-            array('job' => 'remove', 'package' => $packageA),
-            array('job' => 'install', 'package' => $newPackageA),
+            array('job' => 'update', 'from' => $packageA, 'to' => $newPackageA),
         ));
     }
 
@@ -143,8 +141,6 @@ class SolverTest extends \PHPUnit_Framework_TestCase
 
     public function testSolverFull()
     {
-        $this->markTestIncomplete();
-
         $this->repoInstalled->addPackage($packageD = new MemoryPackage('D', '1.0'));
         $this->repoInstalled->addPackage($oldPackageC = new MemoryPackage('C', '1.0'));
 
@@ -162,10 +158,10 @@ class SolverTest extends \PHPUnit_Framework_TestCase
         $this->request->remove('D');
 
         $this->checkSolverResult(array(
-            array('job' => 'install', 'package' => $packageB),
-            array('job' => 'install', 'package' => $packageA),
-            array('job' => 'remove',  'package' => $packageD),
             array('job' => 'update',  'from' => $oldPackageC, 'to' => $packageC),
+            array('job' => 'install', 'package' => $packageB),
+            array('job' => 'remove',  'package' => $packageD),
+            array('job' => 'install', 'package' => $packageA),
         ));
     }
 
