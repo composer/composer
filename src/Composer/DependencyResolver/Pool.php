@@ -36,7 +36,7 @@ class Pool
         $this->repositories[] = $repo;
 
         foreach ($repo->getPackages() as $package) {
-            $package->setId(count($this->packages));
+            $package->setId(count($this->packages) + 1);
             $this->packages[] = $package;
 
             foreach ($package->getNames() as $name) {
@@ -53,7 +53,7 @@ class Pool
     */
     public function packageById($id)
     {
-        return $this->packages[$id];
+        return $this->packages[$id - 1];
     }
 
     /**

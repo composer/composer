@@ -29,7 +29,11 @@ class Solver
     const RULE_PACKAGE_CONFLICT = 7;
     const RULE_PACKAGE_NOT_EXIST = 8;
     const RULE_PACKAGE_REQUIRES = 9;
-    const RULE_LEARNED = 10;
+    const RULE_PACKAGE_OBSOLETES = 10;
+    const RULE_INSTALLED_PACKAGE_OBSOLETES = 11;
+    const RULE_PACKAGE_SAME_NAME = 12;
+    const RULE_PACKAGE_IMPLICIT_OBSOLETES = 13;
+    const RULE_LEARNED = 14;
 
     protected $policy;
     protected $pool;
@@ -41,6 +45,7 @@ class Solver
     protected $addedMap = array();
     protected $fixMap = array();
     protected $updateMap = array();
+    protected $noObsoletes = array();
     protected $watches = array();
     protected $removeWatches = array();
 
@@ -183,7 +188,7 @@ class Solver
      *                                     goes with the reason
      * @return Rule                        The generated rule
      */
-    public function createConflictRule(PackageInterface $issuer, Package $provider, $reason, $reasonData = null)
+    public function createConflictRule(PackageInterface $issuer, PackageInterface $provider, $reason, $reasonData = null)
     {
         // ignore self conflict
         if ($issuer === $provider) {
@@ -287,11 +292,64 @@ class Solver
                 $possibleConflicts = $this->pool->whatProvides($link->getTarget(), $link->getConstraint());
 
                 foreach ($possibleConflicts as $conflict) {
-                    if ($dontfix && $this->installed === $conflict->getRepository()) {
+                    if ($dontFix && $this->installed === $conflict->getRepository()) {
                         continue;
                     }
 
                     $this->addRule(RuleSet::TYPE_PACKAGE, $this->createConflictRule($package, $conflict, self::RULE_PACKAGE_CONFLICT, (string) $link));
+                }
+            }
+
+            // check obsoletes and implicit obsoletes of a package
+            // if ignoreinstalledsobsoletes is not set, we're also checking
+            // obsoletes of installed packages (like newer rpm versions)
+            //
+            /** @TODO: if ($this->noInstalledObsoletes) */
+            if (true) {
+                $noObsoletes = isset($this->noObsoletes[$package->getId()]);
+                $isInstalled = ($this->installed === $package->getRepository());
+
+                foreach ($package->getReplaces() as $link) {
+                    $obsoleteProviders = $this->pool->whatProvides($link->getTarget(), $link->getConstraint());
+
+                    foreach ($obsoleteProviders as $provider) {
+                        if ($provider === $package) {
+                            continue;
+                        }
+
+                        if ($isInstalled && $dontFix && $this->installed === $provider->getRepository()) {
+                            continue; // don't repair installed/installed problems
+                        }
+
+                        $reason = ($isInstalled) ? self::RULE_INSTALLED_PACKAGE_OBSOLETES : self::RULE_PACKAGE_OBSOLETES;
+                        $this->addRule(RuleSet::TYPE_PACKAGE, $this->createConflictRule($package, $provider, $reason, (string) $link));
+                    }
+                }
+
+                // check implicit obsoletes
+                // for installed packages we only need to check installed/installed problems (and
+                // only when dontFix is not set), as the others are picked up when looking at the
+                // uninstalled package.
+                if (!$isInstalled || !$dontFix) {
+                    $obsoleteProviders = $this->pool->whatProvides($package->getName(), null);
+
+                    foreach ($obsoleteProviders as $provider) {
+                        if ($provider === $package) {
+                            continue;
+                        }
+
+                        if ($isInstalled && $this->installed !== $provider->getRepository()) {
+                            continue;
+                        }
+
+                        // obsolete same packages even when noObsletes
+                        if ($noObsoletes && (!$package->equals($provider))) {
+                            continue;
+                        }
+
+                        $reason = ($package->getName() == $provider->getName()) ? self::RULE_PACKAGE_SAME_NAME : self::RULE_PACKAGE_IMPLICIT_OBSOLETES;
+                        $this->addRule(RuleSet::TYPE_PACKAGE, $rule = $this->createConflictRule($package, $provider, $reason, (string) $package));
+                    }
                 }
             }
 
@@ -705,6 +763,111 @@ class Solver
                     if ($this->installed === $package->getRepository()) {
                         $disableQueue[] = array('type' => 'update', 'package' => $package);
                     }
+
+      /* all job packages obsolete * /
+      qstart = q->count;
+      pass = 0;
+      memset(&omap, 0, sizeof(omap));
+      FOR_JOB_SELECT(p, pp, select, what)
+    {
+      Id p2, pp2;
+
+      if (pass == 1)
+        map_grow(&omap, installed->end - installed->start);
+      s = pool->solvables + p;
+      if (s->obsoletes)
+        {
+          Id obs, *obsp;
+          obsp = s->repo->idarraydata + s->obsoletes;
+          while ((obs = *obsp++) != 0)
+        FOR_PROVIDES(p2, pp2, obs)
+          {
+            Solvable *ps = pool->solvables + p2;
+            if (ps->repo != installed)
+              continue;
+            if (!pool->obsoleteusesprovides && !pool_match_nevr(pool, ps, obs))
+              continue;
+            if (pool->obsoleteusescolors && !pool_colormatch(pool, s, ps))
+              continue;
+            if (pass)
+              MAPSET(&omap, p2 - installed->start);
+            else
+              queue_push2(q, DISABLE_UPDATE, p2);
+          }
+        }
+      FOR_PROVIDES(p2, pp2, s->name)
+        {
+          Solvable *ps = pool->solvables + p2;
+          if (ps->repo != installed)
+        continue;
+          if (!pool->implicitobsoleteusesprovides && ps->name != s->name)
+        continue;
+          if (pool->obsoleteusescolors && !pool_colormatch(pool, s, ps))
+        continue;
+          if (pass)
+            MAPSET(&omap, p2 - installed->start);
+              else
+            queue_push2(q, DISABLE_UPDATE, p2);
+        }
+      if (pass)
+        {
+          for (i = j = qstart; i < q->count; i += 2)
+        {
+          if (MAPTST(&omap, q->elements[i + 1] - installed->start))
+            {
+              MAPCLR(&omap, q->elements[i + 1] - installed->start);
+              q->elements[j + 1] = q->elements[i + 1];
+              j += 2;
+            }
+        }
+          queue_truncate(q, j);
+        }
+      if (q->count == qstart)
+        break;
+      pass++;
+    }
+      if (omap.size)
+        map_free(&omap);
+
+      if (qstart == q->count)
+    return;     /* nothing to prune * /
+      if ((set & (SOLVER_SETEVR | SOLVER_SETARCH | SOLVER_SETVENDOR)) == (SOLVER_SETEVR | SOLVER_SETARCH | SOLVER_SETVENDOR))
+    return;     /* all is set */
+
+      /* now that we know which installed packages are obsoleted check each of them * /
+      for (i = j = qstart; i < q->count; i += 2)
+    {
+      Solvable *is = pool->solvables + q->elements[i + 1];
+      FOR_JOB_SELECT(p, pp, select, what)
+        {
+          int illegal = 0;
+          s = pool->solvables + p;
+          if ((set & SOLVER_SETEVR) != 0)
+        illegal |= POLICY_ILLEGAL_DOWNGRADE;    /* ignore * /
+          if ((set & SOLVER_SETARCH) != 0)
+        illegal |= POLICY_ILLEGAL_ARCHCHANGE;   /* ignore * /
+          if ((set & SOLVER_SETVENDOR) != 0)
+        illegal |= POLICY_ILLEGAL_VENDORCHANGE; /* ignore * /
+          illegal = policy_is_illegal(solv, is, s, illegal);
+          if (illegal && illegal == POLICY_ILLEGAL_DOWNGRADE && (set & SOLVER_SETEV) != 0)
+        {
+          /* it's ok if the EV is different * /
+          if (evrcmp(pool, is->evr, s->evr, EVRCMP_COMPARE_EVONLY) != 0)
+            illegal = 0;
+        }
+          if (illegal)
+        break;
+        }
+      if (!p)
+        {
+          /* no package conflicts with the update rule * /
+          /* thus keep the DISABLE_UPDATE * /
+          q->elements[j + 1] = q->elements[i + 1];
+          j += 2;
+        }
+    }
+      queue_truncate(q, j);
+      return;*/
                 }
             break;
 
@@ -908,17 +1071,18 @@ class Solver
 
         $transaction = array();
 
-        foreach ($this->decisionQueue as $literal) {
+        foreach ($this->decisionQueue as $i => $literal) {
             $package = $literal->getPackage();
 
             // wanted & installed || !wanted & !installed
-            if ($literal->isWanted() == ($this->installed == $package->getRepository())) {
+            if ($literal->isWanted() == ($this->installed === $package->getRepository())) {
                 continue;
             }
 
             $transaction[] = array(
                 'job' => ($literal->isWanted()) ? 'install' : 'remove',
                 'package' => $package,
+                'why' => $this->decisionQueueWhy[$i],
             );
         }
 
@@ -995,7 +1159,7 @@ class Solver
     {
         $packageId = abs($literalId);
         return (isset($this->decisionMap[$packageId]) && (
-            $this->decisionMap[$packageId] > 0 && !$literalId < 0 ||
+            $this->decisionMap[$packageId] > 0 && !($literalId < 0) ||
             $this->decisionMap[$packageId] < 0 && $literalId > 0
         ));
     }
@@ -1654,6 +1818,7 @@ class Solver
                             foreach ($updateRuleLiterals as $ruleLiteral) {
                                 if ($this->decidedInstall($ruleLiteral->getPackage())) {
                                     // already fulfilled
+                                    $decisionQueue = array();
                                     break;
                                 }
                                 if ($this->undecided($ruleLiteral->getPackage())) {
@@ -1673,10 +1838,8 @@ class Solver
                             if ($level <= $oLevel) {
                                 $repeat = true;
                             }
-                        }
-
-                        // still undecided? keep package.
-                        if (!$repeat && $this->undecided($literal->getPackage())) {
+                        } else if (!$repeat && $this->undecided($literal->getPackage())) {
+                            // still undecided? keep package.
                             $oLevel = $level;
                             if (isset($this->cleanDepsMap[$literal->getPackageId()])) {
                                 // clean deps removes package

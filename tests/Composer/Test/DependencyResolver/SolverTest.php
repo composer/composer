@@ -74,6 +74,16 @@ class SolverTest extends \PHPUnit_Framework_TestCase
 
     public function testSolverInstallInstalled()
     {
+        $this->repoInstalled->addPackage(new MemoryPackage('A', '1.0'));
+        $this->reposComplete();
+
+        $this->request->install('A');
+
+        $this->checkSolverResult(array());
+    }
+
+    public function testSolverInstallInstalledWithAlternative()
+    {
         $this->repo->addPackage(new MemoryPackage('A', '1.0'));
         $this->repoInstalled->addPackage(new MemoryPackage('A', '1.0'));
         $this->reposComplete();
@@ -107,8 +117,6 @@ class SolverTest extends \PHPUnit_Framework_TestCase
 
     public function testSolverUpdateSingle()
     {
-        $this->markTestIncomplete();
-
         $this->repoInstalled->addPackage($packageA = new MemoryPackage('A', '1.0'));
         $this->repo->addPackage($newPackageA = new MemoryPackage('A', '1.1'));
         $this->reposComplete();
@@ -116,7 +124,9 @@ class SolverTest extends \PHPUnit_Framework_TestCase
         $this->request->update('A');
 
         $this->checkSolverResult(array(
-            array('job' => 'update', 'package' => $newPackageA),
+            //array('job' => 'update', 'from' => $packageA, 'to' => $newPackageA),
+            array('job' => 'remove', 'package' => $packageA),
+            array('job' => 'install', 'package' => $newPackageA),
         ));
     }
 
@@ -155,7 +165,7 @@ class SolverTest extends \PHPUnit_Framework_TestCase
             array('job' => 'install', 'package' => $packageB),
             array('job' => 'install', 'package' => $packageA),
             array('job' => 'remove',  'package' => $packageD),
-            array('job' => 'update',  'package' => $packageC),
+            array('job' => 'update',  'from' => $oldPackageC, 'to' => $packageC),
         ));
     }
 
@@ -185,6 +195,11 @@ class SolverTest extends \PHPUnit_Framework_TestCase
     protected function checkSolverResult(array $expected)
     {
         $result = $this->solver->solve($this->request);
+
+        foreach ($result as &$step) {
+            unset($step['why']);
+        }
+
         $this->assertEquals($expected, $result);
     }
 
