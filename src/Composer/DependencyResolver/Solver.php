@@ -1069,7 +1069,30 @@ class Solver
         //findrecommendedsuggested(solv);
         //solver_prepare_solutions(solv);
 
+        return $this->createTransaction();
+    }
+
+    protected function createTransaction()
+    {
         $transaction = array();
+
+        $installMeansUpdateMap = array();
+        $ignoreRemoveMap = array();
+
+        foreach ($this->decisionQueue as $i => $literal) {
+            $package = $literal->getPackage();
+
+            // !wanted & installed
+            if (!$literal->isWanted() && $this->installed === $package->getRepository()) {
+                $updateRule = $this->packageToUpdateRule[$package->getId()];
+
+                foreach ($updateRule->getLiterals() as $updateLiteral) {
+                    if (!$updateLiteral->equals($literal)) {
+                        $installMeansUpdateMap[$updateLiteral->getPackageId()] = $package;
+                    }
+                }
+            }
+        }
 
         foreach ($this->decisionQueue as $i => $literal) {
             $package = $literal->getPackage();
@@ -1079,11 +1102,34 @@ class Solver
                 continue;
             }
 
-            $transaction[] = array(
-                'job' => ($literal->isWanted()) ? 'install' : 'remove',
-                'package' => $package,
-                'why' => $this->decisionQueueWhy[$i],
-            );
+            if ($literal->isWanted()) {
+                if (isset($installMeansUpdateMap[$literal->getPackageId()])) {
+                    $source = $installMeansUpdateMap[$literal->getPackageId()];
+
+                    $transaction[] = array(
+                        'job' => 'update',
+                        'from' => $source,
+                        'to' => $package,
+                        'why' => $this->decisionQueueWhy[$i],
+                    );
+
+                    // avoid updates to one package from multiple origins
+                    unset($installMeansUpdateMap[$literal->getPackageId()]);
+                    $ignoreRemove[$source->getId()] = true;
+                } else {
+                    $transaction[] = array(
+                        'job' => 'install',
+                        'package' => $package,
+                        'why' => $this->decisionQueueWhy[$i],
+                    );
+                }
+            } else if (!isset($ignoreRemove[$package->getId()])) {
+                $transaction[] = array(
+                    'job' => 'remove',
+                    'package' => $package,
+                    'why' => $this->decisionQueueWhy[$i],
+                );
+            }
         }
 
         return array_reverse($transaction);
