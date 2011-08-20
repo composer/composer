@@ -1,0 +1,82 @@
+{
+    "name": "Package",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "name": {
+            "type": "string",
+            "description": "Package name, including type prefix if it's a plugin",
+            "required": true
+        },
+        "type": {
+            "description": "Package type, either 'Library', or the parent project it applies to if it's a plugin for a framework or application (e.g. 'Symfony2', 'Typo3', 'Drupal', ..).",
+            "type": "string",
+            "optional": true
+        },
+        "description": {
+            "type": "string",
+            "description": "Package description",
+            "required": true
+        },
+        "keywords": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "optional": true
+        },
+        "homepage": {
+            "type": "string",
+            "description": "Homepage URL for the project",
+            "format": "uri",
+            "optional": true
+        },
+        "version": {
+            "type": "string",
+            "description": "Package version, see http://packagist.org/about for more info on valid schemes",
+            "required": true
+        },
+        "license": {
+            "type": "string",
+            "description": "License name",
+            "optional": true
+        },
+        "authors": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Full name of the author",
+                        "required": true
+                    },
+                    "email": {
+                        "type": "string",
+                        "description": "Email address of the author",
+                        "format": "email",
+                        "required": true
+                    },
+                    "homepage": {
+                        "type": "string",
+                        "description": "Homepage URL for the author",
+                        "format": "uri",
+                        "optional": true
+                    }
+                }
+            },
+            "optional": true
+        },
+        "require": {
+            "type": "object",
+            "additionalProperties": true,
+            "optional": true
+        },
+        "extra": {
+            "type": ["object", "array"],
+            "additionalProperties": true,
+            "optional": true
+        }
+    }
+}
