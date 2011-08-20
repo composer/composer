@@ -29,6 +29,7 @@ class Solver
     const RULE_PACKAGE_CONFLICT = 7;
     const RULE_PACKAGE_NOT_EXIST = 8;
     const RULE_PACKAGE_REQUIRES = 9;
+    const RULE_LEARNED = 10;
 
     protected $policy;
     protected $pool;
@@ -1129,9 +1130,7 @@ class Solver
             }
 
             // conflict
-            $learnedRule = null;
-            $why = null;
-            $newLevel = $this->analyze($level, $rule, $learnedRule, $why);
+            list($newLevel, $newRule, $why) = $this->analyze($level, $rule);
 
             assert($newLevel > 0);
             assert($newLevel < $level);
@@ -1172,6 +1171,99 @@ class Solver
         }
 
         return $this->setPropagateLearn($level, $literals[0], $disableRules, $rule);
+    }
+
+    protected function analyze($level, $rule)
+    {
+        $ruleLevel = 1;
+        $num = 0;
+        $l1num = 0;
+        $seen = array();
+        $learnedLiterals = array(null);
+
+        $decisionId = count($this->decisionQueue);
+
+        $this->learnedPool[] = array();
+
+        while(true) {
+            $this->learnedPool[count($this->learnedPool) - 1][] = $rule;
+
+            foreach ($rule->getLiterals() as $literal) {
+                // skip the one true literal
+                if ($this->decisionsSatisfy($literal)) {
+                    continue;
+                }
+
+                if (isset($seen[$literal->getPackageId()])) {
+                    continue;
+                }
+                $seen[$literal->getPackageId()] = true;
+
+                $l = abs($this->decisionMap[$literal->getPackageId()]);
+
+                if (1 === $l) {
+                    $l1num++;
+                } else if ($level === $l) {
+                    $num++;
+                } else {
+                    // not level1 or conflict level, add to new rule
+                    $learnedLiterals[] = $literal;
+
+                    if ($l > $ruleLevel) {
+                        $ruleLevel = $l;
+                    }
+                }
+            }
+
+            $l1retry = true;
+            while ($l1retry) {
+
+                $l1retry = false;
+
+                if (!$num && !$l1num) {
+                    // all level 1 literals done
+                    break 2;
+                }
+
+                while (true) {
+                    assert($decisionId > 0);
+                    $decisionId--;
+
+                    $literal = $this->decisionQueue[$decisionId];
+
+                    if (isset($seen[$literal->getPackageId()])) {
+                        break;
+                    }
+                }
+
+                unset($seen[$literal->getPackageId()]);
+
+                if ($num && 0 === --$num) {
+                    $learnedLiterals[0] = $this->literalFromId(-$literal->getPackageId());
+
+                    if (!$l1num) {
+                        break 2;
+                    }
+
+                    foreach ($this->learnedLiterals as $i => $learnedLiteral) {
+                        if ($i !== 0) {
+                            unset($seen[$literal->getPackageId()]);
+                        }
+                    }
+                    // only level 1 marks left
+                    $l1num++;
+                    $l1retry = true;
+                }
+
+                $rule = $this->decisionQueueWhy[$decisionId];
+            }
+        }
+
+        $why = $this->learnedPool[count($this->learnedPool) - 1];
+
+        $newRule = new Rule($learnedLiterals, self::RULE_LEARNED, $why);
+
+        return array($ruleLevel, $newRule, $why);
     }
 
     private function analyzeUnsolvableRule($conflictRule, &$lastWeakWhy)
