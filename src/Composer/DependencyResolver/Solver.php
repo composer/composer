@@ -371,9 +371,10 @@ class Solver
         $watchLevel = 0;
 
         foreach ($literals as $literal) {
-            $level = $this->decisionsMap[$literal->getPackageId()];
-            if ($level < 0) {
-                $level = -$level;
+            if (isset($this->decisionMap[$literal->getPackageId()])) {
+                $level = abs($this->decisionMap[$literal->getPackageId()]);
+            } else {
+                $level = 0;
             }
 
             if ($level > $watchLevel) {
@@ -932,6 +933,7 @@ class Solver
     protected $branches = array();
     protected $problems = array();
     protected $learnedPool = array();
+    protected $recommendsIndex;
 
     protected function literalFromId($id)
     {
@@ -1091,6 +1093,49 @@ class Solver
         return null;
     }
 
+    /**
+     * Reverts a decision at the given level.
+     */
+    private function revert($level)
+    {
+        while (!empty($this->decisionQueue)) {
+            $literal = $this->decisionQueue[count($this->decisionQueue) - 1];
+
+            if (!isset($this->decisionMap[$literal->getPackageId()])) {
+                break;
+            }
+
+            $decisionLevel = abs($this->decisionMap[$literal->getPackageId()]);
+
+            if ($decisionLevel <= $level) {
+                break;
+            }
+
+            /** TODO: implement recommendations
+             *if (v > 0 && solv->recommendations.count && v == solv->recommendations.elements[solv->recommendations.count - 1])
+             *  solv->recommendations.count--;
+             */
+
+            unset($this->decisionMap[$literal->getPackageId()]);
+            array_pop($this->decisionQueue);
+            array_pop($this->decisionQueueWhy);
+
+            $this->propagateIndex = count($this->decisionQueue);
+        }
+
+        while (!empty($this->branches)) {
+            list($literals, $branchLevel) = $this->branches[count($this->branches) - 1];
+
+            if ($branchLevel > -$level) {
+                continue;
+            }
+
+            array_pop($this->branches);
+        }
+
+        $this->recommendsIndex = -1;
+    }
+
     /**-------------------------------------------------------------------
      *
      * setpropagatelearn
@@ -1126,7 +1171,7 @@ class Solver
             }
 
             if ($level == 1) {
-                return $this->analyze_unsolvable($rule, $disableRules);
+                return $this->analyzeUnsolvable($rule, $disableRules);
             }
 
             // conflict
@@ -1165,7 +1210,7 @@ class Solver
         if (count($literals) > 1) {
             foreach ($literals as $i => $literal) {
                 if (0 !== $i) {
-                    $this->branches[] = array($literal, $level);
+                    $this->branches[] = array(array($literal), -$level);
                 }
             }
         }
