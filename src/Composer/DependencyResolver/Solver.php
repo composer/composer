@@ -48,6 +48,7 @@ class Solver
     protected $noObsoletes = array();
     protected $watches = array();
     protected $removeWatches = array();
+    protected $decisionMap;
 
     protected $packageToUpdateRule = array();
     protected $packageToFeatureRule = array();
@@ -429,11 +430,7 @@ class Solver
         $watchLevel = 0;
 
         foreach ($literals as $literal) {
-            if (isset($this->decisionMap[$literal->getPackageId()])) {
-                $level = abs($this->decisionMap[$literal->getPackageId()]);
-            } else {
-                $level = 0;
-            }
+            $level = abs($this->decisionMap[$literal->getPackageId()]);
 
             if ($level > $watchLevel) {
                 $rule->watch2 = $literal->getId();
@@ -538,7 +535,7 @@ class Solver
                 $decisionLiteral = array_pop($this->decisionQueue);
                 array_pop($this->decisionQueueWhy);
                 unset($this->decisionQueueFree[count($this->decisionQueue)]);
-                unset($this->decisionMap[$decisionLiteral->getPackageId()]);
+                $this->decisionMap[$decisionLiteral->getPackageId()] = 0;
             }
             $ruleIndex = -1;
         }
@@ -551,7 +548,7 @@ class Solver
             $literals = $rule->getLiterals();
             $literal = $literals[0];
 
-            if (!isset($this->decisionMap[$literal->getPackageId()])) {
+            if ($this->decisionMap[$literal->getPackageId()] == 0) {
                 $this->decisionQueue[] = $literal;
                 $this->decisionQueueWhy[] = $rule;
                 $this->addDecision($literal, 1);
@@ -936,6 +933,8 @@ class Solver
         $this->jobs = $request->getJobs();
         $installedPackages = $this->installed->getPackages();
 
+        $this->decisionMap = new \SplFixedArray($this->pool->getMaxId() + 1);
+
         foreach ($this->jobs as $job) {
             switch ($job['cmd']) {
                 case 'update-all':
@@ -1139,7 +1138,6 @@ class Solver
     protected $decisionQueueWhy = array();
     protected $decisionQueueFree = array();
     protected $propagateIndex;
-    protected $decisionMap = array();
     protected $branches = array();
     protected $problems = array();
     protected $learnedPool = array();
@@ -1172,60 +1170,60 @@ class Solver
 
     protected function decisionsContain(Literal $l)
     {
-        return (isset($this->decisionMap[$l->getPackageId()]) && (
+        return (
             $this->decisionMap[$l->getPackageId()] > 0 && $l->isWanted() ||
             $this->decisionMap[$l->getPackageId()] < 0 && !$l->isWanted()
-        ));
+        );
     }
 
     protected function decisionsContainId($literalId)
     {
         $packageId = abs($literalId);
-        return (isset($this->decisionMap[$packageId]) && (
+        return (
             $this->decisionMap[$packageId] > 0 && $literalId > 0 ||
             $this->decisionMap[$packageId] < 0 && $literalId < 0
-        ));
+        );
     }
 
     protected function decisionsSatisfy(Literal $l)
     {
-        return ($l->isWanted() && isset($this->decisionMap[$l->getPackageId()]) && $this->decisionMap[$l->getPackageId()] > 0) ||
-            (!$l->isWanted() && (!isset($this->decisionMap[$l->getPackageId()]) || $this->decisionMap[$l->getPackageId()] < 0));
+        return ($l->isWanted() && $this->decisionMap[$l->getPackageId()] > 0) ||
+            (!$l->isWanted() && $this->decisionMap[$l->getPackageId()] <= 0);
     }
 
     protected function decisionsConflict(Literal $l)
     {
-        return (isset($this->decisionMap[$l->getPackageId()]) && (
+        return (
             $this->decisionMap[$l->getPackageId()] > 0 && !$l->isWanted() ||
             $this->decisionMap[$l->getPackageId()] < 0 && $l->isWanted()
-        ));
+        );
     }
 
     protected function decisionsConflictId($literalId)
     {
         $packageId = abs($literalId);
-        return (isset($this->decisionMap[$packageId]) && (
+        return (
             $this->decisionMap[$packageId] > 0 && !($literalId < 0) ||
             $this->decisionMap[$packageId] < 0 && $literalId > 0
-        ));
+        );
     }
 
     protected function decided(PackageInterface $p)
     {
-        return isset($this->decisionMap[$p->getId()]);
+        return $this->decisionMap[$p->getId()] != 0;
     }
 
     protected function undecided(PackageInterface $p)
     {
-        return !isset($this->decisionMap[$p->getId()]);
+        return $this->decisionMap[$p->getId()] == 0;
     }
 
     protected function decidedInstall(PackageInterface $p) {
-        return isset($this->decisionMap[$p->getId()]) && $this->decisionMap[$p->getId()] > 0;
+        return $this->decisionMap[$p->getId()] > 0;
     }
 
     protected function decidedRemove(PackageInterface $p) {
-        return isset($this->decisionMap[$p->getId()]) && $this->decisionMap[$p->getId()] < 0;
+        return $this->decisionMap[$p->getId()] < 0;
     }
 
     /**
@@ -1311,7 +1309,7 @@ class Solver
         while (!empty($this->decisionQueue)) {
             $literal = $this->decisionQueue[count($this->decisionQueue) - 1];
 
-            if (!isset($this->decisionMap[$literal->getPackageId()])) {
+            if (!$this->decisionMap[$literal->getPackageId()]) {
                 break;
             }
 
@@ -1326,7 +1324,7 @@ class Solver
              *  solv->recommendations.count--;
              */
 
-            unset($this->decisionMap[$literal->getPackageId()]);
+            $this->decisionMap[$literal->getPackageId()] = 0;
             array_pop($this->decisionQueue);
             array_pop($this->decisionQueueWhy);
 
@@ -1672,9 +1670,7 @@ class Solver
     private function resetSolver()
     {
         while ($literal = array_pop($this->decisionQueue)) {
-            if (isset($this->decisionMap[$literal->getPackageId()])) {
-                unset($this->decisionMap[$literal->getPackageId()]);
-            }
+            $this->decisionMap[$literal->getPackageId()] = 0;
         }
 
         $this->decisionQueueWhy = array();
