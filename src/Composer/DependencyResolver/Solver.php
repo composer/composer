@@ -1336,8 +1336,8 @@ class Solver
         while (!empty($this->branches)) {
             list($literals, $branchLevel) = $this->branches[count($this->branches) - 1];
 
-            if ($branchLevel > -$level) {
-                continue;
+            if ($branchLevel >= $level) {
+                break;
             }
 
             array_pop($this->branches);
@@ -1416,16 +1416,14 @@ class Solver
         // choose best package to install from decisionQueue
         $literals = $this->policy->selectPreferedPackages($this, $this->pool, $this->installed, $decisionQueue);
 
+        $selectedLiteral = array_shift($literals);
+
         // if there are multiple candidates, then branch
-        if (count($literals) > 1) {
-            foreach ($literals as $i => $literal) {
-                if (0 !== $i) {
-                    $this->branches[] = array(array($literal), -$level);
-                }
-            }
+        if (count($literals)) {
+            $this->branches[] = array($literals, -$level);
         }
 
-        return $this->setPropagateLearn($level, $literals[0], $disableRules, $rule);
+        return $this->setPropagateLearn($level, $selectedLiteral, $disableRules, $rule);
     }
 
     protected function analyze($level, $rule)
@@ -2000,49 +1998,45 @@ class Solver
 //            $this->printDecisionMap();
 //            $this->printDecisionQueue();
 
+            // minimization step
             if (count($this->branches)) {
-                die("minimization unimplemented");
-//       /* minimization step */
-//      if (solv->branches.count)
-//     {
-//       int l = 0, lasti = -1, lastl = -1;
-//       Id why;
-//
-//       p = 0;
-//       for (i = solv->branches.count - 1; i >= 0; i--)
-//         {
-//           p = solv->branches.elements[i];
-//           if (p < 0)
-//         l = -p;
-//           else if (p > 0 && solv->decisionmap[p] > l + 1)
-//         {
-//           lasti = i;
-//           lastl = l;
-//         }
-//         }
-//       if (lasti >= 0)
-//         {
-//           /* kill old solvable so that we do not loop */
-//           p = solv->branches.elements[lasti];
-//           solv->branches.elements[lasti] = 0;
-//           POOL_DEBUG(SAT_DEBUG_SOLVER, "minimizing %d -> %d with %s\n", solv->decisionmap[p], lastl, solvid2str(pool, p));
-//           minimizationsteps++;
-//
-//           level = lastl;
-//           revert(solv, level);
-//           why = -solv->decisionq_why.elements[solv->decisionq_why.count];
-//           assert(why >= 0);
-//           olevel = level;
-//           level = setpropagatelearn(solv, level, p, disablerules, why);
-//           if (level == 0)
-//         {
-//           queue_free(&dq);
-//           queue_free(&dqs);
-//           return;
-//         }
-//           continue;     /* back to main loop */
-//         }
-//     }
+
+                $lastLiteral = null;
+                $lastLevel = null;
+                $lastBranchIndex = 0;
+                $lastBranchOffset  = 0;
+
+                for ($i = count($this->branches) - 1; $i >= 0; $i--) {
+                    list($literals, $level) = $this->branches[$i];
+
+                    foreach ($literals as $offset => $literal) {
+                        if ($literal && $literal->isWanted() && $this->decisionMap[$literal->getPackageId()] > $level + 1) {
+                            $lastLiteral = $literal;
+                            $lastBranchIndex = $i;
+                            $lastBranchOffset = $offset;
+                            $lastLevel = $level;
+                        }
+                    }
+                }
+
+                if ($lastLiteral) {
+                    $this->branches[$lastBranchIndex][$lastBranchOffset] = null;
+                    $minimizationSteps++;
+
+                    $level = $lastLevel;
+                    $this->revert($level);
+
+                    $why = $this->decisionQueueWhy[count($this->decisionQueueWhy)];
+
+                    $oLevel = $level;
+                    $level = $this->setPropagateLearn($level, $lastLiteral, $disableRules, $why);
+
+                    if ($level == 0) {
+                        return;
+                    }
+
+                    continue;
+                }
             }
 
             break;
