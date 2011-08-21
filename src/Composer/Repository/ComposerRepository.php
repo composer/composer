@@ -55,6 +55,14 @@ class ComposerRepository extends ArrayRepository
             $package->setDistUrl($rev['dist']['url']);
             $package->setDistSha1Checksum($rev['dist']['shasum']);
 
+            if (isset($rev['type'])) {
+                $package->setType($rev['type']);
+            }
+
+            if (isset($rev['extra'])) {
+                $package->setExtra($rev['extra']);
+            }
+
             if (isset($rev['license'])) {
                 $package->setLicense($rev['license']);
             }

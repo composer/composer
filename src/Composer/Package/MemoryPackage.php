@@ -28,6 +28,7 @@ class MemoryPackage extends BasePackage
     protected $releaseType;
     protected $version;
     protected $license;
+    protected $extra = array();
 
     protected $requires = array();
     protected $conflicts = array();
@@ -65,6 +66,22 @@ class MemoryPackage extends BasePackage
     public function getType()
     {
         return $this->type ?: 'library';
+    }
+
+    /**
+     * @param array $extra
+     */
+    public function setExtra(array $extra)
+    {
+        $this->extra = $extra;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getExtra()
+    {
+        return $this->extra;
     }
 
     /**
