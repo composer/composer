@@ -139,7 +139,7 @@ class SolverTest extends \PHPUnit_Framework_TestCase
         $this->checkSolverResult(array());
     }
 
-    public function testSolverFull()
+    public function testSolverAllJobs()
     {
         $this->repoInstalled->addPackage($packageD = new MemoryPackage('D', '1.0'));
         $this->repoInstalled->addPackage($oldPackageC = new MemoryPackage('C', '1.0'));
@@ -161,6 +161,25 @@ class SolverTest extends \PHPUnit_Framework_TestCase
             array('job' => 'update',  'from' => $oldPackageC, 'to' => $packageC),
             array('job' => 'install', 'package' => $packageB),
             array('job' => 'remove',  'package' => $packageD),
+            array('job' => 'install', 'package' => $packageA),
+        ));
+    }
+
+    public function testSolverThreeAlternativeRequireAndConflict()
+    {
+        $this->repo->addPackage($packageA = new MemoryPackage('A', '2.0'));
+        $this->repo->addPackage($middlePackageB = new MemoryPackage('B', '1.0'));
+        $this->repo->addPackage($newPackageB = new MemoryPackage('B', '1.1'));
+        $this->repo->addPackage($oldPackageB = new MemoryPackage('B', '0.9'));
+        $packageA->setRequires(array(new Link('A', 'B', new VersionConstraint('<', '1.1'), 'requires')));
+        $packageA->setConflicts(array(new Link('A', 'B', new VersionConstraint('<', '1.0'), 'conflicts')));
+
+        $this->reposComplete();
+
+        $this->request->install('A');
+
+        $this->checkSolverResult(array(
+            array('job' => 'install', 'package' => $middlePackageB),
             array('job' => 'install', 'package' => $packageA),
         ));
     }

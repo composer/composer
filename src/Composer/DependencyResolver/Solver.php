@@ -1270,16 +1270,16 @@ class Solver
 
                 if (sizeof($ruleLiterals) > 2) {
                     foreach ($ruleLiterals as $ruleLiteral) {
-                        if (!$otherWatch->equals($ruleLiteral) &&
+                        if ($otherWatch !== $ruleLiteral->getId() &&
                             !$this->decisionsConflict($ruleLiteral)) {
 
 
-                            if ($literal->equals($rule->getWatch1())) {
-                                $rule->setWatch1($ruleLiteral);
-                                $rule->setNext1($rule);
+                            if ($literal->getId() === $rule->watch1) {
+                                $rule->watch1 = $ruleLiteral->getId();
+                                $rule->next1 = (isset($this->watches[$ruleLiteral->getId()])) ? $this->watches[$ruleLiteral->getId()] : null ;
                             } else {
-                                $rule->setWatch2($ruleLiteral);
-                                $rule->setNext2($rule);
+                                $rule->watch2 = $ruleLiteral->getId();
+                                $rule->next2 = (isset($this->watches[$ruleLiteral->getId()])) ? $this->watches[$ruleLiteral->getId()] : null ;
                             }
 
                             $this->watches[$ruleLiteral->getId()] = $rule;
