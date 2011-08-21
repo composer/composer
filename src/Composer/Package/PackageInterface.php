@@ -38,17 +38,17 @@ interface PackageInterface
     function getNames();
 
     /**
-    * Allows the solver to set an id for this package to refer to it.
-    *
-    * @param int $id
-    */
+     * Allows the solver to set an id for this package to refer to it.
+     *
+     * @param int $id
+     */
     function setId($id);
 
     /**
-    * Retrieves the package's id set through setId
-    *
-    * @return int The previously set package id
-    */
+     * Retrieves the package's id set through setId
+     *
+     * @return int The previously set package id
+     */
     function getId();
 
     /**
@@ -67,6 +67,13 @@ interface PackageInterface
      * @return string The package type
      */
     function getType();
+
+    /**
+     * Returns the package extra data
+     *
+     * @return array The package extra data
+     */
+    function getExtra();
 
     /**
      * Returns the repository type of this package, e.g. git, svn
