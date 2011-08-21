@@ -32,6 +32,10 @@ class VersionConstraint extends SpecificConstraint
      */
     public function __construct($operator, $version)
     {
+        if ('=' === $operator) {
+            $operator = '==';
+        }
+
         // TODO add third parameter releaseType and match that too
         // TODO add fourth parameter devSnapshot and match that too
         $this->operator = $operator;
