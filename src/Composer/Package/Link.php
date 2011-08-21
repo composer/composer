@@ -34,7 +34,7 @@ class Link
      * @param LinkConstraintInterface $constraint  Constraint applying to the target of this link
      * @param string                  $description Used to create a descriptive string representation
      */
-    public function __construct($source, $target, LinkConstraintInterface $constraint, $description = 'relates to')
+    public function __construct($source, $target, LinkConstraintInterface $constraint = null, $description = 'relates to')
     {
         $this->source = $source;
         $this->target = $target;
