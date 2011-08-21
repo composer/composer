@@ -100,7 +100,7 @@ abstract class BasePackage implements PackageInterface
     public function matches($name, LinkConstraintInterface $constraint)
     {
         if ($this->name === $name) {
-            return $constraint->matches(new VersionConstraint('=', $this->getVersion(), $this->getReleaseType()));
+            return $constraint->matches(new VersionConstraint('==', $this->getVersion(), $this->getReleaseType()));
         }
 
         foreach ($this->getProvides() as $link) {

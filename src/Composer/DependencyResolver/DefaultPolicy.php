@@ -14,6 +14,7 @@ namespace Composer\DependencyResolver;
 
 use Composer\Repository\RepositoryInterface;
 use Composer\Package\PackageInterface;
+use Composer\Package\LinkConstraint\VersionConstraint;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -32,7 +33,10 @@ class DefaultPolicy implements PolicyInterface
 
     public function versionCompare(PackageInterface $a, PackageInterface $b, $operator)
     {
-        return version_compare($a->getVersion(), $b->getVersion(), $operator);
+        $constraint = new VersionConstraint($operator, $b->getVersion());
+        $version = new VersionConstraint('==', $a->getVersion());
+
+        return $constraint->matchSpecific($version);
     }
 
     public function findUpdatePackages(Solver $solver, Pool $pool, RepositoryInterface $repo, PackageInterface $package, $allowAll = false)
