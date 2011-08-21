@@ -35,6 +35,6 @@ class LibraryInstaller
         } else {
             throw new \InvalidArgumentException('Type must be one of (dist, source), '.$type.' given.');
         }
-        return array('version' => $package->getVersion());
+        return true;
     }
 }
