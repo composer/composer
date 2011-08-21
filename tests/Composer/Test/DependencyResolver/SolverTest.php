@@ -184,6 +184,21 @@ class SolverTest extends \PHPUnit_Framework_TestCase
         ));
     }
 
+    public function testSolverObsolete()
+    {
+        $this->repoInstalled->addPackage($packageA = new MemoryPackage('A', '1.0'));
+        $this->repo->addPackage($packageB = new MemoryPackage('B', '1.0'));
+        $packageB->setReplaces(array(new Link('B', 'A', null)));
+
+        $this->reposComplete();
+
+        $this->request->install('B');
+
+        $this->checkSolverResult(array(
+            array('job' => 'update', 'from' => $packageA, 'to' => $packageB),
+        ));
+    }
+
     public function testInstallOneOfTwoAlternatives()
     {
         $this->repo->addPackage($packageA = new MemoryPackage('A', '1.0'));
