@@ -12,6 +12,14 @@
 
 namespace Composer\Command;
 
+use Composer\DependencyResolver\Pool;
+use Composer\DependencyResolver\Request;
+use Composer\DependencyResolver\DefaultPolicy;
+use Composer\DependencyResolver\Solver;
+use Composer\Repository\PlatformRepository;
+use Composer\Package\MemoryPackage;
+use Composer\Package\LinkConstraint\VersionConstraint;
+
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
@@ -28,47 +36,83 @@ class InstallCommand
 
         $config = $this->loadConfig();
 
-        foreach ($config['repositories'] as $name => $spec) {
-            $composer->addRepository($name, $spec);
+        echo 'Loading repositories'.PHP_EOL;
+
+        if (isset($config['repositories'])) {
+            foreach ($config['repositories'] as $name => $spec) {
+                $composer->addRepository($name, $spec);
+            }
         }
 
-        // TODO this should just do dependency solving based on all repositories
-        $packages = array();
+        $pool = new Pool;
+
+        $repoInstalled = new PlatformRepository;
+        $pool->addRepository($repoInstalled);
+
+        // TODO check the lock file to see what's currently installed
+        // $repoInstalled->addPackage(new MemoryPackage('$Package', '$Version'));
+
+        echo 'Loading package list'.PHP_EOL;
+
         foreach ($composer->getRepositories() as $repository) {
-            $packages[] = $repository->getPackages();
+            $pool->addRepository($repository);
         }
-        $packages = call_user_func_array('array_merge', $packages);
+
+        $request = new Request($pool);
+
+        echo 'Building up request'.PHP_EOL;
+
+        // TODO there should be an update flag or dedicated update command
+        // TODO check lock file to remove packages that disappeared from the requirements
+        foreach ($config['require'] as $name => $version) {
+            if ('latest' === $version) {
+                $request->install($name);
+            } else {
+                preg_match('#^([>=<~]*)([\d.]+.*)$#', $version, $match);
+                if (!$match[1]) {
+                    $match[1] = '=';
+                }
+                $constraint = new VersionConstraint($match[1], $match[2]);
+                $request->install($name, $constraint);
+            }
+        }
+
+        echo 'Solving dependencies'.PHP_EOL;
+
+        $policy = new DefaultPolicy;
+        $solver = new Solver($policy, $pool, $repoInstalled);
+        $transaction = $solver->solve($request);
 
         $lock = array();
 
-        // TODO this should use the transaction returned by the solver
-        foreach ($config['require'] as $name => $version) {
-            unset($package);
-            foreach ($packages as $pkg) {
-                if (strtolower($pkg->getName()) === strtolower($name)) {
-                    $package = $pkg;
-                    break;
-                }
-            }
-            if (!isset($package)) {
-                throw new \UnexpectedValueException('Could not find package '.$name.' in any of your repositories');
-            }
-            echo '> Installing '.$package->getName().PHP_EOL;
-            if ($sourceInstall) {
-                // TODO
-            } else {
-                if ($package->getDistType()) {
-                    $downloader = $composer->getDownloader($package->getDistType());
-                    $type = 'dist';
-                } elseif ($package->getSourceType()) {
-                    echo 'Package '.$package->getName().' has no dist url, installing from source instead.';
-                    $downloader = $composer->getDownloader($package->getSourceType());
-                    $type = 'source';
+        foreach ($transaction as $task) {
+            switch ($task['job']) {
+            case 'install':
+                $package = $task['package'];
+                echo '> Installing '.$package->getName().PHP_EOL;
+                if ($sourceInstall) {
+                    // TODO
                 } else {
-                    throw new \UnexpectedValueException('Package '.$package->getName().' has no source or dist URL.');
+                    if ($package->getDistType()) {
+                        $downloaderType = $package->getDistType();
+                        $type = 'dist';
+                    } elseif ($package->getSourceType()) {
+                        echo 'Package '.$package->getName().' has no dist url, installing from source instead.';
+                        $downloaderType = $package->getSourceType();
+                        $type = 'source';
+                    } else {
+                        throw new \UnexpectedValueException('Package '.$package->getName().' has no source or dist URL.');
+                    }
+                    $downloader = $composer->getDownloader($downloaderType);
+                    $installer = $composer->getInstaller($package->getType());
+                    if (!$installer->install($package, $downloader, $type)) {
+                        throw new \LogicException($package->getName().' could not be installed.');
+                    }
                 }
-                $installer = $composer->getInstaller($package->getType());
-                $lock[$name] = $installer->install($package, $downloader, $type);
+                $lock[$package->getName()] = array('version' => $package->getVersion());
+                break;
+            default:
+                throw new \UnexpectedValueException('Unhandled job type : '.$task['job']);
             }
         }
         echo '> Done'.PHP_EOL;
