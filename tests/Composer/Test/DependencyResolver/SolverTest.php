@@ -165,11 +165,27 @@ class SolverTest extends \PHPUnit_Framework_TestCase
         ));
     }
 
+    public function testInstallOneOfTwoAlternatives()
+    {
+        $this->repo->addPackage($packageA = new MemoryPackage('A', '1.0'));
+        $this->repo->addPackage($packageB = new MemoryPackage('A', '1.0'));
+
+        $this->reposComplete();
+
+        $this->request->install('A');
+
+        $this->checkSolverResult(array(
+            array('job' => 'install', 'package' => $packageA),
+        ));
+    }
+
     public function testSolverWithComposerRepo()
     {
-        $this->markTestIncomplete();
-
         $this->repoInstalled = new PlatformRepository;
+
+        // overwrite solver with custom installed repo
+        $this->solver = new Solver($this->policy, $this->pool, $this->repoInstalled);
+
         $this->repo = new ComposerRepository('http://packagist.org');
         list($monolog) = $this->repo->getPackages();
 
