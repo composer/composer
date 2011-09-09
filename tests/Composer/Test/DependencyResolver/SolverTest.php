@@ -213,6 +213,62 @@ class SolverTest extends \PHPUnit_Framework_TestCase
         ));
     }
 
+    public function testInstallProvider()
+    {
+        $this->repo->addPackage($packageA = new MemoryPackage('A', '1.0'));
+        $this->repo->addPackage($packageQ = new MemoryPackage('Q', '1.0'));
+        $this->repo->addPackage($packageB = new MemoryPackage('B', '0.8'));
+        $packageA->setRequires(array(new Link('A', 'B', new VersionConstraint('>=', '1.0'), 'requires')));
+        $packageQ->setProvides(array(new Link('Q', 'B', new VersionConstraint('=', '1.0'), 'provides')));
+
+        $this->reposComplete();
+
+        $this->request->install('A');
+
+        $this->checkSolverResult(array(
+            array('job' => 'install', 'package' => $packageQ),
+            array('job' => 'install', 'package' => $packageA),
+        ));
+    }
+
+    public function testInstallCircularRequire()
+    {
+        $this->repo->addPackage($packageA = new MemoryPackage('A', '1.0'));
+        $this->repo->addPackage($packageB1 = new MemoryPackage('B', '0.9'));
+        $this->repo->addPackage($packageB2 = new MemoryPackage('B', '1.1'));
+        $packageA->setRequires(array(new Link('A', 'B', new VersionConstraint('>=', '1.0'), 'requires')));
+        $packageB2->setRequires(array(new Link('B', 'A', new VersionConstraint('>=', '1.0'), 'requires')));
+
+        $this->reposComplete();
+
+        $this->request->install('A');
+
+        $this->checkSolverResult(array(
+            array('job' => 'install', 'package' => $packageB2),
+            array('job' => 'install', 'package' => $packageA),
+        ));
+    }
+
+/*
+    public function testSolverWithComposerRepo()
+    {
+        $this->repoInstalled = new PlatformRepository;
+
+        // overwrite solver with custom installed repo
+        $this->solver = new Solver($this->policy, $this->pool, $this->repoInstalled);
+
+        $this->repo = new ComposerRepository('http://packagist.org');
+        list($monolog) = $this->repo->getPackages();
+
+        $this->reposComplete();
+
+        $this->request->install('Monolog');
+
+        $this->checkSolverResult(array(
+            array('job' => 'install', 'package' => $monolog),
+        ));
+    }*/
+
     protected function reposComplete()
     {
         $this->pool->addRepository($this->repoInstalled);
