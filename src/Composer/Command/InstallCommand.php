@@ -154,7 +154,7 @@ class InstallCommand
 
     protected function storeLockFile(array $content)
     {
-        file_put_contents('composer.lock', json_encode($content)."\n");
+        file_put_contents('composer.lock', json_encode($content, JSON_FORCE_OBJECT)."\n");
         echo '> composer.lock dumped'.PHP_EOL;
     }
 }
