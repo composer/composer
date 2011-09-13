@@ -65,6 +65,7 @@ class InstallCommand
         // TODO there should be an update flag or dedicated update command
         // TODO check lock file to remove packages that disappeared from the requirements
         foreach ($config['require'] as $name => $version) {
+            $name = $this->lowercase($name);
             if ('latest' === $version) {
                 $request->install($name);
             } else {
@@ -156,5 +157,13 @@ class InstallCommand
     {
         file_put_contents('composer.lock', json_encode($content, JSON_FORCE_OBJECT)."\n");
         echo '> composer.lock dumped'.PHP_EOL;
+    }
+
+    protected function lowercase($str)
+    {
+        if (function_exists('mb_strtolower')) {
+            return mb_strtolower($str, 'UTF-8');
+        }
+        return strtolower($str, 'UTF-8');
     }
 }
