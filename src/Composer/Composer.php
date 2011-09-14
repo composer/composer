@@ -33,11 +33,13 @@ class Composer
 
     public function addDownloader($type, $downloader)
     {
+        $type = strtolower($type);
         $this->downloaders[$type] = $downloader;
     }
 
     public function getDownloader($type)
     {
+        $type = strtolower($type);
         if (!isset($this->downloaders[$type])) {
             throw new \UnexpectedValueException('Unknown source type: '.$type);
         }
@@ -46,11 +48,13 @@ class Composer
 
     public function addInstaller($type, $installer)
     {
+        $type = strtolower($type);
         $this->installers[$type] = $installer;
     }
 
     public function getInstaller($type)
     {
+        $type = strtolower($type);
         if (!isset($this->installers[$type])) {
             throw new \UnexpectedValueException('Unknown dependency type: '.$type);
         }
