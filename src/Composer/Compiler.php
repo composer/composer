@@ -24,6 +24,12 @@ class Compiler
 {
     protected $version;
 
+    /**
+     * Compiles composer into a single phar file
+     *
+     * @throws \RuntimeException
+     * @param string $pharFile The full path to the file to create
+     */
     public function compile($pharFile = 'composer.phar')
     {
         if (file_exists($pharFile)) {
