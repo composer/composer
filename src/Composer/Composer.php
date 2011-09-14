@@ -22,6 +22,8 @@ use Composer\Repository\PearRepository;
  */
 class Composer
 {
+    const VERSION = '1.0.0-DEV';
+
     protected $repositories = array();
     protected $downloaders = array();
     protected $installers = array();

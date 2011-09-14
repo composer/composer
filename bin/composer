@@ -9,12 +9,15 @@ use Composer\Downloader\PearDownloader;
 use Composer\Downloader\ZipDownloader;
 use Composer\Command\InstallCommand;
 use Composer\Installer\LibraryInstaller;
+use Composer\Console\Application;
 
+// initialize composer
 $composer = new Composer();
 $composer->addDownloader('git', new GitDownloader);
 $composer->addDownloader('pear', new PearDownloader);
 $composer->addDownloader('zip', new ZipDownloader);
 $composer->addInstaller('library', new LibraryInstaller);
 
-$cmd = new InstallCommand();
-$cmd->install($composer);
+// run the command application
+$application = new Application($composer);
+$application->run();
