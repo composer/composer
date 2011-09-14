@@ -7,7 +7,6 @@ use Composer\Composer;
 use Composer\Downloader\GitDownloader;
 use Composer\Downloader\PearDownloader;
 use Composer\Downloader\ZipDownloader;
-use Composer\Command\InstallCommand;
 use Composer\Installer\LibraryInstaller;
 use Composer\Console\Application;
 
