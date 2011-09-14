@@ -34,7 +34,7 @@ abstract class BasePackage implements PackageInterface
      */
     public function __construct($name)
     {
-        $this->name = $name;
+        $this->name = strtolower($name);
         $this->id = -1;
     }
 

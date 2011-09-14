@@ -36,8 +36,8 @@ class Link
      */
     public function __construct($source, $target, LinkConstraintInterface $constraint = null, $description = 'relates to')
     {
-        $this->source = $source;
-        $this->target = $target;
+        $this->source = strtolower($source);
+        $this->target = strtolower($target);
         $this->constraint = $constraint;
         $this->description = $description;
     }
