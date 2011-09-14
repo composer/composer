@@ -16,7 +16,7 @@ use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
 
 /**
- * The Compiler class compiles the Silex framework.
+ * The Compiler class compiles composer into a phar
  *
  * @author Fabien Potencier <fabien@symfony.com>
  */
