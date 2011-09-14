@@ -16,7 +16,7 @@ use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
 
 /**
- * The Compiler class compiles the Silex framework.
+ * The Compiler class compiles composer into a phar
  *
  * @author Fabien Potencier <fabien@symfony.com>
  */
@@ -24,6 +24,12 @@ class Compiler
 {
     protected $version;
 
+    /**
+     * Compiles composer into a single phar file
+     *
+     * @throws \RuntimeException
+     * @param string $pharFile The full path to the file to create
+     */
     public function compile($pharFile = 'composer.phar')
     {
         if (file_exists($pharFile)) {
