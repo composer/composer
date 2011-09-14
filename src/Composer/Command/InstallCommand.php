@@ -19,7 +19,6 @@ use Composer\DependencyResolver\Solver;
 use Composer\Repository\PlatformRepository;
 use Composer\Package\MemoryPackage;
 use Composer\Package\LinkConstraint\VersionConstraint;
-
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -35,6 +34,15 @@ class InstallCommand extends Command
         $this
             ->setName('install')
             ->setDescription('Parses the composer.json file and downloads the needed dependencies.')
+            ->setHelp(<<<EOT
+The <info>install</info> command reads the composer.json file from the
+current directory, processes it, and downloads and installs all the
+libraries and dependencies outlined in that file.
+
+<info>php composer install</info>
+
+EOT
+            )
         ;
     }
 

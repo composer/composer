@@ -24,7 +24,7 @@ abstract class Command extends BaseCommand
     /**
      * @return \Composer\Composer
      */
-    public function getComposer()
+    protected function getComposer()
     {
         return $this->getApplication()->getComposer();
     }
