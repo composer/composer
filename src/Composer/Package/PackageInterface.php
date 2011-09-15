@@ -28,6 +28,13 @@ interface PackageInterface
     function getName();
 
     /**
+     * Returns the package's pretty (i.e. with proper case) name
+     *
+     * @return string package name
+     */
+    function getPrettyName();
+
+    /**
      * Returns a set of names that could refer to this package
      *
      * No version or release type information should be included in any of the

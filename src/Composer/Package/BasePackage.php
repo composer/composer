@@ -24,6 +24,7 @@ use Composer\Repository\RepositoryInterface;
 abstract class BasePackage implements PackageInterface
 {
     protected $name;
+    protected $prettyName;
     protected $repository;
     protected $id;
 
@@ -34,14 +35,13 @@ abstract class BasePackage implements PackageInterface
      */
     public function __construct($name)
     {
+        $this->prettyName = $name;
         $this->name = strtolower($name);
         $this->id = -1;
     }
 
     /**
-     * Returns the package's name without version info, thus not a unique identifier
-     *
-     * @return string package name
+     * {@inheritDoc}
      */
     public function getName()
     {
@@ -49,12 +49,15 @@ abstract class BasePackage implements PackageInterface
     }
 
     /**
-     * Returns a set of names that could refer to this package
-     *
-     * No version or release type information should be included in any of the
-     * names. Provided or replaced package names need to be returned as well.
-     *
-     * @return array An array of strings referring to this package
+     * {@inheritDoc}
+     */
+    public function getPrettyName()
+    {
+        return $this->prettyName;
+    }
+
+    /**
+     * {@inheritDoc}
      */
     public function getNames()
     {
@@ -74,16 +77,16 @@ abstract class BasePackage implements PackageInterface
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public function setId($id)
     {
         $this->id = $id;
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public function getId()
     {
         return $this->id;
@@ -157,7 +160,7 @@ abstract class BasePackage implements PackageInterface
             'version' => $matches[1]
                 .(!empty($matches[2]) ? $matches[2] : '.0')
                 .(!empty($matches[3]) ? $matches[3] : '.0'),
-            'type' => strtolower(!empty($matches[4]) ? $matches[4] : 'stable'),
+            'type' => !empty($matches[4]) ? strtolower($matches[4]) : 'stable',
             'dev' => !empty($matches[5]),
         );
     }
