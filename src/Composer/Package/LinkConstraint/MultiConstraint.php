@@ -13,7 +13,7 @@
 namespace Composer\Package\LinkConstraint;
 
 /**
- * Defines a conjuctive set of constraints on the target of a package link
+ * Defines a conjunctive set of constraints on the target of a package link
  *
  * @author Nils Adermann <naderman@naderman.de>
  */
@@ -24,7 +24,7 @@ class MultiConstraint implements LinkConstraintInterface
     /**
      * Sets operator and version to compare a package with
      *
-     * @param array $constraints A conjuctive set of constraints
+     * @param array $constraints A conjunctive set of constraints
      */
     public function __construct(array $constraints)
     {
