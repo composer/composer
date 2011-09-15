@@ -17,6 +17,7 @@ use Composer\Composer;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
+use Composer\Command\InstallCommand;
 
 /**
  * The console application that handles the commands
@@ -58,23 +59,10 @@ class Application extends BaseApplication
     }
 
     /**
-     * Looks for all *Command files in Composer's Command directory
+     * Initializes all the composer commands
      */
     protected function registerCommands()
     {
-        $dir = __DIR__.'/../Command';
-        $finder = new Finder();
-        $finder->files()->name('*Command.php')->in($dir);
-
-        foreach ($finder as $file) {
-            $ns = 'Composer\\Command';
-            if ($relativePath = $file->getRelativePath()) {
-                $ns .= '\\'.strtr($relativePath, '/', '\\');
-            }
-            $r = new \ReflectionClass($ns.'\\'.$file->getBasename('.php'));
-            if ($r->isSubclassOf('Symfony\\Component\\Console\\Command\\Command') && !$r->isAbstract()) {
-                $this->add($r->newInstance());
-            }
-        }
+        $this->add(new InstallCommand());
     }
 }
