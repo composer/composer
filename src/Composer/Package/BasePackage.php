@@ -28,7 +28,7 @@ abstract class BasePackage implements PackageInterface
     protected $id;
 
     /**
-     * All descendents' constructors should call this parent constructor
+     * All descendants' constructors should call this parent constructor
      *
      * @param string $name The package's name
      */
@@ -54,7 +54,7 @@ abstract class BasePackage implements PackageInterface
      * No version or release type information should be included in any of the
      * names. Provided or replaced package names need to be returned as well.
      *
-     * @return array An array of strings refering to this package
+     * @return array An array of strings referring to this package
      */
     public function getNames()
     {
