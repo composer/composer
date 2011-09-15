@@ -33,7 +33,7 @@ interface PackageInterface
      * No version or release type information should be included in any of the
      * names. Provided or replaced package names need to be returned as well.
      *
-     * @return array An array of strings refering to this package
+     * @return array An array of strings referring to this package
      */
     function getNames();
 
