@@ -65,7 +65,7 @@ class InstallCommand
         // TODO there should be an update flag or dedicated update command
         // TODO check lock file to remove packages that disappeared from the requirements
         foreach ($config['require'] as $name => $version) {
-            $name = $this->lowercase($name);
+            $name = strtolower($name);
             if ('latest' === $version) {
                 $request->install($name);
             } else {
@@ -90,7 +90,7 @@ class InstallCommand
             switch ($task['job']) {
             case 'install':
                 $package = $task['package'];
-                echo '> Installing '.$package->getName().PHP_EOL;
+                echo '> Installing '.$package->getPrettyName().PHP_EOL;
                 if ($sourceInstall) {
                     // TODO
                 } else {
@@ -98,16 +98,16 @@ class InstallCommand
                         $downloaderType = $package->getDistType();
                         $type = 'dist';
                     } elseif ($package->getSourceType()) {
-                        echo 'Package '.$package->getName().' has no dist url, installing from source instead.';
+                        echo 'Package '.$package->getPrettyName().' has no dist url, installing from source instead.';
                         $downloaderType = $package->getSourceType();
                         $type = 'source';
                     } else {
-                        throw new \UnexpectedValueException('Package '.$package->getName().' has no source or dist URL.');
+                        throw new \UnexpectedValueException('Package '.$package->getPrettyName().' has no source or dist URL.');
                     }
                     $downloader = $composer->getDownloader($downloaderType);
                     $installer = $composer->getInstaller($package->getType());
                     if (!$installer->install($package, $downloader, $type)) {
-                        throw new \LogicException($package->getName().' could not be installed.');
+                        throw new \LogicException($package->getPrettyName().' could not be installed.');
                     }
                 }
                 $lock[$package->getName()] = array('version' => $package->getVersion());
@@ -157,13 +157,5 @@ class InstallCommand
     {
         file_put_contents('composer.lock', json_encode($content, JSON_FORCE_OBJECT)."\n");
         echo '> composer.lock dumped'.PHP_EOL;
-    }
-
-    protected function lowercase($str)
-    {
-        if (function_exists('mb_strtolower')) {
-            return mb_strtolower($str, 'UTF-8');
-        }
-        return strtolower($str, 'UTF-8');
     }
 }

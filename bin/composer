@@ -10,6 +10,8 @@ use Composer\Downloader\ZipDownloader;
 use Composer\Command\InstallCommand;
 use Composer\Installer\LibraryInstaller;
 
+setlocale(LC_ALL, 'C');
+
 $composer = new Composer();
 $composer->addDownloader('git', new GitDownloader);
 $composer->addDownloader('pear', new PearDownloader);
