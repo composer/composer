@@ -29,5 +29,5 @@ interface InstallerInterface
      * @param DownloaderInterface $downloader
      * @param string              $type
      */
-    public function install(PackageInterface $package, DownloaderInterface $downloader, $type);
+    function install(PackageInterface $package, DownloaderInterface $downloader, $type);
 }

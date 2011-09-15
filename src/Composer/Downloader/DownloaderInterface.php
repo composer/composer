@@ -31,5 +31,5 @@ interface DownloaderInterface
      *
      * @throws \UnexpectedValueException
      */
-    public function download(PackageInterface $package, $path, $url, $checksum = null);
+    function download(PackageInterface $package, $path, $url, $checksum = null);
 }
