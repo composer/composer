@@ -12,12 +12,13 @@
 
 namespace Composer\Installer;
 
+use Composer\Downloader\DownloaderInterface;
 use Composer\Package\PackageInterface;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class LibraryInstaller
+class LibraryInstaller implements InstallerInterface
 {
     protected $dir;
 
@@ -26,7 +27,7 @@ class LibraryInstaller
         $this->dir = $dir;
     }
 
-    public function install(PackageInterface $package, $downloader, $type)
+    public function install(PackageInterface $package, DownloaderInterface $downloader, $type)
     {
         if ($type === 'dist') {
             $downloader->download($package, $this->dir, $package->getDistUrl(), $package->getDistSha1Checksum());

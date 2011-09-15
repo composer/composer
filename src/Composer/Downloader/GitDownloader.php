@@ -17,7 +17,7 @@ use Composer\Package\PackageInterface;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class GitDownloader
+class GitDownloader implements DownloaderInterface
 {
     protected $clone;
 
