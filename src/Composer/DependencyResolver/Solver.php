@@ -343,7 +343,7 @@ class Solver
                             continue;
                         }
 
-                        // obsolete same packages even when noObsletes
+                        // obsolete same packages even when noObsoletes
                         if ($noObsoletes && (!$package->equals($provider))) {
                             continue;
                         }
@@ -1567,7 +1567,7 @@ class Solver
         $seen = array();
         $literals = $conflictRule->getLiterals();
 
-/* unecessary because unlike rule.d, watch2 == 2nd literal, unless watch2 changed
+/* unnecessary because unlike rule.d, watch2 == 2nd literal, unless watch2 changed
         if (sizeof($literals) == 2) {
             $literals[1] = $this->literalFromId($conflictRule->watch2);
         }
@@ -1599,7 +1599,7 @@ class Solver
             $this->analyzeUnsolvableRule($why, $lastWeakWhy);
 
             $literals = $why->getLiterals();
-/* unecessary because unlike rule.d, watch2 == 2nd literal, unless watch2 changed
+/* unnecessary because unlike rule.d, watch2 == 2nd literal, unless watch2 changed
             if (sizeof($literals) == 2) {
                 $literals[1] = $this->literalFromId($why->watch2);
             }
