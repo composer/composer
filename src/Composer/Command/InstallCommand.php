@@ -19,28 +19,45 @@ use Composer\DependencyResolver\Solver;
 use Composer\Repository\PlatformRepository;
 use Composer\Package\MemoryPackage;
 use Composer\Package\LinkConstraint\VersionConstraint;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
+ * @author Ryan Weaver <ryan@knplabs.com>
  */
-class InstallCommand
+class InstallCommand extends Command
 {
-    protected $composer;
-
-    public function install($composer)
+    protected function configure()
     {
-        $this->composer = $composer;
+        $this
+            ->setName('install')
+            ->setDescription('Parses the composer.json file and downloads the needed dependencies.')
+            ->setHelp(<<<EOT
+The <info>install</info> command reads the composer.json file from the
+current directory, processes it, and downloads and installs all the
+libraries and dependencies outlined in that file.
 
+<info>php composer install</info>
+
+EOT
+            )
+        ;
+    }
+
+    protected function execute(InputInterface $input, OutputInterface $output)
+    {
         // TODO this needs a parameter to enable installing from source (i.e. git clone, instead of downloading archives)
         $sourceInstall = false;
 
         $config = $this->loadConfig();
 
-        echo 'Loading repositories'.PHP_EOL;
+        $output->writeln('<info>Loading repositories</info>');
 
         if (isset($config['repositories'])) {
             foreach ($config['repositories'] as $name => $spec) {
-                $composer->addRepository($name, $spec);
+                $this->getComposer()->addRepository($name, $spec);
             }
         }
 
@@ -52,15 +69,15 @@ class InstallCommand
         // TODO check the lock file to see what's currently installed
         // $repoInstalled->addPackage(new MemoryPackage('$Package', '$Version'));
 
-        echo 'Loading package list'.PHP_EOL;
+        $output->writeln('Loading package list');
 
-        foreach ($composer->getRepositories() as $repository) {
+        foreach ($this->getComposer()->getRepositories() as $repository) {
             $pool->addRepository($repository);
         }
 
         $request = new Request($pool);
 
-        echo 'Building up request'.PHP_EOL;
+        $output->writeln('Building up request');
 
         // TODO there should be an update flag or dedicated update command
         // TODO check lock file to remove packages that disappeared from the requirements
@@ -78,7 +95,7 @@ class InstallCommand
             }
         }
 
-        echo 'Solving dependencies'.PHP_EOL;
+        $output->writeln('Solving dependencies');
 
         $policy = new DefaultPolicy;
         $solver = new Solver($policy, $pool, $repoInstalled);
@@ -90,7 +107,7 @@ class InstallCommand
             switch ($task['job']) {
             case 'install':
                 $package = $task['package'];
-                echo '> Installing '.$package->getName().PHP_EOL;
+                $output->writeln('> Installing '.$package->getName());
                 if ($sourceInstall) {
                     // TODO
                 } else {
@@ -98,14 +115,14 @@ class InstallCommand
                         $downloaderType = $package->getDistType();
                         $type = 'dist';
                     } elseif ($package->getSourceType()) {
-                        echo 'Package '.$package->getName().' has no dist url, installing from source instead.';
+                        $output->writeln('Package '.$package->getName().' has no dist url, installing from source instead.');
                         $downloaderType = $package->getSourceType();
                         $type = 'source';
                     } else {
                         throw new \UnexpectedValueException('Package '.$package->getName().' has no source or dist URL.');
                     }
-                    $downloader = $composer->getDownloader($downloaderType);
-                    $installer = $composer->getInstaller($package->getType());
+                    $downloader = $this->getComposer()->getDownloader($downloaderType);
+                    $installer = $this->getComposer()->getInstaller($package->getType());
                     if (!$installer->install($package, $downloader, $type)) {
                         throw new \LogicException($package->getName().' could not be installed.');
                     }
@@ -116,9 +133,9 @@ class InstallCommand
                 throw new \UnexpectedValueException('Unhandled job type : '.$task['job']);
             }
         }
-        echo '> Done'.PHP_EOL;
+        $output->writeln('> Done');
 
-        $this->storeLockFile($lock);
+        $this->storeLockFile($lock, $output);
     }
 
     protected function loadConfig()
@@ -153,10 +170,11 @@ class InstallCommand
         return $config;
     }
 
-    protected function storeLockFile(array $content)
+    protected function storeLockFile(array $content, OutputInterface $output)
     {
         file_put_contents('composer.lock', json_encode($content, JSON_FORCE_OBJECT)."\n");
-        echo '> composer.lock dumped'.PHP_EOL;
+        $output->writeln('> composer.lock dumped');
+
     }
 
     protected function lowercase($str)
