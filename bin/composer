@@ -13,7 +13,7 @@ use Composer\Console\Application;
 setlocale(LC_ALL, 'C');
 
 // initialize composer
-$composer = new Composer();
+$composer = new ConfigurableComposer('composer.json', 'composer.lock');
 $composer->addDownloader('git', new GitDownloader);
 $composer->addDownloader('pear', new PearDownloader);
 $composer->addDownloader('zip', new ZipDownloader);

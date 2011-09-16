@@ -38,4 +38,19 @@ class LibraryInstaller implements InstallerInterface
         }
         return true;
     }
+
+    public function isInstalled(PackageInterface $package, $downloader, $type)
+    {
+        // TODO: implement installation check
+    }
+
+    public function update(PackageInterface $package, $downloader, $type)
+    {
+        // TODO: implement package update
+    }
+
+    public function remove(PackageInterface $package, $downloader, $type)
+    {
+        // TODO: implement package removal
+    }
 }
