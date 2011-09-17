@@ -26,6 +26,16 @@ class PearRepository extends ArrayRepository
     private $name;
     private $url;
 
+    static public function supports($type, $name = '', $url = '')
+    {
+        return 'pear' === strtolower($type) && '' !== $url;
+    }
+
+    static public function create($type, $name = '', $url = '')
+    {
+        return new static($url, $name);
+    }
+
     public function __construct($url, $name = '')
     {
         if (!filter_var($url, FILTER_VALIDATE_URL)) {

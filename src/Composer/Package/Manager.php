@@ -24,8 +24,6 @@ class Manager
 
     public function install(PackageInterface $package)
     {
-        $output->writeln('> Installing '.$package->getName());
-
         $installer   = $this->composer->getInstaller($package->getType());
         $downloader  = $this->getDownloaderForPackage($package);
         $packageType = $this->getTypeForPackage($package);
@@ -37,8 +35,6 @@ class Manager
 
     public function update(PackageInterface $package)
     {
-        $output->writeln('> Updating '.$package->getName());
-
         $installer   = $this->composer->getInstaller($package->getType());
         $downloader  = $this->getDownloaderForPackage($package);
         $packageType = $this->getTypeForPackage($package);
@@ -50,8 +46,6 @@ class Manager
 
     public function remove(PackageInterface $package)
     {
-        $output->writeln('> Removing '.$package->getName());
-
         $installer   = $this->composer->getInstaller($package->getType());
         $downloader  = $this->getDownloaderForPackage($package);
         $packageType = $this->getTypeForPackage($package);

@@ -22,6 +22,11 @@ class PlatformRepository extends ArrayRepository
 {
     protected $packages;
 
+    static public function supports($type, $name = '', $url = '')
+    {
+        return 'platform' === strtolower($type);
+    }
+
     protected function initialize()
     {
         parent::initialize();

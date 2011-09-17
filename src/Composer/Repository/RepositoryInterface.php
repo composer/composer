@@ -17,5 +17,8 @@ namespace Composer\Repository;
  */
 interface RepositoryInterface extends \Countable
 {
+    static function supports($type, $name = '', $url = '');
+    static function create($type, $name = '', $url = '');
+
     function getPackages();
 }

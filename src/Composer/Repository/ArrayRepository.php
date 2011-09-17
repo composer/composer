@@ -23,6 +23,16 @@ class ArrayRepository implements RepositoryInterface
 {
     protected $packages;
 
+    static public function supports($type, $name = '', $url = '')
+    {
+        return 'array' === strtolower($type);
+    }
+
+    static public function create($type, $name = '', $url = '')
+    {
+        return new static();
+    }
+
     /**
      * Adds a new package to the repository
      *
