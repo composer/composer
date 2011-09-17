@@ -82,7 +82,6 @@ EOT
         // TODO there should be an update flag or dedicated update command
         // TODO check lock file to remove packages that disappeared from the requirements
         foreach ($config['require'] as $name => $version) {
-            $name = strtolower($name);
             if ('latest' === $version) {
                 $request->install($name);
             } else {
