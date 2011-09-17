@@ -29,27 +29,27 @@ class Request
 
     public function install($packageName, LinkConstraintInterface $constraint = null)
     {
-        $this->addJob($packageName, 'install', $constraint);
+        $this->addJob(strtolower($packageName), 'install', $constraint);
     }
 
     public function update($packageName, LinkConstraintInterface $constraint = null)
     {
-        $this->addJob($packageName, 'update', $constraint);
+        $this->addJob(strtolower($packageName), 'update', $constraint);
     }
 
     public function remove($packageName, LinkConstraintInterface $constraint = null)
     {
-        $this->addJob($packageName, 'remove', $constraint);
+        $this->addJob(strtolower($packageName), 'remove', $constraint);
     }
 
     protected function addJob($packageName, $cmd, LinkConstraintInterface $constraint = null)
     {
-        $packages = $this->pool->whatProvides($packageName, $constraint);
+        $packages = $this->pool->whatProvides(strtolower($packageName), $constraint);
 
         $this->jobs[] = array(
             'packages' => $packages,
             'cmd' => $cmd,
-            'packageName' => $packageName,
+            'packageName' => strtolower($packageName),
         );
     }
 
