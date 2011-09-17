@@ -12,22 +12,18 @@
 
 namespace Composer\Installer;
 
-use Composer\Downloader\DownloaderInterface;
 use Composer\Package\PackageInterface;
+use Composer\Composer;
 
 /**
- * Package Installer
- * 
- * @author Kirill chEbba Chebunin <iam@chebba.org>
- */ 
-interface InstallerInterface
+ * @author Konstantin Kudryashov <ever.zet@gmail.com>
+ */
+class InstallerInterface
 {
-    /**
-     * Install package
-     *
-     * @param PackageInterface    $package
-     * @param DownloaderInterface $downloader
-     * @param string              $type
-     */
-    function install(PackageInterface $package, DownloaderInterface $downloader, $type);
+    function setComposer(Composer $composer);
+
+    function isInstalled(PackageInterface $package);
+    function install(PackageInterface $package);
+    function update(PackageInterface $package);
+    function remove(PackageInterface $package);
 }
