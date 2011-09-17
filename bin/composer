@@ -4,21 +4,34 @@
 require __DIR__.'/../tests/bootstrap.php';
 
 use Composer\Composer;
-use Composer\Downloader\GitDownloader;
-use Composer\Downloader\PearDownloader;
-use Composer\Downloader\ZipDownloader;
-use Composer\Installer\LibraryInstaller;
-use Composer\Console\Application;
+use Composer\Installer;
+use Composer\Downloader;
+use Composer\Repository;
+use Composer\Package;
+use Composer\Console\Application as ComposerApplication;
 
-setlocale(LC_ALL, 'C');
+$composerFolder = '.composer';
+$composerCache  = $composerFolder.'/packages';
+
+// initialize installer
+$installer = new Installer\LibraryInstaller('vendor', $preferSource = true);
+$installer->setDownloader('git',  new Downloader\GitDownloader());
+$installer->setDownloader('pear', new Downloader\PearDownloader());
+$installer->setDownloader('zip',  new Downloader\ZipDownloader());
 
 // initialize composer
-$composer = new ConfigurableComposer('composer.json', 'composer.lock');
-$composer->addDownloader('git', new GitDownloader);
-$composer->addDownloader('pear', new PearDownloader);
-$composer->addDownloader('zip', new ZipDownloader);
-$composer->addInstaller('library', new LibraryInstaller);
+$composer = new Composer();
+$composer->setInstaller('library', $installer);
+$composer->setRepository('Platform', new Repository\PlatformRepository());
+$composer->setRepository('Packagist', new Repository\ComposerRepository('http://packagist.org'));
+
+// initialize package
+$loader  = new Package\Loader\Json();
+$package = $loader->load('composer.json');
+
+// initialize lock
+$packageLock = new Package\PackageLock('composer.lock');
 
 // run the command application
-$application = new Application($composer);
+$application = new ComposerApplication($composer, $package, $packageLock);
 $application->run();

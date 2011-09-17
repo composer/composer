@@ -12,7 +12,7 @@
 
 namespace Composer;
 
-use Composer\Repository;
+use Composer\Repository\RepositoryFactory;
 use Composer\Package;
 use Composer\Installer\LibraryInstaller;
 
@@ -25,12 +25,16 @@ class ConfigurableComposer extends Composer
     private $lockFile;
     private $isLocked = false;
     private $lockedPackages = array();
+    private $repositoryFactory;
 
-    public function __construct($configFile = 'composer.json', $lockFile = 'composer.lock')
+    public function __construct($configFile = 'composer.json', $lockFile = 'composer.lock',
+                                RepositoryFactory $repositoryFactory)
     {
-        $this->configFile = $configFile;
-        $this->lockFile   = $lockFile;
-        $this->setRepository('Platform', new Repository\PlatformRepository());
+        $this->configFile        = $configFile;
+        $this->lockFile          = $lockFile;
+        $this->repositoryFactory = $repositoryFactory;
+
+        $this->setRepository('Platform', $repositoryFactory->create('platform'));
 
         if (!file_exists($configFile)) {
             throw new \UnexpectedValueException('Can not find composer config file');
@@ -102,7 +106,9 @@ class ConfigurableComposer extends Composer
         $repositories = array();
         foreach ($repositoriesList as $name => $spec) {
             if (is_array($spec) && count($spec) === 1) {
-                $repositories[$name] = $this->createRepository($name, key($spec), current($spec));
+                $repositories[$name] = $this->repositoryFactory->create(
+                    key($spec), $name, current($spec)
+                );
             } elseif (null === $spec) {
                 $repositories[$name] = null;
             } else {
@@ -120,7 +126,7 @@ class ConfigurableComposer extends Composer
     {
         $requirements = array();
         foreach ($requirementsList as $name => $version) {
-            $name = $this->lowercase($name);
+            $name = strtolower($name);
             if ('latest' === $version) {
                 $requirements[$name] = null;
             } else {
@@ -164,37 +170,5 @@ class ConfigurableComposer extends Composer
         }
 
         return $config;
-    }
-
-    private function lowercase($str)
-    {
-        if (function_exists('mb_strtolower')) {
-            return mb_strtolower($str, 'UTF-8');
-        }
-        return strtolower($str, 'UTF-8');
-    }
-
-    private function createRepository($name, $type, $spec)
-    {
-        if (is_string($spec)) {
-            $spec = array('url' => $spec);
-        }
-        $spec['url'] = rtrim($spec['url'], '/');
-
-        switch ($type) {
-            case 'git-bare':
-            case 'git-multi':
-                throw new \Exception($type.' repositories not supported yet');
-            case 'git':
-                return new Repository\GitRepository($spec['url']);
-            case 'composer':
-                return new Repository\ComposerRepository($spec['url']);
-            case 'pear':
-                return new Repository\PearRepository($spec['url'], $name);
-            default:
-                throw new \UnexpectedValueException(
-                    'Unknown repository type: '.$type.', could not create repository '.$name
-                );
-        }
     }
 }

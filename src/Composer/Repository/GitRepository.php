@@ -26,6 +26,16 @@ class GitRepository extends ArrayRepository
 {
     protected $packages;
 
+    static public function supports($type, $name = '', $url = '')
+    {
+        return 'git' === strtolower($type) && '' !== $url;
+    }
+
+    static public function create($type, $name = '', $url = '')
+    {
+        return new static($url);
+    }
+
     public function __construct($url)
     {
         $this->url = $url;
