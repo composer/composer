@@ -13,3 +13,6 @@
 [submodule "src/Symfony/Component/BrowserKit"]
 	path = src/Symfony/Component/BrowserKit
 	url = http://github.com/symfony/BrowserKit.git
+[submodule "src/Symfony/Component/Console"]
+	path = src/Symfony/Component/Console
+	url = https://github.com/symfony/Console.git
