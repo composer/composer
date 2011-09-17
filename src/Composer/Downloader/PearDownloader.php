@@ -18,7 +18,7 @@ use Composer\Package\PackageInterface;
  * @author Benjamin Eberlei <kontakt@beberlei.de>
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class PearDownloader
+class PearDownloader implements DownloaderInterface
 {
     public function download(PackageInterface $package, $path, $url, $checksum = null)
     {

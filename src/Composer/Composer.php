@@ -12,6 +12,8 @@
 
 namespace Composer;
 
+use Composer\Downloader\DownloaderInterface;
+use \Composer\Installer\InstallerInterface;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\GitRepository;
@@ -33,12 +35,25 @@ class Composer
         $this->addRepository('Packagist', array('composer' => 'http://packagist.org'));
     }
 
-    public function addDownloader($type, $downloader)
+    /**
+     * Add downloader for type
+     *
+     * @param string              $type
+     * @param DownloaderInterface $downloader
+     */
+    public function addDownloader($type, DownloaderInterface $downloader)
     {
         $type = strtolower($type);
         $this->downloaders[$type] = $downloader;
     }
 
+    /**
+     * Get type downloader
+     *
+     * @param string $type
+     *
+     * @return DownloaderInterface
+     */
     public function getDownloader($type)
     {
         $type = strtolower($type);
@@ -48,12 +63,25 @@ class Composer
         return $this->downloaders[$type];
     }
 
-    public function addInstaller($type, $installer)
+    /**
+     * Add installer for type
+     *
+     * @param  string            $type
+     * @param InstallerInterface $installer
+     */
+    public function addInstaller($type, InstallerInterface $installer)
     {
         $type = strtolower($type);
         $this->installers[$type] = $installer;
     }
 
+    /**
+     * Get type installer
+     *
+     * @param string $type
+     *
+     * @return InstallerInterface
+     */
     public function getInstaller($type)
     {
         $type = strtolower($type);
