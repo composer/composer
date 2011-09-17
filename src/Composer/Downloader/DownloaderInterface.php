@@ -15,21 +15,9 @@ namespace Composer\Downloader;
 use Composer\Package\PackageInterface;
 
 /**
- * Package Downloader
- * 
- * @author Kirill chEbba Chebunin <iam@chebba.org>
- */ 
-interface DownloaderInterface 
+ * @author Konstantin Kudryashov <ever.zet@gmail.com>
+ */
+interface DownloaderInterface
 {
-    /**
-     * Download package
-     *
-     * @param PackageInterface $package Downloaded package
-     * @param string           $path Download to
-     * @param string           $url Download from
-     * @param string|null      $checksum Package checksum
-     *
-     * @throws \UnexpectedValueException
-     */
     function download(PackageInterface $package, $path, $url, $checksum = null);
 }
