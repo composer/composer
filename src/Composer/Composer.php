@@ -13,7 +13,7 @@
 namespace Composer;
 
 use Composer\Downloader\DownloaderInterface;
-use \Composer\Installer\InstallerInterface;
+use Composer\Installer\InstallerInterface;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\GitRepository;
