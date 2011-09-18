@@ -66,4 +66,11 @@ class PearDownloader implements DownloaderInterface
         }
         chdir($cwd);
     }
+
+    public function isDownloaded(PackageInterface $package, $path)
+    {
+        $targetPath = $path . '/' . $package->getName();
+
+        return is_dir($targetPath);
+    }
 }

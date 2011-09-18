@@ -73,4 +73,11 @@ class ZipDownloader implements DownloaderInterface
             throw new \UnexpectedValueException($zipName.' is not a valid zip archive, got error code '.$retval);
         }
     }
+
+    public function isDownloaded(PackageInterface $package, $path)
+    {
+        $targetPath = $path . '/' . $package->getName();
+
+        return is_dir($targetPath);
+    }
 }

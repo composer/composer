@@ -18,15 +18,18 @@ use Composer\Composer;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
+ * @author Konstantin Kudryashov <ever.zet@gmail.com>
  */
 class LibraryInstaller implements InstallerInterface
 {
     private $dir;
     private $composer;
+    private $preferSource;
 
-    public function __construct($dir = 'vendor')
+    public function __construct($dir = 'vendor', $preferSource = false)
     {
         $this->dir = $dir;
+        $this->preferSource = $preferSource;
     }
 
     public function setComposer(Composer $composer)
@@ -36,39 +39,52 @@ class LibraryInstaller implements InstallerInterface
 
     public function install(PackageInterface $package)
     {
-        if ($package->getDistType()) {
+        if (!is_dir($this->dir)) {
+            if (file_exists($this->dir)) {
+                throw new \UnexpectedValueException($this->dir.' exists and is not a directory.');
+            }
+            if (!mkdir($this->dir, 0777, true)) {
+                throw new \UnexpectedValueException($this->path.' does not exist and could not be created.');
+            }
+        }
 
-            $this->composer->getDownloader($package->getDistType())->download(
+        if (!($this->preferSource && $package->getSourceType()) && $package->getDistType()) {
+            $downloader = $this->composer->getDownloader($package->getDistType());
+
+            return $downloader->download(
                 $package, $this->dir, $package->getDistUrl(), $package->getDistSha1Checksum()
-            );
-
-        } elseif ($package->getSourceType()) {
-
-            $this->composer->getDownloader($package->getSourceType())->download(
-                $package, $this->dir, $package->getSourceUrl()
-            );
-
-        } else {
-            throw new \InvalidArgumentException(
-                'Type must be one of (dist, source), '.$type.' given.'
             );
         }
 
-        return true;
+        if ($package->getSourceType()) {
+            $downloader = $this->composer->getDownloader($package->getSourceType());
+
+            return $downloader->download(
+                $package, $this->dir, $package->getSourceUrl()
+            );
+        }
+
+        throw new \InvalidArgumentException('Package should have dist or source specified');
     }
 
     public function isInstalled(PackageInterface $package)
     {
-        // TODO: implement installation check
-    }
+        if ($package->getSourceType()) {
+            $downloader = $this->composer->getDownloader($package->getSourceType());
 
-    public function update(PackageInterface $package)
-    {
-        // TODO: implement package update
-    }
+            if ($downloader->isDownloaded($package, $this->dir)) {
+                return true;
+            }
+        }
 
-    public function remove(PackageInterface $package)
-    {
-        // TODO: implement package removal
+        if ($package->getDistType()) {
+            $downloader = $this->composer->getDownloader($package->getDistType());
+
+            if ($downloader->isDownloaded($package, $this->dir)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
