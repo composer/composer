@@ -20,4 +20,5 @@ use Composer\Package\PackageInterface;
 interface DownloaderInterface
 {
     function download(PackageInterface $package, $path, $url, $checksum = null);
+    function isDownloaded(PackageInterface $package, $path);
 }
