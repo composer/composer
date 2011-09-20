@@ -20,8 +20,6 @@ use Composer\Downloader\DownloaderInterface;
  */
 interface InstallerInterface
 {
-    function isInstalled(PackageInterface $package, DownloaderInterface $sourceDownloader = null,
-                         DownloaderInterface $distDownloader = null);
-    function install(PackageInterface $package, DownloaderInterface $sourceDownloader = null,
-                     DownloaderInterface $distDownloader = null);
+    function isInstalled(PackageInterface $package);
+    function install(PackageInterface $package);
 }
