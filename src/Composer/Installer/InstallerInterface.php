@@ -13,17 +13,15 @@
 namespace Composer\Installer;
 
 use Composer\Package\PackageInterface;
-use Composer\Composer;
+use Composer\Downloader\DownloaderInterface;
 
 /**
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
  */
-class InstallerInterface
+interface InstallerInterface
 {
-    function setComposer(Composer $composer);
-
-    function isInstalled(PackageInterface $package);
-    function install(PackageInterface $package);
-    function update(PackageInterface $package);
-    function remove(PackageInterface $package);
+    function isInstalled(PackageInterface $package, DownloaderInterface $sourceDownloader = null,
+                         DownloaderInterface $distDownloader = null);
+    function install(PackageInterface $package, DownloaderInterface $sourceDownloader = null,
+                     DownloaderInterface $distDownloader = null);
 }
