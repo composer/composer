@@ -24,21 +24,13 @@ use Composer\Package\LinkConstraint\VersionConstraint;
  */
 class GitRepository extends ArrayRepository
 {
-    protected $packages;
+    protected $url;
+    protected $cacheDir;
 
-    static public function supports($type, $name = '', $url = '')
-    {
-        return 'git' === strtolower($type) && '' !== $url;
-    }
-
-    static public function create($type, $name = '', $url = '')
-    {
-        return new static($url);
-    }
-
-    public function __construct($url)
+    public function __construct($url, $cacheDir)
     {
         $this->url = $url;
+        $this->cacheDir = $cacheDir;
     }
 
     protected function initialize()

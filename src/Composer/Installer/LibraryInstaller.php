@@ -14,7 +14,7 @@ namespace Composer\Installer;
 
 use Composer\Downloader\DownloaderInterface;
 use Composer\Package\PackageInterface;
-use Composer\Composer;
+use Composer\Downloader\DownloaderInterface;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -23,33 +23,52 @@ use Composer\Composer;
 class LibraryInstaller implements InstallerInterface
 {
     private $dir;
-    private $composer;
     private $preferSource;
+    private $downloaders = array();
 
     public function __construct($dir = 'vendor', $preferSource = false)
     {
         $this->dir = $dir;
         $this->preferSource = $preferSource;
+
+        if (!is_dir($this->dir)) {
+            if (file_exists($this->dir)) {
+                throw new \UnexpectedValueException(
+                    $this->dir.' exists and is not a directory.'
+                );
+            }
+            if (!mkdir($this->dir, 0777, true)) {
+                throw new \UnexpectedValueException(
+                    $this->dir.' does not exist and could not be created.'
+                );
+            }
+        }
     }
 
-    public function setComposer(Composer $composer)
+    public function setDownloader($type, DownloaderInterface $downloader = null)
     {
-        $this->composer = $composer;
+        if (null === $downloader) {
+            unset($this->downloaders[$type]);
+
+            return;
+        }
+
+        $this->downloaders[$type] = $downloader;
+    }
+
+    public function getDownloader($type)
+    {
+        if (!isset($this->downloaders[$type])) {
+            throw new \UnexpectedValueException('Unknown source type: '.$type);
+        }
+
+        return $this->downloaders[$type];
     }
 
     public function install(PackageInterface $package)
     {
-        if (!is_dir($this->dir)) {
-            if (file_exists($this->dir)) {
-                throw new \UnexpectedValueException($this->dir.' exists and is not a directory.');
-            }
-            if (!mkdir($this->dir, 0777, true)) {
-                throw new \UnexpectedValueException($this->path.' does not exist and could not be created.');
-            }
-        }
-
         if (!($this->preferSource && $package->getSourceType()) && $package->getDistType()) {
-            $downloader = $this->composer->getDownloader($package->getDistType());
+            $downloader = $this->getDownloader($package->getDistType());
 
             return $downloader->download(
                 $package, $this->dir, $package->getDistUrl(), $package->getDistSha1Checksum()
@@ -57,7 +76,7 @@ class LibraryInstaller implements InstallerInterface
         }
 
         if ($package->getSourceType()) {
-            $downloader = $this->composer->getDownloader($package->getSourceType());
+            $downloader = $this->getDownloader($package->getSourceType());
 
             return $downloader->download(
                 $package, $this->dir, $package->getSourceUrl()
@@ -70,7 +89,7 @@ class LibraryInstaller implements InstallerInterface
     public function isInstalled(PackageInterface $package)
     {
         if ($package->getSourceType()) {
-            $downloader = $this->composer->getDownloader($package->getSourceType());
+            $downloader = $this->getDownloader($package->getSourceType());
 
             if ($downloader->isDownloaded($package, $this->dir)) {
                 return true;
@@ -78,7 +97,7 @@ class LibraryInstaller implements InstallerInterface
         }
 
         if ($package->getDistType()) {
-            $downloader = $this->composer->getDownloader($package->getDistType());
+            $downloader = $this->getDownloader($package->getDistType());
 
             if ($downloader->isDownloaded($package, $this->dir)) {
                 return true;
