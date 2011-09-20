@@ -10,9 +10,6 @@ use Composer\Repository;
 use Composer\Package;
 use Composer\Console\Application as ComposerApplication;
 
-$composerFolder = '.composer';
-$composerCache  = $composerFolder.'/packages';
-
 // initialize installer
 $installer = new Installer\LibraryInstaller('vendor', $preferSource = true);
 $installer->setDownloader('git',  new Downloader\GitDownloader());
