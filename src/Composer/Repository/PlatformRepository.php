@@ -14,6 +14,7 @@ namespace Composer\Repository;
 
 use Composer\Package\MemoryPackage;
 use Composer\Package\BasePackage;
+use Composer\Package\Version\VersionParser;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>

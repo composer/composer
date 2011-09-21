@@ -13,6 +13,8 @@
 namespace Composer\Command;
 
 use Composer\DependencyResolver;
+use Composer\DependencyResolver\Pool;
+use Composer\DependencyResolver\Request;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -43,7 +45,7 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         if ($this->getLock()->isLocked()) {
-            $this->writeln('<info>Found lockfile. Reading</info>');
+            $output->writeln('<info>Found lockfile. Reading</info>');
 
             foreach ($this->getLock()->getLockedPackages() as $package) {
                 $installer = $this->getComposer()->getInstaller($package->getType());

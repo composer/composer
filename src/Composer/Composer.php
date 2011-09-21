@@ -13,6 +13,7 @@
 namespace Composer;
 
 use Composer\Installer\InstallerInterface;
+use Composer\Repository\RepositoryInterface;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>

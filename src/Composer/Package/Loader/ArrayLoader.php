@@ -99,7 +99,7 @@ class ArrayLoader
             $links[]    = new Package\Link($srcPackageName, $packageName, $constraint, $description);
         }
 
-        return $requirements;
+        return $links;
     }
 
     private function validateConfig(array $config)
