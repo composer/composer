@@ -23,7 +23,7 @@ $composer->setRepository('Platform', new Repository\PlatformRepository());
 $composer->setRepository('Packagist', new Repository\ComposerRepository('http://packagist.org'));
 
 // initialize package
-$loader  = new Package\Loader\Json();
+$loader  = new Package\Loader\JsonLoader();
 $package = $loader->load('composer.json');
 
 // initialize lock
