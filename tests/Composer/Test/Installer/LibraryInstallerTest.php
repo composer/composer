@@ -110,10 +110,15 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
         $library = new LibraryInstaller($this->dir, $this->dm, $this->registry);
         $package = $this->createPackageMock();
 
+        $package
+            ->expects($this->once())
+            ->method('getName')
+            ->will($this->returnValue('some/package'));
+
         $this->dm
             ->expects($this->once())
             ->method('download')
-            ->with($package, $this->dir)
+            ->with($package, $this->dir.'/some/package')
             ->will($this->returnValue('source'));
 
         $this->registry
@@ -130,6 +135,11 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
         $initial = $this->createPackageMock();
         $target  = $this->createPackageMock();
 
+        $initial
+            ->expects($this->once())
+            ->method('getName')
+            ->will($this->returnValue('package1'));
+
         $this->registry
             ->expects($this->exactly(2))
             ->method('isPackageRegistered')
@@ -145,7 +155,7 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
         $this->dm
             ->expects($this->once())
             ->method('update')
-            ->with($initial, $target, $this->dir, 'dist');
+            ->with($initial, $target, $this->dir.'/package1', 'dist');
 
         $this->registry
             ->expects($this->once())
@@ -169,6 +179,11 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
         $library = new LibraryInstaller($this->dir, $this->dm, $this->registry);
         $package = $this->createPackageMock();
 
+        $package
+            ->expects($this->once())
+            ->method('getName')
+            ->will($this->returnValue('pkg'));
+
         $this->registry
             ->expects($this->exactly(2))
             ->method('isPackageRegistered')
@@ -184,7 +199,7 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
         $this->dm
             ->expects($this->once())
             ->method('remove')
-            ->with($package, $this->dir, 'source');
+            ->with($package, $this->dir.'/pkg', 'source');
 
         $this->registry
             ->expects($this->once())
