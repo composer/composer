@@ -135,12 +135,22 @@ abstract class BasePackage implements PackageInterface
     }
 
     /**
+     * Returns package unique name, constructed from name, version and release type.
+     *
+     * @return string
+     */
+    public function getUniqueName()
+    {
+        return $this->getName().'-'.$this->getVersion().'-'.$this->getReleaseType();
+    }
+
+    /**
      * Converts the package into a readable and unique string
      *
      * @return string
      */
     public function __toString()
     {
-        return $this->getName().'-'.$this->getVersion().'-'.$this->getReleaseType();
+        return $this->getUniqueName();
     }
 }
