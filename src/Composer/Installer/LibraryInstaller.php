@@ -108,7 +108,7 @@ class LibraryInstaller implements InstallerInterface
      */
     public function install(PackageInterface $package)
     {
-        $type = $this->dm->download($package, $this->dir);
+        $type = $this->dm->download($package, $this->dir.'/'.$package->getName());
         $this->registry->registerPackage($package, $type);
     }
 
@@ -127,7 +127,7 @@ class LibraryInstaller implements InstallerInterface
         }
 
         $type = $this->registry->getRegisteredPackageInstallerType($initial);
-        $this->dm->update($initial, $target, $this->dir, $type);
+        $this->dm->update($initial, $target, $this->dir.'/'.$initial->getName(), $type);
         $this->registry->unregisterPackage($initial);
         $this->registry->registerPackage($target, $type);
     }
@@ -146,7 +146,7 @@ class LibraryInstaller implements InstallerInterface
         }
 
         $type = $this->registry->getRegisteredPackageInstallerType($package);
-        $this->dm->remove($package, $this->dir, $type);
+        $this->dm->remove($package, $this->dir.'/'.$package->getName(), $type);
         $this->registry->unregisterPackage($package);
     }
 }
