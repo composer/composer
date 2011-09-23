@@ -12,14 +12,53 @@
 
 namespace Composer\Installer;
 
+use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\Package\PackageInterface;
-use Composer\Downloader\DownloaderInterface;
 
 /**
+ * Interface for the package installation manager.
+ *
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
  */
 interface InstallerInterface
 {
+    /**
+     * Executes specific solver operation.
+     *
+     * @param   OperationInterface  $operation  solver operation instance
+     */
+    function executeOperation(OperationInterface $operation);
+
+    /**
+     * Checks that provided package is installed.
+     *
+     * @param   PackageInterface    $package    package instance
+     *
+     * @return  Boolean
+     */
     function isInstalled(PackageInterface $package);
+
+    /**
+     * Installs specific package.
+     *
+     * @param   PackageInterface    $package    package instance
+     */
     function install(PackageInterface $package);
+
+    /**
+     * Updates specific package.
+     *
+     * @param   PackageInterface    $initial    already installed package version
+     * @param   PackageInterface    $target     updated version
+     *
+     * @throws  InvalidArgumentException        if $from package is not installed
+     */
+    function update(PackageInterface $initial, PackageInterface $target);
+
+    /**
+     * Uninstalls specific package.
+     *
+     * @param   PackageInterface    $package    package instance
+     */
+    function uninstall(PackageInterface $package);
 }

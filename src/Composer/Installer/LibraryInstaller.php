@@ -12,24 +12,35 @@
 
 namespace Composer\Installer;
 
-use Composer\Downloader\DownloaderInterface;
+use Composer\Downloader\DownloadManager;
+use Composer\Installer\Registry\RegistryInterface;
+use Composer\Installer\Registry\FilesystemRegistry;
+use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\Package\PackageInterface;
-use Composer\Downloader\DownloaderInterface;
 
 /**
+ * Package installation manager.
+ *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
  */
 class LibraryInstaller implements InstallerInterface
 {
     private $dir;
-    private $preferSource;
-    private $downloaders = array();
+    private $dm;
+    private $registry;
 
-    public function __construct($dir = 'vendor', $preferSource = false)
+    /**
+     * Initializes library installer.
+     *
+     * @param   string              $dir        relative path for packages home
+     * @param   DownloadManager     $dm         download manager
+     * @param   RegistryInterface   $registry   registry controller
+     */
+    public function __construct($dir, DownloadManager $dm, RegistryInterface $registry = null)
     {
         $this->dir = $dir;
-        $this->preferSource = $preferSource;
+        $this->dm  = $dm;
 
         if (!is_dir($this->dir)) {
             if (file_exists($this->dir)) {
@@ -43,67 +54,99 @@ class LibraryInstaller implements InstallerInterface
                 );
             }
         }
+
+        if (null === $registry) {
+            $registry = new FilesystemRegistry('.composer', str_replace('/', '_', $dir));
+        }
+
+        $this->registry = $registry;
+        $this->registry->open();
     }
 
-    public function setDownloader($type, DownloaderInterface $downloader = null)
+    /**
+     * Closes packages registry.
+     */
+    public function __destruct()
     {
-        if (null === $downloader) {
-            unset($this->downloaders[$type]);
-
-            return;
-        }
-
-        $this->downloaders[$type] = $downloader;
+        $this->registry->close();
     }
 
-    public function getDownloader($type)
+    /**
+     * Executes specific solver operation.
+     *
+     * @param   OperationInterface  $operation  solver operation instance
+     */
+    public function executeOperation(OperationInterface $operation)
     {
-        if (!isset($this->downloaders[$type])) {
-            throw new \UnexpectedValueException('Unknown source type: '.$type);
-        }
+        $method = $operation->getJobType();
 
-        return $this->downloaders[$type];
+        if ('update' === $method) {
+            $this->$method($operation->getPackage(), $operation->getTargetPackage());
+        } else {
+            $this->$method($operation->getPackage());
+        }
     }
 
-    public function install(PackageInterface $package)
-    {
-        if (!($this->preferSource && $package->getSourceType()) && $package->getDistType()) {
-            $downloader = $this->getDownloader($package->getDistType());
-
-            return $downloader->download(
-                $package, $this->dir, $package->getDistUrl(), $package->getDistSha1Checksum()
-            );
-        }
-
-        if ($package->getSourceType()) {
-            $downloader = $this->getDownloader($package->getSourceType());
-
-            return $downloader->download(
-                $package, $this->dir, $package->getSourceUrl()
-            );
-        }
-
-        throw new \InvalidArgumentException('Package should have dist or source specified');
-    }
-
+    /**
+     * Checks that specific package is installed.
+     *
+     * @param   PackageInterface    $package    package instance
+     *
+     * @return  Boolean
+     */
     public function isInstalled(PackageInterface $package)
     {
-        if ($package->getSourceType()) {
-            $downloader = $this->getDownloader($package->getSourceType());
+        return $this->registry->isPackageRegistered($package);
+    }
 
-            if ($downloader->isDownloaded($package, $this->dir)) {
-                return true;
-            }
+    /**
+     * Installs specific package.
+     *
+     * @param   PackageInterface    $package    package instance
+     *
+     * @throws  InvalidArgumentException        if provided package have no urls to download from
+     */
+    public function install(PackageInterface $package)
+    {
+        $type = $this->dm->download($package, $this->dir);
+        $this->registry->registerPackage($package, $type);
+    }
+
+    /**
+     * Updates specific package.
+     *
+     * @param   PackageInterface    $initial    already installed package version
+     * @param   PackageInterface    $target     updated version
+     *
+     * @throws  InvalidArgumentException        if $from package is not installed
+     */
+    public function update(PackageInterface $initial, PackageInterface $target)
+    {
+        if (!$this->registry->isPackageRegistered($initial)) {
+            throw new \UnexpectedValueException('Package is not installed: '.$initial);
         }
 
-        if ($package->getDistType()) {
-            $downloader = $this->getDownloader($package->getDistType());
+        $type = $this->registry->getRegisteredPackageInstallerType($initial);
+        $this->dm->update($initial, $target, $this->dir, $type);
+        $this->registry->unregisterPackage($initial);
+        $this->registry->registerPackage($target, $type);
+    }
 
-            if ($downloader->isDownloaded($package, $this->dir)) {
-                return true;
-            }
+    /**
+     * Uninstalls specific package.
+     *
+     * @param   PackageInterface    $package    package instance
+     *
+     * @throws  InvalidArgumentException        if package is not installed
+     */
+    public function uninstall(PackageInterface $package)
+    {
+        if (!$this->registry->isPackageRegistered($package)) {
+            throw new \UnexpectedValueException('Package is not installed: '.$package);
         }
 
-        return false;
+        $type = $this->registry->getRegisteredPackageInstallerType($package);
+        $this->dm->remove($package, $this->dir, $type);
+        $this->registry->unregisterPackage($package);
     }
 }
