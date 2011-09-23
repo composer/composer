@@ -201,6 +201,13 @@ interface PackageInterface
     function getRepository();
 
     /**
+     * Returns package unique name, constructed from name, version and release type.
+     *
+     * @return string
+     */
+    function getUniqueName();
+
+    /**
      * Converts the package into a readable and unique string
      *
      * @return string
