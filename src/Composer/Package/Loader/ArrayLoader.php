@@ -36,7 +36,7 @@ class ArrayLoader
         $version = $versionParser->parse($config['version']);
         $package = new Package\MemoryPackage($config['name'], $version['version'], $version['type']);
 
-        $package->setType($config['type']);
+        $package->setType(isset($config['type']) ? $config['type'] : 'library');
 
         if (isset($config['extra'])) {
             $package->setExtra($config['extra']);
@@ -99,16 +99,13 @@ class ArrayLoader
             $links[]    = new Package\Link($srcPackageName, $packageName, $constraint, $description);
         }
 
-        return $requirements;
+        return $links;
     }
 
     private function validateConfig(array $config)
     {
         if (!isset($config['name'])) {
             throw new \UnexpectedValueException('name is required for package');
-        }
-        if (!isset($config['type'])) {
-            throw new \UnexpectedValueException('type is required for package');
         }
         if (!isset($config['version'])) {
             throw new \UnexpectedValueException('version is required for package');
