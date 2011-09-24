@@ -9,7 +9,7 @@
             "required": true
         },
         "type": {
-            "description": "Package type, either 'Library', or the parent project it applies to if it's a plugin for a framework or application (e.g. 'Symfony2', 'Typo3', 'Drupal', ..).",
+            "description": "Package type, either 'Library', or the parent project it applies to if it's a plugin for a framework or application (e.g. 'Symfony2', 'Typo3', 'Drupal', ..), note that this has to be defined and communicated by any project implementing a custom composer installer, those are just unreliable examples.",
             "type": "string",
             "optional": true
         },

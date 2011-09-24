@@ -14,6 +14,7 @@ namespace Composer\Repository;
 
 use Composer\Package\MemoryPackage;
 use Composer\Package\BasePackage;
+use Composer\Package\Version\VersionParser;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -24,10 +25,12 @@ class PlatformRepository extends ArrayRepository
     {
         parent::initialize();
 
+        $versionParser = new VersionParser();
+
         try {
-            $version = BasePackage::parseVersion(PHP_VERSION);
+            $version = $versionParser->parse(PHP_VERSION);
         } catch (\UnexpectedValueException $e) {
-            $version = BasePackage::parseVersion(preg_replace('#^(.+?)(-.+)?$#', '$1', PHP_VERSION));
+            $version = $versionParser->parse(preg_replace('#^(.+?)(-.+)?$#', '$1', PHP_VERSION));
         }
 
         $php = new MemoryPackage('php', $version['version'], $version['type']);
@@ -40,7 +43,7 @@ class PlatformRepository extends ArrayRepository
 
             $reflExt = new \ReflectionExtension($ext);
             try {
-                $version = BasePackage::parseVersion($reflExt->getVersion());
+                $version = $versionParser->parse($reflExt->getVersion());
             } catch (\UnexpectedValueException $e) {
                 $version = array('version' => '0', 'type' => 'stable');
             }
