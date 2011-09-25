@@ -21,6 +21,11 @@ class ZipDownloader extends FileDownloader
 {
     protected function extract($file, $path)
     {
+        if (!class_exists('ZipArchive')) {
+            throw new \UnexpectedValueException('You need the zip extension enabled to use the ZipDownloader');
+        }
+
+`
         $zipArchive = new \ZipArchive();
 
         if (true !== ($retval = $zipArchive->open($file))) {
