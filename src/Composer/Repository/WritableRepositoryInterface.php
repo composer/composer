@@ -15,31 +15,28 @@ namespace Composer\Repository;
 use Composer\Package\PackageInterface;
 
 /**
- * Repository interface.
+ * Writable repository interface.
  *
- * @author Nils Adermann <naderman@naderman.de>
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
  */
-interface RepositoryInterface extends \Countable
+interface WritableRepositoryInterface extends RepositoryInterface
 {
     /**
-     * Initializes repository (reads file, opens connection).
+     * Writes repository (f.e. to the disc).
      */
-    function initialize();
+    function write();
 
     /**
-     * Checks if specified package registered (installed).
+     * Adds package to the repository.
      *
      * @param   PackageInterface    $package    package instance
-     *
-     * @return  Boolean
      */
-    function hasPackage(PackageInterface $package);
+    function addPackage(PackageInterface $package);
 
     /**
-     * Returns list of registered packages.
+     * Removes package from the repository.
      *
-     * @return  array
+     * @param   PackageInterface    $package    package instance
      */
-    function getPackages();
+    function removePackage(PackageInterface $package);
 }
