@@ -15,16 +15,14 @@ namespace Composer\Downloader;
 use Composer\Package\PackageInterface;
 
 /**
- * Downloader for PEAR packages
+ * Downloader for tar.gz files
  *
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  */
-class PearDownloader extends GzipTarDownloader
+class GzipTarDownloader extends FileDownloader
 {
     protected function extract($file, $path)
     {
-        parent::extract($file, $path);
-        @unlink($path . '/package.sig');
-        @unlink($path . '/package.xml');
+        exec('tar -xzf "'.escapeshellarg($file).'"');
     }
 }
