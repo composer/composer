@@ -12,11 +12,7 @@ use Composer\Console\Application as ComposerApplication;
 
 // initialize repository manager
 $rm = new Repository\RepositoryManager();
-$localRepository = new Repository\WrapperRepository(array(
-    new Repository\ArrayRepository('.composer/installed.json'),
-    new Repository\PlatformRepository(),
-));
-$rm->setLocalRepository($localRepository);
+$rm->setLocalRepository(new Repository\PlatformRepository(new Repository\FilesystemRepository('.composer/installed.json')));
 $rm->setRepository('Packagist', new Repository\ComposerRepository('http://packagist.org'));
 
 // initialize download manager
