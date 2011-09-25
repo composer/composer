@@ -15,6 +15,8 @@ namespace Composer\Downloader;
 use Composer\Package\PackageInterface;
 
 /**
+ * Downloader for tar.gz files
+ *
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  */
 class GzipTarDownloader extends FileDownloader

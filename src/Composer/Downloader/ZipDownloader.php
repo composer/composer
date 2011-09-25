@@ -15,7 +15,10 @@ namespace Composer\Downloader;
 use Composer\Package\PackageInterface;
 
 /**
+ * Downloader for zip packages
+ *
  * @author Jordi Boggiano <j.boggiano@seld.be>
+ * @author Kirill chEbba Chebunin <iam@chebba.org>
  */
 class ZipDownloader extends FileDownloader
 {
@@ -25,7 +28,6 @@ class ZipDownloader extends FileDownloader
             throw new \UnexpectedValueException('You need the zip extension enabled to use the ZipDownloader');
         }
 
-`
         $zipArchive = new \ZipArchive();
 
         if (true !== ($retval = $zipArchive->open($file))) {
@@ -35,6 +37,4 @@ class ZipDownloader extends FileDownloader
         $zipArchive->extractTo($path);
         $zipArchive->close();
     }
-
-
 }

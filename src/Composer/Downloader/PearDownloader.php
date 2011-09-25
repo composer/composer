@@ -15,6 +15,8 @@ namespace Composer\Downloader;
 use Composer\Package\PackageInterface;
 
 /**
+ * Downloader for PEAR packages
+ *
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  */
 class PearDownloader extends GzipTarDownloader
