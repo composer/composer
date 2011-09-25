@@ -81,7 +81,7 @@ class LibraryInstaller implements InstallerInterface
         $method = $operation->getJobType();
 
         if ('update' === $method) {
-            $this->$method($operation->getPackage(), $operation->getTargetPackage());
+            $this->$method($operation->getInitialPackage(), $operation->getTargetPackage());
         } else {
             $this->$method($operation->getPackage());
         }

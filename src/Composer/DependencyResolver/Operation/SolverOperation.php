@@ -21,39 +21,16 @@ use Composer\Package\PackageInterface;
  */
 abstract class SolverOperation implements OperationInterface
 {
-    protected $package;
     protected $reason;
 
     /**
      * Initializes operation.
      *
-     * @param   PackageInterface    $package    package instance
-     * @param   string              $reason     operation reason
+     * @param   string  $reason     operation reason
      */
-    public function __construct(PackageInterface $package, $reason = null)
+    public function __construct($reason = null)
     {
-        $this->package = $package;
-        $this->reason  = $reason;
-    }
-
-    /**
-     * Returns package instance.
-     *
-     * @return  PackageInterface
-     */
-    public function getPackage()
-    {
-        return $this->package;
-    }
-
-    /**
-     * Returns package type.
-     *
-     * @return  string
-     */
-    public function getPackageType()
-    {
-        return $this->package->getType();
+        $this->reason = $reason;
     }
 
     /**

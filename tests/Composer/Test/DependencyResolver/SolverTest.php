@@ -226,10 +226,17 @@ class SolverTest extends \PHPUnit_Framework_TestCase
         $result = array();
         foreach ($transaction as $operation) {
             if ('update' === $operation->getJobType()) {
-                $result[] = array('job' => 'update', 'from' => $operation->getPackage(), 'to' => $operation->getTargetPackage());
+                $result[] = array(
+                    'job'  => 'update',
+                    'from' => $operation->getInitialPackage(),
+                    'to'   => $operation->getTargetPackage()
+                );
             } else {
-                $job = 'uninstall' === $operation->getJobType() ? 'remove' : 'install';
-                $result[] = array('job' => $job, 'package' => $operation->getPackage());
+                $job = ('uninstall' === $operation->getJobType() ? 'remove' : 'install');
+                $result[] = array(
+                    'job'     => $job,
+                    'package' => $operation->getPackage()
+                );
             }
         }
 

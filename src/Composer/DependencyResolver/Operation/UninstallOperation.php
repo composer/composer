@@ -21,6 +21,41 @@ use Composer\Package\PackageInterface;
  */
 class UninstallOperation extends SolverOperation
 {
+    protected $package;
+
+    /**
+     * Initializes operation.
+     *
+     * @param   PackageInterface    $package    package instance
+     * @param   string              $reason     operation reason
+     */
+    public function __construct(PackageInterface $package, $reason = null)
+    {
+        parent::__construct($reason);
+
+        $this->package = $package;
+    }
+
+    /**
+     * Returns package instance.
+     *
+     * @return  PackageInterface
+     */
+    public function getPackage()
+    {
+        return $this->package;
+    }
+
+    /**
+     * Returns installer type to be used with this operation.
+     *
+     * @return  string
+     */
+    public function getInstallerType()
+    {
+        return $this->package->getType();
+    }
+
     /**
      * Returns job type.
      *
