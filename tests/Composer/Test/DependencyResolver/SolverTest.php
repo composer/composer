@@ -249,25 +249,29 @@ class SolverTest extends \PHPUnit_Framework_TestCase
         ));
     }
 
-/*
-    public function testSolverWithComposerRepo()
+    public function testInstallAlternativeWithCircularRequire()
     {
-        $this->repoInstalled = new PlatformRepository;
+	$this->markTestIncomplete();
 
-        // overwrite solver with custom installed repo
-        $this->solver = new Solver($this->policy, $this->pool, $this->repoInstalled);
-
-        $this->repo = new ComposerRepository('http://packagist.org');
-        list($monolog) = $this->repo->getPackages();
+        $this->repo->addPackage($packageA = new MemoryPackage('A', '1.0'));
+        $this->repo->addPackage($packageB = new MemoryPackage('B', '1.0'));
+        $this->repo->addPackage($packageC = new MemoryPackage('C', '1.0'));
+        $this->repo->addPackage($packageD = new MemoryPackage('D', '1.0'));
+        $packageA->setRequires(array(new Link('A', 'B', new VersionConstraint('>=', '1.0'), 'requires')));
+        $packageB->setRequires(array(new Link('B', 'Virtual', new VersionConstraint('>=', '1.0'), 'requires')));
+        $packageC->setRequires(array(new Link('C', 'Virtual', new VersionConstraint('==', '1.0'), 'provides')));
+        $packageD->setRequires(array(new Link('D', 'Virtual', new VersionConstraint('==', '1.0'), 'provides')));
 
         $this->reposComplete();
 
-        $this->request->install('Monolog');
+        $this->request->install('A');
 
         $this->checkSolverResult(array(
-            array('job' => 'install', 'package' => $monolog),
+            array('job' => 'install', 'package' => $packageC),
+            array('job' => 'install', 'package' => $packageB),
+            array('job' => 'install', 'package' => $packageA),
         ));
-    }*/
+    }
 
     protected function reposComplete()
     {
