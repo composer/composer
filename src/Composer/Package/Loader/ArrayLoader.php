@@ -110,5 +110,8 @@ class ArrayLoader
         if (!isset($config['version'])) {
             throw new \UnexpectedValueException('version is required for package');
         }
+        if (!isset($config['type'])) {
+            throw new \UnexpectedValueException('type is required for package');
+        }
     }
 }
