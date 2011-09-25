@@ -31,7 +31,6 @@ class ArrayDumper
             'distType',
             'distUrl',
             'distSha1Checksum',
-            'releaseType',
             'version',
             'license',
             'requires',
