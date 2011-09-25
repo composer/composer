@@ -58,7 +58,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
         $pearDownloader
             ->expects($this->once())
             ->method('download')
-            ->with($package, 'target_dir', 'dist_url', 'sha1');
+            ->with($package, 'target_dir', 'dist_url', 'sha1', false);
 
         $manager = new DownloadManager();
         $manager->setDownloader('pear', $pearDownloader);
@@ -114,7 +114,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
         $pearDownloader
             ->expects($this->once())
             ->method('download')
-            ->with($package, 'target_dir', 'dist_url', 'sha1');
+            ->with($package, 'target_dir', 'dist_url', 'sha1', false);
 
         $manager = new DownloadManager();
         $manager->setDownloader('pear', $pearDownloader);
@@ -148,7 +148,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
         $gitDownloader
             ->expects($this->once())
             ->method('download')
-            ->with($package, 'vendor/pkg', 'source_url');
+            ->with($package, 'vendor/pkg', 'source_url', false);
 
         $manager = new DownloadManager();
         $manager->setDownloader('git', $gitDownloader);
@@ -182,7 +182,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
         $gitDownloader
             ->expects($this->once())
             ->method('download')
-            ->with($package, 'vendor/pkg', 'source_url');
+            ->with($package, 'vendor/pkg', 'source_url', true);
 
         $manager = new DownloadManager();
         $manager->setDownloader('git', $gitDownloader);
@@ -221,7 +221,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
         $pearDownloader
             ->expects($this->once())
             ->method('download')
-            ->with($package, 'target_dir', 'dist_url', 'sha1');
+            ->with($package, 'target_dir', 'dist_url', 'sha1', true);
 
         $manager = new DownloadManager();
         $manager->setDownloader('pear', $pearDownloader);
@@ -256,7 +256,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
         $gitDownloader
             ->expects($this->once())
             ->method('download')
-            ->with($package, 'vendor/pkg', 'source_url');
+            ->with($package, 'vendor/pkg', 'source_url', true);
 
         $manager = new DownloadManager();
         $manager->setDownloader('git', $gitDownloader);
@@ -306,7 +306,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
         $pearDownloader
             ->expects($this->once())
             ->method('update')
-            ->with($initial, $target, 'vendor/bundles/FOS/UserBundle');
+            ->with($initial, $target, 'vendor/bundles/FOS/UserBundle', false);
 
         $manager = new DownloadManager();
         $manager->setDownloader('pear', $pearDownloader);
@@ -336,7 +336,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
         $pearDownloader
             ->expects($this->once())
             ->method('remove')
-            ->with($initial, 'vendor/bundles/FOS/UserBundle');
+            ->with($initial, 'vendor/bundles/FOS/UserBundle', false);
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
             ->setMethods(array('download'))
@@ -372,7 +372,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
         $svnDownloader
             ->expects($this->once())
             ->method('update')
-            ->with($initial, $target, 'vendor/pkg');
+            ->with($initial, $target, 'vendor/pkg', true);
 
         $manager = new DownloadManager();
         $manager->setDownloader('svn', $svnDownloader);
@@ -402,7 +402,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
         $svnDownloader
             ->expects($this->once())
             ->method('remove')
-            ->with($initial, 'vendor/pkg');
+            ->with($initial, 'vendor/pkg', true);
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
             ->setMethods(array('download'))

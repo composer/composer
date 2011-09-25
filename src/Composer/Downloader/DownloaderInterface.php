@@ -28,8 +28,9 @@ interface DownloaderInterface
      * @param   string              $path       download path
      * @param   string              $url        download url
      * @param   string              $checksum   package checksum (for dists)
+     * @param   Boolean             $useSource  download as source
      */
-    function download(PackageInterface $package, $path, $url, $checksum = null);
+    function download(PackageInterface $package, $path, $url, $checksum = null, $useSource = false);
 
     /**
      * Updates specific package in specific folder from initial to target version.
@@ -37,14 +38,16 @@ interface DownloaderInterface
      * @param   PackageInterface    $initial    initial package
      * @param   PackageInterface    $target     updated package
      * @param   string              $path       download path
+     * @param   Boolean             $useSource  download as source
      */
-    function update(PackageInterface $initial, PackageInterface $target, $path);
+    function update(PackageInterface $initial, PackageInterface $target, $path, $useSource = false);
 
     /**
      * Removes specific package from specific folder.
      *
      * @param   PackageInterface    $package    package instance
      * @param   string              $path       download path
+     * @param   Boolean             $useSource  download as source
      */
-    function remove(PackageInterface $package, $path);
+    function remove(PackageInterface $package, $path, $useSource = false);
 }
