@@ -78,7 +78,7 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
         $this->dm
             ->expects($this->once())
             ->method('download')
-            ->with($package, $this->dir.'/some/package');
+            ->with($package, $this->dir.DIRECTORY_SEPARATOR.'some/package');
 
         $this->repository
             ->expects($this->once())
@@ -108,7 +108,7 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
         $this->dm
             ->expects($this->once())
             ->method('update')
-            ->with($initial, $target, $this->dir.'/package1');
+            ->with($initial, $target, $this->dir.DIRECTORY_SEPARATOR.'package1');
 
         $this->repository
             ->expects($this->once())
@@ -146,7 +146,7 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
         $this->dm
             ->expects($this->once())
             ->method('remove')
-            ->with($package, $this->dir.'/pkg');
+            ->with($package, $this->dir.DIRECTORY_SEPARATOR.'pkg');
 
         $this->repository
             ->expects($this->once())
