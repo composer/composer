@@ -22,6 +22,8 @@ use Composer\Package\LinkConstraint\VersionConstraint;
  */
 class VersionParser
 {
+    private $modifierRegex = '[.-]?(?:(beta|RC|alpha|patch|pl|p)(?:[.-]?(\d+))?)?([.-]?dev)?';
+
     /**
      * Normalizes a version string to be able to perform comparisons on it
      *
@@ -33,24 +35,42 @@ class VersionParser
         $version = trim($version);
 
         // match classical versioning
-        if (preg_match('{^v?(\d{1,3})(\.\d+)?(\.\d+)?-?((?:beta|RC|alpha)\d*)?(-?dev)?$}i', $version, $matches)) {
-            return $matches[1]
+        if (preg_match('{^v?(\d{1,3})(\.\d+)?(\.\d+)?(\.\d+)?'.$this->modifierRegex.'$}i', $version, $matches)) {
+            $version = $matches[1]
                 .(!empty($matches[2]) ? $matches[2] : '.0')
                 .(!empty($matches[3]) ? $matches[3] : '.0')
-                .(!empty($matches[4]) ? '-'.strtolower($matches[4]) : '')
-                .(!empty($matches[5]) ? '-dev' : '');
+                .(!empty($matches[4]) ? $matches[4] : '.0');
+            $index = 5;
+        } elseif (preg_match('{^v?(\d{4}(?:[.:-]?\d{2}){1,6}(?:[.:-]?\d{1,3})?)'.$this->modifierRegex.'$}i', $version, $matches)) { // match date-based versioning
+            $version = preg_replace('{\D}', '-', $matches[1]);
+            $index = 2;
         }
 
-        // match date-based versioning
-        if (preg_match('{^v?(\d{4}(?:[.:-]?\d{2}){1,6}(?:[.:-]?\d{1})?)((?:beta|RC|alpha)\d*)?(-?dev)?$}i', $version, $matches)) {
-            return preg_replace('{\D}', '-', $matches[1])
-                .(!empty($matches[2]) ? '-'.strtolower($matches[2]) : '')
-                .(!empty($matches[3]) ? '-dev' : '');
+        // add version modifiers if a version was matched
+        if (isset($index)) {
+            if (!empty($matches[$index])) {
+                $mod = array('p', 'pl', 'rc');
+                $modNormalized = array('patch', 'patch', 'RC');
+                $version .= '-'.str_replace($mod, $modNormalized, strtolower($matches[$index]))
+                    . (!empty($matches[$index+1]) ? $matches[$index+1] : '');
+            }
+
+            if (!empty($matches[$index+2])) {
+                $version .= '-dev';
+            }
+
+            return $version;
         }
 
         throw new \UnexpectedValueException('Invalid version string '.$version);
     }
 
+    /**
+     * Parses as constraint string into LinkConstraint objects
+     *
+     * @param string $constraints
+     * @return \Composer\Package\LinkConstraint\LinkConstraintInterface
+     */
     public function parseConstraints($constraints)
     {
         $constraints = preg_split('{\s*,\s*}', trim($constraints));
@@ -78,12 +98,17 @@ class VersionParser
         }
 
         // match wildcard constraints
-        if (preg_match('{^(\d+)(?:\.(\d+))?\.\*$}', $constraint, $matches)) {
-            $lowVersion = $matches[1] . '.' . (isset($matches[2]) ? $matches[2] : '0') . '.0';
-            $highVersion = (isset($matches[2])
-                ? $matches[1] . '.' . ($matches[2]+1)
-                : ($matches[1]+1) . '.0')
-                . '.0';
+        if (preg_match('{^(\d+)(?:\.(\d+))?(?:\.(\d+))?\.\*$}', $constraint, $matches)) {
+            if (isset($matches[3])) {
+                $lowVersion = $matches[1] . '.' . $matches[2] . '.' . $matches[3] . '.0';
+                $highVersion = $matches[1] . '.' . $matches[2] . '.' . ($matches[3]+1) . '.0';
+            } elseif (isset($matches[2])) {
+                $lowVersion = $matches[1] . '.' . $matches[2] . '.0.0';
+                $highVersion = $matches[1] . '.' . ($matches[2]+1) . '.0.0';
+            } else {
+                $lowVersion = $matches[1] . '.0.0.0';
+                $highVersion = ($matches[1]+1) . '.0.0.0';
+            }
 
             return array(
                 new VersionConstraint('>=', $lowVersion),
