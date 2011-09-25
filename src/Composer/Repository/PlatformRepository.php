@@ -14,13 +14,21 @@ namespace Composer\Repository;
 
 use Composer\Package\MemoryPackage;
 use Composer\Package\BasePackage;
+use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class PlatformRepository extends ArrayRepository
+class PlatformRepository extends ArrayRepository implements WritableRepositoryInterface
 {
+    private $localRepository;
+
+    public function __construct(WritableRepositoryInterface $localRepository)
+    {
+        $this->localRepository = $localRepository;
+    }
+
     protected function initialize()
     {
         parent::initialize();
@@ -34,7 +42,7 @@ class PlatformRepository extends ArrayRepository
         }
 
         $php = new MemoryPackage('php', $version['version'], $version['type']);
-        $this->addPackage($php);
+        parent::addPackage($php);
 
         foreach (get_loaded_extensions() as $ext) {
             if (in_array($ext, array('standard', 'Core'))) {
@@ -49,7 +57,36 @@ class PlatformRepository extends ArrayRepository
             }
 
             $ext = new MemoryPackage('ext/'.strtolower($ext), $version['version'], $version['type']);
-            $this->addPackage($ext);
+            parent::addPackage($ext);
         }
+    }
+
+    public function getPackages()
+    {
+        return array_merge(parent::getPackages(), $this->localRepository->getPackages());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function addPackage(PackageInterface $package)
+    {
+        $this->localRepository->addPackage($package);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function removePackage(PackageInterface $package)
+    {
+        $this->localRepository->removePackage($package);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function write()
+    {
+        $this->localRepository->write();
     }
 }
