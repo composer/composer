@@ -34,11 +34,4 @@ class GitDownloader implements DownloaderInterface
             system('git archive --format=tar --prefix='.escapeshellarg($package->getName()).' --remote='.escapeshellarg($url).' master | tar -xf -');
         }
     }
-
-    public function isDownloaded(PackageInterface $package, $path)
-    {
-        $targetPath = $path . '/' . $package->getName();
-
-        return is_dir($targetPath);
-    }
 }
