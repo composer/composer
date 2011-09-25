@@ -21,6 +21,7 @@ use Composer\Package\PackageInterface;
  */
 class UpdateOperation extends SolverOperation
 {
+    protected $initialPackage;
     protected $targetPackage;
 
     /**
@@ -32,19 +33,20 @@ class UpdateOperation extends SolverOperation
      */
     public function __construct(PackageInterface $initial, PackageInterface $target, $reason = null)
     {
-        parent::__construct($initial, $reason);
+        parent::__construct($reason);
 
-        $this->targetPackage = $target;
+        $this->initialPackage = $initial;
+        $this->targetPackage  = $target;
     }
 
     /**
-     * Returns job type.
+     * Returns initial package.
      *
-     * @return  string
+     * @return  PackageInterface
      */
-    public function getJobType()
+    public function getInitialPackage()
     {
-        return 'update';
+        return $this->initialPackage;
     }
 
     /**
@@ -55,5 +57,26 @@ class UpdateOperation extends SolverOperation
     public function getTargetPackage()
     {
         return $this->targetPackage;
+    }
+
+    /**
+     * Returns installer type to be used with this operation.
+     *
+     * @return  string
+     */
+    public function getInstallerType()
+    {
+        return $this->targetPackage->getType();
+    }
+
+
+    /**
+     * Returns job type.
+     *
+     * @return  string
+     */
+    public function getJobType()
+    {
+        return 'update';
     }
 }

@@ -29,18 +29,11 @@ interface OperationInterface
     function getJobType();
 
     /**
-     * Returns package instance.
-     *
-     * @return  PackageInterface
-     */
-    function getPackage();
-
-    /**
-     * Returns package type.
+     * Returns installer type to be used with this operation.
      *
      * @return  string
      */
-    function getPackageType();
+    function getInstallerType();
 
     /**
      * Returns operation reason.
