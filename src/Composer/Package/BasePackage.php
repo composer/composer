@@ -135,33 +135,22 @@ abstract class BasePackage implements PackageInterface
     }
 
     /**
+     * Returns package unique name, constructed from name, version and release type.
+     *
+     * @return string
+     */
+    public function getUniqueName()
+    {
+        return $this->getName().'-'.$this->getVersion().'-'.$this->getReleaseType();
+    }
+
+    /**
      * Converts the package into a readable and unique string
      *
      * @return string
      */
     public function __toString()
     {
-        return $this->getName().'-'.$this->getVersion().'-'.$this->getReleaseType();
-    }
-
-    /**
-     * Parses a version string and returns an array with the version, its type (alpha, beta, RC, stable) and a dev flag (for development branches tracking)
-     *
-     * @param string $version
-     * @return array
-     */
-    public static function parseVersion($version)
-    {
-        if (!preg_match('#^v?(\d+)(\.\d+)?(\.\d+)?-?((?:beta|RC|alpha)\d*)?-?(dev)?$#i', $version, $matches)) {
-            throw new \UnexpectedValueException('Invalid version string '.$version);
-        }
-
-        return array(
-            'version' => $matches[1]
-                .(!empty($matches[2]) ? $matches[2] : '.0')
-                .(!empty($matches[3]) ? $matches[3] : '.0'),
-            'type' => !empty($matches[4]) ? strtolower($matches[4]) : 'stable',
-            'dev' => !empty($matches[5]),
-        );
+        return $this->getUniqueName();
     }
 }

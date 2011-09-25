@@ -213,25 +213,6 @@ class SolverTest extends \PHPUnit_Framework_TestCase
         ));
     }
 
-    public function testSolverWithComposerRepo()
-    {
-        $this->repoInstalled = new PlatformRepository;
-
-        // overwrite solver with custom installed repo
-        $this->solver = new Solver($this->policy, $this->pool, $this->repoInstalled);
-
-        $this->repo = new ComposerRepository('http://packagist.org');
-        list($monolog) = $this->repo->getPackages();
-
-        $this->reposComplete();
-
-        $this->request->install('Monolog');
-
-        $this->checkSolverResult(array(
-            array('job' => 'install', 'package' => $monolog),
-        ));
-    }
-
     protected function reposComplete()
     {
         $this->pool->addRepository($this->repoInstalled);
@@ -240,10 +221,23 @@ class SolverTest extends \PHPUnit_Framework_TestCase
 
     protected function checkSolverResult(array $expected)
     {
-        $result = $this->solver->solve($this->request);
+        $transaction = $this->solver->solve($this->request);
 
-        foreach ($result as &$step) {
-            unset($step['why']);
+        $result = array();
+        foreach ($transaction as $operation) {
+            if ('update' === $operation->getJobType()) {
+                $result[] = array(
+                    'job'  => 'update',
+                    'from' => $operation->getInitialPackage(),
+                    'to'   => $operation->getTargetPackage()
+                );
+            } else {
+                $job = ('uninstall' === $operation->getJobType() ? 'remove' : 'install');
+                $result[] = array(
+                    'job'     => $job,
+                    'package' => $operation->getPackage()
+                );
+            }
         }
 
         $this->assertEquals($expected, $result);

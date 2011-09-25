@@ -12,30 +12,115 @@
 
 namespace Composer\Installer;
 
-use Composer\Downloader\DownloaderInterface;
+use Composer\Downloader\DownloadManager;
+use Composer\Repository\WritableRepositoryInterface;
+use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\Package\PackageInterface;
 
 /**
+ * Package installation manager.
+ *
  * @author Jordi Boggiano <j.boggiano@seld.be>
+ * @author Konstantin Kudryashov <ever.zet@gmail.com>
  */
 class LibraryInstaller implements InstallerInterface
 {
-    protected $dir;
+    private $dir;
+    private $dm;
+    private $repository;
 
-    public function __construct($dir = 'vendor')
+    /**
+     * Initializes library installer.
+     *
+     * @param   string                      $dir        relative path for packages home
+     * @param   DownloadManager             $dm         download manager
+     * @param   WritableRepositoryInterface $repository repository controller
+     */
+    public function __construct($dir, DownloadManager $dm, WritableRepositoryInterface $repository)
     {
         $this->dir = $dir;
+        $this->dm  = $dm;
+
+        if (!is_dir($this->dir)) {
+            if (file_exists($this->dir)) {
+                throw new \UnexpectedValueException(
+                    $this->dir.' exists and is not a directory.'
+                );
+            }
+            if (!mkdir($this->dir, 0777, true)) {
+                throw new \UnexpectedValueException(
+                    $this->dir.' does not exist and could not be created.'
+                );
+            }
+        }
+
+        $this->repository = $repository;
     }
 
-    public function install(PackageInterface $package, DownloaderInterface $downloader, $type)
+    /**
+     * Checks that specific package is installed.
+     *
+     * @param   PackageInterface    $package    package instance
+     *
+     * @return  Boolean
+     */
+    public function isInstalled(PackageInterface $package)
     {
-        if ($type === 'dist') {
-            $downloader->download($package, $this->dir, $package->getDistUrl(), $package->getDistSha1Checksum());
-        } elseif ($type === 'source') {
-            $downloader->download($package, $this->dir, $package->getSourceUrl());
-        } else {
-            throw new \InvalidArgumentException('Type must be one of (dist, source), '.$type.' given.');
+        return $this->repository->hasPackage($package);
+    }
+
+    /**
+     * Installs specific package.
+     *
+     * @param   PackageInterface    $package    package instance
+     *
+     * @throws  InvalidArgumentException        if provided package have no urls to download from
+     */
+    public function install(PackageInterface $package)
+    {
+        $downloadPath = $this->dir.DIRECTORY_SEPARATOR.$package->getName();
+
+        $this->dm->download($package, $downloadPath);
+        $this->repository->addPackage($package);
+    }
+
+    /**
+     * Updates specific package.
+     *
+     * @param   PackageInterface    $initial    already installed package version
+     * @param   PackageInterface    $target     updated version
+     *
+     * @throws  InvalidArgumentException        if $from package is not installed
+     */
+    public function update(PackageInterface $initial, PackageInterface $target)
+    {
+        if (!$this->repository->hasPackage($initial)) {
+            throw new \InvalidArgumentException('Package is not installed: '.$initial);
         }
-        return true;
+
+        $downloadPath = $this->dir.DIRECTORY_SEPARATOR.$initial->getName();
+
+        $this->dm->update($initial, $target, $downloadPath);
+        $this->repository->removePackage($initial);
+        $this->repository->addPackage($target);
+    }
+
+    /**
+     * Uninstalls specific package.
+     *
+     * @param   PackageInterface    $package    package instance
+     *
+     * @throws  InvalidArgumentException        if package is not installed
+     */
+    public function uninstall(PackageInterface $package)
+    {
+        if (!$this->repository->hasPackage($package)) {
+            throw new \InvalidArgumentException('Package is not installed: '.$package);
+        }
+
+        $downloadPath = $this->dir.DIRECTORY_SEPARATOR.$package->getName();
+
+        $this->dm->remove($package, $downloadPath);
+        $this->repository->removePackage($package);
     }
 }

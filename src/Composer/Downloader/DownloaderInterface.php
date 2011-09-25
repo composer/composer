@@ -15,21 +15,39 @@ namespace Composer\Downloader;
 use Composer\Package\PackageInterface;
 
 /**
- * Package Downloader
- * 
- * @author Kirill chEbba Chebunin <iam@chebba.org>
- */ 
-interface DownloaderInterface 
+ * Downloader interface.
+ *
+ * @author Konstantin Kudryashov <ever.zet@gmail.com>
+ */
+interface DownloaderInterface
 {
     /**
-     * Download package
+     * Downloads specific package into specific folder.
      *
-     * @param PackageInterface $package Downloaded package
-     * @param string           $path Download to
-     * @param string           $url Download from
-     * @param string|null      $checksum Package checksum
-     *
-     * @throws \UnexpectedValueException
+     * @param   PackageInterface    $package    package instance
+     * @param   string              $path       download path
+     * @param   string              $url        download url
+     * @param   string              $checksum   package checksum (for dists)
+     * @param   Boolean             $useSource  download as source
      */
-    function download(PackageInterface $package, $path, $url, $checksum = null);
+    function download(PackageInterface $package, $path, $url, $checksum = null, $useSource = false);
+
+    /**
+     * Updates specific package in specific folder from initial to target version.
+     *
+     * @param   PackageInterface    $initial    initial package
+     * @param   PackageInterface    $target     updated package
+     * @param   string              $path       download path
+     * @param   Boolean             $useSource  download as source
+     */
+    function update(PackageInterface $initial, PackageInterface $target, $path, $useSource = false);
+
+    /**
+     * Removes specific package from specific folder.
+     *
+     * @param   PackageInterface    $package    package instance
+     * @param   string              $path       download path
+     * @param   Boolean             $useSource  download as source
+     */
+    function remove(PackageInterface $package, $path, $useSource = false);
 }

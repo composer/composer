@@ -23,16 +23,17 @@ use Composer\Package\LinkConstraint\VersionConstraint;
  */
 class PearRepository extends ArrayRepository
 {
-    private $name;
-    private $url;
+    protected $url;
+    protected $cacheDir;
 
-    public function __construct($url, $name = '')
+    public function __construct($url, $cacheDir)
     {
         if (!filter_var($url, FILTER_VALIDATE_URL)) {
-            throw new \UnexpectedValueException('Invalid url given for PEAR repository "'.$name.'": '.$url);
+            throw new \UnexpectedValueException('Invalid url given for PEAR repository: '.$url);
         }
 
         $this->url = $url;
+        $this->cacheDir = $cacheDir;
     }
 
     protected function initialize()

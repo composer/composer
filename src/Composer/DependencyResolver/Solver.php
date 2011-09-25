@@ -14,6 +14,7 @@ namespace Composer\DependencyResolver;
 
 use Composer\Repository\RepositoryInterface;
 use Composer\Package\PackageInterface;
+use Composer\DependencyResolver\Operation;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -1105,28 +1106,21 @@ class Solver
                 if (isset($installMeansUpdateMap[$literal->getPackageId()])) {
                     $source = $installMeansUpdateMap[$literal->getPackageId()];
 
-                    $transaction[] = array(
-                        'job' => 'update',
-                        'from' => $source,
-                        'to' => $package,
-                        'why' => $this->decisionQueueWhy[$i],
+                    $transaction[] = new Operation\UpdateOperation(
+                        $source, $package, $this->decisionQueueWhy[$i]
                     );
 
                     // avoid updates to one package from multiple origins
                     unset($installMeansUpdateMap[$literal->getPackageId()]);
                     $ignoreRemove[$source->getId()] = true;
                 } else {
-                    $transaction[] = array(
-                        'job' => 'install',
-                        'package' => $package,
-                        'why' => $this->decisionQueueWhy[$i],
+                    $transaction[] = new Operation\InstallOperation(
+                        $package, $this->decisionQueueWhy[$i]
                     );
                 }
             } else if (!isset($ignoreRemove[$package->getId()])) {
-                $transaction[] = array(
-                    'job' => 'remove',
-                    'package' => $package,
-                    'why' => $this->decisionQueueWhy[$i],
+                $transaction[] = new Operation\UninstallOperation(
+                    $package, $this->decisionQueueWhy[$i]
                 );
             }
         }
