@@ -19,7 +19,7 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
 {
     private $dir;
     private $dm;
-    private $registry;
+    private $repository;
     private $library;
 
     protected function setUp()
@@ -33,35 +33,27 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->registry = $this->getMockBuilder('Composer\Installer\Registry\RegistryInterface')
+        $this->repository = $this->getMockBuilder('Composer\Repository\WritableRepositoryInterface')
             ->disableOriginalConstructor()
             ->getMock();
     }
 
     public function testInstallerCreation()
     {
-        $this->registry
-            ->expects($this->once())
-            ->method('open');
-
-        $this->registry
-            ->expects($this->once())
-            ->method('close');
-
-        $library = new LibraryInstaller($this->dir, $this->dm, $this->registry);
+        $library = new LibraryInstaller($this->dir, $this->dm, $this->repository);
         $this->assertTrue(is_dir($this->dir));
 
         $file = sys_get_temp_dir().'/file';
         touch($file);
 
         $this->setExpectedException('UnexpectedValueException');
-        $library = new LibraryInstaller($file, $this->dm, $this->registry);
+        $library = new LibraryInstaller($file, $this->dm, $this->repository);
     }
 
     public function testExecuteOperation()
     {
         $library = $this->getMockBuilder('Composer\Installer\LibraryInstaller')
-            ->setConstructorArgs(array($this->dir, $this->dm, $this->registry))
+            ->setConstructorArgs(array($this->dir, $this->dm, $this->repository))
             ->setMethods(array('install', 'update', 'uninstall'))
             ->getMock();
 
@@ -92,12 +84,12 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
 
     public function testIsInstalled()
     {
-        $library = new LibraryInstaller($this->dir, $this->dm, $this->registry);
+        $library = new LibraryInstaller($this->dir, $this->dm, $this->repository);
         $package = $this->createPackageMock();
 
-        $this->registry
+        $this->repository
             ->expects($this->exactly(2))
-            ->method('isPackageRegistered')
+            ->method('hasPackage')
             ->with($package)
             ->will($this->onConsecutiveCalls(true, false));
 
@@ -107,7 +99,7 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
 
     public function testInstall()
     {
-        $library = new LibraryInstaller($this->dir, $this->dm, $this->registry);
+        $library = new LibraryInstaller($this->dir, $this->dm, $this->repository);
         $package = $this->createPackageMock();
 
         $package
@@ -118,20 +110,19 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
         $this->dm
             ->expects($this->once())
             ->method('download')
-            ->with($package, $this->dir.'/some/package')
-            ->will($this->returnValue('source'));
+            ->with($package, $this->dir.'/some/package');
 
-        $this->registry
+        $this->repository
             ->expects($this->once())
-            ->method('registerPackage')
-            ->with($package, 'source');
+            ->method('addPackage')
+            ->with($package);
 
         $library->install($package);
     }
 
     public function testUpdate()
     {
-        $library = new LibraryInstaller($this->dir, $this->dm, $this->registry);
+        $library = new LibraryInstaller($this->dir, $this->dm, $this->repository);
         $initial = $this->createPackageMock();
         $target  = $this->createPackageMock();
 
@@ -140,43 +131,37 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
             ->method('getName')
             ->will($this->returnValue('package1'));
 
-        $this->registry
+        $this->repository
             ->expects($this->exactly(2))
-            ->method('isPackageRegistered')
+            ->method('hasPackage')
             ->with($initial)
             ->will($this->onConsecutiveCalls(true, false));
-
-        $this->registry
-            ->expects($this->once())
-            ->method('getRegisteredPackageInstallerType')
-            ->with($initial)
-            ->will($this->returnValue('dist'));
 
         $this->dm
             ->expects($this->once())
             ->method('update')
-            ->with($initial, $target, $this->dir.'/package1', 'dist');
+            ->with($initial, $target, $this->dir.'/package1');
 
-        $this->registry
+        $this->repository
             ->expects($this->once())
-            ->method('unregisterPackage')
+            ->method('removePackage')
             ->with($initial);
 
-        $this->registry
+        $this->repository
             ->expects($this->once())
-            ->method('registerPackage')
-            ->with($target, 'dist');
+            ->method('addPackage')
+            ->with($target);
 
         $library->update($initial, $target);
 
-        $this->setExpectedException('UnexpectedValueException');
+        $this->setExpectedException('InvalidArgumentException');
 
         $library->update($initial, $target);
     }
 
     public function testUninstall()
     {
-        $library = new LibraryInstaller($this->dir, $this->dm, $this->registry);
+        $library = new LibraryInstaller($this->dir, $this->dm, $this->repository);
         $package = $this->createPackageMock();
 
         $package
@@ -184,31 +169,25 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
             ->method('getName')
             ->will($this->returnValue('pkg'));
 
-        $this->registry
+        $this->repository
             ->expects($this->exactly(2))
-            ->method('isPackageRegistered')
+            ->method('hasPackage')
             ->with($package)
             ->will($this->onConsecutiveCalls(true, false));
-
-        $this->registry
-            ->expects($this->once())
-            ->method('getRegisteredPackageInstallerType')
-            ->with($package)
-            ->will($this->returnValue('source'));
 
         $this->dm
             ->expects($this->once())
             ->method('remove')
-            ->with($package, $this->dir.'/pkg', 'source');
+            ->with($package, $this->dir.'/pkg');
 
-        $this->registry
+        $this->repository
             ->expects($this->once())
-            ->method('unregisterPackage')
+            ->method('removePackage')
             ->with($package);
 
         $library->uninstall($package);
 
-        $this->setExpectedException('UnexpectedValueException');
+        $this->setExpectedException('InvalidArgumentException');
 
         $library->uninstall($package);
     }
