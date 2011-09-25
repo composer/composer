@@ -16,6 +16,7 @@ use Composer\Package;
 
 /**
  * @author Konstantin Kudryashiv <ever.zet@gmail.com>
+ * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 class ArrayLoader
 {
@@ -28,13 +29,22 @@ class ArrayLoader
         'suggest'   => 'suggests',
     );
 
+    protected $versionParser;
+
+    public function __construct($parser = null)
+    {
+        $this->versionParser = $parser;
+        if (!$parser) {
+            $this->versionParser = new Package\Version\VersionParser;
+        }
+    }
+
     public function load($config)
     {
         $this->validateConfig($config);
 
-        $versionParser = new Package\Version\VersionParser();
-        $version = $versionParser->parse($config['version']);
-        $package = new Package\MemoryPackage($config['name'], $version['version'], $version['type']);
+        $version = $this->versionParser->normalize($config['version']);
+        $package = new Package\MemoryPackage($config['name'], $version);
 
         $package->setType(isset($config['type']) ? $config['type'] : 'library');
 
@@ -87,15 +97,10 @@ class ArrayLoader
     private function loadLinksFromConfig($srcPackageName, $description, array $linksSpecs)
     {
         $links = array();
-        foreach ($linksSpecs as $packageName => $version) {
+        foreach ($linksSpecs as $packageName => $constraint) {
             $name = strtolower($packageName);
 
-            preg_match('#^([>=<~]*)([\d.]+.*)$#', $version, $match);
-            if (!$match[1]) {
-                $match[1] = '=';
-            }
-
-            $constraint = new Package\LinkConstraint\VersionConstraint($match[1], $match[2]);
+            $constraint = $this->versionParser->parseConstraints($constraint);
             $links[]    = new Package\Link($srcPackageName, $packageName, $constraint, $description);
         }
 

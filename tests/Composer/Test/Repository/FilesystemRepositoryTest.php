@@ -49,7 +49,7 @@ class FilesystemRepositoryTest extends \PHPUnit_Framework_TestCase
 
         $data = json_decode(file_get_contents($this->repositoryFile), true);
         $this->assertEquals(array(
-            array('name' => 'package1', 'type' => 'vendor', 'version' => '1.0.0', 'releaseType' => 'beta', 'names' => array('package1'))
+            array('name' => 'package1', 'type' => 'vendor', 'version' => '1.0.0.0-beta', 'names' => array('package1'))
         ), $data);
     }
 }

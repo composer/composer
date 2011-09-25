@@ -18,11 +18,10 @@ class MemoryPackageTest extends \PHPUnit_Framework_TestCase
 {
     public function testMemoryPackage()
     {
-        $package = new MemoryPackage('foo', '1', 'beta');
+        $package = new MemoryPackage('foo', '1-beta');
 
         $this->assertEquals('foo', $package->getName());
-        $this->assertEquals('1', $package->getVersion());
-        $this->assertEquals('beta', $package->getReleaseType());
+        $this->assertEquals('1-beta', $package->getVersion());
 
         $this->assertEquals('foo-1-beta', (string) $package);
     }
