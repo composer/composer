@@ -12,8 +12,11 @@
 
 namespace Composer;
 
-use Composer\Installer\InstallerInterface;
-use Composer\Repository\RepositoryInterface;
+use Composer\Package\PackageInterface;
+use Composer\Package\PackageLock;
+use Composer\Repository\RepositoryManager;
+use Composer\Installer\InstallationManager;
+use Composer\Downloader\DownloadManager;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -23,51 +26,60 @@ class Composer
 {
     const VERSION = '1.0.0-DEV';
 
-    private $repositories = array();
-    private $installers = array();
+    private $package;
+    private $lock;
 
-    public function setInstaller($type, InstallerInterface $installer = null)
+    private $rm;
+    private $dm;
+    private $im;
+
+    public function setPackage(PackageInterface $package)
     {
-        if (null === $installer) {
-            unset($this->installers[$type]);
-
-            return;
-        }
-
-        $this->installers[$type] = $installer;
+        $this->package = $package;
     }
 
-    public function getInstaller($type)
+    public function getPackage()
     {
-        if (!isset($this->installers[$type])) {
-            throw new \UnexpectedValueException('Unknown dependency type: '.$type);
-        }
-
-        return $this->installers[$type];
+        return $this->package;
     }
 
-    public function setRepository($name, RepositoryInterface $repository = null)
+    public function setPackageLock($lock)
     {
-        if (null === $repository) {
-            unset($this->repositories[$name]);
-
-            return;
-        }
-
-        $this->repositories[$name] = $repository;
+        $this->lock = $lock;
     }
 
-    public function getRepository($name)
+    public function getPackageLock()
     {
-        if (!isset($this->repositories[$name])) {
-            throw new \UnexpectedValueException('Unknown repository: '.$name);
-        }
-
-        return $this->repositories[$name];
+        return $this->lock;
     }
 
-    public function getRepositories()
+    public function setRepositoryManager(RepositoryManager $manager)
     {
-        return $this->repositories;
+        $this->rm = $manager;
+    }
+
+    public function getRepositoryManager()
+    {
+        return $this->rm;
+    }
+
+    public function setDownloadManager(DownloadManager $manager)
+    {
+        $this->dm = $manager;
+    }
+
+    public function getDownloadManager()
+    {
+        return $this->dm;
+    }
+
+    public function setInstallationManager(InstallationManager $manager)
+    {
+        $this->im = $manager;
+    }
+
+    public function getInstallationManager()
+    {
+        return $this->im;
     }
 }
