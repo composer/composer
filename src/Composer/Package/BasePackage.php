@@ -153,4 +153,9 @@ abstract class BasePackage implements PackageInterface
     {
         return $this->getUniqueName();
     }
+
+    public function __clone()
+    {
+        $this->repository = null;
+    }
 }
