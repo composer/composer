@@ -17,11 +17,37 @@ use Composer\Package\MemoryPackage;
 
 class ArrayRepositoryTest extends \PHPUnit_Framework_TestCase
 {
-    public function testAddLiteral()
+    public function testAddPackage()
     {
         $repo = new ArrayRepository;
         $repo->addPackage(new MemoryPackage('foo', '1'));
 
         $this->assertEquals(1, count($repo));
+    }
+
+    public function testRemovePackage()
+    {
+        $package = new MemoryPackage('bar', '2');
+
+        $repo = new ArrayRepository;
+        $repo->addPackage(new MemoryPackage('foo', '1'));
+        $repo->addPackage($package);
+
+        $this->assertEquals(2, count($repo));
+
+        $repo->removePackage(new MemoryPackage('foo', '1'));
+
+        $this->assertEquals(1, count($repo));
+        $this->assertEquals(array($package), $repo->getPackages());
+    }
+
+    public function testHasPackage()
+    {
+        $repo = new ArrayRepository;
+        $repo->addPackage(new MemoryPackage('foo', '1'));
+        $repo->addPackage(new MemoryPackage('bar', '2'));
+
+        $this->assertTrue($repo->hasPackage(new MemoryPackage('foo', '1')));
+        $this->assertFalse($repo->hasPackage(new MemoryPackage('bar', '1')));
     }
 }

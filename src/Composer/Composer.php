@@ -12,125 +12,74 @@
 
 namespace Composer;
 
-use Composer\Downloader\DownloaderInterface;
-use Composer\Installer\InstallerInterface;
-use Composer\Repository\ComposerRepository;
-use Composer\Repository\PlatformRepository;
-use Composer\Repository\GitRepository;
-use Composer\Repository\PearRepository;
+use Composer\Package\PackageInterface;
+use Composer\Package\PackageLock;
+use Composer\Repository\RepositoryManager;
+use Composer\Installer\InstallationManager;
+use Composer\Downloader\DownloadManager;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
+ * @author Konstantin Kudryashiv <ever.zet@gmail.com>
  */
 class Composer
 {
     const VERSION = '1.0.0-DEV';
 
-    protected $repositories = array();
-    protected $downloaders = array();
-    protected $installers = array();
+    private $package;
+    private $lock;
 
-    public function __construct()
+    private $rm;
+    private $dm;
+    private $im;
+
+    public function setPackage(PackageInterface $package)
     {
-        $this->addRepository('Packagist', array('composer' => 'http://packagist.org'));
+        $this->package = $package;
     }
 
-    /**
-     * Add downloader for type
-     *
-     * @param string              $type
-     * @param DownloaderInterface $downloader
-     */
-    public function addDownloader($type, DownloaderInterface $downloader)
+    public function getPackage()
     {
-        $type = strtolower($type);
-        $this->downloaders[$type] = $downloader;
+        return $this->package;
     }
 
-    /**
-     * Get type downloader
-     *
-     * @param string $type
-     *
-     * @return DownloaderInterface
-     */
-    public function getDownloader($type)
+    public function setPackageLock($lock)
     {
-        $type = strtolower($type);
-        if (!isset($this->downloaders[$type])) {
-            throw new \UnexpectedValueException('Unknown source type: '.$type);
-        }
-        return $this->downloaders[$type];
+        $this->lock = $lock;
     }
 
-    /**
-     * Add installer for type
-     *
-     * @param  string            $type
-     * @param InstallerInterface $installer
-     */
-    public function addInstaller($type, InstallerInterface $installer)
+    public function getPackageLock()
     {
-        $type = strtolower($type);
-        $this->installers[$type] = $installer;
+        return $this->lock;
     }
 
-    /**
-     * Get type installer
-     *
-     * @param string $type
-     *
-     * @return InstallerInterface
-     */
-    public function getInstaller($type)
+    public function setRepositoryManager(RepositoryManager $manager)
     {
-        $type = strtolower($type);
-        if (!isset($this->installers[$type])) {
-            throw new \UnexpectedValueException('Unknown dependency type: '.$type);
-        }
-        return $this->installers[$type];
+        $this->rm = $manager;
     }
 
-    public function addRepository($name, $spec)
+    public function getRepositoryManager()
     {
-        if (null === $spec) {
-            unset($this->repositories[$name]);
-        }
-        if (is_array($spec) && count($spec) === 1) {
-            return $this->repositories[$name] = $this->createRepository($name, key($spec), current($spec));
-        }
-        throw new \UnexpectedValueException('Invalid repositories specification '.json_encode($spec).', should be: {"type": "url"}');
+        return $this->rm;
     }
 
-    public function getRepositories()
+    public function setDownloadManager(DownloadManager $manager)
     {
-        return $this->repositories;
+        $this->dm = $manager;
     }
 
-    public function createRepository($name, $type, $spec)
+    public function getDownloadManager()
     {
-        if (is_string($spec)) {
-            $spec = array('url' => $spec);
-        }
-        $spec['url'] = rtrim($spec['url'], '/');
+        return $this->dm;
+    }
 
-        switch ($type) {
-        case 'git-bare':
-        case 'git-multi':
-            throw new \Exception($type.' repositories not supported yet');
-            break;
+    public function setInstallationManager(InstallationManager $manager)
+    {
+        $this->im = $manager;
+    }
 
-        case 'git':
-            return new GitRepository($spec['url']);
-
-        case 'composer':
-            return new ComposerRepository($spec['url']);
-
-        case 'pear':
-            return new PearRepository($spec['url'], $name);
-
-        default:
-            throw new \UnexpectedValueException('Unknown repository type: '.$type.', could not create repository '.$name);
-        }
+    public function getInstallationManager()
+    {
+        return $this->im;
     }
 }

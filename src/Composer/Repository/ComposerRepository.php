@@ -12,9 +12,7 @@
 
 namespace Composer\Repository;
 
-use Composer\Package\MemoryPackage;
-use Composer\Package\BasePackage;
-use Composer\Package\Link;
+use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\LinkConstraint\VersionConstraint;
 
 /**
@@ -22,10 +20,16 @@ use Composer\Package\LinkConstraint\VersionConstraint;
  */
 class ComposerRepository extends ArrayRepository
 {
+    protected $url;
     protected $packages;
 
     public function __construct($url)
     {
+        $url = rtrim($url, '/');
+        if (!filter_var($url, FILTER_VALIDATE_URL)) {
+            throw new \UnexpectedValueException('Invalid url given for Composer repository: '.$url);
+        }
+
         $this->url = $url;
     }
 
@@ -42,60 +46,11 @@ class ComposerRepository extends ArrayRepository
         }
     }
 
-    protected function createPackages($data)
+    private function createPackages($data)
     {
         foreach ($data['versions'] as $rev) {
-            $version = BasePackage::parseVersion($rev['version']);
-
-            $package = new MemoryPackage($rev['name'], $version['version'], $version['type']);
-            $package->setSourceType($rev['source']['type']);
-            $package->setSourceUrl($rev['source']['url']);
-
-            $package->setDistType($rev['dist']['type']);
-            $package->setDistUrl($rev['dist']['url']);
-            $package->setDistSha1Checksum($rev['dist']['shasum']);
-
-            if (isset($rev['type'])) {
-                $package->setType($rev['type']);
-            }
-
-            if (isset($rev['extra'])) {
-                $package->setExtra($rev['extra']);
-            }
-
-            if (isset($rev['license'])) {
-                $package->setLicense($rev['license']);
-            }
-
-            $links = array(
-                'require',
-                'conflict',
-                'provide',
-                'replace',
-                'recommend',
-                'suggest',
-            );
-            foreach ($links as $link) {
-                if (isset($rev[$link])) {
-                    $method = 'set'.$link.'s';
-                    $package->{$method}($this->createLinks($rev['name'], $link.'s', $rev[$link]));
-                }
-            }
-            $this->addPackage($package);
+            $loader = new ArrayLoader();
+            $this->addPackage($loader->load($rev));
         }
-    }
-
-    protected function createLinks($name, $description, $linkSpecs)
-    {
-        $links = array();
-        foreach ($linkSpecs as $dep => $ver) {
-            preg_match('#^([>=<~]*)([\d.]+.*)$#', $ver, $match);
-            if (!$match[1]) {
-                $match[1] = '=';
-            }
-            $constraint = new VersionConstraint($match[1], $match[2]);
-            $links[] = new Link($name, $dep, $constraint, $description);
-        }
-        return $links;
     }
 }

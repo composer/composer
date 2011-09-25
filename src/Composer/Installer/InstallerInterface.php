@@ -12,22 +12,46 @@
 
 namespace Composer\Installer;
 
-use Composer\Downloader\DownloaderInterface;
+use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\Package\PackageInterface;
 
 /**
- * Package Installer
- * 
- * @author Kirill chEbba Chebunin <iam@chebba.org>
- */ 
+ * Interface for the package installation manager.
+ *
+ * @author Konstantin Kudryashov <ever.zet@gmail.com>
+ */
 interface InstallerInterface
 {
     /**
-     * Install package
+     * Checks that provided package is installed.
      *
-     * @param PackageInterface    $package
-     * @param DownloaderInterface $downloader
-     * @param string              $type
+     * @param   PackageInterface    $package    package instance
+     *
+     * @return  Boolean
      */
-    function install(PackageInterface $package, DownloaderInterface $downloader, $type);
+    function isInstalled(PackageInterface $package);
+
+    /**
+     * Installs specific package.
+     *
+     * @param   PackageInterface    $package    package instance
+     */
+    function install(PackageInterface $package);
+
+    /**
+     * Updates specific package.
+     *
+     * @param   PackageInterface    $initial    already installed package version
+     * @param   PackageInterface    $target     updated version
+     *
+     * @throws  InvalidArgumentException        if $from package is not installed
+     */
+    function update(PackageInterface $initial, PackageInterface $target);
+
+    /**
+     * Uninstalls specific package.
+     *
+     * @param   PackageInterface    $package    package instance
+     */
+    function uninstall(PackageInterface $package);
 }

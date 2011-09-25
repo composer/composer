@@ -13,11 +13,13 @@
 namespace Composer\Console;
 
 use Symfony\Component\Console\Application as BaseApplication;
-use Composer\Composer;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
 use Composer\Command\InstallCommand;
+use Composer\Composer;
+use Composer\Package\PackageInterface;
+use Composer\Package\PackageLock;
 
 /**
  * The console application that handles the commands
@@ -59,7 +61,7 @@ class Application extends BaseApplication
     }
 
     /**
-     * Initializes all the composer commands
+     * Looks for all *Command files in Composer's Command directory
      */
     protected function registerCommands()
     {
