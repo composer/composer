@@ -34,6 +34,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'parses state'      => array('1.0.0RC1dev',         '1.0.0-rc1-dev'),
             'CI parsing'        => array('1.0.0-rC15-dev',      '1.0.0-rc15-dev'),
             'forces x.y.z'      => array('1.0-dev',             '1.0.0-dev'),
+            'forces x.y.z'      => array('0',                   '0.0.0'),
             'parses long'       => array('10.4.13-beta',        '10.4.13-beta'),
             'strips leading v'  => array('v1.0.0',              '1.0.0'),
             'strips leading v'  => array('v20100102',           '20100102'),

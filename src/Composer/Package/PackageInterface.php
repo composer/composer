@@ -132,13 +132,6 @@ interface PackageInterface
     function getDistSha1Checksum();
 
     /**
-     * Returns the release type of this package, e.g. stable or beta
-     *
-     * @return string The release type
-     */
-    function getReleaseType();
-
-    /**
      * Returns the version of this package
      *
      * @return string version

@@ -43,8 +43,8 @@ class PackageLock
         $versionParser = new VersionParser();
         $packages      = array();
         foreach ($lockList as $info) {
-            $version    = $versionParser->parse($info['version']);
-            $packages[] = new MemoryPackage($info['package'], $version['version'], $version['type']);
+            $version    = $versionParser->normalize($info['version']);
+            $packages[] = new MemoryPackage($info['package'], $version);
         }
 
         return $packages;
