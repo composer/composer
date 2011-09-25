@@ -29,16 +29,12 @@ use Composer\Package\PackageLock;
 class Application extends BaseApplication
 {
     private $composer;
-    private $package;
-    private $lock;
 
-    public function __construct(Composer $composer, PackageInterface $package, PackageLock $lock)
+    public function __construct(Composer $composer)
     {
         parent::__construct('Composer', Composer::VERSION);
 
         $this->composer = $composer;
-        $this->package  = $package;
-        $this->lock     = $lock;
     }
 
     /**
@@ -62,22 +58,6 @@ class Application extends BaseApplication
     public function getComposer()
     {
         return $this->composer;
-    }
-
-    /**
-     * @return PackageInterface
-     */
-    public function getPackage()
-    {
-        return $this->package;
-    }
-
-    /**
-     * @return PackageLock
-     */
-    public function getLock()
-    {
-        return $this->lock;
     }
 
     /**

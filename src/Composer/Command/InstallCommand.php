@@ -15,6 +15,7 @@ namespace Composer\Command;
 use Composer\DependencyResolver;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
+use Composer\DependencyResolver\Operation;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -44,13 +45,16 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        if ($this->getLock()->isLocked()) {
+        $composer = $this->getComposer();
+
+        if ($composer->getPackageLock()->isLocked()) {
             $output->writeln('<info>Found lockfile. Reading</info>');
 
-            foreach ($this->getLock()->getLockedPackages() as $package) {
-                $installer = $this->getComposer()->getInstaller($package->getType());
-                if (!$installer->isInstalled($package)) {
-                    $installer->install($package);
+            $installationManager = $composer->getInstallationManager();
+            foreach ($composer->getPackageLock()->getLockedPackages() as $package) {
+                if (!$installationManager->isPackageInstalled($package)) {
+                    $operation = new Operation\InstallOperation($package, 'lock resolving');
+                    $installationManager->execute($operation);
                 }
             }
 
@@ -59,7 +63,7 @@ EOT
 
         // creating repository pool
         $pool = new Pool;
-        foreach ($this->getComposer()->getRepositories() as $repository) {
+        foreach ($composer->getRepositoryManager()->getRepositories() as $repository) {
             $pool->addRepository($repository);
         }
 
@@ -70,22 +74,23 @@ EOT
         }
 
         // prepare solver
-        $platform = $this->getComposer()->getRepository('Platform');
-        $policy   = new DependencyResolver\DefaultPolicy();
-        $solver   = new DependencyResolver\Solver($policy, $pool, $platform);
+        $installationManager = $composer->getInstallationManager();
+        $localRepo           = $composer->getRepositoryManager()->getLocalRepository();
+        $policy              = new DependencyResolver\DefaultPolicy();
+        $solver              = new DependencyResolver\Solver($policy, $pool, $localRepo);
 
         // solve dependencies and execute operations
-        $operations = $this->solveDependencies($request, $solver);
-        foreach ($operations as $operation) {
-            $operation->execute();
-            // TODO: collect installable packages into $installed
+        foreach ($solver->solve($request) as $operation) {
+            $installationManager->execute($operation);
         }
-
-        $output->writeln('> Done');
 
         if (false) {
-            $config->lock($installed);
+            $composer->getPackageLock()->lock($localRepo->getPackages());
             $output->writeln('> Locked');
         }
+
+        $localRepo->write();
+
+        $output->writeln('> Done');
     }
 }

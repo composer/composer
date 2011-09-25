@@ -34,33 +34,4 @@ abstract class Command extends BaseCommand
     {
         return $this->getApplication()->getComposer();
     }
-
-    /**
-     * @return \Composer\Package\PackageInterface
-     */
-    protected function getPackage()
-    {
-        return $this->getApplication()->getPackage();
-    }
-
-    /**
-     * @return \Composer\Package\PackageLock
-     */
-    protected function getLock()
-    {
-        return $this->getApplication()->getLock();
-    }
-
-    protected function solveDependencies(Request $request, Solver $solver)
-    {
-        $operations = array();
-        foreach ($solver->solve($request) as $task) {
-            $installer = $this->getComposer()->getInstaller($task['package']->getType());
-            $operation = new Operation($installer, $task['job'], $task['package']);
-
-            $operations[] = $operation;
-        }
-
-        return $operations;
-    }
 }

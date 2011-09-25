@@ -10,25 +10,34 @@ use Composer\Repository;
 use Composer\Package;
 use Composer\Console\Application as ComposerApplication;
 
-// initialize installer
-$installer = new Installer\LibraryInstaller('vendor', $preferSource = true);
-$installer->setDownloader('git',  new Downloader\GitDownloader());
-$installer->setDownloader('pear', new Downloader\PearDownloader());
-$installer->setDownloader('zip',  new Downloader\ZipDownloader());
+// initialize repository manager
+$rm = new Repository\RepositoryManager();
+$rm->setLocalRepository(new Repository\FilesystemRepository('.composer/installed.json'));
+$rm->setRepository('Platform',  new Repository\PlatformRepository());
+$rm->setRepository('Packagist', new Repository\ComposerRepository('http://packagist.org'));
 
-// initialize composer
-$composer = new Composer();
-$composer->setInstaller('library', $installer);
-$composer->setRepository('Platform', new Repository\PlatformRepository());
-$composer->setRepository('Packagist', new Repository\ComposerRepository('http://packagist.org'));
+// initialize download manager
+$dm = new Downloader\DownloadManager($preferSource = false);
+$dm->setDownloader('git',  new Downloader\GitDownloader());
+$dm->setDownloader('pear', new Downloader\PearDownloader());
+$dm->setDownloader('zip',  new Downloader\ZipDownloader());
 
-// initialize package
+// initialize installation manager
+$im = new Installer\InstallationManager();
+$im->setInstaller('vendor', new Installer\LibraryInstaller('vendor', $dm, $rm->getLocalRepository()));
+
+// load package
 $loader  = new Package\Loader\JsonLoader();
 $package = $loader->load('composer.json');
 
-// initialize lock
-$packageLock = new Package\PackageLock('composer.lock');
+// initialize composer
+$composer = new Composer();
+$composer->setPackage($package);
+$composer->setPackageLock(new Package\PackageLock('composer.lock'));
+$composer->setRepositoryManager($rm);
+$composer->setDownloadManager($dm);
+$composer->setInstallationManager($im);
 
 // run the command application
-$application = new ComposerApplication($composer, $package, $packageLock);
+$application = new ComposerApplication($composer);
 $application->run();
