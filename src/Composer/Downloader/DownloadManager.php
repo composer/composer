@@ -94,12 +94,14 @@ class DownloadManager
         if (!($preferSource && $sourceType) && $distType) {
             $downloader = $this->getDownloader($distType);
             $downloader->download(
-                $package, $targetDir, $package->getDistUrl(), $package->getDistSha1Checksum()
+                $package, $targetDir,
+                $package->getDistUrl(), $package->getDistSha1Checksum(),
+                $preferSource
             );
             $package->setInstallationSource('dist');
         } elseif ($sourceType) {
             $downloader = $this->getDownloader($sourceType);
-            $downloader->download($package, $targetDir, $package->getSourceUrl());
+            $downloader->download($package, $targetDir, $package->getSourceUrl(), $preferSource);
             $package->setInstallationSource('source');
         } else {
             throw new \InvalidArgumentException('Package should have dist or source specified');
@@ -135,9 +137,9 @@ class DownloadManager
         $downloader = $this->getDownloader($initialType);
 
         if ($initialType === $targetType) {
-            $downloader->update($initial, $target, $targetDir);
+            $downloader->update($initial, $target, $targetDir, $useSource);
         } else {
-            $downloader->remove($initial, $targetDir);
+            $downloader->remove($initial, $targetDir, $useSource);
             $this->download($target, $targetDir, $useSource);
         }
     }
@@ -164,6 +166,6 @@ class DownloadManager
             $downloader = $this->getDownloader($package->getSourceType());
         }
 
-        $downloader->remove($package, $targetDir);
+        $downloader->remove($package, $targetDir, $useSource);
     }
 }
