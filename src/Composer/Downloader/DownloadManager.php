@@ -77,35 +77,33 @@ class DownloadManager
     /**
      * Downloads package into target dir.
      *
-     * @param   PackageInterface    $package    package instance
-     * @param   string              $targetDir  target dir
+     * @param   PackageInterface    $package        package instance
+     * @param   string              $targetDir      target dir
+     * @param   Boolean             $preferSource   prefer installation from source
      *
-     * @return  string                          downloader type (source/dist)
+     * @return  string                              downloader type (source/dist)
      *
-     * @throws  InvalidArgumentException        if package have no urls to download from
+     * @throws  InvalidArgumentException            if package have no urls to download from
      */
-    public function download(PackageInterface $package, $targetDir)
+    public function download(PackageInterface $package, $targetDir, $preferSource = null)
     {
-        $sourceType = $package->getSourceType();
-        $distType   = $package->getDistType();
+        $preferSource = null !== $preferSource ? $preferSource : $this->preferSource;
+        $sourceType   = $package->getSourceType();
+        $distType     = $package->getDistType();
 
-        if (!($this->preferSource && $sourceType) && $distType) {
+        if (!($preferSource && $sourceType) && $distType) {
             $downloader = $this->getDownloader($distType);
             $downloader->download(
                 $package, $targetDir, $package->getDistUrl(), $package->getDistSha1Checksum()
             );
-
-            return 'dist';
-        }
-
-        if ($sourceType) {
+            $package->setInstallationSource('dist');
+        } elseif ($sourceType) {
             $downloader = $this->getDownloader($sourceType);
             $downloader->download($package, $targetDir, $package->getSourceUrl());
-
-            return 'source';
+            $package->setInstallationSource('source');
+        } else {
+            throw new \InvalidArgumentException('Package should have dist or source specified');
         }
-
-        throw new \InvalidArgumentException('Package should have dist or source specified');
     }
 
     /**
@@ -114,20 +112,33 @@ class DownloadManager
      * @param   PackageInterface    $initial    initial package version
      * @param   PackageInterface    $target     target package version
      * @param   string              $targetDir  target dir
-     * @param   string              $type       downloader type (source/dist)
      *
      * @throws  InvalidArgumentException        if initial package is not installed
      */
-    public function update(PackageInterface $initial, PackageInterface $target, $targetDir, $type)
+    public function update(PackageInterface $initial, PackageInterface $target, $targetDir)
     {
-        if ('dist' === $type) {
-            $downloader = $this->getDownloader($initial->getDistType());
-            $downloader->update($initial, $target, $targetDir);
-        } elseif ('source' === $type) {
-            $downloader = $this->getDownloader($initial->getSourceType());
+        if (null === $installationType = $initial->getInstallationSource()) {
+            throw new \InvalidArgumentException(
+                'Package '.$initial.' was not been installed propertly and can not be updated'
+            );
+        }
+        $useSource = 'source' === $installationType;
+
+        if (!$useSource) {
+            $initialType = $initial->getDistType();
+            $targetType  = $target->getDistType();
+        } else {
+            $initialType = $initial->getSourceType();
+            $targetType  = $target->getSourceType();
+        }
+
+        $downloader = $this->getDownloader($initialType);
+
+        if ($initialType === $targetType) {
             $downloader->update($initial, $target, $targetDir);
         } else {
-            throw new \InvalidArgumentException('Package should have dist or source specified');
+            $downloader->remove($initial, $targetDir);
+            $this->download($target, $targetDir, $useSource);
         }
     }
 
@@ -136,18 +147,23 @@ class DownloadManager
      *
      * @param   PackageInterface    $package    package instance
      * @param   string              $targetDir  target dir
-     * @param   string              $type       downloader type (source/dist)
      */
-    public function remove(PackageInterface $package, $targetDir, $type)
+    public function remove(PackageInterface $package, $targetDir)
     {
-        if ('dist' === $type) {
-            $downloader = $this->getDownloader($package->getDistType());
-            $downloader->remove($package, $targetDir);
-        } elseif ('source' === $type) {
-            $downloader = $this->getDownloader($package->getSourceType());
-            $downloader->remove($package, $targetDir);
-        } else {
-            throw new \InvalidArgumentException('Package should have dist or source specified');
+        if (null === $installationType = $package->getInstallationSource()) {
+            throw new \InvalidArgumentException(
+                'Package '.$package.' was not been installed propertly and can not be removed'
+            );
         }
+        $useSource = 'source' === $installationType;
+
+        // get proper downloader
+        if (!$useSource) {
+            $downloader = $this->getDownloader($package->getDistType());
+        } else {
+            $downloader = $this->getDownloader($package->getSourceType());
+        }
+
+        $downloader->remove($package, $targetDir);
     }
 }
