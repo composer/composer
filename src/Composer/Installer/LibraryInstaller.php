@@ -81,7 +81,7 @@ class LibraryInstaller implements InstallerInterface
         $downloadPath = $this->directory.DIRECTORY_SEPARATOR.$package->getName();
 
         $this->downloadManager->download($package, $downloadPath);
-        $this->repository->addPackage($package);
+        $this->repository->addPackage(clone $package);
     }
 
     /**
