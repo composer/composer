@@ -20,9 +20,33 @@ use Composer\Package\PackageInterface;
  */
 class PearDownloader implements DownloaderInterface
 {
-    public function download(PackageInterface $package, $path, $url, $checksum = null)
+    /**
+     * {@inheritDoc}
+     */
+    public function download(PackageInterface $package, $path, $url, $checksum = null, $useSource = false)
     {
-        $targetPath = $path . "/" . $package->getName();
+        $this->downloadTo($package, $url, $path, $checksum);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function update(PackageInterface $initial, PackageInterface $target, $path, $useSource = false)
+    {
+        // TODO rm old dir
+        $this->downloadTo($package, $url, $path, $checksum);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function remove(PackageInterface $package, $path, $useSource = false)
+    {
+        echo 'rm -rf '.$path; // TODO
+    }
+
+    private function downloadTo($package, $url, $targetPath, $checksum = null)
+    {
         if (!is_dir($targetPath)) {
             if (file_exists($targetPath)) {
                 throw new \UnexpectedValueException($targetPath.' exists and is not a directory.');

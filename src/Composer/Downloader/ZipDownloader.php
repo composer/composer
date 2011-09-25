@@ -19,13 +19,37 @@ use Composer\Package\PackageInterface;
  */
 class ZipDownloader implements DownloaderInterface
 {
-    public function download(PackageInterface $package, $path, $url, $checksum = null)
+    /**
+     * {@inheritDoc}
+     */
+    public function download(PackageInterface $package, $path, $url, $checksum = null, $useSource = false)
+    {
+        $this->downloadTo($url, $path, $checksum);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function update(PackageInterface $initial, PackageInterface $target, $path, $useSource = false)
+    {
+        // TODO rm old dir
+        $this->downloadTo($url, $path, $checksum);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function remove(PackageInterface $package, $path, $useSource = false)
+    {
+        echo 'rm -rf '.$path; // TODO
+    }
+
+    private function downloadTo($url, $targetPath, $checksum = null)
     {
         if (!class_exists('ZipArchive')) {
             throw new \UnexpectedValueException('You need the zip extension enabled to use the ZipDownloader');
         }
 
-        $targetPath = $path . "/" . $package->getName();
         if (!is_dir($targetPath)) {
             if (file_exists($targetPath)) {
                 throw new \UnexpectedValueException($targetPath.' exists and is not a directory.');
@@ -40,19 +64,18 @@ class ZipDownloader implements DownloaderInterface
         copy($url, $zipName);
 
         if (!file_exists($zipName)) {
-            throw new \UnexpectedValueException($path.' could not be saved into '.$zipName.', make sure the'
+            throw new \UnexpectedValueException($targetPath.' could not be saved into '.$zipName.', make sure the'
                 .' directory is writable and you have internet connectivity.');
         }
 
         if ($checksum && hash_file('sha1', $zipName) !== $checksum) {
-            throw new \UnexpectedValueException('The checksum verification failed for the '.$package->getName().' archive (downloaded from '.$url.'). Installation aborted.');
+            throw new \UnexpectedValueException('The checksum verification failed for the '.basename($path).' archive (downloaded from '.$url.'). Installation aborted.');
         }
 
         $zipArchive = new \ZipArchive();
 
         echo 'Unpacking archive'.PHP_EOL;
         if (true === ($retval = $zipArchive->open($zipName))) {
-            $targetPath = $path.'/'.$package->getName();
             $zipArchive->extractTo($targetPath);
             $zipArchive->close();
             echo 'Cleaning up'.PHP_EOL;
