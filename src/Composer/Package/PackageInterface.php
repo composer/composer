@@ -172,7 +172,8 @@ interface PackageInterface
 
     /**
      * Returns a set of links to packages which are recommended in
-     * combination with this package.
+     * combination with this package. These would most likely be installed
+     * automatically in combination with this package.
      *
      * @return array An array of package links defining recommended packages
      */
@@ -180,7 +181,8 @@ interface PackageInterface
 
     /**
      * Returns a set of links to packages which are suggested in combination
-     * with this package.
+     * with this package. These can be suggested to the user, but will not be
+     * automatically installed with this package.
      *
      * @return array An array of package links defining suggested packages
      */
