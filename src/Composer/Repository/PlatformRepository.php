@@ -53,7 +53,7 @@ class PlatformRepository extends ArrayRepository implements WritableRepositoryIn
             try {
                 $version = $versionParser->normalize($reflExt->getVersion());
             } catch (\UnexpectedValueException $e) {
-                $version = '0.0.0';
+                $version = $versionParser->normalize('0');
             }
 
             $ext = new MemoryPackage('ext/'.strtolower($ext), $version);
