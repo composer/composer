@@ -50,18 +50,16 @@ abstract class FileDownloader implements DownloaderInterface
         echo 'Unpacking archive'.PHP_EOL;
         $this->extract($fileName, $targetPath);
 
-        // TODO: Need to remove this dirty hack or make it less dirty ;)
-        if (false !== strpos($url, '//github.com/')) {
-            $contentDir = glob($targetPath . '/*');
-            if (1 === count($contentDir)) {
-                $contentDir = $contentDir[0];
-                foreach (array_merge(glob($contentDir . '/.*'), glob($contentDir . '/*')) as $file) {
-                    if (trim(basename($file), '.')) {
-                        rename($file, $targetPath . '/' . basename($file));
-                    }
+        // If we have only a one dir inside it suppose to be a package itself
+        $contentDir = glob($targetPath . '/*');
+        if (1 === count($contentDir)) {
+            $contentDir = $contentDir[0];
+            foreach (array_merge(glob($contentDir . '/.*'), glob($contentDir . '/*')) as $file) {
+                if (trim(basename($file), '.')) {
+                    rename($file, $targetPath . '/' . basename($file));
                 }
-                rmdir($contentDir);
             }
+            rmdir($contentDir);
         }
 
         echo 'Cleaning up'.PHP_EOL;
