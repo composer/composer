@@ -83,6 +83,20 @@ interface PackageInterface
     function getExtra();
 
     /**
+     * Sets source from which this package was installed (source/dist).
+     *
+     * @param   string  $type   source/dist
+     */
+    function setInstallationSource($type);
+
+    /**
+     * Returns source from which this package was installed (source/dist).
+     *
+     * @param   string  $type   source/dist
+     */
+    function getInstallationSource();
+
+    /**
      * Returns the repository type of this package, e.g. git, svn
      *
      * @return string The repository type
