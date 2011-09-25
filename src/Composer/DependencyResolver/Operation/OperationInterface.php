@@ -29,13 +29,6 @@ interface OperationInterface
     function getJobType();
 
     /**
-     * Returns installer type to be used with this operation.
-     *
-     * @return  string
-     */
-    function getInstallerType();
-
-    /**
      * Returns operation reason.
      *
      * @return  string

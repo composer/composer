@@ -23,13 +23,6 @@ use Composer\Package\PackageInterface;
 interface InstallerInterface
 {
     /**
-     * Executes specific solver operation.
-     *
-     * @param   OperationInterface  $operation  solver operation instance
-     */
-    function executeOperation(OperationInterface $operation);
-
-    /**
      * Checks that provided package is installed.
      *
      * @param   PackageInterface    $package    package instance
