@@ -63,13 +63,14 @@ EOT
 
         // creating repository pool
         $pool = new Pool;
+        $pool->addRepository($composer->getRepositoryManager()->getLocalRepository());
         foreach ($composer->getRepositoryManager()->getRepositories() as $repository) {
             $pool->addRepository($repository);
         }
 
         // creating requirements request
         $request = new Request($pool);
-        foreach ($this->getPackage()->getRequires() as $link) {
+        foreach ($composer->getPackage()->getRequires() as $link) {
             $request->install($link->getTarget(), $link->getConstraint());
         }
 
