@@ -36,8 +36,6 @@ class VersionConstraint extends SpecificConstraint
             $operator = '==';
         }
 
-        // TODO add third parameter releaseType and match that too
-        // TODO add fourth parameter devSnapshot and match that too
         $this->operator = $operator;
         $this->version = $version;
     }

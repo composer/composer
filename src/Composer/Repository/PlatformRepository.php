@@ -36,12 +36,12 @@ class PlatformRepository extends ArrayRepository implements WritableRepositoryIn
         $versionParser = new VersionParser();
 
         try {
-            $version = $versionParser->parse(PHP_VERSION);
+            $version = $versionParser->normalize(PHP_VERSION);
         } catch (\UnexpectedValueException $e) {
-            $version = $versionParser->parse(preg_replace('#^(.+?)(-.+)?$#', '$1', PHP_VERSION));
+            $version = $versionParser->normalize(preg_replace('#^(.+?)(-.+)?$#', '$1', PHP_VERSION));
         }
 
-        $php = new MemoryPackage('php', $version['version'], $version['type']);
+        $php = new MemoryPackage('php', $version);
         parent::addPackage($php);
 
         foreach (get_loaded_extensions() as $ext) {
@@ -51,12 +51,12 @@ class PlatformRepository extends ArrayRepository implements WritableRepositoryIn
 
             $reflExt = new \ReflectionExtension($ext);
             try {
-                $version = $versionParser->parse($reflExt->getVersion());
+                $version = $versionParser->normalize($reflExt->getVersion());
             } catch (\UnexpectedValueException $e) {
-                $version = array('version' => '0', 'type' => 'stable');
+                $version = $versionParser->normalize('0');
             }
 
-            $ext = new MemoryPackage('ext/'.strtolower($ext), $version['version'], $version['type']);
+            $ext = new MemoryPackage('ext/'.strtolower($ext), $version);
             parent::addPackage($ext);
         }
     }
