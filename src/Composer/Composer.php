@@ -29,9 +29,9 @@ class Composer
     private $package;
     private $lock;
 
-    private $rm;
-    private $dm;
-    private $im;
+    private $repositoryManager;
+    private $downloadManager;
+    private $installationManager;
 
     public function setPackage(PackageInterface $package)
     {
@@ -55,31 +55,31 @@ class Composer
 
     public function setRepositoryManager(RepositoryManager $manager)
     {
-        $this->rm = $manager;
+        $this->repositoryManager = $manager;
     }
 
     public function getRepositoryManager()
     {
-        return $this->rm;
+        return $this->repositoryManager;
     }
 
     public function setDownloadManager(DownloadManager $manager)
     {
-        $this->dm = $manager;
+        $this->downloadManager = $manager;
     }
 
     public function getDownloadManager()
     {
-        return $this->dm;
+        return $this->downloadManager;
     }
 
     public function setInstallationManager(InstallationManager $manager)
     {
-        $this->im = $manager;
+        $this->installationManager = $manager;
     }
 
     public function getInstallationManager()
     {
-        return $this->im;
+        return $this->installationManager;
     }
 }

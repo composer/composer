@@ -24,7 +24,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
         $manager->setDownloader('test', $downloader);
         $this->assertSame($downloader, $manager->getDownloader('test'));
 
-        $this->setExpectedException('UnexpectedValueException');
+        $this->setExpectedException('InvalidArgumentException');
         $manager->getDownloader('unregistered');
     }
 
@@ -475,12 +475,13 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
         $manager->remove($package, 'vendor/pkg');
     }
 
+    /**
+     * @expectedException InvalidArgumentException
+     */
     public function testRemoveBadlyInstalledPackage()
     {
         $package = $this->createPackageMock();
         $manager = new DownloadManager();
-
-        $this->setExpectedException('InvalidArgumentException');
 
         $manager->remove($package, 'vendor/pkg');
     }

@@ -25,8 +25,8 @@ use Composer\Package\PackageInterface;
  */
 class LibraryInstaller implements InstallerInterface
 {
-    private $dir;
-    private $dm;
+    private $directory;
+    private $downloadManager;
     private $repository;
 
     /**
@@ -36,20 +36,20 @@ class LibraryInstaller implements InstallerInterface
      * @param   DownloadManager             $dm         download manager
      * @param   WritableRepositoryInterface $repository repository controller
      */
-    public function __construct($dir, DownloadManager $dm, WritableRepositoryInterface $repository)
+    public function __construct($directory, DownloadManager $dm, WritableRepositoryInterface $repository)
     {
-        $this->dir = $dir;
-        $this->dm  = $dm;
+        $this->directory = $directory;
+        $this->downloadManager = $dm;
 
-        if (!is_dir($this->dir)) {
-            if (file_exists($this->dir)) {
+        if (!is_dir($this->directory)) {
+            if (file_exists($this->directory)) {
                 throw new \UnexpectedValueException(
-                    $this->dir.' exists and is not a directory.'
+                    $this->directory.' exists and is not a directory.'
                 );
             }
-            if (!mkdir($this->dir, 0777, true)) {
+            if (!mkdir($this->directory, 0777, true)) {
                 throw new \UnexpectedValueException(
-                    $this->dir.' does not exist and could not be created.'
+                    $this->directory.' does not exist and could not be created.'
                 );
             }
         }
@@ -78,9 +78,9 @@ class LibraryInstaller implements InstallerInterface
      */
     public function install(PackageInterface $package)
     {
-        $downloadPath = $this->dir.DIRECTORY_SEPARATOR.$package->getName();
+        $downloadPath = $this->directory.DIRECTORY_SEPARATOR.$package->getName();
 
-        $this->dm->download($package, $downloadPath);
+        $this->downloadManager->download($package, $downloadPath);
         $this->repository->addPackage($package);
     }
 
@@ -98,9 +98,9 @@ class LibraryInstaller implements InstallerInterface
             throw new \InvalidArgumentException('Package is not installed: '.$initial);
         }
 
-        $downloadPath = $this->dir.DIRECTORY_SEPARATOR.$initial->getName();
+        $downloadPath = $this->directory.DIRECTORY_SEPARATOR.$initial->getName();
 
-        $this->dm->update($initial, $target, $downloadPath);
+        $this->downloadManager->update($initial, $target, $downloadPath);
         $this->repository->removePackage($initial);
         $this->repository->addPackage($target);
     }
@@ -118,9 +118,9 @@ class LibraryInstaller implements InstallerInterface
             throw new \InvalidArgumentException('Package is not installed: '.$package);
         }
 
-        $downloadPath = $this->dir.DIRECTORY_SEPARATOR.$package->getName();
+        $downloadPath = $this->directory.DIRECTORY_SEPARATOR.$package->getName();
 
-        $this->dm->remove($package, $downloadPath);
+        $this->downloadManager->remove($package, $downloadPath);
         $this->repository->removePackage($package);
     }
 }
