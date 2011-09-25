@@ -60,17 +60,6 @@ class UpdateOperation extends SolverOperation
     }
 
     /**
-     * Returns installer type to be used with this operation.
-     *
-     * @return  string
-     */
-    public function getInstallerType()
-    {
-        return $this->targetPackage->getType();
-    }
-
-
-    /**
      * Returns job type.
      *
      * @return  string

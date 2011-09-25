@@ -50,38 +50,6 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
         $library = new LibraryInstaller($file, $this->dm, $this->repository);
     }
 
-    public function testExecuteOperation()
-    {
-        $library = $this->getMockBuilder('Composer\Installer\LibraryInstaller')
-            ->setConstructorArgs(array($this->dir, $this->dm, $this->repository))
-            ->setMethods(array('install', 'update', 'uninstall'))
-            ->getMock();
-
-        $packageToInstall = $this->createPackageMock();
-        $packageToRemove  = $this->createPackageMock();
-        $packageToUpdate  = $this->createPackageMock();
-        $updatedPackage   = $this->createPackageMock();
-
-        $library
-            ->expects($this->once())
-            ->method('install')
-            ->with($packageToInstall);
-
-        $library
-            ->expects($this->once())
-            ->method('uninstall')
-            ->with($packageToRemove);
-
-        $library
-            ->expects($this->once())
-            ->method('update')
-            ->with($packageToUpdate, $updatedPackage);
-
-        $library->executeOperation(new Operation\InstallOperation($packageToInstall));
-        $library->executeOperation(new Operation\UninstallOperation($packageToRemove));
-        $library->executeOperation(new Operation\UpdateOperation($packageToUpdate, $updatedPackage));
-    }
-
     public function testIsInstalled()
     {
         $library = new LibraryInstaller($this->dir, $this->dm, $this->repository);

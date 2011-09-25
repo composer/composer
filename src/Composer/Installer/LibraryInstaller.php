@@ -58,22 +58,6 @@ class LibraryInstaller implements InstallerInterface
     }
 
     /**
-     * Executes specific solver operation.
-     *
-     * @param   OperationInterface  $operation  solver operation instance
-     */
-    public function executeOperation(OperationInterface $operation)
-    {
-        $method = $operation->getJobType();
-
-        if ('update' === $method) {
-            $this->$method($operation->getInitialPackage(), $operation->getTargetPackage());
-        } else {
-            $this->$method($operation->getPackage());
-        }
-    }
-
-    /**
      * Checks that specific package is installed.
      *
      * @param   PackageInterface    $package    package instance
