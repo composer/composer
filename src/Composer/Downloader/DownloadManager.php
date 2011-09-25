@@ -68,7 +68,7 @@ class DownloadManager
     public function getDownloader($type)
     {
         if (!isset($this->downloaders[$type])) {
-            throw new \UnexpectedValueException('Unknown source type: '.$type);
+            throw new \InvalidArgumentException('Unknown source type: '.$type);
         }
 
         return $this->downloaders[$type];

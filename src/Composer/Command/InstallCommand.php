@@ -85,6 +85,7 @@ EOT
             $installationManager->execute($operation);
         }
 
+        // TODO implement lock
         if (false) {
             $composer->getPackageLock()->lock($localRepo->getPackages());
             $output->writeln('> Locked');

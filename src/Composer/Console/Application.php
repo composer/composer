@@ -18,8 +18,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
 use Composer\Command\InstallCommand;
 use Composer\Composer;
-use Composer\Package\PackageInterface;
-use Composer\Package\PackageLock;
 
 /**
  * The console application that handles the commands
@@ -61,7 +59,7 @@ class Application extends BaseApplication
     }
 
     /**
-     * Looks for all *Command files in Composer's Command directory
+     * Initializes all the composer commands
      */
     protected function registerCommands()
     {

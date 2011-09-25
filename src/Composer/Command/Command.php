@@ -13,17 +13,12 @@
 namespace Composer\Command;
 
 use Symfony\Component\Console\Command\Command as BaseCommand;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
-use Composer\DependencyResolver\Request;
-use Composer\DependencyResolver\Solver;
-use Composer\Installer\Operation;
 
 /**
  * Base class for Composer commands
  *
  * @author Ryan Weaver <ryan@knplabs.com>
- * @authro Konstantin Kudryashov <ever.zet@gmail.com>
+ * @author Konstantin Kudryashov <ever.zet@gmail.com>
  */
 abstract class Command extends BaseCommand
 {
