@@ -12,8 +12,6 @@
 
 namespace Composer\Downloader;
 
-use Composer\Package\PackageInterface;
-
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
@@ -22,7 +20,7 @@ class ZipDownloader implements DownloaderInterface
     /**
      * {@inheritDoc}
      */
-    public function download(PackageInterface $package, $path, $url, $checksum = null, $useSource = false)
+    public function download($path, $url, $checksum = null, $useSource = false)
     {
         $this->downloadTo($url, $path, $checksum);
     }
@@ -30,7 +28,7 @@ class ZipDownloader implements DownloaderInterface
     /**
      * {@inheritDoc}
      */
-    public function update(PackageInterface $initial, PackageInterface $target, $path, $useSource = false)
+    public function update($path, $url, $checksum = null, $useSource = false)
     {
         // TODO rm old dir
         $this->downloadTo($url, $path, $checksum);
@@ -39,7 +37,7 @@ class ZipDownloader implements DownloaderInterface
     /**
      * {@inheritDoc}
      */
-    public function remove(PackageInterface $package, $path, $useSource = false)
+    public function remove($path, $useSource = false)
     {
         echo 'rm -rf '.$path; // TODO
     }

@@ -12,8 +12,6 @@
 
 namespace Composer\Downloader;
 
-use Composer\Package\PackageInterface;
-
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
@@ -22,7 +20,7 @@ class GitDownloader implements DownloaderInterface
     /**
      * {@inheritDoc}
      */
-    public function download(PackageInterface $package, $path, $url, $checksum = null, $useSource = false)
+    public function download($path, $url, $checksum = null, $useSource = false)
     {
         system('git clone '.escapeshellarg($url).' -b master '.escapeshellarg($path));
 
@@ -33,7 +31,7 @@ class GitDownloader implements DownloaderInterface
     /**
      * {@inheritDoc}
      */
-    public function update(PackageInterface $initial, PackageInterface $target, $path, $useSource = false)
+    public function update($path, $url, $checksum = null, $useSource = false)
     {
         $cwd = getcwd();
         chdir($path);
@@ -44,7 +42,7 @@ class GitDownloader implements DownloaderInterface
     /**
      * {@inheritDoc}
      */
-    public function remove(PackageInterface $package, $path, $useSource = false)
+    public function remove($path, $useSource = false)
     {
         echo 'rm -rf '.$path; // TODO
     }
