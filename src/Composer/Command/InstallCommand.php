@@ -12,20 +12,17 @@
 
 namespace Composer\Command;
 
+use Composer\DependencyResolver;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
-use Composer\DependencyResolver\DefaultPolicy;
-use Composer\DependencyResolver\Solver;
-use Composer\Repository\PlatformRepository;
-use Composer\Package\MemoryPackage;
-use Composer\Package\LinkConstraint\VersionConstraint;
+use Composer\DependencyResolver\Operation;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Ryan Weaver <ryan@knplabs.com>
+ * @author Konstantin Kudryashov <ever.zet@gmail.com>
  */
 class InstallCommand extends Command
 {
@@ -48,130 +45,53 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        // TODO this needs a parameter to enable installing from source (i.e. git clone, instead of downloading archives)
-        $sourceInstall = false;
+        $composer = $this->getComposer();
 
-        $config = $this->loadConfig();
+        if ($composer->getPackageLock()->isLocked()) {
+            $output->writeln('<info>Found lockfile. Reading</info>');
 
-        $output->writeln('<info>Loading repositories</info>');
-
-        if (isset($config['repositories'])) {
-            foreach ($config['repositories'] as $name => $spec) {
-                $this->getComposer()->addRepository($name, $spec);
+            $installationManager = $composer->getInstallationManager();
+            foreach ($composer->getPackageLock()->getLockedPackages() as $package) {
+                if (!$installationManager->isPackageInstalled($package)) {
+                    $operation = new Operation\InstallOperation($package, 'lock resolving');
+                    $installationManager->execute($operation);
+                }
             }
+
+            return 0;
         }
 
+        // creating repository pool
         $pool = new Pool;
-
-        $repoInstalled = new PlatformRepository;
-        $pool->addRepository($repoInstalled);
-
-        // TODO check the lock file to see what's currently installed
-        // $repoInstalled->addPackage(new MemoryPackage('$Package', '$Version'));
-
-        $output->writeln('Loading package list');
-
-        foreach ($this->getComposer()->getRepositories() as $repository) {
+        $pool->addRepository($composer->getRepositoryManager()->getLocalRepository());
+        foreach ($composer->getRepositoryManager()->getRepositories() as $repository) {
             $pool->addRepository($repository);
         }
 
+        // creating requirements request
         $request = new Request($pool);
-
-        $output->writeln('Building up request');
-
-        // TODO there should be an update flag or dedicated update command
-        // TODO check lock file to remove packages that disappeared from the requirements
-        foreach ($config['require'] as $name => $version) {
-            if ('latest' === $version) {
-                $request->install($name);
-            } else {
-                preg_match('#^([>=<~]*)([\d.]+.*)$#', $version, $match);
-                if (!$match[1]) {
-                    $match[1] = '=';
-                }
-                $constraint = new VersionConstraint($match[1], $match[2]);
-                $request->install($name, $constraint);
-            }
+        foreach ($composer->getPackage()->getRequires() as $link) {
+            $request->install($link->getTarget(), $link->getConstraint());
         }
 
-        $output->writeln('Solving dependencies');
+        // prepare solver
+        $installationManager = $composer->getInstallationManager();
+        $localRepo           = $composer->getRepositoryManager()->getLocalRepository();
+        $policy              = new DependencyResolver\DefaultPolicy();
+        $solver              = new DependencyResolver\Solver($policy, $pool, $localRepo);
 
-        $policy = new DefaultPolicy;
-        $solver = new Solver($policy, $pool, $repoInstalled);
-        $transaction = $solver->solve($request);
-
-        $lock = array();
-
-        foreach ($transaction as $task) {
-            switch ($task['job']) {
-            case 'install':
-                $package = $task['package'];
-                $output->writeln('> Installing '.$package->getPrettyName());
-                if ($sourceInstall) {
-                    // TODO
-                } else {
-                    if ($package->getDistType()) {
-                        $downloaderType = $package->getDistType();
-                        $type = 'dist';
-                    } elseif ($package->getSourceType()) {
-                        $output->writeln('Package '.$package->getPrettyName().' has no dist url, installing from source instead.');
-                        $downloaderType = $package->getSourceType();
-                        $type = 'source';
-                    } else {
-                        throw new \UnexpectedValueException('Package '.$package->getPrettyName().' has no source or dist URL.');
-                    }
-                    $downloader = $this->getComposer()->getDownloader($downloaderType);
-                    $installer = $this->getComposer()->getInstaller($package->getType());
-                    if (!$installer->install($package, $downloader, $type)) {
-                        throw new \LogicException($package->getPrettyName().' could not be installed.');
-                    }
-                }
-                $lock[$package->getName()] = array('version' => $package->getVersion());
-                break;
-            default:
-                throw new \UnexpectedValueException('Unhandled job type : '.$task['job']);
-            }
+        // solve dependencies and execute operations
+        foreach ($solver->solve($request) as $operation) {
+            $installationManager->execute($operation);
         }
+
+        if (false) {
+            $composer->getPackageLock()->lock($localRepo->getPackages());
+            $output->writeln('> Locked');
+        }
+
+        $localRepo->write();
+
         $output->writeln('> Done');
-
-        $this->storeLockFile($lock, $output);
-    }
-
-    protected function loadConfig()
-    {
-        if (!file_exists('composer.json')) {
-            throw new \UnexpectedValueException('composer.json config file not found in '.getcwd());
-        }
-        $config = json_decode(file_get_contents('composer.json'), true);
-        if (!$config) {
-            switch (json_last_error()) {
-            case JSON_ERROR_NONE:
-                $msg = 'No error has occurred, is your composer.json file empty?';
-                break;
-            case JSON_ERROR_DEPTH:
-                $msg = 'The maximum stack depth has been exceeded';
-                break;
-            case JSON_ERROR_STATE_MISMATCH:
-                $msg = 'Invalid or malformed JSON';
-                break;
-            case JSON_ERROR_CTRL_CHAR:
-                $msg = 'Control character error, possibly incorrectly encoded';
-                break;
-            case JSON_ERROR_SYNTAX:
-                $msg = 'Syntax error';
-                break;
-            case JSON_ERROR_UTF8:
-                $msg = 'Malformed UTF-8 characters, possibly incorrectly encoded';
-                break;
-            }
-            throw new \UnexpectedValueException('Incorrect composer.json file: '.$msg);
-        }
-        return $config;
-    }
-
-    protected function storeLockFile(array $content, OutputInterface $output)
-    {
-        file_put_contents('composer.lock', json_encode($content, JSON_FORCE_OBJECT)."\n");
-        $output->writeln('> composer.lock dumped');
     }
 }

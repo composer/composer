@@ -14,6 +14,7 @@ namespace Composer\DependencyResolver;
 
 use Composer\Repository\RepositoryInterface;
 use Composer\Package\PackageInterface;
+use Composer\DependencyResolver\Operation;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -49,6 +50,7 @@ class Solver
     protected $watches = array();
     protected $removeWatches = array();
     protected $decisionMap;
+    protected $installedPackageMap;
 
     protected $packageToUpdateRule = array();
     protected $packageToFeatureRule = array();
@@ -251,7 +253,7 @@ class Solver
             $this->addedMap[$package->getId()] = true;
 
             $dontFix = 0;
-            if ($this->installed === $package->getRepository() && !isset($this->fixMap[$package->getId()])) {
+            if (isset($this->installedPackageMap[$package->getId()]) && !isset($this->fixMap[$package->getId()])) {
                 $dontFix = 1;
             }
 
@@ -270,7 +272,7 @@ class Solver
                 if ($dontFix) {
                     $foundInstalled = false;
                     foreach ($possibleRequires as $require) {
-                        if ($this->installed === $require->getRepository()) {
+                        if (isset($this->installedPackageMap[$require->getId()])) {
                             $foundInstalled = true;
                             break;
                         }
@@ -293,7 +295,7 @@ class Solver
                 $possibleConflicts = $this->pool->whatProvides($link->getTarget(), $link->getConstraint());
 
                 foreach ($possibleConflicts as $conflict) {
-                    if ($dontFix && $this->installed === $conflict->getRepository()) {
+                    if ($dontFix && isset($this->installedPackageMap[$conflict->getId()])) {
                         continue;
                     }
 
@@ -308,7 +310,7 @@ class Solver
             /** @TODO: if ($this->noInstalledObsoletes) */
             if (true) {
                 $noObsoletes = isset($this->noObsoletes[$package->getId()]);
-                $isInstalled = ($this->installed === $package->getRepository());
+                $isInstalled = (isset($this->installedPackageMap[$package->getId()]));
 
                 foreach ($package->getReplaces() as $link) {
                     $obsoleteProviders = $this->pool->whatProvides($link->getTarget(), $link->getConstraint());
@@ -757,7 +759,7 @@ class Solver
         switch ($job['cmd']) {
             case 'install':
                 foreach ($job['packages'] as $package) {
-                    if ($this->installed === $package->getRepository()) {
+                    if (isset($this->installedPackageMap[$package->getId()])) {
                         $disableQueue[] = array('type' => 'update', 'package' => $package);
                     }
 
@@ -870,7 +872,7 @@ class Solver
 
             case 'remove':
                 foreach ($job['packages'] as $package) {
-                    if ($this->installed === $package->getRepository()) {
+                    if (isset($this->installedPackageMap[$package->getId()])) {
                         $disableQueue[] = array('type' => 'update', 'package' => $package);
                     }
                 }
@@ -932,6 +934,10 @@ class Solver
     {
         $this->jobs = $request->getJobs();
         $installedPackages = $this->installed->getPackages();
+        $this->installedPackageMap = array();
+        foreach ($installedPackages as $package) {
+            $this->installedPackageMap[$package->getId()] = $package;
+        }
 
         $this->decisionMap = new \SplFixedArray($this->pool->getMaxId() + 1);
 
@@ -953,12 +959,12 @@ class Solver
             foreach ($job['packages'] as $package) {
                 switch ($job['cmd']) {
                     case 'fix':
-                        if ($this->installed === $package->getRepository()) {
+                        if (isset($this->installedPackageMap[$package->getId()])) {
                             $this->fixMap[$package->getId()] = true;
                         }
                         break;
                     case 'update':
-                        if ($this->installed === $package->getRepository()) {
+                        if (isset($this->installedPackageMap[$package->getId()])) {
                             $this->updateMap[$package->getId()] = true;
                         }
                         break;
@@ -1038,7 +1044,7 @@ class Solver
                     break;
                 case 'lock':
                     foreach ($job['packages'] as $package) {
-                        if ($this->installed === $package->getRepository()) {
+                        if (isset($this->installedPackageMap[$package->getId()])) {
                             $rule = $this->createInstallRule($package, self::RULE_JOB_LOCK);
                         } else {
                             $rule = $this->createRemoveRule($package, self::RULE_JOB_LOCK);
@@ -1082,7 +1088,7 @@ class Solver
             $package = $literal->getPackage();
 
             // !wanted & installed
-            if (!$literal->isWanted() && $this->installed === $package->getRepository()) {
+            if (!$literal->isWanted() && isset($this->installedPackageMap[$package->getId()])) {
                 $updateRule = $this->packageToUpdateRule[$package->getId()];
 
                 foreach ($updateRule->getLiterals() as $updateLiteral) {
@@ -1097,7 +1103,7 @@ class Solver
             $package = $literal->getPackage();
 
             // wanted & installed || !wanted & !installed
-            if ($literal->isWanted() == ($this->installed === $package->getRepository())) {
+            if ($literal->isWanted() == (isset($this->installedPackageMap[$package->getId()]))) {
                 continue;
             }
 
@@ -1105,28 +1111,21 @@ class Solver
                 if (isset($installMeansUpdateMap[$literal->getPackageId()])) {
                     $source = $installMeansUpdateMap[$literal->getPackageId()];
 
-                    $transaction[] = array(
-                        'job' => 'update',
-                        'from' => $source,
-                        'to' => $package,
-                        'why' => $this->decisionQueueWhy[$i],
+                    $transaction[] = new Operation\UpdateOperation(
+                        $source, $package, $this->decisionQueueWhy[$i]
                     );
 
                     // avoid updates to one package from multiple origins
                     unset($installMeansUpdateMap[$literal->getPackageId()]);
                     $ignoreRemove[$source->getId()] = true;
                 } else {
-                    $transaction[] = array(
-                        'job' => 'install',
-                        'package' => $package,
-                        'why' => $this->decisionQueueWhy[$i],
+                    $transaction[] = new Operation\InstallOperation(
+                        $package, $this->decisionQueueWhy[$i]
                     );
                 }
             } else if (!isset($ignoreRemove[$package->getId()])) {
-                $transaction[] = array(
-                    'job' => 'remove',
-                    'package' => $package,
-                    'why' => $this->decisionQueueWhy[$i],
+                $transaction[] = new Operation\UninstallOperation(
+                    $package, $this->decisionQueueWhy[$i]
                 );
             }
         }

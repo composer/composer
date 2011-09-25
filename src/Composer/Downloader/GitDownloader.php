@@ -19,27 +19,33 @@ use Composer\Package\PackageInterface;
  */
 class GitDownloader implements DownloaderInterface
 {
-    protected $clone;
-
-    public function __construct($clone = true)
+    /**
+     * {@inheritDoc}
+     */
+    public function download(PackageInterface $package, $path, $url, $checksum = null, $useSource = false)
     {
-        $this->clone = $clone;
+        system('git clone '.escapeshellarg($url).' -b master '.escapeshellarg($path));
+
+        // TODO non-source installs:
+        // system('git archive --format=tar --prefix='.escapeshellarg($package->getName()).' --remote='.escapeshellarg($url).' master | tar -xf -');
     }
 
-    public function download(PackageInterface $package, $path, $url, $checksum = null)
+    /**
+     * {@inheritDoc}
+     */
+    public function update(PackageInterface $initial, PackageInterface $target, $path, $useSource = false)
     {
-        if (!is_dir($path)) {
-            if (file_exists($path)) {
-                throw new \UnexpectedValueException($path.' exists and is not a directory.');
-            }
-            if (!mkdir($path, 0777, true)) {
-                throw new \UnexpectedValueException($path.' does not exist and could not be created.');
-            }
-        }
-        if ($this->clone) {
-            system('git clone '.escapeshellarg($url).' -b master '.escapeshellarg($path.'/'.$package->getName()));
-        } else {
-            system('git archive --format=tar --prefix='.escapeshellarg($package->getName()).' --remote='.escapeshellarg($url).' master | tar -xf -');
-        }
+        $cwd = getcwd();
+        chdir($path);
+        system('git pull');
+        chdir($cwd);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function remove(PackageInterface $package, $path, $useSource = false)
+    {
+        echo 'rm -rf '.$path; // TODO
     }
 }

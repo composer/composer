@@ -20,6 +20,7 @@ namespace Composer\Package;
 class MemoryPackage extends BasePackage
 {
     protected $type;
+    protected $installationSource;
     protected $sourceType;
     protected $sourceUrl;
     protected $distType;
@@ -82,6 +83,22 @@ class MemoryPackage extends BasePackage
     public function getExtra()
     {
         return $this->extra;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setInstallationSource($type)
+    {
+        $this-> installationSource = $type;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getInstallationSource()
+    {
+        return $this->installationSource;
     }
 
     /**

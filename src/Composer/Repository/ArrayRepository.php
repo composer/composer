@@ -24,6 +24,26 @@ class ArrayRepository implements RepositoryInterface
     protected $packages;
 
     /**
+     * Checks if specified package in this repository.
+     *
+     * @param   PackageInterface    $package    package instance
+     *
+     * @return  Boolean
+     */
+    public function hasPackage(PackageInterface $package)
+    {
+        $packageId = $package->getUniqueName();
+
+        foreach ($this->getPackages() as $repoPackage) {
+            if ($packageId === $repoPackage->getUniqueName()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Adds a new package to the repository
      *
      * @param PackageInterface $package
@@ -35,6 +55,24 @@ class ArrayRepository implements RepositoryInterface
         }
         $package->setRepository($this);
         $this->packages[] = $package;
+    }
+
+    /**
+     * Removes package from repository.
+     *
+     * @param   PackageInterface    $package    package instance
+     */
+    public function removePackage(PackageInterface $package)
+    {
+        $packageId = $package->getUniqueName();
+
+        foreach ($this->getPackages() as $key => $repoPackage) {
+            if ($packageId === $repoPackage->getUniqueName()) {
+                array_splice($this->packages, $key, 1);
+
+                return;
+            }
+        }
     }
 
     /**
