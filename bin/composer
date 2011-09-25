@@ -19,8 +19,8 @@ $rm->setRepository('Packagist', new Repository\ComposerRepository('http://packag
 // initialize download manager
 $dm = new Downloader\DownloadManager($preferSource = false);
 $dm->setDownloader('git',  new Downloader\GitDownloader());
-$dm->setDownloader('pear', new Downloader\PearDownloader());
-$dm->setDownloader('zip',  new Downloader\ZipDownloader());
+//$dm->setDownloader('pear', new Downloader\PearDownloader());
+//$dm->setDownloader('zip',  new Downloader\ZipDownloader());
 
 // initialize installation manager
 $im = new Installer\InstallationManager();
