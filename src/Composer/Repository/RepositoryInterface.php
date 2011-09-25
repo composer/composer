@@ -23,11 +23,6 @@ use Composer\Package\PackageInterface;
 interface RepositoryInterface extends \Countable
 {
     /**
-     * Initializes repository (reads file, opens connection).
-     */
-    function initialize();
-
-    /**
      * Checks if specified package registered (installed).
      *
      * @param   PackageInterface    $package    package instance
