@@ -37,7 +37,7 @@
             "required": true
         },
         "license": {
-            "type": "string",
+            "type": ["string", "array"],
             "description": "License name",
             "optional": true
         },
@@ -69,6 +69,31 @@
             "optional": true
         },
         "require": {
+            "type": "object",
+            "additionalProperties": true,
+            "optional": true
+        },
+        "replace": {
+            "type": "object",
+            "additionalProperties": true,
+            "optional": true
+        },
+        "conflict": {
+            "type": "object",
+            "additionalProperties": true,
+            "optional": true
+        },
+        "provide": {
+            "type": "object",
+            "additionalProperties": true,
+            "optional": true
+        },
+        "recommend": {
+            "type": "object",
+            "additionalProperties": true,
+            "optional": true
+        },
+        "suggest": {
             "type": "object",
             "additionalProperties": true,
             "optional": true
