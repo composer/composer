@@ -49,9 +49,9 @@ class VersionParser
         // add version modifiers if a version was matched
         if (isset($index)) {
             if (!empty($matches[$index])) {
-                $mod = array('p', 'pl', 'rc');
-                $modNormalized = array('patch', 'patch', 'RC');
-                $version .= '-'.str_replace($mod, $modNormalized, strtolower($matches[$index]))
+                $mod = array('{^pl?$}', '{^rc$}');
+                $modNormalized = array('patch', 'RC');
+                $version .= '-'.preg_replace($mod, $modNormalized, strtolower($matches[$index]))
                     . (!empty($matches[$index+1]) ? $matches[$index+1] : '');
             }
 
