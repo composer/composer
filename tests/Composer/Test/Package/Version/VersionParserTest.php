@@ -35,6 +35,8 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'parses state'      => array('1.0.0RC1dev',         '1.0.0.0-RC1-dev'),
             'CI parsing'        => array('1.0.0-rC15-dev',      '1.0.0.0-RC15-dev'),
             'delimiters'        => array('1.0.0.RC.15-dev',     '1.0.0.0-RC15-dev'),
+            'RC uppercase'      => array('1.0.0-rc1',           '1.0.0.0-RC1'),
+            'patch replace'     => array('1.0.0.pl3-dev',       '1.0.0.0-patch3-dev'),
             'forces w.x.y.z'    => array('1.0-dev',             '1.0.0.0-dev'),
             'forces w.x.y.z'    => array('0',                   '0.0.0.0'),
             'parses long'       => array('10.4.13-beta',        '10.4.13.0-beta'),
