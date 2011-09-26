@@ -56,7 +56,7 @@ class PlatformRepository extends ArrayRepository implements WritableRepositoryIn
                 $version = $versionParser->normalize('0');
             }
 
-            $ext = new MemoryPackage('ext/'.strtolower($ext), $version);
+            $ext = new MemoryPackage('ext-'.strtolower($ext), $version);
             parent::addPackage($ext);
         }
     }
