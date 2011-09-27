@@ -90,7 +90,7 @@ class MemoryPackage extends BasePackage
      */
     public function setInstallationSource($type)
     {
-        $this-> installationSource = $type;
+        $this->installationSource = $type;
     }
 
     /**
@@ -166,7 +166,7 @@ class MemoryPackage extends BasePackage
     }
 
     /**
-     * @param string $url
+     * @param string $sha1checksum
      */
     public function setDistSha1Checksum($sha1checksum)
     {
@@ -274,7 +274,7 @@ class MemoryPackage extends BasePackage
     /**
      * Set the provided virtual packages
      *
-     * @param array $conflicts A set of package links
+     * @param array $provides A set of package links
      */
     public function setProvides(array $provides)
     {
@@ -292,7 +292,7 @@ class MemoryPackage extends BasePackage
     /**
      * Set the packages this one replaces
      *
-     * @param array $conflicts A set of package links
+     * @param array $replaces A set of package links
      */
     public function setReplaces(array $replaces)
     {
@@ -310,7 +310,7 @@ class MemoryPackage extends BasePackage
     /**
      * Set the recommended packages
      *
-     * @param array $conflicts A set of package links
+     * @param array $recommends A set of package links
      */
     public function setRecommends(array $recommends)
     {
@@ -328,7 +328,7 @@ class MemoryPackage extends BasePackage
     /**
      * Set the suggested packages
      *
-     * @param array $conflicts A set of package links
+     * @param array $suggests A set of package links
      */
     public function setSuggests(array $suggests)
     {
