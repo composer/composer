@@ -24,24 +24,24 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
     public function testNormalizeSucceeds($input, $expected)
     {
         $parser = new VersionParser;
-        $this->assertEquals($expected, $parser->normalize($input));
+        $this->assertSame($expected, $parser->normalize($input));
     }
 
     public function successfulNormalizedVersions()
     {
         return array(
             'none'              => array('1.0.0',               '1.0.0.0'),
-            'none'              => array('1.2.3.4',             '1.2.3.4'),
+            'none/2'            => array('1.2.3.4',             '1.2.3.4'),
             'parses state'      => array('1.0.0RC1dev',         '1.0.0.0-RC1-dev'),
             'CI parsing'        => array('1.0.0-rC15-dev',      '1.0.0.0-RC15-dev'),
             'delimiters'        => array('1.0.0.RC.15-dev',     '1.0.0.0-RC15-dev'),
             'RC uppercase'      => array('1.0.0-rc1',           '1.0.0.0-RC1'),
             'patch replace'     => array('1.0.0.pl3-dev',       '1.0.0.0-patch3-dev'),
             'forces w.x.y.z'    => array('1.0-dev',             '1.0.0.0-dev'),
-            'forces w.x.y.z'    => array('0',                   '0.0.0.0'),
+            'forces w.x.y.z/2'  => array('0',                   '0.0.0.0'),
             'parses long'       => array('10.4.13-beta',        '10.4.13.0-beta'),
-            'strips leading v'  => array('v1.0.0',              '1.0.0'),
-            'strips leading v'  => array('v20100102',           '20100102'),
+            'strips leading v'  => array('v1.0.0',              '1.0.0.0'),
+            'strips v/datetime' => array('v20100102',           '20100102'),
             'parses dates y-m'  => array('2010.01',             '2010-01'),
             'parses dates w/ .' => array('2010.01.02',          '2010-01-02'),
             'parses dates w/ -' => array('2010-01-02',          '2010-01-02'),
@@ -78,7 +78,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
     public function testParseConstraintsSimple($input, $expected)
     {
         $parser = new VersionParser;
-        $this->assertEquals((string) $expected, (string) $parser->parseConstraints($input));
+        $this->assertSame((string) $expected, (string) $parser->parseConstraints($input));
     }
 
     public function simpleConstraints()
@@ -104,18 +104,18 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
         $parser = new VersionParser;
         $expected = new MultiConstraint(array($min, $max));
 
-        $this->assertEquals((string) $expected, (string) $parser->parseConstraints($input));
+        $this->assertSame((string) $expected, (string) $parser->parseConstraints($input));
     }
 
     public function wildcardConstraints()
     {
         return array(
-            array('2.*',     new VersionConstraint('>=', '2.0.0.0'), new VersionConstraint('<', '3.0.0.0')),
-            array('20.*',    new VersionConstraint('>=', '20.0.0.0'), new VersionConstraint('<', '21.0.0.0')),
-            array('2.0.*',   new VersionConstraint('>=', '2.0.0.0'), new VersionConstraint('<', '2.1.0.0')),
-            array('2.2.*',   new VersionConstraint('>=', '2.2.0.0'), new VersionConstraint('<', '2.3.0.0')),
-            array('2.10.*',  new VersionConstraint('>=', '2.10.0.0'), new VersionConstraint('<', '2.11.0.0')),
-            array('2.1.3.*', new VersionConstraint('>=', '2.1.3.0'), new VersionConstraint('<', '2.1.4.0')),
+            array('2.*',     new VersionConstraint('>=', '2.0.0.0'), new VersionConstraint('<', '2.9999999.9999999.9999999')),
+            array('20.*',    new VersionConstraint('>=', '20.0.0.0'), new VersionConstraint('<', '20.9999999.9999999.9999999')),
+            array('2.0.*',   new VersionConstraint('>=', '2.0.0.0'), new VersionConstraint('<', '2.0.9999999.9999999')),
+            array('2.2.*',   new VersionConstraint('>=', '2.2.0.0'), new VersionConstraint('<', '2.2.9999999.9999999')),
+            array('2.10.*',  new VersionConstraint('>=', '2.10.0.0'), new VersionConstraint('<', '2.10.9999999.9999999')),
+            array('2.1.3.*', new VersionConstraint('>=', '2.1.3.0'), new VersionConstraint('<', '2.1.3.9999999')),
         );
     }
 
@@ -125,7 +125,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
         $first = new VersionConstraint('>', '2.0.0.0');
         $second = new VersionConstraint('<=', '3.0.0.0');
         $multi = new MultiConstraint(array($first, $second));
-        $this->assertEquals((string) $multi, (string) $parser->parseConstraints('>2.0,<=3.0'));
+        $this->assertSame((string) $multi, (string) $parser->parseConstraints('>2.0,<=3.0'));
     }
 
     /**
