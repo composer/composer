@@ -5,7 +5,6 @@
  *
  * (c) Nils Adermann <naderman@naderman.de>
  *     Jordi Boggiano <j.boggiano@seld.be>
- *     Wil Moore III <wil.moore@wilmoore.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -22,11 +21,8 @@ class MemoryPackageTest extends \PHPUnit_Framework_TestCase
      * Memory package naming, versioning, and marshalling semantics provider
      *
      * demonstrates several versioning schemes
-     *
-     * @todo    if all package types share the same semantics, we could use a data provider
-     *          to test them all in a single suite
      */
-    public function provider_memory_package_semantics()
+    public function ProviderVersioningSchemes()
     {
         $provider[] = array('foo',              '1-beta',       'foo-1-beta');
         $provider[] = array('node',             '0.5.6',        'node-0.5.6');
@@ -40,10 +36,9 @@ class MemoryPackageTest extends \PHPUnit_Framework_TestCase
     /**
      * Tests memory package naming semantics
      *
-     * @test
-     * @dataProvider    provider_memory_package_semantics
+     * @dataProvider    ProviderVersioningSchemes
      */
-    public function Memory_Package_Has_Expected_Naming_Semantics($name, $version, $marshalled)
+    public function testMemoryPackageHasExpectedNamingSemantics($name, $version, $marshalled)
     {
         $package = new MemoryPackage($name, $version);
         $this->assertEquals(strtolower($name), $package->getName());
@@ -52,10 +47,9 @@ class MemoryPackageTest extends \PHPUnit_Framework_TestCase
     /**
      * Tests memory package versioning semantics
      *
-     * @test
-     * @dataProvider    provider_memory_package_semantics
+     * @dataProvider    ProviderVersioningSchemes
      */
-    public function Memory_Package_Has_Expected_Versioning_Semantics($name, $version, $marshalled)
+    public function testMemoryPackageHasExpectedVersioningSemantics($name, $version, $marshalled)
     {
         $package = new MemoryPackage($name, $version);
         $this->assertEquals($version, $package->getVersion());
@@ -64,10 +58,9 @@ class MemoryPackageTest extends \PHPUnit_Framework_TestCase
     /**
      * Tests memory package marshalling/serialization semantics
      *
-     * @test
-     * @dataProvider    provider_memory_package_semantics
+     * @dataProvider    ProviderVersioningSchemes
      */
-    public function Memory_Package_Has_Expected_Marshalling_Semantics($name, $version, $marshalled)
+    public function testMemoryPackageHasExpectedMarshallingSemantics($name, $version, $marshalled)
     {
         $package = new MemoryPackage($name, $version);
         $this->assertEquals($marshalled, (string) $package);
