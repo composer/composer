@@ -42,23 +42,14 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
 
         $package
             ->expects($this->once())
-            ->method('getDistUrl')
-            ->will($this->returnValue('dist_url'));
-        $package
-            ->expects($this->once())
-            ->method('getDistSha1Checksum')
-            ->will($this->returnValue('sha1'));
-
-        $package
-            ->expects($this->once())
             ->method('setInstallationSource')
             ->with('dist');
 
         $pearDownloader = $this->createDownloaderMock();
         $pearDownloader
             ->expects($this->once())
-            ->method('download')
-            ->with($package, 'target_dir', 'dist_url', 'sha1', false);
+            ->method('distDownload')
+            ->with($package, 'target_dir');
 
         $manager = new DownloadManager();
         $manager->setDownloader('pear', $pearDownloader);
@@ -98,23 +89,14 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
 
         $package
             ->expects($this->once())
-            ->method('getDistUrl')
-            ->will($this->returnValue('dist_url'));
-        $package
-            ->expects($this->once())
-            ->method('getDistSha1Checksum')
-            ->will($this->returnValue('sha1'));
-
-        $package
-            ->expects($this->once())
             ->method('setInstallationSource')
             ->with('dist');
 
         $pearDownloader = $this->createDownloaderMock();
         $pearDownloader
             ->expects($this->once())
-            ->method('download')
-            ->with($package, 'target_dir', 'dist_url', 'sha1', false);
+            ->method('distDownload')
+            ->with($package, 'target_dir');
 
         $manager = new DownloadManager();
         $manager->setDownloader('pear', $pearDownloader);
@@ -133,12 +115,6 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('getDistType')
             ->will($this->returnValue(null));
-
-        $package
-            ->expects($this->once())
-            ->method('getSourceUrl')
-            ->will($this->returnValue('source_url'));
-
         $package
             ->expects($this->once())
             ->method('setInstallationSource')
@@ -147,8 +123,8 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
         $gitDownloader = $this->createDownloaderMock();
         $gitDownloader
             ->expects($this->once())
-            ->method('download')
-            ->with($package, 'vendor/pkg', 'source_url', false);
+            ->method('sourceDownload')
+            ->with($package, 'vendor/pkg');
 
         $manager = new DownloadManager();
         $manager->setDownloader('git', $gitDownloader);
@@ -170,19 +146,14 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
 
         $package
             ->expects($this->once())
-            ->method('getSourceUrl')
-            ->will($this->returnValue('source_url'));
-
-        $package
-            ->expects($this->once())
             ->method('setInstallationSource')
             ->with('source');
 
         $gitDownloader = $this->createDownloaderMock();
         $gitDownloader
             ->expects($this->once())
-            ->method('download')
-            ->with($package, 'vendor/pkg', 'source_url', true);
+            ->method('sourceDownload')
+            ->with($package, 'vendor/pkg');
 
         $manager = new DownloadManager();
         $manager->setDownloader('git', $gitDownloader);
@@ -205,23 +176,14 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
 
         $package
             ->expects($this->once())
-            ->method('getDistUrl')
-            ->will($this->returnValue('dist_url'));
-        $package
-            ->expects($this->once())
-            ->method('getDistSha1Checksum')
-            ->will($this->returnValue('sha1'));
-
-        $package
-            ->expects($this->once())
             ->method('setInstallationSource')
             ->with('dist');
 
         $pearDownloader = $this->createDownloaderMock();
         $pearDownloader
             ->expects($this->once())
-            ->method('download')
-            ->with($package, 'target_dir', 'dist_url', 'sha1', true);
+            ->method('distDownload')
+            ->with($package, 'target_dir');
 
         $manager = new DownloadManager();
         $manager->setDownloader('pear', $pearDownloader);
@@ -244,19 +206,14 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
 
         $package
             ->expects($this->once())
-            ->method('getSourceUrl')
-            ->will($this->returnValue('source_url'));
-
-        $package
-            ->expects($this->once())
             ->method('setInstallationSource')
             ->with('source');
 
         $gitDownloader = $this->createDownloaderMock();
         $gitDownloader
             ->expects($this->once())
-            ->method('download')
-            ->with($package, 'vendor/pkg', 'source_url', true);
+            ->method('sourceDownload')
+            ->with($package, 'vendor/pkg');
 
         $manager = new DownloadManager();
         $manager->setDownloader('git', $gitDownloader);
@@ -301,12 +258,16 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('getDistType')
             ->will($this->returnValue('pear'));
+        $target
+            ->expects($this->once())
+            ->method('setInstallationSource')
+            ->with('dist');
 
         $pearDownloader = $this->createDownloaderMock();
         $pearDownloader
             ->expects($this->once())
-            ->method('update')
-            ->with($initial, $target, 'vendor/bundles/FOS/UserBundle', false);
+            ->method('distUpdate')
+            ->with($initial, $target, 'vendor/bundles/FOS/UserBundle');
 
         $manager = new DownloadManager();
         $manager->setDownloader('pear', $pearDownloader);
@@ -336,7 +297,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
         $pearDownloader
             ->expects($this->once())
             ->method('remove')
-            ->with($initial, 'vendor/bundles/FOS/UserBundle', false);
+            ->with($initial, 'vendor/bundles/FOS/UserBundle');
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
             ->setMethods(array('download'))
@@ -371,8 +332,8 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
         $svnDownloader = $this->createDownloaderMock();
         $svnDownloader
             ->expects($this->once())
-            ->method('update')
-            ->with($initial, $target, 'vendor/pkg', true);
+            ->method('sourceUpdate')
+            ->with($initial, $target, 'vendor/pkg');
 
         $manager = new DownloadManager();
         $manager->setDownloader('svn', $svnDownloader);
@@ -402,7 +363,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
         $svnDownloader
             ->expects($this->once())
             ->method('remove')
-            ->with($initial, 'vendor/pkg', true);
+            ->with($initial, 'vendor/pkg');
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
             ->setMethods(array('download'))

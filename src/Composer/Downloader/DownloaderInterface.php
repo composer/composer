@@ -18,19 +18,25 @@ use Composer\Package\PackageInterface;
  * Downloader interface.
  *
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
+ * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 interface DownloaderInterface
 {
     /**
-     * Downloads specific package into specific folder.
+     * Downloads specific package into specific folder from dist.
      *
      * @param   PackageInterface    $package    package instance
      * @param   string              $path       download path
-     * @param   string              $url        download url
-     * @param   string              $checksum   package checksum (for dists)
-     * @param   Boolean             $useSource  download as source
      */
-    function download(PackageInterface $package, $path, $url, $checksum = null, $useSource = false);
+    function distDownload(PackageInterface $package, $path);
+
+    /**
+     * Downloads specific package into specific folder from source.
+     *
+     * @param   PackageInterface    $package    package instance
+     * @param   string              $path       download path
+     */
+    function sourceDownload(PackageInterface $package, $path);
 
     /**
      * Updates specific package in specific folder from initial to target version.
@@ -38,16 +44,23 @@ interface DownloaderInterface
      * @param   PackageInterface    $initial    initial package
      * @param   PackageInterface    $target     updated package
      * @param   string              $path       download path
-     * @param   Boolean             $useSource  download as source
      */
-    function update(PackageInterface $initial, PackageInterface $target, $path, $useSource = false);
+    function distUpdate(PackageInterface $initial, PackageInterface $target, $path);
+
+    /**
+     * Updates specific package in specific folder from initial to target version.
+     *
+     * @param   PackageInterface    $initial    initial package
+     * @param   PackageInterface    $target     updated package
+     * @param   string              $path       download path
+     */
+    function sourceUpdate(PackageInterface $initial, PackageInterface $target, $path);
 
     /**
      * Removes specific package from specific folder.
      *
      * @param   PackageInterface    $package    package instance
      * @param   string              $path       download path
-     * @param   Boolean             $useSource  download as source
      */
-    function remove(PackageInterface $package, $path, $useSource = false);
+    function remove(PackageInterface $package, $path);
 }

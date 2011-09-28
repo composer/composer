@@ -93,19 +93,19 @@ class DownloadManager
 
         if (!($preferSource && $sourceType) && $distType) {
             $downloader = $this->getDownloader($distType);
-            $downloader->download(
-                $package, $targetDir,
-                $package->getDistUrl(), $package->getDistSha1Checksum(),
-                $preferSource
-            );
             $package->setInstallationSource('dist');
-        } elseif ($sourceType) {
-            $downloader = $this->getDownloader($sourceType);
-            $downloader->download($package, $targetDir, $package->getSourceUrl(), $preferSource);
-            $package->setInstallationSource('source');
-        } else {
-            throw new \InvalidArgumentException('Package should have dist or source specified');
+            $downloader->distDownload($package, $targetDir);
+            return 'dist';
         }
+
+        if ($sourceType) {
+            $downloader = $this->getDownloader($sourceType);
+            $package->setInstallationSource('source');
+            $downloader->sourceDownload($package, $targetDir);
+            return 'source';
+        }
+
+        throw new \InvalidArgumentException('Package should have dist or source specified');
     }
 
     /**
@@ -124,6 +124,7 @@ class DownloadManager
                 'Package '.$initial.' was not been installed propertly and can not be updated'
             );
         }
+
         $useSource = 'source' === $installationType;
 
         if (!$useSource) {
@@ -137,9 +138,11 @@ class DownloadManager
         $downloader = $this->getDownloader($initialType);
 
         if ($initialType === $targetType) {
-            $downloader->update($initial, $target, $targetDir, $useSource);
+            $target->setInstallationSource($installationType);
+            $method = $useSource ? 'sourceUpdate' : 'distUpdate';
+            $downloader->$method($initial, $target, $targetDir);
         } else {
-            $downloader->remove($initial, $targetDir, $useSource);
+            $downloader->remove($initial, $targetDir);
             $this->download($target, $targetDir, $useSource);
         }
     }
@@ -157,15 +160,9 @@ class DownloadManager
                 'Package '.$package.' was not been installed propertly and can not be removed'
             );
         }
+
         $useSource = 'source' === $installationType;
-
-        // get proper downloader
-        if (!$useSource) {
-            $downloader = $this->getDownloader($package->getDistType());
-        } else {
-            $downloader = $this->getDownloader($package->getSourceType());
-        }
-
-        $downloader->remove($package, $targetDir, $useSource);
+        $downloaderType = $useSource ? $package->getSourceType() : $package->getDistType();
+        $this->getDownloader($downloaderType)->remove($package, $targetDir);
     }
 }
