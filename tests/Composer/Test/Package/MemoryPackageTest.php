@@ -22,7 +22,7 @@ class MemoryPackageTest extends \PHPUnit_Framework_TestCase
      *
      * demonstrates several versioning schemes
      */
-    public function providerversioningschemes()
+    public function providerVersioningSchemes()
     {
         $provider[] = array('foo',              '1-beta',       'foo-1-beta');
         $provider[] = array('node',             '0.5.6',        'node-0.5.6');
@@ -35,7 +35,7 @@ class MemoryPackageTest extends \PHPUnit_Framework_TestCase
 
     /**
      * Tests memory package naming semantics
-     * @dataProvider providerversioningschemes
+     * @dataProvider providerVersioningSchemes
      */
     public function testMemoryPackageHasExpectedNamingSemantics($name, $version)
     {
@@ -45,7 +45,7 @@ class MemoryPackageTest extends \PHPUnit_Framework_TestCase
 
     /**
      * Tests memory package versioning semantics
-     * @dataProvider providerversioningschemes
+     * @dataProvider providerVersioningSchemes
      */
     public function testMemoryPackageHasExpectedVersioningSemantics($name, $version)
     {
@@ -55,7 +55,7 @@ class MemoryPackageTest extends \PHPUnit_Framework_TestCase
 
     /**
      * Tests memory package marshalling/serialization semantics
-     * @dataProvider providerversioningschemes
+     * @dataProvider providerVersioningSchemes
      */
     public function testMemoryPackageHasExpectedMarshallingSemantics($name, $version, $marshalled)
     {
