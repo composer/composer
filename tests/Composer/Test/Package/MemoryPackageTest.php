@@ -16,13 +16,51 @@ use Composer\Package\MemoryPackage;
 
 class MemoryPackageTest extends \PHPUnit_Framework_TestCase
 {
-    public function testMemoryPackage()
+
+    /**
+     * Memory package naming, versioning, and marshalling semantics provider
+     *
+     * demonstrates several versioning schemes
+     */
+    public function providerVersioningSchemes()
     {
-        $package = new MemoryPackage('foo', '1-beta');
+        $provider[] = array('foo',              '1-beta',       'foo-1-beta');
+        $provider[] = array('node',             '0.5.6',        'node-0.5.6');
+        $provider[] = array('li3',              '0.10',         'li3-0.10');
+        $provider[] = array('mongodb_odm',      '1.0.0BETA3',   'mongodb_odm-1.0.0BETA3');
+        $provider[] = array('DoctrineCommon',   '2.2.0-DEV',    'doctrinecommon-2.2.0-DEV');
 
-        $this->assertEquals('foo', $package->getName());
-        $this->assertEquals('1-beta', $package->getVersion());
-
-        $this->assertEquals('foo-1-beta', (string) $package);
+        return $provider;
     }
+
+    /**
+     * Tests memory package naming semantics
+     * @dataProvider providerVersioningSchemes
+     */
+    public function testMemoryPackageHasExpectedNamingSemantics($name, $version)
+    {
+        $package = new MemoryPackage($name, $version);
+        $this->assertEquals(strtolower($name), $package->getName());
+    }
+
+    /**
+     * Tests memory package versioning semantics
+     * @dataProvider providerVersioningSchemes
+     */
+    public function testMemoryPackageHasExpectedVersioningSemantics($name, $version)
+    {
+        $package = new MemoryPackage($name, $version);
+        $this->assertEquals($version, $package->getVersion());
+    }
+
+    /**
+     * Tests memory package marshalling/serialization semantics
+     * @dataProvider providerVersioningSchemes
+     */
+    public function testMemoryPackageHasExpectedMarshallingSemantics($name, $version, $marshalled)
+    {
+        $package = new MemoryPackage($name, $version);
+        $this->assertEquals($marshalled, (string) $package);
+    }
+
 }
