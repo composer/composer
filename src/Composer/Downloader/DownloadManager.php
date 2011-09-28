@@ -81,8 +81,6 @@ class DownloadManager
      * @param   string              $targetDir      target dir
      * @param   Boolean             $preferSource   prefer installation from source
      *
-     * @return  string                              downloader type (source/dist)
-     *
      * @throws  InvalidArgumentException            if package have no urls to download from
      */
     public function download(PackageInterface $package, $targetDir, $preferSource = null)
@@ -95,14 +93,16 @@ class DownloadManager
             $downloader = $this->getDownloader($distType);
             $package->setInstallationSource('dist');
             $downloader->distDownload($package, $targetDir);
-            return 'dist';
+
+            return;
         }
 
         if ($sourceType) {
             $downloader = $this->getDownloader($sourceType);
             $package->setInstallationSource('source');
             $downloader->sourceDownload($package, $targetDir);
-            return 'source';
+
+            return;
         }
 
         throw new \InvalidArgumentException('Package should have dist or source specified');
