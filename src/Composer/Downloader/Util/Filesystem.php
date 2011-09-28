@@ -10,19 +10,19 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Downloader;
-
-use Composer\Package\PackageInterface;
+namespace Composer\Downloader\Util;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class PearDownloader extends FileDownloader
+class Filesystem
 {
-    protected function extract($file, $path)
+    public function remove($directory)
     {
-        system(sprintf('tar -zxf %s', escapeshellarg($file)));
-        @unlink($path . '/package.sig');
-        @unlink($path . '/package.xml');
+        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+            system(sprintf('rmdir /S /Q %s', escapeshellarg(realpath($directory))));
+        } else {
+            system(sprintf('rm -rf %s', escapeshellarg($directory)));
+        }
     }
 }

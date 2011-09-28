@@ -22,30 +22,63 @@ class GitDownloader implements DownloaderInterface
     /**
      * {@inheritDoc}
      */
-    public function download(PackageInterface $package, $path, $url, $checksum = null, $useSource = false)
+    public function distDownload(PackageInterface $package, $path)
     {
-        system('git clone '.escapeshellarg($url).' -b master '.escapeshellarg($path));
-
-        // TODO non-source installs:
-        // system('git archive --format=tar --prefix='.escapeshellarg($package->getName()).' --remote='.escapeshellarg($url).' master | tar -xf -');
+        $url = escapeshellarg($package->getDistUrl());
+        $ref = escapeshellarg($package->getDistReference());
+        system(sprintf('git archive --format=tar --prefix=%s --remote=%s %s | tar -xf -', $path, $url, $ref));
     }
 
     /**
      * {@inheritDoc}
      */
-    public function update(PackageInterface $initial, PackageInterface $target, $path, $useSource = false)
+    public function sourceDownload(PackageInterface $package, $path)
     {
-        $cwd = getcwd();
-        chdir($path);
-        system('git pull');
-        chdir($cwd);
+        if (!$package->getSourceReference()) {
+            throw new \InvalidArgumentException('The given package is missing reference information');
+        }
+
+        $url = escapeshellarg($package->getSourceUrl());
+        $ref = escapeshellarg($package->getSourceReference());
+        system(sprintf('git clone %s %s && cd %2$s && git reset --hard %s', $url, $path, $ref));
     }
 
     /**
      * {@inheritDoc}
      */
-    public function remove(PackageInterface $package, $path, $useSource = false)
+    public function distUpdate(PackageInterface $initial, PackageInterface $target, $path)
     {
-        echo 'rm -rf '.$path; // TODO
+        throw new \Exception('Updating dist installs from git is not implemented yet');
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function sourceUpdate(PackageInterface $initial, PackageInterface $target, $path)
+    {
+        if (!$target->getSourceReference()) {
+            throw new \InvalidArgumentException('The given package is missing reference information');
+        }
+
+        $this->enforceCleanDirectory($path);
+        system(sprintf('cd %s && git fetch && git reset --hard %s', $path, $target->getSourceReference()));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function remove(PackageInterface $package, $path)
+    {
+        $this->enforceCleanDirectory($path);
+        $fs = new Util\Filesystem();
+        $fs->remove($path);
+    }
+
+    private function enforceCleanDirectory($path)
+    {
+        exec(sprintf('cd %s && git status -s', $path), $output);
+        if (implode('', $output)) {
+            throw new \RuntimeException('Source directory has uncommitted changes');
+        }
     }
 }
