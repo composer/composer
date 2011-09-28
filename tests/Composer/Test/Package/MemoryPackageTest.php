@@ -37,8 +37,11 @@ class MemoryPackageTest extends \PHPUnit_Framework_TestCase
      * Tests memory package naming semantics
      *
      * @dataProvider    ProviderVersioningSchemes
+     *
+     * @param   string  $name
+     * @param   string  $version
      */
-    public function testMemoryPackageHasExpectedNamingSemantics($name, $version, $marshalled)
+    public function testMemoryPackageHasExpectedNamingSemantics($name, $version)
     {
         $package = new MemoryPackage($name, $version);
         $this->assertEquals(strtolower($name), $package->getName());
@@ -48,8 +51,11 @@ class MemoryPackageTest extends \PHPUnit_Framework_TestCase
      * Tests memory package versioning semantics
      *
      * @dataProvider    ProviderVersioningSchemes
+     *
+     * @param   string  $name
+     * @param   string  $version
      */
-    public function testMemoryPackageHasExpectedVersioningSemantics($name, $version, $marshalled)
+    public function testMemoryPackageHasExpectedVersioningSemantics($name, $version)
     {
         $package = new MemoryPackage($name, $version);
         $this->assertEquals($version, $package->getVersion());
@@ -59,6 +65,10 @@ class MemoryPackageTest extends \PHPUnit_Framework_TestCase
      * Tests memory package marshalling/serialization semantics
      *
      * @dataProvider    ProviderVersioningSchemes
+     *
+     * @param   string  $name
+     * @param   string  $version
+     * @param   string  $marshalled
      */
     public function testMemoryPackageHasExpectedMarshallingSemantics($name, $version, $marshalled)
     {
