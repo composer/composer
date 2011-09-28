@@ -111,6 +111,13 @@ interface PackageInterface
     function getSourceUrl();
 
     /**
+     * Returns the repository reference of this package, e.g. master, 1.0.0 or a commit hash for git
+     *
+     * @return string The repository reference
+     */
+    function getSourceReference();
+
+    /**
      * Returns the type of the distribution archive of this version, e.g. zip, tarball
      *
      * @return string The repository type
@@ -123,6 +130,13 @@ interface PackageInterface
      * @return string
      */
     function getDistUrl();
+
+    /**
+     * Returns the reference of the distribution archive of this version, e.g. master, 1.0.0 or a commit hash for git
+     *
+     * @return string
+     */
+    function getDistReference();
 
     /**
      * Returns the sha1 checksum for the distribution archive of this version

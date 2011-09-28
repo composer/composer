@@ -65,6 +65,7 @@ class ArrayLoader
             }
             $package->setSourceType($config['source']['type']);
             $package->setSourceUrl($config['source']['url']);
+            $package->setSourceReference($config['source']['reference']);
         }
 
         if (isset($config['dist'])) {
@@ -79,6 +80,7 @@ class ArrayLoader
             }
             $package->setDistType($config['dist']['type']);
             $package->setDistUrl($config['dist']['url']);
+            $package->setDistReference($config['dist']['reference']);
             $package->setDistSha1Checksum($config['dist']['shasum']);
         }
 

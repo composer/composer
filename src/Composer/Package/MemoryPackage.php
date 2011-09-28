@@ -23,8 +23,10 @@ class MemoryPackage extends BasePackage
     protected $installationSource;
     protected $sourceType;
     protected $sourceUrl;
+    protected $sourceReference;
     protected $distType;
     protected $distUrl;
+    protected $distReference;
     protected $distSha1Checksum;
     protected $releaseType;
     protected $version;
@@ -134,6 +136,22 @@ class MemoryPackage extends BasePackage
     }
 
     /**
+     * @param string $reference
+     */
+    public function setSourceReference($reference)
+    {
+        $this->sourceReference = $reference;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getSourceReference()
+    {
+        return $this->sourceReference;
+    }
+
+    /**
      * @param string $type
      */
     public function setDistType($type)
@@ -163,6 +181,22 @@ class MemoryPackage extends BasePackage
     public function getDistUrl()
     {
         return $this->distUrl;
+    }
+
+    /**
+     * @param string $reference
+     */
+    public function setDistReference($reference)
+    {
+        $this->distReference = $reference;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getDistReference()
+    {
+        return $this->distReference;
     }
 
     /**
