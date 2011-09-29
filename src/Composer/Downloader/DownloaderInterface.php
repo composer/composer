@@ -23,20 +23,19 @@ use Composer\Package\PackageInterface;
 interface DownloaderInterface
 {
     /**
-     * Downloads specific package into specific folder from dist.
+     * Returns installation source (either source or dist).
      *
-     * @param   PackageInterface    $package    package instance
-     * @param   string              $path       download path
+     * @return  string                          "source" or "dist"
      */
-    function distDownload(PackageInterface $package, $path);
+    function getInstallationSource();
 
     /**
-     * Downloads specific package into specific folder from source.
+     * Downloads specific package into specific folder.
      *
      * @param   PackageInterface    $package    package instance
      * @param   string              $path       download path
      */
-    function sourceDownload(PackageInterface $package, $path);
+    function download(PackageInterface $package, $path);
 
     /**
      * Updates specific package in specific folder from initial to target version.
@@ -45,16 +44,7 @@ interface DownloaderInterface
      * @param   PackageInterface    $target     updated package
      * @param   string              $path       download path
      */
-    function distUpdate(PackageInterface $initial, PackageInterface $target, $path);
-
-    /**
-     * Updates specific package in specific folder from initial to target version.
-     *
-     * @param   PackageInterface    $initial    initial package
-     * @param   PackageInterface    $target     updated package
-     * @param   string              $path       download path
-     */
-    function sourceUpdate(PackageInterface $initial, PackageInterface $target, $path);
+    function update(PackageInterface $initial, PackageInterface $target, $path);
 
     /**
      * Removes specific package from specific folder.
