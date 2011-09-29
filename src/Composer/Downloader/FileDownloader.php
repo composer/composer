@@ -24,50 +24,19 @@ abstract class FileDownloader implements DownloaderInterface
     /**
      * {@inheritDoc}
      */
-    public function distDownload(PackageInterface $package, $path)
+    public function getInstallationSource()
     {
-        $this->download($package->getDistUrl(), $path, $package->getDistSha1Checksum());
+        return 'dist';
     }
 
     /**
      * {@inheritDoc}
      */
-    public function sourceDownload(PackageInterface $package, $path)
+    public function download(PackageInterface $package, $path)
     {
-        $this->download($package->getSourceUrl(), $path);
-    }
+        $url = $package->getDistUrl();
+        $checksum = $package->getDistSha1Checksum();
 
-    /**
-     * {@inheritDoc}
-     */
-    public function distUpdate(PackageInterface $initial, PackageInterface $target, $path)
-    {
-        $fs = new Util\Filesystem();
-        $fs->remove($path);
-        $this->download($target->getDistUrl(), $path, $target->getDistSha1Checksum());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function sourceUpdate(PackageInterface $initial, PackageInterface $target, $path)
-    {
-        $fs = new Util\Filesystem();
-        $fs->remove($path);
-        $this->download($target->getSourceUrl(), $path);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function remove(PackageInterface $package, $path)
-    {
-        $fs = new Util\Filesystem();
-        $fs->remove($path);
-    }
-
-    public function download($url, $path, $checksum = null)
-    {
         if (!is_dir($path)) {
             if (file_exists($path)) {
                 throw new \UnexpectedValueException($path.' exists and is not a directory');
@@ -110,6 +79,25 @@ abstract class FileDownloader implements DownloaderInterface
             }
             rmdir($contentDir);
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function update(PackageInterface $initial, PackageInterface $target, $path)
+    {
+        $fs = new Util\Filesystem();
+        $fs->remove($path);
+        $this->download($target, $path);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function remove(PackageInterface $package, $path)
+    {
+        $fs = new Util\Filesystem();
+        $fs->remove($path);
     }
 
     /**
