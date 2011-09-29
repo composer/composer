@@ -15,20 +15,19 @@ namespace Composer\Downloader;
 use Composer\Package\PackageInterface;
 
 /**
- * Downloader for pear packages
+ * Downloader for tar files: tar, tar.gz or tar.bz2
  *
- * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  */
-class PearDownloader extends TarDownloader
+class TarDownloader extends FileDownloader
 {
     /**
      * {@inheritDoc}
      */
     protected function extract($file, $path)
     {
-        parent::extract($file, $path);
-        @unlink($path . '/package.sig');
-        @unlink($path . '/package.xml');
+        // Can throw an UnexpectedValueException
+        $archive = new \PharData($file);
+        $archive->extractTo($path);
     }
 }
