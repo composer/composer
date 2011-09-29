@@ -22,17 +22,15 @@ class GitDownloader implements DownloaderInterface
     /**
      * {@inheritDoc}
      */
-    public function distDownload(PackageInterface $package, $path)
+    public function getInstallationSource()
     {
-        $url = escapeshellarg($package->getDistUrl());
-        $ref = escapeshellarg($package->getDistReference());
-        system(sprintf('git archive --format=tar --prefix=%s --remote=%s %s | tar -xf -', $path, $url, $ref));
+        return 'source';
     }
 
     /**
      * {@inheritDoc}
      */
-    public function sourceDownload(PackageInterface $package, $path)
+    public function download(PackageInterface $package, $path)
     {
         if (!$package->getSourceReference()) {
             throw new \InvalidArgumentException('The given package is missing reference information');
@@ -46,15 +44,7 @@ class GitDownloader implements DownloaderInterface
     /**
      * {@inheritDoc}
      */
-    public function distUpdate(PackageInterface $initial, PackageInterface $target, $path)
-    {
-        throw new \Exception('Updating dist installs from git is not implemented yet');
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function sourceUpdate(PackageInterface $initial, PackageInterface $target, $path)
+    public function update(PackageInterface $initial, PackageInterface $target, $path)
     {
         if (!$target->getSourceReference()) {
             throw new \InvalidArgumentException('The given package is missing reference information');
