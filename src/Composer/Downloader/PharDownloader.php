@@ -29,5 +29,10 @@ class PharDownloader extends FileDownloader
         // Can throw an UnexpectedValueException
         $archive = new \Phar($file);
         $archive->extractTo($path);
+        /* TODO: handle openssl signed phars
+         * https://github.com/composer/composer/pull/33#issuecomment-2250768
+         * https://github.com/koto/phar-util
+         * http://blog.kotowicz.net/2010/08/hardening-php-how-to-securely-include.html
+         */
     }
 }
