@@ -88,7 +88,7 @@ class ArrayLoader
             if (isset($config[$type])) {
                 $method = 'set'.ucfirst($description);
                 $package->{$method}(
-                    $this->loadLinksFromConfig($package->getName(), $description, $config['require'])
+                    $this->loadLinksFromConfig($package->getName(), $description, $config[$type])
                 );
             }
         }
