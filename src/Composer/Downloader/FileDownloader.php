@@ -105,6 +105,8 @@ abstract class FileDownloader implements DownloaderInterface
      *
      * @param string $file Extracted file
      * @param string $path Directory
+     *
+     * @throws \UnexpectedValueException If can not extract downloaded file to path
      */
     protected abstract function extract($file, $path);
 }
