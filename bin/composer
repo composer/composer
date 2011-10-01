@@ -8,6 +8,7 @@ use Composer\Installer;
 use Composer\Downloader;
 use Composer\Repository;
 use Composer\Package;
+use Composer\Json\JsonFile;
 use Composer\Console\Application as ComposerApplication;
 
 // initialize repository manager
@@ -29,10 +30,14 @@ $im->setInstaller('library', new Installer\LibraryInstaller('vendor', $dm, $rm->
 $loader  = new Package\Loader\JsonLoader();
 $package = $loader->load('composer.json');
 
+
+// init locker
+$locker = new Package\Locker(new JsonFile('composer.lock'), $rm);
+
 // initialize composer
 $composer = new Composer();
 $composer->setPackage($package);
-$composer->setPackageLock(new Package\PackageLock('composer.lock'));
+$composer->setLocker($locker);
 $composer->setRepositoryManager($rm);
 $composer->setDownloadManager($dm);
 $composer->setInstallationManager($im);

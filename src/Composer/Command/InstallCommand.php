@@ -47,11 +47,11 @@ EOT
     {
         $composer = $this->getComposer();
 
-        if ($composer->getPackageLock()->isLocked()) {
+        if ($composer->getLocker()->isLocked()) {
             $output->writeln('<info>Found lockfile. Reading</info>');
 
             $installationManager = $composer->getInstallationManager();
-            foreach ($composer->getPackageLock()->getLockedPackages() as $package) {
+            foreach ($composer->getLocker()->getLockedPackages() as $package) {
                 if (!$installationManager->isPackageInstalled($package)) {
                     $operation = new Operation\InstallOperation($package, 'lock resolving');
                     $installationManager->execute($operation);
@@ -85,14 +85,10 @@ EOT
             $installationManager->execute($operation);
         }
 
-        // TODO implement lock
-        if (false) {
-            $composer->getPackageLock()->lock($localRepo->getPackages());
-            $output->writeln('> Locked');
-        }
+        $composer->getLocker()->lockPackages($localRepo->getPackages());
+        $output->writeln('> Locked');
 
         $localRepo->write();
-
         $output->writeln('> Done');
     }
 }
