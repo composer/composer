@@ -16,6 +16,7 @@ use Composer\Package\MemoryPackage;
 use Composer\Package\BasePackage;
 use Composer\Package\Link;
 use Composer\Package\LinkConstraint\VersionConstraint;
+use Composer\Json\JsonFile;
 
 /**
  * FIXME This is majorly broken and incomplete, it was an experiment
@@ -45,7 +46,8 @@ class GitRepository extends ArrayRepository
             if (!file_exists($this->url.'/composer.json')) {
                 throw new \InvalidArgumentException('The repository at url '.$this->url.' does not contain a composer.json file.');
             }
-            $config = json_decode(file_get_contents($this->url.'/composer.json'), true);
+            $json   = new JsonFile($this->url.'/composer.json');
+            $fonfig = $json->read();
             if (!$config) {
                 throw new \UnexpectedValueException('Config file could not be parsed: '.$this->url.'/composer.json. Probably a JSON syntax error.');
             }
