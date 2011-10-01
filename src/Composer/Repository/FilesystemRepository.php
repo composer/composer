@@ -43,7 +43,11 @@ class FilesystemRepository extends ArrayRepository implements WritableRepository
     {
         parent::initialize();
 
-        $packages = $this->file->read();
+        $packages = null;
+        if ($this->file->exists()) {
+            $packages = $this->file->read();
+        }
+
         if (is_array($packages)) {
             $loader = new ArrayLoader();
             foreach ($packages as $package) {
