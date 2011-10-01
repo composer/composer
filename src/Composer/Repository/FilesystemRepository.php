@@ -12,6 +12,7 @@
 
 namespace Composer\Repository;
 
+use Composer\Json\JsonFile;
 use Composer\Package\PackageInterface;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
@@ -28,25 +29,11 @@ class FilesystemRepository extends ArrayRepository implements WritableRepository
     /**
      * Initializes filesystem repository.
      *
-     * @param   string  $group  registry (installer) group
+     * @param   JsonFile    $repositoryFile repository json file
      */
-    public function __construct($repositoryFile)
+    public function __construct(JsonFile $repositoryFile)
     {
         $this->file = $repositoryFile;
-        $path       = dirname($this->file);
-
-        if (!is_dir($path)) {
-            if (file_exists($path)) {
-                throw new \UnexpectedValueException(
-                    $path.' exists and is not a directory.'
-                );
-            }
-            if (!mkdir($path, 0777, true)) {
-                throw new \UnexpectedValueException(
-                    $path.' does not exist and could not be created.'
-                );
-            }
-        }
     }
 
     /**
@@ -56,8 +43,7 @@ class FilesystemRepository extends ArrayRepository implements WritableRepository
     {
         parent::initialize();
 
-        $packages = @json_decode(file_get_contents($this->file), true);
-
+        $packages = $this->file->read();
         if (is_array($packages)) {
             $loader = new ArrayLoader();
             foreach ($packages as $package) {
@@ -77,6 +63,6 @@ class FilesystemRepository extends ArrayRepository implements WritableRepository
             $packages[] = $dumper->dump($package);
         }
 
-        file_put_contents($this->file, json_encode($packages));
+        $this->file->write($packages);
     }
 }
