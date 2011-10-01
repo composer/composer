@@ -24,6 +24,23 @@ class ArrayRepository implements RepositoryInterface
     protected $packages;
 
     /**
+     * Searches for a package by it's name and version (if has one).
+     *
+     * @param   string  $name       package name
+     * @param   string  $version    package version
+     *
+     * @return  PackageInterface|null
+     */
+    public function findPackage($name, $version)
+    {
+        foreach ($this->getPackages() as $package) {
+            if ($name === $package->getName() && $version === $package->getVersion()) {
+                return $package;
+            }
+        }
+    }
+
+    /**
      * Checks if specified package in this repository.
      *
      * @param   PackageInterface    $package    package instance
