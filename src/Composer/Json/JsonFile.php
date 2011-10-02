@@ -52,9 +52,32 @@ class JsonFile
      */
     public function read()
     {
-        $json   = file_get_contents($this->path);
-        $config = json_decode($json, true);
-        if (!$config) {
+        $json = file_get_contents($this->path);
+
+        return static::parseJson($json);
+    }
+
+    /**
+     * Writes json file.
+     *
+     * @param   array   $hash   writes hash into json file
+     */
+    public function write(array $hash)
+    {
+        file_put_contents($this->path, json_encode($hash));
+    }
+
+    /**
+     * Parses json string and returns hash.
+     *
+     * @param   string  $json   json string
+     *
+     * @return  array
+     */
+    public static function parseJson($json)
+    {
+        $hash = json_decode($json, true);
+        if (!$hash) {
             switch (json_last_error()) {
             case JSON_ERROR_NONE:
                 $msg = 'No error has occurred, is your composer.json file empty?';
@@ -78,16 +101,6 @@ class JsonFile
             throw new \UnexpectedValueException('Incorrect composer.json file: '.$msg);
         }
 
-        return $config;
-    }
-
-    /**
-     * Writes json file.
-     *
-     * @param   array   $hash   writes hash into json file
-     */
-    public function write(array $hash)
-    {
-        file_put_contents($this->path, json_encode($hash));
+        return $hash;
     }
 }
