@@ -14,6 +14,7 @@ namespace Composer\Repository;
 
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\LinkConstraint\VersionConstraint;
+use Composer\Json\JsonFile;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -36,7 +37,8 @@ class ComposerRepository extends ArrayRepository
     protected function initialize()
     {
         parent::initialize();
-        $packages = @json_decode(file_get_contents($this->url.'/packages.json'), true);
+        $json     = new JsonFile($this->url.'/packages.json');
+        $packages = $json->read();
         if (!$packages) {
             throw new \UnexpectedValueException('Could not parse package list from the '.$this->url.' repository');
         }
