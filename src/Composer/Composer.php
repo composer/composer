@@ -13,7 +13,7 @@
 namespace Composer;
 
 use Composer\Package\PackageInterface;
-use Composer\Package\PackageLock;
+use Composer\Package\Locker;
 use Composer\Repository\RepositoryManager;
 use Composer\Installer\InstallationManager;
 use Composer\Downloader\DownloadManager;
@@ -27,7 +27,7 @@ class Composer
     const VERSION = '1.0.0-DEV';
 
     private $package;
-    private $lock;
+    private $locker;
 
     private $repositoryManager;
     private $downloadManager;
@@ -43,14 +43,14 @@ class Composer
         return $this->package;
     }
 
-    public function setPackageLock($lock)
+    public function setLocker(Locker $locker)
     {
-        $this->lock = $lock;
+        $this->locker = $locker;
     }
 
-    public function getPackageLock()
+    public function getLocker()
     {
-        return $this->lock;
+        return $this->locker;
     }
 
     public function setRepositoryManager(RepositoryManager $manager)

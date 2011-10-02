@@ -10,57 +10,49 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Package;
+namespace Composer\Json;
 
-use Composer\Package\MemoryPackage;
-use Composer\Package\Version\VersionParser;
+use Composer\Repository\RepositoryManager;
 
 /**
+ * Reads/writes json files.
+ *
  * @author Konstantin Kudryashiv <ever.zet@gmail.com>
  */
-class PackageLock
+class JsonFile
 {
-    private $file;
-    private $isLocked = false;
+    private $path;
 
-    public function __construct($file = 'composer.lock')
+    /**
+     * Initializes json file reader/parser.
+     *
+     * @param   string  $lockFile   path to a lockfile
+     */
+    public function __construct($path)
     {
-        if (file_exists($file)) {
-            $this->file     = $file;
-            $this->isLocked = true;
-        }
+        $this->path = $path;
     }
 
-    public function isLocked()
+    /**
+     * Checks whether json file exists.
+     *
+     * @return  Boolean
+     */
+    public function exists()
     {
-        return $this->isLocked;
+        return is_file($this->path);
     }
 
-    public function getLockedPackages()
+    /**
+     * Reads json file.
+     *
+     * @param   string  $json   path or json string
+     *
+     * @return  array
+     */
+    public function read()
     {
-        $lockList = $this->loadJsonConfig($this->file);
-
-        $versionParser = new VersionParser();
-        $packages      = array();
-        foreach ($lockList as $info) {
-            $version    = $versionParser->normalize($info['version']);
-            $packages[] = new MemoryPackage($info['package'], $version);
-        }
-
-        return $packages;
-    }
-
-    public function lock(array $packages)
-    {
-        // TODO: write installed packages info into $this->file
-    }
-
-    private function loadJsonConfig($json)
-    {
-        if (is_file($json)) {
-            $json = file_get_contents($json);
-        }
-
+        $json   = file_get_contents($this->path);
         $config = json_decode($json, true);
         if (!$config) {
             switch (json_last_error()) {
@@ -87,5 +79,15 @@ class PackageLock
         }
 
         return $config;
+    }
+
+    /**
+     * Writes json file.
+     *
+     * @param   array   $hash   writes hash into json file
+     */
+    public function write(array $hash)
+    {
+        file_put_contents($this->path, json_encode($hash));
     }
 }

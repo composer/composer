@@ -23,6 +23,23 @@ class RepositoryManager
     private $repositories = array();
 
     /**
+     * Searches for a package by it's name and version in managed repositories.
+     *
+     * @param   string  $name       package name
+     * @param   string  $version    package version
+     *
+     * @return  PackageInterface|null
+     */
+    public function findPackage($name, $version)
+    {
+        foreach ($this->repositories as $repository) {
+            if ($package = $repository->findPackage($name, $version)) {
+                return $package;
+            }
+        }
+    }
+
+    /**
      * Sets repository with specific name.
      *
      * @param   string              $type       repository name
