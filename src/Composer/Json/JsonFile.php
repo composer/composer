@@ -13,6 +13,7 @@
 namespace Composer\Json;
 
 use Composer\Repository\RepositoryManager;
+use Composer\Composer;
 
 /**
  * Reads/writes json files.
@@ -52,7 +53,11 @@ class JsonFile
      */
     public function read()
     {
-        $json = file_get_contents($this->path);
+        $context = stream_context_create(array(
+            'http' => array('header' => 'User-Agent: Composer/'.Composer::VERSION."\r\n")
+        ));
+
+        $json = file_get_contents($this->path, false, $context);
 
         return static::parseJson($json);
     }
