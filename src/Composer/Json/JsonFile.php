@@ -91,7 +91,7 @@ class JsonFile
     {
         $data = json_decode($json, true);
 
-        if (false === $data && 'false' !== $json) {
+        if (null === $data && 'null' !== strtolower($json)) {
             switch (json_last_error()) {
             case JSON_ERROR_NONE:
                 $msg = 'No error has occurred, is your composer.json file empty?';
