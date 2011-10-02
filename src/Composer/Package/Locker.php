@@ -88,6 +88,10 @@ class Locker
             $name    = $package->getName();
             $version = $package->getVersion();
 
+            if ('php' === $name || preg_match('{^ext-[a-z0-9_-]+$}', $name)) {
+                continue;
+            }
+
             if (!$name || !$version) {
                 throw new \LogicException(sprintf(
                     'Package "%s" has no version or name and can not be locked', $package
