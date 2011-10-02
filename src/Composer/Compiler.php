@@ -13,17 +13,15 @@
 namespace Composer;
 
 use Symfony\Component\Finder\Finder;
-use Symfony\Component\Process\Process;
 
 /**
  * The Compiler class compiles composer into a phar
  *
  * @author Fabien Potencier <fabien@symfony.com>
+ * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 class Compiler
 {
-    protected $version;
-
     /**
      * Compiles composer into a single phar file
      *
@@ -36,12 +34,6 @@ class Compiler
             unlink($pharFile);
         }
 
-        $process = new Process('git log --pretty="%h %ci" -n1 HEAD');
-        if ($process->run() > 0) {
-            throw new \RuntimeException('The git binary cannot be found.');
-        }
-        $this->version = trim($process->getOutput());
-
         $phar = new \Phar($pharFile, 0, 'composer.phar');
         $phar->setSignatureAlgorithm(\Phar::SHA1);
 
@@ -52,7 +44,7 @@ class Compiler
             ->ignoreVCS(true)
             ->name('*.php')
             ->notName('Compiler.php')
-            ->in(__DIR__.'/../Composer')
+            ->in(__DIR__.'/..')
         ;
 
         foreach ($finder as $file) {
@@ -60,7 +52,7 @@ class Compiler
         }
 
         $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../tests/bootstrap.php'));
-        $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../bin/composer'));
+        $this->addComposerBin($phar);
 
         // Stubs
         $phar->setStub($this->getStub());
@@ -74,7 +66,7 @@ class Compiler
         unset($phar);
     }
 
-    protected function addFile($phar, $file, $strip = true)
+    private function addFile($phar, $file, $strip = true)
     {
         $path = str_replace(dirname(dirname(__DIR__)).DIRECTORY_SEPARATOR, '', $file->getRealPath());
 
@@ -84,14 +76,20 @@ class Compiler
             $content = "\n".file_get_contents($file)."\n";
         }
 
-        $content = str_replace('@package_version@', $this->version, $content);
-
         $phar->addFromString($path, $content);
     }
 
-    protected function getStub()
+    private function addComposerBin($phar)
+    {
+        $content = file_get_contents(__DIR__.'/../../bin/composer');
+        $content = preg_replace('{^#!/usr/bin/env php\s*}', '', $content);
+        $phar->addFromString('bin/composer', $content);
+    }
+
+    private function getStub()
     {
         return <<<'EOF'
+#!/usr/bin/env php
 <?php
 /*
  * This file is part of Composer.
