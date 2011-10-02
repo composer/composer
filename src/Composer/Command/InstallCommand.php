@@ -76,8 +76,29 @@ EOT
         $policy              = new DependencyResolver\DefaultPolicy();
         $solver              = new DependencyResolver\Solver($policy, $pool, $localRepo);
 
-        // solve dependencies and execute operations
-        foreach ($solver->solve($request) as $operation) {
+        // solve dependencies
+        $operations = $solver->solve($request);
+
+        // check for missing deps
+        // TODO this belongs in the solver, but this will do for now to report top-level deps missing at least
+        foreach ($request->getJobs() as $job) {
+            if ('install' === $job['cmd']) {
+                foreach ($localRepo->getPackages() as $package) {
+                    if ($job['packageName'] === $package->getName()) {
+                        continue 2;
+                    }
+                }
+                foreach ($operations as $operation) {
+                    if ('install' === $operation->getJobType() && $job['packageName'] === $operation->getPackage()->getName()) {
+                        continue 2;
+                    }
+                }
+                throw new \UnexpectedValueException('Package '.$job['packageName'].' could not be resolved to an installable package.');
+            }
+        }
+
+        // execute operations
+        foreach ($operations as $operation) {
             $installationManager->execute($operation);
         }
 
