@@ -107,6 +107,11 @@ class JsonFile
                 break;
             case JSON_ERROR_SYNTAX:
                 $msg = 'Syntax error';
+                if (preg_match('#["}\]]\s*(,)\s*\}#', $json, $match, PREG_OFFSET_CAPTURE)) {
+                    $msg .= ', extra comma on line '.(substr_count(substr($json, 0, $match[1][1]), "\n")+1);
+                } elseif (preg_match('#(\'.+?\' *:|: *\'.+?\')#', $json, $match, PREG_OFFSET_CAPTURE)) {
+                    $msg .= ', use double quotes (") instead of single quotes (\') on line '.(substr_count(substr($json, 0, $match[1][1]), "\n")+1);
+                }
                 break;
             case JSON_ERROR_UTF8:
                 $msg = 'Malformed UTF-8 characters, possibly incorrectly encoded';
