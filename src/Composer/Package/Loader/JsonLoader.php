@@ -22,9 +22,9 @@ class JsonLoader extends ArrayLoader
     public function load($json)
     {
         if ($json instanceof JsonFile) {
-            $json = $json->read();
+            $config = $json->read();
         } elseif (is_string($json)) {
-            $json = JsonFile::parseJson($json);
+            $config = JsonFile::parseJson($json);
         }
 
         return parent::load($config);
