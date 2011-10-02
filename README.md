@@ -1,21 +1,37 @@
 Composer - Package Management for PHP
 =====================================
 
-Usage
------
+Composer is a package manager tracking local dependencies of your projects and libraries.
 
-Todo
-----
-- Implement Repository & Package Backends (Git, PEAR, ...)
-- Make other system dependencies available as unremovable packages
-- Create compose CLI tool
+See the [about page](http://packagist.org/about) on [packagist.org](http://packagist.org/) for more information.
+
+Installation / Usage
+--------------------
+
+1. Download the [`composer.phar`](http://packagist.org/get/composer.phar) executable
+2. If you're on a \*nix system, make it executable: `chmod +x composer.phar`
+3. Create a composer.json defining your dependencies. Note that this example is
+a short version for applications that are not meant to be published as packages
+themselves. To create libraries/packages please read the [guidelines](http://packagist.org/about).
+
+    ``` json
+    {
+        "require": {
+            "monolog/monolog": ">=1.0.0"
+        }
+    }
+    ```
+
+4. Run Composer: `php composer.phar install` (on \*nix you can omit the leading `php`)
+5. Browse for more packages on [Packagist](http://packagist.org).
 
 Requirements
 ------------
-PHP 5.3
 
-Author
-------
+PHP 5.3+
+
+Authors
+-------
 
 Nils Adermann - <naderman@naderman.de> - <http://twitter.com/naderman> - <http://www.naderman.de><br />
 Jordi Boggiano - <j.boggiano@seld.be> - <http://twitter.com/seldaek> - <http://seld.be><br />
@@ -29,4 +45,5 @@ Composer is licensed under the MIT License - see the LICENSE file for details
 
 Acknowledgements
 ----------------
-This project started out as a PHP port of openSUSE's [Libzypp satsolver](http://en.opensuse.org/openSUSE:Libzypp_satsolver).
+
+This project's Solver started out as a PHP port of openSUSE's [Libzypp satsolver](http://en.opensuse.org/openSUSE:Libzypp_satsolver).
