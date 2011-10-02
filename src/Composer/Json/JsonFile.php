@@ -64,6 +64,19 @@ class JsonFile
      */
     public function write(array $hash)
     {
+        $dir = dirname($this->path);
+        if (!is_dir($dir)) {
+            if (file_exists($dir)) {
+                throw new \UnexpectedValueException(
+                    $dir.' exists and is not a directory.'
+                );
+            }
+            if (!mkdir($dir, 0777, true)) {
+                throw new \UnexpectedValueException(
+                    $dir.' does not exist and could not be created.'
+                );
+            }
+        }
         file_put_contents($this->path, json_encode($hash));
     }
 
