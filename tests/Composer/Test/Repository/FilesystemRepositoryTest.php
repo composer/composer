@@ -29,6 +29,10 @@ class FilesystemRepositoryTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(array(
                 array('name' => 'package1', 'version' => '1.0.0-beta', 'type' => 'vendor')
             )));
+        $json
+            ->expects($this->once())
+            ->method('exists')
+            ->will($this->returnValue(true));
 
         $packages = $repository->getPackages();
 
@@ -48,6 +52,10 @@ class FilesystemRepositoryTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('read')
             ->will($this->returnValue(array()));
+        $json
+            ->expects($this->once())
+            ->method('exists')
+            ->will($this->returnValue(true));
         $json
             ->expects($this->once())
             ->method('write')
