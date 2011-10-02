@@ -89,8 +89,9 @@ class JsonFile
      */
     public static function parseJson($json)
     {
-        $hash = json_decode($json, true);
-        if (!$hash) {
+        $data = json_decode($json, true);
+
+        if (false === $data && 'false' !== $json) {
             switch (json_last_error()) {
             case JSON_ERROR_NONE:
                 $msg = 'No error has occurred, is your composer.json file empty?';
@@ -114,6 +115,6 @@ class JsonFile
             throw new \UnexpectedValueException('Incorrect composer.json file: '.$msg);
         }
 
-        return $hash;
+        return $data;
     }
 }
