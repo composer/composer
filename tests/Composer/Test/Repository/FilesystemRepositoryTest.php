@@ -13,43 +13,56 @@
 namespace Composer\Repository;
 
 use Composer\Repository\FilesystemRepository;
+use Composer\Package\MemoryPackage;
 
 class FilesystemRepositoryTest extends \PHPUnit_Framework_TestCase
 {
-    private $dir;
-    private $repositoryFile;
-
-    protected function setUp()
+    public function testRepositoryRead()
     {
-        $this->dir = sys_get_temp_dir().'/.composer';
-        $this->repositoryFile = $this->dir.'/some_registry-reg.json';
+        $json = $this->createJsonFileMock();
 
-        if (file_exists($this->repositoryFile)) {
-            unlink($this->repositoryFile);
-        }
+        $repository = new FilesystemRepository($json);
+
+        $json
+            ->expects($this->once())
+            ->method('read')
+            ->will($this->returnValue(array(
+                array('name' => 'package1', 'version' => '1.0.0-beta', 'type' => 'vendor')
+            )));
+
+        $packages = $repository->getPackages();
+
+        $this->assertSame(1, count($packages));
+        $this->assertSame('package1', $packages[0]->getName());
+        $this->assertSame('1.0.0.0-beta', $packages[0]->getVersion());
+        $this->assertSame('vendor', $packages[0]->getType());
     }
 
-    public function testRepositoryReadWrite()
+    public function testRepositoryWrite()
     {
-        $this->assertFileNotExists($this->repositoryFile);
-        $repository = new FilesystemRepository($this->repositoryFile);
+        $json = $this->createJsonFileMock();
 
-        $repository->getPackages();
+        $repository = new FilesystemRepository($json);
+
+        $json
+            ->expects($this->once())
+            ->method('read')
+            ->will($this->returnValue(array()));
+        $json
+            ->expects($this->once())
+            ->method('write')
+            ->with(array(
+                array('name' => 'mypkg', 'type' => 'library', 'names' => array('mypkg'), 'version' => '0.1.10')
+            ));
+
+        $repository->addPackage(new MemoryPackage('mypkg', '0.1.10'));
         $repository->write();
-        $this->assertFileExists($this->repositoryFile);
+    }
 
-        file_put_contents($this->repositoryFile, json_encode(array(
-            array('name' => 'package1', 'version' => '1.0.0-beta', 'type' => 'vendor')
-        )));
-
-        $repository = new FilesystemRepository($this->repositoryFile);
-        $repository->getPackages();
-        $repository->write();
-        $this->assertFileExists($this->repositoryFile);
-
-        $data = json_decode(file_get_contents($this->repositoryFile), true);
-        $this->assertEquals(array(
-            array('name' => 'package1', 'type' => 'vendor', 'version' => '1.0.0.0-beta', 'names' => array('package1'))
-        ), $data);
+    private function createJsonFileMock()
+    {
+        return $this->getMockBuilder('Composer\Json\JsonFile')
+            ->disableOriginalConstructor()
+            ->getMock();
     }
 }
