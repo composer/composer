@@ -9,8 +9,7 @@ Installation / Usage
 --------------------
 
 1. Download the [`composer.phar`](http://packagist.org/get/composer.phar) executable
-2. If you're on a \*nix system, make it executable: `chmod +x composer.phar`
-3. Create a composer.json defining your dependencies. Note that this example is
+2. Create a composer.json defining your dependencies. Note that this example is
 a short version for applications that are not meant to be published as packages
 themselves. To create libraries/packages please read the [guidelines](http://packagist.org/about).
 
@@ -22,8 +21,8 @@ themselves. To create libraries/packages please read the [guidelines](http://pac
     }
     ```
 
-4. Run Composer: `php composer.phar install` (on \*nix you can omit the leading `php`)
-5. Browse for more packages on [Packagist](http://packagist.org).
+3. Run Composer: `php composer.phar install`
+4. Browse for more packages on [Packagist](http://packagist.org).
 
 Requirements
 ------------
