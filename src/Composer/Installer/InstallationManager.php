@@ -128,4 +128,10 @@ class InstallationManager
         $installer = $this->getInstaller($operation->getPackage()->getType());
         $installer->uninstall($operation->getPackage());
     }
+
+    public function getInstallPath(PackageInterface $package)
+    {
+        $installer = $this->getInstaller($package->getType());
+        return $installer->getInstallPath($package);
+    }
 }

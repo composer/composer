@@ -46,6 +46,10 @@ class ArrayLoader
 
         $package->setType(isset($config['type']) ? $config['type'] : 'library');
 
+        if (isset($config['installAs'])) {
+            $package->setInstallAs($config['installAs']);
+        }
+
         if (isset($config['extra'])) {
             $package->setExtra($config['extra']);
         }
@@ -89,6 +93,10 @@ class ArrayLoader
                     $this->loadLinksFromConfig($package->getName(), $description, $config[$type])
                 );
             }
+        }
+
+        if (isset($config['autoload'])) {
+            $package->setAutoload($config['autoload']);
         }
 
         return $package;
