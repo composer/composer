@@ -38,7 +38,9 @@ class ArrayDumper
             'provides',
             'replaces',
             'recommends',
-            'suggests'
+            'suggests',
+            'autoload',
+            'installAs',
         );
 
         $data = array();

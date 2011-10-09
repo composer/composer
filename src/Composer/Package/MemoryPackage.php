@@ -20,6 +20,7 @@ namespace Composer\Package;
 class MemoryPackage extends BasePackage
 {
     protected $type;
+    protected $installAs;
     protected $installationSource;
     protected $sourceType;
     protected $sourceUrl;
@@ -39,6 +40,7 @@ class MemoryPackage extends BasePackage
     protected $replaces = array();
     protected $recommends = array();
     protected $suggests = array();
+    protected $autoload = array();
 
     /**
      * Creates a new in memory package.
@@ -69,6 +71,22 @@ class MemoryPackage extends BasePackage
     public function getType()
     {
         return $this->type ?: 'library';
+    }
+
+    /**
+     * @param string $installAs
+     */
+    public function setInstallAs($installAs)
+    {
+        $this->installAs = $installAs;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getInstallAs()
+    {
+        return $this->installAs;
     }
 
     /**
@@ -375,5 +393,23 @@ class MemoryPackage extends BasePackage
     public function getSuggests()
     {
         return $this->suggests;
+    }
+
+    /**
+     * Set the autoload mapping
+     *
+     * @param array $autoload Mapping of autoloading rules
+     */
+    public function setAutoload(array $autoload)
+    {
+        $this->autoload = $autoload;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getAutoload()
+    {
+        return $this->autoload;
     }
 }
