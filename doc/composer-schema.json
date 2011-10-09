@@ -13,6 +13,10 @@
             "type": "string",
             "optional": true
         },
+        "installAs": {
+            "description": "Override install location of package",
+            "type": "string"
+        },
         "description": {
             "type": "string",
             "description": "Package description",
@@ -102,6 +106,10 @@
             "type": ["object", "array"],
             "additionalProperties": true,
             "optional": true
+        },
+        "autoload": {
+            "type": "object",
+            "additionalProperties": true
         }
     }
 }
