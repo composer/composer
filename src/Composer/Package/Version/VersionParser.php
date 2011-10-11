@@ -34,7 +34,7 @@ class VersionParser
     {
         $version = trim($version);
 
-        if (in_array($version, array('master', 'trunk'))) {
+        if (preg_match('{^(?:master|trunk)(?:[.-]?dev)?$}i', $version)) {
             return '9999999-dev';
         }
 
@@ -64,6 +64,12 @@ class VersionParser
             }
 
             return $version;
+        }
+
+        if (preg_match('{(.*?)[.-]?dev$}i', $version, $match)) {
+            try {
+                return $this->normalizeBranch($match[1]);
+            } catch (\Exception $e) {}
         }
 
         throw new \UnexpectedValueException('Invalid version string '.$version);
@@ -146,10 +152,11 @@ class VersionParser
         }
 
         // match operators constraints
-        if (preg_match('{^(>=?|<=?|==?)?\s*(\d+.*)}', $constraint, $matches)) {
-            $version = $this->normalize($matches[2]);
-
-            return array(new VersionConstraint($matches[1] ?: '=', $version));
+        if (preg_match('{^(>=?|<=?|==?)?\s*(.*)}', $constraint, $matches)) {
+            try {
+                $version = $this->normalize($matches[2]);
+                return array(new VersionConstraint($matches[1] ?: '=', $version));
+            } catch (\Exception $e) {}
         }
 
         throw new \UnexpectedValueException('Could not parse version constraint '.$constraint);
