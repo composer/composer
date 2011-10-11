@@ -34,6 +34,10 @@ class VersionParser
     {
         $version = trim($version);
 
+        if (in_array($version, array('master', 'trunk'))) {
+            return '9999999-dev';
+        }
+
         // match classical versioning
         if (preg_match('{^v?(\d{1,3})(\.\d+)?(\.\d+)?(\.\d+)?'.$this->modifierRegex.'$}i', $version, $matches)) {
             $version = $matches[1]
@@ -66,6 +70,31 @@ class VersionParser
     }
 
     /**
+     * Normalizes a branch name to be able to perform comparisons on it
+     *
+     * @param string $version
+     * @return array
+     */
+    public function normalizeBranch($name)
+    {
+        $name = trim($name);
+
+        if (in_array($name, array('master', 'trunk'))) {
+            return $this->normalize($name);
+        }
+
+        if (preg_match('#^v?(\d+)(\.(?:\d+|[x*]))?(\.(?:\d+|[x*]))?(\.(?:\d+|[x*]))?$#i', $name, $matches)) {
+            $version = '';
+            for ($i = 1; $i < 5; $i++) {
+                $version .= isset($matches[$i]) ? str_replace('*', 'x', $matches[$i]) : '.x';
+            }
+            return str_replace('x', '9999999', $version).'-dev';
+        }
+
+        throw new \UnexpectedValueException('Invalid branch name '.$branch);
+    }
+
+    /**
      * Parses as constraint string into LinkConstraint objects
      *
      * @param string $constraints
@@ -93,7 +122,7 @@ class VersionParser
 
     private function parseConstraint($constraint)
     {
-        if ('*' === $constraint || '*.*' === $constraint || '*.*.*' === $constraint) {
+        if ('*' === $constraint || '*.*' === $constraint || '*.*.*' === $constraint || '*.*.*.*' === $constraint) {
             return array();
         }
 

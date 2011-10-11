@@ -49,6 +49,8 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'parses datetime'   => array('20100102-203040',     '20100102-203040'),
             'parses dt+number'  => array('20100102203040-10',   '20100102203040-10'),
             'parses dt+patch'   => array('20100102-203040-p1',  '20100102-203040-patch1'),
+            'parses master'     => array('master',              '9999999-dev'),
+            'parses trunk'      => array('trunk',               '9999999-dev'),
         );
     }
 
@@ -69,6 +71,30 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'invalid chars'     => array('a'),
             'invalid type'      => array('1.0.0-meh'),
             'too many bits'     => array('1.0.0.0.0'),
+        );
+    }
+
+    /**
+     * @dataProvider successfulNormalizedBranches
+     */
+    public function testNormalizeBranch($input, $expected)
+    {
+        $parser = new VersionParser;
+        $this->assertSame((string) $expected, (string) $parser->normalizeBranch($input));
+    }
+
+    public function successfulNormalizedBranches()
+    {
+        return array(
+            'parses x'              => array('v1.x',        '1.9999999.9999999.9999999-dev'),
+            'parses *'              => array('v1.*',        '1.9999999.9999999.9999999-dev'),
+            'parses digits'         => array('v1.0',        '1.0.9999999.9999999-dev'),
+            'parses long x'         => array('v1.0.x',      '1.0.9999999.9999999-dev'),
+            'parses long *'         => array('v1.0.3.*',    '1.0.3.9999999-dev'),
+            'parses long digits'    => array('v2.4.0',      '2.4.0.9999999-dev'),
+            'parses long digits/2'  => array('2.4.4',       '2.4.4.9999999-dev'),
+            'parses master'         => array('master',      '9999999-dev'),
+            'parses trunk'          => array('trunk',       '9999999-dev'),
         );
     }
 
