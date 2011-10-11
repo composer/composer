@@ -51,6 +51,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'parses dt+patch'   => array('20100102-203040-p1',  '20100102-203040-patch1'),
             'parses master'     => array('master',              '9999999-dev'),
             'parses trunk'      => array('trunk',               '9999999-dev'),
+            'parses trunk/2'    => array('trunk-dev',           '9999999-dev'),
         );
     }
 
@@ -119,6 +120,8 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'no op means eq'    => array('1.2.3',       new VersionConstraint('=', '1.2.3.0')),
             'completes version' => array('=1.0',        new VersionConstraint('=', '1.0.0.0')),
             'accepts spaces'    => array('>= 1.2.3',    new VersionConstraint('>=', '1.2.3.0')),
+            'accepts master'    => array('>=master-dev',    new VersionConstraint('>=', '9999999-dev')),
+            'accepts master/2'  => array('master-dev',      new VersionConstraint('=', '9999999-dev')),
         );
     }
 
