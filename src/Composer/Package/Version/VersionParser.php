@@ -34,6 +34,10 @@ class VersionParser
     {
         $version = trim($version);
 
+        if (preg_match('{^(?:master|trunk)(?:[.-]?dev)?$}i', $version)) {
+            return '9999999-dev';
+        }
+
         // match classical versioning
         if (preg_match('{^v?(\d{1,3})(\.\d+)?(\.\d+)?(\.\d+)?'.$this->modifierRegex.'$}i', $version, $matches)) {
             $version = $matches[1]
@@ -62,7 +66,38 @@ class VersionParser
             return $version;
         }
 
+        if (preg_match('{(.*?)[.-]?dev$}i', $version, $match)) {
+            try {
+                return $this->normalizeBranch($match[1]);
+            } catch (\Exception $e) {}
+        }
+
         throw new \UnexpectedValueException('Invalid version string '.$version);
+    }
+
+    /**
+     * Normalizes a branch name to be able to perform comparisons on it
+     *
+     * @param string $version
+     * @return array
+     */
+    public function normalizeBranch($name)
+    {
+        $name = trim($name);
+
+        if (in_array($name, array('master', 'trunk'))) {
+            return $this->normalize($name);
+        }
+
+        if (preg_match('#^v?(\d+)(\.(?:\d+|[x*]))?(\.(?:\d+|[x*]))?(\.(?:\d+|[x*]))?$#i', $name, $matches)) {
+            $version = '';
+            for ($i = 1; $i < 5; $i++) {
+                $version .= isset($matches[$i]) ? str_replace('*', 'x', $matches[$i]) : '.x';
+            }
+            return str_replace('x', '9999999', $version).'-dev';
+        }
+
+        throw new \UnexpectedValueException('Invalid branch name '.$branch);
     }
 
     /**
@@ -93,7 +128,7 @@ class VersionParser
 
     private function parseConstraint($constraint)
     {
-        if ('*' === $constraint || '*.*' === $constraint || '*.*.*' === $constraint) {
+        if ('*' === $constraint || '*.*' === $constraint || '*.*.*' === $constraint || '*.*.*.*' === $constraint) {
             return array();
         }
 
@@ -117,10 +152,11 @@ class VersionParser
         }
 
         // match operators constraints
-        if (preg_match('{^(>=?|<=?|==?)?\s*(\d+.*)}', $constraint, $matches)) {
-            $version = $this->normalize($matches[2]);
-
-            return array(new VersionConstraint($matches[1] ?: '=', $version));
+        if (preg_match('{^(>=?|<=?|==?)?\s*(.*)}', $constraint, $matches)) {
+            try {
+                $version = $this->normalize($matches[2]);
+                return array(new VersionConstraint($matches[1] ?: '=', $version));
+            } catch (\Exception $e) {}
         }
 
         throw new \UnexpectedValueException('Could not parse version constraint '.$constraint);

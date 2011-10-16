@@ -231,6 +231,60 @@ class SolverTest extends \PHPUnit_Framework_TestCase
         ));
     }
 
+    public function testSkipReplacerOfExistingPackage()
+    {
+        $this->repo->addPackage($packageA = new MemoryPackage('A', '1.0'));
+        $this->repo->addPackage($packageQ = new MemoryPackage('Q', '1.0'));
+        $this->repo->addPackage($packageB = new MemoryPackage('B', '1.0'));
+        $packageA->setRequires(array(new Link('A', 'B', new VersionConstraint('>=', '1.0'), 'requires')));
+        $packageQ->setReplaces(array(new Link('Q', 'B', new VersionConstraint('>=', '1.0'), 'replaces')));
+
+        $this->reposComplete();
+
+        $this->request->install('A');
+
+        $this->checkSolverResult(array(
+            array('job' => 'install', 'package' => $packageB),
+            array('job' => 'install', 'package' => $packageA),
+        ));
+    }
+
+    public function testInstallReplacerOfMissingPackage()
+    {
+        $this->repo->addPackage($packageA = new MemoryPackage('A', '1.0'));
+        $this->repo->addPackage($packageQ = new MemoryPackage('Q', '1.0'));
+        $packageA->setRequires(array(new Link('A', 'B', new VersionConstraint('>=', '1.0'), 'requires')));
+        $packageQ->setReplaces(array(new Link('Q', 'B', new VersionConstraint('>=', '1.0'), 'replaces')));
+
+        $this->reposComplete();
+
+        $this->request->install('A');
+
+        $this->checkSolverResult(array(
+            array('job' => 'install', 'package' => $packageQ),
+            array('job' => 'install', 'package' => $packageA),
+        ));
+    }
+
+    public function testSkipReplacedPackageIfReplacerIsSelected()
+    {
+        $this->repo->addPackage($packageA = new MemoryPackage('A', '1.0'));
+        $this->repo->addPackage($packageQ = new MemoryPackage('Q', '1.0'));
+        $this->repo->addPackage($packageB = new MemoryPackage('B', '1.0'));
+        $packageA->setRequires(array(new Link('A', 'B', new VersionConstraint('>=', '1.0'), 'requires')));
+        $packageQ->setReplaces(array(new Link('Q', 'B', new VersionConstraint('>=', '1.0'), 'replaces')));
+
+        $this->reposComplete();
+
+        $this->request->install('A');
+        $this->request->install('Q');
+
+        $this->checkSolverResult(array(
+            array('job' => 'install', 'package' => $packageQ),
+            array('job' => 'install', 'package' => $packageA),
+        ));
+    }
+
     public function testInstallCircularRequire()
     {
         $this->repo->addPackage($packageA = new MemoryPackage('A', '1.0'));
