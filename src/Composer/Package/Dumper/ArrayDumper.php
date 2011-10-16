@@ -40,11 +40,11 @@ class ArrayDumper
             'recommends',
             'suggests',
             'autoload',
-            'installAs',
         );
 
         $data = array();
         $data['name'] = $package->getPrettyName();
+        $data['target-dir'] = $package->getTargetDir();
         foreach ($keys as $key) {
             $getter = 'get'.ucfirst($key);
             $value  = $package->$getter();

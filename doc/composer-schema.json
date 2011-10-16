@@ -13,7 +13,7 @@
             "type": "string",
             "optional": true
         },
-        "installAs": {
+        "target-dir": {
             "description": "Override install location of package",
             "type": "string"
         },
