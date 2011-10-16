@@ -88,8 +88,10 @@ EOF;
     {
         $installPaths = array();
         foreach ($this->localRepo->getPackages() as $package) {
+            $this->populateAutoloadInformation($package);
+
             $installPaths[] = array(
-                $this->getFullPackage($package),
+                $package,
                 $this->installationManager->getInstallPath($package)
             );
         }
@@ -115,13 +117,18 @@ EOF;
         return $autoloads;
     }
 
-    private function getFullPackage(PackageInterface $package)
+    /**
+     * Because remote repos don't include the autoload data,
+     * we have to manually fetch it from the locally installed
+     * packages.
+     */
+    private function populateAutoloadInformation(PackageInterface $package)
     {
         $path = $this->installationManager->getInstallPath($package);
 
         $loader = new JsonLoader();
         $fullPackage = $loader->load(new JsonFile($path.'/composer.json'));
 
-        return $fullPackage;
+        $package->setAutoload($fullPackage->getAutoload());
     }
 }
