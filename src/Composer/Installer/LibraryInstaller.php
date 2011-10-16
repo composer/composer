@@ -128,8 +128,8 @@ class LibraryInstaller implements InstallerInterface
     {
         if (null === $package->getInstallAs()) {
             return ($this->directory ? $this->directory.'/' : '').$package->getName();
-        } else {
-            return ($this->directory ? $this->directory.'/' : '').$package->getInstallAs();
         }
+
+        return ($this->directory ? $this->directory.'/' : '').$package->getInstallAs();
     }
 }
