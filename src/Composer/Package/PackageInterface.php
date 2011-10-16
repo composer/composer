@@ -76,11 +76,11 @@ interface PackageInterface
     function getType();
 
     /**
-     * Returns the package installAs property
+     * Returns the package targetDir property
      *
-     * @return string The package installAs
+     * @return string The package targetDir
      */
-    function getInstallAs();
+    function getTargetDir();
 
     /**
      * Returns the package extra data

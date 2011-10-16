@@ -134,8 +134,8 @@ EOT
         foreach ($installPaths as $item) {
             list($package, $installPath) = $item;
 
-            if (null !== $package->getInstallAs()) {
-                $installPath = substr($installPath, 0, -strlen('/'.$package->getInstallAs()));
+            if (null !== $package->getTargetDir()) {
+                $installPath = substr($installPath, 0, -strlen('/'.$package->getTargetDir()));
             }
 
             foreach ($package->getAutoload() as $type => $mapping) {

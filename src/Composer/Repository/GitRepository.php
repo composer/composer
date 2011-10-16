@@ -67,8 +67,8 @@ class GitRepository extends ArrayRepository
         $package->setSourceType('git');
         $package->setSourceUrl($this->url);
 
-        if (isset($data['installAs'])) {
-            $package->setInstallAs($data['installAs']);
+        if (isset($data['target-dir'])) {
+            $package->setTargetDir($data['target-dir']);
         }
 
         if (isset($data['license'])) {
