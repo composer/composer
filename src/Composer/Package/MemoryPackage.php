@@ -20,7 +20,7 @@ namespace Composer\Package;
 class MemoryPackage extends BasePackage
 {
     protected $type;
-    protected $installAs;
+    protected $targetDir;
     protected $installationSource;
     protected $sourceType;
     protected $sourceUrl;
@@ -74,19 +74,19 @@ class MemoryPackage extends BasePackage
     }
 
     /**
-     * @param string $installAs
+     * @param string $targetDir
      */
-    public function setInstallAs($installAs)
+    public function setTargetDir($targetDir)
     {
-        $this->installAs = $installAs;
+        $this->targetDir = $targetDir;
     }
 
     /**
      * {@inheritDoc}
      */
-    public function getInstallAs()
+    public function getTargetDir()
     {
-        return $this->installAs;
+        return $this->targetDir;
     }
 
     /**
