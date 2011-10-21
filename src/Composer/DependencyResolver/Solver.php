@@ -1411,7 +1411,7 @@ class Solver
     private function selectAndInstall($level, array $decisionQueue, $disableRules, Rule $rule)
     {
         // choose best package to install from decisionQueue
-        $literals = $this->policy->selectPreferedPackages($this, $this->pool, $this->installed, $decisionQueue);
+        $literals = $this->policy->selectPreferedPackages($this->pool, $this->installed, $decisionQueue);
 
         $selectedLiteral = array_shift($literals);
 
