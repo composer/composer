@@ -100,7 +100,7 @@ class LibraryInstaller implements InstallerInterface
 
         $this->downloadManager->update($initial, $target, $downloadPath);
         $this->repository->removePackage($initial);
-        $this->repository->addPackage($target);
+        $this->repository->addPackage(clone $target);
     }
 
     /**
