@@ -14,7 +14,6 @@ use Composer\Console\Application as ComposerApplication;
 // initialize repository manager
 $rm = new Repository\RepositoryManager();
 $rm->setLocalRepository(new Repository\FilesystemRepository(new JsonFile('.composer/installed.json')));
-$rm->addRepository(new Repository\ComposerRepository('http://packagist.org'));
 $rm->setRepositoryClass('composer', 'Composer\Repository\ComposerRepository');
 $rm->setRepositoryClass('pear', 'Composer\Repository\PearRepository');
 $rm->setRepositoryClass('package', 'Composer\Repository\PackageRepository');
@@ -31,8 +30,15 @@ $im->addInstaller(new Installer\LibraryInstaller('vendor', $dm, $rm->getLocalRep
 $im->addInstaller(new Installer\LibraryInstaller('vendor/bundles', $dm, $rm->getLocalRepository(), 'symfony-bundle'));
 
 // load package
-$loader  = new Package\Loader\JsonLoader();
-$package = $loader->load(new JsonFile('composer.json'));
+$loader  = new Package\Loader\ArrayLoader($rm);
+$file = new JsonFile('composer.json');
+$packageConfig = $file->read();
+$package = $loader->load($packageConfig);
+
+// load default repository unless it's explicitly disabled
+if (!isset($packageConfig['repositories']['packagist']) || $packageConfig['repositories']['packagist'] !== false) {
+    $rm->addRepository(new Repository\ComposerRepository('http://packagist.org'));
+}
 
 // init locker
 $locker = new Package\Locker(new JsonFile('composer.lock'), $rm);
