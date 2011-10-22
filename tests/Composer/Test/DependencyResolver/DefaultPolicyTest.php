@@ -115,26 +115,6 @@ class DefaultPolicyTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $selected);
     }
 
-    public function testSelectNewestProvider()
-    {
-        $this->markTestIncomplete();
-
-        $this->repo->addPackage($packageA = new MemoryPackage('A', '1.0'));
-        $this->repo->addPackage($packageB = new MemoryPackage('B', '2.0'));
-
-        $packageA->setProvides(array(new Link('A', 'X', new VersionConstraint('==', '2.0'), 'provides')));
-        $packageB->setProvides(array(new Link('B', 'X', new VersionConstraint('==', '1.0'), 'provides')));
-
-        $this->pool->addRepository($this->repo);
-
-        $literals = array(new Literal($packageA, true), new Literal($packageB, true));
-        $expected = array(new Literal($packageA, true));
-
-        $selected = $this->policy->selectPreferedPackages($this->pool, $this->repoInstalled, $literals);
-
-        $this->assertEquals($expected, $selected);
-    }
-
     public function testPreferNonReplacingFromSameRepo()
     {
 
