@@ -17,6 +17,7 @@ $rm->setLocalRepository(new Repository\FilesystemRepository(new JsonFile('.compo
 $rm->addRepository(new Repository\ComposerRepository('http://packagist.org'));
 $rm->setRepositoryClass('composer', 'Composer\Repository\ComposerRepository');
 $rm->setRepositoryClass('pear', 'Composer\Repository\PearRepository');
+$rm->setRepositoryClass('package', 'Composer\Repository\PackageRepository');
 
 // initialize download manager
 $dm = new Downloader\DownloadManager($preferSource = false);
