@@ -74,8 +74,9 @@ EOT
         // prepare solver
         $installationManager = $composer->getInstallationManager();
         $localRepo           = $composer->getRepositoryManager()->getLocalRepository();
+        $installedRepo       = new Repository\PlatformRepository($localRepo);
         $policy              = new DependencyResolver\DefaultPolicy();
-        $solver              = new DependencyResolver\Solver($policy, $pool, $localRepo);
+        $solver              = new DependencyResolver\Solver($policy, $pool, $installedRepo);
 
         // solve dependencies
         $operations = $solver->solve($request);
@@ -111,8 +112,6 @@ EOT
         $localRepo->write();
 
         $output->writeln('> Generating autoload.php');
-        $localRepo = new \Composer\Repository\FilesystemRepository(
-            new \Composer\Json\JsonFile('.composer/installed.json'));
         $generator = new AutoloadGenerator($localRepo, $composer->getPackage(), $installationManager);
         $generator->dump('.composer/autoload.php');
 

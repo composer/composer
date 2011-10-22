@@ -13,9 +13,7 @@ use Composer\Console\Application as ComposerApplication;
 
 // initialize repository manager
 $rm = new Repository\RepositoryManager();
-$rm->setLocalRepository(new Repository\PlatformRepository(
-    new Repository\FilesystemRepository(new JsonFile('.composer/installed.json'))
-));
+$rm->setLocalRepository(new Repository\FilesystemRepository(new JsonFile('.composer/installed.json')));
 $rm->setRepository('Packagist', new Repository\ComposerRepository('http://packagist.org'));
 
 // initialize download manager
@@ -32,7 +30,6 @@ $im->setInstaller('symfony-bundle', new Installer\LibraryInstaller('vendor/bundl
 // load package
 $loader  = new Package\Loader\JsonLoader();
 $package = $loader->load(new JsonFile('composer.json'));
-
 
 // init locker
 $locker = new Package\Locker(new JsonFile('composer.lock'), $rm);
