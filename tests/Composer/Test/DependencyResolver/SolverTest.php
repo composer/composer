@@ -305,7 +305,7 @@ class SolverTest extends \PHPUnit_Framework_TestCase
 
     public function testInstallAlternativeWithCircularRequire()
     {
-	$this->markTestIncomplete();
+        $this->markTestIncomplete();
 
         $this->repo->addPackage($packageA = new MemoryPackage('A', '1.0'));
         $this->repo->addPackage($packageB = new MemoryPackage('B', '1.0'));
