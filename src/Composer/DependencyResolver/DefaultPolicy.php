@@ -65,22 +65,84 @@ class DefaultPolicy implements PolicyInterface
 
     public function selectPreferedPackages(Pool $pool, RepositoryInterface $installed, array $literals)
     {
-        $newest = $this->selectNewestPackages($installed, $literals);
+        $packages = $this->groupLiteralsByNamePreferInstalled($installed, $literals);
 
-        $selected = array();
-        foreach ($newest as $literal) {
-            if ($literal->getPackage()->getRepository() === $installed) {
-                $selected[] = $literal;
-            }
-        }
-        if (count($selected)) {
-            return $selected;
+        foreach ($packages as &$literals) {
+            $policy = $this;
+            usort($literals, function ($a, $b) use ($policy, $pool, $installed) {
+                return $policy->compareByPriorityPreferInstalled($pool, $installed, $a->getPackage(), $b->getPackage());
+            });
         }
 
-        return $newest;
+        foreach ($packages as &$literals) {
+            $literals = $this->pruneToBestVersion($literals);
+
+            $literals = $this->pruneToHighestPriorityOrInstalled($pool, $installed, $literals);
+        }
+
+        $selected = call_user_func_array('array_merge', $packages);
+
+        return $selected;
     }
 
-    public function selectNewestPackages(RepositoryInterface $installed, array $literals)
+    protected function groupLiteralsByNamePreferInstalled(RepositoryInterface $installed, $literals)
+    {
+        $packages = array();
+        foreach ($literals as $literal) {
+            $packageName = $literal->getPackage()->getName();
+
+            if (!isset($packages[$packageName])) {
+                $packages[$packageName] = array();
+            }
+
+            if ($literal->getPackage()->getRepository() === $installed) {
+                array_unshift($packages[$packageName], $literal);
+            } else {
+                $packages[$packageName][] = $literal;
+            }
+        }
+
+        return $packages;
+    }
+
+    public function compareByPriorityPreferInstalled(Pool $pool, RepositoryInterface $installed, PackageInterface $a, PackageInterface $b)
+    {
+        if ($a->getRepository() === $b->getRepository()) {
+            return 0;
+        }
+
+        if ($a->getRepository() === $installed) {
+            return -1;
+        }
+
+        if ($b->getRepository() === $installed) {
+            return 1;
+        }
+
+        return ($pool->getPriority($a->getRepository()) > $pool->getPriority($b->getRepository())) ? -1 : 1;
+    }
+
+    protected function pruneToBestVersion($literals)
+    {
+        $bestLiterals = array($literals[0]);
+        $bestPackage = $literals[0]->getPackage();
+        foreach ($literals as $i => $literal) {
+            if (0 === $i) {
+                continue;
+            }
+
+            if ($this->versionCompare($literal->getPackage(), $bestPackage, '>')) {
+                $bestPackage = $literal->getPackage();
+                $bestLiterals = array($literal);
+            } else if ($this->versionCompare($literal->getPackage(), $bestPackage, '==')) {
+                $bestLiterals[] = $literal;
+            }
+        }
+
+        return $bestLiterals;
+    }
+
+    protected function selectNewestPackages(RepositoryInterface $installed, array $literals)
     {
         $maxLiterals = array($literals[0]);
         $maxPackage = $literals[0]->getPackage();
@@ -98,5 +160,33 @@ class DefaultPolicy implements PolicyInterface
         }
 
         return $maxLiterals;
+    }
+
+    protected function pruneToHighestPriorityOrInstalled(Pool $pool, RepositoryInterface $installed, array $literals)
+    {
+        $selected = array();
+
+        $priority = null;
+
+        foreach ($literals as $literal) {
+            $repo = $literal->getPackage()->getRepository();
+
+            if ($repo === $installed) {
+                $selected[] = $literal;
+                continue;
+            }
+
+            if (null === $priority) {
+                $priority = $pool->getPriority($repo);
+            }
+
+            if ($pool->getPriority($repo) != $priority) {
+                break;
+            }
+
+            $selected[] = $literal;
+        }
+
+        return $selected;
     }
 }
