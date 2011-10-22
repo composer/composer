@@ -209,7 +209,7 @@ class SolverTest extends \PHPUnit_Framework_TestCase
         $this->request->install('A');
 
         $this->checkSolverResult(array(
-            array('job' => 'install', 'package' => $packageB),
+            array('job' => 'install', 'package' => $packageA),
         ));
     }
 
