@@ -18,6 +18,7 @@ use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Operation;
 use Composer\Package\LinkConstraint\VersionConstraint;
+use Composer\Repository\PlatformRepository;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -74,7 +75,7 @@ EOT
         // prepare solver
         $installationManager = $composer->getInstallationManager();
         $localRepo           = $composer->getRepositoryManager()->getLocalRepository();
-        $installedRepo       = new Repository\PlatformRepository($localRepo);
+        $installedRepo       = new PlatformRepository($localRepo);
         $policy              = new DependencyResolver\DefaultPolicy();
         $solver              = new DependencyResolver\Solver($policy, $pool, $installedRepo);
 
