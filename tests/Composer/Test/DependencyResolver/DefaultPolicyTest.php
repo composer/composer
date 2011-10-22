@@ -64,15 +64,15 @@ class DefaultPolicyTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $selected);
     }
 
-    public function testSelectInstalled()
+    public function testSelectNewestOverInstalled()
     {
-        $this->repo->addPackage($packageA = new MemoryPackage('A', '1.0'));
+        $this->repo->addPackage($packageA = new MemoryPackage('A', '2.0'));
         $this->repoInstalled->addPackage($packageAInstalled = new MemoryPackage('A', '1.0'));
         $this->pool->addRepository($this->repo);
         $this->pool->addRepository($this->repoInstalled);
 
         $literals = array(new Literal($packageA, true), new Literal($packageAInstalled, true));
-        $expected = array(new Literal($packageAInstalled, true));
+        $expected = array(new Literal($packageA, true));
 
         $selected = $this->policy->selectPreferedPackages($this->pool, $this->repoInstalled, $literals);
 
@@ -81,8 +81,6 @@ class DefaultPolicyTest extends \PHPUnit_Framework_TestCase
 
     public function testSelectLastRepo()
     {
-        $this->markTestIncomplete();
-
         $this->repoImportant = new ArrayRepository;
 
         $this->repo->addPackage($packageA = new MemoryPackage('A', '1.0'));
@@ -101,8 +99,6 @@ class DefaultPolicyTest extends \PHPUnit_Framework_TestCase
 
     public function testSelectAllProviders()
     {
-        $this->markTestIncomplete();
-
         $this->repo->addPackage($packageA = new MemoryPackage('A', '1.0'));
         $this->repo->addPackage($packageB = new MemoryPackage('B', '2.0'));
 
