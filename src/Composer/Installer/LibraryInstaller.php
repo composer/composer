@@ -35,8 +35,9 @@ class LibraryInstaller implements InstallerInterface
      * @param   string                      $dir        relative path for packages home
      * @param   DownloadManager             $dm         download manager
      * @param   WritableRepositoryInterface $repository repository controller
+     * @param   string                      $type       package type that this installer handles
      */
-    public function __construct($directory, DownloadManager $dm, WritableRepositoryInterface $repository)
+    public function __construct($directory, DownloadManager $dm, WritableRepositoryInterface $repository, $type = 'library')
     {
         $this->directory = $directory;
         $this->downloadManager = $dm;
@@ -55,6 +56,14 @@ class LibraryInstaller implements InstallerInterface
         }
 
         $this->repository = $repository;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function supports($packageType)
+    {
+        return $packageType === $this->type;
     }
 
     /**
