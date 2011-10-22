@@ -31,6 +31,7 @@ class MemoryPackage extends BasePackage
     protected $distSha1Checksum;
     protected $releaseType;
     protected $version;
+    protected $repositories;
     protected $license;
     protected $extra = array();
 
@@ -231,6 +232,24 @@ class MemoryPackage extends BasePackage
     public function getDistSha1Checksum()
     {
         return $this->distSha1Checksum;
+    }
+
+    /**
+     * Set the repositories
+     *
+     * @param string $repositories
+     */
+    public function setRepositories($repositories)
+    {
+        $this->repositories = $repositories;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getRepositories()
+    {
+        return $this->repositories;
     }
 
     /**

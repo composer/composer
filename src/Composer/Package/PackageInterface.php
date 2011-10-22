@@ -229,6 +229,15 @@ interface PackageInterface
     function getAutoload();
 
     /**
+     * Returns an array of repositories
+     *
+     * {"<type>": {<config key/values>}}
+     *
+     * @return array Repositories
+     */
+    function getRepositories();
+
+    /**
      * Stores a reference to the repository that owns the package
      *
      * @param RepositoryInterface $repository

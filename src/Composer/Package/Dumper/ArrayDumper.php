@@ -40,6 +40,7 @@ class ArrayDumper
             'recommends',
             'suggests',
             'autoload',
+            'repositories',
         );
 
         $data = array();

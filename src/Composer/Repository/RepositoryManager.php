@@ -25,6 +25,15 @@ class RepositoryManager
     private $repositoryClasses = array();
 
     /**
+     * Used for lazy loading of packages and their contained repositories
+     *
+     * This is a performance optimization to avoid loading all packages unless they are needed
+     *
+     * @var Boolean
+     */
+    private $initialized;
+
+    /**
      * Searches for a package by it's name and version in managed repositories.
      *
      * @param   string  $name       package name
@@ -49,24 +58,31 @@ class RepositoryManager
     public function addRepository(RepositoryInterface $repository)
     {
         $this->repositories[] = $repository;
+
+        $repository->setRepositoryManager($this);
+
+        // already initialized, so initialize new repos on the fly
+        if ($this->initialized) {
+            $repository->getPackages();
+        }
     }
 
     /**
-     * Returns repository class for a specific installation type.
+     * Returns a new repository for a specific installation type.
      *
-     * @param   string  $type   installation type
-     *
+     * @param   string $type repository type
+     * @param   string $config repository configuration
      * @return  RepositoryInterface
-     *
      * @throws  InvalidArgumentException     if repository for provided type is not registeterd
      */
-    public function getRepositoryClass($type)
+    public function createRepository($type, $config)
     {
         if (!isset($this->repositoryClasses[$type])) {
             throw new \InvalidArgumentException('Repository type is not registered: '.$type);
         }
 
-        return $this->repositoryClasses[$type];
+        $class = $this->repositoryClasses[$type];
+        return new $class($config);
     }
 
     /**
@@ -87,6 +103,13 @@ class RepositoryManager
      */
     public function getRepositories()
     {
+        if (!$this->initialized) {
+            $this->initialized = true;
+            // warm up repos to be sure all sub-repos are added before we return
+            foreach ($this->repositories as $repository) {
+                $repository->getPackages();
+            }
+        }
         return $this->repositories;
     }
 
