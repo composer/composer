@@ -58,11 +58,7 @@ class LibraryInstaller implements InstallerInterface
     }
 
     /**
-     * Checks that specific package is installed.
-     *
-     * @param   PackageInterface    $package    package instance
-     *
-     * @return  Boolean
+     * {@inheritDoc}
      */
     public function isInstalled(PackageInterface $package)
     {
@@ -70,11 +66,7 @@ class LibraryInstaller implements InstallerInterface
     }
 
     /**
-     * Installs specific package.
-     *
-     * @param   PackageInterface    $package    package instance
-     *
-     * @throws  InvalidArgumentException        if provided package have no urls to download from
+     * {@inheritDoc}
      */
     public function install(PackageInterface $package)
     {
@@ -85,12 +77,7 @@ class LibraryInstaller implements InstallerInterface
     }
 
     /**
-     * Updates specific package.
-     *
-     * @param   PackageInterface    $initial    already installed package version
-     * @param   PackageInterface    $target     updated version
-     *
-     * @throws  InvalidArgumentException        if $from package is not installed
+     * {@inheritDoc}
      */
     public function update(PackageInterface $initial, PackageInterface $target)
     {
@@ -106,11 +93,7 @@ class LibraryInstaller implements InstallerInterface
     }
 
     /**
-     * Uninstalls specific package.
-     *
-     * @param   PackageInterface    $package    package instance
-     *
-     * @throws  InvalidArgumentException        if package is not installed
+     * {@inheritDoc}
      */
     public function uninstall(PackageInterface $package)
     {
@@ -124,6 +107,9 @@ class LibraryInstaller implements InstallerInterface
         $this->repository->removePackage($package);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getInstallPath(PackageInterface $package)
     {
         if (null === $package->getTargetDir()) {
