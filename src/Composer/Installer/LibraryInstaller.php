@@ -28,6 +28,7 @@ class LibraryInstaller implements InstallerInterface
     private $directory;
     private $downloadManager;
     private $repository;
+    private $type;
 
     /**
      * Initializes library installer.
@@ -41,6 +42,7 @@ class LibraryInstaller implements InstallerInterface
     {
         $this->directory = $directory;
         $this->downloadManager = $dm;
+        $this->type = $type;
 
         if (!is_dir($this->directory)) {
             if (file_exists($this->directory)) {
