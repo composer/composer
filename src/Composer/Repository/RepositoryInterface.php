@@ -47,4 +47,11 @@ interface RepositoryInterface extends \Countable
      * @return  array
      */
     function getPackages();
+
+    /**
+     * Stores the RepositoryManager owning this repository
+     *
+     * @param RepositoryManager $manager
+     */
+    function setRepositoryManager(RepositoryManager $manager);
 }

@@ -13,6 +13,7 @@
 namespace Composer\Package\Loader;
 
 use Composer\Package;
+use Composer\Repository\RepositoryManager;
 
 /**
  * @author Konstantin Kudryashiv <ever.zet@gmail.com>
@@ -30,9 +31,11 @@ class ArrayLoader
     );
 
     protected $versionParser;
+    private $manager;
 
-    public function __construct($parser = null)
+    public function __construct(RepositoryManager $manager, $parser = null)
     {
+        $this->manager = $manager;
         $this->versionParser = $parser;
         if (!$parser) {
             $this->versionParser = new Package\Version\VersionParser;
@@ -48,6 +51,18 @@ class ArrayLoader
 
         if (isset($config['target-dir'])) {
             $package->setTargetDir($config['target-dir']);
+        }
+
+        if (isset($config['repositories'])) {
+            $repositories = array();
+            foreach ($config['repositories'] as $repo) {
+                if (!$repo) {
+                    continue;
+                }
+                $repository = $this->manager->createRepository(key($repo), current($repo));
+                $this->manager->addRepository($repository);
+            }
+            $package->setRepositories($config['repositories']);
         }
 
         if (isset($config['extra'])) {

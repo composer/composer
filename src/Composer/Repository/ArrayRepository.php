@@ -22,14 +22,10 @@ use Composer\Package\PackageInterface;
 class ArrayRepository implements RepositoryInterface
 {
     protected $packages;
+    protected $repositoryManager;
 
     /**
-     * Searches for a package by it's name and version (if has one).
-     *
-     * @param   string  $name       package name
-     * @param   string  $version    package version
-     *
-     * @return  PackageInterface|null
+     * {@inheritDoc}
      */
     public function findPackage($name, $version)
     {
@@ -41,11 +37,15 @@ class ArrayRepository implements RepositoryInterface
     }
 
     /**
-     * Checks if specified package in this repository.
-     *
-     * @param   PackageInterface    $package    package instance
-     *
-     * @return  Boolean
+     * {@inheritDoc}
+     */
+    public function setRepositoryManager(RepositoryManager $manager)
+    {
+        $this->repositoryManager = $manager;
+    }
+
+    /**
+     * {@inheritDoc}
      */
     public function hasPackage(PackageInterface $package)
     {
@@ -93,9 +93,7 @@ class ArrayRepository implements RepositoryInterface
     }
 
     /**
-     * Returns all contained packages
-     *
-     * @return array All packages
+     * {@inheritDoc}
      */
     public function getPackages()
     {
