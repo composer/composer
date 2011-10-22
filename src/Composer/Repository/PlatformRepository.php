@@ -20,11 +20,11 @@ use Composer\Package\Version\VersionParser;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class PlatformRepository extends ArrayRepository implements WritableRepositoryInterface
+class PlatformRepository extends ArrayRepository
 {
     private $localRepository;
 
-    public function __construct(WritableRepositoryInterface $localRepository)
+    public function __construct(RepositoryInterface $localRepository)
     {
         $this->localRepository = $localRepository;
     }
@@ -64,29 +64,5 @@ class PlatformRepository extends ArrayRepository implements WritableRepositoryIn
     public function getPackages()
     {
         return array_merge(parent::getPackages(), $this->localRepository->getPackages());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function addPackage(PackageInterface $package)
-    {
-        $this->localRepository->addPackage($package);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function removePackage(PackageInterface $package)
-    {
-        $this->localRepository->removePackage($package);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function write()
-    {
-        $this->localRepository->write();
     }
 }
