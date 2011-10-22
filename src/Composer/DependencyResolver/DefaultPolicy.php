@@ -63,6 +63,11 @@ class DefaultPolicy implements PolicyInterface
         return true;
     }
 
+    public function getPriority(Pool $pool, PackageInterface $package)
+    {
+        return $pool->getPriority($package->getRepository());
+    }
+
     public function selectPreferedPackages(Pool $pool, RepositoryInterface $installed, array $literals)
     {
         $packages = $this->groupLiteralsByNamePreferInstalled($installed, $literals);
@@ -119,7 +124,7 @@ class DefaultPolicy implements PolicyInterface
             return 1;
         }
 
-        return ($pool->getPriority($a->getRepository()) > $pool->getPriority($b->getRepository())) ? -1 : 1;
+        return ($this->getPriority($pool, $a) > $this->getPriority($pool, $b)) ? -1 : 1;
     }
 
     protected function pruneToBestVersion($literals)
@@ -169,18 +174,18 @@ class DefaultPolicy implements PolicyInterface
         $priority = null;
 
         foreach ($literals as $literal) {
-            $repo = $literal->getPackage()->getRepository();
+            $package = $literal->getPackage();
 
-            if ($repo === $installed) {
+            if ($package->getRepository() === $installed) {
                 $selected[] = $literal;
                 continue;
             }
 
             if (null === $priority) {
-                $priority = $pool->getPriority($repo);
+                $priority = $this->getPriority($pool, $package);
             }
 
-            if ($pool->getPriority($repo) != $priority) {
+            if ($this->getPriority($pool, $package) != $priority) {
                 break;
             }
 
