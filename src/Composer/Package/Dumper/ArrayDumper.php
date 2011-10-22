@@ -44,7 +44,9 @@ class ArrayDumper
 
         $data = array();
         $data['name'] = $package->getPrettyName();
-        $data['target-dir'] = $package->getTargetDir();
+        if ($package->getTargetDir()) {
+            $data['target-dir'] = $package->getTargetDir();
+        }
         foreach ($keys as $key) {
             $getter = 'get'.ucfirst($key);
             $value  = $package->$getter();
