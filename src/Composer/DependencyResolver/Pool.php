@@ -45,6 +45,11 @@ class Pool
         }
     }
 
+    public function getPriority(RepositoryInterface $repo)
+    {
+        return array_search($repo, $this->repositories, true);
+    }
+
     /**
     * Retrieves the package object for a given package id.
     *
