@@ -14,7 +14,9 @@ use Composer\Console\Application as ComposerApplication;
 // initialize repository manager
 $rm = new Repository\RepositoryManager();
 $rm->setLocalRepository(new Repository\FilesystemRepository(new JsonFile('.composer/installed.json')));
-$rm->setRepository('Packagist', new Repository\ComposerRepository('http://packagist.org'));
+$rm->addRepository(new Repository\ComposerRepository('http://packagist.org'));
+$rm->setRepositoryClass('composer', 'Composer\Repository\ComposerRepository');
+$rm->setRepositoryClass('pear', 'Composer\Repository\PearRepository');
 
 // initialize download manager
 $dm = new Downloader\DownloadManager($preferSource = false);

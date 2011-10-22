@@ -15,12 +15,14 @@ namespace Composer\Repository;
 /**
  * Repositories manager.
  *
+ * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
  */
 class RepositoryManager
 {
     private $localRepository;
     private $repositories = array();
+    private $repositoryClasses = array();
 
     /**
      * Searches for a package by it's name and version in managed repositories.
@@ -40,18 +42,17 @@ class RepositoryManager
     }
 
     /**
-     * Sets repository with specific name.
+     * Adds repository
      *
-     * @param   string              $type       repository name
      * @param   RepositoryInterface $repository repository instance
      */
-    public function setRepository($type, RepositoryInterface $repository)
+    public function addRepository(RepositoryInterface $repository)
     {
-        $this->repositories[$type] = $repository;
+        $this->repositories[] = $repository;
     }
 
     /**
-     * Returns repository for a specific installation type.
+     * Returns repository class for a specific installation type.
      *
      * @param   string  $type   installation type
      *
@@ -59,13 +60,24 @@ class RepositoryManager
      *
      * @throws  InvalidArgumentException     if repository for provided type is not registeterd
      */
-    public function getRepository($type)
+    public function getRepositoryClass($type)
     {
-        if (!isset($this->repositories[$type])) {
-            throw new \InvalidArgumentException('Repository is not registered: '.$type);
+        if (!isset($this->repositoryClasses[$type])) {
+            throw new \InvalidArgumentException('Repository type is not registered: '.$type);
         }
 
-        return $this->repositories[$type];
+        return $this->repositoryClasses[$type];
+    }
+
+    /**
+     * Stores repository class for a specific installation type.
+     *
+     * @param   string  $type   installation type
+     * @param   string  $class  class name of the repo implementation
+     */
+    public function setRepositoryClass($type, $class)
+    {
+        $this->repositoryClasses[$type] = $class;
     }
 
     /**
