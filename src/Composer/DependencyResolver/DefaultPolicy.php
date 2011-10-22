@@ -63,9 +63,8 @@ class DefaultPolicy implements PolicyInterface
         return true;
     }
 
-    public function selectPreferedPackages(Solver $solver, Pool $pool, RepositoryInterface $installed, array $literals)
+    public function selectPreferedPackages(Pool $pool, RepositoryInterface $installed, array $literals)
     {
-        // prefer installed, newest version, recommended, highest priority repository, ...
         $newest = $this->selectNewestPackages($installed, $literals);
 
         $selected = array();
