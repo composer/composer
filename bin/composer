@@ -24,8 +24,8 @@ $dm->setDownloader('zip',  new Downloader\ZipDownloader());
 
 // initialize installation manager
 $im = new Installer\InstallationManager();
-$im->setInstaller('library', new Installer\LibraryInstaller('vendor', $dm, $rm->getLocalRepository()));
-$im->setInstaller('symfony-bundle', new Installer\LibraryInstaller('vendor/bundles', $dm, $rm->getLocalRepository()));
+$im->addInstaller(new Installer\LibraryInstaller('vendor', $dm, $rm->getLocalRepository()));
+$im->addInstaller(new Installer\LibraryInstaller('vendor/bundles', $dm, $rm->getLocalRepository(), 'symfony-bundle'));
 
 // load package
 $loader  = new Package\Loader\JsonLoader();

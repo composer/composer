@@ -19,12 +19,20 @@ use Composer\DependencyResolver\Operation\UninstallOperation;
 
 class InstallationManagerTest extends \PHPUnit_Framework_TestCase
 {
-    public function testSetGetInstaller()
+    public function testAddGetInstaller()
     {
         $installer = $this->createInstallerMock();
+
+        $installer
+            ->expects($this->exactly(2))
+            ->method('supports')
+            ->will($this->returnCallback(function ($arg) {
+                return $arg === 'vendor';
+            }));
+
         $manager   = new InstallationManager();
 
-        $manager->setInstaller('vendor', $installer);
+        $manager->addInstaller($installer);
         $this->assertSame($installer, $manager->getInstaller('vendor'));
 
         $this->setExpectedException('InvalidArgumentException');
@@ -65,7 +73,7 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
     {
         $installer = $this->createInstallerMock();
         $manager   = new InstallationManager();
-        $manager->setInstaller('library', $installer);
+        $manager->addInstaller($installer);
 
         $package   = $this->createPackageMock();
         $operation = new InstallOperation($package, 'test');
@@ -74,6 +82,12 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('getType')
             ->will($this->returnValue('library'));
+
+        $installer
+            ->expects($this->once())
+            ->method('supports')
+            ->with('library')
+            ->will($this->returnValue(true));
 
         $installer
             ->expects($this->once())
@@ -87,7 +101,7 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
     {
         $installer = $this->createInstallerMock();
         $manager   = new InstallationManager();
-        $manager->setInstaller('library', $installer);
+        $manager->addInstaller($installer);
 
         $initial   = $this->createPackageMock();
         $target    = $this->createPackageMock();
@@ -104,6 +118,12 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
 
         $installer
             ->expects($this->once())
+            ->method('supports')
+            ->with('library')
+            ->will($this->returnValue(true));
+
+        $installer
+            ->expects($this->once())
             ->method('update')
             ->with($initial, $target);
 
@@ -112,11 +132,11 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
 
     public function testUpdateWithNotEqualTypes()
     {
-        $installer1 = $this->createInstallerMock();
-        $installer2 = $this->createInstallerMock();
+        $libInstaller = $this->createInstallerMock();
+        $bundleInstaller = $this->createInstallerMock();
         $manager    = new InstallationManager();
-        $manager->setInstaller('library', $installer1);
-        $manager->setInstaller('bundles', $installer2);
+        $manager->addInstaller($libInstaller);
+        $manager->addInstaller($bundleInstaller);
 
         $initial   = $this->createPackageMock();
         $target    = $this->createPackageMock();
@@ -131,12 +151,25 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
             ->method('getType')
             ->will($this->returnValue('bundles'));
 
-        $installer1
+        $bundleInstaller
+            ->expects($this->exactly(2))
+            ->method('supports')
+            ->will($this->returnCallback(function ($arg) {
+                return $arg === 'bundles';
+            }));
+
+        $libInstaller
+            ->expects($this->once())
+            ->method('supports')
+            ->with('library')
+            ->will($this->returnValue(true));
+
+        $libInstaller
             ->expects($this->once())
             ->method('uninstall')
             ->with($initial);
 
-        $installer2
+        $bundleInstaller
             ->expects($this->once())
             ->method('install')
             ->with($target);
@@ -148,7 +181,7 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
     {
         $installer = $this->createInstallerMock();
         $manager   = new InstallationManager();
-        $manager->setInstaller('library', $installer);
+        $manager->addInstaller($installer);
 
         $package   = $this->createPackageMock();
         $operation = new UninstallOperation($package, 'test');
@@ -162,6 +195,12 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('uninstall')
             ->with($package);
+
+        $installer
+            ->expects($this->once())
+            ->method('supports')
+            ->with('library')
+            ->will($this->returnValue(true));
 
         $manager->uninstall($operation);
     }

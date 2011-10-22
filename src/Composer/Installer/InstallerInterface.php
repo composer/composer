@@ -23,6 +23,14 @@ use Composer\Package\PackageInterface;
 interface InstallerInterface
 {
     /**
+     * Decides if the installer supports the given type
+     *
+     * @param   string  $packageType
+     * @return  Boolean
+     */
+    function supports($packageType);
+
+    /**
      * Checks that provided package is installed.
      *
      * @param   PackageInterface    $package    package instance
