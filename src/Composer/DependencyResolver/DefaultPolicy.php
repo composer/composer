@@ -75,7 +75,7 @@ class DefaultPolicy implements PolicyInterface
         foreach ($packages as &$literals) {
             $policy = $this;
             usort($literals, function ($a, $b) use ($policy, $pool, $installed) {
-                return $policy->compareByPriorityPreferInstalled($pool, $installed, $a->getPackage(), $b->getPackage());
+                return $policy->compareByPriorityPreferInstalled($pool, $installed, $a->getPackage(), $b->getPackage(), true);
             });
         }
 
@@ -86,6 +86,11 @@ class DefaultPolicy implements PolicyInterface
         }
 
         $selected = call_user_func_array('array_merge', $packages);
+
+        // now sort the result across all packages to respect replaces across packages
+        usort($selected, function ($a, $b) use ($policy, $pool, $installed) {
+            return $policy->compareByPriorityPreferInstalled($pool, $installed, $a->getPackage(), $b->getPackage());
+        });
 
         return $selected;
     }
@@ -110,10 +115,26 @@ class DefaultPolicy implements PolicyInterface
         return $packages;
     }
 
-    public function compareByPriorityPreferInstalled(Pool $pool, RepositoryInterface $installed, PackageInterface $a, PackageInterface $b)
+    public function compareByPriorityPreferInstalled(Pool $pool, RepositoryInterface $installed, PackageInterface $a, PackageInterface $b, $ignoreReplace = false)
     {
         if ($a->getRepository() === $b->getRepository()) {
-            return 0;
+
+            if (!$ignoreReplace) {
+                // return original, not replaced
+                if ($this->replaces($a, $b)) {
+                    return 1; // use b
+                }
+                if ($this->replaces($b, $a)) {
+                    return -1; // use a
+                }
+            }
+
+            // priority equal, sort by package id to make reproducible
+            if ($a->getId() === $b->getId()) {
+                return 0;
+            }
+
+            return ($a->getId() < $b->getId()) ? -1 : 1;
         }
 
         if ($a->getRepository() === $installed) {
@@ -125,6 +146,19 @@ class DefaultPolicy implements PolicyInterface
         }
 
         return ($this->getPriority($pool, $a) > $this->getPriority($pool, $b)) ? -1 : 1;
+    }
+
+    protected function replaces(PackageInterface $source, PackageInterface $target)
+    {
+        foreach ($source->getReplaces() as $link) {
+            if ($link->getTarget() === $target->getName() &&
+                (null === $link->getConstraint() ||
+                $link->getConstraint()->matches(new VersionConstraint('==', $target->getVersion())))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     protected function pruneToBestVersion($literals)
