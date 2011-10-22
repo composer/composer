@@ -233,8 +233,6 @@ class SolverTest extends \PHPUnit_Framework_TestCase
 
     public function testSkipReplacerOfExistingPackage()
     {
-        $this->markTestIncomplete();
-
         $this->repo->addPackage($packageA = new MemoryPackage('A', '1.0'));
         $this->repo->addPackage($packageQ = new MemoryPackage('Q', '1.0'));
         $this->repo->addPackage($packageB = new MemoryPackage('B', '1.0'));
