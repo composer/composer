@@ -109,6 +109,19 @@
         },
         "autoload": {
             "type": "object",
+            "properties": {
+                "psr-0": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "pear": {
+                    "type": "object",
+                    "additionalProperties": true
+                }
+            }
+        },
+        "repositories": {
+            "type": ["object", "array"],
             "additionalProperties": true
         }
     }
