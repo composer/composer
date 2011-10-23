@@ -49,7 +49,7 @@ class FilesystemRepository extends ArrayRepository implements WritableRepository
         }
 
         if (is_array($packages)) {
-            $loader = new ArrayLoader();
+            $loader = new ArrayLoader($this->repositoryManager);
             foreach ($packages as $package) {
                 $this->addPackage($loader->load($package));
             }
