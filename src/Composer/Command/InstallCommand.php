@@ -50,9 +50,13 @@ EOT
     {
         $composer = $this->getComposer();
 
+        // create installed repo
+        $localRepo           = $composer->getRepositoryManager()->getLocalRepository();
+        $installedRepo       = new PlatformRepository($localRepo);
+
         // creating repository pool
         $pool = new Pool;
-        $pool->addRepository($composer->getRepositoryManager()->getLocalRepository());
+        $pool->addRepository($installedRepo);
         foreach ($composer->getRepositoryManager()->getRepositories() as $repository) {
             $pool->addRepository($repository);
         }
@@ -74,8 +78,6 @@ EOT
 
         // prepare solver
         $installationManager = $composer->getInstallationManager();
-        $localRepo           = $composer->getRepositoryManager()->getLocalRepository();
-        $installedRepo       = new PlatformRepository($localRepo);
         $policy              = new DependencyResolver\DefaultPolicy();
         $solver              = new DependencyResolver\Solver($policy, $pool, $installedRepo);
 
