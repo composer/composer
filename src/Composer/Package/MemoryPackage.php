@@ -56,6 +56,41 @@ class MemoryPackage extends BasePackage
     }
 
     /**
+     * Create memory copy of package
+     *
+     * @param PackageInterface $package Package to copy
+     *
+     * @return MemoryPackage
+     */
+    public static function fromPackage(PackageInterface $package)
+    {
+        // TODO: Fix releaseType. There is no releaseType in the PackageInterface
+        $newPackage = new self($package->getPrettyName(), $package->getVersion());
+        $newPackage->setType($package->getType());
+        $newPackage->setExtra($package->getExtra());
+
+        $newPackage->setSourceType($package->getSourceType());
+        $newPackage->setSourceUrl($package->getSourceUrl());
+        $newPackage->setSourceReference($package->getSourceReference());
+
+        $newPackage->setDistType($package->getDistType());
+        $newPackage->setDistUrl($package->getDistUrl());
+        $newPackage->setDistReference($package->getDistReference());
+        $newPackage->setDistSha1Checksum($package->getDistSha1Checksum());
+
+        $newPackage->setLicense($package->getLicense());
+
+        $newPackage->setRequires($package->getRequires());
+        $newPackage->setConflicts($package->getConflicts());
+        $newPackage->setProvides($package->getProvides());
+        $newPackage->setReplaces($package->getReplaces());
+        $newPackage->setRecommends($package->getRecommends());
+        $newPackage->setSuggests($package->getSuggests());
+
+        return $newPackage;
+    }
+
+    /**
      * @param string $type
      */
     public function setType($type)
