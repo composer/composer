@@ -76,6 +76,13 @@ interface PackageInterface
     function getType();
 
     /**
+     * Returns the package targetDir property
+     *
+     * @return string The package targetDir
+     */
+    function getTargetDir();
+
+    /**
      * Returns the package extra data
      *
      * @return array The package extra data
@@ -208,6 +215,18 @@ interface PackageInterface
      * @return array An array of package links defining suggested packages
      */
     function getSuggests();
+
+    /**
+     * Returns an associative array of autoloading rules
+     *
+     * {"<type>": {"<namespace": "<directory>"}}
+     *
+     * Type is either "psr0" or "pear". Namespaces are mapped to directories
+     * for autoloading using the type specified.
+     *
+     * @return array Mapping of autoloading rules
+     */
+    function getAutoload();
 
     /**
      * Stores a reference to the repository that owns the package

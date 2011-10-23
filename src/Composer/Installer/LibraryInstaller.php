@@ -78,7 +78,7 @@ class LibraryInstaller implements InstallerInterface
      */
     public function install(PackageInterface $package)
     {
-        $downloadPath = $this->directory.DIRECTORY_SEPARATOR.$package->getName();
+        $downloadPath = $this->getInstallPath($package);
 
         $this->downloadManager->download($package, $downloadPath);
         $this->repository->addPackage(clone $package);
@@ -98,7 +98,7 @@ class LibraryInstaller implements InstallerInterface
             throw new \InvalidArgumentException('Package is not installed: '.$initial);
         }
 
-        $downloadPath = $this->directory.DIRECTORY_SEPARATOR.$initial->getName();
+        $downloadPath = $this->getInstallPath($initial);
 
         $this->downloadManager->update($initial, $target, $downloadPath);
         $this->repository->removePackage($initial);
@@ -118,9 +118,18 @@ class LibraryInstaller implements InstallerInterface
             throw new \InvalidArgumentException('Package is not installed: '.$package);
         }
 
-        $downloadPath = $this->directory.DIRECTORY_SEPARATOR.$package->getName();
+        $downloadPath = $this->getInstallPath($package);
 
         $this->downloadManager->remove($package, $downloadPath);
         $this->repository->removePackage($package);
+    }
+
+    public function getInstallPath(PackageInterface $package)
+    {
+        if (null === $package->getTargetDir()) {
+            return ($this->directory ? $this->directory.'/' : '').$package->getName();
+        }
+
+        return ($this->directory ? $this->directory.'/' : '').$package->getTargetDir();
     }
 }

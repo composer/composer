@@ -38,11 +38,13 @@ class ArrayDumper
             'provides',
             'replaces',
             'recommends',
-            'suggests'
+            'suggests',
+            'autoload',
         );
 
         $data = array();
         $data['name'] = $package->getPrettyName();
+        $data['target-dir'] = $package->getTargetDir();
         foreach ($keys as $key) {
             $getter = 'get'.ucfirst($key);
             $value  = $package->$getter();

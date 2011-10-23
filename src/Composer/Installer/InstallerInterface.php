@@ -54,4 +54,6 @@ interface InstallerInterface
      * @param   PackageInterface    $package    package instance
      */
     function uninstall(PackageInterface $package);
+
+    function getInstallPath(PackageInterface $package);
 }

@@ -12,6 +12,7 @@
 
 namespace Composer\Command;
 
+use Composer\Autoload\AutoloadGenerator;
 use Composer\DependencyResolver;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
@@ -108,6 +109,13 @@ EOT
         }
 
         $localRepo->write();
+
+        $output->writeln('> Generating autoload.php');
+        $localRepo = new \Composer\Repository\FilesystemRepository(
+            new \Composer\Json\JsonFile('.composer/installed.json'));
+        $generator = new AutoloadGenerator($localRepo, $composer->getPackage(), $installationManager);
+        $generator->dump('.composer/autoload.php');
+
         $output->writeln('> Done');
     }
 }
