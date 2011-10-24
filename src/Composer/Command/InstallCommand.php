@@ -12,11 +12,13 @@
 
 namespace Composer\Command;
 
+use Composer\Autoload\AutoloadGenerator;
 use Composer\DependencyResolver;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Operation;
 use Composer\Package\LinkConstraint\VersionConstraint;
+use Composer\Repository\PlatformRepository;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -48,9 +50,13 @@ EOT
     {
         $composer = $this->getComposer();
 
+        // create installed repo
+        $localRepo           = $composer->getRepositoryManager()->getLocalRepository();
+        $installedRepo       = new PlatformRepository($localRepo);
+
         // creating repository pool
         $pool = new Pool;
-        $pool->addRepository($composer->getRepositoryManager()->getLocalRepository());
+        $pool->addRepository($installedRepo);
         foreach ($composer->getRepositoryManager()->getRepositories() as $repository) {
             $pool->addRepository($repository);
         }
@@ -72,9 +78,8 @@ EOT
 
         // prepare solver
         $installationManager = $composer->getInstallationManager();
-        $localRepo           = $composer->getRepositoryManager()->getLocalRepository();
         $policy              = new DependencyResolver\DefaultPolicy();
-        $solver              = new DependencyResolver\Solver($policy, $pool, $localRepo);
+        $solver              = new DependencyResolver\Solver($policy, $pool, $installedRepo);
 
         // solve dependencies
         $operations = $solver->solve($request);
@@ -108,6 +113,11 @@ EOT
         }
 
         $localRepo->write();
+
+        $output->writeln('> Generating autoload.php');
+        $generator = new AutoloadGenerator($localRepo, $composer->getPackage(), $installationManager);
+        $generator->dump('.composer/autoload.php');
+
         $output->writeln('> Done');
     }
 }

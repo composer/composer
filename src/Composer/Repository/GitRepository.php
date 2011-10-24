@@ -67,6 +67,10 @@ class GitRepository extends ArrayRepository
         $package->setSourceType('git');
         $package->setSourceUrl($this->url);
 
+        if (isset($data['target-dir'])) {
+            $package->setTargetDir($data['target-dir']);
+        }
+
         if (isset($data['license'])) {
             $package->setLicense($data['license']);
         }
@@ -85,6 +89,11 @@ class GitRepository extends ArrayRepository
                 $package->{$method}($this->createLinks($data['name'], $link.'s', $data[$link]));
             }
         }
+
+        if (isset($data['autoload'])) {
+            $package->setAutoload($data['autoload']);
+        }
+
         $this->addPackage($package);
     }
 

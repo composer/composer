@@ -15,12 +15,23 @@ namespace Composer\Repository;
 /**
  * Repositories manager.
  *
+ * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
  */
 class RepositoryManager
 {
     private $localRepository;
     private $repositories = array();
+    private $repositoryClasses = array();
+
+    /**
+     * Used for lazy loading of packages and their contained repositories
+     *
+     * This is a performance optimization to avoid loading all packages unless they are needed
+     *
+     * @var Boolean
+     */
+    private $initialized;
 
     /**
      * Searches for a package by it's name and version in managed repositories.
@@ -40,32 +51,49 @@ class RepositoryManager
     }
 
     /**
-     * Sets repository with specific name.
+     * Adds repository
      *
-     * @param   string              $type       repository name
      * @param   RepositoryInterface $repository repository instance
      */
-    public function setRepository($type, RepositoryInterface $repository)
+    public function addRepository(RepositoryInterface $repository)
     {
-        $this->repositories[$type] = $repository;
+        $this->repositories[] = $repository;
+
+        $repository->setRepositoryManager($this);
+
+        // already initialized, so initialize new repos on the fly
+        if ($this->initialized) {
+            $repository->getPackages();
+        }
     }
 
     /**
-     * Returns repository for a specific installation type.
+     * Returns a new repository for a specific installation type.
      *
-     * @param   string  $type   installation type
-     *
+     * @param   string $type repository type
+     * @param   string $config repository configuration
      * @return  RepositoryInterface
-     *
      * @throws  InvalidArgumentException     if repository for provided type is not registeterd
      */
-    public function getRepository($type)
+    public function createRepository($type, $config)
     {
-        if (!isset($this->repositories[$type])) {
-            throw new \InvalidArgumentException('Repository is not registered: '.$type);
+        if (!isset($this->repositoryClasses[$type])) {
+            throw new \InvalidArgumentException('Repository type is not registered: '.$type);
         }
 
-        return $this->repositories[$type];
+        $class = $this->repositoryClasses[$type];
+        return new $class($config);
+    }
+
+    /**
+     * Stores repository class for a specific installation type.
+     *
+     * @param   string  $type   installation type
+     * @param   string  $class  class name of the repo implementation
+     */
+    public function setRepositoryClass($type, $class)
+    {
+        $this->repositoryClasses[$type] = $class;
     }
 
     /**
@@ -75,6 +103,13 @@ class RepositoryManager
      */
     public function getRepositories()
     {
+        if (!$this->initialized) {
+            $this->initialized = true;
+            // warm up repos to be sure all sub-repos are added before we return
+            foreach ($this->repositories as $repository) {
+                $repository->getPackages();
+            }
+        }
         return $this->repositories;
     }
 

@@ -51,7 +51,7 @@ class ComposerRepository extends ArrayRepository
     private function createPackages($data)
     {
         foreach ($data['versions'] as $rev) {
-            $loader = new ArrayLoader();
+            $loader = new ArrayLoader($this->repositoryManager);
             $this->addPackage($loader->load($rev));
         }
     }

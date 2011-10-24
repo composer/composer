@@ -20,6 +20,7 @@ namespace Composer\Package;
 class MemoryPackage extends BasePackage
 {
     protected $type;
+    protected $targetDir;
     protected $installationSource;
     protected $sourceType;
     protected $sourceUrl;
@@ -30,6 +31,7 @@ class MemoryPackage extends BasePackage
     protected $distSha1Checksum;
     protected $releaseType;
     protected $version;
+    protected $repositories;
     protected $license;
     protected $extra = array();
 
@@ -39,6 +41,7 @@ class MemoryPackage extends BasePackage
     protected $replaces = array();
     protected $recommends = array();
     protected $suggests = array();
+    protected $autoload = array();
 
     /**
      * Creates a new in memory package.
@@ -69,6 +72,22 @@ class MemoryPackage extends BasePackage
     public function getType()
     {
         return $this->type ?: 'library';
+    }
+
+    /**
+     * @param string $targetDir
+     */
+    public function setTargetDir($targetDir)
+    {
+        $this->targetDir = $targetDir;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getTargetDir()
+    {
+        return $this->targetDir;
     }
 
     /**
@@ -213,6 +232,24 @@ class MemoryPackage extends BasePackage
     public function getDistSha1Checksum()
     {
         return $this->distSha1Checksum;
+    }
+
+    /**
+     * Set the repositories
+     *
+     * @param string $repositories
+     */
+    public function setRepositories($repositories)
+    {
+        $this->repositories = $repositories;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getRepositories()
+    {
+        return $this->repositories;
     }
 
     /**
@@ -375,5 +412,23 @@ class MemoryPackage extends BasePackage
     public function getSuggests()
     {
         return $this->suggests;
+    }
+
+    /**
+     * Set the autoload mapping
+     *
+     * @param array $autoload Mapping of autoloading rules
+     */
+    public function setAutoload(array $autoload)
+    {
+        $this->autoload = $autoload;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getAutoload()
+    {
+        return $this->autoload;
     }
 }

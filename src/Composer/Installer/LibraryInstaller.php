@@ -28,6 +28,7 @@ class LibraryInstaller implements InstallerInterface
     private $directory;
     private $downloadManager;
     private $repository;
+    private $type;
 
     /**
      * Initializes library installer.
@@ -35,11 +36,13 @@ class LibraryInstaller implements InstallerInterface
      * @param   string                      $dir        relative path for packages home
      * @param   DownloadManager             $dm         download manager
      * @param   WritableRepositoryInterface $repository repository controller
+     * @param   string                      $type       package type that this installer handles
      */
-    public function __construct($directory, DownloadManager $dm, WritableRepositoryInterface $repository)
+    public function __construct($directory, DownloadManager $dm, WritableRepositoryInterface $repository, $type = 'library')
     {
         $this->directory = $directory;
         $this->downloadManager = $dm;
+        $this->type = $type;
 
         if (!is_dir($this->directory)) {
             if (file_exists($this->directory)) {
@@ -58,11 +61,15 @@ class LibraryInstaller implements InstallerInterface
     }
 
     /**
-     * Checks that specific package is installed.
-     *
-     * @param   PackageInterface    $package    package instance
-     *
-     * @return  Boolean
+     * {@inheritDoc}
+     */
+    public function supports($packageType)
+    {
+        return $packageType === $this->type;
+    }
+
+    /**
+     * {@inheritDoc}
      */
     public function isInstalled(PackageInterface $package)
     {
@@ -70,27 +77,18 @@ class LibraryInstaller implements InstallerInterface
     }
 
     /**
-     * Installs specific package.
-     *
-     * @param   PackageInterface    $package    package instance
-     *
-     * @throws  InvalidArgumentException        if provided package have no urls to download from
+     * {@inheritDoc}
      */
     public function install(PackageInterface $package)
     {
-        $downloadPath = $this->directory.DIRECTORY_SEPARATOR.$package->getName();
+        $downloadPath = $this->getInstallPath($package);
 
         $this->downloadManager->download($package, $downloadPath);
         $this->repository->addPackage(clone $package);
     }
 
     /**
-     * Updates specific package.
-     *
-     * @param   PackageInterface    $initial    already installed package version
-     * @param   PackageInterface    $target     updated version
-     *
-     * @throws  InvalidArgumentException        if $from package is not installed
+     * {@inheritDoc}
      */
     public function update(PackageInterface $initial, PackageInterface $target)
     {
@@ -98,19 +96,15 @@ class LibraryInstaller implements InstallerInterface
             throw new \InvalidArgumentException('Package is not installed: '.$initial);
         }
 
-        $downloadPath = $this->directory.DIRECTORY_SEPARATOR.$initial->getName();
+        $downloadPath = $this->getInstallPath($initial);
 
         $this->downloadManager->update($initial, $target, $downloadPath);
         $this->repository->removePackage($initial);
-        $this->repository->addPackage($target);
+        $this->repository->addPackage(clone $target);
     }
 
     /**
-     * Uninstalls specific package.
-     *
-     * @param   PackageInterface    $package    package instance
-     *
-     * @throws  InvalidArgumentException        if package is not installed
+     * {@inheritDoc}
      */
     public function uninstall(PackageInterface $package)
     {
@@ -118,9 +112,21 @@ class LibraryInstaller implements InstallerInterface
             throw new \InvalidArgumentException('Package is not installed: '.$package);
         }
 
-        $downloadPath = $this->directory.DIRECTORY_SEPARATOR.$package->getName();
+        $downloadPath = $this->getInstallPath($package);
 
         $this->downloadManager->remove($package, $downloadPath);
         $this->repository->removePackage($package);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getInstallPath(PackageInterface $package)
+    {
+        if (null === $package->getTargetDir()) {
+            return ($this->directory ? $this->directory.'/' : '').$package->getName();
+        }
+
+        return ($this->directory ? $this->directory.'/' : '').$package->getTargetDir();
     }
 }

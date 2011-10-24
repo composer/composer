@@ -23,6 +23,14 @@ use Composer\Package\PackageInterface;
 interface InstallerInterface
 {
     /**
+     * Decides if the installer supports the given type
+     *
+     * @param   string  $packageType
+     * @return  Boolean
+     */
+    function supports($packageType);
+
+    /**
      * Checks that provided package is installed.
      *
      * @param   PackageInterface    $package    package instance
@@ -54,4 +62,12 @@ interface InstallerInterface
      * @param   PackageInterface    $package    package instance
      */
     function uninstall(PackageInterface $package);
+
+    /**
+     * Returns the installation path of a package
+     *
+     * @param   PackageInterface    $package
+     * @return  string path
+     */
+    function getInstallPath(PackageInterface $package);
 }

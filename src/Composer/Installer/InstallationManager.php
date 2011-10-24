@@ -22,20 +22,22 @@ use Composer\DependencyResolver\Operation\UninstallOperation;
  * Package operation manager.
  *
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
+ * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 class InstallationManager
 {
     private $installers = array();
+    private $cache = array();
 
     /**
-     * Sets installer for a specific package type.
+     * Adds installer
      *
-     * @param   string              $type       package type (library f.e.)
      * @param   InstallerInterface  $installer  installer instance
      */
-    public function setInstaller($type, InstallerInterface $installer)
+    public function addInstaller(InstallerInterface $installer)
     {
-        $this->installers[$type] = $installer;
+        array_unshift($this->installers, $installer);
+        $this->cache = array();
     }
 
     /**
@@ -49,11 +51,17 @@ class InstallationManager
      */
     public function getInstaller($type)
     {
-        if (!isset($this->installers[$type])) {
-            throw new \InvalidArgumentException('Unknown installer type: '.$type);
+        if (isset($this->cache[$type])) {
+            return $this->cache[$type];
         }
 
-        return $this->installers[$type];
+        foreach ($this->installers as $installer) {
+            if ($installer->supports($type)) {
+                return $this->cache[$type] = $installer;
+            }
+        }
+
+        throw new \InvalidArgumentException('Unknown installer type: '.$type);
     }
 
     /**
@@ -127,5 +135,17 @@ class InstallationManager
     {
         $installer = $this->getInstaller($operation->getPackage()->getType());
         $installer->uninstall($operation->getPackage());
+    }
+
+    /**
+     * Returns the installation path of a package
+     *
+     * @param   PackageInterface    $package
+     * @return  string path
+     */
+    public function getInstallPath(PackageInterface $package)
+    {
+        $installer = $this->getInstaller($package->getType());
+        return $installer->getInstallPath($package);
     }
 }

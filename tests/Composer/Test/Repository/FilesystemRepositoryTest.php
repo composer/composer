@@ -22,6 +22,7 @@ class FilesystemRepositoryTest extends \PHPUnit_Framework_TestCase
         $json = $this->createJsonFileMock();
 
         $repository = new FilesystemRepository($json);
+        $repository->setRepositoryManager($this->getMock('Composer\Repository\RepositoryManager'));
 
         $json
             ->expects($this->once())
@@ -47,6 +48,7 @@ class FilesystemRepositoryTest extends \PHPUnit_Framework_TestCase
         $json = $this->createJsonFileMock();
 
         $repository = new FilesystemRepository($json);
+        $repository->setRepositoryManager($this->getMock('Composer\Repository\RepositoryManager'));
 
         $json
             ->expects($this->once())

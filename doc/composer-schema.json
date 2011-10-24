@@ -13,6 +13,10 @@
             "type": "string",
             "optional": true
         },
+        "target-dir": {
+            "description": "Override install location of package",
+            "type": "string"
+        },
         "description": {
             "type": "string",
             "description": "Package description",
@@ -102,6 +106,23 @@
             "type": ["object", "array"],
             "additionalProperties": true,
             "optional": true
+        },
+        "autoload": {
+            "type": "object",
+            "properties": {
+                "psr-0": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "pear": {
+                    "type": "object",
+                    "additionalProperties": true
+                }
+            }
+        },
+        "repositories": {
+            "type": ["object", "array"],
+            "additionalProperties": true
         }
     }
 }

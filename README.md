@@ -8,7 +8,7 @@ See the [about page](http://packagist.org/about) on [packagist.org](http://packa
 Installation / Usage
 --------------------
 
-1. Download the [`composer.phar`](http://packagist.org/get/composer.phar) executable
+1. Download the [`composer.phar`](http://getcomposer.org/composer.phar) executable
 2. Create a composer.json defining your dependencies. Note that this example is
 a short version for applications that are not meant to be published as packages
 themselves. To create libraries/packages please read the [guidelines](http://packagist.org/about).
@@ -23,6 +23,15 @@ themselves. To create libraries/packages please read the [guidelines](http://pac
 
 3. Run Composer: `php composer.phar install`
 4. Browse for more packages on [Packagist](http://packagist.org).
+
+Contributing
+------------
+
+All code contributions - including those of people having commit access -
+must go through a pull request and approved by a core developer before being
+merged. This is to ensure proper review of all the code.
+
+Fork the project, create a feature branch, and send us a pull request.
 
 Requirements
 ------------
@@ -42,7 +51,7 @@ License
 
 Composer is licensed under the MIT License - see the LICENSE file for details
 
-Acknowledgements
-----------------
+Acknowledgments
+---------------
 
 This project's Solver started out as a PHP port of openSUSE's [Libzypp satsolver](http://en.opensuse.org/openSUSE:Libzypp_satsolver).
