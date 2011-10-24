@@ -49,8 +49,8 @@ $loader = new UniversalClassLoader();
 
 EOF;
 
-        if (isset($autoloads['psr0'])) {
-            foreach ($autoloads['psr0'] as $def) {
+        if (isset($autoloads['psr-0'])) {
+            foreach ($autoloads['psr-0'] as $def) {
                 foreach ($def['mapping'] as $namespace => $path) {
                     $exportedNamespace = var_export($namespace, true);
                     $exportedPath = var_export(($def['path'] ? '/'.$def['path'] : '').'/'.$path, true);

@@ -221,7 +221,7 @@ interface PackageInterface
      *
      * {"<type>": {"<namespace": "<directory>"}}
      *
-     * Type is either "psr0" or "pear". Namespaces are mapped to directories
+     * Type is either "psr-0" or "pear". Namespaces are mapped to directories
      * for autoloading using the type specified.
      *
      * @return array Mapping of autoloading rules
