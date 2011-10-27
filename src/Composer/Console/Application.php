@@ -16,7 +16,7 @@ use Symfony\Component\Console\Application as BaseApplication;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
-use Composer\Command\InstallCommand;
+use Composer\Command;
 use Composer\Composer;
 
 /**
@@ -63,6 +63,7 @@ class Application extends BaseApplication
      */
     protected function registerCommands()
     {
-        $this->add(new InstallCommand());
+        $this->add(new Command\InstallCommand());
+        $this->add(new Command\DebugPackagesCommand());
     }
 }
