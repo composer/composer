@@ -50,8 +50,9 @@ EOT
     {
         $composer = $this->getComposer();
 
-        // create installed repo
+        // create local repo, this contains all packages that are installed in the local project
         $localRepo           = $composer->getRepositoryManager()->getLocalRepository();
+        // create installed repo, this contains all local packages + platform packages (php & extensions)
         $installedRepo       = new PlatformRepository($localRepo);
 
         // creating repository pool
