@@ -87,18 +87,17 @@ class ArrayLoader
 
         if (isset($config['dist'])) {
             if (!isset($config['dist']['type'])
-             || !isset($config['dist']['url'])
-             || !isset($config['dist']['shasum'])) {
+             || !isset($config['dist']['url'])) {
                 throw new \UnexpectedValueException(sprintf(
                     "package dist should be specified as ".
-                    "{\"type\": ..., \"url\": ..., \"shasum\": ...},\n%s given",
-                    json_encode($config['source'])
+                    "{\"type\": ..., \"url\": ..., \"reference\": ..., \"shasum\": ...},\n%s given",
+                    json_encode($config['dist'])
                 ));
             }
             $package->setDistType($config['dist']['type']);
             $package->setDistUrl($config['dist']['url']);
-            $package->setDistReference($config['dist']['reference']);
-            $package->setDistSha1Checksum($config['dist']['shasum']);
+            $package->setDistReference(isset($config['dist']['reference']) ? $config['dist']['reference'] : null);
+            $package->setDistSha1Checksum(isset($config['dist']['shasum']) ? $config['dist']['shasum'] : null);
         }
 
         foreach ($this->supportedLinkTypes as $type => $description) {
