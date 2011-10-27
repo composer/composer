@@ -16,6 +16,7 @@ use Composer\Package\MemoryPackage;
 use Composer\Package\BasePackage;
 use Composer\Package\Link;
 use Composer\Package\LinkConstraint\VersionConstraint;
+use Composer\Package\Loader\ArrayLoader;
 
 /**
  * @author Benjamin Eberlei <kontakt@beberlei.de>
@@ -24,16 +25,14 @@ use Composer\Package\LinkConstraint\VersionConstraint;
 class PearRepository extends ArrayRepository
 {
     protected $url;
-    protected $cacheDir;
 
-    public function __construct($url, $cacheDir)
+    public function __construct(array $config)
     {
-        if (!filter_var($url, FILTER_VALIDATE_URL)) {
-            throw new \UnexpectedValueException('Invalid url given for PEAR repository: '.$url);
+        if (!filter_var($config['url'], FILTER_VALIDATE_URL)) {
+            throw new \UnexpectedValueException('Invalid url given for PEAR repository: '.$config['url']);
         }
 
-        $this->url = $url;
-        $this->cacheDir = $cacheDir;
+        $this->url = $config['url'];
     }
 
     protected function initialize()
@@ -72,14 +71,14 @@ class PearRepository extends ArrayRepository
                     /* @var $release DOMElement */
                     $pearVersion = $release->getElementsByTagName('v')->item(0)->nodeValue;
 
-                    $version = BasePackage::parseVersion($pearVersion);
+                    $packageData = array(
+                        'name' => $packageName,
+                        'type' => 'library',
+                        'dist' => array('type' => 'pear', 'url' => $this->url.'/get/'.$packageName.'-'.$pearVersion.".tgz"),
+                        'version' => $pearVersion,
+                    );
 
-                    $package = new MemoryPackage($packageName, $version['version'], $version['type']);
-                    $package->setDistType('pear');
-                    $package->setDistUrl($this->url.'/get/'.$packageName.'-'.$pearVersion.".tgz");
-
-                    $depsLink = $releaseLink . "/deps.".$pearVersion.".txt";
-                    $deps = file_get_contents($depsLink);
+                    $deps = file_get_contents($releaseLink . "/deps.".$pearVersion.".txt");
                     if (preg_match('((O:([0-9])+:"([^"]+)"))', $deps, $matches)) {
                         if (strlen($matches[3]) == $matches[2]) {
                             throw new \InvalidArgumentException("Invalid dependency data, it contains serialized objects.");
@@ -88,18 +87,22 @@ class PearRepository extends ArrayRepository
                     $deps = unserialize($deps);
                     if (isset($deps['required']['package'])) {
                         $requires = array();
+
+                        if (isset($deps['required']['package']['name'])) {
+                            $deps['required']['package'] = array($deps['required']['package']);
+                        }
+
                         foreach ($deps['required']['package'] as $dependency) {
                             if (isset($dependency['min'])) {
-                                $constraint = new VersionConstraint('>=', $dependency['min']);
+                                $packageData['require'][$dependency['name']] = '>='.$dependency['min'];
                             } else {
-                                $constraint = new VersionConstraint('>=', '0.0.0');
+                                $packageData['require'][$dependency['name']] = '>=0.0.0';
                             }
-                            $requires[] = new Link($packageName, $dependency['name'], $constraint, 'requires');
                         }
-                        $package->setRequires($requires);
                     }
 
-                    $this->addPackage($package);
+                    $loader = new ArrayLoader($this->repositoryManager);
+                    $this->addPackage($loader->load($packageData));
                 }
             }
         }
