@@ -16,6 +16,7 @@ use Composer\Package\MemoryPackage;
 use Composer\Package\BasePackage;
 use Composer\Package\Link;
 use Composer\Package\LinkConstraint\VersionConstraint;
+use Composer\Package\Loader\ArrayLoader;
 use Composer\Json\JsonFile;
 
 /**
@@ -26,12 +27,14 @@ use Composer\Json\JsonFile;
 class GitRepository extends ArrayRepository
 {
     protected $url;
-    protected $cacheDir;
 
-    public function __construct($url, $cacheDir)
+    public function __construct(array $url)
     {
+        if (!filter_var($config['url'], FILTER_VALIDATE_URL)) {
+            throw new \UnexpectedValueException('Invalid url given for PEAR repository: '.$url);
+        }
+
         $this->url = $url;
-        $this->cacheDir = $cacheDir;
     }
 
     protected function initialize()
@@ -47,7 +50,7 @@ class GitRepository extends ArrayRepository
                 throw new \InvalidArgumentException('The repository at url '.$this->url.' does not contain a composer.json file.');
             }
             $json   = new JsonFile($this->url.'/composer.json');
-            $fonfig = $json->read();
+            $config = $json->read();
             if (!$config) {
                 throw new \UnexpectedValueException('Config file could not be parsed: '.$this->url.'/composer.json. Probably a JSON syntax error.');
             }
@@ -58,57 +61,9 @@ class GitRepository extends ArrayRepository
         $this->createPackage($config);
     }
 
-    // TODO code re-use
     protected function createPackage($data)
     {
-        $version = BasePackage::parseVersion($data['version']);
-
-        $package = new MemoryPackage($data['name'], $version['version'], $version['type']);
-        $package->setSourceType('git');
-        $package->setSourceUrl($this->url);
-
-        if (isset($data['target-dir'])) {
-            $package->setTargetDir($data['target-dir']);
-        }
-
-        if (isset($data['license'])) {
-            $package->setLicense($data['license']);
-        }
-
-        $links = array(
-            'require',
-            'conflict',
-            'provide',
-            'replace',
-            'recommend',
-            'suggest',
-        );
-        foreach ($links as $link) {
-            if (isset($data[$link])) {
-                $method = 'set'.$link.'s';
-                $package->{$method}($this->createLinks($data['name'], $link.'s', $data[$link]));
-            }
-        }
-
-        if (isset($data['autoload'])) {
-            $package->setAutoload($data['autoload']);
-        }
-
-        $this->addPackage($package);
-    }
-
-    // TODO code re-use
-    protected function createLinks($name, $description, $linkSpecs)
-    {
-        $links = array();
-        foreach ($linkSpecs as $dep => $ver) {
-            preg_match('#^([>=<~]*)([\d.]+.*)$#', $ver, $match);
-            if (!$match[1]) {
-                $match[1] = '=';
-            }
-            $constraint = new VersionConstraint($match[1], $match[2]);
-            $links[] = new Link($name, $dep, $constraint, $description);
-        }
-        return $links;
+        $loader = new ArrayLoader($this->repositoryManager);
+        $this->addPackage($loader->load($data));
     }
 }
