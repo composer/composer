@@ -120,6 +120,7 @@ class RepositoryManager
      */
     public function setLocalRepository(RepositoryInterface $repository)
     {
+        $repository->setRepositoryManager($this);
         $this->localRepository = $repository;
     }
 
