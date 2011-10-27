@@ -890,7 +890,7 @@ class Solver
         }
 
         if (isset($this->packageToFeatureRule[$package->getId()])) {
-            $this->packageToFeatureRule[$literal->getPackageId()]->disable();
+            $this->packageToFeatureRule[$package->getId()]->disable();
         }
     }
 
