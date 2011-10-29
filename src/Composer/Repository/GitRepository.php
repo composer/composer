@@ -58,12 +58,7 @@ class GitRepository extends ArrayRepository
             throw new \InvalidArgumentException('Could not find repository at url '.$this->url);
         }
 
-        $this->createPackage($config);
-    }
-
-    protected function createPackage($data)
-    {
         $loader = new ArrayLoader($this->repositoryManager);
-        $this->addPackage($loader->load($data));
+        $this->addPackage($loader->load($config));
     }
 }
