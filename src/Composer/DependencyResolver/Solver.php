@@ -1544,9 +1544,9 @@ class Solver
         }
 
         if ($conflictRule->isWeak()) {
-            /** TODO why > or < lastWeakProblem? */
-            if (!$lastWeakWhy || $why > $lastWeakWhy) {
-                $lastWeakProblem = $why;
+            /** TODO why > or < lastWeakWhy? */
+            if (!$lastWeakWhy || $why > $lastWeakWhy->getId()) {
+                $lastWeakWhy = $conflictRule;
             }
         }
 
