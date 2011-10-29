@@ -1089,9 +1089,16 @@ class Solver
 
             // !wanted & installed
             if (!$literal->isWanted() && isset($this->installedPackageMap[$package->getId()])) {
-                $updateRule = $this->packageToUpdateRule[$package->getId()];
+                $literals = array();
 
-                foreach ($updateRule->getLiterals() as $updateLiteral) {
+                if (isset($this->packageToUpdateRule[$package->getId()])) {
+                    $literals = array_merge($literals, $this->packageToUpdateRule[$package->getId()]->getLiterals());
+                }
+                if (isset($this->packageToFeatureRule[$package->getId()])) {
+                    $literals = array_merge($literals, $this->packageToFeatureRule[$package->getId()]->getLiterals());
+                }
+
+                foreach ($literals as $updateLiteral) {
                     if (!$updateLiteral->equals($literal)) {
                         $installMeansUpdateMap[$updateLiteral->getPackageId()] = $package;
                     }
