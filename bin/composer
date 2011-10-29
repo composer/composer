@@ -11,9 +11,11 @@ use Composer\Package;
 use Composer\Json\JsonFile;
 use Composer\Console\Application as ComposerApplication;
 
+$vendorPath = 'vendor';
+
 // initialize repository manager
 $rm = new Repository\RepositoryManager();
-$rm->setLocalRepository(new Repository\FilesystemRepository(new JsonFile('.composer/installed.json')));
+$rm->setLocalRepository(new Repository\FilesystemRepository(new JsonFile($vendorPath.'/.composer/installed.json')));
 $rm->setRepositoryClass('composer', 'Composer\Repository\ComposerRepository');
 $rm->setRepositoryClass('pear', 'Composer\Repository\PearRepository');
 $rm->setRepositoryClass('package', 'Composer\Repository\PackageRepository');
@@ -26,8 +28,8 @@ $dm->setDownloader('zip',  new Downloader\ZipDownloader());
 
 // initialize installation manager
 $im = new Installer\InstallationManager();
-$im->addInstaller(new Installer\LibraryInstaller('vendor', $dm, $rm->getLocalRepository()));
-$im->addInstaller(new Installer\LibraryInstaller('vendor/bundles', $dm, $rm->getLocalRepository(), 'symfony-bundle'));
+$im->addInstaller(new Installer\LibraryInstaller($vendorPath, $dm, $rm->getLocalRepository()));
+$im->addInstaller(new Installer\LibraryInstaller($vendorPath.'/bundles', $dm, $rm->getLocalRepository(), 'symfony-bundle'));
 
 // load package
 $loader  = new Package\Loader\ArrayLoader($rm);
