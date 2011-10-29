@@ -23,12 +23,12 @@ class DefaultPolicy implements PolicyInterface
 {
     public function allowUninstall()
     {
-        return false;
+        return true;
     }
 
     public function allowDowngrade()
     {
-        return false;
+        return true;
     }
 
     public function versionCompare(PackageInterface $a, PackageInterface $b, $operator)
