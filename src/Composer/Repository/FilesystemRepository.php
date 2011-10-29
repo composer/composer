@@ -48,11 +48,13 @@ class FilesystemRepository extends ArrayRepository implements WritableRepository
             $packages = $this->file->read();
         }
 
-        if (is_array($packages)) {
-            $loader = new ArrayLoader($this->repositoryManager);
-            foreach ($packages as $package) {
-                $this->addPackage($loader->load($package));
-            }
+        if (!is_array($packages)) {
+            throw new \UnexpectedValueException('Could not parse package list from the '.$this->file.' repository');
+        }
+
+        $loader = new ArrayLoader($this->repositoryManager);
+        foreach ($packages as $package) {
+            $this->addPackage($loader->load($package));
         }
     }
 
