@@ -890,7 +890,7 @@ class Solver
         }
 
         if (isset($this->packageToFeatureRule[$package->getId()])) {
-            $this->packageToFeatureRule[$literal->getPackageId()]->disable();
+            $this->packageToFeatureRule[$package->getId()]->disable();
         }
     }
 
@@ -1021,6 +1021,8 @@ class Solver
 
                 $this->packageToFeatureRule[$package->getId()] = $rule;
                 $this->packageToUpdateRule[$package->getId()] = $rule;
+            } else {
+                throw new \Exception('WTF package is not in packageToUpdateRule so it fails later in createTransaction (line 1093)');
             }
         }
 
