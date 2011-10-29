@@ -57,6 +57,7 @@ class PearRepository extends ArrayRepository
             $packagesXML = $this->requestXml($this->url . $categoryLink);
 
             $packages = $packagesXML->getElementsByTagName('p');
+            $loader = new ArrayLoader($this->repositoryManager);
             foreach ($packages as $package) {
                 $packageName = $package->nodeValue;
 
@@ -101,7 +102,6 @@ class PearRepository extends ArrayRepository
                         }
                     }
 
-                    $loader = new ArrayLoader($this->repositoryManager);
                     $this->addPackage($loader->load($packageData));
                 }
             }
