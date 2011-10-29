@@ -2047,8 +2047,11 @@ class Solver
 
     public function printDecisionMap()
     {
-        echo "DecisionMap: \n";
+        echo "\nDecisionMap: \n";
         foreach ($this->decisionMap as $packageId => $level) {
+            if ($packageId === 0) {
+                continue;
+            }
             if ($level > 0) {
                 echo '    +' . $this->pool->packageById($packageId) . "\n";
             } else {
