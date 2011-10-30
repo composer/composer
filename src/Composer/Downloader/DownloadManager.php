@@ -40,7 +40,7 @@ class DownloadManager
      *
      * @param   Boolean $preferSource   prefer downloading from source
      */
-    public function preferSource($preferSource = true)
+    public function setPreferSource($preferSource)
     {
         $this->preferSource = $preferSource;
     }
