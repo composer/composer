@@ -16,6 +16,7 @@ use Composer\Package\PackageInterface;
 
 /**
  * @author Konstantin Kudryashiv <ever.zet@gmail.com>
+ * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 class ArrayDumper
 {
@@ -25,12 +26,7 @@ class ArrayDumper
             'type',
             'names',
             'extra',
-            'installationSource',
-            'sourceType',
-            'sourceUrl',
-            'distType',
-            'distUrl',
-            'distSha1Checksum',
+            'installationSource' => 'installation-source',
             'version',
             'license',
             'requires',
@@ -48,8 +44,26 @@ class ArrayDumper
         if ($package->getTargetDir()) {
             $data['target-dir'] = $package->getTargetDir();
         }
-        foreach ($keys as $key) {
-            $getter = 'get'.ucfirst($key);
+
+        if ($package->getSourceType()) {
+            $data['source']['type'] = $package->getSourceType();
+            $data['source']['url'] = $package->getSourceUrl();
+            $data['source']['reference'] = $package->getSourceReference();
+        }
+
+        if ($package->getDistType()) {
+            $data['dist']['type'] = $package->getDistType();
+            $data['dist']['url'] = $package->getDistUrl();
+            $data['dist']['reference'] = $package->getDistReference();
+            $data['dist']['shasum'] = $package->getDistSha1Checksum();
+        }
+
+        foreach ($keys as $method => $key) {
+            if (is_numeric($method)) {
+                $method = $key;
+            }
+
+            $getter = 'get'.ucfirst($method);
             $value  = $package->$getter();
 
             if (null !== $value && !(is_array($value) && 0 === count($value))) {

@@ -73,6 +73,10 @@ class ArrayLoader
             $package->setLicense($config['license']);
         }
 
+        if (isset($config['installation-source'])) {
+            $package->setInstallationSource($config['installation-source']);
+        }
+
         if (isset($config['source'])) {
             if (!isset($config['source']['type']) || !isset($config['source']['url'])) {
                 throw new \UnexpectedValueException(sprintf(
