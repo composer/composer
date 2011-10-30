@@ -61,7 +61,7 @@ class Locker
         $lockList = $this->lockFile->read();
         $packages = array();
         foreach ($lockList as $info) {
-            $package = $this->repositoryManager->findPackage($info['package'], $info['version']);
+            $package = $this->repositoryManager->getLocalRepository()->findPackage($info['package'], $info['version']);
 
             if (!$package) {
                 throw new \LogicException(sprintf(
