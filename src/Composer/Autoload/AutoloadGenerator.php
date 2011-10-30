@@ -55,7 +55,7 @@ EOF;
                     $exportedPrefix = var_export($prefix, true);
                     $exportedPath = var_export(($def['path'] ? '/'.$def['path'] : '').'/'.$path, true);
                     $file .= <<<EOF
-\$loader->add($exportedPrefix, dirname(__DIR__).$exportedPath);
+\$loader->add($exportedPrefix, dirname(dirname(__DIR__)).$exportedPath);
 
 EOF;
                 }
