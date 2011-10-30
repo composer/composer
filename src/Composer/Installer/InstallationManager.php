@@ -51,6 +51,8 @@ class InstallationManager
      */
     public function getInstaller($type)
     {
+        $type = strtolower($type);
+
         if (isset($this->cache[$type])) {
             return $this->cache[$type];
         }
