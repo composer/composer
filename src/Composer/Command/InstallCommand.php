@@ -43,7 +43,7 @@ The <info>install</info> command reads the composer.json file from the
 current directory, processes it, and downloads and installs all the
 libraries and dependencies outlined in that file.
 
-<info>php composer install</info>
+<info>php composer.phar install</info>
 
 EOT
             )
@@ -52,9 +52,14 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        return $this->install($output, $input->getOption('dev'));
+    }
+
+    public function install(OutputInterface $output, $preferSource, $update = false)
+    {
         $composer = $this->getComposer();
 
-        if ($input->getOption('dev')) {
+        if ($preferSource) {
             $composer->getDownloadManager()->setPreferSource(true);
         }
 
@@ -72,7 +77,30 @@ EOT
 
         // creating requirements request
         $request = new Request($pool);
-        if ($composer->getLocker()->isLocked()) {
+        if ($update) {
+            $output->writeln('> Updating dependencies.');
+            $listedPackages = array();
+            $installedPackages = $installedRepo->getPackages();
+
+            foreach ($composer->getPackage()->getRequires() as $link) {
+                $listedPackages[] = $link->getTarget();
+
+                foreach ($installedPackages as $package) {
+                    if ($package->getName() === $link->getTarget()) {
+                        $request->update($link->getTarget(), $link->getConstraint());
+                        continue 2;
+                    }
+                }
+
+                $request->install($link->getTarget(), $link->getConstraint());
+            }
+
+            foreach ($localRepo->getPackages() as $package) {
+                if (!in_array($package->getName(), $listedPackages)) {
+                    $request->remove($package->getName());
+                }
+            }
+        } elseif ($composer->getLocker()->isLocked()) {
             $output->writeln('> Found lockfile. Reading.');
 
             foreach ($composer->getLocker()->getLockedPackages() as $package) {
@@ -80,6 +108,7 @@ EOT
                 $request->install($package->getName(), $constraint);
             }
         } else {
+            $output->writeln('> Installing dependencies.');
             foreach ($composer->getPackage()->getRequires() as $link) {
                 $request->install($link->getTarget(), $link->getConstraint());
             }
@@ -116,7 +145,7 @@ EOT
             $installationManager->execute($operation);
         }
 
-        if (!$composer->getLocker()->isLocked()) {
+        if ($update || !$composer->getLocker()->isLocked()) {
             $composer->getLocker()->lockPackages($localRepo->getPackages());
             $output->writeln('> Locked');
         }
