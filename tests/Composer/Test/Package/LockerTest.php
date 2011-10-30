@@ -68,7 +68,7 @@ class LockerTest extends \PHPUnit_Framework_TestCase
         $package1 = $this->createPackageMock();
         $package2 = $this->createPackageMock();
 
-        $repo
+        $repo->getLocalRepository()
             ->expects($this->exactly(2))
             ->method('findPackage')
             ->with($this->logicalOr('pkg1', 'pkg2'), $this->logicalOr('1.0.0-beta', '0.1.10'))
@@ -99,7 +99,7 @@ class LockerTest extends \PHPUnit_Framework_TestCase
         $package1 = $this->createPackageMock();
         $package2 = $this->createPackageMock();
 
-        $repo
+        $repo->getLocalRepository()
             ->expects($this->exactly(2))
             ->method('findPackage')
             ->with($this->logicalOr('pkg1', 'pkg2'), $this->logicalOr('1.0.0-beta', '0.1.10'))
@@ -176,9 +176,15 @@ class LockerTest extends \PHPUnit_Framework_TestCase
 
     private function createRepositoryManagerMock()
     {
-        return $this->getMockBuilder('Composer\Repository\RepositoryManager')
+        $mock = $this->getMockBuilder('Composer\Repository\RepositoryManager')
             ->disableOriginalConstructor()
             ->getMock();
+
+        $mock->expects($this->any())
+            ->method('getLocalRepository')
+            ->will($this->returnValue($this->getMockBuilder('Composer\Repository\ArrayRepository')->getMock()));
+
+        return $mock;
     }
 
     private function createPackageMock()
