@@ -43,6 +43,43 @@ class FilesystemRepositoryTest extends \PHPUnit_Framework_TestCase
         $this->assertSame('vendor', $packages[0]->getType());
     }
 
+    /**
+     * @expectedException \UnexpectedValueException
+     */
+    public function testCorruptedRepositoryFile()
+    {
+        $json = $this->createJsonFileMock();
+
+        $repository = new FilesystemRepository($json);
+        $repository->setRepositoryManager($this->getMock('Composer\Repository\RepositoryManager'));
+
+        $json
+            ->expects($this->once())
+            ->method('read')
+            ->will($this->returnValue('foo'));
+        $json
+            ->expects($this->once())
+            ->method('exists')
+            ->will($this->returnValue(true));
+
+        $repository->getPackages();
+    }
+
+    public function testUnexistentRepositoryFile()
+    {
+        $json = $this->createJsonFileMock();
+
+        $repository = new FilesystemRepository($json);
+        $repository->setRepositoryManager($this->getMock('Composer\Repository\RepositoryManager'));
+
+        $json
+            ->expects($this->once())
+            ->method('exists')
+            ->will($this->returnValue(false));
+
+        $this->assertEquals(array(), $repository->getPackages());
+    }
+
     public function testRepositoryWrite()
     {
         $json = $this->createJsonFileMock();
