@@ -326,7 +326,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
             ->with($package)
             ->will($this->returnValue($downloader));
 
-        $manager->preferSource();
+        $manager->setPreferSource(true);
         $manager->download($package, 'target_dir');
     }
 
@@ -362,7 +362,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
             ->with($package)
             ->will($this->returnValue($downloader));
 
-        $manager->preferSource();
+        $manager->setPreferSource(true);
         $manager->download($package, 'target_dir');
     }
 
@@ -398,7 +398,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
             ->with($package)
             ->will($this->returnValue($downloader));
 
-        $manager->preferSource();
+        $manager->setPreferSource(true);
         $manager->download($package, 'target_dir');
     }
 
@@ -415,7 +415,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(null));
 
         $manager = new DownloadManager();
-        $manager->preferSource();
+        $manager->setPreferSource(true);
 
         $this->setExpectedException('InvalidArgumentException');
         $manager->download($package, 'target_dir');

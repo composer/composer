@@ -20,6 +20,7 @@ use Composer\DependencyResolver\Operation;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Repository\PlatformRepository;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -34,6 +35,9 @@ class InstallCommand extends Command
         $this
             ->setName('install')
             ->setDescription('Parses the composer.json file and downloads the needed dependencies.')
+            ->setDefinition(array(
+                new InputOption('dev', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
+            ))
             ->setHelp(<<<EOT
 The <info>install</info> command reads the composer.json file from the
 current directory, processes it, and downloads and installs all the
@@ -49,6 +53,10 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $composer = $this->getComposer();
+
+        if ($input->getOption('dev')) {
+            $composer->getDownloadManager()->setPreferSource(true);
+        }
 
         // create local repo, this contains all packages that are installed in the local project
         $localRepo           = $composer->getRepositoryManager()->getLocalRepository();
