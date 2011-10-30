@@ -34,6 +34,11 @@ class JsonFile
         $this->path = $path;
     }
 
+    public function getPath()
+    {
+        return $this->path;
+    }
+
     /**
      * Checks whether json file exists.
      *
