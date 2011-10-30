@@ -64,6 +64,10 @@ class Locker
             $package = $this->repositoryManager->getLocalRepository()->findPackage($info['package'], $info['version']);
 
             if (!$package) {
+                $package = $this->repositoryManager->findPackage($info['package'], $info['version']);
+            }
+
+            if (!$package) {
                 throw new \LogicException(sprintf(
                     'Can not find "%s-%s" package in registered repositories',
                     $info['package'], $info['version']
