@@ -97,7 +97,7 @@ EOT
         // TODO this belongs in the solver, but this will do for now to report top-level deps missing at least
         foreach ($request->getJobs() as $job) {
             if ('install' === $job['cmd']) {
-                foreach ($localRepo->getPackages() as $package) {
+                foreach ($installedRepo->getPackages() as $package) {
                     if ($job['packageName'] === $package->getName()) {
                         continue 2;
                     }
