@@ -34,6 +34,9 @@ $im->addInstaller(new Installer\LibraryInstaller($vendorPath.'/bundles', $dm, $r
 // load package
 $loader  = new Package\Loader\ArrayLoader($rm);
 $file = new JsonFile('composer.json');
+if (!$file->exists()) {
+    throw new \RuntimeException('The composer.json file could not be found in the current directory');
+}
 $packageConfig = $file->read();
 $package = $loader->load($packageConfig);
 
