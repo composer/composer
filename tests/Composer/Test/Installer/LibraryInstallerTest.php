@@ -160,6 +160,32 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
         $library->uninstall($package);
     }
 
+    public function testGetInstallPath()
+    {
+        $library = new LibraryInstaller($this->dir, $this->dm, $this->repository);
+        $package = $this->createPackageMock();
+
+        $package
+            ->expects($this->once())
+            ->method('getTargetDir')
+            ->will($this->returnValue(null));
+
+        $this->assertEquals($this->dir.'/'.$package->getName(), $library->getInstallPath($package));
+    }
+
+    public function testGetInstallPathWithTargetDir()
+    {
+        $library = new LibraryInstaller($this->dir, $this->dm, $this->repository);
+        $package = $this->createPackageMock();
+
+        $package
+            ->expects($this->once())
+            ->method('getTargetDir')
+            ->will($this->returnValue('Some/Namespace'));
+
+        $this->assertEquals($this->dir.'/'.$package->getName().'/Some/Namespace', $library->getInstallPath($package));
+    }
+
     private function createPackageMock()
     {
         return $this->getMockBuilder('Composer\Package\MemoryPackage')
