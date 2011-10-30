@@ -25,6 +25,7 @@ class Request
     public function __construct(Pool $pool)
     {
         $this->pool = $pool;
+        $this->jobs = array();
     }
 
     public function install($packageName, LinkConstraintInterface $constraint = null)
