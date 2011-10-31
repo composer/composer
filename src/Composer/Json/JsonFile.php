@@ -19,6 +19,7 @@ use Composer\Composer;
  * Reads/writes json files.
  *
  * @author Konstantin Kudryashiv <ever.zet@gmail.com>
+ * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 class JsonFile
 {
@@ -120,17 +121,29 @@ class JsonFile
                 break;
             case JSON_ERROR_SYNTAX:
                 $msg = 'Syntax error';
+                $charOffset = 0;
                 if (preg_match('#["}\]]\s*(,)\s*\}#', $json, $match, PREG_OFFSET_CAPTURE)) {
-                    $msg .= ', extra comma on line '.(substr_count(substr($json, 0, $match[1][1]), "\n")+1);
+                    $msg .= ', extra comma';
+                } elseif (preg_match('#(["}\]]) *\r?\n *"#', $json, $match, PREG_OFFSET_CAPTURE)) {
+                    $msg .= ', missing comma';
+                    $charOffset = 1;
+                } elseif (preg_match('#^ *([a-z0-9_-]+) *:#mi', $json, $match, PREG_OFFSET_CAPTURE)) {
+                    $msg .= ', you must use double quotes (") around keys';
                 } elseif (preg_match('#(\'.+?\' *:|: *\'.+?\')#', $json, $match, PREG_OFFSET_CAPTURE)) {
-                    $msg .= ', use double quotes (") instead of single quotes (\') on line '.(substr_count(substr($json, 0, $match[1][1]), "\n")+1);
+                    $msg .= ', use double quotes (") instead of single quotes (\')';
+                } elseif (preg_match('#(\[".*?":.*?\])#', $json, $match, PREG_OFFSET_CAPTURE)) {
+                    $msg .= ', you must use the hash syntax (e.g. {"foo": "bar"}) instead of array syntax (e.g. ["foo", "bar"])';
+                }
+                if (isset($match[1][1])) {
+                    $preError = substr($json, 0, $match[1][1]);
+                    $msg .= ' on line '.(substr_count($preError, "\n")+1).', char '.abs(strrpos($preError, "\n") - strlen($preError) - $charOffset);
                 }
                 break;
             case JSON_ERROR_UTF8:
                 $msg = 'Malformed UTF-8 characters, possibly incorrectly encoded';
                 break;
             }
-            throw new \UnexpectedValueException('Incorrect composer.json file: '.$msg);
+            throw new \UnexpectedValueException('JSON Parse Error: '.$msg);
         }
 
         return $data;
