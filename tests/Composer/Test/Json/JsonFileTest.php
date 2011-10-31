@@ -1,0 +1,69 @@
+<?php
+
+/*
+ * This file is part of Composer.
+ *
+ * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+namespace Composer\Test\Json;
+
+use Composer\Json\JsonFile;
+
+class JsonFileTest extends \PHPUnit_Framework_TestCase
+{
+    public function testParseErrorDetectExtraComma()
+    {
+        $json = '{
+        "foo": "bar",
+}';
+        $this->expectParseException('extra comma on line 2, char 21', $json);
+    }
+
+    public function testParseErrorDetectSingleQuotes()
+    {
+        $json = '{
+        \'foo\': "bar"
+}';
+        $this->expectParseException('use double quotes (") instead of single quotes (\') on line 2, char 9', $json);
+    }
+
+    public function testParseErrorDetectMissingQuotes()
+    {
+        $json = '{
+        foo: "bar"
+}';
+        $this->expectParseException('must use double quotes (") around keys on line 2, char 9', $json);
+    }
+
+    public function testParseErrorDetectArrayAsHash()
+    {
+        $json = '{
+        "foo": ["bar": "baz"]
+}';
+        $this->expectParseException('you must use the hash syntax (e.g. {"foo": "bar"}) instead of array syntax (e.g. ["foo", "bar"]) on line 2, char 16', $json);
+    }
+
+    public function testParseErrorDetectMissingComma()
+    {
+        $json = '{
+        "foo": "bar"
+        "bar": "foo"
+}';
+        $this->expectParseException('missing comma on line 2, char 21', $json);
+    }
+
+    private function expectParseException($text, $json)
+    {
+        try {
+            JsonFile::parseJson($json);
+            $this->fail();
+        } catch (\UnexpectedValueException $e) {
+            $this->assertContains($text, $e->getMessage());
+        }
+    }
+}
