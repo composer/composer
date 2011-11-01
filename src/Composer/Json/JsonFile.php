@@ -122,7 +122,7 @@ class JsonFile
             case JSON_ERROR_SYNTAX:
                 $msg = 'Syntax error';
                 $charOffset = 0;
-                if (preg_match('#["}\]]\s*(,)\s*\}#', $json, $match, PREG_OFFSET_CAPTURE)) {
+                if (preg_match('#["}\]]\s*(,)\s*[}\]]#', $json, $match, PREG_OFFSET_CAPTURE)) {
                     $msg .= ', extra comma';
                 } elseif (preg_match('#(["}\]]) *\r?\n *"#', $json, $match, PREG_OFFSET_CAPTURE)) {
                     $msg .= ', missing comma';

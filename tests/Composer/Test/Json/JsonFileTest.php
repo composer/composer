@@ -24,6 +24,16 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
         $this->expectParseException('extra comma on line 2, char 21', $json);
     }
 
+    public function testParseErrorDetectExtraCommaInArray()
+    {
+        $json = '{
+        "foo": [
+            "bar",
+        ]
+}';
+        $this->expectParseException('extra comma on line 3, char 18', $json);
+    }
+
     public function testParseErrorDetectSingleQuotes()
     {
         $json = '{
