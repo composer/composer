@@ -24,18 +24,7 @@ use Composer\Repository\RepositoryInterface;
  */
 class AutoloadGenerator
 {
-    private $localRepo;
-    private $package;
-    private $installationManager;
-
-    public function __construct(RepositoryInterface $localRepo, PackageInterface $package, InstallationManager $installationManager)
-    {
-        $this->localRepo = $localRepo;
-        $this->package = $package;
-        $this->installationManager = $installationManager;
-    }
-
-    public function dump($targetDir)
+    public function dump(RepositoryInterface $localRepo, PackageInterface $package, InstallationManager $installationManager, $targetDir)
     {
         $autoloadFile = file_get_contents(__DIR__.'/ClassLoader.php');
 
@@ -69,7 +58,19 @@ return array(
 
 EOF;
 
-        $autoloads = $this->parseAutoloads();
+        // build package => install path map
+        $packageMap = array();
+        foreach ($localRepo->getPackages() as $package) {
+            $packageMap[] = array(
+                $package,
+                $installationManager->getInstallPath($package)
+            );
+        }
+
+        // add main package
+        $packageMap[] = array($package, '');
+
+        $autoloads = $this->parseAutoloads($packageMap);
 
         if (isset($autoloads['psr-0'])) {
             foreach ($autoloads['psr-0'] as $def) {
@@ -85,19 +86,16 @@ EOF;
         file_put_contents($targetDir.'/autoload_namespaces.php', $namespacesFile);
     }
 
-    private function parseAutoloads()
+    /**
+     * Compiles an ordered list of namespace => path mappings
+     *
+     * @param array $packageMap array of array(package, installDir-relative-to-composer.json)
+     * @return array array('psr-0' => array(array('namespace' => 'Foo', 'path' => 'installDir')))
+     */
+    public function parseAutoloads(array $packageMap)
     {
-        $installPaths = array();
-        foreach ($this->localRepo->getPackages() as $package) {
-            $installPaths[] = array(
-                $package,
-                $this->installationManager->getInstallPath($package)
-            );
-        }
-        $installPaths[] = array($this->package, '');
-
         $autoloads = array();
-        foreach ($installPaths as $item) {
+        foreach ($packageMap as $item) {
             list($package, $installPath) = $item;
 
             if (null !== $package->getTargetDir()) {
@@ -121,5 +119,24 @@ EOF;
         }
 
         return $autoloads;
+    }
+
+    /**
+     * Registers an autoloader based on an autoload map returned by parseAutoloads
+     *
+     * @param array $autoloads see parseAutoloads return value
+     * @return ClassLoader
+     */
+    public function createLoader(array $autoloads)
+    {
+        $loader = new ClassLoader();
+
+        if (isset($autoloads['psr-0'])) {
+            foreach ($autoloads['psr-0'] as $def) {
+                $loader->add($def['namespace'], '.'.$def['path']);
+            }
+        }
+
+        return $loader;
     }
 }
