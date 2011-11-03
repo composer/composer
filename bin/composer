@@ -1,7 +1,12 @@
 #!/usr/bin/env php
 <?php
 
-require __DIR__.'/../tests/bootstrap.php';
+if (!@include __DIR__.'/../vendor/.composer/autoload.php') {
+    die('You must set up the project dependencies, run the following commands:
+wget http://getcomposer.org/composer.phar
+php composer.phar install
+');
+}
 
 use Composer\Composer;
 use Composer\Installer;
