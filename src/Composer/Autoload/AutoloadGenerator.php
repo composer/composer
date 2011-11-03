@@ -73,11 +73,9 @@ EOF;
 
         if (isset($autoloads['psr-0'])) {
             foreach ($autoloads['psr-0'] as $def) {
-                foreach ($def['mapping'] as $prefix => $path) {
-                    $exportedPrefix = var_export($prefix, true);
-                    $exportedPath = var_export(($def['path'] ? '/'.$def['path'] : '').'/'.$path, true);
-                    $namespacesFile .= "    $exportedPrefix => dirname(dirname(__DIR__)).$exportedPath,\n";
-                }
+                $exportedPrefix = var_export($def['namespace'], true);
+                $exportedPath = var_export($def['path'], true);
+                $namespacesFile .= "    $exportedPrefix => dirname(dirname(__DIR__)).$exportedPath,\n";
             }
         }
 
@@ -107,11 +105,19 @@ EOF;
             }
 
             foreach ($package->getAutoload() as $type => $mapping) {
-                $autoloads[$type][] = array(
-                    'mapping'   => $mapping,
-                    'path'      => $installPath,
-                );
+                foreach ($mapping as $namespace => $path) {
+                    $autoloads[$type][] = array(
+                        'namespace'   => $namespace,
+                        'path'      => ($installPath ? '/'.$installPath : '').'/'.$path,
+                    );
+                }
             }
+        }
+
+        foreach ($autoloads as $type => $maps) {
+            usort($autoloads[$type], function ($a, $b) {
+                return strcmp($b['namespace'], $a['namespace']);
+            });
         }
 
         return $autoloads;
