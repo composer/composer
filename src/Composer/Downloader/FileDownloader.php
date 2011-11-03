@@ -50,6 +50,10 @@ abstract class FileDownloader implements DownloaderInterface
 
         echo 'Downloading '.$url.' to '.$fileName.PHP_EOL;
 
+        if (0 === strpos($url, 'https:') && !extension_loaded('openssl')) {
+            throw new \RuntimeException('You must enable the openssl extension to download files via https');
+        }
+
         copy($url, $fileName);
 
         if (!file_exists($fileName)) {
