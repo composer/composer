@@ -65,7 +65,7 @@ class LibraryInstaller implements InstallerInterface
      */
     public function supports($packageType)
     {
-        return $packageType === $this->type;
+        return $packageType === $this->type || null === $this->type;
     }
 
     /**

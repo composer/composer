@@ -28,8 +28,7 @@ $dm->setDownloader('zip',  new Downloader\ZipDownloader());
 
 // initialize installation manager
 $im = new Installer\InstallationManager();
-$im->addInstaller(new Installer\LibraryInstaller($vendorPath, $dm, $rm->getLocalRepository()));
-$im->addInstaller(new Installer\LibraryInstaller($vendorPath.'/bundles', $dm, $rm->getLocalRepository(), 'symfony-bundle'));
+$im->addInstaller(new Installer\LibraryInstaller($vendorPath, $dm, $rm->getLocalRepository(), null));
 
 // load package
 $loader  = new Package\Loader\ArrayLoader($rm);
