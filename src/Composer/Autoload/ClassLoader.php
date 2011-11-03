@@ -54,7 +54,14 @@ class ClassLoader
      */
     public function add($prefix, $paths)
     {
-        $this->prefixes[$prefix] = (array) $paths;
+        if (isset($this->prefixes[$prefix])) {
+            $this->prefixes[$prefix] = array_merge(
+                $this->prefixes[$prefix],
+                (array) $paths
+            );
+        } else {
+            $this->prefixes[$prefix] = (array) $paths;
+        }
     }
 
     /**
