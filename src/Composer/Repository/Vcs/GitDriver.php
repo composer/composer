@@ -12,6 +12,7 @@ class GitDriver implements VcsDriverInterface
     protected $url;
     protected $tags;
     protected $branches;
+    protected $rootIdentifier;
     protected $infoCache = array();
 
     public function __construct($url)
@@ -42,7 +43,18 @@ class GitDriver implements VcsDriverInterface
      */
     public function getRootIdentifier()
     {
-        return 'master';
+        if (null === $this->rootIdentifier) {
+            $this->rootIdentifier = 'master';
+            exec(sprintf('cd %s && git branch --no-color -r', escapeshellarg($this->tmpDir)), $output);
+            foreach ($output as $key => $branch) {
+                if ($branch && preg_match('{/HEAD +-> +[^/]+/(\S+)}', $branch, $match)) {
+                    $this->rootIdentifier = $match[1];
+                    break;
+                }
+            }
+        }
+
+        return $this->rootIdentifier;
     }
 
     /**
@@ -121,7 +133,7 @@ class GitDriver implements VcsDriverInterface
 
             exec(sprintf('cd %s && git branch --no-color -rv', escapeshellarg($this->tmpDir)), $output);
             foreach ($output as $key => $branch) {
-                if ($branch && !preg_match('{/HEAD }', $branch)) {
+                if ($branch && !preg_match('{^ *[^/]+/HEAD }', $branch)) {
                     preg_match('{^ *[^/]+/(\S+) *([a-f0-9]+) .*$}', $branch, $match);
                     $branches[$match[1]] = $match[2];
                 }
