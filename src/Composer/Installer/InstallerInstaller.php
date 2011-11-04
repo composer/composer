@@ -49,7 +49,7 @@ class InstallerInstaller extends LibraryInstaller
     {
         $extra = $package->getExtra();
         if (empty($extra['class'])) {
-            throw new \UnexpectedValueException('Error while installing '.$target->getPrettyName().', composer-installer packages should have a class defined in their extra key to be usable.')
+            throw new \UnexpectedValueException('Error while installing '.$target->getPrettyName().', composer-installer packages should have a class defined in their extra key to be usable.');
         }
 
         parent::install($package);
@@ -63,7 +63,7 @@ class InstallerInstaller extends LibraryInstaller
     {
         $extra = $target->getExtra();
         if (empty($extra['class'])) {
-            throw new \UnexpectedValueException('Error while installing '.$target->getPrettyName().', composer-installer packages should have a class defined in their extra key to be usable.')
+            throw new \UnexpectedValueException('Error while installing '.$target->getPrettyName().', composer-installer packages should have a class defined in their extra key to be usable.');
         }
 
         parent::update($initial, $target);
@@ -74,6 +74,7 @@ class InstallerInstaller extends LibraryInstaller
     {
         $downloadPath = $this->getInstallPath($package);
 
+        $extra = $target->getExtra();
         $class = $extra['class'];
         if (class_exists($class, false)) {
             $reflClass = new \ReflectionClass($class);
@@ -83,7 +84,7 @@ class InstallerInstaller extends LibraryInstaller
             $class .= '_composer_tmp';
         } else {
             $generator = new AutoloadGenerator;
-            $map = $generator->parseAutoloads(array($target, $downloadPath));
+            $map = $generator->parseAutoloads(array($package, $downloadPath));
             $generator->createLoader($map)->register();
         }
 
