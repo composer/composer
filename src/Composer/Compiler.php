@@ -51,7 +51,19 @@ class Compiler
             $this->addFile($phar, $file);
         }
 
-        $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../tests/bootstrap.php'));
+        $finder = new Finder();
+        $finder->files()
+            ->ignoreVCS(true)
+            ->name('*.php')
+            ->in(__DIR__.'/../../vendor/symfony/')
+        ;
+
+        foreach ($finder as $file) {
+            $this->addFile($phar, $file);
+        }
+
+        $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/.composer/autoload.php'));
+        $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/.composer/autoload_namespaces.php'));
         $this->addComposerBin($phar);
 
         // Stubs
