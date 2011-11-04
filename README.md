@@ -24,6 +24,16 @@ themselves. To create libraries/packages please read the [guidelines](http://pac
 3. Run Composer: `php composer.phar install`
 4. Browse for more packages on [Packagist](http://packagist.org).
 
+Installation from Source
+------------------------
+
+To run tests, or develop Composer itself, you must use the sources and not the phar
+file as described above.
+
+1. Run `git clone https://github.com/composer/composer.git`
+2. Download the [`composer.phar`](http://getcomposer.org/composer.phar) executable
+3. Run Composer to get the dependencies: `php composer.phar install`
+
 Contributing
 ------------
 
