@@ -22,6 +22,7 @@ $vendorPath = 'vendor';
 $rm = new Repository\RepositoryManager();
 $rm->setLocalRepository(new Repository\FilesystemRepository(new JsonFile($vendorPath.'/.composer/installed.json')));
 $rm->setRepositoryClass('composer', 'Composer\Repository\ComposerRepository');
+$rm->setRepositoryClass('vcs', 'Composer\Repository\VcsRepository');
 $rm->setRepositoryClass('pear', 'Composer\Repository\PearRepository');
 $rm->setRepositoryClass('package', 'Composer\Repository\PackageRepository');
 
