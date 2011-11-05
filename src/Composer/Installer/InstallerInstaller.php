@@ -26,6 +26,7 @@ use Composer\Package\PackageInterface;
 class InstallerInstaller extends LibraryInstaller
 {
     private $installationManager;
+    private static $classCounter = 0;
 
     /**
      * @param   string                      $dir        relative path for packages home
@@ -74,18 +75,20 @@ class InstallerInstaller extends LibraryInstaller
     {
         $downloadPath = $this->getInstallPath($package);
 
-        $extra = $target->getExtra();
+        $extra = $package->getExtra();
         $class = $extra['class'];
+
+        $generator = new AutoloadGenerator;
+        $map = $generator->parseAutoloads(array(array($package, $downloadPath)));
+        $classLoader = $generator->createLoader($map);
+        $classLoader->register();
+
         if (class_exists($class, false)) {
-            $reflClass = new \ReflectionClass($class);
-            $code = file_get_contents($reflClass->getFileName());
-            $code = preg_replace('{^class (\S+)}mi', 'class $1_composer_tmp', $code);
-            eval($code);
-            $class .= '_composer_tmp';
-        } else {
-            $generator = new AutoloadGenerator;
-            $map = $generator->parseAutoloads(array($package, $downloadPath));
-            $generator->createLoader($map)->register();
+            $code = file_get_contents($classLoader->findFile($class));
+            $code = preg_replace('{^class\s+(\S+)}mi', 'class $1_composer_tmp'.self::$classCounter, $code);
+            eval('?>'.$code);
+            $class .= '_composer_tmp'.self::$classCounter;
+            self::$classCounter++;
         }
 
         $extra = $package->getExtra();
