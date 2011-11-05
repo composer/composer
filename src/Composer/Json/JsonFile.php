@@ -124,7 +124,7 @@ class JsonFile
                 $charOffset = 0;
                 if (preg_match('#["}\]]\s*(,)\s*[}\]]#', $json, $match, PREG_OFFSET_CAPTURE)) {
                     $msg .= ', extra comma';
-                } elseif (preg_match('#(\\\\(?!["\\/bfnrt]|u[a-f0-9]{4}))#i', $json, $match, PREG_OFFSET_CAPTURE)) {
+                } elseif (preg_match('#((?<=[^\\\\])\\\\(?!["\\\\/bfnrt]|u[a-f0-9]{4}))#i', $json, $match, PREG_OFFSET_CAPTURE)) {
                     $msg .= ', unescaped backslash (\\)';
                 } elseif (preg_match('#(["}\]]) *\r?\n *"#', $json, $match, PREG_OFFSET_CAPTURE)) {
                     $msg .= ', missing comma';
