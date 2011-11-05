@@ -1,0 +1,9 @@
+{
+    "name": "",
+    "version": "1.0.0",
+    "type": "composer-installer",
+    "autoload": { "psr-0": { "Installer": "" } },
+    "extra": {
+        "class": "Installer\\Custom"
+    }
+}

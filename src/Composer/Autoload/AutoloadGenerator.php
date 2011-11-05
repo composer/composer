@@ -76,7 +76,12 @@ EOF;
             foreach ($autoloads['psr-0'] as $def) {
                 $exportedPrefix = var_export($def['namespace'], true);
                 $exportedPath = var_export($def['path'], true);
-                $namespacesFile .= "    $exportedPrefix => dirname(dirname(__DIR__)).$exportedPath,\n";
+                if (!$this->isAbsolutePath($def['path'])) {
+                    $baseDir = 'dirname(dirname(__DIR__)).';
+                } else {
+                    $baseDir = '';
+                }
+                $namespacesFile .= "    $exportedPrefix => {$baseDir}{$exportedPath},\n";
             }
         }
 
@@ -106,7 +111,7 @@ EOF;
                 foreach ($mapping as $namespace => $path) {
                     $autoloads[$type][] = array(
                         'namespace'   => $namespace,
-                        'path'      => ($installPath ? '/'.$installPath : '').'/'.$path,
+                        'path'      => $installPath.'/'.$path,
                     );
                 }
             }
@@ -133,10 +138,15 @@ EOF;
 
         if (isset($autoloads['psr-0'])) {
             foreach ($autoloads['psr-0'] as $def) {
-                $loader->add($def['namespace'], '.'.$def['path']);
+                $loader->add($def['namespace'], $def['path']);
             }
         }
 
         return $loader;
+    }
+
+    protected function isAbsolutePath($path)
+    {
+        return substr($path, 0, 1) === '/' || substr($path, 1, 1) === ':';
     }
 }
