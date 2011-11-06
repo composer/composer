@@ -24,7 +24,7 @@ use Composer\Repository\RepositoryInterface;
  */
 class AutoloadGenerator
 {
-    public function dump(RepositoryInterface $localRepo, PackageInterface $package, InstallationManager $installationManager, $targetDir)
+    public function dump(RepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir)
     {
         $autoloadFile = file_get_contents(__DIR__.'/ClassLoader.php');
 
@@ -60,27 +60,28 @@ EOF;
 
         // build package => install path map
         $packageMap = array();
-        foreach ($localRepo->getPackages() as $package) {
+        foreach ($localRepo->getPackages() as $installedPackage) {
             $packageMap[] = array(
-                $package,
-                $installationManager->getInstallPath($package)
+                $installedPackage,
+                $installationManager->getInstallPath($installedPackage)
             );
         }
 
         // add main package
-        $packageMap[] = array($package, '');
+        $packageMap[] = array($mainPackage, '');
 
         $autoloads = $this->parseAutoloads($packageMap);
 
         if (isset($autoloads['psr-0'])) {
             foreach ($autoloads['psr-0'] as $def) {
-                $exportedPrefix = var_export($def['namespace'], true);
-                $exportedPath = var_export($def['path'], true);
                 if (!$this->isAbsolutePath($def['path'])) {
                     $baseDir = 'dirname(dirname(__DIR__)).';
+                    $def['path'] = '/'.$def['path'];
                 } else {
                     $baseDir = '';
                 }
+                $exportedPrefix = var_export($def['namespace'], true);
+                $exportedPath = var_export($def['path'], true);
                 $namespacesFile .= "    $exportedPrefix => {$baseDir}{$exportedPath},\n";
             }
         }
