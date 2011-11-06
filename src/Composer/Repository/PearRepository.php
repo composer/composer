@@ -64,7 +64,14 @@ class PearRepository extends ArrayRepository
                 $packageLink = $package->getAttribute('xlink:href');
                 $releaseLink = $this->url . str_replace("/rest/p/", "/rest/r/", $packageLink);
                 $allReleasesLink = $releaseLink . "/allreleases2.xml";
-                $releasesXML = $this->requestXml($allReleasesLink);
+
+                try {
+                    $releasesXML = $this->requestXml($allReleasesLink);
+                } catch (\ErrorException $e) {
+                    if (strpos($e->getMessage(), '404')) {
+                        continue;
+                    }
+                }
 
                 $releases = $releasesXML->getElementsByTagName('r');
 
@@ -79,7 +86,14 @@ class PearRepository extends ArrayRepository
                         'version' => $pearVersion,
                     );
 
-                    $deps = file_get_contents($releaseLink . "/deps.".$pearVersion.".txt");
+                    try {
+                        $deps = file_get_contents($releaseLink . "/deps.".$pearVersion.".txt");
+                    } catch (\ErrorException $e) {
+                        if (strpos($e->getMessage(), '404')) {
+                            continue;
+                        }
+                    }
+
                     if (preg_match('((O:([0-9])+:"([^"]+)"))', $deps, $matches)) {
                         if (strlen($matches[3]) == $matches[2]) {
                             throw new \InvalidArgumentException("Invalid dependency data, it contains serialized objects.");
@@ -102,7 +116,11 @@ class PearRepository extends ArrayRepository
                         }
                     }
 
-                    $this->addPackage($loader->load($packageData));
+                    try {
+                        $this->addPackage($loader->load($packageData));
+                    } catch (\UnexpectedValueException $e) {
+                        continue;
+                    }
                 }
             }
         }

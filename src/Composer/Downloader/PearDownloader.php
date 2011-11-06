@@ -21,7 +21,10 @@ class PearDownloader extends FileDownloader
 {
     protected function extract($file, $path)
     {
-        system(sprintf('tar -zxf %s', escapeshellarg($file)));
+        $oldDir = getcwd();
+        chdir(dirname($file));
+        system(sprintf('tar -zxf %s', escapeshellarg(basename($file))));
+        chdir($oldDir);
         @unlink($path . '/package.sig');
         @unlink($path . '/package.xml');
     }
