@@ -39,7 +39,9 @@ class InstallerInstaller extends LibraryInstaller
         $this->installationManager = $im;
 
         foreach ($repository->getPackages() as $package) {
-            $this->registerInstaller($package);
+            if ('composer-installer' === $package->getType()) {
+                $this->registerInstaller($package);
+            }
         }
     }
 
