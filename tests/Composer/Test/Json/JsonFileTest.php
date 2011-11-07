@@ -42,6 +42,15 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
         $this->expectParseException('unescaped backslash (\\) on line 2, char 12', $json);
     }
 
+    public function testParseErrorSkipsEscapedBackslash()
+    {
+        $json = '{
+        "fo\\\\o": "bar"
+        "a": "b"
+}';
+        $this->expectParseException('missing comma on line 2, char 23', $json);
+    }
+
     public function testParseErrorDetectSingleQuotes()
     {
         $json = '{
