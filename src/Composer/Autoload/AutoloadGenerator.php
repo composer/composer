@@ -24,18 +24,7 @@ use Composer\Repository\RepositoryInterface;
  */
 class AutoloadGenerator
 {
-    private $localRepo;
-    private $package;
-    private $installationManager;
-
-    public function __construct(RepositoryInterface $localRepo, PackageInterface $package, InstallationManager $installationManager)
-    {
-        $this->localRepo = $localRepo;
-        $this->package = $package;
-        $this->installationManager = $installationManager;
-    }
-
-    public function dump($targetDir)
+    public function dump(RepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir)
     {
         $autoloadFile = file_get_contents(__DIR__.'/ClassLoader.php');
 
@@ -69,13 +58,31 @@ return array(
 
 EOF;
 
-        $autoloads = $this->parseAutoloads();
+        // build package => install path map
+        $packageMap = array();
+        foreach ($localRepo->getPackages() as $installedPackage) {
+            $packageMap[] = array(
+                $installedPackage,
+                $installationManager->getInstallPath($installedPackage)
+            );
+        }
+
+        // add main package
+        $packageMap[] = array($mainPackage, '');
+
+        $autoloads = $this->parseAutoloads($packageMap);
 
         if (isset($autoloads['psr-0'])) {
             foreach ($autoloads['psr-0'] as $def) {
+                if (!$this->isAbsolutePath($def['path'])) {
+                    $baseDir = 'dirname(dirname(__DIR__)).';
+                    $def['path'] = '/'.$def['path'];
+                } else {
+                    $baseDir = '';
+                }
                 $exportedPrefix = var_export($def['namespace'], true);
                 $exportedPath = var_export($def['path'], true);
-                $namespacesFile .= "    $exportedPrefix => dirname(dirname(__DIR__)).$exportedPath,\n";
+                $namespacesFile .= "    $exportedPrefix => {$baseDir}{$exportedPath},\n";
             }
         }
 
@@ -85,19 +92,16 @@ EOF;
         file_put_contents($targetDir.'/autoload_namespaces.php', $namespacesFile);
     }
 
-    private function parseAutoloads()
+    /**
+     * Compiles an ordered list of namespace => path mappings
+     *
+     * @param array $packageMap array of array(package, installDir-relative-to-composer.json)
+     * @return array array('psr-0' => array(array('namespace' => 'Foo', 'path' => 'installDir')))
+     */
+    public function parseAutoloads(array $packageMap)
     {
-        $installPaths = array();
-        foreach ($this->localRepo->getPackages() as $package) {
-            $installPaths[] = array(
-                $package,
-                $this->installationManager->getInstallPath($package)
-            );
-        }
-        $installPaths[] = array($this->package, '');
-
         $autoloads = array();
-        foreach ($installPaths as $item) {
+        foreach ($packageMap as $item) {
             list($package, $installPath) = $item;
 
             if (null !== $package->getTargetDir()) {
@@ -108,7 +112,7 @@ EOF;
                 foreach ($mapping as $namespace => $path) {
                     $autoloads[$type][] = array(
                         'namespace'   => $namespace,
-                        'path'      => ($installPath ? '/'.$installPath : '').'/'.$path,
+                        'path'      => $installPath.'/'.$path,
                     );
                 }
             }
@@ -121,5 +125,29 @@ EOF;
         }
 
         return $autoloads;
+    }
+
+    /**
+     * Registers an autoloader based on an autoload map returned by parseAutoloads
+     *
+     * @param array $autoloads see parseAutoloads return value
+     * @return ClassLoader
+     */
+    public function createLoader(array $autoloads)
+    {
+        $loader = new ClassLoader();
+
+        if (isset($autoloads['psr-0'])) {
+            foreach ($autoloads['psr-0'] as $def) {
+                $loader->add($def['namespace'], $def['path']);
+            }
+        }
+
+        return $loader;
+    }
+
+    protected function isAbsolutePath($path)
+    {
+        return substr($path, 0, 1) === '/' || substr($path, 1, 1) === ':';
     }
 }

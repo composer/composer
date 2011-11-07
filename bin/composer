@@ -35,6 +35,7 @@ $dm->setDownloader('zip',  new Downloader\ZipDownloader());
 // initialize installation manager
 $im = new Installer\InstallationManager();
 $im->addInstaller(new Installer\LibraryInstaller($vendorPath, $dm, $rm->getLocalRepository(), null));
+$im->addInstaller(new Installer\InstallerInstaller($vendorPath, $dm, $rm->getLocalRepository(), $im));
 
 // load package
 $loader  = new Package\Loader\ArrayLoader($rm);
