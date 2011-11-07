@@ -41,7 +41,9 @@ $im->addInstaller(new Installer\InstallerInstaller($vendorPath, $dm, $rm->getLoc
 $loader  = new Package\Loader\ArrayLoader($rm);
 $file = new JsonFile('composer.json');
 if (!$file->exists()) {
-    throw new \RuntimeException('The composer.json file could not be found in the current directory');
+    echo 'Composer could not find a composer.json file in '.getcwd().PHP_EOL;
+    echo 'To initialize a project, please create a composer.json file as described on the http://packagist.org/ "Getting Started" section'.PHP_EOL;
+    exit(1);
 }
 $packageConfig = $file->read();
 $package = $loader->load($packageConfig);
