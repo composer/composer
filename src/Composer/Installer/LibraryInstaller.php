@@ -25,9 +25,9 @@ use Composer\Package\PackageInterface;
  */
 class LibraryInstaller implements InstallerInterface
 {
-    private $directory;
-    private $downloadManager;
-    private $repository;
+    protected $directory;
+    protected $downloadManager;
+    protected $repository;
     private $type;
 
     /**
