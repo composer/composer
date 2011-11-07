@@ -10,4 +10,12 @@
  * file that was distributed with this source code.
  */
 
-require __DIR__.'/../vendor/.composer/autoload.php';
+if (file_exists(__DIR__.'/../vendor/.composer/autoload.php')) {
+    require __DIR__.'/../vendor/.composer/autoload.php';
+} else {
+    require __DIR__.'/../src/Composer/Autoload/ClassLoader.php';
+
+    $loader = new Composer\Autoload\ClassLoader();
+    $loader->add('Composer\\', dirname(__DIR__).'/src/');
+    $loader->register();
+}
