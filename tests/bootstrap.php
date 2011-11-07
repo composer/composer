@@ -17,7 +17,5 @@ if (file_exists(__DIR__.'/../vendor/.composer/autoload.php')) {
 
     $loader = new Composer\Autoload\ClassLoader();
     $loader->add('Composer\\', dirname(__DIR__).'/src/');
-    $loader->add('Symfony\\Component\\', dirname(__DIR__).'/src/');
-    $loader->add('Composer_', dirname(__DIR__).'/src/');
     $loader->register();
 }
