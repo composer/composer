@@ -18,15 +18,15 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class HelpCommand extends Command
+class AboutCommand extends Command
 {
     protected function configure()
     {
         $this
-            ->setName('help')
-            ->setDescription('')
+            ->setName('about')
+            ->setDescription('Short information about Composer')
             ->setHelp(<<<EOT
-<info>php composer.phar help</info>
+<info>php composer.phar about</info>
 EOT
             )
         ;
