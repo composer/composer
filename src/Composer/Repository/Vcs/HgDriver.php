@@ -26,7 +26,7 @@ class HgDriver implements VcsDriverInterface
     protected $infoCache = array();
 
     public function __construct($url)
-	{
+    {
         $this->url = $url;
         $this->tmpDir = sys_get_temp_dir() . '/composer-' . preg_replace('{[^a-z0-9]}i', '-', $url) . '/';
     }
@@ -53,11 +53,11 @@ class HgDriver implements VcsDriverInterface
      */
     public function getRootIdentifier()
     {
-		$tmpDir = escapeshellarg($this->tmpDir);
-		if (null === $this->rootIdentifier) {
-			exec(sprintf('cd %s && hg tip --template "{rev}:{node|short}" --color never', $tmpDir), $output);
-			$this->rootIdentifier = $output[0];
-		}
+        $tmpDir = escapeshellarg($this->tmpDir);
+        if (null === $this->rootIdentifier) {
+            exec(sprintf('cd %s && hg tip --template "{rev}:{node|short}" --color never', $tmpDir), $output);
+            $this->rootIdentifier = $output[0];
+        }
         return $this->rootIdentifier;
     }
 
@@ -74,7 +74,7 @@ class HgDriver implements VcsDriverInterface
      */
     public function getSource($identifier)
     {
-        $label = array_search($identifier, (array) $this->tags) ?: $identifier;
+        $label = array_search($identifier, (array)$this->tags) ? : $identifier;
 
         return array('type' => 'hg', 'url' => $this->getUrl(), 'reference' => $label);
     }
@@ -98,7 +98,7 @@ class HgDriver implements VcsDriverInterface
             unset($output);
 
             if (!$composer) {
-                throw new \UnexpectedValueException('Failed to retrieve composer information for identifier '.$identifier.' in '.$this->getUrl());
+                throw new \UnexpectedValueException('Failed to retrieve composer information for identifier ' . $identifier . ' in ' . $this->getUrl());
             }
 
             $composer = JsonFile::parseJson($composer);
@@ -111,7 +111,7 @@ class HgDriver implements VcsDriverInterface
             $this->infoCache[$identifier] = $composer;
         }
 
-		return $this->infoCache[$identifier];
+        return $this->infoCache[$identifier];
     }
 
     /**
@@ -121,12 +121,12 @@ class HgDriver implements VcsDriverInterface
     {
         if (null === $this->tags) {
             exec(sprintf('cd %s && hg tags --color never', escapeshellarg($this->tmpDir)), $output);
-			foreach ($output as $key => $tag) {
-				preg_match('(^([^\s]+)[\s]+[\d+]:(.*)$)', $tag, $match);
-				$tags[$match[1]] = $match[2];
-			}
+            foreach ($output as $tag) {
+                preg_match('(^([^\s]+)[\s]+[\d+]:(.*)$)', $tag, $match);
+                $tags[$match[1]] = $match[2];
+            }
             unset($tags['tip']);
-			$this->tags = $tags;
+            $this->tags = $tags;
         }
 
         return $this->tags;
@@ -141,9 +141,9 @@ class HgDriver implements VcsDriverInterface
             $branches = array();
 
             exec(sprintf('cd %s && hg branches --color never', escapeshellarg($this->tmpDir)), $output);
-            foreach ($output as $key => $branch) {
-				preg_match('(^([^\s]+)[\s]+[\d+]:(.*)$)', $branch, $match);
-				$branches[$match[1]] = $match[2];
+            foreach ($output as $branch) {
+                preg_match('(^([^\s]+)[\s]+[\d+]:(.*)$)', $branch, $match);
+                $branches[$match[1]] = $match[2];
             }
 
             $this->branches = $branches;
@@ -171,16 +171,16 @@ class HgDriver implements VcsDriverInterface
      */
     public static function supports($url, $deep = false)
     {
-		if (preg_match('#(^(?:https?|ssh)://(?:[^@]@)?bitbucket.org|https://(?:.*?)\.kilnhg.com)#i', $url)) {
+        if (preg_match('#(^(?:https?|ssh)://(?:[^@]@)?bitbucket.org|https://(?:.*?)\.kilnhg.com)#i', $url)) {
             return true;
         }
 
         if (!$deep) {
             return false;
         }
-		
-		exec(sprintf('hg identify %s', escapeshellarg($url)), $output);
 
-        return (boolean) $output;
+        exec(sprintf('hg identify %s', escapeshellarg($url)), $output);
+
+        return (boolean)$output;
     }
 }

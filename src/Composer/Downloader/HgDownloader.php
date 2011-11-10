@@ -19,6 +19,7 @@ use Composer\Package\PackageInterface;
  */
 class HgDownloader implements DownloaderInterface
 {
+
     /**
      * {@inheritDoc}
      */
@@ -50,8 +51,8 @@ class HgDownloader implements DownloaderInterface
             throw new \InvalidArgumentException('The given package is missing reference information');
         }
 
-		$this->enforceCleanDirectory($path);
-		system(sprintf('cd %s && hg pull && hg up %s', $path, $target->getSourceReference()));
+        $this->enforceCleanDirectory($path);
+        system(sprintf('cd %s && hg pull && hg up %s', $path, $target->getSourceReference()));
     }
 
     /**
