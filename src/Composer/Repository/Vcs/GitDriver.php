@@ -46,7 +46,7 @@ class GitDriver implements VcsDriverInterface
         if (null === $this->rootIdentifier) {
             $this->rootIdentifier = 'master';
             exec(sprintf('cd %s && git branch --no-color -r', escapeshellarg($this->tmpDir)), $output);
-            foreach ($output as $key => $branch) {
+            foreach ($output as $branch) {
                 if ($branch && preg_match('{/HEAD +-> +[^/]+/(\S+)}', $branch, $match)) {
                     $this->rootIdentifier = $match[1];
                     break;
@@ -132,7 +132,7 @@ class GitDriver implements VcsDriverInterface
             $branches = array();
 
             exec(sprintf('cd %s && git branch --no-color -rv', escapeshellarg($this->tmpDir)), $output);
-            foreach ($output as $key => $branch) {
+            foreach ($output as $branch) {
                 if ($branch && !preg_match('{^ *[^/]+/HEAD }', $branch)) {
                     preg_match('{^ *[^/]+/(\S+) *([a-f0-9]+) .*$}', $branch, $match);
                     $branches[$match[1]] = $match[2];
