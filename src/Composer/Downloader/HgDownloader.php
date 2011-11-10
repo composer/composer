@@ -19,7 +19,6 @@ use Composer\Package\PackageInterface;
  */
 class HgDownloader implements DownloaderInterface
 {
-
     /**
      * {@inheritDoc}
      */
