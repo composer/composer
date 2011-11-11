@@ -70,7 +70,7 @@ class GitDownloader implements DownloaderInterface
 
     private function enforceCleanDirectory($path)
     {
-        exec(sprintf('cd %s && git status -s', $path), $output);
+        exec(sprintf('cd %s && git status --porcelain', $path), $output);
         if (implode('', $output)) {
             throw new \RuntimeException('Source directory has uncommitted changes');
         }
