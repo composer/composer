@@ -17,15 +17,8 @@ namespace Composer\Downloader\Util\Archive;
  * 
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  */
-interface ExtractorInterface
+interface ExtractorInterface extends ArchiveSupportInterface
 {
-    /**
-     * Get type of archive.
-     *
-     * @return string Usually an archive extension, like zip
-     */
-    public function getArchiveType();
-
     /**
      * Extract archive to directory
      *

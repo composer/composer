@@ -1,5 +1,4 @@
 <?php
-
 /*
  * This file is part of Composer.
  *
@@ -13,19 +12,16 @@
 namespace Composer\Downloader\Util\Archive;
 
 /**
- * Archive compressor
- * 
+ * Common interface for archive classes
+ *
  * @author Kirill chEbba Chebunin <iam@chebba.org>
- */
-interface CompressorInterface extends ArchiveSupportInterface
+ */ 
+interface ArchiveSupportInterface
 {
-    /**
-     * Compress the given directory in targetFile
+	/**
+     * Get type of archive.
      *
-     * @param string $dir Directory for compression
-     * @param string $targetFile File to compress to
-     *
-     * @throws \RuntimeException
+     * @return string Usually an archive extension, like zip
      */
-    public function compressDir($dir, $targetFile);
+    public function getArchiveType();
 }
