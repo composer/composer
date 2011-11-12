@@ -41,7 +41,7 @@ EOT
     {
         $composer = $this->getComposer();
 
-        $latest = file_get_contents('http://getcomposer.org/version');
+        $latest = trim(file_get_contents('http://getcomposer.org/version'));
 
         if (Composer::VERSION !== $latest) {
             $output->writeln(sprintf("Updating to version %s.", $latest));
