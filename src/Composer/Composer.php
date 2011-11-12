@@ -24,7 +24,7 @@ use Composer\Downloader\DownloadManager;
  */
 class Composer
 {
-    const VERSION = '1.0.0-DEV';
+    const VERSION = '@package_version@';
 
     private $package;
     private $locker;
