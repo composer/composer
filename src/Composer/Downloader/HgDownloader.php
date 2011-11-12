@@ -51,7 +51,7 @@ class HgDownloader implements DownloaderInterface
         }
 
         $this->enforceCleanDirectory($path);
-        system(sprintf('cd %s && hg pull -u %s', $path, $target->getSourceReference()));
+        system(sprintf('cd %s && hg pull && hg up %s', $path, escapeshellarg($target->getSourceReference())));
     }
 
     /**
