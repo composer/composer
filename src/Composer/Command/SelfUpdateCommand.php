@@ -47,7 +47,7 @@ EOT
             $output->writeln(sprintf("Updating to version %s.", $latest));
 
             $remoteFilename = 'http://getcomposer.org/composer.phar';
-            $localFilename = getcwd().'/composer.phar';
+            $localFilename = $_SERVER['argv'][0];
 
             file_put_contents($localFilename, file_get_contents($remoteFilename));
         } else {
