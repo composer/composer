@@ -31,7 +31,9 @@ class VcsRepository extends ArrayRepository
 
         $drivers = array(
             'Composer\Repository\Vcs\GitHubDriver',
+            'Composer\Repository\Vcs\GitBitbucketDriver',
             'Composer\Repository\Vcs\GitDriver',
+            'Composer\Repository\Vcs\HgBitbucketDriver',
             'Composer\Repository\Vcs\HgDriver',
         );
 
