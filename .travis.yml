@@ -4,4 +4,8 @@ php:
   - 5.3
   - 5.4
 
+before_script:
+  - sh -c "wget -nc http://getcomposer.org/composer.phar"
+  - sh -c "php composer.phar update"
+
 script: phpunit
