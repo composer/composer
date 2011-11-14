@@ -179,5 +179,7 @@ class Application extends BaseApplication
         if ('phar:' === substr(__FILE__, 0, 5)) {
             $this->add(new Command\SelfUpdateCommand());
         }
+
+        $this->add(new Command\GeneratePackageListCommand());
     }
 }
