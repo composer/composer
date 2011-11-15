@@ -43,6 +43,10 @@ class VcsRepository extends ArrayRepository
             }
         }
 
+        if (!$driver) {
+            throw new \InvalidArgumentException('No driver found to handle VCS repository '.$this->url);
+        }
+
         $versionParser = new VersionParser;
         $loader = new ArrayLoader($this->repositoryManager);
         $versions = array();
