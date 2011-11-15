@@ -154,7 +154,7 @@ EOT
 
         $output->writeln('> Generating autoload files');
         $generator = new AutoloadGenerator;
-        $generator->dump($localRepo, $composer->getPackage(), $installationManager, 'vendor/.composer/');
+        $generator->dump($localRepo, $composer->getPackage(), $installationManager, $installationManager->getVendorPath().'/.composer');
 
         $output->writeln('> Done');
     }
