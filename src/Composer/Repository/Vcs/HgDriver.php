@@ -1,13 +1,23 @@
 <?php
 
+/*
+ * This file is part of Composer.
+ *
+ * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Composer\Repository\Vcs;
 
 use Composer\Json\JsonFile;
 
 /**
- * @author Jordi Boggiano <j.boggiano@seld.be>
+ * @author Per Bernhardt <plb@webfactory.de>
  */
-class GitDriver implements VcsDriverInterface
+class HgDriver implements VcsDriverInterface
 {
     protected $url;
     protected $tags;
@@ -29,9 +39,9 @@ class GitDriver implements VcsDriverInterface
         $url = escapeshellarg($this->url);
         $tmpDir = escapeshellarg($this->tmpDir);
         if (is_dir($this->tmpDir)) {
-            exec(sprintf('cd %s && git fetch origin', $tmpDir), $output);
+            exec(sprintf('cd %s && hg pull -u', $tmpDir), $output);
         } else {
-            exec(sprintf('git clone %s %s', $url, $tmpDir), $output);
+            exec(sprintf('hg clone %s %s', $url, $tmpDir), $output);
         }
 
         $this->getTags();
@@ -43,17 +53,12 @@ class GitDriver implements VcsDriverInterface
      */
     public function getRootIdentifier()
     {
+        $tmpDir = escapeshellarg($this->tmpDir);
         if (null === $this->rootIdentifier) {
-            $this->rootIdentifier = 'master';
-            exec(sprintf('cd %s && git branch --no-color -r', escapeshellarg($this->tmpDir)), $output);
-            foreach ($output as $branch) {
-                if ($branch && preg_match('{/HEAD +-> +[^/]+/(\S+)}', $branch, $match)) {
-                    $this->rootIdentifier = $match[1];
-                    break;
-                }
-            }
+            exec(sprintf('cd %s && hg tip --template "{rev}:{node|short}" --color never', $tmpDir), $output);
+            $this->rootIdentifier = $output[0];
         }
-
+        
         return $this->rootIdentifier;
     }
 
@@ -70,9 +75,9 @@ class GitDriver implements VcsDriverInterface
      */
     public function getSource($identifier)
     {
-        $label = array_search($identifier, (array) $this->tags) ?: $identifier;
+        $label = array_search($identifier, (array)$this->tags) ? : $identifier;
 
-        return array('type' => 'git', 'url' => $this->getUrl(), 'reference' => $label);
+        return array('type' => 'hg', 'url' => $this->getUrl(), 'reference' => $label);
     }
 
     /**
@@ -89,19 +94,19 @@ class GitDriver implements VcsDriverInterface
     public function getComposerInformation($identifier)
     {
         if (!isset($this->infoCache[$identifier])) {
-            exec(sprintf('cd %s && git show %s:composer.json', escapeshellarg($this->tmpDir), escapeshellarg($identifier)), $output);
+            exec(sprintf('cd %s && hg cat --color never -r %s composer.json', escapeshellarg($this->tmpDir), escapeshellarg($identifier)), $output);
             $composer = implode("\n", $output);
             unset($output);
 
             if (!$composer) {
-                throw new \UnexpectedValueException('Failed to retrieve composer information for identifier '.$identifier.' in '.$this->getUrl());
+                throw new \UnexpectedValueException('Failed to retrieve composer information for identifier ' . $identifier . ' in ' . $this->getUrl());
             }
 
             $composer = JsonFile::parseJson($composer);
 
             if (!isset($composer['time'])) {
-                exec(sprintf('cd %s && git log -1 --format=%%at %s', escapeshellarg($this->tmpDir), escapeshellarg($identifier)), $output);
-                $date = new \DateTime('@'.$output[0]);
+                exec(sprintf('cd %s && hg log --template "{date|rfc822date}" -r %s', escapeshellarg($this->tmpDir), escapeshellarg($identifier)), $output);
+                $date = new \DateTime($output[0]);
                 $composer['time'] = $date->format('Y-m-d H:i:s');
             }
             $this->infoCache[$identifier] = $composer;
@@ -116,8 +121,13 @@ class GitDriver implements VcsDriverInterface
     public function getTags()
     {
         if (null === $this->tags) {
-            exec(sprintf('cd %s && git tag', escapeshellarg($this->tmpDir)), $output);
-            $this->tags = array_combine($output, $output);
+            exec(sprintf('cd %s && hg tags --color never', escapeshellarg($this->tmpDir)), $output);
+            foreach ($output as $tag) {
+                preg_match('(^([^\s]+)[\s]+[\d+]:(.*)$)', $tag, $match);
+                $tags[$match[1]] = $match[2];
+            }
+            unset($tags['tip']);
+            $this->tags = $tags;
         }
 
         return $this->tags;
@@ -131,12 +141,10 @@ class GitDriver implements VcsDriverInterface
         if (null === $this->branches) {
             $branches = array();
 
-            exec(sprintf('cd %s && git branch --no-color -rv', escapeshellarg($this->tmpDir)), $output);
+            exec(sprintf('cd %s && hg branches --color never', escapeshellarg($this->tmpDir)), $output);
             foreach ($output as $branch) {
-                if ($branch && !preg_match('{^ *[^/]+/HEAD }', $branch)) {
-                    preg_match('{^ *[^/]+/(\S+) *([a-f0-9]+) .*$}', $branch, $match);
-                    $branches[$match[1]] = $match[2];
-                }
+                preg_match('(^([^\s]+)[\s]+[\d+]:(.*)$)', $branch, $match);
+                $branches[$match[1]] = $match[2];
             }
 
             $this->branches = $branches;
@@ -164,7 +172,7 @@ class GitDriver implements VcsDriverInterface
      */
     public static function supports($url, $deep = false)
     {
-        if (preg_match('#(^git://|\.git$|git@|//git\.)#i', $url)) {
+        if (preg_match('#(^(?:https?|ssh)://(?:[^@]@)?bitbucket.org|https://(?:.*?)\.kilnhg.com)#i', $url)) {
             return true;
         }
 
@@ -172,7 +180,8 @@ class GitDriver implements VcsDriverInterface
             return false;
         }
 
-        // TODO try to connect to the server
-        return false;
+        exec(sprintf('hg identify %s', escapeshellarg($url)), $output);
+
+        return (boolean)$output;
     }
 }
