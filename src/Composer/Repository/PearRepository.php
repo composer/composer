@@ -71,6 +71,7 @@ class PearRepository extends ArrayRepository
                     if (strpos($e->getMessage(), '404')) {
                         continue;
                     }
+                    throw $e;
                 }
 
                 $releases = $releasesXML->getElementsByTagName('r');
@@ -92,6 +93,7 @@ class PearRepository extends ArrayRepository
                         if (strpos($e->getMessage(), '404')) {
                             continue;
                         }
+                        throw $e;
                     }
 
                     if (preg_match('((O:([0-9])+:"([^"]+)"))', $deps, $matches)) {
