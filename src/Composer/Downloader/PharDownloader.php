@@ -15,20 +15,24 @@ namespace Composer\Downloader;
 use Composer\Package\PackageInterface;
 
 /**
- * Downloader for pear packages
+ * Downloader for phar files
  *
- * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  */
-class PearDownloader extends TarDownloader
+class PharDownloader extends FileDownloader
 {
     /**
      * {@inheritDoc}
      */
     protected function extract($file, $path)
     {
-        parent::extract($file, $path);
-        @unlink($path . '/package.sig');
-        @unlink($path . '/package.xml');
+        // Can throw an UnexpectedValueException
+        $archive = new \Phar($file);
+        $archive->extractTo($path);
+        /* TODO: handle openssl signed phars
+         * https://github.com/composer/composer/pull/33#issuecomment-2250768
+         * https://github.com/koto/phar-util
+         * http://blog.kotowicz.net/2010/08/hardening-php-how-to-securely-include.html
+         */
     }
 }
