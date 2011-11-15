@@ -16,7 +16,27 @@ use Composer\Package;
 use Composer\Json\JsonFile;
 use Composer\Console\Application as ComposerApplication;
 
-$vendorPath = 'vendor';
+// load Composer configuration
+$file = new JsonFile('composer.json');
+if (!$file->exists()) {
+    echo 'Composer could not find a composer.json file in '.getcwd().PHP_EOL;
+    echo 'To initialize a project, please create a composer.json file as described on the http://packagist.org/ "Getting Started" section'.PHP_EOL;
+    exit(1);
+}
+
+// Configuration defaults
+$composerConfig = array('vendor-dir' => 'vendor');
+
+$packageConfig = $file->read();
+
+if (isset($packageConfig['config']) && is_array($packageConfig['config'])) {
+    $packageConfig['config'] = array_merge($composerConfig, $packageConfig['config']);
+} else {
+    $packageConfig['config'] = $composerConfig;
+}
+
+// easy local access
+$vendorPath = $packageConfig['config']['vendor-dir'];
 
 // initialize repository manager
 $rm = new Repository\RepositoryManager();
@@ -33,19 +53,12 @@ $dm->setDownloader('pear', new Downloader\PearDownloader());
 $dm->setDownloader('zip',  new Downloader\ZipDownloader());
 
 // initialize installation manager
-$im = new Installer\InstallationManager();
+$im = new Installer\InstallationManager($vendorPath);
 $im->addInstaller(new Installer\LibraryInstaller($vendorPath, $dm, $rm->getLocalRepository(), null));
 $im->addInstaller(new Installer\InstallerInstaller($vendorPath, $dm, $rm->getLocalRepository(), $im));
 
 // load package
 $loader  = new Package\Loader\ArrayLoader($rm);
-$file = new JsonFile('composer.json');
-if (!$file->exists()) {
-    echo 'Composer could not find a composer.json file in '.getcwd().PHP_EOL;
-    echo 'To initialize a project, please create a composer.json file as described on the http://packagist.org/ "Getting Started" section'.PHP_EOL;
-    exit(1);
-}
-$packageConfig = $file->read();
 $package = $loader->load($packageConfig);
 
 // load default repository unless it's explicitly disabled
