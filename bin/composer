@@ -29,6 +29,7 @@ $rm->setRepositoryClass('package', 'Composer\Repository\PackageRepository');
 // initialize download manager
 $dm = new Downloader\DownloadManager();
 $dm->setDownloader('git',  new Downloader\GitDownloader());
+$dm->setDownloader('hg', new Downloader\HgDownloader());
 $dm->setDownloader('pear', new Downloader\PearDownloader());
 $dm->setDownloader('zip',  new Downloader\ZipDownloader());
 
