@@ -36,10 +36,6 @@ class GitDownloader implements DownloaderInterface
             throw new \InvalidArgumentException('The given package is missing reference information');
         }
 
-        if (!extension_loaded('openssl')) {
-            throw new \RuntimeException('You must enable the openssl extension to clone git repositories');
-        }
-
         $url = escapeshellarg($package->getSourceUrl());
         $ref = escapeshellarg($package->getSourceReference());
         system(sprintf('git clone %s %s && cd %2$s && git reset --hard %s', $url, $path, $ref));
