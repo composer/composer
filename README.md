@@ -5,6 +5,8 @@ Composer is a package manager tracking local dependencies of your projects and l
 
 See the [about page](http://packagist.org/about) on [packagist.org](http://packagist.org/) for more information.
 
+[![Build Status](https://secure.travis-ci.org/composer/composer.png)](http://travis-ci.org/composer/composer)
+
 Installation / Usage
 --------------------
 
