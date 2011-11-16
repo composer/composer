@@ -97,7 +97,7 @@ class VersionParser
             return str_replace('x', '9999999', $version).'-dev';
         }
 
-        throw new \UnexpectedValueException('Invalid branch name '.$branch);
+        throw new \UnexpectedValueException('Invalid branch name '.$name);
     }
 
     /**
