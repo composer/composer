@@ -43,8 +43,6 @@ EOT
 
         foreach ($composer->getRepositoryManager()->getRepositories() as $repository) {
             foreach ($repository->getPackages() as $package) {
-                if (!isset($packages[$package->getName()]))
-                    $packages[$package->getName()] = array('versions' => array());
                 $packages[$package->getName()]['versions'][$package->getVersion()] = $dumper->dump($package);
             }
         }
