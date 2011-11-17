@@ -123,6 +123,11 @@ class LibraryInstaller implements InstallerInterface
      */
     public function getInstallPath(PackageInterface $package)
     {
+        $installDir = $package->getInstallDir();
+        if (isset($installDir))
+        {
+            return $installDir;
+        }
         $targetDir = $package->getTargetDir();
         return ($this->directory ? $this->directory.'/' : '') . $package->getName() . ($targetDir ? '/'.$targetDir : '');
     }

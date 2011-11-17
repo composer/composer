@@ -27,6 +27,7 @@ abstract class BasePackage implements PackageInterface
     protected $prettyName;
     protected $repository;
     protected $id;
+    protected $installDir;
 
     /**
      * All descendants' constructors should call this parent constructor
@@ -90,6 +91,16 @@ abstract class BasePackage implements PackageInterface
     public function getId()
     {
         return $this->id;
+    }
+
+    public function setInstallDir($dir)
+    {
+        $this->installDir = $dir;
+    }
+
+    public function getInstallDir()
+    {
+        return $this->installDir;
     }
 
     /**
