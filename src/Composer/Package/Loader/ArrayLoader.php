@@ -53,6 +53,10 @@ class ArrayLoader
             $package->setTargetDir($config['target-dir']);
         }
 
+        if (isset($config['install-dir'])) {
+            $package->setInstallDir($config['install-dir']);
+        }
+
         if (isset($config['repositories'])) {
             $repositories = array();
             foreach ($config['repositories'] as $repoName => $repo) {
