@@ -13,6 +13,7 @@
 namespace Composer\Test\DependencyResolver;
 
 use Composer\Repository\ArrayRepository;
+use Composer\Repository\RepositoryInterface;
 use Composer\DependencyResolver\DefaultPolicy;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Literal;
@@ -45,7 +46,7 @@ class DefaultPolicyTest extends \PHPUnit_Framework_TestCase
         $literals = array(new Literal($packageA, true));
         $expected = array(new Literal($packageA, true));
 
-        $selected = $this->policy->selectPreferedPackages($this->pool, $this->repoInstalled, $literals);
+        $selected = $this->policy->selectPreferedPackages($this->pool, array(), $literals);
 
         $this->assertEquals($expected, $selected);
     }
@@ -59,7 +60,7 @@ class DefaultPolicyTest extends \PHPUnit_Framework_TestCase
         $literals = array(new Literal($packageA1, true), new Literal($packageA2, true));
         $expected = array(new Literal($packageA2, true));
 
-        $selected = $this->policy->selectPreferedPackages($this->pool, $this->repoInstalled, $literals);
+        $selected = $this->policy->selectPreferedPackages($this->pool, array(), $literals);
 
         $this->assertEquals($expected, $selected);
     }
@@ -68,13 +69,13 @@ class DefaultPolicyTest extends \PHPUnit_Framework_TestCase
     {
         $this->repo->addPackage($packageA = new MemoryPackage('A', '2.0'));
         $this->repoInstalled->addPackage($packageAInstalled = new MemoryPackage('A', '1.0'));
-        $this->pool->addRepository($this->repo);
         $this->pool->addRepository($this->repoInstalled);
+        $this->pool->addRepository($this->repo);
 
         $literals = array(new Literal($packageA, true), new Literal($packageAInstalled, true));
         $expected = array(new Literal($packageA, true));
 
-        $selected = $this->policy->selectPreferedPackages($this->pool, $this->repoInstalled, $literals);
+        $selected = $this->policy->selectPreferedPackages($this->pool, $this->mapFromRepo($this->repoInstalled), $literals);
 
         $this->assertEquals($expected, $selected);
     }
@@ -86,13 +87,14 @@ class DefaultPolicyTest extends \PHPUnit_Framework_TestCase
         $this->repo->addPackage($packageA = new MemoryPackage('A', '1.0'));
         $this->repoImportant->addPackage($packageAImportant = new MemoryPackage('A', '1.0'));
 
+        $this->pool->addRepository($this->repoInstalled);
         $this->pool->addRepository($this->repo);
         $this->pool->addRepository($this->repoImportant);
 
         $literals = array(new Literal($packageA, true), new Literal($packageAImportant, true));
         $expected = array(new Literal($packageAImportant, true));
 
-        $selected = $this->policy->selectPreferedPackages($this->pool, $this->repoInstalled, $literals);
+        $selected = $this->policy->selectPreferedPackages($this->pool, array(), $literals);
 
         $this->assertEquals($expected, $selected);
     }
@@ -110,7 +112,7 @@ class DefaultPolicyTest extends \PHPUnit_Framework_TestCase
         $literals = array(new Literal($packageA, true), new Literal($packageB, true));
         $expected = $literals;
 
-        $selected = $this->policy->selectPreferedPackages($this->pool, $this->repoInstalled, $literals);
+        $selected = $this->policy->selectPreferedPackages($this->pool, array(), $literals);
 
         $this->assertEquals($expected, $selected);
     }
@@ -128,8 +130,18 @@ class DefaultPolicyTest extends \PHPUnit_Framework_TestCase
         $literals = array(new Literal($packageA, true), new Literal($packageB, true));
         $expected = array(new Literal($packageA, true), new Literal($packageB, true));
 
-        $selected = $this->policy->selectPreferedPackages($this->pool, $this->repoInstalled, $literals);
+        $selected = $this->policy->selectPreferedPackages($this->pool, array(), $literals);
 
         $this->assertEquals($expected, $selected);
+    }
+
+    protected function mapFromRepo(RepositoryInterface $repo)
+    {
+        $map = array();
+        foreach ($repo->getPackages() as $package) {
+            $map[$package->getId()] = true;
+        }
+
+        return $map;
     }
 }

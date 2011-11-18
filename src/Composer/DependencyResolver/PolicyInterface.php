@@ -23,7 +23,7 @@ interface PolicyInterface
     function allowUninstall();
     function allowDowngrade();
     function versionCompare(PackageInterface $a, PackageInterface $b, $operator);
-    function findUpdatePackages(Solver $solver, Pool $pool, RepositoryInterface $repo, PackageInterface $package, $allowAll);
-    function installable(Solver $solver, Pool $pool, RepositoryInterface $repo, PackageInterface $package);
-    function selectPreferedPackages(Pool $pool, RepositoryInterface $installed, array $literals);
+    function findUpdatePackages(Solver $solver, Pool $pool, array $installedMap, PackageInterface $package, $allowAll);
+    function installable(Solver $solver, Pool $pool, array $installedMap, PackageInterface $package);
+    function selectPreferedPackages(Pool $pool, array $installedMap, array $literals);
 }

@@ -47,7 +47,13 @@ class Pool
 
     public function getPriority(RepositoryInterface $repo)
     {
-        return array_search($repo, $this->repositories, true);
+        $priority = array_search($repo, $this->repositories, true);
+
+        if (false === $priority) {
+            throw new \RuntimeException("Could not determine repository priority. The repository was not registered in the pool.");
+        }
+
+        return $priority;
     }
 
     /**
