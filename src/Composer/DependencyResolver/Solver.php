@@ -50,7 +50,7 @@ class Solver
     protected $watches = array();
     protected $removeWatches = array();
     protected $decisionMap;
-    protected $installedPackageMap;
+    protected $installedMap;
 
     protected $packageToUpdateRule = array();
     protected $packageToFeatureRule = array();
@@ -253,11 +253,11 @@ class Solver
             $this->addedMap[$package->getId()] = true;
 
             $dontFix = 0;
-            if (isset($this->installedPackageMap[$package->getId()]) && !isset($this->fixMap[$package->getId()])) {
+            if (isset($this->installedMap[$package->getId()]) && !isset($this->fixMap[$package->getId()])) {
                 $dontFix = 1;
             }
 
-            if (!$dontFix && !$this->policy->installable($this, $this->pool, $this->installed, $package)) {
+            if (!$dontFix && !$this->policy->installable($this, $this->pool, $this->installedMap, $package)) {
                 $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRemoveRule($package, self::RULE_NOT_INSTALLABLE, (string) $package));
                 continue;
             }
@@ -272,7 +272,7 @@ class Solver
                 if ($dontFix) {
                     $foundInstalled = false;
                     foreach ($possibleRequires as $require) {
-                        if (isset($this->installedPackageMap[$require->getId()])) {
+                        if (isset($this->installedMap[$require->getId()])) {
                             $foundInstalled = true;
                             break;
                         }
@@ -284,7 +284,7 @@ class Solver
                     }
                 }
 
-                $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRequireRule($package, $possibleRequires, self::RULE_PACKAGE_REQUIRES, (string) $link));
+                $this->addRule(RuleSet::TYPE_PACKAGE, $rule = $this->createRequireRule($package, $possibleRequires, self::RULE_PACKAGE_REQUIRES, (string) $link));
 
                 foreach ($possibleRequires as $require) {
                     $workQueue->enqueue($require);
@@ -295,7 +295,7 @@ class Solver
                 $possibleConflicts = $this->pool->whatProvides($link->getTarget(), $link->getConstraint());
 
                 foreach ($possibleConflicts as $conflict) {
-                    if ($dontFix && isset($this->installedPackageMap[$conflict->getId()])) {
+                    if ($dontFix && isset($this->installedMap[$conflict->getId()])) {
                         continue;
                     }
 
@@ -310,7 +310,7 @@ class Solver
             /** @TODO: if ($this->noInstalledObsoletes) */
             if (true) {
                 $noObsoletes = isset($this->noObsoletes[$package->getId()]);
-                $isInstalled = (isset($this->installedPackageMap[$package->getId()]));
+                $isInstalled = (isset($this->installedMap[$package->getId()]));
 
                 foreach ($package->getReplaces() as $link) {
                     $obsoleteProviders = $this->pool->whatProvides($link->getTarget(), $link->getConstraint());
@@ -320,7 +320,7 @@ class Solver
                             continue;
                         }
 
-                        if ($isInstalled && $dontFix && $this->installed === $provider->getRepository()) {
+                        if ($isInstalled && $dontFix && isset($this->installedMap[$provider->getId()])) {
                             continue; // don't repair installed/installed problems
                         }
 
@@ -341,7 +341,7 @@ class Solver
                             continue;
                         }
 
-                        if ($isInstalled && $this->installed !== $provider->getRepository()) {
+                        if ($isInstalled && !isset($this->installedMap[$provider->getId()])) {
                             continue;
                         }
 
@@ -379,7 +379,7 @@ class Solver
      */
     private function addRulesForUpdatePackages(PackageInterface $package, $allowAll)
     {
-        $updates = $this->policy->findUpdatePackages($this, $this->pool, $this->installed, $package, $allowAll);
+        $updates = $this->policy->findUpdatePackages($this, $this->pool, $this->installedMap, $package, $allowAll);
 
         $this->addRulesForPackage($package);
 
@@ -759,7 +759,7 @@ class Solver
         switch ($job['cmd']) {
             case 'install':
                 foreach ($job['packages'] as $package) {
-                    if (isset($this->installedPackageMap[$package->getId()])) {
+                    if (isset($this->installedMap[$package->getId()])) {
                         $disableQueue[] = array('type' => 'update', 'package' => $package);
                     }
 
@@ -872,7 +872,7 @@ class Solver
 
             case 'remove':
                 foreach ($job['packages'] as $package) {
-                    if (isset($this->installedPackageMap[$package->getId()])) {
+                    if (isset($this->installedMap[$package->getId()])) {
                         $disableQueue[] = array('type' => 'update', 'package' => $package);
                     }
                 }
@@ -934,9 +934,9 @@ class Solver
     {
         $this->jobs = $request->getJobs();
         $installedPackages = $this->installed->getPackages();
-        $this->installedPackageMap = array();
+        $this->installedMap = array();
         foreach ($installedPackages as $package) {
-            $this->installedPackageMap[$package->getId()] = $package;
+            $this->installedMap[$package->getId()] = $package;
         }
 
         $this->decisionMap = new \SplFixedArray($this->pool->getMaxId() + 1);
@@ -959,12 +959,12 @@ class Solver
             foreach ($job['packages'] as $package) {
                 switch ($job['cmd']) {
                     case 'fix':
-                        if (isset($this->installedPackageMap[$package->getId()])) {
+                        if (isset($this->installedMap[$package->getId()])) {
                             $this->fixMap[$package->getId()] = true;
                         }
                         break;
                     case 'update':
-                        if (isset($this->installedPackageMap[$package->getId()])) {
+                        if (isset($this->installedMap[$package->getId()])) {
                             $this->updateMap[$package->getId()] = true;
                         }
                         break;
@@ -996,11 +996,11 @@ class Solver
 
         foreach ($installedPackages as $package) {
             // create a feature rule which allows downgrades
-            $updates = $this->policy->findUpdatePackages($this, $this->pool, $this->installed, $package, true);
+            $updates = $this->policy->findUpdatePackages($this, $this->pool, $this->installedMap, $package, true);
             $featureRule = $this->createUpdateRule($package, $updates, self::RULE_INTERNAL_ALLOW_UPDATE, (string) $package);
 
             // create an update rule which does not allow downgrades
-            $updates = $this->policy->findUpdatePackages($this, $this->pool, $this->installed, $package, false);
+            $updates = $this->policy->findUpdatePackages($this, $this->pool, $this->installedMap, $package, false);
             $rule = $this->createUpdateRule($package, $updates, self::RULE_INTERNAL_ALLOW_UPDATE, (string) $package);
 
             if ($rule->equals($featureRule)) {
@@ -1044,7 +1044,7 @@ class Solver
                     break;
                 case 'lock':
                     foreach ($job['packages'] as $package) {
-                        if (isset($this->installedPackageMap[$package->getId()])) {
+                        if (isset($this->installedMap[$package->getId()])) {
                             $rule = $this->createInstallRule($package, self::RULE_JOB_LOCK);
                         } else {
                             $rule = $this->createRemoveRule($package, self::RULE_JOB_LOCK);
@@ -1088,7 +1088,7 @@ class Solver
             $package = $literal->getPackage();
 
             // !wanted & installed
-            if (!$literal->isWanted() && isset($this->installedPackageMap[$package->getId()])) {
+            if (!$literal->isWanted() && isset($this->installedMap[$package->getId()])) {
                 $literals = array();
 
                 if (isset($this->packageToUpdateRule[$package->getId()])) {
@@ -1110,7 +1110,7 @@ class Solver
             $package = $literal->getPackage();
 
             // wanted & installed || !wanted & !installed
-            if ($literal->isWanted() == (isset($this->installedPackageMap[$package->getId()]))) {
+            if ($literal->isWanted() == (isset($this->installedMap[$package->getId()]))) {
                 continue;
             }
 
@@ -1418,7 +1418,7 @@ class Solver
     private function selectAndInstall($level, array $decisionQueue, $disableRules, Rule $rule)
     {
         // choose best package to install from decisionQueue
-        $literals = $this->policy->selectPreferedPackages($this->pool, $this->installed, $decisionQueue);
+        $literals = $this->policy->selectPreferedPackages($this->pool, $this->installedMap, $decisionQueue);
 
         $selectedLiteral = array_shift($literals);
 
@@ -1779,7 +1779,7 @@ class Solver
                             if (count($this->installed) != count($this->updateMap)) {
                                 $prunedQueue = array();
                                 foreach ($decisionQueue as $literal) {
-                                    if ($this->installed === $literal->getPackage()->getRepository()) {
+                                    if (isset($this->installedMap[$literal->getPackageId()])) {
                                         $prunedQueue[] = $literal;
                                         if (isset($this->updateMap[$literal->getPackageId()])) {
                                             $prunedQueue = $decisionQueue;
