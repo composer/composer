@@ -44,8 +44,9 @@ class ArrayLoader
 
     public function load($config)
     {
-        $version = $this->versionParser->normalize(isset($config['version']) ? $config['version'] : '0.0.0');
-        $package = new Package\MemoryPackage(isset($config['name']) ? $config['name'] : '__app__', $version);
+        $prettyVersion = isset($config['version']) ? $config['version'] : '0.0.0';
+        $version = $this->versionParser->normalize($prettyVersion);
+        $package = new Package\MemoryPackage(isset($config['name']) ? $config['name'] : '__app__', $version, $prettyVersion);
 
         $package->setType(isset($config['type']) ? $config['type'] : 'library');
 

@@ -17,11 +17,11 @@ use Composer\Repository\RepositoryInterface;
 use Composer\DependencyResolver\DefaultPolicy;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Literal;
-use Composer\Package\MemoryPackage;
 use Composer\Package\Link;
 use Composer\Package\LinkConstraint\VersionConstraint;
+use Composer\Test\TestCase;
 
-class DefaultPolicyTest extends \PHPUnit_Framework_TestCase
+class DefaultPolicyTest extends TestCase
 {
     protected $pool;
     protected $repo;
@@ -40,7 +40,7 @@ class DefaultPolicyTest extends \PHPUnit_Framework_TestCase
 
     public function testSelectSingle()
     {
-        $this->repo->addPackage($packageA = new MemoryPackage('A', '1.0'));
+        $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->pool->addRepository($this->repo);
 
         $literals = array(new Literal($packageA, true));
@@ -53,8 +53,8 @@ class DefaultPolicyTest extends \PHPUnit_Framework_TestCase
 
     public function testSelectNewest()
     {
-        $this->repo->addPackage($packageA1 = new MemoryPackage('A', '1.0'));
-        $this->repo->addPackage($packageA2 = new MemoryPackage('A', '2.0'));
+        $this->repo->addPackage($packageA1 = $this->getPackage('A', '1.0'));
+        $this->repo->addPackage($packageA2 = $this->getPackage('A', '2.0'));
         $this->pool->addRepository($this->repo);
 
         $literals = array(new Literal($packageA1, true), new Literal($packageA2, true));
@@ -67,8 +67,8 @@ class DefaultPolicyTest extends \PHPUnit_Framework_TestCase
 
     public function testSelectNewestOverInstalled()
     {
-        $this->repo->addPackage($packageA = new MemoryPackage('A', '2.0'));
-        $this->repoInstalled->addPackage($packageAInstalled = new MemoryPackage('A', '1.0'));
+        $this->repo->addPackage($packageA = $this->getPackage('A', '2.0'));
+        $this->repoInstalled->addPackage($packageAInstalled = $this->getPackage('A', '1.0'));
         $this->pool->addRepository($this->repoInstalled);
         $this->pool->addRepository($this->repo);
 
@@ -84,8 +84,8 @@ class DefaultPolicyTest extends \PHPUnit_Framework_TestCase
     {
         $this->repoImportant = new ArrayRepository;
 
-        $this->repo->addPackage($packageA = new MemoryPackage('A', '1.0'));
-        $this->repoImportant->addPackage($packageAImportant = new MemoryPackage('A', '1.0'));
+        $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
+        $this->repoImportant->addPackage($packageAImportant = $this->getPackage('A', '1.0'));
 
         $this->pool->addRepository($this->repoInstalled);
         $this->pool->addRepository($this->repo);
@@ -101,8 +101,8 @@ class DefaultPolicyTest extends \PHPUnit_Framework_TestCase
 
     public function testSelectAllProviders()
     {
-        $this->repo->addPackage($packageA = new MemoryPackage('A', '1.0'));
-        $this->repo->addPackage($packageB = new MemoryPackage('B', '2.0'));
+        $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
+        $this->repo->addPackage($packageB = $this->getPackage('B', '2.0'));
 
         $packageA->setProvides(array(new Link('A', 'X', new VersionConstraint('==', '1.0'), 'provides')));
         $packageB->setProvides(array(new Link('B', 'X', new VersionConstraint('==', '1.0'), 'provides')));
@@ -120,8 +120,8 @@ class DefaultPolicyTest extends \PHPUnit_Framework_TestCase
     public function testPreferNonReplacingFromSameRepo()
     {
 
-        $this->repo->addPackage($packageA = new MemoryPackage('A', '1.0'));
-        $this->repo->addPackage($packageB = new MemoryPackage('B', '2.0'));
+        $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
+        $this->repo->addPackage($packageB = $this->getPackage('B', '2.0'));
 
         $packageB->setReplaces(array(new Link('B', 'A', new VersionConstraint('==', '1.0'), 'replaces')));
 

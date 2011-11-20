@@ -13,8 +13,6 @@
 namespace Composer\Repository;
 
 use Composer\Package\MemoryPackage;
-use Composer\Package\BasePackage;
-use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
 
 /**
@@ -36,12 +34,14 @@ class PlatformRepository extends ArrayRepository
         $versionParser = new VersionParser();
 
         try {
-            $version = $versionParser->normalize(PHP_VERSION);
+            $prettyVersion = PHP_VERSION;
+            $version = $versionParser->normalize($prettyVersion);
         } catch (\UnexpectedValueException $e) {
-            $version = $versionParser->normalize(preg_replace('#^(.+?)(-.+)?$#', '$1', PHP_VERSION));
+            $prettyVersion = preg_replace('#^(.+?)(-.+)?$#', '$1', PHP_VERSION);
+            $version = $versionParser->normalize($prettyVersion);
         }
 
-        $php = new MemoryPackage('php', $version);
+        $php = new MemoryPackage('php', $version, $prettyVersion);
         parent::addPackage($php);
 
         foreach (get_loaded_extensions() as $ext) {
@@ -51,12 +51,14 @@ class PlatformRepository extends ArrayRepository
 
             $reflExt = new \ReflectionExtension($ext);
             try {
-                $version = $versionParser->normalize($reflExt->getVersion());
+                $prettyVersion = $reflExt->getVersion();
+                $version = $versionParser->normalize($prettyVersion);
             } catch (\UnexpectedValueException $e) {
-                $version = $versionParser->normalize('0');
+                $prettyVersion = '0';
+                $version = $versionParser->normalize($prettyVersion);
             }
 
-            $ext = new MemoryPackage('ext-'.strtolower($ext), $version);
+            $ext = new MemoryPackage('ext-'.strtolower($ext), $version, $prettyVersion);
             parent::addPackage($ext);
         }
     }
