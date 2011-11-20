@@ -34,12 +34,13 @@ class Link
      * @param LinkConstraintInterface $constraint  Constraint applying to the target of this link
      * @param string                  $description Used to create a descriptive string representation
      */
-    public function __construct($source, $target, LinkConstraintInterface $constraint = null, $description = 'relates to')
+    public function __construct($source, $target, LinkConstraintInterface $constraint = null, $description = 'relates to', $prettyConstraint = null)
     {
         $this->source = strtolower($source);
         $this->target = strtolower($target);
         $this->constraint = $constraint;
         $this->description = $description;
+        $this->prettyConstraint = $prettyConstraint;
     }
 
     public function getSource()
@@ -55,6 +56,15 @@ class Link
     public function getConstraint()
     {
         return $this->constraint;
+    }
+
+    public function getPrettyConstraint()
+    {
+        if (null === $this->prettyConstraint) {
+            throw new \UnexpectedValueException(sprintf('Link %s has been misconfigured and had no prettyConstraint given.', $this));
+        }
+
+        return $this->prettyConstraint;
     }
 
     public function __toString()

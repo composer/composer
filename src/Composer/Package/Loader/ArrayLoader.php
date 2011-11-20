@@ -143,10 +143,8 @@ class ArrayLoader
     {
         $links = array();
         foreach ($linksSpecs as $packageName => $constraint) {
-            $name = strtolower($packageName);
-
             $constraint = $this->versionParser->parseConstraints($constraint);
-            $links[]    = new Package\Link($srcPackageName, $packageName, $constraint, $description);
+            $links[]    = new Package\Link($srcPackageName, $packageName, $constraint, $description, $constraint);
         }
 
         return $links;
