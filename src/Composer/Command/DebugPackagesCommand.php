@@ -50,12 +50,12 @@ EOT
         $installedRepo       = new PlatformRepository($localRepo);
 
         foreach ($installedRepo->getPackages() as $package) {
-            $output->writeln('installed: '.$package->getName().' '.$package->getVersion());
+            $output->writeln('installed: '.$package->getPrettyName().' '.$package->getPrettyVersion().' ('.$package->getName().' '.$package->getVersion().')');
         }
 
         foreach ($composer->getRepositoryManager()->getRepositories() as $repository) {
             foreach ($repository->getPackages() as $package) {
-                $output->writeln('available: '.$package->getName().' '.$package->getVersion());
+                $output->writeln('available: '.$package->getPrettyName().' '.$package->getPrettyVersion().' ('.$package->getName().' '.$package->getVersion().')');
             }
         }
     }
