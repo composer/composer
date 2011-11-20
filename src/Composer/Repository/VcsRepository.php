@@ -96,7 +96,7 @@ class VcsRepository extends ArrayRepository
                 }
 
                 if ($debug) {
-                    echo 'Importing tag '.$tag.PHP_EOL;
+                    echo 'Importing tag '.$tag.' ('.$data['version_normalized'].')'.PHP_EOL;
                 }
 
                 $this->addPackage($loader->load($this->preProcess($driver, $data, $identifier)));
@@ -136,7 +136,7 @@ class VcsRepository extends ArrayRepository
                 }
 
                 if ($debug) {
-                    echo 'Importing branch '.$branch.PHP_EOL;
+                    echo 'Importing branch '.$branch.' ('.$data['version_normalized'].')'.PHP_EOL;
                 }
 
                 $this->addPackage($loader->load($this->preProcess($driver, $data, $identifier)));
