@@ -77,6 +77,10 @@ class ArrayLoader
             $package->setDescription($config['description']);
         }
 
+        if (!empty($config['homepage']) && is_string($config['homepage'])) {
+            $package->setHomepage($config['homepage']);
+        }
+
         if (!empty($config['keywords'])) {
             $package->setKeywords(is_array($config['keywords']) ? $config['keywords'] : array($config['keywords']));
         }

@@ -37,6 +37,7 @@ class MemoryPackage extends BasePackage
     protected $keywords;
     protected $authors;
     protected $description;
+    protected $homepage;
     protected $extra = array();
 
     protected $requires = array();
@@ -468,6 +469,24 @@ class MemoryPackage extends BasePackage
     public function getDescription()
     {
         return $this->description;
+    }
+
+    /**
+     * Set the homepage
+     *
+     * @param string $homepage
+     */
+    public function setHomepage($homepage)
+    {
+        $this->homepage = $homepage;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getHomepage()
+    {
+        return $this->homepage;
     }
 
     /**
