@@ -90,6 +90,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'parses x'              => array('v1.x',        '1.9999999.9999999.9999999-dev'),
             'parses *'              => array('v1.*',        '1.9999999.9999999.9999999-dev'),
             'parses digits'         => array('v1.0',        '1.0.9999999.9999999-dev'),
+            'parses digits/2'       => array('2.0',         '2.0.9999999.9999999-dev'),
             'parses long x'         => array('v1.0.x',      '1.0.9999999.9999999-dev'),
             'parses long *'         => array('v1.0.3.*',    '1.0.3.9999999-dev'),
             'parses long digits'    => array('v2.4.0',      '2.4.0.9999999-dev'),
