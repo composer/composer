@@ -24,6 +24,9 @@ class PearRepository extends ArrayRepository
 
     public function __construct(array $config)
     {
+        if (!preg_match('{^https?://}', $config['url'])) {
+            $config['url'] = 'http://'.$config['url'];
+        }
         if (!filter_var($config['url'], FILTER_VALIDATE_URL)) {
             throw new \UnexpectedValueException('Invalid url given for PEAR repository: '.$config['url']);
         }
