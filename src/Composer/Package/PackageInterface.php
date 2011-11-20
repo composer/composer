@@ -280,6 +280,13 @@ interface PackageInterface
     function getDescription();
 
     /**
+     * Returns the package homepage
+     *
+     * @return string
+     */
+    function getHomepage();
+
+    /**
      * Returns an array of authors of the package
      *
      * Each item can contain name/homepage/email keys
