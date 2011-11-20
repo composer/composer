@@ -13,23 +13,15 @@ class VcsRepository extends ArrayRepository
 {
     protected $url;
     protected $packageName;
+    protected $debug;
 
-    public function __construct(array $config)
+    public function __construct(array $config, array $drivers = null)
     {
         if (!filter_var($config['url'], FILTER_VALIDATE_URL)) {
             throw new \UnexpectedValueException('Invalid url given for PEAR repository: '.$config['url']);
         }
 
-        $this->url = $config['url'];
-    }
-
-    protected function initialize()
-    {
-        parent::initialize();
-
-        $debug = false;
-
-        $drivers = array(
+        $this->drivers = $drivers ?: array(
             'Composer\Repository\Vcs\GitHubDriver',
             'Composer\Repository\Vcs\GitBitbucketDriver',
             'Composer\Repository\Vcs\GitDriver',
@@ -37,7 +29,21 @@ class VcsRepository extends ArrayRepository
             'Composer\Repository\Vcs\HgDriver',
         );
 
-        foreach ($drivers as $driver) {
+        $this->url = $config['url'];
+    }
+
+    public function setDebug($debug)
+    {
+        $this->debug = $debug;
+    }
+
+    protected function initialize()
+    {
+        parent::initialize();
+
+        $debug = $this->debug;
+
+        foreach ($this->drivers as $driver) {
             if ($driver::supports($this->url)) {
                 $driver = new $driver($this->url);
                 $driver->initialize();
