@@ -33,6 +33,9 @@ class MemoryPackage extends BasePackage
     protected $prettyVersion;
     protected $repositories;
     protected $license;
+    protected $releaseDate;
+    protected $keywords;
+    protected $authors;
     protected $extra = array();
 
     protected $requires = array();
@@ -392,6 +395,60 @@ class MemoryPackage extends BasePackage
     public function getSuggests()
     {
         return $this->suggests;
+    }
+
+    /**
+     * Set the releaseDate
+     *
+     * @param DateTime $releaseDate
+     */
+    public function setReleasedate(\DateTime $releaseDate)
+    {
+        $this->releaseDate = $releaseDate;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getReleaseDate()
+    {
+        return $this->releaseDate;
+    }
+
+    /**
+     * Set the keywords
+     *
+     * @param array $keywords
+     */
+    public function setKeywords(array $keywords)
+    {
+        $this->keywords = $keywords;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getKeywords()
+    {
+        return $this->keywords;
+    }
+
+    /**
+     * Set the authors
+     *
+     * @param array $authors
+     */
+    public function setAuthors(array $authors)
+    {
+        $this->authors = $authors;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getAuthors()
+    {
+        return $this->authors;
     }
 
     /**

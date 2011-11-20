@@ -69,12 +69,26 @@ class ArrayLoader
             $package->setRepositories($config['repositories']);
         }
 
-        if (isset($config['extra'])) {
+        if (isset($config['extra']) && is_array($config['extra'])) {
             $package->setExtra($config['extra']);
         }
 
-        if (isset($config['license'])) {
-            $package->setLicense($config['license']);
+        if (!empty($config['keywords'])) {
+            $package->setKeywords(is_array($config['keywords']) ? $config['keywords'] : array($config['keywords']));
+
+        if (!empty($config['license'])) {
+            $package->setLicense(is_array($config['license']) ? $config['license'] : array($config['license']));
+        }
+
+        if (!empty($config['time'])) {
+            try {
+                $package->setReleaseDate(new \DateTime($config['time']));
+            } catch (\Exception $e) {
+            }
+        }
+
+        if (!empty($config['authors']) && is_array($config['authors'])) {
+            $package->setAuthors($config['authors']);
         }
 
         if (isset($config['installation-source'])) {
