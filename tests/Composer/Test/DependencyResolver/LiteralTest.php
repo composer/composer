@@ -13,15 +13,15 @@
 namespace Composer\Test\DependencyResolver;
 
 use Composer\DependencyResolver\Literal;
-use Composer\Package\MemoryPackage;
+use Composer\Test\TestCase;
 
-class LiteralTest extends \PHPUnit_Framework_TestCase
+class LiteralTest extends TestCase
 {
     protected $package;
 
     public function setUp()
     {
-        $this->package = new MemoryPackage('foo', '1');
+        $this->package = $this->getPackage('foo', '1');
         $this->package->setId(12);
     }
 

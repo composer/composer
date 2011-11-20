@@ -13,10 +13,11 @@
 namespace Composer\Test\Package;
 
 use Composer\Package\MemoryPackage;
+use Composer\Package\Version\VersionParser;
+use Composer\Test\TestCase;
 
-class MemoryPackageTest extends \PHPUnit_Framework_TestCase
+class MemoryPackageTest extends TestCase
 {
-
     /**
      * Memory package naming, versioning, and marshalling semantics provider
      *
@@ -24,11 +25,11 @@ class MemoryPackageTest extends \PHPUnit_Framework_TestCase
      */
     public function providerVersioningSchemes()
     {
-        $provider[] = array('foo',              '1-beta',       'foo-1-beta');
-        $provider[] = array('node',             '0.5.6',        'node-0.5.6');
-        $provider[] = array('li3',              '0.10',         'li3-0.10');
-        $provider[] = array('mongodb_odm',      '1.0.0BETA3',   'mongodb_odm-1.0.0BETA3');
-        $provider[] = array('DoctrineCommon',   '2.2.0-DEV',    'doctrinecommon-2.2.0-DEV');
+        $provider[] = array('foo',              '1-beta');
+        $provider[] = array('node',             '0.5.6');
+        $provider[] = array('li3',              '0.10');
+        $provider[] = array('mongodb_odm',      '1.0.0BETA3');
+        $provider[] = array('DoctrineCommon',   '2.2.0-DEV');
 
         return $provider;
     }
@@ -39,7 +40,9 @@ class MemoryPackageTest extends \PHPUnit_Framework_TestCase
      */
     public function testMemoryPackageHasExpectedNamingSemantics($name, $version)
     {
-        $package = new MemoryPackage($name, $version);
+        $versionParser = new VersionParser();
+        $normVersion = $versionParser->normalize($version);
+        $package = new MemoryPackage($name, $normVersion, $version);
         $this->assertEquals(strtolower($name), $package->getName());
     }
 
@@ -49,18 +52,23 @@ class MemoryPackageTest extends \PHPUnit_Framework_TestCase
      */
     public function testMemoryPackageHasExpectedVersioningSemantics($name, $version)
     {
-        $package = new MemoryPackage($name, $version);
-        $this->assertEquals($version, $package->getVersion());
+        $versionParser = new VersionParser();
+        $normVersion = $versionParser->normalize($version);
+        $package = new MemoryPackage($name, $normVersion, $version);
+        $this->assertEquals($version, $package->getPrettyVersion());
+        $this->assertEquals($normVersion, $package->getVersion());
     }
 
     /**
      * Tests memory package marshalling/serialization semantics
      * @dataProvider providerVersioningSchemes
      */
-    public function testMemoryPackageHasExpectedMarshallingSemantics($name, $version, $marshalled)
+    public function testMemoryPackageHasExpectedMarshallingSemantics($name, $version)
     {
-        $package = new MemoryPackage($name, $version);
-        $this->assertEquals($marshalled, (string) $package);
+        $versionParser = new VersionParser();
+        $normVersion = $versionParser->normalize($version);
+        $package = new MemoryPackage($name, $normVersion, $version);
+        $this->assertEquals(strtolower($name).'-'.$normVersion, (string) $package);
     }
 
 }
