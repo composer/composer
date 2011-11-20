@@ -13,9 +13,9 @@
 namespace Composer\Repository;
 
 use Composer\Repository\FilesystemRepository;
-use Composer\Package\MemoryPackage;
+use Composer\Test\TestCase;
 
-class FilesystemRepositoryTest extends \PHPUnit_Framework_TestCase
+class FilesystemRepositoryTest extends TestCase
 {
     public function testRepositoryRead()
     {
@@ -99,10 +99,10 @@ class FilesystemRepositoryTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('write')
             ->with(array(
-                array('name' => 'mypkg', 'type' => 'library', 'names' => array('mypkg'), 'version' => '0.1.10')
+                array('name' => 'mypkg', 'type' => 'library', 'names' => array('mypkg'), 'version' => '0.1.10.0')
             ));
 
-        $repository->addPackage(new MemoryPackage('mypkg', '0.1.10'));
+        $repository->addPackage($this->getPackage('mypkg', '0.1.10'));
         $repository->write();
     }
 
