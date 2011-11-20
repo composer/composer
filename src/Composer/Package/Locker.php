@@ -89,8 +89,8 @@ class Locker
     {
         $hash = array();
         foreach ($packages as $package) {
-            $name    = $package->getName();
-            $version = $package->getVersion();
+            $name    = $package->getPrettyName();
+            $version = $package->getPrettyVersion();
 
             if (!$name || !$version) {
                 throw new \LogicException(sprintf(
