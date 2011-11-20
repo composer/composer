@@ -209,7 +209,7 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
     public function testGetVendorPathAbsolute()
     {
         $manager = new InstallationManager('vendor');
-        $this->assertEquals(realpath('').DIRECTORY_SEPARATOR.'vendor', $manager->getVendorPath(true));
+        $this->assertEquals(getcwd().DIRECTORY_SEPARATOR.'vendor', $manager->getVendorPath(true));
     }
 
     public function testGetVendorPathRelative()
