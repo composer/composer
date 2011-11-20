@@ -29,8 +29,8 @@ class MemoryPackage extends BasePackage
     protected $distUrl;
     protected $distReference;
     protected $distSha1Checksum;
-    protected $releaseType;
     protected $version;
+    protected $prettyVersion;
     protected $repositories;
     protected $license;
     protected $extra = array();
@@ -48,14 +48,14 @@ class MemoryPackage extends BasePackage
      *
      * @param string $name        The package's name
      * @param string $version     The package's version
-     * @param string $releaseType The package's release type (beta/rc/stable/dev)
+     * @param string $prettyVersion The package's non-normalized version
      */
-    public function __construct($name, $version, $releaseType = 'stable')
+    public function __construct($name, $version, $prettyVersion)
     {
         parent::__construct($name);
 
-        $this->releaseType = $releaseType;
         $this->version = $version;
+        $this->prettyVersion = $prettyVersion;
     }
 
     /**
@@ -253,39 +253,19 @@ class MemoryPackage extends BasePackage
     }
 
     /**
-     * Set the release type
-     *
-     * @param string $releaseType
-     */
-    public function setReleaseType($releaseType)
-    {
-        $this->releaseType = $releaseType;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getReleaseType()
-    {
-        return $this->releaseType;
-    }
-
-    /**
-     * Set the version
-     *
-     * @param string $version
-     */
-    public function setVersion($version)
-    {
-        $this->version = $version;
-    }
-
-    /**
      * {@inheritDoc}
      */
     public function getVersion()
     {
         return $this->version;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getPrettyVersion()
+    {
+        return $this->prettyVersion;
     }
 
     /**

@@ -11,3 +11,7 @@
  */
 
 require __DIR__.'/../vendor/.composer/autoload.php';
+
+$loader = new Composer\Autoload\ClassLoader();
+$loader->add('Composer\Test', __DIR__);
+$loader->register();

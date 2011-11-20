@@ -14,15 +14,15 @@ namespace Composer\Test\DependencyResolver;
 
 use Composer\DependencyResolver\Pool;
 use Composer\Repository\ArrayRepository;
-use Composer\Package\MemoryPackage;
+use Composer\Test\TestCase;
 
-class PoolTest extends \PHPUnit_Framework_TestCase
+class PoolTest extends TestCase
 {
     public function testPool()
     {
         $pool = new Pool;
         $repo = new ArrayRepository;
-        $package = new MemoryPackage('foo', '1');
+        $package = $this->getPackage('foo', '1');
 
         $repo->addPackage($package);
         $pool->addRepository($repo);
