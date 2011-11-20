@@ -27,7 +27,6 @@ class ArrayDumper
             'names',
             'extra',
             'installationSource' => 'installation-source',
-            'version',
             'license',
             'requires',
             'conflicts',
@@ -41,6 +40,7 @@ class ArrayDumper
 
         $data = array();
         $data['name'] = $package->getPrettyName();
+        $data['version'] = $package->getPrettyVersion();
         if ($package->getTargetDir()) {
             $data['target-dir'] = $package->getTargetDir();
         }

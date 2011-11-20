@@ -13,6 +13,7 @@
 namespace Composer\Repository;
 
 use Composer\Package\PackageInterface;
+use Composer\Package\Version\VersionParser;
 
 /**
  * A repository implementation that simply stores packages in an array
@@ -29,6 +30,11 @@ class ArrayRepository implements RepositoryInterface
      */
     public function findPackage($name, $version)
     {
+        // normalize version & name
+        $versionParser = new VersionParser();
+        $version = $versionParser->normalize($version);
+        $name = strtolower($name);
+
         foreach ($this->getPackages() as $package) {
             if ($name === $package->getName() && $version === $package->getVersion()) {
                 return $package;
