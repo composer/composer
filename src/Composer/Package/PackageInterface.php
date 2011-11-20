@@ -273,6 +273,13 @@ interface PackageInterface
     function getKeywords();
 
     /**
+     * Returns the package description
+     *
+     * @return string
+     */
+    function getDescription();
+
+    /**
      * Returns an array of authors of the package
      *
      * Each item can contain name/homepage/email keys
