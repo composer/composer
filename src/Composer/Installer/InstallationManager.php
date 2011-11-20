@@ -32,21 +32,21 @@ class InstallationManager
 
     /**
      * Creates an instance of InstallationManager
-     * 
-     * @param    string    $vendorPath    Relative path to the vendor directory
+     *
+     * @param    string    $vendorDir    Relative path to the vendor directory
      * @throws   \InvalidArgumentException
      */
-    public function __construct($vendorPath = 'vendor')
+    public function __construct($vendorDir = 'vendor')
     {
-        if (substr($vendorPath, 0, 1) === '/' || substr($vendorPath, 1, 1) === ':') {
+        if (substr($vendorDir, 0, 1) === '/' || substr($vendorDir, 1, 1) === ':') {
             $basePath = getcwd();
-            if (0 !== strpos($vendorPath, $basePath)) {
-                throw new \InvalidArgumentException("Vendor path ($vendorPath) must be within the current working directory ($basePath).");
+            if (0 !== strpos($vendorDir, $basePath)) {
+                throw new \InvalidArgumentException("Vendor dir ($vendorDir) must be within the current working directory ($basePath).");
             }
             // convert to relative path
-            $this->vendorPath = substr($vendorPath, strlen($basePath)+1);
+            $this->vendorPath = substr($vendorDir, strlen($basePath)+1);
         } else {
-            $this->vendorPath = $vendorPath;
+            $this->vendorPath = $vendorDir;
         }
     }
 
@@ -174,7 +174,7 @@ class InstallationManager
 
     /**
      * Returns the vendor path
-     * 
+     *
      * @param   boolean  $absolute  Whether or not to return an absolute path
      * @return  string path
      */

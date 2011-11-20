@@ -22,7 +22,7 @@ themselves. To create libraries/packages please read the [guidelines](http://pac
         }
     }
     ```
-    
+
 3. Run Composer: `php composer.phar install`
 4. Browse for more packages on [Packagist](http://packagist.org).
 
@@ -51,7 +51,7 @@ in a system wide way.
 Configuration
 -------------
 
-Additional options for composer can be configured in `composer.json` by using the `config` section. 
+Additional options for composer can be configured in `composer.json` by using the `config` section.
 
 ``` json
 {

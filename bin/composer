@@ -35,12 +35,11 @@ if (isset($packageConfig['config']) && is_array($packageConfig['config'])) {
     $packageConfig['config'] = $composerConfig;
 }
 
-// easy local access
-$vendorPath = $packageConfig['config']['vendor-dir'];
+$vendorDir = $packageConfig['config']['vendor-dir'];
 
 // initialize repository manager
 $rm = new Repository\RepositoryManager();
-$rm->setLocalRepository(new Repository\FilesystemRepository(new JsonFile($vendorPath.'/.composer/installed.json')));
+$rm->setLocalRepository(new Repository\FilesystemRepository(new JsonFile($vendorDir.'/.composer/installed.json')));
 $rm->setRepositoryClass('composer', 'Composer\Repository\ComposerRepository');
 $rm->setRepositoryClass('vcs', 'Composer\Repository\VcsRepository');
 $rm->setRepositoryClass('pear', 'Composer\Repository\PearRepository');
@@ -55,9 +54,9 @@ $dm->setDownloader('pear', new Downloader\PearDownloader());
 $dm->setDownloader('zip',  new Downloader\ZipDownloader());
 
 // initialize installation manager
-$im = new Installer\InstallationManager($vendorPath);
-$im->addInstaller(new Installer\LibraryInstaller($vendorPath, $dm, $rm->getLocalRepository(), null));
-$im->addInstaller(new Installer\InstallerInstaller($vendorPath, $dm, $rm->getLocalRepository(), $im));
+$im = new Installer\InstallationManager($vendorDir);
+$im->addInstaller(new Installer\LibraryInstaller($vendorDir, $dm, $rm->getLocalRepository(), null));
+$im->addInstaller(new Installer\InstallerInstaller($vendorDir, $dm, $rm->getLocalRepository(), $im));
 
 // load package
 $loader  = new Package\Loader\ArrayLoader($rm);
