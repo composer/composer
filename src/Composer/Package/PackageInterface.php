@@ -259,7 +259,30 @@ interface PackageInterface
     function getRepository();
 
     /**
-     * Returns package unique name, constructed from name, version and release type.
+     * Returns the release date of the package
+     *
+     * @return DateTime
+     */
+    function getReleaseDate();
+
+    /**
+     * Returns an array of keywords relating to the package
+     *
+     * @return array
+     */
+    function getKeywords();
+
+    /**
+     * Returns an array of authors of the package
+     *
+     * Each item can contain name/homepage/email keys
+     *
+     * @return array
+     */
+    function getAuthors();
+
+    /**
+     * Returns package unique name, constructed from name and version.
      *
      * @return string
      */
