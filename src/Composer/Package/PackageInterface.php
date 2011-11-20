@@ -160,6 +160,13 @@ interface PackageInterface
     function getVersion();
 
     /**
+     * Returns the pretty (i.e. non-normalized) version string of this package
+     *
+     * @return string version
+     */
+    function getPrettyVersion();
+
+    /**
      * Returns the package license, e.g. MIT, BSD, GPL
      *
      * @return string The package license

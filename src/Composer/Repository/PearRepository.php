@@ -12,10 +12,6 @@
 
 namespace Composer\Repository;
 
-use Composer\Package\MemoryPackage;
-use Composer\Package\BasePackage;
-use Composer\Package\Link;
-use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Package\Loader\ArrayLoader;
 
 /**

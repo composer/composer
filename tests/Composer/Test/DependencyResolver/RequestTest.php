@@ -16,17 +16,17 @@ use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Pool;
 use Composer\Repository\ArrayRepository;
 use Composer\DependencyResolver\Literal;
-use Composer\Package\MemoryPackage;
+use Composer\Test\TestCase;
 
-class RequestTest extends \PHPUnit_Framework_TestCase
+class RequestTest extends TestCase
 {
     public function testRequestInstallAndRemove()
     {
         $pool = new Pool;
         $repo = new ArrayRepository;
-        $foo = new MemoryPackage('foo', '1');
-        $bar = new MemoryPackage('bar', '1');
-        $foobar = new MemoryPackage('foobar', '1');
+        $foo = $this->getPackage('foo', '1');
+        $bar = $this->getPackage('bar', '1');
+        $foobar = $this->getPackage('foobar', '1');
 
         $repo->addPackage($foo);
         $repo->addPackage($bar);
