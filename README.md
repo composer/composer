@@ -22,7 +22,7 @@ themselves. To create libraries/packages please read the [guidelines](http://pac
         }
     }
     ```
-
+    
 3. Run Composer: `php composer.phar install`
 4. Browse for more packages on [Packagist](http://packagist.org).
 
@@ -47,6 +47,21 @@ in a system wide way.
 3. Make the phar executeable `chmod a+x composer.phar`
 3. Change into a project directory `cd /path/to/my/project`
 4. Use composer as you normally would `composer.phar install`
+
+Configuration
+-------------
+
+Additional options for composer can be configured in `composer.json` by using the `config` section. 
+
+``` json
+{
+    "config": {
+        "vendor-dir": "custom/path/for/vendor"
+    }
+}
+```
+
+* `vendor-dir`: The location to install vendor packages. The location can be supplied as an absolute or relative path but **must** be within the current working directory.
 
 Contributing
 ------------
