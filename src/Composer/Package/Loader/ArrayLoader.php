@@ -75,6 +75,7 @@ class ArrayLoader
 
         if (!empty($config['keywords'])) {
             $package->setKeywords(is_array($config['keywords']) ? $config['keywords'] : array($config['keywords']));
+        }
 
         if (!empty($config['license'])) {
             $package->setLicense(is_array($config['license']) ? $config['license'] : array($config['license']));
