@@ -71,12 +71,13 @@ EOF;
         $packageMap[] = array($mainPackage, '');
 
         $autoloads = $this->parseAutoloads($packageMap);
+        $vendorPath = $installationManager->getVendorPath();
 
         if (isset($autoloads['psr-0'])) {
             foreach ($autoloads['psr-0'] as $def) {
                 if (!$this->isAbsolutePath($def['path'])) {
-                    $baseDir = 'dirname(dirname(__DIR__)).';
-                    $def['path'] = '/'.$def['path'];
+                    $def['path'] = substr($def['path'], strlen($vendorPath));
+                    $baseDir = "dirname(__DIR__).";
                 } else {
                     $baseDir = '';
                 }

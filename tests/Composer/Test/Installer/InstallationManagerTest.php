@@ -30,7 +30,7 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
                 return $arg === 'vendor';
             }));
 
-        $manager   = new InstallationManager();
+        $manager   = new InstallationManager('vendor');
 
         $manager->addInstaller($installer);
         $this->assertSame($installer, $manager->getInstaller('vendor'));
@@ -43,6 +43,7 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
     {
         $manager = $this->getMockBuilder('Composer\Installer\InstallationManager')
             ->setMethods(array('install', 'update', 'uninstall'))
+            ->setConstructorArgs(array('vendor'))
             ->getMock();
 
         $installOperation = new InstallOperation($this->createPackageMock());
@@ -72,7 +73,7 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
     public function testInstall()
     {
         $installer = $this->createInstallerMock();
-        $manager   = new InstallationManager();
+        $manager   = new InstallationManager('vendor');
         $manager->addInstaller($installer);
 
         $package   = $this->createPackageMock();
@@ -100,7 +101,7 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
     public function testUpdateWithEqualTypes()
     {
         $installer = $this->createInstallerMock();
-        $manager   = new InstallationManager();
+        $manager   = new InstallationManager('vendor');
         $manager->addInstaller($installer);
 
         $initial   = $this->createPackageMock();
@@ -134,7 +135,7 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
     {
         $libInstaller = $this->createInstallerMock();
         $bundleInstaller = $this->createInstallerMock();
-        $manager    = new InstallationManager();
+        $manager    = new InstallationManager('vendor');
         $manager->addInstaller($libInstaller);
         $manager->addInstaller($bundleInstaller);
 
@@ -180,7 +181,7 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
     public function testUninstall()
     {
         $installer = $this->createInstallerMock();
-        $manager   = new InstallationManager();
+        $manager   = new InstallationManager('vendor');
         $manager->addInstaller($installer);
 
         $package   = $this->createPackageMock();
@@ -203,6 +204,18 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(true));
 
         $manager->uninstall($operation);
+    }
+
+    public function testGetVendorPathAbsolute()
+    {
+        $manager = new InstallationManager('vendor');
+        $this->assertEquals(realpath('').DIRECTORY_SEPARATOR.'vendor', $manager->getVendorPath(true));
+    }
+
+    public function testGetVendorPathRelative()
+    {
+        $manager = new InstallationManager('vendor');
+        $this->assertEquals('vendor', $manager->getVendorPath());
     }
 
     private function createInstallerMock()
