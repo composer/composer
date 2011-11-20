@@ -36,6 +36,7 @@ class MemoryPackage extends BasePackage
     protected $releaseDate;
     protected $keywords;
     protected $authors;
+    protected $description;
     protected $extra = array();
 
     protected $requires = array();
@@ -449,6 +450,24 @@ class MemoryPackage extends BasePackage
     public function getAuthors()
     {
         return $this->authors;
+    }
+
+    /**
+     * Set the description
+     *
+     * @param string $description
+     */
+    public function setDescription($description)
+    {
+        $this->description = $description;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getDescription()
+    {
+        return $this->description;
     }
 
     /**
