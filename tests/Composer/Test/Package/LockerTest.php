@@ -122,20 +122,20 @@ class LockerTest extends \PHPUnit_Framework_TestCase
 
         $package1
             ->expects($this->once())
-            ->method('getName')
+            ->method('getPrettyName')
             ->will($this->returnValue('pkg1'));
         $package1
             ->expects($this->once())
-            ->method('getVersion')
+            ->method('getPrettyVersion')
             ->will($this->returnValue('1.0.0-beta'));
 
         $package2
             ->expects($this->once())
-            ->method('getName')
+            ->method('getPrettyName')
             ->will($this->returnValue('pkg2'));
         $package2
             ->expects($this->once())
-            ->method('getVersion')
+            ->method('getPrettyVersion')
             ->will($this->returnValue('0.1.10'));
 
         $json
@@ -159,7 +159,7 @@ class LockerTest extends \PHPUnit_Framework_TestCase
         $package1 = $this->createPackageMock();
         $package1
             ->expects($this->once())
-            ->method('getName')
+            ->method('getPrettyName')
             ->will($this->returnValue('pkg1'));
 
         $this->setExpectedException('LogicException');
