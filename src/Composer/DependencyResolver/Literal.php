@@ -25,6 +25,7 @@ class Literal
     {
         $this->package = $package;
         $this->wanted = $wanted;
+        $this->id = ($this->wanted ? '' : '-') . $this->package->getId();
     }
 
     public function isWanted()
@@ -44,7 +45,7 @@ class Literal
 
     public function getId()
     {
-        return ($this->wanted ? '' : '-') . $this->package->getId();
+        return $this->id;
     }
 
     public function __toString()
@@ -59,6 +60,6 @@ class Literal
 
     public function equals(Literal $b)
     {
-        return $this->getId() === $b->getId();
+        return $this->id === $b->id;
     }
 }
