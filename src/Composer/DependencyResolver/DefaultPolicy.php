@@ -148,12 +148,23 @@ class DefaultPolicy implements PolicyInterface
         return ($this->getPriority($pool, $a) > $this->getPriority($pool, $b)) ? -1 : 1;
     }
 
+    /**
+    * Checks if source replaces a package with the same name as target.
+    *
+    * Replace constraints are ignored. This method should only be used for
+    * prioritisation, not for actual constraint verification.
+    *
+    * @param PackageInterface $source
+    * @param PackageInterface $target
+    * @return bool
+    */
     protected function replaces(PackageInterface $source, PackageInterface $target)
     {
         foreach ($source->getReplaces() as $link) {
-            if ($link->getTarget() === $target->getName() &&
-                (null === $link->getConstraint() ||
-                $link->getConstraint()->matches(new VersionConstraint('==', $target->getVersion())))) {
+            if ($link->getTarget() === $target->getName()
+//                && (null === $link->getConstraint() ||
+//                $link->getConstraint()->matches(new VersionConstraint('==', $target->getVersion())))) {
+                ) {
                 return true;
             }
         }
