@@ -35,6 +35,7 @@ class UpdateCommand extends Command
             ->setDescription('Updates your dependencies to the latest version, and updates the composer.lock file.')
             ->setDefinition(array(
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
+                new InputOption('dry-run', null, InputOption::VALUE_NONE, 'Outputs the operations but will not execute anything (implicitly enables --verbose).'),
             ))
             ->setHelp(<<<EOT
 The <info>update</info> command reads the composer.json file from the
@@ -53,6 +54,6 @@ EOT
         $composer = $this->getComposer();
 
         $installCommand = $this->getApplication()->find('install');
-        return $installCommand->install($output, $input->getOption('dev'), true);
+        return $installCommand->install($input, $output, true);
     }
 }
