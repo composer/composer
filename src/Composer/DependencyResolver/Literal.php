@@ -19,7 +19,9 @@ use Composer\Package\PackageInterface;
  */
 class Literal
 {
+    protected $package;
     protected $wanted;
+    protected $id;
 
     public function __construct(PackageInterface $package, $wanted)
     {
