@@ -109,6 +109,8 @@ class LibraryInstaller implements InstallerInterface
     public function uninstall(PackageInterface $package)
     {
         if (!$this->repository->hasPackage($package)) {
+            // TODO throw exception again here, when update is fixed and we don't have to remove+install (see #125)
+            return;
             throw new \InvalidArgumentException('Package is not installed: '.$package);
         }
 
