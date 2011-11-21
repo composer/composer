@@ -34,4 +34,11 @@ interface OperationInterface
      * @return  string
      */
     function getReason();
+
+    /**
+     * Serializes the operation in a human readable format
+     *
+     * @return string
+     */
+    function __toString();
 }

@@ -55,4 +55,12 @@ class UninstallOperation extends SolverOperation
     {
         return 'uninstall';
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function __toString()
+    {
+        return 'Uninstalling '.$this->package;
+    }
 }

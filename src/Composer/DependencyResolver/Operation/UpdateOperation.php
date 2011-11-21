@@ -68,4 +68,12 @@ class UpdateOperation extends SolverOperation
     {
         return 'update';
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function __toString()
+    {
+        return 'Updating '.$this->initialPackage.' to '.$this->targetPackage;
+    }
 }
