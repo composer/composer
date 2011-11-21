@@ -55,4 +55,12 @@ class InstallOperation extends SolverOperation
     {
         return 'install';
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function __toString()
+    {
+        return 'Installing '.$this->package;
+    }
 }
