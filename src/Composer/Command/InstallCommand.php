@@ -37,6 +37,7 @@ class InstallCommand extends Command
             ->setDescription('Parses the composer.json file and downloads the needed dependencies.')
             ->setDefinition(array(
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
+                new InputOption('dry-run', null, InputOption::VALUE_NONE, 'Outputs the operations but will not execute anything (implicitly enables --verbose).'),
             ))
             ->setHelp(<<<EOT
 The <info>install</info> command reads the composer.json file from the
@@ -52,11 +53,14 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        return $this->install($output, $input->getOption('dev'));
+        return $this->install($input, $output);
     }
 
-    public function install(OutputInterface $output, $preferSource, $update = false)
+    public function install(InputInterface $input, OutputInterface $output, $update = false)
     {
+        $preferSource = (Boolean) $input->getOption('dev');
+        $dryRun = (Boolean) $input->getOption('dry-run');
+        $verbose = $dryRun || $input->getOption('verbose');
         $composer = $this->getComposer();
 
         if ($preferSource) {
@@ -142,19 +146,26 @@ EOT
 
         // execute operations
         foreach ($operations as $operation) {
-            $installationManager->execute($operation);
+            if ($verbose) {
+                $output->writeln((string) $operation);
+            }
+            if (!$dryRun) {
+                $installationManager->execute($operation);
+            }
         }
 
-        if ($update || !$composer->getLocker()->isLocked()) {
-            $composer->getLocker()->lockPackages($localRepo->getPackages());
-            $output->writeln('> Locked');
+        if (!$dryRun) {
+            if ($update || !$composer->getLocker()->isLocked()) {
+                $composer->getLocker()->lockPackages($localRepo->getPackages());
+                $output->writeln('> Locked');
+            }
+
+            $localRepo->write();
+
+            $output->writeln('> Generating autoload files');
+            $generator = new AutoloadGenerator;
+            $generator->dump($localRepo, $composer->getPackage(), $installationManager, $installationManager->getVendorPath().'/.composer');
         }
-
-        $localRepo->write();
-
-        $output->writeln('> Generating autoload files');
-        $generator = new AutoloadGenerator;
-        $generator->dump($localRepo, $composer->getPackage(), $installationManager, $installationManager->getVendorPath().'/.composer');
 
         $output->writeln('> Done');
     }
