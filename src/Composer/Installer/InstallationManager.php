@@ -44,9 +44,9 @@ class InstallationManager
                 throw new \InvalidArgumentException("Vendor dir ($vendorDir) must be within the current working directory ($basePath).");
             }
             // convert to relative path
-            $this->vendorPath = substr($vendorDir, strlen($basePath)+1);
+            $this->vendorPath = rtrim(substr($vendorDir, strlen($basePath)+1), '/');
         } else {
-            $this->vendorPath = $vendorDir;
+            $this->vendorPath = rtrim($vendorDir, '/');
         }
     }
 

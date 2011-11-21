@@ -75,11 +75,20 @@ EOF;
         $autoloads = $this->parseAutoloads($packageMap);
         $vendorPath = $installationManager->getVendorPath();
 
+        $realVendorPath = realpath($vendorPath);
+        $vendorPathDepth = substr_count(strtr(substr($realVendorPath, strlen(getcwd())), '\\', '/'), '/');
+        $appBaseDir = str_repeat('dirname(', $vendorPathDepth).'$baseDir'.str_repeat(')', $vendorPathDepth);
+
         if (isset($autoloads['psr-0'])) {
             foreach ($autoloads['psr-0'] as $def) {
                 if (!$this->isAbsolutePath($def['path'])) {
-                    $def['path'] = substr($def['path'], strlen($vendorPath));
-                    $baseDir = '$baseDir . ';
+                    if (strpos($def['path'], $vendorPath) === 0) {
+                        $def['path'] = substr($def['path'], strlen($vendorPath));
+                        $baseDir = '$baseDir . ';
+                    } else {
+                        $def['path'] = '/'.$def['path'];
+                        $baseDir = $appBaseDir . ' . ';
+                    }
                 } else {
                     $baseDir = '';
                 }
