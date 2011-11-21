@@ -1746,12 +1746,14 @@ class Solver
 
         while (true) {
 
-            $conflictRule = $this->propagate($level);
-            if ($conflictRule !== null) {
-                if ($this->analyzeUnsolvable($conflictRule, $disableRules)) {
-                    continue;
-                } else {
-                    return;
+            if (1 === $level) {
+                $conflictRule = $this->propagate($level);
+                if ($conflictRule !== null) {
+                    if ($this->analyzeUnsolvable($conflictRule, $disableRules)) {
+                        continue;
+                    } else {
+                        return;
+                    }
                 }
             }
 
@@ -1987,16 +1989,17 @@ class Solver
                     return;
                 }
 
-                if ($level < $systemLevel || $level == 1) {
+                // open suse sat-solver uses this, but why is $level == 1 trouble?
+                // SYSTEMSOLVABLE related? we don't have that, so should work
+                //if ($level < $systemLevel || $level == 1) {
+
+                if ($level < $systemLevel) {
                     break; // trouble
                 }
 
                 // something changed, so look at all rules again
                 $n = -1;
             }
-
-//            $this->printDecisionMap();
-//            $this->printDecisionQueue();
 
             // minimization step
             if (count($this->branches)) {
