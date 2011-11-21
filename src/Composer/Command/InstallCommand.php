@@ -91,18 +91,17 @@ EOT
 
                 foreach ($installedPackages as $package) {
                     if ($package->getName() === $link->getTarget()) {
-                        $request->update($link->getTarget(), $link->getConstraint());
-                        continue 2;
+                        $constraint = new VersionConstraint('=', $package->getVersion());
+                        if ($link->getConstraint()->matches($constraint)) {
+                            continue 2;
+                        }
+                        // TODO this should just update to the exact version (once constraints are available on update, see #125)
+                        $request->remove($package->getName(), $constraint);
+                        break;
                     }
                 }
 
                 $request->install($link->getTarget(), $link->getConstraint());
-            }
-
-            foreach ($localRepo->getPackages() as $package) {
-                if (!in_array($package->getName(), $listedPackages)) {
-                    $request->remove($package->getName());
-                }
             }
         } elseif ($composer->getLocker()->isLocked()) {
             $output->writeln('> Found lockfile. Reading.');
