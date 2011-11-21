@@ -45,6 +45,15 @@ class Rule
         $this->watch2 = (count($this->literals) > 1) ? $literals[1]->getId() : 0;
 
         $this->type = -1;
+
+        $this->ruleHash = substr(md5(implode(',', array_map(function ($l) {
+            return $l->getId();
+        }, $this->literals))), 0, 5);
+    }
+
+    public function getHash()
+    {
+        return $this->ruleHash;
     }
 
     public function setId($id)
@@ -67,12 +76,16 @@ class Rule
      */
     public function equals(Rule $rule)
     {
+        if ($this->ruleHash !== $rule->ruleHash) {
+            return false;
+        }
+
         if (count($this->literals) != count($rule->literals)) {
             return false;
         }
 
         for ($i = 0, $n = count($this->literals); $i < $n; $i++) {
-            if (!$this->literals[$i]->equals($rule->literals[$i])) {
+            if (!$this->literals[$i]->getId() === $rule->literals[$i]->getId()) {
                 return false;
             }
         }

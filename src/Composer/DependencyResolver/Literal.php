@@ -19,12 +19,15 @@ use Composer\Package\PackageInterface;
  */
 class Literal
 {
+    protected $package;
     protected $wanted;
+    protected $id;
 
     public function __construct(PackageInterface $package, $wanted)
     {
         $this->package = $package;
         $this->wanted = $wanted;
+        $this->id = ($this->wanted ? '' : '-') . $this->package->getId();
     }
 
     public function isWanted()
@@ -44,7 +47,7 @@ class Literal
 
     public function getId()
     {
-        return ($this->wanted ? '' : '-') . $this->package->getId();
+        return $this->id;
     }
 
     public function __toString()
@@ -59,6 +62,6 @@ class Literal
 
     public function equals(Literal $b)
     {
-        return $this->getId() === $b->getId();
+        return $this->id === $b->id;
     }
 }
