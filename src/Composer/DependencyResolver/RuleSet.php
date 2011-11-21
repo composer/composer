@@ -160,9 +160,9 @@ class RuleSet implements \IteratorAggregate, \Countable
         foreach ($this->rules as $type => $rules) {
             $string .= str_pad(self::$types[$type], 8, ' ') . ": ";
             foreach ($rules as $rule) {
-                $string .= $rule;
+                $string .= $rule."\n";
             }
-            $string .= "\n";
+            $string .= "\n\n";
         }
 
         return $string;
