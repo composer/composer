@@ -39,6 +39,8 @@ class RuleSet implements \IteratorAggregate, \Countable
     protected $ruleById;
     protected $nextRuleId;
 
+    protected $rulesByHash;
+
     public function __construct()
     {
         $this->nextRuleId = 0;
@@ -46,6 +48,8 @@ class RuleSet implements \IteratorAggregate, \Countable
         foreach ($this->getTypes() as $type) {
             $this->rules[$type] = array();
         }
+
+        $this->rulesByHash = array();
     }
 
     public function add(Rule $rule, $type)
@@ -64,6 +68,13 @@ class RuleSet implements \IteratorAggregate, \Countable
 
         $rule->setId($this->nextRuleId);
         $this->nextRuleId++;
+
+        $hash = $rule->getHash();
+        if (!isset($this->rulesByHash[$hash])) {
+            $this->rulesByHash[$hash] = array($rule);
+        } else {
+            $this->rulesByHash[$hash][] = $rule;
+        }
     }
 
     public function count()
@@ -127,6 +138,20 @@ class RuleSet implements \IteratorAggregate, \Countable
         $types = self::$types;
         unset($types[-1]);
         return array_keys($types);
+    }
+
+    public function containsEqual($rule)
+    {
+        if (isset($this->rulesByHash[$rule->getHash()])) {
+            $potentialDuplicates = $this->rulesByHash[$rule->getHash()];
+            foreach ($potentialDuplicates as $potentialDuplicate) {
+                if ($rule->equals($potentialDuplicate)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     public function __toString()

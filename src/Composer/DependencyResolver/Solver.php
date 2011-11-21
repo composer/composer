@@ -229,10 +229,8 @@ class Solver
      */
     private function addRule($type, Rule $newRule = null) {
         if ($newRule) {
-            foreach ($this->rules->getIterator() as $rule) {
-                if ($rule->equals($newRule)) {
-                    return;
-                }
+            if ($this->rules->containsEqual($newRule)) {
+                return;
             }
 
             $this->rules->add($newRule, $type);
