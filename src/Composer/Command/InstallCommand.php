@@ -139,7 +139,11 @@ EOT
                         continue 2;
                     }
                 }
-                throw new \UnexpectedValueException('Package '.$job['packageName'].' could not be resolved to an installable package.');
+
+                if ($pool->whatProvides($job['packageName'])) {
+                    throw new \UnexpectedValueException('Your version constraint for package '.$job['packageName'].' does not match any existing version, if it only has -dev versions make sure you include -dev in your version constraint.');
+                }
+                throw new \UnexpectedValueException('Package '.$job['packageName'].' was not found in the package pool, check the name for typos.');
             }
         }
 
