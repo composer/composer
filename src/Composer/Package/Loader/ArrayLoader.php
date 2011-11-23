@@ -140,7 +140,7 @@ class ArrayLoader
             if (isset($config[$type])) {
                 $method = 'set'.ucfirst($description);
                 $package->{$method}(
-                    $this->loadLinksFromConfig($package->getName(), $description, $config[$type])
+                    $this->loadLinksFromConfig($package, $description, $config[$type])
                 );
             }
         }
@@ -152,12 +152,15 @@ class ArrayLoader
         return $package;
     }
 
-    private function loadLinksFromConfig($srcPackageName, $description, array $linksSpecs)
+    private function loadLinksFromConfig($package, $description, array $linksSpecs)
     {
         $links = array();
         foreach ($linksSpecs as $packageName => $constraint) {
+            if ('self.version' === $constraint) {
+                $constraint = $package->getVersion();
+            }
             $constraint = $this->versionParser->parseConstraints($constraint);
-            $links[]    = new Package\Link($srcPackageName, $packageName, $constraint, $description, $constraint);
+            $links[]    = new Package\Link($package->getName(), $packageName, $constraint, $description, $constraint);
         }
 
         return $links;
