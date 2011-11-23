@@ -135,18 +135,30 @@ class VersionParser
         // match wildcard constraints
         if (preg_match('{^(\d+)(?:\.(\d+))?(?:\.(\d+))?\.\*$}', $constraint, $matches)) {
             if (isset($matches[3])) {
-                $lowVersion = $matches[1] . '.' . $matches[2] . '.' . $matches[3] . '.0';
                 $highVersion = $matches[1] . '.' . $matches[2] . '.' . $matches[3] . '.9999999';
+                if ($matches[3] === '0') {
+                    $lowVersion = $matches[1] . '.' . ($matches[2] - 1) . '.9999999.9999999';
+                } else {
+                    $lowVersion = $matches[1] . '.' . $matches[2] . '.' . ($matches[3] - 1). '.9999999';
+                }
             } elseif (isset($matches[2])) {
-                $lowVersion = $matches[1] . '.' . $matches[2] . '.0.0';
                 $highVersion = $matches[1] . '.' . $matches[2] . '.9999999.9999999';
+                if ($matches[2] === '0') {
+                    $lowVersion = ($matches[1] - 1) . '.9999999.9999999.9999999';
+                } else {
+                    $lowVersion = $matches[1] . '.' . ($matches[2] - 1) . '.9999999.9999999';
+                }
             } else {
-                $lowVersion = $matches[1] . '.0.0.0';
                 $highVersion = $matches[1] . '.9999999.9999999.9999999';
+                if ($matches[1] === '0') {
+                    return array(new VersionConstraint('<', $highVersion));
+                } else {
+                    $lowVersion = ($matches[1] - 1) . '.9999999.9999999.9999999';
+                }
             }
 
             return array(
-                new VersionConstraint('>=', $lowVersion),
+                new VersionConstraint('>', $lowVersion),
                 new VersionConstraint('<', $highVersion),
             );
         }
