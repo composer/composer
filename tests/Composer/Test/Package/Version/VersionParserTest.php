@@ -132,7 +132,11 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
     public function testParseConstraintsWildcard($input, $min, $max)
     {
         $parser = new VersionParser;
-        $expected = new MultiConstraint(array($min, $max));
+        if ($min) {
+            $expected = new MultiConstraint(array($min, $max));
+        } else {
+            $expected = $max;
+        }
 
         $this->assertSame((string) $expected, (string) $parser->parseConstraints($input));
     }
@@ -140,12 +144,13 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
     public function wildcardConstraints()
     {
         return array(
-            array('2.*',     new VersionConstraint('>=', '2.0.0.0'), new VersionConstraint('<', '2.9999999.9999999.9999999')),
-            array('20.*',    new VersionConstraint('>=', '20.0.0.0'), new VersionConstraint('<', '20.9999999.9999999.9999999')),
-            array('2.0.*',   new VersionConstraint('>=', '2.0.0.0'), new VersionConstraint('<', '2.0.9999999.9999999')),
-            array('2.2.*',   new VersionConstraint('>=', '2.2.0.0'), new VersionConstraint('<', '2.2.9999999.9999999')),
-            array('2.10.*',  new VersionConstraint('>=', '2.10.0.0'), new VersionConstraint('<', '2.10.9999999.9999999')),
-            array('2.1.3.*', new VersionConstraint('>=', '2.1.3.0'), new VersionConstraint('<', '2.1.3.9999999')),
+            array('2.*',     new VersionConstraint('>', '1.9999999.9999999.9999999'), new VersionConstraint('<', '2.9999999.9999999.9999999')),
+            array('20.*',    new VersionConstraint('>', '19.9999999.9999999.9999999'), new VersionConstraint('<', '20.9999999.9999999.9999999')),
+            array('2.0.*',   new VersionConstraint('>', '1.9999999.9999999.9999999'), new VersionConstraint('<', '2.0.9999999.9999999')),
+            array('2.2.*',   new VersionConstraint('>', '2.1.9999999.9999999'), new VersionConstraint('<', '2.2.9999999.9999999')),
+            array('2.10.*',  new VersionConstraint('>', '2.9.9999999.9999999'), new VersionConstraint('<', '2.10.9999999.9999999')),
+            array('2.1.3.*', new VersionConstraint('>', '2.1.2.9999999'), new VersionConstraint('<', '2.1.3.9999999')),
+            array('0.*',     null, new VersionConstraint('<', '0.9999999.9999999.9999999')),
         );
     }
 
