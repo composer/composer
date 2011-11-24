@@ -130,12 +130,15 @@ EOT
         foreach ($request->getJobs() as $job) {
             if ('install' === $job['cmd']) {
                 foreach ($installedRepo->getPackages() as $package) {
-                    if ($job['packageName'] === $package->getName()) {
+                    if (in_array($job['packageName'], $package->getNames())) {
                         continue 2;
                     }
                 }
                 foreach ($operations as $operation) {
-                    if ('install' === $operation->getJobType() && $job['packageName'] === $operation->getPackage()->getName()) {
+                    if ('install' === $operation->getJobType() && in_array($job['packageName'], $operation->getPackage()->getNames())) {
+                        continue 2;
+                    }
+                    if ('update' === $operation->getJobType() && in_array($job['packageName'], $operation->getTargetPackage()->getNames())) {
                         continue 2;
                     }
                 }
