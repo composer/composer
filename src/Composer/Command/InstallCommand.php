@@ -39,8 +39,8 @@ class InstallCommand extends Command
             ->setDefinition(array(
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('dry-run', null, InputOption::VALUE_NONE, 'Outputs the operations but will not execute anything (implicitly enables --verbose).'),
-                new InputOption('required-only', null, InputOption::VALUE_NONE, 'Installs required packages only (ignored when installing from an existing lock file).'),
-                new InputOption('include-suggested', null, InputOption::VALUE_NONE, 'Includes suggested packages (ignored when installing from an existing lock file).'),
+                new InputOption('no-install-recommends', null, InputOption::VALUE_NONE, 'Do not install recommended packages (ignored when installing from an existing lock file).'),
+                new InputOption('install-suggests', null, InputOption::VALUE_NONE, 'Also install suggested packages (ignored when installing from an existing lock file).'),
             ))
             ->setHelp(<<<EOT
 The <info>install</info> command reads the composer.json file from the
@@ -185,8 +185,8 @@ EOT
 
     private function collectLinks(InputInterface $input, PackageInterface $package)
     {
-        $requiredOnly     = (Boolean) $input->getOption('required-only');
-        $includeSuggested = (Boolean) $input->getOption('include-suggested');
+        $requiredOnly     = (Boolean) $input->getOption('no-install-recommends');
+        $includeSuggested = (Boolean) $input->getOption('install-suggests');
 
         $links = $package->getRequires();
 
