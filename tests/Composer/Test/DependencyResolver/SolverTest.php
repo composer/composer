@@ -285,6 +285,40 @@ class SolverTest extends TestCase
         ));
     }
 
+    public function testPickOlderIfNewerConflicts()
+    {
+        $this->repo->addPackage($packageX = $this->getPackage('X', '1.0'));
+        $packageX->setRequires(array(
+            new Link('X', 'A', new VersionConstraint('>=', '2.0.0.0'), 'requires'),
+            new Link('X', 'B', new VersionConstraint('>=', '2.0.0.0'), 'requires')));
+
+        $this->repo->addPackage($packageA = $this->getPackage('A', '2.0.0'));
+        $this->repo->addPackage($newPackageA = $this->getPackage('A', '2.1.0'));
+        $this->repo->addPackage($newPackageB = $this->getPackage('B', '2.1.0'));
+
+        $packageA->setRequires(array(new Link('A', 'B', new VersionConstraint('>=', '2.0.0.0'), 'requires')));
+
+        // new package A depends on version of package B that does not exist
+        // => new package A is not installable
+        $newPackageA->setRequires(array(new Link('A', 'B', new VersionConstraint('>=', '2.2.0.0'), 'requires')));
+
+        // add a package S replacing both A and B, so that S and B or S and A cannot be simultaneously installed
+        // but an alternative option for A and B both exists
+        // this creates a more difficult so solve conflict
+        $this->repo->addPackage($packageS = $this->getPackage('S', '2.0.0'));
+        $packageS->setReplaces(array(new Link('S', 'A', new VersionConstraint('>=', '2.0.0.0'), 'replaces'), new Link('S', 'B', new VersionConstraint('>=', '2.0.0.0'), 'replaces')));
+
+        $this->reposComplete();
+
+        $this->request->install('X');
+
+        $this->checkSolverResult(array(
+            array('job' => 'install', 'package' => $packageA),
+            array('job' => 'install', 'package' => $newPackageB),
+            array('job' => 'install', 'package' => $packageX),
+        ));
+    }
+
     public function testInstallCircularRequire()
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
