@@ -36,6 +36,8 @@ class UpdateCommand extends Command
             ->setDefinition(array(
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('dry-run', null, InputOption::VALUE_NONE, 'Outputs the operations but will not execute anything (implicitly enables --verbose).'),
+                new InputOption('required-only', null, InputOption::VALUE_NONE, 'Installs required packages only.'),
+                new InputOption('include-suggested', null, InputOption::VALUE_NONE, 'Includes suggested packages.'),
             ))
             ->setHelp(<<<EOT
 The <info>update</info> command reads the composer.json file from the

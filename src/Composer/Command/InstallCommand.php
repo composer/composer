@@ -18,6 +18,7 @@ use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Operation;
 use Composer\Package\LinkConstraint\VersionConstraint;
+use Composer\Package\PackageInterface;
 use Composer\Repository\PlatformRepository;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -38,6 +39,8 @@ class InstallCommand extends Command
             ->setDefinition(array(
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('dry-run', null, InputOption::VALUE_NONE, 'Outputs the operations but will not execute anything (implicitly enables --verbose).'),
+                new InputOption('required-only', null, InputOption::VALUE_NONE, 'Installs required packages only (ignored when installing from an existing lock file).'),
+                new InputOption('include-suggested', null, InputOption::VALUE_NONE, 'Includes suggested packages (ignored when installing from an existing lock file).'),
             ))
             ->setHelp(<<<EOT
 The <info>install</info> command reads the composer.json file from the
@@ -85,8 +88,9 @@ EOT
             $output->writeln('> Updating dependencies.');
             $listedPackages = array();
             $installedPackages = $installedRepo->getPackages();
+            $links = $this->collectLinks($input, $composer->getPackage());
 
-            foreach ($composer->getPackage()->getRequires() as $link) {
+            foreach ($links as $link) {
                 $listedPackages[] = $link->getTarget();
 
                 foreach ($installedPackages as $package) {
@@ -112,7 +116,10 @@ EOT
             }
         } else {
             $output->writeln('> Installing dependencies.');
-            foreach ($composer->getPackage()->getRequires() as $link) {
+
+            $links = $this->collectLinks($input, $composer->getPackage());
+
+            foreach ($links as $link) {
                 $request->install($link->getTarget(), $link->getConstraint());
             }
         }
@@ -174,5 +181,23 @@ EOT
         }
 
         $output->writeln('> Done');
+    }
+
+    private function collectLinks(InputInterface $input, PackageInterface $package)
+    {
+        $requiredOnly     = (Boolean) $input->getOption('required-only');
+        $includeSuggested = (Boolean) $input->getOption('include-suggested');
+
+        $links = $package->getRequires();
+
+        if (!$requiredOnly) {
+            $links = array_merge($links, $package->getRecommends());
+
+            if ($includeSuggested) {
+                $links = array_merge($links, $package->getSuggests());
+            }
+        }
+
+        return $links;
     }
 }
