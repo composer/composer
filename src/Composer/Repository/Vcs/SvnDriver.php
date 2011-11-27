@@ -18,7 +18,7 @@ class SvnDriver implements VcsDriverInterface
     public function __construct($url)
     {
         $this->url = $this->baseUrl = rtrim($url, '/');
-        if (($pos = strrpos($url, '/trunk')) !== false) {
+        if (false !== ($pos = strrpos($url, '/trunk'))) {
             $this->baseUrl = substr($url, 0, $pos);
         }
     }
