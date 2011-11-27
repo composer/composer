@@ -37,20 +37,32 @@ class VcsRepository extends ArrayRepository
         $this->debug = $debug;
     }
 
+    public function getDriver()
+    {
+        foreach ($this->drivers as $driver) {
+            if ($driver::supports($this->url)) {
+                $driver = new $driver($this->url);
+                $driver->initialize();
+                return $driver;
+            }
+        }
+
+        foreach ($this->drivers as $driver) {
+            if ($driver::supports($this->url, true)) {
+                $driver = new $driver($this->url);
+                $driver->initialize();
+                return $driver;
+            }
+        }
+    }
+
     protected function initialize()
     {
         parent::initialize();
 
         $debug = $this->debug;
 
-        foreach ($this->drivers as $driver) {
-            if ($driver::supports($this->url)) {
-                $driver = new $driver($this->url);
-                $driver->initialize();
-                break;
-            }
-        }
-
+        $driver = $this->getDriver();
         if (!$driver) {
             throw new \InvalidArgumentException('No driver found to handle VCS repository '.$this->url);
         }
