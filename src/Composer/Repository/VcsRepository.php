@@ -25,6 +25,7 @@ class VcsRepository extends ArrayRepository
             'Composer\Repository\Vcs\GitHubDriver',
             'Composer\Repository\Vcs\GitBitbucketDriver',
             'Composer\Repository\Vcs\GitDriver',
+            'Composer\Repository\Vcs\SvnDriver',
             'Composer\Repository\Vcs\HgBitbucketDriver',
             'Composer\Repository\Vcs\HgDriver',
         );
