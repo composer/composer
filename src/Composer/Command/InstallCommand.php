@@ -185,17 +185,14 @@ EOT
 
     private function collectLinks(InputInterface $input, PackageInterface $package)
     {
-        $requiredOnly     = (Boolean) $input->getOption('no-install-recommends');
-        $includeSuggested = (Boolean) $input->getOption('install-suggests');
-
         $links = $package->getRequires();
 
-        if (!$requiredOnly) {
+        if (!$input->getOption('no-install-recommends')) {
             $links = array_merge($links, $package->getRecommends());
+        }
 
-            if ($includeSuggested) {
-                $links = array_merge($links, $package->getSuggests());
-            }
+        if ($input->getOption('install-suggests')) {
+            $links = array_merge($links, $package->getSuggests());
         }
 
         return $links;
