@@ -159,8 +159,8 @@ class ArrayLoader
             if ('self.version' === $constraint) {
                 $constraint = $package->getVersion();
             }
-            $constraint = $this->versionParser->parseConstraints($constraint);
-            $links[]    = new Package\Link($package->getName(), $packageName, $constraint, $description, $constraint);
+            $parsedConstraint = $this->versionParser->parseConstraints($constraint);
+            $links[]    = new Package\Link($package->getName(), $packageName, $parsedConstraint, $description, $constraint);
         }
 
         return $links;
