@@ -75,7 +75,7 @@ class Application extends BaseApplication
     {
         // load Composer configuration
         if (null === $composerFile) {
-            $composerFile = 'composer.json';
+            $composerFile = getenv('COMPOSER') ?: 'composer.json';
         }
 
         $file = new JsonFile($composerFile);
@@ -133,7 +133,8 @@ class Application extends BaseApplication
         }
 
         // init locker
-        $locker = new Package\Locker(new JsonFile('composer.lock'), $rm);
+        $lockFile = substr($composerFile, -5) === '.json' ? substr($composerFile, 0, -4).'lock' : $composerFile . '.lock';
+        $locker = new Package\Locker(new JsonFile($lockFile), $rm);
 
         // initialize composer
         $composer = new Composer();
