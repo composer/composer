@@ -92,7 +92,6 @@ class Application extends BaseApplication
         // Configuration defaults
         $composerConfig = array(
             'vendor-dir' => 'vendor',
-            'bin-dir' => 'bin',
         );
 
         $packageConfig = $file->read();
@@ -104,6 +103,9 @@ class Application extends BaseApplication
         }
 
         $vendorDir = $packageConfig['config']['vendor-dir'];
+        if (!isset($packageConfig['config']['bin-dir'])) {
+            $packageConfig['config']['bin-dir'] = $vendorDir.'/bin';
+        }
         $binDir = $packageConfig['config']['bin-dir'];
 
         // initialize repository manager
