@@ -129,7 +129,7 @@ class Application extends BaseApplication
 
         // load default repository unless it's explicitly disabled
         if (!isset($packageConfig['repositories']['packagist']) || $packageConfig['repositories']['packagist'] !== false) {
-            $rm->addRepository(new Repository\ComposerRepository('http://packagist.org'));
+            $rm->addRepository(new Repository\ComposerRepository(array('url' => 'http://packagist.org')));
         }
 
         // init locker
