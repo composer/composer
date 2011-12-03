@@ -50,9 +50,9 @@ abstract class FileDownloader implements DownloaderInterface
 
         echo 'Downloading '.$url.' to '.$fileName.PHP_EOL;
 
-        if (0 === strpos($url, 'https:') && !extension_loaded('openssl')) {
+        if (!extension_loaded('openssl') && (0 === strpos($url, 'https:') || 0 === strpos($url, 'http://github.com'))) {
             // bypass https for github if openssl is disabled
-            if (preg_match('{^https://(github.com/[^/]+/[^/]+/(zip|tar)ball/[^/]+)$}i', $url, $match)) {
+            if (preg_match('{^https?://(github.com/[^/]+/[^/]+/(zip|tar)ball/[^/]+)$}i', $url, $match)) {
                 $url = 'http://nodeload.'.$match[1];
             } else {
                 throw new \RuntimeException('You must enable the openssl extension to download files via https');
