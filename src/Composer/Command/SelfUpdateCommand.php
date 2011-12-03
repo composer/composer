@@ -39,8 +39,6 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $composer = $this->getComposer();
-
         $latest = trim(file_get_contents('http://getcomposer.org/version'));
 
         if (Composer::VERSION !== $latest) {
