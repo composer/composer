@@ -29,13 +29,14 @@ class InstallerInstaller extends LibraryInstaller
     private static $classCounter = 0;
 
     /**
-     * @param   string                      $dir        relative path for packages home
+     * @param   string                      $vendorDir  relative path for packages home
+     * @param   string                      $binDir     relative path for binaries
      * @param   DownloadManager             $dm         download manager
      * @param   WritableRepositoryInterface $repository repository controller
      */
-    public function __construct($directory, DownloadManager $dm, WritableRepositoryInterface $repository, InstallationManager $im)
+    public function __construct($vendorDir, $binDir, DownloadManager $dm, WritableRepositoryInterface $repository, InstallationManager $im)
     {
-        parent::__construct($directory, $dm, $repository, 'composer-installer');
+        parent::__construct($vendorDir, $binDir, $dm, $repository, 'composer-installer');
         $this->installationManager = $im;
 
         foreach ($repository->getPackages() as $package) {
@@ -94,7 +95,7 @@ class InstallerInstaller extends LibraryInstaller
         }
 
         $extra = $package->getExtra();
-        $installer = new $class($this->directory, $this->downloadManager, $this->repository);
+        $installer = new $class($this->vendorDir, $this->binDir, $this->downloadManager, $this->repository);
         $this->installationManager->addInstaller($installer);
     }
 }

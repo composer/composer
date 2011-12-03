@@ -16,6 +16,7 @@ use Composer\Downloader\DownloadManager;
 use Composer\Repository\WritableRepositoryInterface;
 use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\Package\PackageInterface;
+use Composer\Downloader\Util\Filesystem;
 
 /**
  * Package installation manager.
@@ -25,39 +26,33 @@ use Composer\Package\PackageInterface;
  */
 class LibraryInstaller implements InstallerInterface
 {
-    protected $directory;
+    protected $vendorDir;
+    protected $binDir;
     protected $downloadManager;
     protected $repository;
     private $type;
+    private $filesystem;
 
     /**
      * Initializes library installer.
      *
-     * @param   string                      $dir        relative path for packages home
+     * @param   string                      $vendorDir  relative path for packages home
+     * @param   string                      $binDir     relative path for binaries
      * @param   DownloadManager             $dm         download manager
      * @param   WritableRepositoryInterface $repository repository controller
      * @param   string                      $type       package type that this installer handles
      */
-    public function __construct($directory, DownloadManager $dm, WritableRepositoryInterface $repository, $type = 'library')
+    public function __construct($vendorDir, $binDir, DownloadManager $dm, WritableRepositoryInterface $repository, $type = 'library')
     {
-        $this->directory = $directory;
         $this->downloadManager = $dm;
+        $this->repository = $repository;
         $this->type = $type;
 
-        if (!is_dir($this->directory)) {
-            if (file_exists($this->directory)) {
-                throw new \UnexpectedValueException(
-                    $this->directory.' exists and is not a directory.'
-                );
-            }
-            if (!mkdir($this->directory, 0777, true)) {
-                throw new \UnexpectedValueException(
-                    $this->directory.' does not exist and could not be created.'
-                );
-            }
-        }
-
-        $this->repository = $repository;
+        $this->filesystem = new Filesystem();
+        $this->filesystem->ensureDirectoryExists($vendorDir);
+        $this->filesystem->ensureDirectoryExists($binDir);
+        $this->vendorDir = realpath($vendorDir);
+        $this->binDir = realpath($binDir);
     }
 
     /**
@@ -84,6 +79,7 @@ class LibraryInstaller implements InstallerInterface
         $downloadPath = $this->getInstallPath($package);
 
         $this->downloadManager->download($package, $downloadPath);
+        $this->installBinaries($package);
         $this->repository->addPackage(clone $package);
     }
 
@@ -98,7 +94,9 @@ class LibraryInstaller implements InstallerInterface
 
         $downloadPath = $this->getInstallPath($initial);
 
+        $this->removeBinaries($initial);
         $this->downloadManager->update($initial, $target, $downloadPath);
+        $this->installBinaries($target);
         $this->repository->removePackage($initial);
         $this->repository->addPackage(clone $target);
     }
@@ -117,6 +115,7 @@ class LibraryInstaller implements InstallerInterface
         $downloadPath = $this->getInstallPath($package);
 
         $this->downloadManager->remove($package, $downloadPath);
+        $this->removeBinaries($package);
         $this->repository->removePackage($package);
     }
 
@@ -126,6 +125,86 @@ class LibraryInstaller implements InstallerInterface
     public function getInstallPath(PackageInterface $package)
     {
         $targetDir = $package->getTargetDir();
-        return ($this->directory ? $this->directory.'/' : '') . $package->getName() . ($targetDir ? '/'.$targetDir : '');
+        return ($this->vendorDir ? $this->vendorDir.'/' : '') . $package->getName() . ($targetDir ? '/'.$targetDir : '');
+    }
+
+    protected function installBinaries(PackageInterface $package)
+    {
+        if (!$package->getBinaries()) {
+            return;
+        }
+        foreach ($package->getBinaries() as $bin) {
+            $link = $this->binDir.'/'.basename($bin);
+            if (file_exists($link)) {
+                echo 'Skipped installation of '.$bin.' for package '.$package->getName().', name conflicts with an existing file';
+                continue;
+            }
+            $bin = $this->getInstallPath($package).'/'.$bin;
+
+            if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+                // add unixy support for cygwin and similar environments
+                if ('.bat' !== substr($bin, -4)) {
+                    file_put_contents($link, $this->generateUnixyProxyCode($bin, $link));
+                    chmod($link, 0777);
+                    $link .= '.bat';
+                }
+                file_put_contents($link, $this->generateWindowsProxyCode($bin, $link));
+            } else {
+                symlink($bin, $link);
+            }
+            chmod($link, 0777);
+        }
+    }
+
+    protected function removeBinaries(PackageInterface $package)
+    {
+        if (!$package->getBinaries()) {
+            return;
+        }
+        foreach ($package->getBinaries() as $bin => $os) {
+            $link = $this->binDir.'/'.basename($bin);
+            if (!file_exists($link)) {
+                continue;
+            }
+            unlink($link);
+        }
+    }
+
+    private function generateWindowsProxyCode($bin, $link)
+    {
+        $binPath = $this->filesystem->findShortestPath($link, $bin);
+        if ('.bat' === substr($bin, -4)) {
+            $caller = 'call';
+        } else {
+            $handle = fopen($bin, 'r');
+            $line = fgets($handle);
+            fclose($handle);
+            if (preg_match('{^#!/(?:usr/bin/env )?(?:[^/]+/)*(.+)$}m', $line, $match)) {
+                $caller = $match[1];
+            } else {
+                $caller = 'php';
+            }
+        }
+
+        return "@echo off\r\n".
+            "pushd .\r\n".
+            "cd %~dp0\r\n".
+            "cd ".escapeshellarg(dirname($binPath))."\r\n".
+            "set BIN_TARGET=%CD%\\".basename($binPath)."\r\n".
+            "popd\r\n".
+            $caller." %BIN_TARGET% %*\r\n";
+    }
+
+    private function generateUnixyProxyCode($bin, $link)
+    {
+        $binPath = $this->filesystem->findShortestPath($link, $bin);
+
+        return "#!/usr/bin/env sh\n".
+            'SRC_DIR=`pwd`'."\n".
+            'cd `dirname "$0"`'."\n".
+            'cd '.escapeshellarg(dirname($binPath))."\n".
+            'BIN_TARGET=`pwd`/'.basename($binPath)."\n".
+            'cd $SRC_DIR'."\n".
+            '$BIN_TARGET "$@"'."\n";
     }
 }

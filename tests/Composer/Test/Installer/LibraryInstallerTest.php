@@ -14,20 +14,31 @@ namespace Composer\Test\Installer;
 
 use Composer\Installer\LibraryInstaller;
 use Composer\DependencyResolver\Operation;
+use Composer\Downloader\Util\Filesystem;
 
 class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
 {
-    private $dir;
+    private $vendorDir;
+    private $binDir;
     private $dm;
     private $repository;
     private $library;
 
     protected function setUp()
     {
-        $this->dir = sys_get_temp_dir().'/composer';
-        if (is_dir($this->dir)) {
-            rmdir($this->dir);
+        $fs = new Filesystem;
+
+        $this->vendorDir = sys_get_temp_dir().DIRECTORY_SEPARATOR.'composer-test-vendor';
+        if (is_dir($this->vendorDir)) {
+            $fs->removeDirectory($this->vendorDir);
         }
+        mkdir($this->vendorDir);
+
+        $this->binDir = sys_get_temp_dir().DIRECTORY_SEPARATOR.'composer-test-bin';
+        if (is_dir($this->binDir)) {
+            $fs->removeDirectory($this->binDir);
+        }
+        mkdir($this->binDir);
 
         $this->dm = $this->getMockBuilder('Composer\Downloader\DownloadManager')
             ->disableOriginalConstructor()
@@ -40,19 +51,19 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
 
     public function testInstallerCreation()
     {
-        $library = new LibraryInstaller($this->dir, $this->dm, $this->repository);
-        $this->assertTrue(is_dir($this->dir));
+        $library = new LibraryInstaller($this->vendorDir, $this->binDir, $this->dm, $this->repository);
+        $this->assertTrue(is_dir($this->vendorDir));
 
         $file = sys_get_temp_dir().'/file';
         touch($file);
 
-        $this->setExpectedException('UnexpectedValueException');
-        $library = new LibraryInstaller($file, $this->dm, $this->repository);
+        $this->setExpectedException('RuntimeException');
+        $library = new LibraryInstaller($file, $this->binDir, $this->dm, $this->repository);
     }
 
     public function testIsInstalled()
     {
-        $library = new LibraryInstaller($this->dir, $this->dm, $this->repository);
+        $library = new LibraryInstaller($this->vendorDir, $this->binDir, $this->dm, $this->repository);
         $package = $this->createPackageMock();
 
         $this->repository
@@ -67,7 +78,7 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
 
     public function testInstall()
     {
-        $library = new LibraryInstaller($this->dir, $this->dm, $this->repository);
+        $library = new LibraryInstaller($this->vendorDir, $this->binDir, $this->dm, $this->repository);
         $package = $this->createPackageMock();
 
         $package
@@ -78,7 +89,7 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
         $this->dm
             ->expects($this->once())
             ->method('download')
-            ->with($package, $this->dir.'/some/package');
+            ->with($package, $this->vendorDir.'/some/package');
 
         $this->repository
             ->expects($this->once())
@@ -90,7 +101,7 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
 
     public function testUpdate()
     {
-        $library = new LibraryInstaller($this->dir, $this->dm, $this->repository);
+        $library = new LibraryInstaller($this->vendorDir, $this->binDir, $this->dm, $this->repository);
         $initial = $this->createPackageMock();
         $target  = $this->createPackageMock();
 
@@ -108,7 +119,7 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
         $this->dm
             ->expects($this->once())
             ->method('update')
-            ->with($initial, $target, $this->dir.'/package1');
+            ->with($initial, $target, $this->vendorDir.'/package1');
 
         $this->repository
             ->expects($this->once())
@@ -129,7 +140,7 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
 
     public function testUninstall()
     {
-        $library = new LibraryInstaller($this->dir, $this->dm, $this->repository);
+        $library = new LibraryInstaller($this->vendorDir, $this->binDir, $this->dm, $this->repository);
         $package = $this->createPackageMock();
 
         $package
@@ -146,7 +157,7 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
         $this->dm
             ->expects($this->once())
             ->method('remove')
-            ->with($package, $this->dir.'/pkg');
+            ->with($package, $this->vendorDir.'/pkg');
 
         $this->repository
             ->expects($this->once())
@@ -163,7 +174,7 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
 
     public function testGetInstallPath()
     {
-        $library = new LibraryInstaller($this->dir, $this->dm, $this->repository);
+        $library = new LibraryInstaller($this->vendorDir, $this->binDir, $this->dm, $this->repository);
         $package = $this->createPackageMock();
 
         $package
@@ -171,20 +182,24 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
             ->method('getTargetDir')
             ->will($this->returnValue(null));
 
-        $this->assertEquals($this->dir.'/'.$package->getName(), $library->getInstallPath($package));
+        $this->assertEquals($this->vendorDir.'/'.$package->getName(), $library->getInstallPath($package));
     }
 
     public function testGetInstallPathWithTargetDir()
     {
-        $library = new LibraryInstaller($this->dir, $this->dm, $this->repository);
+        $library = new LibraryInstaller($this->vendorDir, $this->binDir, $this->dm, $this->repository);
         $package = $this->createPackageMock();
 
         $package
             ->expects($this->once())
             ->method('getTargetDir')
             ->will($this->returnValue('Some/Namespace'));
+        $package
+            ->expects($this->any())
+            ->method('getName')
+            ->will($this->returnValue('foo/bar'));
 
-        $this->assertEquals($this->dir.'/'.$package->getName().'/Some/Namespace', $library->getInstallPath($package));
+        $this->assertEquals($this->vendorDir.'/'.$package->getName().'/Some/Namespace', $library->getInstallPath($package));
     }
 
     private function createPackageMock()
