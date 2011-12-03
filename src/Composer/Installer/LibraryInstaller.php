@@ -136,19 +136,21 @@ class LibraryInstaller implements InstallerInterface
         foreach ($package->getBinaries() as $bin) {
             $link = $this->binDir.'/'.basename($bin);
             if (file_exists($link)) {
+                echo 'Skipped installation of '.$bin.' for package '.$package->getName().', name conflicts with an existing file';
                 continue;
             }
+            $bin = $this->getInstallPath($package).'/'.$bin;
 
             if (defined('PHP_WINDOWS_VERSION_BUILD')) {
                 // add unixy support for cygwin and similar environments
                 if ('.bat' !== substr($bin, -4)) {
-                    file_put_contents($link, $this->generateUnixyProxyCode($this->getInstallPath($package).'/'.$bin));
+                    file_put_contents($link, $this->generateUnixyProxyCode($bin, $link));
                     chmod($link, 0777);
                     $link .= '.bat';
                 }
-                file_put_contents($link, $this->generateWindowsProxyCode($this->getInstallPath($package).'/'.$bin));
+                file_put_contents($link, $this->generateWindowsProxyCode($bin, $link));
             } else {
-                symlink($this->getInstallPath($package).'/'.$bin, $link);
+                symlink($bin, $link);
             }
             chmod($link, 0777);
         }
@@ -168,9 +170,8 @@ class LibraryInstaller implements InstallerInterface
         }
     }
 
-    private function generateWindowsProxyCode($bin)
+    private function generateWindowsProxyCode($bin, $link)
     {
-        $link = $this->binDir.'/'.basename($bin);
         $binPath = $this->filesystem->findShortestPath($link, $bin);
         if ('.bat' === substr($bin, -4)) {
             $caller = 'call';
@@ -194,9 +195,8 @@ class LibraryInstaller implements InstallerInterface
             $caller." %BIN_TARGET% %*\r\n";
     }
 
-    private function generateUnixyProxyCode($bin)
+    private function generateUnixyProxyCode($bin, $link)
     {
-        $link = $this->binDir.'/'.basename($bin);
         $binPath = $this->filesystem->findShortestPath($link, $bin);
 
         return "#!/usr/bin/env sh\n".
