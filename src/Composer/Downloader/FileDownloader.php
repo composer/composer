@@ -96,7 +96,7 @@ abstract class FileDownloader implements DownloaderInterface
     public function update(PackageInterface $initial, PackageInterface $target, $path)
     {
         $fs = new Util\Filesystem();
-        $fs->remove($path);
+        $fs->removeDirectory($path);
         $this->download($target, $path);
     }
 
@@ -106,7 +106,7 @@ abstract class FileDownloader implements DownloaderInterface
     public function remove(PackageInterface $package, $path)
     {
         $fs = new Util\Filesystem();
-        $fs->remove($path);
+        $fs->removeDirectory($path);
     }
 
     /**

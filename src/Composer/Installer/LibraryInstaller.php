@@ -16,6 +16,7 @@ use Composer\Downloader\DownloadManager;
 use Composer\Repository\WritableRepositoryInterface;
 use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\Package\PackageInterface;
+use Composer\Downloader\Util\Filesystem;
 
 /**
  * Package installation manager.
@@ -25,7 +26,8 @@ use Composer\Package\PackageInterface;
  */
 class LibraryInstaller implements InstallerInterface
 {
-    protected $directory;
+    protected $vendorDir;
+    protected $binDir;
     protected $downloadManager;
     protected $repository;
     private $type;
@@ -33,31 +35,23 @@ class LibraryInstaller implements InstallerInterface
     /**
      * Initializes library installer.
      *
-     * @param   string                      $dir        relative path for packages home
+     * @param   string                      $vendorDir  relative path for packages home
+     * @param   string                      $binDir     relative path for binaries
      * @param   DownloadManager             $dm         download manager
      * @param   WritableRepositoryInterface $repository repository controller
      * @param   string                      $type       package type that this installer handles
      */
-    public function __construct($directory, DownloadManager $dm, WritableRepositoryInterface $repository, $type = 'library')
+    public function __construct($vendorDir, $binDir, DownloadManager $dm, WritableRepositoryInterface $repository, $type = 'library')
     {
-        $this->directory = $directory;
         $this->downloadManager = $dm;
+        $this->repository = $repository;
         $this->type = $type;
 
-        if (!is_dir($this->directory)) {
-            if (file_exists($this->directory)) {
-                throw new \UnexpectedValueException(
-                    $this->directory.' exists and is not a directory.'
-                );
-            }
-            if (!mkdir($this->directory, 0777, true)) {
-                throw new \UnexpectedValueException(
-                    $this->directory.' does not exist and could not be created.'
-                );
-            }
-        }
-
-        $this->repository = $repository;
+        $fs = new Filesystem();
+        $fs->ensureDirectoryExists($vendorDir);
+        $fs->ensureDirectoryExists($binDir);
+        $this->vendorDir = realpath($vendorDir);
+        $this->binDir = realpath($binDir);
     }
 
     /**
@@ -84,6 +78,7 @@ class LibraryInstaller implements InstallerInterface
         $downloadPath = $this->getInstallPath($package);
 
         $this->downloadManager->download($package, $downloadPath);
+        $this->installBinaries($package);
         $this->repository->addPackage(clone $package);
     }
 
@@ -98,7 +93,9 @@ class LibraryInstaller implements InstallerInterface
 
         $downloadPath = $this->getInstallPath($initial);
 
+        $this->removeBinaries($initial);
         $this->downloadManager->update($initial, $target, $downloadPath);
+        $this->installBinaries($target);
         $this->repository->removePackage($initial);
         $this->repository->addPackage(clone $target);
     }
@@ -117,6 +114,7 @@ class LibraryInstaller implements InstallerInterface
         $downloadPath = $this->getInstallPath($package);
 
         $this->downloadManager->remove($package, $downloadPath);
+        $this->removeBinaries($package);
         $this->repository->removePackage($package);
     }
 
@@ -126,6 +124,61 @@ class LibraryInstaller implements InstallerInterface
     public function getInstallPath(PackageInterface $package)
     {
         $targetDir = $package->getTargetDir();
-        return ($this->directory ? $this->directory.'/' : '') . $package->getName() . ($targetDir ? '/'.$targetDir : '');
+        return ($this->vendorDir ? $this->vendorDir.'/' : '') . $package->getName() . ($targetDir ? '/'.$targetDir : '');
+    }
+
+    protected function installBinaries(PackageInterface $package)
+    {
+        if (!$package->getBinaries()) {
+            return;
+        }
+        foreach ($package->getBinaries() as $bin => $os) {
+            $link = $this->binDir.'/'.basename($bin);
+            if (file_exists($link)) {
+                continue;
+            }
+
+            // skip windows
+            if (defined('PHP_WINDOWS_VERSION_BUILD') && false === strpos($os, 'windows') && '*' !== $os) {
+                continue;
+            }
+
+            // skip unix
+            if (!defined('PHP_WINDOWS_VERSION_BUILD') && false === strpos($os, 'unix') && '*' !== $os) {
+                continue;
+            }
+
+            $binary = $this->getInstallPath($package).'/'.$bin;
+            $from = array(
+                '@php_bin@',
+                '@bin_dir@',
+            );
+            $to = array(
+                'php',
+                $this->binDir,
+            );
+            file_put_contents($binary, str_replace($from, $to, file_get_contents($binary)));
+
+            if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+                copy($binary, $link);
+            } else {
+                symlink($this->getInstallPath($package).'/'.$bin, $link);
+            }
+            chmod($link, 0777);
+        }
+    }
+
+    protected function removeBinaries(PackageInterface $package)
+    {
+        if (!$package->getBinaries()) {
+            return;
+        }
+        foreach ($package->getBinaries() as $bin => $os) {
+            $link = $this->binDir.'/'.basename($bin);
+            if (!file_exists($link)) {
+                continue;
+            }
+            unlink($link);
+        }
     }
 }

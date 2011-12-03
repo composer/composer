@@ -61,7 +61,7 @@ class HgDownloader implements DownloaderInterface
     {
         $this->enforceCleanDirectory($path);
         $fs = new Util\Filesystem();
-        $fs->remove($path);
+        $fs->removeDirectory($path);
     }
 
     private function enforceCleanDirectory($path)

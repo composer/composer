@@ -90,7 +90,10 @@ class Application extends BaseApplication
         }
 
         // Configuration defaults
-        $composerConfig = array('vendor-dir' => 'vendor');
+        $composerConfig = array(
+            'vendor-dir' => 'vendor',
+            'bin-dir' => 'bin',
+        );
 
         $packageConfig = $file->read();
 
@@ -101,6 +104,7 @@ class Application extends BaseApplication
         }
 
         $vendorDir = $packageConfig['config']['vendor-dir'];
+        $binDir = $packageConfig['config']['bin-dir'];
 
         // initialize repository manager
         $rm = new Repository\RepositoryManager();
@@ -120,8 +124,8 @@ class Application extends BaseApplication
 
         // initialize installation manager
         $im = new Installer\InstallationManager($vendorDir);
-        $im->addInstaller(new Installer\LibraryInstaller($vendorDir, $dm, $rm->getLocalRepository(), null));
-        $im->addInstaller(new Installer\InstallerInstaller($vendorDir, $dm, $rm->getLocalRepository(), $im));
+        $im->addInstaller(new Installer\LibraryInstaller($vendorDir, $binDir, $dm, $rm->getLocalRepository(), null));
+        $im->addInstaller(new Installer\InstallerInstaller($vendorDir, $binDir, $dm, $rm->getLocalRepository(), $im));
 
         // load package
         $loader  = new Package\Loader\ArrayLoader($rm);
