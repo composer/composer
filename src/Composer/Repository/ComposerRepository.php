@@ -24,14 +24,17 @@ class ComposerRepository extends ArrayRepository
     protected $url;
     protected $packages;
 
-    public function __construct($url)
+    public function __construct(array $config)
     {
-        $url = rtrim($url, '/');
-        if (!filter_var($url, FILTER_VALIDATE_URL)) {
-            throw new \UnexpectedValueException('Invalid url given for Composer repository: '.$url);
+        if (!preg_match('{^https?://}', $config['url'])) {
+            $config['url'] = 'http://'.$config['url'];
+        }
+        $config['url'] = rtrim($config['url'], '/');
+        if (!filter_var($config['url'], FILTER_VALIDATE_URL)) {
+            throw new \UnexpectedValueException('Invalid url given for Composer repository: '.$config['url']);
         }
 
-        $this->url = $url;
+        $this->url = $config['url'];
     }
 
     protected function initialize()
