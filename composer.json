@@ -23,7 +23,7 @@
         "symfony/finder": ">2.0,<2.2-dev",
         "symfony/process": ">2.0,<2.2-dev"
     },
-    "recommends": {
+    "recommend": {
         "ext-zip": "*"
     },
     "autoload": {
