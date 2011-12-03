@@ -79,9 +79,8 @@ class ArrayLoader
         }
 
         if (isset($config['bin']) && is_array($config['bin'])) {
-            foreach ($config['bin'] as $bin => $os) {
-                unset($config['bin'][$bin]);
-                $config['bin'][ltrim($bin, '/')] = $os;
+            foreach ($config['bin'] as $key => $bin) {
+                $config['bin'][$key]= ltrim($bin, '/');
             }
             $package->setBinaries($config['bin']);
         }

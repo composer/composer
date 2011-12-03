@@ -31,6 +31,7 @@ class LibraryInstaller implements InstallerInterface
     protected $downloadManager;
     protected $repository;
     private $type;
+    private $filesystem;
 
     /**
      * Initializes library installer.
@@ -47,9 +48,9 @@ class LibraryInstaller implements InstallerInterface
         $this->repository = $repository;
         $this->type = $type;
 
-        $fs = new Filesystem();
-        $fs->ensureDirectoryExists($vendorDir);
-        $fs->ensureDirectoryExists($binDir);
+        $this->filesystem = new Filesystem();
+        $this->filesystem->ensureDirectoryExists($vendorDir);
+        $this->filesystem->ensureDirectoryExists($binDir);
         $this->vendorDir = realpath($vendorDir);
         $this->binDir = realpath($binDir);
     }
@@ -132,35 +133,20 @@ class LibraryInstaller implements InstallerInterface
         if (!$package->getBinaries()) {
             return;
         }
-        foreach ($package->getBinaries() as $bin => $os) {
+        foreach ($package->getBinaries() as $bin) {
             $link = $this->binDir.'/'.basename($bin);
             if (file_exists($link)) {
                 continue;
             }
 
-            // skip windows
-            if (defined('PHP_WINDOWS_VERSION_BUILD') && false === strpos($os, 'windows') && '*' !== $os) {
-                continue;
-            }
-
-            // skip unix
-            if (!defined('PHP_WINDOWS_VERSION_BUILD') && false === strpos($os, 'unix') && '*' !== $os) {
-                continue;
-            }
-
-            $binary = $this->getInstallPath($package).'/'.$bin;
-            $from = array(
-                '@php_bin@',
-                '@bin_dir@',
-            );
-            $to = array(
-                'php',
-                $this->binDir,
-            );
-            file_put_contents($binary, str_replace($from, $to, file_get_contents($binary)));
-
             if (defined('PHP_WINDOWS_VERSION_BUILD')) {
-                copy($binary, $link);
+                // add unixy support for cygwin and similar environments
+                if ('.bat' !== substr($bin, -4)) {
+                    file_put_contents($link, $this->generateUnixyProxyCode($this->getInstallPath($package).'/'.$bin));
+                    chmod($link, 0777);
+                    $link .= '.bat';
+                }
+                file_put_contents($link, $this->generateWindowsProxyCode($this->getInstallPath($package).'/'.$bin));
             } else {
                 symlink($this->getInstallPath($package).'/'.$bin, $link);
             }
@@ -180,5 +166,45 @@ class LibraryInstaller implements InstallerInterface
             }
             unlink($link);
         }
+    }
+
+    private function generateWindowsProxyCode($bin)
+    {
+        $link = $this->binDir.'/'.basename($bin);
+        $binPath = $this->filesystem->findShortestPath($link, $bin);
+        if ('.bat' === substr($bin, -4)) {
+            $caller = 'call';
+        } else {
+            $handle = fopen($bin, 'r');
+            $line = fgets($handle);
+            fclose($handle);
+            if (preg_match('{^#!/(?:usr/bin/env )?(?:[^/]+/)*(.+)$}m', $line, $match)) {
+                $caller = $match[1];
+            } else {
+                $caller = 'php';
+            }
+        }
+
+        return "@echo off\r\n".
+            "pushd .\r\n".
+            "cd %~dp0\r\n".
+            "cd ".escapeshellarg(dirname($binPath))."\r\n".
+            "set BIN_TARGET=%CD%\\".basename($binPath)."\r\n".
+            "popd\r\n".
+            $caller." %BIN_TARGET% %*\r\n";
+    }
+
+    private function generateUnixyProxyCode($bin)
+    {
+        $link = $this->binDir.'/'.basename($bin);
+        $binPath = $this->filesystem->findShortestPath($link, $bin);
+
+        return "#!/usr/bin/env sh\n".
+            'SRC_DIR=`pwd`'."\n".
+            'cd `dirname \\`readlink -m "$0"\\``'."\n".
+            'cd '.escapeshellarg(dirname($binPath))."\n".
+            'BIN_TARGET=`pwd`/'.basename($binPath)."\n".
+            'cd $SRC_DIR'."\n".
+            '$BIN_TARGET "$@"'."\n";
     }
 }
