@@ -17,12 +17,28 @@ namespace Composer\Downloader\Util;
  */
 class Filesystem
 {
-    public function remove($directory)
+    public function removeDirectory($directory)
     {
         if (defined('PHP_WINDOWS_VERSION_BUILD')) {
             system(sprintf('rmdir /S /Q %s', escapeshellarg(realpath($directory))));
         } else {
             system(sprintf('rm -rf %s', escapeshellarg($directory)));
+        }
+    }
+
+    public function ensureDirectoryExists($directory)
+    {
+        if (!is_dir($directory)) {
+            if (file_exists($directory)) {
+                throw new \RuntimeException(
+                    $directory.' exists and is not a directory.'
+                );
+            }
+            if (!mkdir($directory, 0777, true)) {
+                throw new \RuntimeException(
+                    $directory.' does not exist and could not be created.'
+                );
+            }
         }
     }
 }

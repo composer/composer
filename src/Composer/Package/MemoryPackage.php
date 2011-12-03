@@ -39,6 +39,7 @@ class MemoryPackage extends BasePackage
     protected $description;
     protected $homepage;
     protected $extra = array();
+    protected $binaries = array();
 
     protected $requires = array();
     protected $conflicts = array();
@@ -109,6 +110,22 @@ class MemoryPackage extends BasePackage
     public function getExtra()
     {
         return $this->extra;
+    }
+
+    /**
+     * @param array $binaries
+     */
+    public function setBinaries(array $binaries)
+    {
+        $this->binaries = $binaries;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getBinaries()
+    {
+        return $this->binaries;
     }
 
     /**
