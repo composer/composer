@@ -164,7 +164,7 @@ class ArrayLoader
         $links = array();
         foreach ($linksSpecs as $packageName => $constraint) {
             if ('self.version' === $constraint) {
-                $constraint = $package->getVersion();
+                $constraint = $package->getPrettyVersion();
             }
             $parsedConstraint = $this->versionParser->parseConstraints($constraint);
             $links[]    = new Package\Link($package->getName(), $packageName, $parsedConstraint, $description, $constraint);
