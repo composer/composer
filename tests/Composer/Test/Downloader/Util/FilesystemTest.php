@@ -49,6 +49,8 @@ class FilesystemTest extends TestCase
             array('c:\\bin\\run', 'd:/vendor/acme/bin/run', true, "'d:/vendor/acme/bin/run'"),
             array('C:/Temp/test', 'C:\Temp', true, "dirname(__DIR__)"),
             array('C:/Temp', 'C:\Temp\test', true, "__DIR__ . '/test'"),
+            array('/tmp/test', '/tmp', true, "dirname(__DIR__)"),
+            array('/tmp', '/tmp/test', true, "__DIR__ . '/test'"),
         );
     }
 
@@ -73,7 +75,11 @@ class FilesystemTest extends TestCase
             array('c:\\bin\\run', 'c:/vendor/acme/bin/run', "../vendor/acme/bin/run"),
             array('c:/bin/run', 'd:/vendor/acme/bin/run', "d:/vendor/acme/bin/run"),
             array('c:\\bin\\run', 'd:/vendor/acme/bin/run', "d:/vendor/acme/bin/run"),
-            array('C:/Temp/test', 'C:\Temp', "../"),
+            array('C:/Temp/test', 'C:\Temp', "./"),
+            array('/tmp/test', '/tmp', "./"),
+            array('C:/Temp/test/sub', 'C:\Temp', "../"),
+            array('/tmp/test/sub', '/tmp', "../"),
+            array('/tmp', '/tmp/test', "test"),
             array('C:/Temp', 'C:\Temp\test', "test"),
         );
     }
