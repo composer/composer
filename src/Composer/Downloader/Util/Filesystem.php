@@ -58,22 +58,22 @@ class Filesystem
         if (dirname($from) === dirname($to)) {
             return './'.basename($to);
         }
-        $from = strtr($from, '\\', '/');
-        $to = strtr($to, '\\', '/');
+        $from = rtrim(strtr($from, '\\', '/'), '/');
+        $to = rtrim(strtr($to, '\\', '/'), '/');
 
-        $commonPath = dirname($to);
-        while (strpos($from, $commonPath) !== 0 && '/' !== $commonPath && !preg_match('{^[a-z]:/$}i', $commonPath)) {
+        $commonPath = $to;
+        while (strpos($from, $commonPath) !== 0 && '/' !== $commonPath && !preg_match('{^[a-z]:/?$}i', $commonPath) && '.' !== $commonPath) {
             $commonPath = strtr(dirname($commonPath), '\\', '/');
         }
 
-        if (0 !== strpos($from, $commonPath) || '/' === $commonPath) {
+        if (0 !== strpos($from, $commonPath) || '/' === $commonPath || '.' === $commonPath) {
             return $to;
         }
 
         $commonPath = rtrim($commonPath, '/') . '/';
         $sourcePathDepth = substr_count(substr($from, strlen($commonPath)), '/');
         $commonPathCode = str_repeat('../', $sourcePathDepth);
-        return $commonPathCode . substr($to, strlen($commonPath));
+        return ($commonPathCode . substr($to, strlen($commonPath))) ?: './';
     }
 
     /**
@@ -81,33 +81,38 @@ class Filesystem
      *
      * @param string $from
      * @param string $to
+     * @param Boolean $directories if true, the source/target are considered to be directories
      * @return string
      */
-    public function findShortestPathCode($from, $to)
+    public function findShortestPathCode($from, $to, $directories = false)
     {
         if (!$this->isAbsolutePath($from) || !$this->isAbsolutePath($to)) {
             throw new \InvalidArgumentException('from and to must be absolute paths');
         }
 
         if ($from === $to) {
-            return '__FILE__';
+            return $directories ? '__DIR__' : '__FILE__';
         }
         $from = strtr($from, '\\', '/');
         $to = strtr($to, '\\', '/');
 
-        $commonPath = dirname($to);
-        while (strpos($from, $commonPath) !== 0 && '/' !== $commonPath && !preg_match('{^[a-z]:/$}i', $commonPath)) {
+        $commonPath = $to;
+        while (strpos($from, $commonPath) !== 0 && '/' !== $commonPath && !preg_match('{^[a-z]:/?$}i', $commonPath) && '.' !== $commonPath) {
             $commonPath = strtr(dirname($commonPath), '\\', '/');
         }
 
-        if (0 !== strpos($from, $commonPath) || '/' === $commonPath) {
+        if (0 !== strpos($from, $commonPath) || '/' === $commonPath || '.' === $commonPath) {
             return var_export($to, true);
         }
 
         $commonPath = rtrim($commonPath, '/') . '/';
-        $sourcePathDepth = substr_count(substr($from, strlen($commonPath)), '/');
+        if (strpos($to, $from.'/') === 0) {
+            return '__DIR__ . '.var_export(substr($to, strlen($from)), true);
+        }
+        $sourcePathDepth = substr_count(substr($from, strlen($commonPath)), '/') + $directories;
         $commonPathCode = str_repeat('dirname(', $sourcePathDepth).'__DIR__'.str_repeat(')', $sourcePathDepth);
-        return $commonPathCode . '.' . var_export('/' . substr($to, strlen($commonPath)), true);
+        $relTarget = substr($to, strlen($commonPath));
+        return $commonPathCode . (strlen($relTarget) ? '.' . var_export('/' . $relTarget, true) : '');
     }
 
     /**
