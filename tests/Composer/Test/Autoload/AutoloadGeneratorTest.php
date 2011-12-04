@@ -53,9 +53,7 @@ class AutoloadGeneratorTest extends \PHPUnit_Framework_TestCase
                 return $that->vendorDir;
             }));
 
-        $this->repo = $this->getMockBuilder('Composer\Repository\RepositoryInterface')
-            ->disableOriginalConstructor()
-            ->getMock();
+        $this->repo = $this->getMock('Composer\Repository\RepositoryInterface');
 
         $this->generator = new AutoloadGenerator();
     }
@@ -115,6 +113,6 @@ class AutoloadGeneratorTest extends \PHPUnit_Framework_TestCase
 
     private function assertAutoloadFiles($name, $dir)
     {
-        $this->assertEquals(file_get_contents(__DIR__.'/Fixtures/autoload_'.$name.'.php'), file_get_contents($dir.'/autoload_namespaces.php'));
+        $this->assertFileEquals(__DIR__.'/Fixtures/autoload_'.$name.'.php', $dir.'/autoload_namespaces.php');
     }
 }
