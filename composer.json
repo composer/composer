@@ -28,5 +28,6 @@
     },
     "autoload": {
         "psr-0": { "Composer": "src/" }
-    }
+    },
+    "bin": ["bin/composer"]
 }
