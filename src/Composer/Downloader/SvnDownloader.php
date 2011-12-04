@@ -51,6 +51,6 @@ class SvnDownloader implements DownloaderInterface
     public function remove(PackageInterface $package, $path)
     {
         $fs = new Util\Filesystem();
-        $fs->remove($path);
+        $fs->removeDirectory($path);
     }
 }

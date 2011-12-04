@@ -78,6 +78,13 @@ class ArrayLoader
             $package->setExtra($config['extra']);
         }
 
+        if (isset($config['bin']) && is_array($config['bin'])) {
+            foreach ($config['bin'] as $key => $bin) {
+                $config['bin'][$key]= ltrim($bin, '/');
+            }
+            $package->setBinaries($config['bin']);
+        }
+
         if (!empty($config['description']) && is_string($config['description'])) {
             $package->setDescription($config['description']);
         }
