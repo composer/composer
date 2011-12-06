@@ -117,7 +117,7 @@ class GitDriver implements VcsDriverInterface
     {
         if (null === $this->tags) {
             exec(sprintf('cd %s && git tag', escapeshellarg($this->tmpDir)), $output);
-            $this->tags = array_combine($output, $output);
+            $this->tags = $output ? array_combine($output, $output) : array();
         }
 
         return $this->tags;
