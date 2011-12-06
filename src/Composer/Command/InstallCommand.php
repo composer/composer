@@ -85,7 +85,7 @@ EOT
         // creating requirements request
         $request = new Request($pool);
         if ($update) {
-            $output->writeln('> Updating dependencies.');
+            $output->writeln('<info>Updating dependencies.</info>');
             $listedPackages = array();
             $installedPackages = $installedRepo->getPackages();
             $links = $this->collectLinks($input, $composer->getPackage());
@@ -108,14 +108,14 @@ EOT
                 $request->install($link->getTarget(), $link->getConstraint());
             }
         } elseif ($composer->getLocker()->isLocked()) {
-            $output->writeln('> Found lockfile. Reading.');
+            $output->writeln('<info>Found lockfile. Reading.</info>');
 
             foreach ($composer->getLocker()->getLockedPackages() as $package) {
                 $constraint = new VersionConstraint('=', $package->getVersion());
                 $request->install($package->getName(), $constraint);
             }
         } else {
-            $output->writeln('> Installing dependencies.');
+            $output->writeln('<info>Installing dependencies.</info>');
 
             $links = $this->collectLinks($input, $composer->getPackage());
 
@@ -170,17 +170,17 @@ EOT
         if (!$dryRun) {
             if ($update || !$composer->getLocker()->isLocked()) {
                 $composer->getLocker()->lockPackages($localRepo->getPackages());
-                $output->writeln('> Locked');
+                $output->writeln('<info>Locked</info>');
             }
 
             $localRepo->write();
 
-            $output->writeln('> Generating autoload files');
+            $output->writeln('<info>Generating autoload files</info>');
             $generator = new AutoloadGenerator;
             $generator->dump($localRepo, $composer->getPackage(), $installationManager, $installationManager->getVendorPath().'/.composer');
         }
 
-        $output->writeln('> Done');
+        $output->writeln('<info>Done</info>');
     }
 
     private function collectLinks(InputInterface $input, PackageInterface $package)
