@@ -162,6 +162,7 @@ class Application extends BaseApplication
         $this->add(new Command\InstallCommand());
         $this->add(new Command\UpdateCommand());
         $this->add(new Command\DebugPackagesCommand());
+        $this->add(new Command\SearchCommand());
 
         if ('phar:' === substr(__FILE__, 0, 5)) {
             $this->add(new Command\SelfUpdateCommand());

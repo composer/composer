@@ -42,14 +42,14 @@ EOT
         $latest = trim(file_get_contents('http://getcomposer.org/version'));
 
         if (Composer::VERSION !== $latest) {
-            $output->writeln(sprintf("Updating to version %s.", $latest));
+            $output->writeln(sprintf("Updating to version <info>%s</info>.", $latest));
 
             $remoteFilename = 'http://getcomposer.org/composer.phar';
             $localFilename = $_SERVER['argv'][0];
 
             file_put_contents($localFilename, file_get_contents($remoteFilename));
         } else {
-            $output->writeln("You are using the latest composer version.");
+            $output->writeln("<info>You are using the latest composer version.</info>");
         }
     }
 }
