@@ -1500,7 +1500,7 @@ class Solver
                         break 2;
                     }
 
-                    foreach ($this->learnedLiterals as $i => $learnedLiteral) {
+                    foreach ($learnedLiterals as $i => $learnedLiteral) {
                         if ($i !== 0) {
                             unset($seen[$literal->getPackageId()]);
                         }
