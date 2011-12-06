@@ -46,16 +46,21 @@ EOT
         // create local repo, this contains all packages that are installed in the local project
         $localRepo = $composer->getRepositoryManager()->getLocalRepository();
 
+        $tokens = array_map('strtolower', $input->getArgument('tokens'));
         foreach ($composer->getRepositoryManager()->getRepositories() as $repository) {
             foreach ($repository->getPackages() as $package) {
-                foreach ((array) $input->getArgument('tokens') as $token) {
-                    if (false === strpos($package->getName(), $token)) {
+                foreach ($tokens as $token) {
+                    if (false === ($pos = strpos($package->getName(), $token))) {
                         continue;
                     }
 
                     $state = $localRepo->hasPackage($package) ? '<info>installed</info>' : $state = '<comment>available</comment>';
 
-                    $output->writeln($state . ': ' . $package->getPrettyName() . ' <comment>' . $package->getPrettyVersion() . '</comment>');
+                    $name = substr($package->getPrettyName(), 0, $pos)
+                        . '<highlight>' . substr($package->getPrettyName(), $pos, strlen($token)) . '</highlight>'
+                        . substr($package->getPrettyName(), $pos + strlen($token));
+                    $output->writeln($state . ': ' . $name . ' <comment>' . $package->getPrettyVersion() . '</comment>');
+                    continue 2;
                 }
             }
         }
