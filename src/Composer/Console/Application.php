@@ -15,6 +15,9 @@ namespace Composer\Console;
 use Symfony\Component\Console\Application as BaseApplication;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Output\ConsoleOutput;
+use Symfony\Component\Console\Formatter\OutputFormatter;
+use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Finder\Finder;
 use Composer\Command;
 use Composer\Composer;
@@ -40,12 +43,21 @@ class Application extends BaseApplication
     }
 
     /**
-     * Runs the current application.
-     *
-     * @param InputInterface  $input  An Input instance
-     * @param OutputInterface $output An Output instance
-     *
-     * @return integer 0 if everything went fine, or an error code
+     * {@inheritDoc}
+     */
+    public function run(InputInterface $input = null, OutputInterface $output = null)
+    {
+        if (null === $output) {
+            $styles['highlight'] = new OutputFormatterStyle('red');
+            $formatter = new OutputFormatter(null, $styles);
+            $output = new ConsoleOutput(ConsoleOutput::VERBOSITY_NORMAL, null, $formatter);
+        }
+
+        return parent::run($input, $output);
+    }
+
+    /**
+     * {@inheritDoc}
      */
     public function doRun(InputInterface $input, OutputInterface $output)
     {
