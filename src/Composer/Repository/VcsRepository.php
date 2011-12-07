@@ -120,22 +120,27 @@ class VcsRepository extends ArrayRepository
 
                 $this->addPackage($loader->load($this->preProcess($driver, $data, $identifier)));
             } elseif ($debug) {
-                echo 'Skipped tag '.$tag.', invalid name or no composer file'.PHP_EOL;
+                echo 'Skipped tag '.$tag.', '.($parsedTag ? 'no composer file was found' : 'invalid name').PHP_EOL;
             }
         }
 
         foreach ($driver->getBranches() as $branch => $identifier) {
             $parsedBranch = $this->validateBranch($versionParser, $branch);
-            if ($parsedBranch && $driver->hasComposerFile($identifier)) {
+            if ($driver->hasComposerFile($identifier)) {
                 $data = $driver->getComposerInformation($identifier);
 
                 // manually versioned package
                 if (isset($data['version'])) {
                     $data['version_normalized'] = $versionParser->normalize($data['version']);
-                } else {
+                } elseif ($parsedBranch) {
                     // auto-versionned package, read value from branch name
                     $data['version'] = $branch;
                     $data['version_normalized'] = $parsedBranch;
+                } else {
+                    if ($debug) {
+                        echo 'Skipped branch '.$branch.', invalid name and no composer file was found'.PHP_EOL;
+                    }
+                    continue;
                 }
 
                 // make sure branch packages have a -dev flag
@@ -160,7 +165,7 @@ class VcsRepository extends ArrayRepository
 
                 $this->addPackage($loader->load($this->preProcess($driver, $data, $identifier)));
             } elseif ($debug) {
-                echo 'Skipped branch '.$branch.', invalid name or no composer file'.PHP_EOL;
+                echo 'Skipped branch '.$branch.', no composer file was found'.PHP_EOL;
             }
         }
     }
