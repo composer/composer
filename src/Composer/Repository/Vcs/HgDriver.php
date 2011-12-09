@@ -172,16 +172,11 @@ class HgDriver implements VcsDriverInterface
      */
     public static function supports($url, $deep = false)
     {
-        if (preg_match('#(^(?:https?|ssh)://(?:[^@]@)?bitbucket.org|https://(?:.*?)\.kilnhg.com)#i', $url)) {
-            return true;
-        }
+	    if ($deep) {
+		    exec(sprintf('hg identify %s', escapeshellarg($url)), $outputIgnored, $exit);
+		    return $exit == 0;
+	    }
 
-        if (!$deep) {
-            return false;
-        }
-
-        exec(sprintf('hg identify %s', escapeshellarg($url)), $output);
-
-        return (boolean)$output;
+	    return false;
     }
 }
