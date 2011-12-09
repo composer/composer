@@ -99,11 +99,11 @@ class Application extends BaseApplication
         }
         $packageConfig = $file->read();
 
-        $composerFileConfig = @$packageConfig['config'] ?: array();
+        $composerFileConfig = isset($packageConfig['config']) ? $packageConfig['config'] : array();
 
         // Configuration: file > ENV > default
-        $vendorDir = @$composerFileConfig['vendor-dir'] ?: (getenv('COMPOSER_VENDOR_DIR') ?: 'vendor');
-        $binDir = @$composerFileConfig['bin-dir'] ?: (getenv('COMPOSER_BIN_DIR') ?: $vendorDir.'/bin');
+        $vendorDir = getenv('COMPOSER_VENDOR_DIR') ?: (isset($composerFileConfig['vendor-dir']) ? $composerFileConfig['vendor-dir'] : 'vendor');
+        $binDir = getenv('COMPOSER_BIN_DIR') ?: (isset($composerFileConfig['bin-dir']) ? $composerFileConfig['bin-dir'] : $vendorDir.'/bin');
 
         // initialize repository manager
         $rm = new Repository\RepositoryManager();
