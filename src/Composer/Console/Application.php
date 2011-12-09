@@ -85,15 +85,9 @@ class Application extends BaseApplication
      */
     public static function bootstrapComposer($composerFile = null)
     {
-        // Configuration defaults
-        $composerConfig = array();
-        $composerConfig['composer'] = $composerFile = $composerFile ?: getenv('COMPOSER') ?: 'composer.json';
-        $composerConfig['lock'] = getenv('COMPOSER_LOCK') ?: (substr($composerConfig['composer'], -5) === '.json' ? substr($composerConfig['composer'], 0, -4).'lock' : $composerConfig['composer'].'.lock');
-        $composerConfig['vendor-dir'] = getenv('COMPOSER_VENDOR_DIR') ?: 'vendor';
-        $composerConfig['bin-dir'] = getenv('COMPOSER_BIN_DIR') ?: $composerConfig['vendor-dir'].'/bin';
-
         // load Composer file
-        $file = new JsonFile($composerFile);
+        $composerFile = $composerFile ?: getenv('COMPOSER') ?: 'composer.json';
+        $file = new JsonFile(getenv('COMPOSER') ?: 'composer.json');
         if (!$file->exists()) {
             if ($composerFile === 'composer.json') {
                 echo 'Composer could not find a composer.json file in '.getcwd().PHP_EOL;
@@ -105,17 +99,12 @@ class Application extends BaseApplication
         }
         $packageConfig = $file->read();
 
-        // Overwrite configuration defaults with that from Composer file
-        if (isset($packageConfig['config']) && is_array($packageConfig['config'])) {
-            $packageConfig['config'] = array_merge($composerConfig, $packageConfig['config']);
-        } else {
-            $packageConfig['config'] = $composerConfig;
-        }
+        $composerFileConfig = @$packageConfig['config'] ?: array();
 
-        // Declare shortcuts for further bootstrap code
-        $lockFile = $packageConfig['config']['lock'];
-        $vendorDir = $packageConfig['config']['vendor-dir'];
-        $binDir = $packageConfig['config']['bin-dir'];
+        // Configuration: file > ENV > default
+        $lockFile = @$composerFileConfig['lock'] ?: (getenv('COMPOSER_LOCK') ?: (substr($composerFile, -5) === '.json' ? substr($composerFile, 0, -4).'lock' : $composerFile.'.lock'));
+        $vendorDir = @$composerFileConfig['vendor-dir'] ?: (getenv('COMPOSER_VENDOR_DIR') ?: 'vendor');
+        $binDir = @$composerFileConfig['bin-dir'] ?: (getenv('COMPOSER_BIN_DIR') ?: $vendorDir.'/bin');
 
         // initialize repository manager
         $rm = new Repository\RepositoryManager();
