@@ -53,7 +53,7 @@ EOT
         }
 
         try {
-            JsonFile::parseJson(file_get_contents($file));
+            JsonFile::parseJson(file_get_contents($file), true);
         } catch (\Exception $e) {
             $output->writeln('<error>'.$e->getMessage().'</error>');
             return 1;
