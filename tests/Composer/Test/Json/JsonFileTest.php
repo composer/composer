@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Json;
 
+use Seld\JsonLint\ParsingException;
 use Composer\Json\JsonFile;
 
 class JsonFileTest extends \PHPUnit_Framework_TestCase
@@ -21,7 +22,7 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
         $json = '{
         "foo": "bar",
 }';
-        $this->expectParseException('extra comma on line 2, char 21', $json);
+        $this->expectParseException('Parse error on line 2', $json);
     }
 
     public function testParseErrorDetectExtraCommaInArray()
@@ -31,7 +32,7 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
             "bar",
         ]
 }';
-        $this->expectParseException('extra comma on line 3, char 18', $json);
+        $this->expectParseException('Parse error on line 3', $json);
     }
 
     public function testParseErrorDetectUnescapedBackslash()
@@ -39,7 +40,7 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
         $json = '{
         "fo\o": "bar"
 }';
-        $this->expectParseException('unescaped backslash (\\) on line 2, char 12', $json);
+        $this->expectParseException('Parse error on line 1', $json);
     }
 
     public function testParseErrorSkipsEscapedBackslash()
@@ -48,7 +49,7 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
         "fo\\\\o": "bar"
         "a": "b"
 }';
-        $this->expectParseException('missing comma on line 2, char 23', $json);
+        $this->expectParseException('Parse error on line 2', $json);
     }
 
     public function testParseErrorDetectSingleQuotes()
@@ -56,7 +57,7 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
         $json = '{
         \'foo\': "bar"
 }';
-        $this->expectParseException('use double quotes (") instead of single quotes (\') on line 2, char 9', $json);
+        $this->expectParseException('Parse error on line 1', $json);
     }
 
     public function testParseErrorDetectMissingQuotes()
@@ -64,7 +65,7 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
         $json = '{
         foo: "bar"
 }';
-        $this->expectParseException('must use double quotes (") around keys on line 2, char 9', $json);
+        $this->expectParseException('Parse error on line 1', $json);
     }
 
     public function testParseErrorDetectArrayAsHash()
@@ -72,7 +73,7 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
         $json = '{
         "foo": ["bar": "baz"]
 }';
-        $this->expectParseException('you must use the hash syntax (e.g. {"foo": "bar"}) instead of array syntax (e.g. ["foo", "bar"]) on line 2, char 16', $json);
+        $this->expectParseException('Parse error on line 2', $json);
     }
 
     public function testParseErrorDetectMissingComma()
@@ -81,7 +82,18 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
         "foo": "bar"
         "bar": "foo"
 }';
-        $this->expectParseException('missing comma on line 2, char 21', $json);
+        $this->expectParseException('Parse error on line 2', $json);
+    }
+
+    public function testSchemaValidation()
+    {
+        $json = file_get_contents(__DIR__.'/../../../../composer.json');
+
+        try {
+            $this->assertNull(JsonFile::validateSchema($json));
+        } catch (\UnexpectedValueException $e) {
+            $this->fail('invalid schema');
+        }
     }
 
     public function testParseErrorDetectMissingCommaMultiline()
@@ -91,7 +103,7 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
 
         "bar": "foo"
 }';
-        $this->expectParseException('missing comma on line 2, char 24', $json);
+        $this->expectParseException('Parse error on line 2', $json);
     }
 
     public function testParseErrorDetectMissingColon()
@@ -100,7 +112,7 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
         "foo": "bar",
         "bar" "foo"
 }';
-        $this->expectParseException('missing colon on line 3, char 14', $json);
+        $this->expectParseException('Parse error on line 3', $json);
     }
 
     public function testSimpleJsonString()
@@ -166,7 +178,7 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
         try {
             JsonFile::parseJson($json);
             $this->fail();
-        } catch (\UnexpectedValueException $e) {
+        } catch (ParsingException $e) {
             $this->assertContains($text, $e->getMessage());
         }
     }

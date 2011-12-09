@@ -54,7 +54,7 @@ class Factory
             'vendor-dir' => 'vendor',
         );
 
-        $packageConfig = $file->read();
+        $packageConfig = $file->read(true);
 
         if (isset($packageConfig['config']) && is_array($packageConfig['config'])) {
             $packageConfig['config'] = array_merge($composerConfig, $packageConfig['config']);
