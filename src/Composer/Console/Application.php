@@ -85,11 +85,14 @@ class Application extends BaseApplication
      */
     public static function bootstrapComposer($composerFile = null)
     {
-        // load Composer configuration
-        if (null === $composerFile) {
-            $composerFile = getenv('COMPOSER') ?: 'composer.json';
-        }
+        // Configuration defaults
+        $composerConfig = array();
+        $composerConfig['composer'] = $composerFile = $composerFile ?: getenv('COMPOSER') ?: 'composer.json';
+        $composerConfig['lock'] = getenv('COMPOSER_LOCK') ?: (substr($composerConfig['composer'], -5) === '.json' ? substr($composerConfig['composer'], 0, -4).'lock' : $composerConfig['composer'].'.lock');
+        $composerConfig['vendor-dir'] = getenv('COMPOSER_VENDOR_DIR') ?: 'vendor';
+        $composerConfig['bin-dir'] = getenv('COMPOSER_BIN_DIR') ?: $composerConfig['vendor-dir'].'/bin';
 
+        // load Composer file
         $file = new JsonFile($composerFile);
         if (!$file->exists()) {
             if ($composerFile === 'composer.json') {
@@ -100,24 +103,18 @@ class Application extends BaseApplication
             echo 'To initialize a project, please create a composer.json file as described on the http://packagist.org/ "Getting Started" section'.PHP_EOL;
             exit(1);
         }
-
-        // Configuration defaults
-        $composerConfig = array(
-            'vendor-dir' => 'vendor',
-        );
-
         $packageConfig = $file->read();
 
+        // Overwrite configuration defaults with that from Composer file
         if (isset($packageConfig['config']) && is_array($packageConfig['config'])) {
             $packageConfig['config'] = array_merge($composerConfig, $packageConfig['config']);
         } else {
             $packageConfig['config'] = $composerConfig;
         }
 
+        // Declare shortcuts for further bootstrap code
+        $lockFile = $packageConfig['config']['lock'];
         $vendorDir = $packageConfig['config']['vendor-dir'];
-        if (!isset($packageConfig['config']['bin-dir'])) {
-            $packageConfig['config']['bin-dir'] = $vendorDir.'/bin';
-        }
         $binDir = $packageConfig['config']['bin-dir'];
 
         // initialize repository manager
@@ -151,7 +148,6 @@ class Application extends BaseApplication
         }
 
         // init locker
-        $lockFile = substr($composerFile, -5) === '.json' ? substr($composerFile, 0, -4).'lock' : $composerFile . '.lock';
         $locker = new Package\Locker(new JsonFile($lockFile), $rm);
 
         // initialize composer
