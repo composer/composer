@@ -55,7 +55,7 @@ class HgDriver implements VcsDriverInterface
     {
         $tmpDir = escapeshellarg($this->tmpDir);
         if (null === $this->rootIdentifier) {
-            exec(sprintf('cd %s && hg tip --template "{rev}:{node|short}" --color never', $tmpDir), $output);
+            exec(sprintf('cd %s && hg tip --template "{node}" --color never', $tmpDir), $output);
             $this->rootIdentifier = $output[0];
         }
         
