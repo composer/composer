@@ -102,7 +102,6 @@ class Application extends BaseApplication
         $composerFileConfig = @$packageConfig['config'] ?: array();
 
         // Configuration: file > ENV > default
-        $lockFile = @$composerFileConfig['lock'] ?: (getenv('COMPOSER_LOCK') ?: (substr($composerFile, -5) === '.json' ? substr($composerFile, 0, -4).'lock' : $composerFile.'.lock'));
         $vendorDir = @$composerFileConfig['vendor-dir'] ?: (getenv('COMPOSER_VENDOR_DIR') ?: 'vendor');
         $binDir = @$composerFileConfig['bin-dir'] ?: (getenv('COMPOSER_BIN_DIR') ?: $vendorDir.'/bin');
 
@@ -137,7 +136,7 @@ class Application extends BaseApplication
         }
 
         // init locker
-        $locker = new Package\Locker(new JsonFile($lockFile), $rm);
+        $locker = new Package\Locker(new JsonFile(substr($composerFile, -5) === '.json' ? substr($composerFile, 0, -4).'lock' : $composerFile.'.lock'), $rm);
 
         // initialize composer
         $composer = new Composer();
