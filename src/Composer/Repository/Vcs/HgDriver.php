@@ -126,7 +126,6 @@ class HgDriver implements VcsDriverInterface
                 preg_match('(^([^\s]+)[\s]+[\d+]:(.*)$)', $tag, $match);
                 $tags[$match[1]] = $match[2];
             }
-            unset($tags['tip']);
             $this->tags = $tags;
         }
 
