@@ -134,6 +134,9 @@ class DownloadManager
             );
         }
 
+        $fs = new Util\Filesystem();
+        $fs->ensureDirectoryExists($targetDir);
+        
         $downloader = $this->getDownloaderForInstalledPackage($package);
         $downloader->download($package, $targetDir);
     }
