@@ -178,7 +178,7 @@ class SvnDriver implements VcsDriverInterface
             return false;
         }
         
-        @exec(sprintf('svn info --non-interactive %s 2>/dev/null', escapeshellarg($url)), null, $exit);
+        exec(sprintf('svn info --non-interactive %s 2>/dev/null', escapeshellarg($url)), null, $exit);
         return $exit == 0;
     }
 }
