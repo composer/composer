@@ -180,7 +180,7 @@ class HgDriver implements VcsDriverInterface
             return false;
         }
 
-        exec(sprintf('hg identify %s', escapeshellarg($url)), null, $exit);
+        exec(sprintf('hg identify %s', escapeshellarg($url)), $ignored, $exit);
         return $exit == 0;
     }
 }
