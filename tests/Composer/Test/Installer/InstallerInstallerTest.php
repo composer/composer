@@ -20,11 +20,7 @@ class InstallerInstallerTest extends \PHPUnit_Framework_TestCase
 {
     protected function setUp()
     {
-        $repositoryManager = $this->getMockBuilder('Composer\Repository\RepositoryManager')
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $loader = new JsonLoader($repositoryManager);
+        $loader = new JsonLoader();
         $this->packages = array();
         for ($i = 1; $i <= 3; $i++) {
             $this->packages[] = $loader->load(__DIR__.'/Fixtures/installer-v'.$i.'/composer.json');

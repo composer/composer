@@ -22,7 +22,6 @@ class FilesystemRepositoryTest extends TestCase
         $json = $this->createJsonFileMock();
 
         $repository = new FilesystemRepository($json);
-        $repository->setRepositoryManager($this->getMock('Composer\Repository\RepositoryManager'));
 
         $json
             ->expects($this->once())
@@ -51,7 +50,6 @@ class FilesystemRepositoryTest extends TestCase
         $json = $this->createJsonFileMock();
 
         $repository = new FilesystemRepository($json);
-        $repository->setRepositoryManager($this->getMock('Composer\Repository\RepositoryManager'));
 
         $json
             ->expects($this->once())
@@ -70,7 +68,6 @@ class FilesystemRepositoryTest extends TestCase
         $json = $this->createJsonFileMock();
 
         $repository = new FilesystemRepository($json);
-        $repository->setRepositoryManager($this->getMock('Composer\Repository\RepositoryManager'));
 
         $json
             ->expects($this->once())
@@ -85,7 +82,6 @@ class FilesystemRepositoryTest extends TestCase
         $json = $this->createJsonFileMock();
 
         $repository = new FilesystemRepository($json);
-        $repository->setRepositoryManager($this->getMock('Composer\Repository\RepositoryManager'));
 
         $json
             ->expects($this->once())
