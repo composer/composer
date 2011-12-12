@@ -55,8 +55,9 @@ class ArrayDumper
 
         foreach (array('require', 'conflict', 'provide', 'replace', 'suggest', 'recommend') as $linkType) {
             if ($links = $package->{'get'.ucfirst($linkType).'s'}()) {
-                foreach ($links as $link)
+                foreach ($links as $link) {
                     $data[$linkType][$link->getTarget()] = $link->getPrettyConstraint();
+                }
             }
         }
 
