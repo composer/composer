@@ -46,18 +46,18 @@ EOT
 
         if (!file_exists($file)) {
             $output->writeln('<error>'.$file.' not found.</error>');
-            return;
+            return 1;
         }
         if (!is_readable($file)) {
             $output->writeln('<error>'.$file.' is not readable.</error>');
-            return;
+            return 1;
         }
 
         try {
             JsonFile::parseJson(file_get_contents($file));
         } catch (\Exception $e) {
             $output->writeln('<error>'.$e->getMessage().'</error>');
-            return;
+            return 1;
         }
 
         $output->writeln('<info>'.$file.' is valid</info>');
