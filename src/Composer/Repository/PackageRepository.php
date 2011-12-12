@@ -47,7 +47,7 @@ class PackageRepository extends ArrayRepository
             $this->config = array($this->config);
         }
 
-        $loader = new ArrayLoader($this->repositoryManager);
+        $loader = new ArrayLoader();
         foreach ($this->config as $package) {
             $package = $loader->load($package);
             $this->addPackage($package);

@@ -69,7 +69,7 @@ class VcsRepository extends ArrayRepository
         }
 
         $versionParser = new VersionParser;
-        $loader = new ArrayLoader($this->repositoryManager);
+        $loader = new ArrayLoader();
         $versions = array();
 
         if ($driver->hasComposerFile($driver->getRootIdentifier())) {

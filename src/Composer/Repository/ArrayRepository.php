@@ -23,7 +23,6 @@ use Composer\Package\Version\VersionParser;
 class ArrayRepository implements RepositoryInterface
 {
     protected $packages;
-    protected $repositoryManager;
 
     /**
      * {@inheritDoc}
@@ -40,14 +39,6 @@ class ArrayRepository implements RepositoryInterface
                 return $package;
             }
         }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function setRepositoryManager(RepositoryManager $manager)
-    {
-        $this->repositoryManager = $manager;
     }
 
     /**
