@@ -28,12 +28,6 @@ class ArrayDumper
             'extra',
             'installationSource' => 'installation-source',
             'license',
-            'requires',
-            'conflicts',
-            'provides',
-            'replaces',
-            'recommends',
-            'suggests',
             'autoload',
             'repositories',
         );
@@ -57,6 +51,13 @@ class ArrayDumper
             $data['dist']['url'] = $package->getDistUrl();
             $data['dist']['reference'] = $package->getDistReference();
             $data['dist']['shasum'] = $package->getDistSha1Checksum();
+        }
+
+        foreach (array('require', 'conflict', 'provide', 'replace', 'suggest', 'recommend') as $linkType) {
+            if ($links = $package->{'get'.ucfirst($linkType).'s'}()) {
+                foreach ($links as $link)
+                    $data[$linkType][$link->getTarget()] = $link->getPrettyConstraint();
+            }
         }
 
         foreach ($keys as $method => $key) {
