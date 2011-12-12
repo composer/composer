@@ -13,6 +13,7 @@
 namespace Composer\Package\Loader;
 
 use Composer\Package;
+use Composer\Package\Version\VersionParser;
 use Composer\Repository\RepositoryManager;
 
 /**
@@ -31,47 +32,35 @@ class ArrayLoader
     );
 
     protected $versionParser;
-    private $manager;
 
-    public function __construct(RepositoryManager $manager, $parser = null)
+    public function __construct(VersionParser $parser = null)
     {
-        $this->manager = $manager;
-        $this->versionParser = $parser;
         if (!$parser) {
-            $this->versionParser = new Package\Version\VersionParser;
+            $parser = new VersionParser;
         }
+        $this->versionParser = $parser;
     }
 
     public function load($config)
     {
-        $prettyVersion = isset($config['version']) ? $config['version'] : '0.0.0';
+        if (!isset($config['name'])) {
+            throw new \UnexpectedValueException('Unknown package has no name defined ('.json_encode($config).').');
+        }
+        if (!isset($config['version'])) {
+            throw new \UnexpectedValueException('Package '.$config['name'].' has no version defined.');
+        }
+
         // handle already normalized versions
         if (isset($config['version_normalized'])) {
             $version = $config['version_normalized'];
         } else {
-            $version = $this->versionParser->normalize($prettyVersion);
+            $version = $this->versionParser->normalize($config['version']);
         }
-        $package = new Package\MemoryPackage(isset($config['name']) ? $config['name'] : '__app__', $version, $prettyVersion);
-
-        $package->setType(isset($config['type']) ? $config['type'] : 'library');
+        $package = new Package\MemoryPackage($config['name'], $version, $config['version']);
+        $package->setType(isset($config['type']) ? strtolower($config['type']) : 'library');
 
         if (isset($config['target-dir'])) {
             $package->setTargetDir($config['target-dir']);
-        }
-
-        if (isset($config['repositories'])) {
-            $repositories = array();
-            foreach ($config['repositories'] as $repoName => $repo) {
-                if (false === $repo && 'packagist' === $repoName) {
-                    continue;
-                }
-                if (!is_array($repo)) {
-                    throw new \UnexpectedValueException('Repository '.$repoName.' in '.$package->getPrettyName().' '.$package->getVersion().' should be an array, '.gettype($repo).' given');
-                }
-                $repository = $this->manager->createRepository(key($repo), current($repo));
-                $this->manager->addRepository($repository);
-            }
-            $package->setRepositories($config['repositories']);
         }
 
         if (isset($config['extra']) && is_array($config['extra'])) {
@@ -167,7 +156,7 @@ class ArrayLoader
                 $constraint = $package->getPrettyVersion();
             }
             $parsedConstraint = $this->versionParser->parseConstraints($constraint);
-            $links[]    = new Package\Link($package->getName(), $packageName, $parsedConstraint, $description, $constraint);
+            $links[] = new Package\Link($package->getName(), $packageName, $parsedConstraint, $description, $constraint);
         }
 
         return $links;

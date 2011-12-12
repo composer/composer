@@ -104,6 +104,7 @@ class Application extends BaseApplication
         // Configuration defaults
         $composerConfig = array(
             'vendor-dir' => 'vendor',
+            'packagist' => true,
         );
 
         $packageConfig = $file->read();
@@ -142,11 +143,11 @@ class Application extends BaseApplication
         $im->addInstaller(new Installer\InstallerInstaller($vendorDir, $binDir, $dm, $rm->getLocalRepository(), $im));
 
         // load package
-        $loader  = new Package\Loader\ArrayLoader($rm);
+        $loader  = new Package\Loader\RootPackageLoader($rm);
         $package = $loader->load($packageConfig);
 
         // load default repository unless it's explicitly disabled
-        if (!isset($packageConfig['repositories']['packagist']) || $packageConfig['repositories']['packagist'] !== false) {
+        if ($packageConfig['config']['packagist']) {
             $rm->addRepository(new Repository\ComposerRepository(array('url' => 'http://packagist.org')));
         }
 

@@ -18,8 +18,7 @@ class ArrayLoaderTest extends \PHPUnit_Framework_TestCase
 {
     public function setUp()
     {
-        $this->manager = $this->getMock('Composer\Repository\RepositoryManager');
-        $this->loader = new ArrayLoader($this->manager);
+        $this->loader = new ArrayLoader();
     }
 
     public function testSelfVersion()
