@@ -133,6 +133,17 @@ class PearRepository extends ArrayRepository
 
                 $packageData += $this->parseDependencies($deps);
 
+                // figure out autoload info
+                try {
+                    $packageInfo = simplexml_load_string($this->rfs->getContents($this->url, $releaseLink . "/package.".$pearVersion.".xml", false));
+                    $packageData += $this->guessAutoload($packageInfo);
+                } catch (TransportException $e) {
+                    if (strpos($e->getMessage(), '404')) {
+                        continue;
+                    }
+                    throw $e;
+                }
+
                 try {
                     $this->addPackage($loader->load($packageData));
                 } catch (\UnexpectedValueException $e) {
@@ -279,15 +290,73 @@ class PearRepository extends ArrayRepository
                     $releaseData += $depsData[$version];
                 }
 
+                // figure out autoload info
+                try {
+                    $releaseLink = $this->url . "/rest/r/".strtolower($packageName);
+                    $packageInfo = simplexml_load_string($this->rfs->getContents($this->url, $releaseLink . "/package.".$version.".xml", false));
+                    $packageData += $this->guessAutoload($packageInfo);
+                } catch (TransportException $e) {
+                    if (strpos($e->getMessage(), '404')) {
+                        continue;
+                    }
+                    throw $e;
+                }
+
                 try {
                     $this->addPackage(
                         $loader->load($packageData + $releaseData)
                     );
                 } catch (\UnexpectedValueException $e) {
+                    // TODO add debug mode with --verbose that outputs those failures
                     continue;
                 }
             }
         }
+    }
+
+    private function guessAutoload(\SimpleXMLElement $packageInfo)
+    {
+        $files = array();
+        if (count($packageInfo->contents->dir)) {
+            foreach ($packageInfo->contents->dir as $dir) {
+                if (count($dir->file)) {
+                    foreach ($dir->file as $file) {
+                        if ('php' !== (string) $file['role']) {
+                            continue;
+                        }
+
+                        $files[] = ltrim($dir['name'].$file['name'], '/');
+                    }
+                }
+            }
+        }
+
+        // reduce to meaningful unique paths
+        while (true) {
+            foreach ($files as $key => $file) {
+                foreach ($files as $key2 => $file2) {
+                    if ($key === $key2) {
+                        continue;
+                    }
+                    if (false !== strpos($file, '/') && dirname($file) === dirname($file2)) {
+                        unset($files[$key2]);
+                        $files[$key] = dirname($file);
+                        continue 3;
+                    }
+                    if (0 === strpos($file2, $file.'/') || $file === $file2) {
+                        unset($files[$key2]);
+                        continue 3;
+                    }
+                }
+            }
+            break;
+        }
+
+        return array(
+            'autoload' => array(
+                'classmap' => $files,
+            ),
+        );
     }
 
     /**
