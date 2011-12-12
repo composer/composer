@@ -20,6 +20,7 @@ use Composer\Json\JsonFile;
 
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>
+ * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 class ValidateCommand extends Command
 {
@@ -29,13 +30,10 @@ class ValidateCommand extends Command
             ->setName('validate')
             ->setDescription('validates a composer.json')
             ->setDefinition(array(
-                new InputArgument('file', InputArgument::OPTIONAL, 'path to composer.json file', getcwd().'/composer.json')
+                new InputArgument('file', InputArgument::OPTIONAL, 'path to composer.json file', './composer.json')
             ))
             ->setHelp(<<<EOT
 The validate command validates a given composer.json
-<info>php composer.phar validate</info> for current location
-or
-<info>php composer.phar validate /path/to/composer.json</info> for custom location
 
 EOT
             )
@@ -46,11 +44,22 @@ EOT
     {
         $file = $input->getArgument('file');
 
+        if (!file_exists($file)) {
+            $output->writeln('<error>'.$file.' not found.</error>');
+            return;
+        }
         if (!is_readable($file)) {
-            throw new \InvalidArgumentException('composer.json not found '.$file);
+            $output->writeln('<error>'.$file.' is not readable.</error>');
+            return;
         }
 
-        $result = JsonFile::parseJson(file_get_contents($file));
-        $output->writeln('<info>valid</info> '.$file.' is valid');
+        try {
+            JsonFile::parseJson(file_get_contents($file));
+        } catch (\Exception $e) {
+            $output->writeln('<error>'.$e->getMessage().'</error>');
+            return;
+        }
+
+        $output->writeln('<info>'.$file.' is valid</info>');
     }
 }
