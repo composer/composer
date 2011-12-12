@@ -114,11 +114,11 @@ class Application extends BaseApplication
             $packageConfig['config'] = $composerConfig;
         }
 
-        $vendorDir = $packageConfig['config']['vendor-dir'];
+        $vendorDir = getenv('COMPOSER_VENDOR_DIR') ?: $packageConfig['config']['vendor-dir'];
         if (!isset($packageConfig['config']['bin-dir'])) {
             $packageConfig['config']['bin-dir'] = $vendorDir.'/bin';
         }
-        $binDir = $packageConfig['config']['bin-dir'];
+        $binDir = getenv('COMPOSER_BIN_DIR') ?: $packageConfig['config']['bin-dir'];
 
         // initialize repository manager
         $rm = new Repository\RepositoryManager();
