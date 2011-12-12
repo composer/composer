@@ -47,7 +47,7 @@ class ComposerRepository extends ArrayRepository
             throw new \UnexpectedValueException('Could not parse package list from the '.$this->url.' repository');
         }
 
-        $loader = new ArrayLoader($this->repositoryManager);
+        $loader = new ArrayLoader();
         foreach ($packages as $data) {
             foreach ($data['versions'] as $rev) {
                 $this->addPackage($loader->load($rev));

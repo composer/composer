@@ -59,8 +59,6 @@ class RepositoryManager
     {
         $this->repositories[] = $repository;
 
-        $repository->setRepositoryManager($this);
-
         // already initialized, so initialize new repos on the fly
         if ($this->initialized) {
             $repository->getPackages();
@@ -120,7 +118,6 @@ class RepositoryManager
      */
     public function setLocalRepository(RepositoryInterface $repository)
     {
-        $repository->setRepositoryManager($this);
         $this->localRepository = $repository;
     }
 

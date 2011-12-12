@@ -142,7 +142,7 @@ class Application extends BaseApplication
         $im->addInstaller(new Installer\InstallerInstaller($vendorDir, $binDir, $dm, $rm->getLocalRepository(), $im));
 
         // load package
-        $loader  = new Package\Loader\ArrayLoader($rm);
+        $loader  = new Package\Loader\RootPackageLoader($rm);
         $package = $loader->load($packageConfig);
 
         // load default repository unless it's explicitly disabled

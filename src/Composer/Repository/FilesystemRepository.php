@@ -53,7 +53,7 @@ class FilesystemRepository extends ArrayRepository implements WritableRepository
             throw new \UnexpectedValueException('Could not parse package list from the '.$this->file->getPath().' repository');
         }
 
-        $loader = new ArrayLoader($this->repositoryManager);
+        $loader = new ArrayLoader();
         foreach ($packages as $package) {
             $this->addPackage($loader->load($package));
         }
