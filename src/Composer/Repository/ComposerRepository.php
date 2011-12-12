@@ -26,7 +26,8 @@ class ComposerRepository extends ArrayRepository
 
     public function __construct(array $config)
     {
-        if (!preg_match('{^https?://}', $config['url'])) {
+        if (!preg_match('{^\w+://}', $config['url'])) {
+            // assume http as the default protocol
             $config['url'] = 'http://'.$config['url'];
         }
         $config['url'] = rtrim($config['url'], '/');
