@@ -38,7 +38,7 @@ class HgDownloader implements DownloaderInterface
 
         $url = escapeshellarg($package->getSourceUrl());
         $ref = escapeshellarg($package->getSourceReference());
-        system(sprintf('hg clone %s %s && cd %2$s && hg up %s', $url, $path, $ref));
+        system(sprintf('(hg clone %s %s  2> /dev/null) && cd %2$s && hg up %s', $url, $path, $ref));
     }
 
     /**
