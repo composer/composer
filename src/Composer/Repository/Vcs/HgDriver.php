@@ -121,11 +121,14 @@ class HgDriver implements VcsDriverInterface
     public function getTags()
     {
         if (null === $this->tags) {
+            $tags = array();
+            
             exec(sprintf('cd %s && hg tags --color never', escapeshellarg($this->tmpDir)), $output);
             foreach ($output as $tag) {
-                preg_match('(^([^\s]+)[\s]+[\d+]:(.*)$)', $tag, $match);
-                $tags[$match[1]] = $match[2];
+                if (preg_match('(^([^\s]+)\s+\d+:(.*)$)', $tag, $match))
+                    $tags[$match[1]] = $match[2];
             }
+
             $this->tags = $tags;
         }
 
@@ -142,8 +145,8 @@ class HgDriver implements VcsDriverInterface
 
             exec(sprintf('cd %s && hg branches --color never', escapeshellarg($this->tmpDir)), $output);
             foreach ($output as $branch) {
-                preg_match('(^([^\s]+)[\s]+[\d+]:(.*)$)', $branch, $match);
-                $branches[$match[1]] = $match[2];
+                if (preg_match('(^([^\s]+)\s+\d+:(.*)$)', $branch, $match))
+                    $branches[$match[1]] = $match[2];
             }
 
             $this->branches = $branches;
