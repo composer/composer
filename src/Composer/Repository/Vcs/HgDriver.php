@@ -41,7 +41,7 @@ class HgDriver implements VcsDriverInterface
         if (is_dir($this->tmpDir)) {
             exec(sprintf('cd %s && hg pull -u', $tmpDir), $output);
         } else {
-            exec(sprintf('hg clone %s %s', $url, $tmpDir), $output);
+            exec(sprintf('cd %s && hg clone %s %s', escapeshellarg(sys_get_temp_dir()), $url, $tmpDir), $output);
         }
 
         $this->getTags();
@@ -179,7 +179,7 @@ class HgDriver implements VcsDriverInterface
             return false;
         }
 
-        exec(sprintf('hg identify %s', escapeshellarg($url)), $ignored, $exit);
+        exec(sprintf('cd %s && hg identify %s', escapeshellarg(sys_get_temp_dir()), escapeshellarg($url)), $ignored, $exit);
         return $exit === 0;
     }
 }
