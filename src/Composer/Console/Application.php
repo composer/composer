@@ -87,7 +87,7 @@ class Application extends BaseApplication
     {
         // load Composer file
         $composerFile = $composerFile ?: getenv('COMPOSER') ?: 'composer.json';
-        $file = new JsonFile(getenv('COMPOSER') ?: 'composer.json');
+        $file = new JsonFile($composerFile);
         if (!$file->exists()) {
             if ($composerFile === 'composer.json') {
                 echo 'Composer could not find a composer.json file in '.getcwd().PHP_EOL;
