@@ -46,9 +46,6 @@ class RootPackageLoader extends ArrayLoader
         if (isset($config['repositories'])) {
             $repositories = array();
             foreach ($config['repositories'] as $repoName => $repo) {
-                if (false === $repo && 'packagist' === $repoName) {
-                    continue;
-                }
                 if (!is_array($repo)) {
                     throw new \UnexpectedValueException('Repository '.$repoName.' in '.$package->getPrettyName().' '.$package->getVersion().' should be an array, '.gettype($repo).' given');
                 }
