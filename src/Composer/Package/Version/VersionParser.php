@@ -34,7 +34,7 @@ class VersionParser
     {
         $version = trim($version);
 
-        if (preg_match('{^(?:master|trunk)(?:[.-]?dev)?$}i', $version)) {
+        if (preg_match('{^(?:master|trunk|default)(?:[.-]?dev)?$}i', $version)) {
             return '9999999-dev';
         }
 
@@ -85,7 +85,7 @@ class VersionParser
     {
         $name = trim($name);
 
-        if (in_array($name, array('master', 'trunk'))) {
+        if (in_array($name, array('master', 'trunk', 'default'))) {
             return $this->normalize($name);
         }
 
