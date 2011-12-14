@@ -21,7 +21,7 @@ interface VcsDriverInterface
     function getComposerInformation($identifier);
 
     /**
-     * Return the root identifier (trunk, master, ..)
+     * Return the root identifier (trunk, master, default/tip ..)
      *
      * @return string Identifier
      */
