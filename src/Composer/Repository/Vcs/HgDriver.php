@@ -41,7 +41,7 @@ class HgDriver implements VcsDriverInterface
         if (is_dir($this->tmpDir)) {
             exec(sprintf('cd %s && hg pull -u', $tmpDir), $output);
         } else {
-            exec(sprintf('hg clone %s %s', $url, $tmpDir), $output);
+            exec(sprintf('cd %s && hg clone %s %s', escapeshellarg(sys_get_temp_dir()), $url, $tmpDir), $output);
         }
 
         $this->getTags();
@@ -55,7 +55,7 @@ class HgDriver implements VcsDriverInterface
     {
         $tmpDir = escapeshellarg($this->tmpDir);
         if (null === $this->rootIdentifier) {
-            exec(sprintf('cd %s && hg tip --template "{rev}:{node|short}" --color never', $tmpDir), $output);
+            exec(sprintf('cd %s && hg tip --template "{node}"', $tmpDir), $output);
             $this->rootIdentifier = $output[0];
         }
         
@@ -94,7 +94,7 @@ class HgDriver implements VcsDriverInterface
     public function getComposerInformation($identifier)
     {
         if (!isset($this->infoCache[$identifier])) {
-            exec(sprintf('cd %s && hg cat --color never -r %s composer.json', escapeshellarg($this->tmpDir), escapeshellarg($identifier)), $output);
+            exec(sprintf('cd %s && hg cat -r %s composer.json', escapeshellarg($this->tmpDir), escapeshellarg($identifier)), $output);
             $composer = implode("\n", $output);
             unset($output);
 
@@ -121,12 +121,14 @@ class HgDriver implements VcsDriverInterface
     public function getTags()
     {
         if (null === $this->tags) {
-            exec(sprintf('cd %s && hg tags --color never', escapeshellarg($this->tmpDir)), $output);
+            $tags = array();
+            
+            exec(sprintf('cd %s && hg tags', escapeshellarg($this->tmpDir)), $output);
             foreach ($output as $tag) {
-                preg_match('(^([^\s]+)[\s]+[\d+]:(.*)$)', $tag, $match);
-                $tags[$match[1]] = $match[2];
+                if (preg_match('(^([^\s]+)\s+\d+:(.*)$)', $tag, $match))
+                    $tags[$match[1]] = $match[2];
             }
-            unset($tags['tip']);
+
             $this->tags = $tags;
         }
 
@@ -141,10 +143,10 @@ class HgDriver implements VcsDriverInterface
         if (null === $this->branches) {
             $branches = array();
 
-            exec(sprintf('cd %s && hg branches --color never', escapeshellarg($this->tmpDir)), $output);
+            exec(sprintf('cd %s && hg branches', escapeshellarg($this->tmpDir)), $output);
             foreach ($output as $branch) {
-                preg_match('(^([^\s]+)[\s]+[\d+]:(.*)$)', $branch, $match);
-                $branches[$match[1]] = $match[2];
+                if (preg_match('(^([^\s]+)\s+\d+:(.*)$)', $branch, $match))
+                    $branches[$match[1]] = $match[2];
             }
 
             $this->branches = $branches;
@@ -180,7 +182,7 @@ class HgDriver implements VcsDriverInterface
             return false;
         }
 
-        exec(sprintf('hg identify %s', escapeshellarg($url)), $ignored, $exit);
+        exec(sprintf('cd %s && hg identify %s', escapeshellarg(sys_get_temp_dir()), escapeshellarg($url)), $ignored, $exit);
         return $exit === 0;
     }
 }
