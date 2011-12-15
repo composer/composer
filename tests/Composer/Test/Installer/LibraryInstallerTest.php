@@ -83,7 +83,7 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
 
         $package
             ->expects($this->once())
-            ->method('getName')
+            ->method('getPrettyName')
             ->will($this->returnValue('some/package'));
 
         $this->dm
@@ -107,7 +107,7 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
 
         $initial
             ->expects($this->once())
-            ->method('getName')
+            ->method('getPrettyName')
             ->will($this->returnValue('package1'));
 
         $this->repository
@@ -145,7 +145,7 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
 
         $package
             ->expects($this->once())
-            ->method('getName')
+            ->method('getPrettyName')
             ->will($this->returnValue('pkg'));
 
         $this->repository
@@ -196,10 +196,10 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue('Some/Namespace'));
         $package
             ->expects($this->any())
-            ->method('getName')
+            ->method('getPrettyName')
             ->will($this->returnValue('foo/bar'));
 
-        $this->assertEquals($this->vendorDir.'/'.$package->getName().'/Some/Namespace', $library->getInstallPath($package));
+        $this->assertEquals($this->vendorDir.'/'.$package->getPrettyName().'/Some/Namespace', $library->getInstallPath($package));
     }
 
     private function createPackageMock()
