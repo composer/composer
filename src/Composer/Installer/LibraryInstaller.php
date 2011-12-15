@@ -125,7 +125,7 @@ class LibraryInstaller implements InstallerInterface
     public function getInstallPath(PackageInterface $package)
     {
         $targetDir = $package->getTargetDir();
-        return ($this->vendorDir ? $this->vendorDir.'/' : '') . $package->getName() . ($targetDir ? '/'.$targetDir : '');
+        return ($this->vendorDir ? $this->vendorDir.'/' : '') . $package->getPrettyName() . ($targetDir ? '/'.$targetDir : '');
     }
 
     protected function installBinaries(PackageInterface $package)
