@@ -13,6 +13,7 @@
 namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
+use Symfony\Component\Process\Process;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -22,6 +23,15 @@ class ZipDownloader extends FileDownloader
     protected function extract($file, $path)
     {
         if (!class_exists('ZipArchive')) {
+            // try to use unzip on *nix
+            if (!defined('PHP_WINDOWS_VERSION_BUILD')) {
+                $process = new Process('unzip '.escapeshellarg($file).' -d '.escapeshellarg($path));
+                $process->run();
+                if ($process->isSuccessful()) {
+                    return;
+                }
+            }
+
             throw new \RuntimeException('You need the zip extension enabled to use the ZipDownloader');
         }
 
