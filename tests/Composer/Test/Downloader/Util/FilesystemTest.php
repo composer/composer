@@ -51,6 +51,7 @@ class FilesystemTest extends TestCase
             array('C:/Temp', 'C:\Temp\test', true, "__DIR__ . '/test'"),
             array('/tmp/test', '/tmp', true, "dirname(__DIR__)"),
             array('/tmp', '/tmp/test', true, "__DIR__ . '/test'"),
+            array('C:/Temp', 'c:\Temp\test', true, "__DIR__ . '/test'"),
         );
     }
 
@@ -81,6 +82,7 @@ class FilesystemTest extends TestCase
             array('/tmp/test/sub', '/tmp', "../"),
             array('/tmp', '/tmp/test', "test"),
             array('C:/Temp', 'C:\Temp\test', "test"),
+            array('C:/Temp', 'c:\Temp\test', "test"),
         );
     }
 }
