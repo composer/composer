@@ -58,8 +58,8 @@ class Filesystem
         if (dirname($from) === dirname($to)) {
             return './'.basename($to);
         }
-        $from = rtrim(strtr($from, '\\', '/'), '/');
-        $to = rtrim(strtr($to, '\\', '/'), '/');
+        $from = lcfirst(rtrim(strtr($from, '\\', '/'), '/'));
+        $to = lcfirst(rtrim(strtr($to, '\\', '/'), '/'));
 
         $commonPath = $to;
         while (strpos($from, $commonPath) !== 0 && '/' !== $commonPath && !preg_match('{^[a-z]:/?$}i', $commonPath) && '.' !== $commonPath) {
@@ -93,8 +93,8 @@ class Filesystem
         if ($from === $to) {
             return $directories ? '__DIR__' : '__FILE__';
         }
-        $from = strtr($from, '\\', '/');
-        $to = strtr($to, '\\', '/');
+        $from = lcfirst(strtr($from, '\\', '/'));
+        $to = lcfirst(strtr($to, '\\', '/'));
 
         $commonPath = $to;
         while (strpos($from, $commonPath) !== 0 && '/' !== $commonPath && !preg_match('{^[a-z]:/?$}i', $commonPath) && '.' !== $commonPath) {
