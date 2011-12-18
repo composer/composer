@@ -38,7 +38,7 @@ class GitDownloader implements DownloaderInterface
 
         $url = escapeshellarg($package->getSourceUrl());
         $ref = escapeshellarg($package->getSourceReference());
-        system(sprintf('git clone %s %s && cd %2$s && git reset --hard %s', $url, $path, $ref));
+        system(sprintf('git clone %s %s && cd %2$s && git checkout %3$s && git reset --hard %3$s', $url, $path, $ref));
     }
 
     /**
@@ -51,7 +51,7 @@ class GitDownloader implements DownloaderInterface
         }
 
         $this->enforceCleanDirectory($path);
-        system(sprintf('cd %s && git fetch && git reset --hard %s', $path, $target->getSourceReference()));
+        system(sprintf('cd %s && git fetch && git checkout %2$s && git reset --hard %2$s', $path, $target->getSourceReference()));
     }
 
     /**
