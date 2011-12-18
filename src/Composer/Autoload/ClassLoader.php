@@ -40,6 +40,7 @@ namespace Composer\Autoload;
 class ClassLoader
 {
     private $prefixes = array();
+    private $fallbackDir;
 
     public function getPrefixes()
     {
@@ -54,6 +55,10 @@ class ClassLoader
      */
     public function add($prefix, $paths)
     {
+        if (!$prefix) {
+            $this->fallbackDir = is_array($paths) ? $paths[0] : $paths;
+            return;
+        }
         if (isset($this->prefixes[$prefix])) {
             $this->prefixes[$prefix] = array_merge(
                 $this->prefixes[$prefix],
@@ -101,23 +106,31 @@ class ClassLoader
 
         if (false !== $pos = strrpos($class, '\\')) {
             // namespaced class name
-            $namespace = substr($class, 0, $pos);
+            $classPath = DIRECTORY_SEPARATOR . str_replace('\\', DIRECTORY_SEPARATOR, substr($class, 0, $pos));
             $className = substr($class, $pos + 1);
         } else {
             // PEAR-like class name
-            $namespace = null;
+            $classPath = null;
             $className = $class;
         }
+
+        $classPath .= DIRECTORY_SEPARATOR . str_replace('_', DIRECTORY_SEPARATOR, $className) . '.php';
 
         foreach ($this->prefixes as $prefix => $dirs) {
             foreach ($dirs as $dir) {
                 if (0 === strpos($class, $prefix)) {
-                    $file = $dir . DIRECTORY_SEPARATOR . ($namespace ? str_replace('\\', DIRECTORY_SEPARATOR, $namespace) . DIRECTORY_SEPARATOR : '')
-                        . str_replace('_', DIRECTORY_SEPARATOR, $className) . '.php';
+                    $file = $dir . $classPath;
                     if (file_exists($file)) {
                         return $file;
                     }
                 }
+            }
+        }
+
+        if ($this->fallbackDir) {
+            $file = $this->fallbackDir . $classPath;
+            if (file_exists($file)) {
+                return $file;
             }
         }
     }
