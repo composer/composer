@@ -70,21 +70,13 @@ EOT
             return $composer->getRepositoryManager()->findPackage($input->getArgument('package'), $input->getArgument('version'));
         }
 
-        // check if we have a local installation so we can grab the right package/version
-        $localRepo = $composer->getRepositoryManager()->getLocalRepository();
-        foreach ($localRepo->getPackages() as $package) {
-            if ($package->getName() === $input->getArgument('package')) {
-                return $package;
-            }
-        }
-
-        // we only have a name, so search for the first package where the name matches
-        foreach ($composer->getRepositoryManager()->getRepositories() as $repository) {
-            foreach ($repository->getPackages() as $package) {
-                if ($package->getName() === $input->getArgument('package')) {
-                    return $package;
-                }
-            }
+        // we only have a name, so search for the highest package where the name matches
+        $repos = array_merge(
+            array($composer->getRepositoryManager()->getLocalRepository()),
+            $composer->getRepositoryManager()->getRepositories()
+        );
+        if ($package = $this->getHighestVersion($repos, $input->getArgument('package'))) {
+            return $package;
         }
     }
 
@@ -157,5 +149,25 @@ EOT
                 $output->writeln($link->getTarget() . ' <comment>' . $link->getPrettyConstraint() . '</comment>');
             }
         }
+    }
+
+    /**
+     * get highest matching package name from an array of repositories
+     */
+    protected function getHighestVersion(array $repos, $packageName)
+    {
+        $highest = null;
+
+        foreach ($repos as $repository) {
+            foreach ($repository->getPackages() as $package) {
+                if ($packageName === $package->getName()) {
+                    if (null === $highest || version_compare($package->getVersion(), $highest->getVersion(), '>=')) {
+                        $highest = $package;
+                    }
+                }
+            }
+        }
+
+        return $highest;
     }
 }
