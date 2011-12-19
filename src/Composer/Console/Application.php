@@ -138,6 +138,7 @@ class Application extends BaseApplication
 
         // initialize installation manager
         $im = new Installer\InstallationManager($vendorDir);
+		$im->addInstaller(new Installer\FLOW3Installer($vendorDir, $binDir, $dm, $rm->getLocalRepository()));
         $im->addInstaller(new Installer\LibraryInstaller($vendorDir, $binDir, $dm, $rm->getLocalRepository(), null));
         $im->addInstaller(new Installer\InstallerInstaller($vendorDir, $binDir, $dm, $rm->getLocalRepository(), $im));
 
