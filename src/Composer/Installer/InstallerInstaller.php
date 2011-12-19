@@ -53,7 +53,7 @@ class InstallerInstaller extends LibraryInstaller
     {
         $extra = $package->getExtra();
         if (empty($extra['class'])) {
-            throw new \UnexpectedValueException('Error while installing '.$target->getPrettyName().', composer-installer packages should have a class defined in their extra key to be usable.');
+            throw new \UnexpectedValueException('Error while installing '.$package->getPrettyName().', composer-installer packages should have a class defined in their extra key to be usable.');
         }
 
         parent::install($package);
