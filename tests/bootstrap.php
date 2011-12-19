@@ -10,8 +10,6 @@
  * file that was distributed with this source code.
  */
 
-require __DIR__.'/../vendor/.composer/autoload.php';
-
-$loader = new Composer\Autoload\ClassLoader();
+$loader = require __DIR__.'/../vendor/.composer/autoload.php';
 $loader->add('Composer\Test', __DIR__);
 $loader->register();
