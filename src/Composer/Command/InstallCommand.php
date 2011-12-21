@@ -108,7 +108,7 @@ EOT
                 $request->install($link->getTarget(), $link->getConstraint());
             }
         } elseif ($composer->getLocker()->isLocked()) {
-            $output->writeln('<info>Found lockfile. Reading.</info>');
+            $output->writeln('<info>Installing from lockfile.</info> (Run "composer update" to add or update packages)');
 
             foreach ($composer->getLocker()->getLockedPackages() as $package) {
                 $constraint = new VersionConstraint('=', $package->getVersion());
