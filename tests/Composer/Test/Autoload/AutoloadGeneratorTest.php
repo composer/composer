@@ -29,7 +29,7 @@ class AutoloadGeneratorTest extends \PHPUnit_Framework_TestCase
         $fs = new Filesystem;
         $that = $this;
 
-        $this->workingDir = sys_get_temp_dir();
+        $this->workingDir = realpath(sys_get_temp_dir());
         $this->vendorDir = $this->workingDir.DIRECTORY_SEPARATOR.'composer-test-autoload';
         if (is_dir($this->vendorDir)) {
             $fs->removeDirectory($this->vendorDir);
