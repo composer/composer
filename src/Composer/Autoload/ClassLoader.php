@@ -40,11 +40,16 @@ namespace Composer\Autoload;
 class ClassLoader
 {
     private $prefixes = array();
-    private $fallbackDir;
+    private $fallbackDirs = array();
 
     public function getPrefixes()
     {
         return $this->prefixes;
+    }
+
+    public function getFallbackDirs()
+    {
+        return $this->fallbackDirs;
     }
 
     /**
@@ -56,7 +61,7 @@ class ClassLoader
     public function add($prefix, $paths)
     {
         if (!$prefix) {
-            $this->fallbackDir = is_array($paths) ? $paths[0] : $paths;
+            $this->fallbackDirs = (array) $paths;
             return;
         }
         if (isset($this->prefixes[$prefix])) {
@@ -121,18 +126,16 @@ class ClassLoader
         foreach ($this->prefixes as $prefix => $dirs) {
             foreach ($dirs as $dir) {
                 if (0 === strpos($class, $prefix)) {
-                    $file = $dir . $classPath;
-                    if (file_exists($file)) {
-                        return $file;
+                    if (file_exists($dir . $classPath)) {
+                        return $dir . $classPath;
                     }
                 }
             }
         }
 
-        if ($this->fallbackDir) {
-            $file = $this->fallbackDir . $classPath;
-            if (file_exists($file)) {
-                return $file;
+        foreach ($this->fallbackDirs as $dir) {
+            if (file_exists($dir . $classPath)) {
+                return $dir . $classPath;
             }
         }
     }
