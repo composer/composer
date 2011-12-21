@@ -28,13 +28,13 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
     {
         $fs = new Filesystem;
 
-        $this->vendorDir = sys_get_temp_dir().DIRECTORY_SEPARATOR.'composer-test-vendor';
+        $this->vendorDir = realpath(sys_get_temp_dir().DIRECTORY_SEPARATOR.'composer-test-vendor');
         if (is_dir($this->vendorDir)) {
             $fs->removeDirectory($this->vendorDir);
         }
         mkdir($this->vendorDir);
 
-        $this->binDir = sys_get_temp_dir().DIRECTORY_SEPARATOR.'composer-test-bin';
+        $this->binDir = realpath(sys_get_temp_dir().DIRECTORY_SEPARATOR.'composer-test-bin');
         if (is_dir($this->binDir)) {
             $fs->removeDirectory($this->binDir);
         }
