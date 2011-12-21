@@ -25,15 +25,6 @@ class RepositoryManager
     private $repositoryClasses = array();
 
     /**
-     * Used for lazy loading of packages and their contained repositories
-     *
-     * This is a performance optimization to avoid loading all packages unless they are needed
-     *
-     * @var Boolean
-     */
-    private $initialized;
-
-    /**
      * Searches for a package by it's name and version in managed repositories.
      *
      * @param   string  $name       package name
@@ -58,11 +49,6 @@ class RepositoryManager
     public function addRepository(RepositoryInterface $repository)
     {
         $this->repositories[] = $repository;
-
-        // already initialized, so initialize new repos on the fly
-        if ($this->initialized) {
-            $repository->getPackages();
-        }
     }
 
     /**
@@ -101,13 +87,6 @@ class RepositoryManager
      */
     public function getRepositories()
     {
-        if (!$this->initialized) {
-            $this->initialized = true;
-            // warm up repos to be sure all sub-repos are added before we return
-            foreach ($this->repositories as $repository) {
-                $repository->getPackages();
-            }
-        }
         return $this->repositories;
     }
 
