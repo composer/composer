@@ -32,7 +32,7 @@ class MemoryPackage extends BasePackage
     protected $version;
     protected $prettyVersion;
     protected $repositories;
-    protected $license;
+    protected $license = array();
     protected $releaseDate;
     protected $keywords;
     protected $authors;
@@ -293,9 +293,9 @@ class MemoryPackage extends BasePackage
     /**
      * Set the license
      *
-     * @param string $license
+     * @param array $license
      */
-    public function setLicense($license)
+    public function setLicense(array $license)
     {
         $this->license = $license;
     }
