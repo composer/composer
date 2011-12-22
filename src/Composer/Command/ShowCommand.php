@@ -86,7 +86,7 @@ EOT
         );
         foreach ($repos as $repository) {
             foreach ($repository->getPackages() as $package) {
-                if ($packageName === $package->getName()) {
+                if ($package->getName() === $input->getArgument('package')) {
                     if (null === $highestVersion || version_compare($package->getVersion(), $highestVersion->getVersion(), '>=')) {
                         $highestVersion = $package;
                     }
