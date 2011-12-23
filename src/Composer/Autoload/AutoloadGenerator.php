@@ -37,6 +37,10 @@ function init() {
 
     $map = require __DIR__.'/autoload_namespaces.php';
 
+    if (file_exists($override = __DIR__.'/autoload_namespaces_override.php')) {
+        $map = array_merge($map, require $override);
+    }
+
     foreach ($map as $namespace => $path) {
         $loader->add($namespace, $path);
     }
