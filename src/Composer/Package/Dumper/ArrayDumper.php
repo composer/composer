@@ -23,6 +23,7 @@ class ArrayDumper
     public function dump(PackageInterface $package)
     {
         $keys = array(
+            'bin',
             'type',
             'names',
             'extra',
