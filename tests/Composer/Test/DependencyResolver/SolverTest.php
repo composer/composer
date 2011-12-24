@@ -139,6 +139,40 @@ class SolverTest extends TestCase
         $this->checkSolverResult(array());
     }
 
+    public function testSolverUpdateConstrained()
+    {
+        $this->repoInstalled->addPackage($packageA = $this->getPackage('A', '1.0'));
+        $this->repo->addPackage($newPackageA = $this->getPackage('A', '1.2'));
+        $this->repo->addPackage($this->getPackage('A', '2.0'));
+        $this->reposComplete();
+
+        $this->request->install('A', new VersionConstraint('<', '2.0.0.0'));
+        $this->request->update('A');
+
+        $this->checkSolverResult(array(array(
+            'job' => 'update',
+            'from' => $packageA,
+            'to' => $newPackageA,
+        )));
+    }
+
+    public function testSolverUpdateFullyConstrained()
+    {
+        $this->repoInstalled->addPackage($packageA = $this->getPackage('A', '1.0'));
+        $this->repo->addPackage($newPackageA = $this->getPackage('A', '1.2'));
+        $this->repo->addPackage($this->getPackage('A', '2.0'));
+        $this->reposComplete();
+
+        $this->request->install('A', new VersionConstraint('<', '2.0.0.0'));
+        $this->request->update('A', new VersionConstraint('=', '1.0.0.0'));
+
+        $this->checkSolverResult(array(array(
+            'job' => 'update',
+            'from' => $packageA,
+            'to' => $newPackageA,
+        )));
+    }
+
     public function testSolverAllJobs()
     {
         $this->repoInstalled->addPackage($packageD = $this->getPackage('D', '1.0'));
