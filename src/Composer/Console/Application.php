@@ -49,6 +49,7 @@ class Application extends BaseApplication
     {
         if (null === $output) {
             $styles['highlight'] = new OutputFormatterStyle('red');
+            $styles['warning'] = new OutputFormatterStyle('black', 'yellow');
             $formatter = new OutputFormatter(null, $styles);
             $output = new ConsoleOutput(ConsoleOutput::VERBOSITY_NORMAL, null, $formatter);
         }
@@ -152,7 +153,7 @@ class Application extends BaseApplication
 
         // init locker
         $lockFile = substr($composerFile, -5) === '.json' ? substr($composerFile, 0, -4).'lock' : $composerFile . '.lock';
-        $locker = new Package\Locker(new JsonFile($lockFile), $rm);
+        $locker = new Package\Locker(new JsonFile($lockFile), $rm, md5_file($composerFile));
 
         // initialize composer
         $composer = new Composer();
