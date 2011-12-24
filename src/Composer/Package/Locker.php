@@ -24,17 +24,20 @@ class Locker
 {
     private $lockFile;
     private $repositoryManager;
+    private $hash;
 
     /**
      * Initializes packages locker.
      *
      * @param   JsonFile            $lockFile           lockfile loader
      * @param   RepositoryManager   $repositoryManager  repository manager instance
+     * @param   string              $hash               unique hash of the current composer configuration
      */
-    public function __construct(JsonFile $lockFile, RepositoryManager $repositoryManager)
+    public function __construct(JsonFile $lockFile, RepositoryManager $repositoryManager, $hash)
     {
         $this->lockFile          = $lockFile;
         $this->repositoryManager = $repositoryManager;
+        $this->hash = $hash;
     }
 
     /**
@@ -45,6 +48,13 @@ class Locker
     public function isLocked()
     {
         return $this->lockFile->exists();
+    }
+
+    public function isFresh()
+    {
+        $lock = $this->lockFile->read();
+
+        return $this->hash === $lock['hash'];
     }
 
     /**
@@ -60,7 +70,7 @@ class Locker
 
         $lockList = $this->lockFile->read();
         $packages = array();
-        foreach ($lockList as $info) {
+        foreach ($lockList['packages'] as $info) {
             $package = $this->repositoryManager->getLocalRepository()->findPackage($info['package'], $info['version']);
 
             if (!$package) {
@@ -87,7 +97,9 @@ class Locker
      */
     public function lockPackages(array $packages)
     {
-        $hash = array();
+        $lock = array(
+            'hash' => $this->hash,
+        );
         foreach ($packages as $package) {
             $name    = $package->getPrettyName();
             $version = $package->getPrettyVersion();
@@ -98,9 +110,9 @@ class Locker
                 ));
             }
 
-            $hash[] = array('package' => $name, 'version' => $version);
+            $lock['packages'][] = array('package' => $name, 'version' => $version);
         }
 
-        $this->lockFile->write($hash);
+        $this->lockFile->write($lock);
     }
 }
