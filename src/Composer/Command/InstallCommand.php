@@ -151,7 +151,7 @@ EOT
                 }
 
                 if ($pool->whatProvides($job['packageName'])) {
-                    throw new \UnexpectedValueException('Your version constraint for package '.$job['packageName'].' does not match any existing version, if it only has -dev versions make sure you include -dev in your version constraint.');
+                    throw new \UnexpectedValueException('Package '.$job['packageName'].' can not be installed, either because its version constraint is incorrect, or because one of its dependencies was not found.');
                 }
                 throw new \UnexpectedValueException('Package '.$job['packageName'].' was not found in the package pool, check the name for typos.');
             }
