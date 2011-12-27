@@ -15,6 +15,11 @@ namespace Composer\Json;
 use Composer\Repository\RepositoryManager;
 use Composer\Composer;
 
+// defined as of PHP 5.4
+if (!defined('JSON_PRETTY_PRINT')) {
+    define('JSON_PRETTY_PRINT', 128);
+}
+
 /**
  * Reads/writes json files.
  *
@@ -91,7 +96,7 @@ class JsonFile
                 );
             }
         }
-        file_put_contents($this->path, json_encode($hash));
+        file_put_contents($this->path, json_encode($hash, JSON_PRETTY_PRINT));
     }
 
     /**
