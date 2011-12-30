@@ -78,7 +78,7 @@ abstract class FileDownloader implements DownloaderInterface
         unlink($fileName);
 
         // If we have only a one dir inside it suppose to be a package itself
-        $contentDir = glob($path . '/*');
+        $contentDir = glob($path . '/*', GLOB_ONLYDIR);
         if (1 === count($contentDir)) {
             $contentDir = $contentDir[0];
             foreach (array_merge(glob($contentDir . '/.*'), glob($contentDir . '/*')) as $file) {
