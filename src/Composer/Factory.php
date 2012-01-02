@@ -37,11 +37,12 @@ class Factory
         $file = new JsonFile($composerFile);
         if (!$file->exists()) {
             if ($composerFile === 'composer.json') {
-                throw new \InvalidArgumentException('Composer could not find a composer.json file in '.getcwd());
+                $message = 'Composer could not find a composer.json file in '.getcwd();
             } else {
-                throw new \InvalidArgumentException('Composer could not find the config file: '.$composerFile);
+                $message = 'Composer could not find the config file: '.$composerFile;
             }
-            throw new \InvalidArgumentException('To initialize a project, please create a composer.json file as described on the http://packagist.org/ "Getting Started" section');
+            $instructions = 'To initialize a project, please create a composer.json file as described on the http://packagist.org/ "Getting Started" section';
+            throw new \InvalidArgumentException($message.PHP_EOL.$instructions);
         }
 
         $baseDir = rtrim(dirname($composerFile), '/').'/';
