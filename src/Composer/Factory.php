@@ -12,11 +12,6 @@
 
 namespace Composer;
 
-use Composer\Composer;
-use Composer\Installer;
-use Composer\Downloader;
-use Composer\Repository;
-use Composer\Package;
 use Composer\Json\JsonFile;
 
 /**
