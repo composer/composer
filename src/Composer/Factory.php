@@ -42,13 +42,14 @@ class Factory
         $file = new JsonFile($composerFile);
         if (!$file->exists()) {
             if ($composerFile === 'composer.json') {
-                echo 'Composer could not find a composer.json file in '.getcwd().PHP_EOL;
+                throw new \InvalidArgumentException('Composer could not find a composer.json file in '.getcwd());
             } else {
-                echo 'Composer could not find the config file: '.$composerFile.PHP_EOL;
+                throw new \InvalidArgumentException('Composer could not find the config file: '.$composerFile);
             }
-            echo 'To initialize a project, please create a composer.json file as described on the http://packagist.org/ "Getting Started" section'.PHP_EOL;
-            exit(1);
+            throw new \InvalidArgumentException('To initialize a project, please create a composer.json file as described on the http://packagist.org/ "Getting Started" section');
         }
+
+        $baseDir = rtrim(dirname($composerFile), '/').'/';
 
         // Configuration defaults
         $composerConfig = array(
@@ -68,6 +69,9 @@ class Factory
             $packageConfig['config']['bin-dir'] = $vendorDir.'/bin';
         }
         $binDir = getenv('COMPOSER_BIN_DIR') ?: $packageConfig['config']['bin-dir'];
+
+        $vendorDir = $baseDir.$vendorDir;
+        $binDir = $baseDir.$binDir;
 
         // initialize repository manager
         $rm = new Repository\RepositoryManager();

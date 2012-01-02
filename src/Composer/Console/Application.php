@@ -67,7 +67,14 @@ class Application extends BaseApplication
      */
     public function getComposer()
     {
-        $this->composer = $this->composer ?: Factory::create();
+        if (null === $this->composer) {
+            try {
+                $this->composer = Factory::create();
+            } catch (\InvalidArgumentException $e) {
+                echo $e->getMessage().PHP_EOL;
+                exit(1);
+            }
+        }
 
         return $this->composer;
     }
