@@ -110,6 +110,11 @@ class RepositoryManager
         return $this->localRepository;
     }
 
+    /**
+     * Finds a package in the local repository.
+     *
+     * @return  Package
+     */
     public function findLocalPackage($name)
     {
         $packages = $this->localRepository->getPackages();
