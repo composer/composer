@@ -138,7 +138,7 @@ class Factory
         return $im;
     }
 
-    public static function create($composerFile = null)
+    static public function create($composerFile = null)
     {
         $factory = new static();
 
