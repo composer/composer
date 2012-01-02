@@ -85,7 +85,7 @@ class Composer
 
     public function getPackageDir($packageName)
     {
-        $package = $this->getLocker()->getLockedPackage($packageName);
+        $package = $this->getRepositoryManager()->findLocalPackage($packageName);
         return $this->installationManager->getInstallPath($package);
     }
 }

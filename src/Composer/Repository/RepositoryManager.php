@@ -109,4 +109,20 @@ class RepositoryManager
     {
         return $this->localRepository;
     }
+
+    public function findLocalPackage($name)
+    {
+        $packages = $this->localRepository->getPackages();
+
+        foreach ($packages as $package) {
+            if ($name === $package->getName()) {
+                return $package;
+            }
+        }
+
+        throw new \LogicException(sprintf(
+            'Can not find "%s" package in local repository',
+            $name
+        ));
+    }
 }
