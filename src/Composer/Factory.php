@@ -19,15 +19,18 @@ use Composer\Json\JsonFile;
  *
  * @author Ryan Weaver <ryan@knplabs.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
+ * @author Igor Wiedler <igor@wiedler.ch>
  */
 class Factory
 {
+    protected $vendorDir;
+
     /**
      * Creates a Composer instance
      *
      * @return Composer
      */
-    public static function create($composerFile = null)
+    public function createComposer($composerFile = null)
     {
         // load Composer configuration
         if (null === $composerFile) {
@@ -66,29 +69,17 @@ class Factory
         }
         $binDir = getenv('COMPOSER_BIN_DIR') ?: $packageConfig['config']['bin-dir'];
 
-        $vendorDir = $baseDir.$vendorDir;
-        $binDir = $baseDir.$binDir;
+        $this->vendorDir = $baseDir.$vendorDir;
+        $this->binDir = $baseDir.$binDir;
 
         // initialize repository manager
-        $rm = new Repository\RepositoryManager();
-        $rm->setLocalRepository(new Repository\FilesystemRepository(new JsonFile($vendorDir.'/.composer/installed.json')));
-        $rm->setRepositoryClass('composer', 'Composer\Repository\ComposerRepository');
-        $rm->setRepositoryClass('vcs', 'Composer\Repository\VcsRepository');
-        $rm->setRepositoryClass('pear', 'Composer\Repository\PearRepository');
-        $rm->setRepositoryClass('package', 'Composer\Repository\PackageRepository');
+        $rm = $this->createRepositoryManager();
 
         // initialize download manager
-        $dm = new Downloader\DownloadManager();
-        $dm->setDownloader('git',  new Downloader\GitDownloader());
-        $dm->setDownloader('svn',  new Downloader\SvnDownloader());
-        $dm->setDownloader('hg', new Downloader\HgDownloader());
-        $dm->setDownloader('pear', new Downloader\PearDownloader());
-        $dm->setDownloader('zip',  new Downloader\ZipDownloader());
+        $dm = $this->createDownloadManager();
 
         // initialize installation manager
-        $im = new Installer\InstallationManager($vendorDir);
-        $im->addInstaller(new Installer\LibraryInstaller($vendorDir, $binDir, $dm, $rm->getLocalRepository(), null));
-        $im->addInstaller(new Installer\InstallerInstaller($vendorDir, $binDir, $dm, $rm->getLocalRepository(), $im));
+        $im = $this->createInstallationManager($rm, $dm);
 
         // load package
         $loader  = new Package\Loader\RootPackageLoader($rm);
@@ -112,5 +103,45 @@ class Factory
         $composer->setInstallationManager($im);
 
         return $composer;
+    }
+
+    protected function createRepositoryManager()
+    {
+        $rm = new Repository\RepositoryManager();
+        $rm->setLocalRepository(new Repository\FilesystemRepository(new JsonFile($this->vendorDir.'/.composer/installed.json')));
+        $rm->setRepositoryClass('composer', 'Composer\Repository\ComposerRepository');
+        $rm->setRepositoryClass('vcs', 'Composer\Repository\VcsRepository');
+        $rm->setRepositoryClass('pear', 'Composer\Repository\PearRepository');
+        $rm->setRepositoryClass('package', 'Composer\Repository\PackageRepository');
+
+        return $rm;
+    }
+
+    protected function createDownloadManager()
+    {
+        $dm = new Downloader\DownloadManager();
+        $dm->setDownloader('git',  new Downloader\GitDownloader());
+        $dm->setDownloader('svn',  new Downloader\SvnDownloader());
+        $dm->setDownloader('hg', new Downloader\HgDownloader());
+        $dm->setDownloader('pear', new Downloader\PearDownloader());
+        $dm->setDownloader('zip',  new Downloader\ZipDownloader());
+
+        return $dm;
+    }
+
+    protected function createInstallationManager(Repository\RepositoryManager $rm, Downloader\DownloadManager $dm)
+    {
+        $im = new Installer\InstallationManager($this->vendorDir);
+        $im->addInstaller(new Installer\LibraryInstaller($this->vendorDir, $this->binDir, $dm, $rm->getLocalRepository(), null));
+        $im->addInstaller(new Installer\InstallerInstaller($this->vendorDir, $this->binDir, $dm, $rm->getLocalRepository(), $im));
+
+        return $im;
+    }
+
+    public static function create($composerFile = null)
+    {
+        $factory = new static();
+
+        return $factory->createComposer($composerFile);
     }
 }
