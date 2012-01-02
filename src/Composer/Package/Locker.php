@@ -80,6 +80,22 @@ class Locker
         return $packages;
     }
 
+    public function getLockedPackage($packageName)
+    {
+        $packages = $this->getLockedPackages();
+
+        foreach ($packages as $package) {
+            if ($packageName === $package->getName()) {
+                return $package;
+            }
+        }
+
+        throw new \LogicException(sprintf(
+            'Can not find "%s" package in registered repositories',
+            $packageName
+        ));
+    }
+
     /**
      * Locks provided packages into lockfile.
      *
