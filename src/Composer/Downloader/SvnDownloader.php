@@ -3,6 +3,7 @@
 namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
+use Composer\Downloader\Util\Filesystem;
 
 /**
  * @author Ben Bieker <mail@ben-bieker.de>
@@ -28,7 +29,7 @@ class SvnDownloader implements DownloaderInterface
 
         $url = escapeshellarg($package->getSourceUrl());
         $ref = escapeshellarg($package->getSourceReference());
-        system(sprintf('svn co %s/%s %s', $url, $ref, $path));
+        Filesystem::runProcess(sprintf('svn co %s/%s %s', $url, $ref, $path));
     }
 
     /**
@@ -42,7 +43,7 @@ class SvnDownloader implements DownloaderInterface
 
         $url = escapeshellarg($target->getSourceUrl());
         $ref = escapeshellarg($target->getSourceReference());
-        system(sprintf('cd %s && svn switch %s/%s', $path, $url, $ref));
+        Filesystem::runProcess(sprintf('cd %s && svn switch %s/%s', $path, $url, $ref));
     }
 
     /**
