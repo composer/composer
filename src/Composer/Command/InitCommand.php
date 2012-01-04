@@ -40,11 +40,10 @@ class InitCommand extends Command
                 new InputOption('homepage', null, InputOption::VALUE_NONE, 'Homepage of package'),
             ))
             ->setHelp(<<<EOT
-The <info>install</info> command reads the composer.json file from the
-current directory, processes it, and downloads and installs all the
-libraries and dependencies outlined in that file.
+The <info>init</info> command creates a basic composer.json file
+in the current directory.
 
-<info>php composer.phar install</info>
+<info>php composer.phar init</info>
 
 EOT
             )
