@@ -59,7 +59,26 @@ abstract class FileDownloader implements DownloaderInterface
             }
         }
 
-        copy($url, $fileName);
+        // Handle system proxy
+        if (isset($_SERVER['HTTP_PROXY'])) {
+            // http(s):// is not supported in proxy
+            $proxy = str_replace(array('http://', 'https://'), array('tcp://', 'ssl://'), $_SERVER['HTTP_PROXY']);
+
+            if (0 === strpos($proxy, 'ssl:') && !extension_loaded('openssl')) {
+                throw new \RuntimeException('You must enable the openssl extension to use a proxy over https');
+            }
+
+            $ctx = stream_context_create(array(
+                'http' => array(
+                    'proxy'           => $proxy,
+                    'request_fulluri' => true,
+                ),
+            ));
+
+            copy($url, $filename, $ctx);
+        } else {
+            copy($url, $fileName);
+        }
 
         if (!file_exists($fileName)) {
             throw new \UnexpectedValueException($url.' could not be saved to '.$fileName.', make sure the'
