@@ -130,11 +130,14 @@ class Application extends BaseApplication
 
         // initialize download manager
         $dm = new Downloader\DownloadManager();
-        $dm->setDownloader('git',  new Downloader\GitDownloader());
-        $dm->setDownloader('svn',  new Downloader\SvnDownloader());
+        $dm->setDownloader('git', new Downloader\GitDownloader());
+        $dm->setDownloader('svn', new Downloader\SvnDownloader());
         $dm->setDownloader('hg', new Downloader\HgDownloader());
         $dm->setDownloader('pear', new Downloader\PearDownloader());
-        $dm->setDownloader('zip',  new Downloader\ZipDownloader());
+        $dm->setDownloader('zip', new Downloader\ZipDownloader());
+        $dm->setDownloader('phar', new Downloader\PharDownloader());
+        $dm->setDownloader('tar', new Downloader\TarDownloader());
+        $dm->setDownloader('file', new Downloader\SimpleFileDownloader());
 
         // initialize installation manager
         $im = new Installer\InstallationManager($vendorDir);
