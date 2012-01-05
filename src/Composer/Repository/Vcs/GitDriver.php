@@ -3,7 +3,7 @@
 namespace Composer\Repository\Vcs;
 
 use Composer\Json\JsonFile;
-use Composer\Downloader\Util\Filesystem;
+use Composer\Util\Process;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -30,9 +30,9 @@ class GitDriver implements VcsDriverInterface
         $url = escapeshellarg($this->url);
         $tmpDir = escapeshellarg($this->tmpDir);
         if (is_dir($this->tmpDir)) {
-            Filesystem::runProcess(sprintf('cd %s && git fetch origin', $tmpDir), $output);
+            Process::execute(sprintf('cd %s && git fetch origin', $tmpDir), $output);
         } else {
-            Filesystem::runProcess(sprintf('git clone %s %s', $url, $tmpDir), $output);
+            Process::execute(sprintf('git clone %s %s', $url, $tmpDir), $output);
         }
 
         $this->getTags();
@@ -46,7 +46,7 @@ class GitDriver implements VcsDriverInterface
     {
         if (null === $this->rootIdentifier) {
             $this->rootIdentifier = 'master';
-            Filesystem::runProcess(sprintf('cd %s && git branch --no-color -r', escapeshellarg($this->tmpDir)), $output);
+            Process::execute(sprintf('cd %s && git branch --no-color -r', escapeshellarg($this->tmpDir)), $output);
             foreach ($output as $branch) {
                 if ($branch && preg_match('{/HEAD +-> +[^/]+/(\S+)}', $branch, $match)) {
                     $this->rootIdentifier = $match[1];
@@ -90,7 +90,7 @@ class GitDriver implements VcsDriverInterface
     public function getComposerInformation($identifier)
     {
         if (!isset($this->infoCache[$identifier])) {
-            Filesystem::runProcess(sprintf('cd %s && git show %s:composer.json', escapeshellarg($this->tmpDir), escapeshellarg($identifier)), $output);
+            Process::execute(sprintf('cd %s && git show %s:composer.json', escapeshellarg($this->tmpDir), escapeshellarg($identifier)), $output);
             $composer = implode("\n", $output);
             unset($output);
 
@@ -101,7 +101,7 @@ class GitDriver implements VcsDriverInterface
             $composer = JsonFile::parseJson($composer);
 
             if (!isset($composer['time'])) {
-                Filesystem::runProcess(sprintf('cd %s && git log -1 --format=%%at %s', escapeshellarg($this->tmpDir), escapeshellarg($identifier)), $output);
+                Process::execute(sprintf('cd %s && git log -1 --format=%%at %s', escapeshellarg($this->tmpDir), escapeshellarg($identifier)), $output);
                 $date = new \DateTime('@'.$output[0]);
                 $composer['time'] = $date->format('Y-m-d H:i:s');
             }
@@ -117,7 +117,7 @@ class GitDriver implements VcsDriverInterface
     public function getTags()
     {
         if (null === $this->tags) {
-            Filesystem::runProcess(sprintf('cd %s && git tag', escapeshellarg($this->tmpDir)), $output);
+            Process::execute(sprintf('cd %s && git tag', escapeshellarg($this->tmpDir)), $output);
             $this->tags = $output ? array_combine($output, $output) : array();
         }
 
@@ -132,7 +132,7 @@ class GitDriver implements VcsDriverInterface
         if (null === $this->branches) {
             $branches = array();
 
-            Filesystem::runProcess(sprintf('cd %s && git branch --no-color -rv', escapeshellarg($this->tmpDir)), $output);
+            Process::execute(sprintf('cd %s && git branch --no-color -rv', escapeshellarg($this->tmpDir)), $output);
             foreach ($output as $branch) {
                 if ($branch && !preg_match('{^ *[^/]+/HEAD }', $branch)) {
                     preg_match('{^ *[^/]+/(\S+) *([a-f0-9]+) .*$}', $branch, $match);

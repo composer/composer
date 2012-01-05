@@ -12,7 +12,7 @@
 
 namespace Composer\Downloader\Util;
 
-use Symfony\Component\Process\Process;
+use Composer\Util\Process;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -22,9 +22,9 @@ class Filesystem
     public function removeDirectory($directory)
     {
         if (defined('PHP_WINDOWS_VERSION_BUILD')) {
-            static::runProcess(sprintf('rmdir /S /Q %s', escapeshellarg(realpath($directory))));
+            Process::execute(sprintf('rmdir /S /Q %s', escapeshellarg(realpath($directory))));
         } else {
-            static::runProcess(sprintf('rm -rf %s', escapeshellarg($directory)));
+            Process::execute(sprintf('rm -rf %s', escapeshellarg($directory)));
         }
     }
 
@@ -126,31 +126,5 @@ class Filesystem
     public function isAbsolutePath($path)
     {
         return substr($path, 0, 1) === '/' || substr($path, 1, 1) === ':';
-    }
-
-    /**
-     * runs a process on the commandline
-     *
-     * @static
-     * @param $command the command to execute
-     * @param null $output the output will be written into this var if passed
-     * @return int statuscode
-     */
-    public static function runProcess($command, &$output = null)
-    {
-        $process = new Process($command);
-        $process->run(function($type, $buffer) use ($output) {
-            if (null === $output) {
-               return;
-            }
-
-            echo $buffer;
-        });
-
-        if (null !== $output) {
-           $output = $process->getOutput();
-        }
-
-        return $process->getExitCode();
     }
 }

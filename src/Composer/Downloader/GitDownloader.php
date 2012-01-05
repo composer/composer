@@ -13,7 +13,7 @@
 namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
-use Composer\Downloader\Util\Filesystem;
+use Composer\Util\Process;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -39,7 +39,7 @@ class GitDownloader implements DownloaderInterface
 
         $url = escapeshellarg($package->getSourceUrl());
         $ref = escapeshellarg($package->getSourceReference());
-        Filesystem::runProcess(sprintf('git clone %s %s && cd %2$s && git checkout %3$s && git reset --hard %3$s', $url, $path, $ref));
+        Process::execute(sprintf('git clone %s %s && cd %2$s && git checkout %3$s && git reset --hard %3$s', $url, $path, $ref));
     }
 
     /**
@@ -52,7 +52,7 @@ class GitDownloader implements DownloaderInterface
         }
 
         $this->enforceCleanDirectory($path);
-        Filesystem::runProcess(sprintf('cd %s && git fetch && git checkout %2$s && git reset --hard %2$s', $path, $target->getSourceReference()));
+        Process::execute(sprintf('cd %s && git fetch && git checkout %2$s && git reset --hard %2$s', $path, $target->getSourceReference()));
     }
 
     /**
@@ -67,7 +67,7 @@ class GitDownloader implements DownloaderInterface
 
     private function enforceCleanDirectory($path)
     {
-        Filesystem::runProcess(sprintf('cd %s && git status --porcelain', $path),$output);
+        Process::execute(sprintf('cd %s && git status --porcelain', $path),$output);
         if (implode('', $output)) {
             throw new \RuntimeException('Source directory has uncommitted changes');
         }
