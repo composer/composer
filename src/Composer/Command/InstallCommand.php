@@ -86,21 +86,13 @@ EOT
         $request = new Request($pool);
         if ($update) {
             $output->writeln('<info>Updating dependencies.</info>');
-            $listedPackages = array();
             $installedPackages = $installedRepo->getPackages();
             $links = $this->collectLinks($input, $composer->getPackage());
 
             foreach ($links as $link) {
-                $listedPackages[] = $link->getTarget();
-
                 foreach ($installedPackages as $package) {
                     if ($package->getName() === $link->getTarget()) {
-                        $constraint = new VersionConstraint('=', $package->getVersion());
-                        if ($link->getConstraint()->matches($constraint)) {
-                            continue 2;
-                        }
-                        // TODO this should just update to the exact version (once constraints are available on update, see #125)
-                        $request->remove($package->getName(), $constraint);
+                        $request->update($package->getName(), new VersionConstraint('=', $package->getVersion()));
                         break;
                     }
                 }
