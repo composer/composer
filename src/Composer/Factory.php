@@ -66,10 +66,16 @@ class Factory
         }
 
         $vendorDir = getenv('COMPOSER_VENDOR_DIR') ?: $packageConfig['config']['vendor-dir'];
+
         if (!isset($packageConfig['config']['bin-dir'])) {
             $packageConfig['config']['bin-dir'] = $vendorDir.'/bin';
         }
         $binDir = getenv('COMPOSER_BIN_DIR') ?: $packageConfig['config']['bin-dir'];
+
+        if (!isset($packageConfig['config']['ext-dir'])) {
+            $packageConfig['config']['ext-dir'] = $vendorDir.'/ext';
+        }
+        $extDir = getenv('COMPOSER_EXT_DIR') ?: $packageConfig['config']['ext-dir'];
 
         // setup process timeout
         $processTimeout = getenv('COMPOSER_PROCESS_TIMEOUT') ?: $packageConfig['config']['process-timeout'];
@@ -92,7 +98,7 @@ class Factory
         $dm = $this->createDownloadManager($io);
 
         // initialize installation manager
-        $im = $this->createInstallationManager($rm, $dm, $vendorDir, $binDir, $io);
+        $im = $this->createInstallationManager($rm, $dm, $vendorDir, $binDir, $extDir, $io);
 
         // purge packages if they have been deleted on the filesystem
         $this->purgePackages($rm, $im);
@@ -175,10 +181,11 @@ class Factory
         return $dm;
     }
 
-    protected function createInstallationManager(Repository\RepositoryManager $rm, Downloader\DownloadManager $dm, $vendorDir, $binDir, IOInterface $io)
+    protected function createInstallationManager(Repository\RepositoryManager $rm, Downloader\DownloadManager $dm, $vendorDir, $binDir, $extDir, IOInterface $io)
     {
         $im = new Installer\InstallationManager($vendorDir);
         $im->addInstaller(new Installer\LibraryInstaller($vendorDir, $binDir, $dm, $rm->getLocalRepository(), $io, null));
+        $im->addInstaller(new Installer\ExtensionInstaller($vendorDir, $binDir, $extDir, $dm, $rm->getLocalRepository(), $io));
         $im->addInstaller(new Installer\InstallerInstaller($vendorDir, $binDir, $dm, $rm->getLocalRepository(), $io, $im));
         $im->addInstaller(new Installer\MetapackageInstaller($rm->getLocalRepository(), $io));
 
