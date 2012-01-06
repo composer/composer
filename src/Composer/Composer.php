@@ -82,4 +82,10 @@ class Composer
     {
         return $this->installationManager;
     }
+
+    public function getPackageDir($packageName)
+    {
+        $package = $this->getRepositoryManager()->findLocalPackage($packageName);
+        return $this->installationManager->getInstallPath($package);
+    }
 }

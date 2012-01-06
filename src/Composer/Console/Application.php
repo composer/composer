@@ -21,11 +21,7 @@ use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Finder\Finder;
 use Composer\Command;
 use Composer\Composer;
-use Composer\Installer;
-use Composer\Downloader;
-use Composer\Repository;
-use Composer\Package;
-use Composer\Json\JsonFile;
+use Composer\Factory;
 
 /**
  * The console application that handles the commands
@@ -72,97 +68,15 @@ class Application extends BaseApplication
     public function getComposer()
     {
         if (null === $this->composer) {
-            $this->composer = self::bootstrapComposer();
+            try {
+                $this->composer = Factory::create();
+            } catch (\InvalidArgumentException $e) {
+                echo $e->getMessage().PHP_EOL;
+                exit(1);
+            }
         }
 
         return $this->composer;
-    }
-
-    /**
-     * Bootstraps a Composer instance
-     *
-     * @return Composer
-     */
-    public static function bootstrapComposer($composerFile = null)
-    {
-        // load Composer configuration
-        if (null === $composerFile) {
-            $composerFile = getenv('COMPOSER') ?: 'composer.json';
-        }
-
-        $file = new JsonFile($composerFile);
-        if (!$file->exists()) {
-            if ($composerFile === 'composer.json') {
-                echo 'Composer could not find a composer.json file in '.getcwd().PHP_EOL;
-            } else {
-                echo 'Composer could not find the config file: '.$composerFile.PHP_EOL;
-            }
-            echo 'To initialize a project, please create a composer.json file as described on the http://packagist.org/ "Getting Started" section'.PHP_EOL;
-            exit(1);
-        }
-
-        // Configuration defaults
-        $composerConfig = array(
-            'vendor-dir' => 'vendor',
-        );
-
-        $packageConfig = $file->read();
-
-        if (isset($packageConfig['config']) && is_array($packageConfig['config'])) {
-            $packageConfig['config'] = array_merge($composerConfig, $packageConfig['config']);
-        } else {
-            $packageConfig['config'] = $composerConfig;
-        }
-
-        $vendorDir = getenv('COMPOSER_VENDOR_DIR') ?: $packageConfig['config']['vendor-dir'];
-        if (!isset($packageConfig['config']['bin-dir'])) {
-            $packageConfig['config']['bin-dir'] = $vendorDir.'/bin';
-        }
-        $binDir = getenv('COMPOSER_BIN_DIR') ?: $packageConfig['config']['bin-dir'];
-
-        // initialize repository manager
-        $rm = new Repository\RepositoryManager();
-        $rm->setLocalRepository(new Repository\FilesystemRepository(new JsonFile($vendorDir.'/.composer/installed.json')));
-        $rm->setRepositoryClass('composer', 'Composer\Repository\ComposerRepository');
-        $rm->setRepositoryClass('vcs', 'Composer\Repository\VcsRepository');
-        $rm->setRepositoryClass('pear', 'Composer\Repository\PearRepository');
-        $rm->setRepositoryClass('package', 'Composer\Repository\PackageRepository');
-
-        // initialize download manager
-        $dm = new Downloader\DownloadManager();
-        $dm->setDownloader('git',  new Downloader\GitDownloader());
-        $dm->setDownloader('svn',  new Downloader\SvnDownloader());
-        $dm->setDownloader('hg', new Downloader\HgDownloader());
-        $dm->setDownloader('pear', new Downloader\PearDownloader());
-        $dm->setDownloader('zip',  new Downloader\ZipDownloader());
-
-        // initialize installation manager
-        $im = new Installer\InstallationManager($vendorDir);
-        $im->addInstaller(new Installer\LibraryInstaller($vendorDir, $binDir, $dm, $rm->getLocalRepository(), null));
-        $im->addInstaller(new Installer\InstallerInstaller($vendorDir, $binDir, $dm, $rm->getLocalRepository(), $im));
-
-        // load package
-        $loader  = new Package\Loader\RootPackageLoader($rm);
-        $package = $loader->load($packageConfig);
-
-        // load default repository unless it's explicitly disabled
-        if (!isset($packageConfig['repositories']['packagist']) || $packageConfig['repositories']['packagist'] !== false) {
-            $rm->addRepository(new Repository\ComposerRepository(array('url' => 'http://packagist.org')));
-        }
-
-        // init locker
-        $lockFile = substr($composerFile, -5) === '.json' ? substr($composerFile, 0, -4).'lock' : $composerFile . '.lock';
-        $locker = new Package\Locker(new JsonFile($lockFile), $rm);
-
-        // initialize composer
-        $composer = new Composer();
-        $composer->setPackage($package);
-        $composer->setLocker($locker);
-        $composer->setRepositoryManager($rm);
-        $composer->setDownloadManager($dm);
-        $composer->setInstallationManager($im);
-
-        return $composer;
     }
 
     /**
