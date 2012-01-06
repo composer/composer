@@ -104,6 +104,7 @@ class Locker
     {
         $lock = array(
             'hash' => $this->hash,
+            'packages' => array(),
         );
         foreach ($packages as $package) {
             $name    = $package->getPrettyName();
