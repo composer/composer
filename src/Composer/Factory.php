@@ -419,6 +419,7 @@ class Factory
         $im->addInstaller(new Installer\PearInstaller($io, $composer, 'pear-library'));
         $im->addInstaller(new Installer\PluginInstaller($io, $composer));
         $im->addInstaller(new Installer\MetapackageInstaller($io));
+        $im->addInstaller(new Installer\ExtensionInstaller($io, $composer));
     }
 
     /**
