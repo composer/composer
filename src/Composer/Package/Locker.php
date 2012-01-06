@@ -29,9 +29,9 @@ class Locker
     /**
      * Initializes packages locker.
      *
-     * @param   JsonFile            $lockFile           lockfile loader
-     * @param   RepositoryManager   $repositoryManager  repository manager instance
-     * @param   string              $hash               unique hash of the current composer configuration
+     * @param JsonFile            $lockFile           lockfile loader
+     * @param RepositoryManager   $repositoryManager  repository manager instance
+     * @param string              $hash               unique hash of the current composer configuration
      */
     public function __construct(JsonFile $lockFile, RepositoryManager $repositoryManager, $hash)
     {
@@ -43,13 +43,18 @@ class Locker
     /**
      * Checks whether locker were been locked (lockfile found).
      *
-     * @return  Boolean
+     * @return Boolean
      */
     public function isLocked()
     {
         return $this->lockFile->exists();
     }
 
+    /**
+     * Checks whether the lock file is still up to date with the current hash
+     *
+     * @return Boolean
+     */
     public function isFresh()
     {
         $lock = $this->lockFile->read();
@@ -60,7 +65,7 @@ class Locker
     /**
      * Searches and returns an array of locked packages, retrieved from registered repositories.
      *
-     * @return  array
+     * @return array
      */
     public function getLockedPackages()
     {
@@ -93,7 +98,7 @@ class Locker
     /**
      * Locks provided packages into lockfile.
      *
-     * @param   array   $packages   array of packages
+     * @param array $packages array of packages
      */
     public function lockPackages(array $packages)
     {

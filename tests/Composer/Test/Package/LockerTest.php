@@ -174,6 +174,36 @@ class LockerTest extends \PHPUnit_Framework_TestCase
         $locker->lockPackages(array($package1));
     }
 
+    public function testIsFresh()
+    {
+        $json = $this->createJsonFileMock();
+        $repo = $this->createRepositoryManagerMock();
+
+        $locker = new Locker($json, $repo, 'md5');
+
+        $json
+            ->expects($this->once())
+            ->method('read')
+            ->will($this->returnValue(array('hash' => 'md5')));
+
+        $this->assertTrue($locker->isFresh());
+    }
+
+    public function testIsFreshFalse()
+    {
+        $json = $this->createJsonFileMock();
+        $repo = $this->createRepositoryManagerMock();
+
+        $locker = new Locker($json, $repo, 'md5');
+
+        $json
+            ->expects($this->once())
+            ->method('read')
+            ->will($this->returnValue(array('hash' => 'oldmd5')));
+
+        $this->assertFalse($locker->isFresh());
+    }
+
     private function createJsonFileMock()
     {
         return $this->getMockBuilder('Composer\Json\JsonFile')
