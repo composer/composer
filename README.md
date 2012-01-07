@@ -36,8 +36,8 @@ file as described above.
 2. Download the [`composer.phar`](http://getcomposer.org/composer.phar) executable
 3. Run Composer to get the dependencies: `php composer.phar install`
 
-Global installation of composer
--------------------------------
+Global installation of composer (manually)
+------------------------------------------
 
 Since composer works with the current working directory it is possible to install it
 in a system wide way.
@@ -47,6 +47,21 @@ in a system wide way.
 3. Make the phar executeable `chmod a+x composer.phar`
 3. Change into a project directory `cd /path/to/my/project`
 4. Use composer as you normally would `composer.phar install`
+
+Global installation of composer (via homebrew)
+----------------------------------------------
+
+Installing via this homebrew formula will always get you the latest composer version.
+
+1. run `brew uninstall composer ; brew install https://raw.github.com/gist/1574469/composer.rb`
+2. Change into a project directory `cd /path/to/my/project`
+3. Use composer as you normally would `composer.phar install`
+
+*You will see a warning "Warning: Cannot verify package integrity"; however, this is benign and expected.*
+
+To upgrade:
+
+1. run `brew uninstall composer ; brew install https://raw.github.com/gist/1574469/composer.rb`
 
 Configuration
 -------------
