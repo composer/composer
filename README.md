@@ -51,11 +51,30 @@ in a system wide way.
 Global installation of composer (via homebrew)
 ----------------------------------------------
 
-Homebrew can help you easily keep up-to-date with the latest composer version.
+Installing via this homebrew formula will always get you the latest composer version.
 
-1. run `brew install https://raw.github.com/gist/1574469/composer.rb`
+1. run `brew uninstall composer ; brew install https://raw.github.com/gist/1574469/composer.rb`
 2. Change into a project directory `cd /path/to/my/project`
 3. Use composer as you normally would `composer.phar install`
+
+To upgrade:
+
+1. run `brew uninstall composer ; brew install https://raw.github.com/gist/1574469/composer.rb`
+
+Install or Upgrade to the latest version of composer
+---------------------------------------------------------------------
+
+
+*You will see a warning "Warning: Cannot verify package integrity"; however, this is benign and expected.*
+
+Verify
+--------
+- composer.phar --version
+- brew home composer
+
+
+
+
 
 Configuration
 -------------
