@@ -85,7 +85,7 @@ EOT
         // creating requirements request
         $request = new Request($pool);
         if ($update) {
-            $output->writeln('<info>Updating dependencies.</info>');
+            $output->writeln('<info>Updating dependencies</info>');
             $installedPackages = $installedRepo->getPackages();
             $links = $this->collectLinks($input, $composer->getPackage());
 
@@ -100,7 +100,11 @@ EOT
                 $request->install($link->getTarget(), $link->getConstraint());
             }
         } elseif ($composer->getLocker()->isLocked()) {
-            $output->writeln('<info>Installing from lockfile.</info> (Run "composer update" to add or update packages)');
+            $output->writeln('<info>Installing from lock file</info>');
+
+            if (!$composer->getLocker()->isFresh()) {
+                $output->writeln('<warning>Your lock file is out of sync with your composer.json, run "composer.phar update" to update dependencies</warning>');
+            }
 
             foreach ($composer->getLocker()->getLockedPackages() as $package) {
                 $constraint = new VersionConstraint('=', $package->getVersion());
@@ -150,6 +154,9 @@ EOT
         }
 
         // execute operations
+        if (!$operations) {
+            $output->writeln('<info>Nothing to install/update</info>');
+        }
         foreach ($operations as $operation) {
             if ($verbose) {
                 $output->writeln((string) $operation);
@@ -162,7 +169,7 @@ EOT
         if (!$dryRun) {
             if ($update || !$composer->getLocker()->isLocked()) {
                 $composer->getLocker()->lockPackages($localRepo->getPackages());
-                $output->writeln('<info>Locked</info>');
+                $output->writeln('<info>Writing lock file</info>');
             }
 
             $localRepo->write();
@@ -171,8 +178,6 @@ EOT
             $generator = new AutoloadGenerator;
             $generator->dump($localRepo, $composer->getPackage(), $installationManager, $installationManager->getVendorPath().'/.composer');
         }
-
-        $output->writeln('<info>Done</info>');
     }
 
     private function collectLinks(InputInterface $input, PackageInterface $package)
