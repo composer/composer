@@ -53,7 +53,7 @@ Global installation of composer (via homebrew)
 
 Homebrew can help you easily keep up-to-date with the latest composer version.
 
-1. run `brew install https://raw.github.com/gist/1574469/composer.rb
+1. run `brew install https://raw.github.com/gist/1574469/composer.rb`
 2. Change into a project directory `cd /path/to/my/project`
 3. Use composer as you normally would `composer.phar install`
 
