@@ -24,23 +24,26 @@ class Locker
 {
     private $lockFile;
     private $repositoryManager;
+    private $hash;
 
     /**
      * Initializes packages locker.
      *
-     * @param   JsonFile            $lockFile           lockfile loader
-     * @param   RepositoryManager   $repositoryManager  repository manager instance
+     * @param JsonFile            $lockFile           lockfile loader
+     * @param RepositoryManager   $repositoryManager  repository manager instance
+     * @param string              $hash               unique hash of the current composer configuration
      */
-    public function __construct(JsonFile $lockFile, RepositoryManager $repositoryManager)
+    public function __construct(JsonFile $lockFile, RepositoryManager $repositoryManager, $hash)
     {
         $this->lockFile          = $lockFile;
         $this->repositoryManager = $repositoryManager;
+        $this->hash = $hash;
     }
 
     /**
      * Checks whether locker were been locked (lockfile found).
      *
-     * @return  Boolean
+     * @return Boolean
      */
     public function isLocked()
     {
@@ -48,9 +51,21 @@ class Locker
     }
 
     /**
+     * Checks whether the lock file is still up to date with the current hash
+     *
+     * @return Boolean
+     */
+    public function isFresh()
+    {
+        $lock = $this->lockFile->read();
+
+        return $this->hash === $lock['hash'];
+    }
+
+    /**
      * Searches and returns an array of locked packages, retrieved from registered repositories.
      *
-     * @return  array
+     * @return array
      */
     public function getLockedPackages()
     {
@@ -60,7 +75,7 @@ class Locker
 
         $lockList = $this->lockFile->read();
         $packages = array();
-        foreach ($lockList as $info) {
+        foreach ($lockList['packages'] as $info) {
             $package = $this->repositoryManager->getLocalRepository()->findPackage($info['package'], $info['version']);
 
             if (!$package) {
@@ -83,11 +98,14 @@ class Locker
     /**
      * Locks provided packages into lockfile.
      *
-     * @param   array   $packages   array of packages
+     * @param array $packages array of packages
      */
     public function lockPackages(array $packages)
     {
-        $hash = array();
+        $lock = array(
+            'hash' => $this->hash,
+            'packages' => array(),
+        );
         foreach ($packages as $package) {
             $name    = $package->getPrettyName();
             $version = $package->getPrettyVersion();
@@ -98,9 +116,9 @@ class Locker
                 ));
             }
 
-            $hash[] = array('package' => $name, 'version' => $version);
+            $lock['packages'][] = array('package' => $name, 'version' => $version);
         }
 
-        $this->lockFile->write($hash);
+        $this->lockFile->write($lock);
     }
 }
