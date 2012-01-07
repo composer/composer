@@ -36,8 +36,8 @@ file as described above.
 2. Download the [`composer.phar`](http://getcomposer.org/composer.phar) executable
 3. Run Composer to get the dependencies: `php composer.phar install`
 
-Global installation of composer
--------------------------------
+Global installation of composer (manually)
+------------------------------------------
 
 Since composer works with the current working directory it is possible to install it
 in a system wide way.
