@@ -130,12 +130,18 @@ class JsonFile
                 // Add a space after the : character
                 $char .= ' ';
             } else if (('}' === $char || ']' === $char) && $outOfQuotes) {
-                // If this character is the end of an element,
-                // output a new line and indent the next line
-                $result .= $newLine;
-                $pos --;
-                for ($j = 0; $j < $pos; $j++) {
-                    $result .= $indentStr;
+                $pos--;
+
+                if ('{' !== $prevChar && '[' !== $prevChar) {
+                    // If this character is the end of an element,
+                    // output a new line and indent the next line
+                    $result .= $newLine;
+                    for ($j = 0; $j < $pos; $j++) {
+                        $result .= $indentStr;
+                    }
+                } else {
+                    // Collapse empty {} and []
+                    $result = rtrim($result);
                 }
             }
 
