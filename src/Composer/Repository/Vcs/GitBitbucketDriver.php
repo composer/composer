@@ -49,7 +49,7 @@ class GitBitbucketDriver implements VcsDriverInterface
     {
         if (null === $this->rootIdentifier) {
             $repoData = json_decode(file_get_contents('https://api.bitbucket.org/1.0/repositories/'.$this->owner.'/'.$this->repository), true);
-            $this->rootIdentifier = $repoData['main_branch'] ?: 'master';
+            $this->rootIdentifier = !empty($repoData['main_branch']) ? $repoData['main_branch'] : 'master';
         }
 
         return $this->rootIdentifier;
