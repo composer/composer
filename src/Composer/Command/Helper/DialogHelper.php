@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * This file is part of Composer.
+ *
+ * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Composer\Command\Helper;
 
 use Symfony\Component\Console\Helper\DialogHelper as BaseDialogHelper;
@@ -7,17 +17,21 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class DialogHelper extends BaseDialogHelper
 {
-    public function writeSection(OutputInterface $output, $text, $style = 'bg=blue;fg=white')
-    {
-        $output->writeln(array(
-            '',
-            $this->getHelperSet()->get('formatter')->formatBlock($text, $style, true),
-            '',
-        ));
-    }
-
+    /**
+     * Build text for asking a question. For example:
+     *
+     *  "Do you want to continue [yes]:"
+     *
+     * @param string $question The question you want to ask
+     * @param mixed $default Default value to add to message, if false no default will be shown
+     * @param string $sep Separation char for between message and user input
+     *
+     * @return string
+     */
     public function getQuestion($question, $default, $sep = ':')
     {
-        return $default ? sprintf('<info>%s</info> [<comment>%s</comment>]%s ', $question, $default, $sep) : sprintf('<info>%s</info>%s ', $question, $sep);
+        return $default ?
+            sprintf('<info>%s</info> [<comment>%s</comment>]%s ', $question, $default, $sep) :
+            sprintf('<info>%s</info>%s ', $question, $sep);
     }
 }
