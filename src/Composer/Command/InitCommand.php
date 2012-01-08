@@ -52,7 +52,7 @@ EOT
 
         $options = array_filter(array_intersect_key($input->getOptions(), array_flip(array('name','description','require'))));
 
-        $options['require'] = $this->formatRequirements($options['require']);
+        $options['require'] = $this->formatRequirements(isset($options['require']) ? $options['require'] : array());
 
         $file = new JsonFile('composer.json');
 
