@@ -46,7 +46,7 @@ EOT
         $composer = $this->getComposer();
         $references = $this->getReferences($input, $output, $composer);
 
-        $this->printLinks($input, $output, $references);
+        $this->printReferences($input, $output, $references);
     }
 
     /**
@@ -58,7 +58,7 @@ EOT
      * @return array
      * @throws \InvalidArgumentException
      */
-    protected function getReferences(InputInterface $input, OutputInterface $output, Composer $composer)
+    private function getReferences(InputInterface $input, OutputInterface $output, Composer $composer)
     {
         $needle = $input->getArgument('package');
 
@@ -72,15 +72,11 @@ EOT
         );
         foreach ($repos as $repository) {
             foreach ($repository->getPackages() as $package) {
-                foreach ($package->getRequires() as $link) {
-                    if ($link->getTarget() === $needle) {
-                        $references[] = $link;
-                    }
-                }
-
-                foreach ($package->getSuggests() as $link) {
-                    if ($link->getTarget() === $needle) {
-                        $references[] = $link;
+                foreach (array('requires', 'recommends', 'suggests') as $type) {
+                    foreach ($package->{'get'.$type}() as $link) {
+                        if ($link->getTarget() === $needle) {
+                            $references[] = array($type, $package, $link);
+                        }
                     }
                 }
             }
@@ -89,10 +85,10 @@ EOT
         return $references;
     }
 
-    protected function printLinks(InputInterface $input, OutputInterface $output, array $links)
+    private function printReferences(InputInterface $input, OutputInterface $output, array $references)
     {
-        foreach ($links as $link) {
-            $output->writeln($link->getSource() . ' <comment>' . $link->getPrettyConstraint() . '</comment>');
+        foreach ($references as $ref) {
+            $output->writeln($ref[1]->getPrettyName() . ' ' . $ref[1]->getPrettyVersion() . ' <info>' . $ref[0] . '</info> ' . $ref[2]->getPrettyConstraint());
         }
     }
 }
