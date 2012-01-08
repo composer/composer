@@ -17,12 +17,33 @@ use Composer\Command\Helper\DialogHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Process\Process;
+use Symfony\Component\Process\ExecutableFinder;
 
 /**
  * @author Justin Rainbow <justin.rainbow@gmail.com>
  */
 class InitCommand extends Command
 {
+    private $gitConfig;
+
+    public function parseAuthorString($author)
+    {
+        if (preg_match('/^(?P<name>[- \.,a-z0-9]+) <(?P<email>.+?)>$/i', $author, $match)) {
+            if ($match['email'] === filter_var($match['email'], FILTER_VALIDATE_EMAIL)) {
+                return array(
+                    'name'  => trim($match['name']),
+                    'email' => $match['email']
+                );
+            }
+        }
+
+        throw new \InvalidArgumentException(
+            'Invalid author string.  Must be in the format:'.
+            ' John Smith <john@example.com>'
+        );
+    }
+
     protected function configure()
     {
         $this
@@ -31,6 +52,7 @@ class InitCommand extends Command
             ->setDefinition(array(
                 new InputOption('name', null, InputOption::VALUE_NONE, 'Name of the package'),
                 new InputOption('description', null, InputOption::VALUE_NONE, 'Description of package'),
+                new InputOption('author', null, InputOption::VALUE_NONE, 'Author name of package'),
                 // new InputOption('version', null, InputOption::VALUE_NONE, 'Version of package'),
                 new InputOption('homepage', null, InputOption::VALUE_NONE, 'Homepage of package'),
                 new InputOption('require', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'An array required packages'),
@@ -50,9 +72,18 @@ EOT
     {
         $dialog = $this->getDialogHelper();
 
-        $options = array_filter(array_intersect_key($input->getOptions(), array_flip(array('name','description','require'))));
+        $whitelist = array('name', 'description', 'author', 'require');
 
-        $options['require'] = $this->formatRequirements(isset($options['require']) ? $options['require'] : array());
+        $options = array_filter(array_intersect_key($input->getOptions(), array_flip($whitelist)));
+
+        if (isset($options['author'])) {
+            $options['authors'] = $this->formatAuthors($options['author']);
+            unset($options['author']);
+        }
+
+        $options['require'] = isset($options['require']) ?
+            $this->formatRequirements($options['require']) :
+            new \stdClass;
 
         $file = new JsonFile('composer.json');
 
@@ -76,6 +107,8 @@ EOT
 
     protected function interact(InputInterface $input, OutputInterface $output)
     {
+        $git = $this->getGitConfig();
+
         $dialog = $this->getDialogHelper();
         $dialog->writeSection($output, 'Welcome to the Composer config generator');
 
@@ -88,7 +121,13 @@ EOT
 
         $cwd = realpath(".");
 
-        $name = $input->getOption('name') ?: basename($cwd);
+        if (false === $name = $input->getOption('name')) {
+            $name = basename($cwd);
+            if (isset($git['github.user'])) {
+                $name = $git['github.user'] . '/' . $name;
+            }
+        }
+
         $name = $dialog->ask(
             $output,
             $dialog->getQuestion('Package name', $name),
@@ -103,17 +142,39 @@ EOT
         );
         $input->setOption('description', $description);
 
+        if (false === $author = $input->getOption('author')) {
+            if (isset($git['user.name']) && isset($git['user.email'])) {
+                $author = sprintf('%s <%s>', $git['user.name'], $git['user.email']);
+            }
+        }
+
+        $self = $this;
+        $author = $dialog->askAndValidate(
+            $output,
+            $dialog->getQuestion('Author', $author),
+            function ($value) use ($self, $author) {
+                if (null === $value) {
+                    return $author;
+                }
+
+                $author = $self->parseAuthorString($value);
+
+                return sprintf('%s <%s>', $author['name'], $author['email']);
+            }
+        );
+        $input->setOption('author', $author);
+
         $output->writeln(array(
             '',
             'Define your dependencies.',
             ''
         ));
 
+        $requirements = array();
         if ($dialog->askConfirmation($output, $dialog->getQuestion('Would you like to define your dependencies interactively', 'yes', '?'), true)) {
             $requirements = $this->determineRequirements($input, $output);
-
-            $input->setOption('require', $requirements);
         }
+        $input->setOption('require', $requirements);
     }
 
     protected function getDialogHelper()
@@ -195,6 +256,11 @@ EOT
         return $requires;
     }
 
+    protected function formatAuthors($author)
+    {
+        return array($this->parseAuthorString($author));
+    }
+
     protected function formatRequirements(array $requirements)
     {
         $requires = array();
@@ -205,5 +271,24 @@ EOT
         }
 
         return empty($requires) ? new \stdClass : $requires;
+    }
+
+    protected function getGitConfig()
+    {
+        if (null !== $this->gitConfig) {
+            return $this->gitConfig;
+        }
+
+        $finder = new ExecutableFinder();
+        $gitBin = $finder->find('git');
+
+        $cmd = new Process(sprintf('%s config -l', $gitBin));
+        $cmd->run();
+
+        if ($cmd->isSuccessful()) {
+            return $this->gitConfig = parse_ini_string($cmd->getOutput(), false, INI_SCANNER_RAW);
+        }
+
+        return $this->gitConfig = array();
     }
 }
