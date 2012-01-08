@@ -124,14 +124,17 @@ class JsonFile
             $char = substr($json, $i, 1);
 
             // Are we inside a quoted string?
-            if ($char == '"' && $prevChar != '\\') {
+            if ('"' === $char && '\\' !== $prevChar) {
                 $outOfQuotes = !$outOfQuotes;
-            } else if (($char == '}' || $char == ']') && $outOfQuotes) {
+            } else if (':' === $char && $outOfQuotes) {
+                // Add a space after the : character
+                $char .= ' ';
+            } else if (('}' === $char || ']' === $char) && $outOfQuotes) {
                 // If this character is the end of an element,
                 // output a new line and indent the next line
                 $result .= $newLine;
                 $pos --;
-                for ($j=0; $j<$pos; $j++) {
+                for ($j = 0; $j < $pos; $j++) {
                     $result .= $indentStr;
                 }
             }
@@ -141,10 +144,10 @@ class JsonFile
 
             // If the last character was the beginning of an element,
             // output a new line and indent the next line
-            if (($char == ',' || $char == '{' || $char == '[') && $outOfQuotes) {
+            if ((',' === $char || '{' === $char || '[' === $char) && $outOfQuotes) {
                 $result .= $newLine;
 
-                if ($char == '{' || $char == '[') {
+                if ('{' === $char || '[' === $char) {
                     $pos ++;
                 }
 

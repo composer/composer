@@ -88,7 +88,7 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
     {
         $data = array('name' => 'composer/composer');
         $json = '{
-    "name":"composer\/composer"
+    "name": "composer\/composer"
 }';
         $this->assertJsonFormat($json, $data);
     }
