@@ -84,6 +84,15 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
         $this->expectParseException('missing comma on line 2, char 21', $json);
     }
 
+    public function testSimpleJsonString()
+    {
+        $data = array('name' => 'composer/composer');
+        $json = '{
+    "name":"composer\/composer"
+}';
+        $this->assertJsonFormat($json, $data);
+    }
+
     private function expectParseException($text, $json)
     {
         try {
@@ -93,4 +102,12 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
             $this->assertContains($text, $e->getMessage());
         }
     }
+
+    private function assertJsonFormat($json, $data)
+    {
+        $file = new JsonFile('composer.json');
+
+        $this->assertEquals($json, $file->encode($data));
+    }
+
 }
