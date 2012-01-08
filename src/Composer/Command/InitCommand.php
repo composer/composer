@@ -103,6 +103,22 @@ EOT
         }
 
         $file->write($options);
+
+        if ($input->isInteractive()) {
+            $ignoreFile = realpath('.gitignore');
+
+            if (false === $ignoreFile) {
+                $ignoreFile = realpath('.') . '/.gitignore';
+            }
+
+            if (!$this->hasVendorIgnore($ignoreFile)) {
+                $question = 'Would you like the <info>vendor</info> directory added to your <info>.gitignore</info> [<comment>yes</comment>]?';
+
+                if ($dialog->askConfirmation($output, $question, true)) {
+                    $this->addVendorIgnore($ignoreFile);
+                }
+            }
+        }
     }
 
     protected function interact(InputInterface $input, OutputInterface $output)
@@ -290,5 +306,56 @@ EOT
         }
 
         return $this->gitConfig = array();
+    }
+
+    /**
+     * Checks the local .gitignore file for the Composer vendor directory.
+     *
+     * Tested patterns include:
+     *  "/$vendor"
+     *  "$vendor"
+     *  "$vendor/"
+     *  "/$vendor/"
+     *  "/$vendor/*"
+     *  "$vendor/*"
+     *
+     * @param string $ignoreFile
+     * @param string $vendor
+     *
+     * @return Boolean
+     */
+    protected function hasVendorIgnore($ignoreFile, $vendor = 'vendor')
+    {
+        if (!file_exists($ignoreFile)) {
+            return false;
+        }
+
+        $pattern = sprintf(
+            '~^/?%s(/|/\*)?$~',
+            preg_quote($vendor, '~')
+        );
+
+        $lines = file($ignoreFile, FILE_IGNORE_NEW_LINES);
+        foreach ($lines as $line) {
+            if (preg_match($pattern, $line)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function addVendorIgnore($ignoreFile, $vendor = 'vendor')
+    {
+        $contents = "";
+        if (file_exists($ignoreFile)) {
+            $contents = file_get_contents($ignoreFile);
+
+            if ("\n" !== substr($contents, 0, -1)) {
+                $contents .= "\n";
+            }
+        }
+
+        file_put_contents($ignoreFile, $contents . $vendor);
     }
 }
