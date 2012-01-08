@@ -20,6 +20,7 @@ use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Finder\Finder;
 use Composer\Command;
+use Composer\Command\Helper\DialogHelper;
 use Composer\Composer;
 use Composer\Factory;
 use Composer\IO\IOInterface;
@@ -114,5 +115,17 @@ class Application extends BaseApplication
         if ('phar:' === substr(__FILE__, 0, 5)) {
             $this->add(new Command\SelfUpdateCommand());
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function getDefaultHelperSet()
+    {
+        $helperSet = parent::getDefaultHelperSet();
+
+        $helperSet->set(new DialogHelper());
+
+        return $helperSet;
     }
 }
