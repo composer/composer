@@ -13,7 +13,6 @@
 namespace Composer\Command;
 
 use Composer\Json\JsonFile;
-use Composer\Command\Helper\DialogHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -70,7 +69,7 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $dialog = $this->getDialogHelper();
+        $dialog = $this->getHelperSet()->get('dialog');
 
         $whitelist = array('name', 'description', 'author', 'require');
 
@@ -125,7 +124,7 @@ EOT
     {
         $git = $this->getGitConfig();
 
-        $dialog = $this->getDialogHelper();
+        $dialog = $this->getHelperSet()->get('dialog');
         $dialog->writeSection($output, 'Welcome to the Composer config generator');
 
         // namespace
@@ -208,16 +207,6 @@ EOT
         $input->setOption('require', $requirements);
     }
 
-    protected function getDialogHelper()
-    {
-        $dialog = $this->getHelperSet()->get('dialog');
-        if (!$dialog || get_class($dialog) !== 'Composer\Command\Helper\DialogHelper') {
-            $this->getHelperSet()->set($dialog = new DialogHelper());
-        }
-
-        return $dialog;
-    }
-
     protected function findPackages($name)
     {
         $composer = $this->getComposer();
@@ -243,7 +232,7 @@ EOT
 
     protected function determineRequirements(InputInterface $input, OutputInterface $output)
     {
-        $dialog = $this->getDialogHelper();
+        $dialog = $this->getHelperSet()->get('dialog');
         $prompt = $dialog->getQuestion('Search for a package', false, ':');
 
         $requires = $input->getOption('require') ?: array();
