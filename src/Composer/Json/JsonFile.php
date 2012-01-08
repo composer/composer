@@ -148,7 +148,7 @@ class JsonFile
                 $result .= $newLine;
 
                 if ('{' === $char || '[' === $char) {
-                    $pos ++;
+                    $pos++;
                 }
 
                 for ($j = 0; $j < $pos; $j++) {
