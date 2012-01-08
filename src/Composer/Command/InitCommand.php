@@ -125,7 +125,12 @@ EOT
         $git = $this->getGitConfig();
 
         $dialog = $this->getHelperSet()->get('dialog');
-        $dialog->writeSection($output, 'Welcome to the Composer config generator');
+        $formatter = $this->getHelperSet()->get('formatter');
+        $output->writeln(array(
+            '',
+            $formatter->formatBlock('Welcome to the Composer config generator', 'bg=blue;fg=white', true),
+            ''
+        ));
 
         // namespace
         $output->writeln(array(
