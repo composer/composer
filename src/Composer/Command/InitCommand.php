@@ -141,13 +141,28 @@ EOT
             $name = basename($cwd);
             if (isset($git['github.user'])) {
                 $name = $git['github.user'] . '/' . $name;
+            } else {
+                // package names must be in the format foo/bar
+                $name = $name . '/' . $name;
             }
         }
 
-        $name = $dialog->ask(
+        $name = $dialog->askAndValidate(
             $output,
             $dialog->getQuestion('Package name', $name),
-            $name
+            function ($value) use ($name) {
+                if (null === $value) {
+                    return $name;
+                }
+
+                if (!preg_match('{^[a-z0-9_.-]+/[a-z0-9_.-]+$}i', $value)) {
+                    throw new \InvalidArgumentException(
+                        'The package name '.$value.' is invalid, it should have a vendor name, a forward slash, and a package name, matching: [a-z0-9_.-]+/[a-z0-9_.-]+'
+                    );
+                }
+
+                return $value;
+            }
         );
         $input->setOption('name', $name);
 
