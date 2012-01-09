@@ -55,7 +55,7 @@ class RuleSet implements \IteratorAggregate, \Countable
     public function add(Rule $rule, $type)
     {
         if (!isset(self::$types[$type])) {
-            throw OutOfBoundsException('Unknown rule type: ' . $type);
+            throw new \OutOfBoundsException('Unknown rule type: ' . $type);
         }
 
         if (!isset($this->rules[$type])) {
