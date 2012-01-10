@@ -13,9 +13,12 @@
 namespace Composer\Repository\Vcs;
 
 use Composer\Json\JsonFile;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Input\InputInterface;
 
 /**
  * @author Per Bernhardt <plb@webfactory.de>
+ * @author François Pluchino <francois.pluchino@opendisplay.com>
  */
 class HgBitbucketDriver extends VcsDriver implements VcsDriverInterface
 {
@@ -26,13 +29,13 @@ class HgBitbucketDriver extends VcsDriver implements VcsDriverInterface
     protected $rootIdentifier;
     protected $infoCache = array();
 
-    public function __construct($url)
+    public function __construct($url, InputInterface $input, OutputInterface $output)
     {
         preg_match('#^(?:https?|http)://bitbucket\.org/([^/]+)/([^/]+)/?$#', $url, $match);
         $this->owner = $match[1];
         $this->repository = $match[2];
 
-        parent::__construct($url);
+        parent::__construct($url, $input, $output);
     }
 
     /**

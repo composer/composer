@@ -15,17 +15,25 @@ namespace Composer\Repository;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Json\JsonFile;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Input\InputInterface;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
+ * @author François Pluchino <francois.pluchino@opendisplay.com>
  */
 class ComposerRepository extends ArrayRepository
 {
     protected $url;
     protected $packages;
+    protected $input;
+    protected $output;
 
-    public function __construct(array $config)
+    public function __construct(InputInterface $input, OutputInterface $output, array $config)
     {
+        $this->input = $input;
+        $this->output = $output;
+
         if (!preg_match('{^\w+://}', $config['url'])) {
             // assume http as the default protocol
             $config['url'] = 'http://'.$config['url'];

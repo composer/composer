@@ -16,24 +16,33 @@ use Composer\Json\JsonFile;
 use Composer\Package\PackageInterface;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Input\InputInterface;
 
 /**
  * Package repository.
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
+ * @author François Pluchino <francois.pluchino@opendisplay.com>
  */
 class PackageRepository extends ArrayRepository
 {
     private $config;
+    private $input;
+    private $output;
 
     /**
      * Initializes filesystem repository.
      *
-     * @param array $config package definition
+     * @param InputInterface  $input  The Input instance
+     * @param OutputInterface $output The Output instance
+     * @param array           $config package definition
      */
-    public function __construct(array $config)
+    public function __construct(InputInterface $input, OutputInterface $output, array $config)
     {
         $this->config = $config;
+        $this->input = $input;
+        $this->output = $output;
     }
 
     /**

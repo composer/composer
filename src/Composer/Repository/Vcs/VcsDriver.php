@@ -17,18 +17,28 @@ namespace Composer\Repository\Vcs;
  *
  * @author François Pluchino <francois.pluchino@opendisplay.com>
  */
+
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Input\InputInterface;
+
 abstract class VcsDriver
 {
     protected $url;
+    protected $input;
+    protected $output;
 
     /**
      * Constructor
      *
-     * @param string $url The URL
+     * @param string          $url    The URL
+     * @param InputInterface  $input  The Input instance
+     * @param OutputInterface $output The output instance
      */
-    public function __construct($url)
+    public function __construct($url, InputInterface $input, OutputInterface $output)
     {
         $this->url = $url;
+        $this->input = $input;
+        $this->output = $output;
     }
 
     /**
