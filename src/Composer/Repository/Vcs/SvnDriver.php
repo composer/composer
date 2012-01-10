@@ -7,9 +7,8 @@ use Composer\Json\JsonFile;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class SvnDriver implements VcsDriverInterface
+class SvnDriver extends VcsDriver implements VcsDriverInterface
 {
-    protected $url;
     protected $baseUrl;
     protected $tags;
     protected $branches;
@@ -17,7 +16,8 @@ class SvnDriver implements VcsDriverInterface
 
     public function __construct($url)
     {
-        $this->url = $this->baseUrl = rtrim($url, '/');
+        parent::__construct($this->baseUrl = rtrim($url, '/'));
+
         if (false !== ($pos = strrpos($url, '/trunk'))) {
             $this->baseUrl = substr($url, 0, $pos);
         }
