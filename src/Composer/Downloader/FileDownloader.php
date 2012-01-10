@@ -12,6 +12,8 @@
 namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Input\InputInterface;
 
 /**
  * Base downloader for file packages
@@ -21,6 +23,21 @@ use Composer\Package\PackageInterface;
  */
 abstract class FileDownloader implements DownloaderInterface
 {
+    protected $intput;
+    protected $output;
+
+    /**
+     * Constructor.
+     *
+     * @param InputInterface  $input  The Input instance
+     * @param OutputInterface $output The Output instance
+     */
+    public function __construct(InputInterface $input, OutputInterface $output)
+    {
+        $this->intput = $input;
+        $this->output = $output;
+    }
+
     /**
      * {@inheritDoc}
      */

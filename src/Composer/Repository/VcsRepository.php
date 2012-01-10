@@ -5,17 +5,22 @@ namespace Composer\Repository;
 use Composer\Repository\Vcs\VcsDriverInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\Loader\ArrayLoader;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Input\InputInterface;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
+ * @author François Pluchino <francois.pluchino@opendisplay.com>
  */
 class VcsRepository extends ArrayRepository
 {
     protected $url;
     protected $packageName;
     protected $debug;
+    protected $input;
+    protected $output;
 
-    public function __construct(array $config, array $drivers = null)
+    public function __construct(InputInterface $input, OutputInterface $output, array $config, array $drivers = null)
     {
         if (!filter_var($config['url'], FILTER_VALIDATE_URL)) {
             throw new \UnexpectedValueException('Invalid url given for PEAR repository: '.$config['url']);
@@ -31,6 +36,8 @@ class VcsRepository extends ArrayRepository
         );
 
         $this->url = $config['url'];
+        $this->input = $input;
+        $this->output = $output;
     }
 
     public function setDebug($debug)
@@ -42,7 +49,7 @@ class VcsRepository extends ArrayRepository
     {
         foreach ($this->drivers as $driver) {
             if ($driver::supports($this->url)) {
-                $driver = new $driver($this->url);
+                $driver = new $driver($this->url, $this->input, $this->output);
                 $driver->initialize();
                 return $driver;
             }

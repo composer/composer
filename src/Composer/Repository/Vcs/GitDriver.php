@@ -3,22 +3,25 @@
 namespace Composer\Repository\Vcs;
 
 use Composer\Json\JsonFile;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Input\InputInterface;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
+ * @author François Pluchino <francois.pluchino@opendisplay.com>
  */
-class GitDriver implements VcsDriverInterface
+class GitDriver extends VcsDriver implements VcsDriverInterface
 {
-    protected $url;
     protected $tags;
     protected $branches;
     protected $rootIdentifier;
     protected $infoCache = array();
 
-    public function __construct($url)
+    public function __construct($url, InputInterface $input, OutputInterface $output)
     {
-        $this->url = $url;
         $this->tmpDir = sys_get_temp_dir() . '/composer-' . preg_replace('{[^a-z0-9]}i', '-', $url) . '/';
+
+        parent::__construct($url, $input, $output);
     }
 
     /**

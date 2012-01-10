@@ -32,10 +32,13 @@ use Composer\Json\JsonFile;
  *
  * @author Ryan Weaver <ryan@knplabs.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
+ * @author François Pluchino <francois.pluchino@opendisplay.com>
  */
 class Application extends BaseApplication
 {
     protected $composer;
+    protected $input;
+    protected $output;
 
     public function __construct()
     {
@@ -64,6 +67,9 @@ class Application extends BaseApplication
     {
         $this->registerCommands();
 
+        $this->input = $input;
+        $this->output = $output;
+
         return parent::doRun($input, $output);
     }
 
@@ -73,7 +79,7 @@ class Application extends BaseApplication
     public function getComposer()
     {
         if (null === $this->composer) {
-            $this->composer = self::bootstrapComposer();
+            $this->composer = self::bootstrapComposer(null, $this->input, $this->output);
         }
 
         return $this->composer;
@@ -84,7 +90,7 @@ class Application extends BaseApplication
      *
      * @return Composer
      */
-    public static function bootstrapComposer($composerFile = null)
+    public static function bootstrapComposer($composerFile = null, InputInterface $input = null, OutputInterface $output = null)
     {
         // load Composer configuration
         if (null === $composerFile) {
@@ -122,7 +128,7 @@ class Application extends BaseApplication
         $binDir = getenv('COMPOSER_BIN_DIR') ?: $packageConfig['config']['bin-dir'];
 
         // initialize repository manager
-        $rm = new Repository\RepositoryManager();
+        $rm = new Repository\RepositoryManager($input, $output);
         $rm->setLocalRepository(new Repository\FilesystemRepository(new JsonFile($vendorDir.'/.composer/installed.json')));
         $rm->setRepositoryClass('composer', 'Composer\Repository\ComposerRepository');
         $rm->setRepositoryClass('vcs', 'Composer\Repository\VcsRepository');
@@ -134,8 +140,8 @@ class Application extends BaseApplication
         $dm->setDownloader('git',  new Downloader\GitDownloader());
         $dm->setDownloader('svn',  new Downloader\SvnDownloader());
         $dm->setDownloader('hg', new Downloader\HgDownloader());
-        $dm->setDownloader('pear', new Downloader\PearDownloader());
-        $dm->setDownloader('zip',  new Downloader\ZipDownloader());
+        $dm->setDownloader('pear', new Downloader\PearDownloader($input, $output));
+        $dm->setDownloader('zip',  new Downloader\ZipDownloader($input, $output));
 
         // initialize installation manager
         $im = new Installer\InstallationManager($vendorDir);
@@ -148,7 +154,7 @@ class Application extends BaseApplication
 
         // load default repository unless it's explicitly disabled
         if (!isset($packageConfig['repositories']['packagist']) || $packageConfig['repositories']['packagist'] !== false) {
-            $rm->addRepository(new Repository\ComposerRepository(array('url' => 'http://packagist.org')));
+            $rm->addRepository(new Repository\ComposerRepository($input, $output, array('url' => 'http://packagist.org')));
         }
 
         // init locker
