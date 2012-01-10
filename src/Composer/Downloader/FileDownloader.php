@@ -20,6 +20,7 @@ use Symfony\Component\Console\Input\InputInterface;
  *
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  * @author Jordi Boggiano <j.boggiano@seld.be>
+ * @author François Pluchino <francois.pluchino@opendisplay.com>
  */
 abstract class FileDownloader implements DownloaderInterface
 {
@@ -65,7 +66,8 @@ abstract class FileDownloader implements DownloaderInterface
 
         $fileName = rtrim($path.'/'.md5(time().rand()).'.'.pathinfo($url, PATHINFO_EXTENSION), '.');
 
-        echo 'Downloading '.$url.' to '.$fileName.PHP_EOL;
+        //echo 'Downloading '.$url.' to '.$fileName.PHP_EOL;
+        $this->output->writeln("  - <info>Downloading</info> <comment>" . $package->getName() . "</comment> (" . $package->getPrettyVersion() . ")");
 
         if (!extension_loaded('openssl') && (0 === strpos($url, 'https:') || 0 === strpos($url, 'http://github.com'))) {
             // bypass https for github if openssl is disabled
@@ -106,11 +108,11 @@ abstract class FileDownloader implements DownloaderInterface
             throw new \UnexpectedValueException('The checksum verification of the archive failed (downloaded from '.$url.')');
         }
 
-        echo 'Unpacking archive'.PHP_EOL;
+        $this->output->writeln('    Unpacking archive');
         $this->extract($fileName, $path);
 
 
-        echo 'Cleaning up'.PHP_EOL;
+        $this->output->writeln('    Cleaning up');
         unlink($fileName);
 
         // If we have only a one dir inside it suppose to be a package itself
