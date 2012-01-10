@@ -70,7 +70,6 @@ abstract class FileDownloader implements DownloaderInterface
 
         $fileName = rtrim($path.'/'.md5(time().rand()).'.'.pathinfo($url, PATHINFO_EXTENSION), '.');
 
-        //echo 'Downloading '.$url.' to '.$fileName.PHP_EOL;
         $this->output->writeln("  - Package <comment>" . $package->getName() . "</comment> (<info>" . $package->getPrettyVersion() . "</info>)");
 
         if (!extension_loaded('openssl') && (0 === strpos($url, 'https:') || 0 === strpos($url, 'http://github.com'))) {
