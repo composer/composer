@@ -26,6 +26,7 @@ abstract class FileDownloader implements DownloaderInterface
 {
     protected $intput;
     protected $output;
+    protected $bytesMax;
 
     /**
      * Constructor.
@@ -52,6 +53,9 @@ abstract class FileDownloader implements DownloaderInterface
      */
     public function download(PackageInterface $package, $path)
     {
+        // init the progress bar
+        $this->bytesMax = 0;
+
         $url = $package->getDistUrl();
         $checksum = $package->getDistSha1Checksum();
 
@@ -67,7 +71,7 @@ abstract class FileDownloader implements DownloaderInterface
         $fileName = rtrim($path.'/'.md5(time().rand()).'.'.pathinfo($url, PATHINFO_EXTENSION), '.');
 
         //echo 'Downloading '.$url.' to '.$fileName.PHP_EOL;
-        $this->output->writeln("  - <info>Downloading</info> <comment>" . $package->getName() . "</comment> (" . $package->getPrettyVersion() . ")");
+        $this->output->writeln("  - Package <comment>" . $package->getName() . "</comment> (<info>" . $package->getPrettyVersion() . "</info>)");
 
         if (!extension_loaded('openssl') && (0 === strpos($url, 'https:') || 0 === strpos($url, 'http://github.com'))) {
             // bypass https for github if openssl is disabled
@@ -79,6 +83,8 @@ abstract class FileDownloader implements DownloaderInterface
         }
 
         // Handle system proxy
+        $ctx = stream_context_create();
+
         if (isset($_SERVER['HTTP_PROXY'])) {
             // http(s):// is not supported in proxy
             $proxy = str_replace(array('http://', 'https://'), array('tcp://', 'ssl://'), $_SERVER['HTTP_PROXY']);
@@ -93,11 +99,13 @@ abstract class FileDownloader implements DownloaderInterface
                     'request_fulluri' => true,
                 ),
             ));
-
-            copy($url, $filename, $ctx);
-        } else {
-            copy($url, $fileName);
         }
+
+        stream_context_set_params($ctx, array("notification" => array($this, 'callbackDownload')));
+
+        copy($url, $fileName, $ctx);
+
+        $this->output->overwrite('', 80);
 
         if (!file_exists($fileName)) {
             throw new \UnexpectedValueException($url.' could not be saved to '.$fileName.', make sure the'
@@ -108,11 +116,11 @@ abstract class FileDownloader implements DownloaderInterface
             throw new \UnexpectedValueException('The checksum verification of the archive failed (downloaded from '.$url.')');
         }
 
-        $this->output->writeln('    Unpacking archive');
+        $this->output->overwrite('    Unpacking archive');
         $this->extract($fileName, $path);
 
 
-        $this->output->writeln('    Cleaning up');
+        $this->output->overwrite('    Cleaning up');
         unlink($fileName);
 
         // If we have only a one dir inside it suppose to be a package itself
@@ -126,6 +134,9 @@ abstract class FileDownloader implements DownloaderInterface
             }
             rmdir($contentDir);
         }
+
+        $this->output->overwrite('');
+        $this->output->writeln('');
     }
 
     /**
@@ -145,6 +156,57 @@ abstract class FileDownloader implements DownloaderInterface
     {
         $fs = new Util\Filesystem();
         $fs->removeDirectory($path);
+    }
+
+    /**
+     * Download notification action.
+     *
+     * @param integer $notificationCode The notification code
+     * @param integer $severity         The severity level
+     * @param string  $message          The message
+     * @param integer $messageCode      The message code
+     * @param integer $bytesTransferred The loaded size
+     * @param integer $bytesMax         The total size
+     */
+    protected function callbackDownload($notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax)
+    {
+        switch ($notificationCode) {
+            case STREAM_NOTIFY_AUTH_REQUIRED:
+                break;
+
+            case STREAM_NOTIFY_FILE_SIZE_IS:
+                if ($this->bytesMax < $bytesMax) {
+                    $this->bytesMax = $bytesMax;
+                }
+
+                break;
+
+            case STREAM_NOTIFY_PROGRESS:
+                if ($this->bytesMax > 0) {
+                    $progression = 0;
+
+                    if ($this->bytesMax > 0) {
+                        $progression = ($bytesTransferred / $this->bytesMax * 100);
+                    }
+
+                    $levels = array(0, 5, 10, 15, 20, 25, 30, 35, 40, 35, 50, 55, 60,
+                            65, 70, 75, 80, 85, 90, 95, 100);
+
+                    $progression = round($progression, 0);
+
+                    if (in_array($progression, $levels)) {
+                        $this->output->overwrite("    Downloading: <comment>$progression%</comment>", 80);
+                    }
+                }
+
+                break;
+
+            case STREAM_NOTIFY_AUTH_RESULT:
+                break;
+
+            default:
+                break;
+        }
     }
 
     /**

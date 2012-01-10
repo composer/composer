@@ -37,7 +37,7 @@ class ConsoleOutput extends BaseConsoleOutput
 
         $this->write($messages, false, $type);
 
-        for ($place = ($size - strlen($line)); $place > 0; $place--) {
+        for ($place = ($size - strlen($messages)); $place > 0; $place--) {
             $this->write(' ');
         }
 
