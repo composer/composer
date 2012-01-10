@@ -17,9 +17,8 @@ use Composer\Json\JsonFile;
 /**
  * @author Per Bernhardt <plb@webfactory.de>
  */
-class HgDriver implements VcsDriverInterface
+class HgDriver extends VcsDriver implements VcsDriverInterface
 {
-    protected $url;
     protected $tags;
     protected $branches;
     protected $rootIdentifier;
@@ -27,8 +26,9 @@ class HgDriver implements VcsDriverInterface
 
     public function __construct($url)
     {
-        $this->url = $url;
         $this->tmpDir = sys_get_temp_dir() . '/composer-' . preg_replace('{[^a-z0-9]}i', '-', $url) . '/';
+
+        parent::__construct($url);
     }
 
     /**
@@ -58,7 +58,7 @@ class HgDriver implements VcsDriverInterface
             exec(sprintf('cd %s && hg tip --template "{node}"', $tmpDir), $output);
             $this->rootIdentifier = $output[0];
         }
-        
+
         return $this->rootIdentifier;
     }
 
@@ -122,7 +122,7 @@ class HgDriver implements VcsDriverInterface
     {
         if (null === $this->tags) {
             $tags = array();
-            
+
             exec(sprintf('cd %s && hg tags', escapeshellarg($this->tmpDir)), $output);
             foreach ($output as $tag) {
                 if (preg_match('(^([^\s]+)\s+\d+:(.*)$)', $tag, $match))
