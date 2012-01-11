@@ -70,7 +70,6 @@ class VcsRepository extends ArrayRepository
 
         $versionParser = new VersionParser;
         $loader = new ArrayLoader();
-        $versions = array();
 
         if ($driver->hasComposerFile($driver->getRootIdentifier())) {
             $data = $driver->getComposerInformation($driver->getRootIdentifier());
