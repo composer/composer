@@ -3,8 +3,7 @@
 namespace Composer\Repository\Vcs;
 
 use Composer\Json\JsonFile;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Input\InputInterface;
+use Composer\Console\Helper\WrapperInterface;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -17,9 +16,9 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
     protected $branches;
     protected $infoCache = array();
 
-    public function __construct($url, InputInterface $input, OutputInterface $output)
+    public function __construct($url, WrapperInterface $wrapper)
     {
-        parent::__construct($this->baseUrl = rtrim($url, '/'), $input, $output);
+        parent::__construct($this->baseUrl = rtrim($url, '/'), $wrapper);
 
         if (false !== ($pos = strrpos($url, '/trunk'))) {
             $this->baseUrl = substr($url, 0, $pos);

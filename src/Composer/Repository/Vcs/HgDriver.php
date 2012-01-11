@@ -13,8 +13,7 @@
 namespace Composer\Repository\Vcs;
 
 use Composer\Json\JsonFile;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Input\InputInterface;
+use Composer\Console\Helper\WrapperInterface;
 
 /**
  * @author Per Bernhardt <plb@webfactory.de>
@@ -27,11 +26,11 @@ class HgDriver extends VcsDriver implements VcsDriverInterface
     protected $rootIdentifier;
     protected $infoCache = array();
 
-    public function __construct($url, InputInterface $input, OutputInterface $output)
+    public function __construct($url, WrapperInterface $wrapper)
     {
         $this->tmpDir = sys_get_temp_dir() . '/composer-' . preg_replace('{[^a-z0-9]}i', '-', $url) . '/';
 
-        parent::__construct($url, $input, $output);
+        parent::__construct($url, $wrapper);
     }
 
     /**

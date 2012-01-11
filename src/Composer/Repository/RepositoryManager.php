@@ -12,8 +12,7 @@
 
 namespace Composer\Repository;
 
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Input\InputInterface;
+use Composer\Console\Helper\WrapperInterface;
 
 /**
  * Repositories manager.
@@ -27,13 +26,11 @@ class RepositoryManager
     private $localRepository;
     private $repositories = array();
     private $repositoryClasses = array();
-    private $input;
-    private $output;
+    private $wrapper;
 
-    public function __construct(InputInterface $input, OutputInterface $output)
+    public function __construct(WrapperInterface $wrapper)
     {
-        $this->input = $input;
-        $this->output = $output;
+        $this->wrapper = $wrapper;
     }
 
     /**
@@ -78,7 +75,7 @@ class RepositoryManager
         }
 
         $class = $this->repositoryClasses[$type];
-        return new $class($this->input, $this->output, $config);
+        return new $class($config, $this->wrapper);
     }
 
     /**
