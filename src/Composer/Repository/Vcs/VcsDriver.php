@@ -46,7 +46,7 @@ abstract class VcsDriver
      *
      * @return string The correct type of protocol
      */
-    protected function getHttpSupport()
+    protected function getScheme()
     {
         if (extension_loaded('openssl')) {
             return 'https';
