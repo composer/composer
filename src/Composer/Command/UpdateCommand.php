@@ -53,9 +53,8 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $composer = $this->getComposer();
-
         $installCommand = $this->getApplication()->find('install');
+
         return $installCommand->install($input, $output, true);
     }
 }
