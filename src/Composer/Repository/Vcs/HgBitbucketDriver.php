@@ -31,7 +31,7 @@ class HgBitbucketDriver extends VcsDriver implements VcsDriverInterface
 
     public function __construct($url, InputInterface $input, OutputInterface $output)
     {
-        preg_match('#^(?:https?|http)://bitbucket\.org/([^/]+)/([^/]+)/?$#', $url, $match);
+        preg_match('#^https://bitbucket\.org/([^/]+)/([^/]+)/?$#', $url, $match);
         $this->owner = $match[1];
         $this->repository = $match[2];
 
