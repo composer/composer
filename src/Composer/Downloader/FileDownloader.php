@@ -75,7 +75,7 @@ abstract class FileDownloader implements DownloaderInterface
                 ),
             ));
 
-            copy($url, $filename, $ctx);
+            copy($url, $fileName, $ctx);
         } else {
             copy($url, $fileName);
         }
