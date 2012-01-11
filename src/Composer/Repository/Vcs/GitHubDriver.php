@@ -41,7 +41,7 @@ class GitHubDriver extends VcsDriver implements VcsDriverInterface
     public function getRootIdentifier()
     {
         if (null === $this->rootIdentifier) {
-            $repoData = json_decode(file_get_contents($this->getHttpSupport() . '://api.github.com/repos/'.$this->owner.'/'.$this->repository), true);
+            $repoData = json_decode(file_get_contents($this->getScheme() . '://api.github.com/repos/'.$this->owner.'/'.$this->repository), true);
             $this->rootIdentifier = $repoData['master_branch'] ?: 'master';
         }
 
@@ -72,7 +72,7 @@ class GitHubDriver extends VcsDriver implements VcsDriverInterface
     public function getDist($identifier)
     {
         $label = array_search($identifier, $this->getTags()) ?: $identifier;
-        $url = $this->getHttpSupport() . '://github.com/'.$this->owner.'/'.$this->repository.'/zipball/'.$label;
+        $url = $this->getScheme() . '://github.com/'.$this->owner.'/'.$this->repository.'/zipball/'.$label;
 
         return array('type' => 'zip', 'url' => $url, 'reference' => $label, 'shasum' => '');
     }
@@ -83,7 +83,7 @@ class GitHubDriver extends VcsDriver implements VcsDriverInterface
     public function getComposerInformation($identifier)
     {
         if (!isset($this->infoCache[$identifier])) {
-            $composer = @file_get_contents($this->getHttpSupport() . '://raw.github.com/'.$this->owner.'/'.$this->repository.'/'.$identifier.'/composer.json');
+            $composer = @file_get_contents($this->getScheme() . '://raw.github.com/'.$this->owner.'/'.$this->repository.'/'.$identifier.'/composer.json');
             if (!$composer) {
                 throw new \UnexpectedValueException('Failed to retrieve composer information for identifier '.$identifier.' in '.$this->getUrl());
             }
@@ -91,7 +91,7 @@ class GitHubDriver extends VcsDriver implements VcsDriverInterface
             $composer = JsonFile::parseJson($composer);
 
             if (!isset($composer['time'])) {
-                $commit = json_decode(file_get_contents($this->getHttpSupport() . '://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/commits/'.$identifier), true);
+                $commit = json_decode(file_get_contents($this->getScheme() . '://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/commits/'.$identifier), true);
                 $composer['time'] = $commit['commit']['committer']['date'];
             }
             $this->infoCache[$identifier] = $composer;
@@ -106,7 +106,7 @@ class GitHubDriver extends VcsDriver implements VcsDriverInterface
     public function getTags()
     {
         if (null === $this->tags) {
-            $tagsData = json_decode(file_get_contents($this->getHttpSupport() . '://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/tags'), true);
+            $tagsData = json_decode(file_get_contents($this->getScheme() . '://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/tags'), true);
             $this->tags = array();
             foreach ($tagsData as $tag) {
                 $this->tags[$tag['name']] = $tag['commit']['sha'];
@@ -122,7 +122,7 @@ class GitHubDriver extends VcsDriver implements VcsDriverInterface
     public function getBranches()
     {
         if (null === $this->branches) {
-            $branchData = json_decode(file_get_contents($this->getHttpSupport() . '://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/branches'), true);
+            $branchData = json_decode(file_get_contents($this->getScheme() . '://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/branches'), true);
             $this->branches = array();
             foreach ($branchData as $branch) {
                 $this->branches[$branch['name']] = $branch['commit']['sha'];
