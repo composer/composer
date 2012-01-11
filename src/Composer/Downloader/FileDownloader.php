@@ -104,7 +104,8 @@ abstract class FileDownloader implements DownloaderInterface
 
         copy($url, $fileName, $ctx);
 
-        $this->output->overwrite('', 80);
+        $this->output->overwrite("    Downloading: <comment>OK</comment>", 80);
+        $this->writeln('');
 
         if (!file_exists($fileName)) {
             throw new \UnexpectedValueException($url.' could not be saved to '.$fileName.', make sure the'
@@ -115,11 +116,11 @@ abstract class FileDownloader implements DownloaderInterface
             throw new \UnexpectedValueException('The checksum verification of the archive failed (downloaded from '.$url.')');
         }
 
-        $this->output->overwrite('    Unpacking archive');
+        $this->output->writeln('    Unpacking archive');
         $this->extract($fileName, $path);
 
 
-        $this->output->overwrite('    Cleaning up');
+        $this->output->writeln('    Cleaning up');
         unlink($fileName);
 
         // If we have only a one dir inside it suppose to be a package itself
