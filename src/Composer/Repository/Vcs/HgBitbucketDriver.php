@@ -158,6 +158,6 @@ class HgBitbucketDriver implements VcsDriverInterface
      */
     public static function supports($url, $deep = false)
     {
-        return preg_match('#^https://bitbucket\.org/([^/]+)/([^/]+)/?$#', $url, $match);
+        return preg_match('#^https://bitbucket\.org/([^/]+)/([^/]+)/?$#', $url);
     }
 }
