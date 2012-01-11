@@ -22,7 +22,6 @@ use Symfony\Component\Console\Input\InputInterface;
  */
 class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
 {
-    //protected $url;
     protected $owner;
     protected $repository;
     protected $tags;
@@ -32,7 +31,7 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
 
     public function __construct($url, InputInterface $input, OutputInterface $output)
     {
-        preg_match('#^(?:https?|http)://bitbucket\.org/([^/]+)/(.+?)\.git$#', $url, $match);
+        preg_match('#^https://bitbucket\.org/([^/]+)/(.+?)\.git$#', $url, $match);
         $this->owner = $match[1];
         $this->repository = $match[2];
 
@@ -162,6 +161,6 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
      */
     public static function supports($url, $deep = false)
     {
-        return preg_match('#^(?:https?|http)://bitbucket\.org/([^/]+)/(.+?)\.git$#', $url, $match);
+        return preg_match('#^https://bitbucket\.org/([^/]+)/(.+?)\.git$#', $url, $match);
     }
 }
