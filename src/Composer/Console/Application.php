@@ -12,13 +12,16 @@
 
 namespace Composer\Console;
 
+use Composer\Console\Helper\WrapperInterface;
+
 use Symfony\Component\Console\Application as BaseApplication;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Finder\Finder;
-use Composer\Console\Output\ConsoleOutput;
+use Composer\Console\Helper\Wrapper;
 use Composer\Command;
 use Composer\Composer;
 use Composer\Installer;
@@ -37,8 +40,7 @@ use Composer\Json\JsonFile;
 class Application extends BaseApplication
 {
     protected $composer;
-    protected $input;
-    protected $output;
+    protected $wrapper;
 
     public function __construct()
     {
@@ -67,8 +69,7 @@ class Application extends BaseApplication
     {
         $this->registerCommands();
 
-        $this->input = $input;
-        $this->output = $output;
+        $this->wrapper = new Wrapper($input, $output);
 
         return parent::doRun($input, $output);
     }
@@ -79,7 +80,7 @@ class Application extends BaseApplication
     public function getComposer()
     {
         if (null === $this->composer) {
-            $this->composer = self::bootstrapComposer(null, $this->input, $this->output);
+            $this->composer = self::bootstrapComposer(null, $this->wrapper);
         }
 
         return $this->composer;
@@ -90,7 +91,7 @@ class Application extends BaseApplication
      *
      * @return Composer
      */
-    public static function bootstrapComposer($composerFile = null, InputInterface $input = null, OutputInterface $output = null)
+    public static function bootstrapComposer($composerFile = null, WrapperInterface $wrapper)
     {
         // load Composer configuration
         if (null === $composerFile) {
@@ -128,7 +129,7 @@ class Application extends BaseApplication
         $binDir = getenv('COMPOSER_BIN_DIR') ?: $packageConfig['config']['bin-dir'];
 
         // initialize repository manager
-        $rm = new Repository\RepositoryManager($input, $output);
+        $rm = new Repository\RepositoryManager($wrapper);
         $rm->setLocalRepository(new Repository\FilesystemRepository(new JsonFile($vendorDir.'/.composer/installed.json')));
         $rm->setRepositoryClass('composer', 'Composer\Repository\ComposerRepository');
         $rm->setRepositoryClass('vcs', 'Composer\Repository\VcsRepository');
@@ -140,8 +141,8 @@ class Application extends BaseApplication
         $dm->setDownloader('git',  new Downloader\GitDownloader());
         $dm->setDownloader('svn',  new Downloader\SvnDownloader());
         $dm->setDownloader('hg', new Downloader\HgDownloader());
-        $dm->setDownloader('pear', new Downloader\PearDownloader($input, $output));
-        $dm->setDownloader('zip',  new Downloader\ZipDownloader($input, $output));
+        $dm->setDownloader('pear', new Downloader\PearDownloader($wrapper));
+        $dm->setDownloader('zip',  new Downloader\ZipDownloader($wrapper));
 
         // initialize installation manager
         $im = new Installer\InstallationManager($vendorDir);
@@ -154,7 +155,7 @@ class Application extends BaseApplication
 
         // load default repository unless it's explicitly disabled
         if (!isset($packageConfig['repositories']['packagist']) || $packageConfig['repositories']['packagist'] !== false) {
-            $rm->addRepository(new Repository\ComposerRepository($input, $output, array('url' => 'http://packagist.org')));
+            $rm->addRepository(new Repository\ComposerRepository(array('url' => 'http://packagist.org')));
         }
 
         // init locker

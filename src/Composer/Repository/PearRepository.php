@@ -13,21 +13,16 @@
 namespace Composer\Repository;
 
 use Composer\Package\Loader\ArrayLoader;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Input\InputInterface;
 
 /**
  * @author Benjamin Eberlei <kontakt@beberlei.de>
  * @author Jordi Boggiano <j.boggiano@seld.be>
- * @author François Pluchino <francois.pluchino@opendisplay.com>
  */
 class PearRepository extends ArrayRepository
 {
     protected $url;
-    private $input;
-    private $output;
 
-    public function __construct(InputInterface $input, OutputInterface $output, array $config)
+    public function __construct(array $config)
     {
         if (!preg_match('{^https?://}', $config['url'])) {
             $config['url'] = 'http://'.$config['url'];
@@ -37,8 +32,6 @@ class PearRepository extends ArrayRepository
         }
 
         $this->url = $config['url'];
-        $this->input = $input;
-        $this->output = $output;
     }
 
     protected function initialize()

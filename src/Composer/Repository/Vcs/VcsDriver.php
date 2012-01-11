@@ -13,32 +13,28 @@
 namespace Composer\Repository\Vcs;
 
 /**
- * A driver implementation
+ * A driver implementation for driver with authentification interaction.
  *
  * @author François Pluchino <francois.pluchino@opendisplay.com>
  */
 
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Input\InputInterface;
+use Composer\Console\Helper\WrapperInterface;
 
 abstract class VcsDriver
 {
     protected $url;
-    protected $input;
-    protected $output;
+    protected $wrapper;
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param string          $url    The URL
-     * @param InputInterface  $input  The Input instance
-     * @param OutputInterface $output The output instance
+     * @param string           $url     The URL
+     * @param WrapperInterface $wrapper The Wrapper instance
      */
-    public function __construct($url, InputInterface $input, OutputInterface $output)
+    public function __construct($url, WrapperInterface $wrapper)
     {
         $this->url = $url;
-        $this->input = $input;
-        $this->output = $output;
+        $this->wrapper = $wrapper;
     }
 
     /**

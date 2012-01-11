@@ -11,9 +11,8 @@
 
 namespace Composer\Downloader;
 
+use Composer\Console\Helper\WrapperInterface;
 use Composer\Package\PackageInterface;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Input\InputInterface;
 
 /**
  * Base downloader for file packages
@@ -24,20 +23,17 @@ use Symfony\Component\Console\Input\InputInterface;
  */
 abstract class FileDownloader implements DownloaderInterface
 {
-    protected $intput;
-    protected $output;
+    protected $wrapper;
     protected $bytesMax;
 
     /**
      * Constructor.
      *
-     * @param InputInterface  $input  The Input instance
-     * @param OutputInterface $output The Output instance
+     * @param WrapperInterface  $wrapper  The Wrapper instance
      */
-    public function __construct(InputInterface $input, OutputInterface $output)
+    public function __construct(WrapperInterface $wrapper)
     {
-        $this->intput = $input;
-        $this->output = $output;
+        $this->wrapper = $wrapper;
     }
 
     /**
@@ -70,7 +66,7 @@ abstract class FileDownloader implements DownloaderInterface
 
         $fileName = rtrim($path.'/'.md5(time().rand()).'.'.pathinfo($url, PATHINFO_EXTENSION), '.');
 
-        $this->output->writeln("  - Package <comment>" . $package->getName() . "</comment> (<info>" . $package->getPrettyVersion() . "</info>)");
+        $this->wrapper->getOutput()->writeln("  - Package <comment>" . $package->getName() . "</comment> (<info>" . $package->getPrettyVersion() . "</info>)");
 
         if (!extension_loaded('openssl') && (0 === strpos($url, 'https:') || 0 === strpos($url, 'http://github.com'))) {
             // bypass https for github if openssl is disabled
@@ -104,8 +100,7 @@ abstract class FileDownloader implements DownloaderInterface
 
         copy($url, $fileName, $ctx);
 
-        $this->output->overwrite("    Downloading: <comment>OK</comment>", 80);
-        $this->writeln('');
+        $this->wrapper->overwriteln("    Downloading: <comment>OK</comment>", 80);
 
         if (!file_exists($fileName)) {
             throw new \UnexpectedValueException($url.' could not be saved to '.$fileName.', make sure the'
@@ -116,11 +111,11 @@ abstract class FileDownloader implements DownloaderInterface
             throw new \UnexpectedValueException('The checksum verification of the archive failed (downloaded from '.$url.')');
         }
 
-        $this->output->writeln('    Unpacking archive');
+        $this->wrapper->getOutput()->writeln('    Unpacking archive');
         $this->extract($fileName, $path);
 
 
-        $this->output->writeln('    Cleaning up');
+        $this->wrapper->getOutput()->writeln('    Cleaning up');
         unlink($fileName);
 
         // If we have only a one dir inside it suppose to be a package itself
@@ -135,8 +130,8 @@ abstract class FileDownloader implements DownloaderInterface
             rmdir($contentDir);
         }
 
-        $this->output->overwrite('');
-        $this->output->writeln('');
+        $this->wrapper->overwrite('');
+        $this->wrapper->getOutput()->writeln('');
     }
 
     /**
@@ -195,7 +190,7 @@ abstract class FileDownloader implements DownloaderInterface
                     $progression = round($progression, 0);
 
                     if (in_array($progression, $levels)) {
-                        $this->output->overwrite("    Downloading: <comment>$progression%</comment>", 80);
+                        $this->wrapper->overwrite("    Downloading: <comment>$progression%</comment>", 80);
                     }
                 }
 
