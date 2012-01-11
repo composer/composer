@@ -44,7 +44,6 @@ class RootPackageLoader extends ArrayLoader
         $package = parent::load($config);
 
         if (isset($config['repositories'])) {
-            $repositories = array();
             foreach ($config['repositories'] as $repoName => $repo) {
                 if (false === $repo && 'packagist' === $repoName) {
                     continue;
