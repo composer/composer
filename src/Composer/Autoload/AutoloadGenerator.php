@@ -83,6 +83,7 @@ EOF;
 
         if (isset($autoloads['psr-0'])) {
             $exportedNamespaces = array();
+            $exportedNamespacesMap = array();
             foreach ($autoloads['psr-0'] as $def) {
                 $def['path'] = strtr($def['path'], '\\', '/');
                 $baseDir = '';
