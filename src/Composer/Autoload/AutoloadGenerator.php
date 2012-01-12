@@ -82,24 +82,40 @@ EOF;
         $appBaseDir = str_replace('__DIR__', '$vendorDir', $appBaseDir);
 
         if (isset($autoloads['psr-0'])) {
+            $exportedNamespaces = array();
             foreach ($autoloads['psr-0'] as $def) {
                 $def['path'] = strtr($def['path'], '\\', '/');
                 $baseDir = '';
+                $isVendor = null;
                 if (!$filesystem->isAbsolutePath($def['path'])) {
                     if (strpos($def['path'], $relVendorPath) === 0) {
                         $def['path'] = substr($def['path'], strlen($relVendorPath));
                         $baseDir = '$vendorDir . ';
+                        $isVendor = true;
                     } else {
                         $def['path'] = '/'.$def['path'];
                         $baseDir = $appBaseDir . ' . ';
+                        $isVendor = false;
                     }
                 } elseif (strpos($def['path'], $vendorPath) === 0) {
                     $def['path'] = substr($def['path'], strlen($vendorPath));
                     $baseDir = '$vendorDir . ';
+                    $isVendor = true;
                 }
                 $exportedPrefix = var_export($def['namespace'], true);
                 $exportedPath = var_export($def['path'], true);
-                $namespacesFile .= "    $exportedPrefix => {$baseDir}{$exportedPath},\n";
+                if (!in_array($exportedPrefix, $exportedNamespaces)) {
+                    $exportedNamespaces[] = $exportedPrefix;
+                }
+                if (!isset($exportedNamespacesMap[$exportedPrefix])) {
+                    $exportedNamespacesMap[$exportedPrefix] = array();
+                }
+                $exportedNamespacesMap[$exportedPrefix][$isVendor?'vendor':'non-vendor'] = $baseDir.$exportedPath;
+            }
+            foreach ($exportedNamespaces as $exportedPrefix) {
+                $pathMap = $exportedNamespacesMap[$exportedPrefix];
+                $exportedPath = $pathMap[isset($pathMap['non-vendor'])?'non-vendor':'vendor'];
+                $namespacesFile .= "    $exportedPrefix => $exportedPath,\n";
             }
         }
 

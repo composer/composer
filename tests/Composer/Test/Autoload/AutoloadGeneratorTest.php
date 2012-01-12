@@ -111,6 +111,26 @@ class AutoloadGeneratorTest extends \PHPUnit_Framework_TestCase
         $this->assertAutoloadFiles('vendors', $this->vendorDir.'/.composer');
     }
 
+    public function testOverrideVendorsAutoloading()
+    {
+        $package = new MemoryPackage('a', '1.0', '1.0');
+        $package->setAutoload(array('psr-0' => array('A\\B' => '/home/deveuser/local-packages/a-a/lib')));
+
+        $packages = array();
+        $packages[] = $a = new MemoryPackage('a/a', '1.0', '1.0');
+        $packages[] = $b = new MemoryPackage('b/b', '1.0', '1.0');
+        $a->setAutoload(array('psr-0' => array('A' => 'src/', 'A\\B' => 'lib/')));
+        $b->setAutoload(array('psr-0' => array('B\\Sub\\Name' => 'src/')));
+
+        $this->repo->expects($this->once())
+            ->method('getPackages')
+            ->will($this->returnValue($packages));
+
+        mkdir($this->vendorDir.'/.composer', 0777, true);
+        $this->generator->dump($this->repo, $package, $this->im, $this->vendorDir.'/.composer');
+        $this->assertAutoloadFiles('override_vendors', $this->vendorDir.'/.composer');
+    }
+
     private function assertAutoloadFiles($name, $dir)
     {
         $this->assertFileEquals(__DIR__.'/Fixtures/autoload_'.$name.'.php', $dir.'/autoload_namespaces.php');
