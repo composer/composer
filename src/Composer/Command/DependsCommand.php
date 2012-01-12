@@ -63,7 +63,6 @@ EOT
         $needle = $input->getArgument('package');
 
         $references = array();
-        $recommendedDependencies = array();
 
         // check if we have a local installation so we can grab the right package/version
         $repos = array_merge(

@@ -160,6 +160,6 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
      */
     public static function supports($url, $deep = false)
     {
-        return preg_match('#^https://bitbucket\.org/([^/]+)/(.+?)\.git$#', $url, $match);
+        return preg_match('#^https://bitbucket\.org/([^/]+)/(.+?)\.git$#', $url);
     }
 }
