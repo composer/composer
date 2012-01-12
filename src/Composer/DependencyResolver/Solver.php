@@ -1078,9 +1078,7 @@ class Solver
     protected function createTransaction()
     {
         $transaction = array();
-
         $installMeansUpdateMap = array();
-        $ignoreRemoveMap = array();
 
         foreach ($this->decisionQueue as $i => $literal) {
             $package = $literal->getPackage();
@@ -1739,7 +1737,7 @@ class Solver
 
         $level = 1;
         $systemLevel = $level + 1;
-        $minimizationsteps = 0;
+        $minimizationSteps = 0;
         $installedPos = 0;
 
         $this->installedPackages = $this->installed->getPackages();
@@ -1930,7 +1928,7 @@ class Solver
                     $installedPos = 0;
                 }
 
-                $systemlevel = $level + 1;
+                $systemLevel = $level + 1;
 
                 if ($pass < 2) {
                     // had trouble => retry

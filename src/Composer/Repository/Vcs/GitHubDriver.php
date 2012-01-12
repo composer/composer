@@ -150,6 +150,6 @@ class GitHubDriver extends VcsDriver implements VcsDriverInterface
      */
     public static function supports($url, $deep = false)
     {
-        return extension_loaded('openssl') && preg_match('#^(?:https?|git)://github\.com/([^/]+)/(.+?)(?:\.git)?$#', $url, $match);
+        return extension_loaded('openssl') && preg_match('#^(?:https?|git)://github\.com/([^/]+)/(.+?)(?:\.git)?$#', $url);
     }
 }

@@ -102,7 +102,6 @@ class PearRepository extends ArrayRepository
                     }
                     $deps = unserialize($deps);
                     if (isset($deps['required']['package'])) {
-                        $requires = array();
 
                         if (isset($deps['required']['package']['name'])) {
                             $deps['required']['package'] = array($deps['required']['package']);
