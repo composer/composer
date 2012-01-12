@@ -6,6 +6,6 @@ $vendorDir = dirname(__DIR__);
 
 return array(
     'B\\Sub\\Name' => $vendorDir . '/b/b/src/',
-    'A\\B' => '/home/deveuser/local-packages/a-a/lib',
+    'A\\B' => array('/home/deveuser/local-packages/a-a/lib',$vendorDir . '/a/a/lib/'),
     'A' => $vendorDir . '/a/a/src/',
 );
