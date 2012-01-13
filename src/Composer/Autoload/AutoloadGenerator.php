@@ -105,8 +105,8 @@ EOF;
                 }
                 $exportedPrefix = var_export($namespace, true);
                 $namespacesFile .= "    $exportedPrefix => ";
-                if (count($exportedPaths)>1) {
-                    $namespacesFile .= "array(".implode(',',$exportedPaths)."),\n";
+                if (count($exportedPaths) > 1) {
+                    $namespacesFile .= "array(".implode(', ',$exportedPaths)."),\n";
                 } else {
                     $namespacesFile .= $exportedPaths[0].",\n";
                 }
