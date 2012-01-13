@@ -67,6 +67,10 @@ EOF;
 
         // build package => install path map
         $packageMap = array();
+
+        // add main package
+        $packageMap[] = array($mainPackage, '');
+
         foreach ($localRepo->getPackages() as $installedPackage) {
             $packageMap[] = array(
                 $installedPackage,
@@ -74,32 +78,38 @@ EOF;
             );
         }
 
-        // add main package
-        $packageMap[] = array($mainPackage, '');
         $autoloads = $this->parseAutoloads($packageMap);
 
         $appBaseDir = $filesystem->findShortestPathCode($vendorPath, getcwd(), true);
         $appBaseDir = str_replace('__DIR__', '$vendorDir', $appBaseDir);
 
         if (isset($autoloads['psr-0'])) {
-            foreach ($autoloads['psr-0'] as $def) {
-                $def['path'] = strtr($def['path'], '\\', '/');
-                $baseDir = '';
-                if (!$filesystem->isAbsolutePath($def['path'])) {
-                    if (strpos($def['path'], $relVendorPath) === 0) {
-                        $def['path'] = substr($def['path'], strlen($relVendorPath));
+            foreach ($autoloads['psr-0'] as $namespace => $paths) {
+                $exportedPaths = array();
+                foreach ($paths as $path) {
+                    $path = strtr($path, '\\', '/');
+                    $baseDir = '';
+                    if (!$filesystem->isAbsolutePath($path)) {
+                        if (strpos($path, $relVendorPath) === 0) {
+                            $path = substr($path, strlen($relVendorPath));
+                            $baseDir = '$vendorDir . ';
+                        } else {
+                            $path = '/'.$path;
+                            $baseDir = $appBaseDir . ' . ';
+                        }
+                    } elseif (strpos($path, $vendorPath) === 0) {
+                        $path = substr($path, strlen($vendorPath));
                         $baseDir = '$vendorDir . ';
-                    } else {
-                        $def['path'] = '/'.$def['path'];
-                        $baseDir = $appBaseDir . ' . ';
                     }
-                } elseif (strpos($def['path'], $vendorPath) === 0) {
-                    $def['path'] = substr($def['path'], strlen($vendorPath));
-                    $baseDir = '$vendorDir . ';
+                    $exportedPaths[] = $baseDir.var_export($path, true);
                 }
-                $exportedPrefix = var_export($def['namespace'], true);
-                $exportedPath = var_export($def['path'], true);
-                $namespacesFile .= "    $exportedPrefix => {$baseDir}{$exportedPath},\n";
+                $exportedPrefix = var_export($namespace, true);
+                $namespacesFile .= "    $exportedPrefix => ";
+                if (count($exportedPaths)>1) {
+                    $namespacesFile .= "array(".implode(',',$exportedPaths)."),\n";
+                } else {
+                    $namespacesFile .= $exportedPaths[0].",\n";
+                }
             }
         }
 
@@ -113,7 +123,7 @@ EOF;
      * Compiles an ordered list of namespace => path mappings
      *
      * @param array $packageMap array of array(package, installDir-relative-to-composer.json)
-     * @return array array('psr-0' => array(array('namespace' => 'Foo', 'path' => 'installDir')))
+     * @return array array('psr-0' => array('Ns\\Foo' => array('installDir')))
      */
     public function parseAutoloads(array $packageMap)
     {
@@ -127,19 +137,14 @@ EOF;
 
             foreach ($package->getAutoload() as $type => $mapping) {
                 foreach ($mapping as $namespace => $path) {
-                    $autoloads[$type][] = array(
-                        'namespace' => $namespace,
-                        'path'      => empty($installPath) ? $path : $installPath.'/'.$path,
-                    );
+                    $autoloads[$type][$namespace][] = empty($installPath) ? $path : $installPath.'/'.$path;
                 }
             }
 
         }
 
         foreach ($autoloads as $type => $maps) {
-            usort($autoloads[$type], function ($a, $b) {
-                return strcmp($b['namespace'], $a['namespace']);
-            });
+            krsort($autoloads[$type]);
         }
 
         return $autoloads;
@@ -156,8 +161,8 @@ EOF;
         $loader = new ClassLoader();
 
         if (isset($autoloads['psr-0'])) {
-            foreach ($autoloads['psr-0'] as $def) {
-                $loader->add($def['namespace'], $def['path']);
+            foreach ($autoloads['psr-0'] as $namespace => $path) {
+                $loader->add($namespace, $path);
             }
         }
 
