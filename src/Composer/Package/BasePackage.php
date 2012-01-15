@@ -15,6 +15,7 @@ namespace Composer\Package;
 use Composer\Package\LinkConstraint\LinkConstraintInterface;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Repository\RepositoryInterface;
+use Composer\Repository\RepositoryManager;
 
 /**
  * Base class for packages providing name storage and default match implementation
@@ -157,5 +158,48 @@ abstract class BasePackage implements PackageInterface
     public function __clone()
     {
         $this->repository = null;
+    }
+
+    /**
+     * find all versions for this package
+     *
+     * @param RepositoryManager $repositoryManager
+     * @return array
+     */
+    public function getVersions(RepositoryManager $repositoryManager)
+    {
+        $versions = array();
+
+        foreach ($repositoryManager->getRepositories() as $repository) {
+            foreach ($repository->getPackages() as $package) {
+                if ($package->getName() === $this->getName()) {
+                    $versions[] = $package;
+                }
+            }
+        }
+
+        return $versions;
+    }
+
+    /**
+     * find the latest version of this package
+     *
+     * @param LinkConstraintInterface $constraint
+     * @param RepositoryManager $repositoryManager
+     * @return PackageInterface
+     */
+    public function getLatestVersion(LinkConstraintInterface $constraint, RepositoryManager $repositoryManager)
+    {
+        $latest = $this;
+        $packages = $this->getVersions($repositoryManager);
+
+        foreach ($packages as $package) {
+            $selfVersion = new VersionConstraint('==', $package->getVersion());
+            if ($selfVersion->matches($constraint) && $package->getVersion() > $this->getVersion()) {
+                $latest = $package;
+            }
+        }
+
+        return $latest;
     }
 }
