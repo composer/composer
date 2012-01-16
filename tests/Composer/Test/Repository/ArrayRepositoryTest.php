@@ -50,4 +50,20 @@ class ArrayRepositoryTest extends TestCase
         $this->assertTrue($repo->hasPackage($this->getPackage('foo', '1')));
         $this->assertFalse($repo->hasPackage($this->getPackage('bar', '1')));
     }
+
+    public function testFindPackagesByName()
+    {
+        $repo = new ArrayRepository();
+        $repo->addPackage($this->getPackage('foo', '1'));
+        $repo->addPackage($this->getPackage('bar', '2'));
+        $repo->addPackage($this->getPackage('bar', '3'));
+
+        $foo = $repo->findPackagesByName('foo');
+        $this->assertCount(1, $foo);
+        $this->assertEquals('foo', $foo[0]->getName());
+
+        $bar = $repo->findPackagesByName('bar');
+        $this->assertCount(2, $bar);
+        $this->assertEquals('bar', $bar[0]->getName());
+    }
 }
