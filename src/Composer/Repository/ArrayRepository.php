@@ -48,10 +48,15 @@ class ArrayRepository implements RepositoryInterface
     {
         // normalize name
         $name = strtolower($name);
+        $packages = array();
 
-        return array_filter($this->getPackages(), function (PackageInterface $package) use ($name) {
-            return $package->getName() === $name;
-        });
+        foreach ($this->getPackages() as $package) {
+            if ($package->getName() === $name) {
+                $packages[] = $package;
+            }
+        }
+
+        return $packages;
     }
 
     /**
