@@ -118,7 +118,7 @@ class SolverTest extends TestCase
         $this->checkSolverResult(array());
     }
 
-    public function testSolverUpdateDoesOnlyUpdate()
+    public function testSolverUpdateDoesOnlyUpdateAndUnpack()
     {
         $this->repoInstalled->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repoInstalled->addPackage($packageB = $this->getPackage('B', '1.0'));
@@ -134,6 +134,7 @@ class SolverTest extends TestCase
 
         $this->checkSolverResult(array(
             array('job' => 'update', 'from' => $packageB, 'to' => $newPackageB),
+            array('job' => 'unpack', 'package' => $newPackageB),
         ));
     }
 
