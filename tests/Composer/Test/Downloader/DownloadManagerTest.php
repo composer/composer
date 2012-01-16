@@ -599,6 +599,35 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
         $manager->remove($package, 'vendor/bundles/FOS/UserBundle');
     }
 
+    public function testUnpack()
+    {
+        $package = $this->createPackageMock();
+        $package->expects($this->exactly(2))
+            ->method('getId')
+            ->will($this->onConsecutiveCalls('pear', 'zip'));
+
+        $pearDownloader = $this->createDownloaderMock();
+
+        $zipDownloader = $this->getMockBuilder('Composer\Downloader\ZipDownloader')->getMock();
+        $zipDownloader
+            ->expects($this->once())
+            ->method('unpack')
+            ->with($package, 'vendor/bundles/FOS/RestBundle');
+
+        $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
+            ->setMethods(array('getDownloaderForInstalledPackage'))
+            ->getMock();
+        $manager
+            ->expects($this->exactly(2))
+            ->method('getDownloaderForInstalledPackage')
+            ->will($this->returnCallback(function($package) use ($pearDownloader, $zipDownloader){
+                           return ('zip' == $package->getId()) ? $zipDownloader : $pearDownloader;
+                       }));
+
+        $manager->unpack($package, 'vendor/bundles/FOS/UserBundle');
+        $manager->unpack($package, 'vendor/bundles/FOS/RestBundle');
+    }
+
     private function createDownloaderMock()
     {
         return $this->getMockBuilder('Composer\Downloader\DownloaderInterface')

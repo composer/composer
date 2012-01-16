@@ -172,6 +172,24 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
         $library->uninstall($package);
     }
 
+    public function testUnpack()
+    {
+        $library = new LibraryInstaller($this->vendorDir, $this->binDir, $this->dm, $this->repository);
+        $package = $this->createPackageMock();
+
+        $package
+            ->expects($this->once())
+            ->method('getPrettyName')
+            ->will($this->returnValue('some/package'));
+
+        $this->dm
+            ->expects($this->once())
+            ->method('unpack')
+            ->with($package, $this->vendorDir.'/some/package');
+
+        $library->unpack($package);
+    }
+
     public function testGetInstallPath()
     {
         $library = new LibraryInstaller($this->vendorDir, $this->binDir, $this->dm, $this->repository);
