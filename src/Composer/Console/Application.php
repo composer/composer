@@ -85,6 +85,14 @@ class Application extends BaseApplication
     }
 
     /**
+     * @return IOInterface
+     */
+    public function getIO()
+    {
+        return $this->io;
+    }
+
+    /**
      * Bootstraps a Composer instance
      *
      * @return Composer
@@ -144,8 +152,8 @@ class Application extends BaseApplication
 
         // initialize installation manager
         $im = new Installer\InstallationManager($vendorDir);
-        $im->addInstaller(new Installer\LibraryInstaller($vendorDir, $binDir, $dm, $rm->getLocalRepository(), null));
-        $im->addInstaller(new Installer\InstallerInstaller($vendorDir, $binDir, $dm, $rm->getLocalRepository(), $im));
+        $im->addInstaller(new Installer\LibraryInstaller($vendorDir, $binDir, $dm, $rm->getLocalRepository(), $io, null));
+        $im->addInstaller(new Installer\InstallerInstaller($vendorDir, $binDir, $dm, $rm->getLocalRepository(), $io, $im));
 
         // load package
         $loader  = new Package\Loader\RootPackageLoader($rm);
