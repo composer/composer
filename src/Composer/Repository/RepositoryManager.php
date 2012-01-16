@@ -12,7 +12,7 @@
 
 namespace Composer\Repository;
 
-use Composer\Console\Helper\WrapperInterface;
+use Composer\IO\IOInterface;
 
 /**
  * Repositories manager.
@@ -26,11 +26,11 @@ class RepositoryManager
     private $localRepository;
     private $repositories = array();
     private $repositoryClasses = array();
-    private $wrapper;
+    private $io;
 
-    public function __construct(WrapperInterface $wrapper)
+    public function __construct(IOInterface $io)
     {
-        $this->wrapper = $wrapper;
+        $this->io = $io;
     }
 
     /**
@@ -75,7 +75,7 @@ class RepositoryManager
         }
 
         $class = $this->repositoryClasses[$type];
-        return new $class($config, $this->wrapper);
+        return new $class($config, $this->io);
     }
 
     /**

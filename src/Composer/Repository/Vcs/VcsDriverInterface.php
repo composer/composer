@@ -2,6 +2,8 @@
 
 namespace Composer\Repository\Vcs;
 
+use Composer\Console\Helper\Wrapper;
+
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */

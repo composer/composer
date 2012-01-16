@@ -12,8 +12,6 @@
 
 namespace Composer\Console;
 
-use Composer\Console\Helper\WrapperInterface;
-
 use Symfony\Component\Console\Application as BaseApplication;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -21,7 +19,6 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Finder\Finder;
-use Composer\Console\Helper\Wrapper;
 use Composer\Command;
 use Composer\Composer;
 use Composer\Installer;
@@ -29,6 +26,8 @@ use Composer\Downloader;
 use Composer\Repository;
 use Composer\Package;
 use Composer\Json\JsonFile;
+use Composer\IO\IOInterface;
+use Composer\IO\ConsoleIO;
 
 /**
  * The console application that handles the commands
@@ -40,7 +39,7 @@ use Composer\Json\JsonFile;
 class Application extends BaseApplication
 {
     protected $composer;
-    protected $wrapper;
+    protected $io;
 
     public function __construct()
     {
@@ -68,8 +67,7 @@ class Application extends BaseApplication
     public function doRun(InputInterface $input, OutputInterface $output)
     {
         $this->registerCommands();
-
-        $this->wrapper = new Wrapper($input, $output);
+        $this->io = new ConsoleIO($input, $output, $this->getHelperSet());
 
         return parent::doRun($input, $output);
     }
@@ -80,7 +78,7 @@ class Application extends BaseApplication
     public function getComposer()
     {
         if (null === $this->composer) {
-            $this->composer = self::bootstrapComposer(null, $this->wrapper);
+            $this->composer = self::bootstrapComposer(null, $this->io);
         }
 
         return $this->composer;
@@ -91,7 +89,7 @@ class Application extends BaseApplication
      *
      * @return Composer
      */
-    public static function bootstrapComposer($composerFile = null, WrapperInterface $wrapper)
+    public static function bootstrapComposer($composerFile = null, IOInterface $io)
     {
         // load Composer configuration
         if (null === $composerFile) {
@@ -129,7 +127,7 @@ class Application extends BaseApplication
         $binDir = getenv('COMPOSER_BIN_DIR') ?: $packageConfig['config']['bin-dir'];
 
         // initialize repository manager
-        $rm = new Repository\RepositoryManager($wrapper);
+        $rm = new Repository\RepositoryManager($io);
         $rm->setLocalRepository(new Repository\FilesystemRepository(new JsonFile($vendorDir.'/.composer/installed.json')));
         $rm->setRepositoryClass('composer', 'Composer\Repository\ComposerRepository');
         $rm->setRepositoryClass('vcs', 'Composer\Repository\VcsRepository');
@@ -141,8 +139,8 @@ class Application extends BaseApplication
         $dm->setDownloader('git',  new Downloader\GitDownloader());
         $dm->setDownloader('svn',  new Downloader\SvnDownloader());
         $dm->setDownloader('hg', new Downloader\HgDownloader());
-        $dm->setDownloader('pear', new Downloader\PearDownloader($wrapper));
-        $dm->setDownloader('zip',  new Downloader\ZipDownloader($wrapper));
+        $dm->setDownloader('pear', new Downloader\PearDownloader($io));
+        $dm->setDownloader('zip',  new Downloader\ZipDownloader($io));
 
         // initialize installation manager
         $im = new Installer\InstallationManager($vendorDir);

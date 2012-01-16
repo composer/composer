@@ -3,11 +3,10 @@
 namespace Composer\Repository\Vcs;
 
 use Composer\Json\JsonFile;
-use Composer\Console\Helper\WrapperInterface;
+use Composer\IO\IOInterface;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
- * @author François Pluchino <francois.pluchino@opendisplay.com>
  */
 class GitDriver extends VcsDriver implements VcsDriverInterface
 {
@@ -16,11 +15,11 @@ class GitDriver extends VcsDriver implements VcsDriverInterface
     protected $rootIdentifier;
     protected $infoCache = array();
 
-    public function __construct($url, WrapperInterface $wrapper)
+    public function __construct($url, IOInterface $io)
     {
         $this->tmpDir = sys_get_temp_dir() . '/composer-' . preg_replace('{[^a-z0-9]}i', '-', $url) . '/';
 
-        parent::__construct($url, $wrapper);
+        parent::__construct($url, $io);
     }
 
     /**

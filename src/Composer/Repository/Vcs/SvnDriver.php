@@ -3,11 +3,10 @@
 namespace Composer\Repository\Vcs;
 
 use Composer\Json\JsonFile;
-use Composer\Console\Helper\WrapperInterface;
+use Composer\IO\IOInterface;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
- * @author François Pluchino <francois.pluchino@opendisplay.com>
  */
 class SvnDriver extends VcsDriver implements VcsDriverInterface
 {
@@ -16,9 +15,9 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
     protected $branches;
     protected $infoCache = array();
 
-    public function __construct($url, WrapperInterface $wrapper)
+    public function __construct($url, IOInterface $io)
     {
-        parent::__construct($this->baseUrl = rtrim($url, '/'), $wrapper);
+        parent::__construct($this->baseUrl = rtrim($url, '/'), $io);
 
         if (false !== ($pos = strrpos($url, '/trunk'))) {
             $this->baseUrl = substr($url, 0, $pos);
