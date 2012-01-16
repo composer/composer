@@ -49,7 +49,7 @@ class ArrayRepository implements RepositoryInterface
         // normalize name
         $name = strtolower($name);
 
-        return array_filter($this->getPackages(), function(PackageInterface $package) use ($name) {
+        return array_filter($this->getPackages(), function (PackageInterface $package) use ($name) {
             return $package->getName() === $name;
         });
     }
