@@ -12,6 +12,7 @@
 
 namespace Composer\Repository;
 
+use Composer\Composer;
 /**
  * Repositories manager.
  *
@@ -108,5 +109,30 @@ class RepositoryManager
     public function getLocalRepository()
     {
         return $this->localRepository;
+    }
+
+    /**
+     * find outdated packages
+     *
+     * @param Composer $composer
+     * @return array
+     */
+    public function findOutdated(Composer $composer)
+    {
+        $outdated = array();
+
+        foreach ($this->getLocalRepository()->getPackages() as $package) {
+            $outdated[$package->getName()]['installed'] = $package;
+
+            foreach ($composer->getPackage()->getRequires() as $link) {
+                if ($link->getTarget() !== $package->getName()) {
+                    continue;
+                }
+
+                $outdated[$package->getName()]['available'] = $package->getLatestVersion($link->getConstraint(), $this);
+            }
+        }
+
+        return $outdated;
     }
 }
