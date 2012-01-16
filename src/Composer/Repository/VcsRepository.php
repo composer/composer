@@ -5,20 +5,19 @@ namespace Composer\Repository;
 use Composer\Repository\Vcs\VcsDriverInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\Loader\ArrayLoader;
-use Composer\Console\Helper\WrapperInterface;
+use Composer\IO\IOInterface;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
- * @author François Pluchino <francois.pluchino@opendisplay.com>
  */
 class VcsRepository extends ArrayRepository
 {
     protected $url;
     protected $packageName;
     protected $debug;
-    protected $wrapper;
+    protected $io;
 
-    public function __construct(WrapperInterface $wrapper, array $config, array $drivers = null)
+    public function __construct(array $config, IOInterface $io, array $drivers = null)
     {
         if (!filter_var($config['url'], FILTER_VALIDATE_URL)) {
             throw new \UnexpectedValueException('Invalid url given for PEAR repository: '.$config['url']);
@@ -34,7 +33,7 @@ class VcsRepository extends ArrayRepository
         );
 
         $this->url = $config['url'];
-        $this->wrapper = $wrapper;
+        $this->io = $io;
     }
 
     public function setDebug($debug)
@@ -46,7 +45,7 @@ class VcsRepository extends ArrayRepository
     {
         foreach ($this->drivers as $driver) {
             if ($driver::supports($this->url)) {
-                $driver = new $driver($this->url, $this->wrapper);
+                $driver = new $driver($this->url, $this->io);
                 $driver->initialize();
                 return $driver;
             }
@@ -54,7 +53,7 @@ class VcsRepository extends ArrayRepository
 
         foreach ($this->drivers as $driver) {
             if ($driver::supports($this->url, true)) {
-                $driver = new $driver($this->url, $this->wrapper);
+                $driver = new $driver($this->url, $this->io);
                 $driver->initialize();
                 return $driver;
             }

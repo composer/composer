@@ -13,11 +13,10 @@
 namespace Composer\Repository\Vcs;
 
 use Composer\Json\JsonFile;
-use Composer\Console\Helper\WrapperInterface;
+use Composer\IO\IOInterface;
 
 /**
  * @author Per Bernhardt <plb@webfactory.de>
- * @author François Pluchino <francois.pluchino@opendisplay.com>
  */
 class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
 {
@@ -28,13 +27,13 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
     protected $rootIdentifier;
     protected $infoCache = array();
 
-    public function __construct($url, WrapperInterface $wrapper)
+    public function __construct($url, IOInterface $io)
     {
         preg_match('#^https://bitbucket\.org/([^/]+)/(.+?)\.git$#', $url, $match);
         $this->owner = $match[1];
         $this->repository = $match[2];
 
-        parent::__construct($url, $wrapper);
+        parent::__construct($url, $io);
     }
 
     /**
@@ -50,7 +49,7 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
     public function getRootIdentifier()
     {
         if (null === $this->rootIdentifier) {
-            $repoData = json_decode(file_get_contents($this->getScheme() . '://api.bitbucket.org/1.0/repositories/'.$this->owner.'/'.$this->repository), true);
+            $repoData = json_decode($this->getContents($this->getScheme() . '://api.bitbucket.org/1.0/repositories/'.$this->owner.'/'.$this->repository), true);
             $this->rootIdentifier = !empty($repoData['main_branch']) ? $repoData['main_branch'] : 'master';
         }
 
@@ -92,7 +91,7 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
     public function getComposerInformation($identifier)
     {
         if (!isset($this->infoCache[$identifier])) {
-            $composer = @file_get_contents($this->getScheme() . '://bitbucket.org/'.$this->owner.'/'.$this->repository.'/raw/'.$identifier.'/composer.json');
+            $composer = $this->getContents($this->getScheme() . '://bitbucket.org/'.$this->owner.'/'.$this->repository.'/raw/'.$identifier.'/composer.json');
             if (!$composer) {
                 throw new \UnexpectedValueException('Failed to retrieve composer information for identifier '.$identifier.' in '.$this->getUrl());
             }
@@ -100,7 +99,7 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
             $composer = JsonFile::parseJson($composer);
 
             if (!isset($composer['time'])) {
-                $changeset = json_decode(file_get_contents($this->getScheme() . '://api.bitbucket.org/1.0/repositories/'.$this->owner.'/'.$this->repository.'/changesets/'.$identifier), true);
+                $changeset = json_decode($this->getContents($this->getScheme() . '://api.bitbucket.org/1.0/repositories/'.$this->owner.'/'.$this->repository.'/changesets/'.$identifier), true);
                 $composer['time'] = $changeset['timestamp'];
             }
             $this->infoCache[$identifier] = $composer;
@@ -115,7 +114,7 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
     public function getTags()
     {
         if (null === $this->tags) {
-            $tagsData = json_decode(file_get_contents($this->getScheme() . '://api.bitbucket.org/1.0/repositories/'.$this->owner.'/'.$this->repository.'/tags'), true);
+            $tagsData = json_decode($this->getContents($this->getScheme() . '://api.bitbucket.org/1.0/repositories/'.$this->owner.'/'.$this->repository.'/tags'), true);
             $this->tags = array();
             foreach ($tagsData as $tag => $data) {
                 $this->tags[$tag] = $data['raw_node'];
@@ -131,7 +130,7 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
     public function getBranches()
     {
         if (null === $this->branches) {
-            $branchData = json_decode(file_get_contents($this->getScheme() . '://api.bitbucket.org/1.0/repositories/'.$this->owner.'/'.$this->repository.'/branches'), true);
+            $branchData = json_decode($this->getContents($this->getScheme() . '://api.bitbucket.org/1.0/repositories/'.$this->owner.'/'.$this->repository.'/branches'), true);
             $this->branches = array();
             foreach ($branchData as $branch => $data) {
                 $this->branches[$branch] = $data['raw_node'];

@@ -11,7 +11,7 @@
 
 namespace Composer\Downloader;
 
-use Composer\Console\Helper\WrapperInterface;
+use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 
 /**
@@ -23,17 +23,17 @@ use Composer\Package\PackageInterface;
  */
 abstract class FileDownloader implements DownloaderInterface
 {
-    protected $wrapper;
+    protected $io;
     protected $bytesMax;
 
     /**
      * Constructor.
      *
-     * @param WrapperInterface  $wrapper  The Wrapper instance
+     * @param IOInterface  $io  The IO instance
      */
-    public function __construct(WrapperInterface $wrapper)
+    public function __construct(IOInterface $io)
     {
-        $this->wrapper = $wrapper;
+        $this->io = $io;
     }
 
     /**
@@ -66,7 +66,7 @@ abstract class FileDownloader implements DownloaderInterface
 
         $fileName = rtrim($path.'/'.md5(time().rand()).'.'.pathinfo($url, PATHINFO_EXTENSION), '.');
 
-        $this->wrapper->getOutput()->writeln("  - Package <comment>" . $package->getName() . "</comment> (<info>" . $package->getPrettyVersion() . "</info>)");
+        $this->io->writeln("  - Package <info>" . $package->getName() . "</info> (<comment>" . $package->getPrettyVersion() . "</comment>)");
 
         if (!extension_loaded('openssl') && (0 === strpos($url, 'https:') || 0 === strpos($url, 'http://github.com'))) {
             // bypass https for github if openssl is disabled
@@ -98,9 +98,9 @@ abstract class FileDownloader implements DownloaderInterface
 
         stream_context_set_params($ctx, array("notification" => array($this, 'callbackDownload')));
 
+        $this->io->overwrite("    Downloading: <comment>connection...</comment>", 80);
         copy($url, $fileName, $ctx);
-
-        $this->wrapper->overwriteln("    Downloading: <comment>OK</comment>", 80);
+        $this->io->overwriteln("    Downloading", 80);
 
         if (!file_exists($fileName)) {
             throw new \UnexpectedValueException($url.' could not be saved to '.$fileName.', make sure the'
@@ -111,11 +111,11 @@ abstract class FileDownloader implements DownloaderInterface
             throw new \UnexpectedValueException('The checksum verification of the archive failed (downloaded from '.$url.')');
         }
 
-        $this->wrapper->getOutput()->writeln('    Unpacking archive');
+        $this->io->writeln('    Unpacking archive');
         $this->extract($fileName, $path);
 
 
-        $this->wrapper->getOutput()->writeln('    Cleaning up');
+        $this->io->writeln('    Cleaning up');
         unlink($fileName);
 
         // If we have only a one dir inside it suppose to be a package itself
@@ -130,8 +130,8 @@ abstract class FileDownloader implements DownloaderInterface
             rmdir($contentDir);
         }
 
-        $this->wrapper->overwrite('');
-        $this->wrapper->getOutput()->writeln('');
+        $this->io->overwrite('');
+        $this->io->writeln('');
     }
 
     /**
@@ -190,7 +190,7 @@ abstract class FileDownloader implements DownloaderInterface
                     $progression = round($progression, 0);
 
                     if (in_array($progression, $levels)) {
-                        $this->wrapper->overwrite("    Downloading: <comment>$progression%</comment>", 80);
+                        $this->io->overwrite("    Downloading: <comment>$progression%</comment>", 80);
                     }
                 }
 
