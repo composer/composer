@@ -99,11 +99,11 @@ class Application extends BaseApplication
         $file = new JsonFile($composerFile);
         if (!$file->exists()) {
             if ($composerFile === 'composer.json') {
-                echo 'Composer could not find a composer.json file in '.getcwd().PHP_EOL;
+                $this->io->writeln('Composer could not find a composer.json file in '.getcwd());
             } else {
-                echo 'Composer could not find the config file: '.$composerFile.PHP_EOL;
+                $this->io->writeln('Composer could not find the config file: '.$composerFile);
             }
-            echo 'To initialize a project, please create a composer.json file as described on the http://packagist.org/ "Getting Started" section'.PHP_EOL;
+            $this->io->writeln('To initialize a project, please create a composer.json file as described on the http://packagist.org/ "Getting Started" section');
             exit(1);
         }
 

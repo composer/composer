@@ -111,7 +111,7 @@ EOT
                 $request->install($package->getName(), $constraint);
             }
         } else {
-            $output->writeln('<info>Installing dependencies.</info>');
+            $output->writeln('<info>Installing dependencies</info>');
 
             $links = $this->collectLinks($input, $composer->getPackage());
 
