@@ -23,6 +23,7 @@ abstract class VcsDriver
 {
     protected $url;
     protected $io;
+    private $firstCall;
 
     /**
      * Constructor.
@@ -34,6 +35,7 @@ abstract class VcsDriver
     {
         $this->url = $url;
         $this->io = $io;
+        $this->firstCall = true;
     }
 
     /**
@@ -96,8 +98,13 @@ abstract class VcsDriver
         curl_close($ch);
 
         // for private repository returning 404 error when the authentification is incorrect
-        $ps = 404 === $code && null === $this->io->getLastUsername() && null === $auth['username'];
+        $ps = $this->firstCall && 404 === $code && null === $this->io->getLastUsername() && null === $auth['username'];
 
+        if ($this->firstCall) {
+            $this->firstCall = false;
+        }
+
+        // auth required
         if (401 === $code || $ps) {
             if (!$this->io->isInteractive()) {
                 $mess = "The '$url' URL not found";
