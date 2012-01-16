@@ -20,6 +20,9 @@
     <filter>
         <whitelist>
             <directory>./src/Composer/</directory>
+            <exclude>
+                <file>./src/Composer/Autoload/ClassLoader.php</file>
+            </exclude>
         </whitelist>
     </filter>
 </phpunit>

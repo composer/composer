@@ -85,11 +85,9 @@ EOT
             $composer->getRepositoryManager()->getRepositories()
         );
         foreach ($repos as $repository) {
-            foreach ($repository->getPackages() as $package) {
-                if ($package->getName() === $input->getArgument('package')) {
-                    if (null === $highestVersion || version_compare($package->getVersion(), $highestVersion->getVersion(), '>=')) {
-                        $highestVersion = $package;
-                    }
+            foreach ($repository->findPackagesByName($input->getArgument('package')) as $package) {
+                if (null === $highestVersion || version_compare($package->getVersion(), $highestVersion->getVersion(), '>=')) {
+                    $highestVersion = $package;
                 }
             }
         }
@@ -135,10 +133,8 @@ EOT
         $versions = array();
 
         foreach ($composer->getRepositoryManager()->getRepositories() as $repository) {
-            foreach ($repository->getPackages() as $version) {
-                if ($version->getName() === $package->getName()) {
-                    $versions[] = $version->getPrettyVersion();
-                }
+            foreach ($repository->findPackagesByName($package->getName()) as $version) {
+                $versions[] = $version->getPrettyVersion();
             }
         }
 

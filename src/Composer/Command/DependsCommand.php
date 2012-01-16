@@ -16,10 +16,12 @@ use Composer\Composer;
 use Composer\Package\PackageInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * @author Justin Rainbow <justin.rainbow@gmail.com>
+ * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 class DependsCommand extends Command
 {
@@ -27,13 +29,14 @@ class DependsCommand extends Command
     {
         $this
             ->setName('depends')
-            ->setDescription('Where is a package used?')
+            ->setDescription('Shows which packages depend on the given package')
             ->setDefinition(array(
-                new InputArgument('package', InputArgument::REQUIRED, 'the package to inspect')
+                new InputArgument('package', InputArgument::REQUIRED, 'Package to inspect'),
+                new InputOption('link-type', '', InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY, 'Link types to show', array('requires', 'recommends', 'suggests'))
             ))
             ->setHelp(<<<EOT
-The depends command displays detailed information about where a
-package is referenced.
+Displays detailed information about where a package is referenced.
+
 <info>php composer.phar depends composer/composer</info>
 
 EOT
@@ -46,7 +49,11 @@ EOT
         $composer = $this->getComposer();
         $references = $this->getReferences($input, $output, $composer);
 
-        $this->printReferences($input, $output, $references);
+        if ($input->getOption('verbose')) {
+            $this->printReferences($input, $output, $references);
+        } else {
+            $this->printPackages($input, $output, $references);
+        }
     }
 
     /**
@@ -63,18 +70,20 @@ EOT
         $needle = $input->getArgument('package');
 
         $references = array();
+        $verbose = (Boolean) $input->getOption('verbose');
 
-        // check if we have a local installation so we can grab the right package/version
-        $repos = array_merge(
-            array($composer->getRepositoryManager()->getLocalRepository()),
-            $composer->getRepositoryManager()->getRepositories()
-        );
+        $repos = $composer->getRepositoryManager()->getRepositories();
+        $types = $input->getOption('link-type');
         foreach ($repos as $repository) {
             foreach ($repository->getPackages() as $package) {
-                foreach (array('requires', 'recommends', 'suggests') as $type) {
+                foreach ($types as $type) {
                     foreach ($package->{'get'.$type}() as $link) {
                         if ($link->getTarget() === $needle) {
-                            $references[] = array($type, $package, $link);
+                            if ($verbose) {
+                                $references[] = array($type, $package, $link);
+                            } else {
+                                $references[$package->getName()] = $package->getPrettyName();
+                            }
                         }
                     }
                 }
@@ -88,6 +97,14 @@ EOT
     {
         foreach ($references as $ref) {
             $output->writeln($ref[1]->getPrettyName() . ' ' . $ref[1]->getPrettyVersion() . ' <info>' . $ref[0] . '</info> ' . $ref[2]->getPrettyConstraint());
+        }
+    }
+
+    private function printPackages(InputInterface $input, OutputInterface $output, array $packages)
+    {
+        ksort($packages);
+        foreach ($packages as $package) {
+            $output->writeln($package);
         }
     }
 }

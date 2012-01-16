@@ -53,7 +53,7 @@ Global installation of composer (via homebrew)
 
 Installing via this homebrew formula will always get you the latest composer version.
 
-1. run `brew uninstall composer ; brew install https://raw.github.com/gist/1574469/composer.rb`
+1. run `brew uninstall composer ; brew install --HEAD https://raw.github.com/gist/1574469/composer.rb`
 2. Change into a project directory `cd /path/to/my/project`
 3. Use composer as you normally would `composer.phar install`
 
