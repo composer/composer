@@ -194,8 +194,8 @@ abstract class BasePackage implements PackageInterface
         $packages = $this->getVersions($repositoryManager);
 
         foreach ($packages as $package) {
-            $selfVersion = new VersionConstraint('==', $package->getVersion());
-            if ($selfVersion->matches($constraint) && $package->getVersion() > $this->getVersion()) {
+            $selfConstraint = new VersionConstraint('==', $package->getVersion());
+            if ($constraint->matches($selfConstraint) && $package->getVersion() > $this->getVersion()) {
                 $latest = $package;
             }
         }
