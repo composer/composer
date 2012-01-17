@@ -54,13 +54,13 @@ class PearRepository extends ArrayRepository
             $link = $category->getAttribute("xlink:href");
             try {
                 $packagesLink = str_replace("info.xml", "packagesinfo.xml", $link);
-                $this->fetchPear2Repositories($this->url . '/' . $packagesLink);
+                $this->fetchPear2Packages($this->url . '/' . $packagesLink);
             } catch (\ErrorException $e) {
                 if (false === strpos($e->getMessage(), '404')) {
                     throw $e;
                 }
                 $categoryLink = str_replace("info.xml", "packages.xml", $link);
-                $this->fetchPearRepositories($this->url . '/' . $categoryLink);
+                $this->fetchPearPackages($this->url . '/' . $categoryLink);
             }
 
         }
@@ -71,7 +71,7 @@ class PearRepository extends ArrayRepository
      * @throws  ErrorException
      * @throws  InvalidArgumentException
      */
-    private function fetchPearRepositories($categoryLink)
+    private function fetchPearPackages($categoryLink)
     {
         $packagesXML = $this->requestXml($categoryLink);
         $packages = $packagesXML->getElementsByTagName('p');
@@ -201,7 +201,7 @@ class PearRepository extends ArrayRepository
      * @return  void
      * @throws  InvalidArgumentException
      */
-    private function fetchPear2Repositories($packagesLink)
+    private function fetchPear2Packages($packagesLink)
     {
         $loader = new ArrayLoader();
         $packagesXml = $this->requestXml($packagesLink);
