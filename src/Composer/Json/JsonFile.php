@@ -75,8 +75,9 @@ class JsonFile
      * Writes json file.
      *
      * @param   array   $hash   writes hash into json file
+     * @param Boolean $prettyPrint If true, output is pretty-printed
      */
-    public function write(array $hash)
+    public function write(array $hash, $prettyPrint = true)
     {
         $dir = dirname($this->path);
         if (!is_dir($dir)) {
@@ -91,25 +92,30 @@ class JsonFile
                 );
             }
         }
-        file_put_contents($this->path, $this->encode($hash));
+        file_put_contents($this->path, $this->encode($hash, $prettyPrint));
     }
 
     /**
-     * Indents a flat JSON string to make it more human-readable
+     * Encodes an array into (optionally pretty-printed) JSON
      *
      * Original code for this function can be found at:
      *  http://recursive-design.com/blog/2008/03/11/format-json-with-php/
      *
      * @param array $hash Data to encode into a formatted JSON string
+     * @param Boolean $prettyPrint If true, output is pretty-printed
      * @return string Indented version of the original JSON string
      */
-    public function encode(array $hash)
+    public function encode(array $hash, $prettyPrint = true)
     {
-        if (defined('JSON_PRETTY_PRINT')) {
+        if ($prettyPrint && defined('JSON_PRETTY_PRINT')) {
             return json_encode($hash, JSON_PRETTY_PRINT);
         }
 
         $json = json_encode($hash);
+
+        if (!$prettyPrint) {
+            return $json;
+        }
 
         $result = '';
         $pos = 0;
@@ -126,10 +132,10 @@ class JsonFile
             // Are we inside a quoted string?
             if ('"' === $char && '\\' !== $prevChar) {
                 $outOfQuotes = !$outOfQuotes;
-            } else if (':' === $char && $outOfQuotes) {
+            } elseif (':' === $char && $outOfQuotes) {
                 // Add a space after the : character
                 $char .= ' ';
-            } else if (('}' === $char || ']' === $char) && $outOfQuotes) {
+            } elseif (('}' === $char || ']' === $char) && $outOfQuotes) {
                 $pos--;
 
                 if ('{' !== $prevChar && '[' !== $prevChar) {
