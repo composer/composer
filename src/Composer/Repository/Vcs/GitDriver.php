@@ -4,22 +4,23 @@ namespace Composer\Repository\Vcs;
 
 use Composer\Json\JsonFile;
 use Composer\Util\Process;
+use Composer\IO\IOInterface;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class GitDriver implements VcsDriverInterface
+class GitDriver extends VcsDriver implements VcsDriverInterface
 {
-    protected $url;
     protected $tags;
     protected $branches;
     protected $rootIdentifier;
     protected $infoCache = array();
 
-    public function __construct($url)
+    public function __construct($url, IOInterface $io)
     {
-        $this->url = $url;
         $this->tmpDir = sys_get_temp_dir() . '/composer-' . preg_replace('{[^a-z0-9]}i', '-', $url) . '/';
+
+        parent::__construct($url, $io);
     }
 
     /**

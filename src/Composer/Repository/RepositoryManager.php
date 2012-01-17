@@ -12,17 +12,26 @@
 
 namespace Composer\Repository;
 
+use Composer\IO\IOInterface;
+
 /**
  * Repositories manager.
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
+ * @author François Pluchino <francois.pluchino@opendisplay.com>
  */
 class RepositoryManager
 {
     private $localRepository;
     private $repositories = array();
     private $repositoryClasses = array();
+    private $io;
+
+    public function __construct(IOInterface $io)
+    {
+        $this->io = $io;
+    }
 
     /**
      * Searches for a package by it's name and version in managed repositories.
@@ -66,7 +75,7 @@ class RepositoryManager
         }
 
         $class = $this->repositoryClasses[$type];
-        return new $class($config);
+        return new $class($config, $this->io);
     }
 
     /**

@@ -111,7 +111,7 @@ EOT
                 $request->install($package->getName(), $constraint);
             }
         } else {
-            $output->writeln('<info>Installing dependencies.</info>');
+            $output->writeln('<info>Installing dependencies</info>');
 
             $links = $this->collectLinks($input, $composer->getPackage());
 
@@ -123,7 +123,7 @@ EOT
         // prepare solver
         $installationManager = $composer->getInstallationManager();
         $policy              = new DependencyResolver\DefaultPolicy();
-        $solver              = new DependencyResolver\Solver($policy, $pool, $installedRepo);
+        $solver              = new DependencyResolver\Solver($policy, $pool, $installedRepo, $this->getApplication()->getIO());
 
         // solve dependencies
         $operations = $solver->solve($request);

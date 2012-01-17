@@ -12,6 +12,7 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\IO\IOInterface;
 use Composer\Repository\RepositoryInterface;
 use Composer\Package\PackageInterface;
 use Composer\DependencyResolver\Operation;
@@ -55,12 +56,15 @@ class Solver
     protected $packageToUpdateRule = array();
     protected $packageToFeatureRule = array();
 
-    public function __construct(PolicyInterface $policy, Pool $pool, RepositoryInterface $installed)
+    protected $io;
+
+    public function __construct(PolicyInterface $policy, Pool $pool, RepositoryInterface $installed, IOInterface $io)
     {
         $this->policy = $policy;
         $this->pool = $pool;
         $this->installed = $installed;
         $this->rules = new RuleSet;
+        $this->io = $io;
     }
 
     /**
@@ -2046,26 +2050,26 @@ class Solver
 
     public function printDecisionMap()
     {
-        echo "\nDecisionMap: \n";
+        $this->io->writeln("\nDecisionMap: ");
         foreach ($this->decisionMap as $packageId => $level) {
             if ($packageId === 0) {
                 continue;
             }
             if ($level > 0) {
-                echo '    +' . $this->pool->packageById($packageId) . "\n";
+                $this->io->writeln('    +' . $this->pool->packageById($packageId));
             } else {
-                echo '    -' . $this->pool->packageById($packageId) . "\n";
+                $this->io->writeln('    -' . $this->pool->packageById($packageId));
             }
         }
-        echo "\n";
+        $this->io->writeln('');
     }
 
     public function printDecisionQueue()
     {
-        echo "DecisionQueue: \n";
+        $this->io->writeln("DecisionQueue: ");
         foreach ($this->decisionQueue as $i => $literal) {
-            echo '    ' . $literal . ' ' . $this->decisionQueueWhy[$i] . "\n";
+            $this->io->writeln('    ' . $literal . ' ' . $this->decisionQueueWhy[$i]);
         }
-        echo "\n";
+        $this->io->writeln('');
     }
 }

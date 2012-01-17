@@ -11,6 +11,7 @@
 
 namespace Composer\Downloader;
 
+use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 
 /**
@@ -18,9 +19,23 @@ use Composer\Package\PackageInterface;
  *
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  * @author Jordi Boggiano <j.boggiano@seld.be>
+ * @author François Pluchino <francois.pluchino@opendisplay.com>
  */
 abstract class FileDownloader implements DownloaderInterface
 {
+    protected $io;
+    protected $bytesMax;
+
+    /**
+     * Constructor.
+     *
+     * @param IOInterface  $io  The IO instance
+     */
+    public function __construct(IOInterface $io)
+    {
+        $this->io = $io;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -34,6 +49,9 @@ abstract class FileDownloader implements DownloaderInterface
      */
     public function download(PackageInterface $package, $path)
     {
+        // init the progress bar
+        $this->bytesMax = 0;
+
         $url = $package->getDistUrl();
         $checksum = $package->getDistSha1Checksum();
 
@@ -48,7 +66,7 @@ abstract class FileDownloader implements DownloaderInterface
 
         $fileName = rtrim($path.'/'.md5(time().rand()).'.'.pathinfo($url, PATHINFO_EXTENSION), '.');
 
-        echo 'Downloading '.$url.' to '.$fileName.PHP_EOL;
+        $this->io->writeln("  - Package <info>" . $package->getName() . "</info> (<comment>" . $package->getPrettyVersion() . "</comment>)");
 
         if (!extension_loaded('openssl') && (0 === strpos($url, 'https:') || 0 === strpos($url, 'http://github.com'))) {
             // bypass https for github if openssl is disabled
@@ -60,6 +78,8 @@ abstract class FileDownloader implements DownloaderInterface
         }
 
         // Handle system proxy
+        $params = array('http' => array());
+
         if (isset($_SERVER['HTTP_PROXY'])) {
             // http(s):// is not supported in proxy
             $proxy = str_replace(array('http://', 'https://'), array('tcp://', 'ssl://'), $_SERVER['HTTP_PROXY']);
@@ -68,17 +88,24 @@ abstract class FileDownloader implements DownloaderInterface
                 throw new \RuntimeException('You must enable the openssl extension to use a proxy over https');
             }
 
-            $ctx = stream_context_create(array(
-                'http' => array(
-                    'proxy'           => $proxy,
-                    'request_fulluri' => true,
-                ),
-            ));
-
-            copy($url, $fileName, $ctx);
-        } else {
-            copy($url, $fileName);
+            $params['http'] = array(
+                'proxy'           => $proxy,
+                'request_fulluri' => true,
+            );
         }
+
+        if ($this->io->hasAuthorization($package->getSourceUrl())) {
+            $auth = $this->io->getAuthorization($package->getSourceUrl());
+            $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
+            $params['http'] = array_merge($params['http'], array('header' => "Authorization: Basic $authStr\r\n"));
+        }
+
+        $ctx = stream_context_create($params);
+        stream_context_set_params($ctx, array("notification" => array($this, 'callbackGet')));
+
+        $this->io->overwrite("    Downloading: <comment>connection...</comment>", 80);
+        copy($url, $fileName, $ctx);
+        $this->io->overwriteln("    Downloading", 80);
 
         if (!file_exists($fileName)) {
             throw new \UnexpectedValueException($url.' could not be saved to '.$fileName.', make sure the'
@@ -89,11 +116,11 @@ abstract class FileDownloader implements DownloaderInterface
             throw new \UnexpectedValueException('The checksum verification of the archive failed (downloaded from '.$url.')');
         }
 
-        echo 'Unpacking archive'.PHP_EOL;
+        $this->io->writeln('    Unpacking archive');
         $this->extract($fileName, $path);
 
 
-        echo 'Cleaning up'.PHP_EOL;
+        $this->io->writeln('    Cleaning up');
         unlink($fileName);
 
         // If we have only a one dir inside it suppose to be a package itself
@@ -107,6 +134,8 @@ abstract class FileDownloader implements DownloaderInterface
             }
             rmdir($contentDir);
         }
+
+        $this->io->writeln('');
     }
 
     /**
@@ -126,6 +155,52 @@ abstract class FileDownloader implements DownloaderInterface
     {
         $fs = new Util\Filesystem();
         $fs->removeDirectory($path);
+    }
+
+    /**
+     * Get notification action.
+     *
+     * @param integer $notificationCode The notification code
+     * @param integer $severity         The severity level
+     * @param string  $message          The message
+     * @param integer $messageCode      The message code
+     * @param integer $bytesTransferred The loaded size
+     * @param integer $bytesMax         The total size
+     */
+    protected function callbackGet($notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax)
+    {
+        switch ($notificationCode) {
+            case STREAM_NOTIFY_AUTH_REQUIRED:
+                throw new \LogicException("Authorization is required");
+                break;
+
+            case STREAM_NOTIFY_FAILURE:
+                throw new \LogicException("File not found");
+                break;
+
+            case STREAM_NOTIFY_FILE_SIZE_IS:
+                if ($this->bytesMax < $bytesMax) {
+                    $this->bytesMax = $bytesMax;
+                }
+                break;
+
+            case STREAM_NOTIFY_PROGRESS:
+                if ($this->bytesMax > 0) {
+                    $progression = 0;
+
+                    if ($this->bytesMax > 0) {
+                        $progression = round($bytesTransferred / $this->bytesMax * 100);
+                    }
+
+                    if (0 === $progression % 5) {
+                        $this->io->overwrite("    Downloading: <comment>$progression%</comment>", 80);
+                    }
+                }
+                break;
+
+            default:
+                break;
+        }
     }
 
     /**
