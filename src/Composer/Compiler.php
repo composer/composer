@@ -74,7 +74,9 @@ class Compiler
         $this->addComposerBin($phar);
 
         // Stubs
-        $phar->setStub($this->getStub());
+        $phar['_cli_stub.php'] = $this->getCliStub();
+        $phar['_web_stub.php'] = $this->getWebStub();
+        $phar->setDefaultStub('_cli_stub.php', '_web_stub.php');
 
         $phar->stopBuffering();
 
@@ -107,7 +109,7 @@ class Compiler
         $phar->addFromString('bin/composer', $content);
     }
 
-    private function getStub()
+    private function getCliStub()
     {
         return <<<'EOF'
 #!/usr/bin/env php
@@ -125,6 +127,27 @@ class Compiler
 Phar::mapPhar('composer.phar');
 
 require 'phar://composer.phar/bin/composer';
+
+__HALT_COMPILER();
+EOF;
+    }
+
+    protected function getWebStub()
+    {
+        return <<<'EOF'
+<?php
+
+/*
+ * This file is part of Composer.
+ *
+ * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * For the full copyright and license information, please view
+ * the license that is located at the bottom of this file.
+ */
+
+throw new \LogicException('This PHAR file can only be used from the CLI.');
 
 __HALT_COMPILER();
 EOF;
