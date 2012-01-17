@@ -187,8 +187,6 @@ class PearRepository extends ArrayRepository
         $depsData = array();
         if (isset($deps['required'])) {
             $depsData['require'] = $this->parseDependenciesOptions($deps['required']);
-        } else {
-            $depsData['require'] = array('php' => '>=5.3.0');
         }
 
         if (isset($depsData['optional'])) {
