@@ -143,7 +143,7 @@ class PearRepository extends ArrayRepository
     }
 
     /**
-     * @todo    Improve dependences of pear packages.
+     * @todo    Improve dependencies resolution of pear packages.
      * @param   array $options
      * @return  array
      */
