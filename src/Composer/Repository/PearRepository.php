@@ -124,22 +124,24 @@ class PearRepository extends ArrayRepository
             }
         }
     }
-    
+
     /**
      * @param   array $data
-     * @return  string 
+     * @return  string
      */
     private function parseVersion(array $data)
     {
+        if (!isset($data['min']) && !isset($data['max'])) {
+            return '*';
+        }
+        $versions = array();
         if (isset($data['min'])) {
-            $version = '>=' . $data['min'];
-        } else {
-            $version = '>=0.0.0';
+            $versions[] = '>=' . $data['min'];
         }
         if (isset($data['max'])) {
-            $version .= ',<=' . $data['max'];
+            $versions[] = '<=' . $data['max'];
         }
-        return $version;
+        return implode(',', $versions);
     }
 
     /**
@@ -155,7 +157,7 @@ class PearRepository extends ArrayRepository
                 $data[$name] = $this->parseVersion($options);
             } elseif ('package' == $name) {
                 foreach ($options as $key => $value) {
-                    $dataKey = $value['name']; 
+                    $dataKey = $value['name'];
                     $data[$dataKey] = $this->parseVersion($value);
                 }
             } elseif ('extension' == $name) {
@@ -165,6 +167,7 @@ class PearRepository extends ArrayRepository
                 }
             }
         }
+        var_dump($data);die;
         return $data;
     }
 
