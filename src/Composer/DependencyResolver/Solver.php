@@ -12,7 +12,6 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\IO\IOInterface;
 use Composer\Repository\RepositoryInterface;
 use Composer\Package\PackageInterface;
 use Composer\DependencyResolver\Operation;
@@ -56,15 +55,12 @@ class Solver
     protected $packageToUpdateRule = array();
     protected $packageToFeatureRule = array();
 
-    protected $io;
-
-    public function __construct(PolicyInterface $policy, Pool $pool, RepositoryInterface $installed, IOInterface $io)
+    public function __construct(PolicyInterface $policy, Pool $pool, RepositoryInterface $installed)
     {
         $this->policy = $policy;
         $this->pool = $pool;
         $this->installed = $installed;
         $this->rules = new RuleSet;
-        $this->io = $io;
     }
 
     /**
@@ -2048,28 +2044,28 @@ class Solver
         }
     }
 
-    public function printDecisionMap()
+    private function printDecisionMap()
     {
-        $this->io->writeln("\nDecisionMap: ");
+        echo "\nDecisionMap: \n";
         foreach ($this->decisionMap as $packageId => $level) {
             if ($packageId === 0) {
                 continue;
             }
             if ($level > 0) {
-                $this->io->writeln('    +' . $this->pool->packageById($packageId));
+                echo '    +' . $this->pool->packageById($packageId)."\n";
             } else {
-                $this->io->writeln('    -' . $this->pool->packageById($packageId));
+                echo '    -' . $this->pool->packageById($packageId)."\n";
             }
         }
-        $this->io->writeln('');
+        echo "\n";
     }
 
-    public function printDecisionQueue()
+    private function printDecisionQueue()
     {
-        $this->io->writeln("DecisionQueue: ");
+        echo "DecisionQueue: \n";
         foreach ($this->decisionQueue as $i => $literal) {
-            $this->io->writeln('    ' . $literal . ' ' . $this->decisionQueueWhy[$i]);
+            echo '    ' . $literal . ' ' . $this->decisionQueueWhy[$i]."\n";
         }
-        $this->io->writeln('');
+        echo "\n";
     }
 }

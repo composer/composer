@@ -123,7 +123,7 @@ EOT
         // prepare solver
         $installationManager = $composer->getInstallationManager();
         $policy              = new DependencyResolver\DefaultPolicy();
-        $solver              = new DependencyResolver\Solver($policy, $pool, $installedRepo, $this->getApplication()->getIO());
+        $solver              = new DependencyResolver\Solver($policy, $pool, $installedRepo);
 
         // solve dependencies
         $operations = $solver->solve($request);
