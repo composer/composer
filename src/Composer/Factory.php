@@ -23,8 +23,6 @@ use Composer\Json\JsonFile;
  */
 class Factory
 {
-    protected $vendorDir;
-
     /**
      * Creates a Composer instance
      *
@@ -48,8 +46,6 @@ class Factory
             throw new \InvalidArgumentException($message.PHP_EOL.$instructions);
         }
 
-        $baseDir = rtrim(dirname($composerFile), '/').'/';
-
         // Configuration defaults
         $composerConfig = array(
             'vendor-dir' => 'vendor',
@@ -69,9 +65,6 @@ class Factory
         }
         $binDir = getenv('COMPOSER_BIN_DIR') ?: $packageConfig['config']['bin-dir'];
 
-        $this->vendorDir = $baseDir.$vendorDir;
-        $this->binDir = $baseDir.$binDir;
-
         // initialize repository manager
         $rm = $this->createRepositoryManager();
 
@@ -79,7 +72,7 @@ class Factory
         $dm = $this->createDownloadManager();
 
         // initialize installation manager
-        $im = $this->createInstallationManager($rm, $dm);
+        $im = $this->createInstallationManager($rm, $dm, $vendorDir, $binDir);
 
         // load package
         $loader  = new Package\Loader\RootPackageLoader($rm);
@@ -105,10 +98,10 @@ class Factory
         return $composer;
     }
 
-    protected function createRepositoryManager()
+    protected function createRepositoryManager($vendorDir)
     {
         $rm = new Repository\RepositoryManager();
-        $rm->setLocalRepository(new Repository\FilesystemRepository(new JsonFile($this->vendorDir.'/.composer/installed.json')));
+        $rm->setLocalRepository(new Repository\FilesystemRepository(new JsonFile($vendorDir.'/.composer/installed.json')));
         $rm->setRepositoryClass('composer', 'Composer\Repository\ComposerRepository');
         $rm->setRepositoryClass('vcs', 'Composer\Repository\VcsRepository');
         $rm->setRepositoryClass('pear', 'Composer\Repository\PearRepository');
@@ -129,11 +122,11 @@ class Factory
         return $dm;
     }
 
-    protected function createInstallationManager(Repository\RepositoryManager $rm, Downloader\DownloadManager $dm)
+    protected function createInstallationManager(Repository\RepositoryManager $rm, Downloader\DownloadManager $dm, $vendorDir, $binDir)
     {
-        $im = new Installer\InstallationManager($this->vendorDir);
-        $im->addInstaller(new Installer\LibraryInstaller($this->vendorDir, $this->binDir, $dm, $rm->getLocalRepository(), null));
-        $im->addInstaller(new Installer\InstallerInstaller($this->vendorDir, $this->binDir, $dm, $rm->getLocalRepository(), $im));
+        $im = new Installer\InstallationManager($vendorDir);
+        $im->addInstaller(new Installer\LibraryInstaller($vendorDir, $binDir, $dm, $rm->getLocalRepository(), null));
+        $im->addInstaller(new Installer\InstallerInstaller($vendorDir, $binDir, $dm, $rm->getLocalRepository(), $im));
 
         return $im;
     }
