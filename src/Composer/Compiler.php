@@ -13,7 +13,7 @@
 namespace Composer;
 
 use Symfony\Component\Finder\Finder;
-use Symfony\Component\Process\Process;
+use Composer\Util\Process;
 
 /**
  * The Compiler class compiles composer into a phar
