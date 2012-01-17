@@ -77,7 +77,8 @@ abstract class FileDownloader implements DownloaderInterface
             }
         }
 
-        $auth = $this->io->getAuthentification($package->getSourceUrl());
+        // Handle system proxy
+        $params = array('http' => array());
 
         if (isset($_SERVER['HTTP_PROXY'])) {
             // http(s):// is not supported in proxy
@@ -86,10 +87,24 @@ abstract class FileDownloader implements DownloaderInterface
             if (0 === strpos($proxy, 'ssl:') && !extension_loaded('openssl')) {
                 throw new \RuntimeException('You must enable the openssl extension to use a proxy over https');
             }
+
+            $params['http'] = array(
+                'proxy'           => $proxy,
+                'request_fulluri' => true,
+            );
         }
 
+        if ($this->io->hasAuthentification($package->getSourceUrl())) {
+            $auth = $this->io->getAuthentification($package->getSourceUrl());
+            $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
+            $params['http'] = array_merge($params['http'], array('header' => "Authorization: Basic $authStr\r\n"));
+        }
+
+        $ctx = stream_context_create($params);
+        stream_context_set_params($ctx, array("notification" => array($this, 'callbackGet')));
+
         $this->io->overwrite("    Downloading: <comment>connection...</comment>", 80);
-        $this->copy($url, $fileName, $auth['username'], $auth['password']);
+        copy($url, $fileName, $ctx);
         $this->io->overwriteln("    Downloading", 80);
 
         if (!file_exists($fileName)) {
@@ -120,7 +135,6 @@ abstract class FileDownloader implements DownloaderInterface
             rmdir($contentDir);
         }
 
-        $this->io->overwrite('');
         $this->io->writeln('');
     }
 
@@ -144,90 +158,54 @@ abstract class FileDownloader implements DownloaderInterface
     }
 
     /**
-     * Download notification action.
+     * Get notification action.
      *
-     * @param integer $sizeTotal  The total size
-     * @param integer $sizeLoaded The loaded size
+     * @param integer $notificationCode The notification code
+     * @param integer $severity         The severity level
+     * @param string  $message          The message
+     * @param integer $messageCode      The message code
+     * @param integer $bytesTransferred The loaded size
+     * @param integer $bytesMax         The total size
      */
-    protected function callbackDownload($sizeTotal, $sizeLoaded)
+    protected function callbackGet($notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax)
     {
-        if ($sizeTotal > 1024) {
-            $progression = 0;
+        switch ($notificationCode) {
+            case STREAM_NOTIFY_AUTH_REQUIRED:
+                throw new \LogicException("Authentification is required");
+                break;
 
-            if ($sizeTotal > 0) {
-                $progression = ($sizeLoaded / $sizeTotal * 100);
-            }
+            case STREAM_NOTIFY_FAILURE:
+                throw new \LogicException("File not found");
+                break;
 
-            $levels = array(0, 5, 10, 15, 20, 25, 30, 35, 40, 35, 50, 55, 60,
-                    65, 70, 75, 80, 85, 90, 95, 100);
+            case STREAM_NOTIFY_FILE_SIZE_IS:
+                if ($this->bytesMax < $bytesMax) {
+                    $this->bytesMax = $bytesMax;
+                }
+                break;
 
-            $progression = round($progression, 0);
+            case STREAM_NOTIFY_PROGRESS:
+                if ($this->bytesMax > 0) {
+                    $progression = 0;
 
-            if (in_array($progression, $levels)) {
-                $this->io->overwrite("    Downloading: <comment>$progression%</comment>", 80);
-            }
+                    if ($this->bytesMax > 0) {
+                        $progression = ($bytesTransferred / $this->bytesMax * 100);
+                    }
+
+                    $levels = array(0, 5, 10, 15, 20, 25, 30, 35, 40, 35, 50,
+                            55, 60, 65, 70, 75, 80, 85, 90, 95, 100);
+
+                    $progression = round($progression, 0);
+
+                    if (in_array($progression, $levels)) {
+                        $this->io->overwrite("    Downloading: <comment>$progression%</comment>", 80);
+                    }
+                }
+                break;
+
+            default:
+                break;
         }
-    }
-
-    /**
-     * Copy the content in file directory.
-     *
-     * @param string $url      The file URL
-     * @param string $filename The local path
-     * @param string $username The username
-     * @param string $password The password
-     */
-    protected function copy($url, $filename, $username = null, $password = null)
-    {
-        // create directory
-        if (!file_exists(dirname($filename))) {
-            mkdir(dirname($filename), 0777, true);
-        }
-
-        $fh = fopen($filename, 'c+');
-
-        // curl options
-        $defaults = array(
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_BINARYTRANSFER => true,
-            CURLOPT_BUFFERSIZE => 128000,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_NOPROGRESS => false,
-            CURLOPT_PROGRESSFUNCTION => array($this, 'callbackDownload'),
-            CURLOPT_URL => $url,
-            CURLOPT_HTTPGET => true,
-            CURLOPT_SSL_VERIFYPEER => false,
-            CURLOPT_FILE => $fh,
-        );
-
-        // add authorization to curl options
-        if (null !== $username && null !== $password) {
-            $defaults[CURLOPT_USERPWD] = $username . ':' . $password;
-        }
-
-        // init curl
-        $ch = curl_init();
-
-        // curl options
-        curl_setopt_array($ch, $defaults);
-
-        // run curl
-        $curl_result = curl_exec($ch);
-        $curl_info = curl_getinfo($ch);
-        $curl_errorCode = curl_errno($ch);
-        $curl_error = curl_error($ch);
-        $code = $curl_info['http_code'];
-        $code = null ? 0 : $code;
-
-        //close streams
-        curl_close($ch);
-        fclose($fh);
-
-        if (200 !== $code) {
-            return false;
-        }
-
-        return true;
     }
 
     /**

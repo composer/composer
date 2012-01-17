@@ -24,6 +24,8 @@ abstract class VcsDriver
     protected $url;
     protected $io;
     private $firstCall;
+    private $contentUrl;
+    private $content;
 
     /**
      * Constructor.
@@ -60,74 +62,87 @@ abstract class VcsDriver
      */
     protected function getContents($url)
     {
+        $this->contentUrl = $url;
         $auth = $this->io->getAuthentification($this->url);
-
-        // curl options
-        $defaults = array(
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_BINARYTRANSFER => true,
-            CURLOPT_BUFFERSIZE => 64000,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_NOPROGRESS => true,
-            CURLOPT_URL => $url,
-            CURLOPT_HTTPGET => true,
-            CURLOPT_SSL_VERIFYPEER => false
-        );
+        $params = array();
 
         // add authorization to curl options
         if ($this->io->hasAuthentification($this->url)) {
-            $defaults[CURLOPT_USERPWD] = $auth['username'] . ':' . $auth['password'];
+            $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
+            $params['http'] = array('header' => "Authorization: Basic $authStr\r\n");
 
         } else if (null !== $this->io->getLastUsername()) {
-            $defaults[CURLOPT_USERPWD] = $this->io->getLastUsername() . ':' . $this->io->getLastPassword();
+            $authStr = base64_encode($this->io->getLastUsername() . ':' . $this->io->getLastPassword());
+            $params['http'] = array('header' => "Authorization: Basic $authStr\r\n");
         }
 
-        // init curl
-        $ch = curl_init();
-        curl_setopt_array($ch, $defaults);
+        $ctx = stream_context_create($params);
+        stream_context_set_params($ctx, array("notification" => array($this, 'callbackGet')));
 
-        // run curl
-        $curl_result = curl_exec($ch);
-        $curl_info = curl_getinfo($ch);
-        $curl_errorCode = curl_errno($ch);
-        $curl_error = curl_error($ch);
-        $code = $curl_info['http_code'];
-        $code = null ? 0 : $code;
+        $content = @file_get_contents($url, false, $ctx);
 
-        //close streams
-        curl_close($ch);
-
-        // for private repository returning 404 error when the authentification is incorrect
-        $ps = $this->firstCall && 404 === $code && null === $this->io->getLastUsername() && null === $auth['username'];
-
-        if ($this->firstCall) {
-            $this->firstCall = false;
+        // content get after authentification
+        if (false === $content) {
+            $content = $this->content;
+            $this->content = null;
+            $this->contentUrl = null;
         }
 
-        // auth required
-        if (401 === $code || $ps) {
-            if (!$this->io->isInteractive()) {
-                $mess = "The '$url' URL not found";
+        return $content;
+    }
 
-                if (401 === $code || $ps) {
-                    $mess = "The '$url' URL required the authentification.\nYou must be used the interactive console";
+    /**
+     * Get notification action.
+     *
+     * @param integer $notificationCode The notification code
+     * @param integer $severity         The severity level
+     * @param string  $message          The message
+     * @param integer $messageCode      The message code
+     * @param integer $bytesTransferred The loaded size
+     * @param integer $bytesMax         The total size
+     */
+    protected function callbackGet($notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax)
+    {
+        switch ($notificationCode) {
+            case STREAM_NOTIFY_AUTH_REQUIRED:
+            case STREAM_NOTIFY_FAILURE:
+                // for private repository returning 404 error when the authentification is incorrect
+                $auth = $this->io->getAuthentification($this->url);
+                $ps = $this->firstCall && 404 === $messageCode
+                        && null === $this->io->getLastUsername()
+                        && null === $auth['username'];
+
+                if (404 === $messageCode && !$this->firstCall) {
+                    throw new \LogicException("The '" . $this->contentUrl . "' URL not found");
                 }
 
-                throw new \LogicException($mess);
-            }
+                if ($this->firstCall) {
+                    $this->firstCall = false;
+                }
 
-            $this->io->writeln("Authorization required for <info>" . $this->owner.'/' . $this->repository . "</info>:");
-            $username = $this->io->ask('    Username: ');
-            $password = $this->io->askAndHideAnswer('    Password: ');
-            $this->io->setAuthentification($this->url, $username, $password);
+                // get authentification informations
+                if (401 === $messageCode || $ps) {
+                    if (!$this->io->isInteractive()) {
+                        $mess = "The '" . $this->contentUrl . "' URL not found";
 
-            return $this->getContents($url);
+                        if (401 === $code || $ps) {
+                            $mess = "The '" . $this->contentUrl . "' URL required the authentification.\nYou must be used the interactive console";
+                        }
+
+                        throw new \LogicException($mess);
+                    }
+
+                    $this->io->writeln("Authorization for <info>" . $this->contentUrl . "</info>:");
+                    $username = $this->io->ask('    Username: ');
+                    $password = $this->io->askAndHideAnswer('    Password: ');
+                    $this->io->setAuthentification($this->url, $username, $password);
+
+                    $this->content = $this->getContents($this->contentUrl);
+                }
+                break;
+
+            default:
+                break;
         }
-
-        if (404 === $code) {
-            throw new \LogicException("The '$url' URL not found");
-        }
-
-        return $curl_result;
     }
 }
