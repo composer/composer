@@ -95,7 +95,7 @@ class PearRepository extends ArrayRepository
             $releases = $releasesXML->getElementsByTagName('r');
 
             foreach ($releases as $release) {
-                /* @var $release DOMElement */
+                /* @var $release \DOMElement */
                 $pearVersion = $release->getElementsByTagName('v')->item(0)->nodeValue;
 
                 $packageData = array(
