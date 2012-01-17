@@ -31,7 +31,7 @@ class PearRepository extends ArrayRepository
             throw new \UnexpectedValueException('Invalid url given for PEAR repository: '.$config['url']);
         }
 
-        $this->url = $config['url'];
+        $this->url = preg_replace('#^(.+)/+$#U', '$1', $config['url']);
     }
 
     protected function initialize()
@@ -51,24 +51,62 @@ class PearRepository extends ArrayRepository
         $categories = $categoryXML->getElementsByTagName("c");
 
         foreach ($categories as $category) {
-            $categoryLink = $category->getAttribute("xlink:href");
-            $categoryLink = str_replace("info.xml", "packages.xml", $categoryLink);
-            if ('/' !== substr($categoryLink, 0, 1)) {
-                $categoryLink = '/' . $categoryLink;
+            $link = $category->getAttribute("xlink:href");
+            try {
+                $packagesLink = str_replace("info.xml", "packagesinfo.xml", $link);
+                $this->fetchPear2Repositories($this->url . '/' . $packagesLink);
+            } catch (\ErrorException $e) {
+                if (false === strpos($e->getMessage(), '404')) {
+                    throw $e;
+                }
+                $categoryLink = str_replace("info.xml", "packages.xml", $link);
+                $this->fetchPearRepositories($this->url . '/' . $categoryLink);
             }
-            $packagesXML = $this->requestXml($this->url . $categoryLink);
 
-            $packages = $packagesXML->getElementsByTagName('p');
-            $loader = new ArrayLoader();
-            foreach ($packages as $package) {
-                $packageName = $package->nodeValue;
+        }
+    }
 
-                $packageLink = $package->getAttribute('xlink:href');
-                $releaseLink = $this->url . str_replace("/rest/p/", "/rest/r/", $packageLink);
-                $allReleasesLink = $releaseLink . "/allreleases2.xml";
+    /**
+     * @param   string $categoryLink
+     * @throws  ErrorException
+     * @throws  InvalidArgumentException
+     */
+    private function fetchPearRepositories($categoryLink)
+    {
+        $packagesXML = $this->requestXml($categoryLink);
+        $packages = $packagesXML->getElementsByTagName('p');
+        $loader = new ArrayLoader();
+        foreach ($packages as $package) {
+            $packageName = $package->nodeValue;
+
+            $packageLink = $package->getAttribute('xlink:href');
+            $releaseLink = $this->url . str_replace("/rest/p/", "/rest/r/", $packageLink);
+            $allReleasesLink = $releaseLink . "/allreleases2.xml";
+
+            try {
+                $releasesXML = $this->requestXml($allReleasesLink);
+            } catch (\ErrorException $e) {
+                if (strpos($e->getMessage(), '404')) {
+                    continue;
+                }
+                throw $e;
+            }
+
+            $releases = $releasesXML->getElementsByTagName('r');
+
+            foreach ($releases as $release) {
+                /* @var $release DOMElement */
+                $pearVersion = $release->getElementsByTagName('v')->item(0)->nodeValue;
+
+                $packageData = array(
+                    'name' => $packageName,
+                    'type' => 'library',
+                    'dist' => array('type' => 'pear', 'url' => $this->url.'/get/'.$packageName.'-'.$pearVersion.".tgz"),
+                    'version' => $pearVersion,
+                );
 
                 try {
-                    $releasesXML = $this->requestXml($allReleasesLink);
+                    $deps = file_get_contents($releaseLink . "/deps.".$pearVersion.".txt");
                 } catch (\ErrorException $e) {
                     if (strpos($e->getMessage(), '404')) {
                         continue;
@@ -76,54 +114,135 @@ class PearRepository extends ArrayRepository
                     throw $e;
                 }
 
-                $releases = $releasesXML->getElementsByTagName('r');
+                $packageData += $this->parseDependences($deps);
 
-                foreach ($releases as $release) {
-                    /* @var $release DOMElement */
-                    $pearVersion = $release->getElementsByTagName('v')->item(0)->nodeValue;
+                try {
+                    $this->addPackage($loader->load($packageData));
+                } catch (\UnexpectedValueException $e) {
+                    continue;
+                }
+            }
+        }
+    }
 
-                    $packageData = array(
-                        'name' => $packageName,
-                        'type' => 'library',
-                        'dist' => array('type' => 'pear', 'url' => $this->url.'/get/'.$packageName.'-'.$pearVersion.".tgz"),
-                        'version' => $pearVersion,
+    /**
+     * @todo    Improve dependences of pear packages.
+     * @param   array $options
+     * @return  array
+     */
+    private function parseDependencesOptions(array $depsOptions)
+    {
+        $data = array();
+        foreach ($depsOptions as $name => $options) {
+            if ('php' == $name) {
+                $key = $name;
+                if (isset($options['min'])) {
+                    $value = '>=' . $options['min'];
+                } else {
+                    $value = '>=0.0.0';
+                }
+                $data[$key] = $value;
+
+            } elseif ('package' == $name) {
+                foreach ($options as $key => $value) {
+                    $key = $value['name'];
+                    if (isset($value['min'])) {
+                        $value = '>=' . $value['min'];
+                    } else {
+                        $value = '>=0.0.0';
+                    }
+                    $data[$key] = $value;
+                }
+            } elseif ('extension' == $name) {
+                foreach ($options as $key => $value) {
+                    $key = 'ext-' . $value['name'];
+                    $value = '*';
+                    $data[$key] = $value;
+                }
+            }
+        }
+        $data = array_filter($data);
+        return $data;
+    }
+
+    /**
+     * @param   string $deps
+     * @return  array
+     * @throws  InvalidArgumentException
+     */
+    private function parseDependences($deps)
+    {
+        if (preg_match('((O:([0-9])+:"([^"]+)"))', $deps, $matches)) {
+            if (strlen($matches[3]) == $matches[2]) {
+                throw new \InvalidArgumentException("Invalid dependency data, it contains serialized objects.");
+            }
+        }
+        $deps = (array) @unserialize($deps);
+        unset($deps['required']['pearinstaller']);
+
+        $depsData = array();
+        if (isset($deps['required'])) {
+            $depsData['require'] = $this->parseDependencesOptions($deps['required']);
+        } else {
+            $depsData['require'] = array('php' => '>=5.3.0');
+        }
+
+        if (isset($depsData['optional'])) {
+            $depsData['recommend'] = $this->parseDependencesOptions($depsData['optional']);
+        }
+
+        return $depsData;
+    }
+
+    /**
+     * @param   string $packagesLink
+     * @return  void
+     * @throws  InvalidArgumentException
+     */
+    private function fetchPear2Repositories($packagesLink)
+    {
+        $loader = new ArrayLoader();
+        $packagesXml = $this->requestXml($packagesLink);
+        $informations = $packagesXml->getElementsByTagName('pi');
+        foreach ($informations as $information) {
+            $package = $information->getElementsByTagName('p')->item(0);
+
+            $packageName = $package->getElementsByTagName('n')->item(0)->nodeValue;
+            $packageData = array(
+                'name' => $packageName,
+                'type' => 'library'
+            );
+            $packageKeys = array('l' => 'license', 'd' => 'description');
+            foreach ($packageKeys as $pear => $composer) {
+                if ($package->getElementsByTagName($pear)->length > 0
+                        && ($pear = $package->getElementsByTagName($pear)->item(0)->nodeValue)) {
+                    $packageData[$composer] = $pear;
+                }
+            }
+
+            $depsData = $information->getElementsByTagName('deps')->item(0);
+            $depsData = $depsData->getElementsByTagName('d')->item(0);
+            $depsData = $this->parseDependences($depsData->nodeValue);
+
+            $revisions = $information->getElementsByTagName('a')->item(0);
+            $revisions = $revisions->getElementsByTagName('r');
+            $packageUrl = $this->url . '/get/' . $packageName;
+            foreach ($revisions as $revision) {
+                $version = $revision->getElementsByTagName('v')->item(0)->nodeValue;
+                $revisionData = array(
+                    'dist' => array(
+                        'type' => 'pear',
+                        'url' => $packageUrl . '-' . $version . '.tgz'
+                    ),
+                    'version' => $version
+                );
+
+                try {
+                    $this->addPackage(
+                        $loader->load($packageData + $revisionData + $depsData)
                     );
-
-                    try {
-                        $deps = file_get_contents($releaseLink . "/deps.".$pearVersion.".txt");
-                    } catch (\ErrorException $e) {
-                        if (strpos($e->getMessage(), '404')) {
-                            continue;
-                        }
-                        throw $e;
-                    }
-
-                    if (preg_match('((O:([0-9])+:"([^"]+)"))', $deps, $matches)) {
-                        if (strlen($matches[3]) == $matches[2]) {
-                            throw new \InvalidArgumentException("Invalid dependency data, it contains serialized objects.");
-                        }
-                    }
-                    $deps = unserialize($deps);
-                    if (isset($deps['required']['package'])) {
-
-                        if (isset($deps['required']['package']['name'])) {
-                            $deps['required']['package'] = array($deps['required']['package']);
-                        }
-
-                        foreach ($deps['required']['package'] as $dependency) {
-                            if (isset($dependency['min'])) {
-                                $packageData['require'][$dependency['name']] = '>='.$dependency['min'];
-                            } else {
-                                $packageData['require'][$dependency['name']] = '>=0.0.0';
-                            }
-                        }
-                    }
-
-                    try {
-                        $this->addPackage($loader->load($packageData));
-                    } catch (\UnexpectedValueException $e) {
-                        continue;
-                    }
+                } catch (\UnexpectedValueException $e) {
+                    continue;
                 }
             }
         }
