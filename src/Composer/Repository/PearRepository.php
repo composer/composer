@@ -165,7 +165,6 @@ class PearRepository extends ArrayRepository
                 }
             }
         }
-        $data = array_filter($data);
         return $data;
     }
 
