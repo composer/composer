@@ -115,6 +115,25 @@ class SolverTest extends TestCase
         $this->checkSolverResult(array());
     }
 
+    public function testSolverUpdateDoesOnlyUpdate()
+    {
+        $this->repoInstalled->addPackage($packageA = $this->getPackage('A', '1.0'));
+        $this->repoInstalled->addPackage($packageB = $this->getPackage('B', '1.0'));
+        $this->repo->addPackage($newPackageB = $this->getPackage('B', '1.1'));
+        $this->reposComplete();
+
+        $packageA->setRequires(array(new Link('A', 'B', new VersionConstraint('>=', '1.0.0.0'), 'requires')));
+
+        $this->request->install('A', new VersionConstraint('=', '1.0.0.0'));
+        $this->request->install('B', new VersionConstraint('=', '1.1.0.0'));
+        $this->request->update('A', new VersionConstraint('=', '1.0.0.0'));
+        $this->request->update('B', new VersionConstraint('=', '1.0.0.0'));
+
+        $this->checkSolverResult(array(
+            array('job' => 'update', 'from' => $packageB, 'to' => $newPackageB),
+        ));
+    }
+
     public function testSolverUpdateSingle()
     {
         $this->repoInstalled->addPackage($packageA = $this->getPackage('A', '1.0'));
