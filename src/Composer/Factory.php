@@ -13,6 +13,7 @@
 namespace Composer;
 
 use Composer\Json\JsonFile;
+use Composer\IO\IOInterface;
 
 /**
  * Creates an configured instance of composer.
@@ -28,7 +29,7 @@ class Factory
      *
      * @return Composer
      */
-    public function createComposer($composerFile = null)
+    public function createComposer(IOInterface $io, $composerFile = null)
     {
         // load Composer configuration
         if (null === $composerFile) {
@@ -66,13 +67,13 @@ class Factory
         $binDir = getenv('COMPOSER_BIN_DIR') ?: $packageConfig['config']['bin-dir'];
 
         // initialize repository manager
-        $rm = $this->createRepositoryManager($vendorDir);
+        $rm = $this->createRepositoryManager($io, $vendorDir);
 
         // initialize download manager
-        $dm = $this->createDownloadManager();
+        $dm = $this->createDownloadManager($io);
 
         // initialize installation manager
-        $im = $this->createInstallationManager($rm, $dm, $vendorDir, $binDir);
+        $im = $this->createInstallationManager($rm, $dm, $vendorDir, $binDir, $io);
 
         // load package
         $loader  = new Package\Loader\RootPackageLoader($rm);
@@ -98,9 +99,9 @@ class Factory
         return $composer;
     }
 
-    protected function createRepositoryManager($vendorDir)
+    protected function createRepositoryManager(IOInterface $io, $vendorDir)
     {
-        $rm = new Repository\RepositoryManager();
+        $rm = new Repository\RepositoryManager($io);
         $rm->setLocalRepository(new Repository\FilesystemRepository(new JsonFile($vendorDir.'/.composer/installed.json')));
         $rm->setRepositoryClass('composer', 'Composer\Repository\ComposerRepository');
         $rm->setRepositoryClass('vcs', 'Composer\Repository\VcsRepository');
@@ -110,31 +111,31 @@ class Factory
         return $rm;
     }
 
-    protected function createDownloadManager()
+    protected function createDownloadManager(IOInterface $io)
     {
         $dm = new Downloader\DownloadManager();
         $dm->setDownloader('git',  new Downloader\GitDownloader());
         $dm->setDownloader('svn',  new Downloader\SvnDownloader());
         $dm->setDownloader('hg', new Downloader\HgDownloader());
-        $dm->setDownloader('pear', new Downloader\PearDownloader());
-        $dm->setDownloader('zip',  new Downloader\ZipDownloader());
+        $dm->setDownloader('pear', new Downloader\PearDownloader($io));
+        $dm->setDownloader('zip',  new Downloader\ZipDownloader($io));
 
         return $dm;
     }
 
-    protected function createInstallationManager(Repository\RepositoryManager $rm, Downloader\DownloadManager $dm, $vendorDir, $binDir)
+    protected function createInstallationManager(Repository\RepositoryManager $rm, Downloader\DownloadManager $dm, $vendorDir, $binDir, IOInterface $io)
     {
         $im = new Installer\InstallationManager($vendorDir);
-        $im->addInstaller(new Installer\LibraryInstaller($vendorDir, $binDir, $dm, $rm->getLocalRepository(), null));
-        $im->addInstaller(new Installer\InstallerInstaller($vendorDir, $binDir, $dm, $rm->getLocalRepository(), $im));
+        $im->addInstaller(new Installer\LibraryInstaller($vendorDir, $binDir, $dm, $rm->getLocalRepository(), $io, null));
+        $im->addInstaller(new Installer\InstallerInstaller($vendorDir, $binDir, $dm, $rm->getLocalRepository(), $io, $im));
 
         return $im;
     }
 
-    static public function create($composerFile = null)
+    static public function create(IOInterface $io, $composerFile = null)
     {
         $factory = new static();
 
-        return $factory->createComposer($composerFile);
+        return $factory->createComposer($io, $composerFile);
     }
 }

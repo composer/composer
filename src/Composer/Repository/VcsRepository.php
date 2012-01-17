@@ -5,6 +5,7 @@ namespace Composer\Repository;
 use Composer\Repository\Vcs\VcsDriverInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\Loader\ArrayLoader;
+use Composer\IO\IOInterface;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -14,8 +15,9 @@ class VcsRepository extends ArrayRepository
     protected $url;
     protected $packageName;
     protected $debug;
+    protected $io;
 
-    public function __construct(array $config, array $drivers = null)
+    public function __construct(array $config, IOInterface $io, array $drivers = null)
     {
         if (!filter_var($config['url'], FILTER_VALIDATE_URL)) {
             throw new \UnexpectedValueException('Invalid url given for PEAR repository: '.$config['url']);
@@ -31,6 +33,7 @@ class VcsRepository extends ArrayRepository
         );
 
         $this->url = $config['url'];
+        $this->io = $io;
     }
 
     public function setDebug($debug)
@@ -42,7 +45,7 @@ class VcsRepository extends ArrayRepository
     {
         foreach ($this->drivers as $driver) {
             if ($driver::supports($this->url)) {
-                $driver = new $driver($this->url);
+                $driver = new $driver($this->url, $this->io);
                 $driver->initialize();
                 return $driver;
             }
@@ -50,7 +53,7 @@ class VcsRepository extends ArrayRepository
 
         foreach ($this->drivers as $driver) {
             if ($driver::supports($this->url, true)) {
-                $driver = new $driver($this->url);
+                $driver = new $driver($this->url, $this->io);
                 $driver->initialize();
                 return $driver;
             }
@@ -77,6 +80,7 @@ class VcsRepository extends ArrayRepository
         }
 
         foreach ($driver->getTags() as $tag => $identifier) {
+            $this->io->overwrite('Get composer of <info>' . $this->packageName . '</info> (<comment>' . $tag . '</comment>)');
             $parsedTag = $this->validateTag($versionParser, $tag);
             if ($parsedTag && $driver->hasComposerFile($identifier)) {
                 try {
@@ -84,7 +88,7 @@ class VcsRepository extends ArrayRepository
                 } catch (\Exception $e) {
                     if (strpos($e->getMessage(), 'JSON Parse Error') !== false) {
                         if ($debug) {
-                            echo 'Skipped tag '.$tag.', '.$e->getMessage().PHP_EOL;
+                            $this->io->writeln('Skipped tag '.$tag.', '.$e->getMessage());
                         }
                         continue;
                     } else {
@@ -108,22 +112,25 @@ class VcsRepository extends ArrayRepository
                 // broken package, version doesn't match tag
                 if ($data['version_normalized'] !== $parsedTag) {
                     if ($debug) {
-                        echo 'Skipped tag '.$tag.', tag ('.$parsedTag.') does not match version ('.$data['version_normalized'].') in composer.json'.PHP_EOL;
+                        $this->io->writeln('Skipped tag '.$tag.', tag ('.$parsedTag.') does not match version ('.$data['version_normalized'].') in composer.json');
                     }
                     continue;
                 }
 
                 if ($debug) {
-                    echo 'Importing tag '.$tag.' ('.$data['version_normalized'].')'.PHP_EOL;
+                    $this->io->writeln('Importing tag '.$tag.' ('.$data['version_normalized'].')');
                 }
 
                 $this->addPackage($loader->load($this->preProcess($driver, $data, $identifier)));
             } elseif ($debug) {
-                echo 'Skipped tag '.$tag.', '.($parsedTag ? 'no composer file was found' : 'invalid name').PHP_EOL;
+                $this->io->writeln('Skipped tag '.$tag.', '.($parsedTag ? 'no composer file was found' : 'invalid name'));
             }
         }
 
+        $this->io->overwrite('');
+
         foreach ($driver->getBranches() as $branch => $identifier) {
+            $this->io->overwrite('Get composer of <info>' . $this->packageName . '</info> (<comment>' . $branch . '</comment>)');
             $parsedBranch = $this->validateBranch($versionParser, $branch);
             if ($driver->hasComposerFile($identifier)) {
                 $data = $driver->getComposerInformation($identifier);
@@ -137,7 +144,7 @@ class VcsRepository extends ArrayRepository
                     $data['version_normalized'] = $parsedBranch;
                 } else {
                     if ($debug) {
-                        echo 'Skipped branch '.$branch.', invalid name and no composer file was found'.PHP_EOL;
+                        $this->io->writeln('Skipped branch '.$branch.', invalid name and no composer file was found');
                     }
                     continue;
                 }
@@ -151,7 +158,7 @@ class VcsRepository extends ArrayRepository
                 foreach ($this->getPackages() as $package) {
                     if ($normalizedStableVersion === $package->getVersion()) {
                         if ($debug) {
-                            echo 'Skipped branch '.$branch.', already tagged'.PHP_EOL;
+                            $this->io->writeln('Skipped branch '.$branch.', already tagged');
                         }
 
                         continue 2;
@@ -159,14 +166,16 @@ class VcsRepository extends ArrayRepository
                 }
 
                 if ($debug) {
-                    echo 'Importing branch '.$branch.' ('.$data['version_normalized'].')'.PHP_EOL;
+                    $this->io->writeln('Importing branch '.$branch.' ('.$data['version_normalized'].')');
                 }
 
                 $this->addPackage($loader->load($this->preProcess($driver, $data, $identifier)));
             } elseif ($debug) {
-                echo 'Skipped branch '.$branch.', no composer file was found'.PHP_EOL;
+                $this->io->writeln('Skipped branch '.$branch.', no composer file was found');
             }
         }
+
+        $this->io->overwrite('');
     }
 
     private function preProcess(VcsDriverInterface $driver, array $data, $identifier)
