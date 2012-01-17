@@ -12,8 +12,7 @@
 
 namespace Composer\IO;
 
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\ConsoleOutputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Helper\HelperSet;
 
 /**
@@ -21,8 +20,17 @@ use Symfony\Component\Console\Helper\HelperSet;
  *
  * @author François Pluchino <francois.pluchino@opendisplay.com>
  */
-interface IOInterface extends InputInterface, ConsoleOutputInterface
+interface IOInterface extends OutputInterface
 {
+
+
+    /**
+     * Is this input means interactive?
+     *
+     * @return Boolean
+     */
+    function isInteractive();
+
     /**
      * Overwrites a previous message to the output.
      *
@@ -31,7 +39,7 @@ interface IOInterface extends InputInterface, ConsoleOutputInterface
      * @param Boolean      $newline  Whether to add a newline or not
      * @param integer      $type     The type of output
      */
-    public function overwrite($messages, $size = 80, $newline = false, $type = 0);
+    function overwrite($messages, $size = 80, $newline = false, $type = 0);
 
     /**
      * Overwrites a previous message to the output and adds a newline at the end.
@@ -40,7 +48,7 @@ interface IOInterface extends InputInterface, ConsoleOutputInterface
      * @param integer      $size     The size of line
      * @param integer      $type     The type of output
      */
-    public function overwriteln($messages, $size = 80, $type = 0);
+    function overwriteln($messages, $size = 80, $type = 0);
 
     /**
      * Asks a question to the user.
@@ -52,7 +60,7 @@ interface IOInterface extends InputInterface, ConsoleOutputInterface
      *
      * @throws \RuntimeException If there is no data to read in the input stream
      */
-    public function ask($question, $default = null);
+    function ask($question, $default = null);
 
     /**
      * Asks a confirmation to the user.
@@ -64,7 +72,7 @@ interface IOInterface extends InputInterface, ConsoleOutputInterface
      *
      * @return Boolean true if the user has confirmed, false otherwise
      */
-    public function askConfirmation($question, $default = true);
+    function askConfirmation($question, $default = true);
 
     /**
      * Asks for a value and validates the response.
@@ -82,7 +90,7 @@ interface IOInterface extends InputInterface, ConsoleOutputInterface
      *
      * @throws \Exception When any of the validators return an error
      */
-    public function askAndValidate($question, $validator, $attempts = false, $default = null);
+    function askAndValidate($question, $validator, $attempts = false, $default = null);
 
     /**
      * Asks a question to the user and hide the answer.
@@ -91,28 +99,28 @@ interface IOInterface extends InputInterface, ConsoleOutputInterface
      *
      * @return string The answer
      */
-    public function askAndHideAnswer($question);
+    function askAndHideAnswer($question);
 
     /**
      * Get the last username entered.
      *
      * @return string The username
      */
-    public function getLastUsername();
+    function getLastUsername();
 
     /**
      * Get the last password entered.
      *
      * @return string The password
      */
-    public function getLastPassword();
+    function getLastPassword();
 
     /**
      * Get all authentification informations entered.
      *
      * @return array The map of authentification
      */
-    public function getAuthentifications();
+    function getAuthentifications();
 
     /**
      * Verify if the repository has a authentification informations.
@@ -121,7 +129,7 @@ interface IOInterface extends InputInterface, ConsoleOutputInterface
      *
      * @return boolean
      */
-    public function hasAuthentification($repositoryName);
+    function hasAuthentification($repositoryName);
 
     /**
      * Get the username and password of repository.
@@ -130,7 +138,7 @@ interface IOInterface extends InputInterface, ConsoleOutputInterface
      *
      * @return array The 'username' and 'password'
      */
-    public function getAuthentification($repositoryName);
+    function getAuthentification($repositoryName);
 
     /**
      * Set the authentification informations for the repository.
@@ -139,5 +147,5 @@ interface IOInterface extends InputInterface, ConsoleOutputInterface
      * @param string $username       The username
      * @param string $password       The password
      */
-    public function setAuthentification($repositoryName, $username, $password = null);
+    function setAuthentification($repositoryName, $username, $password = null);
 }

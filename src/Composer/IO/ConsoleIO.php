@@ -12,10 +12,8 @@
 
 namespace Composer\IO;
 
-use Composer\IO\IOInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputDefinition;
-use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Formatter\OutputFormatterInterface;
 use Symfony\Component\Console\Helper\HelperSet;
@@ -37,11 +35,11 @@ class ConsoleIO implements IOInterface
     /**
      * Constructor.
      *
-     * @param InputInterface         $input     The input instance
-     * @param ConsoleOutputInterface $output    The output instance
-     * @param HelperSet              $helperSet The helperSet instance
+     * @param InputInterface  $input     The input instance
+     * @param OutputInterface $output    The output instance
+     * @param HelperSet       $helperSet The helperSet instance
      */
-    public function __construct(InputInterface $input, ConsoleOutputInterface $output, HelperSet $helperSet)
+    public function __construct(InputInterface $input, OutputInterface $output, HelperSet $helperSet)
     {
         $this->input = $input;
         $this->output = $output;
@@ -51,97 +49,9 @@ class ConsoleIO implements IOInterface
     /**
      * {@inheritDoc}
      */
-    public function getFirstArgument()
-    {
-        return $this->input->getFirstArgument();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function hasParameterOption($values)
-    {
-        return $this->input->hasParameterOption($values);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getParameterOption($values, $default = false)
-    {
-        return $this->input->getParameterOption($values, $default);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function bind(InputDefinition $definition)
-    {
-        $this->input->bind($definition);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function validate()
-    {
-        $this->input->validate();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getArguments()
-    {
-        return $this->input->getArguments();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getArgument($name)
-    {
-        return $this->input->getArgument($name);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getOptions()
-    {
-        return $this->input->getOptions();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getOption($name)
-    {
-        return $this->input->getOption($name);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public function isInteractive()
     {
         return $this->input->isInteractive();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getErrorOutput()
-    {
-        return $this->output->getErrorOutput();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function setErrorOutput(OutputInterface $error)
-    {
-        $this->output->setErrorOutput($error);
     }
 
     /**
@@ -290,7 +200,7 @@ class ConsoleIO implements IOInterface
         }
 
         // for other OS with shell_exec (hide the answer)
-        else if (rtrim(shell_exec($command)) === 'OK') {
+        if (rtrim(shell_exec($command)) === 'OK') {
             $command = "/usr/bin/env bash -c 'echo OK'";
 
             $this->write($question);

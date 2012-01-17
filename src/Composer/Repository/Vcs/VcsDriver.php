@@ -122,8 +122,9 @@ abstract class VcsDriver
             $this->io->setAuthentification($this->url, $username, $password);
 
             return $this->getContents($url);
+        }
 
-        } else if (404 === $code) {
+        if (404 === $code) {
             throw new \LogicException("The '$url' URL not found");
         }
 
