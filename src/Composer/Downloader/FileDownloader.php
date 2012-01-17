@@ -189,15 +189,10 @@ abstract class FileDownloader implements DownloaderInterface
                     $progression = 0;
 
                     if ($this->bytesMax > 0) {
-                        $progression = ($bytesTransferred / $this->bytesMax * 100);
+                        $progression = round($bytesTransferred / $this->bytesMax * 100);
                     }
 
-                    $levels = array(0, 5, 10, 15, 20, 25, 30, 35, 40, 35, 50,
-                            55, 60, 65, 70, 75, 80, 85, 90, 95, 100);
-
-                    $progression = round($progression, 0);
-
-                    if (in_array($progression, $levels)) {
+                    if (0 === $progression % 5) {
                         $this->io->overwrite("    Downloading: <comment>$progression%</comment>", 80);
                     }
                 }
