@@ -124,6 +124,23 @@ class PearRepository extends ArrayRepository
             }
         }
     }
+    
+    /**
+     * @param   array $data
+     * @return  string 
+     */
+    private function parseVersion(array $data)
+    {
+        if (isset($data['min'])) {
+            $version = '>=' . $data['min'];
+        } else {
+            $version = '>=0.0.0';
+        }
+        if (isset($data['max'])) {
+            $version .= ',<=' . $data['max'];
+        }
+        return $version;
+    }
 
     /**
      * @todo    Improve dependences of pear packages.
@@ -135,29 +152,16 @@ class PearRepository extends ArrayRepository
         $data = array();
         foreach ($depsOptions as $name => $options) {
             if ('php' == $name) {
-                $key = $name;
-                if (isset($options['min'])) {
-                    $value = '>=' . $options['min'];
-                } else {
-                    $value = '>=0.0.0';
-                }
-                $data[$key] = $value;
-
+                $data[$name] = $this->parseVersion($options);
             } elseif ('package' == $name) {
                 foreach ($options as $key => $value) {
-                    $key = $value['name'];
-                    if (isset($value['min'])) {
-                        $value = '>=' . $value['min'];
-                    } else {
-                        $value = '>=0.0.0';
-                    }
-                    $data[$key] = $value;
+                    $key = $value['name']; 
+                    $data[$key] = $this->parseVersion($value);
                 }
             } elseif ('extension' == $name) {
                 foreach ($options as $key => $value) {
                     $key = 'ext-' . $value['name'];
-                    $value = '*';
-                    $data[$key] = $value;
+                    $data[$key] = '*';
                 }
             }
         }
