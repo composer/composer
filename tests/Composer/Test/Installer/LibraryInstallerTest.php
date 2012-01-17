@@ -23,6 +23,7 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
     private $dm;
     private $repository;
     private $library;
+    private $io;
 
     protected function setUp()
     {
@@ -45,25 +46,27 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
             ->getMock();
 
         $this->repository = $this->getMockBuilder('Composer\Repository\WritableRepositoryInterface')
-            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->io = $this->getMockBuilder('Composer\IO\IOInterface')
             ->getMock();
     }
 
     public function testInstallerCreation()
     {
-        $library = new LibraryInstaller($this->vendorDir, $this->binDir, $this->dm, $this->repository);
+        $library = new LibraryInstaller($this->vendorDir, $this->binDir, $this->dm, $this->repository, $this->io);
         $this->assertTrue(is_dir($this->vendorDir));
 
         $file = sys_get_temp_dir().'/file';
         touch($file);
 
         $this->setExpectedException('RuntimeException');
-        $library = new LibraryInstaller($file, $this->binDir, $this->dm, $this->repository);
+        $library = new LibraryInstaller($file, $this->binDir, $this->dm, $this->repository, $this->io);
     }
 
     public function testIsInstalled()
     {
-        $library = new LibraryInstaller($this->vendorDir, $this->binDir, $this->dm, $this->repository);
+        $library = new LibraryInstaller($this->vendorDir, $this->binDir, $this->dm, $this->repository, $this->io);
         $package = $this->createPackageMock();
 
         $this->repository
@@ -78,7 +81,7 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
 
     public function testInstall()
     {
-        $library = new LibraryInstaller($this->vendorDir, $this->binDir, $this->dm, $this->repository);
+        $library = new LibraryInstaller($this->vendorDir, $this->binDir, $this->dm, $this->repository, $this->io);
         $package = $this->createPackageMock();
 
         $package
@@ -101,7 +104,7 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
 
     public function testUpdate()
     {
-        $library = new LibraryInstaller($this->vendorDir, $this->binDir, $this->dm, $this->repository);
+        $library = new LibraryInstaller($this->vendorDir, $this->binDir, $this->dm, $this->repository, $this->io);
         $initial = $this->createPackageMock();
         $target  = $this->createPackageMock();
 
@@ -140,7 +143,7 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
 
     public function testUninstall()
     {
-        $library = new LibraryInstaller($this->vendorDir, $this->binDir, $this->dm, $this->repository);
+        $library = new LibraryInstaller($this->vendorDir, $this->binDir, $this->dm, $this->repository, $this->io);
         $package = $this->createPackageMock();
 
         $package
@@ -174,7 +177,7 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
 
     public function testGetInstallPath()
     {
-        $library = new LibraryInstaller($this->vendorDir, $this->binDir, $this->dm, $this->repository);
+        $library = new LibraryInstaller($this->vendorDir, $this->binDir, $this->dm, $this->repository, $this->io);
         $package = $this->createPackageMock();
 
         $package
@@ -187,7 +190,7 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
 
     public function testGetInstallPathWithTargetDir()
     {
-        $library = new LibraryInstaller($this->vendorDir, $this->binDir, $this->dm, $this->repository);
+        $library = new LibraryInstaller($this->vendorDir, $this->binDir, $this->dm, $this->repository, $this->io);
         $package = $this->createPackageMock();
 
         $package
