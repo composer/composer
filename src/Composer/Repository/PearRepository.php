@@ -114,7 +114,7 @@ class PearRepository extends ArrayRepository
                     throw $e;
                 }
 
-                $packageData += $this->parseDependences($deps);
+                $packageData += $this->parseDependencies($deps);
 
                 try {
                     $this->addPackage($loader->load($packageData));
@@ -130,7 +130,7 @@ class PearRepository extends ArrayRepository
      * @param   array $options
      * @return  array
      */
-    private function parseDependencesOptions(array $depsOptions)
+    private function parseDependenciesOptions(array $depsOptions)
     {
         $data = array();
         foreach ($depsOptions as $name => $options) {
@@ -170,7 +170,7 @@ class PearRepository extends ArrayRepository
      * @return  array
      * @throws  InvalidArgumentException
      */
-    private function parseDependences($deps)
+    private function parseDependencies($deps)
     {
         if (preg_match('((O:([0-9])+:"([^"]+)"))', $deps, $matches)) {
             if (strlen($matches[3]) == $matches[2]) {
@@ -182,13 +182,13 @@ class PearRepository extends ArrayRepository
 
         $depsData = array();
         if (isset($deps['required'])) {
-            $depsData['require'] = $this->parseDependencesOptions($deps['required']);
+            $depsData['require'] = $this->parseDependenciesOptions($deps['required']);
         } else {
             $depsData['require'] = array('php' => '>=5.3.0');
         }
 
         if (isset($depsData['optional'])) {
-            $depsData['recommend'] = $this->parseDependencesOptions($depsData['optional']);
+            $depsData['recommend'] = $this->parseDependenciesOptions($depsData['optional']);
         }
 
         return $depsData;
@@ -222,7 +222,7 @@ class PearRepository extends ArrayRepository
 
             $depsData = $information->getElementsByTagName('deps')->item(0);
             $depsData = $depsData->getElementsByTagName('d')->item(0);
-            $depsData = $this->parseDependences($depsData->nodeValue);
+            $depsData = $this->parseDependencies($depsData->nodeValue);
 
             $revisions = $information->getElementsByTagName('a')->item(0);
             $revisions = $revisions->getElementsByTagName('r');
