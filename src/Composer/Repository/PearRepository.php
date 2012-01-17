@@ -31,7 +31,7 @@ class PearRepository extends ArrayRepository
             throw new \UnexpectedValueException('Invalid url given for PEAR repository: '.$config['url']);
         }
 
-        $this->url = preg_replace('#^(.+)/+$#U', '$1', $config['url']);
+        $this->url = rtrim($config['url'], '/');
     }
 
     protected function initialize()
