@@ -15,7 +15,7 @@ namespace Composer\Repository\Vcs;
 use Composer\IO\IOInterface;
 
 /**
- * A driver implementation for driver with authentification interaction.
+ * A driver implementation for driver with authorization interaction.
  *
  * @author François Pluchino <francois.pluchino@opendisplay.com>
  */
@@ -63,11 +63,11 @@ abstract class VcsDriver
     protected function getContents($url)
     {
         $this->contentUrl = $url;
-        $auth = $this->io->getAuthentification($this->url);
+        $auth = $this->io->getAuthorization($this->url);
         $params = array();
 
         // add authorization to curl options
-        if ($this->io->hasAuthentification($this->url)) {
+        if ($this->io->hasAuthorization($this->url)) {
             $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
             $params['http'] = array('header' => "Authorization: Basic $authStr\r\n");
 
@@ -81,7 +81,7 @@ abstract class VcsDriver
 
         $content = @file_get_contents($url, false, $ctx);
 
-        // content get after authentification
+        // content get after authorization
         if (false === $content) {
             $content = $this->content;
             $this->content = null;
@@ -106,36 +106,36 @@ abstract class VcsDriver
         switch ($notificationCode) {
             case STREAM_NOTIFY_AUTH_REQUIRED:
             case STREAM_NOTIFY_FAILURE:
-                // for private repository returning 404 error when the authentification is incorrect
-                $auth = $this->io->getAuthentification($this->url);
+                // for private repository returning 404 error when the authorization is incorrect
+                $auth = $this->io->getAuthorization($this->url);
                 $ps = $this->firstCall && 404 === $messageCode
                         && null === $this->io->getLastUsername()
                         && null === $auth['username'];
 
                 if (404 === $messageCode && !$this->firstCall) {
-                    throw new \LogicException("The '" . $this->contentUrl . "' URL not found");
+                    throw new \RuntimeException("The '" . $this->contentUrl . "' URL not found");
                 }
 
                 if ($this->firstCall) {
                     $this->firstCall = false;
                 }
 
-                // get authentification informations
+                // get authorization informations
                 if (401 === $messageCode || $ps) {
                     if (!$this->io->isInteractive()) {
                         $mess = "The '" . $this->contentUrl . "' URL not found";
 
                         if (401 === $code || $ps) {
-                            $mess = "The '" . $this->contentUrl . "' URL required the authentification.\nYou must be used the interactive console";
+                            $mess = "The '" . $this->contentUrl . "' URL required the authorization.\nYou must be used the interactive console";
                         }
 
-                        throw new \LogicException($mess);
+                        throw new \RuntimeException($mess);
                     }
 
                     $this->io->writeln("Authorization for <info>" . $this->contentUrl . "</info>:");
                     $username = $this->io->ask('    Username: ');
                     $password = $this->io->askAndHideAnswer('    Password: ');
-                    $this->io->setAuthentification($this->url, $username, $password);
+                    $this->io->setAuthorization($this->url, $username, $password);
 
                     $this->content = $this->getContents($this->contentUrl);
                 }

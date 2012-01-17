@@ -94,8 +94,8 @@ abstract class FileDownloader implements DownloaderInterface
             );
         }
 
-        if ($this->io->hasAuthentification($package->getSourceUrl())) {
-            $auth = $this->io->getAuthentification($package->getSourceUrl());
+        if ($this->io->hasAuthorization($package->getSourceUrl())) {
+            $auth = $this->io->getAuthorization($package->getSourceUrl());
             $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
             $params['http'] = array_merge($params['http'], array('header' => "Authorization: Basic $authStr\r\n"));
         }
@@ -171,7 +171,7 @@ abstract class FileDownloader implements DownloaderInterface
     {
         switch ($notificationCode) {
             case STREAM_NOTIFY_AUTH_REQUIRED:
-                throw new \LogicException("Authentification is required");
+                throw new \LogicException("Authorization is required");
                 break;
 
             case STREAM_NOTIFY_FAILURE:

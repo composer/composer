@@ -28,7 +28,7 @@ class ConsoleIO implements IOInterface
     protected $input;
     protected $output;
     protected $helperSet;
-    protected $authentifications;
+    protected $authorizations = array();
     protected $lastUsername;
     protected $lastPassword;
 
@@ -242,42 +242,38 @@ class ConsoleIO implements IOInterface
     /**
      * {@inheritDoc}
      */
-    public function getAuthentifications()
+    public function getAuthorizations()
     {
-        if (null === $this->authentifications) {
-            $this->authentifications = array();
-        }
-
-        return $this->authentifications;
+        return $this->authorizations;
     }
 
     /**
      * {@inheritDoc}
      */
-    public function hasAuthentification($repositoryName)
+    public function hasAuthorization($repositoryName)
     {
-        $auths = $this->getAuthentifications();
-        return isset($auths[$repositoryName]) ? true : false;
+        $auths = $this->getAuthorizations();
+        return isset($auths[$repositoryName]);
     }
 
     /**
      * {@inheritDoc}
      */
-    public function getAuthentification($repositoryName)
+    public function getAuthorization($repositoryName)
     {
-        $auths = $this->getAuthentifications();
+        $auths = $this->getAuthorizations();
         return isset($auths[$repositoryName]) ? $auths[$repositoryName] : array('username' => null, 'password' => null);
     }
 
     /**
      * {@inheritDoc}
      */
-    public function setAuthentification($repositoryName, $username, $password = null)
+    public function setAuthorization($repositoryName, $username, $password = null)
     {
-        $auths = $this->getAuthentifications();
+        $auths = $this->getAuthorizations();
         $auths[$repositoryName] = array('username' => $username, 'password' => $password);
 
-        $this->authentifications = $auths;
+        $this->authorizations = $auths;
         $this->lastUsername = $username;
         $this->lastPassword = $password;
     }
