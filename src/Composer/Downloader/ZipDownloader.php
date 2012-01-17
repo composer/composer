@@ -13,7 +13,7 @@
 namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
-use Symfony\Component\Process\Process;
+use Composer\Util\Process;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
