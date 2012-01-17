@@ -30,23 +30,21 @@ interface IOInterface extends OutputInterface
     function isInteractive();
 
     /**
-     * Overwrites a previous message to the output.
+     * Writes a message to the output.
      *
-     * @param string|array $messages The message as an array of lines of a single string
-     * @param integer      $size     The size of line
+     * @param string|array $messages The message as an array of lines or a single string
      * @param Boolean      $newline  Whether to add a newline or not
-     * @param integer      $type     The type of output
      */
-    function overwrite($messages, $size = 80, $newline = false, $type = 0);
+    function write($messages, $newline = true);
 
     /**
-     * Overwrites a previous message to the output and adds a newline at the end.
+     * Overwrites a previous message to the output.
      *
-     * @param string|array $messages The message as an array of lines of a single string
+     * @param string|array $messages The message as an array of lines or a single string
      * @param integer      $size     The size of line
-     * @param integer      $type     The type of output
+     * @param Boolean      $newline  Whether to add a newline or not
      */
-    function overwriteln($messages, $size = 80, $type = 0);
+    function overwrite($messages, $size = 80, $newline = true);
 
     /**
      * Asks a question to the user.

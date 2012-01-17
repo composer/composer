@@ -77,7 +77,7 @@ class Application extends BaseApplication
             try {
                 $this->composer = Factory::create($this->io);
             } catch (\InvalidArgumentException $e) {
-                $this->io->writeln($e->getMessage());
+                $this->io->write($e->getMessage());
                 exit(1);
             }
         }

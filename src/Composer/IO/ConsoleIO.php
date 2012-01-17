@@ -57,17 +57,9 @@ class ConsoleIO implements IOInterface
     /**
      * {@inheritDoc}
      */
-    public function write($messages, $newline = false, $type = 0)
+    public function write($messages, $newline = true)
     {
-        $this->output->write($messages, $newline, $type);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function writeln($messages, $type = 0)
-    {
-        $this->output->writeln($messages, $type);
+        $this->output->write($messages, $newline);
     }
 
     /**
@@ -98,62 +90,6 @@ class ConsoleIO implements IOInterface
     /**
      * {@inheritDoc}
      */
-    public function overwriteln($messages, $size = 80, $type = 0)
-    {
-        $this->overwrite($messages, $size, true, $type);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function setVerbosity($level)
-    {
-        $this->output->setVerbosity($level);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getVerbosity()
-    {
-        return $this->output->getVerbosity();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function setDecorated($decorated)
-    {
-        $this->output->setDecorated($decorated);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function isDecorated()
-    {
-        return $this->output->isDecorated();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function setFormatter(OutputFormatterInterface $formatter)
-    {
-        $this->output->setFormatter($formatter);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getFormatter()
-    {
-        return $this->output->getFormatter();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public function ask($question, $default = null)
     {
         return $this->helperSet->get('dialog')->ask($this->output, $question, $default);
@@ -167,6 +103,9 @@ class ConsoleIO implements IOInterface
         return $this->helperSet->get('dialog')->askConfirmation($this->output, $question, $default);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function askAndValidate($question, $validator, $attempts = false, $default = null)
     {
         return $this->helperSet->get('dialog')->askAndValidate($this->output, $question, $validator, $attempts, $default);

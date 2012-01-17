@@ -140,7 +140,7 @@ class LibraryInstaller implements InstallerInterface
         foreach ($package->getBinaries() as $bin) {
             $link = $this->binDir.'/'.basename($bin);
             if (file_exists($link)) {
-                $this->io->writeln('Skipped installation of '.$bin.' for package '.$package->getName().', name conflicts with an existing file');
+                $this->io->write('Skipped installation of '.$bin.' for package '.$package->getName().', name conflicts with an existing file');
                 continue;
             }
             $bin = $this->getInstallPath($package).'/'.$bin;

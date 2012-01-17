@@ -41,7 +41,9 @@ abstract class VcsDriver
     }
 
     /**
-     * Get the https or http protocol.
+     * Get the https or http protocol depending on SSL support.
+     *
+     * Call this only if you know that the server supports both.
      *
      * @return string The correct type of protocol
      */
@@ -70,7 +72,6 @@ abstract class VcsDriver
         if ($this->io->hasAuthorization($this->url)) {
             $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
             $params['http'] = array('header' => "Authorization: Basic $authStr\r\n");
-
         } else if (null !== $this->io->getLastUsername()) {
             $authStr = base64_encode($this->io->getLastUsername() . ':' . $this->io->getLastPassword());
             $params['http'] = array('header' => "Authorization: Basic $authStr\r\n");
@@ -116,9 +117,7 @@ abstract class VcsDriver
                     throw new \RuntimeException("The '" . $this->contentUrl . "' URL not found");
                 }
 
-                if ($this->firstCall) {
-                    $this->firstCall = false;
-                }
+                $this->firstCall = false;
 
                 // get authorization informations
                 if (401 === $messageCode || $ps) {
@@ -132,7 +131,7 @@ abstract class VcsDriver
                         throw new \RuntimeException($mess);
                     }
 
-                    $this->io->writeln("Authorization for <info>" . $this->contentUrl . "</info>:");
+                    $this->io->write("Authorization for <info>" . $this->contentUrl . "</info>:");
                     $username = $this->io->ask('    Username: ');
                     $password = $this->io->askAndHideAnswer('    Password: ');
                     $this->io->setAuthorization($this->url, $username, $password);
