@@ -12,15 +12,12 @@
 
 namespace Composer\IO;
 
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Helper\HelperSet;
-
 /**
  * The Input/Output helper interface.
  *
  * @author François Pluchino <francois.pluchino@opendisplay.com>
  */
-interface IOInterface extends OutputInterface
+interface IOInterface
 {
     /**
      * Is this input means interactive?

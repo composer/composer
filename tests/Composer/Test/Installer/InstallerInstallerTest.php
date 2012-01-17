@@ -35,7 +35,9 @@ class InstallerInstallerTest extends \PHPUnit_Framework_TestCase
             ->getMock();
 
         $this->repository = $this->getMockBuilder('Composer\Repository\WritableRepositoryInterface')
-            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->io = $this->getMockBuilder('Composer\IO\IOInterface')
             ->getMock();
     }
 
@@ -45,7 +47,7 @@ class InstallerInstallerTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('getPackages')
             ->will($this->returnValue(array()));
-        $installer = new InstallerInstallerMock(__DIR__.'/Fixtures/', __DIR__.'/Fixtures/bin', $this->dm, $this->repository, $this->im);
+        $installer = new InstallerInstallerMock(__DIR__.'/Fixtures/', __DIR__.'/Fixtures/bin', $this->dm, $this->repository, $this->io, $this->im);
 
         $test = $this;
         $this->im
@@ -68,7 +70,7 @@ class InstallerInstallerTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('hasPackage')
             ->will($this->returnValue(true));
-        $installer = new InstallerInstallerMock(__DIR__.'/Fixtures/', __DIR__.'/Fixtures/bin', $this->dm, $this->repository, $this->im);
+        $installer = new InstallerInstallerMock(__DIR__.'/Fixtures/', __DIR__.'/Fixtures/bin', $this->dm, $this->repository, $this->io, $this->im);
 
         $test = $this;
         $this->im
@@ -91,7 +93,7 @@ class InstallerInstallerTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('hasPackage')
             ->will($this->returnValue(true));
-        $installer = new InstallerInstallerMock(__DIR__.'/Fixtures/', __DIR__.'/Fixtures/bin', $this->dm, $this->repository, $this->im);
+        $installer = new InstallerInstallerMock(__DIR__.'/Fixtures/', __DIR__.'/Fixtures/bin', $this->dm, $this->repository, $this->io, $this->im);
 
         $test = $this;
         $this->im
