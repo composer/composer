@@ -66,7 +66,7 @@ class Factory
         $binDir = getenv('COMPOSER_BIN_DIR') ?: $packageConfig['config']['bin-dir'];
 
         // initialize repository manager
-        $rm = $this->createRepositoryManager();
+        $rm = $this->createRepositoryManager($vendorDir);
 
         // initialize download manager
         $dm = $this->createDownloadManager();
