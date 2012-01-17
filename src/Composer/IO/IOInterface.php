@@ -22,8 +22,6 @@ use Symfony\Component\Console\Helper\HelperSet;
  */
 interface IOInterface extends OutputInterface
 {
-
-
     /**
      * Is this input means interactive?
      *
@@ -116,20 +114,20 @@ interface IOInterface extends OutputInterface
     function getLastPassword();
 
     /**
-     * Get all authentification informations entered.
+     * Get all authorization informations entered.
      *
-     * @return array The map of authentification
+     * @return array The map of authorization
      */
-    function getAuthentifications();
+    function getAuthorizations();
 
     /**
-     * Verify if the repository has a authentification informations.
+     * Verify if the repository has a authorization informations.
      *
      * @param string $repositoryName The unique name of repository
      *
      * @return boolean
      */
-    function hasAuthentification($repositoryName);
+    function hasAuthorization($repositoryName);
 
     /**
      * Get the username and password of repository.
@@ -138,14 +136,14 @@ interface IOInterface extends OutputInterface
      *
      * @return array The 'username' and 'password'
      */
-    function getAuthentification($repositoryName);
+    function getAuthorization($repositoryName);
 
     /**
-     * Set the authentification informations for the repository.
+     * Set the authorization informations for the repository.
      *
      * @param string $repositoryName The unique name of repository
      * @param string $username       The username
      * @param string $password       The password
      */
-    function setAuthentification($repositoryName, $username, $password = null);
+    function setAuthorization($repositoryName, $username, $password = null);
 }
