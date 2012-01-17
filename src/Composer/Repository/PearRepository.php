@@ -155,13 +155,13 @@ class PearRepository extends ArrayRepository
                 $data[$name] = $this->parseVersion($options);
             } elseif ('package' == $name) {
                 foreach ($options as $key => $value) {
-                    $key = $value['name']; 
-                    $data[$key] = $this->parseVersion($value);
+                    $dataKey = $value['name']; 
+                    $data[$dataKey] = $this->parseVersion($value);
                 }
             } elseif ('extension' == $name) {
                 foreach ($options as $key => $value) {
-                    $key = 'ext-' . $value['name'];
-                    $data[$key] = '*';
+                    $dataKey = 'ext-' . $value['name'];
+                    $data[$dataKey] = $this->parseVersion($value);
                 }
             }
         }
