@@ -44,6 +44,24 @@ class ArrayRepository implements RepositoryInterface
     /**
      * {@inheritDoc}
      */
+    public function findPackagesByName($name)
+    {
+        // normalize name
+        $name = strtolower($name);
+        $packages = array();
+
+        foreach ($this->getPackages() as $package) {
+            if ($package->getName() === $name) {
+                $packages[] = $package;
+            }
+        }
+
+        return $packages;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function hasPackage(PackageInterface $package)
     {
         $packageId = $package->getUniqueName();

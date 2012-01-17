@@ -42,6 +42,15 @@ interface RepositoryInterface extends \Countable
     function findPackage($name, $version);
 
     /**
+     * Searches for packages by it's name.
+     *
+     * @param   string  $name       package name
+     *
+     * @return  array
+     */
+    function findPackagesByName($name);
+
+    /**
      * Returns list of registered packages.
      *
      * @return  array
