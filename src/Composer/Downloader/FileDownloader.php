@@ -46,8 +46,77 @@ abstract class FileDownloader implements DownloaderInterface
             }
         }
 
-        $fileName = rtrim($path.'/'.md5(time().rand()).'.'.pathinfo($url, PATHINFO_EXTENSION), '.');
+        $temporaryName = md5($package->getName() . $package->getVersion());
+        $fileName = rtrim($path.'/'.$temporaryName.'.'.pathinfo($url, PATHINFO_EXTENSION), '.');
 
+        if (!file_exists($fileName)) {
+            $this->fetch($url, $fileName);
+        }
+
+        if ($checksum && hash_file('sha1', $fileName) !== $checksum) {
+            throw new \UnexpectedValueException('The checksum verification of the archive failed (downloaded from '.$url.')');
+        }
+    }
+
+    /**
+     * Unpacks previously downloaded packages
+     *
+     * @param PackageInterface $package package instance
+     * @param string           $path    target path
+     */
+    public function unpack(PackageInterface $package, $path)
+    {
+        $url = $package->getDistUrl();
+        $temporaryName = md5($package->getName() . $package->getVersion());
+        $fileName = rtrim($path.'/'.$temporaryName.'.'.pathinfo($url, PATHINFO_EXTENSION), '.');
+
+        echo 'Unpacking archive for ', $package->getName(), PHP_EOL;
+        $this->extract($fileName, $path);
+
+        unlink($fileName);
+
+        // If we have only a one dir inside it suppose to be a package itself
+        $contentDir = glob($path . '/*');
+        if (1 === count($contentDir)) {
+            $contentDir = $contentDir[0];
+            foreach (array_merge(glob($contentDir . '/.*'), glob($contentDir . '/*')) as $file) {
+                if (trim(basename($file), '.')) {
+                    rename($file, $path . '/' . basename($file));
+                }
+            }
+            rmdir($contentDir);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function update(PackageInterface $initial, PackageInterface $target, $path)
+    {
+        $fs = new Util\Filesystem();
+        $fs->removeDirectory($path);
+        $this->download($target, $path);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function remove(PackageInterface $package, $path)
+    {
+        $fs = new Util\Filesystem();
+        $fs->removeDirectory($path);
+    }
+
+    /**
+     * Fetches specific package from specific url.
+     *
+     * @param string $url      url to download from
+     * @param string $fileName target filename
+     *
+     * @throws \RuntimeException|\UnexpectedValueException
+     */
+    protected function fetch($url, $fileName)
+    {
         echo 'Downloading '.$url.' to '.$fileName.PHP_EOL;
 
         if (!extension_loaded('openssl') && (0 === strpos($url, 'https:') || 0 === strpos($url, 'http://github.com'))) {
@@ -84,48 +153,6 @@ abstract class FileDownloader implements DownloaderInterface
             throw new \UnexpectedValueException($url.' could not be saved to '.$fileName.', make sure the'
                 .' directory is writable and you have internet connectivity');
         }
-
-        if ($checksum && hash_file('sha1', $fileName) !== $checksum) {
-            throw new \UnexpectedValueException('The checksum verification of the archive failed (downloaded from '.$url.')');
-        }
-
-        echo 'Unpacking archive'.PHP_EOL;
-        $this->extract($fileName, $path);
-
-
-        echo 'Cleaning up'.PHP_EOL;
-        unlink($fileName);
-
-        // If we have only a one dir inside it suppose to be a package itself
-        $contentDir = glob($path . '/*');
-        if (1 === count($contentDir)) {
-            $contentDir = $contentDir[0];
-            foreach (array_merge(glob($contentDir . '/.*'), glob($contentDir . '/*')) as $file) {
-                if (trim(basename($file), '.')) {
-                    rename($file, $path . '/' . basename($file));
-                }
-            }
-            rmdir($contentDir);
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function update(PackageInterface $initial, PackageInterface $target, $path)
-    {
-        $fs = new Util\Filesystem();
-        $fs->removeDirectory($path);
-        $this->download($target, $path);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function remove(PackageInterface $package, $path)
-    {
-        $fs = new Util\Filesystem();
-        $fs->removeDirectory($path);
     }
 
     /**

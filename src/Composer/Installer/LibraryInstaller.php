@@ -128,6 +128,15 @@ class LibraryInstaller implements InstallerInterface
         return ($this->vendorDir ? $this->vendorDir.'/' : '') . $package->getPrettyName() . ($targetDir ? '/'.$targetDir : '');
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public function unpack(PackageInterface $package)
+    {
+        $downloadPath = $this->getInstallPath($package);
+        $this->downloadManager->unpack($package, $downloadPath);
+    }
+
     protected function installBinaries(PackageInterface $package)
     {
         if (!$package->getBinaries()) {

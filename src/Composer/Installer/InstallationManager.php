@@ -17,6 +17,7 @@ use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
+use Composer\DependencyResolver\Operation\UnpackOperation;
 
 /**
  * Package operation manager.
@@ -185,5 +186,22 @@ class InstallationManager
         }
 
         return getcwd().DIRECTORY_SEPARATOR.$this->vendorPath;
+    }
+
+    /**
+     * Unpacks downloaded packages
+     *
+     * @param UnpackOperation $operation operation instance
+     */
+    public function unpack(UnpackOperation $operation)
+    {
+        $installer = $this->getInstaller($operation->getPackage()->getType());
+        $installer->unpack($operation->getPackage());
+
+        /*
+        actually we can use this, but it breaks other operations flow:
+        foreach ($this->cache as $installer) {
+            $installer->unpack();
+        }*/
     }
 }

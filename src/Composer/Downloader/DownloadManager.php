@@ -183,4 +183,19 @@ class DownloadManager
         $downloader = $this->getDownloaderForInstalledPackage($package);
         $downloader->remove($package, $targetDir);
     }
+
+    /**
+     * Unpacks archives if necessary
+     */
+    /**
+     * @param PackageInterface $package   package instance
+     * @param string           $targetDir target dir
+     */
+    public function unpack(PackageInterface $package, $targetDir)
+    {
+        $downloader = $this->getDownloaderForInstalledPackage($package);
+        if ($downloader instanceof FileDownloader) {
+            $downloader->unpack($package, $targetDir);
+        }
+    }
 }

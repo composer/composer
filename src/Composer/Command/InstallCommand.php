@@ -138,10 +138,10 @@ EOT
                     }
                 }
                 foreach ($operations as $operation) {
-                    if ('install' === $operation->getJobType() && in_array($job['packageName'], $operation->getPackage()->getNames())) {
+                    if (in_array($operation->getJobType(), array('install', 'unpack')) && in_array($job['packageName'], $operation->getPackage()->getNames())) {
                         continue 2;
                     }
-                    if ('update' === $operation->getJobType() && in_array($job['packageName'], $operation->getTargetPackage()->getNames())) {
+                    if (in_array($operation->getJobType(), array('update', 'unpack')) && in_array($job['packageName'], $operation->getTargetPackage()->getNames())) {
                         continue 2;
                     }
                 }

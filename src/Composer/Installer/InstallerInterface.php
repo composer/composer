@@ -70,4 +70,11 @@ interface InstallerInterface
      * @return  string path
      */
     function getInstallPath(PackageInterface $package);
+
+    /**
+     * Unpacks all downloaded packages
+     *
+     * @param PackageInterface $package package instance
+     */
+    function unpack(PackageInterface $package);
 }

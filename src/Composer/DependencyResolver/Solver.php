@@ -1078,6 +1078,7 @@ class Solver
     protected function createTransaction()
     {
         $transaction = array();
+        $unpacks = array();
         $installMeansUpdateMap = array();
 
         foreach ($this->decisionQueue as $i => $literal) {
@@ -1126,6 +1127,9 @@ class Solver
                         $package, $this->decisionQueueWhy[$i]
                     );
                 }
+                $unpacks[] = new Operation\UnpackOperation(
+                    $package, $this->decisionQueueWhy[$i]
+                );
             } else if (!isset($ignoreRemove[$package->getId()])) {
                 $transaction[] = new Operation\UninstallOperation(
                     $package, $this->decisionQueueWhy[$i]
@@ -1133,7 +1137,9 @@ class Solver
             }
         }
 
-        return array_reverse($transaction);
+        // we want all unpacks to be latest operation possible.
+        // Also need to get same order. Just in case.
+        return array_merge(array_reverse($transaction), array_reverse($unpacks));
     }
 
     protected $decisionQueue = array();

@@ -16,6 +16,7 @@ use Composer\Installer\InstallationManager;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
+use Composer\DependencyResolver\Operation\UnpackOperation;
 
 class InstallationManagerTest extends \PHPUnit_Framework_TestCase
 {
@@ -206,6 +207,106 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
         $manager->uninstall($operation);
     }
 
+    /**
+     * @depends testInstall
+     */
+    public function testUnpack()
+    {
+        $installer = $this->createInstallerMock();
+        $manager   = new InstallationManager('vendor');
+        $manager->addInstaller($installer);
+
+        $package   = $this->createPackageMock();
+        $operation = new InstallOperation($package, 'test');
+        $unpackOperation = new UnpackOperation($package, 'test');
+
+        $package
+            ->expects($this->exactly(2))
+            ->method('getType')
+            ->will($this->returnValue('library'));
+
+        $installer
+            ->expects($this->once())
+            ->method('supports')
+            ->with('library')
+            ->will($this->returnValue(true));
+
+        $installer
+            ->expects($this->once())
+            ->method('install')
+            ->with($package);
+
+        $installer
+            ->expects($this->once())
+            ->method('unpack')
+            ->with($package);
+
+        $manager->install($operation);
+        $manager->unpack($unpackOperation);
+    }
+
+    public function testGetInstallPath()
+    {
+        $expected = '/path/to/install';
+        $installer = $this->createInstallerMock();
+        $manager   = new InstallationManager('vendor');
+        $manager->addInstaller($installer);
+
+        $package   = $this->createPackageMock();
+
+        $package
+            ->expects($this->once())
+            ->method('getType')
+            ->will($this->returnValue('library'));
+
+        $installer
+            ->expects($this->once())
+            ->method('supports')
+            ->with('library')
+            ->will($this->returnValue(true));
+
+        $installer
+            ->expects($this->once())
+            ->method('getInstallPath')
+            ->with($package)
+            ->will($this->returnValue($expected));
+
+
+        $manager->getInstallPath($package);
+    }
+
+    public function testIsInstalled()
+    {
+        $installer = $this->createInstallerMock();
+        $manager   = new InstallationManager('vendor');
+        $manager->addInstaller($installer);
+
+        $packageA   = $this->createPackageMock();
+        $packageB   = $this->createPackageMock();
+
+        $packageA
+            ->expects($this->once())
+            ->method('getType')
+            ->will($this->returnValue('library'));
+
+        $packageB
+            ->expects($this->once())
+            ->method('getType')
+            ->will($this->returnValue('bundle'));
+
+        $installer
+            ->expects($this->exactly(2))
+            ->method('isInstalled')
+            ->will($this->returnCallback(
+                       function($package) {
+                           return 'library' === $package->getType();
+                       }
+                   ));
+
+        $this->assertTrue($manager->isPackageInstalled($packageA));
+        $this->assertFalse($manager->isPackageInstalled($packageB));
+    }
+
     public function testGetVendorPathAbsolute()
     {
         $manager = new InstallationManager('vendor');
@@ -216,6 +317,21 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
     {
         $manager = new InstallationManager('vendor');
         $this->assertEquals('vendor', $manager->getVendorPath());
+    }
+
+    /**
+     * @expectedException InvalidArgumentException
+     */
+    public function testExceptionIfVendorNotInBasePath()
+    {
+        new InstallationManager('/vendor' . microtime(true));
+    }
+
+    public function testVendorInBasePath()
+    {
+        $expect = microtime(true).DIRECTORY_SEPARATOR.'/vendor';
+        $manager = new InstallationManager(getcwd().DIRECTORY_SEPARATOR.$expect);
+        $this->assertEquals($expect, $manager->getVendorPath());
     }
 
     private function createInstallerMock()
