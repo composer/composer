@@ -78,7 +78,7 @@ class Application extends BaseApplication
     public function getComposer()
     {
         if (null === $this->composer) {
-            $this->composer = self::bootstrapComposer(null, $this->io);
+            $this->composer = self::bootstrapComposer($this->io);
         }
 
         return $this->composer;
@@ -97,7 +97,7 @@ class Application extends BaseApplication
      *
      * @return Composer
      */
-    public static function bootstrapComposer($composerFile = null, IOInterface $io)
+    public static function bootstrapComposer(IOInterface $io, $composerFile = null)
     {
         // load Composer configuration
         if (null === $composerFile) {
