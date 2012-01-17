@@ -22,16 +22,20 @@ use Symfony\Component\Finder\Finder;
 use Composer\Command;
 use Composer\Composer;
 use Composer\Factory;
+use Composer\IO\IOInterface;
+use Composer\IO\ConsoleIO;
 
 /**
  * The console application that handles the commands
  *
  * @author Ryan Weaver <ryan@knplabs.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
+ * @author François Pluchino <francois.pluchino@opendisplay.com>
  */
 class Application extends BaseApplication
 {
     protected $composer;
+    protected $io;
 
     public function __construct()
     {
@@ -59,6 +63,7 @@ class Application extends BaseApplication
     public function doRun(InputInterface $input, OutputInterface $output)
     {
         $this->registerCommands();
+        $this->io = new ConsoleIO($input, $output, $this->getHelperSet());
 
         return parent::doRun($input, $output);
     }
@@ -70,14 +75,22 @@ class Application extends BaseApplication
     {
         if (null === $this->composer) {
             try {
-                $this->composer = Factory::create();
+                $this->composer = Factory::create($this->io);
             } catch (\InvalidArgumentException $e) {
-                echo $e->getMessage().PHP_EOL;
+                $this->io->writeln($e->getMessage());
                 exit(1);
             }
         }
 
         return $this->composer;
+    }
+
+    /**
+     * @return IOInterface
+     */
+    public function getIO()
+    {
+        return $this->io;
     }
 
     /**

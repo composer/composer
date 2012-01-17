@@ -12,6 +12,7 @@
 
 namespace Composer\Installer;
 
+use Composer\IO\IOInterface;
 use Composer\Autoload\AutoloadGenerator;
 use Composer\Downloader\DownloadManager;
 use Composer\Repository\WritableRepositoryInterface;
@@ -33,10 +34,11 @@ class InstallerInstaller extends LibraryInstaller
      * @param   string                      $binDir     relative path for binaries
      * @param   DownloadManager             $dm         download manager
      * @param   WritableRepositoryInterface $repository repository controller
+     * @param   IOInterface                 $io         io instance
      */
-    public function __construct($vendorDir, $binDir, DownloadManager $dm, WritableRepositoryInterface $repository, InstallationManager $im)
+    public function __construct($vendorDir, $binDir, DownloadManager $dm, WritableRepositoryInterface $repository, IOInterface $io, InstallationManager $im)
     {
-        parent::__construct($vendorDir, $binDir, $dm, $repository, 'composer-installer');
+        parent::__construct($vendorDir, $binDir, $dm, $repository, $io, 'composer-installer');
         $this->installationManager = $im;
 
         foreach ($repository->getPackages() as $package) {

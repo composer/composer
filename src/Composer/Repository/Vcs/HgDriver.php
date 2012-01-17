@@ -14,22 +14,23 @@ namespace Composer\Repository\Vcs;
 
 use Composer\Json\JsonFile;
 use Composer\Util\Process;
+use Composer\IO\IOInterface;
 
 /**
  * @author Per Bernhardt <plb@webfactory.de>
  */
-class HgDriver implements VcsDriverInterface
+class HgDriver extends VcsDriver implements VcsDriverInterface
 {
-    protected $url;
     protected $tags;
     protected $branches;
     protected $rootIdentifier;
     protected $infoCache = array();
 
-    public function __construct($url)
+    public function __construct($url, IOInterface $io)
     {
-        $this->url = $url;
         $this->tmpDir = sys_get_temp_dir() . '/composer-' . preg_replace('{[^a-z0-9]}i', '-', $url) . '/';
+
+        parent::__construct($url, $io);
     }
 
     /**
@@ -59,7 +60,7 @@ class HgDriver implements VcsDriverInterface
             Process::execute(sprintf('cd %s && hg tip --template "{node}"', $tmpDir), $output);
             $this->rootIdentifier = $output[0];
         }
-        
+
         return $this->rootIdentifier;
     }
 
@@ -123,7 +124,7 @@ class HgDriver implements VcsDriverInterface
     {
         if (null === $this->tags) {
             $tags = array();
-            
+
             Process::execute(sprintf('cd %s && hg tags', escapeshellarg($this->tmpDir)), $output);
             foreach ($output as $tag) {
                 if (preg_match('(^([^\s]+)\s+\d+:(.*)$)', $tag, $match))

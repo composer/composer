@@ -12,6 +12,7 @@
 
 namespace Composer\Installer;
 
+use Composer\IO\IOInterface;
 use Composer\Downloader\DownloadManager;
 use Composer\Repository\WritableRepositoryInterface;
 use Composer\DependencyResolver\Operation\OperationInterface;
@@ -30,6 +31,7 @@ class LibraryInstaller implements InstallerInterface
     protected $binDir;
     protected $downloadManager;
     protected $repository;
+    protected $io;
     private $type;
     private $filesystem;
 
@@ -40,12 +42,14 @@ class LibraryInstaller implements InstallerInterface
      * @param   string                      $binDir     relative path for binaries
      * @param   DownloadManager             $dm         download manager
      * @param   WritableRepositoryInterface $repository repository controller
+     * @param   IOInterface                 $io         io instance
      * @param   string                      $type       package type that this installer handles
      */
-    public function __construct($vendorDir, $binDir, DownloadManager $dm, WritableRepositoryInterface $repository, $type = 'library')
+    public function __construct($vendorDir, $binDir, DownloadManager $dm, WritableRepositoryInterface $repository, IOInterface $io, $type = 'library')
     {
         $this->downloadManager = $dm;
         $this->repository = $repository;
+        $this->io = $io;
         $this->type = $type;
 
         $this->filesystem = new Filesystem();
@@ -136,7 +140,7 @@ class LibraryInstaller implements InstallerInterface
         foreach ($package->getBinaries() as $bin) {
             $link = $this->binDir.'/'.basename($bin);
             if (file_exists($link)) {
-                echo 'Skipped installation of '.$bin.' for package '.$package->getName().', name conflicts with an existing file'.PHP_EOL;
+                $this->io->writeln('Skipped installation of '.$bin.' for package '.$package->getName().', name conflicts with an existing file');
                 continue;
             }
             $bin = $this->getInstallPath($package).'/'.$bin;
