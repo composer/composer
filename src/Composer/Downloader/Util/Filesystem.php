@@ -12,6 +12,8 @@
 
 namespace Composer\Downloader\Util;
 
+use Composer\Util\Process;
+
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
@@ -20,9 +22,9 @@ class Filesystem
     public function removeDirectory($directory)
     {
         if (defined('PHP_WINDOWS_VERSION_BUILD')) {
-            system(sprintf('rmdir /S /Q %s', escapeshellarg(realpath($directory))));
+            Process::execute(sprintf('rmdir /S /Q %s', escapeshellarg(realpath($directory))));
         } else {
-            system(sprintf('rm -rf %s', escapeshellarg($directory)));
+            Process::execute(sprintf('rm -rf %s', escapeshellarg($directory)));
         }
     }
 
