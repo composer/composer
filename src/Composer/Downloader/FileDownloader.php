@@ -66,7 +66,7 @@ abstract class FileDownloader implements DownloaderInterface
 
         $fileName = rtrim($path.'/'.md5(time().rand()).'.'.pathinfo($url, PATHINFO_EXTENSION), '.');
 
-        $this->io->writeln("  - Package <info>" . $package->getName() . "</info> (<comment>" . $package->getPrettyVersion() . "</comment>)");
+        $this->io->write("  - Package <info>" . $package->getName() . "</info> (<comment>" . $package->getPrettyVersion() . "</comment>)");
 
         if (!extension_loaded('openssl') && (0 === strpos($url, 'https:') || 0 === strpos($url, 'http://github.com'))) {
             // bypass https for github if openssl is disabled
@@ -105,7 +105,7 @@ abstract class FileDownloader implements DownloaderInterface
 
         $this->io->overwrite("    Downloading: <comment>connection...</comment>", 80);
         copy($url, $fileName, $ctx);
-        $this->io->overwriteln("    Downloading", 80);
+        $this->io->overwrite("    Downloading", 80);
 
         if (!file_exists($fileName)) {
             throw new \UnexpectedValueException($url.' could not be saved to '.$fileName.', make sure the'
@@ -116,11 +116,11 @@ abstract class FileDownloader implements DownloaderInterface
             throw new \UnexpectedValueException('The checksum verification of the archive failed (downloaded from '.$url.')');
         }
 
-        $this->io->writeln('    Unpacking archive');
+        $this->io->write('    Unpacking archive');
         $this->extract($fileName, $path);
 
 
-        $this->io->writeln('    Cleaning up');
+        $this->io->write('    Cleaning up');
         unlink($fileName);
 
         // If we have only a one dir inside it suppose to be a package itself
@@ -135,7 +135,7 @@ abstract class FileDownloader implements DownloaderInterface
             rmdir($contentDir);
         }
 
-        $this->io->writeln('');
+        $this->io->write('');
     }
 
     /**
