@@ -80,7 +80,7 @@ class VcsRepository extends ArrayRepository
         }
 
         foreach ($driver->getTags() as $tag => $identifier) {
-            $this->io->overwrite('Get composer of <info>' . $this->packageName . '</info> (<comment>' . $tag . '</comment>)');
+            $this->io->overwrite('Get composer of <info>' . $this->packageName . '</info> (<comment>' . $tag . '</comment>)', false);
             $parsedTag = $this->validateTag($versionParser, $tag);
             if ($parsedTag && $driver->hasComposerFile($identifier)) {
                 try {
@@ -127,10 +127,10 @@ class VcsRepository extends ArrayRepository
             }
         }
 
-        $this->io->overwrite('');
+        $this->io->overwrite('', false);
 
         foreach ($driver->getBranches() as $branch => $identifier) {
-            $this->io->overwrite('Get composer of <info>' . $this->packageName . '</info> (<comment>' . $branch . '</comment>)');
+            $this->io->overwrite('Get composer of <info>' . $this->packageName . '</info> (<comment>' . $branch . '</comment>)', false);
             $parsedBranch = $this->validateBranch($versionParser, $branch);
             if ($driver->hasComposerFile($identifier)) {
                 $data = $driver->getComposerInformation($identifier);
@@ -175,7 +175,7 @@ class VcsRepository extends ArrayRepository
             }
         }
 
-        $this->io->overwrite('');
+        $this->io->overwrite('', false);
     }
 
     private function preProcess(VcsDriverInterface $driver, array $data, $identifier)
