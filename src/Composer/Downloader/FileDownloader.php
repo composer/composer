@@ -24,7 +24,7 @@ use Composer\Package\PackageInterface;
 abstract class FileDownloader implements DownloaderInterface
 {
     protected $io;
-    protected $bytesMax;
+    private $bytesMax;
 
     /**
      * Constructor.
@@ -103,9 +103,9 @@ abstract class FileDownloader implements DownloaderInterface
         $ctx = stream_context_create($params);
         stream_context_set_params($ctx, array("notification" => array($this, 'callbackGet')));
 
-        $this->io->overwrite("    Downloading: <comment>connection...</comment>", 80);
+        $this->io->overwrite("    Downloading: <comment>connection...</comment>");
         copy($url, $fileName, $ctx);
-        $this->io->overwrite("    Downloading", 80);
+        $this->io->overwrite("    Downloading");
 
         if (!file_exists($fileName)) {
             throw new \UnexpectedValueException($url.' could not be saved to '.$fileName.', make sure the'
@@ -193,7 +193,7 @@ abstract class FileDownloader implements DownloaderInterface
                     }
 
                     if (0 === $progression % 5) {
-                        $this->io->overwrite("    Downloading: <comment>$progression%</comment>", 80);
+                        $this->io->overwrite("    Downloading: <comment>$progression%</comment>");
                     }
                 }
                 break;

@@ -65,25 +65,25 @@ class ConsoleIO implements IOInterface
     /**
      * {@inheritDoc}
      */
-    public function overwrite($messages, $size = 80, $newline = false, $type = 0)
+    public function overwrite($messages, $size = 80, $newline = false)
     {
         for ($place = $size; $place > 0; $place--) {
-            $this->write("\x08");
+            $this->write("\x08", false);
         }
 
-        $this->write($messages, false, $type);
+        $this->write($messages, false);
 
         for ($place = ($size - strlen($messages)); $place > 0; $place--) {
-            $this->write(' ');
+            $this->write(' ', false);
         }
 
         // clean up the end line
         for ($place = ($size - strlen($messages)); $place > 0; $place--) {
-            $this->write("\x08");
+            $this->write("\x08", false);
         }
 
         if ($newline) {
-            $this->writeln('');
+            $this->write('');
         }
     }
 
