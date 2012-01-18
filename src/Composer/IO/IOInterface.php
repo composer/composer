@@ -38,10 +38,10 @@ interface IOInterface
      * Overwrites a previous message to the output.
      *
      * @param string|array $messages The message as an array of lines or a single string
-     * @param integer      $size     The size of line
      * @param Boolean      $newline  Whether to add a newline or not
+     * @param integer      $size     The size of line
      */
-    function overwrite($messages, $size = 80, $newline = true);
+    function overwrite($messages, $newline = true, $size = 80);
 
     /**
      * Asks a question to the user.
