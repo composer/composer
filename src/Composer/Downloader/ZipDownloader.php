@@ -23,7 +23,7 @@ class ZipDownloader extends FileDownloader
 {
     protected $process;
 
-    public function __construct(IOInterface $io, $ProcessExecutor $process = null)
+    public function __construct(IOInterface $io, ProcessExecutor $process = null)
     {
         $this->process = $process ?: new ProcessExecutor;
         parent::__construct($io);
