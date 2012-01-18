@@ -13,13 +13,20 @@
 namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
-use Composer\Util\Process;
+use Composer\Util\ProcessExecutor;
 
 /**
  * @author Per Bernhardt <plb@webfactory.de>
  */
 class HgDownloader implements DownloaderInterface
 {
+    protected $process;
+
+    public function __construct(ProcessExecutor $process = null)
+    {
+        $this->process = $process ?: new ProcessExecutor;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -39,7 +46,7 @@ class HgDownloader implements DownloaderInterface
 
         $url = escapeshellarg($package->getSourceUrl());
         $ref = escapeshellarg($package->getSourceReference());
-        Process::execute(sprintf('(hg clone %s %s  2> /dev/null) && cd %2$s && hg up %s', $url, $path, $ref));
+        $this->process->execute(sprintf('(hg clone %s %s  2> /dev/null) && cd %2$s && hg up %s', $url, $path, $ref));
     }
 
     /**
@@ -52,7 +59,7 @@ class HgDownloader implements DownloaderInterface
         }
 
         $this->enforceCleanDirectory($path);
-        Process::execute(sprintf('cd %s && hg pull && hg up %s', $path, escapeshellarg($target->getSourceReference())));
+        $this->process->execute(sprintf('cd %s && hg pull && hg up %s', $path, escapeshellarg($target->getSourceReference())));
     }
 
     /**
@@ -67,7 +74,7 @@ class HgDownloader implements DownloaderInterface
 
     private function enforceCleanDirectory($path)
     {
-        Process::execute(sprintf('cd %s && hg st', $path), $output);
+        $this->process->execute(sprintf('cd %s && hg st', $path), $output);
         if (implode('', $output)) {
             throw new \RuntimeException('Source directory has uncommitted changes');
         }

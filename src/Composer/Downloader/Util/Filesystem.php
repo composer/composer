@@ -12,7 +12,7 @@
 
 namespace Composer\Downloader\Util;
 
-use Composer\Util\Process;
+use Composer\Util\ProcessExecutor;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -22,10 +22,12 @@ class Filesystem
     public function removeDirectory($directory)
     {
         if (defined('PHP_WINDOWS_VERSION_BUILD')) {
-            Process::execute(sprintf('rmdir /S /Q %s', escapeshellarg(realpath($directory))));
+            $cmd = sprintf('rmdir /S /Q %s', escapeshellarg(realpath($directory)));
         } else {
-            Process::execute(sprintf('rm -rf %s', escapeshellarg($directory)));
+            $cmd = sprintf('rm -rf %s', escapeshellarg($directory));
         }
+
+        return $this->getProcess()->execute($cmd) === 0;
     }
 
     public function ensureDirectoryExists($directory)
@@ -126,5 +128,10 @@ class Filesystem
     public function isAbsolutePath($path)
     {
         return substr($path, 0, 1) === '/' || substr($path, 1, 1) === ':';
+    }
+
+    protected function getProcess()
+    {
+        return new ProcessExecutor;
     }
 }
