@@ -1,4 +1,5 @@
 <?php
+
 /*
  * This file is part of Composer.
  *
@@ -18,23 +19,19 @@ namespace Composer\Util;
  */
 final class StreamContextFactory
 {
-    private static $context;
-
     /**
      * Creates a context supporting HTTP proxies
      *
+     * @param array $options Options to merge with the default
+     * @param array $params  Parameters to specify on the context
      * @return resource Default context
      * @throws \RuntimeException if https proxy required and OpenSSL uninstalled
      */
-    public static function getContext()
+    static public function getContext(array $options = array(), array $params = array())
     {
-        if (null !== self::$context) {
-            return self::$context;
-        }
-        
-        // Handle system proxy
-        $params = array('http' => array());
+        $options = array_merge(array('http' => array()), $options);
 
+        // Handle system proxy
         if (isset($_SERVER['HTTP_PROXY']) || isset($_SERVER['http_proxy'])) {
             // Some systems seem to rely on a lowercased version instead...
             $proxy = isset($_SERVER['HTTP_PROXY']) ? $_SERVER['HTTP_PROXY'] : $_SERVER['http_proxy'];
@@ -46,12 +43,12 @@ final class StreamContextFactory
                 throw new \RuntimeException('You must enable the openssl extension to use a proxy over https');
             }
             
-            $params['http'] = array(
+            $options['http'] = array(
                 'proxy'           => $proxy,
                 'request_fulluri' => true,
             );
         }
         
-        return self::$context = stream_context_create($params);
+        return stream_context_create($options, $params);
     }
 }
