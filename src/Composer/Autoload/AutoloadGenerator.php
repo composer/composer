@@ -82,6 +82,8 @@ EOF;
         $appBaseDir = str_replace('__DIR__', '$vendorDir', $appBaseDir);
 
         if (isset($autoloads['psr-0'])) {
+            $exportedNamespaces = array();
+            $exportedNamespacesMap = array();
             foreach ($autoloads['psr-0'] as $def) {
                 $def['path'] = strtr($def['path'], '\\', '/');
                 $baseDir = '';
@@ -99,7 +101,22 @@ EOF;
                 }
                 $exportedPrefix = var_export($def['namespace'], true);
                 $exportedPath = var_export($def['path'], true);
-                $namespacesFile .= "    $exportedPrefix => {$baseDir}{$exportedPath},\n";
+                if (!in_array($exportedPrefix, $exportedNamespaces)) {
+                    $exportedNamespaces[] = $exportedPrefix;
+                }
+                if (!isset($exportedNamespacesMap[$exportedPrefix])) {
+                    $exportedNamespacesMap[$exportedPrefix] = array();
+                }
+                $exportedNamespacesMap[$exportedPrefix][] = $baseDir.$exportedPath;
+            }
+            foreach ($exportedNamespaces as $exportedPrefix) {
+                $paths = $exportedNamespacesMap[$exportedPrefix];
+                if (count($paths)>1) {
+                    $exportedPath = 'array('.implode(',', $paths).')';
+                } else {
+                    $exportedPath = $paths[0];
+                }
+                $namespacesFile .= "    $exportedPrefix => $exportedPath,\n";
             }
         }
 
