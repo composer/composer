@@ -78,15 +78,14 @@ abstract class FileDownloader implements DownloaderInterface
             }
         }
 
-        $ctx = StreamContextFactory::getContext();
-
+        $options = array();
         if ($this->io->hasAuthorization($package->getSourceUrl())) {
             $auth = $this->io->getAuthorization($package->getSourceUrl());
             $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
-            stream_context_set_option($ctx, 'http', 'header', "Authorization: Basic $authStr\r\n");
+            $options['http']['header'] = "Authorization: Basic $authStr\r\n";
         }
 
-        stream_context_set_params($ctx, array("notification" => array($this, 'callbackGet')));
+        $ctx = StreamContextFactory::getContext($options, array('notification' => array($this, 'callbackGet')));
 
         $this->io->overwrite("    Downloading: <comment>connection...</comment>", false);
         @copy($url, $fileName, $ctx);

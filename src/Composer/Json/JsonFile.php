@@ -60,8 +60,10 @@ class JsonFile
      */
     public function read()
     {
-        $ctx = StreamContextFactory::getContext();
-        stream_context_set_option($ctx, 'http', 'header', 'User-Agent: Composer/'.Composer::VERSION."\r\n");
+        $ctx = StreamContextFactory::getContext(array(
+            'http' => array(
+                'header' => 'User-Agent: Composer/'.Composer::VERSION."\r\n"
+        )));
 
         $json = file_get_contents($this->path, false, $ctx);
         if (!$json) {
