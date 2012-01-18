@@ -124,16 +124,16 @@ class ConsoleIO implements IOInterface
                             . addslashes($question) . '", ""))');
             $command = "cscript //nologo " . escapeshellarg($vbscript);
 
-            $this->write($question);
+            $this->write($question, false);
 
             $value = rtrim(shell_exec($command));
             unlink($vbscript);
 
             for ($i = 0; $i < strlen($value); ++$i) {
-                $this->write('*');
+                $this->write('*', false);
             }
 
-            $this->writeln('');
+            $this->write('');
 
             return $value;
         }
@@ -142,22 +142,22 @@ class ConsoleIO implements IOInterface
         if (rtrim(shell_exec($command)) === 'OK') {
             $command = "/usr/bin/env bash -c 'echo OK'";
 
-            $this->write($question);
+            $this->write($question, false);
 
             $command = "/usr/bin/env bash -c 'read -s mypassword && echo \$mypassword'";
             $value = rtrim(shell_exec($command));
 
             for ($i = 0; $i < strlen($value); ++$i) {
-                $this->write('*');
+                $this->write('*', false);
             }
 
-            $this->writeln('');
+            $this->write('');
 
             return $value;
         }
 
         // for other OS without shell_exec (does not hide the answer)
-        $this->writeln('');
+        $this->write('');
 
         return $this->ask($question);
     }
