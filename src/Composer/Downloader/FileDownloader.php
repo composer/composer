@@ -103,7 +103,7 @@ abstract class FileDownloader implements DownloaderInterface
         $ctx = stream_context_create($params);
         stream_context_set_params($ctx, array("notification" => array($this, 'callbackGet')));
 
-        $this->io->overwrite("    Downloading: <comment>connection...</comment>");
+        $this->io->overwrite("    Downloading: <comment>connection...</comment>", false);
         copy($url, $fileName, $ctx);
         $this->io->overwrite("    Downloading");
 
@@ -193,7 +193,7 @@ abstract class FileDownloader implements DownloaderInterface
                     }
 
                     if (0 === $progression % 5) {
-                        $this->io->overwrite("    Downloading: <comment>$progression%</comment>");
+                        $this->io->overwrite("    Downloading: <comment>$progression%</comment>", false);
                     }
                 }
                 break;
