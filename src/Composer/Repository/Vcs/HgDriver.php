@@ -13,7 +13,7 @@
 namespace Composer\Repository\Vcs;
 
 use Composer\Json\JsonFile;
-use Composer\Util\Process;
+use Composer\Util\ProcessExecutor;
 use Composer\IO\IOInterface;
 
 /**
@@ -26,11 +26,11 @@ class HgDriver extends VcsDriver implements VcsDriverInterface
     protected $rootIdentifier;
     protected $infoCache = array();
 
-    public function __construct($url, IOInterface $io)
+    public function __construct($url, IOInterface $io, ProcessExecutor $process = null)
     {
         $this->tmpDir = sys_get_temp_dir() . '/composer-' . preg_replace('{[^a-z0-9]}i', '-', $url) . '/';
 
-        parent::__construct($url, $io);
+        parent::__construct($url, $io, $process);
     }
 
     /**
@@ -41,9 +41,9 @@ class HgDriver extends VcsDriver implements VcsDriverInterface
         $url = escapeshellarg($this->url);
         $tmpDir = escapeshellarg($this->tmpDir);
         if (is_dir($this->tmpDir)) {
-            Process::execute(sprintf('cd %s && hg pull -u', $tmpDir), $output);
+            $this->process->execute(sprintf('cd %s && hg pull -u', $tmpDir), $output);
         } else {
-            Process::execute(sprintf('cd %s && hg clone %s %s', escapeshellarg(sys_get_temp_dir()), $url, $tmpDir), $output);
+            $this->process->execute(sprintf('cd %s && hg clone %s %s', escapeshellarg(sys_get_temp_dir()), $url, $tmpDir), $output);
         }
 
         $this->getTags();
@@ -57,7 +57,7 @@ class HgDriver extends VcsDriver implements VcsDriverInterface
     {
         $tmpDir = escapeshellarg($this->tmpDir);
         if (null === $this->rootIdentifier) {
-            Process::execute(sprintf('cd %s && hg tip --template "{node}"', $tmpDir), $output);
+            $this->process->execute(sprintf('cd %s && hg tip --template "{node}"', $tmpDir), $output);
             $this->rootIdentifier = $output[0];
         }
 
@@ -96,7 +96,7 @@ class HgDriver extends VcsDriver implements VcsDriverInterface
     public function getComposerInformation($identifier)
     {
         if (!isset($this->infoCache[$identifier])) {
-            Process::execute(sprintf('cd %s && hg cat -r %s composer.json', escapeshellarg($this->tmpDir), escapeshellarg($identifier)), $output);
+            $this->process->execute(sprintf('cd %s && hg cat -r %s composer.json', escapeshellarg($this->tmpDir), escapeshellarg($identifier)), $output);
             $composer = implode("\n", $output);
             unset($output);
 
@@ -107,7 +107,7 @@ class HgDriver extends VcsDriver implements VcsDriverInterface
             $composer = JsonFile::parseJson($composer);
 
             if (!isset($composer['time'])) {
-                Process::execute(sprintf('cd %s && hg log --template "{date|rfc822date}" -r %s', escapeshellarg($this->tmpDir), escapeshellarg($identifier)), $output);
+                $this->process->execute(sprintf('cd %s && hg log --template "{date|rfc822date}" -r %s', escapeshellarg($this->tmpDir), escapeshellarg($identifier)), $output);
                 $date = new \DateTime($output[0]);
                 $composer['time'] = $date->format('Y-m-d H:i:s');
             }
@@ -125,7 +125,7 @@ class HgDriver extends VcsDriver implements VcsDriverInterface
         if (null === $this->tags) {
             $tags = array();
 
-            Process::execute(sprintf('cd %s && hg tags', escapeshellarg($this->tmpDir)), $output);
+            $this->process->execute(sprintf('cd %s && hg tags', escapeshellarg($this->tmpDir)), $output);
             foreach ($output as $tag) {
                 if (preg_match('(^([^\s]+)\s+\d+:(.*)$)', $tag, $match))
                     $tags[$match[1]] = $match[2];
@@ -145,7 +145,7 @@ class HgDriver extends VcsDriver implements VcsDriverInterface
         if (null === $this->branches) {
             $branches = array();
 
-            Process::execute(sprintf('cd %s && hg branches', escapeshellarg($this->tmpDir)), $output);
+            $this->process->execute(sprintf('cd %s && hg branches', escapeshellarg($this->tmpDir)), $output);
             foreach ($output as $branch) {
                 if (preg_match('(^([^\s]+)\s+\d+:(.*)$)', $branch, $match))
                     $branches[$match[1]] = $match[2];
@@ -184,7 +184,7 @@ class HgDriver extends VcsDriver implements VcsDriverInterface
             return false;
         }
 
-        $exit = Process::execute(sprintf('cd %s && hg identify %s', escapeshellarg(sys_get_temp_dir()), escapeshellarg($url)), $ignored);
+        $exit = $this->process->execute(sprintf('cd %s && hg identify %s', escapeshellarg(sys_get_temp_dir()), escapeshellarg($url)), $ignored);
         return $exit === 0;
     }
 }

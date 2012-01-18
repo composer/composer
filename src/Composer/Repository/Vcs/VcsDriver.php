@@ -13,6 +13,7 @@
 namespace Composer\Repository\Vcs;
 
 use Composer\IO\IOInterface;
+use Composer\Util\ProcessExecutor;
 
 /**
  * A driver implementation for driver with authorization interaction.
@@ -23,6 +24,7 @@ abstract class VcsDriver
 {
     protected $url;
     protected $io;
+    protected $process;
     private $firstCall;
     private $contentUrl;
     private $content;
@@ -32,11 +34,13 @@ abstract class VcsDriver
      *
      * @param string      $url The URL
      * @param IOInterface $io  The IO instance
+     * @param ProcessExecutor $process  Process instance, injectable for mocking
      */
-    public function __construct($url, IOInterface $io)
+    public function __construct($url, IOInterface $io, ProcessExecutor $process = null)
     {
         $this->url = $url;
         $this->io = $io;
+        $this->process = $process ?: new ProcessExecutor;
         $this->firstCall = true;
     }
 

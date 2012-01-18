@@ -12,24 +12,23 @@
 
 namespace Composer\Util;
 
-use Symfony\Component\Process\Process as BaseProcess;
+use Symfony\Component\Process\Process;
 
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>
  */
-class Process extends BaseProcess
+class ProcessExecutor
 {
     /**
      * runs a process on the commandline
      *
-     * @static
      * @param $command the command to execute
      * @param null $output the output will be written into this var if passed
      * @return int statuscode
      */
-    public static function execute($command, &$output = null)
+    public function execute($command, &$output = null)
     {
-        $process = new static($command);
+        $process = new Process($command);
         $process->run(function($type, $buffer) use ($output) {
             if (null === $output) {
                return;

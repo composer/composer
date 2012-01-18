@@ -3,7 +3,7 @@
 namespace Composer\Repository\Vcs;
 
 use Composer\Json\JsonFile;
-use Composer\Util\Process;
+use Composer\Util\ProcessExecutor;
 use Composer\IO\IOInterface;
 
 /**
@@ -16,11 +16,11 @@ class GitDriver extends VcsDriver implements VcsDriverInterface
     protected $rootIdentifier;
     protected $infoCache = array();
 
-    public function __construct($url, IOInterface $io)
+    public function __construct($url, IOInterface $io, ProcessExecutor $process = null)
     {
         $this->tmpDir = sys_get_temp_dir() . '/composer-' . preg_replace('{[^a-z0-9]}i', '-', $url) . '/';
 
-        parent::__construct($url, $io);
+        parent::__construct($url, $io, $process);
     }
 
     /**
@@ -31,9 +31,9 @@ class GitDriver extends VcsDriver implements VcsDriverInterface
         $url = escapeshellarg($this->url);
         $tmpDir = escapeshellarg($this->tmpDir);
         if (is_dir($this->tmpDir)) {
-            Process::execute(sprintf('cd %s && git fetch origin', $tmpDir), $output);
+            $this->process->execute(sprintf('cd %s && git fetch origin', $tmpDir), $output);
         } else {
-            Process::execute(sprintf('git clone %s %s', $url, $tmpDir), $output);
+            $this->process->execute(sprintf('git clone %s %s', $url, $tmpDir), $output);
         }
 
         $this->getTags();
@@ -47,7 +47,7 @@ class GitDriver extends VcsDriver implements VcsDriverInterface
     {
         if (null === $this->rootIdentifier) {
             $this->rootIdentifier = 'master';
-            Process::execute(sprintf('cd %s && git branch --no-color -r', escapeshellarg($this->tmpDir)), $output);
+            $this->process->execute(sprintf('cd %s && git branch --no-color -r', escapeshellarg($this->tmpDir)), $output);
             foreach ($output as $branch) {
                 if ($branch && preg_match('{/HEAD +-> +[^/]+/(\S+)}', $branch, $match)) {
                     $this->rootIdentifier = $match[1];
@@ -91,7 +91,7 @@ class GitDriver extends VcsDriver implements VcsDriverInterface
     public function getComposerInformation($identifier)
     {
         if (!isset($this->infoCache[$identifier])) {
-            Process::execute(sprintf('cd %s && git show %s:composer.json', escapeshellarg($this->tmpDir), escapeshellarg($identifier)), $output);
+            $this->process->execute(sprintf('cd %s && git show %s:composer.json', escapeshellarg($this->tmpDir), escapeshellarg($identifier)), $output);
             $composer = implode("\n", $output);
             unset($output);
 
@@ -102,7 +102,7 @@ class GitDriver extends VcsDriver implements VcsDriverInterface
             $composer = JsonFile::parseJson($composer);
 
             if (!isset($composer['time'])) {
-                Process::execute(sprintf('cd %s && git log -1 --format=%%at %s', escapeshellarg($this->tmpDir), escapeshellarg($identifier)), $output);
+                $this->process->execute(sprintf('cd %s && git log -1 --format=%%at %s', escapeshellarg($this->tmpDir), escapeshellarg($identifier)), $output);
                 $date = new \DateTime('@'.$output[0]);
                 $composer['time'] = $date->format('Y-m-d H:i:s');
             }
@@ -118,7 +118,7 @@ class GitDriver extends VcsDriver implements VcsDriverInterface
     public function getTags()
     {
         if (null === $this->tags) {
-            Process::execute(sprintf('cd %s && git tag', escapeshellarg($this->tmpDir)), $output);
+            $this->process->execute(sprintf('cd %s && git tag', escapeshellarg($this->tmpDir)), $output);
             $this->tags = $output ? array_combine($output, $output) : array();
         }
 
@@ -133,7 +133,7 @@ class GitDriver extends VcsDriver implements VcsDriverInterface
         if (null === $this->branches) {
             $branches = array();
 
-            Process::execute(sprintf('cd %s && git branch --no-color -rv', escapeshellarg($this->tmpDir)), $output);
+            $this->process->execute(sprintf('cd %s && git branch --no-color -rv', escapeshellarg($this->tmpDir)), $output);
             foreach ($output as $branch) {
                 if ($branch && !preg_match('{^ *[^/]+/HEAD }', $branch)) {
                     preg_match('{^ *[^/]+/(\S+) *([a-f0-9]+) .*$}', $branch, $match);
