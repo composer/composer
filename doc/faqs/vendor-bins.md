@@ -68,12 +68,21 @@ Say project `my-vendor/project-b` has requirements setup like this:
 Running `composer install` for this `composer.json` will look at
 all of project-b's dependencies and install them to `vendor/bin`.
 
-In this case, Composer will create a symlink from
-`vendor/my-vendor/project-a/bin/project-a-bin` to `vendor/bin/project-a-bin`.
+In this case, Composer will make `vendor/my-vendor/project-a/bin/project-a-bin`
+available as `vendor/bin/project-a-bin`. On a Unix-like platform
+this is accomplished by creating a symlink.
 
 
 ## What about Windows and .bat files?
 
-Composer will automatically create `.bat` files for bins installed in a
-Windows environment. Package maintainers should not list self managed
-`.bat` files as bins.
+Packages managed entirely by Composer do not *need* to contain any
+`.bat` files for Windows compatibility. Composer handles installation
+of bins in a special way when run in a Windows environment:
+
+ * A `.bat` files is generated automatically to reference the bin
+ * A Unix-style proxy file with the same name as the bin is generated
+   automatically (useful for Cygwin or Git Bash)
+
+Packages that need to support workflows that may not include Composer
+are welcome to maintain custom `.bat` files. In this case, the package
+should **not** list the `.bat` file as a bin as it is not needed.
