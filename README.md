@@ -90,6 +90,15 @@ merged. This is to ensure proper review of all the code.
 
 Fork the project, create a feature branch, and send us a pull request.
 
+If you would like to help take a look at the [list of issues](http://github.com/composer/composer/issues).
+
+Community
+---------
+
+The developer mailing list is on [google groups](http://groups.google.com/group/composer-dev)
+IRC channels are available for discussion as well, on irc.freenode.org [#composer](irc://irc.freenode.org/composer) 
+for users and [#composer-dev](irc://irc.freenode.org/composer-dev) for development.
+
 Requirements
 ------------
 
