@@ -69,4 +69,4 @@ Running `composer install` for this `composer.json` will look at
 all of project-b's dependencies and install them to `vendor/bin`.
 
 In this case, Composer will create a symlink from
-`vendor/my-vendor/project-a/bin/project-a-bin` to `vendor/bin/project-a`.
+`vendor/my-vendor/project-a/bin/project-a-bin` to `vendor/bin/project-a-bin`.
