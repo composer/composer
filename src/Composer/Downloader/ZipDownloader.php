@@ -13,21 +13,27 @@
 namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
-use Composer\Util\Process;
+use Composer\Util\ProcessExecutor;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 class ZipDownloader extends FileDownloader
 {
+    protected $process;
+
+    public function __construct(ProcessExecutor $process = null)
+    {
+        $this->process = $process ?: new ProcessExecutor;
+    }
+
     protected function extract($file, $path)
     {
         if (!class_exists('ZipArchive')) {
             // try to use unzip on *nix
             if (!defined('PHP_WINDOWS_VERSION_BUILD')) {
-                $process = new Process('unzip '.escapeshellarg($file).' -d '.escapeshellarg($path));
-                $process->run();
-                if ($process->isSuccessful()) {
+                $result = $this->process->execute('unzip '.escapeshellarg($file).' -d '.escapeshellarg($path));
+                if (0 == $result) {
                     return;
                 }
             }
