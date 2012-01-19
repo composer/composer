@@ -139,9 +139,8 @@ class ConsoleIO implements IOInterface
         }
 
         // for other OS with shell_exec (hide the answer)
+        $command = "/usr/bin/env bash -c 'echo OK'";
         if (rtrim(shell_exec($command)) === 'OK') {
-            $command = "/usr/bin/env bash -c 'echo OK'";
-
             $this->write($question, false);
 
             $command = "/usr/bin/env bash -c 'read -s mypassword && echo \$mypassword'";
