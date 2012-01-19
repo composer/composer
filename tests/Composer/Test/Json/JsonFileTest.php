@@ -93,6 +93,15 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
         $this->assertJsonFormat($json, $data);
     }
 
+    public function testTrailingBackslash()
+    {
+        $data = array('Metadata\\' => 'src/');
+        $json = '{
+    "Metadata\\\\": "src\/"
+}';
+        $this->assertJsonFormat($json, $data);
+    }
+
     private function expectParseException($text, $json)
     {
         try {
