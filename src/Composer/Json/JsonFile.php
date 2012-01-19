@@ -130,7 +130,7 @@ class JsonFile
             $char = substr($json, $i, 1);
 
             // Are we inside a quoted string?
-            if ('"' === $char && '\\' !== $prevChar) {
+            if ('"' === $char && ('\\' !== $prevChar || '\\\\' === substr($json, $i-2, 2))) {
                 $outOfQuotes = !$outOfQuotes;
             } elseif (':' === $char && $outOfQuotes) {
                 // Add a space after the : character
