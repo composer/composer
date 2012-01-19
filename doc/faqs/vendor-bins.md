@@ -86,3 +86,25 @@ of bins in a special way when run in a Windows environment:
 Packages that need to support workflows that may not include Composer
 are welcome to maintain custom `.bat` files. In this case, the package
 should **not** list the `.bat` file as a bin as it is not needed.
+
+
+## Can vendor bins be installed somewhere other than vendor/bin?
+
+Yes, there are two ways that an alternate vendor bin location can be specified.
+
+ * Setting the `vendor-dir` configuration setting in `composer.json`
+ * Setting the environment variable `COMPOSER_VENDOR_DIR`
+
+An example of the former looks like this:
+
+```json
+{
+    "config": {
+        "vendor-dir": "scripts"
+    }
+}
+```
+
+Running `composer install` for this `composer.json` will result in
+all of the vendor bins being installed in `scripts/` instead of
+`vendor/bin/`.
