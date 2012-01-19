@@ -15,6 +15,7 @@ namespace Composer\Command;
 use Composer\Script\ScriptEvents;
 use Composer\Script\EventDispatcher;
 use Composer\Autoload\AutoloadGenerator;
+use Composer\Composer;
 use Composer\DependencyResolver;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
@@ -60,17 +61,28 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        return $this->install($input, $output);
-    }
-
-    public function install(InputInterface $input, OutputInterface $output, $update = false)
-    {
-        $preferSource = (Boolean) $input->getOption('dev');
-        $dryRun = (Boolean) $input->getOption('dry-run');
-        $verbose = $dryRun || $input->getOption('verbose');
         $composer = $this->getComposer();
         $io = $this->getApplication()->getIO();
-        $dispatcher = new EventDispatcher($this->getComposer(), $io);
+        $eventDispatcher = new EventDispatcher($composer, $io);
+        return $this->install(
+            $composer,
+            $eventDispatcher,
+            $input,
+            $output,
+            false,
+            (Boolean)$input->getOption('dev'),
+            (Boolean)$input->getOption('dry-run'),
+            (Boolean)$input->getOption('verbose'),
+            (Boolean)$input->getOption('no-install-recommends'),
+            (Boolean)$input->getOption('install-suggests')
+        );
+    }
+
+    public function install(Composer $composer, EventDispatcher $eventDispatcher, InputInterface $input, OutputInterface $output, $update, $preferSource, $dryRun, $verbose, $noInstallRecommends, $installSuggests)
+    {
+        if ($dryRun) {
+            $verbose = true;
+        }
 
         if ($preferSource) {
             $composer->getDownloadManager()->setPreferSource(true);
@@ -91,7 +103,7 @@ EOT
         // dispatch pre event
         if (!$dryRun) {
             $eventName = $update ? ScriptEvents::PRE_UPDATE_CMD : ScriptEvents::PRE_INSTALL_CMD;
-            $dispatcher->dispatchCommandEvent($eventName);
+            $eventDispatcher->dispatchCommandEvent($eventName);
         }
 
         // creating requirements request
@@ -99,7 +111,7 @@ EOT
         if ($update) {
             $output->writeln('<info>Updating dependencies</info>');
             $installedPackages = $installedRepo->getPackages();
-            $links = $this->collectLinks($input, $composer->getPackage());
+            $links = $this->collectLinks($input, $composer->getPackage(), $noInstallRecommends, $installSuggests);
 
             foreach ($links as $link) {
                 foreach ($installedPackages as $package) {
@@ -125,7 +137,7 @@ EOT
         } else {
             $output->writeln('<info>Installing dependencies</info>');
 
-            $links = $this->collectLinks($input, $composer->getPackage());
+            $links = $this->collectLinks($input, $composer->getPackage(), $noInstallRecommends, $installSuggests);
 
             foreach ($links as $link) {
                 $request->install($link->getTarget(), $link->getConstraint());
@@ -177,9 +189,9 @@ EOT
                 $output->writeln((string) $operation);
             }
             if (!$dryRun) {
-                $dispatcher->dispatchPackageEvent(constant('Composer\Script\ScriptEvents::PRE_PACKAGE_'.strtoupper($operation->getJobType())), $operation);
+                $eventDispatcher->dispatchPackageEvent(constant('Composer\Script\ScriptEvents::PRE_PACKAGE_'.strtoupper($operation->getJobType())), $operation);
                 $installationManager->execute($operation);
-                $dispatcher->dispatchPackageEvent(constant('Composer\Script\ScriptEvents::POST_PACKAGE_'.strtoupper($operation->getJobType())), $operation);
+                $eventDispatcher->dispatchPackageEvent(constant('Composer\Script\ScriptEvents::POST_PACKAGE_'.strtoupper($operation->getJobType())), $operation);
             }
         }
 
@@ -197,19 +209,19 @@ EOT
 
             // dispatch post event
             $eventName = $update ? ScriptEvents::POST_UPDATE_CMD : ScriptEvents::POST_INSTALL_CMD;
-            $dispatcher->dispatchCommandEvent($eventName);
+            $eventDispatcher->dispatchCommandEvent($eventName);
         }
     }
 
-    private function collectLinks(InputInterface $input, PackageInterface $package)
+    private function collectLinks(InputInterface $input, PackageInterface $package, $noInstallRecommends, $installSuggests)
     {
         $links = $package->getRequires();
 
-        if (!$input->getOption('no-install-recommends')) {
+        if (!$noInstallRecommends) {
             $links = array_merge($links, $package->getRecommends());
         }
 
-        if ($input->getOption('install-suggests')) {
+        if ($installSuggests) {
             $links = array_merge($links, $package->getSuggests());
         }
 
