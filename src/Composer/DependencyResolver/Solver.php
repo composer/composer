@@ -239,7 +239,7 @@ class Solver
 
     public function addRulesForPackage(PackageInterface $package)
     {
-        $workQueue = new \SPLQueue;
+        $workQueue = new \SplQueue;
         $workQueue->enqueue($package);
 
         while (!$workQueue->isEmpty()) {
