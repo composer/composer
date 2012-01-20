@@ -92,15 +92,15 @@ should **not** list the `.bat` file as a bin as it is not needed.
 
 Yes, there are two ways that an alternate vendor bin location can be specified.
 
- * Setting the `vendor-dir` configuration setting in `composer.json`
- * Setting the environment variable `COMPOSER_VENDOR_DIR`
+ * Setting the `bin-dir` configuration setting in `composer.json`
+ * Setting the environment variable `COMPOSER_BIN_DIR`
 
 An example of the former looks like this:
 
 ```json
 {
     "config": {
-        "vendor-dir": "scripts"
+        "bin-dir": "scripts"
     }
 }
 ```
