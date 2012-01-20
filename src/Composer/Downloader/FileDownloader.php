@@ -104,7 +104,7 @@ abstract class FileDownloader implements DownloaderInterface
         stream_context_set_params($ctx, array("notification" => array($this, 'callbackGet')));
 
         $this->io->overwrite("    Downloading: <comment>connection...</comment>", false);
-        copy($url, $fileName, $ctx);
+        @copy($url, $fileName, $ctx);
         $this->io->overwrite("    Downloading");
 
         if (!file_exists($fileName)) {
