@@ -22,14 +22,14 @@ final class StreamContextFactory
     /**
      * Creates a context supporting HTTP proxies
      *
-     * @param array $options Options to merge with the default
-     * @param array $params  Parameters to specify on the context
+     * @param array $defaultOptions Options to merge with the default
+     * @param array $defaultParams  Parameters to specify on the context
      * @return resource Default context
      * @throws \RuntimeException if https proxy required and OpenSSL uninstalled
      */
-    static public function getContext(array $options = array(), array $params = array())
+    static public function getContext(array $defaultOptions = array(), array $defaultParams = array())
     {
-        $options = array_merge(array('http' => array()), $options);
+        $options = array('http' => array());
 
         // Handle system proxy
         if (isset($_SERVER['HTTP_PROXY']) || isset($_SERVER['http_proxy'])) {
@@ -48,7 +48,9 @@ final class StreamContextFactory
                 'request_fulluri' => true,
             );
         }
+
+        $options = array_merge($options, $defaultOptions);
         
-        return stream_context_create($options, $params);
+        return stream_context_create($options, $defaultParams);
     }
 }
