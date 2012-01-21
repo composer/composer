@@ -37,10 +37,11 @@ class ProcessExecutor
             echo $buffer;
         });
 
-        if (null !== $output) {
-           $output = $process->getOutput();
-        }
-
+        //if (null !== $output) {
+           //$output = $process->getOutput();
+        //}
+        $output = explode("\n", $process->getOutput());
+        
         return $process->getExitCode();
     }
 }
