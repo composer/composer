@@ -49,7 +49,7 @@ final class StreamContextFactory
             );
         }
 
-        $options = array_merge($options, $defaultOptions);
+        $options = array_merge_recursive($options, $defaultOptions);
         
         return stream_context_create($options, $defaultParams);
     }
