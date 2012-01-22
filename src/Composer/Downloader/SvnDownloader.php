@@ -58,6 +58,7 @@ class SvnDownloader implements DownloaderInterface
             throw new \InvalidArgumentException('The given package is missing reference information');
         }
 
+        $this->enforceCleanDirectory($path);
         $url = escapeshellarg($target->getSourceUrl());
         $ref = escapeshellarg($target->getSourceReference());
         $this->process->execute(sprintf('cd %s && svn switch %s/%s', $path, $url, $ref));
@@ -68,7 +69,16 @@ class SvnDownloader implements DownloaderInterface
      */
     public function remove(PackageInterface $package, $path)
     {
+        $this->enforceCleanDirectory($path);
         $fs = new Util\Filesystem();
         $fs->removeDirectory($path);
+    }
+
+    private function enforceCleanDirectory($path)
+    {
+        $this->process->execute(sprintf('cd %s && svn status', $path), $output);
+        if (trim($output)) {
+            throw new \RuntimeException('Source directory has uncommitted changes');
+        }
     }
 }
