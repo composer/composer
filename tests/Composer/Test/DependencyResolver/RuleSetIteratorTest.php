@@ -52,4 +52,23 @@ class ResultSetIteratorTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals($expected, $result);
     }
+
+    public function testKeys()
+    {
+        $ruleSetIterator = new RuleSetIterator($this->rules);
+
+        $result = array();
+        foreach ($ruleSetIterator as $key => $rule)
+        {
+            $result[] = $key;
+        }
+
+        $expected = array(
+            RuleSet::TYPE_JOB,
+            RuleSet::TYPE_JOB,
+            RuleSet::TYPE_UPDATE,
+        );
+
+        $this->assertEquals($expected, $result);
+    }
 }
