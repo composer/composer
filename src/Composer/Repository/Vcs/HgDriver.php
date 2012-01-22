@@ -58,6 +58,7 @@ class HgDriver extends VcsDriver implements VcsDriverInterface
         $tmpDir = escapeshellarg($this->tmpDir);
         if (null === $this->rootIdentifier) {
             $this->process->execute(sprintf('cd %s && hg tip --template "{node}"', $tmpDir), $output);
+            $output = $this->process->splitLines($output);
             $this->rootIdentifier = $output[0];
         }
 
@@ -96,11 +97,9 @@ class HgDriver extends VcsDriver implements VcsDriverInterface
     public function getComposerInformation($identifier)
     {
         if (!isset($this->infoCache[$identifier])) {
-            $this->process->execute(sprintf('cd %s && hg cat -r %s composer.json', escapeshellarg($this->tmpDir), escapeshellarg($identifier)), $output);
-            $composer = implode("\n", $output);
-            unset($output);
+            $this->process->execute(sprintf('cd %s && hg cat -r %s composer.json', escapeshellarg($this->tmpDir), escapeshellarg($identifier)), $composer);
 
-            if (!$composer) {
+            if (!trim($composer)) {
                 throw new \UnexpectedValueException('Failed to retrieve composer information for identifier ' . $identifier . ' in ' . $this->getUrl());
             }
 
@@ -126,9 +125,10 @@ class HgDriver extends VcsDriver implements VcsDriverInterface
             $tags = array();
 
             $this->process->execute(sprintf('cd %s && hg tags', escapeshellarg($this->tmpDir)), $output);
-            foreach ($output as $tag) {
-                if (preg_match('(^([^\s]+)\s+\d+:(.*)$)', $tag, $match))
+            foreach ($this->process->splitLines($output) as $tag) {
+                if ($tag && preg_match('(^([^\s]+)\s+\d+:(.*)$)', $tag, $match)) {
                     $tags[$match[1]] = $match[2];
+                }
             }
 
             $this->tags = $tags;
@@ -146,9 +146,10 @@ class HgDriver extends VcsDriver implements VcsDriverInterface
             $branches = array();
 
             $this->process->execute(sprintf('cd %s && hg branches', escapeshellarg($this->tmpDir)), $output);
-            foreach ($output as $branch) {
-                if (preg_match('(^([^\s]+)\s+\d+:(.*)$)', $branch, $match))
+            foreach ($this->process->splitLines($output) as $branch) {
+                if ($branch && preg_match('(^([^\s]+)\s+\d+:(.*)$)', $branch, $match)) {
                     $branches[$match[1]] = $match[2];
+                }
             }
 
             $this->branches = $branches;
