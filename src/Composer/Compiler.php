@@ -110,7 +110,7 @@ class Compiler
     private function getStub()
     {
         return <<<'EOF'
-#!/usr/bin/env php -d detect_unicode=0
+#!/usr/bin/env php
 <?php
 /*
  * This file is part of Composer.
