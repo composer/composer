@@ -80,11 +80,9 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
                 $rev = '';
             }
 
-            $this->process->execute(sprintf('svn cat --non-interactive %s', escapeshellarg($this->baseUrl.$identifier.'composer.json'.$rev)),$output);
-            $composer = implode("\n", $output);
-            unset($output);
+            $this->process->execute(sprintf('svn cat --non-interactive %s', escapeshellarg($this->baseUrl.$identifier.'composer.json'.$rev)), $composer);
 
-            if (!$composer) {
+            if (!trim($composer)) {
                 throw new \UnexpectedValueException('Failed to retrieve composer information for identifier '.$identifier.' in '.$this->getUrl());
             }
 
@@ -92,8 +90,8 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
 
             if (!isset($composer['time'])) {
                 $this->process->execute(sprintf('svn info %s', escapeshellarg($this->baseUrl.$identifier.$rev)), $output);
-                foreach ($output as $line) {
-                    if (preg_match('{^Last Changed Date: ([^(]+)}', $line, $match)) {
+                foreach ($this->process->splitLines($output) as $line) {
+                    if ($line && preg_match('{^Last Changed Date: ([^(]+)}', $line, $match)) {
                         $date = new \DateTime($match[1]);
                         $composer['time'] = $date->format('Y-m-d H:i:s');
                         break;
@@ -114,8 +112,10 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
         if (null === $this->tags) {
             $this->process->execute(sprintf('svn ls --non-interactive %s', escapeshellarg($this->baseUrl.'/tags')), $output);
             $this->tags = array();
-            foreach ($output as $tag) {
-                $this->tags[rtrim($tag, '/')] = '/tags/'.$tag;
+            foreach ($this->process->splitLines($output) as $tag) {
+                if ($tag) {
+                    $this->tags[rtrim($tag, '/')] = '/tags/'.$tag;
+                }
             }
         }
 
@@ -131,7 +131,7 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
             $this->process->execute(sprintf('svn ls --verbose --non-interactive %s', escapeshellarg($this->baseUrl.'/')), $output);
 
             $this->branches = array();
-            foreach ($output as $line) {
+            foreach ($this->process->splitLines($output) as $line) {
                 preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match);
                 if ($match[2] === 'trunk/') {
                     $this->branches['trunk'] = '/trunk/@'.$match[1];
@@ -141,7 +141,7 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
             unset($output);
 
             $this->process->execute(sprintf('svn ls --verbose --non-interactive %s', escapeshellarg($this->baseUrl.'/branches')), $output);
-            foreach ($output as $line) {
+            foreach ($this->process->splitLines($output) as $line) {
                 preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match);
                 if ($match[2] === './') {
                     continue;

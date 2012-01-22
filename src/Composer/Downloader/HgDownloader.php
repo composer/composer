@@ -75,7 +75,7 @@ class HgDownloader implements DownloaderInterface
     private function enforceCleanDirectory($path)
     {
         $this->process->execute(sprintf('cd %s && hg st', $path), $output);
-        if (implode('', $output)) {
+        if (trim($output)) {
             throw new \RuntimeException('Source directory has uncommitted changes');
         }
     }

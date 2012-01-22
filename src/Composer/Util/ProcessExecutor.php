@@ -28,19 +28,25 @@ class ProcessExecutor
      */
     public function execute($command, &$output = null)
     {
+        $captureOutput = count(func_get_args()) > 1;
         $process = new Process($command);
-        $process->run(function($type, $buffer) use ($output) {
-            if (null === $output) {
-               return;
+        $process->run(function($type, $buffer) use ($captureOutput) {
+            if ($captureOutput) {
+                return;
             }
 
             echo $buffer;
         });
 
-        if (null !== $output) {
-           $output = $process->getOutput();
+        if ($captureOutput) {
+            $output = $process->getOutput();
         }
 
         return $process->getExitCode();
+    }
+
+    public function splitLines($output)
+    {
+        return ((string) $output === '') ? array() : preg_split('{\r?\n}', $output);
     }
 }

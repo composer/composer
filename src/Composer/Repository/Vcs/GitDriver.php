@@ -48,7 +48,7 @@ class GitDriver extends VcsDriver implements VcsDriverInterface
         if (null === $this->rootIdentifier) {
             $this->rootIdentifier = 'master';
             $this->process->execute(sprintf('cd %s && git branch --no-color -r', escapeshellarg($this->tmpDir)), $output);
-            foreach ($output as $branch) {
+            foreach ($this->process->splitLines($output) as $branch) {
                 if ($branch && preg_match('{/HEAD +-> +[^/]+/(\S+)}', $branch, $match)) {
                     $this->rootIdentifier = $match[1];
                     break;
@@ -91,11 +91,9 @@ class GitDriver extends VcsDriver implements VcsDriverInterface
     public function getComposerInformation($identifier)
     {
         if (!isset($this->infoCache[$identifier])) {
-            $this->process->execute(sprintf('cd %s && git show %s:composer.json', escapeshellarg($this->tmpDir), escapeshellarg($identifier)), $output);
-            $composer = implode("\n", $output);
-            unset($output);
+            $this->process->execute(sprintf('cd %s && git show %s:composer.json', escapeshellarg($this->tmpDir), escapeshellarg($identifier)), $composer);
 
-            if (!$composer) {
+            if (!trim($composer)) {
                 throw new \UnexpectedValueException('Failed to retrieve composer information for identifier '.$identifier.' in '.$this->getUrl());
             }
 
@@ -119,6 +117,7 @@ class GitDriver extends VcsDriver implements VcsDriverInterface
     {
         if (null === $this->tags) {
             $this->process->execute(sprintf('cd %s && git tag', escapeshellarg($this->tmpDir)), $output);
+            $output = $this->process->splitLines($output);
             $this->tags = $output ? array_combine($output, $output) : array();
         }
 
@@ -134,7 +133,7 @@ class GitDriver extends VcsDriver implements VcsDriverInterface
             $branches = array();
 
             $this->process->execute(sprintf('cd %s && git branch --no-color -rv', escapeshellarg($this->tmpDir)), $output);
-            foreach ($output as $branch) {
+            foreach ($this->process->splitLines($output) as $branch) {
                 if ($branch && !preg_match('{^ *[^/]+/HEAD }', $branch)) {
                     preg_match('{^ *[^/]+/(\S+) *([a-f0-9]+) .*$}', $branch, $match);
                     $branches[$match[1]] = $match[2];
