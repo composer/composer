@@ -2,11 +2,11 @@
 
 ## What is a bin?
 
-Any runnable code that a Composer package would like to pass along
+Any command line script that a Composer package would like to pass along
 to a user who installs the package should be listed as a bin.
 
-If a package contains other runnable code that is not needed by the
-user (like build or compile scripts) that code should not be listed
+If a package contains other scripts that are not needed by the package
+users (like build or compile scripts) that code should not be listed
 as a bin.
 
 
@@ -28,7 +28,7 @@ for any given project.
 It instructs Composer to install the package's bins to `vendor/bin`
 for any project that **depends** on that project.
 
-This is a convenient way to expose useful runnable code that would
+This is a convenient way to expose useful scripts that would
 otherwise be hidden deep in the `vendor/` directory.
 
 
