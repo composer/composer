@@ -114,11 +114,13 @@ class Factory
     protected function createDownloadManager(IOInterface $io)
     {
         $dm = new Downloader\DownloadManager();
-        $dm->setDownloader('git',  new Downloader\GitDownloader());
-        $dm->setDownloader('svn',  new Downloader\SvnDownloader());
-        $dm->setDownloader('hg', new Downloader\HgDownloader());
+        $dm->setDownloader('git',  new Downloader\GitDownloader($io));
+        $dm->setDownloader('svn',  new Downloader\SvnDownloader($io));
+        $dm->setDownloader('hg', new Downloader\HgDownloader($io));
         $dm->setDownloader('pear', new Downloader\PearDownloader($io));
         $dm->setDownloader('zip',  new Downloader\ZipDownloader($io));
+        $dm->setDownloader('tar',  new Downloader\TarDownloader($io));
+        $dm->setDownloader('phar',  new Downloader\PharDownloader($io));
 
         return $dm;
     }
