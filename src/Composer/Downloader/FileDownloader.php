@@ -119,7 +119,6 @@ abstract class FileDownloader implements DownloaderInterface
         $this->io->write('    Unpacking archive');
         $this->extract($fileName, $path);
 
-
         $this->io->write('    Cleaning up');
         unlink($fileName);
 
