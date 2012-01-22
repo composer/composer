@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 
-if ((!@include __DIR__.'/../vendor/.composer/autoload.php') and (!@include 'vendor/.composer/autoload.php')) {
+if ((!@include __DIR__.'/../../../.composer/autoload.php') and (!@include __DIR__.'/../vendor/.composer/autoload.php')) {
     die('You must set up the project dependencies, run the following commands:
 wget http://getcomposer.org/composer.phar
 php composer.phar install
