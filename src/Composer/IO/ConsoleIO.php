@@ -117,7 +117,7 @@ class ConsoleIO implements IOInterface
     public function askAndHideAnswer($question)
     {
         // for windows OS (does not hide the answer in the popup, but it never appears in the STDIN history)
-        if (preg_match('/^win/i', PHP_OS)) {
+        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
             $vbscript = sys_get_temp_dir() . '/prompt_password.vbs';
             file_put_contents($vbscript,
                     'wscript.echo(Inputbox("' . addslashes($question) . '","'
