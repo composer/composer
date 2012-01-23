@@ -69,6 +69,7 @@ class Compiler
             $this->addFile($phar, $file);
         }
 
+        $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/.composer/ClassLoader.php'));
         $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/.composer/autoload.php'));
         $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/.composer/autoload_namespaces.php'));
         $this->addComposerBin($phar);
