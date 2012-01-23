@@ -80,10 +80,8 @@ class LibraryInstaller implements InstallerInterface
      */
     public function install(PackageInterface $package)
     {
-        $broken = !is_readable($this->getInstallPath($package));
-
         //remove the binaries first if its missing on filesystem
-        if ($broken) {
+        if (!is_readable($this->getInstallPath($package)) && $this->repository->hasPackage($package)) {
             $this->removeBinaries($package);
         }
 
@@ -91,7 +89,7 @@ class LibraryInstaller implements InstallerInterface
         $this->downloadManager->download($package, $downloadPath);
         $this->installBinaries($package);
 
-        if($broken) {
+        if(!$this->repository->hasPackage($package)) {
             $this->repository->addPackage(clone $package);
         }
     }
