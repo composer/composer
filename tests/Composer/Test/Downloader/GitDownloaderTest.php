@@ -26,13 +26,13 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
             ->method('getSourceReference')
             ->will($this->returnValue(null));
 
-        $downloader = new GitDownloader();
+        $downloader = new GitDownloader($this->getMock('Composer\IO\IOInterface'));
         $downloader->download($packageMock, '/path');
     }
 
     public function testDownload()
     {
-        $expectedGitCommand = 'git clone \'https://github.com/l3l0/composer\' composerPath && cd composerPath && git checkout \'ref\' && git reset --hard \'ref\'';
+        $expectedGitCommand = 'git clone \'https://github.com/l3l0/composer\' \'composerPath\' && cd \'composerPath\' && git checkout \'ref\' && git reset --hard \'ref\'';
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $packageMock->expects($this->any())
             ->method('getSourceReference')
@@ -45,7 +45,7 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
             ->method('execute')
             ->with($this->equalTo($expectedGitCommand));
 
-        $downloader = new GitDownloader($processExecutor);
+        $downloader = new GitDownloader($this->getMock('Composer\IO\IOInterface'), $processExecutor);
         $downloader->download($packageMock, 'composerPath');
     }
 
@@ -60,14 +60,14 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
             ->method('getSourceReference')
             ->will($this->returnValue(null));
 
-        $downloader = new GitDownloader();
+        $downloader = new GitDownloader($this->getMock('Composer\IO\IOInterface'));
         $downloader->update($initialPackageMock, $sourcePackageMock, '/path');
     }
 
     public function testUpdate()
     {
-        $expectedGitUpdateCommand = 'cd composerPath && git fetch && git checkout ref && git reset --hard ref';
-        $expectedGitResetCommand = 'cd composerPath && git status --porcelain';
+        $expectedGitUpdateCommand = 'cd \'composerPath\' && git fetch && git checkout \'ref\' && git reset --hard \'ref\'';
+        $expectedGitResetCommand = 'cd \'composerPath\' && git status --porcelain';
 
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $packageMock->expects($this->any())
@@ -84,13 +84,13 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
             ->method('execute')
             ->with($this->equalTo($expectedGitUpdateCommand));
 
-        $downloader = new GitDownloader($processExecutor);
+        $downloader = new GitDownloader($this->getMock('Composer\IO\IOInterface'), $processExecutor);
         $downloader->update($packageMock, $packageMock, 'composerPath');
     }
 
     public function testRemove()
     {
-        $expectedGitResetCommand = 'cd composerPath && git status --porcelain';
+        $expectedGitResetCommand = 'cd \'composerPath\' && git status --porcelain';
 
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
@@ -98,13 +98,13 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
             ->method('execute')
             ->with($this->equalTo($expectedGitResetCommand));
 
-        $downloader = new GitDownloader($processExecutor);
+        $downloader = new GitDownloader($this->getMock('Composer\IO\IOInterface'), $processExecutor);
         $downloader->remove($packageMock, 'composerPath');
     }
 
     public function testGetInstallationSource()
     {
-        $downloader = new GitDownloader();
+        $downloader = new GitDownloader($this->getMock('Composer\IO\IOInterface'));
         
         $this->assertEquals('source', $downloader->getInstallationSource());
     }
