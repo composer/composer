@@ -48,7 +48,6 @@ class GitDownloader extends VcsDownloader
      */
     protected function enforceCleanDirectory($path)
     {
-        $output = array();
         $this->process->execute(sprintf('cd %s && git status --porcelain', escapeshellarg($path)), $output);
         if (trim($output)) {
             throw new \RuntimeException('Source directory has uncommitted changes');
