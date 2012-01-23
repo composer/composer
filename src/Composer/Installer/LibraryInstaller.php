@@ -72,7 +72,7 @@ class LibraryInstaller implements InstallerInterface
      */
     public function isInstalled(PackageInterface $package)
     {
-        return $this->repository->hasPackage($package);
+        return $this->repository->hasPackage($package) && is_readable($this->getInstallPath($package));
     }
 
     /**
@@ -121,6 +121,23 @@ class LibraryInstaller implements InstallerInterface
         $this->downloadManager->remove($package, $downloadPath);
         $this->removeBinaries($package);
         $this->repository->removePackage($package);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function replace(PackageInterface $package)
+    {
+        if (!$this->repository->hasPackage($package)) {
+            throw new \InvalidArgumentException('Package is not installed: '.$package);
+        }
+
+        $downloadPath = $this->getInstallPath($package);
+
+        $this->removeBinaries($package);
+
+        $this->downloadManager->download($package, $downloadPath);
+        $this->installBinaries($package);
     }
 
     /**

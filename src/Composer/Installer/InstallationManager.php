@@ -17,6 +17,7 @@ use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
+use Composer\DependencyResolver\Operation\ReplaceOperation;
 
 /**
  * Package operation manager.
@@ -158,6 +159,17 @@ class InstallationManager
     {
         $installer = $this->getInstaller($operation->getPackage()->getType());
         $installer->uninstall($operation->getPackage());
+    }
+
+    /**
+     * Replaces package.
+     *
+     * @param   ReplaceOperation  $operation  operation instance
+     */
+    public function replace(ReplaceOperation $operation)
+    {
+        $installer = $this->getInstaller($operation->getPackage()->getType());
+        $installer->replace($operation->getPackage());
     }
 
     /**
