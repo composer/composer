@@ -1,0 +1,151 @@
+#!/usr/bin/env php
+<?php
+
+/*
+ * This file is part of Composer.
+ *
+ * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+
+process($argv);
+
+/**
+ * processes the installer
+ */
+function process($argv)
+{
+    $check = in_array('--check', $argv);
+    $help = in_array('--help', $argv);
+    $force = in_array('--force', $argv);
+
+    if ($help) {
+        displayHelp();
+        exit(0);
+    }
+
+    $ok = checkPlatform();
+
+    if ($check && !$ok) {
+        exit(1);
+    }
+
+    if ($ok || $force) {
+        installComposer();
+    }
+
+    exit(0);
+}
+
+/**
+ * displays the help
+ */
+function displayHelp()
+{
+    echo <<<EOF
+Composer Installer
+------------------
+Options
+--help   this help
+--check  for checking environment only
+--force  forces the installation
+
+EOF;
+}
+
+/**
+ * check the platform for possible issues on running composer
+ */
+function checkPlatform()
+{
+    $errors = array();
+    if (false !== ini_get('detect_unicode')) {
+        $errors['unicode'] = 'On';
+    }
+
+    if (ini_get('phar.readonly')) {
+        $errors['readonly'] = 'On';
+    }
+
+    if (ini_get('phar.require_hash')) {
+        $errors['require_hash'] = 'On';
+    }
+
+    if ($suhosin = ini_get('suhosin.executor.include.whitelist') && (isset($suhosin) && false === stripos($suhosin, 'phar'))) {
+        $errors['suhosin'] = $suhosin;
+    }
+
+    if (PHP_VERSION < '5.3.2') {
+        $errors['php'] = PHP_VERSION;
+    }
+
+    if (!empty($errors)) {
+        out("Composer detected that you have enabled some settings in your `php.ini` file that can make Composer unable to work properly.".PHP_EOL, 'error');
+
+        echo PHP_EOL.'Make sure that you have changed options listed below:'.PHP_EOL;
+        foreach ($errors as $error => $actual) {
+            switch ($error) {
+                case 'unicode':
+                    $text = "    detect_unicode = Off (actual: {$actual})".PHP_EOL;
+                    break;
+
+                case 'readonly':
+                    $text = "    phar.readonly = Off (actual: {$actual})".PHP_EOL;
+                    break;
+
+                case 'require_hash':
+                    $text = "    phar.require_hash = Off (actual: {$actual})".PHP_EOL;
+                    break;
+
+                case 'suhosin':
+                    $text = "    suhosin.executor.include.whitelist = phar (actual: {$actual})".PHP_EOL;
+                    break;
+                case 'php':
+                    $text = "    PHP_VERSION (actual: {$actual})".PHP_EOL;
+                    break;
+            }
+            out($text, 'info');
+        }
+        echo PHP_EOL;
+        return false;
+    }
+
+    out("All settings correct for using Composer".PHP_EOL,'success');
+    return true;
+}
+
+/**
+ * installs composer to the current working directory
+ */
+function installComposer()
+{
+    $installDir = getcwd();
+    $file = $installDir . DIRECTORY_SEPARATOR . 'composer.phar';
+
+    if (is_readable($file)) {
+        @unlink($file);
+    }
+
+    $download = copy('http://getcomposer.org/composer.phar', $installDir.DIRECTORY_SEPARATOR.'composer.phar');
+
+    out(PHP_EOL."Composer successfully installed to: " . $file, 'success');
+    out(PHP_EOL."Use it: php composer.phar".PHP_EOL, 'info');
+}
+
+/**
+ * colorize output
+ */
+function out($text, $color = null)
+{
+    $styles = array(
+        'success' => "\033[0;32m%s\033[0m",
+        'error' => "\033[31;31m%s\033[0m",
+        'info' => "\033[33;33m%s\033[0m"
+    );
+
+    echo sprintf(isset($styles[$color]) ? $styles[$color] : "%s", $text);
+}
