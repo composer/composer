@@ -15,6 +15,7 @@ namespace Composer\Package;
 use Composer\Package\LinkConstraint\LinkConstraintInterface;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Repository\RepositoryInterface;
+use Composer\Repository\PlatformRepository;
 
 /**
  * Base class for packages providing name storage and default match implementation
@@ -132,6 +133,16 @@ abstract class BasePackage implements PackageInterface
             throw new \LogicException('A package can only be added to one repository');
         }
         $this->repository = $repository;
+    }
+
+    /**
+     * checks if this package is a platform package
+     *
+     * @return boolean
+     */
+    public function isPlatform()
+    {
+        return $this->getRepository() instanceof PlatformRepository;
     }
 
     /**

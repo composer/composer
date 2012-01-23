@@ -14,5 +14,6 @@ class Custom2 implements InstallerInterface
     public function install(PackageInterface $package) {}
     public function update(PackageInterface $initial, PackageInterface $target) {}
     public function uninstall(PackageInterface $package) {}
+    public function replace(PackageInterface $package) {}
     public function getInstallPath(PackageInterface $package) {}
 }
