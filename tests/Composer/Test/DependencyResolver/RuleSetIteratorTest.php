@@ -39,8 +39,7 @@ class ResultSetIteratorTest extends \PHPUnit_Framework_TestCase
         $ruleSetIterator = new RuleSetIterator($this->rules);
 
         $result = array();
-        foreach ($ruleSetIterator as $rule)
-        {
+        foreach ($ruleSetIterator as $rule) {
             $result[] = $rule;
         }
 
@@ -58,8 +57,7 @@ class ResultSetIteratorTest extends \PHPUnit_Framework_TestCase
         $ruleSetIterator = new RuleSetIterator($this->rules);
 
         $result = array();
-        foreach ($ruleSetIterator as $key => $rule)
-        {
+        foreach ($ruleSetIterator as $key => $rule) {
             $result[] = $key;
         }
 

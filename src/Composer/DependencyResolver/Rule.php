@@ -87,7 +87,7 @@ class Rule
         }
 
         for ($i = 0, $n = count($this->literals); $i < $n; $i++) {
-            if (!($this->literals[$i]->getId() === $rule->literals[$i]->getId())) {
+            if ($this->literals[$i]->getId() !== $rule->literals[$i]->getId()) {
                 return false;
             }
         }
