@@ -23,7 +23,7 @@ use Composer\Repository\PlatformRepository;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Composer\DependencyResolver\Operation\ReplaceOperation;
+use Composer\DependencyResolver\Operation\InstallOperation;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -135,7 +135,7 @@ EOT
             if ('install' === $job['cmd']) {
                 foreach ($installedRepo->getPackages() as $package ) {
                     if ($installedRepo->hasPackage($package) && !$package->isPlatform() && !$installationManager->isPackageInstalled($package)) {
-                        $operations[$job['packageName']] = new ReplaceOperation($package, \Composer\DependencyResolver\Solver::RULE_PACKAGE_NOT_EXIST);
+                        $operations[$job['packageName']] = new InstallOperation($package, \Composer\DependencyResolver\Solver::RULE_PACKAGE_NOT_EXIST);
                     }
                     if (in_array($job['packageName'], $package->getNames())) {
                         continue 2;

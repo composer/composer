@@ -162,17 +162,6 @@ class InstallationManager
     }
 
     /**
-     * Replaces package.
-     *
-     * @param   ReplaceOperation  $operation  operation instance
-     */
-    public function replace(ReplaceOperation $operation)
-    {
-        $installer = $this->getInstaller($operation->getPackage()->getType());
-        $installer->replace($operation->getPackage());
-    }
-
-    /**
      * Returns the installation path of a package
      *
      * @param   PackageInterface    $package

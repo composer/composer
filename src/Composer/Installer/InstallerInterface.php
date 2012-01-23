@@ -64,13 +64,6 @@ interface InstallerInterface
     function uninstall(PackageInterface $package);
 
     /**
-     * Replaces specific package.
-     *
-     * @param   PackageInterface    $package    package instance
-     */
-    function replace(PackageInterface $package);
-
-    /**
      * Returns the installation path of a package
      *
      * @param   PackageInterface    $package
