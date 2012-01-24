@@ -106,6 +106,7 @@ class Application extends BaseApplication
         $this->add(new Command\SearchCommand());
         $this->add(new Command\ValidateCommand());
         $this->add(new Command\ShowCommand());
+        $this->add(new Command\CleanCommand());
 
         if ('phar:' === substr(__FILE__, 0, 5)) {
             $this->add(new Command\SelfUpdateCommand());

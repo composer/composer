@@ -55,6 +55,6 @@ EOT
     {
         $installCommand = $this->getApplication()->find('install');
 
-        return $installCommand->install($input, $output, true);
+        return $installCommand->update($input, $output);
     }
 }
