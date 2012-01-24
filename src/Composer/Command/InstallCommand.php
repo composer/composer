@@ -13,9 +13,7 @@
 namespace Composer\Command;
 
 use Composer\Trigger\TriggerEvents;
-
 use Composer\Trigger\TriggerDispatcher;
-
 use Composer\Autoload\AutoloadGenerator;
 use Composer\DependencyResolver;
 use Composer\DependencyResolver\Pool;
@@ -69,7 +67,8 @@ EOT
         $dryRun = (Boolean) $input->getOption('dry-run');
         $verbose = $dryRun || $input->getOption('verbose');
         $composer = $this->getComposer();
-        $dispatcher = new TriggerDispatcher($this->getApplication());
+        $io = $this->getApplication()->getIO();
+        $dispatcher = new TriggerDispatcher($this->getComposer(), $io);
 
         if ($preferSource) {
             $composer->getDownloadManager()->setPreferSource(true);

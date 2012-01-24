@@ -20,38 +20,6 @@ namespace Composer\IO;
 interface IOInterface
 {
     /**
-     * Returns all the given arguments merged with the default values.
-     *
-     * @return array
-     */
-    function getArguments();
-
-    /**
-     * Gets argument by name.
-     *
-     * @param string $name The name of the argument
-     *
-     * @return mixed
-     */
-    function getArgument($name);
-
-    /**
-     * Returns all the given options merged with the default values.
-     *
-     * @return array
-     */
-    function getOptions();
-
-    /**
-     * Gets an option by name.
-     *
-     * @param string $name The name of the option
-     *
-     * @return mixed
-     */
-    function getOption($name);
-
-    /**
      * Is this input means interactive?
      *
      * @return Boolean
