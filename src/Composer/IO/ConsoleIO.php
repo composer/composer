@@ -49,6 +49,38 @@ class ConsoleIO implements IOInterface
     /**
      * {@inheritDoc}
      */
+    public function getArguments()
+    {
+        return $this->input->getArguments();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getArgument($name)
+    {
+        return $this->input->getArgument($name);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getOptions()
+    {
+        return $this->input->getOptions();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getOption($name)
+    {
+        return $this->input->getOption($name);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function isInteractive()
     {
         return $this->input->isInteractive();
