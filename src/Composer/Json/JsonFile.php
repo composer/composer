@@ -92,7 +92,7 @@ class JsonFile
                 );
             }
         }
-        file_put_contents($this->path, $this->encode($hash, $prettyPrint));
+        file_put_contents($this->path, static::encode($hash, $prettyPrint));
     }
 
     /**
@@ -105,7 +105,7 @@ class JsonFile
      * @param Boolean $prettyPrint If true, output is pretty-printed
      * @return string Indented version of the original JSON string
      */
-    public function encode(array $hash, $prettyPrint = true)
+    static public function encode(array $hash, $prettyPrint = true)
     {
         if ($prettyPrint && defined('JSON_PRETTY_PRINT')) {
             return json_encode($hash, JSON_PRETTY_PRINT);
@@ -181,7 +181,7 @@ class JsonFile
      *
      * @return  array
      */
-    public static function parseJson($json)
+    static public function parseJson($json)
     {
         $data = json_decode($json, true);
 
