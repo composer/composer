@@ -10,7 +10,12 @@ See the [about page](http://packagist.org/about) on [packagist.org](http://packa
 Installation / Usage
 --------------------
 
-1. Download the [`composer.phar`](http://getcomposer.org/composer.phar) executable
+1. Download the [`composer.phar`](http://getcomposer.org/composer.phar) executable or use the installer.
+
+
+    $ curl http://getcomposer.org/installer | php
+
+
 2. Create a composer.json defining your dependencies. Note that this example is
 a short version for applications that are not meant to be published as packages
 themselves. To create libraries/packages please read the [guidelines](http://packagist.org/about).
@@ -43,7 +48,7 @@ Since composer works with the current working directory it is possible to instal
 in a system wide way.
 
 1. Change into a directory in your path like `cd /usr/local/bin`
-2. Get composer `wget http://getcomposer.org/composer.phar`
+2. Get composer `curl http://getcomposer.org/installer | php`
 3. Make the phar executeable `chmod a+x composer.phar`
 3. Change into a project directory `cd /path/to/my/project`
 4. Use composer as you normally would `composer.phar install`
