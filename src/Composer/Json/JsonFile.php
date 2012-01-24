@@ -206,7 +206,7 @@ class JsonFile
                     $msg .= ', extra comma';
                 } elseif (preg_match('#((?<=[^\\\\])\\\\(?!["\\\\/bfnrt]|u[a-f0-9]{4}))#i', $json, $match, PREG_OFFSET_CAPTURE)) {
                     $msg .= ', unescaped backslash (\\)';
-                } elseif (preg_match('#(["}\]]) *\r?\n *"#', $json, $match, PREG_OFFSET_CAPTURE)) {
+                } elseif (preg_match('#(["}\]])(?: *\r?\n *)+"#', $json, $match, PREG_OFFSET_CAPTURE)) {
                     $msg .= ', missing comma';
                     $charOffset = 1;
                 } elseif (preg_match('#^ *([a-z0-9_-]+) *:#mi', $json, $match, PREG_OFFSET_CAPTURE)) {
@@ -215,6 +215,8 @@ class JsonFile
                     $msg .= ', use double quotes (") instead of single quotes (\')';
                 } elseif (preg_match('#(\[".*?":.*?\])#', $json, $match, PREG_OFFSET_CAPTURE)) {
                     $msg .= ', you must use the hash syntax (e.g. {"foo": "bar"}) instead of array syntax (e.g. ["foo", "bar"])';
+                } elseif (preg_match('#".*?"( *["{\[])#', $json, $match, PREG_OFFSET_CAPTURE)) {
+                    $msg .= ', missing colon';
                 }
                 if (isset($match[1][1])) {
                     $preError = substr($json, 0, $match[1][1]);
