@@ -12,6 +12,10 @@
 
 namespace Composer\Command;
 
+use Composer\Trigger\TriggerEvents;
+
+use Composer\Trigger\TriggerDispatcher;
+
 use Composer\Autoload\AutoloadGenerator;
 use Composer\DependencyResolver;
 use Composer\DependencyResolver\Pool;
@@ -65,6 +69,7 @@ EOT
         $dryRun = (Boolean) $input->getOption('dry-run');
         $verbose = $dryRun || $input->getOption('verbose');
         $composer = $this->getComposer();
+        $dispatcher = new TriggerDispatcher($this->getApplication());
 
         if ($preferSource) {
             $composer->getDownloadManager()->setPreferSource(true);
@@ -80,6 +85,12 @@ EOT
         $pool->addRepository($installedRepo);
         foreach ($composer->getRepositoryManager()->getRepositories() as $repository) {
             $pool->addRepository($repository);
+        }
+
+        // dispatch pre event
+        if (!$dryRun) {
+            $eventName = $update ? TriggerEvents::PRE_UPDATE : TriggerEvents::PRE_INSTALL;
+            $dispatcher->dispatch($eventName);
         }
 
         // creating requirements request
@@ -177,6 +188,10 @@ EOT
             $output->writeln('<info>Generating autoload files</info>');
             $generator = new AutoloadGenerator;
             $generator->dump($localRepo, $composer->getPackage(), $installationManager, $installationManager->getVendorPath().'/.composer');
+
+            // dispatch post event
+            $eventName = $update ? TriggerEvents::POST_UPDATE : TriggerEvents::POST_INSTALL;
+            $dispatcher->dispatch($eventName);
         }
     }
 
