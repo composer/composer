@@ -84,6 +84,25 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
         $this->expectParseException('missing comma on line 2, char 21', $json);
     }
 
+    public function testParseErrorDetectMissingCommaMultiline()
+    {
+        $json = '{
+        "foo": "barbar"
+
+        "bar": "foo"
+}';
+        $this->expectParseException('missing comma on line 2, char 24', $json);
+    }
+
+    public function testParseErrorDetectMissingColon()
+    {
+        $json = '{
+        "foo": "bar",
+        "bar" "foo"
+}';
+        $this->expectParseException('missing colon on line 3, char 14', $json);
+    }
+
     public function testSimpleJsonString()
     {
         $data = array('name' => 'composer/composer');
