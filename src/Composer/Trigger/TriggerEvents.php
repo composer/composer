@@ -62,4 +62,28 @@ class TriggerEvents
      * @var string
      */
     const POST_UPDATE = 'post_update';
+
+    /**
+     * The PRE_UNINSTALL event occurs at begging uninstallation packages.
+     *
+     * This event allows you to execute a trigger after any other code in the
+     * composer is executed. The event listener method receives a
+     * Composer\Trigger\TriggerEvent instance.
+     *
+     * @var string
+     */
+    const PRE_UNINSTALL = 'pre_uninstall';
+    //TODO add the dispatcher when the uninstall command will be doing
+
+    /**
+     * The PRE_UNINSTALL event occurs at end uninstallation packages.
+     *
+     * This event allows you to execute a trigger after any other code in the
+     * composer is executed. The event listener method receives a
+     * Composer\Trigger\TriggerEvent instance.
+     *
+     * @var string
+     */
+    const POST_UNINSTALL = 'post_uninstall';
+    //TODO add the dispatcher when the uninstall command will be doing
 }

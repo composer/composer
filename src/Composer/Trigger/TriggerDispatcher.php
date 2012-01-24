@@ -16,33 +16,36 @@ use Composer\Json\JsonFile;
 use Composer\Repository\FilesystemRepository;
 use Composer\Autoload\ClassLoader;
 use Composer\Package\PackageInterface;
-use Composer\Console\Application;
+use Composer\IO\IOInterface;
 use Composer\Composer;
 
 /**
  * The Trigger Dispatcher.
  *
  * Example in command:
- *     $dispatcher = new TriggerDispatcher($this->getApplication());
+ *     $dispatcher = new TriggerDispatcher($this->getComposer(), $this->getApplication()->getIO());
  *     // ...
- *     $dispatcher->dispatch(TriggerEvents::PRE_INSTALL);
+ *     $dispatcher->dispatch(TriggerEvents::POST_INSTALL);
  *     // ...
  *
  * @author François Pluchino <francois.pluchino@opendisplay.com>
  */
 class TriggerDispatcher
 {
-    protected $application;
+    protected $composer;
+    protected $io;
     protected $loader;
 
     /**
      * Constructor.
      *
-     * @param Application $application
+     * @param Composer    $composer The composer instance
+     * @param IOInterface $io       The IOInterface instance
      */
-    public function __construct(Application $application)
+    public function __construct(Composer $composer, IOInterface $io)
     {
-        $this->application = $application;
+        $this->composer = $composer;
+        $this->io = $io;
         $this->loader = new ClassLoader();
     }
 
@@ -53,11 +56,11 @@ class TriggerDispatcher
      */
     public function dispatch($eventName)
     {
-        $event = new GetTriggerEvent();
+        $event = new TriggerEvent();
 
-        $event->setDispatcher($this);
         $event->setName($eventName);
-        $event->setApplication($this->application);
+        $event->setComposer($this->composer);
+        $event->setIO($this->io);
 
         $this->doDispatch($event);
     }
@@ -65,76 +68,41 @@ class TriggerDispatcher
     /**
      * Triggers the listeners of an event.
      *
-     * @param GetTriggerEvent $event The event object to pass to the event handlers/listeners.
+     * @param TriggerEvent $event The event object to pass to the event handlers/listeners.
      */
-    protected function doDispatch(GetTriggerEvent $event)
+    protected function doDispatch(TriggerEvent $event)
     {
         $listeners = $this->getListeners($event);
 
-        foreach ($listeners as $method => $eventType) {
-            if ($eventType === $event->getName()) {
-                $className = substr($method, 0, strpos($method, '::'));
-                $methodName = substr($method, strpos($method, '::') + 2);
+        foreach ($listeners as $method) {
+            $className = substr($method, 0, strpos($method, '::'));
+            $methodName = substr($method, strpos($method, '::') + 2);
 
-                try {
-                    $refMethod = new \ReflectionMethod($className, $methodName);
+            try {
+                $refMethod = new \ReflectionMethod($className, $methodName);
 
-                    // execute only if all conditions are validates
-                    if ($refMethod->isPublic()
-                            && $refMethod->isStatic()
-                            && !$refMethod->isAbstract()
-                            && 1 === $refMethod->getNumberOfParameters()) {
-                        $className::$methodName($event);
-                    }
+                // execute only if all conditions are validates
+                if ($refMethod->isPublic()
+                        && $refMethod->isStatic()
+                        && !$refMethod->isAbstract()
+                        && 1 === $refMethod->getNumberOfParameters()) {
+                    $className::$methodName($event);
+                }
 
-                } catch (\ReflectionException $ex) {}//silent execpetion
-            }
+            } catch (\ReflectionException $ex) {}//silent execpetion
         }
     }
 
     /**
      * Register namespaces in ClassLoader.
      *
-     * @param GetTriggerEvent $event The event object
+     * @param TriggerEvent $event The event object
      *
      * @return array The listener classes with event type
      */
-    protected function getListeners(GetTriggerEvent $event)
+    protected function getListeners(TriggerEvent $event)
     {
-        $listeners = array();
-        $composer = $this->application->getComposer();
-        $vendorDir = $composer->getInstallationManager()->getVendorPath(true);
-        $installedFile = $vendorDir . '/.composer/installed.json';
-
-        // get the list of package installed
-        // $composer->getRepositoryManager()->getLocalRepository() not used
-        // because the list is not refreshed for the post event
-        $fsr = new FilesystemRepository(new JsonFile($installedFile));
-        $packages = $fsr->getPackages();
-
-        foreach ($packages as $package) {
-            $listeners = array_merge_recursive($listeners, $this->getListenerClasses($package));
-        }
-
-        // add root package
-        $listeners = array_merge_recursive($listeners, $this->getListenerClasses($composer->getPackage(), true));
-
-        return $listeners;
-    }
-
-    /**
-     * Get listeners and register the namespace on Classloader.
-     *
-     * @param PackageInterface $package The package objet
-     * @param boolean $root             For root composer
-     *
-     * @return array The listener classes with event type
-     */
-    private function getListenerClasses(PackageInterface $package, $root = false)
-    {
-        $composer = $this->application->getComposer();
-        $installDir = $composer->getInstallationManager()->getVendorPath(true)
-                        . '/' . $package->getName();
+        $package = $this->composer->getPackage();
         $ex = $package->getExtra();
         $al = $package->getAutoload();
         $searchListeners = array();
@@ -143,27 +111,25 @@ class TriggerDispatcher
         $namespaces = array();
 
         // get classes
-        if (isset($ex['triggers'])) {
-            foreach ($ex['triggers'] as $method => $event) {
-                $searchListeners[$method] = $event;
+        if (isset($ex['triggers'][$event->getName()])) {
+            foreach ($ex['triggers'][$event->getName()] as $method) {
+                $searchListeners[] = $method;
             }
         }
 
         // get namespaces
         if (isset($al['psr-0'])) {
             foreach ($al['psr-0'] as $ns => $path) {
-                $dir = $root ? realpath('.') : $installDir;
-
-                $path = trim($dir . '/' . $path, '/');
+                $path = trim(realpath('.') . '/' . $path, '/');
                 $searchNamespaces[$ns] = $path;
             }
         }
 
         // filter class::method have not a namespace registered
         foreach ($searchNamespaces as $ns => $path) {
-            foreach ($searchListeners as $method => $event) {
+            foreach ($searchListeners as $method) {
                 if (0 === strpos($method, $ns)) {
-                    $listeners[$method] = $event;
+                    $listeners[] = $method;
 
                     if (!in_array($ns, array_keys($namespaces))) {
                         $namespaces[$ns] = $path;
