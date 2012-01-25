@@ -115,8 +115,6 @@ class ArrayLoader
             $package->setSourceType($config['source']['type']);
             $package->setSourceUrl($config['source']['url']);
             $package->setSourceReference($config['source']['reference']);
-        } elseif ($package->isDev()) {
-            throw new \UnexpectedValueException('Dev package '.$package.' must have a source specified');
         }
 
         if (isset($config['dist'])) {
