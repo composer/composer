@@ -122,21 +122,20 @@ EOT
 
             foreach ($links as $link) {
                 if (isset($internallyInstalledPackagesMap[$link->getTarget()])) {
-                    $package = $internallyInstalledPackagesMap[$link->getTarget()];
-                    if (!$link->getConstraint()->matches(new VersionConstraint('=', $package->getVersion()))) {
+                    $internallyInstalledPackage = $internallyInstalledPackagesMap[$link->getTarget()];
+                    if (!$link->getConstraint()->matches(new VersionConstraint('=', $internallyInstalledPackage->getVersion()))) {
                         // Solver was not handling this well so we will
-                        // handle it here where we can do something
-                        // nice in the way of output.
-                        throw new \UnexpectedValueException('Package '.$package->getName().' can not be updated because its version constraint ('.$link->getPrettyConstraint().') is not compatible with previously installed version ('.$package->getPrettyVersion().')');
+                        // handle it here.
+                        throw new \UnexpectedValueException('Package '.$internallyInstalledPackage->getName().' can not be updated because its version constraint ('.$link->getPrettyConstraint().') is not compatible with internally installed version ('.$internallyInstalledPackage->getPrettyVersion().')');
                     }
-                    // This package is installed internally, no need to
-                    // install it again.
+                    // This package is installed internally and has already
+                    // been added to the request.
                     continue;
                 }
                 foreach ($installedPackages as $package) {
                     if ($package->getName() === $link->getTarget()) {
                         $request->update($package->getName(), new VersionConstraint('=', $package->getVersion()));
-                        break;
+                        continue 2;
                     }
                 }
 
@@ -151,6 +150,17 @@ EOT
 
             foreach ($composer->getLocker()->getLockedPackages() as $package) {
                 $constraint = new VersionConstraint('=', $package->getVersion());
+                if (isset($internallyInstalledPackagesMap[$package->getName()])) {
+                    $internallyInstalledPackage = $internallyInstalledPackagesMap[$package->getName()];
+                    if (!$constraint->matches(new VersionConstraint('=', $internallyInstalledPackage->getVersion()))) {
+                        // Solver was not handling this well so we will
+                        // handle it here.
+                        throw new \UnexpectedValueException('Package '.$package->getName().' can not be installed because its version constraint ('.$package->getPrettyVersion().') is not compatible with internally installed version ('.$internallyInstalledPackage->getPrettyVersion().')');
+                    }
+                    // This package is installed internally and has already
+                    // been added to the request.
+                    continue;
+                }
                 $request->install($package->getName(), $constraint);
             }
         } else {
@@ -160,15 +170,14 @@ EOT
 
             foreach ($links as $link) {
                 if (isset($internallyInstalledPackagesMap[$link->getTarget()])) {
-                    $package = $internallyInstalledPackagesMap[$link->getTarget()];
-                    if (!$link->getConstraint()->matches(new VersionConstraint('=', $package->getVersion()))) {
+                    $internallyInstalledPackage = $internallyInstalledPackagesMap[$link->getTarget()];
+                    if (!$link->getConstraint()->matches(new VersionConstraint('=', $internallyInstalledPackage->getVersion()))) {
                         // Solver was not handling this well so we will
-                        // handle it here where we can do something
-                        // nice in the way of output.
-                        throw new \UnexpectedValueException('Package '.$package->getName().' can not be installed because its version constraint ('.$link->getPrettyConstraint().') is not compatible with previously installed version ('.$package->getPrettyVersion().')');
+                        // handle it here.
+                        throw new \UnexpectedValueException('Package '.$internallyInstalledPackage->getName().' can not be installed because its version constraint ('.$link->getPrettyConstraint().') is not compatible with internally installed version ('.$internallyInstalledPackage->getPrettyVersion().')');
                     }
-                    // This package is installed internally, no need to
-                    // install it again.
+                    // This package is installed internally and has already
+                    // been added to the request.
                     continue;
                 }
                 $request->install($link->getTarget(), $link->getConstraint());
