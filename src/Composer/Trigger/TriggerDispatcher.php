@@ -103,10 +103,11 @@ class TriggerDispatcher
     protected function getListeners(TriggerEvent $event)
     {
         $package = $this->composer->getPackage();
+        $vendorDir = $this->composer->getInstallationManager()->getVendorPath(true);
+        $autoloadFile = $vendorDir . '/.composer/autoload.php';
         $ex = $package->getExtra();
         $al = $package->getAutoload();
         $searchListeners = array();
-        $searchNamespaces = array();
         $listeners = array();
         $namespaces = array();
 
@@ -117,33 +118,33 @@ class TriggerDispatcher
             }
         }
 
-        // get namespaces
+        // get autoload namespaces
+        if (file_exists($autoloadFile)) {
+            $this->loader = require $autoloadFile;
+        }
+
+        $namespaces = $this->loader->getPrefixes();
+
+        // get namespaces in composer.json project
         if (isset($al['psr-0'])) {
             foreach ($al['psr-0'] as $ns => $path) {
-                $path = trim(realpath('.') . '/' . $path, '/');
-                $searchNamespaces[$ns] = $path;
+                if (!isset($namespaces[str_replace('\\', '\\\\', $ns)])) {
+                    $this->loader->add($ns, trim(realpath('.').'/'.$path, '/'));
+                }
             }
+
+            $this->loader->register();
+            $namespaces = $this->loader->getPrefixes();
         }
 
         // filter class::method have not a namespace registered
-        foreach ($searchNamespaces as $ns => $path) {
+        foreach ($namespaces as $ns => $path) {
             foreach ($searchListeners as $method) {
                 if (0 === strpos($method, $ns)) {
                     $listeners[] = $method;
-
-                    if (!in_array($ns, array_keys($namespaces))) {
-                        $namespaces[$ns] = $path;
-                    }
                 }
             }
         }
-
-        // register namespaces in class loader
-        foreach ($namespaces as $ns => $path) {
-            $this->loader->add($ns, $path);
-        }
-
-        $this->loader->register();
 
         return $listeners;
     }
