@@ -8,7 +8,7 @@ project. This event is raised before and after each action (install, update).
 
 ## Where are the event types defined?
 
-It is in the constant property in `Composer\\Trigger\\TriggerEvents` class.
+It is in the constant property in `Composer\Trigger\TriggerEvents` class.
 
 
 ## How is it defined?
@@ -22,6 +22,7 @@ in associative array define the event's type.
 The PSR-0 must be defined, otherwise the trigger will not be triggered.
 
 For any given project:
+
 ```json
 {
     "extra": {
@@ -43,6 +44,7 @@ For any given project:
 ```
 
 Trigger Example:
+
 ```php
 <?php
 namespace MyVendor\MyRootPackage;
@@ -65,4 +67,4 @@ class MyClass
 
 ## Informations:
 
-A declared trigger with non existent file will be ignored.
+A declared trigger with non existent file or without registered namespace will be ignored.
