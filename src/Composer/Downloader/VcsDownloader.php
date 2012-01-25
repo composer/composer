@@ -61,8 +61,8 @@ abstract class VcsDownloader implements DownloaderInterface
             throw new \InvalidArgumentException('The given package is missing reference information');
         }
 
+        $this->io->write("  - Package <info>" . $target->getName() . "</info> (<comment>" . $target->getPrettyVersion() . "</comment>)");
         $this->enforceCleanDirectory($path);
-        $this->io->write("  - Package <info>" . $package->getName() . "</info> (<comment>" . $package->getPrettyVersion() . "</comment>)");
         $this->doUpdate($initial, $target, $path);
         $this->io->write('');
     }
