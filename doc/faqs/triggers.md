@@ -42,6 +42,27 @@ For any given project:
 }
 ```
 
+Trigger Example:
+```php
+<?php
+namespace MyVendor\MyRootPackage;
+
+use Composer\Trigger\TriggerEvent;
+
+class MyClass
+{
+    public static function myStaticMethod(TriggerEvent $event)
+    {
+        // code...
+    }
+    
+    public static function myStaticMethod2(TriggerEvent $event)
+    {
+        // code...
+    }
+}
+```
+
 ## Informations:
 
 A declared trigger with non existent file will be ignored.
