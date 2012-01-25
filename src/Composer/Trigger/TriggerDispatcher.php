@@ -56,11 +56,7 @@ class TriggerDispatcher
      */
     public function dispatch($eventName)
     {
-        $event = new TriggerEvent();
-
-        $event->setName($eventName);
-        $event->setComposer($this->composer);
-        $event->setIO($this->io);
+        $event = new TriggerEvent($eventName, $this->composer, $this->io);
 
         $this->doDispatch($event);
     }

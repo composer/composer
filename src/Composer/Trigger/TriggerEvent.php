@@ -38,6 +38,20 @@ class TriggerEvent
     private $io;
 
     /**
+     * Constructor.
+     *
+     * @param string      $name     The event name
+     * @param Composer    $composer The composer objet
+     * @param IOInterface $io       The IOInterface object
+     */
+    public function __construct($name, Composer $composer, IOInterface $io)
+    {
+        $this->name = $name;
+        $this->composer = $composer;
+        $this->io = $io;
+    }
+
+    /**
      * Returns the event's name.
      *
      * @return string The event name
@@ -45,16 +59,6 @@ class TriggerEvent
     public function getName()
     {
         return $this->name;
-    }
-
-    /**
-     * Stores the event's name.
-     *
-     * @param string $name The event name
-     */
-    public function setName($name)
-    {
-        $this->name = $name;
     }
 
     /**
@@ -68,16 +72,6 @@ class TriggerEvent
     }
 
     /**
-     * Stores the composer instance.
-     *
-     * @param Composer $composer
-     */
-    public function setComposer(Composer $composer)
-    {
-        $this->composer = $composer;
-    }
-
-    /**
      * Returns the IO instance.
      *
      * @return IOInterface
@@ -85,15 +79,5 @@ class TriggerEvent
     public function getIO()
     {
         return $this->io;
-    }
-
-    /**
-     * Stores the IO instance.
-     *
-     * @param IOInterface $io
-     */
-    public function setIO(IOInterface $io)
-    {
-        $this->io = $io;
     }
 }
