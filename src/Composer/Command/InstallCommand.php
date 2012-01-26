@@ -20,6 +20,7 @@ use Composer\DependencyResolver;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Operation;
+use Composer\Package\MemoryPackage;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Package\PackageInterface;
 use Composer\Repository\PlatformRepository;
@@ -93,6 +94,12 @@ EOT
         // create installed repo, this contains all local packages + platform packages (php & extensions)
         $installedRepo       = new PlatformRepository($localRepo);
 
+        if ($internallyInstalledPackages) {
+            foreach ($internallyInstalledPackages as $package) {
+                $installedRepo->addPackage(new MemoryPackage($package->getName(), $package->getVersion(), $package->getPrettyVersion()));
+            }
+        }
+
         // creating repository pool
         $pool = new Pool;
         $pool->addRepository($installedRepo);
@@ -108,30 +115,12 @@ EOT
 
         // creating requirements request
         $request = new Request($pool);
-        $internallyInstalledPackagesMap = array();
-        if ($internallyInstalledPackages) {
-            foreach ($internallyInstalledPackages as $package) {
-                $request->install($package->getName(), new VersionConstraint('=', $package->getVersion()));
-                $internallyInstalledPackagesMap[$package->getName()] = $package;
-            }
-        }
         if ($update) {
             $output->writeln('<info>Updating dependencies</info>');
             $installedPackages = $installedRepo->getPackages();
             $links = $this->collectLinks($input, $composer->getPackage(), $noInstallRecommends, $installSuggests);
 
             foreach ($links as $link) {
-                if (isset($internallyInstalledPackagesMap[$link->getTarget()])) {
-                    $internallyInstalledPackage = $internallyInstalledPackagesMap[$link->getTarget()];
-                    if (!$link->getConstraint()->matches(new VersionConstraint('=', $internallyInstalledPackage->getVersion()))) {
-                        // Solver was not handling this well so we will
-                        // handle it here.
-                        throw new \UnexpectedValueException('Package '.$internallyInstalledPackage->getName().' can not be updated because its version constraint ('.$link->getPrettyConstraint().') is not compatible with internally installed version ('.$internallyInstalledPackage->getPrettyVersion().')');
-                    }
-                    // This package is installed internally and has already
-                    // been added to the request.
-                    continue;
-                }
                 foreach ($installedPackages as $package) {
                     if ($package->getName() === $link->getTarget()) {
                         $request->update($package->getName(), new VersionConstraint('=', $package->getVersion()));
@@ -150,17 +139,6 @@ EOT
 
             foreach ($composer->getLocker()->getLockedPackages() as $package) {
                 $constraint = new VersionConstraint('=', $package->getVersion());
-                if (isset($internallyInstalledPackagesMap[$package->getName()])) {
-                    $internallyInstalledPackage = $internallyInstalledPackagesMap[$package->getName()];
-                    if (!$constraint->matches(new VersionConstraint('=', $internallyInstalledPackage->getVersion()))) {
-                        // Solver was not handling this well so we will
-                        // handle it here.
-                        throw new \UnexpectedValueException('Package '.$package->getName().' can not be installed because its version constraint ('.$package->getPrettyVersion().') is not compatible with internally installed version ('.$internallyInstalledPackage->getPrettyVersion().')');
-                    }
-                    // This package is installed internally and has already
-                    // been added to the request.
-                    continue;
-                }
                 $request->install($package->getName(), $constraint);
             }
         } else {
@@ -169,17 +147,6 @@ EOT
             $links = $this->collectLinks($input, $composer->getPackage(), $noInstallRecommends, $installSuggests);
 
             foreach ($links as $link) {
-                if (isset($internallyInstalledPackagesMap[$link->getTarget()])) {
-                    $internallyInstalledPackage = $internallyInstalledPackagesMap[$link->getTarget()];
-                    if (!$link->getConstraint()->matches(new VersionConstraint('=', $internallyInstalledPackage->getVersion()))) {
-                        // Solver was not handling this well so we will
-                        // handle it here.
-                        throw new \UnexpectedValueException('Package '.$internallyInstalledPackage->getName().' can not be installed because its version constraint ('.$link->getPrettyConstraint().') is not compatible with internally installed version ('.$internallyInstalledPackage->getPrettyVersion().')');
-                    }
-                    // This package is installed internally and has already
-                    // been added to the request.
-                    continue;
-                }
                 $request->install($link->getTarget(), $link->getConstraint());
             }
         }
