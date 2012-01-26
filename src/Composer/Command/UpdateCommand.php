@@ -38,6 +38,7 @@ class UpdateCommand extends Command
                 new InputOption('dry-run', null, InputOption::VALUE_NONE, 'Outputs the operations but will not execute anything (implicitly enables --verbose).'),
                 new InputOption('no-install-recommends', null, InputOption::VALUE_NONE, 'Do not install recommended packages.'),
                 new InputOption('install-suggests', null, InputOption::VALUE_NONE, 'Also install suggested packages.'),
+                new InputOption('force', null, InputOption::VALUE_NONE, 'Force update packages.'),
             ))
             ->setHelp(<<<EOT
 The <info>update</info> command reads the composer.json file from the
@@ -53,6 +54,18 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        if ((Boolean) $input->getOption('force')) {
+            foreach (array('version', 'prettyVersion') as $property) {
+                $$property = new \ReflectionProperty('Composer\Package\MemoryPackage', $property);
+                $$property->setAccessible(true);
+            }
+
+            foreach ($this->getComposer()->getRepositoryManager()->getLocalRepository()->getPackages() as $package) {
+                $version->setValue($package, '0');
+                $prettyVersion->setValue($package, '0.0.0.0');
+            }
+        }
+
         $installCommand = $this->getApplication()->find('install');
 
         return $installCommand->install($input, $output, true);
