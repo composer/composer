@@ -135,7 +135,7 @@ EOT
                 foreach ($installedPackages as $package) {
                     if ($package->getName() === $link->getTarget()) {
                         $request->update($package->getName(), new VersionConstraint('=', $package->getVersion()));
-                        continue 2;
+                        break;
                     }
                 }
 
