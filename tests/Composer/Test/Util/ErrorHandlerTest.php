@@ -1,0 +1,49 @@
+<?php
+
+/*
+ * This file is part of Composer.
+ *
+ * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+namespace Composer\Test\Util;
+
+use Composer\Util\ErrorHandler;
+use Composer\Test\TestCase;
+
+/**
+ * ErrorHandler test case
+ *
+ * @author Artem Lopata <biozshock@gmail.com>
+ */
+class ErrorHandlerTest extends TestCase
+{
+    /**
+     * Test ErrorHandler handles notices
+     */
+    public function testErrorHandlerCaptureNotice()
+    {
+        $this->setExpectedException('\ErrorException', 'Undefined index: baz in ' . __FILE__);
+
+        ErrorHandler::set();
+
+        $array = array('foo' => 'bar');
+        $array['baz'];
+    }
+
+    /**
+     * Test ErrorHandler handles warnings
+     */
+    public function testErrorHandlerCaptureWarning()
+    {
+        $this->setExpectedException('\ErrorException', 'array_merge(): Argument #2 is not an array in ' . __FILE__);
+
+        ErrorHandler::set();
+
+        array_merge(array(), 'string');
+    }
+}
