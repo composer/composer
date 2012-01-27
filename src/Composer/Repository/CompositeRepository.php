@@ -21,7 +21,6 @@ use Composer\Package\PackageInterface;
  */
 class CompositeRepository implements RepositoryInterface
 {
-
     /**
      * List of repositories
      * @var array
@@ -38,8 +37,7 @@ class CompositeRepository implements RepositoryInterface
     }
 
     /**
-     * (non-PHPdoc)
-     * @see Composer\Repository.RepositoryInterface::hasPackage()
+     * {@inheritdoc}
      */
     public function hasPackage(PackageInterface $package)
     {
@@ -53,10 +51,10 @@ class CompositeRepository implements RepositoryInterface
     }
 
     /**
-     * (non-PHPdoc)
-     * @see Composer\Repository.RepositoryInterface::findPackage()
+     * {@inheritdoc}
      */
-    public function findPackage($name, $version) {
+    public function findPackage($name, $version)
+    {
         foreach ($this->repositories as $repository) {
             /* @var $repository RepositoryInterface */
             $package = $repository->findPackage($name, $version);
@@ -68,8 +66,7 @@ class CompositeRepository implements RepositoryInterface
     }
 
     /**
-     * (non-PHPdoc)
-     * @see Composer\Repository.RepositoryInterface::findPackagesByName()
+     * {@inheritdoc}
      */
     public function findPackagesByName($name)
     {
@@ -82,8 +79,7 @@ class CompositeRepository implements RepositoryInterface
     }
 
     /**
-     * (non-PHPdoc)
-     * @see Composer\Repository.RepositoryInterface::getPackages()
+     * {@inheritdoc}
      */
     public function getPackages()
     {
@@ -96,17 +92,7 @@ class CompositeRepository implements RepositoryInterface
     }
 
     /**
-     * Add a repository.
-     * @param RepositoryInterface $repository
-     */
-    public function addRepository(RepositoryInterface $repository)
-    {
-        $this->repositories[] = $repository;
-    }
-
-    /**
-     * (non-PHPdoc)
-     * @see Countable::count()
+     * {@inheritdoc}
      */
     public function count()
     {
@@ -116,5 +102,14 @@ class CompositeRepository implements RepositoryInterface
             $total += $repository->count();
         }
         return $total;
+    }
+
+    /**
+     * Add a repository.
+     * @param RepositoryInterface $repository
+     */
+    public function addRepository(RepositoryInterface $repository)
+    {
+        $this->repositories[] = $repository;
     }
 }
