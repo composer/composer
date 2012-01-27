@@ -23,7 +23,9 @@ use Composer\DependencyResolver\Operation;
 use Composer\Package\MemoryPackage;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Package\PackageInterface;
+use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
+use Composer\Repository\RepositoryInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -79,7 +81,7 @@ EOT
         );
     }
 
-    public function install(Composer $composer, EventDispatcher $eventDispatcher, InputInterface $input, OutputInterface $output, $update, $preferSource, $dryRun, $verbose, $noInstallRecommends, $installSuggests, $internallyInstalledPackages = null)
+    public function install(Composer $composer, EventDispatcher $eventDispatcher, InputInterface $input, OutputInterface $output, $update, $preferSource, $dryRun, $verbose, $noInstallRecommends, $installSuggests, RepositoryInterface $additionalInstalledRepository = null)
     {
         if ($dryRun) {
             $verbose = true;
@@ -90,14 +92,11 @@ EOT
         }
 
         // create local repo, this contains all packages that are installed in the local project
-        $localRepo           = $composer->getRepositoryManager()->getLocalRepository();
+        $localRepo = $composer->getRepositoryManager()->getLocalRepository();
         // create installed repo, this contains all local packages + platform packages (php & extensions)
-        $installedRepo       = new PlatformRepository($localRepo);
-
-        if ($internallyInstalledPackages) {
-            foreach ($internallyInstalledPackages as $package) {
-                $installedRepo->addPackage(new MemoryPackage($package->getName(), $package->getVersion(), $package->getPrettyVersion()));
-            }
+        $installedRepo = new CompositeRepository(array($localRepo, new PlatformRepository()));
+        if ($additionalInstalledRepository) {
+            $installedRepo->addRepository($additionalInstalledRepository);
         }
 
         // creating repository pool
