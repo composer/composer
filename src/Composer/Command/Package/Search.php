@@ -10,9 +10,9 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Command;
+namespace Composer\Command\Package;
 
-use Composer\Repository\PlatformRepository;
+use Composer\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -20,13 +20,13 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>
  */
-class SearchCommand extends Command
+class Search extends Command
 {
     protected function configure()
     {
         $this
             ->setName('search')
-            ->setDescription('search for packages')
+            ->setDescription('Search for packages')
             ->setDefinition(array(
                 new InputArgument('tokens', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'tokens to search for'),
             ))
@@ -41,13 +41,11 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $composer = $this->getComposer();
-
         // create local repo, this contains all packages that are installed in the local project
-        $localRepo = $composer->getRepositoryManager()->getLocalRepository();
+        $localRepo = $this->getLocalRepository();
 
         $tokens = array_map('strtolower', $input->getArgument('tokens'));
-        foreach ($composer->getRepositoryManager()->getRepositories() as $repository) {
+        foreach ($this->getRepositories() as $repository) {
             foreach ($repository->getPackages() as $package) {
                 foreach ($tokens as $token) {
                     if (false === ($pos = strpos($package->getName(), $token))) {

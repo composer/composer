@@ -98,17 +98,18 @@ class Application extends BaseApplication
      */
     protected function registerCommands()
     {
-        $this->add(new Command\AboutCommand());
-        $this->add(new Command\DependsCommand());
-        $this->add(new Command\InstallCommand());
-        $this->add(new Command\UpdateCommand());
-        $this->add(new Command\DebugPackagesCommand());
-        $this->add(new Command\SearchCommand());
-        $this->add(new Command\ValidateCommand());
-        $this->add(new Command\ShowCommand());
+        $this->add(new Command\Composer\About());
+        $this->add(new Command\Composer\Validate());
+        
+        $this->add(new Command\Package\Show());
+        $this->add(new Command\Package\Depends());
+        $this->add(new Command\Package\Install());
+        $this->add(new Command\Package\Update());
+        $this->add(new Command\Package\Listing());
+        $this->add(new Command\Package\Search());
 
         if ('phar:' === substr(__FILE__, 0, 5)) {
-            $this->add(new Command\SelfUpdateCommand());
+            $this->add(new Command\Composer\SelfUpdate());
         }
     }
 }

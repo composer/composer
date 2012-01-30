@@ -10,7 +10,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Command;
+namespace Composer\Command\Package;
 
 use Composer\Autoload\AutoloadGenerator;
 use Composer\DependencyResolver;
@@ -19,7 +19,7 @@ use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Operation;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Package\PackageInterface;
-use Composer\Repository\PlatformRepository;
+use Composer\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -29,7 +29,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  * @author Ryan Weaver <ryan@knplabs.com>
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
  */
-class InstallCommand extends Command
+class Install extends Command
 {
     protected function configure()
     {
@@ -71,14 +71,14 @@ EOT
         }
 
         // create local repo, this contains all packages that are installed in the local project
-        $localRepo           = $composer->getRepositoryManager()->getLocalRepository();
+        $localRepo           = $this->getLocalRepository();
         // create installed repo, this contains all local packages + platform packages (php & extensions)
-        $installedRepo       = new PlatformRepository($localRepo);
+        $installedRepo       = $this->getInstalledRepository();
 
         // creating repository pool
         $pool = new Pool;
         $pool->addRepository($installedRepo);
-        foreach ($composer->getRepositoryManager()->getRepositories() as $repository) {
+        foreach ($this->getRepositories() as $repository) {
             $pool->addRepository($repository);
         }
 

@@ -10,10 +10,9 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Command;
+namespace Composer\Command\Package;
 
-use Composer\Composer;
-use Composer\Package\PackageInterface;
+use Composer\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -23,7 +22,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  * @author Justin Rainbow <justin.rainbow@gmail.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class DependsCommand extends Command
+class Depends extends Command
 {
     protected function configure()
     {
@@ -46,8 +45,7 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $composer = $this->getComposer();
-        $references = $this->getReferences($input, $output, $composer);
+        $references = $this->getReferences($input, $output);
 
         if ($input->getOption('verbose')) {
             $this->printReferences($input, $output, $references);
@@ -61,18 +59,16 @@ EOT
      *
      * @param InputInterface $input
      * @param OutputInterface $output
-     * @param Composer $composer
      * @return array
-     * @throws \InvalidArgumentException
      */
-    private function getReferences(InputInterface $input, OutputInterface $output, Composer $composer)
+    private function getReferences(InputInterface $input, OutputInterface $output)
     {
         $needle = $input->getArgument('package');
 
         $references = array();
         $verbose = (Boolean) $input->getOption('verbose');
 
-        $repos = $composer->getRepositoryManager()->getRepositories();
+        $repos = $this->getRepositories();
         $types = $input->getOption('link-type');
         foreach ($repos as $repository) {
             foreach ($repository->getPackages() as $package) {
