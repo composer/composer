@@ -10,15 +10,10 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Command;
+namespace Composer\Command\Package;
 
-use Composer\Autoload\AutoloadGenerator;
-use Composer\DependencyResolver;
-use Composer\DependencyResolver\Pool;
-use Composer\DependencyResolver\Request;
-use Composer\DependencyResolver\Operation;
-use Composer\Package\LinkConstraint\VersionConstraint;
-use Composer\Repository\PlatformRepository;
+use Composer\Command\Command;
+use Composer\Package\PackageInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -26,12 +21,12 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class DebugPackagesCommand extends Command
+class Listing extends Command
 {
     protected function configure()
     {
         $this
-            ->setName('debug:packages')
+            ->setName('list-packages')
             ->setDescription('Lists all existing packages and their version')
             ->setDefinition(array(
                 new InputOption('local', null, InputOption::VALUE_NONE, 'list locally installed packages only'),
@@ -47,16 +42,14 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $composer = $this->getComposer();
-
         // create local repo, this contains all packages that are installed in the local project
-        $localRepo = $composer->getRepositoryManager()->getLocalRepository();
+        $localRepo = $this->getLocalRepository();
         // create installed repo, this contains all local packages + platform packages (php & extensions)
-        $installedRepo = new PlatformRepository($localRepo);
+        $installedRepo = $this->getInstalledRepository();
 
         if ($input->getOption('local')) {
             foreach ($localRepo->getPackages() as $package) {
-                $output->writeln('<info>local:</info> ' . $package->getPrettyName() . ' ' . $package->getPrettyVersion() . '<comment> (' . $package->getVersion() . ')</comment>');
+                $this->printPackage($output, $package, 'local');
             }
 
             return;
@@ -65,7 +58,7 @@ EOT
         if ($input->getOption('platform')) {
             $repos = array_diff($installedRepo->getPackages(), $localRepo->getPackages());
             foreach ($repos as $package) {
-                $output->writeln('<info>plattform:</info> ' . $package->getPrettyName() . ' ' . $package->getPrettyVersion() . '<comment> (' . $package->getVersion() . ')</comment>');
+                $this->printPackage($output, $package, 'platform', 'info');
             }
 
             return;
@@ -73,17 +66,31 @@ EOT
 
         foreach ($installedRepo->getPackages() as $package) {
             if ($localRepo->hasPackage($package)) {
-                $output->writeln('<info>installed:</info> ' . $package->getPrettyName() . ' ' . $package->getPrettyVersion() . '<comment> (' . $package->getVersion() . ')</comment>');
+                $this->printPackage($output, $package, 'installed','info');
             } else {
-                $output->writeln('<info>platform:</info> ' . $package->getPrettyName() . ' ' . $package->getPrettyVersion() . '<comment> (' . $package->getName() . ' ' . $package->getVersion() . ')</comment>');
+                $this->printPackage($output, $package, 'platform','info');
             }
         }
 
-        foreach ($composer->getRepositoryManager()->getRepositories() as $repository) {
+        foreach ($this->getRepositories() as $repository) {
             foreach ($repository->getPackages() as $package) {
-                $output->writeln('<comment>available:</comment> ' . $package->getPrettyName() . ' ' . $package->getPrettyVersion() . '<comment> (' . $package->getName() . ' ' . $package->getVersion() . ')</comment>');
+                if (!$installedRepo->hasPackage($package)) {
+                    $this->printPackage($output, $package, 'available');
+                }
             }
         }
     }
-
+    
+    protected function printPackage(OutputInterface $output, PackageInterface $package, $state, $style = 'comment')
+    {
+        $output->writeln(sprintf('<%s>%s </%s>: %s %s (<comment>%s %s</comment>) ',
+            $style,
+            $state, 
+            $style,
+            $package->getPrettyName(),
+            $package->getPrettyVersion(),
+            $package->getName(),
+            $package->getVersion())
+        );
+    }
 }

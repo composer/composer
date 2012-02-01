@@ -10,9 +10,9 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Command;
+namespace Composer\Command\Package;
 
-use Composer\Composer;
+use Composer\Command\Command;
 use Composer\Package\PackageInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
@@ -22,13 +22,13 @@ use Symfony\Component\Console\Output\OutputInterface;
  * @author Robert Schönthal <seroscho@googlemail.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class ShowCommand extends Command
+class Show extends Command
 {
     protected function configure()
     {
         $this
             ->setName('show')
-            ->setDescription('show package details')
+            ->setDescription('Show package details')
             ->setDefinition(array(
                 new InputArgument('package', InputArgument::REQUIRED, 'the package to inspect'),
                 new InputArgument('version', InputArgument::OPTIONAL, 'the version'),
@@ -44,64 +44,24 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $composer = $this->getComposer();
-        $package = $this->getPackage($input, $output, $composer);
+        $package = $this->getPackage($input, $output);
         if (!$package) {
             throw new \InvalidArgumentException('no package found');
         }
 
-        $this->printMeta($input, $output, $package, $composer);
+        $this->printMeta($input, $output, $package);
         $this->printLinks($input, $output, $package, 'requires');
         $this->printLinks($input, $output, $package, 'recommends');
         $this->printLinks($input, $output, $package, 'replaces');
     }
 
     /**
-     * finds a package by name and version if provided
-     *
-     * @param InputInterface $input
-     * @return PackageInterface
-     * @throws \InvalidArgumentException
-     */
-    protected function getPackage(InputInterface $input, OutputInterface $output, Composer $composer)
-    {
-        // we have a name and a version so we can use ::findPackage
-        if ($input->getArgument('version')) {
-            return $composer->getRepositoryManager()->findPackage($input->getArgument('package'), $input->getArgument('version'));
-        }
-
-        // check if we have a local installation so we can grab the right package/version
-        $localRepo = $composer->getRepositoryManager()->getLocalRepository();
-        foreach ($localRepo->getPackages() as $package) {
-            if ($package->getName() === $input->getArgument('package')) {
-                return $package;
-            }
-        }
-
-        // we only have a name, so search for the highest version of the given package
-        $highestVersion = null;
-        $repos = array_merge(
-            array($composer->getRepositoryManager()->getLocalRepository()),
-            $composer->getRepositoryManager()->getRepositories()
-        );
-        foreach ($repos as $repository) {
-            foreach ($repository->findPackagesByName($input->getArgument('package')) as $package) {
-                if (null === $highestVersion || version_compare($package->getVersion(), $highestVersion->getVersion(), '>=')) {
-                    $highestVersion = $package;
-                }
-            }
-        }
-
-        return $highestVersion;
-    }
-
-    /**
      * prints package meta data
      */
-    protected function printMeta(InputInterface $input, OutputInterface $output, PackageInterface $package, Composer $composer)
+    protected function printMeta(InputInterface $input, OutputInterface $output, PackageInterface $package)
     {
         $output->writeln('<info>name</info>     : ' . $package->getPrettyName());
-        $this->printVersions($input, $output, $package, $composer);
+        $this->printVersions($input, $output, $package);
         $output->writeln('<info>type</info>     : ' . $package->getType());
         $output->writeln('<info>names</info>    : ' . join(', ', $package->getNames()));
         $output->writeln('<info>source</info>   : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getSourceType(), $package->getSourceUrl(), $package->getSourceReference()));
@@ -123,7 +83,7 @@ EOT
     /**
      * prints all available versions of this package and highlights the installed one if any
      */
-    protected function printVersions(InputInterface $input, OutputInterface $output, PackageInterface $package, Composer $composer)
+    protected function printVersions(InputInterface $input, OutputInterface $output, PackageInterface $package)
     {
         if ($input->getArgument('version')) {
             $output->writeln('<info>version</info>  : ' . $package->getPrettyVersion());
@@ -132,7 +92,7 @@ EOT
 
         $versions = array();
 
-        foreach ($composer->getRepositoryManager()->getRepositories() as $repository) {
+        foreach ($this->getRepositories() as $repository) {
             foreach ($repository->findPackagesByName($package->getName()) as $version) {
                 $versions[] = $version->getPrettyVersion();
             }
@@ -141,7 +101,7 @@ EOT
         $versions = join(', ', $versions);
 
         // highlight installed version
-        if ($composer->getRepositoryManager()->getLocalRepository()->hasPackage($package)) {
+        if ($this->getLocalRepository()->hasPackage($package)) {
             $versions = str_replace($package->getPrettyVersion(), '<info>* ' . $package->getPrettyVersion() . '</info>', $versions);
         }
 

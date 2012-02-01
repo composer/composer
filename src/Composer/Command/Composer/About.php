@@ -10,15 +10,16 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Command;
+namespace Composer\Command\Composer;
 
+use Composer\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class AboutCommand extends Command
+class About extends Command
 {
     protected function configure()
     {

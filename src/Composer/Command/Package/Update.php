@@ -10,15 +10,9 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Command;
+namespace Composer\Command\Package;
 
-use Composer\Autoload\AutoloadGenerator;
-use Composer\DependencyResolver;
-use Composer\DependencyResolver\Pool;
-use Composer\DependencyResolver\Request;
-use Composer\DependencyResolver\Operation;
-use Composer\Package\LinkConstraint\VersionConstraint;
-use Composer\Repository\PlatformRepository;
+use Composer\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -26,7 +20,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class UpdateCommand extends Command
+class Update extends Command
 {
     protected function configure()
     {

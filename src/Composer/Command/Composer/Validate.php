@@ -10,9 +10,9 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Command;
+namespace Composer\Command\Composer;
 
-use Composer\Repository\PlatformRepository;
+use Composer\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -22,13 +22,13 @@ use Composer\Json\JsonFile;
  * @author Robert Schönthal <seroscho@googlemail.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class ValidateCommand extends Command
+class Validate extends Command
 {
     protected function configure()
     {
         $this
             ->setName('validate')
-            ->setDescription('validates a composer.json')
+            ->setDescription('Validates a composer.json')
             ->setDefinition(array(
                 new InputArgument('file', InputArgument::OPTIONAL, 'path to composer.json file', './composer.json')
             ))
