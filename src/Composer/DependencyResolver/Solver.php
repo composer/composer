@@ -937,7 +937,7 @@ class Solver
             $this->installedMap[$package->getId()] = $package;
         }
 
-        if (version_compare(PHP_VERSION, '5.3.2', '>')) {
+        if (version_compare(PHP_VERSION, '5.3.3', '>')) {
             $this->decisionMap = new \SplFixedArray($this->pool->getMaxId() + 1);
         } else {
             $this->decisionMap = array_fill(0, $this->pool->getMaxId() + 1, 0);
