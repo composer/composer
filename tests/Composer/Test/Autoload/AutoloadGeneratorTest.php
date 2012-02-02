@@ -79,8 +79,17 @@ class AutoloadGeneratorTest extends \PHPUnit_Framework_TestCase
 
     public function testVendorDirSameAsWorkingDir()
     {
-        chdir($this->vendorDir);
-        $this->testMainPackageAutoloading();
+        $this->vendorDir = $this->workingDir;
+
+        $package = new MemoryPackage('a', '1.0', '1.0');
+        $package->setAutoload(array('psr-0' => array('Main' => 'src/', 'Lala' => 'src/')));
+
+        $this->repo->expects($this->once())
+            ->method('getPackages')
+            ->will($this->returnValue(array()));
+
+        $this->generator->dump($this->repo, $package, $this->im, $this->vendorDir.'/.composer');
+        $this->assertAutoloadFiles('main3', $this->vendorDir.'/.composer');
     }
 
     public function testMainPackageAutoloadingAlternativeVendorDir()
