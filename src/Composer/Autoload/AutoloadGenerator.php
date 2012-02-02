@@ -54,7 +54,7 @@ EOF;
 
         $filesystem = new Filesystem();
         $vendorPath = strtr(realpath($installationManager->getVendorPath()), '\\', '/');
-        $relVendorPath = ltrim(substr($vendorPath, strlen(getcwd())), '/');
+        $relVendorPath = $filesystem->findShortestPath(getcwd(), $vendorPath);
         $vendorDirCode = $filesystem->findShortestPathCode(realpath($targetDir), $vendorPath, true);
 
         $namespacesFile = <<<EOF
