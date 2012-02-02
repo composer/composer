@@ -88,6 +88,7 @@ class AutoloadGeneratorTest extends \PHPUnit_Framework_TestCase
             ->method('getPackages')
             ->will($this->returnValue(array()));
 
+        @mkdir($this->vendorDir.'/.composer');
         $this->generator->dump($this->repo, $package, $this->im, $this->vendorDir.'/.composer');
         $this->assertAutoloadFiles('main3', $this->vendorDir.'/.composer');
     }
