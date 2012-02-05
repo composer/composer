@@ -153,6 +153,13 @@ interface PackageInterface
     function getDistSha1Checksum();
 
     /**
+     * Returns the scripts of this package
+     *
+     * @return array array('script name' => array('listeners'))
+     */
+    function getScripts();
+
+    /**
      * Returns the version of this package
      *
      * @return string version

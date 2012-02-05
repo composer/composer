@@ -12,8 +12,8 @@
 
 namespace Composer\Command;
 
-use Composer\Trigger\TriggerEvents;
-use Composer\Trigger\TriggerDispatcher;
+use Composer\Script\ScriptEvents;
+use Composer\Script\EventDispatcher;
 use Composer\Autoload\AutoloadGenerator;
 use Composer\DependencyResolver;
 use Composer\DependencyResolver\Pool;
@@ -68,7 +68,7 @@ EOT
         $verbose = $dryRun || $input->getOption('verbose');
         $composer = $this->getComposer();
         $io = $this->getApplication()->getIO();
-        $dispatcher = new TriggerDispatcher($this->getComposer(), $io);
+        $dispatcher = new EventDispatcher($this->getComposer(), $io);
 
         if ($preferSource) {
             $composer->getDownloadManager()->setPreferSource(true);
@@ -88,8 +88,8 @@ EOT
 
         // dispatch pre event
         if (!$dryRun) {
-            $eventName = $update ? TriggerEvents::PRE_UPDATE : TriggerEvents::PRE_INSTALL;
-            $dispatcher->dispatch($eventName);
+            $eventName = $update ? ScriptEvents::PRE_UPDATE_CMD : ScriptEvents::PRE_INSTALL_CMD;
+            $dispatcher->dispatchCommandEvent($eventName);
         }
 
         // creating requirements request
@@ -172,7 +172,9 @@ EOT
                 $output->writeln((string) $operation);
             }
             if (!$dryRun) {
+                $dispatcher->dispatchPackageEvent(constant('Composer\Script\ScriptEvents::PRE_PACKAGE_'.strtoupper($operation->getJobType())), $operation);
                 $installationManager->execute($operation);
+                $dispatcher->dispatchPackageEvent(constant('Composer\Script\ScriptEvents::POST_PACKAGE_'.strtoupper($operation->getJobType())), $operation);
             }
         }
 
@@ -189,8 +191,8 @@ EOT
             $generator->dump($localRepo, $composer->getPackage(), $installationManager, $installationManager->getVendorPath().'/.composer');
 
             // dispatch post event
-            $eventName = $update ? TriggerEvents::POST_UPDATE : TriggerEvents::POST_INSTALL;
-            $dispatcher->dispatch($eventName);
+            $eventName = $update ? ScriptEvents::POST_UPDATE_CMD : ScriptEvents::POST_INSTALL_CMD;
+            $dispatcher->dispatchCommandEvent($eventName);
         }
     }
 
