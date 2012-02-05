@@ -85,7 +85,7 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
         $package = $this->createPackageMock();
 
         $package
-            ->expects($this->once())
+            ->expects($this->exactly(2))
             ->method('getPrettyName')
             ->will($this->returnValue('some/package'));
 
