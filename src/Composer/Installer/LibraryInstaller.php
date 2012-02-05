@@ -80,16 +80,16 @@ class LibraryInstaller implements InstallerInterface
      */
     public function install(PackageInterface $package)
     {
-        //remove the binaries first if its missing on filesystem
-        if (!is_readable($this->getInstallPath($package)) && $this->repository->hasPackage($package)) {
+        $downloadPath = $this->getInstallPath($package);
+
+        // remove the binaries if it appears the package files are missing
+        if (!is_readable($downloadPath) && $this->repository->hasPackage($package)) {
             $this->removeBinaries($package);
         }
 
-        $downloadPath = $this->getInstallPath($package);
         $this->downloadManager->download($package, $downloadPath);
         $this->installBinaries($package);
-
-        if(!$this->repository->hasPackage($package)) {
+        if (!$this->repository->hasPackage($package)) {
             $this->repository->addPackage(clone $package);
         }
     }
