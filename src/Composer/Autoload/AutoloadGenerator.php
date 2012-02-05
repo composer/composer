@@ -54,7 +54,7 @@ EOF;
 
         $filesystem = new Filesystem();
         $vendorPath = strtr(realpath($installationManager->getVendorPath()), '\\', '/');
-        $relVendorPath = ltrim(substr($vendorPath, strlen(getcwd())), '/');
+        $relVendorPath = $filesystem->findShortestPath(getcwd(), $vendorPath);
         $vendorDirCode = $filesystem->findShortestPathCode(realpath($targetDir), $vendorPath, true);
 
         $namespacesFile = <<<EOF
@@ -93,7 +93,12 @@ EOF;
                     $path = strtr($path, '\\', '/');
                     $baseDir = '';
                     if (!$filesystem->isAbsolutePath($path)) {
-                        if (strpos($path, $relVendorPath) === 0) {
+                        // vendor dir == working dir
+                        if (preg_match('{^(\./?)?$}', $relVendorPath)) {
+                            $path = '/'.$path;
+                            $baseDir = '$vendorDir . ';
+                        } elseif (strpos($path, $relVendorPath) === 0) {
+                            // path starts with vendor dir
                             $path = substr($path, strlen($relVendorPath));
                             $baseDir = '$vendorDir . ';
                         } else {
