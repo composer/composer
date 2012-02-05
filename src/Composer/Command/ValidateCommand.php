@@ -28,7 +28,7 @@ class ValidateCommand extends Command
     {
         $this
             ->setName('validate')
-            ->setDescription('validates a composer.json')
+            ->setDescription('Validates a composer.json')
             ->setDefinition(array(
                 new InputArgument('file', InputArgument::OPTIONAL, 'path to composer.json file', './composer.json')
             ))

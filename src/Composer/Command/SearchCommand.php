@@ -26,7 +26,7 @@ class SearchCommand extends Command
     {
         $this
             ->setName('search')
-            ->setDescription('search for packages')
+            ->setDescription('Search for packages')
             ->setDefinition(array(
                 new InputArgument('tokens', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'tokens to search for'),
             ))
