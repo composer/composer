@@ -63,9 +63,42 @@ EOT
         return $this->install($input, $output);
     }
 
-    public function install(InputInterface $input, OutputInterface $output, $update = false)
+    /**
+     * update packages
+     *
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     */
+    public function update(InputInterface $input, OutputInterface $output)
     {
-        $preferSource = (Boolean) $input->getOption('dev');
+        $this->processPackages($input, $output, true);
+    }
+
+    /**
+     * install packages
+     *
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     */
+    public function install(InputInterface $input, OutputInterface $output)
+    {
+        $this->processPackages($input, $output);
+    }
+
+    /**
+     * uninstall packages
+     *
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     */
+    public function uninstall(InputInterface $input, OutputInterface $output)
+    {
+        $this->processPackages($input, $output, false, true);
+    }
+
+    protected function processPackages(InputInterface $input, OutputInterface $output, $update = false, $delete = false)
+    {
+        $preferSource = (Boolean) $input->hasParameterOption('dev') ? $input->getOption('dev') : false;
         $dryRun = (Boolean) $input->getOption('dry-run');
         $verbose = $dryRun || $input->getOption('verbose');
         $composer = $this->getComposer();
@@ -111,7 +144,21 @@ EOT
 
                 $request->install($link->getTarget(), $link->getConstraint());
             }
-        } elseif ($composer->getLocker()->isLocked()) {
+        } elseif($delete) {
+            $output->writeln('<info>Removing packages</info>');
+            $installedPackages = $localRepo->getPackages();
+            $links = $this->collectLinks($input, $composer->getPackage());
+
+            foreach ($links as $link) {
+                foreach ($installedPackages as $package) {
+                    if ($package->getName() === $link->getTarget()) {
+                        $request->remove($package->getName());
+                        break;
+                    }
+                }
+            }
+        }
+        elseif ($composer->getLocker()->isLocked()) {
             $output->writeln('<info>Installing from lock file</info>');
 
             if (!$composer->getLocker()->isFresh()) {
@@ -173,7 +220,7 @@ EOT
             $output->writeln('<info>Nothing to install/update</info>');
         }
         foreach ($operations as $operation) {
-            if ($verbose) {
+            if ($verbose || $delete) {
                 $output->writeln((string) $operation);
             }
             if (!$dryRun) {
@@ -184,7 +231,7 @@ EOT
         }
 
         if (!$dryRun) {
-            if ($update || !$composer->getLocker()->isLocked()) {
+            if ($update || $delete || !$composer->getLocker()->isLocked()) {
                 $composer->getLocker()->lockPackages($localRepo->getPackages());
                 $output->writeln('<info>Writing lock file</info>');
             }
@@ -205,11 +252,11 @@ EOT
     {
         $links = $package->getRequires();
 
-        if (!$input->getOption('no-install-recommends')) {
+        if ($input->hasParameterOption('no-install-recommends') && !$input->getOption('no-install-recommends')) {
             $links = array_merge($links, $package->getRecommends());
         }
 
-        if ($input->getOption('install-suggests')) {
+        if ($input->hasParameterOption('install-suggest') && $input->getOption('install-suggests')) {
             $links = array_merge($links, $package->getSuggests());
         }
 
