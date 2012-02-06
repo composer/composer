@@ -28,7 +28,7 @@ class ShowCommand extends Command
     {
         $this
             ->setName('show')
-            ->setDescription('show package details')
+            ->setDescription('Show package details')
             ->setDefinition(array(
                 new InputArgument('package', InputArgument::REQUIRED, 'the package to inspect'),
                 new InputArgument('version', InputArgument::OPTIONAL, 'the version'),

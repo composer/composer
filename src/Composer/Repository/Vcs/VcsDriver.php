@@ -79,6 +79,7 @@ abstract class VcsDriver
         } else if (null !== $this->io->getLastUsername()) {
             $authStr = base64_encode($this->io->getLastUsername() . ':' . $this->io->getLastPassword());
             $params['http'] = array('header' => "Authorization: Basic $authStr\r\n");
+            $this->io->setAuthorization($this->url, $this->io->getLastUsername(), $this->io->getLastPassword());
         }
 
         $ctx = stream_context_create($params);
