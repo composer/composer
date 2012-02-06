@@ -31,6 +31,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Solver;
+use Composer\IO\IOInterface;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -67,12 +68,11 @@ EOT
         $composer = $this->getComposer();
         $io = $this->getApplication()->getIO();
         $eventDispatcher = new EventDispatcher($composer, $io);
+
         return $this->install(
+            $io,
             $composer,
             $eventDispatcher,
-            $input,
-            $output,
-            false,
             (Boolean)$input->getOption('dev'),
             (Boolean)$input->getOption('dry-run'),
             (Boolean)$input->getOption('verbose'),
@@ -81,7 +81,7 @@ EOT
         );
     }
 
-    public function install(Composer $composer, EventDispatcher $eventDispatcher, InputInterface $input, OutputInterface $output, $update, $preferSource, $dryRun, $verbose, $noInstallRecommends, $installSuggests, RepositoryInterface $additionalInstalledRepository = null)
+    public function install(IOInterface $io, Composer $composer, EventDispatcher $eventDispatcher, $preferSource = false, $dryRun = false, $verbose = false, $noInstallRecommends = false, $installSuggests = false, $update = false, RepositoryInterface $additionalInstalledRepository = null)
     {
         if ($dryRun) {
             $verbose = true;
@@ -115,9 +115,9 @@ EOT
         // creating requirements request
         $request = new Request($pool);
         if ($update) {
-            $output->writeln('<info>Updating dependencies</info>');
+            $io->write('<info>Updating dependencies</info>');
             $installedPackages = $installedRepo->getPackages();
-            $links = $this->collectLinks($input, $composer->getPackage(), $noInstallRecommends, $installSuggests);
+            $links = $this->collectLinks($composer->getPackage(), $noInstallRecommends, $installSuggests);
 
             foreach ($links as $link) {
                 foreach ($installedPackages as $package) {
@@ -130,10 +130,10 @@ EOT
                 $request->install($link->getTarget(), $link->getConstraint());
             }
         } elseif ($composer->getLocker()->isLocked()) {
-            $output->writeln('<info>Installing from lock file</info>');
+            $io->write('<info>Installing from lock file</info>');
 
             if (!$composer->getLocker()->isFresh()) {
-                $output->writeln('<warning>Your lock file is out of sync with your composer.json, run "composer.phar update" to update dependencies</warning>');
+                $io->write('<warning>Your lock file is out of sync with your composer.json, run "composer.phar update" to update dependencies</warning>');
             }
 
             foreach ($composer->getLocker()->getLockedPackages() as $package) {
@@ -141,9 +141,9 @@ EOT
                 $request->install($package->getName(), $constraint);
             }
         } else {
-            $output->writeln('<info>Installing dependencies</info>');
+            $io->write('<info>Installing dependencies</info>');
 
-            $links = $this->collectLinks($input, $composer->getPackage(), $noInstallRecommends, $installSuggests);
+            $links = $this->collectLinks($composer->getPackage(), $noInstallRecommends, $installSuggests);
 
             foreach ($links as $link) {
                 $request->install($link->getTarget(), $link->getConstraint());
@@ -188,11 +188,11 @@ EOT
 
         // execute operations
         if (!$operations) {
-            $output->writeln('<info>Nothing to install/update</info>');
+            $io->write('<info>Nothing to install/update</info>');
         }
         foreach ($operations as $operation) {
             if ($verbose) {
-                $output->writeln((string) $operation);
+                $io->write((string) $operation);
             }
             if (!$dryRun) {
                 $eventDispatcher->dispatchPackageEvent(constant('Composer\Script\ScriptEvents::PRE_PACKAGE_'.strtoupper($operation->getJobType())), $operation);
@@ -204,12 +204,12 @@ EOT
         if (!$dryRun) {
             if ($update || !$composer->getLocker()->isLocked()) {
                 $composer->getLocker()->lockPackages($localRepo->getPackages());
-                $output->writeln('<info>Writing lock file</info>');
+                $io->write('<info>Writing lock file</info>');
             }
 
             $localRepo->write();
 
-            $output->writeln('<info>Generating autoload files</info>');
+            $io->write('<info>Generating autoload files</info>');
             $generator = new AutoloadGenerator;
             $generator->dump($localRepo, $composer->getPackage(), $installationManager, $installationManager->getVendorPath().'/.composer');
 
@@ -219,7 +219,7 @@ EOT
         }
     }
 
-    private function collectLinks(InputInterface $input, PackageInterface $package, $noInstallRecommends, $installSuggests)
+    private function collectLinks(PackageInterface $package, $noInstallRecommends, $installSuggests)
     {
         $links = $package->getRequires();
 

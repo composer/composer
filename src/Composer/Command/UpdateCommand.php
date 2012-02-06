@@ -60,16 +60,15 @@ EOT
         $eventDispatcher = new EventDispatcher($composer, $io);
 
         return $installCommand->install(
+            $io,
             $composer,
             $eventDispatcher,
-            $input,
-            $output,
-            true,
             (Boolean)$input->getOption('dev'),
             (Boolean)$input->getOption('dry-run'),
             (Boolean)$input->getOption('verbose'),
             (Boolean)$input->getOption('no-install-recommends'),
-            (Boolean)$input->getOption('install-suggests')
+            (Boolean)$input->getOption('install-suggests'),
+            true
         );
     }
 }
