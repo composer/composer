@@ -12,6 +12,8 @@
 
 namespace Composer\Command;
 
+use Composer\Script\ScriptEvents;
+use Composer\Script\EventDispatcher;
 use Composer\Autoload\AutoloadGenerator;
 use Composer\DependencyResolver;
 use Composer\DependencyResolver\Pool;
@@ -23,6 +25,8 @@ use Composer\Repository\PlatformRepository;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Composer\DependencyResolver\Operation\InstallOperation;
+use Composer\DependencyResolver\Solver;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -65,6 +69,8 @@ EOT
         $dryRun = (Boolean) $input->getOption('dry-run');
         $verbose = $dryRun || $input->getOption('verbose');
         $composer = $this->getComposer();
+        $io = $this->getApplication()->getIO();
+        $dispatcher = new EventDispatcher($this->getComposer(), $io);
 
         if ($preferSource) {
             $composer->getDownloadManager()->setPreferSource(true);
@@ -80,6 +86,12 @@ EOT
         $pool->addRepository($installedRepo);
         foreach ($composer->getRepositoryManager()->getRepositories() as $repository) {
             $pool->addRepository($repository);
+        }
+
+        // dispatch pre event
+        if (!$dryRun) {
+            $eventName = $update ? ScriptEvents::PRE_UPDATE_CMD : ScriptEvents::PRE_INSTALL_CMD;
+            $dispatcher->dispatchCommandEvent($eventName);
         }
 
         // creating requirements request
@@ -132,7 +144,10 @@ EOT
         // TODO this belongs in the solver, but this will do for now to report top-level deps missing at least
         foreach ($request->getJobs() as $job) {
             if ('install' === $job['cmd']) {
-                foreach ($installedRepo->getPackages() as $package) {
+                foreach ($installedRepo->getPackages() as $package ) {
+                    if ($installedRepo->hasPackage($package) && !$package->isPlatform() && !$installationManager->isPackageInstalled($package)) {
+                        $operations[$job['packageName']] = new InstallOperation($package, Solver::RULE_PACKAGE_NOT_EXIST);
+                    }
                     if (in_array($job['packageName'], $package->getNames())) {
                         continue 2;
                     }
@@ -162,7 +177,9 @@ EOT
                 $output->writeln((string) $operation);
             }
             if (!$dryRun) {
+                $dispatcher->dispatchPackageEvent(constant('Composer\Script\ScriptEvents::PRE_PACKAGE_'.strtoupper($operation->getJobType())), $operation);
                 $installationManager->execute($operation);
+                $dispatcher->dispatchPackageEvent(constant('Composer\Script\ScriptEvents::POST_PACKAGE_'.strtoupper($operation->getJobType())), $operation);
             }
         }
 
@@ -177,6 +194,10 @@ EOT
             $output->writeln('<info>Generating autoload files</info>');
             $generator = new AutoloadGenerator;
             $generator->dump($localRepo, $composer->getPackage(), $installationManager, $installationManager->getVendorPath().'/.composer');
+
+            // dispatch post event
+            $eventName = $update ? ScriptEvents::POST_UPDATE_CMD : ScriptEvents::POST_INSTALL_CMD;
+            $dispatcher->dispatchCommandEvent($eventName);
         }
     }
 
