@@ -18,6 +18,7 @@ use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Operation;
 use Composer\Package\LinkConstraint\VersionConstraint;
+use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -52,7 +53,7 @@ EOT
         // create local repo, this contains all packages that are installed in the local project
         $localRepo = $composer->getRepositoryManager()->getLocalRepository();
         // create installed repo, this contains all local packages + platform packages (php & extensions)
-        $installedRepo = new PlatformRepository($localRepo);
+        $installedRepo = new CompositeRepository(array($localRepo, new PlatformRepository()));
 
         if ($input->getOption('local')) {
             foreach ($localRepo->getPackages() as $package) {

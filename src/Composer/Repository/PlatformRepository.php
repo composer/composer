@@ -20,12 +20,6 @@ use Composer\Package\Version\VersionParser;
  */
 class PlatformRepository extends ArrayRepository
 {
-    private $localRepository;
-
-    public function __construct(RepositoryInterface $localRepository)
-    {
-        $this->localRepository = $localRepository;
-    }
 
     protected function initialize()
     {
@@ -61,10 +55,5 @@ class PlatformRepository extends ArrayRepository
             $ext = new MemoryPackage('ext-'.strtolower($ext), $version, $prettyVersion);
             parent::addPackage($ext);
         }
-    }
-
-    public function getPackages()
-    {
-        return array_merge(parent::getPackages(), $this->localRepository->getPackages());
     }
 }
