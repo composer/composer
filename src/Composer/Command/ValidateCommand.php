@@ -12,7 +12,6 @@
 
 namespace Composer\Command;
 
-use Composer\Repository\PlatformRepository;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;

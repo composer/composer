@@ -15,13 +15,17 @@ namespace Composer\Command;
 use Composer\Script\ScriptEvents;
 use Composer\Script\EventDispatcher;
 use Composer\Autoload\AutoloadGenerator;
+use Composer\Composer;
 use Composer\DependencyResolver;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Operation;
+use Composer\Package\MemoryPackage;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Package\PackageInterface;
+use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
+use Composer\Repository\RepositoryInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -60,26 +64,40 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        return $this->install($input, $output);
-    }
-
-    public function install(InputInterface $input, OutputInterface $output, $update = false)
-    {
-        $preferSource = (Boolean) $input->getOption('dev');
-        $dryRun = (Boolean) $input->getOption('dry-run');
-        $verbose = $dryRun || $input->getOption('verbose');
         $composer = $this->getComposer();
         $io = $this->getApplication()->getIO();
-        $dispatcher = new EventDispatcher($this->getComposer(), $io);
+        $eventDispatcher = new EventDispatcher($composer, $io);
+        return $this->install(
+            $composer,
+            $eventDispatcher,
+            $input,
+            $output,
+            false,
+            (Boolean)$input->getOption('dev'),
+            (Boolean)$input->getOption('dry-run'),
+            (Boolean)$input->getOption('verbose'),
+            (Boolean)$input->getOption('no-install-recommends'),
+            (Boolean)$input->getOption('install-suggests')
+        );
+    }
+
+    public function install(Composer $composer, EventDispatcher $eventDispatcher, InputInterface $input, OutputInterface $output, $update, $preferSource, $dryRun, $verbose, $noInstallRecommends, $installSuggests, RepositoryInterface $additionalInstalledRepository = null)
+    {
+        if ($dryRun) {
+            $verbose = true;
+        }
 
         if ($preferSource) {
             $composer->getDownloadManager()->setPreferSource(true);
         }
 
         // create local repo, this contains all packages that are installed in the local project
-        $localRepo           = $composer->getRepositoryManager()->getLocalRepository();
+        $localRepo = $composer->getRepositoryManager()->getLocalRepository();
         // create installed repo, this contains all local packages + platform packages (php & extensions)
-        $installedRepo       = new PlatformRepository($localRepo);
+        $installedRepo = new CompositeRepository(array($localRepo, new PlatformRepository()));
+        if ($additionalInstalledRepository) {
+            $installedRepo->addRepository($additionalInstalledRepository);
+        }
 
         // creating repository pool
         $pool = new Pool;
@@ -91,7 +109,7 @@ EOT
         // dispatch pre event
         if (!$dryRun) {
             $eventName = $update ? ScriptEvents::PRE_UPDATE_CMD : ScriptEvents::PRE_INSTALL_CMD;
-            $dispatcher->dispatchCommandEvent($eventName);
+            $eventDispatcher->dispatchCommandEvent($eventName);
         }
 
         // creating requirements request
@@ -99,7 +117,7 @@ EOT
         if ($update) {
             $output->writeln('<info>Updating dependencies</info>');
             $installedPackages = $installedRepo->getPackages();
-            $links = $this->collectLinks($input, $composer->getPackage());
+            $links = $this->collectLinks($input, $composer->getPackage(), $noInstallRecommends, $installSuggests);
 
             foreach ($links as $link) {
                 foreach ($installedPackages as $package) {
@@ -125,7 +143,7 @@ EOT
         } else {
             $output->writeln('<info>Installing dependencies</info>');
 
-            $links = $this->collectLinks($input, $composer->getPackage());
+            $links = $this->collectLinks($input, $composer->getPackage(), $noInstallRecommends, $installSuggests);
 
             foreach ($links as $link) {
                 $request->install($link->getTarget(), $link->getConstraint());
@@ -177,9 +195,9 @@ EOT
                 $output->writeln((string) $operation);
             }
             if (!$dryRun) {
-                $dispatcher->dispatchPackageEvent(constant('Composer\Script\ScriptEvents::PRE_PACKAGE_'.strtoupper($operation->getJobType())), $operation);
+                $eventDispatcher->dispatchPackageEvent(constant('Composer\Script\ScriptEvents::PRE_PACKAGE_'.strtoupper($operation->getJobType())), $operation);
                 $installationManager->execute($operation);
-                $dispatcher->dispatchPackageEvent(constant('Composer\Script\ScriptEvents::POST_PACKAGE_'.strtoupper($operation->getJobType())), $operation);
+                $eventDispatcher->dispatchPackageEvent(constant('Composer\Script\ScriptEvents::POST_PACKAGE_'.strtoupper($operation->getJobType())), $operation);
             }
         }
 
@@ -197,19 +215,19 @@ EOT
 
             // dispatch post event
             $eventName = $update ? ScriptEvents::POST_UPDATE_CMD : ScriptEvents::POST_INSTALL_CMD;
-            $dispatcher->dispatchCommandEvent($eventName);
+            $eventDispatcher->dispatchCommandEvent($eventName);
         }
     }
 
-    private function collectLinks(InputInterface $input, PackageInterface $package)
+    private function collectLinks(InputInterface $input, PackageInterface $package, $noInstallRecommends, $installSuggests)
     {
         $links = $package->getRequires();
 
-        if (!$input->getOption('no-install-recommends')) {
+        if (!$noInstallRecommends) {
             $links = array_merge($links, $package->getRecommends());
         }
 
-        if ($input->getOption('install-suggests')) {
+        if ($installSuggests) {
             $links = array_merge($links, $package->getSuggests());
         }
 
