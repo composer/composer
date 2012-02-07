@@ -14,7 +14,7 @@ namespace Composer\Script;
 
 use Composer\Json\JsonFile;
 use Composer\Repository\FilesystemRepository;
-use Composer\Autoload\ClassLoader;
+use Composer\Autoload\AutoloadGenerator;
 use Composer\Package\PackageInterface;
 use Composer\IO\IOInterface;
 use Composer\Composer;
@@ -48,8 +48,6 @@ class EventDispatcher
     {
         $this->composer = $composer;
         $this->io = $io;
-        $this->loader = new ClassLoader();
-        $this->loader->register();
     }
 
     /**
@@ -105,16 +103,22 @@ class EventDispatcher
     {
         $package = $this->composer->getPackage();
         $scripts = $package->getScripts();
-        $autoload = $package->getAutoload();
 
-        // get namespaces in composer.json project
-        if (!$this->loader->getPrefixes() && isset($autoload['psr-0'])) {
-            krsort($autoload['psr-0']);
-            foreach ($autoload['psr-0'] as $ns => $path) {
-                $this->loader->add($ns, rtrim(getcwd().'/'.$path, '/'));
-            }
+        if (empty($scripts[$event->getName()])) {
+            return array();
         }
 
-        return isset($scripts[$event->getName()]) ? $scripts[$event->getName()] : array();
+        if ($this->loader) {
+            $this->loader->unregister();
+        }
+
+        $generator = new AutoloadGenerator;
+        $packages = $this->composer->getRepositoryManager()->getLocalRepository()->getPackages();
+        $packageMap = $generator->buildPackageMap($this->composer->getInstallationManager(), $package, $packages);
+        $map = $generator->parseAutoloads($packageMap);
+        $this->loader = $generator->createLoader($map);
+        $this->loader->register();
+
+        return $scripts[$event->getName()];
     }
 }

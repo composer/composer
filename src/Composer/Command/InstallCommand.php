@@ -15,18 +15,23 @@ namespace Composer\Command;
 use Composer\Script\ScriptEvents;
 use Composer\Script\EventDispatcher;
 use Composer\Autoload\AutoloadGenerator;
+use Composer\Composer;
 use Composer\DependencyResolver;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Operation;
+use Composer\Package\MemoryPackage;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Package\PackageInterface;
+use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
+use Composer\Repository\RepositoryInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Solver;
+use Composer\IO\IOInterface;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -60,26 +65,39 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        return $this->install($input, $output);
-    }
-
-    public function install(InputInterface $input, OutputInterface $output, $update = false)
-    {
-        $preferSource = (Boolean) $input->getOption('dev');
-        $dryRun = (Boolean) $input->getOption('dry-run');
-        $verbose = $dryRun || $input->getOption('verbose');
         $composer = $this->getComposer();
         $io = $this->getApplication()->getIO();
-        $dispatcher = new EventDispatcher($this->getComposer(), $io);
+        $eventDispatcher = new EventDispatcher($composer, $io);
+
+        return $this->install(
+            $io,
+            $composer,
+            $eventDispatcher,
+            (Boolean)$input->getOption('dev'),
+            (Boolean)$input->getOption('dry-run'),
+            (Boolean)$input->getOption('verbose'),
+            (Boolean)$input->getOption('no-install-recommends'),
+            (Boolean)$input->getOption('install-suggests')
+        );
+    }
+
+    public function install(IOInterface $io, Composer $composer, EventDispatcher $eventDispatcher, $preferSource = false, $dryRun = false, $verbose = false, $noInstallRecommends = false, $installSuggests = false, $update = false, RepositoryInterface $additionalInstalledRepository = null)
+    {
+        if ($dryRun) {
+            $verbose = true;
+        }
 
         if ($preferSource) {
             $composer->getDownloadManager()->setPreferSource(true);
         }
 
         // create local repo, this contains all packages that are installed in the local project
-        $localRepo           = $composer->getRepositoryManager()->getLocalRepository();
+        $localRepo = $composer->getRepositoryManager()->getLocalRepository();
         // create installed repo, this contains all local packages + platform packages (php & extensions)
-        $installedRepo       = new PlatformRepository($localRepo);
+        $installedRepo = new CompositeRepository(array($localRepo, new PlatformRepository()));
+        if ($additionalInstalledRepository) {
+            $installedRepo->addRepository($additionalInstalledRepository);
+        }
 
         // creating repository pool
         $pool = new Pool;
@@ -91,15 +109,15 @@ EOT
         // dispatch pre event
         if (!$dryRun) {
             $eventName = $update ? ScriptEvents::PRE_UPDATE_CMD : ScriptEvents::PRE_INSTALL_CMD;
-            $dispatcher->dispatchCommandEvent($eventName);
+            $eventDispatcher->dispatchCommandEvent($eventName);
         }
 
         // creating requirements request
         $request = new Request($pool);
         if ($update) {
-            $output->writeln('<info>Updating dependencies</info>');
+            $io->write('<info>Updating dependencies</info>');
             $installedPackages = $installedRepo->getPackages();
-            $links = $this->collectLinks($input, $composer->getPackage());
+            $links = $this->collectLinks($composer->getPackage(), $noInstallRecommends, $installSuggests);
 
             foreach ($links as $link) {
                 foreach ($installedPackages as $package) {
@@ -112,10 +130,10 @@ EOT
                 $request->install($link->getTarget(), $link->getConstraint());
             }
         } elseif ($composer->getLocker()->isLocked()) {
-            $output->writeln('<info>Installing from lock file</info>');
+            $io->write('<info>Installing from lock file</info>');
 
             if (!$composer->getLocker()->isFresh()) {
-                $output->writeln('<warning>Your lock file is out of sync with your composer.json, run "composer.phar update" to update dependencies</warning>');
+                $io->write('<warning>Your lock file is out of sync with your composer.json, run "composer.phar update" to update dependencies</warning>');
             }
 
             foreach ($composer->getLocker()->getLockedPackages() as $package) {
@@ -123,9 +141,9 @@ EOT
                 $request->install($package->getName(), $constraint);
             }
         } else {
-            $output->writeln('<info>Installing dependencies</info>');
+            $io->write('<info>Installing dependencies</info>');
 
-            $links = $this->collectLinks($input, $composer->getPackage());
+            $links = $this->collectLinks($composer->getPackage(), $noInstallRecommends, $installSuggests);
 
             foreach ($links as $link) {
                 $request->install($link->getTarget(), $link->getConstraint());
@@ -170,46 +188,46 @@ EOT
 
         // execute operations
         if (!$operations) {
-            $output->writeln('<info>Nothing to install/update</info>');
+            $io->write('<info>Nothing to install/update</info>');
         }
         foreach ($operations as $operation) {
             if ($verbose) {
-                $output->writeln((string) $operation);
+                $io->write((string) $operation);
             }
             if (!$dryRun) {
-                $dispatcher->dispatchPackageEvent(constant('Composer\Script\ScriptEvents::PRE_PACKAGE_'.strtoupper($operation->getJobType())), $operation);
+                $eventDispatcher->dispatchPackageEvent(constant('Composer\Script\ScriptEvents::PRE_PACKAGE_'.strtoupper($operation->getJobType())), $operation);
                 $installationManager->execute($operation);
-                $dispatcher->dispatchPackageEvent(constant('Composer\Script\ScriptEvents::POST_PACKAGE_'.strtoupper($operation->getJobType())), $operation);
+                $eventDispatcher->dispatchPackageEvent(constant('Composer\Script\ScriptEvents::POST_PACKAGE_'.strtoupper($operation->getJobType())), $operation);
             }
         }
 
         if (!$dryRun) {
             if ($update || !$composer->getLocker()->isLocked()) {
                 $composer->getLocker()->lockPackages($localRepo->getPackages());
-                $output->writeln('<info>Writing lock file</info>');
+                $io->write('<info>Writing lock file</info>');
             }
 
             $localRepo->write();
 
-            $output->writeln('<info>Generating autoload files</info>');
+            $io->write('<info>Generating autoload files</info>');
             $generator = new AutoloadGenerator;
             $generator->dump($localRepo, $composer->getPackage(), $installationManager, $installationManager->getVendorPath().'/.composer');
 
             // dispatch post event
             $eventName = $update ? ScriptEvents::POST_UPDATE_CMD : ScriptEvents::POST_INSTALL_CMD;
-            $dispatcher->dispatchCommandEvent($eventName);
+            $eventDispatcher->dispatchCommandEvent($eventName);
         }
     }
 
-    private function collectLinks(InputInterface $input, PackageInterface $package)
+    private function collectLinks(PackageInterface $package, $noInstallRecommends, $installSuggests)
     {
         $links = $package->getRequires();
 
-        if (!$input->getOption('no-install-recommends')) {
+        if (!$noInstallRecommends) {
             $links = array_merge($links, $package->getRecommends());
         }
 
-        if ($input->getOption('install-suggests')) {
+        if ($installSuggests) {
             $links = array_merge($links, $package->getSuggests());
         }
 

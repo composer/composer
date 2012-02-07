@@ -19,6 +19,7 @@ use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Operation;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Repository\PlatformRepository;
+use Composer\Script\EventDispatcher;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -54,7 +55,20 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $installCommand = $this->getApplication()->find('install');
+        $composer = $this->getComposer();
+        $io = $this->getApplication()->getIO();
+        $eventDispatcher = new EventDispatcher($composer, $io);
 
-        return $installCommand->install($input, $output, true);
+        return $installCommand->install(
+            $io,
+            $composer,
+            $eventDispatcher,
+            (Boolean)$input->getOption('dev'),
+            (Boolean)$input->getOption('dry-run'),
+            (Boolean)$input->getOption('verbose'),
+            (Boolean)$input->getOption('no-install-recommends'),
+            (Boolean)$input->getOption('install-suggests'),
+            true
+        );
     }
 }
