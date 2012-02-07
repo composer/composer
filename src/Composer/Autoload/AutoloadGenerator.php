@@ -68,19 +68,7 @@ return array(
 
 EOF;
 
-        // build package => install path map
-        $packageMap = array();
-
-        // add main package
-        $packageMap[] = array($mainPackage, '');
-
-        foreach ($localRepo->getPackages() as $installedPackage) {
-            $packageMap[] = array(
-                $installedPackage,
-                $installationManager->getInstallPath($installedPackage)
-            );
-        }
-
+        $packageMap = $this->buildPackageMap($installationManager, $mainPackage, $localRepo->getPackages());
         $autoloads = $this->parseAutoloads($packageMap);
 
         $appBaseDir = $filesystem->findShortestPathCode($vendorPath, getcwd(), true);
@@ -126,6 +114,24 @@ EOF;
         file_put_contents($targetDir.'/autoload.php', $autoloadFile);
         file_put_contents($targetDir.'/autoload_namespaces.php', $namespacesFile);
         copy(__DIR__.'/ClassLoader.php', $targetDir.'/ClassLoader.php');
+    }
+
+    public function buildPackageMap(InstallationManager $installationManager, PackageInterface $mainPackage, array $packages)
+    {
+        // build package => install path map
+        $packageMap = array();
+
+        // add main package
+        $packageMap[] = array($mainPackage, '');
+
+        foreach ($packages as $package) {
+            $packageMap[] = array(
+                $package,
+                $installationManager->getInstallPath($package)
+            );
+        }
+
+        return $packageMap;
     }
 
     /**
