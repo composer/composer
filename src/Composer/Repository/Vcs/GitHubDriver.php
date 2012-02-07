@@ -109,9 +109,48 @@ class GitHubDriver extends VcsDriver implements VcsDriverInterface
             foreach ($tagsData as $tag) {
                 $this->tags[$tag['name']] = $tag['commit']['sha'];
             }
+
+            $this->filterTags();
         }
 
         return $this->tags;
+    }
+
+    public function filterTags()
+    {
+        $invalidShas = array();
+
+        $refs = json_decode($this->getContents($this->getScheme() . '://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/git/refs/notes/composer'), true);
+        if (!$refs) {
+            return;
+        }
+        $url = $refs['object']['url'];
+
+        $commit = json_decode($this->getContents($url), true);
+        $url = $commit['tree']['url'];
+
+        $tree = json_decode($this->getContents($url), true);
+        foreach ($tree['tree'] as $blob) {
+            $url = $blob['url'];
+            $note = json_decode($this->getContents($url), true);
+
+            $sha = $blob['path'];
+
+            $content = ('base64' === $note['encoding'])
+                ? trim(base64_decode(trim($note['content'])))
+                : trim($note['content']);
+            $content = explode("\n", $content);
+
+            if (in_array('invalid', $content)) {
+                $invalidShas[$sha] = $sha;
+            }
+        }
+
+        foreach ($this->tags as $tag => $sha) {
+            if (isset($invalidShas[$sha]) && $sha === $invalidShas[$sha]) {
+                unset($this->tags[$tag]);
+            }
+        }
     }
 
     /**

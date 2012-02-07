@@ -119,9 +119,38 @@ class GitDriver extends VcsDriver implements VcsDriverInterface
             $this->process->execute(sprintf('cd %s && git tag', escapeshellarg($this->tmpDir)), $output);
             $output = $this->process->splitLines($output);
             $this->tags = $output ? array_combine($output, $output) : array();
+
+            $this->filterTags();
         }
 
         return $this->tags;
+    }
+
+    // to invalidate a version:
+    // git notes --ref=composer add -m 'invalid' -f v1.0.0
+    // git push -f origin refs/notes/composer
+    public function filterTags()
+    {
+        $this->process->execute(sprintf('cd %s && git fetch -f origin refs/notes/composer', escapeshellarg($this->tmpDir)));
+        $invalidTags = array();
+        foreach ($this->tags as $tag) {
+            $this->process->execute(sprintf(
+                'cd %s && git notes --ref=composer show %s',
+                escapeshellarg($this->tmpDir),
+                escapeshellarg($tag)
+            ), $output);
+            $output = $this->process->splitLines(trim($output));
+
+            if ($output && in_array('invalid', $output)) {
+                $invalidTags[$tag] = $tag;
+            }
+        }
+
+        foreach ($this->tags as $tag) {
+            if (isset($invalidTags[$tag])) {
+                unset($this->tags[$tag]);
+            }
+        }
     }
 
     /**
