@@ -85,6 +85,14 @@ class ClassLoader
     }
 
     /**
+     * Unregisters this instance as an autoloader.
+     */
+    public function unregister()
+    {
+        spl_autoload_unregister(array($this, 'loadClass'));
+    }
+
+    /**
      * Loads the given class or interface.
      *
      * @param string $class The name of the class
