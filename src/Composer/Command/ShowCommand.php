@@ -20,6 +20,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\ComposerRepository;
+use Composer\Repository\RepositoryInterface;
 
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>
@@ -75,7 +76,7 @@ EOT
      * @return PackageInterface
      * @throws \InvalidArgumentException
      */
-    protected function getPackage(InputInterface $input, OutputInterface $output, $installedRepo, $repos)
+    protected function getPackage(InputInterface $input, OutputInterface $output, RepositoryInterface $installedRepo, RepositoryInterface $repos)
     {
         // we have a name and a version so we can use ::findPackage
         if ($input->getArgument('version')) {
@@ -103,7 +104,7 @@ EOT
     /**
      * prints package meta data
      */
-    protected function printMeta(InputInterface $input, OutputInterface $output, PackageInterface $package, $installedRepo, $repos)
+    protected function printMeta(InputInterface $input, OutputInterface $output, PackageInterface $package, RepositoryInterface $installedRepo, RepositoryInterface $repos)
     {
         $output->writeln('<info>name</info>     : ' . $package->getPrettyName());
         $this->printVersions($input, $output, $package, $installedRepo, $repos);
@@ -128,7 +129,7 @@ EOT
     /**
      * prints all available versions of this package and highlights the installed one if any
      */
-    protected function printVersions(InputInterface $input, OutputInterface $output, PackageInterface $package, $installedRepo, $repos)
+    protected function printVersions(InputInterface $input, OutputInterface $output, PackageInterface $package, RepositoryInterface $installedRepo, RepositoryInterface $repos)
     {
         if ($input->getArgument('version')) {
             $output->writeln('<info>version</info>  : ' . $package->getPrettyVersion());
