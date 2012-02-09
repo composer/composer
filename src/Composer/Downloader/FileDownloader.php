@@ -13,6 +13,7 @@ namespace Composer\Downloader;
 
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
+use Composer\Util\Filesystem;
 
 /**
  * Base downloader for file packages
@@ -142,7 +143,7 @@ abstract class FileDownloader implements DownloaderInterface
      */
     public function update(PackageInterface $initial, PackageInterface $target, $path)
     {
-        $fs = new Util\Filesystem();
+        $fs = new Filesystem();
         $fs->removeDirectory($path);
         $this->download($target, $path);
     }
@@ -152,7 +153,7 @@ abstract class FileDownloader implements DownloaderInterface
      */
     public function remove(PackageInterface $package, $path)
     {
-        $fs = new Util\Filesystem();
+        $fs = new Filesystem();
         $fs->removeDirectory($path);
     }
 

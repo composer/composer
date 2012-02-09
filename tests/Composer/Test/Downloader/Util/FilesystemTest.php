@@ -12,7 +12,7 @@
 
 namespace Composer\Test\Repository;
 
-use Composer\Downloader\Util\Filesystem;
+use Composer\Util\Filesystem;
 use Composer\Test\TestCase;
 
 class FilesystemTest extends TestCase

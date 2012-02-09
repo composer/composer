@@ -14,6 +14,7 @@ namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
 use Composer\Downloader\DownloaderInterface;
+use Composer\Util\Filesystem;
 
 /**
  * Downloaders manager.
@@ -134,9 +135,9 @@ class DownloadManager
             );
         }
 
-        $fs = new Util\Filesystem();
+        $fs = new Filesystem();
         $fs->ensureDirectoryExists($targetDir);
-        
+
         $downloader = $this->getDownloaderForInstalledPackage($package);
         $downloader->download($package, $targetDir);
     }
