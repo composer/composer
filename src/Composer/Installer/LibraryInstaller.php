@@ -151,7 +151,7 @@ class LibraryInstaller implements InstallerInterface
                     // likely leftover from a previous install, make sure
                     // that the target is still executable in case this
                     // is a fresh install of the vendor.
-                    chmod($link, 0777);
+                    chmod($link, 0755);
                 }
                 $this->io->write('Skipped installation of '.$bin.' for package '.$package->getName().', name conflicts with an existing file');
                 continue;
@@ -162,14 +162,14 @@ class LibraryInstaller implements InstallerInterface
                 // add unixy support for cygwin and similar environments
                 if ('.bat' !== substr($bin, -4)) {
                     file_put_contents($link, $this->generateUnixyProxyCode($bin, $link));
-                    chmod($link, 0777);
+                    chmod($link, 0755);
                     $link .= '.bat';
                 }
                 file_put_contents($link, $this->generateWindowsProxyCode($bin, $link));
             } else {
                 symlink($bin, $link);
             }
-            chmod($link, 0777);
+            chmod($link, 0755);
         }
     }
 
