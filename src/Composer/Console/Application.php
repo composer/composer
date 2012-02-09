@@ -106,7 +106,6 @@ class Application extends BaseApplication
         $this->add(new Command\DependsCommand());
         $this->add(new Command\InstallCommand());
         $this->add(new Command\UpdateCommand());
-        $this->add(new Command\DebugPackagesCommand());
         $this->add(new Command\SearchCommand());
         $this->add(new Command\ValidateCommand());
         $this->add(new Command\ShowCommand());
