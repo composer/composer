@@ -17,7 +17,7 @@ use Composer\Json\JsonFile;
 use Composer\Package\Loader\JsonLoader;
 use Composer\Package\PackageInterface;
 use Composer\Repository\RepositoryInterface;
-use Composer\Downloader\Util\Filesystem;
+use Composer\Util\Filesystem;
 
 /**
  * @author Igor Wiedler <igor@wiedler.ch>

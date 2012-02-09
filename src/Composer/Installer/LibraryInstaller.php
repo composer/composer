@@ -17,7 +17,7 @@ use Composer\Downloader\DownloadManager;
 use Composer\Repository\WritableRepositoryInterface;
 use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\Package\PackageInterface;
-use Composer\Downloader\Util\Filesystem;
+use Composer\Util\Filesystem;
 
 /**
  * Package installation manager.

@@ -14,7 +14,7 @@ namespace Composer\Test\Installer;
 
 use Composer\Installer\LibraryInstaller;
 use Composer\DependencyResolver\Operation;
-use Composer\Downloader\Util\Filesystem;
+use Composer\Util\Filesystem;
 
 class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
 {
