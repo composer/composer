@@ -16,6 +16,7 @@ use Composer\Composer;
 use Composer\Package\PackageInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
@@ -32,14 +33,16 @@ class ShowCommand extends Command
     {
         $this
             ->setName('show')
-            ->setDescription('Show package details')
+            ->setDescription('Show information about packages')
             ->setDefinition(array(
-                new InputArgument('package', InputArgument::REQUIRED, 'the package to inspect'),
-                new InputArgument('version', InputArgument::OPTIONAL, 'the version'),
+                new InputArgument('package', InputArgument::OPTIONAL, 'Package to inspect'),
+                new InputArgument('version', InputArgument::OPTIONAL, 'Version to inspect'),
+                new InputOption('installed', null, InputOption::VALUE_NONE, 'List installed packages only'),
+                new InputOption('platform', null, InputOption::VALUE_NONE, 'List platform packages only'),
             ))
             ->setHelp(<<<EOT
-The show command displays detailed information about a package
-<info>php composer.phar show composer/composer master-dev</info>
+The show command displays detailed information about a package, or
+lists all packages available.
 
 EOT
             )
@@ -48,25 +51,48 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        if ($composer = $this->getComposer(false)) {
+        // init repos
+        $platformRepo = new PlatformRepository;
+        if ($input->getOption('platform')) {
+            $repos = $installedRepo = $platformRepo;
+        } elseif ($input->getOption('installed')) {
+            $composer = $this->getComposer();
+            $repos = $installedRepo = $composer->getRepositoryManager()->getLocalRepository();
+        } elseif ($composer = $this->getComposer(false)) {
             $localRepo = $composer->getRepositoryManager()->getLocalRepository();
-            $installedRepo = new CompositeRepository(array($localRepo, new PlatformRepository()));
+            $installedRepo = new CompositeRepository(array($localRepo, $platformRepo));
             $repos = new CompositeRepository(array_merge(array($installedRepo), $composer->getRepositoryManager()->getRepositories()));
         } else {
             $output->writeln('No composer.json found in the current directory, showing packages from packagist.org');
-            $installedRepo = new PlatformRepository;
+            $installedRepo = $platformRepo;
             $repos = new CompositeRepository(array($installedRepo, new ComposerRepository(array('url' => 'http://packagist.org'))));
         }
 
-        $package = $this->getPackage($input, $output, $installedRepo, $repos);
-        if (!$package) {
-            throw new \InvalidArgumentException('no package found');
+        // show single package or single version
+        if ($input->getArgument('package')) {
+            $package = $this->getPackage($input, $output, $installedRepo, $repos);
+            if (!$package) {
+                throw new \InvalidArgumentException('Package '.$input->getArgument('package').' not found');
+            }
+
+            $this->printMeta($input, $output, $package, $installedRepo, $repos);
+            $this->printLinks($input, $output, $package, 'requires');
+            $this->printLinks($input, $output, $package, 'recommends');
+            $this->printLinks($input, $output, $package, 'replaces');
+            return;
         }
 
-        $this->printMeta($input, $output, $package, $installedRepo, $repos);
-        $this->printLinks($input, $output, $package, 'requires');
-        $this->printLinks($input, $output, $package, 'recommends');
-        $this->printLinks($input, $output, $package, 'replaces');
+        // list packages
+        foreach ($repos->getPackages() as $package) {
+            if ($platformRepo->hasPackage($package)) {
+                $type = '<info>platform: </info> ';
+            } elseif ($installedRepo->hasPackage($package)) {
+                $type = '<info>installed:</info> ';
+            } else {
+                $type = '<comment>available:</comment> ';
+            }
+            $output->writeln($type . ' ' . $package->getPrettyName() . ' ' . $package->getPrettyVersion() . '<comment> (' . $package->getVersion() . ')</comment>');
+        }
     }
 
     /**
