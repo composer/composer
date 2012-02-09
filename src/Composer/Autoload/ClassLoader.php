@@ -65,7 +65,9 @@ class ClassLoader
     public function add($prefix, $paths)
     {
         if (!$prefix) {
-            $this->fallbackDirs = (array) $paths;
+            foreach ((array) $paths as $path) {
+                $this->fallbackDirs[] = $path;
+            }
             return;
         }
         if (isset($this->prefixes[$prefix])) {
