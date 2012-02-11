@@ -157,8 +157,10 @@ class PearRepository extends ArrayRepository
                 $data[$name] = $this->parseVersion($options);
             } elseif ('package' == $name) {
                 foreach ($options as $key => $value) {
-                    $dataKey = $value['name'];
-                    $data[$dataKey] = $this->parseVersion($value);
+                    if (is_array($value)) {
+                        $dataKey = $value['name'];
+                        $data[$dataKey] = $this->parseVersion($value);
+                    }
                 }
             } elseif ('extension' == $name) {
                 foreach ($options as $key => $value) {
@@ -223,9 +225,13 @@ class PearRepository extends ArrayRepository
                 }
             }
 
-            $depsData = $information->getElementsByTagName('deps')->item(0);
-            $depsData = $depsData->getElementsByTagName('d')->item(0);
-            $depsData = $this->parseDependencies($depsData->nodeValue);
+            $depsData = array();            
+            foreach ($information->getElementsByTagName('deps') as $depElement) {
+                $depsVersion = $depElement->getElementsByTagName('v')->item(0)->nodeValue;
+                $depsData[$depsVersion] = $this->parseDependencies(
+                    $depElement->getElementsByTagName('d')->item(0)->nodeValue
+                );
+            }
 
             $revisions = $information->getElementsByTagName('a')->item(0);
             $revisions = $revisions->getElementsByTagName('r');
@@ -239,10 +245,13 @@ class PearRepository extends ArrayRepository
                     ),
                     'version' => $version
                 );
+                if (isset($depsData[$version])) {
+                    $revisionData += $depsData[$version];
+                }
 
                 try {
                     $this->addPackage(
-                        $loader->load($packageData + $revisionData + $depsData)
+                        $loader->load($packageData + $revisionData)
                     );
                 } catch (\UnexpectedValueException $e) {
                     continue;
