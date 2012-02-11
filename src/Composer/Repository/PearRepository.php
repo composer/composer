@@ -193,7 +193,7 @@ class PearRepository extends ArrayRepository
         }
 
         if (isset($deps['optional'])) {
-            $depsData['recommend'] = $this->parseDependenciesOptions($deps['optional']);
+            $depsData['suggest'] = $this->parseDependenciesOptions($deps['optional']);
         }
 
         return $depsData;
