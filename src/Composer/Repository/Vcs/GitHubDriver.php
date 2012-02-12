@@ -147,10 +147,10 @@ class GitHubDriver extends VcsDriver implements VcsDriverInterface
             $content = explode("\n", $content);
 
             if (in_array('invalid', $content)) {
-                $annotatedTag = $this->getFromApi('repos/'.$this->owner.'/'.$this->repository.'/git/tags/'.$sha);
-                if (isset($annotatedTag['tag'])) {
+                try {
+                    $annotatedTag = $this->getFromApi('repos/'.$this->owner.'/'.$this->repository.'/git/tags/'.$sha);
                     $invalidShas[$annotatedTag['object']['sha']] = $annotatedTag['object']['sha'];
-                } else {
+                } catch (\Exception $e) {
                     $invalidShas[$sha] = $sha;
                 }
             }
