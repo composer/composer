@@ -129,7 +129,7 @@ class GitDriver extends VcsDriver implements VcsDriverInterface
     // to invalidate a version:
     // git notes --ref=composer add -m 'invalid' -f v1.0.0
     // git push -f origin refs/notes/composer
-    public function filterTags()
+    protected function filterTags()
     {
         $this->process->execute(sprintf('cd %s && git fetch -f origin refs/notes/composer', escapeshellarg($this->tmpDir)));
         $invalidTags = array();

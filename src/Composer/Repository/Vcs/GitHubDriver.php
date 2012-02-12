@@ -39,7 +39,7 @@ class GitHubDriver extends VcsDriver implements VcsDriverInterface
     public function getRootIdentifier()
     {
         if (null === $this->rootIdentifier) {
-            $repoData = json_decode($this->getContents($this->getScheme() . '://api.github.com/repos/'.$this->owner.'/'.$this->repository), true);
+            $repoData = $this->getFromApi('repos/'.$this->owner.'/'.$this->repository);
             $this->rootIdentifier = $repoData['master_branch'] ?: 'master';
         }
 
@@ -89,7 +89,7 @@ class GitHubDriver extends VcsDriver implements VcsDriverInterface
             $composer = JsonFile::parseJson($composer);
 
             if (!isset($composer['time'])) {
-                $commit = json_decode($this->getContents($this->getScheme() . '://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/commits/'.$identifier), true);
+                $commit = $this->getFromApi('repos/'.$this->owner.'/'.$this->repository.'/commits/'.$identifier);
                 $composer['time'] = $commit['commit']['committer']['date'];
             }
             $this->infoCache[$identifier] = $composer;
@@ -104,7 +104,7 @@ class GitHubDriver extends VcsDriver implements VcsDriverInterface
     public function getTags()
     {
         if (null === $this->tags) {
-            $tagsData = json_decode($this->getContents($this->getScheme() . '://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/tags'), true);
+            $tagsData = $this->getFromApi('repos/'.$this->owner.'/'.$this->repository.'/tags');
             $this->tags = array();
             foreach ($tagsData as $tag) {
                 $this->tags[$tag['name']] = $tag['commit']['sha'];
@@ -116,11 +116,11 @@ class GitHubDriver extends VcsDriver implements VcsDriverInterface
         return $this->tags;
     }
 
-    public function filterTags()
+    protected function filterTags()
     {
         $invalidShas = array();
 
-        $refs = json_decode($this->getContents($this->getScheme() . '://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/git/refs/notes/composer'), true);
+        $refs = $this->getFromApi('repos/'.$this->owner.'/'.$this->repository.'/git/refs/notes/composer');
         if (!$refs) {
             return;
         }
@@ -159,7 +159,7 @@ class GitHubDriver extends VcsDriver implements VcsDriverInterface
     public function getBranches()
     {
         if (null === $this->branches) {
-            $branchData = json_decode($this->getContents($this->getScheme() . '://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/branches'), true);
+            $branchData = $this->getFromApi('repos/'.$this->owner.'/'.$this->repository.'/branches');
             $this->branches = array();
             foreach ($branchData as $branch) {
                 $this->branches[$branch['name']] = $branch['commit']['sha'];
@@ -181,6 +181,12 @@ class GitHubDriver extends VcsDriver implements VcsDriverInterface
         }
 
         return false;
+    }
+
+    protected function getFromApi($path)
+    {
+        $url = $this->getScheme().'://api.github.com/'.$path;
+        return json_decode($this->getContents($url), true);
     }
 
     /**
