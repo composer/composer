@@ -140,7 +140,15 @@ class GitDriver extends VcsDriver implements VcsDriverInterface
      *     git notes --ref=composer add -m 'invalid' -f v1.0.0
      *     git push -f origin refs/notes/composer
      *
-     * After that, composer will ignore that version.
+     * To check if a tag has been invalidated, you can use:
+     *
+     *     git show --show-notes=composer v1.0.0
+     *
+     * To remove the note and make the version valid again,
+     * you can do:
+     *
+     *     git notes --ref=composer remove v1.0.0
+     *     git push -f origin refs/notes/composer
      */
     protected function filterTags()
     {
