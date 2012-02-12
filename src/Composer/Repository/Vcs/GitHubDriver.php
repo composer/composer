@@ -116,6 +116,11 @@ class GitHubDriver extends VcsDriver implements VcsDriverInterface
         return $this->tags;
     }
 
+    /**
+     * Filter out invalid tags
+     *
+     * @see Composer\Repository\Vcs\GitDriver::filterTags
+     */
     protected function filterTags()
     {
         $invalidShas = array();
@@ -183,6 +188,9 @@ class GitHubDriver extends VcsDriver implements VcsDriverInterface
         return false;
     }
 
+    /**
+     * Make a request to the GitHub API
+     */
     protected function getFromApi($path)
     {
         $url = $this->getScheme().'://api.github.com/'.$path;

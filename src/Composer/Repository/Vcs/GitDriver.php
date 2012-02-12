@@ -126,9 +126,22 @@ class GitDriver extends VcsDriver implements VcsDriverInterface
         return $this->tags;
     }
 
-    // to invalidate a version:
-    // git notes --ref=composer add -m 'invalid' -f v1.0.0
-    // git push -f origin refs/notes/composer
+    /**
+     * Filter out invalid tags
+     *
+     * This is done by searching the tag's commit for a
+     * git note in the `refs/notes/composer` ref. That note
+     * is checked for the value `invalid`. If found, the
+     * version is considered invalid and is discarded.
+     *
+     * To invalidate a version, e.g. 1.0.0, assuming it is
+     * using the `v1.0.0` tag, here is how you would do it:
+     *
+     *     git notes --ref=composer add -m 'invalid' -f v1.0.0
+     *     git push -f origin refs/notes/composer
+     *
+     * After that, composer will ignore that version.
+     */
     protected function filterTags()
     {
         $this->process->execute(sprintf('cd %s && git fetch -f origin refs/notes/composer', escapeshellarg($this->tmpDir)));
