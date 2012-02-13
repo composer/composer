@@ -142,19 +142,19 @@ class GitDriver extends VcsDriver implements VcsDriverInterface
      *
      * To check if a tag has been invalidated, you can use:
      *
-     *     git fetch origin refs/notes/composer
-     *     git log -1 --show-notes=composer v1.0.0
+     *     git fetch origin refs/notes/composer:refs/notes/composer
+     *     git notes --ref=composer show v1.0.0
      *
      * To remove the note and make the version valid again,
      * you can do:
      *
-     *     git fetch origin refs/notes/composer
+     *     git fetch origin refs/notes/composer:refs/notes/composer
      *     git notes --ref=composer remove v1.0.0
      *     git push -f origin refs/notes/composer
      */
     protected function filterTags()
     {
-        $this->process->execute(sprintf('cd %s && git fetch -f origin refs/notes/composer', escapeshellarg($this->tmpDir)));
+        $this->process->execute(sprintf('cd %s && git fetch -f origin refs/notes/composer:refs/notes/composer', escapeshellarg($this->tmpDir)));
         $invalidTags = array();
         foreach ($this->tags as $tag) {
             $this->process->execute(sprintf(

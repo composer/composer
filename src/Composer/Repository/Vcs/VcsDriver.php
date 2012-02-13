@@ -94,6 +94,8 @@ abstract class VcsDriver
             $this->contentUrl = null;
         }
 
+        $this->firstCall = false;
+
         return $content;
     }
 
@@ -121,8 +123,6 @@ abstract class VcsDriver
                 if (404 === $messageCode && !$this->firstCall) {
                     throw new \RuntimeException("The '" . $this->contentUrl . "' URL not found");
                 }
-
-                $this->firstCall = false;
 
                 // get authorization informations
                 if (401 === $messageCode || $ps) {
