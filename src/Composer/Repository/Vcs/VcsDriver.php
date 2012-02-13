@@ -136,7 +136,7 @@ abstract class VcsDriver
                         throw new \RuntimeException($mess);
                     }
 
-                    $this->io->write("Authorization for <info>" . $this->contentUrl . "</info>:");
+                    $this->io->write(array('', "Authorization for <info>" . $this->contentUrl . "</info>:"));
                     $username = $this->io->ask('    Username: ');
                     $password = $this->io->askAndHideAnswer('    Password: ');
                     $this->io->setAuthorization($this->url, $username, $password);
