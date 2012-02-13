@@ -27,7 +27,7 @@ Request: install A
 Packages Repo1.Av1, Repo2.Av1
 
 * priority(Repo1) >= priority(Repo2) => (Repo1.Av1, Repo2.Av1)
-* priority(Repo2) <  priority(Repo2) => (Repo2.Av1, Repo1.Av1)
+* priority(Repo1) <  priority(Repo2) => (Repo2.Av1, Repo1.Av1)
 
 ### Virtual Packages (provides)
 
@@ -39,7 +39,7 @@ Packages Av1, Bv1
 Request: install X
 
 * priority(Av1.repo) >= priority(Bv1.repo) => (Av1, Bv1)
-* priority(Av1.repo) < priority(Bv1.repo) => (Bv1, Av1)
+* priority(Av1.repo) <  priority(Bv1.repo) => (Bv1, Av1)
 
 ### Package replacements
 
@@ -49,8 +49,7 @@ Packages: Av1, Bv2
 
 Request: install A
 
-* priority(Av1.repo) > priority(Bv2.repo) => (Av1, Bv2)
-* priority(Av1.repo) = priority(Bv2.repo) => (Av1, Bv2)
-* priority(Av1.repo) < priority(Bv2.repo) => (Bv2, Av1)
+* priority(Av1.repo) >= priority(Bv2.repo) => (Av1, Bv2)
+* priority(Av1.repo) <  priority(Bv2.repo) => (Bv2, Av1)
 
-Bv2.version is ignored, only the replacement version for A matters.
+Bv2 version is ignored, only the replacement version for A matters.
