@@ -54,13 +54,13 @@ class PearRepository extends ArrayRepository
             $link = $category->getAttribute("xlink:href");
             try {
                 $packagesLink = str_replace("info.xml", "packagesinfo.xml", $link);
-                $this->fetchPear2Packages($this->url . '/' . $packagesLink);
+                $this->fetchPear2Packages($this->url . $packagesLink);
             } catch (\ErrorException $e) {
                 if (false === strpos($e->getMessage(), '404')) {
                     throw $e;
                 }
                 $categoryLink = str_replace("info.xml", "packages.xml", $link);
-                $this->fetchPearPackages($this->url . '/' . $categoryLink);
+                $this->fetchPearPackages($this->url . $categoryLink);
             }
 
         }
@@ -153,6 +153,10 @@ class PearRepository extends ArrayRepository
     {
         $data = array();
         foreach ($depsOptions as $name => $options) {
+            // make sure single deps are wrapped in an array
+            if (isset($options['name'])) {
+                $options = array($options);
+            }
             if ('php' == $name) {
                 $data[$name] = $this->parseVersion($options);
             } elseif ('package' == $name) {
@@ -188,11 +192,11 @@ class PearRepository extends ArrayRepository
         unset($deps['required']['pearinstaller']);
 
         $depsData = array();
-        if (isset($deps['required'])) {
+        if (!empty($deps['required'])) {
             $depsData['require'] = $this->parseDependenciesOptions($deps['required']);
         }
 
-        if (isset($deps['optional'])) {
+        if (!empty($deps['optional'])) {
             $depsData['suggest'] = $this->parseDependenciesOptions($deps['optional']);
         }
 
@@ -225,7 +229,7 @@ class PearRepository extends ArrayRepository
                 }
             }
 
-            $depsData = array();            
+            $depsData = array();
             foreach ($information->getElementsByTagName('deps') as $depElement) {
                 $depsVersion = $depElement->getElementsByTagName('v')->item(0)->nodeValue;
                 $depsData[$depsVersion] = $this->parseDependencies(
@@ -233,12 +237,16 @@ class PearRepository extends ArrayRepository
                 );
             }
 
-            $revisions = $information->getElementsByTagName('a')->item(0);
-            $revisions = $revisions->getElementsByTagName('r');
+            $releases = $information->getElementsByTagName('a')->item(0);
+            if (!$releases) {
+                continue;
+            }
+
+            $releases = $releases->getElementsByTagName('r');
             $packageUrl = $this->url . '/get/' . $packageName;
-            foreach ($revisions as $revision) {
-                $version = $revision->getElementsByTagName('v')->item(0)->nodeValue;
-                $revisionData = array(
+            foreach ($releases as $release) {
+                $version = $release->getElementsByTagName('v')->item(0)->nodeValue;
+                $releaseData = array(
                     'dist' => array(
                         'type' => 'pear',
                         'url' => $packageUrl . '-' . $version . '.tgz'
@@ -246,12 +254,12 @@ class PearRepository extends ArrayRepository
                     'version' => $version
                 );
                 if (isset($depsData[$version])) {
-                    $revisionData += $depsData[$version];
+                    $releaseData += $depsData[$version];
                 }
 
                 try {
                     $this->addPackage(
-                        $loader->load($packageData + $revisionData)
+                        $loader->load($packageData + $releaseData)
                     );
                 } catch (\UnexpectedValueException $e) {
                     continue;
