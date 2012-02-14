@@ -12,8 +12,9 @@ Installation / Usage
 
 1. Download the [`composer.phar`](http://getcomposer.org/composer.phar) executable or use the installer.
 
-
+    ``` sh
     $ curl -s http://getcomposer.org/installer | php
+    ```
 
 
 2. Create a composer.json defining your dependencies. Note that this example is
