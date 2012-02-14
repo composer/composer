@@ -13,6 +13,7 @@
 namespace Composer\Repository;
 
 use Composer\Package\Loader\ArrayLoader;
+use Composer\Util\StreamContextFactory;
 
 /**
  * @author Benjamin Eberlei <kontakt@beberlei.de>
@@ -20,7 +21,8 @@ use Composer\Package\Loader\ArrayLoader;
  */
 class PearRepository extends ArrayRepository
 {
-    protected $url;
+    private $url;
+    private $streamContext;
 
     public function __construct(array $config)
     {
@@ -41,6 +43,7 @@ class PearRepository extends ArrayRepository
         set_error_handler(function($severity, $message, $file, $line) {
             throw new \ErrorException($message, $severity, $severity, $file, $line);
         });
+        $this->streamContext = StreamContextFactory::getContext();
         $this->fetchFromServer();
         restore_error_handler();
     }
@@ -106,7 +109,7 @@ class PearRepository extends ArrayRepository
                 );
 
                 try {
-                    $deps = file_get_contents($releaseLink . "/deps.".$pearVersion.".txt");
+                    $deps = file_get_contents($releaseLink . "/deps.".$pearVersion.".txt", false, $this->streamContext);
                 } catch (\ErrorException $e) {
                     if (strpos($e->getMessage(), '404')) {
                         continue;
@@ -274,7 +277,7 @@ class PearRepository extends ArrayRepository
      */
     private function requestXml($url)
     {
-        $content = file_get_contents($url);
+        $content = file_get_contents($url, false, $this->streamContext);
         if (!$content) {
             throw new \UnexpectedValueException('The PEAR channel at '.$url.' did not respond.');
         }
