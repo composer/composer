@@ -14,6 +14,7 @@ namespace Composer\Downloader;
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Util\Filesystem;
+use Composer\Util\StreamContextFactory;
 
 /**
  * Base downloader for file packages
@@ -78,31 +79,14 @@ abstract class FileDownloader implements DownloaderInterface
             }
         }
 
-        // Handle system proxy
-        $params = array('http' => array());
-
-        if (isset($_SERVER['HTTP_PROXY'])) {
-            // http(s):// is not supported in proxy
-            $proxy = str_replace(array('http://', 'https://'), array('tcp://', 'ssl://'), $_SERVER['HTTP_PROXY']);
-
-            if (0 === strpos($proxy, 'ssl:') && !extension_loaded('openssl')) {
-                throw new \RuntimeException('You must enable the openssl extension to use a proxy over https');
-            }
-
-            $params['http'] = array(
-                'proxy'           => $proxy,
-                'request_fulluri' => true,
-            );
-        }
-
+        $options = array();
         if ($this->io->hasAuthorization($package->getSourceUrl())) {
             $auth = $this->io->getAuthorization($package->getSourceUrl());
             $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
-            $params['http'] = array_merge($params['http'], array('header' => "Authorization: Basic $authStr\r\n"));
+            $options['http']['header'] = "Authorization: Basic $authStr\r\n";
         }
 
-        $ctx = stream_context_create($params);
-        stream_context_set_params($ctx, array("notification" => array($this, 'callbackGet')));
+        $ctx = StreamContextFactory::getContext($options, array('notification' => array($this, 'callbackGet')));
 
         $this->io->overwrite("    Downloading: <comment>connection...</comment>", false);
         @copy($url, $fileName, $ctx);
