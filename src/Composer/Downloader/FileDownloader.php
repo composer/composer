@@ -11,6 +11,7 @@
 
 namespace Composer\Downloader;
 
+use Composer\Util\RemoteFilesystem;
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Util\Filesystem;
@@ -25,11 +26,6 @@ use Composer\Util\Filesystem;
 abstract class FileDownloader implements DownloaderInterface
 {
     protected $io;
-    private $bytesMax;
-    private $firstCall;
-    private $url;
-    private $fileUrl;
-    private $fileName;
 
     /**
      * Constructor.
@@ -54,13 +50,6 @@ abstract class FileDownloader implements DownloaderInterface
      */
     public function download(PackageInterface $package, $path)
     {
-        $this->firstCall = true;
-        $this->url = $package->getSourceUrl();
-        $this->fileUrl = $package->getDistUrl();
-
-        // init the progress bar
-        $this->bytesMax = 0;
-
         $url = $package->getDistUrl();
         $checksum = $package->getDistSha1Checksum();
 
@@ -74,7 +63,6 @@ abstract class FileDownloader implements DownloaderInterface
         }
 
         $fileName = rtrim($path.'/'.md5(time().rand()).'.'.pathinfo($url, PATHINFO_EXTENSION), '.');
-        $this->fileName = $fileName;
 
         $this->io->write("  - Package <info>" . $package->getName() . "</info> (<comment>" . $package->getPrettyVersion() . "</comment>)");
 
@@ -87,7 +75,8 @@ abstract class FileDownloader implements DownloaderInterface
             }
         }
 
-        $this->copy($this->url, $this->fileName, $this->fileUrl);
+        $rfs = new RemoteFilesystem($this->io);
+        $rfs->copy($package->getSourceUrl(), $fileName, $url);
         $this->io->write('');
 
         if (!file_exists($fileName)) {
@@ -137,112 +126,6 @@ abstract class FileDownloader implements DownloaderInterface
     {
         $fs = new Filesystem();
         $fs->removeDirectory($path);
-    }
-
-    /**
-     * Get notification action.
-     *
-     * @param integer $notificationCode The notification code
-     * @param integer $severity         The severity level
-     * @param string  $message          The message
-     * @param integer $messageCode      The message code
-     * @param integer $bytesTransferred The loaded size
-     * @param integer $bytesMax         The total size
-     */
-    protected function callbackGet($notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax)
-    {
-        switch ($notificationCode) {
-            case STREAM_NOTIFY_AUTH_REQUIRED:
-            case STREAM_NOTIFY_FAILURE:
-                // for private repository returning 404 error when the authorization is incorrect
-                $auth = $this->io->getAuthorization($this->url);
-                $ps = $this->firstCall && 404 === $messageCode
-                && null === $this->io->getLastUsername()
-                && null === $auth['username'];
-
-                if (404 === $messageCode && !$this->firstCall) {
-                    throw new \RuntimeException("The '" . $this->fileUrl . "' URL not found");
-                }
-
-                $this->firstCall = false;
-
-                // get authorization informations
-                if (401 === $messageCode || $ps) {
-                    if (!$this->io->isInteractive()) {
-                        $mess = "The '" . $this->fileUrl . "' URL not found";
-
-                        if (401 === $code || $ps) {
-                            $mess = "The '" . $this->fileUrl . "' URL required the authorization.\nYou must be used the interactive console";
-                        }
-
-                        throw new \RuntimeException($mess);
-                    }
-
-                    $this->io->overwrite('    Authorization required:');
-                    $username = $this->io->ask('      Username: ');
-                    $password = $this->io->askAndHideAnswer('      Password: ');
-                    $this->io->setAuthorization($this->url, $username, $password);
-
-                    $this->copy($this->url, $this->fileName, $this->fileUrl);
-                }
-                break;
-
-            case STREAM_NOTIFY_FILE_SIZE_IS:
-                if ($this->bytesMax < $bytesMax) {
-                    $this->bytesMax = $bytesMax;
-                }
-                break;
-
-            case STREAM_NOTIFY_PROGRESS:
-                if ($this->bytesMax > 0) {
-                    $progression = 0;
-
-                    if ($this->bytesMax > 0) {
-                        $progression = round($bytesTransferred / $this->bytesMax * 100);
-                    }
-
-                    if (0 === $progression % 5) {
-                        $this->io->overwrite("    Downloading: <comment>$progression%</comment>", false);
-                    }
-                }
-                break;
-
-            default:
-                break;
-        }
-    }
-
-    protected function copy($url, $fileName, $fileUrl)
-    {
-        // Handle system proxy
-        $params = array('http' => array());
-
-        if (isset($_SERVER['HTTP_PROXY'])) {
-            // http(s):// is not supported in proxy
-            $proxy = str_replace(array('http://', 'https://'), array('tcp://', 'ssl://'), $_SERVER['HTTP_PROXY']);
-
-            if (0 === strpos($proxy, 'ssl:') && !extension_loaded('openssl')) {
-                throw new \RuntimeException('You must enable the openssl extension to use a proxy over https');
-            }
-
-            $params['http'] = array(
-                    'proxy'           => $proxy,
-                    'request_fulluri' => true,
-            );
-        }
-
-        if ($this->io->hasAuthorization($url)) {
-            $auth = $this->io->getAuthorization($url);
-            $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
-            $params['http'] = array_merge($params['http'], array('header' => "Authorization: Basic $authStr\r\n"));
-        }
-
-        $ctx = stream_context_create($params);
-        stream_context_set_params($ctx, array("notification" => array($this, 'callbackGet')));
-
-        $this->io->overwrite("    Downloading: <comment>connection...</comment>", false);
-        @copy($fileUrl, $fileName, $ctx);
-        $this->io->overwrite("    Downloading", false);
     }
 
     /**
