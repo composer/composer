@@ -26,6 +26,9 @@ namespace Composer\Autoload;
  *     // activate the autoloader
  *     $loader->register();
  *
+ *     // to enable searching the include path (eg. for PEAR packages)
+ *     $loader->setUseIncludePath(true);
+ *
  * In this example, if you try to use a class in the Symfony\Component
  * namespace or one of its children (Symfony\Component\Console for instance),
  * the autoloader will first look for the class under the component/
@@ -41,6 +44,7 @@ class ClassLoader
 {
     private $prefixes = array();
     private $fallbackDirs = array();
+    private $useIncludePath = false;
 
     public function getPrefixes()
     {
@@ -61,7 +65,9 @@ class ClassLoader
     public function add($prefix, $paths)
     {
         if (!$prefix) {
-            $this->fallbackDirs = (array) $paths;
+            foreach ((array) $paths as $path) {
+                $this->fallbackDirs[] = $path;
+            }
             return;
         }
         if (isset($this->prefixes[$prefix])) {
@@ -72,6 +78,27 @@ class ClassLoader
         } else {
             $this->prefixes[$prefix] = (array) $paths;
         }
+    }
+
+    /**
+     * Turns on searching the include for class files.
+     *
+     * @param Boolean $useIncludePath
+     */
+    public function setUseIncludePath($useIncludePath)
+    {
+        $this->useIncludePath = $useIncludePath;
+    }
+
+    /**
+     * Can be used to check if the autoloader uses the include path to check
+     * for classes.
+     *
+     * @return Boolean
+     */
+    public function getUseIncludePath()
+    {
+        return $this->useIncludePath;
     }
 
     /**
@@ -121,7 +148,7 @@ class ClassLoader
 
         if (false !== $pos = strrpos($class, '\\')) {
             // namespaced class name
-            $classPath = DIRECTORY_SEPARATOR . str_replace('\\', DIRECTORY_SEPARATOR, substr($class, 0, $pos));
+            $classPath = str_replace('\\', DIRECTORY_SEPARATOR, substr($class, 0, $pos)) . DIRECTORY_SEPARATOR;
             $className = substr($class, $pos + 1);
         } else {
             // PEAR-like class name
@@ -129,22 +156,26 @@ class ClassLoader
             $className = $class;
         }
 
-        $classPath .= DIRECTORY_SEPARATOR . str_replace('_', DIRECTORY_SEPARATOR, $className) . '.php';
+        $classPath .= str_replace('_', DIRECTORY_SEPARATOR, $className) . '.php';
 
         foreach ($this->prefixes as $prefix => $dirs) {
             foreach ($dirs as $dir) {
                 if (0 === strpos($class, $prefix)) {
-                    if (file_exists($dir . $classPath)) {
-                        return $dir . $classPath;
+                    if (file_exists($dir . DIRECTORY_SEPARATOR . $classPath)) {
+                        return $dir . DIRECTORY_SEPARATOR . $classPath;
                     }
                 }
             }
         }
 
         foreach ($this->fallbackDirs as $dir) {
-            if (file_exists($dir . $classPath)) {
-                return $dir . $classPath;
+            if (file_exists($dir . DIRECTORY_SEPARATOR . $classPath)) {
+                return $dir . DIRECTORY_SEPARATOR . $classPath;
             }
+        }
+
+        if ($this->useIncludePath && $file = stream_resolve_include_path($classPath)) {
+            return $file;
         }
     }
 }

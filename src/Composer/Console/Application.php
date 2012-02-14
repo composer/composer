@@ -71,14 +71,18 @@ class Application extends BaseApplication
     /**
      * @return Composer
      */
-    public function getComposer()
+    public function getComposer($required = true)
     {
         if (null === $this->composer) {
             try {
                 $this->composer = Factory::create($this->io);
             } catch (\InvalidArgumentException $e) {
-                $this->io->write($e->getMessage());
-                exit(1);
+                if ($required) {
+                    $this->io->write($e->getMessage());
+                    exit(1);
+                }
+
+                return;
             }
         }
 
@@ -102,7 +106,6 @@ class Application extends BaseApplication
         $this->add(new Command\DependsCommand());
         $this->add(new Command\InstallCommand());
         $this->add(new Command\UpdateCommand());
-        $this->add(new Command\DebugPackagesCommand());
         $this->add(new Command\SearchCommand());
         $this->add(new Command\ValidateCommand());
         $this->add(new Command\ShowCommand());

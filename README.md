@@ -12,7 +12,10 @@ Installation / Usage
 
 1. Download the [`composer.phar`](http://getcomposer.org/composer.phar) executable or use the installer.
 
-    $ curl http://getcomposer.org/installer | php
+    ``` sh
+    $ curl -s http://getcomposer.org/installer | php
+    ```
+
 
 2. Create a composer.json defining your dependencies. Note that this example is
 a short version for applications that are not meant to be published as packages
@@ -46,10 +49,11 @@ Since composer works with the current working directory it is possible to instal
 in a system wide way.
 
 1. Change into a directory in your path like `cd /usr/local/bin`
-2. Get composer `curl http://getcomposer.org/installer | php`
+2. Get composer `curl -s http://getcomposer.org/installer | php`
 3. Make the phar executeable `chmod a+x composer.phar`
-3. Change into a project directory `cd /path/to/my/project`
-4. Use composer as you normally would `composer.phar install`
+4. Change into a project directory `cd /path/to/my/project`
+5. Use composer as you normally would `composer.phar install`
+6. Optionally you can rename the composer.phar to composer to make it easier
 
 Global installation of composer (via homebrew)
 ----------------------------------------------
@@ -99,7 +103,7 @@ Community
 ---------
 
 The developer mailing list is on [google groups](http://groups.google.com/group/composer-dev)
-IRC channels are available for discussion as well, on irc.freenode.org [#composer](irc://irc.freenode.org/composer) 
+IRC channels are available for discussion as well, on irc.freenode.org [#composer](irc://irc.freenode.org/composer)
 for users and [#composer-dev](irc://irc.freenode.org/composer-dev) for development.
 
 Requirements

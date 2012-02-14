@@ -14,6 +14,7 @@ namespace Composer\Json;
 
 use Composer\Repository\RepositoryManager;
 use Composer\Composer;
+use Composer\Util\StreamContextFactory;
 
 /**
  * Reads/writes json files.
@@ -59,11 +60,12 @@ class JsonFile
      */
     public function read()
     {
-        $context = stream_context_create(array(
-            'http' => array('header' => 'User-Agent: Composer/'.Composer::VERSION."\r\n")
-        ));
+        $ctx = StreamContextFactory::getContext(array(
+            'http' => array(
+                'header' => 'User-Agent: Composer/'.Composer::VERSION."\r\n"
+        )));
 
-        $json = file_get_contents($this->path, false, $context);
+        $json = file_get_contents($this->path, false, $ctx);
         if (!$json) {
             throw new \RuntimeException('Could not read '.$this->path.', you are probably offline');
         }
