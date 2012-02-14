@@ -35,7 +35,7 @@ class UpdateCommand extends Command
             ->setName('update')
             ->setDescription('Updates your dependencies to the latest version, and updates the composer.lock file.')
             ->setDefinition(array(
-                new InputOption('dev', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
+                new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('dry-run', null, InputOption::VALUE_NONE, 'Outputs the operations but will not execute anything (implicitly enables --verbose).'),
                 new InputOption('no-install-recommends', null, InputOption::VALUE_NONE, 'Do not install recommended packages.'),
                 new InputOption('install-suggests', null, InputOption::VALUE_NONE, 'Also install suggested packages.'),
@@ -63,7 +63,7 @@ EOT
             $io,
             $composer,
             $eventDispatcher,
-            (Boolean)$input->getOption('dev'),
+            (Boolean)$input->getOption('prefer-source'),
             (Boolean)$input->getOption('dry-run'),
             (Boolean)$input->getOption('verbose'),
             (Boolean)$input->getOption('no-install-recommends'),
