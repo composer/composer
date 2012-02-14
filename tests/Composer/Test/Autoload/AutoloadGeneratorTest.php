@@ -13,7 +13,7 @@
 namespace Composer\Test\Installer;
 
 use Composer\Autoload\AutoloadGenerator;
-use Composer\Downloader\Util\Filesystem;
+use Composer\Util\Filesystem;
 use Composer\Package\MemoryPackage;
 
 class AutoloadGeneratorTest extends \PHPUnit_Framework_TestCase

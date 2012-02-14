@@ -16,6 +16,4 @@ if ((!$loader = @include __DIR__.'/../../../.composer/autoload.php') && (!$loade
         'php composer.phar install'.PHP_EOL);
 }
 
-$loader = require __DIR__.'/../vendor/.composer/autoload.php';
 $loader->add('Composer\Test', __DIR__);
-$loader->register();
