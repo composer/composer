@@ -438,7 +438,7 @@ class MemoryPackage extends BasePackage
      *
      * @param DateTime $releaseDate
      */
-    public function setReleasedate(\DateTime $releaseDate)
+    public function setReleaseDate(\DateTime $releaseDate)
     {
         $this->releaseDate = $releaseDate;
     }
