@@ -51,10 +51,7 @@ class PearRepository extends ArrayRepository
         $categories = $categoryXML->getElementsByTagName("c");
 
         foreach ($categories as $category) {
-            $link = $category->getAttribute("xlink:href");
-            if (0 !== strpos($link, '/')) {
-                $link = '/' . $link;
-            }
+            $link = '/' . ltrim($category->getAttribute("xlink:href"), '/');
             try {
                 $packagesLink = str_replace("info.xml", "packagesinfo.xml", $link);
                 $this->fetchPear2Packages($this->url . $packagesLink);
