@@ -177,7 +177,7 @@ class RemoteFilesystem
                     $password = $this->io->askAndHideAnswer('      Password: ');
                     $this->io->setAuthorization($this->originUrl, $username, $password);
 
-                    $this->content = $this->get($this->originUrl, $this->fileUrl, $this->fileName, $this->progess);
+                    $this->content = $this->get($this->originUrl, $this->fileUrl, $this->fileName, $this->progress);
                 }
                 break;
 
