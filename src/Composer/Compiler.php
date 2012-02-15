@@ -79,7 +79,8 @@ class Compiler
 
         $phar->stopBuffering();
 
-        $phar->compressFiles(\Phar::GZ);
+        // disabled for interoperability with systems without gzip ext
+        // $phar->compressFiles(\Phar::GZ);
 
         $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../LICENSE'), false);
 
