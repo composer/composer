@@ -19,11 +19,14 @@ use Composer\IO\IOInterface;
  */
 class RemoteFilesystem
 {
-    protected $io;
+    private $io;
+    private $firstCall;
     private $bytesMax;
     private $originUrl;
     private $fileUrl;
     private $fileName;
+    private $content;
+    private $progess;
 
     /**
      * Constructor.
@@ -38,19 +41,51 @@ class RemoteFilesystem
     /**
      * Copy the remote file in local.
      *
-     * @param string $originUrl The origin URL
-     * @param string $fileName  The local filename
-     * @param string $fileUrl   The file URL
-     *
-     * @throws \RuntimeException When opensll extension is disabled
+     * @param string  $originUrl The orgin URL
+     * @param string  $fileUrl   The file URL
+     * @param string  $fileName  the local filename
+     * @param boolean $progess   Display the progression
      */
-    public function copy($originUrl, $fileName, $fileUrl)
+    public function copy($originUrl, $fileUrl, $fileName, $progess = true)
+    {
+        $this->get($originUrl, $fileUrl, $fileName, $progess);
+    }
+
+    /**
+     * Get the content.
+     *
+     * @param string  $originUrl The orgin URL
+     * @param string  $fileUrl   The file URL
+     * @param boolean $progess   Display the progression
+     *
+     * @return false|string The content
+     */
+    public function getContents($originUrl, $fileUrl, $progess = true)
+    {
+        $this->get($originUrl, $fileUrl, null, $progess);
+
+        return $this->content;
+    }
+
+    /**
+     * Get file content or copy action.
+     *
+     * @param string  $originUrl The orgin URL
+     * @param string  $fileUrl   The file URL
+     * @param string  $fileName  the local filename
+     * @param boolean $progess   Display the progression
+     *
+     * @throws \RuntimeException When the openssl extension is disabled
+     */
+    protected function get($originUrl, $fileUrl, $fileName = null, $progess = true)
     {
         $this->firstCall = true;
-        $this->originUrl = $originUrl;
-        $this->fileName = $fileName;
-        $this->fileUrl = $fileUrl;
         $this->bytesMax = 0;
+        $this->content = null;
+        $this->originUrl = $originUrl;
+        $this->fileUrl = $fileUrl;
+        $this->fileName = $fileName;
+        $this->progress = $progess;
 
         // Handle system proxy
         $params = array('http' => array());
@@ -69,18 +104,35 @@ class RemoteFilesystem
             );
         }
 
+        // add authorization in context
         if ($this->io->hasAuthorization($originUrl)) {
             $auth = $this->io->getAuthorization($originUrl);
             $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
             $params['http'] = array_merge($params['http'], array('header' => "Authorization: Basic $authStr\r\n"));
+
+        } else if (null !== $this->io->getLastUsername()) {
+            $authStr = base64_encode($this->io->getLastUsername() . ':' . $this->io->getLastPassword());
+            $params['http'] = array('header' => "Authorization: Basic $authStr\r\n");
+            $this->io->setAuthorization($originUrl, $this->io->getLastUsername(), $this->io->getLastPassword());
         }
 
         $ctx = stream_context_create($params);
         stream_context_set_params($ctx, array("notification" => array($this, 'callbackGet')));
 
-        $this->io->overwrite("    Downloading: <comment>connection...</comment>", false);
-        @copy($fileUrl, $fileName, $ctx);
-        $this->io->overwrite("    Downloading", false);
+        if ($this->progress) {
+            $this->io->overwrite("    Downloading: <comment>connection...</comment>", false);
+        }
+
+        if (null !== $fileName) {
+            @copy($fileUrl, $fileName, $ctx);
+
+        } else {
+            $this->content = @file_get_contents($fileUrl, false, $ctx);
+        }
+
+        if ($this->progress) {
+            $this->io->overwrite("    Downloading", false);
+        }
     }
 
     /**
@@ -100,8 +152,7 @@ class RemoteFilesystem
             case STREAM_NOTIFY_FAILURE:
                 // for private repository returning 404 error when the authorization is incorrect
                 $auth = $this->io->getAuthorization($this->originUrl);
-                $ps = $this->firstCall && 404 === $messageCode
-                && null === $auth['username'];
+                $ps = $this->firstCall && 404 === $messageCode && null === $auth['username'];
 
                 if (404 === $messageCode && !$this->firstCall) {
                     throw new \RuntimeException("The '" . $this->fileUrl . "' URL not found");
@@ -112,21 +163,21 @@ class RemoteFilesystem
                 // get authorization informations
                 if (401 === $messageCode || $ps) {
                     if (!$this->io->isInteractive()) {
-                        $mess = "The '" . $this->fileUrl . "' URL not found";
+                        $mess = "The '" . $this->fileUrl . "' URL was not found";
 
                         if (401 === $code || $ps) {
-                            $mess = "The '" . $this->fileUrl . "' URL required the authorization.\nYou must be used the interactive console";
+                            $mess = "The '" . $this->fileUrl . "' URL required the authorization.\nYou must be using the interactive console";
                         }
 
                         throw new \RuntimeException($mess);
                     }
 
-                    $this->io->overwrite('    Authorization required:');
+                    $this->io->overwrite('    Authorization required (<info>' .$this->getHostname($this->fileUrl).'</info>):');
                     $username = $this->io->ask('      Username: ');
                     $password = $this->io->askAndHideAnswer('      Password: ');
                     $this->io->setAuthorization($this->originUrl, $username, $password);
 
-                    $this->copy($this->originUrl, $this->fileName, $this->fileUrl);
+                    $this->content = $this->get($this->originUrl, $this->fileUrl, $this->fileName, $this->progess);
                 }
                 break;
 
@@ -137,7 +188,7 @@ class RemoteFilesystem
                 break;
 
             case STREAM_NOTIFY_PROGRESS:
-                if ($this->bytesMax > 0) {
+                if ($this->bytesMax > 0 && $this->progress) {
                     $progression = 0;
 
                     if ($this->bytesMax > 0) {
@@ -153,5 +204,20 @@ class RemoteFilesystem
             default:
                 break;
         }
+    }
+
+    /**
+     * Get the hostname.
+     *
+     * @param string $url The file URL
+     *
+     * @return string The hostname
+     */
+    protected function getHostname($url)
+    {
+        $host = substr($url, strpos($url, '://') + 3);
+        $host = substr($host, 0, strpos($host, '/'));
+
+        return $host;
     }
 }

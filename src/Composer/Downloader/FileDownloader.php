@@ -11,10 +11,10 @@
 
 namespace Composer\Downloader;
 
-use Composer\Util\RemoteFilesystem;
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Util\Filesystem;
+use Composer\Util\RemoteFilesystem;
 
 /**
  * Base downloader for file packages
@@ -76,7 +76,7 @@ abstract class FileDownloader implements DownloaderInterface
         }
 
         $rfs = new RemoteFilesystem($this->io);
-        $rfs->copy($package->getSourceUrl(), $fileName, $url);
+        $rfs->copy($package->getSourceUrl(), $url, $fileName);
         $this->io->write('');
 
         if (!file_exists($fileName)) {
