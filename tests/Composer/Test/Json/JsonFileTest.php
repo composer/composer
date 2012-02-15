@@ -121,6 +121,26 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
         $this->assertJsonFormat($json, $data);
     }
 
+    public function testEscape()
+    {
+        $data = array("Metadata\\\"" => 'src/');
+        $json = '{
+    "Metadata\\\\\\"": "src\/"
+}';
+
+        $this->assertJsonFormat($json, $data);
+    }
+
+    public function testUnicode()
+    {
+        $data = array("Žluťoučký \" kůň" => "úpěl ďábelské ódy za €");
+        $json = '{
+    "Žluťoučký \" kůň": "úpěl ďábelské ódy za €"
+}';
+
+        $this->assertJsonFormat($json, $data);
+    }
+
     private function expectParseException($text, $json)
     {
         try {
