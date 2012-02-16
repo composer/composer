@@ -43,8 +43,8 @@ class InitCommand extends Command
         }
 
         throw new \InvalidArgumentException(
-            'Invalid author string.  Must be in the format:'.
-            ' John Smith <john@example.com>'
+            'Invalid author string.  Must be in the format: '.
+            'John Smith <john@example.com>'
         );
     }
 
@@ -150,6 +150,10 @@ EOT
             $name = basename($cwd);
             if (isset($git['github.user'])) {
                 $name = $git['github.user'] . '/' . $name;
+            } elseif (!empty($_SERVER['USERNAME'])) {
+                $name = $_SERVER['USERNAME'] . '/' . $name;
+            } elseif (get_current_user()) {
+                $name = get_current_user() . '/' . $name;
             } else {
                 // package names must be in the format foo/bar
                 $name = $name . '/' . $name;
@@ -158,7 +162,7 @@ EOT
 
         $name = $dialog->askAndValidate(
             $output,
-            $dialog->getQuestion('Package name', $name),
+            $dialog->getQuestion('Package name (<vendor>/<name>)', $name),
             function ($value) use ($name) {
                 if (null === $value) {
                     return $name;
@@ -371,6 +375,6 @@ EOT
             }
         }
 
-        file_put_contents($ignoreFile, $contents . $vendor);
+        file_put_contents($ignoreFile, $contents . $vendor. "\n");
     }
 }
