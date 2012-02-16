@@ -53,10 +53,8 @@ class LibraryInstaller implements InstallerInterface
         $this->type = $type;
 
         $this->filesystem = new Filesystem();
-        $this->filesystem->ensureDirectoryExists($vendorDir);
-        $this->filesystem->ensureDirectoryExists($binDir);
-        $this->vendorDir = realpath($vendorDir);
-        $this->binDir = realpath($binDir);
+        $this->vendorDir = rtrim($vendorDir, '/');
+        $this->binDir = rtrim($binDir, '/');
     }
 
     /**
@@ -82,6 +80,9 @@ class LibraryInstaller implements InstallerInterface
     {
         $downloadPath = $this->getInstallPath($package);
 
+        $this->filesystem->ensureDirectoryExists($this->vendorDir);
+        $this->filesystem->ensureDirectoryExists($this->binDir);
+
         // remove the binaries if it appears the package files are missing
         if (!is_readable($downloadPath) && $this->repository->hasPackage($package)) {
             $this->removeBinaries($package);
@@ -104,6 +105,9 @@ class LibraryInstaller implements InstallerInterface
         }
 
         $downloadPath = $this->getInstallPath($initial);
+
+        $this->filesystem->ensureDirectoryExists($this->vendorDir);
+        $this->filesystem->ensureDirectoryExists($this->binDir);
 
         $this->removeBinaries($initial);
         $this->downloadManager->update($initial, $target, $downloadPath);
