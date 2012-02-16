@@ -87,37 +87,20 @@ class RemoteFilesystem
         $this->fileName = $fileName;
         $this->progress = $progess;
 
-        // Handle system proxy
-        $params = array('http' => array());
-
-        if (isset($_SERVER['HTTP_PROXY'])) {
-            // http(s):// is not supported in proxy
-            $proxy = str_replace(array('http://', 'https://'), array('tcp://', 'ssl://'), $_SERVER['HTTP_PROXY']);
-
-            if (0 === strpos($proxy, 'ssl:') && !extension_loaded('openssl')) {
-                throw new \RuntimeException('You must enable the openssl extension to use a proxy over https');
-            }
-
-            $params['http'] = array(
-                    'proxy'           => $proxy,
-                    'request_fulluri' => true,
-            );
-        }
-
         // add authorization in context
+        $options = array();
         if ($this->io->hasAuthorization($originUrl)) {
             $auth = $this->io->getAuthorization($originUrl);
             $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
-            $params['http'] = array_merge($params['http'], array('header' => "Authorization: Basic $authStr\r\n"));
+            $options['http']['header'] = "Authorization: Basic $authStr\r\n";
 
         } else if (null !== $this->io->getLastUsername()) {
             $authStr = base64_encode($this->io->getLastUsername() . ':' . $this->io->getLastPassword());
-            $params['http'] = array('header' => "Authorization: Basic $authStr\r\n");
+            $options['http'] = array('header' => "Authorization: Basic $authStr\r\n");
             $this->io->setAuthorization($originUrl, $this->io->getLastUsername(), $this->io->getLastPassword());
         }
 
-        $ctx = stream_context_create($params);
-        stream_context_set_params($ctx, array("notification" => array($this, 'callbackGet')));
+        $ctx = StreamContextFactory::getContext($options, array('notification' => array($this, 'callbackGet')));
 
         if ($this->progress) {
             $this->io->overwrite("    Downloading: <comment>connection...</comment>", false);

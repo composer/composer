@@ -24,11 +24,16 @@ class ArrayDumper
     {
         $keys = array(
             'binaries' => 'bin',
+            'scripts',
             'type',
             'names',
             'extra',
             'installationSource' => 'installation-source',
             'license',
+            'authors',
+            'description',
+            'homepage',
+            'keywords',
             'autoload',
             'repositories',
         );
@@ -39,6 +44,10 @@ class ArrayDumper
         $data['version_normalized'] = $package->getVersion();
         if ($package->getTargetDir()) {
             $data['target-dir'] = $package->getTargetDir();
+        }
+
+        if ($package->getReleaseDate()) {
+            $data['time'] = $package->getReleaseDate()->format('Y-m-d H:i:s');
         }
 
         if ($package->getSourceType()) {
