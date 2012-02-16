@@ -58,7 +58,7 @@ class RemoteFilesystem
      * @param string  $fileUrl   The file URL
      * @param boolean $progess   Display the progression
      *
-     * @return false|string The content
+     * @return string The content
      */
     public function getContents($originUrl, $fileUrl, $progess = true)
     {
@@ -75,7 +75,7 @@ class RemoteFilesystem
      * @param string  $fileName  the local filename
      * @param boolean $progess   Display the progression
      *
-     * @throws \RuntimeException When the openssl extension is disabled
+     * @throws \RuntimeException When the file could not be downloaded
      */
     protected function get($originUrl, $fileUrl, $fileName = null, $progess = true)
     {
@@ -93,7 +93,6 @@ class RemoteFilesystem
             $auth = $this->io->getAuthorization($originUrl);
             $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
             $options['http']['header'] = "Authorization: Basic $authStr\r\n";
-
         } else if (null !== $this->io->getLastUsername()) {
             $authStr = base64_encode($this->io->getLastUsername() . ':' . $this->io->getLastPassword());
             $options['http'] = array('header' => "Authorization: Basic $authStr\r\n");
@@ -107,14 +106,18 @@ class RemoteFilesystem
         }
 
         if (null !== $fileName) {
-            @copy($fileUrl, $fileName, $ctx);
-
+            $result = @copy($fileUrl, $fileName, $ctx);
         } else {
-            $this->content = @file_get_contents($fileUrl, false, $ctx);
+            $result = @file_get_contents($fileUrl, false, $ctx);
+            $this->content = $result;
         }
 
         if ($this->progress) {
             $this->io->overwrite("    Downloading", false);
+        }
+
+        if (false === $result) {
+            throw new \RuntimeException("the '$fileUrl' file could not be downloaded");
         }
     }
 
