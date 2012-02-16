@@ -104,7 +104,7 @@ class JsonFile
                 );
             }
         }
-        file_put_contents($this->path, static::encode($hash, $options));
+        file_put_contents($this->path, static::encode($hash, $options). ($options & JSON_PRETTY_PRINT ? "\n" : ''));
     }
 
     /**
