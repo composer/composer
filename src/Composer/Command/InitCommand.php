@@ -273,17 +273,23 @@ EOT
                         return false;
                     }
 
+                    if (!is_numeric($selection) && preg_match('{^\s*(\S+) +(\S.*)\s*}', $selection, $matches)) {
+                        return $matches[1].' '.$matches[2];
+                    }
+
                     if (!isset($matches[(int) $selection])) {
                         throw new \Exception('Not a valid selection');
                     }
 
-                    return $matches[(int) $selection];
+                    $package = $matches[(int) $selection];
+
+                    return sprintf('%s %s', $package->getName(), $package->getPrettyVersion());
                 };
 
-                $package = $dialog->askAndValidate($output, $dialog->getQuestion('Enter package # to add', false, ':'), $validator, 3);
+                $package = $dialog->askAndValidate($output, $dialog->getQuestion('Enter package # to add, or a <package> <version> couple if it is not listed', false, ':'), $validator, 3);
 
                 if (false !== $package) {
-                    $requires[] = sprintf('%s %s', $package->getName(), $package->getPrettyVersion());
+                    $requires[] = $package;
                 }
             }
         }
@@ -300,7 +306,7 @@ EOT
     {
         $requires = array();
         foreach ($requirements as $requirement) {
-            list($packageName, $packageVersion) = explode(" ", $requirement);
+            list($packageName, $packageVersion) = explode(" ", $requirement, 2);
 
             $requires[$packageName] = $packageVersion;
         }
