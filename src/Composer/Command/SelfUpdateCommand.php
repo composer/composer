@@ -42,7 +42,7 @@ EOT
     {
         $ctx = StreamContextFactory::getContext();
 
-        $latest = trim(file_get_contents('http://getcomposer.org/version'), false, $ctx);
+        $latest = trim(file_get_contents('http://getcomposer.org/version', false, $ctx));
 
         if (Composer::VERSION !== $latest) {
             $output->writeln(sprintf("Updating to version <info>%s</info>.", $latest));
