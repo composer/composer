@@ -14,6 +14,7 @@ namespace Composer\Json;
 
 use Composer\Repository\RepositoryManager;
 use Composer\Composer;
+use Composer\Util\StreamContextFactory;
 
 /**
  * Reads/writes json files.
@@ -59,11 +60,12 @@ class JsonFile
      */
     public function read()
     {
-        $context = stream_context_create(array(
-            'http' => array('header' => 'User-Agent: Composer/'.Composer::VERSION."\r\n")
-        ));
+        $ctx = StreamContextFactory::getContext(array(
+            'http' => array(
+                'header' => 'User-Agent: Composer/'.Composer::VERSION."\r\n"
+        )));
 
-        $json = file_get_contents($this->path, false, $context);
+        $json = file_get_contents($this->path, false, $ctx);
         if (!$json) {
             throw new \RuntimeException('Could not read '.$this->path.', you are probably offline');
         }
@@ -76,8 +78,9 @@ class JsonFile
      *
      * @param   array   $hash   writes hash into json file
      * @param Boolean $prettyPrint If true, output is pretty-printed
+     * @param Boolean $unescapeUnicode If true, unicode chars in output are unescaped
      */
-    public function write(array $hash, $prettyPrint = true)
+    public function write(array $hash, $prettyPrint = true, $unescapeUnicode = true)
     {
         $dir = dirname($this->path);
         if (!is_dir($dir)) {
@@ -92,7 +95,7 @@ class JsonFile
                 );
             }
         }
-        file_put_contents($this->path, static::encode($hash, $prettyPrint));
+        file_put_contents($this->path, static::encode($hash, $prettyPrint, $unescapeUnicode));
     }
 
     /**
@@ -103,17 +106,23 @@ class JsonFile
      *
      * @param array $hash Data to encode into a formatted JSON string
      * @param Boolean $prettyPrint If true, output is pretty-printed
+     * @param Boolean $unescapeUnicode If true, unicode chars in output are unescaped
      * @return string Indented version of the original JSON string
      */
-    static public function encode(array $hash, $prettyPrint = true)
+    static public function encode(array $hash, $prettyPrint = true, $unescapeUnicode = true)
     {
-        if ($prettyPrint && defined('JSON_PRETTY_PRINT')) {
-            return json_encode($hash, JSON_PRETTY_PRINT);
+        if (version_compare(PHP_VERSION, '5.4', '>=')) {
+            $options = $prettyPrint ? JSON_PRETTY_PRINT : 0;
+            if ($unescapeUnicode) {
+                $options |= JSON_UNESCAPED_UNICODE;
+            }
+
+            return json_encode($hash, $options);
         }
 
         $json = json_encode($hash);
 
-        if (!$prettyPrint) {
+        if (!$prettyPrint && !$unescapeUnicode) {
             return $json;
         }
 
@@ -122,21 +131,43 @@ class JsonFile
         $strLen = strlen($json);
         $indentStr = '    ';
         $newLine = "\n";
-        $prevChar = '';
         $outOfQuotes = true;
+        $buffer = '';
+        $noescape = true;
 
         for ($i = 0; $i <= $strLen; $i++) {
             // Grab the next character in the string
             $char = substr($json, $i, 1);
 
             // Are we inside a quoted string?
-            if ('"' === $char && ('\\' !== $prevChar || '\\\\' === substr($json, $i-2, 2))) {
+            if ('"' === $char && $noescape) {
                 $outOfQuotes = !$outOfQuotes;
-            } elseif (':' === $char && $outOfQuotes) {
+            }
+
+            if (!$outOfQuotes) {
+                $buffer .= $char;
+                $noescape = '\\' === $char ? !$noescape : true;
+                continue;
+            } elseif ('' !== $buffer) {
+                if ($unescapeUnicode && function_exists('mb_convert_encoding')) {
+                    // http://stackoverflow.com/questions/2934563/how-to-decode-unicode-escape-sequences-like-u00ed-to-proper-utf-8-encoded-cha
+                    $result .= preg_replace_callback('/\\\\u([0-9a-f]{4})/i', function($match) {
+                        return mb_convert_encoding(pack('H*', $match[1]), 'UTF-8', 'UCS-2BE');
+                    }, $buffer.$char);
+                } else {
+                    $result .= $buffer.$char;
+                }
+
+                $buffer = '';
+                continue;
+            }
+
+            if (':' === $char) {
                 // Add a space after the : character
                 $char .= ' ';
-            } elseif (('}' === $char || ']' === $char) && $outOfQuotes) {
+            } elseif (('}' === $char || ']' === $char)) {
                 $pos--;
+                $prevChar = substr($json, $i - 1, 1);
 
                 if ('{' !== $prevChar && '[' !== $prevChar) {
                     // If this character is the end of an element,
@@ -151,12 +182,11 @@ class JsonFile
                 }
             }
 
-            // Add the character to the result string
             $result .= $char;
 
             // If the last character was the beginning of an element,
             // output a new line and indent the next line
-            if ((',' === $char || '{' === $char || '[' === $char) && $outOfQuotes) {
+            if (',' === $char || '{' === $char || '[' === $char) {
                 $result .= $newLine;
 
                 if ('{' === $char || '[' === $char) {
@@ -167,8 +197,6 @@ class JsonFile
                     $result .= $indentStr;
                 }
             }
-
-            $prevChar = $char;
         }
 
         return $result;
