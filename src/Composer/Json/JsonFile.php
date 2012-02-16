@@ -16,6 +16,16 @@ use Composer\Repository\RepositoryManager;
 use Composer\Composer;
 use Composer\Util\StreamContextFactory;
 
+if (!defined('JSON_UNESCAPED_SLASHES')) {
+    define('JSON_UNESCAPED_SLASHES', 64);
+}
+if (!defined('JSON_PRETTY_PRINT')) {
+    define('JSON_PRETTY_PRINT', 128);
+}
+if (!defined('JSON_UNESCAPED_UNICODE')) {
+    define('JSON_UNESCAPED_UNICODE', 256);
+}
+
 /**
  * Reads/writes json files.
  *
@@ -77,10 +87,9 @@ class JsonFile
      * Writes json file.
      *
      * @param   array   $hash   writes hash into json file
-     * @param Boolean $prettyPrint If true, output is pretty-printed
-     * @param Boolean $unescapeUnicode If true, unicode chars in output are unescaped
+     * @param int $options json_encode options
      */
-    public function write(array $hash, $prettyPrint = true, $unescapeUnicode = true)
+    public function write(array $hash, $options = 448)
     {
         $dir = dirname($this->path);
         if (!is_dir($dir)) {
@@ -95,7 +104,7 @@ class JsonFile
                 );
             }
         }
-        file_put_contents($this->path, static::encode($hash, $prettyPrint, $unescapeUnicode));
+        file_put_contents($this->path, static::encode($hash, $options));
     }
 
     /**
@@ -105,22 +114,19 @@ class JsonFile
      *  http://recursive-design.com/blog/2008/03/11/format-json-with-php/
      *
      * @param array $hash Data to encode into a formatted JSON string
-     * @param Boolean $prettyPrint If true, output is pretty-printed
-     * @param Boolean $unescapeUnicode If true, unicode chars in output are unescaped
-     * @return string Indented version of the original JSON string
+     * @param int $options json_encode options
+     * @return string Encoded json
      */
-    static public function encode(array $hash, $prettyPrint = true, $unescapeUnicode = true)
+    static public function encode(array $hash, $options = 448)
     {
         if (version_compare(PHP_VERSION, '5.4', '>=')) {
-            $options = $prettyPrint ? JSON_PRETTY_PRINT : 0;
-            if ($unescapeUnicode) {
-                $options |= JSON_UNESCAPED_UNICODE;
-            }
-
             return json_encode($hash, $options);
         }
 
         $json = json_encode($hash);
+
+        $prettyPrint = (Boolean) ($options & JSON_PRETTY_PRINT);
+        $unescapeUnicode = (Boolean) ($options & JSON_UNESCAPED_UNICODE);
 
         if (!$prettyPrint && !$unescapeUnicode) {
             return $json;
