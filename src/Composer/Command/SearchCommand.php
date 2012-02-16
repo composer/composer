@@ -15,6 +15,9 @@ namespace Composer\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
+use Composer\Repository\CompositeRepository;
+use Composer\Repository\PlatformRepository;
+use Composer\Repository\ComposerRepository;
 
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>
@@ -40,27 +43,32 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $composer = $this->getComposer();
-
-        // create local repo, this contains all packages that are installed in the local project
-        $localRepo = $composer->getRepositoryManager()->getLocalRepository();
+        // init repos
+        $platformRepo = new PlatformRepository;
+        if ($composer = $this->getComposer(false)) {
+            $localRepo = $composer->getRepositoryManager()->getLocalRepository();
+            $installedRepo = new CompositeRepository(array($localRepo, $platformRepo));
+            $repos = new CompositeRepository(array_merge(array($installedRepo), $composer->getRepositoryManager()->getRepositories()));
+        } else {
+            $output->writeln('No composer.json found in the current directory, showing packages from packagist.org');
+            $installedRepo = $platformRepo;
+            $repos = new CompositeRepository(array($installedRepo, new ComposerRepository(array('url' => 'http://packagist.org'))));
+        }
 
         $tokens = array_map('strtolower', $input->getArgument('tokens'));
-        foreach ($composer->getRepositoryManager()->getRepositories() as $repository) {
-            foreach ($repository->getPackages() as $package) {
-                foreach ($tokens as $token) {
-                    if (false === ($pos = strpos($package->getName(), $token))) {
-                        continue;
-                    }
-
-                    $state = $localRepo->hasPackage($package) ? '<info>installed</info>' : $state = '<comment>available</comment>';
-
-                    $name = substr($package->getPrettyName(), 0, $pos)
-                        . '<highlight>' . substr($package->getPrettyName(), $pos, strlen($token)) . '</highlight>'
-                        . substr($package->getPrettyName(), $pos + strlen($token));
-                    $output->writeln($state . ': ' . $name . ' <comment>' . $package->getPrettyVersion() . '</comment>');
-                    continue 2;
+        foreach ($repos->getPackages() as $package) {
+            foreach ($tokens as $token) {
+                if (false === ($pos = strpos($package->getName(), $token))) {
+                    continue;
                 }
+
+                $state = $localRepo->hasPackage($package) ? '<info>installed</info>' : $state = '<comment>available</comment>';
+
+                $name = substr($package->getPrettyName(), 0, $pos)
+                    . '<highlight>' . substr($package->getPrettyName(), $pos, strlen($token)) . '</highlight>'
+                    . substr($package->getPrettyName(), $pos + strlen($token));
+                $output->writeln($state . ': ' . $name . ' <comment>' . $package->getPrettyVersion() . '</comment>');
+                continue 2;
             }
         }
     }
