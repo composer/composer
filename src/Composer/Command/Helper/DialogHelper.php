@@ -28,9 +28,9 @@ class DialogHelper extends BaseDialogHelper
      *
      * @return string
      */
-    public function getQuestion($question, $default, $sep = ':')
+    public function getQuestion($question, $default = null, $sep = ':')
     {
-        return $default ?
+        return $default !== null ?
             sprintf('<info>%s</info> [<comment>%s</comment>]%s ', $question, $default, $sep) :
             sprintf('<info>%s</info>%s ', $question, $sep);
     }
