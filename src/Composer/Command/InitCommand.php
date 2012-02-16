@@ -13,6 +13,9 @@
 namespace Composer\Command;
 
 use Composer\Json\JsonFile;
+use Composer\Repository\CompositeRepository;
+use Composer\Repository\PlatformRepository;
+use Composer\Repository\ComposerRepository;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -21,10 +24,12 @@ use Symfony\Component\Process\ExecutableFinder;
 
 /**
  * @author Justin Rainbow <justin.rainbow@gmail.com>
+ * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 class InitCommand extends Command
 {
     private $gitConfig;
+    private $repos;
 
     public function parseAuthorString($author)
     {
@@ -214,22 +219,23 @@ EOT
 
     protected function findPackages($name)
     {
-        $composer = $this->getComposer();
-
         $packages = array();
 
-        // create local repo, this contains all packages that are installed in the local project
-        $localRepo = $composer->getRepositoryManager()->getLocalRepository();
+        // init repos
+        if (!$this->repos) {
+            $this->repos = new CompositeRepository(array(
+                new PlatformRepository,
+                new ComposerRepository(array('url' => 'http://packagist.org'))
+            ));
+        }
 
         $token = strtolower($name);
-        foreach ($composer->getRepositoryManager()->getRepositories() as $repository) {
-            foreach ($repository->getPackages() as $package) {
-                if (false === ($pos = strpos($package->getName(), $token))) {
-                    continue;
-                }
-
-                $packages[] = $package;
+        foreach ($this->repos->getPackages() as $package) {
+            if (false === ($pos = strpos($package->getName(), $token))) {
+                continue;
             }
+
+            $packages[] = $package;
         }
 
         return $packages;
