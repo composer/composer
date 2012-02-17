@@ -129,11 +129,7 @@ class ConsoleIO implements IOInterface
             $value = rtrim(shell_exec($command));
             unlink($vbscript);
 
-            for ($i = 0; $i < strlen($value); ++$i) {
-                $this->write('*', false);
-            }
-
-            $this->write('');
+            $this->write('***');
 
             return $value;
         }
