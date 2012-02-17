@@ -1477,7 +1477,7 @@ class Solver
 
                 $l1retry = false;
 
-                if (!$num && !$l1num) {
+                if (!$num && !--$l1num) {
                     // all level 1 literals done
                     break 2;
                 }
