@@ -14,6 +14,7 @@ namespace Composer;
 
 use Composer\Json\JsonFile;
 use Composer\IO\IOInterface;
+use Composer\Repository\RepositoryManager;
 
 /**
  * Creates an configured instance of composer.
@@ -69,22 +70,23 @@ class Factory
         // initialize repository manager
         $rm = $this->createRepositoryManager($io);
 
-        // initialize download manager
-        $dm = $this->createDownloadManager($io);
-
-        // initialize installation manager
-        $im = $this->createInstallationManager($rm, $dm, $vendorDir, $binDir, $io);
-
         // load default repository unless it's explicitly disabled
         if (!isset($packageConfig['repositories']['packagist']) || $packageConfig['repositories']['packagist'] !== false) {
             $this->addPackagistRepository($rm);
         }
 
+        // load local repository
         $this->addLocalRepository($rm, $vendorDir);
 
         // load package
         $loader  = new Package\Loader\RootPackageLoader($rm);
         $package = $loader->load($packageConfig);
+
+        // initialize download manager
+        $dm = $this->createDownloadManager($io);
+
+        // initialize installation manager
+        $im = $this->createInstallationManager($rm, $dm, $vendorDir, $binDir, $io);
 
         // init locker
         $lockFile = substr($composerFile, -5) === '.json' ? substr($composerFile, 0, -4).'lock' : $composerFile . '.lock';
@@ -101,9 +103,9 @@ class Factory
         return $composer;
     }
 
-    protected function createRepositoryManager(IOInterface $io, $vendorDir)
+    protected function createRepositoryManager(IOInterface $io)
     {
-        $rm = new Repository\RepositoryManager($io);
+        $rm = new RepositoryManager($io);
         $rm->setRepositoryClass('composer', 'Composer\Repository\ComposerRepository');
         $rm->setRepositoryClass('vcs', 'Composer\Repository\VcsRepository');
         $rm->setRepositoryClass('pear', 'Composer\Repository\PearRepository');
