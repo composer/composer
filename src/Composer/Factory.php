@@ -67,7 +67,7 @@ class Factory
         $binDir = getenv('COMPOSER_BIN_DIR') ?: $packageConfig['config']['bin-dir'];
 
         // initialize repository manager
-        $rm = $this->createRepositoryManager($io, $vendorDir);
+        $rm = $this->createRepositoryManager($io);
 
         // initialize download manager
         $dm = $this->createDownloadManager($io);
@@ -75,14 +75,16 @@ class Factory
         // initialize installation manager
         $im = $this->createInstallationManager($rm, $dm, $vendorDir, $binDir, $io);
 
+        // load default repository unless it's explicitly disabled
+        if (!isset($packageConfig['repositories']['packagist']) || $packageConfig['repositories']['packagist'] !== false) {
+            $this->addPackagistRepository($rm);
+        }
+
+        $this->addLocalRepository($rm, $vendorDir);
+
         // load package
         $loader  = new Package\Loader\RootPackageLoader($rm);
         $package = $loader->load($packageConfig);
-
-        // load default repository unless it's explicitly disabled
-        if (!isset($packageConfig['repositories']['packagist']) || $packageConfig['repositories']['packagist'] !== false) {
-            $rm->addRepository(new Repository\ComposerRepository(array('url' => 'http://packagist.org')));
-        }
 
         // init locker
         $lockFile = substr($composerFile, -5) === '.json' ? substr($composerFile, 0, -4).'lock' : $composerFile . '.lock';
@@ -102,13 +104,22 @@ class Factory
     protected function createRepositoryManager(IOInterface $io, $vendorDir)
     {
         $rm = new Repository\RepositoryManager($io);
-        $rm->setLocalRepository(new Repository\FilesystemRepository(new JsonFile($vendorDir.'/.composer/installed.json')));
         $rm->setRepositoryClass('composer', 'Composer\Repository\ComposerRepository');
         $rm->setRepositoryClass('vcs', 'Composer\Repository\VcsRepository');
         $rm->setRepositoryClass('pear', 'Composer\Repository\PearRepository');
         $rm->setRepositoryClass('package', 'Composer\Repository\PackageRepository');
 
         return $rm;
+    }
+
+    protected function addLocalRepository(RepositoryManager $rm, $vendorDir)
+    {
+        $rm->setLocalRepository(new Repository\FilesystemRepository(new JsonFile($vendorDir.'/.composer/installed.json')));
+    }
+
+    protected function addPackagistRepository(RepositoryManager $rm)
+    {
+        $rm->addRepository(new Repository\ComposerRepository(array('url' => 'http://packagist.org')));
     }
 
     protected function createDownloadManager(IOInterface $io)
