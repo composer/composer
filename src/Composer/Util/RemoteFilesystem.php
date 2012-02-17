@@ -120,7 +120,7 @@ class RemoteFilesystem
         }
 
         if (false === $result) {
-            throw new \RuntimeException("the '$fileUrl' file could not be downloaded");
+            throw new \RuntimeException("The '$fileUrl' file could not be downloaded");
         }
     }
 
@@ -141,7 +141,7 @@ class RemoteFilesystem
             case STREAM_NOTIFY_FAILURE:
                 // for private repository returning 404 error when the authorization is incorrect
                 $auth = $this->io->getAuthorization($this->originUrl);
-                $ps = $this->firstCall && 404 === $messageCode && null === $auth['username'];
+                $attemptAuthentication = $this->firstCall && 404 === $messageCode && null === $auth['username'];
 
                 if (404 === $messageCode && !$this->firstCall) {
                     throw new \RuntimeException("The '" . $this->fileUrl . "' URL not found");
@@ -150,18 +150,18 @@ class RemoteFilesystem
                 $this->firstCall = false;
 
                 // get authorization informations
-                if (401 === $messageCode || $ps) {
+                if (401 === $messageCode || $attemptAuthentication) {
                     if (!$this->io->isInteractive()) {
                         $mess = "The '" . $this->fileUrl . "' URL was not found";
 
-                        if (401 === $code || $ps) {
-                            $mess = "The '" . $this->fileUrl . "' URL required the authorization.\nYou must be using the interactive console";
+                        if (401 === $code || $attemptAuthentication) {
+                            $mess = "The '" . $this->fileUrl . "' URL required authentication.\nYou must be using the interactive console";
                         }
 
                         throw new \RuntimeException($mess);
                     }
 
-                    $this->io->overwrite('    Authorization required (<info>'.parse_url($this->fileUrl, PHP_URL_HOST).'</info>):');
+                    $this->io->overwrite('    Authentication required (<info>'.parse_url($this->fileUrl, PHP_URL_HOST).'</info>):');
                     $username = $this->io->ask('      Username: ');
                     $password = $this->io->askAndHideAnswer('      Password: ');
                     $this->io->setAuthorization($this->originUrl, $username, $password);
