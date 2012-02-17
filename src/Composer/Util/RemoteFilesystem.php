@@ -25,7 +25,7 @@ class RemoteFilesystem
     private $originUrl;
     private $fileUrl;
     private $fileName;
-    private $content;
+    private $result;
     private $progess;
     private $lastProgress;
 
@@ -46,10 +46,14 @@ class RemoteFilesystem
      * @param string  $fileUrl   The file URL
      * @param string  $fileName  the local filename
      * @param boolean $progess   Display the progression
+     *
+     * @return Boolean true
      */
     public function copy($originUrl, $fileUrl, $fileName, $progess = true)
     {
         $this->get($originUrl, $fileUrl, $fileName, $progess);
+
+        return $this->result;
     }
 
     /**
@@ -65,7 +69,7 @@ class RemoteFilesystem
     {
         $this->get($originUrl, $fileUrl, null, $progess);
 
-        return $this->content;
+        return $this->result;
     }
 
     /**
@@ -83,7 +87,7 @@ class RemoteFilesystem
     {
         $this->firstCall = $firstCall;
         $this->bytesMax = 0;
-        $this->content = null;
+        $this->result = null;
         $this->originUrl = $originUrl;
         $this->fileUrl = $fileUrl;
         $this->fileName = $fileName;
@@ -112,14 +116,18 @@ class RemoteFilesystem
             $result = @copy($fileUrl, $fileName, $ctx);
         } else {
             $result = @file_get_contents($fileUrl, false, $ctx);
-            $this->content = $result;
+        }
+
+        // avoid overriding if content was loaded by a sub-call to get()
+        if (null === $this->result) {
+            $this->result = $result;
         }
 
         if ($this->progress) {
             $this->io->overwrite("    Downloading", false);
         }
 
-        if (false === $result) {
+        if (false === $this->result) {
             throw new \RuntimeException("The '$fileUrl' file could not be downloaded");
         }
     }
@@ -166,7 +174,7 @@ class RemoteFilesystem
                     $password = $this->io->askAndHideAnswer('      Password: ');
                     $this->io->setAuthorization($this->originUrl, $username, $password);
 
-                    $this->content = $this->get($this->originUrl, $this->fileUrl, $this->fileName, $this->progress, false);
+                    $this->get($this->originUrl, $this->fileUrl, $this->fileName, $this->progress, false);
                 }
                 break;
 
