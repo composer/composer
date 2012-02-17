@@ -113,22 +113,23 @@ class JsonFile
      * Original code for this function can be found at:
      *  http://recursive-design.com/blog/2008/03/11/format-json-with-php/
      *
-     * @param array $hash Data to encode into a formatted JSON string
+     * @param mixed $data Data to encode into a formatted JSON string
      * @param int $options json_encode options
      * @return string Encoded json
      */
-    static public function encode(array $hash, $options = 448)
+    static public function encode($data, $options = 448)
     {
         if (version_compare(PHP_VERSION, '5.4', '>=')) {
-            return json_encode($hash, $options);
+            return json_encode($data, $options);
         }
 
-        $json = json_encode($hash);
+        $json = json_encode($data);
 
         $prettyPrint = (Boolean) ($options & JSON_PRETTY_PRINT);
         $unescapeUnicode = (Boolean) ($options & JSON_UNESCAPED_UNICODE);
+        $unescapeSlashes = (Boolean) ($options & JSON_UNESCAPED_SLASHES);
 
-        if (!$prettyPrint && !$unescapeUnicode) {
+        if (!$prettyPrint && !$unescapeUnicode && !$unescapeSlashes) {
             return $json;
         }
 
@@ -155,15 +156,18 @@ class JsonFile
                 $noescape = '\\' === $char ? !$noescape : true;
                 continue;
             } elseif ('' !== $buffer) {
-                if ($unescapeUnicode && function_exists('mb_convert_encoding')) {
-                    // http://stackoverflow.com/questions/2934563/how-to-decode-unicode-escape-sequences-like-u00ed-to-proper-utf-8-encoded-cha
-                    $result .= preg_replace_callback('/\\\\u([0-9a-f]{4})/i', function($match) {
-                        return mb_convert_encoding(pack('H*', $match[1]), 'UTF-8', 'UCS-2BE');
-                    }, $buffer.$char);
-                } else {
-                    $result .= $buffer.$char;
+                if ($unescapeSlashes) {
+                    $buffer = str_replace('\\/', '/', $buffer);
                 }
 
+                if ($unescapeUnicode && function_exists('mb_convert_encoding')) {
+                    // http://stackoverflow.com/questions/2934563/how-to-decode-unicode-escape-sequences-like-u00ed-to-proper-utf-8-encoded-cha
+                    $buffer = preg_replace_callback('/\\\\u([0-9a-f]{4})/i', function($match) {
+                        return mb_convert_encoding(pack('H*', $match[1]), 'UTF-8', 'UCS-2BE');
+                    }, $buffer);
+                }
+
+                $result .= $buffer.$char;
                 $buffer = '';
                 continue;
             }
@@ -213,7 +217,7 @@ class JsonFile
      *
      * @param   string  $json   json string
      *
-     * @return  array
+     * @return  mixed
      */
     static public function parseJson($json)
     {
