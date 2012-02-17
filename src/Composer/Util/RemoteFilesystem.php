@@ -96,7 +96,7 @@ class RemoteFilesystem
             $auth = $this->io->getAuthorization($originUrl);
             $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
             $options['http']['header'] = "Authorization: Basic $authStr\r\n";
-        } else if (null !== $this->io->getLastUsername()) {
+        } elseif (null !== $this->io->getLastUsername()) {
             $authStr = base64_encode($this->io->getLastUsername() . ':' . $this->io->getLastPassword());
             $options['http'] = array('header' => "Authorization: Basic $authStr\r\n");
             $this->io->setAuthorization($originUrl, $this->io->getLastUsername(), $this->io->getLastPassword());
@@ -161,7 +161,7 @@ class RemoteFilesystem
                         throw new \RuntimeException($mess);
                     }
 
-                    $this->io->overwrite('    Authorization required (<info>' .$this->getHostname($this->fileUrl).'</info>):');
+                    $this->io->overwrite('    Authorization required (<info>'.parse_url($this->fileUrl, PHP_URL_HOST).'</info>):');
                     $username = $this->io->ask('      Username: ');
                     $password = $this->io->askAndHideAnswer('      Password: ');
                     $this->io->setAuthorization($this->originUrl, $username, $password);
@@ -194,20 +194,5 @@ class RemoteFilesystem
             default:
                 break;
         }
-    }
-
-    /**
-     * Get the hostname.
-     *
-     * @param string $url The file URL
-     *
-     * @return string The hostname
-     */
-    protected function getHostname($url)
-    {
-        $host = substr($url, strpos($url, '://') + 3);
-        $host = substr($host, 0, strpos($host, '/'));
-
-        return $host;
     }
 }
