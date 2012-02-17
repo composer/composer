@@ -14,7 +14,7 @@ namespace Composer\Downloader;
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Util\Filesystem;
-use Composer\Util\StreamContextFactory;
+use Composer\Util\RemoteFilesystem;
 
 /**
  * Base downloader for file packages
@@ -26,7 +26,6 @@ use Composer\Util\StreamContextFactory;
 abstract class FileDownloader implements DownloaderInterface
 {
     protected $io;
-    private $bytesMax;
 
     /**
      * Constructor.
@@ -51,9 +50,6 @@ abstract class FileDownloader implements DownloaderInterface
      */
     public function download(PackageInterface $package, $path)
     {
-        // init the progress bar
-        $this->bytesMax = 0;
-
         $url = $package->getDistUrl();
         $checksum = $package->getDistSha1Checksum();
 
@@ -79,18 +75,9 @@ abstract class FileDownloader implements DownloaderInterface
             }
         }
 
-        $options = array();
-        if ($this->io->hasAuthorization($package->getSourceUrl())) {
-            $auth = $this->io->getAuthorization($package->getSourceUrl());
-            $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
-            $options['http']['header'] = "Authorization: Basic $authStr\r\n";
-        }
-
-        $ctx = StreamContextFactory::getContext($options, array('notification' => array($this, 'callbackGet')));
-
-        $this->io->overwrite("    Downloading: <comment>connection...</comment>", false);
-        @copy($url, $fileName, $ctx);
-        $this->io->overwrite("    Downloading");
+        $rfs = new RemoteFilesystem($this->io);
+        $rfs->copy($package->getSourceUrl(), $url, $fileName);
+        $this->io->write('');
 
         if (!file_exists($fileName)) {
             throw new \UnexpectedValueException($url.' could not be saved to '.$fileName.', make sure the'
@@ -146,52 +133,6 @@ abstract class FileDownloader implements DownloaderInterface
     {
         $fs = new Filesystem();
         $fs->removeDirectory($path);
-    }
-
-    /**
-     * Get notification action.
-     *
-     * @param integer $notificationCode The notification code
-     * @param integer $severity         The severity level
-     * @param string  $message          The message
-     * @param integer $messageCode      The message code
-     * @param integer $bytesTransferred The loaded size
-     * @param integer $bytesMax         The total size
-     */
-    protected function callbackGet($notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax)
-    {
-        switch ($notificationCode) {
-            case STREAM_NOTIFY_AUTH_REQUIRED:
-                throw new \LogicException("Authorization is required");
-                break;
-
-            case STREAM_NOTIFY_FAILURE:
-                throw new \LogicException("File not found");
-                break;
-
-            case STREAM_NOTIFY_FILE_SIZE_IS:
-                if ($this->bytesMax < $bytesMax) {
-                    $this->bytesMax = $bytesMax;
-                }
-                break;
-
-            case STREAM_NOTIFY_PROGRESS:
-                if ($this->bytesMax > 0) {
-                    $progression = 0;
-
-                    if ($this->bytesMax > 0) {
-                        $progression = round($bytesTransferred / $this->bytesMax * 100);
-                    }
-
-                    if (0 === $progression % 5) {
-                        $this->io->overwrite("    Downloading: <comment>$progression%</comment>", false);
-                    }
-                }
-                break;
-
-            default:
-                break;
-        }
     }
 
     /**
