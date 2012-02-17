@@ -74,12 +74,13 @@ class RemoteFilesystem
      * @param string  $fileUrl   The file URL
      * @param string  $fileName  the local filename
      * @param boolean $progess   Display the progression
+     * @param boolean $firstCall Whether this is the first attempt at fetching this resource
      *
      * @throws \RuntimeException When the file could not be downloaded
      */
-    protected function get($originUrl, $fileUrl, $fileName = null, $progess = true)
+    protected function get($originUrl, $fileUrl, $fileName = null, $progess = true, $firstCall = true)
     {
-        $this->firstCall = true;
+        $this->firstCall = $firstCall;
         $this->bytesMax = 0;
         $this->content = null;
         $this->originUrl = $originUrl;
@@ -163,7 +164,7 @@ class RemoteFilesystem
                     $password = $this->io->askAndHideAnswer('      Password: ');
                     $this->io->setAuthorization($this->originUrl, $username, $password);
 
-                    $this->content = $this->get($this->originUrl, $this->fileUrl, $this->fileName, $this->progress);
+                    $this->content = $this->get($this->originUrl, $this->fileUrl, $this->fileName, $this->progress, false);
                 }
                 break;
 
