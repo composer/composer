@@ -27,6 +27,7 @@ class RemoteFilesystem
     private $fileName;
     private $content;
     private $progess;
+    private $lastProgress;
 
     /**
      * Constructor.
@@ -87,6 +88,7 @@ class RemoteFilesystem
         $this->fileUrl = $fileUrl;
         $this->fileName = $fileName;
         $this->progress = $progess;
+        $this->lastProgress = null;
 
         // add authorization in context
         $options = array();
@@ -182,7 +184,8 @@ class RemoteFilesystem
                         $progression = round($bytesTransferred / $this->bytesMax * 100);
                     }
 
-                    if (0 === $progression % 5) {
+                    if ((0 === $progression % 5) && $progression !== $this->lastProgress) {
+                        $this->lastProgress = $progression;
                         $this->io->overwrite("    Downloading: <comment>$progression%</comment>", false);
                     }
                 }
