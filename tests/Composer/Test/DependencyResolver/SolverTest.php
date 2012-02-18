@@ -19,6 +19,7 @@ use Composer\DependencyResolver\DefaultPolicy;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Solver;
+use Composer\DependencyResolver\SolverProblemsException;
 use Composer\Package\Link;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Test\TestCase;
@@ -484,6 +485,49 @@ class SolverTest extends TestCase
         ));
     }
 
+    public function testConflictResultEmpty()
+    {
+        $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
+        $this->repo->addPackage($packageB = $this->getPackage('B', '1.0'));;
+
+        $packageA->setConflicts(array(
+            new Link('A', 'B', new VersionConstraint('>=', '1.0'), 'conflicts'),
+        ));
+
+        $this->reposComplete();
+
+        $this->request->install('A');
+        $this->request->install('B');
+
+        try {
+            $transaction = $this->solver->solve($this->request);
+            $this->fail('Unsolvable conflict did not resolve in exception.');
+        } catch (SolverProblemsException $e) {
+            // @todo: assert problem properties
+        }
+    }
+
+    public function testUnsatisfiableRequires()
+    {
+        $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
+        $this->repo->addPackage($packageB = $this->getPackage('B', '1.0'));
+
+        $packageA->setRequires(array(
+            new Link('A', 'B', new VersionConstraint('>=', '2.0'), 'requires'),
+        ));
+
+        $this->reposComplete();
+
+        $this->request->install('A');
+
+        try {
+            $transaction = $this->solver->solve($this->request);
+            $this->fail('Unsolvable conflict did not resolve in exception.');
+        } catch (SolverProblemsException $e) {
+            // @todo: assert problem properties
+        }
+    }
+
     protected function reposComplete()
     {
         $this->pool->addRepository($this->repoInstalled);
@@ -513,5 +557,4 @@ class SolverTest extends TestCase
 
         $this->assertEquals($expected, $result);
     }
-
 }
