@@ -32,7 +32,7 @@ class HgDownloaderTest extends \PHPUnit_Framework_TestCase
 
     public function testDownload()
     {
-        $expectedGitCommand = 'hg clone \'https://mercurial.dev/l3l0/composer\' \'composerPath\' && cd \'composerPath\' && hg up \'ref\'';
+        $expectedGitCommand = $this->getCmd('hg clone \'https://mercurial.dev/l3l0/composer\' \'composerPath\' && cd \'composerPath\' && hg up \'ref\'');
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $packageMock->expects($this->any())
             ->method('getSourceReference')
@@ -66,8 +66,8 @@ class HgDownloaderTest extends \PHPUnit_Framework_TestCase
 
     public function testUpdate()
     {
-        $expectedUpdateCommand = 'cd \'composerPath\' && hg pull && hg up \'ref\'';
-        $expectedResetCommand = 'cd \'composerPath\' && hg st';
+        $expectedUpdateCommand = $this->getCmd('cd \'composerPath\' && hg pull && hg up \'ref\'');
+        $expectedResetCommand = $this->getCmd('cd \'composerPath\' && hg st');
 
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $packageMock->expects($this->any())
@@ -90,22 +90,35 @@ class HgDownloaderTest extends \PHPUnit_Framework_TestCase
 
     public function testRemove()
     {
-        $expectedResetCommand = 'cd \'composerPath\' && hg st';
+        $expectedResetCommand = $this->getCmd('cd \'composerPath\' && hg st');
 
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
         $processExecutor->expects($this->any())
             ->method('execute')
             ->with($this->equalTo($expectedResetCommand));
+        $filesystem = $this->getMock('Composer\Util\Filesystem');
+        $filesystem->expects($this->any())
+            ->method('removeDirectory')
+            ->with($this->equalTo('composerPath'));
 
-        $downloader = new HgDownloader($this->getMock('Composer\IO\IOInterface'), $processExecutor);
+        $downloader = new HgDownloader($this->getMock('Composer\IO\IOInterface'), $processExecutor, $filesystem);
         $downloader->remove($packageMock, 'composerPath');
     }
 
     public function testGetInstallationSource()
     {
         $downloader = new HgDownloader($this->getMock('Composer\IO\IOInterface'));
-        
+
         $this->assertEquals('source', $downloader->getInstallationSource());
+    }
+
+    private function getCmd($cmd)
+    {
+        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+            return strtr($cmd, "'", '"');
+        }
+
+        return $cmd;
     }
 }
