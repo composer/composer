@@ -19,7 +19,7 @@ In order to make that package installable you need to give it a name. You do thi
 
 In this case the project name is `acme/hello-world`, where `acme` is the vendor name. Supplying a vendor name is mandatory.
 
-**Note:** If you don't know what to use as a vendor name, your GitHub username is usually a good bet. The convention for word separation is to use dashes.
+**Note:** If you don't know what to use as a vendor name, your GitHub username is usually a good bet. While package names are case insensitive, the convention is all lowercase and dashes for word separation.
 
 ## Specifying the version
 
@@ -60,3 +60,56 @@ Here are some examples of version branch names:
     1.*
     1.1.x
     1.1.*
+
+**Note:** When you install a dev version, it will install it from source. See [Repositories] for more information.
+
+## Publishing to a VCS
+
+Once you have a vcs repository (version control system, e.g. git) containing a `composer.json` file, your library is already composer-installable. In this example we will publish the `acme/hello-world` library on GitHub under `github.com/composer/hello-world`.
+
+Now, To test installing the `acme/hello-world` package, we create a new project locally. We will call it `acme/blog`. This blog will depend on `acme/hello-world`, which in turn depends on `monolog/monolog`. We can accomplish this by creating a new `blog` directory somewhere, containing a `composer.json`:
+
+```json
+{
+    "name": "acme/blog",
+    "require": {
+        "acme/hello-world": "dev-master"
+    }
+}
+```
+
+The name is not needed in this case, since we don't want to publish the blog as a library. It is added here to clarify which `composer.json` is being described.
+
+Now we need to tell the blog app where to find the `hello-world` dependency. We do this by adding a package repository specification to the blog's `composer.json`:
+
+```json
+{
+    "name": "acme/blog",
+    "repositories": {
+        "acme/hello-world": {
+            "vcs": { "url": "https://github.com/composer/hello-world" }
+        }
+    },
+    "require": {
+        "acme/hello-world": "dev-master"
+    }
+}
+```
+
+For more details on how package repositories work and what other types are available, see [Repositories].
+
+That's all. You can now install the dependencies by running composer's `install` command!
+
+**Recap:** Any git/svn/hg repository containing a `composer.json` can be added to your project by specifying the package repository and declaring the dependency in the `require` field.
+
+## Publishing to packagist
+
+Alright, so now you can publish packages. But specifying the vcs repository every time is cumbersome. You don't want to force all your users to do that.
+
+The other thing that you may have noticed is that we did not specify a package repository for `monolog/monolog`. How did that work? The answer is packagist.
+
+Packagist is the main package repository for composer, and it is enabled by default. Anything that is published on packagist is available automatically through composer. Since monolog [is on packagist](http://packagist.org/packages/monolog/monolog), we can depend on it without having to specify any additional repositories.
+
+Assuming we want to share `hello-world` with the world, we would want to publish it on packagist as well. And this is really easy.
+
+You simply hit the big "Submit Package" button and sign up. Then you submit the URL to your VCS, at which point packagist will start crawling it. Once it is done, your package will be available to anyone.
