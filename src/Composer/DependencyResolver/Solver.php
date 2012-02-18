@@ -988,7 +988,7 @@ class Solver
 
             if ($this->policy->allowUninstall()) {
                 $rule->setWeak(true);
-                $this->addRule(RuleSet::TYPE_FEATURE, $featureRule);
+                $this->addRule(RuleSet::TYPE_FEATURE, $rule);
                 $this->packageToFeatureRule[$package->getId()] = $rule;
             } else {
                 $this->addRule(RuleSet::TYPE_UPDATE, $rule);
