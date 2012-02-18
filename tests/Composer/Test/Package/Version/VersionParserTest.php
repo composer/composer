@@ -49,9 +49,10 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'parses datetime'   => array('20100102-203040',     '20100102-203040'),
             'parses dt+number'  => array('20100102203040-10',   '20100102203040-10'),
             'parses dt+patch'   => array('20100102-203040-p1',  '20100102-203040-patch1'),
-            'parses master'     => array('master',              '9999999-dev'),
-            'parses trunk'      => array('trunk',               '9999999-dev'),
-            'parses trunk/2'    => array('trunk-dev',           '9999999-dev'),
+            'parses master'     => array('dev-master',          '9999999-dev'),
+            'parses trunk'      => array('dev-trunk',           '9999999-dev'),
+            'parses arbitrary'  => array('dev-feature-foo',     'dev-feature-foo'),
+            'parses arbitrary2' => array('dev-foobar',          'dev-foobar'),
         );
     }
 
@@ -72,6 +73,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'invalid chars'     => array('a'),
             'invalid type'      => array('1.0.0-meh'),
             'too many bits'     => array('1.0.0.0.0'),
+            'non-dev arbitrary' => array('feature-foo'),
         );
     }
 
@@ -97,6 +99,8 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'parses long digits/2'  => array('2.4.4',       '2.4.4.9999999-dev'),
             'parses master'         => array('master',      '9999999-dev'),
             'parses trunk'          => array('trunk',       '9999999-dev'),
+            'parses arbitrary'      => array('feature-a',   'dev-feature-a'),
+            'parses arbitrary/2'    => array('foobar',      'dev-foobar'),
         );
     }
 
