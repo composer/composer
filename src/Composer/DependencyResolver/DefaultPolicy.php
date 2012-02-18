@@ -26,11 +26,6 @@ class DefaultPolicy implements PolicyInterface
         return true;
     }
 
-    public function allowDowngrade()
-    {
-        return true;
-    }
-
     public function versionCompare(PackageInterface $a, PackageInterface $b, $operator)
     {
         $constraint = new VersionConstraint($operator, $b->getVersion());
@@ -39,16 +34,11 @@ class DefaultPolicy implements PolicyInterface
         return $constraint->matchSpecific($version);
     }
 
-    public function findUpdatePackages(Solver $solver, Pool $pool, array $installedMap, PackageInterface $package, $allowAll = false)
+    public function findUpdatePackages(Solver $solver, Pool $pool, array $installedMap, PackageInterface $package)
     {
         $packages = array();
 
         foreach ($pool->whatProvides($package->getName()) as $candidate) {
-            // skip old packages unless downgrades are an option
-            if (!$allowAll && !$this->allowDowngrade() && $this->versionCompare($package, $candidate, '>')) {
-                continue;
-            }
-
             if ($candidate !== $package) {
                 $packages[] = $candidate;
             }
