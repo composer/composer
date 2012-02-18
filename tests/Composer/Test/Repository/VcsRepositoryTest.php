@@ -86,6 +86,9 @@ class VcsRepositoryTest extends \PHPUnit_Framework_TestCase
         $process->execute('git checkout master', $null);
         $process->execute('git branch 1.0', $null);
 
+        // add 1.0.x branch
+        $process->execute('git branch 1.0.x', $null);
+
         // update master to 2.0
         $composer['version'] = '2.0.0';
         file_put_contents('composer.json', json_encode($composer));
@@ -112,8 +115,9 @@ class VcsRepositoryTest extends \PHPUnit_Framework_TestCase
     {
         $expected = array(
             '0.6.0' => true,
-            '0.9.0' => true,
             '1.0.0' => true,
+            '1.0-dev' => true,
+            '1.0.x-dev' => true,
             'dev-feature-b' => true,
             'dev-feature-a' => true,
             'dev-master' => true,
@@ -131,10 +135,6 @@ class VcsRepositoryTest extends \PHPUnit_Framework_TestCase
             }
         }
 
-        if ($expected) {
-            $this->fail('Missing versions: '.implode(', ', $expected));
-        }
-
-        $this->pass();
+        $this->assertEmpty($expected, 'Missing versions: '.implode(', ', array_keys($expected)));
     }
 }
