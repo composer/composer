@@ -29,6 +29,8 @@ class Rule
     public $next1;
     public $next2;
 
+    public $ruleHash;
+
     public function __construct(array $literals, $reason, $reasonData)
     {
         // sort all packages ascending by id
@@ -85,7 +87,7 @@ class Rule
         }
 
         for ($i = 0, $n = count($this->literals); $i < $n; $i++) {
-            if (!$this->literals[$i]->getId() === $rule->literals[$i]->getId()) {
+            if ($this->literals[$i]->getId() !== $rule->literals[$i]->getId()) {
                 return false;
             }
         }
