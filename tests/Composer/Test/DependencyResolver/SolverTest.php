@@ -415,9 +415,9 @@ class SolverTest extends TestCase
     }
 
     /**
-    * If a replacer D replaces B and C with C not otherwise available,
-    * D must be installed instead of the original B.
-    */
+     * If a replacer D replaces B and C with C not otherwise available,
+     * D must be installed instead of the original B.
+     */
     public function testUseReplacerIfNecessary()
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
