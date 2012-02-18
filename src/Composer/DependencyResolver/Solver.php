@@ -375,9 +375,9 @@ class Solver
      *                                   be added
      * @param bool             $allowAll Whether downgrades are allowed
      */
-    private function addRulesForUpdatePackages(PackageInterface $package, $allowAll)
+    private function addRulesForUpdatePackages(PackageInterface $package)
     {
-        $updates = $this->policy->findUpdatePackages($this, $this->pool, $this->installedMap, $package, $allowAll);
+        $updates = $this->policy->findUpdatePackages($this, $this->pool, $this->installedMap, $package);
 
         $this->addRulesForPackage($package);
 
@@ -965,7 +965,7 @@ class Solver
         }
 
         foreach ($installedPackages as $package) {
-            $this->addRulesForUpdatePackages($package, true);
+            $this->addRulesForUpdatePackages($package);
         }
 
 
@@ -983,31 +983,15 @@ class Solver
         // solver_addrpmrulesforweak(solv, &addedmap);
 
         foreach ($installedPackages as $package) {
-            // create a feature rule which allows downgrades
-            $updates = $this->policy->findUpdatePackages($this, $this->pool, $this->installedMap, $package, true);
-            $featureRule = $this->createUpdateRule($package, $updates, self::RULE_INTERNAL_ALLOW_UPDATE, (string) $package);
-
-            // create an update rule which does not allow downgrades
-            $updates = $this->policy->findUpdatePackages($this, $this->pool, $this->installedMap, $package, false);
+            $updates = $this->policy->findUpdatePackages($this, $this->pool, $this->installedMap, $package);
             $rule = $this->createUpdateRule($package, $updates, self::RULE_INTERNAL_ALLOW_UPDATE, (string) $package);
 
-            if ($rule->equals($featureRule)) {
-                if ($this->policy->allowUninstall()) {
-                    $featureRule->setWeak(true);
-                    $this->addRule(RuleSet::TYPE_FEATURE, $featureRule);
-                    $this->packageToFeatureRule[$package->getId()] = $rule;
-                } else {
-                    $this->addRule(RuleSet::TYPE_UPDATE, $rule);
-                    $this->packageToUpdateRule[$package->getId()] = $rule;
-                }
-            } else if ($this->policy->allowUninstall()) {
-                $featureRule->setWeak(true);
+            if ($this->policy->allowUninstall()) {
                 $rule->setWeak(true);
-
                 $this->addRule(RuleSet::TYPE_FEATURE, $featureRule);
-                $this->addRule(RuleSet::TYPE_UPDATE, $rule);
-
                 $this->packageToFeatureRule[$package->getId()] = $rule;
+            } else {
+                $this->addRule(RuleSet::TYPE_UPDATE, $rule);
                 $this->packageToUpdateRule[$package->getId()] = $rule;
             }
         }
