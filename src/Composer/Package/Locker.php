@@ -116,7 +116,13 @@ class Locker
                 ));
             }
 
-            $lock['packages'][] = array('package' => $name, 'version' => $version);
+            $spec = array('package' => $name, 'version' => $version);
+
+            if ($package->isDev()) {
+                $spec['reference'] = $package->getSourceReference();
+            }
+
+            $lock['packages'][] = $spec;
         }
 
         $this->lockFile->write($lock);
