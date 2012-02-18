@@ -122,6 +122,14 @@ also update the lock file.
 
     $ php composer.phar update
 
+## Packagist
+
+[Packagist](http://packagist.org/) is the main composer repository. A composer repository is basically a package source. A place where you can get packages from. Packagist aims to be the central repository that everybody uses. This means that you can automatically `require` any package that is available there.
+
+If you go to the [packagist website](http://packagist.org/) (packagist.org), you can browse and search for packages.
+
+Any open source project using composer should publish their packages on packagist.
+
 ## Autoloading
 
 For libraries that follow the [PSR-0](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-0.md) naming standard, composer generates
