@@ -1035,6 +1035,10 @@ class Solver
         //findrecommendedsuggested(solv);
         //solver_prepare_solutions(solv);
 
+        if ($this->problems) {
+            throw new SolverProblemsException($this->problems, $this->learnedPool);
+        }
+
         return $this->createTransaction();
     }
 
