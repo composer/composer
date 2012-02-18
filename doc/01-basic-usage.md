@@ -64,9 +64,6 @@ allows adding more related projects under the same namespace later on. If you
 are maintaining a library, this would make it really easy to split it up into
 smaller decoupled parts.
 
-If you don't know what to use as a vendor name, your GitHub username is usually
-a good bet.
-
 ## Package versions
 
 We are also requiring the version `1.0.*` of monolog. This means any version
