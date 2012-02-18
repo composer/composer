@@ -128,10 +128,9 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue('package1'));
 
         $this->repository
-            ->expects($this->exactly(2))
+            ->expects($this->exactly(3))
             ->method('hasPackage')
-            ->with($initial)
-            ->will($this->onConsecutiveCalls(true, false));
+            ->will($this->onConsecutiveCalls(true, false, false));
 
         $this->dm
             ->expects($this->once())
