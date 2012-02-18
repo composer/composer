@@ -39,8 +39,7 @@ class ResultSetIteratorTest extends \PHPUnit_Framework_TestCase
         $ruleSetIterator = new RuleSetIterator($this->rules);
 
         $result = array();
-        foreach ($ruleSetIterator as $rule)
-        {
+        foreach ($ruleSetIterator as $rule) {
             $result[] = $rule;
         }
 
@@ -48,6 +47,24 @@ class ResultSetIteratorTest extends \PHPUnit_Framework_TestCase
             $this->rules[RuleSet::TYPE_JOB][0],
             $this->rules[RuleSet::TYPE_JOB][1],
             $this->rules[RuleSet::TYPE_UPDATE][0],
+        );
+
+        $this->assertEquals($expected, $result);
+    }
+
+    public function testKeys()
+    {
+        $ruleSetIterator = new RuleSetIterator($this->rules);
+
+        $result = array();
+        foreach ($ruleSetIterator as $key => $rule) {
+            $result[] = $key;
+        }
+
+        $expected = array(
+            RuleSet::TYPE_JOB,
+            RuleSet::TYPE_JOB,
+            RuleSet::TYPE_UPDATE,
         );
 
         $this->assertEquals($expected, $result);
