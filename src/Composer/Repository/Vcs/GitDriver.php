@@ -172,8 +172,8 @@ class GitDriver extends VcsDriver implements VcsDriverInterface
         // local filesystem
         if (preg_match('{^(file://|/|[a-z]:[\\\\/])}', $url)) {
             $process = new ProcessExecutor();
-            $process->execute(sprintf('cd %s && git log -1 --format=%%at', escapeshellarg($url)), $output);
-            if (is_numeric(trim($output))) {
+            // check whether there is a git repo in that path
+            if ($process->execute(sprintf('cd %s && git show', escapeshellarg($url)), $output) === 0) {
                 return true;
             }
         }
