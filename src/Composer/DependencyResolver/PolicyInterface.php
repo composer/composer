@@ -20,7 +20,6 @@ use Composer\Package\PackageInterface;
  */
 interface PolicyInterface
 {
-    function allowUninstall();
     function versionCompare(PackageInterface $a, PackageInterface $b, $operator);
     function findUpdatePackages(Solver $solver, Pool $pool, array $installedMap, PackageInterface $package);
     function installable(Solver $solver, Pool $pool, array $installedMap, PackageInterface $package);
