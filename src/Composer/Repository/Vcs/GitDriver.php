@@ -101,7 +101,7 @@ class GitDriver extends VcsDriver implements VcsDriverInterface
 
             if (!isset($composer['time'])) {
                 $this->process->execute(sprintf('cd %s && git log -1 --format=%%at %s', escapeshellarg($this->tmpDir), escapeshellarg($identifier)), $output);
-                $date = new \DateTime('@'.$output[0]);
+                $date = new \DateTime('@'.trim($output));
                 $composer['time'] = $date->format('Y-m-d H:i:s');
             }
             $this->infoCache[$identifier] = $composer;
