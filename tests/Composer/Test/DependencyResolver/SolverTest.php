@@ -414,6 +414,42 @@ class SolverTest extends TestCase
         ));
     }
 
+    /**
+    * If a replacer D replaces B and C with C not otherwise available,
+    * D must be installed instead of the original B.
+    */
+    public function testUseReplacerIfNecessary()
+    {
+        $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
+        $this->repo->addPackage($packageB = $this->getPackage('B', '1.0'));
+        $this->repo->addPackage($packageD = $this->getPackage('D', '1.0'));
+        $this->repo->addPackage($packageD2 = $this->getPackage('D', '1.1'));
+
+        $packageA->setRequires(array(
+            new Link('A', 'B', new VersionConstraint('>=', '1.0'), 'requires'),
+            new Link('A', 'C', new VersionConstraint('>=', '1.0'), 'requires'),
+        ));
+
+        $packageD->setReplaces(array(
+            new Link('D', 'B', new VersionConstraint('>=', '1.0'), 'replaces'),
+            new Link('D', 'C', new VersionConstraint('>=', '1.0'), 'replaces'),
+        ));
+
+        $packageD2->setReplaces(array(
+            new Link('D', 'B', new VersionConstraint('>=', '1.0'), 'replaces'),
+            new Link('D', 'C', new VersionConstraint('>=', '1.0'), 'replaces'),
+        ));
+
+        $this->reposComplete();
+
+        $this->request->install('A');
+
+        $this->checkSolverResult(array(
+            array('job' => 'install', 'package' => $packageD2),
+            array('job' => 'install', 'package' => $packageA),
+        ));
+    }
+
     protected function reposComplete()
     {
         $this->pool->addRepository($this->repoInstalled);
