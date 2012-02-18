@@ -169,6 +169,15 @@ class GitDriver extends VcsDriver implements VcsDriverInterface
             return true;
         }
 
+        // local filesystem
+        if (preg_match('{^(file://|/|[a-z]:[\\\\/])}', $url)) {
+            $process = new ProcessExecutor();
+            $process->execute(sprintf('cd %s && git log -1 --format=%%at', escapeshellarg($url)), $output);
+            if (is_numeric(trim($output))) {
+                return true;
+            }
+        }
+
         if (!$deep) {
             return false;
         }
