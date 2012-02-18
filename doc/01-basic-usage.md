@@ -78,11 +78,10 @@ Version constraints can be specified in a few different ways.
   example `1.0.2`. This is not used very often, but can be useful.
 
 * **Range:** By using comparison operators you can specify ranges of valid
-  versions. Valid operators are `>`, `>=`, `<`, `<=`. An example range would be `>=1.0`. Youcan define multiple of these, separated by comma:
+  versions. Valid operators are `>`, `>=`, `<`, `<=`. An example range would be `>=1.0`. You can define multiple of these, separated by comma:
   `>=1.0,<2.0`.
 
-* **Wildcard:** You can specify a pattern with a `*` wildcard. The previous
-  `>=1.0,<2.0` example could also be written as `1.0.*`.
+* **Wildcard:** You can specify a pattern with a `*` wildcard. `1.0.*` is the equivalent of `>=1.0,<1.1-dev`.
 
 ## Installing dependencies
 
