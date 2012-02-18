@@ -77,7 +77,7 @@ class Solver
      *                                     that goes with the reason
      * @return Rule                        The generated rule or null if tautological
      */
-    public function createRequireRule(PackageInterface $package, array $providers, $reason, $reasonData = null)
+    protected function createRequireRule(PackageInterface $package, array $providers, $reason, $reasonData = null)
     {
         $literals = array(new Literal($package, false));
 
@@ -128,7 +128,7 @@ class Solver
      *                                     goes with the reason
      * @return Rule                        The generated rule
      */
-    public function createInstallRule(PackageInterface $package, $reason, $reasonData = null)
+    protected function createInstallRule(PackageInterface $package, $reason, $reasonData = null)
     {
         return new Rule(new Literal($package, true));
     }
@@ -146,7 +146,7 @@ class Solver
      *                            the reason
      * @return Rule               The generated rule
      */
-    public function createInstallOneOfRule(array $packages, $reason, $reasonData = null)
+    protected function createInstallOneOfRule(array $packages, $reason, $reasonData = null)
     {
         if (empty($packages)) {
             return $this->createImpossibleRule($reason, $reasonData);
@@ -172,7 +172,7 @@ class Solver
      *                                     goes with the reason
      * @return Rule                        The generated rule
      */
-    public function createRemoveRule(PackageInterface $package, $reason, $reasonData = null)
+    protected function createRemoveRule(PackageInterface $package, $reason, $reasonData = null)
     {
         return new Rule(array(new Literal($package, false)), $reason, $reasonData);
     }
@@ -191,7 +191,7 @@ class Solver
      *                                     goes with the reason
      * @return Rule                        The generated rule
      */
-    public function createConflictRule(PackageInterface $issuer, PackageInterface $provider, $reason, $reasonData = null)
+    protected function createConflictRule(PackageInterface $issuer, PackageInterface $provider, $reason, $reasonData = null)
     {
         // ignore self conflict
         if ($issuer === $provider) {
@@ -212,7 +212,7 @@ class Solver
      *                            the reason
      * @return Rule               An empty rule
      */
-    public function createImpossibleRule($reason, $reasonData = null)
+    protected function createImpossibleRule($reason, $reasonData = null)
     {
         return new Rule(array(), $reason, $reasonData);
     }
@@ -237,7 +237,7 @@ class Solver
         }
     }
 
-    public function addRulesForPackage(PackageInterface $package)
+    protected function addRulesForPackage(PackageInterface $package)
     {
         $workQueue = new \SplQueue;
         $workQueue->enqueue($package);
@@ -571,7 +571,7 @@ class Solver
         }
     }
 
-    public function addChoiceRules()
+    protected function addChoiceRules()
     {
 
 // void
