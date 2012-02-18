@@ -32,7 +32,7 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
 
     public function testDownload()
     {
-        $expectedGitCommand = 'git clone \'https://github.com/l3l0/composer\' \'composerPath\' && cd \'composerPath\' && git checkout \'ref\' && git reset --hard \'ref\'';
+        $expectedGitCommand = $this->getCmd('git clone \'https://github.com/l3l0/composer\' \'composerPath\' && cd \'composerPath\' && git checkout \'ref\' && git reset --hard \'ref\'');
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $packageMock->expects($this->any())
             ->method('getSourceReference')
@@ -66,8 +66,8 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
 
     public function testUpdate()
     {
-        $expectedGitUpdateCommand = 'cd \'composerPath\' && git fetch && git checkout \'ref\' && git reset --hard \'ref\'';
-        $expectedGitResetCommand = 'cd \'composerPath\' && git status --porcelain';
+        $expectedGitUpdateCommand = $this->getCmd('cd \'composerPath\' && git fetch && git checkout \'ref\' && git reset --hard \'ref\'');
+        $expectedGitResetCommand = $this->getCmd('cd \'composerPath\' && git status --porcelain');
 
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $packageMock->expects($this->any())
@@ -90,22 +90,35 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
 
     public function testRemove()
     {
-        $expectedGitResetCommand = 'cd \'composerPath\' && git status --porcelain';
+        $expectedGitResetCommand = $this->getCmd('cd \'composerPath\' && git status --porcelain');
 
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
         $processExecutor->expects($this->any())
             ->method('execute')
             ->with($this->equalTo($expectedGitResetCommand));
+        $filesystem = $this->getMock('Composer\Util\Filesystem');
+        $filesystem->expects($this->any())
+            ->method('removeDirectory')
+            ->with($this->equalTo('composerPath'));
 
-        $downloader = new GitDownloader($this->getMock('Composer\IO\IOInterface'), $processExecutor);
+        $downloader = new GitDownloader($this->getMock('Composer\IO\IOInterface'), $processExecutor, $filesystem);
         $downloader->remove($packageMock, 'composerPath');
     }
 
     public function testGetInstallationSource()
     {
         $downloader = new GitDownloader($this->getMock('Composer\IO\IOInterface'));
-        
+
         $this->assertEquals('source', $downloader->getInstallationSource());
+    }
+
+    private function getCmd($cmd)
+    {
+        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+            return strtr($cmd, "'", '"');
+        }
+
+        return $cmd;
     }
 }
