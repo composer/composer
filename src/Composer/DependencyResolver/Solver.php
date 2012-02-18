@@ -77,7 +77,7 @@ class Solver
      *                                     that goes with the reason
      * @return Rule                        The generated rule or null if tautological
      */
-    public function createRequireRule(PackageInterface $package, array $providers, $reason, $reasonData = null)
+    protected function createRequireRule(PackageInterface $package, array $providers, $reason, $reasonData = null)
     {
         $literals = array(new Literal($package, false));
 
@@ -128,7 +128,7 @@ class Solver
      *                                     goes with the reason
      * @return Rule                        The generated rule
      */
-    public function createInstallRule(PackageInterface $package, $reason, $reasonData = null)
+    protected function createInstallRule(PackageInterface $package, $reason, $reasonData = null)
     {
         return new Rule(new Literal($package, true));
     }
@@ -146,7 +146,7 @@ class Solver
      *                            the reason
      * @return Rule               The generated rule
      */
-    public function createInstallOneOfRule(array $packages, $reason, $reasonData = null)
+    protected function createInstallOneOfRule(array $packages, $reason, $reasonData = null)
     {
         if (empty($packages)) {
             return $this->createImpossibleRule($reason, $reasonData);
@@ -172,7 +172,7 @@ class Solver
      *                                     goes with the reason
      * @return Rule                        The generated rule
      */
-    public function createRemoveRule(PackageInterface $package, $reason, $reasonData = null)
+    protected function createRemoveRule(PackageInterface $package, $reason, $reasonData = null)
     {
         return new Rule(array(new Literal($package, false)), $reason, $reasonData);
     }
@@ -191,7 +191,7 @@ class Solver
      *                                     goes with the reason
      * @return Rule                        The generated rule
      */
-    public function createConflictRule(PackageInterface $issuer, PackageInterface $provider, $reason, $reasonData = null)
+    protected function createConflictRule(PackageInterface $issuer, PackageInterface $provider, $reason, $reasonData = null)
     {
         // ignore self conflict
         if ($issuer === $provider) {
@@ -212,7 +212,7 @@ class Solver
      *                            the reason
      * @return Rule               An empty rule
      */
-    public function createImpossibleRule($reason, $reasonData = null)
+    protected function createImpossibleRule($reason, $reasonData = null)
     {
         return new Rule(array(), $reason, $reasonData);
     }
@@ -237,7 +237,7 @@ class Solver
         }
     }
 
-    public function addRulesForPackage(PackageInterface $package)
+    protected function addRulesForPackage(PackageInterface $package)
     {
         $workQueue = new \SplQueue;
         $workQueue->enqueue($package);
@@ -375,9 +375,9 @@ class Solver
      *                                   be added
      * @param bool             $allowAll Whether downgrades are allowed
      */
-    private function addRulesForUpdatePackages(PackageInterface $package, $allowAll)
+    private function addRulesForUpdatePackages(PackageInterface $package)
     {
-        $updates = $this->policy->findUpdatePackages($this, $this->pool, $this->installedMap, $package, $allowAll);
+        $updates = $this->policy->findUpdatePackages($this, $this->pool, $this->installedMap, $package);
 
         $this->addRulesForPackage($package);
 
@@ -571,7 +571,7 @@ class Solver
         }
     }
 
-    public function addChoiceRules()
+    protected function addChoiceRules()
     {
 
 // void
@@ -944,20 +944,6 @@ class Solver
         }
 
         foreach ($this->jobs as $job) {
-            switch ($job['cmd']) {
-                case 'update-all':
-                    foreach ($installedPackages as $package) {
-                        $this->updateMap[$package->getId()] = true;
-                    }
-                break;
-
-                case 'fix-all':
-                    foreach ($installedPackages as $package) {
-                        $this->fixMap[$package->getId()] = true;
-                    }
-                break;
-            }
-
             foreach ($job['packages'] as $package) {
                 switch ($job['cmd']) {
                     case 'fix':
@@ -979,7 +965,7 @@ class Solver
         }
 
         foreach ($installedPackages as $package) {
-            $this->addRulesForUpdatePackages($package, true);
+            $this->addRulesForUpdatePackages($package);
         }
 
 
@@ -997,31 +983,15 @@ class Solver
         // solver_addrpmrulesforweak(solv, &addedmap);
 
         foreach ($installedPackages as $package) {
-            // create a feature rule which allows downgrades
-            $updates = $this->policy->findUpdatePackages($this, $this->pool, $this->installedMap, $package, true);
-            $featureRule = $this->createUpdateRule($package, $updates, self::RULE_INTERNAL_ALLOW_UPDATE, (string) $package);
-
-            // create an update rule which does not allow downgrades
-            $updates = $this->policy->findUpdatePackages($this, $this->pool, $this->installedMap, $package, false);
+            $updates = $this->policy->findUpdatePackages($this, $this->pool, $this->installedMap, $package);
             $rule = $this->createUpdateRule($package, $updates, self::RULE_INTERNAL_ALLOW_UPDATE, (string) $package);
 
-            if ($rule->equals($featureRule)) {
-                if ($this->policy->allowUninstall()) {
-                    $featureRule->setWeak(true);
-                    $this->addRule(RuleSet::TYPE_FEATURE, $featureRule);
-                    $this->packageToFeatureRule[$package->getId()] = $rule;
-                } else {
-                    $this->addRule(RuleSet::TYPE_UPDATE, $rule);
-                    $this->packageToUpdateRule[$package->getId()] = $rule;
-                }
-            } else if ($this->policy->allowUninstall()) {
-                $featureRule->setWeak(true);
+            if ($this->policy->allowUninstall()) {
                 $rule->setWeak(true);
-
                 $this->addRule(RuleSet::TYPE_FEATURE, $featureRule);
-                $this->addRule(RuleSet::TYPE_UPDATE, $rule);
-
                 $this->packageToFeatureRule[$package->getId()] = $rule;
+            } else {
+                $this->addRule(RuleSet::TYPE_UPDATE, $rule);
                 $this->packageToUpdateRule[$package->getId()] = $rule;
             }
         }
@@ -1477,7 +1447,7 @@ class Solver
 
                 $l1retry = false;
 
-                if (!$num && !$l1num) {
+                if (!$num && !--$l1num) {
                     // all level 1 literals done
                     break 2;
                 }

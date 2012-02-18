@@ -107,7 +107,7 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
     {
         $data = array('name' => 'composer/composer');
         $json = '{
-    "name": "composer\/composer"
+    "name": "composer/composer"
 }';
         $this->assertJsonFormat($json, $data);
     }
@@ -116,9 +116,49 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
     {
         $data = array('Metadata\\' => 'src/');
         $json = '{
-    "Metadata\\\\": "src\/"
+    "Metadata\\\\": "src/"
 }';
         $this->assertJsonFormat($json, $data);
+    }
+
+    public function testEscape()
+    {
+        $data = array("Metadata\\\"" => 'src/');
+        $json = '{
+    "Metadata\\\\\\"": "src/"
+}';
+
+        $this->assertJsonFormat($json, $data);
+    }
+
+    public function testUnicode()
+    {
+        if (!function_exists('mb_convert_encoding')) {
+            $this->markTestSkipped('Test requires the mbstring extension');
+        }
+        $data = array("Žluťoučký \" kůň" => "úpěl ďábelské ódy za €");
+        $json = '{
+    "Žluťoučký \" kůň": "úpěl ďábelské ódy za €"
+}';
+
+        $this->assertJsonFormat($json, $data);
+    }
+
+    public function testEscapedSlashes()
+    {
+        if (!function_exists('mb_convert_encoding')) {
+            $this->markTestSkipped('Test requires the mbstring extension');
+        }
+        $data = "\\/fooƌ";
+
+        $this->assertJsonFormat('"\\\\\\/fooƌ"', $data, JSON_UNESCAPED_UNICODE);
+    }
+
+    public function testEscapedUnicode()
+    {
+        $data = "ƌ";
+
+        $this->assertJsonFormat('"\\u018c"', $data, 0);
     }
 
     private function expectParseException($text, $json)
@@ -131,11 +171,15 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
         }
     }
 
-    private function assertJsonFormat($json, $data)
+    private function assertJsonFormat($json, $data, $options = null)
     {
         $file = new JsonFile('composer.json');
 
-        $this->assertEquals($json, $file->encode($data));
+        if (null === $options) {
+            $this->assertEquals($json, $file->encode($data));
+        } else {
+            $this->assertEquals($json, $file->encode($data, $options));
+        }
     }
 
 }
