@@ -29,13 +29,13 @@ which describes the project's dependencies.
 ```json
 {
     "require": {
-        "monolog/monolog": "1.0.2"
+        "monolog/monolog": "1.0.*"
     }
 }
 ```
 
 We are simply stating that our project requires the `monolog/monolog` package,
-version `1.0.2`.
+any version beginning with `1.0`.
 
 ## Installation
 
