@@ -1113,6 +1113,8 @@ class Solver
 
     protected function addDecision(Literal $l, $level)
     {
+        assert($this->decisionMap[$l->getPackageId()] == 0);
+
         if ($l->isWanted()) {
             $this->decisionMap[$l->getPackageId()] = $level;
         } else {
@@ -1123,6 +1125,9 @@ class Solver
     protected function addDecisionId($literalId, $level)
     {
         $packageId = abs($literalId);
+
+        assert($this->decisionMap[$packageId] == 0);
+
         if ($literalId > 0) {
             $this->decisionMap[$packageId] = $level;
         } else {
@@ -1165,8 +1170,8 @@ class Solver
     {
         $packageId = abs($literalId);
         return (
-            $this->decisionMap[$packageId] > 0 && !($literalId < 0) ||
-            $this->decisionMap[$packageId] < 0 && $literalId > 0
+            ($this->decisionMap[$packageId] > 0 && $literalId < 0) ||
+            ($this->decisionMap[$packageId] < 0 && $literalId > 0)
         );
     }
 
