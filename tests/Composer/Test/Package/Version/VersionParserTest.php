@@ -52,7 +52,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'parses master'     => array('dev-master',          '9999999-dev'),
             'parses trunk'      => array('dev-trunk',           '9999999-dev'),
             'parses arbitrary'  => array('dev-feature-foo',     'dev-feature-foo'),
-            'parses arbitrary2' => array('dev-foobar',          'dev-foobar'),
+            'parses arbitrary2' => array('DEV-FOOBAR',          'dev-foobar'),
         );
     }
 
@@ -125,8 +125,9 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'no op means eq'    => array('1.2.3',       new VersionConstraint('=', '1.2.3.0')),
             'completes version' => array('=1.0',        new VersionConstraint('=', '1.0.0.0')),
             'accepts spaces'    => array('>= 1.2.3',    new VersionConstraint('>=', '1.2.3.0')),
-            'accepts master'    => array('>=master-dev',    new VersionConstraint('>=', '9999999-dev')),
-            'accepts master/2'  => array('master-dev',      new VersionConstraint('=', '9999999-dev')),
+            'accepts master'    => array('>=dev-master',    new VersionConstraint('>=', '9999999-dev')),
+            'accepts master/2'  => array('dev-master',      new VersionConstraint('=', '9999999-dev')),
+            'accepts arbitrary' => array('dev-feature-a',   new VersionConstraint('=', 'dev-feature-a')),
         );
     }
 
