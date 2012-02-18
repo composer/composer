@@ -30,6 +30,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\DependencyResolver\Operation\InstallOperation;
+use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Solver;
 use Composer\IO\IOInterface;
 
@@ -192,6 +193,28 @@ EOT
         if (!$operations) {
             $io->write('<info>Nothing to install/update</info>');
         }
+
+        // force dev packages to be updated to latest reference on update
+        if ($update) {
+            foreach ($installedPackages as $package) {
+                if (!$package->isDev()) {
+                    continue;
+                }
+                foreach ($operations as $operation) {
+                    if (('update' === $operation->getJobType() && $package === $operation->getInitialPackage())
+                        || ('uninstall' === $operation->getJobType() && $package === $operation->getPackage())
+                    ) {
+                        continue 2;
+                    }
+                }
+
+                // force update
+                $newPackage = $composer->getRepositoryManager()->findPackage($package->getName(), $package->getVersion());
+                $operation = new UpdateOperation($package, $newPackage);
+                $operations[] = $operation;
+            }
+        }
+
         foreach ($operations as $operation) {
             if ($verbose) {
                 $io->write((string) $operation);
