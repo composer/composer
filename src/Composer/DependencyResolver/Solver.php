@@ -986,14 +986,9 @@ class Solver
             $updates = $this->policy->findUpdatePackages($this, $this->pool, $this->installedMap, $package);
             $rule = $this->createUpdateRule($package, $updates, self::RULE_INTERNAL_ALLOW_UPDATE, (string) $package);
 
-            if ($this->policy->allowUninstall()) {
-                $rule->setWeak(true);
-                $this->addRule(RuleSet::TYPE_FEATURE, $rule);
-                $this->packageToFeatureRule[$package->getId()] = $rule;
-            } else {
-                $this->addRule(RuleSet::TYPE_UPDATE, $rule);
-                $this->packageToUpdateRule[$package->getId()] = $rule;
-            }
+            $rule->setWeak(true);
+            $this->addRule(RuleSet::TYPE_FEATURE, $rule);
+            $this->packageToFeatureRule[$package->getId()] = $rule;
         }
 
         foreach ($this->jobs as $job) {
