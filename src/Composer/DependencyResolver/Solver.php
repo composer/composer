@@ -52,7 +52,6 @@ class Solver
     protected $decisionMap;
     protected $installedMap;
 
-    protected $packageToUpdateRule = array();
     protected $packageToFeatureRule = array();
 
     public function __construct(PolicyInterface $policy, Pool $pool, RepositoryInterface $installed)
@@ -508,7 +507,7 @@ class Solver
 
             // push all of our rules (can only be feature or job rules)
             // asserting this literal on the problem stack
-            foreach ($this->rules->getIteratorFor(array(RuleSet::TYPE_JOB, RuleSet::TYPE_UPDATE, RuleSet::TYPE_FEATURE)) as $assertRule) {
+            foreach ($this->rules->getIteratorFor(array(RuleSet::TYPE_JOB, RuleSet::TYPE_FEATURE)) as $assertRule) {
                 if ($assertRule->isDisabled() || !$assertRule->isAssertion() || $assertRule->isWeak()) {
                     continue;
                 }
@@ -882,11 +881,6 @@ class Solver
 
     protected function disableUpdateRule($package)
     {
-        // find update & feature rule and disable
-        if (isset($this->packageToUpdateRule[$package->getId()])) {
-            $this->packageToUpdateRule[$package->getId()]->disable();
-        }
-
         if (isset($this->packageToFeatureRule[$package->getId()])) {
             $this->packageToFeatureRule[$package->getId()]->disable();
         }
@@ -1056,9 +1050,6 @@ class Solver
             if (!$literal->isWanted() && isset($this->installedMap[$package->getId()])) {
                 $literals = array();
 
-                if (isset($this->packageToUpdateRule[$package->getId()])) {
-                    $literals = array_merge($literals, $this->packageToUpdateRule[$package->getId()]->getLiterals());
-                }
                 if (isset($this->packageToFeatureRule[$package->getId()])) {
                     $literals = array_merge($literals, $this->packageToFeatureRule[$package->getId()]->getLiterals());
                 }
@@ -1808,11 +1799,7 @@ class Solver
 
                         $rule = null;
 
-                        if (isset($this->packageToUpdateRule[$literal->getPackageId()])) {
-                            $rule = $this->packageToUpdateRule[$literal->getPackageId()];
-                        }
-
-                        if ((!$rule || $rule->isDisabled()) && isset($this->packageToFeatureRule[$literal->getPackageId()])) {
+                        if (isset($this->packageToFeatureRule[$literal->getPackageId()])) {
                             $rule = $this->packageToFeatureRule[$literal->getPackageId()];
                         }
 
