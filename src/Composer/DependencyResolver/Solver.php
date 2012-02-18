@@ -944,20 +944,6 @@ class Solver
         }
 
         foreach ($this->jobs as $job) {
-            switch ($job['cmd']) {
-                case 'update-all':
-                    foreach ($installedPackages as $package) {
-                        $this->updateMap[$package->getId()] = true;
-                    }
-                break;
-
-                case 'fix-all':
-                    foreach ($installedPackages as $package) {
-                        $this->fixMap[$package->getId()] = true;
-                    }
-                break;
-            }
-
             foreach ($job['packages'] as $package) {
                 switch ($job['cmd']) {
                     case 'fix':
