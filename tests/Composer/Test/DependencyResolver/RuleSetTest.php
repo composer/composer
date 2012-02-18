@@ -54,17 +54,6 @@ class RuleSetTest extends TestCase
         $ruleSet->add(new Rule(array(), 'job1', null), 7);
     }
 
-    public function testAddWhenTypeIsUnknow()
-    {
-        $ruleSet = new RuleSet;
-
-        $rule = new Rule(array(), 'job1', null);
-        $ruleSet->add($rule, -1);
-
-        $rules = $ruleSet->getRules();
-        $this->assertSame($rule, $rules[-1][0]);
-    }
-
     public function testCount()
     {
         $ruleSet = new RuleSet;
