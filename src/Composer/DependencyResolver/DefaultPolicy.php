@@ -21,11 +21,6 @@ use Composer\Package\LinkConstraint\VersionConstraint;
  */
 class DefaultPolicy implements PolicyInterface
 {
-    public function allowUninstall()
-    {
-        return true;
-    }
-
     public function versionCompare(PackageInterface $a, PackageInterface $b, $operator)
     {
         $constraint = new VersionConstraint($operator, $b->getVersion());

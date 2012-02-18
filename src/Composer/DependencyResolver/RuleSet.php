@@ -20,7 +20,6 @@ class RuleSet implements \IteratorAggregate, \Countable
     // highest priority => lowest number
     const TYPE_PACKAGE = 0;
     const TYPE_JOB = 1;
-    const TYPE_UPDATE = 2;
     const TYPE_FEATURE = 3;
     const TYPE_CHOICE = 4;
     const TYPE_LEARNED = 5;
@@ -29,7 +28,6 @@ class RuleSet implements \IteratorAggregate, \Countable
         -1 => 'UNKNOWN',
         self::TYPE_PACKAGE => 'PACKAGE',
         self::TYPE_FEATURE => 'FEATURE',
-        self::TYPE_UPDATE => 'UPDATE',
         self::TYPE_JOB => 'JOB',
         self::TYPE_CHOICE => 'CHOICE',
         self::TYPE_LEARNED => 'LEARNED',
