@@ -119,7 +119,7 @@ class Locker
             $spec = array('package' => $name, 'version' => $version);
 
             if ($package->isDev()) {
-                $spec['reference'] = $package->getSourceReference();
+                $spec['source_reference'] = $package->getSourceReference();
             }
 
             $lock['packages'][] = $spec;

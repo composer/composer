@@ -113,6 +113,7 @@ EOT
         }
 
         // creating requirements request
+        $installFromLock = false;
         $request = new Request($pool);
         if ($update) {
             $io->write('<info>Updating dependencies</info>');
@@ -130,6 +131,7 @@ EOT
                 $request->install($link->getTarget(), $link->getConstraint());
             }
         } elseif ($composer->getLocker()->isLocked()) {
+            $installFromLock = true;
             $io->write('<info>Installing from lock file</info>');
 
             if (!$composer->getLocker()->isFresh()) {
@@ -196,7 +198,25 @@ EOT
             }
             if (!$dryRun) {
                 $eventDispatcher->dispatchPackageEvent(constant('Composer\Script\ScriptEvents::PRE_PACKAGE_'.strtoupper($operation->getJobType())), $operation);
+
+                // if installing from lock, restore dev packages' references to their locked state
+                if ($installFromLock) {
+                    $package = null;
+                    if ('update' === $operation->getJobType()) {
+                        $package = $operation->getTargetPackage();
+                    } elseif ('install' === $operation->getJobType()) {
+                        $package = $operation->getPackage();
+                    }
+                    if ($package && $package->isDev()) {
+                        foreach ($composer->getLocker()->getLockedPackages() as $lockedPackage) {
+                            if (!empty($lockedPackage['source_reference']) && strtolower($lockedPackage['package']) === $package->getName()) {
+                                $package->setSourceReference($lockedPackage['source_reference']);
+                            }
+                        }
+                    }
+                }
                 $installationManager->execute($operation);
+
                 $eventDispatcher->dispatchPackageEvent(constant('Composer\Script\ScriptEvents::POST_PACKAGE_'.strtoupper($operation->getJobType())), $operation);
             }
         }
