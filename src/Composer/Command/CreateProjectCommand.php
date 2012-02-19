@@ -27,13 +27,13 @@ use Composer\Installer\ProjectInstaller;
  *
  * @author Benjamin Eberlei <kontakt@beberlei.de>
  */
-class InstallProjectCommand extends Command
+class CreateProjectCommand extends Command
 {
     protected function configure()
     {
         $this
-            ->setName('install-project')
-            ->setDescription('Install a package as new project into given directory.')
+            ->setName('create-project')
+            ->setDescription('Create new project from a package into given directory.')
             ->setDefinition(array(
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('repository-url', null, InputOption::VALUE_REQUIRED, 'Pick a different repository url to look for the package.'),
@@ -42,11 +42,12 @@ class InstallProjectCommand extends Command
                 new InputArgument('directory', InputArgument::OPTIONAL),
             ))
             ->setHelp(<<<EOT
-The <info>install-project</info> command installs a given package into a new directory.
-You can use this command to bootstrap new projects or setup a clean installation for
-new developers of your project.
+The <info>create-project</info> command creates a new project from a given
+package into a new directory. You can use this command to bootstrap new
+projects or setup a clean version-controlled installation
+for developers of your project.
 
-<info>php composer.phar install-project vendor/project intodirectory</info>
+<info>php composer.phar create-project vendor/project intodirectory</info>
 
 To setup a developer workable version you should create the project using the source
 controlled code by appending the <info>'--prefer-source'</info> flag.
