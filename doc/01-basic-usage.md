@@ -25,8 +25,8 @@ To check if composer is working, just run the PHAR through `php`:
 This should give you a list of available commands.
 
 > **Note:** You can also perform the checks only without downloading composer by using the `--check` option. For more information, just use `--help`.
-
-    $ curl -s http://getcomposer.org/installer | php -- --help
+>
+>     $ curl -s http://getcomposer.org/installer | php -- --help
 
 ## Project setup
 
