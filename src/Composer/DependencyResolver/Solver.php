@@ -1257,8 +1257,7 @@ class Solver
                                 } else {
                                     $prevRule->next2 = $nextRule;
                                 }
-                            }
-                            else {
+                            } else {
                                 $this->watches[$literal->getId()] = $nextRule;
                             }
 
@@ -2072,8 +2071,7 @@ class Solver
                     if ($watch->next2 == $watch) {
                         echo $indent."    2 *RECURSION*";
                     }
-                }
-                else if ($watch && ($watch->next1 || $watch->next2)) {
+                } elseif ($watch && ($watch->next1 || $watch->next2)) {
                     $indent = str_replace(array('1', '2'), ' ', $indent);
 
                     array_push($queue, array($indent.'    2 ', $watch->next2));
