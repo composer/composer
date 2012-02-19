@@ -17,8 +17,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\IO\IOInterface;
-use Composer\Downloader\DownloadManager;
-use Composer\Downloader;
+use Composer\Factory;
 use Composer\Repository\ComposerRepository;
 use Composer\Installer\ProjectInstaller;
 
@@ -82,9 +81,14 @@ EOT
 
         if ($packagistUrl === null) {
             $sourceRepo = new ComposerRepository(array('url' => 'http://packagist.org'));
-        } else {
+        } else if (substr($packagistUrl, -5) === ".json") {
+            $sourceRepo = new FilesystemRepository($packagistUrl);
+        } else if (strpos($packagistUrl, 'http') === 0) {
             $sourceRepo = new ComposerRepository(array('url' => $packagistUrl));
+        } else {
+            throw new \InvalidArgumentException("Invalid Packagist Url given. Has to be a .json file or an http url.");
         }
+
         $package = $sourceRepo->findPackage($packageName, $version);
         if (!$package) {
             throw new \InvalidArgumentException("Could not find package $packageName with version $version.");
@@ -106,16 +110,8 @@ EOT
 
     protected function createDownloadManager(IOInterface $io)
     {
-        $dm = new Downloader\DownloadManager();
-        $dm->setDownloader('git',  new Downloader\GitDownloader($io));
-        $dm->setDownloader('svn',  new Downloader\SvnDownloader($io));
-        $dm->setDownloader('hg', new Downloader\HgDownloader($io));
-        $dm->setDownloader('pear', new Downloader\PearDownloader($io));
-        $dm->setDownloader('zip',  new Downloader\ZipDownloader($io));
-        $dm->setDownloader('tar',  new Downloader\TarDownloader($io));
-        $dm->setDownloader('phar',  new Downloader\PharDownloader($io));
-
-        return $dm;
+        $factory = new Factory();
+        return $factory->createDownloadManager($io);
     }
 }
 

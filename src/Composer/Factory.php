@@ -138,7 +138,7 @@ class Factory
         $rm->addRepository(new Repository\ComposerRepository(array('url' => 'http://packagist.org')));
     }
 
-    protected function createDownloadManager(IOInterface $io)
+    public function createDownloadManager(IOInterface $io)
     {
         $dm = new Downloader\DownloadManager();
         $dm->setDownloader('git',  new Downloader\GitDownloader($io));
