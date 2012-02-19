@@ -232,8 +232,8 @@ EOT
                     }
                     if ($package && $package->isDev()) {
                         foreach ($composer->getLocker()->getLockedPackages() as $lockedPackage) {
-                            if (!empty($lockedPackage['source_reference']) && strtolower($lockedPackage['package']) === $package->getName()) {
-                                $package->setSourceReference($lockedPackage['source_reference']);
+                            if (!empty($lockedPackage['source-reference']) && strtolower($lockedPackage['package']) === $package->getName()) {
+                                $package->setSourceReference($lockedPackage['source-reference']);
                             }
                         }
                     }
