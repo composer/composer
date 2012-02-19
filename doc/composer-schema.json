@@ -101,6 +101,20 @@
             "description": "This is a hash of package name (keys) and version constraints (values) that this package suggests work well with it (typically this will only be suggested to the user).",
             "additionalProperties": true
         },
+        "config": {
+            "type": ["object"],
+            "description": "Composer options.",
+            "properties": {
+                "vendor-dir": {
+                    "type": "string",
+                    "description": "The location where all packages are installed, defaults to \"vendor\"."
+                },
+                "bin-dir": {
+                    "type": "string",
+                    "description": "The location where all binaries are linked, defaults to \"vendor/bin\"."
+                }
+            }
+        },
         "extra": {
             "type": ["object", "array"],
             "description": "Arbitrary extra data that can be used by custom installers, for example, package of type composer-installer must have a 'class' key defining the installer class name.",
