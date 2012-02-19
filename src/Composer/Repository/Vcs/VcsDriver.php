@@ -68,4 +68,9 @@ abstract class VcsDriver
         $rfs = new RemoteFilesystem($this->io);
         return $rfs->getContents($this->url, $url, false);
     }
+
+    protected static function isLocalUrl($url)
+    {
+        return (Boolean) preg_match('{^(file://|/|[a-z]:[\\\\/])}i', $url);
+    }
 }
