@@ -19,6 +19,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Composer\IO\IOInterface;
 use Composer\Factory;
 use Composer\Repository\ComposerRepository;
+use Composer\Repository\FilesystemRepository;
 use Composer\Installer\ProjectInstaller;
 
 /**
