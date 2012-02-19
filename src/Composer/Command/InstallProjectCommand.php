@@ -36,7 +36,7 @@ class InstallProjectCommand extends Command
             ->setDescription('Install a package as new project into given directory.')
             ->setDefinition(array(
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
-                new InputOption('packagist-url', null, InputOption::VALUE_REQUIRED, 'Pick a different packagist url to look for the package.'),
+                new InputOption('repository-url', null, InputOption::VALUE_REQUIRED, 'Pick a different repository url to look for the package.'),
                 new InputArgument('package', InputArgument::REQUIRED),
                 new InputArgument('version', InputArgument::OPTIONAL),
                 new InputArgument('directory', InputArgument::OPTIONAL),
@@ -51,8 +51,8 @@ new developers of your project.
 To setup a developer workable version you should create the project using the source
 controlled code by appending the <info>'--prefer-source'</info> flag.
 
-To install a package from another packagist repository than the default one you
-can pass the <info>'--packagist-url=http://mypackagist.org'</info> flag.
+To install a package from another repository repository than the default one you
+can pass the <info>'--repository-url=http://myrepository.org'</info> flag.
 
 EOT
             )
@@ -69,25 +69,25 @@ EOT
             $input->getArgument('directory'),
             $input->getArgument('version'),
             (Boolean)$input->getOption('prefer-source'),
-            $input->getOption('packagist-url')
+            $input->getOption('repository-url')
         );
     }
 
-    public function installProject(IOInterface $io, $packageName, $directory = null, $version = null, $preferSource = false, $packagistUrl = null)
+    public function installProject(IOInterface $io, $packageName, $directory = null, $version = null, $preferSource = false, $repositoryUrl = null)
     {
         $dm = $this->createDownloadManager($io);
         if ($preferSource) {
             $dm->setPreferSource(true);
         }
 
-        if ($packagistUrl === null) {
+        if ($repositoryUrl === null) {
             $sourceRepo = new ComposerRepository(array('url' => 'http://packagist.org'));
-        } else if (substr($packagistUrl, -5) === ".json") {
-            $sourceRepo = new FilesystemRepository($packagistUrl);
-        } else if (strpos($packagistUrl, 'http') === 0) {
-            $sourceRepo = new ComposerRepository(array('url' => $packagistUrl));
+        } else if (substr($repositoryUrl, -5) === ".json") {
+            $sourceRepo = new FilesystemRepository($repositoryUrl);
+        } else if (strpos($repositoryUrl, 'http') === 0) {
+            $sourceRepo = new ComposerRepository(array('url' => $repositoryUrl));
         } else {
-            throw new \InvalidArgumentException("Invalid Packagist Url given. Has to be a .json file or an http url.");
+            throw new \InvalidArgumentException("Invalid repository url given. Has to be a .json file or an http url.");
         }
 
         $package = $sourceRepo->findPackage($packageName, $version);
