@@ -165,6 +165,26 @@ class SolverTest extends TestCase
         ));
     }
 
+    public function testSolverUpdateAll()
+    {
+        $this->repoInstalled->addPackage($packageA = $this->getPackage('A', '1.0'));
+        $this->repoInstalled->addPackage($packageB = $this->getPackage('B', '1.0'));
+        $this->repo->addPackage($newPackageA = $this->getPackage('A', '1.1'));
+        $this->repo->addPackage($newPackageB = $this->getPackage('B', '1.1'));
+
+        $packageA->setRequires(array(new Link('A', 'B', null, 'requires')));
+
+        $this->reposComplete();
+
+        $this->request->install('A');
+        $this->request->updateAll();
+
+        $this->checkSolverResult(array(
+            array('job' => 'update', 'from' => $packageB, 'to' => $newPackageB),
+            array('job' => 'update', 'from' => $packageA, 'to' => $newPackageA),
+        ));
+    }
+
     public function testSolverUpdateCurrent()
     {
         $this->repoInstalled->addPackage($this->getPackage('A', '1.0'));
