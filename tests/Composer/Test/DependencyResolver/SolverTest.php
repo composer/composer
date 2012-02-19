@@ -55,6 +55,23 @@ class SolverTest extends TestCase
         ));
     }
 
+    public function testInstallNonExistingPackageFails()
+    {
+        $this->markTestIncomplete('Reporting this failure is not implemented/working yet');
+
+        $this->repo->addPackage($this->getPackage('A', '1.0'));
+        $this->reposComplete();
+
+        $this->request->install('B');
+
+        try {
+            $transaction = $this->solver->solve($this->request);
+            $this->fail('Unsolvable conflict did not resolve in exception.');
+        } catch (SolverProblemsException $e) {
+            // TODO assert problem properties
+        }
+    }
+
     public function testSolverInstallWithDeps()
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
@@ -537,7 +554,7 @@ class SolverTest extends TestCase
             $transaction = $this->solver->solve($this->request);
             $this->fail('Unsolvable conflict did not resolve in exception.');
         } catch (SolverProblemsException $e) {
-            // @todo: assert problem properties
+            // TODO assert problem properties
         }
     }
 
@@ -558,7 +575,7 @@ class SolverTest extends TestCase
             $transaction = $this->solver->solve($this->request);
             $this->fail('Unsolvable conflict did not resolve in exception.');
         } catch (SolverProblemsException $e) {
-            // @todo: assert problem properties
+            // TODO assert problem properties
         }
     }
 
