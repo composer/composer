@@ -952,6 +952,14 @@ class Solver
                         break;
                 }
             }
+
+            switch ($job['cmd']) {
+                case 'update-all':
+                    foreach ($installedPackages as $package) {
+                        $this->updateMap[$package->getId()] = true;
+                    }
+                break;
+            }
         }
 
         foreach ($installedPackages as $package) {
