@@ -196,10 +196,13 @@ EOT
 
         // force dev packages to be updated to latest reference on update
         if ($update) {
-            foreach ($installedPackages as $package) {
+            foreach ($localRepo->getPackages() as $package) {
+                // skip non-dev packages
                 if (!$package->isDev()) {
                     continue;
                 }
+
+                // skip packages that will be updated/uninstalled
                 foreach ($operations as $operation) {
                     if (('update' === $operation->getJobType() && $package === $operation->getInitialPackage())
                         || ('uninstall' === $operation->getJobType() && $package === $operation->getPackage())
@@ -210,8 +213,10 @@ EOT
 
                 // force update
                 $newPackage = $composer->getRepositoryManager()->findPackage($package->getName(), $package->getVersion());
-                $operation = new UpdateOperation($package, $newPackage);
-                $operations[] = $operation;
+                if ($newPackage->getSourceReference() !== $package->getSourceReference()) {
+                    $operation = new UpdateOperation($package, $newPackage);
+                    $operations[] = $operation;
+                }
             }
         }
 
