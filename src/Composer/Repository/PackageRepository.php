@@ -33,7 +33,7 @@ class PackageRepository extends ArrayRepository
      */
     public function __construct(array $config)
     {
-        $this->config = $config;
+        $this->config = $config['package'];
     }
 
     /**
