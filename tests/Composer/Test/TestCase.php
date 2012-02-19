@@ -14,6 +14,7 @@ namespace Composer\Test;
 
 use Composer\Package\Version\VersionParser;
 use Composer\Package\MemoryPackage;
+use Composer\Package\LinkConstraint\VersionConstraint;
 
 abstract class TestCase extends \PHPUnit_Framework_TestCase
 {
