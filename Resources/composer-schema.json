@@ -121,6 +121,13 @@
             "type": ["object", "array"],
             "description": "A set of additional repositories where packages can be found.",
             "additionalProperties": true
+        },
+        "bin": {
+            "type": ["array"],
+            "description": "A set of files that should be treated as binaries and symlinked into bin-dir (from config).",
+            "items": {
+                "type": "string"
+            }
         }
     }
 }
