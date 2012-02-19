@@ -63,6 +63,14 @@ Here are some examples of version branch names:
 
 **Note:** When you install a dev version, it will install it from source. See [Repositories] for more information.
 
+## Lock file
+
+For projects it is recommended to commit the `composer.lock` file into version control. For libraries this is not the case. You do not want your library to be tied to exact versions of the dependencies. It should work with any compatible version, so make sure you specify your version constraints so that they include all compatible versions.
+
+**Do not commit your library's `composer.lock` into version control.**
+
+If you are using git, add it to the `.gitignore`.
+
 ## Publishing to a VCS
 
 Once you have a vcs repository (version control system, e.g. git) containing a `composer.json` file, your library is already composer-installable. In this example we will publish the `acme/hello-world` library on GitHub under `github.com/composer/hello-world`.
