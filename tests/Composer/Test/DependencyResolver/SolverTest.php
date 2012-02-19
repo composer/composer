@@ -67,7 +67,7 @@ class SolverTest extends TestCase
             $this->markTestIncomplete('Reporting this failure is not implemented/working yet');
             //$this->fail('Unsolvable conflict did not resolve in exception.');
         } catch (SolverProblemsException $e) {
-            // @todo: assert problem properties
+            // TODO assert problem properties
         }
     }
 
@@ -519,7 +519,7 @@ class SolverTest extends TestCase
             $transaction = $this->solver->solve($this->request);
             $this->fail('Unsolvable conflict did not resolve in exception.');
         } catch (SolverProblemsException $e) {
-            // @todo: assert problem properties
+            // TODO assert problem properties
         }
     }
 
@@ -540,7 +540,7 @@ class SolverTest extends TestCase
             $transaction = $this->solver->solve($this->request);
             $this->fail('Unsolvable conflict did not resolve in exception.');
         } catch (SolverProblemsException $e) {
-            // @todo: assert problem properties
+            // TODO assert problem properties
         }
     }
 
