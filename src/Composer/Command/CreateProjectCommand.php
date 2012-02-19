@@ -81,11 +81,11 @@ EOT
             $dm->setPreferSource(true);
         }
 
-        if ($repositoryUrl === null) {
+        if (null === $repositoryUrl) {
             $sourceRepo = new ComposerRepository(array('url' => 'http://packagist.org'));
-        } else if (substr($repositoryUrl, -5) === ".json") {
+        } elseif (".json" === substr($repositoryUrl, -5)) {
             $sourceRepo = new FilesystemRepository($repositoryUrl);
-        } else if (strpos($repositoryUrl, 'http') === 0) {
+        } elseif (0 === strpos($repositoryUrl, 'http')) {
             $sourceRepo = new ComposerRepository(array('url' => $repositoryUrl));
         } else {
             throw new \InvalidArgumentException("Invalid repository url given. Has to be a .json file or an http url.");
@@ -96,7 +96,7 @@ EOT
             throw new \InvalidArgumentException("Could not find package $packageName with version $version.");
         }
 
-        if ($directory === null) {
+        if (null === $directory) {
             $parts = explode("/", $packageName);
             $directory = getcwd() . DIRECTORY_SEPARATOR . array_pop($parts);
         }
