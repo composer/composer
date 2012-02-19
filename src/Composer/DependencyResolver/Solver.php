@@ -1222,7 +1222,8 @@ class Solver
                 continue;
             }
 
-            for ($rule = $this->watches[$literal->getId()]; $rule !== null; $rule = $nextRule) {
+            $prevRule = null;
+            for ($rule = $this->watches[$literal->getId()]; $rule !== null; $prevRule = $rule, $rule = $nextRule) {
                 $nextRule = $rule->getNext($literal);
 
                 if ($rule->isDisabled()) {
@@ -1242,13 +1243,22 @@ class Solver
                         if ($otherWatch !== $ruleLiteral->getId() &&
                             !$this->decisionsConflict($ruleLiteral)) {
 
-
                             if ($literal->getId() === $rule->watch1) {
                                 $rule->watch1 = $ruleLiteral->getId();
-                                $rule->next1 = (isset($this->watches[$ruleLiteral->getId()])) ? $this->watches[$ruleLiteral->getId()] : null ;
+                                $rule->next1 = (isset($this->watches[$ruleLiteral->getId()])) ? $this->watches[$ruleLiteral->getId()] : null;
                             } else {
                                 $rule->watch2 = $ruleLiteral->getId();
-                                $rule->next2 = (isset($this->watches[$ruleLiteral->getId()])) ? $this->watches[$ruleLiteral->getId()] : null ;
+                                $rule->next2 = (isset($this->watches[$ruleLiteral->getId()])) ? $this->watches[$ruleLiteral->getId()] : null;
+                            }
+
+                            if ($prevRule) {
+                                if ($prevRule->watch1 === $literal->getId()) {
+                                    $prevRule->next1 = $nextRule;
+                                } else {
+                                    $prevRule->next2 = $nextRule;
+                                }
+                            } else {
+                                $this->watches[$literal->getId()] = $nextRule;
                             }
 
                             $this->watches[$ruleLiteral->getId()] = $rule;
@@ -2018,8 +2028,10 @@ class Solver
             }
             if ($level > 0) {
                 echo '    +' . $this->pool->packageById($packageId)."\n";
-            } else {
+            } elseif ($level < 0) {
                 echo '    -' . $this->pool->packageById($packageId)."\n";
+            } else {
+                echo '    ?' . $this->pool->packageById($packageId)."\n";
             }
         }
         echo "\n";
@@ -2032,5 +2044,42 @@ class Solver
             echo '    ' . $literal . ' ' . $this->decisionQueueWhy[$i]."\n";
         }
         echo "\n";
+    }
+
+    private function printWatches()
+    {
+        echo "\nWatches:\n";
+        foreach ($this->watches as $literalId => $watch) {
+            echo '  '.$this->literalFromId($literalId)."\n";
+            $queue = array(array('    ', $watch));
+
+            while (!empty($queue)) {
+                list($indent, $watch) = array_pop($queue);
+
+                echo $indent.$watch;
+
+                if ($watch) {
+                    echo ' [id='.$watch->getId().',watch1='.$this->literalFromId($watch->watch1).',watch2='.$this->literalFromId($watch->watch2)."]";
+                }
+
+                echo "\n";
+
+                if ($watch && ($watch->next1 == $watch || $watch->next2 == $watch)) {
+                    if ($watch->next1 == $watch) {
+                        echo $indent."    1 *RECURSION*";
+                    }
+                    if ($watch->next2 == $watch) {
+                        echo $indent."    2 *RECURSION*";
+                    }
+                } elseif ($watch && ($watch->next1 || $watch->next2)) {
+                    $indent = str_replace(array('1', '2'), ' ', $indent);
+
+                    array_push($queue, array($indent.'    2 ', $watch->next2));
+                    array_push($queue, array($indent.'    1 ', $watch->next1));
+                }
+            }
+
+            echo "\n";
+        }
     }
 }
