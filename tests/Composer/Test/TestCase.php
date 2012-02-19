@@ -14,6 +14,7 @@ namespace Composer\Test;
 
 use Composer\Package\Version\VersionParser;
 use Composer\Package\MemoryPackage;
+use Composer\Package\LinkConstraint\VersionConstraint;
 
 abstract class TestCase extends \PHPUnit_Framework_TestCase
 {
@@ -24,6 +25,14 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
         if (!self::$versionParser) {
             self::$versionParser = new VersionParser();
         }
+    }
+
+    protected function getVersionConstraint($operator, $version)
+    {
+        return new VersionConstraint(
+            $operator,
+            self::$versionParser->normalize($version)
+        );
     }
 
     protected function getPackage($name, $version)
