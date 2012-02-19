@@ -44,14 +44,17 @@ class RootPackageLoader extends ArrayLoader
         $package = parent::load($config);
 
         if (isset($config['repositories'])) {
-            foreach ($config['repositories'] as $repoName => $repo) {
-                if (false === $repo && 'packagist' === $repoName) {
+            foreach ($config['repositories'] as $index => $repo) {
+                if (isset($repo['packagist']) && $repo['packagist'] === false) {
                     continue;
                 }
                 if (!is_array($repo)) {
-                    throw new \UnexpectedValueException('Repository '.$repoName.' in '.$package->getPrettyName().' '.$package->getVersion().' should be an array, '.gettype($repo).' given');
+                    throw new \UnexpectedValueException('Repository '.$index.' should be an array, '.gettype($repo).' given');
                 }
-                $repository = $this->manager->createRepository(key($repo), current($repo));
+                if (!isset($repo['type'])) {
+                    throw new \UnexpectedValueException('Repository '.$index.' must have a type defined');
+                }
+                $repository = $this->manager->createRepository($repo['type'], $repo);
                 $this->manager->addRepository($repository);
             }
             $package->setRepositories($config['repositories']);
