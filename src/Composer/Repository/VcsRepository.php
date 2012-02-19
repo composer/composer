@@ -19,10 +19,6 @@ class VcsRepository extends ArrayRepository
 
     public function __construct(array $config, IOInterface $io, array $drivers = null)
     {
-        if (!filter_var($config['url'], FILTER_VALIDATE_URL)) {
-            throw new \UnexpectedValueException('Invalid url given for VCS repository: '.$config['url']);
-        }
-
         $this->drivers = $drivers ?: array(
             'Composer\Repository\Vcs\GitHubDriver',
             'Composer\Repository\Vcs\GitBitbucketDriver',

@@ -78,10 +78,8 @@ class LibraryInstaller implements InstallerInterface
      */
     public function install(PackageInterface $package)
     {
+        $this->initializeDirs();
         $downloadPath = $this->getInstallPath($package);
-
-        $this->filesystem->ensureDirectoryExists($this->vendorDir);
-        $this->filesystem->ensureDirectoryExists($this->binDir);
 
         // remove the binaries if it appears the package files are missing
         if (!is_readable($downloadPath) && $this->repository->hasPackage($package)) {
@@ -104,10 +102,8 @@ class LibraryInstaller implements InstallerInterface
             throw new \InvalidArgumentException('Package is not installed: '.$initial);
         }
 
+        $this->initializeDirs();
         $downloadPath = $this->getInstallPath($initial);
-
-        $this->filesystem->ensureDirectoryExists($this->vendorDir);
-        $this->filesystem->ensureDirectoryExists($this->binDir);
 
         $this->removeBinaries($initial);
         $this->downloadManager->update($initial, $target, $downloadPath);
@@ -189,6 +185,14 @@ class LibraryInstaller implements InstallerInterface
             }
             unlink($link);
         }
+    }
+
+    protected function initializeDirs()
+    {
+        $this->filesystem->ensureDirectoryExists($this->vendorDir);
+        $this->filesystem->ensureDirectoryExists($this->binDir);
+        $this->vendorDir = realpath($this->vendorDir);
+        $this->binDir = realpath($this->binDir);
     }
 
     private function generateWindowsProxyCode($bin, $link)

@@ -15,6 +15,7 @@ class GitDriver extends VcsDriver implements VcsDriverInterface
     protected $branches;
     protected $rootIdentifier;
     protected $infoCache = array();
+    protected $isLocal = false;
 
     public function __construct($url, IOInterface $io, ProcessExecutor $process = null)
     {
@@ -30,10 +31,15 @@ class GitDriver extends VcsDriver implements VcsDriverInterface
     {
         $url = escapeshellarg($this->url);
         $tmpDir = escapeshellarg($this->tmpDir);
-        if (is_dir($this->tmpDir)) {
-            $this->process->execute(sprintf('cd %s && git fetch origin', $tmpDir), $output);
+
+        if (static::isLocalUrl($url)) {
+            $this->isLocal = true;
         } else {
-            $this->process->execute(sprintf('git clone %s %s', $url, $tmpDir), $output);
+            if (is_dir($this->tmpDir)) {
+                $this->process->execute(sprintf('cd %s && git fetch origin', $tmpDir), $output);
+            } else {
+                $this->process->execute(sprintf('git clone %s %s', $url, $tmpDir), $output);
+            }
         }
 
         $this->getTags();
@@ -47,11 +53,27 @@ class GitDriver extends VcsDriver implements VcsDriverInterface
     {
         if (null === $this->rootIdentifier) {
             $this->rootIdentifier = 'master';
-            $this->process->execute(sprintf('cd %s && git branch --no-color -r', escapeshellarg($this->tmpDir)), $output);
-            foreach ($this->process->splitLines($output) as $branch) {
-                if ($branch && preg_match('{/HEAD +-> +[^/]+/(\S+)}', $branch, $match)) {
-                    $this->rootIdentifier = $match[1];
-                    break;
+
+            if ($this->isLocal) {
+                // select currently checked out branch if master is not available
+                $this->process->execute(sprintf('cd %s && git branch --no-color', escapeshellarg($this->tmpDir)), $output);
+                $branches = $this->process->splitLines($output);
+                if (!in_array('* master', $branches)) {
+                    foreach ($branches as $branch) {
+                        if ($branch && preg_match('{^\* +(\S+)}', $branch, $match)) {
+                            $this->rootIdentifier = $match[1];
+                            break;
+                        }
+                    }
+                }
+            } else {
+                // try to find a non-master remote HEAD branch
+                $this->process->execute(sprintf('cd %s && git branch --no-color -r', escapeshellarg($this->tmpDir)), $output);
+                foreach ($this->process->splitLines($output) as $branch) {
+                    if ($branch && preg_match('{/HEAD +-> +[^/]+/(\S+)}', $branch, $match)) {
+                        $this->rootIdentifier = $match[1];
+                        break;
+                    }
                 }
             }
         }
@@ -101,7 +123,7 @@ class GitDriver extends VcsDriver implements VcsDriverInterface
 
             if (!isset($composer['time'])) {
                 $this->process->execute(sprintf('cd %s && git log -1 --format=%%at %s', escapeshellarg($this->tmpDir), escapeshellarg($identifier)), $output);
-                $date = new \DateTime('@'.$output[0]);
+                $date = new \DateTime('@'.trim($output));
                 $composer['time'] = $date->format('Y-m-d H:i:s');
             }
             $this->infoCache[$identifier] = $composer;
@@ -132,7 +154,11 @@ class GitDriver extends VcsDriver implements VcsDriverInterface
         if (null === $this->branches) {
             $branches = array();
 
-            $this->process->execute(sprintf('cd %s && git branch --no-color -rv', escapeshellarg($this->tmpDir)), $output);
+            $this->process->execute(sprintf(
+                'cd %s && git branch --no-color --no-abbrev -v %s',
+                escapeshellarg($this->tmpDir),
+                $this->isLocal ? '' : '-r'
+            ), $output);
             foreach ($this->process->splitLines($output) as $branch) {
                 if ($branch && !preg_match('{^ *[^/]+/HEAD }', $branch)) {
                     preg_match('{^ *[^/]+/(\S+) *([a-f0-9]+) .*$}', $branch, $match);
@@ -167,6 +193,15 @@ class GitDriver extends VcsDriver implements VcsDriverInterface
     {
         if (preg_match('#(^git://|\.git$|git@|//git\.)#i', $url)) {
             return true;
+        }
+
+        // local filesystem
+        if (static::isLocalUrl($url)) {
+            $process = new ProcessExecutor();
+            // check whether there is a git repo in that path
+            if ($process->execute(sprintf('cd %s && git show', escapeshellarg($url)), $output) === 0) {
+                return true;
+            }
         }
 
         if (!$deep) {
