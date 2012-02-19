@@ -24,8 +24,7 @@ To check if composer is working, just run the PHAR through `php`:
 
 This should give you a list of available commands.
 
-**Note:** You can also perform the checks only without downloading composer
-by using the `--check` option. For more information, just use `--help`.
+> **Note:** You can also perform the checks only without downloading composer by using the `--check` option. For more information, just use `--help`.
 
     $ curl -s http://getcomposer.org/installer | php -- --help
 
@@ -165,4 +164,4 @@ $loader = require 'vendor/.composer/autoload.php';
 $loader->add('Acme\Test', __DIR__);
 ```
 
-**Note:** Composer provides its own autoloader. If you don't want to use that one, you can just include `vendor/.composer/autoload_namespaces.php`, which returns an associative array mapping namespaces to directories.
+> **Note:** Composer provides its own autoloader. If you don't want to use that one, you can just include `vendor/.composer/autoload_namespaces.php`, which returns an associative array mapping namespaces to directories.
