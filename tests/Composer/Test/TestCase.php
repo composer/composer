@@ -27,6 +27,14 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
         }
     }
 
+    protected function getVersionConstraint($operator, $version)
+    {
+        return new VersionConstraint(
+            $operator,
+            self::$versionParser->normalize($version)
+        );
+    }
+
     protected function getPackage($name, $version)
     {
         $normVersion = self::$versionParser->normalize($version);
