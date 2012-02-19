@@ -76,7 +76,13 @@ class VcsRepository extends ArrayRepository
         }
 
         foreach ($driver->getTags() as $tag => $identifier) {
-            $this->io->overwrite('Get composer of <info>' . $this->packageName . '</info> (<comment>' . $tag . '</comment>)', false);
+            $msg = 'Get composer info for <info>' . $this->packageName . '</info> (<comment>' . $tag . '</comment>)';
+            if ($debug) {
+                $this->io->write($msg);
+            } else {
+                $this->io->overwrite($msg, false);
+            }
+
             $parsedTag = $this->validateTag($versionParser, $tag);
             if ($parsedTag && $driver->hasComposerFile($identifier)) {
                 try {
@@ -122,7 +128,13 @@ class VcsRepository extends ArrayRepository
         $this->io->overwrite('', false);
 
         foreach ($driver->getBranches() as $branch => $identifier) {
-            $this->io->overwrite('Get composer of <info>' . $this->packageName . '</info> (<comment>' . $branch . '</comment>)', false);
+            $msg = 'Get composer info for <info>' . $this->packageName . '</info> (<comment>' . $branch . '</comment>)';
+            if ($debug) {
+                $this->io->write($msg);
+            } else {
+                $this->io->overwrite($msg, false);
+            }
+
             $parsedBranch = $this->validateBranch($versionParser, $branch);
             if ($driver->hasComposerFile($identifier)) {
                 $data = $driver->getComposerInformation($identifier);
