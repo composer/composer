@@ -1266,7 +1266,7 @@ class Solver
                             }
 
                             if ($prevRule) {
-                                if ($prevRule->watch1 === $literal->getId()) {
+                                if ($prevRule->next1 == $rule) {
                                     $prevRule->next1 = $nextRule;
                                 } else {
                                     $prevRule->next2 = $nextRule;
@@ -1276,6 +1276,8 @@ class Solver
                             }
 
                             $this->watches[$ruleLiteral->getId()] = $rule;
+
+                            $rule = $prevRule;
                             continue 2;
                         }
                     }
@@ -1506,7 +1508,7 @@ class Solver
         }
 
         $why = count($this->learnedPool) - 1;
-
+        assert($learnedLiterals[0] !== null);
         $newRule = new Rule($learnedLiterals, self::RULE_LEARNED, $why);
 
         return array($ruleLevel, $newRule, $why);
