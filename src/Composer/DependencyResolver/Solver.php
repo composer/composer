@@ -2033,4 +2033,42 @@ class Solver
         }
         echo "\n";
     }
+
+    private function printWatches()
+    {
+        echo "\nWatches:\n";
+        foreach ($this->watches as $literalId => $watch) {
+            echo '  '.$this->literalFromId($literalId)."\n";
+            $queue = array(array('    ', $watch));
+
+            while (!empty($queue)) {
+                list($indent, $watch) = array_pop($queue);
+
+                echo $indent.$watch;
+
+                if ($watch) {
+                    echo ' [id='.$watch->getId().',watch1='.$this->literalFromId($watch->watch1).',watch2='.$this->literalFromId($watch->watch2)."]";
+                }
+
+                echo "\n";
+
+                if ($watch && ($watch->next1 == $watch || $watch->next2 == $watch)) {
+                    if ($watch->next1 == $watch) {
+                        echo $indent."    1 *RECURSION*";
+                    }
+                    if ($watch->next2 == $watch) {
+                        echo $indent."    2 *RECURSION*";
+                    }
+                }
+                else if ($watch && ($watch->next1 || $watch->next2)) {
+                    $indent = str_replace(array('1', '2'), ' ', $indent);
+
+                    array_push($queue, array($indent.'    2 ', $watch->next2));
+                    array_push($queue, array($indent.'    1 ', $watch->next1));
+                }
+            }
+
+            echo "\n";
+        }
+    }
 }
