@@ -57,6 +57,8 @@ class SolverTest extends TestCase
 
     public function testInstallNonExistingPackageFails()
     {
+        $this->markTestIncomplete('Reporting this failure is not implemented/working yet');
+
         $this->repo->addPackage($this->getPackage('A', '1.0'));
         $this->reposComplete();
 
@@ -64,8 +66,7 @@ class SolverTest extends TestCase
 
         try {
             $transaction = $this->solver->solve($this->request);
-            $this->markTestIncomplete('Reporting this failure is not implemented/working yet');
-            //$this->fail('Unsolvable conflict did not resolve in exception.');
+            $this->fail('Unsolvable conflict did not resolve in exception.');
         } catch (SolverProblemsException $e) {
             // TODO assert problem properties
         }
