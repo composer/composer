@@ -304,7 +304,7 @@ class Solver
             // if ignoreinstalledsobsoletes is not set, we're also checking
             // obsoletes of installed packages (like newer rpm versions)
             //
-            /** @TODO: if ($this->noInstalledObsoletes) */
+            /** TODO if ($this->noInstalledObsoletes) */
             if (true) {
                 $noObsoletes = isset($this->noObsoletes[$package->getId()]);
                 $isInstalled = (isset($this->installedMap[$package->getId()]));
