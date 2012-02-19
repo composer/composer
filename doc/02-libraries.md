@@ -19,7 +19,7 @@ In order to make that package installable you need to give it a name. You do thi
 
 In this case the project name is `acme/hello-world`, where `acme` is the vendor name. Supplying a vendor name is mandatory.
 
-**Note:** If you don't know what to use as a vendor name, your GitHub username is usually a good bet. While package names are case insensitive, the convention is all lowercase and dashes for word separation.
+> **Note:** If you don't know what to use as a vendor name, your GitHub username is usually a good bet. While package names are case insensitive, the convention is all lowercase and dashes for word separation.
 
 ## Specifying the version
 
@@ -48,7 +48,7 @@ Here are a few examples of valid tag names:
     v2.0.0-alpha
     v2.0.4-p1
 
-**Note:** If you specify an explicit version in `composer.json`, the tag name must match the specified version.
+> **Note:** If you specify an explicit version in `composer.json`, the tag name must match the specified version.
 
 ### Branches
 
@@ -61,7 +61,7 @@ Here are some examples of version branch names:
     1.1.x
     1.1.*
 
-**Note:** When you install a dev version, it will install it from source. See [Repositories] for more information.
+> **Note:** When you install a dev version, it will install it from source. See [Repositories] for more information.
 
 ## Lock file
 
