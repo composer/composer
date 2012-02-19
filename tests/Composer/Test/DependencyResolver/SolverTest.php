@@ -55,6 +55,22 @@ class SolverTest extends TestCase
         ));
     }
 
+    public function testInstallNonExistingPackageFails()
+    {
+        $this->repo->addPackage($this->getPackage('A', '1.0'));
+        $this->reposComplete();
+
+        $this->request->install('B');
+
+        try {
+            $transaction = $this->solver->solve($this->request);
+            $this->markTestIncomplete('Reporting this failure is not implemented/working yet');
+            //$this->fail('Unsolvable conflict did not resolve in exception.');
+        } catch (SolverProblemsException $e) {
+            // @todo: assert problem properties
+        }
+    }
+
     public function testSolverInstallWithDeps()
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));

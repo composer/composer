@@ -964,6 +964,12 @@ class Solver
 
 
         foreach ($this->jobs as $job) {
+            if (empty($job['packages']) && $job['cmd'] == 'install') {
+                $this->addRule(
+                    RuleSet::TYPE_JOB,
+                    $this->createImpossibleRule(static::RULE_JOB_INSTALL, $job)
+                );
+            }
             foreach ($job['packages'] as $package) {
                 switch ($job['cmd']) {
                     case 'install':
