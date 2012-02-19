@@ -304,7 +304,7 @@ class Solver
             // if ignoreinstalledsobsoletes is not set, we're also checking
             // obsoletes of installed packages (like newer rpm versions)
             //
-            /** @TODO: if ($this->noInstalledObsoletes) */
+            /** TODO if ($this->noInstalledObsoletes) */
             if (true) {
                 $noObsoletes = isset($this->noObsoletes[$package->getId()]);
                 $isInstalled = (isset($this->installedMap[$package->getId()]));
@@ -964,6 +964,12 @@ class Solver
 
 
         foreach ($this->jobs as $job) {
+            if (empty($job['packages']) && $job['cmd'] == 'install') {
+                $this->addRule(
+                    RuleSet::TYPE_JOB,
+                    $this->createImpossibleRule(static::RULE_JOB_INSTALL, $job)
+                );
+            }
             foreach ($job['packages'] as $package) {
                 switch ($job['cmd']) {
                     case 'install':
