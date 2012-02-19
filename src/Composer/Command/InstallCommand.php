@@ -119,14 +119,9 @@ EOT
             $installedPackages = $installedRepo->getPackages();
             $links = $this->collectLinks($composer->getPackage(), $noInstallRecommends, $installSuggests);
 
-            foreach ($links as $link) {
-                foreach ($installedPackages as $package) {
-                    if ($package->getName() === $link->getTarget()) {
-                        $request->update($package->getName(), new VersionConstraint('=', $package->getVersion()));
-                        break;
-                    }
-                }
+            $request->updateAll();
 
+            foreach ($links as $link) {
                 $request->install($link->getTarget(), $link->getConstraint());
             }
         } elseif ($composer->getLocker()->isLocked()) {
