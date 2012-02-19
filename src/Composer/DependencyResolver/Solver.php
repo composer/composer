@@ -1222,7 +1222,8 @@ class Solver
                 continue;
             }
 
-            for ($rule = $this->watches[$literal->getId()]; $rule !== null; $rule = $nextRule) {
+            $prevRule = null;
+            for ($rule = $this->watches[$literal->getId()]; $rule !== null; $prevRule = $rule, $rule = $nextRule) {
                 $nextRule = $rule->getNext($literal);
 
                 if ($rule->isDisabled()) {
@@ -1242,13 +1243,23 @@ class Solver
                         if ($otherWatch !== $ruleLiteral->getId() &&
                             !$this->decisionsConflict($ruleLiteral)) {
 
-
                             if ($literal->getId() === $rule->watch1) {
                                 $rule->watch1 = $ruleLiteral->getId();
-                                $rule->next1 = (isset($this->watches[$ruleLiteral->getId()])) ? $this->watches[$ruleLiteral->getId()] : null ;
+                                $rule->next1 = (isset($this->watches[$ruleLiteral->getId()])) ? $this->watches[$ruleLiteral->getId()] : null;
                             } else {
                                 $rule->watch2 = $ruleLiteral->getId();
-                                $rule->next2 = (isset($this->watches[$ruleLiteral->getId()])) ? $this->watches[$ruleLiteral->getId()] : null ;
+                                $rule->next2 = (isset($this->watches[$ruleLiteral->getId()])) ? $this->watches[$ruleLiteral->getId()] : null;
+                            }
+
+                            if ($prevRule) {
+                                if ($prevRule->watch1 === $literal->getId()) {
+                                    $prevRule->next1 = $nextRule;
+                                } else {
+                                    $prevRule->next2 = $nextRule;
+                                }
+                            }
+                            else {
+                                $this->watches[$literal->getId()] = $nextRule;
                             }
 
                             $this->watches[$ruleLiteral->getId()] = $rule;
