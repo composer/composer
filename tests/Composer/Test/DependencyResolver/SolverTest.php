@@ -485,6 +485,40 @@ class SolverTest extends TestCase
         ));
     }
 
+    public function testIssue265()
+    {
+        $this->repo->addPackage($packageA1 = $this->getPackage('A', '2.0.999999-dev'));
+        $this->repo->addPackage($packageA2 = $this->getPackage('A', '2.1-dev'));
+        $this->repo->addPackage($packageA3 = $this->getPackage('A', '2.2-dev'));
+        $this->repo->addPackage($packageB1 = $this->getPackage('B', '2.0.10'));
+        $this->repo->addPackage($packageB2 = $this->getPackage('B', '2.0.9'));
+        $this->repo->addPackage($packageC = $this->getPackage('C', '2.0-dev'));
+        $this->repo->addPackage($packageD = $this->getPackage('D', '2.0.9'));
+
+        $packageC->setRequires(array(
+            new Link('C', 'A', new VersionConstraint('>=', '2.0'), 'requires'),
+            new Link('C', 'D', new VersionConstraint('>=', '2.0'), 'requires'),
+        ));
+
+        $packageD->setRequires(array(
+            new Link('D', 'A', new VersionConstraint('>=', '2.1'), 'requires'),
+            new Link('D', 'B', new VersionConstraint('>=', '2.0-dev'), 'requires'),
+        ));
+
+        $packageB1->setRequires(array(new Link('B', 'A', new VersionConstraint('==', '2.1.0.0-dev'), 'requires')));
+        $packageB2->setRequires(array(new Link('B', 'A', new VersionConstraint('==', '2.1.0.0-dev'), 'requires')));
+
+        $packageB2->setReplaces(array(new Link('B', 'D', new VersionConstraint('==', '2.0.9.0'), 'replaces')));
+
+        $this->reposComplete();
+
+        $this->request->install('C', new VersionConstraint('==', '2.0.0.0-dev'));
+
+        $this->setExpectedException('Composer\DependencyResolver\SolverProblemsException');
+
+        $this->solver->solve($this->request);
+    }
+
     public function testConflictResultEmpty()
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
