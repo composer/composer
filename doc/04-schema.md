@@ -204,6 +204,8 @@ Custom package repositories to use.
 
 By default composer just uses the packagist repository. By specifying repositories you can get packages from elsewhere.
 
+Repositories are not resolved recursively. You can only add them to your main `composer.json`. Repository declarations of dependencies' `composer.json`s are ignored.
+
 Following repository types are supported:
 
 * **composer:** A composer repository is simply a `packages.json` file served via HTTP that contains a list of `composer.json` objects with additional `dist` and/or `source` information.
