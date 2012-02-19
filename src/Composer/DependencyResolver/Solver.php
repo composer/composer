@@ -2018,8 +2018,10 @@ class Solver
             }
             if ($level > 0) {
                 echo '    +' . $this->pool->packageById($packageId)."\n";
-            } else {
+            } elseif ($level < 0) {
                 echo '    -' . $this->pool->packageById($packageId)."\n";
+            } else {
+                echo '    ?' . $this->pool->packageById($packageId)."\n";
             }
         }
         echo "\n";
