@@ -216,3 +216,28 @@ Here is an example for the smarty template engine:
 Typically you would leave the source part off, as you don't really need it.
 
 ## Hosting your own
+
+While you will probably want to put your packages on packagist most of the time, there are some use cases for hosting your own repository.
+
+* **Private company packages:** If you are part of a company that uses composer for their packages internally, you might want to keep those packages private.
+* **Separate ecosystem:** If you have a project which has its own ecosystem, and the packages aren't really reusable by the greater PHP community, you might want to keep them separate to packagist. An example of this would be wordpress plugins.
+
+When hosting your own package repository it is recommended to use a `composer` one. This is type that is native to composer and yields the best performance.
+
+There are a few different tools that can help you create a `composer` repository.
+
+### Packagist
+
+The underlying application used by packagist is open source. This means that you can just install your own copy of packagist, re-brand, and use it. It's really quite straight-forward to do.
+
+Packagist is a Symfony2 application, and it is [available on GitHub](https://github.com/composer/packagist). It uses composer internally and acts as a proxy between VCS repositories and the composer users. It holds a list of all VCS packages, periodically re-crawls them, and exposes them as a composer repository.
+
+To put set your own copy, simply follow the instructions from the [packagist github repository](https://github.com/composer/packagist).
+
+### Satis
+
+Satis is a static `composer` repository generator. It is a bit like a ultra-lightweight, file-based version of packagist.
+
+You give it a `composer.json` containing repositories, typically VCS and package repository definitions. It will fetch all the packages from these repositories and dump a `packages.json` that is your `composer` repository.
+
+Check [the satis GitHub repository](https://github.com/composer/satis) for more information.
