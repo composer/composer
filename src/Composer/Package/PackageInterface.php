@@ -69,6 +69,13 @@ interface PackageInterface
     function matches($name, LinkConstraintInterface $constraint);
 
     /**
+     * Returns whether the package is a development virtual package or a concrete one
+     *
+     * @return Boolean
+     */
+    function isDev();
+
+    /**
      * Returns the package type, e.g. library
      *
      * @return string The package type

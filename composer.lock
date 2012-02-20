@@ -1,17 +1,20 @@
 {
-    "hash": "9c243b2c15fdc7c3e35c5200d704ba53",
+    "hash": "4ba2fad397e186b6bc453b4417c2ab00",
     "packages": [
         {
-            "package": "symfony\/process",
-            "version": "2.1.0-dev"
+            "package": "symfony/console",
+            "version": "dev-master",
+            "source-reference": "75ca31776bd98ad427f759cbe8a62400e40c73a1"
         },
         {
-            "package": "symfony\/finder",
-            "version": "2.1.0-dev"
+            "package": "symfony/finder",
+            "version": "dev-master",
+            "source-reference": "dd56fc9f1f0baa006d7491d5c17eb3e2dd8a066c"
         },
         {
-            "package": "symfony\/console",
-            "version": "2.1.0-dev"
+            "package": "symfony/process",
+            "version": "dev-master",
+            "source-reference": "f381eeee3733ca0fd374491fab56dce0f3ca8e34"
         }
     ]
 }

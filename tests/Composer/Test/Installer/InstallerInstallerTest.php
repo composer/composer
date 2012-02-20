@@ -67,9 +67,9 @@ class InstallerInstallerTest extends \PHPUnit_Framework_TestCase
             ->method('getPackages')
             ->will($this->returnValue(array($this->packages[0])));
         $this->repository
-            ->expects($this->once())
+            ->expects($this->exactly(2))
             ->method('hasPackage')
-            ->will($this->returnValue(true));
+            ->will($this->onConsecutiveCalls(true, false));
         $installer = new InstallerInstallerMock(__DIR__.'/Fixtures/', __DIR__.'/Fixtures/bin', $this->dm, $this->repository, $this->io, $this->im);
 
         $test = $this;
@@ -90,9 +90,9 @@ class InstallerInstallerTest extends \PHPUnit_Framework_TestCase
             ->method('getPackages')
             ->will($this->returnValue(array($this->packages[1])));
         $this->repository
-            ->expects($this->once())
+            ->expects($this->exactly(2))
             ->method('hasPackage')
-            ->will($this->returnValue(true));
+            ->will($this->onConsecutiveCalls(true, false));
         $installer = new InstallerInstallerMock(__DIR__.'/Fixtures/', __DIR__.'/Fixtures/bin', $this->dm, $this->repository, $this->io, $this->im);
 
         $test = $this;

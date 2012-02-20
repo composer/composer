@@ -71,7 +71,15 @@ class Factory
         $rm = $this->createRepositoryManager($io);
 
         // load default repository unless it's explicitly disabled
-        if (!isset($packageConfig['repositories']['packagist']) || $packageConfig['repositories']['packagist'] !== false) {
+        $loadPackagist = true;
+        if (isset($packageConfig['repositories'])) {
+            foreach ($packageConfig['repositories'] as $repo) {
+                if (isset($repo['packagist']) && $repo['packagist'] === false) {
+                    $loadPackagist = false;
+                }
+            }
+        }
+        if ($loadPackagist) {
             $this->addPackagistRepository($rm);
         }
 

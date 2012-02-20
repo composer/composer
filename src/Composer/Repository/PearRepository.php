@@ -22,6 +22,7 @@ use Composer\Util\StreamContextFactory;
 class PearRepository extends ArrayRepository
 {
     private $url;
+    private $channel;
     private $streamContext;
 
     public function __construct(array $config)
@@ -29,11 +30,14 @@ class PearRepository extends ArrayRepository
         if (!preg_match('{^https?://}', $config['url'])) {
             $config['url'] = 'http://'.$config['url'];
         }
+
         if (!filter_var($config['url'], FILTER_VALIDATE_URL)) {
             throw new \UnexpectedValueException('Invalid url given for PEAR repository: '.$config['url']);
         }
 
         $this->url = rtrim($config['url'], '/');
+
+        $this->channel = !empty($config['channel']) ? $config['channel'] : null;
     }
 
     protected function initialize()
@@ -50,6 +54,12 @@ class PearRepository extends ArrayRepository
 
     protected function fetchFromServer()
     {
+        if (!$this->channel) {
+            $channelXML = $this->requestXml($this->url . "/channel.xml");
+            $this->channel = $channelXML->getElementsByTagName("suggestedalias")->item(0)->nodeValue
+                                    ?: $channelXML->getElementsByTagName("name")->item(0)->nodeValue;
+        }
+
         $categoryXML = $this->requestXml($this->url . "/rest/c/categories.xml");
         $categories = $categoryXML->getElementsByTagName("c");
 
@@ -81,6 +91,7 @@ class PearRepository extends ArrayRepository
         $loader = new ArrayLoader();
         foreach ($packages as $package) {
             $packageName = $package->nodeValue;
+            $fullName = 'pear-'.$this->channel.'/'.$packageName;
 
             $packageLink = $package->getAttribute('xlink:href');
             $releaseLink = $this->url . str_replace("/rest/p/", "/rest/r/", $packageLink);
@@ -102,7 +113,7 @@ class PearRepository extends ArrayRepository
                 $pearVersion = $release->getElementsByTagName('v')->item(0)->nodeValue;
 
                 $packageData = array(
-                    'name' => $packageName,
+                    'name' => $fullName,
                     'type' => 'library',
                     'dist' => array('type' => 'pear', 'url' => $this->url.'/get/'.$packageName.'-'.$pearVersion.".tgz"),
                     'version' => $pearVersion,
@@ -220,8 +231,9 @@ class PearRepository extends ArrayRepository
             $package = $information->getElementsByTagName('p')->item(0);
 
             $packageName = $package->getElementsByTagName('n')->item(0)->nodeValue;
+            $fullName = 'pear-'.$this->channel.'/'.$packageName;
             $packageData = array(
-                'name' => $packageName,
+                'name' => $fullName,
                 'type' => 'library'
             );
             $packageKeys = array('l' => 'license', 'd' => 'description');

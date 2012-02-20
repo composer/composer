@@ -69,11 +69,7 @@ class Locker
      */
     public function getLockedPackages()
     {
-        if (!$this->isLocked()) {
-            throw new \LogicException('No lockfile found. Unable to read locked packages');
-        }
-
-        $lockList = $this->lockFile->read();
+        $lockList = $this->getLockData();
         $packages = array();
         foreach ($lockList['packages'] as $info) {
             $package = $this->repositoryManager->getLocalRepository()->findPackage($info['package'], $info['version']);
@@ -93,6 +89,15 @@ class Locker
         }
 
         return $packages;
+    }
+
+    public function getLockData()
+    {
+        if (!$this->isLocked()) {
+            throw new \LogicException('No lockfile found. Unable to read locked packages');
+        }
+
+        return $this->lockFile->read();
     }
 
     /**
@@ -116,8 +121,17 @@ class Locker
                 ));
             }
 
-            $lock['packages'][] = array('package' => $name, 'version' => $version);
+            $spec = array('package' => $name, 'version' => $version);
+
+            if ($package->isDev()) {
+                $spec['source-reference'] = $package->getSourceReference();
+            }
+
+            $lock['packages'][] = $spec;
         }
+        usort($lock['packages'], function ($a, $b) {
+            return strcmp($a['package'], $b['package']);
+        });
 
         $this->lockFile->write($lock);
     }

@@ -55,6 +55,11 @@ class Request
         );
     }
 
+    public function updateAll()
+    {
+        $this->jobs[] = array('cmd' => 'update-all', 'packages' => array());
+    }
+
     public function getJobs()
     {
         return $this->jobs;

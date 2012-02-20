@@ -34,8 +34,13 @@ class VersionParser
     {
         $version = trim($version);
 
-        if (preg_match('{^(?:master|trunk|default)(?:[.-]?dev)?$}i', $version)) {
+        // match master-like branches
+        if (preg_match('{^(?:dev-)?(?:master|trunk|default)$}i', $version)) {
             return '9999999-dev';
+        }
+
+        if ('dev-' === strtolower(substr($version, 0, 4))) {
+            return strtolower($version);
         }
 
         // match classical versioning
@@ -53,7 +58,7 @@ class VersionParser
         // add version modifiers if a version was matched
         if (isset($index)) {
             if (!empty($matches[$index])) {
-                $mod = array('{^pl?$}', '{^rc$}');
+                $mod = array('{^pl?$}i', '{^rc$}i');
                 $modNormalized = array('patch', 'RC');
                 $version .= '-'.preg_replace($mod, $modNormalized, strtolower($matches[$index]))
                     . (!empty($matches[$index+1]) ? $matches[$index+1] : '');
@@ -97,7 +102,7 @@ class VersionParser
             return str_replace('x', '9999999', $version).'-dev';
         }
 
-        throw new \UnexpectedValueException('Invalid branch name '.$name);
+        return 'dev-'.$name;
     }
 
     /**
