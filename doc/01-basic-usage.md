@@ -24,13 +24,15 @@ To check if composer is working, just run the PHAR through `php`:
 
 This should give you a list of available commands.
 
-> **Note:** You can also perform the checks only without downloading composer by using the `--check` option. For more information, just use `--help`.
+> **Note:** You can also perform the checks only without downloading composer
+> by using the `--check` option. For more information, just use `--help`.
 >
 >     $ curl -s http://getcomposer.org/installer | php -- --help
 
 ## Project setup
 
-To start using composer in your project, all you need is a `composer.json` file. This file describes the dependencies of your project and may contain
+To start using composer in your project, all you need is a `composer.json`
+file. This file describes the dependencies of your project and may contain
 other metadata as well.
 
 The [JSON format](http://json.org/) is quite easy to write. It allows you to
@@ -74,10 +76,11 @@ Version constraints can be specified in a few different ways.
   example `1.0.2`. This is not used very often, but can be useful.
 
 * **Range:** By using comparison operators you can specify ranges of valid
-  versions. Valid operators are `>`, `>=`, `<`, `<=`. An example range would be `>=1.0`. You can define multiple of these, separated by comma:
-  `>=1.0,<2.0`.
+  versions. Valid operators are `>`, `>=`, `<`, `<=`. An example range would be
+  `>=1.0`. You can define multiple of these, separated by comma:   `>=1.0,<2.0`.
 
-* **Wildcard:** You can specify a pattern with a `*` wildcard. `1.0.*` is the equivalent of `>=1.0,<1.1-dev`.
+* **Wildcard:** You can specify a pattern with a `*` wildcard. `1.0.*` is the
+  equivalent of `>=1.0,<1.1-dev`.
 
 ## Installing dependencies
 
@@ -95,8 +98,8 @@ In case of monolog it will put it into `vendor/monolog/monolog`.
 `vendor` into your `.gitignore`. You really don't want to add all of that
 code to your repository.
 
-Another thing that the `install` command does is it adds a `composer.lock` file
-into your project root.
+Another thing that the `install` command does is it adds a `composer.lock`
+file into your project root.
 
 ## Lock file
 
@@ -119,22 +122,33 @@ also update the lock file.
 
 ## Packagist
 
-[Packagist](http://packagist.org/) is the main composer repository. A composer repository is basically a package source. A place where you can get packages from. Packagist aims to be the central repository that everybody uses. This means that you can automatically `require` any package that is available there.
+[Packagist](http://packagist.org/) is the main composer repository. A composer
+repository is basically a package source. A place where you can get packages
+from. Packagist aims to be the central repository that everybody uses. This
+means that you can automatically `require` any package that is available
+there.
 
-If you go to the [packagist website](http://packagist.org/) (packagist.org), you can browse and search for packages.
+If you go to the [packagist website](http://packagist.org/) (packagist.org),
+you can browse and search for packages.
 
-Any open source project using composer should publish their packages on packagist.
+Any open source project using composer should publish their packages on
+packagist.
 
 ## Autoloading
 
-For libraries that follow the [PSR-0](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-0.md) naming standard, composer generates
-a `vendor/.composer/autoload.php` file for autoloading. You can simply include this file and you will get autoloading for free.
+For libraries that follow the [PSR-0](https://github.com/php-fig/fig-
+standards/blob/master/accepted/PSR-0.md) naming standard, composer generates a
+`vendor/.composer/autoload.php` file for autoloading. You can simply include
+this file and you will get autoloading for free.
 
 ```php
 require 'vendor/.composer/autoload.php';
 ```
 
-This makes it really easy to use third party code, because you really just have to add one line to `composer.json` and run `install`. For monolog, it means that we can just start using classes from it, and they will be autoloaded.
+This makes it really easy to use third party code, because you really just
+have to add one line to `composer.json` and run `install`. For monolog, it
+means that we can just start using classes from it, and they will be
+autoloaded.
 
 ```php
 $log = new Monolog\Logger('name');
@@ -143,7 +157,8 @@ $log->pushHandler(new Monolog\Handler\StreamHandler('app.log', Logger::WARNING))
 $log->addWarning('Foo');
 ```
 
-You can even add your own code to the autoloader by adding an `autoload` key to `composer.json`.
+You can even add your own code to the autoloader by adding an `autoload` key
+to `composer.json`.
 
 ```json
 {
@@ -153,15 +168,22 @@ You can even add your own code to the autoloader by adding an `autoload` key to 
 }
 ```
 
-This is a mapping from namespaces to directories. The `src` directory would be in your project root. An example filename would be `src/Acme/Foo.php` containing a `Acme\Foo` class.
+This is a mapping from namespaces to directories. The `src` directory would be
+in your project root. An example filename would be `src/Acme/Foo.php`
+containing a `Acme\Foo` class.
 
-After adding the `autoload` key, you have to re-run `install` to re-generate the `vendor/.composer/autoload.php` file.
+After adding the `autoload` key, you have to re-run `install` to re-generate
+the `vendor/.composer/autoload.php` file.
 
-Including that file will also return the autoloader instance, so you can add retrieve it and add more namespaces. This can be useful for autoloading classes in a test suite, for example.
+Including that file will also return the autoloader instance, so you can add
+retrieve it and add more namespaces. This can be useful for autoloading
+classes in a test suite, for example.
 
 ```php
 $loader = require 'vendor/.composer/autoload.php';
 $loader->add('Acme\Test', __DIR__);
 ```
 
-> **Note:** Composer provides its own autoloader. If you don't want to use that one, you can just include `vendor/.composer/autoload_namespaces.php`, which returns an associative array mapping namespaces to directories.
+> **Note:** Composer provides its own autoloader. If you don't want to use
+that one, you can just include `vendor/.composer/autoload_namespaces.php`,
+which returns an associative array mapping namespaces to directories.
