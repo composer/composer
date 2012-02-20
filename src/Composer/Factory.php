@@ -51,7 +51,6 @@ class Factory
         // Configuration defaults
         $composerConfig = array(
             'vendor-dir' => 'vendor',
-            'repositories' => array(),
         );
 
         $packageConfig = $file->read();
@@ -73,9 +72,11 @@ class Factory
 
         // load default repository unless it's explicitly disabled
         $loadPackagist = true;
-        foreach ($packageConfig['repositories'] as $repo) {
-            if (isset($repo['packagist']) && $repo['packagist'] === false) {
-                $loadPackagist = false;
+        if (isset($packageConfig['repositories'])) {
+            foreach ($packageConfig['repositories'] as $repo) {
+                if (isset($repo['packagist']) && $repo['packagist'] === false) {
+                    $loadPackagist = false;
+                }
             }
         }
         if ($loadPackagist) {
