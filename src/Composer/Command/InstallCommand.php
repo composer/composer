@@ -30,6 +30,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\DependencyResolver\Operation\InstallOperation;
+use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Solver;
 use Composer\IO\IOInterface;
 
@@ -113,23 +114,20 @@ EOT
         }
 
         // creating requirements request
+        $installFromLock = false;
         $request = new Request($pool);
         if ($update) {
             $io->write('<info>Updating dependencies</info>');
             $installedPackages = $installedRepo->getPackages();
             $links = $this->collectLinks($composer->getPackage(), $noInstallRecommends, $installSuggests);
 
-            foreach ($links as $link) {
-                foreach ($installedPackages as $package) {
-                    if ($package->getName() === $link->getTarget()) {
-                        $request->update($package->getName(), new VersionConstraint('=', $package->getVersion()));
-                        break;
-                    }
-                }
+            $request->updateAll();
 
+            foreach ($links as $link) {
                 $request->install($link->getTarget(), $link->getConstraint());
             }
         } elseif ($composer->getLocker()->isLocked()) {
+            $installFromLock = true;
             $io->write('<info>Installing from lock file</info>');
 
             if (!$composer->getLocker()->isFresh()) {
@@ -158,45 +156,63 @@ EOT
         // solve dependencies
         $operations = $solver->solve($request);
 
-        // check for missing deps
-        // TODO this belongs in the solver, but this will do for now to report top-level deps missing at least
-        foreach ($request->getJobs() as $job) {
-            if ('install' === $job['cmd']) {
-                foreach ($installedRepo->getPackages() as $package ) {
-                    if ($installedRepo->hasPackage($package) && !$package->isPlatform() && !$installationManager->isPackageInstalled($package)) {
-                        $operations[$job['packageName']] = new InstallOperation($package, Solver::RULE_PACKAGE_NOT_EXIST);
-                    }
-                    if (in_array($job['packageName'], $package->getNames())) {
-                        continue 2;
-                    }
-                }
-                foreach ($operations as $operation) {
-                    if ('install' === $operation->getJobType() && in_array($job['packageName'], $operation->getPackage()->getNames())) {
-                        continue 2;
-                    }
-                    if ('update' === $operation->getJobType() && in_array($job['packageName'], $operation->getTargetPackage()->getNames())) {
-                        continue 2;
-                    }
-                }
-
-                if ($pool->whatProvides($job['packageName'])) {
-                    throw new \UnexpectedValueException('Package '.$job['packageName'].' can not be installed, either because its version constraint is incorrect, or because one of its dependencies was not found.');
-                }
-                throw new \UnexpectedValueException('Package '.$job['packageName'].' was not found in the package pool, check the name for typos.');
-            }
-        }
-
         // execute operations
         if (!$operations) {
             $io->write('<info>Nothing to install/update</info>');
         }
+
+        // force dev packages to be updated to latest reference on update
+        if ($update) {
+            foreach ($localRepo->getPackages() as $package) {
+                // skip non-dev packages
+                if (!$package->isDev()) {
+                    continue;
+                }
+
+                // skip packages that will be updated/uninstalled
+                foreach ($operations as $operation) {
+                    if (('update' === $operation->getJobType() && $package === $operation->getInitialPackage())
+                        || ('uninstall' === $operation->getJobType() && $package === $operation->getPackage())
+                    ) {
+                        continue 2;
+                    }
+                }
+
+                // force update
+                $newPackage = $composer->getRepositoryManager()->findPackage($package->getName(), $package->getVersion());
+                if ($newPackage && $newPackage->getSourceReference() !== $package->getSourceReference()) {
+                    $operations[] = new UpdateOperation($package, $newPackage);
+                }
+            }
+        }
+
         foreach ($operations as $operation) {
             if ($verbose) {
                 $io->write((string) $operation);
             }
             if (!$dryRun) {
                 $eventDispatcher->dispatchPackageEvent(constant('Composer\Script\ScriptEvents::PRE_PACKAGE_'.strtoupper($operation->getJobType())), $operation);
+
+                // if installing from lock, restore dev packages' references to their locked state
+                if ($installFromLock) {
+                    $package = null;
+                    if ('update' === $operation->getJobType()) {
+                        $package = $operation->getTargetPackage();
+                    } elseif ('install' === $operation->getJobType()) {
+                        $package = $operation->getPackage();
+                    }
+                    if ($package && $package->isDev()) {
+                        $lockData = $composer->getLocker()->getLockData();
+                        foreach ($lockData['packages'] as $lockedPackage) {
+                            if (!empty($lockedPackage['source-reference']) && strtolower($lockedPackage['package']) === $package->getName()) {
+                                $package->setSourceReference($lockedPackage['source-reference']);
+                                break;
+                            }
+                        }
+                    }
+                }
                 $installationManager->execute($operation);
+
                 $eventDispatcher->dispatchPackageEvent(constant('Composer\Script\ScriptEvents::POST_PACKAGE_'.strtoupper($operation->getJobType())), $operation);
             }
         }

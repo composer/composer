@@ -101,6 +101,20 @@
             "description": "This is a hash of package name (keys) and version constraints (values) that this package suggests work well with it (typically this will only be suggested to the user).",
             "additionalProperties": true
         },
+        "config": {
+            "type": ["object"],
+            "description": "Composer options.",
+            "properties": {
+                "vendor-dir": {
+                    "type": "string",
+                    "description": "The location where all packages are installed, defaults to \"vendor\"."
+                },
+                "bin-dir": {
+                    "type": "string",
+                    "description": "The location where all binaries are linked, defaults to \"vendor/bin\"."
+                }
+            }
+        },
         "extra": {
             "type": ["object", "array"],
             "description": "Arbitrary extra data that can be used by custom installers, for example, package of type composer-installer must have a 'class' key defining the installer class name.",
@@ -121,6 +135,59 @@
             "type": ["object", "array"],
             "description": "A set of additional repositories where packages can be found.",
             "additionalProperties": true
+        },
+        "bin": {
+            "type": ["array"],
+            "description": "A set of files that should be treated as binaries and symlinked into bin-dir (from config).",
+            "items": {
+                "type": "string"
+            }
+        },
+        "scripts": {
+            "type": ["object"],
+            "description": "Scripts listeners that will be executed before/after some events.",
+            "properties": {
+                "pre-install-cmd": {
+                    "type": ["array", "string"],
+                    "description": "Occurs before the install command is executed, contains one or more Class::method callables."
+                },
+                "post-install-cmd": {
+                    "type": ["array", "string"],
+                    "description": "Occurs after the install command is executed, contains one or more Class::method callables."
+                },
+                "pre-update-cmd": {
+                    "type": ["array", "string"],
+                    "description": "Occurs before the update command is executed, contains one or more Class::method callables."
+                },
+                "post-update-cmd": {
+                    "type": ["array", "string"],
+                    "description": "Occurs after the update command is executed, contains one or more Class::method callables."
+                },
+                "pre-package-install": {
+                    "type": ["array", "string"],
+                    "description": "Occurs before a package is installed, contains one or more Class::method callables."
+                },
+                "post-package-install": {
+                    "type": ["array", "string"],
+                    "description": "Occurs after a package is installed, contains one or more Class::method callables."
+                },
+                "pre-package-update": {
+                    "type": ["array", "string"],
+                    "description": "Occurs before a package is updated, contains one or more Class::method callables."
+                },
+                "post-package-update": {
+                    "type": ["array", "string"],
+                    "description": "Occurs after a package is updated, contains one or more Class::method callables."
+                },
+                "pre-package-uninstall": {
+                    "type": ["array", "string"],
+                    "description": "Occurs before a package has been uninstalled, contains one or more Class::method callables."
+                },
+                "post-package-uninstall": {
+                    "type": ["array", "string"],
+                    "description": "Occurs after a package has been uninstalled, contains one or more Class::method callables."
+                }
+            }
         }
     }
 }

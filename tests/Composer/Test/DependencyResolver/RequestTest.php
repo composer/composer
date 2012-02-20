@@ -46,4 +46,16 @@ class RequestTest extends TestCase
             ),
             $request->getJobs());
     }
+
+    public function testUpdateAll()
+    {
+        $pool = new Pool;
+        $request = new Request($pool);
+
+        $request->updateAll();
+
+        $this->assertEquals(
+            array(array('cmd' => 'update-all', 'packages' => array())),
+            $request->getJobs());
+    }
 }

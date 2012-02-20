@@ -125,14 +125,14 @@ class DownloadManager
         $sourceType   = $package->getSourceType();
         $distType     = $package->getDistType();
 
-        if (!($preferSource && $sourceType) && $distType) {
+        if (!$package->isDev() && !($preferSource && $sourceType) && $distType) {
             $package->setInstallationSource('dist');
         } elseif ($sourceType) {
             $package->setInstallationSource('source');
+        } elseif ($package->isDev()) {
+            throw new \InvalidArgumentException('Dev package '.$package.' must have a source specified');
         } else {
-            throw new \InvalidArgumentException(
-                'Package '.$package.' should have source or dist specified'
-            );
+            throw new \InvalidArgumentException('Package '.$package.' must have a source or dist specified');
         }
 
         $fs = new Filesystem();

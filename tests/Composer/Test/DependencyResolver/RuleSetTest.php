@@ -27,10 +27,9 @@ class RuleSetTest extends TestCase
                 new Rule(array(), 'job1', null),
                 new Rule(array(), 'job2', null),
             ),
-            RuleSet::TYPE_UPDATE => array(
+            RuleSet::TYPE_FEATURE => array(
                 new Rule(array(), 'update1', null),
             ),
-            RuleSet::TYPE_FEATURE => array(),
             RuleSet::TYPE_LEARNED => array(),
             RuleSet::TYPE_CHOICE => array(),
         );
@@ -38,7 +37,7 @@ class RuleSetTest extends TestCase
         $ruleSet = new RuleSet;
 
         $ruleSet->add($rules[RuleSet::TYPE_JOB][0], RuleSet::TYPE_JOB);
-        $ruleSet->add($rules[RuleSet::TYPE_UPDATE][0], RuleSet::TYPE_UPDATE);
+        $ruleSet->add($rules[RuleSet::TYPE_FEATURE][0], RuleSet::TYPE_FEATURE);
         $ruleSet->add($rules[RuleSet::TYPE_JOB][1], RuleSet::TYPE_JOB);
 
         $this->assertEquals($rules, $ruleSet->getRules());
@@ -81,7 +80,7 @@ class RuleSetTest extends TestCase
         $rule1 = new Rule(array(), 'job1', null);
         $rule2 = new Rule(array(), 'job1', null);
         $ruleSet->add($rule1, RuleSet::TYPE_JOB);
-        $ruleSet->add($rule2, RuleSet::TYPE_UPDATE);
+        $ruleSet->add($rule2, RuleSet::TYPE_FEATURE);
 
         $iterator = $ruleSet->getIterator();
 
@@ -97,9 +96,9 @@ class RuleSetTest extends TestCase
         $rule2 = new Rule(array(), 'job1', null);
 
         $ruleSet->add($rule1, RuleSet::TYPE_JOB);
-        $ruleSet->add($rule2, RuleSet::TYPE_UPDATE);
+        $ruleSet->add($rule2, RuleSet::TYPE_FEATURE);
 
-        $iterator = $ruleSet->getIteratorFor(RuleSet::TYPE_UPDATE);
+        $iterator = $ruleSet->getIteratorFor(RuleSet::TYPE_FEATURE);
 
         $this->assertSame($rule2, $iterator->current());
     }
@@ -111,7 +110,7 @@ class RuleSetTest extends TestCase
         $rule2 = new Rule(array(), 'job1', null);
 
         $ruleSet->add($rule1, RuleSet::TYPE_JOB);
-        $ruleSet->add($rule2, RuleSet::TYPE_UPDATE);
+        $ruleSet->add($rule2, RuleSet::TYPE_FEATURE);
 
         $iterator = $ruleSet->getIteratorWithout(RuleSet::TYPE_JOB);
 
@@ -143,7 +142,7 @@ class RuleSetTest extends TestCase
             ->method('equal')
             ->will($this->returnValue(false));
 
-        $ruleSet->add($rule, RuleSet::TYPE_UPDATE);
+        $ruleSet->add($rule, RuleSet::TYPE_FEATURE);
 
         $this->assertTrue($ruleSet->containsEqual($rule));
         $this->assertFalse($ruleSet->containsEqual($rule2));
@@ -156,9 +155,9 @@ class RuleSetTest extends TestCase
         $literal = new Literal($this->getPackage('foo', '2.1'), true);
         $rule = new Rule(array($literal), 'job1', null);
 
-        $ruleSet->add($rule, RuleSet::TYPE_UPDATE);
+        $ruleSet->add($rule, RuleSet::TYPE_FEATURE);
 
-        $this->assertContains('UPDATE  : (+foo-2.1.0.0)', $ruleSet->__toString());
+        $this->assertContains('FEATURE : (+foo-2.1.0.0)', $ruleSet->__toString());
     }
 
     private function getRuleMock()
