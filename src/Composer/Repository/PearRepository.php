@@ -90,7 +90,8 @@ class PearRepository extends ArrayRepository
         $packages = $packagesXML->getElementsByTagName('p');
         $loader = new ArrayLoader();
         foreach ($packages as $package) {
-            $packageName = 'pear-'.$this->channel.'/'.$package->nodeValue;
+            $packageName = $package->nodeValue;
+            $fullName = 'pear-'.$this->channel.'/'.$packageName;
 
             $packageLink = $package->getAttribute('xlink:href');
             $releaseLink = $this->url . str_replace("/rest/p/", "/rest/r/", $packageLink);
@@ -112,7 +113,7 @@ class PearRepository extends ArrayRepository
                 $pearVersion = $release->getElementsByTagName('v')->item(0)->nodeValue;
 
                 $packageData = array(
-                    'name' => $packageName,
+                    'name' => $fullName,
                     'type' => 'library',
                     'dist' => array('type' => 'pear', 'url' => $this->url.'/get/'.$packageName.'-'.$pearVersion.".tgz"),
                     'version' => $pearVersion,
@@ -229,9 +230,10 @@ class PearRepository extends ArrayRepository
         foreach ($informations as $information) {
             $package = $information->getElementsByTagName('p')->item(0);
 
-            $packageName = 'pear-'.$this->channel.'/'.$package->getElementsByTagName('n')->item(0)->nodeValue;
+            $packageName = $package->getElementsByTagName('n')->item(0)->nodeValue;
+            $fullName = 'pear-'.$this->channel.'/'.$packageName;
             $packageData = array(
-                'name' => $packageName,
+                'name' => $fullName,
                 'type' => 'library'
             );
             $packageKeys = array('l' => 'license', 'd' => 'description');
