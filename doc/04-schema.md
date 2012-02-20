@@ -288,7 +288,7 @@ Example:
                 "source": {
                     "url": "http://smarty-php.googlecode.com/svn/",
                     "type": "svn",
-                    "reference": "trunk"
+                    "reference": "tags/Smarty_3_1_7/distribution/"
                 }
             }
         }
