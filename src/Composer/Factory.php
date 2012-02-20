@@ -51,6 +51,7 @@ class Factory
         // Configuration defaults
         $composerConfig = array(
             'vendor-dir' => 'vendor',
+            'repositories' => array(),
         );
 
         $packageConfig = $file->read();
@@ -71,7 +72,13 @@ class Factory
         $rm = $this->createRepositoryManager($io);
 
         // load default repository unless it's explicitly disabled
-        if (!isset($packageConfig['repositories']['packagist']) || $packageConfig['repositories']['packagist'] !== false) {
+        $loadPackagist = true;
+        foreach ($packageConfig['repositories'] as $repo) {
+            if (isset($repo['packagist']) && $repo['packagist'] === false) {
+                $loadPackagist = false;
+            }
+        }
+        if ($loadPackagist) {
             $this->addPackagistRepository($rm);
         }
 
