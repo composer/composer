@@ -252,6 +252,8 @@ Example:
 }
 ```
 
+> **Note:** Order is significant here. Repositories added later will take precedence. This also means that custom repositories can override packages that exist on packagist.
+
 You can also disable the packagist repository by setting `packagist` to `false`.
 
 ```json
