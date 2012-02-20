@@ -14,10 +14,10 @@ node's [npm](http://npmjs.org/) and ruby's [bundler](http://gembundler.com/).
 But there has not been such a tool for PHP so far.
 
 The problem that composer solves is the following. You have a project that
-depends on a number of libraries. Some of libraries have dependencies of their
-own. You declare the things you depend on. Composer will then go ahead and
-find out which versions of which packages need to be installed, and install
-them.
+depends on a number of libraries. Some of those libraries have dependencies of
+their own. You declare the things you depend on. Composer will then go ahead
+and find out which versions of which packages need to be installed, and
+install them.
 
 ## Declaring dependencies
 

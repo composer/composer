@@ -154,15 +154,15 @@ every time is cumbersome. You don't want to force all your users to do that.
 The other thing that you may have noticed is that we did not specify a package
 repository for `monolog/monolog`. How did that work? The answer is packagist.
 
-Packagist is the main package repository for composer, and it is enabled by
-default. Anything that is published on packagist is available automatically
-through composer. Since monolog [is on
-packagist](http://packagist.org/packages/monolog/monolog), we can depend on it
-without having to specify any additional repositories.
+[Packagist](http://packagist.org/) is the main package repository for
+composer, and it is enabled by default. Anything that is published on
+packagist is available automatically through composer. Since monolog
+[is on packagist](http://packagist.org/packages/monolog/monolog), we can depend
+on it without having to specify any additional repositories.
 
 Assuming we want to share `hello-world` with the world, we would want to
 publish it on packagist as well. And this is really easy.
 
 You simply hit the big "Submit Package" button and sign up. Then you submit
-the URL to your VCS, at which point packagist will start crawling it. Once it
-is done, your package will be available to anyone.
+the URL to your VCS repository, at which point packagist will start crawling
+it. Once it is done, your package will be available to anyone.
