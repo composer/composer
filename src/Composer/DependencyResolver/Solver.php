@@ -147,10 +147,6 @@ class Solver
      */
     protected function createInstallOneOfRule(array $packages, $reason, $reasonData = null)
     {
-        if (empty($packages)) {
-            return $this->createImpossibleRule($reason, $reasonData);
-        }
-
         $literals = array();
         foreach ($packages as $package) {
             $literals[] = new Literal($package, true);
@@ -198,22 +194,6 @@ class Solver
         }
 
         return new Rule(array(new Literal($issuer, false), new Literal($provider, false)), $reason, $reasonData);
-    }
-
-    /**
-     * Intentionally creates a rule impossible to solve
-     *
-     * The rule is an empty one so it can never be satisfied.
-     *
-     * @param int     $reason     A RULE_* constant describing the reason for
-     *                            generating this rule
-     * @param mixed   $reasonData Any data, e.g. the package name, that goes with
-     *                            the reason
-     * @return Rule               An empty rule
-     */
-    protected function createImpossibleRule($reason, $reasonData = null)
-    {
-        return new Rule(array(), $reason, $reasonData);
     }
 
     /**
@@ -972,12 +952,6 @@ class Solver
 
 
         foreach ($this->jobs as $job) {
-            if (empty($job['packages']) && $job['cmd'] == 'install') {
-                $this->addRule(
-                    RuleSet::TYPE_JOB,
-                    $this->createImpossibleRule(static::RULE_JOB_INSTALL, $job)
-                );
-            }
             foreach ($job['packages'] as $package) {
                 switch ($job['cmd']) {
                     case 'install':
@@ -1002,9 +976,13 @@ class Solver
         foreach ($this->jobs as $job) {
             switch ($job['cmd']) {
                 case 'install':
-                    $rule = $this->createInstallOneOfRule($job['packages'], self::RULE_JOB_INSTALL, $job['packageName']);
-                    $this->addRule(RuleSet::TYPE_JOB, $rule);
-                    $this->ruleToJob[$rule->getId()] = $job;
+                    if (empty($job['packages'])) {
+                        $this->problems[] = array($job);
+                    } else {
+                        $rule = $this->createInstallOneOfRule($job['packages'], self::RULE_JOB_INSTALL, $job['packageName']);
+                        $this->addRule(RuleSet::TYPE_JOB, $rule);
+                        $this->ruleToJob[$rule->getId()] = $job;
+                    }
                     break;
                 case 'remove':
                     // remove all packages with this name including uninstalled
