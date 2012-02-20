@@ -148,6 +148,116 @@ The VCS driver to be used is detected automatically based on the URL.
 
 ### PEAR
 
+It is possible to install packages from any PEAR channel by using the `pear`
+repository. Composer will prefix all package names with `pear-{channelName}/` to
+avoid conflicts.
+
+Example using `pear2.php.net`:
+
+```json
+{
+    "repositories": [
+        {
+            "type": "pear",
+            "url": "http://pear2.php.net"
+        }
+    ],
+    "require": {
+        "pear-pear2/PEAR2_HTTP_Request": "*"
+    }
+}
+```
+
+In this case the short name of the channel is `pear2`, so the
+`PEAR2_HTTP_Request` package name becomes `pear-pear2/PEAR2_HTTP_Request`.
+
+> **Note:** The `pear` repository requires doing quite a few requests per
+> package, so this may considerably slow down the installation process.
+
 ### Package
 
+If you want to use a project that does not support composer through any of the
+means above, you still can define the package yourself using a `package`
+repository.
+
+Basically, you define the same information that is included in the `composer`
+repository's `packages.json`, but only for a single package. Again, the
+minimally required fields are `name`, `version`, and either of `dist` or
+`source`.
+
+Here is an example for the smarty template engine:
+
+```json
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "name": "smarty/smarty",
+                "version": "3.1.7",
+                "dist": {
+                    "url": "http://www.smarty.net/files/Smarty-3.1.7.zip",
+                    "type": "zip"
+                },
+                "source": {
+                    "url": "http://smarty-php.googlecode.com/svn/",
+                    "type": "svn",
+                    "reference": "tags/Smarty_3_1_7/distribution/"
+                }
+            }
+        }
+    ],
+    "require": {
+        "smarty/smarty": "3.1.*"
+    }
+}
+```
+
+Typically you would leave the source part off, as you don't really need it.
+
 ## Hosting your own
+
+While you will probably want to put your packages on packagist most of the time,
+there are some use cases for hosting your own repository.
+
+* **Private company packages:** If you are part of a company that uses composer
+  for their packages internally, you might want to keep those packages private.
+
+* **Separate ecosystem:** If you have a project which has its own ecosystem,
+  and the packages aren't really reusable by the greater PHP community, you
+  might want to keep them separate to packagist. An example of this would be
+  wordpress plugins.
+
+When hosting your own package repository it is recommended to use a `composer`
+one. This is type that is native to composer and yields the best performance.
+
+There are a few different tools that can help you create a `composer`
+repository.
+
+### Packagist
+
+The underlying application used by packagist is open source. This means that you
+can just install your own copy of packagist, re-brand, and use it. It's really
+quite straight-forward to do.
+
+Packagist is a Symfony2 application, and it is [available on
+GitHub](https://github.com/composer/packagist). It uses composer internally and
+acts as a proxy between VCS repositories and the composer users. It holds a list
+of all VCS packages, periodically re-crawls them, and exposes them as a composer
+repository.
+
+To set your own copy, simply follow the instructions from the [packagist
+github repository](https://github.com/composer/packagist).
+
+### Satis
+
+Satis is a static `composer` repository generator. It is a bit like a ultra-
+lightweight, file-based version of packagist.
+
+You give it a `composer.json` containing repositories, typically VCS and package
+repository definitions. It will fetch all the packages that are `require`d from
+these repositories and dump a `packages.json` that is your `composer`
+repository.
+
+Check [the satis GitHub repository](https://github.com/composer/satis) for more
+information.
