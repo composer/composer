@@ -38,7 +38,7 @@ class RootPackageLoader extends ArrayLoader
             $config['name'] = '__root__';
         }
         if (!isset($config['version'])) {
-            $config['version'] = '1.0.0-dev';
+            $config['version'] = '1.0.0';
         }
 
         $package = parent::load($config);

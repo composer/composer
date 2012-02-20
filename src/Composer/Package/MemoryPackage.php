@@ -41,6 +41,7 @@ class MemoryPackage extends BasePackage
     protected $extra = array();
     protected $binaries = array();
     protected $scripts = array();
+    protected $dev;
 
     protected $requires = array();
     protected $conflicts = array();
@@ -63,6 +64,16 @@ class MemoryPackage extends BasePackage
 
         $this->version = $version;
         $this->prettyVersion = $prettyVersion;
+
+        $this->dev = 'dev-' === substr($version, 0, 4) || '-dev' === substr($version, -4);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function isDev()
+    {
+        return $this->dev;
     }
 
     /**
