@@ -246,7 +246,7 @@ acts as a proxy between VCS repositories and the composer users. It holds a list
 of all VCS packages, periodically re-crawls them, and exposes them as a composer
 repository.
 
-To put set your own copy, simply follow the instructions from the [packagist
+To set your own copy, simply follow the instructions from the [packagist
 github repository](https://github.com/composer/packagist).
 
 ### Satis
@@ -255,8 +255,9 @@ Satis is a static `composer` repository generator. It is a bit like a ultra-
 lightweight, file-based version of packagist.
 
 You give it a `composer.json` containing repositories, typically VCS and package
-repository definitions. It will fetch all the packages from these repositories
-and dump a `packages.json` that is your `composer` repository.
+repository definitions. It will fetch all the packages that are `require`d from
+these repositories and dump a `packages.json` that is your `composer`
+repository.
 
 Check [the satis GitHub repository](https://github.com/composer/satis) for more
 information.
