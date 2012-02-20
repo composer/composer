@@ -57,8 +57,6 @@ class SolverTest extends TestCase
 
     public function testInstallNonExistingPackageFails()
     {
-        $this->markTestIncomplete('Reporting this failure is not implemented/working yet');
-
         $this->repo->addPackage($this->getPackage('A', '1.0'));
         $this->reposComplete();
 
