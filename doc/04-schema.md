@@ -7,7 +7,7 @@ This chapter will explain all of the options available in `composer.json`.
 We have a [JSON schema](http://json-schema.org) that documents the format and
 can also be used to validate your `composer.json`. In fact, it is used by the
 `validate` command. You can find it at: [`Resources/composer-
-schema.json`](https://github.com/composer/composer/blob/docs/Resources
+schema.json`](https://github.com/composer/composer/blob/res
 /composer-schema.json).
 
 ## Package root
