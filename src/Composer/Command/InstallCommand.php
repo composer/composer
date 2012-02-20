@@ -156,34 +156,6 @@ EOT
         // solve dependencies
         $operations = $solver->solve($request);
 
-        // check for missing deps
-        // TODO this belongs in the solver, but this will do for now to report top-level deps missing at least
-        foreach ($request->getJobs() as $job) {
-            if ('install' === $job['cmd']) {
-                foreach ($installedRepo->getPackages() as $package ) {
-                    if ($installedRepo->hasPackage($package) && !$package->isPlatform() && !$installationManager->isPackageInstalled($package)) {
-                        $operations[$job['packageName']] = new InstallOperation($package, Solver::RULE_PACKAGE_NOT_EXIST);
-                    }
-                    if (in_array($job['packageName'], $package->getNames())) {
-                        continue 2;
-                    }
-                }
-                foreach ($operations as $operation) {
-                    if ('install' === $operation->getJobType() && in_array($job['packageName'], $operation->getPackage()->getNames())) {
-                        continue 2;
-                    }
-                    if ('update' === $operation->getJobType() && in_array($job['packageName'], $operation->getTargetPackage()->getNames())) {
-                        continue 2;
-                    }
-                }
-
-                if ($pool->whatProvides($job['packageName'])) {
-                    throw new \UnexpectedValueException('Package '.$job['packageName'].' can not be installed, either because its version constraint is incorrect, or because one of its dependencies was not found.');
-                }
-                throw new \UnexpectedValueException('Package '.$job['packageName'].' was not found in the package pool, check the name for typos.');
-            }
-        }
-
         // execute operations
         if (!$operations) {
             $io->write('<info>Nothing to install/update</info>');
