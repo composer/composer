@@ -29,7 +29,10 @@ class GitDownloader extends VcsDownloader
         $ref = escapeshellarg($package->getSourceReference());
         $path = escapeshellarg($path);
         $this->io->write("    Cloning ".$package->getSourceReference());
-        $this->process->execute(sprintf('git clone %s %s && cd %2$s && git checkout %3$s && git reset --hard %3$s', $url, $path, $ref), $ignoredOutput);
+        $command = sprintf('git clone %s %s && cd %2$s && git checkout %3$s && git reset --hard %3$s', $url, $path, $ref);
+        if (0 !== $this->process->execute($command, $ignoredOutput)) {
+            throw new \RuntimeException('Failed to execute ' . $command);
+        }
     }
 
     /**
@@ -40,7 +43,10 @@ class GitDownloader extends VcsDownloader
         $ref = escapeshellarg($target->getSourceReference());
         $path = escapeshellarg($path);
         $this->io->write("    Checking out ".$target->getSourceReference());
-        $this->process->execute(sprintf('cd %s && git fetch && git checkout %2$s && git reset --hard %2$s', $path, $ref), $ignoredOutput);
+        $command = sprintf('cd %s && git fetch && git checkout %2$s && git reset --hard %2$s', $path, $ref);
+        if (0 !== $this->process->execute($command, $ignoredOutput)) {
+            throw new \RuntimeException('Failed to execute ' . $command);
+        }
     }
 
     /**
@@ -48,7 +54,11 @@ class GitDownloader extends VcsDownloader
      */
     protected function enforceCleanDirectory($path)
     {
-        $this->process->execute(sprintf('cd %s && git status --porcelain', escapeshellarg($path)), $output);
+        $command = sprintf('cd %s && git status --porcelain', escapeshellarg($path));
+        if (0 !== $this->process->execute($command, $output)) {
+            throw new \RuntimeException('Failed to execute ' . $command);
+        }
+
         if (trim($output)) {
             throw new \RuntimeException('Source directory has uncommitted changes');
         }
