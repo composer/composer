@@ -464,16 +464,17 @@ class SolverTest extends TestCase
 
     public function testInstallAlternativeWithCircularRequire()
     {
-        $this->markTestIncomplete();
-
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageB = $this->getPackage('B', '1.0'));
         $this->repo->addPackage($packageC = $this->getPackage('C', '1.0'));
         $this->repo->addPackage($packageD = $this->getPackage('D', '1.0'));
         $packageA->setRequires(array(new Link('A', 'B', $this->getVersionConstraint('>=', '1.0'), 'requires')));
         $packageB->setRequires(array(new Link('B', 'Virtual', $this->getVersionConstraint('>=', '1.0'), 'requires')));
-        $packageC->setRequires(array(new Link('C', 'Virtual', $this->getVersionConstraint('==', '1.0'), 'provides')));
-        $packageD->setRequires(array(new Link('D', 'Virtual', $this->getVersionConstraint('==', '1.0'), 'provides')));
+        $packageC->setProvides(array(new Link('C', 'Virtual', $this->getVersionConstraint('==', '1.0'), 'provides')));
+        $packageD->setProvides(array(new Link('D', 'Virtual', $this->getVersionConstraint('==', '1.0'), 'provides')));
+
+        $packageC->setRequires(array(new Link('C', 'A', $this->getVersionConstraint('==', '1.0'), 'requires')));
+        $packageD->setRequires(array(new Link('D', 'A', $this->getVersionConstraint('==', '1.0'), 'requires')));
 
         $this->reposComplete();
 
