@@ -125,7 +125,7 @@ class FileDownloader implements DownloaderInterface
      */
     protected function processUrl($url)
     {
-        if (!extension_loaded('openssl') && (0 === strpos($url, 'https:') || 0 === strpos($url, 'http://github.com'))) {
+        if (!extension_loaded('openssl') && 0 === strpos($url, 'https:')) {
             throw new \RuntimeException('You must enable the openssl extension to download files via https');
         }
 
