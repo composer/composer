@@ -214,8 +214,7 @@ EOT
                 // force update
                 $newPackage = $composer->getRepositoryManager()->findPackage($package->getName(), $package->getVersion());
                 if ($newPackage->getSourceReference() !== $package->getSourceReference()) {
-                    $operation = new UpdateOperation($package, $newPackage);
-                    $operations[] = $operation;
+                    $operations[] = new UpdateOperation($package, $newPackage);
                 }
             }
         }
