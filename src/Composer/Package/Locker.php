@@ -129,6 +129,9 @@ class Locker
 
             $lock['packages'][] = $spec;
         }
+        usort($lock['packages'], function ($a, $b) {
+            return strcmp($a['package'], $b['package']);
+        });
 
         $this->lockFile->write($lock);
     }
