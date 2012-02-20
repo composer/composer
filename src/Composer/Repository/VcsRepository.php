@@ -76,20 +76,22 @@ class VcsRepository extends ArrayRepository
         }
 
         foreach ($driver->getTags() as $tag => $identifier) {
-            $this->io->overwrite('Get composer of <info>' . $this->packageName . '</info> (<comment>' . $tag . '</comment>)', false);
+            $msg = 'Get composer info for <info>' . $this->packageName . '</info> (<comment>' . $tag . '</comment>)';
+            if ($debug) {
+                $this->io->write($msg);
+            } else {
+                $this->io->overwrite($msg, false);
+            }
+
             $parsedTag = $this->validateTag($versionParser, $tag);
             if ($parsedTag && $driver->hasComposerFile($identifier)) {
                 try {
                     $data = $driver->getComposerInformation($identifier);
                 } catch (\Exception $e) {
-                    if (strpos($e->getMessage(), 'JSON Parse Error') !== false) {
-                        if ($debug) {
-                            $this->io->write('Skipped tag '.$tag.', '.$e->getMessage());
-                        }
-                        continue;
-                    } else {
-                        throw $e;
+                    if ($debug) {
+                        $this->io->write('Skipped tag '.$tag.', '.$e->getMessage());
                     }
+                    continue;
                 }
 
                 // manually versioned package
@@ -103,7 +105,7 @@ class VcsRepository extends ArrayRepository
 
                 // make sure tag packages have no -dev flag
                 $data['version'] = preg_replace('{[.-]?dev$}i', '', $data['version']);
-                $data['version_normalized'] = preg_replace('{[.-]?dev$}i', '', $data['version_normalized']);
+                $data['version_normalized'] = preg_replace('{(^dev-|[.-]?dev$)}i', '', $data['version_normalized']);
 
                 // broken package, version doesn't match tag
                 if ($data['version_normalized'] !== $parsedTag) {
@@ -126,39 +128,33 @@ class VcsRepository extends ArrayRepository
         $this->io->overwrite('', false);
 
         foreach ($driver->getBranches() as $branch => $identifier) {
-            $this->io->overwrite('Get composer of <info>' . $this->packageName . '</info> (<comment>' . $branch . '</comment>)', false);
+            $msg = 'Get composer info for <info>' . $this->packageName . '</info> (<comment>' . $branch . '</comment>)';
+            if ($debug) {
+                $this->io->write($msg);
+            } else {
+                $this->io->overwrite($msg, false);
+            }
+
             $parsedBranch = $this->validateBranch($versionParser, $branch);
             if ($driver->hasComposerFile($identifier)) {
                 $data = $driver->getComposerInformation($identifier);
 
-                // manually versioned package
-                if (isset($data['version'])) {
-                    $data['version_normalized'] = $versionParser->normalize($data['version']);
-                } elseif ($parsedBranch) {
-                    // auto-versionned package, read value from branch name
-                    $data['version'] = $branch;
-                    $data['version_normalized'] = $parsedBranch;
-                } else {
+                if (!$parsedBranch) {
                     if ($debug) {
                         $this->io->write('Skipped branch '.$branch.', invalid name and no composer file was found');
                     }
                     continue;
                 }
 
-                // make sure branch packages have a -dev flag
-                $normalizedStableVersion = preg_replace('{[.-]?dev$}i', '', $data['version_normalized']);
-                $data['version'] = preg_replace('{[.-]?dev$}i', '', $data['version']) . '-dev';
-                $data['version_normalized'] = $normalizedStableVersion . '-dev';
+                // branches are always auto-versionned, read value from branch name
+                $data['version'] = $branch;
+                $data['version_normalized'] = $parsedBranch;
 
-                // Skip branches that contain a version that has been tagged already
-                foreach ($this->getPackages() as $package) {
-                    if ($normalizedStableVersion === $package->getVersion()) {
-                        if ($debug) {
-                            $this->io->write('Skipped branch '.$branch.', already tagged');
-                        }
-
-                        continue 2;
-                    }
+                // make sure branch packages have a dev flag
+                if ('dev-' === substr($parsedBranch, 0, 4) || '9999999-dev' === $parsedBranch) {
+                    $data['version'] = 'dev-' . $data['version'];
+                } else {
+                    $data['version'] = $data['version'] . '-dev';
                 }
 
                 if ($debug) {

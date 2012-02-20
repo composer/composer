@@ -30,6 +30,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\DependencyResolver\Operation\InstallOperation;
+use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Solver;
 use Composer\IO\IOInterface;
 
@@ -113,6 +114,7 @@ EOT
         }
 
         // creating requirements request
+        $installFromLock = false;
         $request = new Request($pool);
         if ($update) {
             $io->write('<info>Updating dependencies</info>');
@@ -125,6 +127,7 @@ EOT
                 $request->install($link->getTarget(), $link->getConstraint());
             }
         } elseif ($composer->getLocker()->isLocked()) {
+            $installFromLock = true;
             $io->write('<info>Installing from lock file</info>');
 
             if (!$composer->getLocker()->isFresh()) {
@@ -185,13 +188,59 @@ EOT
         if (!$operations) {
             $io->write('<info>Nothing to install/update</info>');
         }
+
+        // force dev packages to be updated to latest reference on update
+        if ($update) {
+            foreach ($localRepo->getPackages() as $package) {
+                // skip non-dev packages
+                if (!$package->isDev()) {
+                    continue;
+                }
+
+                // skip packages that will be updated/uninstalled
+                foreach ($operations as $operation) {
+                    if (('update' === $operation->getJobType() && $package === $operation->getInitialPackage())
+                        || ('uninstall' === $operation->getJobType() && $package === $operation->getPackage())
+                    ) {
+                        continue 2;
+                    }
+                }
+
+                // force update
+                $newPackage = $composer->getRepositoryManager()->findPackage($package->getName(), $package->getVersion());
+                if ($newPackage->getSourceReference() !== $package->getSourceReference()) {
+                    $operations[] = new UpdateOperation($package, $newPackage);
+                }
+            }
+        }
+
         foreach ($operations as $operation) {
             if ($verbose) {
                 $io->write((string) $operation);
             }
             if (!$dryRun) {
                 $eventDispatcher->dispatchPackageEvent(constant('Composer\Script\ScriptEvents::PRE_PACKAGE_'.strtoupper($operation->getJobType())), $operation);
+
+                // if installing from lock, restore dev packages' references to their locked state
+                if ($installFromLock) {
+                    $package = null;
+                    if ('update' === $operation->getJobType()) {
+                        $package = $operation->getTargetPackage();
+                    } elseif ('install' === $operation->getJobType()) {
+                        $package = $operation->getPackage();
+                    }
+                    if ($package && $package->isDev()) {
+                        $lockData = $composer->getLocker()->getLockData();
+                        foreach ($lockData['packages'] as $lockedPackage) {
+                            if (!empty($lockedPackage['source-reference']) && strtolower($lockedPackage['package']) === $package->getName()) {
+                                $package->setSourceReference($lockedPackage['source-reference']);
+                                break;
+                            }
+                        }
+                    }
+                }
                 $installationManager->execute($operation);
+
                 $eventDispatcher->dispatchPackageEvent(constant('Composer\Script\ScriptEvents::POST_PACKAGE_'.strtoupper($operation->getJobType())), $operation);
             }
         }
