@@ -136,8 +136,8 @@ packagist.
 
 ## Autoloading
 
-For libraries that follow the [PSR-0](https://github.com/php-fig/fig-
-standards/blob/master/accepted/PSR-0.md) naming standard, composer generates a
+For libraries that follow the [PSR-0](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-0.md)
+naming standard, composer generates a
 `vendor/.composer/autoload.php` file for autoloading. You can simply include
 this file and you will get autoloading for free.
 
