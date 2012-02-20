@@ -43,7 +43,8 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
         $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
         $processExecutor->expects($this->once())
             ->method('execute')
-            ->with($this->equalTo($expectedGitCommand));
+            ->with($this->equalTo($expectedGitCommand))
+            ->will($this->returnValue(0));
 
         $downloader = new GitDownloader($this->getMock('Composer\IO\IOInterface'), $processExecutor);
         $downloader->download($packageMock, 'composerPath');
@@ -79,10 +80,12 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
         $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
         $processExecutor->expects($this->at(0))
             ->method('execute')
-            ->with($this->equalTo($expectedGitResetCommand));
+            ->with($this->equalTo($expectedGitResetCommand))
+            ->will($this->returnValue(0));
         $processExecutor->expects($this->at(1))
             ->method('execute')
-            ->with($this->equalTo($expectedGitUpdateCommand));
+            ->with($this->equalTo($expectedGitUpdateCommand))
+            ->will($this->returnValue(0));
 
         $downloader = new GitDownloader($this->getMock('Composer\IO\IOInterface'), $processExecutor);
         $downloader->update($packageMock, $packageMock, 'composerPath');
@@ -96,7 +99,8 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
         $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
         $processExecutor->expects($this->any())
             ->method('execute')
-            ->with($this->equalTo($expectedGitResetCommand));
+            ->with($this->equalTo($expectedGitResetCommand))
+            ->will($this->returnValue(0));
         $filesystem = $this->getMock('Composer\Util\Filesystem');
         $filesystem->expects($this->any())
             ->method('removeDirectory')
