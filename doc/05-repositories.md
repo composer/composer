@@ -148,6 +148,71 @@ The VCS driver to be used is detected automatically based on the URL.
 
 ### PEAR
 
+It is possible to install packages from any PEAR channel by using the `pear`
+repository. Composer will prefix all package names with `pear-{channelName}/` to
+avoid conflicts.
+
+Example using `pear2.php.net`:
+
+```json
+{
+    "repositories": [
+        {
+            "type": "pear",
+            "url": "http://pear2.php.net"
+        }
+    ],
+    "require": {
+        "pear-pear2/PEAR2_HTTP_Request": "*"
+    }
+}
+```
+
+In this case the short name of the channel is `pear2`, so the
+`PEAR2_HTTP_Request` package name becomes `pear-pear2/PEAR2_HTTP_Request`.
+
+> **Note:** The `pear` repository requires doing quite a few requests per
+> package, so this may considerably slow down the installation process.
+
 ### Package
+
+If you want to use a project that does not support composer through any of the
+means above, you still can define the package yourself using a `package`
+repository.
+
+Basically, you define the same information that is included in the `composer`
+repository's `packages.json`, but only for a single package. Again, the
+minimally required fields are `name`, `version`, and either of `dist` or
+`source`.
+
+Here is an example for the smarty template engine:
+
+```json
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "name": "smarty/smarty",
+                "version": "3.1.7",
+                "dist": {
+                    "url": "http://www.smarty.net/files/Smarty-3.1.7.zip",
+                    "type": "zip"
+                },
+                "source": {
+                    "url": "http://smarty-php.googlecode.com/svn/",
+                    "type": "svn",
+                    "reference": "trunk"
+                }
+            }
+        }
+    ],
+    "require": {
+        "smarty/smarty": "3.1.*"
+    }
+}
+```
+
+Typically you would leave the source part off, as you don't really need it.
 
 ## Hosting your own
