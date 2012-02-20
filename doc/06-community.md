@@ -22,16 +22,3 @@ The developer mailing list is on [google groups](http://groups.google.com/group
 /composer-dev) IRC channels are available for discussion as well, on
 irc.freenode.org [#composer](irc://irc.freenode.org/composer) for users and
 [#composer-dev](irc://irc.freenode.org/composer-dev) for development.
-
-## Resources
-
-### Blog posts
-
-* [Composer: Part 1 – What & Why](http://nelm.io/blog/2011/12/composer-part-1-what-why/)
-* [Composer: Part 2 – Impact](http://nelm.io/blog/2011/12/composer-part-2-impact/)
-* [An Update On Composer](http://nelm.io/blog/2012/02/an-update-on-composer/)
-
-### Slides
-
-* [Dependency Management with Composer - Jordi Boggiano](http://slides.seld.be/?file=2012-02-14+Dependency+Management+with+Composer.html)
-* [Composer - Nils Adermann](http://www.slideshare.net/naderman/composer-php-usergroup-karlsruhe)
