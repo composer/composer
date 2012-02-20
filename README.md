@@ -97,6 +97,10 @@ merged. This is to ensure proper review of all the code.
 
 Fork the project, create a feature branch, and send us a pull request.
 
+To ensure a consistent code base, you should make sure the code follows
+the [Coding Standards](http://symfony.com/doc/2.0/contributing/code/standards.html)
+which we borrowed from Symfony.
+
 If you would like to help take a look at the [list of issues](http://github.com/composer/composer/issues).
 
 Community
