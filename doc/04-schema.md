@@ -412,6 +412,6 @@ Optional.
 A set of files that should be treated as binaries and symlinked into the `bin-
 dir` (from config).
 
-See [faq/bin.md] for more details.
+See [articles/bin.md] for more details.
 
 Optional.
