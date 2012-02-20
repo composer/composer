@@ -136,49 +136,56 @@
             "description": "A set of additional repositories where packages can be found.",
             "additionalProperties": true
         },
+        "bin": {
+            "type": ["array"],
+            "description": "A set of files that should be treated as binaries and symlinked into bin-dir (from config).",
+            "items": {
+                "type": "string"
+            }
+        },
         "scripts": {
             "type": ["object"],
             "description": "Scripts listeners that will be executed before/after some events.",
             "properties": {
                 "pre-install-cmd": {
                     "type": ["array", "string"],
-                    "description": "Occurs before the install command is executed, contains one or more Class::method callables.",
+                    "description": "Occurs before the install command is executed, contains one or more Class::method callables."
                 },
                 "post-install-cmd": {
                     "type": ["array", "string"],
-                    "description": "Occurs after the install command is executed, contains one or more Class::method callables.",
+                    "description": "Occurs after the install command is executed, contains one or more Class::method callables."
                 },
                 "pre-update-cmd": {
                     "type": ["array", "string"],
-                    "description": "Occurs before the update command is executed, contains one or more Class::method callables.",
+                    "description": "Occurs before the update command is executed, contains one or more Class::method callables."
                 },
                 "post-update-cmd": {
                     "type": ["array", "string"],
-                    "description": "Occurs after the update command is executed, contains one or more Class::method callables.",
+                    "description": "Occurs after the update command is executed, contains one or more Class::method callables."
                 },
                 "pre-package-install": {
                     "type": ["array", "string"],
-                    "description": "Occurs before a package is installed, contains one or more Class::method callables.",
+                    "description": "Occurs before a package is installed, contains one or more Class::method callables."
                 },
                 "post-package-install": {
                     "type": ["array", "string"],
-                    "description": "Occurs after a package is installed, contains one or more Class::method callables.",
+                    "description": "Occurs after a package is installed, contains one or more Class::method callables."
                 },
                 "pre-package-update": {
                     "type": ["array", "string"],
-                    "description": "Occurs before a package is updated, contains one or more Class::method callables.",
+                    "description": "Occurs before a package is updated, contains one or more Class::method callables."
                 },
                 "post-package-update": {
                     "type": ["array", "string"],
-                    "description": "Occurs after a package is updated, contains one or more Class::method callables.",
+                    "description": "Occurs after a package is updated, contains one or more Class::method callables."
                 },
                 "pre-package-uninstall": {
                     "type": ["array", "string"],
-                    "description": "Occurs before a package has been uninstalled, contains one or more Class::method callables.",
+                    "description": "Occurs before a package has been uninstalled, contains one or more Class::method callables."
                 },
                 "post-package-uninstall": {
                     "type": ["array", "string"],
-                    "description": "Occurs after a package has been uninstalled, contains one or more Class::method callables.",
+                    "description": "Occurs after a package has been uninstalled, contains one or more Class::method callables."
                 }
             }
         }
