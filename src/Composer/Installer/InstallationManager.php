@@ -123,8 +123,12 @@ class InstallationManager
      */
     public function install(InstallOperation $operation)
     {
-        $installer = $this->getInstaller($operation->getPackage()->getType());
-        $installer->install($operation->getPackage());
+        $package = $operation->getPackage();
+        if ($package instanceof AliasPackage) {
+            $package = $package->getAliasOf();
+        }
+        $installer = $this->getInstaller($package->getType());
+        $installer->install($package);
     }
 
     /**
@@ -135,7 +139,13 @@ class InstallationManager
     public function update(UpdateOperation $operation)
     {
         $initial = $operation->getInitialPackage();
+        if ($initial instanceof AliasPackage) {
+            $initial = $initial->getAliasOf();
+        }
         $target  = $operation->getTargetPackage();
+        if ($target instanceof AliasPackage) {
+            $target = $target->getAliasOf();
+        }
 
         $initialType = $initial->getType();
         $targetType  = $target->getType();
@@ -156,8 +166,12 @@ class InstallationManager
      */
     public function uninstall(UninstallOperation $operation)
     {
-        $installer = $this->getInstaller($operation->getPackage()->getType());
-        $installer->uninstall($operation->getPackage());
+        $package = $operation->getPackage();
+        if ($package instanceof AliasPackage) {
+            $package = $package->getAliasOf();
+        }
+        $installer = $this->getInstaller($package->getType());
+        $installer->uninstall($package);
     }
 
     /**
