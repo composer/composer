@@ -48,6 +48,7 @@ class InstallCommand extends Command
             ->setDescription('Parses the composer.json file and downloads the needed dependencies.')
             ->setDefinition(array(
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
+                new InputOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation of dev packages from distribution file.'),
                 new InputOption('dry-run', null, InputOption::VALUE_NONE, 'Outputs the operations but will not execute anything (implicitly enables --verbose).'),
                 new InputOption('no-install-recommends', null, InputOption::VALUE_NONE, 'Do not install recommended packages (ignored when installing from an existing lock file).'),
                 new InputOption('install-suggests', null, InputOption::VALUE_NONE, 'Also install suggested packages (ignored when installing from an existing lock file).'),
@@ -75,6 +76,7 @@ EOT
             $composer,
             $eventDispatcher,
             (Boolean)$input->getOption('prefer-source'),
+            (Boolean)$input->getOption('prefer-dist'),
             (Boolean)$input->getOption('dry-run'),
             (Boolean)$input->getOption('verbose'),
             (Boolean)$input->getOption('no-install-recommends'),
@@ -82,7 +84,7 @@ EOT
         );
     }
 
-    public function install(IOInterface $io, Composer $composer, EventDispatcher $eventDispatcher, $preferSource = false, $dryRun = false, $verbose = false, $noInstallRecommends = false, $installSuggests = false, $update = false, RepositoryInterface $additionalInstalledRepository = null)
+    public function install(IOInterface $io, Composer $composer, EventDispatcher $eventDispatcher, $preferSource = false, $preferDist = false, $dryRun = false, $verbose = false, $noInstallRecommends = false, $installSuggests = false, $update = false, RepositoryInterface $additionalInstalledRepository = null)
     {
         if ($dryRun) {
             $verbose = true;
@@ -90,6 +92,10 @@ EOT
 
         if ($preferSource) {
             $composer->getDownloadManager()->setPreferSource(true);
+        }
+
+        if ($preferDist) {
+            $composer->getDownloadManager()->setPreferDist(true);
         }
 
         // create local repo, this contains all packages that are installed in the local project

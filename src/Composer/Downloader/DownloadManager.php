@@ -24,6 +24,7 @@ use Composer\Util\Filesystem;
 class DownloadManager
 {
     private $preferSource = false;
+    private $preferDist   = false;
     private $downloaders  = array();
 
     /**
@@ -44,6 +45,16 @@ class DownloadManager
     public function setPreferSource($preferSource)
     {
         $this->preferSource = $preferSource;
+    }
+
+    /**
+     * Makes downloader prefer dist installation over the source for dev packages.
+     *
+     * @param   Boolean $preferDist   prefer downloading from dist
+     */
+    public function setPreferDist($preferDist)
+    {
+        $this->preferDist = $preferDist;
     }
 
     /**
@@ -125,7 +136,7 @@ class DownloadManager
         $sourceType   = $package->getSourceType();
         $distType     = $package->getDistType();
 
-        if (!$package->isDev() && !($preferSource && $sourceType) && $distType) {
+        if ((!$package->isDev() || ($package->isDev() && $this->preferDist)) && !($preferSource && $sourceType) && $distType) {
             $package->setInstallationSource('dist');
         } elseif ($sourceType) {
             $package->setInstallationSource('source');
