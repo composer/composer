@@ -6,9 +6,8 @@ This chapter will explain all of the options available in `composer.json`.
 
 We have a [JSON schema](http://json-schema.org) that documents the format and
 can also be used to validate your `composer.json`. In fact, it is used by the
-`validate` command. You can find it at: [`Resources/composer-
-schema.json`](https://github.com/composer/composer/blob/master/res
-/composer-schema.json).
+`validate` command. You can find it at: 
+[`Resources/composer-schema.json`](https://github.com/composer/composer/blob/master/res/composer-schema.json).
 
 ## Package root
 
@@ -188,8 +187,8 @@ Optional.
 
 Autoload mapping for a PHP autoloader.
 
-Currently only [PSR-0](https://github.com/php-fig/fig-
-standards/blob/master/accepted/PSR-0.md) autoloading is supported. Under the
+Currently only [PSR-0](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-0.md)
+autoloading is supported. Under the
 `psr-0` key you define a mapping from namespaces to paths, relative to the
 package root.
 
