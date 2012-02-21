@@ -107,13 +107,17 @@ EOT
 
         // prepare aliased packages
         $aliasRepo = new ArrayRepository;
-        foreach ($composer->getPackage()->getAliases() as $alias) {
+        if (!$update && $composer->getLocker()->isLocked()) {
+            $aliases = $composer->getLocker()->getAliases();
+        } else {
+            $aliases = $composer->getPackage()->getAliases();
+        }
+        foreach ($aliases as $alias) {
             foreach ($repoManager->findPackages($alias['package'], $alias['version']) as $package) {
-                $aliasRepo->addPackage(new AliasPackage($package, $alias['replaces']));
+                $aliasRepo->addPackage(new AliasPackage($package, $alias['alias']));
             }
-
             foreach ($repoManager->getLocalRepository()->findPackages($alias['package'], $alias['version']) as $package) {
-                $repoManager->getLocalRepository()->addPackage(new AliasPackage($package, $alias['replaces']));
+                $repoManager->getLocalRepository()->addPackage(new AliasPackage($package, $alias['alias']));
                 $repoManager->getLocalRepository()->removePackage($package);
             }
         }
@@ -137,10 +141,10 @@ EOT
         $request = new Request($pool);
         if ($update) {
             $io->write('<info>Updating dependencies</info>');
-            $installedPackages = $installedRepo->getPackages();
-            $links = $this->collectLinks($composer->getPackage(), $noInstallRecommends, $installSuggests);
 
             $request->updateAll();
+
+            $links = $this->collectLinks($composer->getPackage(), $noInstallRecommends, $installSuggests);
 
             foreach ($links as $link) {
                 $request->install($link->getTarget(), $link->getConstraint());
@@ -154,7 +158,14 @@ EOT
             }
 
             foreach ($composer->getLocker()->getLockedPackages() as $package) {
-                $constraint = new VersionConstraint('=', $package->getVersion());
+                $version = $package->getVersion();
+                foreach ($aliases as $alias) {
+                    if ($alias['package'] === $package->getName() && $alias['version'] === $package->getVersion()) {
+                        $version = $alias['alias'];
+                        break;
+                    }
+                }
+                $constraint = new VersionConstraint('=', $version);
                 $request->install($package->getName(), $constraint);
             }
         } else {
@@ -175,14 +186,13 @@ EOT
         // solve dependencies
         $operations = $solver->solve($request);
 
-        // execute operations
-        if (!$operations) {
-            $io->write('<info>Nothing to install/update</info>');
-        }
-
         // force dev packages to be updated to latest reference on update
         if ($update) {
             foreach ($localRepo->getPackages() as $package) {
+                if ($package instanceof AliasPackage) {
+                    $package = $package->getAliasOf();
+                }
+
                 // skip non-dev packages
                 if (!$package->isDev()) {
                     continue;
@@ -203,6 +213,19 @@ EOT
                     $operations[] = new UpdateOperation($package, $newPackage);
                 }
             }
+        }
+
+        // anti-alias local repository to allow updates to work fine
+        foreach ($repoManager->getLocalRepository()->getPackages() as $package) {
+            if ($package instanceof AliasPackage) {
+                $repoManager->getLocalRepository()->addPackage(clone $package->getAliasOf());
+                $repoManager->getLocalRepository()->removePackage($package);
+            }
+        }
+
+        // execute operations
+        if (!$operations) {
+            $io->write('<info>Nothing to install/update</info>');
         }
 
         foreach ($operations as $operation) {
@@ -238,7 +261,7 @@ EOT
 
         if (!$dryRun) {
             if ($update || !$composer->getLocker()->isLocked()) {
-                $composer->getLocker()->lockPackages($localRepo->getPackages());
+                $composer->getLocker()->setLockData($localRepo->getPackages(), $aliases);
                 $io->write('<info>Writing lock file</info>');
             }
 

@@ -53,7 +53,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'parses trunk'      => array('dev-trunk',           '9999999-dev'),
             'parses arbitrary'  => array('dev-feature-foo',     'dev-feature-foo'),
             'parses arbitrary2' => array('DEV-FOOBAR',          'dev-foobar'),
-            'ignores aliases'   => array('dev-master as 1.0.0', '9999999-dev'),
+            'ignores aliases'   => array('dev-master as 1.0.0', '1.0.0.0'),
         );
     }
 

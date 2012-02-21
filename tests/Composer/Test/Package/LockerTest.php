@@ -114,7 +114,7 @@ class LockerTest extends \PHPUnit_Framework_TestCase
         $locker->getLockedPackages();
     }
 
-    public function testLockPackages()
+    public function testSetLockData()
     {
         $json = $this->createJsonFileMock();
         $repo = $this->createRepositoryManagerMock();
@@ -151,9 +151,10 @@ class LockerTest extends \PHPUnit_Framework_TestCase
                     array('package' => 'pkg1', 'version' => '1.0.0-beta'),
                     array('package' => 'pkg2', 'version' => '0.1.10')
                 ),
+                'aliases' => array(),
             ));
 
-        $locker->lockPackages(array($package1, $package2));
+        $locker->setLockData(array($package1, $package2), array());
     }
 
     public function testLockBadPackages()
@@ -171,7 +172,7 @@ class LockerTest extends \PHPUnit_Framework_TestCase
 
         $this->setExpectedException('LogicException');
 
-        $locker->lockPackages(array($package1));
+        $locker->setLockData(array($package1), array());
     }
 
     public function testIsFresh()

@@ -13,6 +13,7 @@
 namespace Composer\Installer;
 
 use Composer\Package\PackageInterface;
+use Composer\Package\AliasPackage;
 use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;

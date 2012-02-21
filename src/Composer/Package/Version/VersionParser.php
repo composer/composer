@@ -36,7 +36,7 @@ class VersionParser
 
         // ignore aliases and just assume the alias is required instead of the source
         if (preg_match('{^([^,\s]+) +as +([^,\s]+)$}', $version, $match)) {
-            $version = $match[1];
+            $version = $match[2];
         }
 
         // match master-like branches

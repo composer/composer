@@ -60,6 +60,11 @@ class AliasPackage extends BasePackage
         }
     }
 
+    public function getAliasOf()
+    {
+        return $this->aliasOf;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -203,6 +208,10 @@ class AliasPackage extends BasePackage
     public function getReleaseDate()
     {
         return $this->aliasOf->getReleaseDate();
+    }
+    public function getBinaries()
+    {
+        return $this->aliasOf->getBinaries();
     }
     public function getKeywords()
     {
