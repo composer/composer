@@ -15,6 +15,7 @@ namespace Composer;
 use Composer\Json\JsonFile;
 use Composer\IO\IOInterface;
 use Composer\Repository\RepositoryManager;
+use Composer\Util\ProcessExecutor;
 
 /**
  * Creates an configured instance of composer.
@@ -66,6 +67,11 @@ class Factory
             $packageConfig['config']['bin-dir'] = $vendorDir.'/bin';
         }
         $binDir = getenv('COMPOSER_BIN_DIR') ?: $packageConfig['config']['bin-dir'];
+
+        // setup process timeout
+        if (false !== getenv('COMPOSER_PROCESS_TIMEOUT')) {
+            ProcessExecutor::setTimeout((int) getenv('COMPOSER_PROCESS_TIMEOUT'));
+        }
 
         // initialize repository manager
         $rm = $this->createRepositoryManager($io);
