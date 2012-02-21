@@ -50,7 +50,7 @@ class RootPackageLoader extends ArrayLoader
                     $aliases[] = array(
                         'package' => strtolower($reqName),
                         'version' => $this->versionParser->normalize($match[1]),
-                        'replaces' => $this->versionParser->normalize($match[2]),
+                        'alias' => $this->versionParser->normalize($match[2]),
                     );
                 }
             }
