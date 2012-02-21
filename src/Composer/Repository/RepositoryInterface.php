@@ -32,7 +32,7 @@ interface RepositoryInterface extends \Countable
     function hasPackage(PackageInterface $package);
 
     /**
-     * Searches for a package by it's name and version (if has one).
+     * Searches for the first match of a package by name and version.
      *
      * @param   string  $name       package name
      * @param   string  $version    package version
@@ -42,13 +42,14 @@ interface RepositoryInterface extends \Countable
     function findPackage($name, $version);
 
     /**
-     * Searches for packages by it's name.
+     * Searches for all packages matching a name and optionally a version.
      *
      * @param   string  $name       package name
+     * @param   string  $version    package version
      *
      * @return  array
      */
-    function findPackagesByName($name);
+    function findPackages($name, $version = null);
 
     /**
      * Returns list of registered packages.
