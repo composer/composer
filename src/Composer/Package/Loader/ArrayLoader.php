@@ -22,15 +22,6 @@ use Composer\Repository\RepositoryManager;
  */
 class ArrayLoader
 {
-    protected $supportedLinkTypes = array(
-        'require'   => 'requires',
-        'conflict'  => 'conflicts',
-        'provide'   => 'provides',
-        'replace'   => 'replaces',
-        'recommend' => 'recommends',
-        'suggest'   => 'suggests',
-    );
-
     protected $versionParser;
 
     public function __construct(VersionParser $parser = null)
@@ -141,7 +132,7 @@ class ArrayLoader
             $package->setDistSha1Checksum(isset($config['dist']['shasum']) ? $config['dist']['shasum'] : null);
         }
 
-        foreach ($this->supportedLinkTypes as $type => $description) {
+        foreach (Package\BasePackage::$supportedLinkTypes as $type => $description) {
             if (isset($config[$type])) {
                 $method = 'set'.ucfirst($description);
                 $package->{$method}(

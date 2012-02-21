@@ -20,10 +20,12 @@ use Composer\DependencyResolver;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Operation;
+use Composer\Package\AliasPackage;
 use Composer\Package\MemoryPackage;
 use Composer\Package\Link;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Package\PackageInterface;
+use Composer\Repository\ArrayRepository;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
@@ -103,6 +105,20 @@ EOT
             $installedRepo->addRepository($additionalInstalledRepository);
         }
 
+        // prepare aliased packages
+        $aliasRepo = new ArrayRepository;
+        foreach ($composer->getPackage()->getAliases() as $alias) {
+            foreach ($repoManager->findPackages($alias['package'], $alias['version']) as $package) {
+                $aliasRepo->addPackage(new AliasPackage($package, $alias['replaces']));
+            }
+
+            foreach ($repoManager->getLocalRepository()->findPackages($alias['package'], $alias['version']) as $package) {
+                $repoManager->getLocalRepository()->addPackage(new AliasPackage($package, $alias['replaces']));
+                $repoManager->getLocalRepository()->removePackage($package);
+            }
+        }
+        $repoManager->addRepository($aliasRepo);
+
         // creating repository pool
         $pool = new Pool;
         $pool->addRepository($installedRepo);
@@ -148,27 +164,6 @@ EOT
 
             foreach ($links as $link) {
                 $request->install($link->getTarget(), $link->getConstraint());
-            }
-        }
-
-        // prepare aliased packages
-        foreach ($composer->getPackage()->getAliases() as $alias) {
-            $candidates = array_merge(
-                $repoManager->findPackages($alias['package'], $alias['version']),
-                $repoManager->getLocalRepository()->findPackages($alias['package'], $alias['version'])
-            );
-            foreach ($candidates as $package) {
-                $replaces = $package->getReplaces();
-                foreach ($replaces as $index => $link) {
-                    // link is self.version, but must be replacing also the replaced version
-                    if ('self.version' === $link->getPrettyConstraint()) {
-                        $replaces[] = new Link($link->getSource(), $link->getTarget(), new VersionConstraint('=', $alias['replaces']), 'replaces', $alias['replaces']);
-                    }
-                }
-
-                // add replace of itself
-                $replaces[] = new Link($alias['package'], $alias['package'], new VersionConstraint('=', $alias['replaces']), 'replaces', $alias['replaces']);
-                $package->setReplaces($replaces);
             }
         }
 
