@@ -43,6 +43,21 @@ class RootPackageLoader extends ArrayLoader
 
         $package = parent::load($config);
 
+        if (isset($config['require'])) {
+            $aliases = array();
+            foreach ($config['require'] as $reqName => $reqVersion) {
+                if (preg_match('{^([^,\s]+) +as +([^,\s]+)$}', $reqVersion, $match)) {
+                    $aliases[] = array(
+                        'package' => strtolower($reqName),
+                        'version' => $this->versionParser->normalize($match[1]),
+                        'replaces' => $this->versionParser->normalize($match[2]),
+                    );
+                }
+            }
+
+            $package->setAliases($aliases);
+        }
+
         if (isset($config['repositories'])) {
             foreach ($config['repositories'] as $index => $repo) {
                 if (isset($repo['packagist']) && $repo['packagist'] === false) {

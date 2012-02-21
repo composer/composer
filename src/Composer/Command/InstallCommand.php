@@ -21,6 +21,7 @@ use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Operation;
 use Composer\Package\MemoryPackage;
+use Composer\Package\Link;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Package\PackageInterface;
 use Composer\Repository\CompositeRepository;
@@ -92,8 +93,10 @@ EOT
             $composer->getDownloadManager()->setPreferSource(true);
         }
 
+        $repoManager = $composer->getRepositoryManager();
+
         // create local repo, this contains all packages that are installed in the local project
-        $localRepo = $composer->getRepositoryManager()->getLocalRepository();
+        $localRepo = $repoManager->getLocalRepository();
         // create installed repo, this contains all local packages + platform packages (php & extensions)
         $installedRepo = new CompositeRepository(array($localRepo, new PlatformRepository()));
         if ($additionalInstalledRepository) {
@@ -103,7 +106,7 @@ EOT
         // creating repository pool
         $pool = new Pool;
         $pool->addRepository($installedRepo);
-        foreach ($composer->getRepositoryManager()->getRepositories() as $repository) {
+        foreach ($repoManager->getRepositories() as $repository) {
             $pool->addRepository($repository);
         }
 
@@ -148,6 +151,27 @@ EOT
             }
         }
 
+        // prepare aliased packages
+        foreach ($composer->getPackage()->getAliases() as $alias) {
+            $candidates = array_merge(
+                $repoManager->findPackages($alias['package'], $alias['version']),
+                $repoManager->getLocalRepository()->findPackages($alias['package'], $alias['version'])
+            );
+            foreach ($candidates as $package) {
+                $replaces = $package->getReplaces();
+                foreach ($replaces as $index => $link) {
+                    // link is self.version, but must be replacing also the replaced version
+                    if ('self.version' === $link->getPrettyConstraint()) {
+                        $replaces[] = new Link($link->getSource(), $link->getTarget(), new VersionConstraint('=', $alias['replaces']), 'replaces', $alias['replaces']);
+                    }
+                }
+
+                // add replace of itself
+                $replaces[] = new Link($alias['package'], $alias['package'], new VersionConstraint('=', $alias['replaces']), 'replaces', $alias['replaces']);
+                $package->setReplaces($replaces);
+            }
+        }
+
         // prepare solver
         $installationManager = $composer->getInstallationManager();
         $policy              = new DependencyResolver\DefaultPolicy();
@@ -179,7 +203,7 @@ EOT
                 }
 
                 // force update
-                $newPackage = $composer->getRepositoryManager()->findPackage($package->getName(), $package->getVersion());
+                $newPackage = $repoManager->findPackage($package->getName(), $package->getVersion());
                 if ($newPackage && $newPackage->getSourceReference() !== $package->getSourceReference()) {
                     $operations[] = new UpdateOperation($package, $newPackage);
                 }
