@@ -90,7 +90,9 @@ class ArrayLoader
 
         if (!empty($config['time'])) {
             try {
-                $package->setReleaseDate(new \DateTime($config['time']));
+                $date = new \DateTime($config['time']);
+                $date->setTimezone(new \DateTimeZone('UTC'));
+                $package->setReleaseDate($date);
             } catch (\Exception $e) {
             }
         }
