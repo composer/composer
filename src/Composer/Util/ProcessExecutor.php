@@ -19,6 +19,8 @@ use Symfony\Component\Process\Process;
  */
 class ProcessExecutor
 {
+    static protected $timeout = 60;
+
     /**
      * runs a process on the commandline
      *
@@ -29,7 +31,7 @@ class ProcessExecutor
     public function execute($command, &$output = null)
     {
         $captureOutput = count(func_get_args()) > 1;
-        $process = new Process($command);
+        $process = new Process($command, null, null, null, static::getTimeout());
         $process->run(function($type, $buffer) use ($captureOutput) {
             if ($captureOutput) {
                 return;
@@ -48,5 +50,15 @@ class ProcessExecutor
     public function splitLines($output)
     {
         return ((string) $output === '') ? array() : preg_split('{\r?\n}', $output);
+    }
+
+    static public function getTimeout()
+    {
+        return static::$timeout;
+    }
+
+    static public function setTimeout($timeout)
+    {
+        static::$timeout = $timeout;
     }
 }
