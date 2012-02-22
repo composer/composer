@@ -91,6 +91,12 @@ class Locker
         return $packages;
     }
 
+    public function getAliases()
+    {
+        $lockList = $this->getLockData();
+        return isset($lockList['aliases']) ? $lockList['aliases'] : array();
+    }
+
     public function getLockData()
     {
         if (!$this->isLocked()) {
@@ -101,15 +107,17 @@ class Locker
     }
 
     /**
-     * Locks provided packages into lockfile.
+     * Locks provided data into lockfile.
      *
      * @param array $packages array of packages
+     * @param array $aliases array of aliases
      */
-    public function lockPackages(array $packages)
+    public function setLockData(array $packages, array $aliases)
     {
         $lock = array(
             'hash' => $this->hash,
             'packages' => array(),
+            'aliases' => $aliases,
         );
         foreach ($packages as $package) {
             $name    = $package->getPrettyName();

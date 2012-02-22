@@ -68,12 +68,12 @@ class CompositeRepository implements RepositoryInterface
     /**
      * {@inheritdoc}
      */
-    public function findPackagesByName($name)
+    public function findPackages($name, $version = null)
     {
         $packages = array();
         foreach ($this->repositories as $repository) {
             /* @var $repository RepositoryInterface */
-            $packages[] = $repository->findPackagesByName($name);
+            $packages[] = $repository->findPackages($name, $version);
         }
         return call_user_func_array('array_merge', $packages);
     }
