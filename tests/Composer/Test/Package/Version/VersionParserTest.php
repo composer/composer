@@ -129,6 +129,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'accepts master'    => array('>=dev-master',    new VersionConstraint('>=', '9999999-dev')),
             'accepts master/2'  => array('dev-master',      new VersionConstraint('=', '9999999-dev')),
             'accepts arbitrary' => array('dev-feature-a',   new VersionConstraint('=', 'dev-feature-a')),
+            'ignores aliases'   => array('dev-master as 1.0.0', new VersionConstraint('=', '1.0.0.0')),
         );
     }
 
