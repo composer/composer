@@ -106,7 +106,6 @@ EOT
         }
 
         // prepare aliased packages
-        $aliasRepo = new ArrayRepository;
         if (!$update && $composer->getLocker()->isLocked()) {
             $aliases = $composer->getLocker()->getAliases();
         } else {
@@ -114,14 +113,13 @@ EOT
         }
         foreach ($aliases as $alias) {
             foreach ($repoManager->findPackages($alias['package'], $alias['version']) as $package) {
-                $aliasRepo->addPackage(new AliasPackage($package, $alias['alias']));
+                $package->getRepository()->addPackage(new AliasPackage($package, $alias['alias']));
             }
             foreach ($repoManager->getLocalRepository()->findPackages($alias['package'], $alias['version']) as $package) {
                 $repoManager->getLocalRepository()->addPackage(new AliasPackage($package, $alias['alias']));
                 $repoManager->getLocalRepository()->removePackage($package);
             }
         }
-        $repoManager->addRepository($aliasRepo);
 
         // creating repository pool
         $pool = new Pool;

@@ -14,6 +14,7 @@ namespace Composer\DependencyResolver;
 
 use Composer\Repository\RepositoryInterface;
 use Composer\Package\PackageInterface;
+use Composer\Package\AliasPackage;
 use Composer\Package\LinkConstraint\VersionConstraint;
 
 /**
@@ -103,6 +104,16 @@ class DefaultPolicy implements PolicyInterface
     public function compareByPriorityPreferInstalled(Pool $pool, array $installedMap, PackageInterface $a, PackageInterface $b, $ignoreReplace = false)
     {
         if ($a->getRepository() === $b->getRepository()) {
+            if ($a->getName() === $b->getName()) {
+                $aAliased = $a instanceof AliasPackage;
+                $bAliased = $b instanceof AliasPackage;
+                if ($aAliased && !$bAliased) {
+                    return -1; // use a
+                }
+                if (!$aAliased && $bAliased) {
+                    return 1; // use b
+                }
+            }
 
             if (!$ignoreReplace) {
                 // return original, not replaced
