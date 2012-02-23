@@ -55,7 +55,12 @@ class FilesystemRepository extends ArrayRepository implements WritableRepository
 
         $loader = new ArrayLoader();
         foreach ($packages as $package) {
-            $this->addPackage($loader->load($package));
+            $package = $loader->load($package);
+            if ($package->getAlias()) {
+                $this->addPackage($this->createAliasPackage($package));
+            } else {
+                $this->addPackage($package);
+            }
         }
     }
 

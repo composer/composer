@@ -134,6 +134,12 @@ class ArrayLoader
             $package->setDistSha1Checksum(isset($config['dist']['shasum']) ? $config['dist']['shasum'] : null);
         }
 
+        // load alias for named dev packages
+        if (!empty($config['alias']) && 'dev-' === substr($package->getPrettyVersion(), 0, 4)) {
+            $package->setAlias($config['alias_normalized']);
+            $package->setPrettyAlias($config['alias']);
+        }
+
         foreach (Package\BasePackage::$supportedLinkTypes as $type => $description) {
             if (isset($config[$type])) {
                 $method = 'set'.ucfirst($description);

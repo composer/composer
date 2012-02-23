@@ -42,6 +42,8 @@ class MemoryPackage extends BasePackage
     protected $binaries = array();
     protected $scripts = array();
     protected $aliases = array();
+    protected $alias;
+    protected $prettyAlias;
     protected $dev;
 
     protected $requires = array();
@@ -171,6 +173,38 @@ class MemoryPackage extends BasePackage
     public function getAliases()
     {
         return $this->aliases;
+    }
+
+    /**
+     * @param string $alias
+     */
+    public function setAlias($alias)
+    {
+        $this->alias = $alias;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getAlias()
+    {
+        return $this->alias;
+    }
+
+    /**
+     * @param string $prettyAlias
+     */
+    public function setPrettyAlias($prettyAlias)
+    {
+        $this->prettyAlias = $prettyAlias;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getPrettyAlias()
+    {
+        return $this->prettyAlias;
     }
 
     /**
