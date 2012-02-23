@@ -113,10 +113,10 @@ EOT
         }
         foreach ($aliases as $alias) {
             foreach ($repoManager->findPackages($alias['package'], $alias['version']) as $package) {
-                $package->getRepository()->addPackage(new AliasPackage($package, $alias['alias']));
+                $package->getRepository()->addPackage(new AliasPackage($package, $alias['alias_normalized'], $alias['alias']));
             }
             foreach ($repoManager->getLocalRepository()->findPackages($alias['package'], $alias['version']) as $package) {
-                $repoManager->getLocalRepository()->addPackage(new AliasPackage($package, $alias['alias']));
+                $repoManager->getLocalRepository()->addPackage(new AliasPackage($package, $alias['alias_normalized'], $alias['alias']));
                 $repoManager->getLocalRepository()->removePackage($package);
             }
         }

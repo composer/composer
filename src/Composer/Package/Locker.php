@@ -14,6 +14,7 @@ namespace Composer\Package;
 
 use Composer\Json\JsonFile;
 use Composer\Repository\RepositoryManager;
+use Composer\Package\AliasPackage;
 
 /**
  * Reads/writes project lockfile (composer.lock).
@@ -72,10 +73,14 @@ class Locker
         $lockList = $this->getLockData();
         $packages = array();
         foreach ($lockList['packages'] as $info) {
-            $package = $this->repositoryManager->getLocalRepository()->findPackage($info['package'], $info['version']);
+            $resolvedVersion = !empty($info['alias']) ? $info['alias'] : $info['version'];
+            $package = $this->repositoryManager->getLocalRepository()->findPackage($info['package'], $resolvedVersion);
 
             if (!$package) {
                 $package = $this->repositoryManager->findPackage($info['package'], $info['version']);
+                if ($package && !empty($info['alias'])) {
+                    $package = new AliasPackage($package, $info['alias'], $info['alias']);
+                }
             }
 
             if (!$package) {
@@ -133,6 +138,9 @@ class Locker
 
             if ($package->isDev()) {
                 $spec['source-reference'] = $package->getSourceReference();
+            }
+            if ($package->getAlias()) {
+                $spec['alias'] = $package->getAlias();
             }
 
             $lock['packages'][] = $spec;

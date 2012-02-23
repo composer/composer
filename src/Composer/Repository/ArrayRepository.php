@@ -12,6 +12,7 @@
 
 namespace Composer\Repository;
 
+use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
 
@@ -94,6 +95,11 @@ class ArrayRepository implements RepositoryInterface
         }
         $package->setRepository($this);
         $this->packages[] = $package;
+    }
+
+    protected function createAliasPackage(PackageInterface $package)
+    {
+        return new AliasPackage($package, $package->getAlias(), $package->getPrettyAlias());
     }
 
     /**
