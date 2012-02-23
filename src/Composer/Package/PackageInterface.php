@@ -294,6 +294,13 @@ interface PackageInterface
     function getDescription();
 
     /**
+     * Returns the package binaries
+     *
+     * @return string
+     */
+    function getBinaries();
+
+    /**
      * Returns the package homepage
      *
      * @return string

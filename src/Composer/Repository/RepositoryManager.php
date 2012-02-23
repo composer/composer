@@ -51,6 +51,25 @@ class RepositoryManager
     }
 
     /**
+     * Searches for all packages matching a name and optionally a version in managed repositories.
+     *
+     * @param   string  $name       package name
+     * @param   string  $version    package version
+     *
+     * @return  array
+     */
+    public function findPackages($name, $version)
+    {
+        $packages = array();
+
+        foreach ($this->repositories as $repository) {
+            $packages = array_merge($packages, $repository->findPackages($name, $version));
+        }
+
+        return $packages;
+    }
+
+    /**
      * Adds repository
      *
      * @param   RepositoryInterface $repository repository instance

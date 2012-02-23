@@ -44,14 +44,21 @@ class ArrayRepository implements RepositoryInterface
     /**
      * {@inheritDoc}
      */
-    public function findPackagesByName($name)
+    public function findPackages($name, $version = null)
     {
         // normalize name
         $name = strtolower($name);
+
+        // normalize version
+        if (null !== $version) {
+            $versionParser = new VersionParser();
+            $version = $versionParser->normalize($version);
+        }
+
         $packages = array();
 
         foreach ($this->getPackages() as $package) {
-            if ($package->getName() === $name) {
+            if ($package->getName() === $name && (null === $version || $version === $package->getVersion())) {
                 $packages[] = $package;
             }
         }

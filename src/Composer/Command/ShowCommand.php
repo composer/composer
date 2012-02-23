@@ -118,7 +118,7 @@ EOT
 
         // we only have a name, so search for the highest version of the given package
         $highestVersion = null;
-        foreach ($repos->findPackagesByName($input->getArgument('package')) as $package) {
+        foreach ($repos->findPackages($input->getArgument('package')) as $package) {
             if (null === $highestVersion || version_compare($package->getVersion(), $highestVersion->getVersion(), '>=')) {
                 $highestVersion = $package;
             }
@@ -164,7 +164,7 @@ EOT
 
         $versions = array();
 
-        foreach ($repos->findPackagesByName($package->getName()) as $version) {
+        foreach ($repos->findPackages($package->getName()) as $version) {
             $versions[] = $version->getPrettyVersion();
         }
 
