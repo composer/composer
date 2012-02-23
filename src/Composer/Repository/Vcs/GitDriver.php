@@ -14,13 +14,12 @@ class GitDriver extends VcsDriver implements VcsDriverInterface
     protected $tags;
     protected $branches;
     protected $rootIdentifier;
+    protected $repoDir;
     protected $infoCache = array();
     protected $isLocal = false;
 
     public function __construct($url, IOInterface $io, ProcessExecutor $process = null)
     {
-        $this->tmpDir = sys_get_temp_dir() . '/composer-' . preg_replace('{[^a-z0-9]}i', '-', $url) . '/';
-
         parent::__construct($url, $io, $process);
     }
 
@@ -30,15 +29,17 @@ class GitDriver extends VcsDriver implements VcsDriverInterface
     public function initialize()
     {
         $url = escapeshellarg($this->url);
-        $tmpDir = escapeshellarg($this->tmpDir);
 
-        if (static::isLocalUrl($url)) {
+        if (static::isLocalUrl($this->url)) {
             $this->isLocal = true;
+            $this->repoDir = $this->url;
         } else {
-            if (is_dir($this->tmpDir)) {
-                $this->process->execute(sprintf('cd %s && git fetch origin', $tmpDir), $output);
+            $this->repoDir = sys_get_temp_dir() . '/composer-' . preg_replace('{[^a-z0-9]}i', '-', $url) . '/';
+            $repoDir = escapeshellarg($this->repoDir);
+            if (is_dir($this->repoDir)) {
+                $this->process->execute(sprintf('cd %s && git fetch origin', $repoDir), $output);
             } else {
-                $this->process->execute(sprintf('git clone %s %s', $url, $tmpDir), $output);
+                $this->process->execute(sprintf('git clone %s %s', $url, $repoDir), $output);
             }
         }
 
@@ -56,7 +57,7 @@ class GitDriver extends VcsDriver implements VcsDriverInterface
 
             if ($this->isLocal) {
                 // select currently checked out branch if master is not available
-                $this->process->execute(sprintf('cd %s && git branch --no-color', escapeshellarg($this->tmpDir)), $output);
+                $this->process->execute(sprintf('cd %s && git branch --no-color', escapeshellarg($this->repoDir)), $output);
                 $branches = $this->process->splitLines($output);
                 if (!in_array('* master', $branches)) {
                     foreach ($branches as $branch) {
@@ -68,7 +69,7 @@ class GitDriver extends VcsDriver implements VcsDriverInterface
                 }
             } else {
                 // try to find a non-master remote HEAD branch
-                $this->process->execute(sprintf('cd %s && git branch --no-color -r', escapeshellarg($this->tmpDir)), $output);
+                $this->process->execute(sprintf('cd %s && git branch --no-color -r', escapeshellarg($this->repoDir)), $output);
                 foreach ($this->process->splitLines($output) as $branch) {
                     if ($branch && preg_match('{/HEAD +-> +[^/]+/(\S+)}', $branch, $match)) {
                         $this->rootIdentifier = $match[1];
@@ -113,7 +114,7 @@ class GitDriver extends VcsDriver implements VcsDriverInterface
     public function getComposerInformation($identifier)
     {
         if (!isset($this->infoCache[$identifier])) {
-            $this->process->execute(sprintf('cd %s && git show %s:composer.json', escapeshellarg($this->tmpDir), escapeshellarg($identifier)), $composer);
+            $this->process->execute(sprintf('cd %s && git show %s:composer.json', escapeshellarg($this->repoDir), escapeshellarg($identifier)), $composer);
 
             if (!trim($composer)) {
                 throw new \UnexpectedValueException('Failed to retrieve composer information for identifier '.$identifier.' in '.$this->getUrl());
@@ -122,7 +123,7 @@ class GitDriver extends VcsDriver implements VcsDriverInterface
             $composer = JsonFile::parseJson($composer);
 
             if (!isset($composer['time'])) {
-                $this->process->execute(sprintf('cd %s && git log -1 --format=%%at %s', escapeshellarg($this->tmpDir), escapeshellarg($identifier)), $output);
+                $this->process->execute(sprintf('cd %s && git log -1 --format=%%at %s', escapeshellarg($this->repoDir), escapeshellarg($identifier)), $output);
                 $date = new \DateTime('@'.trim($output));
                 $composer['time'] = $date->format('Y-m-d H:i:s');
             }
@@ -138,7 +139,7 @@ class GitDriver extends VcsDriver implements VcsDriverInterface
     public function getTags()
     {
         if (null === $this->tags) {
-            $this->process->execute(sprintf('cd %s && git tag', escapeshellarg($this->tmpDir)), $output);
+            $this->process->execute(sprintf('cd %s && git tag', escapeshellarg($this->repoDir)), $output);
             $output = $this->process->splitLines($output);
             $this->tags = $output ? array_combine($output, $output) : array();
         }
@@ -156,12 +157,12 @@ class GitDriver extends VcsDriver implements VcsDriverInterface
 
             $this->process->execute(sprintf(
                 'cd %s && git branch --no-color --no-abbrev -v %s',
-                escapeshellarg($this->tmpDir),
+                escapeshellarg($this->repoDir),
                 $this->isLocal ? '' : '-r'
             ), $output);
             foreach ($this->process->splitLines($output) as $branch) {
                 if ($branch && !preg_match('{^ *[^/]+/HEAD }', $branch)) {
-                    preg_match('{^ *[^/]+/(\S+) *([a-f0-9]+) .*$}', $branch, $match);
+                    preg_match('{^(?:\* )? *(?:[^/]+/)?(\S+) *([a-f0-9]+) .*$}', $branch, $match);
                     $branches[$match[1]] = $match[2];
                 }
             }
