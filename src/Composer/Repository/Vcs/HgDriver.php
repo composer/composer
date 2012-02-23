@@ -130,6 +130,7 @@ class HgDriver extends VcsDriver implements VcsDriverInterface
                     $tags[$match[1]] = $match[2];
                 }
             }
+            unset($tags['tip']);
 
             $this->tags = $tags;
         }
