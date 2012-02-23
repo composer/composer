@@ -34,6 +34,11 @@ class VersionParser
     {
         $version = trim($version);
 
+        // ignore aliases and just assume the alias is required instead of the source
+        if (preg_match('{^([^,\s]+) +as +([^,\s]+)$}', $version, $match)) {
+            $version = $match[2];
+        }
+
         // match master-like branches
         if (preg_match('{^(?:dev-)?(?:master|trunk|default)$}i', $version)) {
             return '9999999-dev';

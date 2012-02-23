@@ -1393,7 +1393,7 @@ class Solver
 
         // if there are multiple candidates, then branch
         if (count($literals)) {
-            $this->branches[] = array($literals, -$level);
+            $this->branches[] = array($literals, $level);
         }
 
         return $this->setPropagateLearn($level, $selectedLiteral, $disableRules, $rule);
@@ -1996,7 +1996,7 @@ class Solver
                     $level = $lastLevel;
                     $this->revert($level);
 
-                    $why = $this->decisionQueueWhy[count($this->decisionQueueWhy)];
+                    $why = $this->decisionQueueWhy[count($this->decisionQueueWhy) - 1];
 
                     $oLevel = $level;
                     $level = $this->setPropagateLearn($level, $lastLiteral, $disableRules, $why);
