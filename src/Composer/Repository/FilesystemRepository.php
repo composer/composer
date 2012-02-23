@@ -56,6 +56,7 @@ class FilesystemRepository extends ArrayRepository implements WritableRepository
         $loader = new ArrayLoader();
         foreach ($packages as $package) {
             $package = $loader->load($package);
+            // TODO discriminate between really installed as alias and installed as real package
             if ($package->getAlias()) {
                 $this->addPackage($this->createAliasPackage($package));
             } else {
