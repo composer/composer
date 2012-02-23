@@ -139,6 +139,7 @@ class Locker
             if ($package->isDev()) {
                 $spec['source-reference'] = $package->getSourceReference();
             }
+            // TODO discriminate between really installed as alias and installed as real package
             if ($package->getAlias()) {
                 $spec['alias'] = $package->getAlias();
             }
