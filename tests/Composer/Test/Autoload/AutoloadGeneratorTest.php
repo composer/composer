@@ -23,18 +23,18 @@ class AutoloadGeneratorTest extends \PHPUnit_Framework_TestCase
     private $im;
     private $repository;
     private $generator;
+    private $fs;
 
     protected function setUp()
     {
-        $fs = new Filesystem;
+        $this->fs = new Filesystem;
         $that = $this;
 
         $this->workingDir = realpath(sys_get_temp_dir());
         $this->vendorDir = $this->workingDir.DIRECTORY_SEPARATOR.'composer-test-autoload';
-        if (is_dir($this->vendorDir)) {
-            $fs->removeDirectory($this->vendorDir);
+        if (!is_dir($this->vendorDir)) {
+            mkdir($this->vendorDir);
         }
-        mkdir($this->vendorDir);
 
         $this->dir = getcwd();
         chdir($this->workingDir);
@@ -60,6 +60,9 @@ class AutoloadGeneratorTest extends \PHPUnit_Framework_TestCase
 
     protected function tearDown()
     {
+        if (is_dir($this->vendorDir)) {
+            $this->fs->removeDirectory($this->vendorDir);
+        }
         chdir($this->dir);
     }
 
