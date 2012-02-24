@@ -71,6 +71,7 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
      */
     public function getComposerInformation($identifier)
     {
+        $identifier = '/' . trim($identifier, '/') . '/';
         if (!isset($this->infoCache[$identifier])) {
             preg_match('{^(.+?)(@\d+)?$}', $identifier, $match);
             if (!empty($match[2])) {
@@ -141,7 +142,7 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
             unset($output);
 
             $this->process->execute(sprintf('svn ls --verbose --non-interactive %s', escapeshellarg($this->baseUrl.'/branches')), $output);
-            foreach ($this->process->splitLines($output) as $line) {
+            foreach ($this->process->splitLines(trim($output)) as $line) {
                 preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match);
                 if ($match[2] === './') {
                     continue;
