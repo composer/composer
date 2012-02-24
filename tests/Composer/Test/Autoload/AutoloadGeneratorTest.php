@@ -15,8 +15,9 @@ namespace Composer\Test\Installer;
 use Composer\Autoload\AutoloadGenerator;
 use Composer\Util\Filesystem;
 use Composer\Package\MemoryPackage;
+use Composer\Test\TestCase;
 
-class AutoloadGeneratorTest extends \PHPUnit_Framework_TestCase
+class AutoloadGeneratorTest extends TestCase
 {
     public $vendorDir;
     private $workingDir;
@@ -32,9 +33,7 @@ class AutoloadGeneratorTest extends \PHPUnit_Framework_TestCase
 
         $this->workingDir = realpath(sys_get_temp_dir());
         $this->vendorDir = $this->workingDir.DIRECTORY_SEPARATOR.'composer-test-autoload';
-        if (!is_dir($this->vendorDir)) {
-            mkdir($this->vendorDir);
-        }
+        $this->ensureDirectoryExistsAndClear($this->vendorDir);
 
         $this->dir = getcwd();
         chdir($this->workingDir);
@@ -53,14 +52,18 @@ class AutoloadGeneratorTest extends \PHPUnit_Framework_TestCase
                 return $that->vendorDir;
             }));
 
-        $this->repo = $this->getMock('Composer\Repository\RepositoryInterface');
+        $this->repository = $this->getMock('Composer\Repository\RepositoryInterface');
 
         $this->generator = new AutoloadGenerator();
     }
 
     protected function tearDown()
     {
-        if (is_dir($this->vendorDir)) {
+        if ($this->vendorDir === $this->workingDir) {
+            if (is_dir($this->workingDir.'/.composer')) {
+                $this->fs->removeDirectory($this->workingDir.'/.composer');
+            }
+        } elseif (is_dir($this->vendorDir)) {
             $this->fs->removeDirectory($this->vendorDir);
         }
         chdir($this->dir);
@@ -71,12 +74,12 @@ class AutoloadGeneratorTest extends \PHPUnit_Framework_TestCase
         $package = new MemoryPackage('a', '1.0', '1.0');
         $package->setAutoload(array('psr-0' => array('Main' => 'src/', 'Lala' => 'src/')));
 
-        $this->repo->expects($this->once())
+        $this->repository->expects($this->once())
             ->method('getPackages')
             ->will($this->returnValue(array()));
 
         mkdir($this->vendorDir.'/.composer');
-        $this->generator->dump($this->repo, $package, $this->im, $this->vendorDir.'/.composer');
+        $this->generator->dump($this->repository, $package, $this->im, $this->vendorDir.'/.composer');
         $this->assertAutoloadFiles('main', $this->vendorDir.'/.composer');
     }
 
@@ -87,14 +90,15 @@ class AutoloadGeneratorTest extends \PHPUnit_Framework_TestCase
         $package = new MemoryPackage('a', '1.0', '1.0');
         $package->setAutoload(array('psr-0' => array('Main' => 'src/', 'Lala' => 'src/')));
 
-        $this->repo->expects($this->once())
+        $this->repository->expects($this->once())
             ->method('getPackages')
             ->will($this->returnValue(array()));
 
         if (!is_dir($this->vendorDir.'/.composer')) {
             mkdir($this->vendorDir.'/.composer', 0777, true);
         }
-        $this->generator->dump($this->repo, $package, $this->im, $this->vendorDir.'/.composer');
+
+        $this->generator->dump($this->repository, $package, $this->im, $this->vendorDir.'/.composer');
         $this->assertAutoloadFiles('main3', $this->vendorDir.'/.composer');
     }
 
@@ -103,13 +107,13 @@ class AutoloadGeneratorTest extends \PHPUnit_Framework_TestCase
         $package = new MemoryPackage('a', '1.0', '1.0');
         $package->setAutoload(array('psr-0' => array('Main' => 'src/', 'Lala' => 'src/')));
 
-        $this->repo->expects($this->once())
+        $this->repository->expects($this->once())
             ->method('getPackages')
             ->will($this->returnValue(array()));
 
         $this->vendorDir .= '/subdir';
         mkdir($this->vendorDir.'/.composer', 0777, true);
-        $this->generator->dump($this->repo, $package, $this->im, $this->vendorDir.'/.composer');
+        $this->generator->dump($this->repository, $package, $this->im, $this->vendorDir.'/.composer');
         $this->assertAutoloadFiles('main2', $this->vendorDir.'/.composer');
     }
 
@@ -123,12 +127,12 @@ class AutoloadGeneratorTest extends \PHPUnit_Framework_TestCase
         $a->setAutoload(array('psr-0' => array('A' => 'src/', 'A\\B' => 'lib/')));
         $b->setAutoload(array('psr-0' => array('B\\Sub\\Name' => 'src/')));
 
-        $this->repo->expects($this->once())
+        $this->repository->expects($this->once())
             ->method('getPackages')
             ->will($this->returnValue($packages));
 
         mkdir($this->vendorDir.'/.composer', 0777, true);
-        $this->generator->dump($this->repo, $package, $this->im, $this->vendorDir.'/.composer');
+        $this->generator->dump($this->repository, $package, $this->im, $this->vendorDir.'/.composer');
         $this->assertAutoloadFiles('vendors', $this->vendorDir.'/.composer');
     }
 
@@ -143,12 +147,12 @@ class AutoloadGeneratorTest extends \PHPUnit_Framework_TestCase
         $a->setAutoload(array('psr-0' => array('A' => 'src/', 'A\\B' => 'lib/')));
         $b->setAutoload(array('psr-0' => array('B\\Sub\\Name' => 'src/')));
 
-        $this->repo->expects($this->once())
+        $this->repository->expects($this->once())
             ->method('getPackages')
             ->will($this->returnValue($packages));
 
         mkdir($this->vendorDir.'/.composer', 0777, true);
-        $this->generator->dump($this->repo, $package, $this->im, $this->vendorDir.'/.composer');
+        $this->generator->dump($this->repository, $package, $this->im, $this->vendorDir.'/.composer');
         $this->assertAutoloadFiles('override_vendors', $this->vendorDir.'/.composer');
     }
 
