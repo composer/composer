@@ -15,6 +15,7 @@ namespace Composer\Test;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\MemoryPackage;
 use Composer\Package\LinkConstraint\VersionConstraint;
+use Composer\Util\Filesystem;
 
 abstract class TestCase extends \PHPUnit_Framework_TestCase
 {
@@ -39,5 +40,14 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
     {
         $normVersion = self::$versionParser->normalize($version);
         return new MemoryPackage($name, $normVersion, $version);
+    }
+
+    protected function ensureDirectoryExistsAndClear($directory)
+    {
+        $fs = new Filesystem();
+        if (is_dir($directory)) {
+            $fs->removeDirectory($directory);
+        }
+        mkdir($directory, 0777, true);
     }
 }
