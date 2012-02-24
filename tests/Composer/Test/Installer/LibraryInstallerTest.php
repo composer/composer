@@ -15,8 +15,9 @@ namespace Composer\Test\Installer;
 use Composer\Installer\LibraryInstaller;
 use Composer\DependencyResolver\Operation;
 use Composer\Util\Filesystem;
+use Composer\Test\TestCase;
 
-class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
+class LibraryInstallerTest extends TestCase
 {
     private $vendorDir;
     private $binDir;
@@ -30,16 +31,10 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
         $this->fs = new Filesystem;
 
         $this->vendorDir = realpath(sys_get_temp_dir()).DIRECTORY_SEPARATOR.'composer-test-vendor';
-        if (is_dir($this->vendorDir)) {
-            $this->fs->removeDirectory($this->vendorDir);
-        }
-        mkdir($this->vendorDir);
+        $this->ensureDirectoryExistsAndClear($this->vendorDir);
 
         $this->binDir = realpath(sys_get_temp_dir()).DIRECTORY_SEPARATOR.'composer-test-bin';
-        if (is_dir($this->binDir)) {
-            $this->fs->removeDirectory($this->binDir);
-        }
-        mkdir($this->binDir);
+        $this->ensureDirectoryExistsAndClear($this->binDir);
 
         $this->dm = $this->getMockBuilder('Composer\Downloader\DownloadManager')
             ->disableOriginalConstructor()
@@ -50,6 +45,17 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
 
         $this->io = $this->getMockBuilder('Composer\IO\IOInterface')
             ->getMock();
+    }
+
+    protected function tearDown()
+    {
+        if (is_dir($this->vendorDir)) {
+            $this->fs->removeDirectory($this->vendorDir);
+        }
+
+        if (is_dir($this->binDir)) {
+            $this->fs->removeDirectory($this->binDir);
+        }
     }
 
     public function testInstallerCreationShouldNotCreateVendorDirectory()
