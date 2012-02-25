@@ -127,6 +127,7 @@ class InstallationManager
         $package = $operation->getPackage();
         if ($package instanceof AliasPackage) {
             $package = $package->getAliasOf();
+            $package->setInstalledAsAlias(true);
         }
         $installer = $this->getInstaller($package->getType());
         $installer->install($package);
@@ -146,6 +147,7 @@ class InstallationManager
         $target  = $operation->getTargetPackage();
         if ($target instanceof AliasPackage) {
             $target = $target->getAliasOf();
+            $target->setInstalledAsAlias(true);
         }
 
         $initialType = $initial->getType();
