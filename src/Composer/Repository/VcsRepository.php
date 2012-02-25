@@ -185,34 +185,7 @@ class VcsRepository extends ArrayRepository
             $data['source'] = $driver->getSource($identifier);
         }
 
-        // check for a branch alias (dev-master => 1.0.x-dev for example) if this is a named branch
-        if ('dev-' === substr($data['version'], 0, 4) && isset($data['extra']['branch-alias']) && is_array($data['extra']['branch-alias'])) {
-            foreach ($data['extra']['branch-alias'] as $sourceBranch => $targetBranch) {
-                // ensure it is an alias to a numeric branch that is parseable
-                if (!($validatedTargetBranch = $this->validateBranch($targetBranch)) || '-dev' !== substr($validatedTargetBranch, -4)) {
-                    continue;
-                }
-                // ensure that it is the current branch aliasing itself
-                if ($data['version'] !== $sourceBranch && substr($data['version'], 4) !== $sourceBranch) {
-                    continue;
-                }
-
-                $data['alias'] = $targetBranch.'-dev';
-                $data['alias_normalized'] = $validatedTargetBranch;
-                break;
-            }
-        }
-
         return $data;
-    }
-
-    public function addPackage(PackageInterface $package)
-    {
-        parent::addPackage($package);
-
-        if ($package->getAlias()) {
-            $this->addPackage($this->createAliasPackage($package));
-        }
     }
 
     private function validateBranch($branch)
