@@ -254,6 +254,6 @@ class AliasPackage extends BasePackage
     }
     public function __toString()
     {
-        return $this->aliasOf->__toString();
+        return parent::__toString().' (alias of '.$this->aliasOf->getVersion().')';
     }
 }
