@@ -130,7 +130,7 @@ class Factory
 
     protected function addLocalRepository(RepositoryManager $rm, $vendorDir)
     {
-        $rm->setLocalRepository(new Repository\FilesystemRepository(new JsonFile($vendorDir.'/.composer/installed.json')));
+        $rm->setLocalRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/.composer/installed.json')));
     }
 
     protected function addPackagistRepository(RepositoryManager $rm)

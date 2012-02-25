@@ -23,6 +23,7 @@ use Composer\Repository\PlatformRepository;
 class AliasPackage extends BasePackage
 {
     protected $version;
+    protected $prettyVersion;
     protected $dev;
     protected $aliasOf;
 
@@ -38,12 +39,14 @@ class AliasPackage extends BasePackage
      *
      * @param PackageInterface $aliasOf The package this package is an alias of
      * @param string $version The version the alias must report
+     * @param string $prettyVersion The alias's non-normalized version
      */
-    public function __construct($aliasOf, $version)
+    public function __construct($aliasOf, $version, $prettyVersion)
     {
         parent::__construct($aliasOf->getName());
 
         $this->version = $version;
+        $this->prettyVersion = $prettyVersion;
         $this->aliasOf = $aliasOf;
         $this->dev = 'dev-' === substr($version, 0, 4) || '-dev' === substr($version, -4);
 
@@ -78,7 +81,7 @@ class AliasPackage extends BasePackage
      */
     public function getPrettyVersion()
     {
-        return $this->version;
+        return $this->prettyVersion;
     }
 
     /**
@@ -92,7 +95,7 @@ class AliasPackage extends BasePackage
     /**
      * {@inheritDoc}
      */
-    function getRequires()
+    public function getRequires()
     {
         return $this->requires;
     }
@@ -100,7 +103,7 @@ class AliasPackage extends BasePackage
     /**
      * {@inheritDoc}
      */
-    function getConflicts()
+    public function getConflicts()
     {
         return $this->conflicts;
     }
@@ -108,7 +111,7 @@ class AliasPackage extends BasePackage
     /**
      * {@inheritDoc}
      */
-    function getProvides()
+    public function getProvides()
     {
         return $this->provides;
     }
@@ -116,7 +119,7 @@ class AliasPackage extends BasePackage
     /**
      * {@inheritDoc}
      */
-    function getReplaces()
+    public function getReplaces()
     {
         return $this->replaces;
     }
@@ -124,7 +127,7 @@ class AliasPackage extends BasePackage
     /**
      * {@inheritDoc}
      */
-    function getRecommends()
+    public function getRecommends()
     {
         return $this->recommends;
     }
@@ -132,9 +135,25 @@ class AliasPackage extends BasePackage
     /**
      * {@inheritDoc}
      */
-    function getSuggests()
+    public function getSuggests()
     {
         return $this->suggests;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getAlias()
+    {
+        return '';
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getPrettyAlias()
+    {
+        return '';
     }
 
     /***************************************
@@ -172,6 +191,10 @@ class AliasPackage extends BasePackage
     public function getSourceReference()
     {
         return $this->aliasOf->getSourceReference();
+    }
+    public function setSourceReference($reference)
+    {
+        return $this->aliasOf->setSourceReference($reference);
     }
     public function getDistType()
     {
