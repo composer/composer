@@ -200,7 +200,7 @@ class GitDriver extends VcsDriver implements VcsDriverInterface
         if (static::isLocalUrl($url)) {
             $process = new ProcessExecutor();
             // check whether there is a git repo in that path
-            if ($process->execute(sprintf('cd %s && git show', escapeshellarg($url)), $output) === 0) {
+            if ($process->execute(sprintf('cd %s && git tag', escapeshellarg($url)), $output) === 0) {
                 return true;
             }
         }
