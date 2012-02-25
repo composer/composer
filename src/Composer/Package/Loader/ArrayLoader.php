@@ -134,10 +134,28 @@ class ArrayLoader
             $package->setDistSha1Checksum(isset($config['dist']['shasum']) ? $config['dist']['shasum'] : null);
         }
 
-        // load alias for named dev packages
-        if (!empty($config['alias']) && 'dev-' === substr($package->getPrettyVersion(), 0, 4)) {
-            $package->setAlias($config['alias_normalized']);
-            $package->setPrettyAlias($config['alias']);
+        // check for a branch alias (dev-master => 1.0.x-dev for example) if this is a named branch
+        if ('dev-' === substr($package->getPrettyVersion(), 0, 4) && isset($config['extra']['branch-alias']) && is_array($config['extra']['branch-alias'])) {
+            foreach ($config['extra']['branch-alias'] as $sourceBranch => $targetBranch) {
+                // ensure it is an alias to a -dev package
+                if ('-dev' !== substr($targetBranch, -4)) {
+                    continue;
+                }
+                // normalize without -dev and ensure it's a numeric branch that is parseable
+                $validatedTargetBranch = $this->versionParser->normalizeBranch(substr($targetBranch, 0, -4));
+                if ('-dev' !== substr($validatedTargetBranch, -4)) {
+                    continue;
+                }
+
+                // ensure that it is the current branch aliasing itself
+                if (strtolower($package->getPrettyVersion()) !== strtolower($sourceBranch)) {
+                    continue;
+                }
+
+                $package->setAlias($validatedTargetBranch);
+                $package->setPrettyAlias($targetBranch);
+                break;
+            }
         }
 
         foreach (Package\BasePackage::$supportedLinkTypes as $type => $description) {

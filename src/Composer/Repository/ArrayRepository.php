@@ -95,6 +95,11 @@ class ArrayRepository implements RepositoryInterface
         }
         $package->setRepository($this);
         $this->packages[] = $package;
+
+        // create alias package on the fly if needed (installed repos manage aliases themselves)
+        if ($package->getAlias() && !$this instanceof InstalledRepositoryInterface) {
+            $this->addPackage($this->createAliasPackage($package));
+        }
     }
 
     protected function createAliasPackage(PackageInterface $package)
