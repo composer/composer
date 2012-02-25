@@ -4,6 +4,8 @@ namespace Composer\Repository;
 
 use Composer\Repository\Vcs\VcsDriverInterface;
 use Composer\Package\Version\VersionParser;
+use Composer\Package\PackageInterface;
+use Composer\Package\AliasPackage;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\IO\IOInterface;
 
@@ -16,6 +18,7 @@ class VcsRepository extends ArrayRepository
     protected $packageName;
     protected $debug;
     protected $io;
+    protected $versionParser;
 
     public function __construct(array $config, IOInterface $io, array $drivers = null)
     {
@@ -67,7 +70,7 @@ class VcsRepository extends ArrayRepository
             throw new \InvalidArgumentException('No driver found to handle VCS repository '.$this->url);
         }
 
-        $versionParser = new VersionParser;
+        $this->versionParser = new VersionParser;
         $loader = new ArrayLoader();
 
         if ($driver->hasComposerFile($driver->getRootIdentifier())) {
@@ -83,7 +86,7 @@ class VcsRepository extends ArrayRepository
                 $this->io->overwrite($msg, false);
             }
 
-            $parsedTag = $this->validateTag($versionParser, $tag);
+            $parsedTag = $this->validateTag($tag);
             if ($parsedTag && $driver->hasComposerFile($identifier)) {
                 try {
                     $data = $driver->getComposerInformation($identifier);
@@ -96,7 +99,7 @@ class VcsRepository extends ArrayRepository
 
                 // manually versioned package
                 if (isset($data['version'])) {
-                    $data['version_normalized'] = $versionParser->normalize($data['version']);
+                    $data['version_normalized'] = $this->versionParser->normalize($data['version']);
                 } else {
                     // auto-versionned package, read value from tag
                     $data['version'] = $tag;
@@ -135,7 +138,7 @@ class VcsRepository extends ArrayRepository
                 $this->io->overwrite($msg, false);
             }
 
-            $parsedBranch = $this->validateBranch($versionParser, $branch);
+            $parsedBranch = $this->validateBranch($branch);
             if ($driver->hasComposerFile($identifier)) {
                 $data = $driver->getComposerInformation($identifier);
 
@@ -185,20 +188,20 @@ class VcsRepository extends ArrayRepository
         return $data;
     }
 
-    private function validateBranch($versionParser, $branch)
+    private function validateBranch($branch)
     {
         try {
-            return $versionParser->normalizeBranch($branch);
+            return $this->versionParser->normalizeBranch($branch);
         } catch (\Exception $e) {
         }
 
         return false;
     }
 
-    private function validateTag($versionParser, $version)
+    private function validateTag($version)
     {
         try {
-            return $versionParser->normalize($version);
+            return $this->versionParser->normalize($version);
         } catch (\Exception $e) {
         }
 

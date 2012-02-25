@@ -317,6 +317,20 @@ interface PackageInterface
     function getAuthors();
 
     /**
+     * Returns a version this package should be aliased to
+     *
+     * @return string
+     */
+    function getAlias();
+
+    /**
+     * Returns a non-normalized version this package should be aliased to
+     *
+     * @return string
+     */
+    function getPrettyAlias();
+
+    /**
      * Returns package unique name, constructed from name and version.
      *
      * @return string
