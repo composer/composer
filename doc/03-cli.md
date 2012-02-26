@@ -30,10 +30,20 @@ resolution.
 
 ### Options
 
-* **--prefer-source:** There are two ways of downloading a package: `source` and `dist`. For stable versions composer will use the `dist` by default. The `source` is a version control repository. If `--prefer-source` is enabled, composer will install from `source` if there is one. This is useful if you want to make a bugfix to a project and get a local git clone of the dependency directly.
-* **--dry-run:** If you want to run through an installation without actually installing a package, you can use `--dry-run`. This will simulate the installation and show you what would happen.
-* **--no-install-recommends:** By default composer will install all packages that are referenced by `recommend`. By passing this option you can disable that.
-* **--install-suggests:** The packages referenced by `suggest` will not be installed by default. By passing this option, you can install them.
+* **--prefer-source:** There are two ways of downloading a package: `source`
+  and `dist`. For stable versions composer will use the `dist` by default.
+  The `source` is a version control repository. If `--prefer-source` is
+  enabled, composer will install from `source` if there is one. This is
+  useful if you want to make a bugfix to a project and get a local git
+  clone of the dependency directly.
+* **--dry-run:** If you want to run through an installation without actually
+  installing a package, you can use `--dry-run`. This will simulate the
+  installation and show you what would happen.
+* **--no-install-recommends:** By default composer will install all packages
+  that are referenced by `recommend`. By passing this option you can disable
+  that.
+* **--install-suggests:** The packages referenced by `suggest` will not be
+  installed by default. By passing this option, you can install them.
 
 ## update
 
@@ -115,7 +125,7 @@ should be included in the listing.
 ### Options
 
 * **--link-type:** The link types to match on, can be specified multiple
-times.
+  times.
 
 ## validate
 
@@ -137,3 +147,34 @@ command. It will replace your `composer.phar` with the latest version.
 To get more information about a certain command, just use `help`.
 
     $ php composer.phar help install
+
+## Environment variables
+
+You can set a number of environment variables that override certain settings.
+Whenever possible it is recommended to specify these settings in the `config`
+section of `composer.json` instead. It is worth noting that that the env vars
+will always take precedence over the values specified in `composer.json`.
+
+### COMPOSER
+
+By setting the `COMPOSER` env variable is is possible to set the filename of
+`composer.json` to something else.
+
+For example:
+
+    $ COMPOSER=composer-other.json php composer.phar install
+
+### COMPOSER_VENDOR_DIR
+
+By setting this option you can make composer install the dependencies into a
+directory other than `vendor`.
+
+### COMPOSER_BIN_DIR
+
+By setting this option you can change the `bin` ([articles/vendor-bins.md])
+directory to something other than `vendor/bin`.
+
+### COMPOSER_PROCESS_TIMEOUT
+
+This env var controls the time composer waits for commands (such as git
+commands) to finish executing. The default value is 60 seconds.

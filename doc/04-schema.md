@@ -6,7 +6,7 @@ This chapter will explain all of the options available in `composer.json`.
 
 We have a [JSON schema](http://json-schema.org) that documents the format and
 can also be used to validate your `composer.json`. In fact, it is used by the
-`validate` command. You can find it at: 
+`validate` command. You can find it at:
 [`Resources/composer-schema.json`](https://github.com/composer/composer/blob/master/res/composer-schema.json).
 
 ## Package root
@@ -58,9 +58,9 @@ The type of the package. It defaults to `library`.
 
 Package types are used for custom installation logic. If you have a package
 that needs some special logic, you can define a custom type. This could be a
-`symfony-bundle`, a `wordpress-plugin` or a `typo3-module`. These will all be
-specific to certain projects, and they will need to provide an installer
-capable of installing packages of that type.
+`symfony-bundle`, a `wordpress-plugin` or a `typo3-module`. These types will
+all be specific to certain projects, and they will need to provide an
+installer capable of installing packages of that type.
 
 Out of the box, composer supports two types:
 
@@ -242,14 +242,13 @@ Repositories are not resolved recursively. You can only add them to your main
 `composer.json`. Repository declarations of dependencies' `composer.json`s are
 ignored.
 
-Following repository types are supported:
+The following repository types are supported:
 
 * **composer:** A composer repository is simply a `packages.json` file served
-  via HTTP that contains a list of `composer.json` objects with additional
+  via HTTP, that contains a list of `composer.json` objects with additional
   `dist` and/or `source` information.
 * **vcs:** The version control system repository can fetch packages from git,
-  svn and hg repositories. Note the distinction between package repository and
-  version control repository.
+  svn and hg repositories.
 * **pear:** With this you can import any pear repository into your composer
   project.
 * **package:** If you depend on a project that does not have any support for
@@ -335,7 +334,8 @@ Example:
 
 ## scripts
 
-Composer allows you to hook into various parts of the installation process through the use of scripts.
+Composer allows you to hook into various parts of the installation process
+through the use of scripts.
 
 These events are supported:
 
@@ -388,6 +388,8 @@ class ScriptHandler
 {
     static public function doSomething(Event $event)
     {
+        $composer = $event->getComposer();
+
         // custom logic
     }
 }
@@ -411,6 +413,6 @@ Optional.
 A set of files that should be treated as binaries and symlinked into the `bin-
 dir` (from config).
 
-See [articles/bin.md] for more details.
+See [articles/vendor-bins.md] for more details.
 
 Optional.

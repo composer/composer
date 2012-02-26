@@ -1,7 +1,7 @@
 # Introduction
 
 Composer is a tool for dependency management in PHP. It allows you to declare
-the dependencies of your project and will install these dependencies for you.
+the dependencies of your project and will install them for you.
 
 ## Dependency management
 
@@ -45,7 +45,7 @@ composer:
     $ curl -s http://getcomposer.org/installer | php
 
 This will just check a few PHP settings and then download `composer.phar` to
-your working directory. This is the composer binary.
+your working directory. This file is the composer binary.
 
 After that we run the command for installing all dependencies:
 

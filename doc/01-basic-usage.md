@@ -9,10 +9,10 @@ To install composer, simply run this command on the command line:
 This will perform some checks on your environment to make sure you can
 actually run it.
 
-This will download `composer.phar` and place it in your working directory.
-`composer.phar` is the composer binary. It is a PHAR (PHP archive), which
-is an archive format for PHP which can be run on the command line, amongst
-other things.
+Then it will download `composer.phar` and place it in your working directory.
+`composer.phar` is the composer binary. It is a PHAR (PHP archive), which is
+an archive format for PHP which can be run on the command line, amongst other
+things.
 
 You can place this file anywhere you wish. If you put it in your `PATH`,
 you can access it globally. On unixy systems you can even make it
@@ -94,9 +94,9 @@ supplied version constraint and download it into the the `vendor` directory.
 It's a convention to put third party code into a directory named `vendor`.
 In case of monolog it will put it into `vendor/monolog/monolog`.
 
-**Tip:** If you are using git for your project, you probably want to add
-`vendor` into your `.gitignore`. You really don't want to add all of that
-code to your repository.
+> **Tip:** If you are using git for your project, you probably want to add
+> `vendor` into your `.gitignore`. You really don't want to add all of that
+> code to your repository.
 
 Another thing that the `install` command does is it adds a `composer.lock`
 file into your project root.
@@ -145,7 +145,7 @@ this file and you will get autoloading for free.
 require 'vendor/.composer/autoload.php';
 ```
 
-This makes it really easy to use third party code, because you really just
+This makes it really easy to use third party code, because you only
 have to add one line to `composer.json` and run `install`. For monolog, it
 means that we can just start using classes from it, and they will be
 autoloaded.
@@ -157,7 +157,7 @@ $log->pushHandler(new Monolog\Handler\StreamHandler('app.log', Logger::WARNING))
 $log->addWarning('Foo');
 ```
 
-You can even add your own code to the autoloader by adding an `autoload` key
+You can even add your own code to the autoloader by adding an `autoload` field
 to `composer.json`.
 
 ```json
@@ -170,14 +170,14 @@ to `composer.json`.
 
 This is a mapping from namespaces to directories. The `src` directory would be
 in your project root. An example filename would be `src/Acme/Foo.php`
-containing a `Acme\Foo` class.
+containing an `Acme\Foo` class.
 
-After adding the `autoload` key, you have to re-run `install` to re-generate
+After adding the `autoload` field, you have to re-run `install` to re-generate
 the `vendor/.composer/autoload.php` file.
 
-Including that file will also return the autoloader instance, so you can add
-retrieve it and add more namespaces. This can be useful for autoloading
-classes in a test suite, for example.
+Including that file will also return the autoloader instance, so you can store
+the return value of the include call in a variable and add more namespaces.
+This can be useful for autoloading classes in a test suite, for example.
 
 ```php
 $loader = require 'vendor/.composer/autoload.php';

@@ -5,12 +5,12 @@ of repositories are available, and how they work.
 
 ## Concepts
 
-Before we look at the different types of repositories that we can have, we
-need to understand some of the basic concepts that composer is built on.
+Before we look at the different types of repositories that exist, we need to
+understand some of the basic concepts that composer is built on.
 
 ### Package
 
-Composer is a dependency manager. It installs packages. A package is
+Composer is a dependency manager. It installs packages locally. A package is
 essentially just a directory containing something. In this case it is PHP
 code, but in theory it could be anything. And it contains a package
 description which has a name and a version. The name and the version are used
@@ -20,9 +20,9 @@ In fact, internally composer sees every version as a separate package. While
 this distinction does not matter when you are using composer, it's quite
 important when you want to change it.
 
-In addition to the name and the version, there is useful data. The only really
-important piece of information is the package source, that describes where to
-get the package contents. The package data points to the contents of the
+In addition to the name and the version, there is useful data. The information
+most relevant for installation is the source definition, which describes where
+to get the package contents. The package data points to the contents of the
 package. And there are two options here: dist and source.
 
 **Dist:** The dist is a packaged version of the package data. Usually a
@@ -135,11 +135,11 @@ The following are supported:
 * **Subversion:** [subversion.apache.org](http://subversion.apache.org)
 * **Mercurial:** [mercurial.selenic.com](http://mercurial.selenic.com)
 
-To use these systems you need to have them installed. That can be
-invonvenient. And for this reason there is special support for GitHub and
-BitBucket that use the APIs provided by these sites, to fetch the packages
-without having to install the version control system. The VCS repository
-provides `dist`s for them that fetch the packages as zips.
+To get packages from these systems you need to have their respective clients
+installed. That can be invonvenient. And for this reason there is special
+support for GitHub and BitBucket that use the APIs provided by these sites, to
+fetch the packages without having to install the version control system. The
+VCS repository provides `dist`s for them that fetch the packages as zips.
 
 * **GitHub:** [github.com](https://github.com) (Git)
 * **BitBucket:** [bitbucket.org](https://bitbucket.org) (Git and Mercurial)
@@ -177,12 +177,12 @@ In this case the short name of the channel is `pear2`, so the
 ### Package
 
 If you want to use a project that does not support composer through any of the
-means above, you still can define the package yourself using a `package`
+means above, you still can define the package yourself by using a `package`
 repository.
 
 Basically, you define the same information that is included in the `composer`
 repository's `packages.json`, but only for a single package. Again, the
-minimally required fields are `name`, `version`, and either of `dist` or
+minimum required fields are `name`, `version`, and either of `dist` or
 `source`.
 
 Here is an example for the smarty template engine:
@@ -231,8 +231,7 @@ there are some use cases for hosting your own repository.
 When hosting your own package repository it is recommended to use a `composer`
 one. This is type that is native to composer and yields the best performance.
 
-There are a few different tools that can help you create a `composer`
-repository.
+There are a few tools that can help you create a `composer` repository.
 
 ### Packagist
 
@@ -251,13 +250,12 @@ github repository](https://github.com/composer/packagist).
 
 ### Satis
 
-Satis is a static `composer` repository generator. It is a bit like a ultra-
-lightweight, file-based version of packagist.
+Satis is a static `composer` repository generator. It is a bit like an ultra-
+lightweight, static file-based version of packagist.
 
-You give it a `composer.json` containing repositories, typically VCS and package
-repository definitions. It will fetch all the packages that are `require`d from
-these repositories and dump a `packages.json` that is your `composer`
-repository.
+You give it a `composer.json` containing repositories, typically VCS and
+package repository definitions. It will fetch all the packages that are
+`require`d and dump a `packages.json` that is your `composer` repository.
 
 Check [the satis GitHub repository](https://github.com/composer/satis) for more
 information.
