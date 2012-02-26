@@ -118,14 +118,14 @@ abstract class BasePackage implements PackageInterface
         }
 
         foreach ($this->getProvides() as $link) {
-            if ($link->getTarget() === $name) {
-                return $constraint->matches($link->getConstraint());
+            if ($link->getTarget() === $name && $constraint->matches($link->getConstraint())) {
+                return true;
             }
         }
 
         foreach ($this->getReplaces() as $link) {
-            if ($link->getTarget() === $name) {
-                return $constraint->matches($link->getConstraint());
+            if ($link->getTarget() === $name && $constraint->matches($link->getConstraint())) {
+                return true;
             }
         }
 
