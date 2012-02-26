@@ -136,7 +136,7 @@ The following are supported:
 * **Mercurial:** [mercurial.selenic.com](http://mercurial.selenic.com)
 
 To get packages from these systems you need to have their respective clients
-installed. That can be invonvenient. And for this reason there is special
+installed. That can be inconvenient. And for this reason there is special
 support for GitHub and BitBucket that use the APIs provided by these sites, to
 fetch the packages without having to install the version control system. The
 VCS repository provides `dist`s for them that fetch the packages as zips.
