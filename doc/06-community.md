@@ -1,7 +1,7 @@
 # Community
 
-We have a lot of people using composer, and also many contributors to the
-project.
+There are a lot of people using composer already, quite a few are also already
+contributing.
 
 ## Contributing
 
@@ -22,7 +22,7 @@ The most important guidelines are described as follows:
 
 ## IRC / mailing list
 
-The developer mailing list is on [google groups](http://groups.google.com/group/composer-dev/) 
+The developer mailing list is on [google groups](http://groups.google.com/group/composer-dev/)
 IRC channels are available for discussion as well, on
 irc.freenode.org [#composer](irc://irc.freenode.org/composer) for users and
 [#composer-dev](irc://irc.freenode.org/composer-dev) for development.
