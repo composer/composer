@@ -15,6 +15,7 @@ namespace Composer\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\IO\IOInterface;
 use Composer\Factory;
@@ -66,6 +67,7 @@ EOT
 
         return $this->installProject(
             $io,
+            $this->getInstallCommand($input, $output),
             $input->getArgument('package'),
             $input->getArgument('directory'),
             $input->getArgument('version'),
@@ -74,7 +76,16 @@ EOT
         );
     }
 
-    public function installProject(IOInterface $io, $packageName, $directory = null, $version = null, $preferSource = false, $repositoryUrl = null)
+    protected function getInstallCommand($input, $output)
+    {
+        $app = $this->getApplication();
+        return function() use ($app, $input, $output) {
+            $newInput = new ArrayInput(array('command' => 'install'));
+            $app->doRUn($newInput, $output);
+        };
+    }
+
+    public function installProject(IOInterface $io, $installCommand, $packageName, $directory = null, $version = null, $preferSource = false, $repositoryUrl = null)
     {
         $dm = $this->createDownloadManager($io);
         if ($preferSource) {
@@ -101,13 +112,13 @@ EOT
             $directory = getcwd() . DIRECTORY_SEPARATOR . array_pop($parts);
         }
 
+        $io->write('<info>Installing ' . $package->getName() . ' as new project.</info>', true);
         $projectInstaller = new ProjectInstaller($directory, $dm);
         $projectInstaller->install($package);
 
-        $io->write('Created new project directory for ' . $package->getName(), true);
-        $io->write('Next steps:', true);
-        $io->write('1. cd ' . $directory, true);
-        $io->write('2. composer install', true);
+        $io->write('<info>Created project into directory ' . $directory . '</info>', true);
+        chdir($directory);
+        $installCommand();
     }
 
     protected function createDownloadManager(IOInterface $io)
