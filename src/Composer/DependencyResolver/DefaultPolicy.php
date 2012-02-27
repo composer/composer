@@ -104,6 +104,7 @@ class DefaultPolicy implements PolicyInterface
     public function compareByPriorityPreferInstalled(Pool $pool, array $installedMap, PackageInterface $a, PackageInterface $b, $ignoreReplace = false)
     {
         if ($a->getRepository() === $b->getRepository()) {
+            // prefer aliases to the original package
             if ($a->getName() === $b->getName()) {
                 $aAliased = $a instanceof AliasPackage;
                 $bAliased = $b instanceof AliasPackage;
