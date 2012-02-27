@@ -52,6 +52,7 @@ class Factory
         // Configuration defaults
         $composerConfig = array(
             'vendor-dir' => 'vendor',
+            'process-timeout' => 60,
         );
 
         $packageConfig = $file->read();
@@ -69,9 +70,8 @@ class Factory
         $binDir = getenv('COMPOSER_BIN_DIR') ?: $packageConfig['config']['bin-dir'];
 
         // setup process timeout
-        if (false !== getenv('COMPOSER_PROCESS_TIMEOUT')) {
-            ProcessExecutor::setTimeout((int) getenv('COMPOSER_PROCESS_TIMEOUT'));
-        }
+        $processTimeout = getenv('COMPOSER_PROCESS_TIMEOUT') ?: $packageConfig['config']['process-timeout']
+        ProcessExecutor::setTimeout((int) $processTimeout);
 
         // initialize repository manager
         $rm = $this->createRepositoryManager($io);
