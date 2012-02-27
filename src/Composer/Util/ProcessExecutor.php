@@ -19,7 +19,7 @@ use Symfony\Component\Process\Process;
  */
 class ProcessExecutor
 {
-    static protected $timeout = 60;
+    static protected $timeout = 300;
 
     /**
      * runs a process on the commandline
