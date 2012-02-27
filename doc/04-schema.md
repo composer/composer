@@ -321,7 +321,7 @@ The following options are supported:
   different directory if you want to.
 * **bin-dir:** Defaults to `vendor/bin`. If a project includes binaries, they
   will be symlinked into this directory.
-* **process-timeout:** Defaults to `60`. The duration processes like git clones
+* **process-timeout:** Defaults to `300`. The duration processes like git clones
   can run before Composer assumes they died out. You may need to make this
   higher if you have a slow connection or huge vendors.
 

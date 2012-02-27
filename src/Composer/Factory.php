@@ -52,7 +52,7 @@ class Factory
         // Configuration defaults
         $composerConfig = array(
             'vendor-dir' => 'vendor',
-            'process-timeout' => 60,
+            'process-timeout' => 300,
         );
 
         $packageConfig = $file->read();
