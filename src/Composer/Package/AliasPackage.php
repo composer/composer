@@ -50,16 +50,29 @@ class AliasPackage extends BasePackage
         $this->aliasOf = $aliasOf;
         $this->dev = 'dev-' === substr($version, 0, 4) || '-dev' === substr($version, -4);
 
-        foreach (self::$supportedLinkTypes as $type => $description) {
-            $links = $aliasOf->{'get'.ucfirst($description)}();
+        // replace self.version dependencies
+        foreach (array('requires', 'recommends', 'suggests') as $type) {
+            $links = $aliasOf->{'get'.ucfirst($type)}();
+            foreach ($links as $index => $link) {
+                // link is self.version, but must be replacing also the replaced version
+                if ('self.version' === $link->getPrettyConstraint()) {
+                    $links[$index] = new Link($link->getSource(), $link->getTarget(), new VersionConstraint('=', $this->version), $type, $this->version);
+                }
+            }
+            $this->$type = $links;
+        }
+
+        // duplicate self.version provides
+        foreach (array('conflicts', 'provides', 'replaces') as $type) {
+            $links = $aliasOf->{'get'.ucfirst($type)}();
             $newLinks = array();
             foreach ($links as $link) {
                 // link is self.version, but must be replacing also the replaced version
                 if ('self.version' === $link->getPrettyConstraint()) {
-                    $newLinks[] = new Link($link->getSource(), $link->getTarget(), new VersionConstraint('=', $this->version), $description, $this->version);
+                    $newLinks[] = new Link($link->getSource(), $link->getTarget(), new VersionConstraint('=', $this->version), $type, $this->version);
                 }
             }
-            $this->$description = array_merge($links, $newLinks);
+            $this->$type = array_merge($links, $newLinks);
         }
     }
 
