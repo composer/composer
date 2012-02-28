@@ -53,8 +53,9 @@ return $__composer_autoload_init();
 EOF;
 
         $filesystem = new Filesystem();
-        $vendorPath = strtr(realpath($installationManager->getVendorPath()), '\\', '/');
-        $relVendorPath = $filesystem->findShortestPath(getcwd(), $vendorPath);
+        $vendorPath = strtr(realpath($installationManager->getVendorPath(true)), '\\', '/');
+        $basePath = $installationManager->getBasePath();
+        $relVendorPath = $filesystem->findShortestPath($basePath, $vendorPath);
         $vendorDirCode = $filesystem->findShortestPathCode(realpath($targetDir), $vendorPath, true);
 
         $namespacesFile = <<<EOF
@@ -71,7 +72,7 @@ EOF;
         $packageMap = $this->buildPackageMap($installationManager, $mainPackage, $localRepo->getPackages());
         $autoloads = $this->parseAutoloads($packageMap);
 
-        $appBaseDir = $filesystem->findShortestPathCode($vendorPath, getcwd(), true);
+        $appBaseDir = $filesystem->findShortestPathCode($vendorPath, $basePath, true);
         $appBaseDir = str_replace('__DIR__', '$vendorDir', $appBaseDir);
 
         if (isset($autoloads['psr-0'])) {

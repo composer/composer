@@ -20,7 +20,7 @@ use Composer\Test\TestCase;
 class AutoloadGeneratorTest extends TestCase
 {
     public $vendorDir;
-    private $workingDir;
+    public $workingDir;
     private $im;
     private $repository;
     private $generator;
@@ -35,9 +35,6 @@ class AutoloadGeneratorTest extends TestCase
         $this->vendorDir = $this->workingDir.DIRECTORY_SEPARATOR.'composer-test-autoload';
         $this->ensureDirectoryExistsAndClear($this->vendorDir);
 
-        $this->dir = getcwd();
-        chdir($this->workingDir);
-
         $this->im = $this->getMockBuilder('Composer\Installer\InstallationManager')
             ->disableOriginalConstructor()
             ->getMock();
@@ -50,6 +47,11 @@ class AutoloadGeneratorTest extends TestCase
             ->method('getVendorPath')
             ->will($this->returnCallback(function () use ($that) {
                 return $that->vendorDir;
+            }));
+        $this->im->expects($this->any())
+            ->method('getBasePath')
+            ->will($this->returnCallback(function () use ($that) {
+                return $that->workingDir;
             }));
 
         $this->repository = $this->getMock('Composer\Repository\RepositoryInterface');
@@ -66,7 +68,6 @@ class AutoloadGeneratorTest extends TestCase
         } elseif (is_dir($this->vendorDir)) {
             $this->fs->removeDirectory($this->vendorDir);
         }
-        chdir($this->dir);
     }
 
     public function testMainPackageAutoloading()

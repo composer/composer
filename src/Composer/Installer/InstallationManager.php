@@ -18,6 +18,7 @@ use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
+use Composer\Util\Filesystem;
 
 /**
  * Package operation manager.
@@ -30,22 +31,26 @@ class InstallationManager
     private $installers = array();
     private $cache = array();
     private $vendorPath;
+    private $basePath;
 
     /**
      * Creates an instance of InstallationManager
      *
-     * @param    string    $vendorDir    Relative path to the vendor directory
+     * @param    string      $vendorDir    Relative path to the vendor directory
+     * @param    string|null $basePath     Base path
      * @throws   \InvalidArgumentException
      */
-    public function __construct($vendorDir = 'vendor')
+    public function __construct($vendorDir = 'vendor', $basePath = null)
     {
-        if (substr($vendorDir, 0, 1) === '/' || substr($vendorDir, 1, 1) === ':') {
-            $basePath = getcwd();
-            if (0 !== strpos($vendorDir, $basePath)) {
-                throw new \InvalidArgumentException("Vendor dir ($vendorDir) must be within the current working directory ($basePath).");
+        $this->basePath = $basePath ?: getcwd();
+        $fs = new Filesystem();
+
+        if ($fs->isAbsolutePath($vendorDir)) {
+            $relativePath = $fs->findShortestPath($this->basePath, $vendorDir);
+            if ($fs->isAbsolutePath($relativePath)) {
+                throw new \InvalidArgumentException("Vendor dir ($vendorDir) must be accessable from the directory ({$this->basePath}).");
             }
-            // convert to relative path
-            $this->vendorPath = rtrim(substr($vendorDir, strlen($basePath)+1), '/');
+            $this->vendorPath = $relativePath;
         } else {
             $this->vendorPath = rtrim($vendorDir, '/');
         }
@@ -201,6 +206,16 @@ class InstallationManager
             return $this->vendorPath;
         }
 
-        return getcwd().DIRECTORY_SEPARATOR.$this->vendorPath;
+        return $this->basePath.DIRECTORY_SEPARATOR.$this->vendorPath;
+    }
+
+    /**
+     * Returns the base path
+     *
+     * @return string path
+     */
+    public function getBasePath()
+    {
+        return $this->basePath;
     }
 }
