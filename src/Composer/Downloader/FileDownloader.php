@@ -52,7 +52,9 @@ class FileDownloader implements DownloaderInterface
     public function download(PackageInterface $package, $path)
     {
         $url = $package->getDistUrl();
-        $checksum = $package->getDistSha1Checksum();
+        if (!$url) {
+            throw new \InvalidArgumentException('The given package is missing url information');
+        }
 
         if (!is_dir($path)) {
             if (file_exists($path)) {
@@ -78,6 +80,7 @@ class FileDownloader implements DownloaderInterface
                 .' directory is writable and you have internet connectivity');
         }
 
+        $checksum = $package->getDistSha1Checksum();
         if ($checksum && hash_file('sha1', $fileName) !== $checksum) {
             throw new \UnexpectedValueException('The checksum verification of the file failed (downloaded from '.$url.')');
         }
