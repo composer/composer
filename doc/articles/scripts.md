@@ -1,3 +1,6 @@
+<!--
+    tagline: Script are callbacks that are called before/after installing packages
+-->
 # Scripts
 
 ## What is a script?

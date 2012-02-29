@@ -19,4 +19,7 @@ indexer ran.
 
 ## Can Packagist be triggered to recrawl a package (on commit or by other means)?
 
-Not yet. :) See [#84](https://github.com/composer/packagist/issues/84).
+Yes, you can click the "Force update" button on your package page if you are
+logged in as a maintainer. The recommended way is to set up the GitHub hook,
+you can find the URL and instructions on your Packagist
+[profile](http://packagist.org/profile/) page.

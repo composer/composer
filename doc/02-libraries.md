@@ -129,7 +129,7 @@ We do this by adding a package repository specification to the blog's
     }
 
 For more details on how package repositories work and what other types are
-available, see [Repositories].
+available, see [Repositories](05-repositories).
 
 That's all. You can now install the dependencies by running composer's
 `install` command!

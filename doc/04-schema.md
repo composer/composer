@@ -396,6 +396,6 @@ Optional.
 A set of files that should be treated as binaries and symlinked into the `bin-
 dir` (from config).
 
-See [articles/vendor-bins.md] for more details.
+See (Vendor Bins)[articles/vendor-bins] for more details.
 
 Optional.
