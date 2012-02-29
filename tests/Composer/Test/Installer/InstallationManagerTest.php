@@ -218,6 +218,12 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('vendor', $manager->getVendorPath());
     }
 
+    public function testGetVendorPathAbsoluteForCustomComposerFile()
+    {
+        $manager = new InstallationManager('vendor2', __DIR__.'/Fixtures/installer-v1');
+        $this->assertEquals(__DIR__.'/Fixtures/installer-v1'.DIRECTORY_SEPARATOR.'vendor2', $manager->getVendorPath(true));
+    }
+
     private function createInstallerMock()
     {
         return $this->getMockBuilder('Composer\Installer\InstallerInterface')

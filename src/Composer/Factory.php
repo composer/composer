@@ -49,6 +49,8 @@ class Factory
             throw new \InvalidArgumentException($message.PHP_EOL.$instructions);
         }
 
+        $basePath = dirname($composerFile);
+
         // Configuration defaults
         $composerConfig = array(
             'vendor-dir' => 'vendor',
@@ -100,7 +102,7 @@ class Factory
         $dm = $this->createDownloadManager($io);
 
         // initialize installation manager
-        $im = $this->createInstallationManager($rm, $dm, $vendorDir, $binDir, $io);
+        $im = $this->createInstallationManager($rm, $dm, $vendorDir, $binDir, $basePath, $io);
 
         // init locker
         $lockFile = substr($composerFile, -5) === '.json' ? substr($composerFile, 0, -4).'lock' : $composerFile . '.lock';
@@ -152,9 +154,9 @@ class Factory
         return $dm;
     }
 
-    protected function createInstallationManager(Repository\RepositoryManager $rm, Downloader\DownloadManager $dm, $vendorDir, $binDir, IOInterface $io)
+    protected function createInstallationManager(Repository\RepositoryManager $rm, Downloader\DownloadManager $dm, $vendorDir, $binDir, $basePath, IOInterface $io)
     {
-        $im = new Installer\InstallationManager($vendorDir);
+        $im = new Installer\InstallationManager($vendorDir, $basePath);
         $im->addInstaller(new Installer\LibraryInstaller($vendorDir, $binDir, $dm, $rm->getLocalRepository(), $io, null));
         $im->addInstaller(new Installer\InstallerInstaller($vendorDir, $binDir, $dm, $rm->getLocalRepository(), $io, $im));
 
