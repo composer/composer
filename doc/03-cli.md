@@ -5,7 +5,7 @@ things. This chapter documents all the available commands.
 
 ## init
 
-In the [Libraries] chapter we looked at how to create a `composer.json` by
+In the [Libraries](02-libraries) chapter we looked at how to create a `composer.json` by
 hand. There is also an `init` command available that makes it a bit easier to
 do this.
 
@@ -171,7 +171,7 @@ directory other than `vendor`.
 
 ### COMPOSER_BIN_DIR
 
-By setting this option you can change the `bin` ([articles/vendor-bins.md])
+By setting this option you can change the `bin` ([Vendor Bins](articles/vendor-bins))
 directory to something other than `vendor/bin`.
 
 ### COMPOSER_PROCESS_TIMEOUT
