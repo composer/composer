@@ -33,6 +33,7 @@ class ProcessExecutor
     public function execute($command, &$output = null)
     {
         $captureOutput = count(func_get_args()) > 1;
+        $this->errorOutput = null;
         $process = new Process($command, null, null, null, static::getTimeout());
         $process->run(function($type, $buffer) use ($captureOutput) {
             if ($captureOutput) {
