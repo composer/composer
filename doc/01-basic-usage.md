@@ -42,13 +42,11 @@ The first (and often only) thing you specify in `composer.json` is the
 `require` key. You're simply telling composer which packages your project
 depends on.
 
-```json
-{
-    "require": {
-        "monolog/monolog": "1.0.*"
+    {
+        "require": {
+            "monolog/monolog": "1.0.*"
+        }
     }
-}
-```
 
 As you can see, `require` takes an object that maps package names to versions.
 
@@ -141,32 +139,26 @@ naming standard, composer generates a
 `vendor/.composer/autoload.php` file for autoloading. You can simply include
 this file and you will get autoloading for free.
 
-```php
-require 'vendor/.composer/autoload.php';
-```
+    require 'vendor/.composer/autoload.php';
 
 This makes it really easy to use third party code, because you only
 have to add one line to `composer.json` and run `install`. For monolog, it
 means that we can just start using classes from it, and they will be
 autoloaded.
 
-```php
-$log = new Monolog\Logger('name');
-$log->pushHandler(new Monolog\Handler\StreamHandler('app.log', Logger::WARNING));
+    $log = new Monolog\Logger('name');
+    $log->pushHandler(new Monolog\Handler\StreamHandler('app.log', Logger::WARNING));
 
-$log->addWarning('Foo');
-```
+    $log->addWarning('Foo');
 
 You can even add your own code to the autoloader by adding an `autoload` field
 to `composer.json`.
 
-```json
-{
-    "autoload": {
-        "psr-0": {"Acme": "src/"}
+    {
+        "autoload": {
+            "psr-0": {"Acme": "src/"}
+        }
     }
-}
-```
 
 This is a mapping from namespaces to directories. The `src` directory would be
 in your project root. An example filename would be `src/Acme/Foo.php`
@@ -179,10 +171,8 @@ Including that file will also return the autoloader instance, so you can store
 the return value of the include call in a variable and add more namespaces.
 This can be useful for autoloading classes in a test suite, for example.
 
-```php
-$loader = require 'vendor/.composer/autoload.php';
-$loader->add('Acme\Test', __DIR__);
-```
+    $loader = require 'vendor/.composer/autoload.php';
+    $loader->add('Acme\Test', __DIR__);
 
 > **Note:** Composer provides its own autoloader. If you don't want to use
 that one, you can just include `vendor/.composer/autoload_namespaces.php`,

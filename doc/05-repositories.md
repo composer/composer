@@ -52,18 +52,16 @@ The main repository type is the `composer` repository. It uses a single
 `packages.json` file that contains all of the package metadata. The JSON
 format is as follows:
 
-```json
-{
-    "vendor/packageName": {
-        "name": "vendor/packageName",
-        "description": "Package description",
-        "versions": {
-            "master-dev": { @composer.json },
-            "1.0.0": { @composer.json }
+    {
+        "vendor/packageName": {
+            "name": "vendor/packageName",
+            "description": "Package description",
+            "versions": {
+                "master-dev": { @composer.json },
+                "1.0.0": { @composer.json }
+            }
         }
     }
-}
-```
 
 The `@composer.json` marker would be the contents of the `composer.json` from
 that package version including as a minimum:
@@ -74,16 +72,14 @@ that package version including as a minimum:
 
 Here is a minimal package definition:
 
-```json
-{
-    "name": "smarty/smarty",
-    "version": "3.1.7",
-    "dist": {
-        "url": "http://www.smarty.net/files/Smarty-3.1.7.zip",
-        "type": "zip"
+    {
+        "name": "smarty/smarty",
+        "version": "3.1.7",
+        "dist": {
+            "url": "http://www.smarty.net/files/Smarty-3.1.7.zip",
+            "type": "zip"
+        }
     }
-}
-```
 
 It may include any of the other fields specified in the [schema].
 
@@ -111,19 +107,17 @@ point to your custom branch.
 
 Example assuming you patched monolog to fix a bug in the `bugfix` branch:
 
-```json
-{
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "http://github.com/igorw/monolog"
+    {
+        "repositories": [
+            {
+                "type": "vcs",
+                "url": "http://github.com/igorw/monolog"
+            }
+        ],
+        "require": {
+            "monolog/monolog": "dev-bugfix"
         }
-    ],
-    "require": {
-        "monolog/monolog": "dev-bugfix"
     }
-}
-```
 
 When you run `php composer.phar update`, you should get your modified version
 of `monolog/monolog` instead of the one from packagist.
@@ -154,19 +148,17 @@ avoid conflicts.
 
 Example using `pear2.php.net`:
 
-```json
-{
-    "repositories": [
-        {
-            "type": "pear",
-            "url": "http://pear2.php.net"
+    {
+        "repositories": [
+            {
+                "type": "pear",
+                "url": "http://pear2.php.net"
+            }
+        ],
+        "require": {
+            "pear-pear2/PEAR2_HTTP_Request": "*"
         }
-    ],
-    "require": {
-        "pear-pear2/PEAR2_HTTP_Request": "*"
     }
-}
-```
 
 In this case the short name of the channel is `pear2`, so the
 `PEAR2_HTTP_Request` package name becomes `pear-pear2/PEAR2_HTTP_Request`.
@@ -187,31 +179,29 @@ minimum required fields are `name`, `version`, and either of `dist` or
 
 Here is an example for the smarty template engine:
 
-```json
-{
-    "repositories": [
-        {
-            "type": "package",
-            "package": {
-                "name": "smarty/smarty",
-                "version": "3.1.7",
-                "dist": {
-                    "url": "http://www.smarty.net/files/Smarty-3.1.7.zip",
-                    "type": "zip"
-                },
-                "source": {
-                    "url": "http://smarty-php.googlecode.com/svn/",
-                    "type": "svn",
-                    "reference": "tags/Smarty_3_1_7/distribution/"
+    {
+        "repositories": [
+            {
+                "type": "package",
+                "package": {
+                    "name": "smarty/smarty",
+                    "version": "3.1.7",
+                    "dist": {
+                        "url": "http://www.smarty.net/files/Smarty-3.1.7.zip",
+                        "type": "zip"
+                    },
+                    "source": {
+                        "url": "http://smarty-php.googlecode.com/svn/",
+                        "type": "svn",
+                        "reference": "tags/Smarty_3_1_7/distribution/"
+                    }
                 }
             }
+        ],
+        "require": {
+            "smarty/smarty": "3.1.*"
         }
-    ],
-    "require": {
-        "smarty/smarty": "3.1.*"
     }
-}
-```
 
 Typically you would leave the source part off, as you don't really need it.
 

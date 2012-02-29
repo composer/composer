@@ -134,22 +134,20 @@ Each author object can have following properties:
 
 An example:
 
-```json
-{
-    "authors": [
-        {
-            "name": "Nils Adermann",
-            "email": "naderman@naderman.de",
-            "homepage": "http://www.naderman.de"
-        },
-        {
-            "name": "Jordi Boggiano",
-            "email": "j.boggiano@seld.be",
-            "homepage": "http://seld.be"
-        }
-    ]
-}
-```
+    {
+        "authors": [
+            {
+                "name": "Nils Adermann",
+                "email": "naderman@naderman.de",
+                "homepage": "http://www.naderman.de"
+            },
+            {
+                "name": "Jordi Boggiano",
+                "email": "j.boggiano@seld.be",
+                "homepage": "http://seld.be"
+            }
+        ]
+    }
 
 Optional, but highly recommended.
 
@@ -173,13 +171,11 @@ Each of these takes an object which maps package names to version constraints.
 
 Example:
 
-```json
-{
-    "require": {
-        "monolog/monolog": "1.0.*"
+    {
+        "require": {
+            "monolog/monolog": "1.0.*"
+        }
     }
-}
-```
 
 Optional.
 
@@ -194,13 +190,11 @@ package root.
 
 Example:
 
-```json
-{
-    "autoload": {
-        "psr-0": { "Monolog": "src/" }
+    {
+        "autoload": {
+            "psr-0": { "Monolog": "src/" }
+        }
     }
-}
-```
 
 Optional, but it is highly recommended that you follow PSR-0 and use this.
 
@@ -220,14 +214,12 @@ it from `vendor/symfony/yaml`.
 
 To do that, `autoload` and `target-dir` are defined as follows:
 
-```json
-{
-    "autoload": {
-        "psr-0": { "Symfony\\Component\\Yaml": "" }
-    },
-    "target-dir": "Symfony/Component/Yaml"
-}
-```
+    {
+        "autoload": {
+            "psr-0": { "Symfony\\Component\\Yaml": "" }
+        },
+        "target-dir": "Symfony/Component/Yaml"
+    }
 
 Optional.
 
@@ -259,40 +251,38 @@ For more information on any of these, see [Repositories].
 
 Example:
 
-```json
-{
-    "repositories": [
-        {
-            "type": "composer",
-            "url": "http://packages.example.com"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/Seldaek/monolog"
-        },
-        {
-            "type": "pear",
-            "url": "http://pear2.php.net"
-        },
-        {
-            "type": "package",
-            "package": {
-                "name": "smarty/smarty",
-                "version": "3.1.7",
-                "dist": {
-                    "url": "http://www.smarty.net/files/Smarty-3.1.7.zip",
-                    "type": "zip"
-                },
-                "source": {
-                    "url": "http://smarty-php.googlecode.com/svn/",
-                    "type": "svn",
-                    "reference": "tags/Smarty_3_1_7/distribution/"
+    {
+        "repositories": [
+            {
+                "type": "composer",
+                "url": "http://packages.example.com"
+            },
+            {
+                "type": "vcs",
+                "url": "https://github.com/Seldaek/monolog"
+            },
+            {
+                "type": "pear",
+                "url": "http://pear2.php.net"
+            },
+            {
+                "type": "package",
+                "package": {
+                    "name": "smarty/smarty",
+                    "version": "3.1.7",
+                    "dist": {
+                        "url": "http://www.smarty.net/files/Smarty-3.1.7.zip",
+                        "type": "zip"
+                    },
+                    "source": {
+                        "url": "http://smarty-php.googlecode.com/svn/",
+                        "type": "svn",
+                        "reference": "tags/Smarty_3_1_7/distribution/"
+                    }
                 }
             }
-        }
-    ]
-}
-```
+        ]
+    }
 
 > **Note:** Order is significant here. Repositories added later will take
 precedence. This also means that custom repositories can override packages
@@ -301,15 +291,13 @@ that exist on packagist.
 You can also disable the packagist repository by setting `packagist` to
 `false`.
 
-```json
-{
-    "repositories": [
-        {
-            "packagist": false
-        }
-    ]
-}
-```
+    {
+        "repositories": [
+            {
+                "packagist": false
+            }
+        ]
+    }
 
 ## config
 
@@ -327,13 +315,11 @@ The following options are supported:
 
 Example:
 
-```json
-{
-    "config": {
-        "bin-dir": "bin"
+    {
+        "config": {
+            "bin-dir": "bin"
+        }
     }
-}
-```
 
 ## scripts
 
@@ -368,35 +354,31 @@ handle it.
 
 Example:
 
-```json
-{
-    "scripts": {
-        "post-install-cmd": [
-            "Acme\\ScriptHandler::doSomething"
-        ]
+    {
+        "scripts": {
+            "post-install-cmd": [
+                "Acme\\ScriptHandler::doSomething"
+            ]
+        }
     }
-}
-```
 
 The event handler receives a `Composer\Script\Event` object as an argument,
 which gives you access to the `Composer\Composer` instance through the
 `getComposer` method.
 
-```php
-namespace Acme;
+    namespace Acme;
 
-use Composer\Script\Event;
+    use Composer\Script\Event;
 
-class ScriptHandler
-{
-    static public function doSomething(Event $event)
+    class ScriptHandler
     {
-        $composer = $event->getComposer();
+        static public function doSomething(Event $event)
+        {
+            $composer = $event->getComposer();
 
-        // custom logic
+            // custom logic
+        }
     }
-}
-```
 
 ## extra
 
@@ -405,9 +387,7 @@ Arbitrary extra data for consumption by `scripts`.
 This can be virtually anything. To access it from within a script event
 handler, you can do:
 
-```php
-$extra = $event->getComposer()->getPackage()->getExtra();
-```
+    $extra = $event->getComposer()->getPackage()->getExtra();
 
 Optional.
 
