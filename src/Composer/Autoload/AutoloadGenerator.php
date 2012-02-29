@@ -35,7 +35,7 @@ if (!class_exists('Composer\\Autoload\\ClassLoader', false)) {
     require __DIR__.'/ClassLoader.php';
 }
 
-$__composer_autoload_init = function() {
+return call_user_func(function() {
     $loader = new \Composer\Autoload\ClassLoader();
 
     $map = require __DIR__.'/autoload_namespaces.php';
@@ -47,9 +47,8 @@ $__composer_autoload_init = function() {
     $loader->register();
 
     return $loader;
-};
+});
 
-return $__composer_autoload_init();
 EOF;
 
         $filesystem = new Filesystem();
