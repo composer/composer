@@ -12,14 +12,12 @@ libraries is that your project is a package without a name.
 In order to make that package installable you need to give it a name. You do
 this by adding a `name` to `composer.json`:
 
-```json
-{
-    "name": "acme/hello-world",
-    "require": {
-        "monolog/monolog": "1.0.*"
+    {
+        "name": "acme/hello-world",
+        "require": {
+            "monolog/monolog": "1.0.*"
+        }
     }
-}
-```
 
 In this case the project name is `acme/hello-world`, where `acme` is the
 vendor name. Supplying a vendor name is mandatory.
@@ -36,11 +34,9 @@ the repository is able to infer the version from elsewhere.
 
 If you do want to specify it explicitly, you can just add a `version` field:
 
-```json
-{
-    "version": "1.0.0"
-}
-```
+    {
+        "version": "1.0.0"
+    }
 
 However if you are using git, svn or hg, you don't have to specify it.
 Composer will detect versions as follows:
@@ -105,14 +101,12 @@ project locally. We will call it `acme/blog`. This blog will depend on `acme
 this by creating a new `blog` directory somewhere, containing a
 `composer.json`:
 
-```json
-{
-    "name": "acme/blog",
-    "require": {
-        "acme/hello-world": "dev-master"
+    {
+        "name": "acme/blog",
+        "require": {
+            "acme/hello-world": "dev-master"
+        }
     }
-}
-```
 
 The name is not needed in this case, since we don't want to publish the blog
 as a library. It is added here to clarify which `composer.json` is being
@@ -122,19 +116,17 @@ Now we need to tell the blog app where to find the `hello-world` dependency.
 We do this by adding a package repository specification to the blog's
 `composer.json`:
 
-```json
-{
-    "name": "acme/blog",
-    "repositories": {
-        "acme/hello-world": {
-            "vcs": { "url": "https://github.com/composer/hello-world" }
+    {
+        "name": "acme/blog",
+        "repositories": {
+            "acme/hello-world": {
+                "vcs": { "url": "https://github.com/composer/hello-world" }
+            }
+        },
+        "require": {
+            "acme/hello-world": "dev-master"
         }
-    },
-    "require": {
-        "acme/hello-world": "dev-master"
     }
-}
-```
 
 For more details on how package repositories work and what other types are
 available, see [Repositories].

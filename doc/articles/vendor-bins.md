@@ -16,11 +16,9 @@ It is defined by adding the `bin` key to a project's `composer.json`.
 It is specified as an array of files so multiple bins can be added
 for any given project.
 
-```json
-{
-    "bin": ["bin/my-script", "bin/my-other-script"]
-}
-```
+    {
+        "bin": ["bin/my-script", "bin/my-other-script"]
+    }
 
 
 ## What does defining a bin in composer.json do?
@@ -44,26 +42,22 @@ symlink is created from each dependency's bins to `vendor/bin`.
 
 Say package `my-vendor/project-a` has bins setup like this:
 
-```json
-{
-    "name": "my-vendor/project-a",
-    "bin": ["bin/project-a-bin"]
-}
-```
+    {
+        "name": "my-vendor/project-a",
+        "bin": ["bin/project-a-bin"]
+    }
 
 Running `composer install` for this `composer.json` will not do
 anything with `bin/project-a-bin`.
 
 Say project `my-vendor/project-b` has requirements setup like this:
 
-```json
-{
-    "name": "my-vendor/project-b",
-    "requires": {
-        "my-vendor/project-a": "*"
+    {
+        "name": "my-vendor/project-b",
+        "requires": {
+            "my-vendor/project-a": "*"
+        }
     }
-}
-```
 
 Running `composer install` for this `composer.json` will look at
 all of project-b's dependencies and install them to `vendor/bin`.
@@ -97,13 +91,11 @@ Yes, there are two ways that an alternate vendor bin location can be specified.
 
 An example of the former looks like this:
 
-```json
-{
-    "config": {
-        "bin-dir": "scripts"
+    {
+        "config": {
+            "bin-dir": "scripts"
+        }
     }
-}
-```
 
 Running `composer install` for this `composer.json` will result in
 all of the vendor bins being installed in `scripts/` instead of

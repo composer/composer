@@ -26,13 +26,11 @@ You decide to use [monolog](https://github.com/Seldaek/monolog). In order to
 add it to your project, all you need to do is create a `composer.json` file
 which describes the project's dependencies.
 
-```json
-{
-    "require": {
-        "monolog/monolog": "1.0.*"
+    {
+        "require": {
+            "monolog/monolog": "1.0.*"
+        }
     }
-}
-```
 
 We are simply stating that our project requires the `monolog/monolog` package,
 any version beginning with `1.0`.
@@ -58,8 +56,6 @@ This will download monolog and dump it into `vendor/monolog/monolog`.
 After this you can just add the following line to your bootstrap code to get
 autoloading:
 
-```php
-require 'vendor/.composer/autoload.php';
-```
+    require 'vendor/.composer/autoload.php';
 
 That's all it takes to have a basic setup.

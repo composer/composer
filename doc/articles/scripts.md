@@ -34,33 +34,29 @@ functionality.
 
 Script definition example:
 
-```json
-{
-    "scripts": {
-        "post-update-cmd": "MyVendor\\MyClass::postUpdate",
-        "post-package-install": ["MyVendor\\MyClass::postPackageInstall"]
+    {
+        "scripts": {
+            "post-update-cmd": "MyVendor\\MyClass::postUpdate",
+            "post-package-install": ["MyVendor\\MyClass::postPackageInstall"]
+        }
     }
-}
-```
 
 Script listener example:
 
-```php
-<?php
+    <?php
 
-namespace MyVendor;
+    namespace MyVendor;
 
-class MyClass
-{
-    public static function postUpdate($event)
+    class MyClass
     {
-        // do stuff
-    }
+        public static function postUpdate($event)
+        {
+            // do stuff
+        }
 
-    public static function postPackageInstall($event)
-    {
-        $installedPackage = $event->getOperation()->getPackage();
-        // do stuff
+        public static function postPackageInstall($event)
+        {
+            $installedPackage = $event->getOperation()->getPackage();
+            // do stuff
+        }
     }
-}
-```
