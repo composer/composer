@@ -62,12 +62,18 @@ EOT
                     continue;
                 }
 
-                $state = $localRepo->hasPackage($package) ? '<info>installed</info>' : $state = '<comment>available</comment>';
+                if ($platformRepo->hasPackage($package)) {
+                    $type = '<info>platform: </info> ';
+                } elseif ($installedRepo->hasPackage($package)) {
+                    $type = '<info>installed:</info> ';
+                } else {
+                    $type = '<comment>available:</comment> ';
+                }
 
                 $name = substr($package->getPrettyName(), 0, $pos)
                     . '<highlight>' . substr($package->getPrettyName(), $pos, strlen($token)) . '</highlight>'
                     . substr($package->getPrettyName(), $pos + strlen($token));
-                $output->writeln($state . ': ' . $name . ' <comment>' . $package->getPrettyVersion() . '</comment>');
+                $output->writeln($type . ': ' . $name . ' <comment>' . $package->getPrettyVersion() . '</comment>');
                 continue 2;
             }
         }
