@@ -19,9 +19,9 @@
     ],
     "require": {
         "php": ">=5.3.0",
-        "symfony/console": "dev-master",
-        "symfony/finder": "dev-master",
-        "symfony/process": "dev-master"
+        "symfony/console": "2.1.*",
+        "symfony/finder": "2.1.*",
+        "symfony/process": "2.1.*"
     },
     "recommend": {
         "ext-zip": "*"
