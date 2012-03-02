@@ -98,7 +98,14 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
                 $rev = '';
             }
 
-            $this->process->execute(sprintf('svn cat --non-interactive %s', escapeshellarg($this->baseUrl.$identifier.'composer.json'.$rev)), $composer);
+            $this->process->execute(
+                sprintf(
+                    'svn cat --non-interactive %s %s',
+                    $this->getSvnCredentialString(),
+                    escapeshellarg($this->baseUrl.$identifier.'composer.json'.$rev)
+                ),
+                $composer
+            );
 
             if (!trim($composer)) {
                 throw new \UnexpectedValueException('Failed to retrieve composer information for identifier '.$identifier.' in '.$this->getUrl());
@@ -107,7 +114,14 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
             $composer = JsonFile::parseJson($composer);
 
             if (!isset($composer['time'])) {
-                $this->process->execute(sprintf('svn info %s', escapeshellarg($this->baseUrl.$identifier.$rev)), $output);
+                $this->process->execute(
+                    sprintf(
+                        'svn info %s %s',
+                        $this->getSvnCredentialString(),
+                        escapeshellarg($this->baseUrl.$identifier.$rev)
+                    ),
+                    $output
+                );
                 foreach ($this->process->splitLines($output) as $line) {
                     if ($line && preg_match('{^Last Changed Date: ([^(]+)}', $line, $match)) {
                         $date = new \DateTime($match[1]);
@@ -128,7 +142,14 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
     public function getTags()
     {
         if (null === $this->tags) {
-            $this->process->execute(sprintf('svn ls --non-interactive %s', escapeshellarg($this->baseUrl.'/tags')), $output);
+            $this->process->execute(
+                sprintf(
+                    'svn ls --non-interactive %s %s',
+                    $this->getSvnCredentialString(),
+                    escapeshellarg($this->baseUrl.'/tags')
+                ),
+                $output
+            );
             $this->tags = array();
             foreach ($this->process->splitLines($output) as $tag) {
                 if ($tag) {
@@ -146,7 +167,14 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
     public function getBranches()
     {
         if (null === $this->branches) {
-            $this->process->execute(sprintf('svn ls --verbose --non-interactive %s', escapeshellarg($this->baseUrl.'/')), $output);
+            $this->process->execute(
+                sprintf(
+                    'svn ls --verbose --non-interactive %s %s',
+                    $this->getSvnCredentialString(),
+                    escapeshellarg($this->baseUrl.'/')
+                ),
+                $output
+            );
 
             $this->branches = array();
             foreach ($this->process->splitLines($output) as $line) {
@@ -158,7 +186,14 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
             }
             unset($output);
 
-            $this->process->execute(sprintf('svn ls --verbose --non-interactive %s', escapeshellarg($this->baseUrl.'/branches')), $output);
+            $this->process->execute(
+                sprintf(
+                    'svn ls --verbose --non-interactive %s',
+                    $this->getSvnCredentialString(),
+                    escapeshellarg($this->baseUrl.'/branches')
+                ),
+                $output
+            );
             foreach ($this->process->splitLines(trim($output)) as $line) {
                 preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match);
                 if ($match[2] === './') {
@@ -216,7 +251,14 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
 
         $processExecutor = new ProcessExecutor();
 
-        $exit = $processExecutor->execute(sprintf('svn info --non-interactive %s 2>/dev/null', escapeshellarg($url)), $ignored);
+        $exit = $processExecutor->execute(
+            sprintf(
+                'svn info --non-interactive %s %s 2>/dev/null',
+                $this->getSvnCredentialString(),
+                escapeshellarg($url)
+            ),
+            $ignored
+        );
         return $exit === 0;
     }
 
