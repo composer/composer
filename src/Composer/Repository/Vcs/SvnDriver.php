@@ -183,7 +183,7 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
         if ($this->useAuth !== true) {
             return '';
         }
-        $str = ' --no-auth-cache --username "%s" --password "%s"';
+        $str = ' --no-auth-cache --username "%s" --password "%s" ';
         return sprintf($str, $this->svnUsername, $this->svnPassword);
     }
 
