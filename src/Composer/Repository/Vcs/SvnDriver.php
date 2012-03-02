@@ -39,7 +39,7 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
             $this->baseUrl = substr($url, 0, $pos);
         }
 
-        $this->detectedSvnAuth();
+        $this->detectSvnAuth();
     }
 
     /**
