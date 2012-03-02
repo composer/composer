@@ -172,6 +172,22 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
     }
 
     /**
+     * Return the credential string for the svn command.
+     *
+     * --no-auth-cache when credentials are present
+     *
+     * @return string
+     */
+    public function getSvnCredentialString()
+    {
+        if ($this->useAuth !== true) {
+            return '';
+        }
+        $str = ' --no-auth-cache --username "%s" --password "%s"';
+        return sprintf($str, $this->svnUsername, $this->svnPassword);
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function hasComposerFile($identifier)
