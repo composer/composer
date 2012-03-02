@@ -16,6 +16,21 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
     protected $branches;
     protected $infoCache = array();
 
+    /**
+     * @var boolean $useAuth Contains credentials, or not?
+     */
+    protected $useAuth = false;
+
+    /**
+     * @var string $svnUsername
+     */
+    protected $svnUsername = '';
+
+    /**
+     * @var string $svnPassword
+     */
+    protected $svnPassword = '';
+
     public function __construct($url, IOInterface $io, ProcessExecutor $process = null)
     {
         parent::__construct($this->baseUrl = rtrim($url, '/'), $io, $process);
@@ -23,6 +38,8 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
         if (false !== ($pos = strrpos($url, '/trunk'))) {
             $this->baseUrl = substr($url, 0, $pos);
         }
+
+        $this->detectedSvnAuth();
     }
 
     /**
@@ -185,5 +202,26 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
 
         $exit = $processExecutor->execute(sprintf('svn info --non-interactive %s 2>/dev/null', escapeshellarg($url)), $ignored);
         return $exit === 0;
+    }
+
+    /**
+     * This is quick and dirty - thoughts?
+     *
+     * @return void
+     * @uses   parent::$baseUrl
+     * @uses   self::$useAuth, self::$svnUsername, self::$svnPassword
+     * @see    self::__construct()
+     */
+    protected function detectSvnAuth()
+    {
+        $uri = parse_url($this->baseUrl);
+        if (!isset($uri['user']) || empty($uri['user'])) {
+            return;
+        }
+
+        $this->svnUsername = $uri['user'];
+        $this->svnUsername = $uri['pass'];
+
+        $this->useAuth = true;
     }
 }
