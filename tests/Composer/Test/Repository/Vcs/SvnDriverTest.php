@@ -10,13 +10,12 @@
  * file that was distributed with this source code.
  */
 
-// is this namespace correct? I mean, who cares... but?
-namespace Composer\Test\Json;
+namespace Composer\Test\Repository\Vcs;
 
 /**
  * Why does composer force an install when I need an autoloader instead?
  */
-$root = dirname(dirname(dirname(dirname(__DIR__)))) . '/src';
+$root = dirname(dirname(dirname(dirname(dirname(__DIR__))))) . '/src';
 set_include_path($root . ':' . get_include_path());
 
 require_once $root . '/Composer/Autoload/ClassLoader.php';
