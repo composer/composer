@@ -236,7 +236,10 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
         }
 
         $this->svnUsername = $uri['user'];
-        $this->svnUsername = $uri['pass'];
+
+        if (isset($uri['pass']) && !empty($uri['pass'])) {
+            $this->svnPassword = $uri['pass'];
+        }
 
         $this->useAuth = true;
     }
