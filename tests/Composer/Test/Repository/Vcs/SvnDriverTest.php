@@ -31,16 +31,6 @@ use Composer\IO\NullIO;
  */
 class SvnDriverTest extends \PHPUnit_Framework_TestCase
 {
-    private static $gitRepo;
-    private static $skipped;
-
-    public function setUp()
-    {
-        if (self::$skipped) {
-            $this->markTestSkipped(self::$skipped);
-        }
-    }
-
     /**
      * Provide some examples for {@self::testCredentials()}.
      *
