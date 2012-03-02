@@ -4,3 +4,4 @@
 /composer.phar
 /vendor
 /nbproject
+phpunit.xml
