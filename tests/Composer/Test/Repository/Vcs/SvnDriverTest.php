@@ -5,7 +5,6 @@
  *
  * (c) Nils Adermann <naderman@naderman.de>
  *     Jordi Boggiano <j.boggiano@seld.be>
- *     Till Klampaeckel <till@php.net>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -25,14 +24,12 @@ $loader = new \Composer\Autoload\ClassLoader;
 $loader->register();
 $loader->setUseIncludePath(true);
 
-//use Symfony\Component\Process\ExecutableFinder;
-//use Composer\Package\Dumper\ArrayDumper;
-use Composer\Repository\VcsRepository;
 use Composer\Repository\Vcs\SvnDriver;
-//use Composer\Util\Filesystem;
-//use Composer\Util\ProcessExecutor;
 use Composer\IO\NullIO;
 
+/**
+ * @author Till Klampaeckel <till@php.net>
+ */
 class SvnDriverTest extends \PHPUnit_Framework_TestCase
 {
     private static $gitRepo;
