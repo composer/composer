@@ -16,6 +16,7 @@ use Composer\Package\LinkConstraint\LinkConstraintInterface;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\PlatformRepository;
+use Composer\Package\Version\VersionParser;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -41,14 +42,14 @@ class AliasPackage extends BasePackage
      * @param string $version The version the alias must report
      * @param string $prettyVersion The alias's non-normalized version
      */
-    public function __construct($aliasOf, $version, $prettyVersion)
+    public function __construct(PackageInterface $aliasOf, $version, $prettyVersion)
     {
         parent::__construct($aliasOf->getName());
 
         $this->version = $version;
         $this->prettyVersion = $prettyVersion;
         $this->aliasOf = $aliasOf;
-        $this->dev = 'dev-' === substr($version, 0, 4) || '-dev' === substr($version, -4);
+        $this->dev = VersionParser::isDev($version);
 
         // replace self.version dependencies
         foreach (array('requires', 'recommends', 'suggests') as $type) {
