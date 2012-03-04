@@ -12,17 +12,6 @@
 
 namespace Composer\Test\Repository\Vcs;
 
-/**
- * Why does composer force an install when I need an autoloader instead?
- */
-$root = dirname(dirname(dirname(dirname(dirname(__DIR__))))) . '/src';
-set_include_path($root . ':' . get_include_path());
-
-require_once $root . '/Composer/Autoload/ClassLoader.php';
-$loader = new \Composer\Autoload\ClassLoader;
-$loader->register();
-$loader->setUseIncludePath(true);
-
 use Composer\Repository\Vcs\SvnDriver;
 use Composer\IO\NullIO;
 
