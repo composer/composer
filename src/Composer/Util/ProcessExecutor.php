@@ -21,6 +21,8 @@ class ProcessExecutor
 {
     static protected $timeout = 300;
 
+    protected $errorOutput;
+
     /**
      * runs a process on the commandline
      *
@@ -31,6 +33,7 @@ class ProcessExecutor
     public function execute($command, &$output = null)
     {
         $captureOutput = count(func_get_args()) > 1;
+        $this->errorOutput = null;
         $process = new Process($command, null, null, null, static::getTimeout());
         $process->run(function($type, $buffer) use ($captureOutput) {
             if ($captureOutput) {
@@ -44,12 +47,24 @@ class ProcessExecutor
             $output = $process->getOutput();
         }
 
+        $this->errorOutput = $process->getErrorOutput();
+
         return $process->getExitCode();
     }
 
     public function splitLines($output)
     {
         return ((string) $output === '') ? array() : preg_split('{\r?\n}', $output);
+    }
+
+    /**
+     * Get any error output from the last command
+     *
+     * @return string
+     */
+    public function getErrorOutput()
+    {
+        return $this->errorOutput;
     }
 
     static public function getTimeout()
