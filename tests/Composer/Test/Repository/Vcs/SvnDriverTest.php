@@ -28,9 +28,9 @@ class SvnDriverTest extends \PHPUnit_Framework_TestCase
     public static function urlProvider()
     {
         return array(
-            array('http://till:test@svn.example.org/', ' --no-auth-cache --username "till" --password "test" '),
+            array('http://till:test@svn.example.org/', " --no-auth-cache --username 'till' --password 'test' "),
             array('http://svn.apache.org/', ''),
-            array('svn://johndoe@example.org', ' --no-auth-cache --username "johndoe" --password "" '),
+            array('svn://johndoe@example.org', " --no-auth-cache --username 'johndoe' --password '' "),
         );
     }
 
