@@ -273,13 +273,13 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
     protected function detectSvnAuth()
     {
         $uri = parse_url($this->baseUrl);
-        if (!isset($uri['user']) || empty($uri['user'])) {
+        if (empty($uri['user'])) {
             return;
         }
 
         $this->svnUsername = $uri['user'];
 
-        if (isset($uri['pass']) && !empty($uri['pass'])) {
+        if (!empty($uri['pass'])) {
             $this->svnPassword = $uri['pass'];
         }
 
