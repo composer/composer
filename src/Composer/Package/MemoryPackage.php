@@ -12,6 +12,8 @@
 
 namespace Composer\Package;
 
+use Composer\Package\Version\VersionParser;
+
 /**
  * A package with setters for all members to create it dynamically in memory
  *
@@ -69,7 +71,7 @@ class MemoryPackage extends BasePackage
         $this->version = $version;
         $this->prettyVersion = $prettyVersion;
 
-        $this->dev = 'dev-' === substr($version, 0, 4) || '-dev' === substr($version, -4);
+        $this->dev = VersionParser::isDev($version);
     }
 
     /**
