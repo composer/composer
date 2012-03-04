@@ -25,6 +25,17 @@ class VersionParser
     private $modifierRegex = '[.-]?(?:(beta|RC|alpha|patch|pl|p)(?:[.-]?(\d+))?)?([.-]?dev)?';
 
     /**
+     * Checks if a version is dev or not
+     *
+     * @param string $version
+     * @return Boolean
+     */
+    static public function isDev($version)
+    {
+        return 'dev-' === substr($version, 0, 4) || '-dev' === substr($version, -4);
+    }
+
+    /**
      * Normalizes a version string to be able to perform comparisons on it
      *
      * @param string $version
