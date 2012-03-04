@@ -187,4 +187,23 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'invalid version'   => array('1.0.0-meh'),
         );
     }
+
+    /**
+     * @dataProvider dataIsDev
+     */
+    public function testIsDev($expected, $version)
+    {
+        $this->assertSame($expected, VersionParser::isDev($version));
+    }
+
+    public function dataIsDev()
+    {
+        return array(
+            array(false, '1.0'),
+            array(false, 'v2.0.*'),
+            array(false, '3.0dev'),
+            array(true, 'dev-master'),
+            array(true, '3.1.2-dev'),
+        );
+    }
 }
