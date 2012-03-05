@@ -41,6 +41,11 @@ class Compiler
         }
         $this->version = trim($process->getOutput());
 
+        $process = new Process('git describe --tags HEAD');
+        if ($process->run() == 0) {
+            $this->version = trim($process->getOutput());
+        }
+
         $phar = new \Phar($pharFile, 0, 'composer.phar');
         $phar->setSignatureAlgorithm(\Phar::SHA1);
 
