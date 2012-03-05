@@ -66,30 +66,29 @@ class JsonFile
     /**
      * Reads json file.
      *
-     * @param   string  $json   path or json string
-     *
      * @return  array
      */
-    public function read($validate = false)
+    public function read()
     {
         $ctx = StreamContextFactory::getContext(array(
             'http' => array(
                 'header' => 'User-Agent: Composer/'.Composer::VERSION."\r\n"
-        )));
+            )
+        ));
 
         $json = file_get_contents($this->path, false, $ctx);
         if (!$json) {
             throw new \RuntimeException('Could not read '.$this->path.', you are probably offline');
         }
 
-        return static::parseJson($json, $validate);
+        return static::parseJson($json);
     }
 
     /**
      * Writes json file.
      *
-     * @param   array   $hash   writes hash into json file
-     * @param int $options json_encode options
+     * @param array $hash writes hash into json file
+     * @param int $options json_encode options (defaults to JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
      */
     public function write(array $hash, $options = 448)
     {
@@ -110,13 +109,45 @@ class JsonFile
     }
 
     /**
+     * Validates the schema of the current json file according to composer-schema.json rules
+     *
+     * @param string $json
+     * @return Boolean true on success
+     * @throws \UnexpectedValueException
+     */
+    public function validateSchema()
+    {
+        $content = file_get_contents($this->path);
+        $data = json_decode($content);
+
+        if (null === $data && 'null' !== $content) {
+            self::validateSyntax($content);
+        }
+
+        $schema = json_decode(file_get_contents(__DIR__ . '/../../../res/composer-schema.json'));
+
+        $validator = new Validator();
+        $validator->check($data, $schema);
+
+        if (!$validator->isValid()) {
+            $msg = "\n";
+            foreach ((array) $validator->getErrors() as $error) {
+                $msg .= ($error['property'] ? $error['property'].' : ' : '').$error['message']."\n";
+            }
+            throw new \UnexpectedValueException('Your composer.json is invalid. The following errors were found:' . $msg);
+        }
+
+        return true;
+    }
+
+    /**
      * Encodes an array into (optionally pretty-printed) JSON
      *
-     * Original code for this function can be found at:
+     * This code is based on the function found at:
      *  http://recursive-design.com/blog/2008/03/11/format-json-with-php/
      *
      * @param mixed $data Data to encode into a formatted JSON string
-     * @param int $options json_encode options
+     * @param int $options json_encode options (defaults to JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
      * @return string Encoded json
      */
     static public function encode($data, $options = 448)
@@ -218,61 +249,33 @@ class JsonFile
      * Parses json string and returns hash.
      *
      * @param string $json json string
-     * @param boolean $validateSchema wether to validate the json schema
      *
      * @return  mixed
      */
-    public static function parseJson($json, $validateSchema=false)
-    {        
-        $data = static::validateSyntax($json);
-
-        if ($validateSchema) {
-            static::validateSchema($json);
+    public static function parseJson($json)
+    {
+        $data = json_decode($json, true);
+        if (null === $data && 'null' !== $json) {
+            self::validateSyntax($json);
         }
 
         return $data;
     }
 
     /**
-     * validates a composer.json against the schema
-     * 
+     * Validates the syntax of a JSON string
+     *
      * @param string $json
-     * @return boolean
+     * @return Boolean true on success
      * @throws \UnexpectedValueException
      */
-    public static function validateSchema($json)
-    {
-        $data = json_decode($json);
-        $schema = json_decode(file_get_contents(__DIR__ . '/../../../res/composer-schema.json'));
-
-        $validator = new Validator();
-
-        $validator->check($data, $schema);
-
-        if (!$validator->isValid()) {
-            $msg = "\n";
-            foreach ((array) $validator->getErrors() as $error) {
-                $msg .= ($error['property'] ? $error['property'].' : ' : '').$error['message']."\n";
-            }
-
-            throw new \UnexpectedValueException('Your composer.json did not validate against the schema. The following mistakes were found:'.$msg);
-        }
-    }
-
-    /**
-     * validates the json syntax
-     * 
-     * @param string $json
-     * @return array
-     * @throws \UnexpectedValueException
-     */
-    public static function validateSyntax($json)
+    protected static function validateSyntax($json)
     {
         $parser = new JsonParser();
         $result = $parser->lint($json);
 
         if (null === $result) {
-           return json_decode($json, true);
+            return true;
         }
 
         throw $result;

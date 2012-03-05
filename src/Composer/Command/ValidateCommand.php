@@ -53,7 +53,9 @@ EOT
         }
 
         try {
-            JsonFile::parseJson(file_get_contents($file), true);
+            $json = new JsonFile($file);
+            $json->read();
+            $json->validateSchema();
         } catch (\Exception $e) {
             $output->writeln('<error>'.$e->getMessage().'</error>');
             return 1;
