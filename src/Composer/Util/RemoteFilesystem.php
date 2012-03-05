@@ -26,7 +26,7 @@ class RemoteFilesystem
     private $fileUrl;
     private $fileName;
     private $result;
-    private $progess;
+    private $progress;
     private $lastProgress;
 
     /**
@@ -45,13 +45,13 @@ class RemoteFilesystem
      * @param string  $originUrl The orgin URL
      * @param string  $fileUrl   The file URL
      * @param string  $fileName  the local filename
-     * @param boolean $progess   Display the progression
+     * @param boolean $progress  Display the progression
      *
      * @return Boolean true
      */
-    public function copy($originUrl, $fileUrl, $fileName, $progess = true)
+    public function copy($originUrl, $fileUrl, $fileName, $progress = true)
     {
-        $this->get($originUrl, $fileUrl, $fileName, $progess);
+        $this->get($originUrl, $fileUrl, $fileName, $progress);
 
         return $this->result;
     }
@@ -61,13 +61,13 @@ class RemoteFilesystem
      *
      * @param string  $originUrl The orgin URL
      * @param string  $fileUrl   The file URL
-     * @param boolean $progess   Display the progression
+     * @param boolean $progress  Display the progression
      *
      * @return string The content
      */
-    public function getContents($originUrl, $fileUrl, $progess = true)
+    public function getContents($originUrl, $fileUrl, $progress = true)
     {
-        $this->get($originUrl, $fileUrl, null, $progess);
+        $this->get($originUrl, $fileUrl, null, $progress);
 
         return $this->result;
     }
@@ -78,12 +78,12 @@ class RemoteFilesystem
      * @param string  $originUrl The orgin URL
      * @param string  $fileUrl   The file URL
      * @param string  $fileName  the local filename
-     * @param boolean $progess   Display the progression
+     * @param boolean $progress  Display the progression
      * @param boolean $firstCall Whether this is the first attempt at fetching this resource
      *
      * @throws \RuntimeException When the file could not be downloaded
      */
-    protected function get($originUrl, $fileUrl, $fileName = null, $progess = true, $firstCall = true)
+    protected function get($originUrl, $fileUrl, $fileName = null, $progress = true, $firstCall = true)
     {
         $this->firstCall = $firstCall;
         $this->bytesMax = 0;
@@ -91,21 +91,10 @@ class RemoteFilesystem
         $this->originUrl = $originUrl;
         $this->fileUrl = $fileUrl;
         $this->fileName = $fileName;
-        $this->progress = $progess;
+        $this->progress = $progress;
         $this->lastProgress = null;
 
-        // add authorization in context
-        $options = array();
-        if ($this->io->hasAuthorization($originUrl)) {
-            $auth = $this->io->getAuthorization($originUrl);
-            $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
-            $options['http']['header'] = "Authorization: Basic $authStr\r\n";
-        } elseif (null !== $this->io->getLastUsername()) {
-            $authStr = base64_encode($this->io->getLastUsername() . ':' . $this->io->getLastPassword());
-            $options['http'] = array('header' => "Authorization: Basic $authStr\r\n");
-            $this->io->setAuthorization($originUrl, $this->io->getLastUsername(), $this->io->getLastPassword());
-        }
-
+        $options = $this->getOptionsForUrl($originUrl);
         $ctx = StreamContextFactory::getContext($options, array('notification' => array($this, 'callbackGet')));
 
         if ($this->progress) {
@@ -147,24 +136,20 @@ class RemoteFilesystem
         switch ($notificationCode) {
             case STREAM_NOTIFY_AUTH_REQUIRED:
             case STREAM_NOTIFY_FAILURE:
-                // for private repository returning 404 error when the authorization is incorrect
-                $auth = $this->io->getAuthorization($this->originUrl);
-                $attemptAuthentication = $this->firstCall && 404 === $messageCode && null === $auth['username'];
-
                 if (404 === $messageCode && !$this->firstCall) {
                     throw new \RuntimeException("The '" . $this->fileUrl . "' URL not found");
                 }
+
+                // for private repository returning 404 error when the authorization is incorrect
+                $auth = $this->io->getAuthorization($this->originUrl);
+                $attemptAuthentication = $this->firstCall && 404 === $messageCode && null === $auth['username'];
 
                 $this->firstCall = false;
 
                 // get authorization informations
                 if (401 === $messageCode || $attemptAuthentication) {
                     if (!$this->io->isInteractive()) {
-                        $mess = "The '" . $this->fileUrl . "' URL was not found";
-
-                        if (401 === $code || $attemptAuthentication) {
-                            $mess = "The '" . $this->fileUrl . "' URL required authentication.\nYou must be using the interactive console";
-                        }
+                        $mess = "The '" . $this->fileUrl . "' URL required authentication.\nYou must be using the interactive console";
 
                         throw new \RuntimeException($mess);
                     }
@@ -202,5 +187,21 @@ class RemoteFilesystem
             default:
                 break;
         }
+    }
+
+    protected function getOptionsForUrl($url)
+    {
+        $options = array();
+        if ($this->io->hasAuthorization($url)) {
+            $auth = $this->io->getAuthorization($url);
+            $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
+            $options['http'] = array('header' => "Authorization: Basic $authStr\r\n");
+        } elseif (null !== $this->io->getLastUsername()) {
+            $authStr = base64_encode($this->io->getLastUsername() . ':' . $this->io->getLastPassword());
+            $options['http'] = array('header' => "Authorization: Basic $authStr\r\n");
+            $this->io->setAuthorization($url, $this->io->getLastUsername(), $this->io->getLastPassword());
+        }
+
+        return $options;
     }
 }

@@ -19,7 +19,7 @@ use Composer\Package\PackageInterface;
  *
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  */
-class TarDownloader extends FileDownloader
+class TarDownloader extends ArchiveDownloader
 {
     /**
      * {@inheritDoc}
