@@ -10,7 +10,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Test\Repository;
+namespace Composer\Test\Util;
 
 use Composer\Util\Filesystem;
 use Composer\Test\TestCase;
@@ -32,7 +32,6 @@ class FilesystemTest extends TestCase
             array('/foo/bar', '/foo/bar', false, "__FILE__"),
             array('/foo/bar', '/foo/baz', false, "__DIR__.'/baz'"),
             array('/foo/bin/run', '/foo/vendor/acme/bin/run', false, "dirname(__DIR__).'/vendor/acme/bin/run'"),
-            array('/foo/bin/run', '/foo/vendor/acme/bin/run', false, "dirname(__DIR__).'/vendor/acme/bin/run'"),
             array('/foo/bin/run', '/bar/bin/run', false, "'/bar/bin/run'"),
             array('c:/bin/run', 'c:/vendor/acme/bin/run', false, "dirname(__DIR__).'/vendor/acme/bin/run'"),
             array('c:\\bin\\run', 'c:/vendor/acme/bin/run', false, "dirname(__DIR__).'/vendor/acme/bin/run'"),
@@ -40,7 +39,6 @@ class FilesystemTest extends TestCase
             array('c:\\bin\\run', 'd:/vendor/acme/bin/run', false, "'d:/vendor/acme/bin/run'"),
             array('/foo/bar', '/foo/bar', true, "__DIR__"),
             array('/foo/bar', '/foo/baz', true, "dirname(__DIR__).'/baz'"),
-            array('/foo/bin/run', '/foo/vendor/acme/bin/run', true, "dirname(dirname(__DIR__)).'/vendor/acme/bin/run'"),
             array('/foo/bin/run', '/foo/vendor/acme/bin/run', true, "dirname(dirname(__DIR__)).'/vendor/acme/bin/run'"),
             array('/foo/bin/run', '/bar/bin/run', true, "'/bar/bin/run'"),
             array('c:/bin/run', 'c:/vendor/acme/bin/run', true, "dirname(dirname(__DIR__)).'/vendor/acme/bin/run'"),
@@ -69,7 +67,6 @@ class FilesystemTest extends TestCase
         return array(
             array('/foo/bar', '/foo/bar', "./bar"),
             array('/foo/bar', '/foo/baz', "./baz"),
-            array('/foo/bin/run', '/foo/vendor/acme/bin/run', "../vendor/acme/bin/run"),
             array('/foo/bin/run', '/foo/vendor/acme/bin/run', "../vendor/acme/bin/run"),
             array('/foo/bin/run', '/bar/bin/run', "/bar/bin/run"),
             array('c:/bin/run', 'c:/vendor/acme/bin/run', "../vendor/acme/bin/run"),
