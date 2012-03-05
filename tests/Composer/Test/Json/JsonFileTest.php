@@ -87,13 +87,8 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
 
     public function testSchemaValidation()
     {
-        $json = file_get_contents(__DIR__.'/../../../../composer.json');
-
-        try {
-            $this->assertNull(JsonFile::validateSchema($json));
-        } catch (\UnexpectedValueException $e) {
-            $this->fail('invalid schema');
-        }
+        $json = new JsonFile(__DIR__.'/../../../../composer.json');
+        $this->assertTrue($json->validateSchema());
     }
 
     public function testParseErrorDetectMissingCommaMultiline()
