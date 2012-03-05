@@ -31,7 +31,7 @@ class PearRepository extends ArrayRepository
             $config['url'] = 'http://'.$config['url'];
         }
 
-        if (!filter_var($config['url'], FILTER_VALIDATE_URL)) {
+        if (function_exists('filter_var') && !filter_var($config['url'], FILTER_VALIDATE_URL)) {
             throw new \UnexpectedValueException('Invalid url given for PEAR repository: '.$config['url']);
         }
 
