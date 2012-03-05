@@ -51,12 +51,9 @@ EOT
         $composer = $this->getComposer();
         $io = $this->getApplication()->getIO();
         $eventDispatcher = new EventDispatcher($composer, $io);
-        $install = new Install;
+        $install = Install::create($io, $composer, $eventDispatcher);
 
         return $install->run(
-            $io,
-            $composer,
-            $eventDispatcher,
             (Boolean)$input->getOption('prefer-source'),
             (Boolean)$input->getOption('dry-run'),
             (Boolean)$input->getOption('verbose'),
