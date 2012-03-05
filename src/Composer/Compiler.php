@@ -56,18 +56,24 @@ class Compiler
             ->ignoreVCS(true)
             ->name('*.php')
             ->notName('Compiler.php')
+            ->notName('ClassLoader.php')
             ->in(__DIR__.'/..')
         ;
 
         foreach ($finder as $file) {
             $this->addFile($phar, $file);
         }
+        $this->addFile($phar, new \SplFileInfo(__DIR__.'/Autoload/ClassLoader.php'), false);
+        $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../res/composer-schema.json'), false);
+        $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../res/composer-schema-lax.json'), false);
 
         $finder = new Finder();
         $finder->files()
             ->ignoreVCS(true)
             ->name('*.php')
             ->in(__DIR__.'/../../vendor/symfony/')
+            ->in(__DIR__.'/../../vendor/seld/jsonlint/src/')
+            ->in(__DIR__.'/../../vendor/justinrainbow/json-schema/src/')
         ;
 
         foreach ($finder as $file) {
