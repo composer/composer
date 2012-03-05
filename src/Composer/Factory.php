@@ -56,7 +56,7 @@ class Factory
         );
 
         $packageConfig = $file->read();
-        $file->validateSchema();
+        $file->validateSchema(JsonFile::LAX_SCHEMA);
 
         if (isset($packageConfig['config']) && is_array($packageConfig['config'])) {
             $packageConfig['config'] = array_merge($composerConfig, $packageConfig['config']);

@@ -36,6 +36,9 @@ if (!defined('JSON_UNESCAPED_UNICODE')) {
  */
 class JsonFile
 {
+    const LAX_SCHEMA = 1;
+    const STRICT_SCHEMA = 2;
+
     private $path;
 
     /**
@@ -111,11 +114,11 @@ class JsonFile
     /**
      * Validates the schema of the current json file according to composer-schema.json rules
      *
-     * @param string $json
+     * @param int $schema a JsonFile::*_SCHEMA constant
      * @return Boolean true on success
      * @throws \UnexpectedValueException
      */
-    public function validateSchema()
+    public function validateSchema($schema = self::STRICT_SCHEMA)
     {
         $content = file_get_contents($this->path);
         $data = json_decode($content);
@@ -124,17 +127,20 @@ class JsonFile
             self::validateSyntax($content);
         }
 
-        $schema = json_decode(file_get_contents(__DIR__ . '/../../../res/composer-schema.json'));
+        $schemaFile = __DIR__ . '/../../../res/composer-schema'.($schema === self::LAX_SCHEMA ? '-lax' : '').'.json';
+        $schema = json_decode(file_get_contents($schemaFile));
 
         $validator = new Validator();
         $validator->check($data, $schema);
 
+        // TODO add more specific checks for common errors if needed
+
         if (!$validator->isValid()) {
-            $msg = "\n";
+            $errors = array();
             foreach ((array) $validator->getErrors() as $error) {
-                $msg .= ($error['property'] ? $error['property'].' : ' : '').$error['message']."\n";
+                $errors[] = ($error['property'] ? $error['property'].' : ' : '').$error['message'];
             }
-            throw new \UnexpectedValueException('Your composer.json is invalid. The following errors were found:' . $msg);
+            throw new JsonValidationException($errors);
         }
 
         return true;
