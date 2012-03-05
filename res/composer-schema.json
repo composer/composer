@@ -128,6 +128,10 @@
                     "type": "object",
                     "description": "This is a hash of namespaces (keys) and the directories they can be found into (values) by the autoloader.",
                     "additionalProperties": true
+                },
+                "classmap": {
+                    "type": "array",
+                    "description": "This is an array of directories that contain classes to be included in the class-map generation process."
                 }
             }
         },
