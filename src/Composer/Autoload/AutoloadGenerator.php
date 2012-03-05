@@ -115,11 +115,13 @@ EOF;
         $namespacesFile .= ");\n";
 
         if (isset($autoloads['classmap'])) {
-            $it = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($autoloads['classmap']));
-            ClassMapGenerator::dump(iterator_to_array($it), $targetDir.'/autoload_classmap.php');
+            // flatten array
+            $autoloads['classmap'] = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($autoloads['classmap']));
         } else {
-            file_put_contents($targetDir.'/autoload_classmap.php', '<?php return array();');
+            $autoloads['classmap'] = array();
         }
+
+        ClassMapGenerator::dump($autoloads['classmap'], $targetDir.'/autoload_classmap.php');
 
         file_put_contents($targetDir.'/autoload.php', $autoloadFile);
         file_put_contents($targetDir.'/autoload_namespaces.php', $namespacesFile);
