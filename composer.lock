@@ -1,5 +1,5 @@
 {
-    "hash": "b2085ecb7dd1580412c22cd922996af5",
+    "hash": "959be339ea6f0b140f09215c4ef451cc",
     "packages": [
         {
             "package": "justinrainbow/json-schema",
@@ -9,7 +9,7 @@
         {
             "package": "seld/jsonlint",
             "version": "dev-master",
-            "source-reference": "a4bbe4b85431300aed3e9218e64ce2e1a649e845"
+            "source-reference": "12f0b1e5334a52b7035e1d15f36974db7c06b78d"
         },
         {
             "package": "symfony/console",
@@ -26,5 +26,6 @@
             "version": "dev-master",
             "source-reference": "6aceac404d8574cf7da57e7e29b00a665b7bd559"
         }
-    ]
+    ],
+    "aliases": []
 }
