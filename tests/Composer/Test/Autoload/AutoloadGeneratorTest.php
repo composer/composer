@@ -134,6 +134,40 @@ class AutoloadGeneratorTest extends TestCase
         mkdir($this->vendorDir.'/.composer', 0777, true);
         $this->generator->dump($this->repository, $package, $this->im, $this->vendorDir.'/.composer');
         $this->assertAutoloadFiles('vendors', $this->vendorDir.'/.composer');
+        $this->assertTrue(file_exists($this->vendorDir.'/.composer/autoload_classmap.php'), "ClassMap file needs to be generated, even if empty.");
+    }
+
+    public function testVendorsClassMapAutoloading()
+    {
+        $package = new MemoryPackage('a', '1.0', '1.0');
+
+        $packages = array();
+        $packages[] = $a = new MemoryPackage('a/a', '1.0', '1.0');
+        $packages[] = $b = new MemoryPackage('b/b', '1.0', '1.0');
+        $a->setAutoload(array('classmap' => array('src/')));
+        $b->setAutoload(array('classmap' => array('src/', 'lib/')));
+
+        $this->repository->expects($this->once())
+            ->method('getPackages')
+            ->will($this->returnValue($packages));
+
+        @mkdir($this->vendorDir.'/.composer', 0777, true);
+        mkdir($this->vendorDir.'/a/a/src', 0777, true);
+        mkdir($this->vendorDir.'/b/b/src', 0777, true);
+        mkdir($this->vendorDir.'/b/b/lib', 0777, true);
+        file_put_contents($this->vendorDir.'/a/a/src/a.php', '<?php class ClassMapFoo {}');
+        file_put_contents($this->vendorDir.'/b/b/src/b.php', '<?php class ClassMapBar {}');
+        file_put_contents($this->vendorDir.'/b/b/lib/c.php', '<?php class ClassMapBaz {}');
+
+        $this->generator->dump($this->repository, $package, $this->im, $this->vendorDir.'/.composer');
+        $this->assertTrue(file_exists($this->vendorDir.'/.composer/autoload_classmap.php'), "ClassMap file needs to be generated, even if empty.");
+        $this->assertEquals(array(
+                'ClassMapFoo' => $this->vendorDir.'/a/a/src/a.php',
+                'ClassMapBar' => $this->vendorDir.'/b/b/src/b.php',
+                'ClassMapBaz' => $this->vendorDir.'/b/b/lib/c.php',
+            ),
+            include ($this->vendorDir.'/.composer/autoload_classmap.php')
+        );
     }
 
     public function testOverrideVendorsAutoloading()

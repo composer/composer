@@ -23,12 +23,11 @@ class ClassMapGenerator
     /**
      * Generate a class map file
      *
-     * @param array|string $dirs Directories or a single path to search in
+     * @param Traversable $dirs Directories or a single path to search in
      * @param string $file The name of the class map file
      */
     static public function dump($dirs, $file)
     {
-        $dirs = (array) $dirs;
         $maps = array();
 
         foreach ($dirs as $dir) {
