@@ -19,7 +19,7 @@ use Composer\IO\IOInterface;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class ZipDownloader extends FileDownloader
+class ZipDownloader extends ArchiveDownloader
 {
     protected $process;
 

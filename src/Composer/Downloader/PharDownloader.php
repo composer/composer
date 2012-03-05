@@ -19,7 +19,7 @@ use Composer\Package\PackageInterface;
  *
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  */
-class PharDownloader extends FileDownloader
+class PharDownloader extends ArchiveDownloader
 {
     /**
      * {@inheritDoc}
