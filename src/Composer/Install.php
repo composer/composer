@@ -18,25 +18,90 @@ use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Solver;
+use Composer\Downloader\DownloadManager;
+use Composer\Installer\InstallationManager;
 use Composer\IO\IOInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\Link;
 use Composer\Package\LinkConstraint\VersionConstraint;
+use Composer\Package\Locker;
 use Composer\Package\PackageInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
+use Composer\Repository\RepositoryManager;
 use Composer\Script\EventDispatcher;
 use Composer\Script\ScriptEvents;
 
 class Install
 {
     /**
+     * 
+     * @var IOInterface
+     */
+    protected $io;
+
+    /**
+     *
+     * @var PackageInterface
+     */
+    protected $package;
+
+    /**
+     * 
+     * @var DownloadManager
+     */
+    protected $downloadManager;
+
+    /**
+     * 
+     * @var RepositoryManager
+     */
+    protected $repositoryManager;
+
+    /**
+     * 
+     * @var Locker
+     */
+    protected $locker;
+
+    /**
+     * 
+     * @var InstallationManager
+     */
+    protected $installationManager;
+
+    /**
+     * 
+     * @var EventDispatcher
+     */
+    protected $eventDispatcher;
+
+    /**
+     * Constructor
+     * 
+     * @param IOInterface $io
+     * @param PackageInterface $package
+     * @param DownloadManager $downloadManager
+     * @param RepositoryManager $repositoryManager
+     * @param Locker $locker
+     * @param InstallationManager $installationManager
+     * @param EventDispatcher $eventDispatcher
+     */
+    public function __construct(IOInterface $io, PackageInterface $package, DownloadManager $downloadManager, RepositoryManager $repositoryManager, Locker $locker, InstallationManager $installationManager, EventDispatcher $eventDispatcher)
+    {
+        $this->io = $io;
+        $this->package = $package;
+        $this->downloadManager = $downloadManager;
+        $this->repositoryManager = $repositoryManager;
+        $this->locker = $locker;
+        $this->installationManager = $installationManager;
+        $this->eventDispatcher = $eventDispatcher;
+    }
+
+    /**
      * Run installation (or update)
      *
-     * @param IOInterface $io
-     * @param Composer $composer
-     * @param EventDispatcher $eventDispatcher
      * @param bool $preferSource
      * @param bool $dryRun
      * @param bool $verbose
@@ -45,17 +110,17 @@ class Install
      * @param bool $update
      * @param RepositoryInterface $additionalInstalledRepository
      */
-    public function run(IOInterface $io, Composer $composer, EventDispatcher $eventDispatcher, $preferSource = false, $dryRun = false, $verbose = false, $noInstallRecommends = false, $installSuggests = false, $update = false, RepositoryInterface $additionalInstalledRepository = null)
+    public function run($preferSource = false, $dryRun = false, $verbose = false, $noInstallRecommends = false, $installSuggests = false, $update = false, RepositoryInterface $additionalInstalledRepository = null)
     {
         if ($dryRun) {
             $verbose = true;
         }
 
         if ($preferSource) {
-            $composer->getDownloadManager()->setPreferSource(true);
+            $this->downloadManager->setPreferSource(true);
         }
 
-        $repoManager = $composer->getRepositoryManager();
+        $repoManager = $this->repositoryManager;
 
         // create local repo, this contains all packages that are installed in the local project
         $localRepo = $repoManager->getLocalRepository();
@@ -66,10 +131,10 @@ class Install
         }
 
         // prepare aliased packages
-        if (!$update && $composer->getLocker()->isLocked()) {
-            $aliases = $composer->getLocker()->getAliases();
+        if (!$update && $this->locker->isLocked()) {
+            $aliases = $this->locker->getAliases();
         } else {
-            $aliases = $composer->getPackage()->getAliases();
+            $aliases = $this->package->getAliases();
         }
         foreach ($aliases as $alias) {
             foreach ($repoManager->findPackages($alias['package'], $alias['version']) as $package) {
@@ -91,31 +156,31 @@ class Install
         // dispatch pre event
         if (!$dryRun) {
             $eventName = $update ? ScriptEvents::PRE_UPDATE_CMD : ScriptEvents::PRE_INSTALL_CMD;
-            $eventDispatcher->dispatchCommandEvent($eventName);
+            $this->eventDispatcher->dispatchCommandEvent($eventName);
         }
 
         // creating requirements request
         $installFromLock = false;
         $request = new Request($pool);
         if ($update) {
-            $io->write('<info>Updating dependencies</info>');
+            $this->io->write('<info>Updating dependencies</info>');
 
             $request->updateAll();
 
-            $links = $this->collectLinks($composer->getPackage(), $noInstallRecommends, $installSuggests);
+            $links = $this->collectLinks($noInstallRecommends, $installSuggests);
 
             foreach ($links as $link) {
                 $request->install($link->getTarget(), $link->getConstraint());
             }
-        } elseif ($composer->getLocker()->isLocked()) {
+        } elseif ($this->locker->isLocked()) {
             $installFromLock = true;
-            $io->write('<info>Installing from lock file</info>');
+            $this->io->write('<info>Installing from lock file</info>');
 
-            if (!$composer->getLocker()->isFresh()) {
-                $io->write('<warning>Your lock file is out of sync with your composer.json, run "composer.phar update" to update dependencies</warning>');
+            if (!$this->locker->isFresh()) {
+                $this->io->write('<warning>Your lock file is out of sync with your composer.json, run "composer.phar update" to update dependencies</warning>');
             }
 
-            foreach ($composer->getLocker()->getLockedPackages() as $package) {
+            foreach ($this->locker->getLockedPackages() as $package) {
                 $version = $package->getVersion();
                 foreach ($aliases as $alias) {
                     if ($alias['package'] === $package->getName() && $alias['version'] === $package->getVersion()) {
@@ -127,9 +192,9 @@ class Install
                 $request->install($package->getName(), $constraint);
             }
         } else {
-            $io->write('<info>Installing dependencies</info>');
+            $this->io->write('<info>Installing dependencies</info>');
 
-            $links = $this->collectLinks($composer->getPackage(), $noInstallRecommends, $installSuggests);
+            $links = $this->collectLinks($noInstallRecommends, $installSuggests);
 
             foreach ($links as $link) {
                 $request->install($link->getTarget(), $link->getConstraint());
@@ -137,9 +202,8 @@ class Install
         }
 
         // prepare solver
-        $installationManager = $composer->getInstallationManager();
-        $policy              = new DependencyResolver\DefaultPolicy();
-        $solver              = new DependencyResolver\Solver($policy, $pool, $installedRepo);
+        $policy              = new DefaultPolicy();
+        $solver              = new Solver($policy, $pool, $installedRepo);
 
         // solve dependencies
         $operations = $solver->solve($request);
@@ -183,15 +247,15 @@ class Install
 
         // execute operations
         if (!$operations) {
-            $io->write('<info>Nothing to install/update</info>');
+            $this->io->write('<info>Nothing to install/update</info>');
         }
 
         foreach ($operations as $operation) {
             if ($verbose) {
-                $io->write((string) $operation);
+                $this->io->write((string) $operation);
             }
             if (!$dryRun) {
-                $eventDispatcher->dispatchPackageEvent(constant('Composer\Script\ScriptEvents::PRE_PACKAGE_'.strtoupper($operation->getJobType())), $operation);
+                $this->eventDispatcher->dispatchPackageEvent(constant('Composer\Script\ScriptEvents::PRE_PACKAGE_'.strtoupper($operation->getJobType())), $operation);
 
                 // if installing from lock, restore dev packages' references to their locked state
                 if ($installFromLock) {
@@ -202,7 +266,7 @@ class Install
                         $package = $operation->getPackage();
                     }
                     if ($package && $package->isDev()) {
-                        $lockData = $composer->getLocker()->getLockData();
+                        $lockData = $this->locker->getLockData();
                         foreach ($lockData['packages'] as $lockedPackage) {
                             if (!empty($lockedPackage['source-reference']) && strtolower($lockedPackage['package']) === $package->getName()) {
                                 $package->setSourceReference($lockedPackage['source-reference']);
@@ -211,42 +275,63 @@ class Install
                         }
                     }
                 }
-                $installationManager->execute($operation);
+                $this->installationManager->execute($operation);
 
-                $eventDispatcher->dispatchPackageEvent(constant('Composer\Script\ScriptEvents::POST_PACKAGE_'.strtoupper($operation->getJobType())), $operation);
+                $this->eventDispatcher->dispatchPackageEvent(constant('Composer\Script\ScriptEvents::POST_PACKAGE_'.strtoupper($operation->getJobType())), $operation);
             }
         }
 
         if (!$dryRun) {
-            if ($update || !$composer->getLocker()->isLocked()) {
-                $composer->getLocker()->setLockData($localRepo->getPackages(), $aliases);
-                $io->write('<info>Writing lock file</info>');
+            if ($update || !$this->locker->isLocked()) {
+                $this->locker->setLockData($localRepo->getPackages(), $aliases);
+                $this->io->write('<info>Writing lock file</info>');
             }
 
             $localRepo->write();
 
-            $io->write('<info>Generating autoload files</info>');
+            $this->io->write('<info>Generating autoload files</info>');
             $generator = new AutoloadGenerator;
-            $generator->dump($localRepo, $composer->getPackage(), $installationManager, $installationManager->getVendorPath().'/.composer');
+            $generator->dump($localRepo, $this->package, $this->installationManager, $this->installationManager->getVendorPath().'/.composer');
 
             // dispatch post event
             $eventName = $update ? ScriptEvents::POST_UPDATE_CMD : ScriptEvents::POST_INSTALL_CMD;
-            $eventDispatcher->dispatchCommandEvent($eventName);
+            $this->eventDispatcher->dispatchCommandEvent($eventName);
         }
     }
 
-    private function collectLinks(PackageInterface $package, $noInstallRecommends, $installSuggests)
+    private function collectLinks($noInstallRecommends, $installSuggests)
     {
-        $links = $package->getRequires();
+        $links = $this->package->getRequires();
 
         if (!$noInstallRecommends) {
-            $links = array_merge($links, $package->getRecommends());
+            $links = array_merge($links, $this->package->getRecommends());
         }
 
         if ($installSuggests) {
-            $links = array_merge($links, $package->getSuggests());
+            $links = array_merge($links, $this->package->getSuggests());
         }
 
         return $links;
+    }
+
+    /**
+     * Create Install
+     * 
+     * @param IOInterface $io
+     * @param Composer $composer
+     * @param EventDispatcher $eventDispatcher
+     * @return Install
+     */
+    static public function create(IOInterface $io, Composer $composer, EventDispatcher $eventDispatcher)
+    {
+        return new static(
+            $io,
+            $composer->getPackage(),
+            $composer->getDownloadManager(),
+            $composer->getRepositoryManager(),
+            $composer->getLocker(),
+            $composer->getInstallationManager(),
+            $eventDispatcher
+        );
     }
 }
