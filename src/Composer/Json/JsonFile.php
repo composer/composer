@@ -14,6 +14,8 @@ namespace Composer\Json;
 
 use Composer\Repository\RepositoryManager;
 use Composer\Composer;
+use JsonSchema\Validator;
+use Seld\JsonLint\JsonParser;
 use Composer\Util\StreamContextFactory;
 
 if (!defined('JSON_UNESCAPED_SLASHES')) {
@@ -68,7 +70,7 @@ class JsonFile
      *
      * @return  array
      */
-    public function read()
+    public function read($validate = false)
     {
         $ctx = StreamContextFactory::getContext(array(
             'http' => array(
@@ -80,7 +82,7 @@ class JsonFile
             throw new \RuntimeException('Could not read '.$this->path.', you are probably offline');
         }
 
-        return static::parseJson($json);
+        return static::parseJson($json, $validate);
     }
 
     /**
@@ -215,59 +217,64 @@ class JsonFile
     /**
      * Parses json string and returns hash.
      *
-     * @param   string  $json   json string
+     * @param string $json json string
+     * @param boolean $validateSchema wether to validate the json schema
      *
      * @return  mixed
      */
-    static public function parseJson($json)
-    {
-        $data = json_decode($json, true);
+    public static function parseJson($json, $validateSchema=false)
+    {        
+        $data = static::validateSyntax($json);
 
-        if (null === $data && 'null' !== strtolower($json)) {
-            switch (json_last_error()) {
-            case JSON_ERROR_NONE:
-                $msg = 'No error has occurred, is your composer.json file empty?';
-                break;
-            case JSON_ERROR_DEPTH:
-                $msg = 'The maximum stack depth has been exceeded';
-                break;
-            case JSON_ERROR_STATE_MISMATCH:
-                $msg = 'Invalid or malformed JSON';
-                break;
-            case JSON_ERROR_CTRL_CHAR:
-                $msg = 'Control character error, possibly incorrectly encoded';
-                break;
-            case JSON_ERROR_SYNTAX:
-                $msg = 'Syntax error';
-                $charOffset = 0;
-                if (preg_match('#["}\]]\s*(,)\s*[}\]]#', $json, $match, PREG_OFFSET_CAPTURE)) {
-                    $msg .= ', extra comma';
-                } elseif (preg_match('#((?<=[^\\\\])\\\\(?!["\\\\/bfnrt]|u[a-f0-9]{4}))#i', $json, $match, PREG_OFFSET_CAPTURE)) {
-                    $msg .= ', unescaped backslash (\\)';
-                } elseif (preg_match('#(["}\]])(?: *\r?\n *)+"#', $json, $match, PREG_OFFSET_CAPTURE)) {
-                    $msg .= ', missing comma';
-                    $charOffset = 1;
-                } elseif (preg_match('#^ *([a-z0-9_-]+) *:#mi', $json, $match, PREG_OFFSET_CAPTURE)) {
-                    $msg .= ', you must use double quotes (") around keys';
-                } elseif (preg_match('#(\'.+?\' *:|: *\'.+?\')#', $json, $match, PREG_OFFSET_CAPTURE)) {
-                    $msg .= ', use double quotes (") instead of single quotes (\')';
-                } elseif (preg_match('#(\[".*?":.*?\])#', $json, $match, PREG_OFFSET_CAPTURE)) {
-                    $msg .= ', you must use the hash syntax (e.g. {"foo": "bar"}) instead of array syntax (e.g. ["foo", "bar"])';
-                } elseif (preg_match('#".*?"( *["{\[])#', $json, $match, PREG_OFFSET_CAPTURE)) {
-                    $msg .= ', missing colon';
-                }
-                if (isset($match[1][1])) {
-                    $preError = substr($json, 0, $match[1][1]);
-                    $msg .= ' on line '.(substr_count($preError, "\n")+1).', char '.abs(strrpos($preError, "\n") - strlen($preError) - $charOffset);
-                }
-                break;
-            case JSON_ERROR_UTF8:
-                $msg = 'Malformed UTF-8 characters, possibly incorrectly encoded';
-                break;
-            }
-            throw new \UnexpectedValueException('JSON Parse Error: '.$msg);
+        if ($validateSchema) {
+            static::validateSchema($json);
         }
 
         return $data;
+    }
+
+    /**
+     * validates a composer.json against the schema
+     * 
+     * @param string $json
+     * @return boolean
+     * @throws \UnexpectedValueException
+     */
+    public static function validateSchema($json)
+    {
+        $data = json_decode($json);
+        $schema = json_decode(file_get_contents(__DIR__ . '/../../../res/composer-schema.json'));
+
+        $validator = new Validator();
+
+        $validator->check($data, $schema);
+
+        if (!$validator->isValid()) {
+            $msg = "\n";
+            foreach ((array) $validator->getErrors() as $error) {
+                $msg .= ($error['property'] ? $error['property'].' : ' : '').$error['message']."\n";
+            }
+
+            throw new \UnexpectedValueException('Your composer.json did not validate against the schema. The following mistakes were found:'.$msg);
+        }
+    }
+
+    /**
+     * validates the json syntax
+     * 
+     * @param string $json
+     * @return array
+     * @throws \UnexpectedValueException
+     */
+    public static function validateSyntax($json)
+    {
+        $parser = new JsonParser();
+        $result = $parser->lint($json);
+
+        if (null === $result) {
+           return json_decode($json, true);
+        }
+
+        throw $result;
     }
 }

@@ -35,8 +35,7 @@
         },
         "version": {
             "type": "string",
-            "description": "Package version, see http://packagist.org/about for more info on valid schemes.",
-            "required": true
+            "description": "Package version, see http://packagist.org/about for more info on valid schemes."
         },
         "time": {
             "type": "string",
