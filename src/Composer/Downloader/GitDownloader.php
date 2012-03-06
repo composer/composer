@@ -25,13 +25,27 @@ class GitDownloader extends VcsDownloader
      */
     public function doDownload(PackageInterface $package, $path)
     {
-        $url = escapeshellarg($package->getSourceUrl());
         $ref = escapeshellarg($package->getSourceReference());
-        $path = escapeshellarg($path);
+        $command = 'git clone %s %s && cd %2$s && git checkout %3$s && git reset --hard %3$s';
         $this->io->write("    Cloning ".$package->getSourceReference());
-        $command = sprintf('git clone %s %s && cd %2$s && git checkout %3$s && git reset --hard %3$s', $url, $path, $ref);
-        if (0 !== $this->process->execute($command, $ignoredOutput)) {
-            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+
+        // github, autoswitch protocols
+        if (preg_match('{^(?:https?|git)(://github.com/.*)}', $package->getSourceUrl(), $match)) {
+            $protocols = array('git', 'https', 'http');
+            foreach ($protocols as $protocol) {
+                $url = escapeshellarg($protocol . $match[1]);
+                if (0 === $this->process->execute(sprintf($command, $url, escapeshellarg($path), $ref), $ignoredOutput)) {
+                    return;
+                }
+                $this->filesystem->removeDirectory($path);
+            }
+            throw new \RuntimeException('Failed to checkout ' . $url .' via git, https and http protocols, aborting.' . "\n\n" . $this->process->getErrorOutput());
+        } else {
+            $url = escapeshellarg($package->getSourceUrl());
+            $command = sprintf($command, $url, escapeshellarg($path), $ref);
+            if (0 !== $this->process->execute($command, $ignoredOutput)) {
+                throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+            }
         }
     }
 
