@@ -105,7 +105,7 @@ class Compiler
         if ($strip) {
             $content = php_strip_whitespace($file);
         } else {
-            $content = "\n".file_get_contents($file)."\n";
+            $content = file_get_contents($file)."\n";
         }
 
         $content = str_replace('@package_version@', $this->version, $content);
