@@ -74,7 +74,7 @@ Here are some examples of version branch names:
     1.1.*
 
 > **Note:** When you install a dev version, it will install it from source.
-See [Repositories] for more information.
+See [Repositories](05-repositories) for more information.
 
 ## Lock file
 

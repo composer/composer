@@ -247,7 +247,7 @@ The following repository types are supported:
   composer whatsoever you can define the package inline using a `package`
   repository. You basically just inline the `composer.json` object.
 
-For more information on any of these, see [Repositories].
+For more information on any of these, see [Repositories](05-repositories).
 
 Example:
 
