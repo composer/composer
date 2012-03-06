@@ -31,6 +31,7 @@ class ConsoleIO implements IOInterface
     protected $authorizations = array();
     protected $lastUsername;
     protected $lastPassword;
+    protected $lastMessage;
 
     /**
      * Constructor.
@@ -60,31 +61,40 @@ class ConsoleIO implements IOInterface
     public function write($messages, $newline = true)
     {
         $this->output->write($messages, $newline);
+        $this->lastMessage = join($newline ? "\n" : '', (array) $messages);
     }
 
     /**
      * {@inheritDoc}
      */
-    public function overwrite($messages, $newline = true, $size = 80)
+    public function overwrite($messages, $newline = true, $size = null)
     {
-        for ($place = $size; $place > 0; $place--) {
-            $this->write("\x08", false);
-        }
+        // messages can be an array, let's convert it to string anyway
+        $messages = join($newline ? "\n" : '', (array) $messages);
 
+        // since overwrite is supposed to overwrite last message...
+        if (!isset($size)) {
+            // removing possible formatting of lastMessage with strip_tags
+            $size = strlen(strip_tags($this->lastMessage));
+        }
+        // ...let's fill its length with backspaces
+        $this->write(str_repeat("\x08", $size), false);
+
+        // write the new message
         $this->write($messages, false);
 
-        for ($place = ($size - strlen($messages)); $place > 0; $place--) {
-            $this->write(' ', false);
-        }
-
-        // clean up the end line
-        for ($place = ($size - strlen($messages)); $place > 0; $place--) {
-            $this->write("\x08", false);
+        $fill = $size - strlen(strip_tags($messages));
+        if ($fill > 0) {
+            // whitespace whatever has left
+            $this->write(str_repeat(' ', $fill), false);
+            // move the cursor back
+            $this->write(str_repeat("\x08", $fill), false);
         }
 
         if ($newline) {
             $this->write('');
         }
+        $this->lastMessage = $messages;
     }
 
     /**

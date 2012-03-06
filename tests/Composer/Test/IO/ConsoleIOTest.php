@@ -53,35 +53,35 @@ class ConsoleIOTest extends TestCase
     {
         $inputMock = $this->getMock('Symfony\Component\Console\Input\InputInterface');
         $outputMock = $this->getMock('Symfony\Component\Console\Output\OutputInterface');
+
         $outputMock->expects($this->at(0))
             ->method('write')
-            ->with($this->equalTo("\x08"), $this->equalTo(false));
-        $outputMock->expects($this->at(19))
+            ->with($this->equalTo('something (<question>strlen = 23</question>)'));
+        $outputMock->expects($this->at(1))
             ->method('write')
-            ->with($this->equalTo("\x08"), $this->equalTo(false));
-        $outputMock->expects($this->at(20))
+            ->with($this->equalTo(str_repeat("\x08", 23)), $this->equalTo(false));
+        $outputMock->expects($this->at(2))
             ->method('write')
-            ->with($this->equalTo('some information'), $this->equalTo(false));
-        $outputMock->expects($this->at(21))
+            ->with($this->equalTo('shorter (<comment>12</comment>)'), $this->equalTo(false));
+        $outputMock->expects($this->at(3))
             ->method('write')
-            ->with($this->equalTo(' '), $this->equalTo(false));
-        $outputMock->expects($this->at(24))
+            ->with($this->equalTo(str_repeat(' ', 11)), $this->equalTo(false));
+        $outputMock->expects($this->at(4))
             ->method('write')
-            ->with($this->equalTo(' '), $this->equalTo(false));
-        $outputMock->expects($this->at(25))
+            ->with($this->equalTo(str_repeat("\x08", 11)), $this->equalTo(false));
+        $outputMock->expects($this->at(5))
             ->method('write')
-            ->with($this->equalTo("\x08"), $this->equalTo(false));
-        $outputMock->expects($this->at(28))
+            ->with($this->equalTo(str_repeat("\x08", 12)), $this->equalTo(false));
+        $outputMock->expects($this->at(6))
             ->method('write')
-            ->with($this->equalTo("\x08"), $this->equalTo(false));
-        $outputMock->expects($this->at(29))
-            ->method('write')
-            ->with($this->equalTo(''));
+            ->with($this->equalTo('something longer than initial (<info>34</info>)'));
 
         $helperMock = $this->getMock('Symfony\Component\Console\Helper\HelperSet');
 
         $consoleIO = new ConsoleIO($inputMock, $outputMock, $helperMock);
-        $consoleIO->overwrite('some information', true, 20);
+        $consoleIO->write('something (<question>strlen = 23</question>)');
+        $consoleIO->overwrite('shorter (<comment>12</comment>)', false);
+        $consoleIO->overwrite('something longer than initial (<info>34</info>)');
     }
 
     public function testAsk()

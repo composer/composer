@@ -84,8 +84,6 @@ class FileDownloader implements DownloaderInterface
         if ($checksum && hash_file('sha1', $fileName) !== $checksum) {
             throw new \UnexpectedValueException('The checksum verification of the file failed (downloaded from '.$url.')');
         }
-
-        $this->io->write('');
     }
 
     /**
