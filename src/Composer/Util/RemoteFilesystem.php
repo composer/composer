@@ -98,7 +98,7 @@ class RemoteFilesystem
         $ctx = StreamContextFactory::getContext($options, array('notification' => array($this, 'callbackGet')));
 
         if ($this->progress) {
-            $this->io->overwrite("    Downloading: <comment>connection...</comment>", false);
+            $this->io->write("    Downloading: <comment>connection...</comment>", false);
         }
 
         if (null !== $fileName) {
