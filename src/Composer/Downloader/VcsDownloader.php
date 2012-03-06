@@ -51,6 +51,7 @@ abstract class VcsDownloader implements DownloaderInterface
         }
 
         $this->io->write("  - Package <info>" . $package->getName() . "</info> (<comment>" . $package->getPrettyVersion() . "</comment>)");
+        $this->filesystem->removeDirectory($path);
         $this->doDownload($package, $path);
         $this->io->write('');
     }
