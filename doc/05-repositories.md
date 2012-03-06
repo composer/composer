@@ -249,3 +249,16 @@ package repository definitions. It will fetch all the packages that are
 
 Check [the satis GitHub repository](https://github.com/composer/satis) for more
 information.
+
+## Disabling packagist
+
+You can disable the default packagist repository by adding this to your
+`composer.json`:
+
+    {
+        "repositories": [
+            {
+                "packagist": false
+            }
+        ]
+    }
