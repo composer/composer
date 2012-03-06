@@ -33,7 +33,7 @@ use Composer\Repository\RepositoryManager;
 use Composer\Script\EventDispatcher;
 use Composer\Script\ScriptEvents;
 
-class Install
+class Installer
 {
     /**
      * 
@@ -315,12 +315,12 @@ class Install
     }
 
     /**
-     * Create Install
+     * Create Installer
      * 
      * @param IOInterface $io
      * @param Composer $composer
      * @param EventDispatcher $eventDispatcher
-     * @return Install
+     * @return Installer
      */
     static public function create(IOInterface $io, Composer $composer, EventDispatcher $eventDispatcher)
     {
