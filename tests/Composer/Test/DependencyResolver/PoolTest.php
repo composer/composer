@@ -54,7 +54,44 @@ class PoolTest extends TestCase
         $secondPriority = $pool->getPriority($secondRepository);
 
         $this->assertEquals(0, $firstPriority);
-        $this->assertEquals(1, $secondPriority);
+        $this->assertEquals(-1, $secondPriority);
+    }
+
+    public function testWhatProvidesSamePackageForDifferentRepositories()
+    {
+        $pool = new Pool;
+        $firstRepository = new ArrayRepository;
+        $secondRepository = new ArrayRepository;
+
+        $firstPackage = $this->getPackage('foo', '1');
+        $secondPackage = $this->getPackage('foo', '1');
+        $thirdPackage = $this->getPackage('foo', '2');
+
+        $firstRepository->addPackage($firstPackage);
+        $secondRepository->addPackage($secondPackage);
+        $secondRepository->addPackage($thirdPackage);
+
+        $pool->addRepository($firstRepository);
+        $pool->addRepository($secondRepository);
+
+        $this->assertEquals(array($firstPackage, $secondPackage, $thirdPackage), $pool->whatProvides('foo'));
+    }
+
+    public function testWhatProvidesPackageWithConstraint()
+    {
+        $pool = new Pool;
+        $repository = new ArrayRepository;
+
+        $firstPackage = $this->getPackage('foo', '1');
+        $secondPackage = $this->getPackage('foo', '2');
+
+        $repository->addPackage($firstPackage);
+        $repository->addPackage($secondPackage);
+
+        $pool->addRepository($repository);
+
+        $this->assertEquals(array($firstPackage, $secondPackage), $pool->whatProvides('foo'));
+        $this->assertEquals(array($secondPackage), $pool->whatProvides('foo', $this->getVersionConstraint('==', '2')));
     }
 
     public function testPackageById()

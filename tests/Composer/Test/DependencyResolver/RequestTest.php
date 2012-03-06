@@ -47,6 +47,32 @@ class RequestTest extends TestCase
             $request->getJobs());
     }
 
+    public function testRequestInstallSamePackageFromDifferentRepositories()
+    {
+        $pool = new Pool;
+        $repo1 = new ArrayRepository;
+        $repo2 = new ArrayRepository;
+
+        $foo1 = $this->getPackage('foo', '1');
+        $foo2 = $this->getPackage('foo', '1');
+
+        $repo1->addPackage($foo1);
+        $repo2->addPackage($foo2);
+
+        $pool->addRepository($repo1);
+        $pool->addRepository($repo2);
+
+        $request = new Request($pool);
+        $request->install('foo', $this->getVersionConstraint('=', '1'));
+
+        $this->assertEquals(
+            array(
+                    array('packages' => array($foo1, $foo2), 'cmd' => 'install', 'packageName' => 'foo'),
+            ),
+            $request->getJobs()
+        );
+    }
+
     public function testUpdateAll()
     {
         $pool = new Pool;
