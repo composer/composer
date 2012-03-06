@@ -104,8 +104,10 @@ class Compiler
 
         if ($strip) {
             $content = php_strip_whitespace($file);
-        } else {
+        } elseif ('LICENSE' === basename($file)) {
             $content = "\n".file_get_contents($file)."\n";
+        } else {
+            $content = file_get_contents($file);
         }
 
         $content = str_replace('@package_version@', $this->version, $content);
