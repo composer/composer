@@ -166,7 +166,7 @@ For example:
 
 ### COMPOSER_VENDOR_DIR
 
-By setting this option you can make composer install the dependencies into a
+By setting this var you can make composer install the dependencies into a
 directory other than `vendor`.
 
 ### COMPOSER_BIN_DIR
@@ -178,3 +178,9 @@ directory to something other than `vendor/bin`.
 
 This env var controls the time composer waits for commands (such as git
 commands) to finish executing. The default value is 60 seconds.
+
+### HTTP_PROXY
+
+If you are using composer from behind an HTTP proxy, you can use the standard
+`HTTP_PROXY` or `http_proxy` env vars. Simply set it to the URL of your proxy.
+Many operating systems already set this variable for you.
