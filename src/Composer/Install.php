@@ -120,10 +120,10 @@ class Install
             $this->downloadManager->setPreferSource(true);
         }
 
-        $repoManager = $this->repositoryManager;
+        $this->repositoryManager = $this->repositoryManager;
 
         // create local repo, this contains all packages that are installed in the local project
-        $localRepo = $repoManager->getLocalRepository();
+        $localRepo = $this->repositoryManager->getLocalRepository();
         // create installed repo, this contains all local packages + platform packages (php & extensions)
         $installedRepo = new CompositeRepository(array($localRepo, new PlatformRepository()));
         if ($additionalInstalledRepository) {
@@ -137,19 +137,19 @@ class Install
             $aliases = $this->package->getAliases();
         }
         foreach ($aliases as $alias) {
-            foreach ($repoManager->findPackages($alias['package'], $alias['version']) as $package) {
+            foreach ($this->repositoryManager->findPackages($alias['package'], $alias['version']) as $package) {
                 $package->getRepository()->addPackage(new AliasPackage($package, $alias['alias_normalized'], $alias['alias']));
             }
-            foreach ($repoManager->getLocalRepository()->findPackages($alias['package'], $alias['version']) as $package) {
-                $repoManager->getLocalRepository()->addPackage(new AliasPackage($package, $alias['alias_normalized'], $alias['alias']));
-                $repoManager->getLocalRepository()->removePackage($package);
+            foreach ($this->repositoryManager->getLocalRepository()->findPackages($alias['package'], $alias['version']) as $package) {
+                $this->repositoryManager->getLocalRepository()->addPackage(new AliasPackage($package, $alias['alias_normalized'], $alias['alias']));
+                $this->repositoryManager->getLocalRepository()->removePackage($package);
             }
         }
 
         // creating repository pool
         $pool = new Pool;
         $pool->addRepository($installedRepo);
-        foreach ($repoManager->getRepositories() as $repository) {
+        foreach ($this->repositoryManager->getRepositories() as $repository) {
             $pool->addRepository($repository);
         }
 
@@ -230,7 +230,7 @@ class Install
                 }
 
                 // force update
-                $newPackage = $repoManager->findPackage($package->getName(), $package->getVersion());
+                $newPackage = $this->repositoryManager->findPackage($package->getName(), $package->getVersion());
                 if ($newPackage && $newPackage->getSourceReference() !== $package->getSourceReference()) {
                     $operations[] = new UpdateOperation($package, $newPackage);
                 }
@@ -238,10 +238,10 @@ class Install
         }
 
         // anti-alias local repository to allow updates to work fine
-        foreach ($repoManager->getLocalRepository()->getPackages() as $package) {
+        foreach ($this->repositoryManager->getLocalRepository()->getPackages() as $package) {
             if ($package instanceof AliasPackage) {
-                $repoManager->getLocalRepository()->addPackage(clone $package->getAliasOf());
-                $repoManager->getLocalRepository()->removePackage($package);
+                $this->repositoryManager->getLocalRepository()->addPackage(clone $package->getAliasOf());
+                $this->repositoryManager->getLocalRepository()->removePackage($package);
             }
         }
 
