@@ -37,7 +37,7 @@ class Compiler
 
         $process = new Process('git log --pretty="%h" -n1 HEAD');
         if ($process->run() != 0) {
-            throw new \RuntimeException('The git binary cannot be found.');
+            throw new \RuntimeException('The git binary cannot be found or compile was run not inside git repository folder.');
         }
         $this->version = trim($process->getOutput());
 
