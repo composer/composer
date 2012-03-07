@@ -178,4 +178,4 @@ This can be useful for autoloading classes in a test suite, for example.
 that one, you can just include `vendor/.composer/autoload_namespaces.php`,
 which returns an associative array mapping namespaces to directories.
 
-[prev](00-intro)  [next](02-libraries)
+&larr; [Intro](00-intro)  |  [Libraries](02-libraries) &rarr;
