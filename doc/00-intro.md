@@ -60,4 +60,4 @@ autoloading:
 
 That's all it takes to have a basic setup.
 
-[Basic Usage](01-basic-usage) &rarr;
+[Basic Usage](01-basic-usage.md) &rarr;
