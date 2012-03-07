@@ -127,13 +127,19 @@ class JsonFile
             self::validateSyntax($content);
         }
 
-        $schemaFile = __DIR__ . '/../../../res/composer-schema'.($schema === self::LAX_SCHEMA ? '-lax' : '').'.json';
-        $schema = json_decode(file_get_contents($schemaFile));
+        $schemaFile = __DIR__ . '/../../../res/composer-schema.json';
+        $schemaData = json_decode(file_get_contents($schemaFile));
+
+        if ($schema === self::LAX_SCHEMA) {
+            $schemaData->additionalProperties = true;
+            $schemaData->properties->name->required = false;
+            $schemaData->properties->description->required = false;
+        }
 
         $validator = new Validator();
-        $validator->check($data, $schema);
+        $validator->check($data, $schemaData);
 
-        // TODO add more specific checks for common errors if needed
+        // TODO add more validation like check version constraints and such, perhaps build that into the arrayloader?
 
         if (!$validator->isValid()) {
             $errors = array();

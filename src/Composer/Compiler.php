@@ -65,7 +65,6 @@ class Compiler
         }
         $this->addFile($phar, new \SplFileInfo(__DIR__.'/Autoload/ClassLoader.php'), false);
         $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../res/composer-schema.json'), false);
-        $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../res/composer-schema-lax.json'), false);
 
         $finder = new Finder();
         $finder->files()
