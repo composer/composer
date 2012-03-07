@@ -47,7 +47,7 @@ abstract class VcsDownloader implements DownloaderInterface
     public function download(PackageInterface $package, $path)
     {
         if (!$package->getSourceReference()) {
-            throw new \InvalidArgumentException('The given package is missing reference information');
+            throw new \InvalidArgumentException('Package '.$package->getPrettyName().' is missing reference information');
         }
 
         $this->io->write("  - Package <info>" . $package->getName() . "</info> (<comment>" . $package->getPrettyVersion() . "</comment>)");
@@ -62,7 +62,7 @@ abstract class VcsDownloader implements DownloaderInterface
     public function update(PackageInterface $initial, PackageInterface $target, $path)
     {
         if (!$target->getSourceReference()) {
-            throw new \InvalidArgumentException('The given package is missing reference information');
+            throw new \InvalidArgumentException('Package '.$target->getPrettyName().' is missing reference information');
         }
 
         $this->io->write("  - Package <info>" . $target->getName() . "</info> (<comment>" . $target->getPrettyVersion() . "</comment>)");
