@@ -19,13 +19,22 @@ class Filesystem
 {
     public function removeDirectory($directory)
     {
+        if (!is_dir($directory)) {
+            return true;
+        }
+
         if (defined('PHP_WINDOWS_VERSION_BUILD')) {
             $cmd = sprintf('rmdir /S /Q %s', escapeshellarg(realpath($directory)));
         } else {
             $cmd = sprintf('rm -rf %s', escapeshellarg($directory));
         }
 
-        return $this->getProcess()->execute($cmd) === 0;
+        $result = $this->getProcess()->execute($cmd) === 0;
+
+        // clear stat cache because external processes aren't tracked by the php stat cache
+        clearstatcache();
+
+        return $result;
     }
 
     public function ensureDirectoryExists($directory)
