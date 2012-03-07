@@ -389,4 +389,4 @@ See (Vendor Bins)[articles/vendor-bins] for more details.
 
 Optional.
 
-&larr; [Command-line interface](03-cli.md)  |  [Repositories](05-repositories) &rarr;
+&larr; [Command-line interface](03-cli.md)  |  [Repositories](05-repositories.md) &rarr;
