@@ -74,7 +74,7 @@ Here are some examples of version branch names:
     1.1.*
 
 > **Note:** When you install a dev version, it will install it from source.
-See [Repositories](05-repositories) for more information.
+See [Repositories](05-repositories.md) for more information.
 
 ## Lock file
 
@@ -129,7 +129,7 @@ We do this by adding a package repository specification to the blog's
     }
 
 For more details on how package repositories work and what other types are
-available, see [Repositories](05-repositories).
+available, see [Repositories](05-repositories.md).
 
 That's all. You can now install the dependencies by running composer's
 `install` command!

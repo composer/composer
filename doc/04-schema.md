@@ -247,7 +247,7 @@ The following repository types are supported:
   composer whatsoever you can define the package inline using a `package`
   repository. You basically just inline the `composer.json` object.
 
-For more information on any of these, see [Repositories](05-repositories).
+For more information on any of these, see [Repositories](05-repositories.md).
 
 Example:
 
@@ -385,7 +385,7 @@ Optional.
 A set of files that should be treated as binaries and symlinked into the `bin-
 dir` (from config).
 
-See (Vendor Bins)[articles/vendor-bins] for more details.
+See (Vendor Bins)[articles/vendor-bins.md] for more details.
 
 Optional.
 

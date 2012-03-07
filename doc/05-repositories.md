@@ -81,7 +81,7 @@ Here is a minimal package definition:
         }
     }
 
-It may include any of the other fields specified in the [schema].
+It may include any of the other fields specified in the [schema](04-schema.md).
 
 The `composer` repository is also what packagist uses. To reference a
 `composer` repository, just supply the path before the `packages.json` file.
