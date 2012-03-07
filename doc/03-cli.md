@@ -184,3 +184,5 @@ commands) to finish executing. The default value is 60 seconds.
 If you are using composer from behind an HTTP proxy, you can use the standard
 `HTTP_PROXY` or `http_proxy` env vars. Simply set it to the URL of your proxy.
 Many operating systems already set this variable for you.
+
+&larr; [Libraries](02-libraries.md)  |  [Schema](04-schema.md) &rarr;

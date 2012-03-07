@@ -50,7 +50,7 @@ class HgDownloader extends VcsDownloader
     {
         $this->process->execute(sprintf('cd %s && hg st', escapeshellarg($path)), $output);
         if (trim($output)) {
-            throw new \RuntimeException('Source directory has uncommitted changes');
+            throw new \RuntimeException('Source directory ' . $path . ' has uncommitted changes');
         }
     }
 }

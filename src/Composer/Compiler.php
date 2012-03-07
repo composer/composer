@@ -35,9 +35,9 @@ class Compiler
             unlink($pharFile);
         }
 
-        $process = new Process('git log --pretty="%h" -n1 HEAD');
+        $process = new Process('git log --pretty="%h" -n1 HEAD', __DIR__);
         if ($process->run() != 0) {
-            throw new \RuntimeException('The git binary cannot be found.');
+            throw new \RuntimeException('Can\'t run git log. You must ensure to run compile from composer git repository clone and that git binary is available.');
         }
         $this->version = trim($process->getOutput());
 

@@ -74,7 +74,7 @@ class GitDownloader extends VcsDownloader
         }
 
         if (trim($output)) {
-            throw new \RuntimeException('Source directory has uncommitted changes');
+            throw new \RuntimeException('Source directory ' . $path . ' has uncommitted changes');
         }
     }
 }

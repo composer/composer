@@ -51,7 +51,7 @@ class SvnDownloader extends VcsDownloader
     {
         $this->process->execute(sprintf('cd %s && svn status', escapeshellarg($path)), $output);
         if (trim($output)) {
-            throw new \RuntimeException('Source directory has uncommitted changes');
+            throw new \RuntimeException('Source directory ' . $path . ' has uncommitted changes');
         }
     }
 }
