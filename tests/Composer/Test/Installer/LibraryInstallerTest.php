@@ -49,13 +49,8 @@ class LibraryInstallerTest extends TestCase
 
     protected function tearDown()
     {
-        if (is_dir($this->vendorDir)) {
-            $this->fs->removeDirectory($this->vendorDir);
-        }
-
-        if (is_dir($this->binDir)) {
-            $this->fs->removeDirectory($this->binDir);
-        }
+        $this->fs->removeDirectory($this->vendorDir);
+        $this->fs->removeDirectory($this->binDir);
     }
 
     public function testInstallerCreationShouldNotCreateVendorDirectory()
