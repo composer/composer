@@ -177,3 +177,5 @@ This can be useful for autoloading classes in a test suite, for example.
 > **Note:** Composer provides its own autoloader. If you don't want to use
 that one, you can just include `vendor/.composer/autoload_namespaces.php`,
 which returns an associative array mapping namespaces to directories.
+
+&larr; [Intro](00-intro.md)  |  [Libraries](02-libraries.md) &rarr;

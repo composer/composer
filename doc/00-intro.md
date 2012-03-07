@@ -59,3 +59,5 @@ autoloading:
     require 'vendor/.composer/autoload.php';
 
 That's all it takes to have a basic setup.
+
+[Basic Usage](01-basic-usage.md) &rarr;
