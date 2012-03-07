@@ -158,3 +158,5 @@ publish it on packagist as well. And this is really easy.
 You simply hit the big "Submit Package" button and sign up. Then you submit
 the URL to your VCS repository, at which point packagist will start crawling
 it. Once it is done, your package will be available to anyone.
+
+[prev](01-basic-usage) [next](03-cli)
