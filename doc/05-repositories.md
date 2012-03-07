@@ -264,4 +264,4 @@ You can disable the default packagist repository by adding this to your
     }
 
 
-[prev](05-repositories)
+&larr; [Schema](04-schema.md)  |  [Community](06-community.md) &rarr;
