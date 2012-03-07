@@ -26,3 +26,5 @@ The developer mailing list is on [google groups](http://groups.google.com/group/
 IRC channels are available for discussion as well, on
 irc.freenode.org [#composer](irc://irc.freenode.org/composer) for users and
 [#composer-dev](irc://irc.freenode.org/composer-dev) for development.
+
+&larr; [Community](06-community.md)
