@@ -44,4 +44,10 @@ class SvnDriverTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals($expect, $svn->getSvnCredentialString());
     }
+
+    public function testInteractiveString()
+    {
+        $io  = new \Composer\IO\NullIO; // non-interactive by design
+        $svn = new SvnDriver('http://svn.example.org', $io);
+    }
 }
