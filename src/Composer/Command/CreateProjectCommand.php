@@ -19,7 +19,6 @@ use Composer\IO\IOInterface;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\FilesystemRepository;
 use Composer\Script\EventDispatcher;
-use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -69,7 +68,6 @@ EOT
 
         return $this->installProject(
             $io,
-            $this->getInstallCommand($input, $output),
             $input->getArgument('package'),
             $input->getArgument('directory'),
             $input->getArgument('version'),
@@ -78,7 +76,7 @@ EOT
         );
     }
 
-    public function installProject(IOInterface $io, $installCommand, $packageName, $directory = null, $version = null, $preferSource = false, $repositoryUrl = null)
+    public function installProject(IOInterface $io, $packageName, $directory = null, $version = null, $preferSource = false, $repositoryUrl = null)
     {
         $dm = $this->createDownloadManager($io);
         if ($preferSource) {
