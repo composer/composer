@@ -243,6 +243,28 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
     }
 
     /**
+     * Determine if composer was called with --no-interaction/-n
+     * and return the option string for the command.
+     *
+     * @return string
+     * @uses   parent::$io
+     * @see    IOInterface::isInteractive()
+     */
+    public function getSvnInteractiveSetting()
+    {
+        static $option;
+        if ($option !== null) {
+            return $option;
+        }
+        if ($this->io->isInteractive() === false) {
+            $option = '--non-interactive ';
+        } else {
+            $option = '';
+        }
+        return $option;
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function hasComposerFile($identifier)
