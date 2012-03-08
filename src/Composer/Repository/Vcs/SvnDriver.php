@@ -257,25 +257,15 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
     }
 
     /**
-     * Determine if composer was called with --no-interaction/-n
-     * and return the option string for the command.
+     * Always run commands 'non-interactive':
+     * It's easier to spot issues because then the svn process would fail fast
+     * and not wait for user input.
      *
      * @return string
-     * @uses   parent::$io
-     * @see    IOInterface::isInteractive()
      */
     public function getSvnInteractiveSetting()
     {
-        static $option;
-        if ($option !== null) {
-            return $option;
-        }
-        if ($this->io->isInteractive() === false) {
-            $option = '--non-interactive ';
-        } else {
-            $option = '';
-        }
-        return $option;
+        return '--non-interactive ';
     }
 
     /**
