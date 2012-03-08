@@ -45,6 +45,11 @@ composer:
 This will just check a few PHP settings and then download `composer.phar` to
 your working directory. This file is the composer binary.
 
+You can install composer to a specific directory by using the `--install-dir`
+option and providing a target directory (it can be an absolute or relative path):
+
+    $ curl -s http://getcomposer.org/installer | php -- --install-dir=bin
+
 After that we run the command for installing all dependencies:
 
     $ php composer.phar install
