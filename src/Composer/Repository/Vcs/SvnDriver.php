@@ -53,6 +53,25 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
     }
 
     /**
+     * Execute an SVN command and try to fix up the process with credentials
+     * if necessary.
+     *
+     * @param string $command The svn command to run.
+     *
+     * @return string
+     * @uses   parent::$process
+     * @see    ProcessExecutor::execute()
+     */
+    public function execute($command)
+    {
+        $status = $this->process->execute(
+            $command,
+            $output
+        );
+        return $output;
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function initialize()
@@ -108,9 +127,8 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
                 $rev = '';
             }
 
-            $this->process->execute(
-                $this->getSvnCommand('svn cat', $this->baseUrl . $identifier . 'composer.json' . $rev),
-                $output
+            $output = $this->execute(
+                $this->getSvnCommand('svn cat', $this->baseUrl . $identifier . 'composer.json' . $rev)
             );
 
             if (!trim($output)) {
@@ -122,9 +140,8 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
             $composer = JsonFile::parseJson($output);
 
             if (!isset($composer['time'])) {
-                $this->process->execute(
-                    $this->getSvnCommand('svn info', $this->baseUrl . $identifier . $rev),
-                    $output
+                $output = $this->execute(
+                    $this->getSvnCommand('svn info', $this->baseUrl . $identifier . $rev)
                 );
                 foreach ($this->process->splitLines($output) as $line) {
                     if ($line && preg_match('{^Last Changed Date: ([^(]+)}', $line, $match)) {
@@ -146,9 +163,8 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
     public function getTags()
     {
         if (null === $this->tags) {
-            $this->process->execute(
-                $this->getSvnCommand('svn ls', $this->baseUrl . '/tags'),
-                $output
+            $output = $this->execute(
+                $this->getSvnCommand('svn ls', $this->baseUrl . '/tags')
             );
             $this->tags = array();
             foreach ($this->process->splitLines($output) as $tag) {
@@ -167,9 +183,8 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
     public function getBranches()
     {
         if (null === $this->branches) {
-            $this->process->execute(
-                $this->getSvnCommand('svn ls --verbose', $this->baseUrl . '/'),
-                $output
+            $output = $this->execute(
+                $this->getSvnCommand('svn ls --verbose', $this->baseUrl . '/')
             );
 
             $this->branches = array();
@@ -182,9 +197,8 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
             }
             unset($output);
 
-            $this->process->execute(
-                $this->getSvnCommand('svn ls --verbose', $this->baseUrl . '/branches'),
-                $output
+            $output = $this->execute(
+                $this->getSvnCommand('svn ls --verbose', $this->baseUrl . '/branches')
             );
             foreach ($this->process->splitLines(trim($output)) as $line) {
                 preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match);
@@ -295,7 +309,7 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
 
         $exit = $processExecutor->execute(
             $this->getSvnCommand('svn info', $url, '2>/dev/null'),
-            $ignored
+            $ignoredOutput
         );
         return $exit === 0;
     }
