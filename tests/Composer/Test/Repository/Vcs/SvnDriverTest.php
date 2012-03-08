@@ -47,7 +47,14 @@ class SvnDriverTest extends \PHPUnit_Framework_TestCase
 
     public function testInteractiveString()
     {
+        $url = 'http://svn.example.org';
+
         $io  = new \Composer\IO\NullIO; // non-interactive by design
-        $svn = new SvnDriver('http://svn.example.org', $io);
+        $svn = new SvnDriver($url, $io);
+
+        $this->assertEquals(
+            "svn ls --non-interactive  'http://svn.example.org'",
+            $svn->getSvnCommand('svn ls', $url)
+        );
     }
 }
