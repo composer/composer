@@ -9,7 +9,7 @@ use Composer\IO\IOInterface;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class SvnDriver extends VcsDriver implements VcsDriverInterface
+class SvnDriver extends VcsDriver
 {
     protected $baseUrl;
     protected $tags;
@@ -108,7 +108,7 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
             );
 
             if (!trim($composer)) {
-                throw new \UnexpectedValueException('Failed to retrieve composer information for identifier '.$identifier.' in '.$this->getUrl());
+                return;
             }
 
             $composer = JsonFile::parseJson($composer);
@@ -224,20 +224,6 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
             escapeshellarg($this->svnUsername),
             escapeshellarg($this->svnPassword)
         );
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function hasComposerFile($identifier)
-    {
-        try {
-            $this->getComposerInformation($identifier);
-            return true;
-        } catch (\Exception $e) {
-        }
-
-        return false;
     }
 
     /**
