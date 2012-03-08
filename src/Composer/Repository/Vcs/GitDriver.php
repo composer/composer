@@ -9,7 +9,7 @@ use Composer\IO\IOInterface;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class GitDriver extends VcsDriver implements VcsDriverInterface
+class GitDriver extends VcsDriver
 {
     protected $tags;
     protected $branches;
@@ -117,7 +117,7 @@ class GitDriver extends VcsDriver implements VcsDriverInterface
             $this->process->execute(sprintf('cd %s && git show %s:composer.json', escapeshellarg($this->repoDir), escapeshellarg($identifier)), $composer);
 
             if (!trim($composer)) {
-                throw new \UnexpectedValueException('Failed to retrieve composer information for identifier '.$identifier.' in '.$this->getUrl());
+                return;
             }
 
             $composer = JsonFile::parseJson($composer);
@@ -171,20 +171,6 @@ class GitDriver extends VcsDriver implements VcsDriverInterface
         }
 
         return $this->branches;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function hasComposerFile($identifier)
-    {
-        try {
-            $this->getComposerInformation($identifier);
-            return true;
-        } catch (\Exception $e) {
-        }
-
-        return false;
     }
 
     /**

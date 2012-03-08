@@ -2,6 +2,7 @@
 
 namespace Composer\Repository;
 
+use Composer\Downloader\TransportException;
 use Composer\Repository\Vcs\VcsDriverInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\PackageInterface;
@@ -90,10 +91,13 @@ class VcsRepository extends ArrayRepository
             if ($parsedTag && $driver->hasComposerFile($identifier)) {
                 try {
                     $data = $driver->getComposerInformation($identifier);
-                } catch (\Exception $e) {
+                } catch (TransportException $e) {
                     if ($debug) {
                         $this->io->write('Skipped tag '.$tag.', '.$e->getMessage());
                     }
+                    continue;
+                } catch (\Exception $e) {
+                    $this->io->write('Skipped tag '.$tag.', '.$e->getMessage());
                     continue;
                 }
 
