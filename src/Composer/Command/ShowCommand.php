@@ -165,10 +165,12 @@ EOT
         $versions = array();
 
         foreach ($repos->findPackages($package->getName()) as $version) {
-            $versions[$version->getPrettyVersion()] = true;
+            $versions[$version->getPrettyVersion()] = $version->getVersion();
         }
 
-        $versions = join(', ', array_keys($versions));
+        uasort($versions, 'version_compare');
+
+        $versions = join(', ', array_keys(array_reverse($versions)));
 
         // highlight installed version
         if ($installedRepo->hasPackage($package)) {
