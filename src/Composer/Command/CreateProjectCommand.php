@@ -36,11 +36,11 @@ class CreateProjectCommand extends Command
             ->setName('create-project')
             ->setDescription('Create new project from a package into given directory.')
             ->setDefinition(array(
+                new InputArgument('package', InputArgument::REQUIRED, 'Package name to be installed'),
+                new InputArgument('directory', InputArgument::OPTIONAL, 'Directory where the files should be created'),
+                new InputArgument('version', InputArgument::OPTIONAL, 'Version, will defaults to latest'),
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('repository-url', null, InputOption::VALUE_REQUIRED, 'Pick a different repository url to look for the package.'),
-                new InputArgument('package', InputArgument::REQUIRED),
-                new InputArgument('version', InputArgument::OPTIONAL),
-                new InputArgument('directory', InputArgument::OPTIONAL),
             ))
             ->setHelp(<<<EOT
 The <info>create-project</info> command creates a new project from a given
@@ -48,7 +48,7 @@ package into a new directory. You can use this command to bootstrap new
 projects or setup a clean version-controlled installation
 for developers of your project.
 
-<info>php composer.phar create-project vendor/project intodirectory</info>
+<info>php composer.phar create-project vendor/project target-directory [version]</info>
 
 To setup a developer workable version you should create the project using the source
 controlled code by appending the <info>'--prefer-source'</info> flag.
