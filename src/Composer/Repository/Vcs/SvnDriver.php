@@ -16,6 +16,21 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
     protected $branches;
     protected $infoCache = array();
 
+    /**
+     * @var boolean $useAuth Contains credentials, or not?
+     */
+    protected $useAuth = false;
+
+    /**
+     * @var string $svnUsername
+     */
+    protected $svnUsername = '';
+
+    /**
+     * @var string $svnPassword
+     */
+    protected $svnPassword = '';
+
     public function __construct($url, IOInterface $io, ProcessExecutor $process = null)
     {
         parent::__construct($this->baseUrl = rtrim($url, '/'), $io, $process);
@@ -23,6 +38,8 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
         if (false !== ($pos = strrpos($url, '/trunk'))) {
             $this->baseUrl = substr($url, 0, $pos);
         }
+
+        $this->detectSvnAuth();
     }
 
     /**
@@ -81,7 +98,14 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
                 $rev = '';
             }
 
-            $this->process->execute(sprintf('svn cat --non-interactive %s', escapeshellarg($this->baseUrl.$identifier.'composer.json'.$rev)), $composer);
+            $this->process->execute(
+                sprintf(
+                    'svn cat --non-interactive %s %s',
+                    $this->getSvnCredentialString(),
+                    escapeshellarg($this->baseUrl.$identifier.'composer.json'.$rev)
+                ),
+                $composer
+            );
 
             if (!trim($composer)) {
                 throw new \UnexpectedValueException('Failed to retrieve composer information for identifier '.$identifier.' in '.$this->getUrl());
@@ -90,7 +114,14 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
             $composer = JsonFile::parseJson($composer);
 
             if (!isset($composer['time'])) {
-                $this->process->execute(sprintf('svn info %s', escapeshellarg($this->baseUrl.$identifier.$rev)), $output);
+                $this->process->execute(
+                    sprintf(
+                        'svn info %s %s',
+                        $this->getSvnCredentialString(),
+                        escapeshellarg($this->baseUrl.$identifier.$rev)
+                    ),
+                    $output
+                );
                 foreach ($this->process->splitLines($output) as $line) {
                     if ($line && preg_match('{^Last Changed Date: ([^(]+)}', $line, $match)) {
                         $date = new \DateTime($match[1]);
@@ -111,7 +142,14 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
     public function getTags()
     {
         if (null === $this->tags) {
-            $this->process->execute(sprintf('svn ls --non-interactive %s', escapeshellarg($this->baseUrl.'/tags')), $output);
+            $this->process->execute(
+                sprintf(
+                    'svn ls --non-interactive %s %s',
+                    $this->getSvnCredentialString(),
+                    escapeshellarg($this->baseUrl.'/tags')
+                ),
+                $output
+            );
             $this->tags = array();
             foreach ($this->process->splitLines($output) as $tag) {
                 if ($tag) {
@@ -129,7 +167,14 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
     public function getBranches()
     {
         if (null === $this->branches) {
-            $this->process->execute(sprintf('svn ls --verbose --non-interactive %s', escapeshellarg($this->baseUrl.'/')), $output);
+            $this->process->execute(
+                sprintf(
+                    'svn ls --verbose --non-interactive %s %s',
+                    $this->getSvnCredentialString(),
+                    escapeshellarg($this->baseUrl.'/')
+                ),
+                $output
+            );
 
             $this->branches = array();
             foreach ($this->process->splitLines($output) as $line) {
@@ -141,7 +186,14 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
             }
             unset($output);
 
-            $this->process->execute(sprintf('svn ls --verbose --non-interactive %s', escapeshellarg($this->baseUrl.'/branches')), $output);
+            $this->process->execute(
+                sprintf(
+                    'svn ls --verbose --non-interactive %s',
+                    $this->getSvnCredentialString(),
+                    escapeshellarg($this->baseUrl.'/branches')
+                ),
+                $output
+            );
             foreach ($this->process->splitLines(trim($output)) as $line) {
                 preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match);
                 if ($match[2] === './') {
@@ -152,6 +204,26 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
         }
 
         return $this->branches;
+    }
+
+    /**
+     * Return the credential string for the svn command.
+     *
+     * --no-auth-cache when credentials are present
+     *
+     * @return string
+     */
+    public function getSvnCredentialString()
+    {
+        if ($this->useAuth !== true) {
+            return '';
+        }
+        $str = ' --no-auth-cache --username %s --password %s ';
+        return sprintf(
+            $str,
+            escapeshellarg($this->svnUsername),
+            escapeshellarg($this->svnPassword)
+        );
     }
 
     /**
@@ -183,7 +255,38 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
 
         $processExecutor = new ProcessExecutor();
 
-        $exit = $processExecutor->execute(sprintf('svn info --non-interactive %s 2>/dev/null', escapeshellarg($url)), $ignored);
+        $exit = $processExecutor->execute(
+            sprintf(
+                'svn info --non-interactive %s %s 2>/dev/null',
+                $this->getSvnCredentialString(),
+                escapeshellarg($url)
+            ),
+            $ignored
+        );
         return $exit === 0;
+    }
+
+    /**
+     * This is quick and dirty - thoughts?
+     *
+     * @return void
+     * @uses   parent::$baseUrl
+     * @uses   self::$useAuth, self::$svnUsername, self::$svnPassword
+     * @see    self::__construct()
+     */
+    protected function detectSvnAuth()
+    {
+        $uri = parse_url($this->baseUrl);
+        if (empty($uri['user'])) {
+            return;
+        }
+
+        $this->svnUsername = $uri['user'];
+
+        if (!empty($uri['pass'])) {
+            $this->svnPassword = $uri['pass'];
+        }
+
+        $this->useAuth = true;
     }
 }
