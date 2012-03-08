@@ -34,6 +34,11 @@ class PackageRepository extends ArrayRepository
     public function __construct(array $config)
     {
         $this->config = $config['package'];
+
+        // make sure we have an array of package definitions
+        if (!is_numeric(key($this->config))) {
+            $this->config = array($this->config);
+        }
     }
 
     /**
@@ -42,10 +47,6 @@ class PackageRepository extends ArrayRepository
     protected function initialize()
     {
         parent::initialize();
-
-        if (!is_numeric(key($this->config))) {
-            $this->config = array($this->config);
-        }
 
         $loader = new ArrayLoader();
         foreach ($this->config as $package) {
