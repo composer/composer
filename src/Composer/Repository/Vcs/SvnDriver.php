@@ -31,6 +31,16 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
      */
     protected $svnPassword = '';
 
+    /**
+     * __construct
+     *
+     * @param string          $url
+     * @param IOInterface     $io
+     * @param ProcessExecutor $process
+     *
+     * @return $this
+     * @uses   self::detectSvnAuth()
+     */
     public function __construct($url, IOInterface $io, ProcessExecutor $process = null)
     {
         parent::__construct($this->baseUrl = rtrim($url, '/'), $io, $process);
@@ -209,9 +219,10 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
     /**
      * Return the credential string for the svn command.
      *
-     * --no-auth-cache when credentials are present
+     * Adds --no-auth-cache when credentials are present.
      *
      * @return string
+     * @uses   self::$useAuth
      */
     public function getSvnCredentialString()
     {
