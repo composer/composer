@@ -123,7 +123,7 @@ We do this by adding a package repository specification to the blog's
                 "type": "vcs",
                 "url": "https://github.com/composer/hello-world"
             }
-        },
+        ],
         "require": {
             "acme/hello-world": "dev-master"
         }
