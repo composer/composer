@@ -60,12 +60,13 @@ abstract class VcsDriver
      * Get the remote content.
      *
      * @param string $url The URL of content
+     * @param boolean $firstCall Consider this the first call for driver instance?
      *
      * @return mixed The result
      */
-    protected function getContents($url)
+    protected function getContents($url, $firstCall = true)
     {
-        $rfs = new RemoteFilesystem($this->io);
+        $rfs = new RemoteFilesystem($this->io, $firstCall);
         return $rfs->getContents($this->url, $url, false);
     }
 

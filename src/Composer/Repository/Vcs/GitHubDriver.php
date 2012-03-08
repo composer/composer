@@ -81,7 +81,7 @@ class GitHubDriver extends VcsDriver implements VcsDriverInterface
     public function getComposerInformation($identifier)
     {
         if (!isset($this->infoCache[$identifier])) {
-            $composer = $this->getContents($this->getScheme() . '://raw.github.com/'.$this->owner.'/'.$this->repository.'/'.$identifier.'/composer.json');
+            $composer = $this->getContents($this->getScheme() . '://raw.github.com/'.$this->owner.'/'.$this->repository.'/'.$identifier.'/composer.json', false);
             if (!$composer) {
                 throw new \UnexpectedValueException('Failed to retrieve composer information for identifier '.$identifier.' in '.$this->getUrl());
             }
@@ -89,7 +89,7 @@ class GitHubDriver extends VcsDriver implements VcsDriverInterface
             $composer = JsonFile::parseJson($composer);
 
             if (!isset($composer['time'])) {
-                $commit = json_decode($this->getContents($this->getScheme() . '://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/commits/'.$identifier), true);
+                $commit = json_decode($this->getContents($this->getScheme() . '://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/commits/'.$identifier, false), true);
                 $composer['time'] = $commit['commit']['committer']['date'];
             }
             $this->infoCache[$identifier] = $composer;
@@ -104,7 +104,7 @@ class GitHubDriver extends VcsDriver implements VcsDriverInterface
     public function getTags()
     {
         if (null === $this->tags) {
-            $tagsData = json_decode($this->getContents($this->getScheme() . '://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/tags'), true);
+            $tagsData = json_decode($this->getContents($this->getScheme() . '://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/tags', false), true);
             $this->tags = array();
             foreach ($tagsData as $tag) {
                 $this->tags[$tag['name']] = $tag['commit']['sha'];
@@ -120,7 +120,7 @@ class GitHubDriver extends VcsDriver implements VcsDriverInterface
     public function getBranches()
     {
         if (null === $this->branches) {
-            $branchData = json_decode($this->getContents($this->getScheme() . '://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/branches'), true);
+            $branchData = json_decode($this->getContents($this->getScheme() . '://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/branches', false), true);
             $this->branches = array();
             foreach ($branchData as $branch) {
                 $this->branches[$branch['name']] = $branch['commit']['sha'];

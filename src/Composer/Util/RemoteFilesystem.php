@@ -33,10 +33,12 @@ class RemoteFilesystem
      * Constructor.
      *
      * @param IOInterface  $io  The IO instance
+     * @param boolean $firstCall Consider this the first call for driver instance?
      */
-    public function __construct(IOInterface $io)
+    public function __construct(IOInterface $io, $firstCall = true)
     {
         $this->io = $io;
+        $this->firstCall = $firstCall;
     }
 
     /**
@@ -83,9 +85,11 @@ class RemoteFilesystem
      *
      * @throws \RuntimeException When the file could not be downloaded
      */
-    protected function get($originUrl, $fileUrl, $fileName = null, $progress = true, $firstCall = true)
+    protected function get($originUrl, $fileUrl, $fileName = null, $progress = true, $firstCall = null)
     {
-        $this->firstCall = $firstCall;
+        if (null !== $firstCall) {
+            $this->firstCall = $firstCall;
+        }
         $this->bytesMax = 0;
         $this->result = null;
         $this->originUrl = $originUrl;
