@@ -75,8 +75,9 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
         // this could be any failure, but let's see if it's auth related
         if ($status == 1) {
             if ($this->useAuth === false && strpos($output, 'authorization failed:') !== false) {
-                $this->svnUsername = $this->io->ask("What's your svn username?");
-                $this->svnPassword = $this->io->ask("What's your svn password?");
+                $this->io->write("The Subversion server ({$this->baseUrl}) request credentials:");
+                $this->svnUsername = $this->io->ask("Username");
+                $this->svnPassword = $this->io->ask("Password");
                 $this->useAuth     = true;
 
                 // restart the process
