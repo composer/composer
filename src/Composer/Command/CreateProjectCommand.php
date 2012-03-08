@@ -12,16 +12,18 @@
 
 namespace Composer\Command;
 
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\ArrayInput;
-use Symfony\Component\Console\Output\OutputInterface;
-use Composer\IO\IOInterface;
 use Composer\Factory;
+use Composer\Installer;
+use Composer\Installer\ProjectInstaller;
+use Composer\IO\IOInterface;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\FilesystemRepository;
-use Composer\Installer\ProjectInstaller;
+use Composer\Script\EventDispatcher;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Install a package as new project into new directory.
@@ -76,15 +78,6 @@ EOT
         );
     }
 
-    protected function getInstallCommand($input, $output)
-    {
-        $app = $this->getApplication();
-        return function() use ($app, $input, $output) {
-            $newInput = new ArrayInput(array('command' => 'install'));
-            $app->doRUn($newInput, $output);
-        };
-    }
-
     public function installProject(IOInterface $io, $installCommand, $packageName, $directory = null, $version = null, $preferSource = false, $repositoryUrl = null)
     {
         $dm = $this->createDownloadManager($io);
@@ -126,7 +119,12 @@ EOT
 
         $io->write('<info>Created project into directory ' . $directory . '</info>', true);
         chdir($directory);
-        $installCommand();
+
+        $composer = Factory::create($io);
+        $eventDispatcher = new EventDispatcher($composer, $io);
+        $installer = Installer::create($io, $composer, $eventDispatcher);
+
+        $installer->run($preferSource);
     }
 
     protected function createDownloadManager(IOInterface $io)
