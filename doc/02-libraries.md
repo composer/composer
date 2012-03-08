@@ -118,9 +118,10 @@ We do this by adding a package repository specification to the blog's
 
     {
         "name": "acme/blog",
-        "repositories": {
-            "acme/hello-world": {
-                "vcs": { "url": "https://github.com/composer/hello-world" }
+        "repositories": [
+            {
+                "type": "vcs",
+                "url": "https://github.com/composer/hello-world"
             }
         },
         "require": {
