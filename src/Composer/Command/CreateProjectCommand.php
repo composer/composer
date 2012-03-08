@@ -102,14 +102,22 @@ EOT
             throw new \InvalidArgumentException("Invalid repository url given. Has to be a .json file or an http url.");
         }
 
-        $package = $sourceRepo->findPackage($packageName, $version);
-        if (!$package) {
-            throw new \InvalidArgumentException("Could not find package $packageName with version $version.");
+        $candidates = $sourceRepo->findPackages($packageName, $version);
+        if (!$candidates) {
+            throw new \InvalidArgumentException("Could not find package $packageName" . ($version ? " with version $version." : ''));
         }
 
         if (null === $directory) {
-            $parts = explode("/", $packageName);
+            $parts = explode("/", $packageName, 2);
             $directory = getcwd() . DIRECTORY_SEPARATOR . array_pop($parts);
+        }
+
+        // select highest version if we have many
+        $package = $candidates[0];
+        foreach ($candidates as $candidate) {
+            if (version_compare($package->getVersion(), $candidate->getVersion(), '<')) {
+                $package = $candidate;
+            }
         }
 
         $io->write('<info>Installing ' . $package->getName() . ' as new project.</info>', true);
