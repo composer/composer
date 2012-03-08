@@ -109,27 +109,21 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
             }
 
             $this->process->execute(
-                sprintf(
-                    'svn cat --non-interactive %s %s',
-                    $this->getSvnCredentialString(),
-                    escapeshellarg($this->baseUrl.$identifier.'composer.json'.$rev)
-                ),
+                $this->getSvnCommand('svn cat', $this->baseUrl . $identifier . 'composer.json' . $rev),
                 $composer
             );
 
             if (!trim($composer)) {
-                throw new \UnexpectedValueException('Failed to retrieve composer information for identifier '.$identifier.' in '.$this->getUrl());
+                throw new \UnexpectedValueException(
+                    'Failed to retrieve composer information for identifier ' . $identifier . ' in ' . $this->getUrl()
+                );
             }
 
             $composer = JsonFile::parseJson($composer);
 
             if (!isset($composer['time'])) {
                 $this->process->execute(
-                    sprintf(
-                        'svn info %s %s',
-                        $this->getSvnCredentialString(),
-                        escapeshellarg($this->baseUrl.$identifier.$rev)
-                    ),
+                    $this->getSvnCommand('svn info', $this->baseUrl . $identifier . $rev),
                     $output
                 );
                 foreach ($this->process->splitLines($output) as $line) {
@@ -153,11 +147,7 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
     {
         if (null === $this->tags) {
             $this->process->execute(
-                sprintf(
-                    'svn ls --non-interactive %s %s',
-                    $this->getSvnCredentialString(),
-                    escapeshellarg($this->baseUrl.'/tags')
-                ),
+                $this->getSvnCommand('svn ls', $this->baseUrl . '/tags'),
                 $output
             );
             $this->tags = array();
@@ -178,11 +168,7 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
     {
         if (null === $this->branches) {
             $this->process->execute(
-                sprintf(
-                    'svn ls --verbose --non-interactive %s %s',
-                    $this->getSvnCredentialString(),
-                    escapeshellarg($this->baseUrl.'/')
-                ),
+                $this->getSvnCommand('svn ls --verbose', $this->baseUrl . '/'),
                 $output
             );
 
@@ -197,11 +183,7 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
             unset($output);
 
             $this->process->execute(
-                sprintf(
-                    'svn ls --verbose --non-interactive %s',
-                    $this->getSvnCredentialString(),
-                    escapeshellarg($this->baseUrl.'/branches')
-                ),
+                $this->getSvnCommand('svn ls --verbose', $this->baseUrl . '/branches'),
                 $output
             );
             foreach ($this->process->splitLines(trim($output)) as $line) {
@@ -214,6 +196,29 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
         }
 
         return $this->branches;
+    }
+
+    /**
+     * A method to create the svn commands run.
+     *
+     * @string $cmd  Usually 'svn ls' or something like that.
+     * @string $url  Repo URL.
+     * @string $pipe Optional pipe for the output.
+     *
+     * @return string
+     */
+    public function getSvnCommand($cmd, $url, $pipe = null)
+    {
+        $cmd = sprintf('%s %s%s %s',
+            $cmd,
+            $this->getSvnInteractiveSetting(),
+            $this->getSvnCredentialString(),
+            escapeshellarg($url)
+        );
+        if ($pipe !== null) {
+            $cmd .= ' ' . $pipe;
+        }
+        return $cmd;
     }
 
     /**
@@ -267,11 +272,7 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
         $processExecutor = new ProcessExecutor();
 
         $exit = $processExecutor->execute(
-            sprintf(
-                'svn info --non-interactive %s %s 2>/dev/null',
-                $this->getSvnCredentialString(),
-                escapeshellarg($url)
-            ),
+            $this->getSvnCommand('svn info', $url, '2>/dev/null'),
             $ignored
         );
         return $exit === 0;
