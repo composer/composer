@@ -110,16 +110,16 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
 
             $this->process->execute(
                 $this->getSvnCommand('svn cat', $this->baseUrl . $identifier . 'composer.json' . $rev),
-                $composer
+                $output
             );
 
-            if (!trim($composer)) {
+            if (!trim($output)) {
                 throw new \UnexpectedValueException(
                     'Failed to retrieve composer information for identifier ' . $identifier . ' in ' . $this->getUrl()
                 );
             }
 
-            $composer = JsonFile::parseJson($composer);
+            $composer = JsonFile::parseJson($output);
 
             if (!isset($composer['time'])) {
                 $this->process->execute(
