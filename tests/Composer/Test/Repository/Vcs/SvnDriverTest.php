@@ -25,12 +25,12 @@ class SvnDriverTest extends \PHPUnit_Framework_TestCase
      *
      * @return array
      */
-    public static function urlProvider()
+    public function urlProvider()
     {
         return array(
-            array('http://till:test@svn.example.org/', " --no-auth-cache --username 'till' --password 'test' "),
+            array('http://till:test@svn.example.org/', $this->getCmd(" --no-auth-cache --username 'till' --password 'test' ")),
             array('http://svn.apache.org/', ''),
-            array('svn://johndoe@example.org', " --no-auth-cache --username 'johndoe' --password '' "),
+            array('svn://johndoe@example.org', $this->getCmd(" --no-auth-cache --username 'johndoe' --password '' ")),
         );
     }
 
@@ -43,5 +43,14 @@ class SvnDriverTest extends \PHPUnit_Framework_TestCase
         $svn = new SvnDriver($url, $io);
 
         $this->assertEquals($expect, $svn->getSvnCredentialString());
+    }
+
+    private function getCmd($cmd)
+    {
+        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+            return strtr($cmd, "'", '"');
+        }
+
+        return $cmd;
     }
 }
