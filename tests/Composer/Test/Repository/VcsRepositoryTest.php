@@ -123,7 +123,7 @@ class VcsRepositoryTest extends \PHPUnit_Framework_TestCase
             'dev-master' => true,
         );
 
-        $repo = new VcsRepository(array('url' => self::$gitRepo), new NullIO);
+        $repo = new VcsRepository(array('url' => self::$gitRepo, 'type' => 'vcs'), new NullIO);
         $packages = $repo->getPackages();
         $dumper = new ArrayDumper();
 

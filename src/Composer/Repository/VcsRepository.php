@@ -20,20 +20,22 @@ class VcsRepository extends ArrayRepository
     protected $debug;
     protected $io;
     protected $versionParser;
+    protected $type;
 
     public function __construct(array $config, IOInterface $io, array $drivers = null)
     {
         $this->drivers = $drivers ?: array(
-            'Composer\Repository\Vcs\GitHubDriver',
-            'Composer\Repository\Vcs\GitBitbucketDriver',
-            'Composer\Repository\Vcs\GitDriver',
-            'Composer\Repository\Vcs\SvnDriver',
-            'Composer\Repository\Vcs\HgBitbucketDriver',
-            'Composer\Repository\Vcs\HgDriver',
+            'github'        => 'Composer\Repository\Vcs\GitHubDriver',
+            'git-bitbucket' => 'Composer\Repository\Vcs\GitBitbucketDriver',
+            'git'           => 'Composer\Repository\Vcs\GitDriver',
+            'svn'           => 'Composer\Repository\Vcs\SvnDriver',
+            'hg-bitbucket'  => 'Composer\Repository\Vcs\HgBitbucketDriver',
+            'hg'            => 'Composer\Repository\Vcs\HgDriver',
         );
 
         $this->url = $config['url'];
         $this->io = $io;
+        $this->type = $config['type'];
     }
 
     public function setDebug($debug)
@@ -43,6 +45,13 @@ class VcsRepository extends ArrayRepository
 
     public function getDriver()
     {
+        if (isset($this->drivers[$this->type])) {
+            $class = $this->drivers[$this->type];
+            $driver = new $class($this->url, $this->io);
+            $driver->initialize();
+            return $driver;
+        }
+
         foreach ($this->drivers as $driver) {
             if ($driver::supports($this->url)) {
                 $driver = new $driver($this->url, $this->io);
