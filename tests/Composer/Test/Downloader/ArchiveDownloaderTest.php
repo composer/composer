@@ -32,4 +32,21 @@ class ArchiveDownloaderTest extends \PHPUnit_Framework_TestCase
         $this->assertRegExp('#/path/[a-z0-9]+\.js#', $first);
         $this->assertSame($first, $method->invoke($downloader, $packageMock, '/path'));
     }
+
+    public function testProcessUrl()
+    {
+        $downloader = $this->getMockForAbstractClass('Composer\Downloader\ArchiveDownloader', array($this->getMock('Composer\IO\IOInterface')));
+        $method = new \ReflectionMethod($downloader, 'processUrl');
+        $method->setAccessible(true);
+
+        $expected = 'https://github.com/composer/composer/zipball/master';
+        $url = $method->invoke($downloader, $expected);
+
+        if(extension_loaded('openssl'))
+        {
+            $this->assertEquals($expected, $url);
+        } else {
+            $this->assertEquals('http://nodeload.github.com/composer/composer/zipball/master', $url);
+        }
+    }
 }
