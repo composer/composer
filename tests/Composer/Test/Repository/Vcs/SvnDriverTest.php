@@ -62,6 +62,31 @@ class SvnDriverTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expect, $svn->getSvnCredentialString());
     }
 
+    /**
+     * Test the execute method.
+     */
+    public function testExecute()
+    {
+        $this->markTestSkipped("Currently no way to mock the output value which is passed by reference.");
+
+        $console = $this->getMock('Composer\IO\IOInterface');
+        $console->expects($this->once())
+            ->method('isInteractive')
+            ->will($this->returnValue(true));
+
+        $output  = "svn: OPTIONS of 'http://corp.svn.local/repo':";
+        $output .= " authorization failed: Could not authenticate to server:";
+        $output .= " rejected Basic challenge (http://corp.svn.local/)";
+
+        $process = $this->getMock('Composer\Util\ProcessExecutor');
+        $process->expects($this->once())
+            ->method('execute')
+            ->will($this->returnValue(1));
+
+        $svn = new SvnDriver('http://till:secret@corp.svn.local/repo', $console, $process);
+        $svn->execute('svn ls', 'http://corp.svn.local/repo');
+    }
+
     public function testInteractiveString()
     {
         $url = 'http://svn.example.org';
