@@ -73,7 +73,7 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
             $output
         );
         // this could be any failure, but let's see if it's auth related
-        if ($status == 1) {
+        if ($status == 1 && $this->io->isInteractive()) {
             if ($this->useAuth === false && strpos($output, 'authorization failed:') !== false) {
                 $this->io->write("The Subversion server ({$this->baseUrl}) request credentials:");
                 $this->svnUsername = $this->io->ask("Username");
