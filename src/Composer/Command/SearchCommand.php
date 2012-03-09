@@ -56,26 +56,26 @@ EOT
         }
 
         $tokens = array_map('strtolower', $input->getArgument('tokens'));
+        $packages = array();
+
         foreach ($repos->getPackages() as $package) {
             foreach ($tokens as $token) {
                 if (false === ($pos = strpos($package->getName(), $token))) {
                     continue;
                 }
 
-                if ($platformRepo->hasPackage($package)) {
-                    $type = '<info>platform: </info> ';
-                } elseif ($installedRepo->hasPackage($package)) {
-                    $type = '<info>installed:</info> ';
-                } else {
-                    $type = '<comment>available:</comment> ';
-                }
-
                 $name = substr($package->getPrettyName(), 0, $pos)
                     . '<highlight>' . substr($package->getPrettyName(), $pos, strlen($token)) . '</highlight>'
                     . substr($package->getPrettyName(), $pos + strlen($token));
-                $output->writeln($type . ': ' . $name . ' <comment>' . $package->getPrettyVersion() . '</comment>');
+                $version = $installedRepo->hasPackage($package) ? '<info>'.$package->getPrettyVersion().'</info>' : $package->getPrettyVersion();
+
+                $packages[$name][$package->getPrettyVersion()] = $version;
                 continue 2;
             }
+        }
+
+        foreach ($packages as $name => $versions) {
+            $output->writeln($name .' <comment>:</comment> '. join(', ', $versions));
         }
     }
 }
