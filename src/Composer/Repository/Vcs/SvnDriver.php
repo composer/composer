@@ -219,6 +219,16 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
     }
 
     /**
+     * Return the no-auth-cache switch.
+     *
+     * @return string
+     */
+    public function getSvnAuthCache()
+    {
+        return '--no-auth-cache ';
+    }
+
+    /**
      * A method to create the svn commands run.
      *
      * @string $cmd  Usually 'svn ls' or something like that.
@@ -254,9 +264,10 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
         if ($this->useAuth !== true) {
             return '';
         }
-        $str = ' --no-auth-cache --username %s --password %s ';
+        $str = ' %s--username %s --password %s ';
         return sprintf(
             $str,
+            $this->getSvnAuthCache(),
             escapeshellarg($this->svnUsername),
             escapeshellarg($this->svnPassword)
         );
