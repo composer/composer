@@ -60,13 +60,18 @@ EOT
 
         foreach ($repos->getPackages() as $package) {
             foreach ($tokens as $token) {
-                if (false === ($pos = strpos($package->getName(), $token))) {
+                if (false === ($pos = strpos($package->getName(), $token)) && (false === strpos(join(',',$package->getKeywords() ?: array()), $token))) {
                     continue;
                 }
 
-                $name = substr($package->getPrettyName(), 0, $pos)
-                    . '<highlight>' . substr($package->getPrettyName(), $pos, strlen($token)) . '</highlight>'
-                    . substr($package->getPrettyName(), $pos + strlen($token));
+                if (false !== ($pos = strpos($package->getName(), $token))) {
+                    $name = substr($package->getPrettyName(), 0, $pos)
+                        . '<highlight>' . substr($package->getPrettyName(), $pos, strlen($token)) . '</highlight>'
+                        . substr($package->getPrettyName(), $pos + strlen($token));
+                } else {
+                    $name = $package->getPrettyName();
+                }
+
                 $version = $installedRepo->hasPackage($package) ? '<info>'.$package->getPrettyVersion().'</info>' : $package->getPrettyVersion();
 
                 $packages[$name][$package->getPrettyVersion()] = $version;
