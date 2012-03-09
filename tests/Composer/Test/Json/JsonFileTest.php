@@ -140,9 +140,10 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
 
     public function testUnicode()
     {
-        if (!function_exists('mb_convert_encoding')) {
+        if (!function_exists('mb_convert_encoding') && version_compare(PHP_VERSION, '5.4', '<')) {
             $this->markTestSkipped('Test requires the mbstring extension');
         }
+
         $data = array("Žluťoučký \" kůň" => "úpěl ďábelské ódy za €");
         $json = '{
     "Žluťoučký \" kůň": "úpěl ďábelské ódy za €"
@@ -151,14 +152,23 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
         $this->assertJsonFormat($json, $data);
     }
 
-    public function testEscapedSlashes()
+    public function testOnlyUnicode()
     {
-        if (!function_exists('mb_convert_encoding')) {
+        if (!function_exists('mb_convert_encoding') && version_compare(PHP_VERSION, '5.4', '<')) {
             $this->markTestSkipped('Test requires the mbstring extension');
         }
-        $data = "\\/fooƌ";
 
-        $this->assertJsonFormat('"\\\\\\/fooƌ"', $data, JSON_UNESCAPED_UNICODE);
+        $data = "\\/ƌ";
+
+        $this->assertJsonFormat('"\\\\\\/ƌ"', $data, JsonFile::JSON_UNESCAPED_UNICODE);
+    }
+
+    public function testEscapedSlashes()
+    {
+
+        $data = "\\/foo";
+
+        $this->assertJsonFormat('"\\\\\\/foo"', $data, 0);
     }
 
     public function testEscapedUnicode()
