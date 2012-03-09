@@ -29,6 +29,14 @@ class SvnDriverTest extends \PHPUnit_Framework_TestCase
      */
     public static function urlProvider()
     {
+        $nullIO = new \Composer\IO\NullIO;
+
+        $input  = new \Symfony\Component\Console\Input\ArrayInput(array('install'));
+        $output = new \Symfony\Component\Console\Output\NullOutput;
+        $helper = new \Symfony\Component\Console\Helper\HelperSet;
+
+        $consoleInteractiveIO = new \Composer\IO\ConsoleIO($input, $output, $helper);
+
         return array(
             array(
                 'http://till:test@svn.example.org/',
