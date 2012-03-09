@@ -31,32 +31,18 @@ class SvnDriverTest extends \PHPUnit_Framework_TestCase
     {
         $nullIO = new \Composer\IO\NullIO;
 
-        $input  = new \Symfony\Component\Console\Input\ArrayInput(array('install'));
-        $output = new \Symfony\Component\Console\Output\NullOutput;
-        $helper = new \Symfony\Component\Console\Helper\HelperSet;
-
-        $consoleInteractiveIO = new \Composer\IO\ConsoleIO($input, $output, $helper);
-
         return array(
             array(
                 'http://till:test@svn.example.org/',
                 " --no-auth-cache --username 'till' --password 'test' ",
-                $nullIO,
             ),
             array(
                 'http://svn.apache.org/',
                 '',
-                $nullIO,
             ),
             array(
                 'svn://johndoe@example.org',
                 " --no-auth-cache --username 'johndoe' --password '' ",
-                $nullIO,
-            ),
-            array(
-                'https://till:secret@corp.svn.local/project1',
-                " --username 'till' --password 'secret' ",
-                $consoleInteractiveIO,
             ),
         );
     }
@@ -64,15 +50,14 @@ class SvnDriverTest extends \PHPUnit_Framework_TestCase
     /**
      * Test the credential string.
      *
-     * @param string $url     The SVN url.
-     * @param string $expect  The expectation for the test.
-     * @param string $ioClass The IO interface.
-     * 
+     * @param string $url    The SVN url.
+     * @param string $expect The expectation for the test.
+     *
      * @dataProvider urlProvider
      */
-    public function testCredentials($url, $expect, \Composer\IO\IOInterface $io)
+    public function testCredentials($url, $expect)
     {
-        $svn = new SvnDriver($url, $io);
+        $svn = new SvnDriver($url, new \Composer\IO\NullIO);
 
         $this->assertEquals($expect, $svn->getSvnCredentialString());
     }
