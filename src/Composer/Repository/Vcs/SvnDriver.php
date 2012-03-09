@@ -22,6 +22,13 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
     protected $useAuth = false;
 
     /**
+     * @var boolean $useCache To determine if we should cache the credentials
+     *                        supplied by the user. By default: no cache.
+     * @see self::getSvnAuthCache()
+     */
+    protected $useCache = false;
+
+    /**
      * @var string $svnUsername
      */
     protected $svnUsername = '';
@@ -75,13 +82,22 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
 
         // this could be any failure, but let's see if it's auth related
         if ($status == 1 && $this->io->isInteractive()) {
-            if ($this->useAuth === false && strpos($output, 'authorization failed:') !== false) {
-
-                $this->io->write("The Subversion server ({$this->baseUrl}) request credentials:");
+            if (strpos($output, 'authorization failed:') === false) {
+                return $output;
+            }
+            if (!$this->useAuth) {
+                $this->io->write("The Subversion server ({$this->baseUrl}) requested credentials:");
 
                 $this->svnUsername = $this->io->ask("Username");
                 $this->svnPassword = $this->io->ask("Password");
                 $this->useAuth     = true;
+
+                $cacheTrueAnswers = array('yes', 'y', 'true', 'ja', 'si', 'da');
+
+                $cacheAnswer = strtolower($this->io->ask("Should we Subversion cache these credentials?", 'no'));
+                if (in_array($cacheAnswer, $cacheTrueAnswers)) {
+                    $this->useCache = true;
+                }
 
                 // restart the process
                 $output = $this->execute($command, $url);
@@ -228,7 +244,10 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
      */
     public function getSvnAuthCache()
     {
-        return '--no-auth-cache ';
+        if (!$this->useCache) {
+            return '--no-auth-cache ';
+        }
+        return '';
     }
 
     /**
