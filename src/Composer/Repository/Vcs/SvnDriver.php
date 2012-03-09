@@ -101,6 +101,8 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
 
                 // restart the process
                 $output = $this->execute($command, $url);
+            } else {
+                $this->io->write("Authorization failed: {$svnCommand}");
             }
         }
         return $output;
