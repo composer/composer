@@ -299,8 +299,9 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
 
     /**
      * Always run commands 'non-interactive':
-     * It's easier to spot issues because then the svn process would fail fast
-     * and not wait for user input.
+     *
+     * It's easier to spot potential issues (e.g. auth-failure) because
+     * non-interactive svn fails fast and does not wait for user input.
      *
      * @return string
      */
