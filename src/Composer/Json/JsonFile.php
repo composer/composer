@@ -18,16 +18,6 @@ use JsonSchema\Validator;
 use Seld\JsonLint\JsonParser;
 use Composer\Util\StreamContextFactory;
 
-if (!defined('JSON_UNESCAPED_SLASHES')) {
-    define('JSON_UNESCAPED_SLASHES', 64);
-}
-if (!defined('JSON_PRETTY_PRINT')) {
-    define('JSON_PRETTY_PRINT', 128);
-}
-if (!defined('JSON_UNESCAPED_UNICODE')) {
-    define('JSON_UNESCAPED_UNICODE', 256);
-}
-
 /**
  * Reads/writes json files.
  *
@@ -38,6 +28,10 @@ class JsonFile
 {
     const LAX_SCHEMA = 1;
     const STRICT_SCHEMA = 2;
+
+    const JSON_UNESCAPED_SLASHES = 64;
+    const JSON_PRETTY_PRINT = 128;
+    const JSON_UNESCAPED_UNICODE = 256;
 
     private $path;
 
@@ -108,7 +102,7 @@ class JsonFile
                 );
             }
         }
-        file_put_contents($this->path, static::encode($hash, $options). ($options & JSON_PRETTY_PRINT ? "\n" : ''));
+        file_put_contents($this->path, static::encode($hash, $options). ($options & self::JSON_PRETTY_PRINT ? "\n" : ''));
     }
 
     /**
@@ -170,9 +164,9 @@ class JsonFile
 
         $json = json_encode($data);
 
-        $prettyPrint = (Boolean) ($options & JSON_PRETTY_PRINT);
-        $unescapeUnicode = (Boolean) ($options & JSON_UNESCAPED_UNICODE);
-        $unescapeSlashes = (Boolean) ($options & JSON_UNESCAPED_SLASHES);
+        $prettyPrint = (Boolean) ($options & self::JSON_PRETTY_PRINT);
+        $unescapeUnicode = (Boolean) ($options & self::JSON_UNESCAPED_UNICODE);
+        $unescapeSlashes = (Boolean) ($options & self::JSON_UNESCAPED_SLASHES);
 
         if (!$prettyPrint && !$unescapeUnicode && !$unescapeSlashes) {
             return $json;
