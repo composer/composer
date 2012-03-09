@@ -90,7 +90,7 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
     {
         $identifier = '/' . trim($identifier, '/') . '/';
         if (!isset($this->infoCache[$identifier])) {
-            preg_match('{^(.+?)(@\d+)?$}', $identifier, $match);
+            preg_match('{^(.+?)(@\d+)?/$}', $identifier, $match);
             if (!empty($match[2])) {
                 $identifier = $match[1];
                 $rev = $match[2];
