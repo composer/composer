@@ -41,22 +41,22 @@ class SvnDriverTest extends \PHPUnit_Framework_TestCase
             array(
                 'http://till:test@svn.example.org/',
                 " --no-auth-cache --username 'till' --password 'test' ",
-                '\Composer\IO\NullIO',
+                $nullIO,
             ),
             array(
                 'http://svn.apache.org/',
                 '',
-                '\Composer\IO\NullIO',
+                $nullIO,
             ),
             array(
                 'svn://johndoe@example.org',
                 " --no-auth-cache --username 'johndoe' --password '' ",
-                '\Composer\IO\NullIO',
+                $nullIO,
             ),
             array(
                 'https://till:secret@corp.svn.local/project1',
                 " --username 'till' --password 'secret' ",
-                '\Composer\IO\ConsoleIO',
+                $consoleInteractiveIO,
             ),
         );
     }
@@ -70,9 +70,8 @@ class SvnDriverTest extends \PHPUnit_Framework_TestCase
      * 
      * @dataProvider urlProvider
      */
-    public function testCredentials($url, $expect, $ioClass)
+    public function testCredentials($url, $expect, \Composer\IO\IOInterface $io)
     {
-        $io  = new \Composer\IO\NullIO;
         $svn = new SvnDriver($url, $io);
 
         $this->assertEquals($expect, $svn->getSvnCredentialString());
