@@ -108,6 +108,11 @@ class RemoteFilesystem
             $result = @file_get_contents($fileUrl, false, $ctx);
         }
 
+        // fix for 5.4.0 https://bugs.php.net/bug.php?id=61336
+        if (!empty($http_response_header[0]) && preg_match('{^HTTP/\S+ 404}i', $http_response_header[0])) {
+            $result = false;
+        }
+
         // avoid overriding if content was loaded by a sub-call to get()
         if (null === $this->result) {
             $this->result = $result;
