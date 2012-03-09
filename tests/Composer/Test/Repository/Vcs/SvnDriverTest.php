@@ -23,21 +23,46 @@ class SvnDriverTest extends \PHPUnit_Framework_TestCase
     /**
      * Provide some examples for {@self::testCredentials()}.
      *
+     * {@link \Composer\IO\NullIO} is always non-interactive.
+     *
      * @return array
      */
     public static function urlProvider()
     {
         return array(
-            array('http://till:test@svn.example.org/', " --no-auth-cache --username 'till' --password 'test' "),
-            array('http://svn.apache.org/', ''),
-            array('svn://johndoe@example.org', " --no-auth-cache --username 'johndoe' --password '' "),
+            array(
+                'http://till:test@svn.example.org/',
+                " --no-auth-cache --username 'till' --password 'test' ",
+                '\Composer\IO\NullIO',
+            ),
+            array(
+                'http://svn.apache.org/',
+                '',
+                '\Composer\IO\NullIO',
+            ),
+            array(
+                'svn://johndoe@example.org',
+                " --no-auth-cache --username 'johndoe' --password '' ",
+                '\Composer\IO\NullIO',
+            ),
+            array(
+                'https://till:secret@corp.svn.local/project1',
+                " --username 'till' --password 'secret' ",
+                '\Composer\IO\ConsoleIO',
+            ),
         );
     }
 
     /**
+     * Test the credential string.
+     *
+     * @param string $url     The SVN url.
+     * @param string $expect  The expectation for the test.
+     * @param string $ioClass The IO interface.
+     * 
      * @dataProvider urlProvider
      */
-    public function testCredentials($url, $expect)
+    public function testCredentials($url, $expect, $ioClass)
     {
         $io  = new \Composer\IO\NullIO;
         $svn = new SvnDriver($url, $io);
