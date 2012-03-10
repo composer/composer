@@ -94,9 +94,9 @@ EOT
      */
     private function isUnmatchedPackage(PackageInterface $package, $token)
     {
-        return (false === strpos($package->getName(), $token)) &&
-            (false === strpos(join(',',$package->getKeywords() ?: array()), $token)) &&
-            (false === strpos($package->getDescription(), $token))
+        return (false === strpos($package->getName(), $token))
+            && (false === strpos(join(',',$package->getKeywords() ?: array()), $token))
+            && (false === strpos($package->getDescription(), $token))
         ;
     }
 }
