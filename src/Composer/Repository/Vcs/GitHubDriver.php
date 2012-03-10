@@ -33,15 +33,15 @@ class GitHubDriver extends VcsDriver
      * @param string $url
      * @param IOInterface $io
      * @param ProcessExecutor $process
-     * @param callable $remoteFilesystemGenerator
+     * @param callable $remoteFilesystemFactory
      */
-    public function __construct($url, IOInterface $io, ProcessExecutor $process = null, $remoteFilesystemGenerator = null)
+    public function __construct($url, IOInterface $io, ProcessExecutor $process = null, $remoteFilesystemFactory = null)
     {
         preg_match('#^(?:https?|git)://github\.com/([^/]+)/(.+?)(?:\.git)?$#', $url, $match);
         $this->owner = $match[1];
         $this->repository = $match[2];
 
-        parent::__construct($url, $io, $process, $remoteFilesystemGenerator);
+        parent::__construct($url, $io, $process, $remoteFilesystemFactory);
     }
 
     /**
@@ -216,7 +216,7 @@ class GitHubDriver extends VcsDriver
                                 $this->generateSshUrl(),
                                 $this->io,
                                 $this->process,
-                                $this->remoteFilesystemGenerator
+                                $this->remoteFilesystemFactory
                             );
                             $this->gitDriver->initialize();
                             return;
