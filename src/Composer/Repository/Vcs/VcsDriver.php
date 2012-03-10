@@ -27,6 +27,7 @@ abstract class VcsDriver implements VcsDriverInterface
     protected $url;
     protected $io;
     protected $process;
+    protected $remoteFilesystemGenerator;
 
     /**
      * Constructor.
@@ -34,12 +35,16 @@ abstract class VcsDriver implements VcsDriverInterface
      * @param string      $url The URL
      * @param IOInterface $io  The IO instance
      * @param ProcessExecutor $process  Process instance, injectable for mocking
+     * @param callback $remoteFilesystemGenerator Generates Remote Filesystem, injectable for mocking
      */
-    public function __construct($url, IOInterface $io, ProcessExecutor $process = null)
+    public function __construct($url, IOInterface $io, ProcessExecutor $process = null, $remoteFilesystemGenerator = null)
     {
         $this->url = $url;
         $this->io = $io;
         $this->process = $process ?: new ProcessExecutor;
+        $this->remoteFilesystemGenerator = $remoteFilesystemGenerator ?: function() use ($io) {
+            return new RemoteFilesystem($io);
+        };
     }
 
     /**
@@ -80,7 +85,7 @@ abstract class VcsDriver implements VcsDriverInterface
      */
     protected function getContents($url)
     {
-        $rfs = new RemoteFilesystem($this->io);
+        $rfs = call_user_func($this->remoteFilesystemGenerator);
         return $rfs->getContents($this->url, $url, false);
     }
 

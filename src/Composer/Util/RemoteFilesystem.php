@@ -80,13 +80,11 @@ class RemoteFilesystem
      * @param string  $fileUrl   The file URL
      * @param string  $fileName  the local filename
      * @param boolean $progress  Display the progression
-     * @param boolean $firstCall Whether this is the first attempt at fetching this resource
      *
      * @throws TransportException When the file could not be downloaded
      */
-    protected function get($originUrl, $fileUrl, $fileName = null, $progress = true, $firstCall = true)
+    protected function get($originUrl, $fileUrl, $fileName = null, $progress = true)
     {
-        $this->firstCall = $firstCall;
         $this->bytesMax = 0;
         $this->result = null;
         $this->originUrl = $originUrl;
@@ -140,20 +138,12 @@ class RemoteFilesystem
     protected function callbackGet($notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax)
     {
         switch ($notificationCode) {
-            case STREAM_NOTIFY_AUTH_REQUIRED:
             case STREAM_NOTIFY_FAILURE:
-                if (404 === $messageCode && !$this->firstCall) {
-                    throw new TransportException("The '" . $this->fileUrl . "' URL not found", 404);
-                }
+                throw new TransportException(trim($message), $messageCode);
+                break;
 
-                // for private repository returning 404 error when the authorization is incorrect
-                $auth = $this->io->getAuthorization($this->originUrl);
-                $attemptAuthentication = $this->firstCall && 404 === $messageCode && null === $auth['username'];
-
-                $this->firstCall = false;
-
-                // get authorization informations
-                if (401 === $messageCode || $attemptAuthentication) {
+            case STREAM_NOTIFY_AUTH_REQUIRED:
+                if (401 === $messageCode) {
                     if (!$this->io->isInteractive()) {
                         $message = "The '" . $this->fileUrl . "' URL required authentication.\nYou must be using the interactive console";
 
@@ -165,7 +155,7 @@ class RemoteFilesystem
                     $password = $this->io->askAndHideAnswer('      Password: ');
                     $this->io->setAuthorization($this->originUrl, $username, $password);
 
-                    $this->get($this->originUrl, $this->fileUrl, $this->fileName, $this->progress, false);
+                    $this->get($this->originUrl, $this->fileUrl, $this->fileName, $this->progress);
                 }
                 break;
 

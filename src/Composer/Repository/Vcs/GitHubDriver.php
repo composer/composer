@@ -2,8 +2,10 @@
 
 namespace Composer\Repository\Vcs;
 
+use Composer\Downloader\TransportException;
 use Composer\Json\JsonFile;
 use Composer\IO\IOInterface;
+use Composer\Util\ProcessExecutor;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -16,14 +18,30 @@ class GitHubDriver extends VcsDriver
     protected $branches;
     protected $rootIdentifier;
     protected $infoCache = array();
+    protected $isPrivate = false;
 
-    public function __construct($url, IOInterface $io)
+    /**
+     * Git Driver
+     * 
+     * @var GitDriver
+     */
+    protected $gitDriver;
+
+    /**
+     * Constructor
+     * 
+     * @param string $url
+     * @param IOInterface $io
+     * @param ProcessExecutor $process
+     * @param callback $remoteFilesystemGenerator
+     */
+    public function __construct($url, IOInterface $io, ProcessExecutor $process = null, $remoteFilesystemGenerator = null)
     {
         preg_match('#^(?:https?|git)://github\.com/([^/]+)/(.+?)(?:\.git)?$#', $url, $match);
         $this->owner = $match[1];
         $this->repository = $match[2];
 
-        parent::__construct($url, $io);
+        parent::__construct($url, $io, $process, $remoteFilesystemGenerator);
     }
 
     /**
@@ -31,6 +49,7 @@ class GitHubDriver extends VcsDriver
      */
     public function initialize()
     {
+        $this->fetchRootIdentifier();
     }
 
     /**
@@ -38,11 +57,9 @@ class GitHubDriver extends VcsDriver
      */
     public function getRootIdentifier()
     {
-        if (null === $this->rootIdentifier) {
-            $repoData = JsonFile::parseJson($this->getContents($this->getScheme() . '://api.github.com/repos/'.$this->owner.'/'.$this->repository));
-            $this->rootIdentifier = $repoData['master_branch'] ?: 'master';
+        if ($this->gitDriver) {
+            return $this->gitDriver->getRootIdentifier();
         }
-
         return $this->rootIdentifier;
     }
 
@@ -51,6 +68,9 @@ class GitHubDriver extends VcsDriver
      */
     public function getUrl()
     {
+        if ($this->gitDriver) {
+            return $this->gitDriver->getUrl();
+        }
         return $this->url;
     }
 
@@ -59,9 +79,19 @@ class GitHubDriver extends VcsDriver
      */
     public function getSource($identifier)
     {
+        if ($this->gitDriver) {
+            return $this->gitDriver->getSource($identifier);
+        }
         $label = array_search($identifier, $this->getTags()) ?: $identifier;
+        if ($this->isPrivate) {
+            // Private GitHub repositories should be accessed using the
+            // SSH version of the URL.
+            $url = $this->generateSshUrl();
+        } else {
+            $url = $this->getUrl();
+        }
 
-        return array('type' => 'git', 'url' => $this->getUrl(), 'reference' => $label);
+        return array('type' => 'git', 'url' => $url, 'reference' => $label);
     }
 
     /**
@@ -69,6 +99,9 @@ class GitHubDriver extends VcsDriver
      */
     public function getDist($identifier)
     {
+        if ($this->gitDriver) {
+            return $this->gitDriver->getDist($identifier);
+        }
         $label = array_search($identifier, $this->getTags()) ?: $identifier;
         $url = $this->getScheme() . '://github.com/'.$this->owner.'/'.$this->repository.'/zipball/'.$label;
 
@@ -80,6 +113,9 @@ class GitHubDriver extends VcsDriver
      */
     public function getComposerInformation($identifier)
     {
+        if ($this->gitDriver) {
+            return $this->gitDriver->getComposerInformation($identifier);
+        }
         if (!isset($this->infoCache[$identifier])) {
             $composer = $this->getContents($this->getScheme() . '://raw.github.com/'.$this->owner.'/'.$this->repository.'/'.$identifier.'/composer.json');
             if (!$composer) {
@@ -103,6 +139,9 @@ class GitHubDriver extends VcsDriver
      */
     public function getTags()
     {
+        if ($this->gitDriver) {
+            return $this->gitDriver->getTags();
+        }
         if (null === $this->tags) {
             $tagsData = JsonFile::parseJson($this->getContents($this->getScheme() . '://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/tags'));
             $this->tags = array();
@@ -119,6 +158,9 @@ class GitHubDriver extends VcsDriver
      */
     public function getBranches()
     {
+        if ($this->gitDriver) {
+            return $this->gitDriver->getBranches();
+        }
         if (null === $this->branches) {
             $branchData = JsonFile::parseJson($this->getContents($this->getScheme() . '://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/branches'));
             $this->branches = array();
@@ -136,5 +178,60 @@ class GitHubDriver extends VcsDriver
     public static function supports($url, $deep = false)
     {
         return extension_loaded('openssl') && preg_match('#^(?:https?|git)://github\.com/([^/]+)/(.+?)(?:\.git)?$#', $url);
+    }
+
+    /**
+     * Generate an SSH URL
+     * 
+     * @return string
+     */
+    protected function generateSshUrl()
+    {
+        return 'git@github.com:'.$this->owner.'/'.$this->repository.'.git';
+    }
+
+    /**
+     * Fetch root identifier from GitHub
+     * 
+     * @throws TransportException
+     */
+    protected function fetchRootIdentifier()
+    {
+        $repoDataUrl = $this->getScheme() . '://api.github.com/repos/'.$this->owner.'/'.$this->repository;
+        $attemptCounter = 0;
+        while (null === $this->rootIdentifier) {
+            if (5 == $attemptCounter++) {
+                throw new \RuntimeException("Either you have entered invalid credentials or this GitHub repository does not exists (404)");
+            }
+            try {
+                $repoData = JsonFile::parseJson($this->getContents($repoDataUrl));
+                $this->rootIdentifier = $repoData['master_branch'] ?: 'master';
+            } catch (TransportException $e) {
+                switch($e->getCode()) {
+                    case 401:
+                    case 404:
+                        $this->isPrivate = true;
+                        if (!$this->io->isInteractive()) {
+                            $this->gitDriver = new GitDriver(
+                                $this->generateSshUrl(),
+                                $this->io,
+                                $this->process,
+                                $this->remoteFilesystemGenerator
+                            );
+                            $this->gitDriver->initialize();
+                            return;
+                        }
+                        $this->io->write('Authentication required (<info>'.$this->url.'</info>):');
+                        $username = $this->io->ask('Username: ');
+                        $password = $this->io->askAndHideAnswer('Password: ');
+                        $this->io->setAuthorization($this->url, $username, $password);
+                        break;
+
+                    default:
+                        throw $e;
+                        break;
+                }
+            }
+        }
     }
 }
