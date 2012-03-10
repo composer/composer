@@ -21,7 +21,7 @@ class ComposerTest extends TestCase
         $package = $this->getMock('Composer\Package\PackageInterface');
         $composer->setPackage($package);
 
-        $this->assertEquals($package,$composer->getPackage());
+        $this->assertSame($package, $composer->getPackage());
     }
 
     public function testSetGetLocker()
@@ -30,7 +30,7 @@ class ComposerTest extends TestCase
         $locker = $this->getMockBuilder('Composer\Package\Locker')->disableOriginalConstructor()->getMock();
         $composer->setLocker($locker);
 
-        $this->assertEquals($locker,$composer->getLocker());
+        $this->assertSame($locker, $composer->getLocker());
     }
 
     public function testSetGetRepositoryManager()
@@ -39,7 +39,7 @@ class ComposerTest extends TestCase
         $manager = $this->getMockBuilder('Composer\Repository\RepositoryManager')->disableOriginalConstructor()->getMock();
         $composer->setRepositoryManager($manager);
 
-        $this->assertEquals($manager,$composer->getRepositoryManager());
+        $this->assertSame($manager, $composer->getRepositoryManager());
     }
 
     public function testSetGetDownloadManager()
@@ -48,7 +48,7 @@ class ComposerTest extends TestCase
         $manager = $this->getMock('Composer\Downloader\DownloadManager');
         $composer->setDownloadManager($manager);
 
-        $this->assertEquals($manager,$composer->getDownloadManager());
+        $this->assertSame($manager, $composer->getDownloadManager());
     }
 
     public function testSetGetInstallationManager()
@@ -57,6 +57,6 @@ class ComposerTest extends TestCase
         $manager = $this->getMock('Composer\Installer\InstallationManager');
         $composer->setInstallationManager($manager);
 
-        $this->assertEquals($manager,$composer->getInstallationManager());
+        $this->assertSame($manager, $composer->getInstallationManager());
     }
 }
