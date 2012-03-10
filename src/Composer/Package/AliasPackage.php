@@ -266,6 +266,10 @@ class AliasPackage extends BasePackage
     {
         return $this->aliasOf->getAuthors();
     }
+    public function getSupport()
+    {
+        return $this->aliasOf->getSupport();
+    }
     public function __toString()
     {
         return parent::__toString().' (alias of '.$this->aliasOf->getVersion().')';
