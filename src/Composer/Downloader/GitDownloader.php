@@ -29,24 +29,11 @@ class GitDownloader extends VcsDownloader
         $command = 'git clone %s %s && cd %2$s && git checkout %3$s && git reset --hard %3$s';
         $this->io->write("    Cloning ".$package->getSourceReference());
 
-        // github, autoswitch protocols
-        if (preg_match('{^(?:https?|git)(://github.com/.*)}', $package->getSourceUrl(), $match)) {
-            $protocols = array('git', 'https', 'http');
-            foreach ($protocols as $protocol) {
-                $url = escapeshellarg($protocol . $match[1]);
-                if (0 === $this->process->execute(sprintf($command, $url, escapeshellarg($path), $ref), $ignoredOutput)) {
-                    return;
-                }
-                $this->filesystem->removeDirectory($path);
-            }
-            throw new \RuntimeException('Failed to checkout ' . $url .' via git, https and http protocols, aborting.' . "\n\n" . $this->process->getErrorOutput());
-        } else {
-            $url = escapeshellarg($package->getSourceUrl());
-            $command = sprintf($command, $url, escapeshellarg($path), $ref);
-            if (0 !== $this->process->execute($command, $ignoredOutput)) {
-                throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
-            }
-        }
+        $commandCallable = function($url) use ($ref, $path, $command) {
+            return sprintf($command, $url, escapeshellarg($path), $ref);
+        };
+
+        $this->runCommand($commandCallable, $package->getSourceUrl(), $path);
     }
 
     /**
@@ -57,10 +44,13 @@ class GitDownloader extends VcsDownloader
         $ref = escapeshellarg($target->getSourceReference());
         $path = escapeshellarg($path);
         $this->io->write("    Checking out ".$target->getSourceReference());
-        $command = sprintf('cd %s && git fetch && git checkout %2$s && git reset --hard %2$s', $path, $ref);
-        if (0 !== $this->process->execute($command, $ignoredOutput)) {
-            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
-        }
+        $command = 'cd %s && git remote set-url origin %s && git fetch && git checkout %3$s && git reset --hard %3$s';
+
+        $commandCallable = function($url) use ($ref, $path, $command) {
+            return sprintf($command, $path, $url, $ref);
+        };
+
+        $this->runCommand($commandCallable, $target->getSourceUrl());
     }
 
     /**
@@ -75,6 +65,38 @@ class GitDownloader extends VcsDownloader
 
         if (trim($output)) {
             throw new \RuntimeException('Source directory ' . $path . ' has uncommitted changes');
+        }
+    }
+
+    /**
+     * Runs a command doing attempts for each protocol supported by github.
+     *
+     * @param callable $commandCallable A callable building the command for the given url
+     * @param string $url
+     * @param string $path The directory to remove for each attempt (null if not needed)
+     * @throws \RuntimeException
+     */
+    protected function runCommand($commandCallable, $url, $path = null)
+    {
+        // github, autoswitch protocols
+        if (preg_match('{^(?:https?|git)(://github.com/.*)}', $url, $match)) {
+            $protocols = array('git', 'https', 'http');
+            foreach ($protocols as $protocol) {
+                $url = escapeshellarg($protocol . $match[1]);
+                if (0 === $this->process->execute(call_user_func($commandCallable, $url), $ignoredOutput)) {
+                    return;
+                }
+                if (null !== $path) {
+                    $this->filesystem->removeDirectory($path);
+                }
+            }
+            throw new \RuntimeException('Failed to checkout ' . $url .' via git, https and http protocols, aborting.' . "\n\n" . $this->process->getErrorOutput());
+        }
+
+        $url = escapeshellarg($url);
+        $command = call_user_func($commandCallable, $url);
+        if (0 !== $this->process->execute($command, $ignoredOutput)) {
+            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
         }
     }
 }
