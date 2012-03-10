@@ -160,11 +160,12 @@ class AutoloadGeneratorTest extends TestCase
         file_put_contents($this->vendorDir.'/b/b/lib/c.php', '<?php class ClassMapBaz {}');
 
         $this->generator->dump($this->repository, $package, $this->im, $this->vendorDir.'/.composer');
-        $this->assertTrue(file_exists($this->vendorDir.'/.composer/autoload_classmap.php'), "ClassMap file needs to be generated, even if empty.");
-        $this->assertEquals(array(
-                'ClassMapFoo' => $this->vendorDir.'/a/a/src/a.php',
-                'ClassMapBar' => $this->vendorDir.'/b/b/src/b.php',
-                'ClassMapBaz' => $this->vendorDir.'/b/b/lib/c.php',
+        $this->assertTrue(file_exists($this->vendorDir.'/.composer/autoload_classmap.php'), "ClassMap file needs to be generated.");
+        $this->assertEquals(
+            array(
+                'ClassMapFoo' => $this->workingDir.'/composer-test-autoload/a/a/src/a.php',
+                'ClassMapBar' => $this->workingDir.'/composer-test-autoload/b/b/src/b.php',
+                'ClassMapBaz' => $this->workingDir.'/composer-test-autoload/b/b/lib/c.php',
             ),
             include ($this->vendorDir.'/.composer/autoload_classmap.php')
         );
