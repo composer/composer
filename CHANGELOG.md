@@ -1,6 +1,7 @@
 * 1.0.0-alpha2
 
   * Added `create-project` command to install a project from scratch with composer
+  * Added automated `classmap` autoloading support for non-PSR-0 compliant projects
   * Git clones from GitHub automatically select between git/https/http protocols
   * Enhanced `validate` command to give more feedback
   * Added "file" downloader type to download plain files
