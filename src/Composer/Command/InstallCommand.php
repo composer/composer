@@ -32,7 +32,7 @@ class InstallCommand extends Command
             ->setDefinition(array(
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('dry-run', null, InputOption::VALUE_NONE, 'Outputs the operations but will not execute anything (implicitly enables --verbose).'),
-                new InputOption('no-install-recommends', null, InputOption::VALUE_NONE, 'Do not install recommended packages (ignored when installing from an existing lock file).'),
+                new InputOption('install-recommends', null, InputOption::VALUE_NONE, 'Also install recommended packages (ignored when installing from an existing lock file).'),
                 new InputOption('install-suggests', null, InputOption::VALUE_NONE, 'Also install suggested packages (ignored when installing from an existing lock file).'),
             ))
             ->setHelp(<<<EOT
@@ -53,12 +53,14 @@ EOT
         $io = $this->getApplication()->getIO();
         $install = Installer::create($io, $composer);
 
-        return $install->run(
-            (Boolean) $input->getOption('prefer-source'),
-            (Boolean) $input->getOption('dry-run'),
-            (Boolean) $input->getOption('verbose'),
-            (Boolean) $input->getOption('no-install-recommends'),
-            (Boolean) $input->getOption('install-suggests')
-        );
+        $install
+            ->setDryRun($input->getOption('dry-run'))
+            ->setVerbose($input->getOption('verbose'))
+            ->setPreferSource($input->getOption('prefer-source'))
+            ->setInstallRecommends($input->getOption('install-recommends'))
+            ->setInstallSuggests($input->getOption('install-suggests'))
+        ;
+
+        return $install->run();
     }
 }
