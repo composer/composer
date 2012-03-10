@@ -41,6 +41,8 @@ class FilesystemTest extends TestCase
             array('/foo/bar', '/foo/baz', true, "dirname(__DIR__).'/baz'"),
             array('/foo/bin/run', '/foo/vendor/acme/bin/run', true, "dirname(dirname(__DIR__)).'/vendor/acme/bin/run'"),
             array('/foo/bin/run', '/bar/bin/run', true, "'/bar/bin/run'"),
+            array('/bin/run', '/bin/run', true, "__DIR__"),
+            array('c:/bin/run', 'c:\\bin/run', true, "__DIR__"),
             array('c:/bin/run', 'c:/vendor/acme/bin/run', true, "dirname(dirname(__DIR__)).'/vendor/acme/bin/run'"),
             array('c:\\bin\\run', 'c:/vendor/acme/bin/run', true, "dirname(dirname(__DIR__)).'/vendor/acme/bin/run'"),
             array('c:/bin/run', 'd:/vendor/acme/bin/run', true, "'d:/vendor/acme/bin/run'"),
