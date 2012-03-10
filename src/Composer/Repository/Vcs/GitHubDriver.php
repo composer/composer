@@ -33,7 +33,7 @@ class GitHubDriver extends VcsDriver
      * @param string $url
      * @param IOInterface $io
      * @param ProcessExecutor $process
-     * @param callback $remoteFilesystemGenerator
+     * @param callable $remoteFilesystemGenerator
      */
     public function __construct($url, IOInterface $io, ProcessExecutor $process = null, $remoteFilesystemGenerator = null)
     {
