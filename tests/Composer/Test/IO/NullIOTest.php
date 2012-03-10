@@ -56,23 +56,23 @@ class NullIOTest extends TestCase
     {
         $io = new NullIO();
 
-        $this->assertInternalType('array',$io->getAuthorizations());
+        $this->assertInternalType('array', $io->getAuthorizations());
         $this->assertEmpty($io->getAuthorizations());
-        $this->assertEquals(array('username' => null, 'password' => null),$io->getAuthorization('foo'));
+        $this->assertEquals(array('username' => null, 'password' => null), $io->getAuthorization('foo'));
     }
 
     public function testAsk()
     {
         $io = new NullIO();
 
-        $this->assertEquals('foo',$io->ask('bar','foo'));
+        $this->assertEquals('foo', $io->ask('bar', 'foo'));
     }
 
     public function testAskConfirmation()
     {
         $io = new NullIO();
 
-        $this->assertEquals('foo',$io->askConfirmation('bar','foo'));
+        $this->assertEquals('foo', $io->askConfirmation('bar', 'foo'));
     }
 
     public function testAskAndValidate()
