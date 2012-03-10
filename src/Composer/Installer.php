@@ -75,6 +75,18 @@ class Installer
      */
     protected $eventDispatcher;
 
+    protected $preferSource;
+    protected $dryRun;
+    protected $verbose;
+    protected $installRecommends;
+    protected $installSuggests;
+    protected $update;
+
+    /**
+     * @var RepositoryInterface
+     */
+    protected $additionalInstalledRepository;
+
     /**
      * Constructor
      *
@@ -99,37 +111,27 @@ class Installer
 
     /**
      * Run installation (or update)
-     *
-     * @param Boolean $preferSource
-     * @param Boolean $dryRun
-     * @param Boolean $verbose
-     * @param Boolean $noInstallRecommends
-     * @param Boolean $installSuggests
-     * @param Boolean $update
-     * @param RepositoryInterface $additionalInstalledRepository
      */
-    public function run($preferSource = false, $dryRun = false, $verbose = false, $noInstallRecommends = false, $installSuggests = false, $update = false, RepositoryInterface $additionalInstalledRepository = null)
+    public function run()
     {
-        if ($dryRun) {
-            $verbose = true;
+        if ($this->dryRun) {
+            $this->verbose = true;
         }
 
-        if ($preferSource) {
+        if ($this->preferSource) {
             $this->downloadManager->setPreferSource(true);
         }
-
-        $this->repositoryManager = $this->repositoryManager;
 
         // create local repo, this contains all packages that are installed in the local project
         $localRepo = $this->repositoryManager->getLocalRepository();
         // create installed repo, this contains all local packages + platform packages (php & extensions)
         $installedRepo = new CompositeRepository(array($localRepo, new PlatformRepository()));
-        if ($additionalInstalledRepository) {
-            $installedRepo->addRepository($additionalInstalledRepository);
+        if ($this->additionalInstalledRepository) {
+            $installedRepo->addRepository($this->additionalInstalledRepository);
         }
 
         // prepare aliased packages
-        if (!$update && $this->locker->isLocked()) {
+        if (!$this->update && $this->locker->isLocked()) {
             $aliases = $this->locker->getAliases();
         } else {
             $aliases = $this->package->getAliases();
@@ -152,20 +154,20 @@ class Installer
         }
 
         // dispatch pre event
-        if (!$dryRun) {
-            $eventName = $update ? ScriptEvents::PRE_UPDATE_CMD : ScriptEvents::PRE_INSTALL_CMD;
+        if (!$this->dryRun) {
+            $eventName = $this->update ? ScriptEvents::PRE_UPDATE_CMD : ScriptEvents::PRE_INSTALL_CMD;
             $this->eventDispatcher->dispatchCommandEvent($eventName);
         }
 
         // creating requirements request
         $installFromLock = false;
         $request = new Request($pool);
-        if ($update) {
+        if ($this->update) {
             $this->io->write('<info>Updating dependencies</info>');
 
             $request->updateAll();
 
-            $links = $this->collectLinks($noInstallRecommends, $installSuggests);
+            $links = $this->collectLinks();
 
             foreach ($links as $link) {
                 $request->install($link->getTarget(), $link->getConstraint());
@@ -192,7 +194,7 @@ class Installer
         } else {
             $this->io->write('<info>Installing dependencies</info>');
 
-            $links = $this->collectLinks($noInstallRecommends, $installSuggests);
+            $links = $this->collectLinks();
 
             foreach ($links as $link) {
                 $request->install($link->getTarget(), $link->getConstraint());
@@ -207,7 +209,7 @@ class Installer
         $operations = $solver->solve($request);
 
         // force dev packages to be updated to latest reference on update
-        if ($update) {
+        if ($this->update) {
             foreach ($localRepo->getPackages() as $package) {
                 if ($package instanceof AliasPackage) {
                     $package = $package->getAliasOf();
@@ -249,10 +251,10 @@ class Installer
         }
 
         foreach ($operations as $operation) {
-            if ($verbose) {
+            if ($this->verbose) {
                 $this->io->write((string) $operation);
             }
-            if (!$dryRun) {
+            if (!$this->dryRun) {
                 $this->eventDispatcher->dispatchPackageEvent(constant('Composer\Script\ScriptEvents::PRE_PACKAGE_'.strtoupper($operation->getJobType())), $operation);
 
                 // if installing from lock, restore dev packages' references to their locked state
@@ -279,8 +281,8 @@ class Installer
             }
         }
 
-        if (!$dryRun) {
-            if ($update || !$this->locker->isLocked()) {
+        if (!$this->dryRun) {
+            if ($this->update || !$this->locker->isLocked()) {
                 $this->locker->setLockData($localRepo->getPackages(), $aliases);
                 $this->io->write('<info>Writing lock file</info>');
             }
@@ -292,20 +294,20 @@ class Installer
             $generator->dump($localRepo, $this->package, $this->installationManager, $this->installationManager->getVendorPath().'/.composer');
 
             // dispatch post event
-            $eventName = $update ? ScriptEvents::POST_UPDATE_CMD : ScriptEvents::POST_INSTALL_CMD;
+            $eventName = $this->update ? ScriptEvents::POST_UPDATE_CMD : ScriptEvents::POST_INSTALL_CMD;
             $this->eventDispatcher->dispatchCommandEvent($eventName);
         }
     }
 
-    private function collectLinks($noInstallRecommends, $installSuggests)
+    private function collectLinks()
     {
         $links = $this->package->getRequires();
 
-        if (!$noInstallRecommends) {
+        if ($this->installRecommends) {
             $links = array_merge($links, $this->package->getRecommends());
         }
 
-        if ($installSuggests) {
+        if ($this->installSuggests) {
             $links = array_merge($links, $this->package->getSuggests());
         }
 
@@ -333,5 +335,90 @@ class Installer
             $composer->getInstallationManager(),
             $eventDispatcher
         );
+    }
+
+    public function setAdditionalInstalledRepository(RepositoryInterface $additionalInstalledRepository)
+    {
+        $this->additionalInstalledRepository = $additionalInstalledRepository;
+
+        return $this;
+    }
+
+    /**
+     * wether to run in drymode or not
+     *
+     * @param boolean $dryRun
+     * @return Installer
+     */
+    public function setDryRun($dryRun=true)
+    {
+        $this->dryRun = (boolean)$dryRun;
+
+        return $this;
+    }
+
+    /**
+     * also install recommend packages
+     *
+     * @param boolean $installRecommends
+     * @return Installer
+     */
+    public function setInstallRecommends($installRecommends=true)
+    {
+        $this->installRecommends = (boolean)$installRecommends;
+
+        return $this;
+    }
+
+    /**
+     * also install suggested packages
+     *
+     * @param boolean $installSuggests
+     * @return Installer
+     */
+    public function setInstallSuggests($installSuggests=true)
+    {
+        $this->installSuggests = (boolean)$installSuggests;
+
+        return $this;
+    }
+
+    /**
+     * prefer source installation
+     *
+     * @param boolean $preferSource
+     * @return Installer
+     */
+    public function setPreferSource($preferSource=true)
+    {
+        $this->preferSource = (boolean)$preferSource;
+
+        return $this;
+    }
+
+    /**
+     * update packages
+     *
+     * @param boolean $update
+     * @return Installer
+     */
+    public function setUpdate($update=true)
+    {
+        $this->update = (boolean)$update;
+
+        return $this;
+    }
+
+    /**
+     * run in verbose mode
+     *
+     * @param boolean $verbose
+     * @return Installer
+     */
+    public function setVerbose($verbose=true)
+    {
+        $this->verbose = (boolean)$verbose;
+
+        return $this;
     }
 }
