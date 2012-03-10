@@ -18,7 +18,6 @@ use Composer\Installer\ProjectInstaller;
 use Composer\IO\IOInterface;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\FilesystemRepository;
-use Composer\Script\EventDispatcher;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -119,8 +118,7 @@ EOT
         chdir($directory);
 
         $composer = Factory::create($io);
-        $eventDispatcher = new EventDispatcher($composer, $io);
-        $installer = Installer::create($io, $composer, $eventDispatcher);
+        $installer = Installer::create($io, $composer);
 
         $installer->run($preferSource);
     }
