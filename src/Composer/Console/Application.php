@@ -144,8 +144,6 @@ class Application extends BaseApplication
      */
     public function handleError($level, $message, $file, $line, $context = null )
     {
-        throw new \ErrorException('['.$file.'] '.$message.' line '.$line);
-
-        return false;
+        throw new \ErrorException($message, 0, $level, $file, $line);
     }
 }
