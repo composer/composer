@@ -41,6 +41,7 @@ class Application extends BaseApplication
     public function __construct()
     {
         parent::__construct('Composer', Composer::VERSION);
+        set_error_handler(array($this, 'handleError'), E_NOTICE | E_WARNING | E_STRICT);
     }
 
     /**
@@ -128,5 +129,23 @@ class Application extends BaseApplication
         $helperSet->set(new DialogHelper());
 
         return $helperSet;
+    }
+
+    /**
+     * custom error handler
+     *
+     * @param int $level
+     * @param string $message
+     * @param string $file
+     * @param int $line
+     * @param array $context
+     * @return boolean
+     * @throws \RuntimeException
+     */
+    public function handleError($level, $message, $file, $line, $context = null )
+    {
+        throw new \RuntimeException('['.$file.'] '.$message.' line '.$line);
+
+        return false;
     }
 }
