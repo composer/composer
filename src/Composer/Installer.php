@@ -352,7 +352,7 @@ class Installer
      */
     public function setDryRun($dryRun=true)
     {
-        $this->dryRun = (boolean)$dryRun;
+        $this->dryRun = (boolean) $dryRun;
 
         return $this;
     }
@@ -365,7 +365,7 @@ class Installer
      */
     public function setInstallRecommends($installRecommends=true)
     {
-        $this->installRecommends = (boolean)$installRecommends;
+        $this->installRecommends = (boolean) $installRecommends;
 
         return $this;
     }
@@ -378,7 +378,7 @@ class Installer
      */
     public function setInstallSuggests($installSuggests=true)
     {
-        $this->installSuggests = (boolean)$installSuggests;
+        $this->installSuggests = (boolean) $installSuggests;
 
         return $this;
     }
@@ -391,7 +391,7 @@ class Installer
      */
     public function setPreferSource($preferSource=true)
     {
-        $this->preferSource = (boolean)$preferSource;
+        $this->preferSource = (boolean) $preferSource;
 
         return $this;
     }
@@ -404,7 +404,7 @@ class Installer
      */
     public function setUpdate($update=true)
     {
-        $this->update = (boolean)$update;
+        $this->update = (boolean) $update;
 
         return $this;
     }
@@ -417,7 +417,7 @@ class Installer
      */
     public function setVerbose($verbose=true)
     {
-        $this->verbose = (boolean)$verbose;
+        $this->verbose = (boolean) $verbose;
 
         return $this;
     }
