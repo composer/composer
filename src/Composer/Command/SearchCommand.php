@@ -18,6 +18,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\ComposerRepository;
+use Composer\Package\PackageInterface;
 
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>
@@ -60,8 +61,8 @@ EOT
 
         foreach ($repos->getPackages() as $package) {
             foreach ($tokens as $token) {
-                if (false === ($pos = strpos($package->getName(), $token)) && (false === strpos(join(',',$package->getKeywords() ?: array()), $token))) {
-                    continue;
+                if ($this->isUnmatchedPackage($package, $token)) {
+                   continue;
                 }
 
                 if (false !== ($pos = strpos($package->getName(), $token))) {
@@ -82,5 +83,20 @@ EOT
         foreach ($packages as $name => $versions) {
             $output->writeln($name .' <comment>:</comment> '. join(', ', $versions));
         }
+    }
+
+    /**
+     * tries to find a token within the name/keywords/description
+     *
+     * @param PackageInterface $package
+     * @param string $token
+     * @return boolean
+     */
+    private function isUnmatchedPackage(PackageInterface $package, $token)
+    {
+        return (false === strpos($package->getName(), $token)) &&
+            (false === strpos(join(',',$package->getKeywords() ?: array()), $token)) &&
+            (false === strpos($package->getDescription(), $token))
+        ;
     }
 }
