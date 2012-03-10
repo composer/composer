@@ -56,6 +56,7 @@ class MemoryPackage extends BasePackage
     protected $recommends = array();
     protected $suggests = array();
     protected $autoload = array();
+    protected $support = array();
 
     /**
      * Creates a new in memory package.
@@ -622,5 +623,25 @@ class MemoryPackage extends BasePackage
     public function getAutoload()
     {
         return $this->autoload;
+    }
+
+    /**
+     * Set the support information
+     *
+     * @param array $support
+     */
+    public function setSupport(array $support)
+    {
+        $this->support = $support;
+    }
+
+    /**
+     * Returns the support information
+     *
+     * @return array
+     */
+    public function getSupport()
+    {
+        return $this->support;
     }
 }

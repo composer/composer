@@ -191,6 +191,37 @@
                     "description": "Occurs after a package has been uninstalled, contains one or more Class::method callables."
                 }
             }
+        },
+        "support": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "description": "Email address of the community.",
+                    "format": "email"
+                },
+                "issues": {
+                    "type": "string",
+                    "description": "URL to the Issue Tracker.",
+                    "format": "uri"
+                },
+                "forum": {
+                    "type": "string",
+                    "description": "URL to the Forum.",
+                    "format": "uri"
+                },
+                "wiki": {
+                    "type": "string",
+                    "description": "URL to the Wiki.",
+                    "format": "uri"
+                },
+                "irc": {
+                    "type": "string",
+                    "description": "Irc support channel"
+                }
+            }
         }
+
     }
 }
