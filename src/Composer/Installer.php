@@ -33,53 +33,51 @@ use Composer\Repository\RepositoryManager;
 use Composer\Script\EventDispatcher;
 use Composer\Script\ScriptEvents;
 
+/**
+ * @author Jordi Boggiano <j.boggiano@seld.be>
+ * @author Beau Simensen <beau@dflydev.com>
+ * @author Konstantin Kudryashov <ever.zet@gmail.com>
+ */
 class Installer
 {
     /**
-     * 
      * @var IOInterface
      */
     protected $io;
 
     /**
-     *
      * @var PackageInterface
      */
     protected $package;
 
     /**
-     * 
      * @var DownloadManager
      */
     protected $downloadManager;
 
     /**
-     * 
      * @var RepositoryManager
      */
     protected $repositoryManager;
 
     /**
-     * 
      * @var Locker
      */
     protected $locker;
 
     /**
-     * 
      * @var InstallationManager
      */
     protected $installationManager;
 
     /**
-     * 
      * @var EventDispatcher
      */
     protected $eventDispatcher;
 
     /**
      * Constructor
-     * 
+     *
      * @param IOInterface $io
      * @param PackageInterface $package
      * @param DownloadManager $downloadManager
@@ -102,12 +100,12 @@ class Installer
     /**
      * Run installation (or update)
      *
-     * @param bool $preferSource
-     * @param bool $dryRun
-     * @param bool $verbose
-     * @param bool $noInstallRecommends
-     * @param bool $installSuggests
-     * @param bool $update
+     * @param Boolean $preferSource
+     * @param Boolean $dryRun
+     * @param Boolean $verbose
+     * @param Boolean $noInstallRecommends
+     * @param Boolean $installSuggests
+     * @param Boolean $update
      * @param RepositoryInterface $additionalInstalledRepository
      */
     public function run($preferSource = false, $dryRun = false, $verbose = false, $noInstallRecommends = false, $installSuggests = false, $update = false, RepositoryInterface $additionalInstalledRepository = null)
@@ -202,8 +200,8 @@ class Installer
         }
 
         // prepare solver
-        $policy              = new DefaultPolicy();
-        $solver              = new Solver($policy, $pool, $installedRepo);
+        $policy = new DefaultPolicy();
+        $solver = new Solver($policy, $pool, $installedRepo);
 
         // solve dependencies
         $operations = $solver->solve($request);
@@ -316,14 +314,16 @@ class Installer
 
     /**
      * Create Installer
-     * 
+     *
      * @param IOInterface $io
      * @param Composer $composer
      * @param EventDispatcher $eventDispatcher
      * @return Installer
      */
-    static public function create(IOInterface $io, Composer $composer, EventDispatcher $eventDispatcher)
+    static public function create(IOInterface $io, Composer $composer, EventDispatcher $eventDispatcher = null)
     {
+        $eventDispatcher = $eventDispatcher ?: new EventDispatcher($composer, $io);
+
         return new static(
             $io,
             $composer->getPackage(),

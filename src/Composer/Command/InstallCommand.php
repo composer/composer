@@ -13,7 +13,6 @@
 namespace Composer\Command;
 
 use Composer\Installer;
-use Composer\Script\EventDispatcher;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -52,15 +51,14 @@ EOT
     {
         $composer = $this->getComposer();
         $io = $this->getApplication()->getIO();
-        $eventDispatcher = new EventDispatcher($composer, $io);
-        $install = Installer::create($io, $composer, $eventDispatcher);
+        $install = Installer::create($io, $composer);
 
         return $install->run(
-            (Boolean)$input->getOption('prefer-source'),
-            (Boolean)$input->getOption('dry-run'),
-            (Boolean)$input->getOption('verbose'),
-            (Boolean)$input->getOption('no-install-recommends'),
-            (Boolean)$input->getOption('install-suggests')
+            (Boolean) $input->getOption('prefer-source'),
+            (Boolean) $input->getOption('dry-run'),
+            (Boolean) $input->getOption('verbose'),
+            (Boolean) $input->getOption('no-install-recommends'),
+            (Boolean) $input->getOption('install-suggests')
         );
     }
 }
