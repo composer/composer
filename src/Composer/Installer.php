@@ -75,12 +75,12 @@ class Installer
      */
     protected $eventDispatcher;
 
-    protected $preferSource;
-    protected $dryRun;
-    protected $verbose;
-    protected $installRecommends;
-    protected $installSuggests;
-    protected $update;
+    protected $preferSource = false;
+    protected $dryRun = false;
+    protected $verbose = false;
+    protected $installRecommends = true;
+    protected $installSuggests = false;
+    protected $update = false;
 
     /**
      * @var RepositoryInterface
@@ -358,9 +358,9 @@ class Installer
     }
 
     /**
-     * also install recommend packages
+     * install recommend packages
      *
-     * @param boolean $installRecommends
+     * @param boolean $noInstallRecommends
      * @return Installer
      */
     public function setInstallRecommends($installRecommends=true)
