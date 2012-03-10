@@ -44,6 +44,11 @@ return call_user_func(function() {
         $loader->add($namespace, $path);
     }
 
+    $classMap = require __DIR__.'/autoload_classmap.php';
+    if ($classMap) {
+        $loader->addClassMap($classMap);
+    }
+
     $loader->register();
 
     return $loader;
@@ -107,8 +112,16 @@ EOF;
                 }
             }
         }
-
         $namespacesFile .= ");\n";
+
+        if (isset($autoloads['classmap'])) {
+            // flatten array
+            $autoloads['classmap'] = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($autoloads['classmap']));
+        } else {
+            $autoloads['classmap'] = array();
+        }
+
+        ClassMapGenerator::dump($autoloads['classmap'], $targetDir.'/autoload_classmap.php');
 
         file_put_contents($targetDir.'/autoload.php', $autoloadFile);
         file_put_contents($targetDir.'/autoload_namespaces.php', $namespacesFile);
