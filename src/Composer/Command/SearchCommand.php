@@ -61,11 +61,11 @@ EOT
 
         foreach ($repos->getPackages() as $package) {
             foreach ($tokens as $token) {
-                if ($this->isUnmatchedPackage($package, $token)) {
-                   continue;
+                if (!$this->matchPackage($package, $token)) {
+                    continue;
                 }
 
-                if (false !== ($pos = strpos($package->getName(), $token))) {
+                if (false !== ($pos = stripos($package->getName(), $token))) {
                     $name = substr($package->getPrettyName(), 0, $pos)
                         . '<highlight>' . substr($package->getPrettyName(), $pos, strlen($token)) . '</highlight>'
                         . substr($package->getPrettyName(), $pos + strlen($token));
@@ -92,11 +92,11 @@ EOT
      * @param string $token
      * @return boolean
      */
-    private function isUnmatchedPackage(PackageInterface $package, $token)
+    private function matchPackage(PackageInterface $package, $token)
     {
-        return (false === strpos($package->getName(), $token))
-            && (false === strpos(join(',',$package->getKeywords() ?: array()), $token))
-            && (false === strpos($package->getDescription(), $token))
+        return (false !== stripos($package->getName(), $token))
+            || (false !== stripos(join(',', $package->getKeywords() ?: array()), $token))
+            || (false !== stripos($package->getDescription(), $token))
         ;
     }
 }

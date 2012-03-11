@@ -132,21 +132,26 @@ EOT
      */
     protected function printMeta(InputInterface $input, OutputInterface $output, PackageInterface $package, RepositoryInterface $installedRepo, RepositoryInterface $repos)
     {
-        $output->writeln('<info>name</info>     : <comment>' . $package->getPrettyName(). '</comment> '.$package->getDescription());
+        $output->writeln('<info>name</info>     : ' . $package->getPrettyName());
+        $output->writeln('<info>descrip.</info> : ' . $package->getDescription());
         $this->printVersions($input, $output, $package, $installedRepo, $repos);
         $output->writeln('<info>type</info>     : ' . $package->getType());
-        $output->writeln('<info>names</info>    : ' . join(', ', $package->getNames()));
+        $output->writeln('<info>license</info>  : ' . implode(', ', $package->getLicense()));
         $output->writeln('<info>source</info>   : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getSourceType(), $package->getSourceUrl(), $package->getSourceReference()));
         $output->writeln('<info>dist</info>     : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getDistType(), $package->getDistUrl(), $package->getDistReference()));
-        $output->writeln('<info>license</info>  : ' . join(', ', $package->getLicense()));
+        $output->writeln('<info>names</info>    : ' . implode(', ', $package->getNames()));
 
         if ($package->getAutoload()) {
             $output->writeln("\n<info>autoload</info>");
             foreach ($package->getAutoload() as $type => $autoloads) {
                 $output->writeln('<comment>' . $type . '</comment>');
 
-                foreach ($autoloads as $name => $path) {
-                    $output->writeln($name . ' : ' . ($path ?: '.'));
+                if ($type === 'psr-0') {
+                    foreach ($autoloads as $name => $path) {
+                        $output->writeln(($name ?: '*') . ' => ' . ($path ?: '.'));
+                    }
+                } elseif ($type === 'classmap') {
+                    $output->writeln(implode(', ', $autoloads));
                 }
             }
         }
@@ -170,7 +175,7 @@ EOT
 
         uasort($versions, 'version_compare');
 
-        $versions = join(', ', array_keys(array_reverse($versions)));
+        $versions = implode(', ', array_keys(array_reverse($versions)));
 
         // highlight installed version
         if ($installedRepo->hasPackage($package)) {
