@@ -15,6 +15,7 @@ namespace Composer;
 use Composer\Autoload\AutoloadGenerator;
 use Composer\DependencyResolver\DefaultPolicy;
 use Composer\DependencyResolver\Operation\UpdateOperation;
+use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Solver;
@@ -242,6 +243,13 @@ class Installer
             if ($package instanceof AliasPackage) {
                 $this->repositoryManager->getLocalRepository()->addPackage(clone $package->getAliasOf());
                 $this->repositoryManager->getLocalRepository()->removePackage($package);
+            }
+        }
+
+        //force reinstallation of deleted packages
+        foreach($installedRepo->getPackages() as $package) {
+            if ($installedRepo->hasPackage($package) && !$package->isPlatform() && !$this->installationManager->isPackageInstalled($package)) {
+                $operations[$package->getName()] = new InstallOperation($package, Solver::RULE_PACKAGE_NOT_EXIST);
             }
         }
 
