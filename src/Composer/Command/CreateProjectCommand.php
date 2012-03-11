@@ -120,7 +120,9 @@ EOT
         $composer = Factory::create($io);
         $installer = Installer::create($io, $composer);
 
-        $installer->run($preferSource);
+        $installer
+            ->setPreferSource($preferSource)
+            ->run();
     }
 
     protected function createDownloadManager(IOInterface $io)
