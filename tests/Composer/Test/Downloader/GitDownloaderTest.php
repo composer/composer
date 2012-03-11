@@ -41,7 +41,6 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
 
     public function testDownload()
     {
-        $expectedGitCommand = $this->getCmd("git clone 'https://example.com/composer/composer' 'composerPath' && cd 'composerPath' && git checkout 'ref' && git reset --hard 'ref'");
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $packageMock->expects($this->any())
             ->method('getSourceReference')
@@ -50,6 +49,8 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
             ->method('getSourceUrl')
             ->will($this->returnValue('https://example.com/composer/composer'));
         $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
+
+        $expectedGitCommand = $this->getCmd("git clone 'https://example.com/composer/composer' 'composerPath' && cd 'composerPath' && git checkout 'ref' && git reset --hard 'ref'");
         $processExecutor->expects($this->once())
             ->method('execute')
             ->with($this->equalTo($expectedGitCommand))
@@ -59,13 +60,13 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
         $downloader->download($packageMock, 'composerPath');
     }
 
-    public function testDownloadUsesVariousProtocolsForGithub()
+    public function testDownloadUsesVariousProtocolsAndSetsPushUrlForGithub()
     {
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $packageMock->expects($this->any())
             ->method('getSourceReference')
             ->will($this->returnValue('ref'));
-        $packageMock->expects($this->once())
+        $packageMock->expects($this->any())
             ->method('getSourceUrl')
             ->will($this->returnValue('https://github.com/composer/composer'));
         $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
@@ -84,6 +85,12 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
 
         $expectedGitCommand = $this->getCmd("git clone 'http://github.com/composer/composer' 'composerPath' && cd 'composerPath' && git checkout 'ref' && git reset --hard 'ref'");
         $processExecutor->expects($this->at(2))
+            ->method('execute')
+            ->with($this->equalTo($expectedGitCommand))
+            ->will($this->returnValue(0));
+
+        $expectedGitCommand = $this->getCmd("cd 'composerPath' && git remote set-url --push origin 'git@github.com:composer/composer.git'");
+        $processExecutor->expects($this->at(3))
             ->method('execute')
             ->with($this->equalTo($expectedGitCommand))
             ->will($this->returnValue(0));
