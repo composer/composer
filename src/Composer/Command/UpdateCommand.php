@@ -51,13 +51,15 @@ EOT
         $io = $this->getApplication()->getIO();
         $install = Installer::create($io, $composer);
 
-        return $install->run(
-            (Boolean)$input->getOption('prefer-source'),
-            (Boolean)$input->getOption('dry-run'),
-            (Boolean)$input->getOption('verbose'),
-            (Boolean)$input->getOption('no-install-recommends'),
-            (Boolean)$input->getOption('install-suggests'),
-            true
-        );
+        $install
+            ->setDryRun($input->getOption('dry-run'))
+            ->setVerbose($input->getOption('verbose'))
+            ->setPreferSource($input->getOption('prefer-source'))
+            ->setInstallRecommends(!$input->getOption('no-install-recommends'))
+            ->setInstallSuggests($input->getOption('install-suggests'))
+            ->setUpdate(true)
+        ;
+
+        return $install->run();
     }
 }
