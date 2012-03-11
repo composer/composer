@@ -13,7 +13,6 @@
 namespace Composer\Command;
 
 use Composer\Installer;
-use Composer\Script\EventDispatcher;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -50,8 +49,7 @@ EOT
     {
         $composer = $this->getComposer();
         $io = $this->getApplication()->getIO();
-        $eventDispatcher = new EventDispatcher($composer, $io);
-        $install = Installer::create($io, $composer, $eventDispatcher);
+        $install = Installer::create($io, $composer);
 
         return $install->run(
             (Boolean)$input->getOption('prefer-source'),
