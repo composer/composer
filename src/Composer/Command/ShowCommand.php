@@ -136,6 +136,7 @@ EOT
         $this->printVersions($input, $output, $package, $installedRepo, $repos);
         $output->writeln('<info>type</info>     : ' . $package->getType());
         $output->writeln('<info>names</info>    : ' . join(', ', $package->getNames()));
+        $output->writeln('<info>keywords</info> : ' . join(', ', $package->getKeywords()));
         $output->writeln('<info>source</info>   : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getSourceType(), $package->getSourceUrl(), $package->getSourceReference()));
         $output->writeln('<info>dist</info>     : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getDistType(), $package->getDistUrl(), $package->getDistReference()));
         $output->writeln('<info>license</info>  : ' . join(', ', $package->getLicense()));
