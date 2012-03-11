@@ -132,7 +132,7 @@ EOT
      */
     protected function printMeta(InputInterface $input, OutputInterface $output, PackageInterface $package, RepositoryInterface $installedRepo, RepositoryInterface $repos)
     {
-        $output->writeln('<info>name</info>     : ' . $package->getPrettyName());
+        $output->writeln('<info>name</info>     : <comment>' . $package->getPrettyName(). '</comment> '.$package->getDescription());
         $this->printVersions($input, $output, $package, $installedRepo, $repos);
         $output->writeln('<info>type</info>     : ' . $package->getType());
         $output->writeln('<info>names</info>    : ' . join(', ', $package->getNames()));
