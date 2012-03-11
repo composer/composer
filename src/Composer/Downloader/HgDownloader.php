@@ -37,10 +37,11 @@ class HgDownloader extends VcsDownloader
      */
     public function doUpdate(PackageInterface $initial, PackageInterface $target, $path)
     {
+        $url = escapeshellarg($target->getSourceUrl());
         $ref = escapeshellarg($target->getSourceReference());
         $path = escapeshellarg($path);
         $this->io->write("    Updating to ".$target->getSourceReference());
-        $this->process->execute(sprintf('cd %s && hg pull && hg up %s', $path, $ref), $ignoredOutput);
+        $this->process->execute(sprintf('cd %s && hg pull %s && hg up %s', $path, $url, $ref), $ignoredOutput);
     }
 
     /**
