@@ -19,6 +19,7 @@ use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\ComposerRepository;
 use Composer\Package\PackageInterface;
+use Composer\Package\AliasPackage;
 
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>
@@ -56,10 +57,14 @@ EOT
             $repos = new CompositeRepository(array($installedRepo, new ComposerRepository(array('url' => 'http://packagist.org'))));
         }
 
-        $tokens = array_map('strtolower', $input->getArgument('tokens'));
+        $tokens = $input->getArgument('tokens');
         $packages = array();
 
         foreach ($repos->getPackages() as $package) {
+            if ($package instanceof AliasPackage || isset($packages[$package->getName()])) {
+                continue;
+            }
+
             foreach ($tokens as $token) {
                 if (!$this->matchPackage($package, $token)) {
                     continue;
@@ -73,15 +78,16 @@ EOT
                     $name = $package->getPrettyName();
                 }
 
-                $version = $installedRepo->hasPackage($package) ? '<info>'.$package->getPrettyVersion().'</info>' : $package->getPrettyVersion();
-
-                $packages[$name][$package->getPrettyVersion()] = $version;
+                $packages[$package->getName()] = array(
+                    'name' => $name,
+                    'description' => strtok($package->getDescription(), "\r\n")
+                );
                 continue 2;
             }
         }
 
-        foreach ($packages as $name => $versions) {
-            $output->writeln($name .' <comment>:</comment> '. join(', ', $versions));
+        foreach ($packages as $details) {
+            $output->writeln($details['name'] .' <comment>:</comment> '. $details['description']);
         }
     }
 

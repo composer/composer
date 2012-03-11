@@ -83,15 +83,32 @@ EOT
         }
 
         // list packages
+        $packages = array();
         foreach ($repos->getPackages() as $package) {
             if ($platformRepo->hasPackage($package)) {
-                $type = '<info>platform: </info> ';
+                $type = '<info>platform</info>:';
             } elseif ($installedRepo->hasPackage($package)) {
-                $type = '<info>installed:</info> ';
+                $type = '<info>installed</info>:';
             } else {
-                $type = '<comment>available:</comment> ';
+                $type = '<comment>available</comment>:';
             }
-            $output->writeln($type . ' ' . $package->getPrettyName() . ' ' . $package->getPrettyVersion() . '<comment> (' . $package->getVersion() . ')</comment>');
+            if (isset($packages[$type][$package->getName()])
+                && version_compare($packages[$type][$package->getName()]->getVersion(), $package->getVersion(), '>=')
+            ) {
+                continue;
+            }
+            $packages[$type][$package->getName()] = $package;
+        }
+
+        foreach (array('<info>platform</info>:', '<comment>available</comment>:', '<info>installed</info>:') as $type) {
+            if (isset($packages[$type])) {
+                $output->writeln($type);
+                ksort($packages[$type]);
+                foreach ($packages[$type] as $package) {
+                    $output->writeln('  '.$package->getPrettyName() .' <comment>:</comment> '. strtok($package->getDescription(), "\r\n"));
+                }
+                $output->writeln('');
+            }
         }
     }
 
