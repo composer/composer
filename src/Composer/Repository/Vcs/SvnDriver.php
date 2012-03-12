@@ -96,10 +96,8 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
                 $this->svnPassword = $this->io->askAndHideAnswer("Password");
                 $this->useAuth     = true;
 
-                static $cacheTrueAnswers = array('yes', 'y', 'true', 'ja', 'si', 'da');
-
-                $cacheAnswer = strtolower(trim($this->io->ask("Should Subversion cache these credentials?", 'no')));
-                if (in_array($cacheAnswer, $cacheTrueAnswers)) {
+                $pleaseCache = $this->io->askConfirmation("Should Subversion cache these credentials?", false);
+                if ($pleaseCache === true) {
                     $this->useCache = true;
                 }
 
