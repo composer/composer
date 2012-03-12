@@ -95,4 +95,30 @@ class SvnDriverTest extends \PHPUnit_Framework_TestCase
 
         return $cmd;
     }
+
+    public static function supportProvider()
+    {
+        return array(
+            array('http://svn.apache.org', true),
+            array('http://svn.sf.net', true),
+            array('svn://example.org', true),
+            array('svn+ssh://example.org', true),
+            array('file:///d:/repository_name/project', true),
+            array('file:///repository_name/project', true),
+        );
+    }
+
+    /**
+     * Nail a bug in {@link SvnDriver::support()}.
+     *
+     * @dataProvider supportProvider
+     */
+    public function testSupport($url, $assertion)
+    {
+        if ($assertion === true) {
+            $this->assertTrue(SvnDriver::supports($url));
+        } else {
+            $this->assertFalse(SvnDriver::supports($url));
+        }
+    }
 }
