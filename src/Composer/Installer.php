@@ -278,6 +278,8 @@ class Installer
                 $this->installationManager->execute($operation);
 
                 $this->eventDispatcher->dispatchPackageEvent(constant('Composer\Script\ScriptEvents::POST_PACKAGE_'.strtoupper($operation->getJobType())), $operation);
+
+                $localRepo->write();
             }
         }
 
