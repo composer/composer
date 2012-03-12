@@ -93,7 +93,7 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
                 $this->io->write("The Subversion server ({$this->baseUrl}) requested credentials:");
 
                 $this->svnUsername = $this->io->ask("Username");
-                $this->svnPassword = $this->io->ask("Password");
+                $this->svnPassword = $this->io->askAndHideAnswer("Password");
                 $this->useAuth     = true;
 
                 static $cacheTrueAnswers = array('yes', 'y', 'true', 'ja', 'si', 'da');
