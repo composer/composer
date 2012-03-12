@@ -18,6 +18,7 @@ use Composer\Repository\WritableRepositoryInterface;
 use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\Package\PackageInterface;
 use Composer\Util\Filesystem;
+use Composer\Repository\InstalledFilesystemRepository;
 
 /**
  * Package installation manager.
@@ -48,13 +49,28 @@ class LibraryInstaller implements InstallerInterface
     public function __construct($vendorDir, $binDir, DownloadManager $dm, WritableRepositoryInterface $repository, IOInterface $io, $type = 'library')
     {
         $this->downloadManager = $dm;
-        $this->repository = $repository;
         $this->io = $io;
         $this->type = $type;
 
         $this->filesystem = new Filesystem();
         $this->vendorDir = rtrim($vendorDir, '/');
         $this->binDir = rtrim($binDir, '/');
+
+        $this->setRepository($repository);
+    }
+
+    protected function setRepository(WritableRepositoryInterface $repository)
+    {
+        if ($repository instanceof InstalledFilesystemRepository) {
+            //fix unreadable packages (deleted ones)
+            foreach ($repository->getPackages() as $package) {
+                if (!$package->isPlatform() && !is_readable($this->getInstallPath($package))) {
+                    $repository->removePackage($package);
+                }
+            }
+        }
+
+        $this->repository = $repository;
     }
 
     /**

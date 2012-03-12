@@ -246,13 +246,6 @@ class Installer
             }
         }
 
-        //force reinstallation of deleted packages
-        foreach($installedRepo->getPackages() as $package) {
-            if ($installedRepo->hasPackage($package) && !$package->isPlatform() && !$this->installationManager->isPackageInstalled($package)) {
-                $operations[$package->getName()] = new InstallOperation($package, Solver::RULE_PACKAGE_NOT_EXIST);
-            }
-        }
-
         // execute operations
         if (!$operations) {
             $this->io->write('<info>Nothing to install/update</info>');
