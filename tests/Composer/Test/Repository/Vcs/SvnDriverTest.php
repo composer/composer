@@ -44,7 +44,7 @@ class SvnDriverTest extends \PHPUnit_Framework_TestCase
      */
     public function testCredentials($url, $expect)
     {
-        $svn = new SvnDriver($url, new \Composer\IO\NullIO);
+        $svn = new SvnDriver($url, new NullIO);
 
         $this->assertEquals($expect, $svn->getSvnCredentialString());
     }
