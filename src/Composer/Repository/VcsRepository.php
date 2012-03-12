@@ -2,6 +2,7 @@
 
 namespace Composer\Repository;
 
+use Composer\Downloader\TransportException;
 use Composer\Repository\Vcs\VcsDriverInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\PackageInterface;
@@ -19,20 +20,22 @@ class VcsRepository extends ArrayRepository
     protected $debug;
     protected $io;
     protected $versionParser;
+    protected $type;
 
     public function __construct(array $config, IOInterface $io, array $drivers = null)
     {
         $this->drivers = $drivers ?: array(
-            'Composer\Repository\Vcs\GitHubDriver',
-            'Composer\Repository\Vcs\GitBitbucketDriver',
-            'Composer\Repository\Vcs\GitDriver',
-            'Composer\Repository\Vcs\SvnDriver',
-            'Composer\Repository\Vcs\HgBitbucketDriver',
-            'Composer\Repository\Vcs\HgDriver',
+            'github'        => 'Composer\Repository\Vcs\GitHubDriver',
+            'git-bitbucket' => 'Composer\Repository\Vcs\GitBitbucketDriver',
+            'git'           => 'Composer\Repository\Vcs\GitDriver',
+            'svn'           => 'Composer\Repository\Vcs\SvnDriver',
+            'hg-bitbucket'  => 'Composer\Repository\Vcs\HgBitbucketDriver',
+            'hg'            => 'Composer\Repository\Vcs\HgDriver',
         );
 
         $this->url = $config['url'];
         $this->io = $io;
+        $this->type = $config['type'];
     }
 
     public function setDebug($debug)
@@ -42,6 +45,13 @@ class VcsRepository extends ArrayRepository
 
     public function getDriver()
     {
+        if (isset($this->drivers[$this->type])) {
+            $class = $this->drivers[$this->type];
+            $driver = new $class($this->url, $this->io);
+            $driver->initialize();
+            return $driver;
+        }
+
         foreach ($this->drivers as $driver) {
             if ($driver::supports($this->url)) {
                 $driver = new $driver($this->url, $this->io);
@@ -73,9 +83,15 @@ class VcsRepository extends ArrayRepository
         $this->versionParser = new VersionParser;
         $loader = new ArrayLoader();
 
-        if ($driver->hasComposerFile($driver->getRootIdentifier())) {
-            $data = $driver->getComposerInformation($driver->getRootIdentifier());
-            $this->packageName = !empty($data['name']) ? $data['name'] : null;
+        try {
+            if ($driver->hasComposerFile($driver->getRootIdentifier())) {
+                $data = $driver->getComposerInformation($driver->getRootIdentifier());
+                $this->packageName = !empty($data['name']) ? $data['name'] : null;
+            }
+        } catch (\Exception $e) {
+            if ($debug) {
+                $this->io->write('Skipped parsing '.$driver->getRootIdentifier().', '.$e->getMessage());
+            }
         }
 
         foreach ($driver->getTags() as $tag => $identifier) {
@@ -86,46 +102,53 @@ class VcsRepository extends ArrayRepository
                 $this->io->overwrite($msg, false);
             }
 
-            $parsedTag = $this->validateTag($tag);
-            if ($parsedTag && $driver->hasComposerFile($identifier)) {
-                try {
-                    $data = $driver->getComposerInformation($identifier);
-                } catch (\Exception $e) {
-                    if ($debug) {
-                        $this->io->write('Skipped tag '.$tag.', '.$e->getMessage());
-                    }
-                    continue;
-                }
-
-                // manually versioned package
-                if (isset($data['version'])) {
-                    $data['version_normalized'] = $this->versionParser->normalize($data['version']);
-                } else {
-                    // auto-versionned package, read value from tag
-                    $data['version'] = $tag;
-                    $data['version_normalized'] = $parsedTag;
-                }
-
-                // make sure tag packages have no -dev flag
-                $data['version'] = preg_replace('{[.-]?dev$}i', '', $data['version']);
-                $data['version_normalized'] = preg_replace('{(^dev-|[.-]?dev$)}i', '', $data['version_normalized']);
-
-                // broken package, version doesn't match tag
-                if ($data['version_normalized'] !== $parsedTag) {
-                    if ($debug) {
-                        $this->io->write('Skipped tag '.$tag.', tag ('.$parsedTag.') does not match version ('.$data['version_normalized'].') in composer.json');
-                    }
-                    continue;
-                }
-
+            if (!$parsedTag = $this->validateTag($tag)) {
                 if ($debug) {
-                    $this->io->write('Importing tag '.$tag.' ('.$data['version_normalized'].')');
+                    $this->io->write('Skipped tag '.$tag.', invalid tag name');
                 }
-
-                $this->addPackage($loader->load($this->preProcess($driver, $data, $identifier)));
-            } elseif ($debug) {
-                $this->io->write('Skipped tag '.$tag.', '.($parsedTag ? 'no composer file was found' : 'invalid name'));
+                continue;
             }
+
+            try {
+                if (!$data = $driver->getComposerInformation($identifier)) {
+                    if ($debug) {
+                        $this->io->write('Skipped tag '.$tag.', no composer file');
+                    }
+                    continue;
+                }
+            } catch (\Exception $e) {
+                if ($debug) {
+                    $this->io->write('Skipped tag '.$tag.', '.$e->getMessage());
+                }
+                continue;
+            }
+
+            // manually versioned package
+            if (isset($data['version'])) {
+                $data['version_normalized'] = $this->versionParser->normalize($data['version']);
+            } else {
+                // auto-versionned package, read value from tag
+                $data['version'] = $tag;
+                $data['version_normalized'] = $parsedTag;
+            }
+
+            // make sure tag packages have no -dev flag
+            $data['version'] = preg_replace('{[.-]?dev$}i', '', $data['version']);
+            $data['version_normalized'] = preg_replace('{(^dev-|[.-]?dev$)}i', '', $data['version_normalized']);
+
+            // broken package, version doesn't match tag
+            if ($data['version_normalized'] !== $parsedTag) {
+                if ($debug) {
+                    $this->io->write('Skipped tag '.$tag.', tag ('.$parsedTag.') does not match version ('.$data['version_normalized'].') in composer.json');
+                }
+                continue;
+            }
+
+            if ($debug) {
+                $this->io->write('Importing tag '.$tag.' ('.$data['version_normalized'].')');
+            }
+
+            $this->addPackage($loader->load($this->preProcess($driver, $data, $identifier)));
         }
 
         $this->io->overwrite('', false);
@@ -138,36 +161,46 @@ class VcsRepository extends ArrayRepository
                 $this->io->overwrite($msg, false);
             }
 
-            $parsedBranch = $this->validateBranch($branch);
-            if ($driver->hasComposerFile($identifier)) {
-                $data = $driver->getComposerInformation($identifier);
+            if (!$parsedBranch = $this->validateBranch($branch)) {
+                if ($debug) {
+                    $this->io->write('Skipped branch '.$branch.', invalid name');
+                }
+                continue;
+            }
 
-                if (!$parsedBranch) {
+            try {
+                if (!$data = $driver->getComposerInformation($identifier)) {
                     if ($debug) {
-                        $this->io->write('Skipped branch '.$branch.', invalid name and no composer file was found');
+                        $this->io->write('Skipped branch '.$branch.', no composer file');
                     }
                     continue;
                 }
-
-                // branches are always auto-versionned, read value from branch name
-                $data['version'] = $branch;
-                $data['version_normalized'] = $parsedBranch;
-
-                // make sure branch packages have a dev flag
-                if ('dev-' === substr($parsedBranch, 0, 4) || '9999999-dev' === $parsedBranch) {
-                    $data['version'] = 'dev-' . $data['version'];
-                } else {
-                    $data['version'] = $data['version'] . '-dev';
-                }
-
+            } catch (TransportException $e) {
                 if ($debug) {
-                    $this->io->write('Importing branch '.$branch.' ('.$data['version_normalized'].')');
+                    $this->io->write('Skipped branch '.$branch.', no composer file was found');
                 }
-
-                $this->addPackage($loader->load($this->preProcess($driver, $data, $identifier)));
-            } elseif ($debug) {
-                $this->io->write('Skipped branch '.$branch.', no composer file was found');
+                continue;
+            } catch (\Exception $e) {
+                $this->io->write('Skipped branch '.$branch.', '.$e->getMessage());
+                continue;
             }
+
+            // branches are always auto-versionned, read value from branch name
+            $data['version'] = $branch;
+            $data['version_normalized'] = $parsedBranch;
+
+            // make sure branch packages have a dev flag
+            if ('dev-' === substr($parsedBranch, 0, 4) || '9999999-dev' === $parsedBranch) {
+                $data['version'] = 'dev-' . $data['version'];
+            } else {
+                $data['version'] = $data['version'] . '-dev';
+            }
+
+            if ($debug) {
+                $this->io->write('Importing branch '.$branch.' ('.$data['version_normalized'].')');
+            }
+
+            $this->addPackage($loader->load($this->preProcess($driver, $data, $identifier)));
         }
 
         $this->io->overwrite('', false);

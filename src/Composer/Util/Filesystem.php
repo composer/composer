@@ -66,11 +66,12 @@ class Filesystem
             throw new \InvalidArgumentException('from and to must be absolute paths');
         }
 
+        $from = lcfirst(rtrim(strtr($from, '\\', '/'), '/'));
+        $to = lcfirst(rtrim(strtr($to, '\\', '/'), '/'));
+
         if (dirname($from) === dirname($to)) {
             return './'.basename($to);
         }
-        $from = lcfirst(rtrim(strtr($from, '\\', '/'), '/'));
-        $to = lcfirst(rtrim(strtr($to, '\\', '/'), '/'));
 
         $commonPath = $to;
         while (strpos($from, $commonPath) !== 0 && '/' !== $commonPath && !preg_match('{^[a-z]:/?$}i', $commonPath) && '.' !== $commonPath) {
@@ -101,11 +102,12 @@ class Filesystem
             throw new \InvalidArgumentException('from and to must be absolute paths');
         }
 
+        $from = lcfirst(strtr($from, '\\', '/'));
+        $to = lcfirst(strtr($to, '\\', '/'));
+
         if ($from === $to) {
             return $directories ? '__DIR__' : '__FILE__';
         }
-        $from = lcfirst(strtr($from, '\\', '/'));
-        $to = lcfirst(strtr($to, '\\', '/'));
 
         $commonPath = $to;
         while (strpos($from, $commonPath) !== 0 && '/' !== $commonPath && !preg_match('{^[a-z]:/?$}i', $commonPath) && '.' !== $commonPath) {

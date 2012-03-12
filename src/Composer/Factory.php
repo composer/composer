@@ -123,8 +123,11 @@ class Factory
         $rm = new RepositoryManager($io);
         $rm->setRepositoryClass('composer', 'Composer\Repository\ComposerRepository');
         $rm->setRepositoryClass('vcs', 'Composer\Repository\VcsRepository');
-        $rm->setRepositoryClass('pear', 'Composer\Repository\PearRepository');
         $rm->setRepositoryClass('package', 'Composer\Repository\PackageRepository');
+        $rm->setRepositoryClass('pear', 'Composer\Repository\PearRepository');
+        $rm->setRepositoryClass('git', 'Composer\Repository\VcsRepository');
+        $rm->setRepositoryClass('svn', 'Composer\Repository\VcsRepository');
+        $rm->setRepositoryClass('hg', 'Composer\Repository\VcsRepository');
 
         return $rm;
     }
@@ -139,7 +142,7 @@ class Factory
         $rm->addRepository(new Repository\ComposerRepository(array('url' => 'http://packagist.org')));
     }
 
-    protected function createDownloadManager(IOInterface $io)
+    public function createDownloadManager(IOInterface $io)
     {
         $dm = new Downloader\DownloadManager();
         $dm->setDownloader('git', new Downloader\GitDownloader($io));

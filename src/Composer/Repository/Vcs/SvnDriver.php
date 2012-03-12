@@ -9,7 +9,7 @@ use Composer\IO\IOInterface;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class SvnDriver extends VcsDriver implements VcsDriverInterface
+class SvnDriver extends VcsDriver
 {
     protected $baseUrl;
     protected $tags;
@@ -158,7 +158,7 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
     {
         $identifier = '/' . trim($identifier, '/') . '/';
         if (!isset($this->infoCache[$identifier])) {
-            preg_match('{^(.+?)(@\d+)?$}', $identifier, $match);
+            preg_match('{^(.+?)(@\d+)?/$}', $identifier, $match);
             if (!empty($match[2])) {
                 $identifier = $match[1];
                 $rev = $match[2];
@@ -167,11 +167,8 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
             }
 
             $output = $this->execute('svn cat', $this->baseUrl . $identifier . 'composer.json' . $rev);
-
             if (!trim($output)) {
-                throw new \UnexpectedValueException(
-                    'Failed to retrieve composer information for identifier ' . $identifier . ' in ' . $this->getUrl()
-                );
+                return;
             }
 
             $composer = JsonFile::parseJson($output);
@@ -310,20 +307,6 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
     public function getSvnInteractiveSetting()
     {
         return '--non-interactive ';
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function hasComposerFile($identifier)
-    {
-        try {
-            $this->getComposerInformation($identifier);
-            return true;
-        } catch (\Exception $e) {
-        }
-
-        return false;
     }
 
     /**

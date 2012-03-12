@@ -13,6 +13,7 @@
 namespace Composer\Util;
 
 use Composer\IO\IOInterface;
+use Composer\Downloader\TransportException;
 
 /**
  * @author François Pluchino <francois.pluchino@opendisplay.com>
@@ -81,7 +82,7 @@ class RemoteFilesystem
      * @param boolean $progress  Display the progression
      * @param boolean $firstCall Whether this is the first attempt at fetching this resource
      *
-     * @throws \RuntimeException When the file could not be downloaded
+     * @throws TransportException When the file could not be downloaded
      */
     protected function get($originUrl, $fileUrl, $fileName = null, $progress = true, $firstCall = true)
     {
@@ -98,13 +99,18 @@ class RemoteFilesystem
         $ctx = StreamContextFactory::getContext($options, array('notification' => array($this, 'callbackGet')));
 
         if ($this->progress) {
-            $this->io->overwrite("    Downloading: <comment>connection...</comment>", false);
+            $this->io->write("    Downloading: <comment>connection...</comment>", false);
         }
 
         if (null !== $fileName) {
             $result = @copy($fileUrl, $fileName, $ctx);
         } else {
             $result = @file_get_contents($fileUrl, false, $ctx);
+        }
+
+        // fix for 5.4.0 https://bugs.php.net/bug.php?id=61336
+        if (!empty($http_response_header[0]) && preg_match('{^HTTP/\S+ 404}i', $http_response_header[0])) {
+            $result = false;
         }
 
         // avoid overriding if content was loaded by a sub-call to get()
@@ -117,7 +123,7 @@ class RemoteFilesystem
         }
 
         if (false === $this->result) {
-            throw new \RuntimeException("The '$fileUrl' file could not be downloaded");
+            throw new TransportException("The '$fileUrl' file could not be downloaded");
         }
     }
 
@@ -137,7 +143,7 @@ class RemoteFilesystem
             case STREAM_NOTIFY_AUTH_REQUIRED:
             case STREAM_NOTIFY_FAILURE:
                 if (404 === $messageCode && !$this->firstCall) {
-                    throw new \RuntimeException("The '" . $this->fileUrl . "' URL not found");
+                    throw new TransportException("The '" . $this->fileUrl . "' URL not found", 404);
                 }
 
                 // for private repository returning 404 error when the authorization is incorrect
@@ -149,9 +155,9 @@ class RemoteFilesystem
                 // get authorization informations
                 if (401 === $messageCode || $attemptAuthentication) {
                     if (!$this->io->isInteractive()) {
-                        $mess = "The '" . $this->fileUrl . "' URL required authentication.\nYou must be using the interactive console";
+                        $message = "The '" . $this->fileUrl . "' URL required authentication.\nYou must be using the interactive console";
 
-                        throw new \RuntimeException($mess);
+                        throw new TransportException($message, 401);
                     }
 
                     $this->io->overwrite('    Authentication required (<info>'.parse_url($this->fileUrl, PHP_URL_HOST).'</info>):');
