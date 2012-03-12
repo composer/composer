@@ -81,7 +81,7 @@ class SvnDriver extends VcsDriver implements VcsDriverInterface
         );
 
         // this could be any failure
-        if ($status == 1 && $this->io->isInteractive()) {
+        if ($status > 0 && $this->io->isInteractive()) {
 
             // the error is not auth-related
             if (strpos($output, 'authorization failed:') === false) {
