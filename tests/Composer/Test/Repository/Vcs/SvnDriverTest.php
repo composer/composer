@@ -54,7 +54,7 @@ class SvnDriverTest extends \PHPUnit_Framework_TestCase
      */
     public function testExecute()
     {
-        $this->markTestSkipped("Currently no way to mock the output value which is passed by reference.");
+        $this->markTestIncomplete("Currently no way to mock the output value which is passed by reference.");
 
         $console = $this->getMock('Composer\IO\IOInterface');
         $console->expects($this->once())
