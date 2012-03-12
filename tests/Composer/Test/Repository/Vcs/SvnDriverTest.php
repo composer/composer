@@ -23,14 +23,10 @@ class SvnDriverTest extends \PHPUnit_Framework_TestCase
     /**
      * Provide some examples for {@self::testCredentials()}.
      *
-     * {@link \Composer\IO\NullIO} is always non-interactive.
-     *
      * @return array
      */
     public function urlProvider()
     {
-        $nullIO = new \Composer\IO\NullIO;
-
         return array(
             array('http://till:test@svn.example.org/', $this->getCmd(" --no-auth-cache --username 'till' --password 'test' ")),
             array('http://svn.apache.org/', ''),
