@@ -151,7 +151,7 @@ EOT
     {
         $output->writeln('<info>name</info>     : ' . $package->getPrettyName());
         $output->writeln('<info>descrip.</info> : ' . $package->getDescription());
-        $output->writeln('<info>keywords</info> : ' . join(', ', $package->getKeywords()));
+        $output->writeln('<info>keywords</info> : ' . join(', ', $package->getKeywords() ?: array()));
         $this->printVersions($input, $output, $package, $installedRepo, $repos);
         $output->writeln('<info>type</info>     : ' . $package->getType());
         $output->writeln('<info>license</info>  : ' . implode(', ', $package->getLicense()));
