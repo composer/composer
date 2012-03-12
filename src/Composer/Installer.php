@@ -15,7 +15,6 @@ namespace Composer;
 use Composer\Autoload\AutoloadGenerator;
 use Composer\DependencyResolver\DefaultPolicy;
 use Composer\DependencyResolver\Operation\UpdateOperation;
-use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Solver;
