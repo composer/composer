@@ -75,8 +75,8 @@ class HgDownloaderTest extends \PHPUnit_Framework_TestCase
 
     public function testUpdate()
     {
-        $expectedUpdateCommand = $this->getCmd('cd \'composerPath\' && hg pull && hg up \'ref\'');
-        $expectedResetCommand = $this->getCmd('cd \'composerPath\' && hg st');
+        $expectedUpdateCommand = $this->getCmd("cd 'composerPath' && hg pull 'https://github.com/l3l0/composer' && hg up 'ref'");
+        $expectedResetCommand = $this->getCmd("cd 'composerPath' && hg st");
 
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $packageMock->expects($this->any())

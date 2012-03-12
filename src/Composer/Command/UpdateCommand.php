@@ -12,14 +12,7 @@
 
 namespace Composer\Command;
 
-use Composer\Autoload\AutoloadGenerator;
-use Composer\DependencyResolver;
-use Composer\DependencyResolver\Pool;
-use Composer\DependencyResolver\Request;
-use Composer\DependencyResolver\Operation;
-use Composer\Package\LinkConstraint\VersionConstraint;
-use Composer\Repository\PlatformRepository;
-use Composer\Script\EventDispatcher;
+use Composer\Installer;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -54,21 +47,19 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $installCommand = $this->getApplication()->find('install');
         $composer = $this->getComposer();
         $io = $this->getApplication()->getIO();
-        $eventDispatcher = new EventDispatcher($composer, $io);
+        $install = Installer::create($io, $composer);
 
-        return $installCommand->install(
-            $io,
-            $composer,
-            $eventDispatcher,
-            (Boolean)$input->getOption('prefer-source'),
-            (Boolean)$input->getOption('dry-run'),
-            (Boolean)$input->getOption('verbose'),
-            (Boolean)$input->getOption('no-install-recommends'),
-            (Boolean)$input->getOption('install-suggests'),
-            true
-        );
+        $install
+            ->setDryRun($input->getOption('dry-run'))
+            ->setVerbose($input->getOption('verbose'))
+            ->setPreferSource($input->getOption('prefer-source'))
+            ->setInstallRecommends(!$input->getOption('no-install-recommends'))
+            ->setInstallSuggests($input->getOption('install-suggests'))
+            ->setUpdate(true)
+        ;
+
+        return $install->run();
     }
 }

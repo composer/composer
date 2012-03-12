@@ -12,6 +12,7 @@
 
 namespace Composer\Repository\Vcs;
 
+use Composer\Downloader\TransportException;
 use Composer\IO\IOInterface;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
@@ -21,7 +22,7 @@ use Composer\Util\RemoteFilesystem;
  *
  * @author François Pluchino <francois.pluchino@opendisplay.com>
  */
-abstract class VcsDriver
+abstract class VcsDriver implements VcsDriverInterface
 {
     protected $url;
     protected $io;
@@ -40,6 +41,20 @@ abstract class VcsDriver
         $this->io = $io;
         $this->process = $process ?: new ProcessExecutor;
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function hasComposerFile($identifier)
+    {
+        try {
+            return (Boolean) $this->getComposerInformation($identifier);
+        } catch (TransportException $e) {
+        }
+
+        return false;
+    }
+
 
     /**
      * Get the https or http protocol depending on SSL support.

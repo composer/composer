@@ -111,7 +111,7 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
             $this->callCallbackGet($fs, STREAM_NOTIFY_FAILURE, 0, '', 404, 0, 0);
             $this->fail();
         } catch (\Exception $e) {
-            $this->assertInstanceOf('RuntimeException', $e);
+            $this->assertInstanceOf('Composer\Downloader\TransportException', $e);
             $this->assertContains('URL not found', $e->getMessage());
         }
     }
@@ -137,7 +137,7 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
             $this->callCallbackGet($fs, STREAM_NOTIFY_FAILURE, 0, '', 404, 0, 0);
             $this->fail();
         } catch (\Exception $e) {
-            $this->assertInstanceOf('RuntimeException', $e);
+            $this->assertInstanceOf('Composer\Downloader\TransportException', $e);
             $this->assertContains('URL required authentication', $e->getMessage());
             $this->assertAttributeEquals(false, 'firstCall', $fs);
         }

@@ -18,6 +18,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\ComposerRepository;
+use Composer\Package\PackageInterface;
+use Composer\Package\AliasPackage;
 
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>
@@ -55,27 +57,52 @@ EOT
             $repos = new CompositeRepository(array($installedRepo, new ComposerRepository(array('url' => 'http://packagist.org'))));
         }
 
-        $tokens = array_map('strtolower', $input->getArgument('tokens'));
+        $tokens = $input->getArgument('tokens');
+        $packages = array();
+
         foreach ($repos->getPackages() as $package) {
+            if ($package instanceof AliasPackage || isset($packages[$package->getName()])) {
+                continue;
+            }
+
             foreach ($tokens as $token) {
-                if (false === ($pos = strpos($package->getName(), $token))) {
+                if (!$this->matchPackage($package, $token)) {
                     continue;
                 }
 
-                if ($platformRepo->hasPackage($package)) {
-                    $type = '<info>platform: </info> ';
-                } elseif ($installedRepo->hasPackage($package)) {
-                    $type = '<info>installed:</info> ';
+                if (false !== ($pos = stripos($package->getName(), $token))) {
+                    $name = substr($package->getPrettyName(), 0, $pos)
+                        . '<highlight>' . substr($package->getPrettyName(), $pos, strlen($token)) . '</highlight>'
+                        . substr($package->getPrettyName(), $pos + strlen($token));
                 } else {
-                    $type = '<comment>available:</comment> ';
+                    $name = $package->getPrettyName();
                 }
 
-                $name = substr($package->getPrettyName(), 0, $pos)
-                    . '<highlight>' . substr($package->getPrettyName(), $pos, strlen($token)) . '</highlight>'
-                    . substr($package->getPrettyName(), $pos + strlen($token));
-                $output->writeln($type . ': ' . $name . ' <comment>' . $package->getPrettyVersion() . '</comment>');
+                $packages[$package->getName()] = array(
+                    'name' => $name,
+                    'description' => strtok($package->getDescription(), "\r\n")
+                );
                 continue 2;
             }
         }
+
+        foreach ($packages as $details) {
+            $output->writeln($details['name'] .' <comment>:</comment> '. $details['description']);
+        }
+    }
+
+    /**
+     * tries to find a token within the name/keywords/description
+     *
+     * @param PackageInterface $package
+     * @param string $token
+     * @return boolean
+     */
+    private function matchPackage(PackageInterface $package, $token)
+    {
+        return (false !== stripos($package->getName(), $token))
+            || (false !== stripos(join(',', $package->getKeywords() ?: array()), $token))
+            || (false !== stripos($package->getDescription(), $token))
+        ;
     }
 }

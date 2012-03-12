@@ -83,15 +83,32 @@ EOT
         }
 
         // list packages
+        $packages = array();
         foreach ($repos->getPackages() as $package) {
             if ($platformRepo->hasPackage($package)) {
-                $type = '<info>platform: </info> ';
+                $type = '<info>platform</info>:';
             } elseif ($installedRepo->hasPackage($package)) {
-                $type = '<info>installed:</info> ';
+                $type = '<info>installed</info>:';
             } else {
-                $type = '<comment>available:</comment> ';
+                $type = '<comment>available</comment>:';
             }
-            $output->writeln($type . ' ' . $package->getPrettyName() . ' ' . $package->getPrettyVersion() . '<comment> (' . $package->getVersion() . ')</comment>');
+            if (isset($packages[$type][$package->getName()])
+                && version_compare($packages[$type][$package->getName()]->getVersion(), $package->getVersion(), '>=')
+            ) {
+                continue;
+            }
+            $packages[$type][$package->getName()] = $package;
+        }
+
+        foreach (array('<info>platform</info>:', '<comment>available</comment>:', '<info>installed</info>:') as $type) {
+            if (isset($packages[$type])) {
+                $output->writeln($type);
+                ksort($packages[$type]);
+                foreach ($packages[$type] as $package) {
+                    $output->writeln('  '.$package->getPrettyName() .' <comment>:</comment> '. strtok($package->getDescription(), "\r\n"));
+                }
+                $output->writeln('');
+            }
         }
     }
 
@@ -133,20 +150,26 @@ EOT
     protected function printMeta(InputInterface $input, OutputInterface $output, PackageInterface $package, RepositoryInterface $installedRepo, RepositoryInterface $repos)
     {
         $output->writeln('<info>name</info>     : ' . $package->getPrettyName());
+        $output->writeln('<info>descrip.</info> : ' . $package->getDescription());
+        $output->writeln('<info>keywords</info> : ' . join(', ', $package->getKeywords() ?: array()));
         $this->printVersions($input, $output, $package, $installedRepo, $repos);
         $output->writeln('<info>type</info>     : ' . $package->getType());
-        $output->writeln('<info>names</info>    : ' . join(', ', $package->getNames()));
+        $output->writeln('<info>license</info>  : ' . implode(', ', $package->getLicense()));
         $output->writeln('<info>source</info>   : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getSourceType(), $package->getSourceUrl(), $package->getSourceReference()));
         $output->writeln('<info>dist</info>     : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getDistType(), $package->getDistUrl(), $package->getDistReference()));
-        $output->writeln('<info>license</info>  : ' . join(', ', $package->getLicense()));
+        $output->writeln('<info>names</info>    : ' . implode(', ', $package->getNames()));
 
         if ($package->getAutoload()) {
             $output->writeln("\n<info>autoload</info>");
             foreach ($package->getAutoload() as $type => $autoloads) {
                 $output->writeln('<comment>' . $type . '</comment>');
 
-                foreach ($autoloads as $name => $path) {
-                    $output->writeln($name . ' : ' . ($path ?: '.'));
+                if ($type === 'psr-0') {
+                    foreach ($autoloads as $name => $path) {
+                        $output->writeln(($name ?: '*') . ' => ' . ($path ?: '.'));
+                    }
+                } elseif ($type === 'classmap') {
+                    $output->writeln(implode(', ', $autoloads));
                 }
             }
         }
@@ -165,10 +188,12 @@ EOT
         $versions = array();
 
         foreach ($repos->findPackages($package->getName()) as $version) {
-            $versions[$version->getPrettyVersion()] = true;
+            $versions[$version->getPrettyVersion()] = $version->getVersion();
         }
 
-        $versions = join(', ', array_keys($versions));
+        uasort($versions, 'version_compare');
+
+        $versions = implode(', ', array_keys(array_reverse($versions)));
 
         // highlight installed version
         if ($installedRepo->hasPackage($package)) {

@@ -19,7 +19,7 @@ use Composer\IO\IOInterface;
 /**
  * @author Per Bernhardt <plb@webfactory.de>
  */
-class HgDriver extends VcsDriver implements VcsDriverInterface
+class HgDriver extends VcsDriver
 {
     protected $tags;
     protected $branches;
@@ -100,7 +100,7 @@ class HgDriver extends VcsDriver implements VcsDriverInterface
             $this->process->execute(sprintf('cd %s && hg cat -r %s composer.json', escapeshellarg($this->tmpDir), escapeshellarg($identifier)), $composer);
 
             if (!trim($composer)) {
-                throw new \UnexpectedValueException('Failed to retrieve composer information for identifier ' . $identifier . ' in ' . $this->getUrl());
+                return;
             }
 
             $composer = JsonFile::parseJson($composer);
@@ -157,20 +157,6 @@ class HgDriver extends VcsDriver implements VcsDriverInterface
         }
 
         return $this->branches;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function hasComposerFile($identifier)
-    {
-        try {
-            $this->getComposerInformation($identifier);
-            return true;
-        } catch (\Exception $e) {
-        }
-
-        return false;
     }
 
     /**
