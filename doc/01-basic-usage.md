@@ -92,7 +92,7 @@ In case of monolog it will put it into `vendor/monolog/monolog`.
 Another thing that the `install` command does is it adds a `composer.lock`
 file into your project root.
 
-## `composer.json` - The Lock File
+## `composer.lock` - The Lock File
 
 After installing the dependencies, composer writes the list of the exact
 versions it installed into a `composer.lock` file. This locks the project
