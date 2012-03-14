@@ -2,26 +2,11 @@
 
 ## Installation
 
-To install composer, simply run this command on the command line:
+To install composer, you just need to download the `composer.phar` executable.
 
     $ curl -s http://getcomposer.org/installer | php
 
-This will perform some checks on your environment to make sure you can
-actually run it.
-
-Then it will download `composer.phar` and place it in your working directory.
-`composer.phar` is the composer binary. It is a PHAR (PHP archive), which is
-an archive format for PHP which can be run on the command line, amongst other
-things.
-
-You can place this file anywhere you wish. If you put it in your `PATH`,
-you can access it globally. On unixy systems you can even make it
-executable and invoke it without `php`.
-
-You can install composer to a specific directory by using the `--install-dir`
-option and providing a target directory (it can be an absolute or relative path):
-
-    $ curl -s http://getcomposer.org/installer | php -- --install-dir=bin
+For the details, see the [Introduction](00-intro.md) chapter.
 
 To check if composer is working, just run the PHAR through `php`:
 
@@ -34,7 +19,7 @@ This should give you a list of available commands.
 >
 >     $ curl -s http://getcomposer.org/installer | php -- --help
 
-## Project setup
+## `composer.json`: Project Setup
 
 To start using composer in your project, all you need is a `composer.json`
 file. This file describes the dependencies of your project and may contain
@@ -42,6 +27,8 @@ other metadata as well.
 
 The [JSON format](http://json.org/) is quite easy to write. It allows you to
 define nested structures.
+
+### The `require` Key
 
 The first (and often only) thing you specify in `composer.json` is the
 `require` key. You're simply telling composer which packages your project
@@ -53,12 +40,13 @@ depends on.
         }
     }
 
-As you can see, `require` takes an object that maps package names to versions.
+As you can see, `require` takes an object that maps **package names(()) (e.g. `monolog/monolog`)
+to ** package versions** (e.g. `1.0.*`).
 
-## Package names
+### Package Names
 
 The package name consists of a vendor name and the project's name. Often these
-will be identical. The vendor name exists to prevent naming clashes. It allows
+will be identical - the vendor name just exists to prevent naming clashes. It allows
 two different people to create a library named `json`, which would then just be
 named `igorw/json` and `seldaek/json`.
 
@@ -68,10 +56,10 @@ allows adding more related projects under the same namespace later on. If you
 are maintaining a library, this would make it really easy to split it up into
 smaller decoupled parts.
 
-## Package versions
+### Package Versions
 
-We are also requiring the version `1.0.*` of monolog. This means any version
-in the `1.0` development branch. It would match `1.0.0`, `1.0.2` and `1.0.20`.
+We are requiring version `1.0.*` of monolog. This means any version in the `1.0`
+development branch. It would match `1.0.0`, `1.0.2` or `1.0.20`.
 
 Version constraints can be specified in a few different ways.
 
@@ -80,14 +68,14 @@ Version constraints can be specified in a few different ways.
 
 * **Range:** By using comparison operators you can specify ranges of valid
   versions. Valid operators are `>`, `>=`, `<`, `<=`. An example range would be
-  `>=1.0`. You can define multiple of these, separated by comma:   `>=1.0,<2.0`.
+  `>=1.0`. You can define multiple ranges, separated by a comma:   `>=1.0,<2.0`.
 
 * **Wildcard:** You can specify a pattern with a `*` wildcard. `1.0.*` is the
   equivalent of `>=1.0,<1.1-dev`.
 
-## Installing dependencies
+## Installing Dependencies
 
-To fetch the defined dependencies into the local project, you simply run the
+To fetch the defined dependencies into your local project, just run the
 `install` command of `composer.phar`.
 
     $ php composer.phar install
@@ -104,29 +92,33 @@ In case of monolog it will put it into `vendor/monolog/monolog`.
 Another thing that the `install` command does is it adds a `composer.lock`
 file into your project root.
 
-## Lock file
+## `composer.json` - The Lock File
 
 After installing the dependencies, composer writes the list of the exact
 versions it installed into a `composer.lock` file. This locks the project
 to those specific versions.
 
-**Commit your project's `composer.lock` into version control.**
+**Commit your project's `composer.lock` (along with `composer.json`) into version control.**
 
-The reason is that anyone who sets up the project should get the same version.
-The `install` command will check if a lock file is present. If it is, it will
-use the versions specified there. If not, it will resolve the dependencies and
-create a lock file.
+This is important because the `install` command checks if a lock file is present,
+and if it is, it downloads the versions specified there (regardless of what `composer.json`
+says). This means that anyone who sets up the project will download the exact
+same version of the dependencies. 
 
-If any of the dependencies gets a new version, you can update to that version
-by using the `update` command. This will fetch the latest matching versions and
-also update the lock file.
+If no `composer.json` lock file exists, it will read the dependencies and
+versions from `composer.json` and  create the lock file.
+
+This means that if any of the dependencies gets a new version, you won't be updated
+automatically. To update to the new version, use `update` command. This will fetch
+the latest matching versions (according to your `composer.json` file) and also update
+the lock file with the new version.
 
     $ php composer.phar update
 
 ## Packagist
 
 [Packagist](http://packagist.org/) is the main composer repository. A composer
-repository is basically a package source. A place where you can get packages
+repository is basically a package source: a place where you can get packages
 from. Packagist aims to be the central repository that everybody uses. This
 means that you can automatically `require` any package that is available
 there.
@@ -135,7 +127,8 @@ If you go to the [packagist website](http://packagist.org/) (packagist.org),
 you can browse and search for packages.
 
 Any open source project using composer should publish their packages on
-packagist.
+packagist. A library doesn't need to be on packagist to be used by composer,
+but it makes life quite a bit simpler.
 
 ## Autoloading
 
@@ -146,8 +139,7 @@ this file and you will get autoloading for free.
 
     require 'vendor/.composer/autoload.php';
 
-This makes it really easy to use third party code, because you only
-have to add one line to `composer.json` and run `install`. For monolog, it
+This makes it really easy to use third party code: For monolog, it
 means that we can just start using classes from it, and they will be
 autoloaded.
 
