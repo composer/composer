@@ -102,10 +102,9 @@ class RemoteFilesystem
             $this->io->write("    Downloading: <comment>connection...</comment>", false);
         }
 
+        $result = @file_get_contents($fileUrl, false, $ctx);
         if (null !== $fileName) {
-            $result = @copy($fileUrl, $fileName, $ctx);
-        } else {
-            $result = @file_get_contents($fileUrl, false, $ctx);
+            $result = @file_put_contents($fileName, $result) ? true : false;
         }
 
         // fix for 5.4.0 https://bugs.php.net/bug.php?id=61336
