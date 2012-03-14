@@ -104,6 +104,13 @@ class Factory
         // initialize installation manager
         $im = $this->createInstallationManager($rm, $dm, $vendorDir, $binDir, $io);
 
+        // purge packages if they have been deleted on the filesystem
+        foreach ($rm->getLocalRepository()->getPackages() as $package) {
+            if (!$im->isPackageInstalled($package)) {
+                $rm->getLocalRepository()->removePackage($package);
+            }
+        }
+
         // init locker
         $lockFile = substr($composerFile, -5) === '.json' ? substr($composerFile, 0, -4).'lock' : $composerFile . '.lock';
         $locker = new Package\Locker(new JsonFile($lockFile), $rm, md5_file($composerFile));
