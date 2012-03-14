@@ -83,6 +83,7 @@ class Factory
             foreach ($packageConfig['repositories'] as $repo) {
                 if (isset($repo['packagist']) && $repo['packagist'] === false) {
                     $loadPackagist = false;
+                    break;
                 }
             }
         }
