@@ -102,12 +102,11 @@ class Compiler
     {
         $path = str_replace(dirname(dirname(__DIR__)).DIRECTORY_SEPARATOR, '', $file->getRealPath());
 
+        $content = file_get_contents($file);
         if ($strip) {
-            $content = php_strip_whitespace($file);
+            $content = $this->stripComments($content);
         } elseif ('LICENSE' === basename($file)) {
-            $content = "\n".file_get_contents($file)."\n";
-        } else {
-            $content = file_get_contents($file);
+            $content = "\n".$content."\n";
         }
 
         $content = str_replace('@package_version@', $this->version, $content);
@@ -120,6 +119,32 @@ class Compiler
         $content = file_get_contents(__DIR__.'/../../bin/composer');
         $content = preg_replace('{^#!/usr/bin/env php\s*}', '', $content);
         $phar->addFromString('bin/composer', $content);
+    }
+
+    /**
+     * Removes comments from a PHP source string.
+     *
+     * @param string $source A PHP string
+     * @return string The PHP string with the comments removed
+     */
+    private function stripComments($source)
+    {
+        if (!function_exists('token_get_all')) {
+            return $source;
+        }
+
+        $output = '';
+        foreach (token_get_all($source) as $token) {
+            if (is_string($token)) {
+                $output .= $token;
+            } elseif (in_array($token[0], array(T_COMMENT, T_DOC_COMMENT))) {
+                $output .= str_repeat("\n", substr_count($token[1], "\n"));
+            } else {
+                $output .= $token[1];
+            }
+        }
+
+        return $output;
     }
 
     private function getStub()
