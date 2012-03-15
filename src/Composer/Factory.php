@@ -94,11 +94,7 @@ class Factory
         $im = $this->createInstallationManager($rm, $dm, $vendorDir, $binDir, $io);
 
         // purge packages if they have been deleted on the filesystem
-        foreach ($rm->getLocalRepository()->getPackages() as $package) {
-            if (!$im->isPackageInstalled($package)) {
-                $rm->getLocalRepository()->removePackage($package);
-            }
-        }
+        $this->purgePackages($rm, $im);
 
         // init locker
         $lockFile = substr($composerFile, -5) === '.json' ? substr($composerFile, 0, -4).'lock' : $composerFile . '.lock';
@@ -185,6 +181,15 @@ class Factory
         $im->addInstaller(new Installer\InstallerInstaller($vendorDir, $binDir, $dm, $rm->getLocalRepository(), $io, $im));
 
         return $im;
+    }
+
+    protected function purgePackages(Repository\RepositoryManager $rm, Installer\InstallationManager $im)
+    {
+        foreach ($rm->getLocalRepository()->getPackages() as $package) {
+            if (!$im->isPackageInstalled($package)) {
+                $rm->getLocalRepository()->removePackage($package);
+            }
+        }
     }
 
     static public function create(IOInterface $io, $composerFile = null)
