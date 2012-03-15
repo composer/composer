@@ -6,6 +6,7 @@ use Composer\Downloader\TransportException;
 use Composer\Json\JsonFile;
 use Composer\IO\IOInterface;
 use Composer\Util\ProcessExecutor;
+use Composer\Util\RemoteFilesystem;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -33,15 +34,15 @@ class GitHubDriver extends VcsDriver
      * @param string $url
      * @param IOInterface $io
      * @param ProcessExecutor $process
-     * @param callable $remoteFilesystemFactory
+     * @param RemoteFilesystem $remoteFilesystem
      */
-    public function __construct($url, IOInterface $io, ProcessExecutor $process = null, $remoteFilesystemFactory = null)
+    public function __construct($url, IOInterface $io, ProcessExecutor $process = null, RemoteFilesystem $remoteFilesystem = null)
     {
         preg_match('#^(?:https?|git)://github\.com/([^/]+)/(.+?)(?:\.git)?$#', $url, $match);
         $this->owner = $match[1];
         $this->repository = $match[2];
 
-        parent::__construct($url, $io, $process, $remoteFilesystemFactory);
+        parent::__construct($url, $io, $process, $remoteFilesystem);
     }
 
     /**
@@ -212,11 +213,15 @@ class GitHubDriver extends VcsDriver
                     case 404:
                         $this->isPrivate = true;
                         if (!$this->io->isInteractive()) {
+                            // If this repository may be private (hard to say for sure,
+                            // GitHub returns 404 for private repositories) and we
+                            // cannot ask for authentication credentials (because we
+                            // are not interactive) then we fallback to GitDriver.
                             $this->gitDriver = new GitDriver(
                                 $this->generateSshUrl(),
                                 $this->io,
                                 $this->process,
-                                $this->remoteFilesystemFactory
+                                $this->remoteFilesystem
                             );
                             $this->gitDriver->initialize();
                             return;
