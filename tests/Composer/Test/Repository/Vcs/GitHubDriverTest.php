@@ -61,7 +61,7 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
             ->with($this->equalTo($repoUrl), $this->equalTo($repoApiUrl), $this->equalTo(false))
             ->will($this->returnValue('{"master_branch": "test_master"}'));
 
-        $gitHubDriver = new GitHubDriver($repoUrl, $io, null, function() use ($remoteFilesystem) { return $remoteFilesystem; });
+        $gitHubDriver = new GitHubDriver($repoUrl, $io, null, $remoteFilesystem);
         $gitHubDriver->initialize();
         $this->setAttribute($gitHubDriver, 'tags', array($identifier => $sha));
 
@@ -109,9 +109,7 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
             ->with($this->equalTo($repoUrl), $this->equalTo($repoApiUrl), $this->equalTo(false))
             ->will($this->returnValue('{"master_branch": "test_master"}'));
 
-        $gitHubDriver = new GitHubDriver($repoUrl, $io, null, function() use ($remoteFilesystem) {
-            return $remoteFilesystem;
-        });
+        $gitHubDriver = new GitHubDriver($repoUrl, $io, null, $remoteFilesystem);
         $gitHubDriver->initialize();
         $this->setAttribute($gitHubDriver, 'tags', array($identifier => $sha));
 
@@ -192,9 +190,7 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
             ->method('splitLines')
             ->will($this->returnValue(array('  upstream/HEAD -> upstream/test_master')));
 
-        $gitHubDriver = new GitHubDriver($repoUrl, $io, $process, function() use ($remoteFilesystem) {
-            return $remoteFilesystem;
-        });
+        $gitHubDriver = new GitHubDriver($repoUrl, $io, $process, $remoteFilesystem);
         $gitHubDriver->initialize();
 
         $this->assertEquals('test_master', $gitHubDriver->getRootIdentifier());
