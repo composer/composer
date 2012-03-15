@@ -7,6 +7,7 @@
   * Added "file" downloader type to download plain files
   * Added support for authentication with svn repositories
   * Dependency on filter_var is now optional
+  * Many improvements to the `search` & `show` commands
   * Various robustness & error handling improvements
 
 * 1.0.0-alpha1 (2012-03-01)
