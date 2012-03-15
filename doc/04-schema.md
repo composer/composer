@@ -297,9 +297,10 @@ Example:
         ]
     }
 
-> **Note:** Order is significant here. Repositories added later will take
-precedence. This also means that custom repositories can override packages
-that exist on packagist.
+> **Note:** Order is significant here. When looking for a package, Composer
+will look from the first to the last repository, and pick the first match.
+By default Packagist is added last which means that custom repositories can
+override packages from it.
 
 ## config
 
