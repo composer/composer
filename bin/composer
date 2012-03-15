@@ -2,7 +2,7 @@
 <?php
 
 function autoload($file) {
-    return (file_exists($file) && include $file) ? true : false;
+    return (file_exists($file) && include $file);
 }
 
 if (!autoload(__DIR__.'/../../../.composer/autoload.php') && !autoload(__DIR__.'/../vendor/.composer/autoload.php')) {
