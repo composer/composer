@@ -14,6 +14,7 @@ namespace Composer\Test\Repository\Vcs;
 
 use Composer\Downloader\TransportException;
 use Composer\Repository\Vcs\GitHubDriver;
+use Composer\Util\Filesystem;
 
 /**
  * @author Beau Simensen <beau@dflydev.com>
@@ -162,9 +163,13 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
             ->with($this->equalTo($repoUrl), $this->equalTo($repoApiUrl), $this->equalTo(false))
             ->will($this->throwException(new TransportException('HTTP/1.1 404 Not Found', 404)));
 
+        // clean local clone if present
+        $fs = new Filesystem();
+        $fs->removeDirectory(sys_get_temp_dir() . '/composer-' . preg_replace('{[^a-z0-9]}i', '-', $repoSshUrl) . '/');
+
         $process->expects($this->at(0))
             ->method('execute')
-            ->with($this->stringContains('git fetch origin'));
+            ->with($this->stringContains($repoSshUrl));
 
         $process->expects($this->at(1))
             ->method('execute')
