@@ -15,7 +15,7 @@ This idea is not new and Composer is strongly inspired by node's [npm](http://np
 and ruby's [bundler](http://gembundler.com/). But there has not been such a tool
 for PHP.
 
-The problem that composer solves is this:
+The problem that Composer solves is this:
 
 a) You have a project that depends on a number of libraries.
 
@@ -24,7 +24,7 @@ b) Some of those libraries depend on other libraries .
 c) You declare the things you depend on
 
 d) Composer finds out which versions of which packages need to be installed, and
-   install them (meaning it downloads them into your project).
+   installs them (meaning it downloads them into your project).
 
 ## Declaring dependencies
 
@@ -47,16 +47,16 @@ any version beginning with `1.0`.
 ### 1) Downloading the Composer Executable
 
 To actually get Composer, we need to do two things. The first one is installing
-composer (again, this mean downloading it into your project):
+Composer (again, this mean downloading it into your project):
 
     $ curl -s http://getcomposer.org/installer | php
 
 This will just check a few PHP settings and then download `composer.phar` to
-your working directory. This file is the composer binary. It is a PHAR (PHP
+your working directory. This file is the Composer binary. It is a PHAR (PHP
 archive), which is an archive format for PHP which can be run on the command
 line, amongst other things.
 
-You can install composer to a specific directory by using the `--install-dir`
+You can install Composer to a specific directory by using the `--install-dir`
 option and providing a target directory (it can be an absolute or relative path):
 
     $ curl -s http://getcomposer.org/installer | php -- --install-dir=bin
@@ -67,7 +67,7 @@ executable and invoke it without `php`.
 
 ### 2) Using Composer
 
-Next, run the command the `install` command to calculate and download dependencies:
+Next, run the command the `install` command to resolve and download dependencies:
 
     $ php composer.phar install
 
@@ -75,14 +75,14 @@ This will download monolog into the `vendor/monolog/monolog` directory.
 
 ## Autoloading
 
-Besides download the library, Composer also prepares an autoload file that's
+Besides downloading the library, Composer also prepares an autoload file that's
 capable of autoloading all of the classes in any of the libraries that it
 downloads. To use it, just add the following line to your code's bootstrap
 process:
 
     require 'vendor/.composer/autoload.php';
 
-Woh! Now starting using monolog! To keep learning more about Composer, keep
+Woh! Now start using monolog! To keep learning more about Composer, keep
 reading the "Basic Usage" chapter.
 
 [Basic Usage](01-basic-usage.md) &rarr;

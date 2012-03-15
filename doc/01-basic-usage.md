@@ -2,26 +2,26 @@
 
 ## Installation
 
-To install composer, you just need to download the `composer.phar` executable.
+To install Composer, you just need to download the `composer.phar` executable.
 
     $ curl -s http://getcomposer.org/installer | php
 
 For the details, see the [Introduction](00-intro.md) chapter.
 
-To check if composer is working, just run the PHAR through `php`:
+To check if Composer is working, just run the PHAR through `php`:
 
     $ php composer.phar
 
 This should give you a list of available commands.
 
-> **Note:** You can also perform the checks only without downloading composer
+> **Note:** You can also perform the checks only without downloading Composer
 > by using the `--check` option. For more information, just use `--help`.
 >
 >     $ curl -s http://getcomposer.org/installer | php -- --help
 
 ## `composer.json`: Project Setup
 
-To start using composer in your project, all you need is a `composer.json`
+To start using Composer in your project, all you need is a `composer.json`
 file. This file describes the dependencies of your project and may contain
 other metadata as well.
 
@@ -31,7 +31,7 @@ define nested structures.
 ### The `require` Key
 
 The first (and often only) thing you specify in `composer.json` is the
-`require` key. You're simply telling composer which packages your project
+`require` key. You're simply telling Composer which packages your project
 depends on.
 
     {
@@ -40,8 +40,8 @@ depends on.
         }
     }
 
-As you can see, `require` takes an object that maps **package names(()) (e.g. `monolog/monolog`)
-to ** package versions** (e.g. `1.0.*`).
+As you can see, `require` takes an object that maps **package names** (e.g. `monolog/monolog`)
+to **package versions** (e.g. `1.0.*`).
 
 ### Package Names
 
@@ -94,7 +94,7 @@ file into your project root.
 
 ## `composer.lock` - The Lock File
 
-After installing the dependencies, composer writes the list of the exact
+After installing the dependencies, Composer writes the list of the exact
 versions it installed into a `composer.lock` file. This locks the project
 to those specific versions.
 
@@ -108,7 +108,7 @@ same version of the dependencies.
 If no `composer.json` lock file exists, it will read the dependencies and
 versions from `composer.json` and  create the lock file.
 
-This means that if any of the dependencies gets a new version, you won't be updated
+This means that if any of the dependencies get a new version, you won't get the updates.
 automatically. To update to the new version, use `update` command. This will fetch
 the latest matching versions (according to your `composer.json` file) and also update
 the lock file with the new version.
@@ -117,7 +117,7 @@ the lock file with the new version.
 
 ## Packagist
 
-[Packagist](http://packagist.org/) is the main composer repository. A composer
+[Packagist](http://packagist.org/) is the main Composer repository. A Composer
 repository is basically a package source: a place where you can get packages
 from. Packagist aims to be the central repository that everybody uses. This
 means that you can automatically `require` any package that is available
@@ -126,16 +126,16 @@ there.
 If you go to the [packagist website](http://packagist.org/) (packagist.org),
 you can browse and search for packages.
 
-Any open source project using composer should publish their packages on
-packagist. A library doesn't need to be on packagist to be used by composer,
+Any open source project using Composer should publish their packages on
+packagist. A library doesn't need to be on packagist to be used by Composer,
 but it makes life quite a bit simpler.
 
 ## Autoloading
 
 For libraries that follow the [PSR-0](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-0.md)
-naming standard, composer generates a
-`vendor/.composer/autoload.php` file for autoloading. You can simply include
-this file and you will get autoloading for free.
+naming standard, Composer generates a `vendor/.composer/autoload.php` file
+for autoloading. You can simply include this file and you will get autoloading
+for free.
 
     require 'vendor/.composer/autoload.php';
 
