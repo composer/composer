@@ -68,7 +68,7 @@ class RootPackageLoader extends ArrayLoader
                     throw new \UnexpectedValueException('Repository '.$index.' should be an array, '.gettype($repo).' given');
                 }
                 if (!isset($repo['type'])) {
-                    throw new \UnexpectedValueException('Repository '.$index.' must have a type defined');
+                    throw new \UnexpectedValueException('Repository '.$index.' ('.json_encode($repo).') must have a type defined');
                 }
                 $repository = $this->manager->createRepository($repo['type'], $repo);
                 $this->manager->addRepository($repository);
