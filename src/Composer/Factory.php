@@ -78,18 +78,7 @@ class Factory
         $rm = $this->createRepositoryManager($io);
 
         // load default repository unless it's explicitly disabled
-        $loadPackagist = true;
-        if (isset($packageConfig['repositories'])) {
-            foreach ($packageConfig['repositories'] as $repo) {
-                if (isset($repo['packagist']) && $repo['packagist'] === false) {
-                    $loadPackagist = false;
-                    break;
-                }
-            }
-        }
-        if ($loadPackagist) {
-            $this->addPackagistRepository($rm);
-        }
+        $packageConfig = $this->addPackagistRepository($packageConfig);
 
         // load local repository
         $this->addLocalRepository($rm, $vendorDir);
@@ -145,9 +134,33 @@ class Factory
         $rm->setLocalRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/.composer/installed.json')));
     }
 
-    protected function addPackagistRepository(RepositoryManager $rm)
+    protected function addPackagistRepository(array $packageConfig)
     {
-        $rm->addRepository(new Repository\ComposerRepository(array('url' => 'http://packagist.org')));
+        $loadPackagist = true;
+        $packagistConfig = array(
+                'type' => 'composer',
+                'url' => 'http://packagist.org'
+        );
+        if (isset($packageConfig['repositories'])) {
+            foreach ($packageConfig['repositories'] as $key => $repo) {
+                if (isset($repo['packagist'])) {
+                    if (true === $repo['packagist']) {
+                        $packageConfig['repositories'][$key] = $packagistConfig;
+                    }
+
+                    $loadPackagist = false;
+                    break;
+                }
+            }
+        } else {
+            $packageConfig['repositories'] = array();
+        }
+
+        if ($loadPackagist) {
+            $packageConfig['repositories'][] = $packagistConfig;
+        }
+
+        return $packageConfig;
     }
 
     public function createDownloadManager(IOInterface $io)
