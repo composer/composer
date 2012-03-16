@@ -219,6 +219,10 @@
                 "irc": {
                     "type": "string",
                     "description": "Irc support channel"
+                },
+                "source": {
+                    "type": "string",
+                    "description": "URL to the sources"
                 }
             }
         }
