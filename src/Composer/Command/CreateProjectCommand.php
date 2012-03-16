@@ -22,6 +22,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Composer\Json\JsonFile;
 
 /**
  * Install a package as new project into new directory.
@@ -85,7 +86,7 @@ EOT
         if (null === $repositoryUrl) {
             $sourceRepo = new ComposerRepository(array('url' => 'http://packagist.org'));
         } elseif (".json" === substr($repositoryUrl, -5)) {
-            $sourceRepo = new FilesystemRepository($repositoryUrl);
+            $sourceRepo = new FilesystemRepository(new JsonFile($repositoryUrl));
         } elseif (0 === strpos($repositoryUrl, 'http')) {
             $sourceRepo = new ComposerRepository(array('url' => $repositoryUrl));
         } else {
