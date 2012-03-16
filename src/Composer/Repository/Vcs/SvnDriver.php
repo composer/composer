@@ -158,7 +158,6 @@ class SvnDriver extends VcsDriver
                     }
                 }
             }
-            unset($output);
         }
 
         return $this->tags;
@@ -216,7 +215,6 @@ class SvnDriver extends VcsDriver
                     }
                 }
             }
-            unset($output);
         }
 
         return $this->branches;
