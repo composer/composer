@@ -96,9 +96,9 @@ example we will publish the `acme/hello-world` library on GitHub under
 `github.com/composer/hello-world`.
 
 Now, To test installing the `acme/hello-world` package, we create a new
-project locally. We will call it `acme/blog`. This blog will depend on `acme
-/hello-world`, which in turn depends on `monolog/monolog`. We can accomplish
-this by creating a new `blog` directory somewhere, containing a
+project locally. We will call it `acme/blog`. This blog will depend on
+`acme/hello-world`, which in turn depends on `monolog/monolog`. We can
+accomplish this by creating a new `blog` directory somewhere, containing a
 `composer.json`:
 
     {
