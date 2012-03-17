@@ -1,14 +1,14 @@
 # Git Hooks
 
 [Hooks](http://book.git-scm.com/5_git_hooks.html) are little scripts you can
-place in the .git/hooks directory to trigger actions at certain points. Using
-these hooks, Composer can have tight integration with git, making the project
-workflow much simpler.
+place in the `.git/hooks` directory to trigger actions at certain points. Using
+these hooks, Composer can have tight integration with git, easing the project
+workflow.
 
-# post-checkout
+## post-checkout
 
-Placing the following file at `.git/hooks/post-checkout` will have Composer run
-an update whenever a git checkout is run.
+To have Composer install all its dependencies whenever a git checkout is
+performed, place the following file at `.git/hooks/post-checkout`.
 
     #!/bin/sh
     # Composer Git Checkout Hook
@@ -25,7 +25,7 @@ an update whenever a git checkout is run.
         fi
     
         # Update the project with Composer.
-        php composer.phar update
+        php composer.phar install
     fi
 
 Also be sure to run `chmod +x .git/hooks/post-checkout` to ensure the file can
