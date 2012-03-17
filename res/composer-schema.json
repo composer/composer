@@ -222,7 +222,8 @@
                 },
                 "source": {
                     "type": "string",
-                    "description": "URL to the sources"
+                    "description": "URL to the sources",
+                    "format": "uri"
                 }
             }
         }
