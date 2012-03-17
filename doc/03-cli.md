@@ -157,7 +157,7 @@ will always take precedence over the values specified in `composer.json`.
 
 ### COMPOSER
 
-By setting the `COMPOSER` env variable is is possible to set the filename of
+By setting the `COMPOSER` env variable it is possible to set the filename of
 `composer.json` to something else.
 
 For example:
