@@ -12,6 +12,7 @@
 
 namespace Composer\Util;
 
+use Composer\Composer;
 use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
 
@@ -101,13 +102,30 @@ class RemoteFilesystem
         }
 
         $result = @file_get_contents($fileUrl, false, $ctx);
-        if (null !== $fileName) {
-            $result = @file_put_contents($fileName, $result) ? true : false;
-        }
 
         // fix for 5.4.0 https://bugs.php.net/bug.php?id=61336
         if (!empty($http_response_header[0]) && preg_match('{^HTTP/\S+ 404}i', $http_response_header[0])) {
             $result = false;
+        }
+
+        // decode gzip
+        if (false !== $result && extension_loaded('zlib') && substr($fileUrl, 0, 4) === 'http') {
+            foreach ($http_response_header as $header) {
+                if (preg_match('{^content-encoding: *gzip *$}i', $header)) {
+                    if (version_compare(PHP_VERSION, '5.4.0', '>=')) {
+                        $result = zlib_decode($result);
+                    } else {
+                        // work around issue with gzuncompress & co that do not work with all gzip checksums
+                        $result = file_get_contents('compress.zlib://data:application/octet-stream;base64,'.base64_encode($result));
+                    }
+                    break;
+                }
+            }
+        }
+
+        // handle copy command if download was successful
+        if (false !== $result && null !== $fileName) {
+            $result = (Boolean) @file_put_contents($fileName, $result);
         }
 
         // avoid overriding if content was loaded by a sub-call to get()
@@ -116,7 +134,7 @@ class RemoteFilesystem
         }
 
         if ($this->progress) {
-            $this->io->overwrite("    Downloading", false);
+            $this->io->write('');
         }
 
         if (false === $this->result) {
@@ -184,17 +202,21 @@ class RemoteFilesystem
         }
     }
 
-    protected function getOptionsForUrl($url)
+    protected function getOptionsForUrl($originUrl)
     {
-        $options = array();
-        if ($this->io->hasAuthorization($url)) {
-            $auth = $this->io->getAuthorization($url);
+        $options['http']['header'] = 'User-Agent: Composer/'.Composer::VERSION."\r\n";
+        if (extension_loaded('zlib')) {
+            $options['http']['header'] .= 'Accept-Encoding: gzip'."\r\n";
+        }
+
+        if ($this->io->hasAuthorization($originUrl)) {
+            $auth = $this->io->getAuthorization($originUrl);
             $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
-            $options['http'] = array('header' => "Authorization: Basic $authStr\r\n");
+            $options['http']['header'] .= "Authorization: Basic $authStr\r\n";
         } elseif (null !== $this->io->getLastUsername()) {
             $authStr = base64_encode($this->io->getLastUsername() . ':' . $this->io->getLastPassword());
-            $options['http'] = array('header' => "Authorization: Basic $authStr\r\n");
-            $this->io->setAuthorization($url, $this->io->getLastUsername(), $this->io->getLastPassword());
+            $options['http']['header'] .= "Authorization: Basic $authStr\r\n";
+            $this->io->setAuthorization($originUrl, $this->io->getLastUsername(), $this->io->getLastPassword());
         }
 
         return $options;
