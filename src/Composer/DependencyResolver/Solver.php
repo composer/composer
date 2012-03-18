@@ -21,21 +21,6 @@ use Composer\DependencyResolver\Operation;
  */
 class Solver
 {
-    const RULE_INTERNAL_ALLOW_UPDATE = 1;
-    const RULE_JOB_INSTALL = 2;
-    const RULE_JOB_REMOVE = 3;
-    const RULE_JOB_LOCK = 4;
-    const RULE_NOT_INSTALLABLE = 5;
-    const RULE_NOTHING_PROVIDES_DEP = 6;
-    const RULE_PACKAGE_CONFLICT = 7;
-    const RULE_PACKAGE_NOT_EXIST = 8;
-    const RULE_PACKAGE_REQUIRES = 9;
-    const RULE_PACKAGE_OBSOLETES = 10;
-    const RULE_INSTALLED_PACKAGE_OBSOLETES = 11;
-    const RULE_PACKAGE_SAME_NAME = 12;
-    const RULE_PACKAGE_IMPLICIT_OBSOLETES = 13;
-    const RULE_LEARNED = 14;
-
     protected $policy;
     protected $pool;
     protected $installed;
@@ -235,7 +220,7 @@ class Solver
             }
 
             if (!$dontFix && !$this->policy->installable($this, $this->pool, $this->installedMap, $package)) {
-                $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRemoveRule($package, self::RULE_NOT_INSTALLABLE, (string) $package));
+                $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRemoveRule($package, Rule::RULE_NOT_INSTALLABLE, (string) $package));
                 continue;
             }
 
@@ -261,7 +246,7 @@ class Solver
                     }
                 }
 
-                $this->addRule(RuleSet::TYPE_PACKAGE, $rule = $this->createRequireRule($package, $possibleRequires, self::RULE_PACKAGE_REQUIRES, (string) $link));
+                $this->addRule(RuleSet::TYPE_PACKAGE, $rule = $this->createRequireRule($package, $possibleRequires, Rule::RULE_PACKAGE_REQUIRES, (string) $link));
 
                 foreach ($possibleRequires as $require) {
                     $workQueue->enqueue($require);
@@ -276,7 +261,7 @@ class Solver
                         continue;
                     }
 
-                    $this->addRule(RuleSet::TYPE_PACKAGE, $this->createConflictRule($package, $conflict, self::RULE_PACKAGE_CONFLICT, (string) $link));
+                    $this->addRule(RuleSet::TYPE_PACKAGE, $this->createConflictRule($package, $conflict, Rule::RULE_PACKAGE_CONFLICT, (string) $link));
                 }
             }
 
@@ -301,7 +286,7 @@ class Solver
                             continue; // don't repair installed/installed problems
                         }
 
-                        $reason = ($isInstalled) ? self::RULE_INSTALLED_PACKAGE_OBSOLETES : self::RULE_PACKAGE_OBSOLETES;
+                        $reason = ($isInstalled) ? Rule::RULE_INSTALLED_PACKAGE_OBSOLETES : Rule::RULE_PACKAGE_OBSOLETES;
                         $this->addRule(RuleSet::TYPE_PACKAGE, $this->createConflictRule($package, $provider, $reason, (string) $link));
                     }
                 }
@@ -327,7 +312,7 @@ class Solver
                             continue;
                         }
 
-                        $reason = ($package->getName() == $provider->getName()) ? self::RULE_PACKAGE_SAME_NAME : self::RULE_PACKAGE_IMPLICIT_OBSOLETES;
+                        $reason = ($package->getName() == $provider->getName()) ? Rule::RULE_PACKAGE_SAME_NAME : Rule::RULE_PACKAGE_IMPLICIT_OBSOLETES;
                         $this->addRule(RuleSet::TYPE_PACKAGE, $rule = $this->createConflictRule($package, $provider, $reason, (string) $package));
                     }
                 }
@@ -973,7 +958,7 @@ class Solver
 
         foreach ($installedPackages as $package) {
             $updates = $this->policy->findUpdatePackages($this, $this->pool, $this->installedMap, $package);
-            $rule = $this->createUpdateRule($package, $updates, self::RULE_INTERNAL_ALLOW_UPDATE, (string) $package);
+            $rule = $this->createUpdateRule($package, $updates, Rule::RULE_INTERNAL_ALLOW_UPDATE, (string) $package);
 
             $rule->setWeak(true);
             $this->addRule(RuleSet::TYPE_FEATURE, $rule);
@@ -988,7 +973,7 @@ class Solver
                         $problem->addJobRule($job);
                         $this->problems[] = $problem;
                     } else {
-                        $rule = $this->createInstallOneOfRule($job['packages'], self::RULE_JOB_INSTALL, $job['packageName']);
+                        $rule = $this->createInstallOneOfRule($job['packages'], Rule::RULE_JOB_INSTALL, $job['packageName']);
                         $this->addRule(RuleSet::TYPE_JOB, $rule);
                         $this->ruleToJob[$rule->getId()] = $job;
                     }
@@ -999,7 +984,7 @@ class Solver
 
                     // todo: cleandeps
                     foreach ($job['packages'] as $package) {
-                        $rule = $this->createRemoveRule($package, self::RULE_JOB_REMOVE);
+                        $rule = $this->createRemoveRule($package, Rule::RULE_JOB_REMOVE);
                         $this->addRule(RuleSet::TYPE_JOB, $rule);
                         $this->ruleToJob[$rule->getId()] = $job;
                     }
@@ -1007,9 +992,9 @@ class Solver
                 case 'lock':
                     foreach ($job['packages'] as $package) {
                         if (isset($this->installedMap[$package->getId()])) {
-                            $rule = $this->createInstallRule($package, self::RULE_JOB_LOCK);
+                            $rule = $this->createInstallRule($package, Rule::RULE_JOB_LOCK);
                         } else {
-                            $rule = $this->createRemoveRule($package, self::RULE_JOB_LOCK);
+                            $rule = $this->createRemoveRule($package, Rule::RULE_JOB_LOCK);
                         }
                         $this->addRule(RuleSet::TYPE_JOB, $rule);
                         $this->ruleToJob[$rule->getId()] = $job;
@@ -1496,7 +1481,7 @@ class Solver
 
         $why = count($this->learnedPool) - 1;
         assert($learnedLiterals[0] !== null);
-        $newRule = new Rule($learnedLiterals, self::RULE_LEARNED, $why);
+        $newRule = new Rule($learnedLiterals, Rule::RULE_LEARNED, $why);
 
         return array($ruleLevel, $newRule, $why);
     }

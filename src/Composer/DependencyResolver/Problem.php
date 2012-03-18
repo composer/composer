@@ -90,12 +90,7 @@ class Problem
                 $messages[] = $this->jobToText($job);
             } elseif ($rule) {
                 if ($rule instanceof Rule) {
-                    $message = '';
-                    if ($rule->getType() == RuleSet::TYPE_LEARNED) {
-                        $message .= 'learned:';
-                    }
-
-                    $messages[] = $message.$rule;
+                    $messages[] = $rule->toHumanReadableString();
                 }
             }
         }

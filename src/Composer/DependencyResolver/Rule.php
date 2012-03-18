@@ -17,6 +17,19 @@ namespace Composer\DependencyResolver;
  */
 class Rule
 {
+    const RULE_INTERNAL_ALLOW_UPDATE = 1;
+    const RULE_JOB_INSTALL = 2;
+    const RULE_JOB_REMOVE = 3;
+    const RULE_JOB_LOCK = 4;
+    const RULE_NOT_INSTALLABLE = 5;
+    const RULE_PACKAGE_CONFLICT = 6;
+    const RULE_PACKAGE_REQUIRES = 7;
+    const RULE_PACKAGE_OBSOLETES = 8;
+    const RULE_INSTALLED_PACKAGE_OBSOLETES = 9;
+    const RULE_PACKAGE_SAME_NAME = 10;
+    const RULE_PACKAGE_IMPLICIT_OBSOLETES = 11;
+    const RULE_LEARNED = 12;
+
     protected $disabled;
     protected $literals;
     protected $type;
@@ -160,6 +173,68 @@ class Rule
             return $this->watch2;
         } else {
             return $this->watch1;
+        }
+    }
+
+    public function toHumanReadableString()
+    {
+        $ruleText = '';
+        foreach ($this->literals as $i => $literal) {
+            if ($i != 0) {
+                $ruleText .= '|';
+            }
+            $ruleText .= $literal;
+        }
+
+        switch ($this->reason) {
+            case self::RULE_INTERNAL_ALLOW_UPDATE:
+                return $ruleText;
+
+            case self::RULE_JOB_INSTALL:
+                return "Install command rule ($ruleText)";
+
+            case self::RULE_JOB_REMOVE:
+                return "Remove command rule ($ruleText)";
+
+            case self::RULE_JOB_LOCK:
+                return "Lock command rule ($ruleText)";
+
+            case self::RULE_NOT_INSTALLABLE:
+                return $ruleText;
+
+            case self::RULE_PACKAGE_CONFLICT:
+                $package1 = $this->literals[0]->getPackage();
+                $package2 = $this->literals[1]->getPackage();
+                return 'Package "'.$package1.'" conflicts with "'.$package2.'"';
+
+            case self::RULE_PACKAGE_REQUIRES:
+                $literals = $this->literals;
+                $sourceLiteral = array_shift($literals);
+                $sourcePackage = $sourceLiteral->getPackage();
+
+                $requires = array();
+                foreach ($literals as $literal) {
+                    $requires[] = $literal->getPackage();
+                }
+
+                $text = 'Package "'.$sourcePackage.'" contains the rule '.$this->reasonData.'. ';
+                if ($requires) {
+                    $text .= 'Any of these packages satisfy the dependency: '.implode(', ', $requires).'.';
+                } else {
+                    $text .= 'No package satisfies this dependency.';
+                }
+                return $text;
+
+            case self::RULE_PACKAGE_OBSOLETES:
+                return $ruleText;
+            case self::RULE_INSTALLED_PACKAGE_OBSOLETES:
+                return $ruleText;
+            case self::RULE_PACKAGE_SAME_NAME:
+                return $ruleText;
+            case self::RULE_PACKAGE_IMPLICIT_OBSOLETES:
+                return $ruleText;
+            case self::RULE_LEARNED:
+                return 'learned: '.$ruleText;
         }
     }
 
