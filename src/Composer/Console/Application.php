@@ -25,6 +25,7 @@ use Composer\Composer;
 use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\IO\ConsoleIO;
+use Composer\Util\ErrorHandler;
 
 /**
  * The console application that handles the commands
@@ -40,6 +41,7 @@ class Application extends BaseApplication
 
     public function __construct()
     {
+        ErrorHandler::set();
         parent::__construct('Composer', Composer::VERSION);
     }
 
