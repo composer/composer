@@ -12,8 +12,10 @@
 
 namespace Composer\Repository;
 
+use Composer\IO\IOInterface;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Util\RemoteFilesystem;
+use Composer\Downloader\TransportException;
 
 /**
  * @author Benjamin Eberlei <kontakt@beberlei.de>
@@ -23,6 +25,7 @@ class PearRepository extends ArrayRepository
 {
     private $url;
     private $channel;
+    private $io;
     private $rfs;
 
     public function __construct(array $config, IOInterface $io, RemoteFilesystem $rfs = null)
@@ -37,18 +40,16 @@ class PearRepository extends ArrayRepository
 
         $this->url = rtrim($config['url'], '/');
         $this->channel = !empty($config['channel']) ? $config['channel'] : null;
-        $this->rfs = $rfs ?: new RemoteFilesystem($io);
+        $this->io = $io;
+        $this->rfs = $rfs ?: new RemoteFilesystem($this->io);
     }
 
     protected function initialize()
     {
         parent::initialize();
 
-        set_error_handler(function($severity, $message, $file, $line) {
-            throw new \ErrorException($message, $severity, $severity, $file, $line);
-        });
+        $this->io->write('Initializing PEAR repository '.$this->url);
         $this->fetchFromServer();
-        restore_error_handler();
     }
 
     protected function fetchFromServer()
@@ -67,7 +68,7 @@ class PearRepository extends ArrayRepository
             try {
                 $packagesLink = str_replace("info.xml", "packagesinfo.xml", $link);
                 $this->fetchPear2Packages($this->url . $packagesLink);
-            } catch (\ErrorException $e) {
+            } catch (TransportException $e) {
                 if (false === strpos($e->getMessage(), '404')) {
                     throw $e;
                 }
@@ -80,7 +81,7 @@ class PearRepository extends ArrayRepository
 
     /**
      * @param   string $categoryLink
-     * @throws  ErrorException
+     * @throws  TransportException
      * @throws  InvalidArgumentException
      */
     private function fetchPearPackages($categoryLink)
@@ -98,7 +99,7 @@ class PearRepository extends ArrayRepository
 
             try {
                 $releasesXML = $this->requestXml($allReleasesLink);
-            } catch (\ErrorException $e) {
+            } catch (TransportException $e) {
                 if (strpos($e->getMessage(), '404')) {
                     continue;
                 }
@@ -120,7 +121,7 @@ class PearRepository extends ArrayRepository
 
                 try {
                     $deps = $this->rfs->getContents($this->url, $releaseLink . "/deps.".$pearVersion.".txt", false);
-                } catch (\ErrorException $e) {
+                } catch (TransportException $e) {
                     if (strpos($e->getMessage(), '404')) {
                         continue;
                     }
@@ -225,6 +226,7 @@ class PearRepository extends ArrayRepository
     {
         $loader = new ArrayLoader();
         $packagesXml = $this->requestXml($packagesLink);
+
         $informations = $packagesXml->getElementsByTagName('pi');
         foreach ($informations as $information) {
             $package = $information->getElementsByTagName('p')->item(0);
