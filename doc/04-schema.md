@@ -13,7 +13,9 @@ can also be used to validate your `composer.json`. In fact, it is used by the
 
 The root of the package definition is a JSON object.
 
-## name
+## Properties
+
+### name
 
 The name of the package. It consists of vendor name and project name,
 separated by `/`.
@@ -25,13 +27,13 @@ Examples:
 
 Required for published packages (libraries).
 
-## description
+### description
 
 A short description of the package. Usually this is just one line long.
 
 Optional but recommended.
 
-## version
+### version
 
 The version of the package.
 
@@ -52,7 +54,7 @@ Optional if the package repository can infer the version from somewhere, such
 as the VCS tag name in the VCS repository. In that case it is also recommended
 to omit it.
 
-## type
+### type
 
 The type of the package. It defaults to `library`.
 
@@ -74,7 +76,7 @@ order to be able to install the bundle.
 Only use a custom type if you need custom logic during installation. It is
 recommended to omit this field and have it just default to `library`.
 
-## keywords
+### keywords
 
 An array of keywords that the package is related to. These can be used for
 searching and filtering.
@@ -89,13 +91,13 @@ Examples:
 
 Optional.
 
-## homepage
+### homepage
 
 An URL to the website of the project.
 
 Optional.
 
-## time
+### time
 
 Release date of the version.
 
@@ -103,7 +105,7 @@ Must be in `YYYY-MM-DD` or `YYYY-MM-DD HH:MM:SS` format.
 
 Optional.
 
-## license
+### license
 
 The license of the package. This can be either a string or an array of strings.
 
@@ -122,7 +124,7 @@ The recommended notation for the most common licenses is:
 
 Optional, but it is highly recommended to supply this.
 
-## authors
+### authors
 
 The authors of the package. This is an array of objects.
 
@@ -151,7 +153,7 @@ An example:
 
 Optional, but highly recommended.
 
-## Link types
+### Link types
 
 Each of these takes an object which maps package names to version constraints.
 
@@ -179,7 +181,7 @@ Example:
 
 Optional.
 
-## autoload
+### autoload
 
 Autoload mapping for a PHP autoloader.
 
@@ -211,7 +213,7 @@ Example:
         }
     }
 
-## target-dir
+### target-dir
 
 Defines the installation target.
 
@@ -236,7 +238,7 @@ To do that, `autoload` and `target-dir` are defined as follows:
 
 Optional.
 
-## repositories
+### repositories
 
 Custom package repositories to use.
 
@@ -297,11 +299,12 @@ Example:
         ]
     }
 
-> **Note:** Order is significant here. Repositories added later will take
-precedence. This also means that custom repositories can override packages
-that exist on packagist.
+> **Note:** Order is significant here. When looking for a package, Composer
+will look from the first to the last repository, and pick the first match.
+By default Packagist is added last which means that custom repositories can
+override packages from it.
 
-## config
+### config
 
 A set of configuration options. It is only used for projects.
 
@@ -323,7 +326,7 @@ Example:
         }
     }
 
-## scripts
+### scripts
 
 Composer allows you to hook into various parts of the installation process
 through the use of scripts.
@@ -382,7 +385,7 @@ which gives you access to the `Composer\Composer` instance through the
         }
     }
 
-## extra
+### extra
 
 Arbitrary extra data for consumption by `scripts`.
 
@@ -393,12 +396,12 @@ handler, you can do:
 
 Optional.
 
-## bin
+### bin
 
 A set of files that should be treated as binaries and symlinked into the `bin-
 dir` (from config).
 
-See (Vendor Bins)[articles/vendor-bins.md] for more details.
+See [Vendor Bins](articles/vendor-bins.md) for more details.
 
 Optional.
 

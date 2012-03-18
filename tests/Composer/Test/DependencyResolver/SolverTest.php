@@ -9,7 +9,6 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-
 namespace Composer\Test\DependencyResolver;
 
 use Composer\Repository\ArrayRepository;
@@ -68,6 +67,25 @@ class SolverTest extends TestCase
         } catch (SolverProblemsException $e) {
             // TODO assert problem properties
         }
+    }
+
+    public function testSolverInstallSamePackageFromDifferentRepositories()
+    {
+        $repo1 = new ArrayRepository;
+        $repo2 = new ArrayRepository;
+
+        $repo1->addPackage($foo1 = $this->getPackage('foo', '1'));
+        $repo2->addPackage($foo2 = $this->getPackage('foo', '1'));
+
+        $this->pool->addRepository($this->repoInstalled);
+        $this->pool->addRepository($repo1);
+        $this->pool->addRepository($repo2);
+
+        $this->request->install('foo');
+
+        $this->checkSolverResult(array(
+                array('job' => 'install', 'package' => $foo1),
+        ));
     }
 
     public function testSolverInstallWithDeps()
