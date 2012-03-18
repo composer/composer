@@ -27,9 +27,9 @@ class ErrorHandlerTest extends TestCase
      */
     public function testErrorHandlerCaptureNotice()
     {
-        $this->setExpectedException('\ErrorException', 'Undefined index: baz in ' . __FILE__);
+        $this->setExpectedException('\ErrorException', 'Undefined index: baz');
 
-        ErrorHandler::set();
+        ErrorHandler::register();
 
         $array = array('foo' => 'bar');
         $array['baz'];
@@ -40,9 +40,9 @@ class ErrorHandlerTest extends TestCase
      */
     public function testErrorHandlerCaptureWarning()
     {
-        $this->setExpectedException('\ErrorException', 'array_merge(): Argument #2 is not an array in ' . __FILE__);
+        $this->setExpectedException('\ErrorException', 'array_merge(): Argument #2 is not an array');
 
-        ErrorHandler::set();
+        ErrorHandler::register();
 
         array_merge(array(), 'string');
     }
