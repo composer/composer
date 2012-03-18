@@ -332,6 +332,21 @@ class SvnDriver extends VcsDriver
     }
 
     /**
+     * An absolute path (leading '/') is converted to a file:// url.
+     *
+     * @param string $url
+     *
+     * @return string
+     */
+    protected static function fixSvnUrl($url)
+    {
+        if (strpos($url, '/', 0) === 0) {
+            $url = 'file://' . $url;
+        }
+        return $url;
+    }
+
+    /**
      * This is quick and dirty - thoughts?
      *
      * @return void
