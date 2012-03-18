@@ -15,6 +15,8 @@ namespace Composer\Repository;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Json\JsonFile;
+use Composer\IO\IOInterface;
+use Composer\Util\RemoteFilesystem;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -22,9 +24,10 @@ use Composer\Json\JsonFile;
 class ComposerRepository extends ArrayRepository
 {
     protected $url;
+    protected $io;
     protected $packages;
 
-    public function __construct(array $config)
+    public function __construct(array $config, IOInterface $io)
     {
         if (!preg_match('{^\w+://}', $config['url'])) {
             // assume http as the default protocol
@@ -36,12 +39,13 @@ class ComposerRepository extends ArrayRepository
         }
 
         $this->url = $config['url'];
+        $this->io = $io;
     }
 
     protected function initialize()
     {
         parent::initialize();
-        $json     = new JsonFile($this->url.'/packages.json');
+        $json     = new JsonFile($this->url.'/packages.json', new RemoteFilesystem($this->io));
         $packages = $json->read();
         if (!$packages) {
             throw new \UnexpectedValueException('Could not parse package list from the '.$this->url.' repository');
