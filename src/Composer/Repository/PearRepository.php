@@ -13,7 +13,7 @@
 namespace Composer\Repository;
 
 use Composer\Package\Loader\ArrayLoader;
-use Composer\Util\StreamContextFactory;
+use Composer\Util\RemoteFilesystem;
 
 /**
  * @author Benjamin Eberlei <kontakt@beberlei.de>
@@ -23,9 +23,9 @@ class PearRepository extends ArrayRepository
 {
     private $url;
     private $channel;
-    private $streamContext;
+    private $rfs;
 
-    public function __construct(array $config)
+    public function __construct(array $config, IOInterface $io, RemoteFilesystem $rfs = null)
     {
         if (!preg_match('{^https?://}', $config['url'])) {
             $config['url'] = 'http://'.$config['url'];
@@ -36,8 +36,8 @@ class PearRepository extends ArrayRepository
         }
 
         $this->url = rtrim($config['url'], '/');
-
         $this->channel = !empty($config['channel']) ? $config['channel'] : null;
+        $this->rfs = $rfs ?: new RemoteFilesystem($io);
     }
 
     protected function initialize()
@@ -47,7 +47,6 @@ class PearRepository extends ArrayRepository
         set_error_handler(function($severity, $message, $file, $line) {
             throw new \ErrorException($message, $severity, $severity, $file, $line);
         });
-        $this->streamContext = StreamContextFactory::getContext();
         $this->fetchFromServer();
         restore_error_handler();
     }
@@ -120,7 +119,7 @@ class PearRepository extends ArrayRepository
                 );
 
                 try {
-                    $deps = file_get_contents($releaseLink . "/deps.".$pearVersion.".txt", false, $this->streamContext);
+                    $deps = $this->rfs->getContents($this->url, $releaseLink . "/deps.".$pearVersion.".txt", false);
                 } catch (\ErrorException $e) {
                     if (strpos($e->getMessage(), '404')) {
                         continue;
@@ -289,7 +288,7 @@ class PearRepository extends ArrayRepository
      */
     private function requestXml($url)
     {
-        $content = file_get_contents($url, false, $this->streamContext);
+        $content = $this->rfs->getContents($this->url, $url, false);
         if (!$content) {
             throw new \UnexpectedValueException('The PEAR channel at '.$url.' did not respond.');
         }
