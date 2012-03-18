@@ -75,6 +75,12 @@ class Problem
             $job = $reason['job'];
 
             if ($job && $job['cmd'] === 'install' && empty($job['packages'])) {
+                // handle php extensions
+                if (0 === stripos($job['packageName'], 'ext-')) {
+                    $ext = substr($job['packageName'], 4);
+                    $error = extension_loaded($ext) ? 'has the wrong version ('.phpversion($ext).') installed' : 'is missing from your system';
+                    return 'The requested PHP extension "'.$job['packageName'].'" '.$this->constraintToText($job['constraint']).$error.'.';
+                }
                 return 'The requested package "'.$job['packageName'].'" '.$this->constraintToText($job['constraint']).'could not be found.';
             }
         }
