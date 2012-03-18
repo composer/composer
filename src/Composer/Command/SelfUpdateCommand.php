@@ -13,7 +13,7 @@
 namespace Composer\Command;
 
 use Composer\Composer;
-use Composer\Util\StreamContextFactory;
+use Composer\Util\RemoteFilesystem;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -40,9 +40,8 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $ctx = StreamContextFactory::getContext();
-
-        $latest = trim(file_get_contents('http://getcomposer.org/version', false, $ctx));
+        $rfs = new RemoteFilesystem($this->getIO());
+        $latest = trim($rfs->getContents('getcomposer.org', 'http://getcomposer.org/version', false));
 
         if (Composer::VERSION !== $latest) {
             $output->writeln(sprintf("Updating to version <info>%s</info>.", $latest));
@@ -50,7 +49,7 @@ EOT
             $remoteFilename = 'http://getcomposer.org/composer.phar';
             $localFilename = $_SERVER['argv'][0];
 
-            copy($remoteFilename, $localFilename, $ctx);
+            $rfs->copy('getcomposer.org', $remoteFilename, $localFilename);
         } else {
             $output->writeln("<info>You are using the latest composer version.</info>");
         }

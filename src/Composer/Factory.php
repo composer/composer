@@ -16,6 +16,7 @@ use Composer\Json\JsonFile;
 use Composer\IO\IOInterface;
 use Composer\Repository\RepositoryManager;
 use Composer\Util\ProcessExecutor;
+use Composer\Util\RemoteFilesystem;
 
 /**
  * Creates an configured instance of composer.
@@ -38,7 +39,7 @@ class Factory
             $composerFile = getenv('COMPOSER') ?: 'composer.json';
         }
 
-        $file = new JsonFile($composerFile);
+        $file = new JsonFile($composerFile, new RemoteFilesystem($io));
         if (!$file->exists()) {
             if ($composerFile === 'composer.json') {
                 $message = 'Composer could not find a composer.json file in '.getcwd();
@@ -98,7 +99,7 @@ class Factory
 
         // init locker
         $lockFile = substr($composerFile, -5) === '.json' ? substr($composerFile, 0, -4).'lock' : $composerFile . '.lock';
-        $locker = new Package\Locker(new JsonFile($lockFile), $rm, md5_file($composerFile));
+        $locker = new Package\Locker(new JsonFile($lockFile, new RemoteFilesystem($io)), $rm, md5_file($composerFile));
 
         // initialize composer
         $composer = new Composer();
