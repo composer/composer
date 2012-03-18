@@ -110,15 +110,22 @@ class RemoteFilesystem
 
         // decode gzip
         if (false !== $result && extension_loaded('zlib') && substr($fileUrl, 0, 4) === 'http') {
+            $decode = false;
             foreach ($http_response_header as $header) {
                 if (preg_match('{^content-encoding: *gzip *$}i', $header)) {
-                    if (version_compare(PHP_VERSION, '5.4.0', '>=')) {
-                        $result = zlib_decode($result);
-                    } else {
-                        // work around issue with gzuncompress & co that do not work with all gzip checksums
-                        $result = file_get_contents('compress.zlib://data:application/octet-stream;base64,'.base64_encode($result));
-                    }
-                    break;
+                    $decode = true;
+                    continue;
+                } elseif (preg_match('{^HTTP/}i', $header)) {
+                    $decode = false;
+                }
+            }
+
+            if ($decode) {
+                if (version_compare(PHP_VERSION, '5.4.0', '>=')) {
+                    $result = zlib_decode($result);
+                } else {
+                    // work around issue with gzuncompress & co that do not work with all gzip checksums
+                    $result = file_get_contents('compress.zlib://data:application/octet-stream;base64,'.base64_encode($result));
                 }
             }
         }
@@ -138,7 +145,7 @@ class RemoteFilesystem
         }
 
         if (false === $this->result) {
-            throw new TransportException("The '$fileUrl' file could not be downloaded");
+            throw new TransportException('The "'.$fileUrl.'" file could not be downloaded');
         }
     }
 
@@ -156,7 +163,7 @@ class RemoteFilesystem
     {
         switch ($notificationCode) {
             case STREAM_NOTIFY_FAILURE:
-                throw new TransportException(trim($message), $messageCode);
+                throw new TransportException('The "'.$this->fileUrl.'" file could not be downloaded ('.trim($message).')', $messageCode);
                 break;
 
             case STREAM_NOTIFY_AUTH_REQUIRED:
