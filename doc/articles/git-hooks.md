@@ -2,8 +2,8 @@
 
 [Hooks](http://book.git-scm.com/5_git_hooks.html) are little scripts you can
 place in the `.git/hooks` directory to trigger actions at certain points. Using
-these hooks, Composer can have tight integration with git, easing the project
-workflow.
+these hooks Composer can have tight integration with git thereby easing the
+project workflow.
 
 ## post-checkout
 
