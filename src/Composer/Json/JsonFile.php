@@ -73,7 +73,7 @@ class JsonFile
             )
         ));
 
-        $json = file_get_contents($this->path, false, $ctx);
+        $json = @file_get_contents($this->path, false, $ctx);
         if (!$json) {
             throw new \RuntimeException('Could not read '.$this->path.', you are probably offline');
         }
