@@ -74,7 +74,6 @@ class FileDownloader implements DownloaderInterface
         $url = $this->processUrl($url);
 
         $this->rfs->copy($package->getSourceUrl(), $url, $fileName);
-        $this->io->write('');
 
         if (!file_exists($fileName)) {
             throw new \UnexpectedValueException($url.' could not be saved to '.$fileName.', make sure the'
