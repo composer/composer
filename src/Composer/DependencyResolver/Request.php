@@ -52,6 +52,7 @@ class Request
             'packages' => $packages,
             'cmd' => $cmd,
             'packageName' => $packageName,
+            'constraint' => $constraint,
         );
     }
 

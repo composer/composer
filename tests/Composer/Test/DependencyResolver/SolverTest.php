@@ -59,13 +59,15 @@ class SolverTest extends TestCase
         $this->repo->addPackage($this->getPackage('A', '1.0'));
         $this->reposComplete();
 
-        $this->request->install('B');
+        $this->request->install('B', $this->getVersionConstraint('=', '1'));
 
         try {
             $transaction = $this->solver->solve($this->request);
-            $this->fail('Unsolvable conflict did not resolve in exception.');
+            $this->fail('Unsolvable conflict did not result in exception.');
         } catch (SolverProblemsException $e) {
-            // TODO assert problem properties
+            $problems = $e->getProblems();
+            $this->assertEquals(1, count($problems));
+            $this->assertEquals('The requested package "b" with constraint == 1.0.0.0 could not be found.', (string) $problems[0]);
         }
     }
 
@@ -589,8 +591,10 @@ class SolverTest extends TestCase
 
         try {
             $transaction = $this->solver->solve($this->request);
-            $this->fail('Unsolvable conflict did not resolve in exception.');
+            $this->fail('Unsolvable conflict did not result in exception.');
         } catch (SolverProblemsException $e) {
+            $problems = $e->getProblems();
+            $this->assertEquals(1, count($problems));
             // TODO assert problem properties
         }
     }
@@ -610,8 +614,10 @@ class SolverTest extends TestCase
 
         try {
             $transaction = $this->solver->solve($this->request);
-            $this->fail('Unsolvable conflict did not resolve in exception.');
+            $this->fail('Unsolvable conflict did not result in exception.');
         } catch (SolverProblemsException $e) {
+            $problems = $e->getProblems();
+            $this->assertEquals(1, count($problems));
             // TODO assert problem properties
         }
     }
