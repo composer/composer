@@ -35,7 +35,7 @@ class VcsRepository extends ArrayRepository
 
         $this->url = $config['url'];
         $this->io = $io;
-        $this->type = $config['type'];
+        $this->type = isset($config['type']) ? $config['type'] : 'vcs';
     }
 
     public function setDebug($debug)
