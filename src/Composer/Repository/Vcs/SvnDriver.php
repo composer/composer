@@ -327,7 +327,7 @@ class SvnDriver extends VcsDriver
         $processExecutor = new ProcessExecutor();
 
         $exit = $processExecutor->execute(
-            $this->getSvnCommand('svn info', $url, '2>/dev/null'),
+            "svn info --non-interactive {$url}",
             $ignoredOutput
         );
         return $exit === 0;
