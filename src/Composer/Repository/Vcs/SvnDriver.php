@@ -50,6 +50,7 @@ class SvnDriver extends VcsDriver
      */
     public function __construct($url, IOInterface $io, ProcessExecutor $process = null)
     {
+        $url = self::fixSvnUrl($url);
         parent::__construct($this->baseUrl = rtrim($url, '/'), $io, $process);
 
         if (false !== ($pos = strrpos($url, '/trunk'))) {
@@ -314,7 +315,8 @@ class SvnDriver extends VcsDriver
      */
     public static function supports($url, $deep = false)
     {
-        if (preg_match('#(^svn://|//svn\.)#i', $url)) {
+        $url = self::fixSvnUrl($url);
+        if (preg_match('#((^svn://)|(^svn\+ssh://)|(^file:///)|(^http)|(svn\.))#i', $url)) {
             return true;
         }
 
