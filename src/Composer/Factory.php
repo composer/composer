@@ -78,17 +78,7 @@ class Factory
         $rm = $this->createRepositoryManager($io);
 
         // load default repository unless it's explicitly disabled
-        $loadPackagist = true;
-        if (isset($packageConfig['repositories'])) {
-            foreach ($packageConfig['repositories'] as $repo) {
-                if (isset($repo['packagist']) && $repo['packagist'] === false) {
-                    $loadPackagist = false;
-                }
-            }
-        }
-        if ($loadPackagist) {
-            $this->addPackagistRepository($rm);
-        }
+        $packageConfig = $this->addPackagistRepository($packageConfig);
 
         // load local repository
         $this->addLocalRepository($rm, $vendorDir);
@@ -102,6 +92,9 @@ class Factory
 
         // initialize installation manager
         $im = $this->createInstallationManager($rm, $dm, $vendorDir, $binDir, $io);
+
+        // purge packages if they have been deleted on the filesystem
+        $this->purgePackages($rm, $im);
 
         // init locker
         $lockFile = substr($composerFile, -5) === '.json' ? substr($composerFile, 0, -4).'lock' : $composerFile . '.lock';
@@ -137,9 +130,33 @@ class Factory
         $rm->setLocalRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/.composer/installed.json')));
     }
 
-    protected function addPackagistRepository(RepositoryManager $rm)
+    protected function addPackagistRepository(array $packageConfig)
     {
-        $rm->addRepository(new Repository\ComposerRepository(array('url' => 'http://packagist.org')));
+        $loadPackagist = true;
+        $packagistConfig = array(
+                'type' => 'composer',
+                'url' => 'http://packagist.org'
+        );
+        if (isset($packageConfig['repositories'])) {
+            foreach ($packageConfig['repositories'] as $key => $repo) {
+                if (isset($repo['packagist'])) {
+                    if (true === $repo['packagist']) {
+                        $packageConfig['repositories'][$key] = $packagistConfig;
+                    }
+
+                    $loadPackagist = false;
+                    break;
+                }
+            }
+        } else {
+            $packageConfig['repositories'] = array();
+        }
+
+        if ($loadPackagist) {
+            $packageConfig['repositories'][] = $packagistConfig;
+        }
+
+        return $packageConfig;
     }
 
     public function createDownloadManager(IOInterface $io)
@@ -164,6 +181,15 @@ class Factory
         $im->addInstaller(new Installer\InstallerInstaller($vendorDir, $binDir, $dm, $rm->getLocalRepository(), $io, $im));
 
         return $im;
+    }
+
+    protected function purgePackages(Repository\RepositoryManager $rm, Installer\InstallationManager $im)
+    {
+        foreach ($rm->getLocalRepository()->getPackages() as $package) {
+            if (!$im->isPackageInstalled($package)) {
+                $rm->getLocalRepository()->removePackage($package);
+            }
+        }
     }
 
     static public function create(IOInterface $io, $composerFile = null)
