@@ -40,9 +40,9 @@ class RequestTest extends TestCase
 
         $this->assertEquals(
             array(
-                array('packages' => array($foo), 'cmd' => 'install', 'packageName' => 'foo'),
-                array('packages' => array($bar), 'cmd' => 'install', 'packageName' => 'bar'),
-                array('packages' => array($foobar), 'cmd' => 'remove', 'packageName' => 'foobar'),
+                array('packages' => array($foo), 'cmd' => 'install', 'packageName' => 'foo', 'constraint' => null),
+                array('packages' => array($bar), 'cmd' => 'install', 'packageName' => 'bar', 'constraint' => null),
+                array('packages' => array($foobar), 'cmd' => 'remove', 'packageName' => 'foobar', 'constraint' => null),
             ),
             $request->getJobs());
     }
@@ -63,11 +63,11 @@ class RequestTest extends TestCase
         $pool->addRepository($repo2);
 
         $request = new Request($pool);
-        $request->install('foo', $this->getVersionConstraint('=', '1'));
+        $request->install('foo', $constraint = $this->getVersionConstraint('=', '1'));
 
         $this->assertEquals(
             array(
-                    array('packages' => array($foo1, $foo2), 'cmd' => 'install', 'packageName' => 'foo'),
+                    array('packages' => array($foo1, $foo2), 'cmd' => 'install', 'packageName' => 'foo', 'constraint' => $constraint),
             ),
             $request->getJobs()
         );
