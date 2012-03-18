@@ -41,7 +41,7 @@ class Application extends BaseApplication
 
     public function __construct()
     {
-        ErrorHandler::set();
+        ErrorHandler::register();
         parent::__construct('Composer', Composer::VERSION);
     }
 

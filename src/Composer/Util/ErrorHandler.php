@@ -13,7 +13,7 @@
 namespace Composer\Util;
 
 /**
- * Convert PHP E_NOTICE, E_WARNING into exceptions
+ * Convert PHP errors into exceptions
  *
  * @author Artem Lopata <biozshock@gmail.com>
  */
@@ -22,30 +22,30 @@ class ErrorHandler
     /**
      * Error handler
      *
-     * @param int    $errorNo     Level of the error raised
-     * @param string $errorString Error message
-     * @param string $errorFile   Filename that the error was raised in
-     * @param int    $errorLine   Line number the error was raised at
+     * @param int    $level   Level of the error raised
+     * @param string $message Error message
+     * @param string $file    Filename that the error was raised in
+     * @param int    $line    Line number the error was raised at
      *
      * @static
      * @throws \ErrorException
      */
-    public static function handle($errorNo, $errorString, $errorFile, $errorLine)
+    public static function handle($level, $message, $file, $line)
     {
-        //this allows error suppression in 3rd party code to work
+        // respect error_reporting being disabled
         if (!error_reporting()) {
             return;
         }
 
-        throw new \ErrorException(sprintf('%s in %s:%d', $errorString, $errorFile, $errorLine), $errorNo);
+        throw new \ErrorException($message, 0, $level, $file, $line);
     }
 
     /**
-     * Set error handler
+     * Register error handler
      *
      * @static
      */
-    public static function set()
+    public static function register()
     {
         set_error_handler(array(__CLASS__, 'handle'));
     }
