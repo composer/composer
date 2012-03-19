@@ -18,14 +18,12 @@ performed, place the following file at `.git/hooks/post-checkout`.
     then
         # Check to see if Composer is installed.
         echo "Processing Composer"
-        if [ ! -f composer.phar ]
-        then
-            # Install Composer.
-            curl -s http://getcomposer.org/installer | php
-        fi
     
-        # Update the project with Composer.
-        php composer.phar install
+        # Check to see if Composer is installed.
+        [ ! -f composer.phar ] && [ ! `which composer.phar` ] && curl -s http://getcomposer.org/installer | php >/dev/null
+    
+        # Run the composer install
+        [ -f composer.phar ] && php composer.phar install || composer.phar install
     fi
 
 Also be sure to run `chmod +x .git/hooks/post-checkout` to ensure the file can
