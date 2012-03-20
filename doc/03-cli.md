@@ -179,10 +179,15 @@ directory to something other than `vendor/bin`.
 This env var controls the time composer waits for commands (such as git
 commands) to finish executing. The default value is 60 seconds.
 
-### HTTP_PROXY
+### http_proxy or HTTP_PROXY
 
 If you are using composer from behind an HTTP proxy, you can use the standard
-`HTTP_PROXY` or `http_proxy` env vars. Simply set it to the URL of your proxy.
+`http_proxy` or `HTTP_PROXY` env vars. Simply set it to the URL of your proxy.
 Many operating systems already set this variable for you.
+
+Using `http_proxy` (lowercased) or even defining both might be preferrable since
+some tools like git or curl will only use the lower-cased `http_proxy` version.
+Alternatively you can also define the git proxy using
+`git config --global http.proxy <proxy url>`.
 
 &larr; [Libraries](02-libraries.md)  |  [Schema](04-schema.md) &rarr;
