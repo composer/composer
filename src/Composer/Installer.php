@@ -171,7 +171,7 @@ class Installer
             $links = $this->collectLinks();
 
             foreach ($links as $link) {
-                $request->install($link->getTarget(), $link->getConstraint());
+                $request->update($link->getTarget(), $link->getConstraint());
             }
         } elseif ($this->locker->isLocked()) {
             $installFromLock = true;
