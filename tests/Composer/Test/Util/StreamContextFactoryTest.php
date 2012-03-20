@@ -57,13 +57,13 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
 
     public function testHttpProxy()
     {
-        $_SERVER['HTTP_PROXY'] = 'http://username:password@proxyserver.net:port/';
-        $_SERVER['http_proxy'] = 'http://proxyserver/';
+        $_SERVER['http_proxy'] = 'http://username:password@proxyserver.net:port/';
+        $_SERVER['HTTP_PROXY'] = 'http://proxyserver/';
 
         $context = StreamContextFactory::getContext(array('http' => array('method' => 'GET')));
         $options = stream_context_get_options($context);
 
-        $this->assertSame('http://proxyserver/', $_SERVER['http_proxy']);
+        $this->assertSame('http://proxyserver/', $_SERVER['HTTP_PROXY']);
 
         $this->assertEquals(array('http' => array(
             'proxy' => 'tcp://username:password@proxyserver.net:port/',
