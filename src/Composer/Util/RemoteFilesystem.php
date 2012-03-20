@@ -141,7 +141,7 @@ class RemoteFilesystem
         }
 
         if ($this->progress) {
-            $this->io->write('');
+            $this->io->overwrite("    Downloading: <comment>100%</comment>");
         }
 
         if (false === $this->result) {
