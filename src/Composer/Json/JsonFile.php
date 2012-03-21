@@ -17,6 +17,7 @@ use Composer\Composer;
 use JsonSchema\Validator;
 use Seld\JsonLint\JsonParser;
 use Composer\Util\StreamContextFactory;
+use Composer\Util\RemoteFilesystem;
 
 /**
  * Reads/writes json files.
@@ -34,15 +35,22 @@ class JsonFile
     const JSON_UNESCAPED_UNICODE = 256;
 
     private $path;
+    private $rfs;
 
     /**
      * Initializes json file reader/parser.
      *
      * @param   string  $lockFile   path to a lockfile
+     * @param   RemoteFilesystem  $rfs   required for loading http/https json files
      */
-    public function __construct($path)
+    public function __construct($path, RemoteFilesystem $rfs = null)
     {
         $this->path = $path;
+
+        if (null === $rfs && preg_match('{^https?://}i', $path)) {
+            throw new \InvalidArgumentException('http urls require a RemoteFilesystem instance to be passed');
+        }
+        $this->rfs = $rfs;
     }
 
     public function getPath()
@@ -67,15 +75,14 @@ class JsonFile
      */
     public function read()
     {
-        $ctx = StreamContextFactory::getContext(array(
-            'http' => array(
-                'header' => 'User-Agent: Composer/'.Composer::VERSION."\r\n"
-            )
-        ));
-
-        $json = file_get_contents($this->path, false, $ctx);
-        if (!$json) {
-            throw new \RuntimeException('Could not read '.$this->path.', you are probably offline');
+        try {
+            if ($this->rfs) {
+                $json = $this->rfs->getContents($this->path, $this->path, false);
+            } else {
+                $json = file_get_contents($this->path);
+            }
+        } catch (\Exception $e) {
+            throw new \RuntimeException('Could not read '.$this->path.', you are probably offline ('.$e->getMessage().')');
         }
 
         return static::parseJson($json);

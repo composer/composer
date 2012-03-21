@@ -54,7 +54,8 @@ EOT
         } else {
             $output->writeln('No composer.json found in the current directory, showing packages from packagist.org');
             $installedRepo = $platformRepo;
-            $repos = new CompositeRepository(array($installedRepo, new ComposerRepository(array('url' => 'http://packagist.org'))));
+            $packagist = new ComposerRepository(array('url' => 'http://packagist.org'), $this->getIO());
+            $repos = new CompositeRepository(array($installedRepo, $packagist));
         }
 
         $tokens = $input->getArgument('tokens');

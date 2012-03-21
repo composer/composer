@@ -53,7 +53,7 @@ class Pool
             throw new \RuntimeException("Could not determine repository priority. The repository was not registered in the pool.");
         }
 
-        return $priority;
+        return -$priority;
     }
 
     /**

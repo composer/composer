@@ -80,7 +80,7 @@ class DefaultPolicyTest extends TestCase
         $this->assertEquals($expected, $selected);
     }
 
-    public function testSelectLastRepo()
+    public function testSelectFirstRepo()
     {
         $this->repoImportant = new ArrayRepository;
 
@@ -88,8 +88,8 @@ class DefaultPolicyTest extends TestCase
         $this->repoImportant->addPackage($packageAImportant = $this->getPackage('A', '1.0'));
 
         $this->pool->addRepository($this->repoInstalled);
-        $this->pool->addRepository($this->repo);
         $this->pool->addRepository($this->repoImportant);
+        $this->pool->addRepository($this->repo);
 
         $literals = array(new Literal($packageA, true), new Literal($packageAImportant, true));
         $expected = array(new Literal($packageAImportant, true));

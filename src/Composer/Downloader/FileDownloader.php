@@ -27,15 +27,17 @@ use Composer\Util\RemoteFilesystem;
 class FileDownloader implements DownloaderInterface
 {
     protected $io;
+    protected $rfs;
 
     /**
      * Constructor.
      *
      * @param IOInterface  $io  The IO instance
      */
-    public function __construct(IOInterface $io)
+    public function __construct(IOInterface $io, RemoteFilesystem $rfs = null)
     {
         $this->io = $io;
+        $this->rfs = $rfs ?: new RemoteFilesystem($io);
     }
 
     /**
@@ -71,9 +73,7 @@ class FileDownloader implements DownloaderInterface
 
         $url = $this->processUrl($url);
 
-        $rfs = new RemoteFilesystem($this->io);
-        $rfs->copy($package->getSourceUrl(), $url, $fileName);
-        $this->io->write('');
+        $this->rfs->copy($package->getSourceUrl(), $url, $fileName);
 
         if (!file_exists($fileName)) {
             throw new \UnexpectedValueException($url.' could not be saved to '.$fileName.', make sure the'

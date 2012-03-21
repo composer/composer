@@ -15,7 +15,6 @@ namespace Composer\Downloader;
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Util\Filesystem;
-use Composer\Util\RemoteFilesystem;
 
 /**
  * Base downloader for archives

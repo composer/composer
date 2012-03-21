@@ -34,15 +34,15 @@ final class StreamContextFactory
         // Handle system proxy
         if (isset($_SERVER['HTTP_PROXY']) || isset($_SERVER['http_proxy'])) {
             // Some systems seem to rely on a lowercased version instead...
-            $proxy = isset($_SERVER['HTTP_PROXY']) ? $_SERVER['HTTP_PROXY'] : $_SERVER['http_proxy'];
-            
+            $proxy = isset($_SERVER['http_proxy']) ? $_SERVER['http_proxy'] : $_SERVER['HTTP_PROXY'];
+
             // http(s):// is not supported in proxy
             $proxy = str_replace(array('http://', 'https://'), array('tcp://', 'ssl://'), $proxy);
 
             if (0 === strpos($proxy, 'ssl:') && !extension_loaded('openssl')) {
                 throw new \RuntimeException('You must enable the openssl extension to use a proxy over https');
             }
-            
+
             $options['http'] = array(
                 'proxy'           => $proxy,
                 'request_fulluri' => true,

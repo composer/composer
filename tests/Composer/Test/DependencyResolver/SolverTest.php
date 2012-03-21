@@ -9,7 +9,6 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-
 namespace Composer\Test\DependencyResolver;
 
 use Composer\Repository\ArrayRepository;
@@ -60,14 +59,35 @@ class SolverTest extends TestCase
         $this->repo->addPackage($this->getPackage('A', '1.0'));
         $this->reposComplete();
 
-        $this->request->install('B');
+        $this->request->install('B', $this->getVersionConstraint('=', '1'));
 
         try {
             $transaction = $this->solver->solve($this->request);
-            $this->fail('Unsolvable conflict did not resolve in exception.');
+            $this->fail('Unsolvable conflict did not result in exception.');
         } catch (SolverProblemsException $e) {
-            // TODO assert problem properties
+            $problems = $e->getProblems();
+            $this->assertEquals(1, count($problems));
+            $this->assertEquals('The requested package "b" with constraint == 1.0.0.0 could not be found.', (string) $problems[0]);
         }
+    }
+
+    public function testSolverInstallSamePackageFromDifferentRepositories()
+    {
+        $repo1 = new ArrayRepository;
+        $repo2 = new ArrayRepository;
+
+        $repo1->addPackage($foo1 = $this->getPackage('foo', '1'));
+        $repo2->addPackage($foo2 = $this->getPackage('foo', '1'));
+
+        $this->pool->addRepository($this->repoInstalled);
+        $this->pool->addRepository($repo1);
+        $this->pool->addRepository($repo2);
+
+        $this->request->install('foo');
+
+        $this->checkSolverResult(array(
+                array('job' => 'install', 'package' => $foo1),
+        ));
     }
 
     public function testSolverInstallWithDeps()
@@ -571,8 +591,10 @@ class SolverTest extends TestCase
 
         try {
             $transaction = $this->solver->solve($this->request);
-            $this->fail('Unsolvable conflict did not resolve in exception.');
+            $this->fail('Unsolvable conflict did not result in exception.');
         } catch (SolverProblemsException $e) {
+            $problems = $e->getProblems();
+            $this->assertEquals(1, count($problems));
             // TODO assert problem properties
         }
     }
@@ -592,8 +614,10 @@ class SolverTest extends TestCase
 
         try {
             $transaction = $this->solver->solve($this->request);
-            $this->fail('Unsolvable conflict did not resolve in exception.');
+            $this->fail('Unsolvable conflict did not result in exception.');
         } catch (SolverProblemsException $e) {
+            $problems = $e->getProblems();
+            $this->assertEquals(1, count($problems));
             // TODO assert problem properties
         }
     }

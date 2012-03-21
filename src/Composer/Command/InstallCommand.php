@@ -61,6 +61,6 @@ EOT
             ->setInstallSuggests($input->getOption('install-suggests'))
         ;
 
-        return $install->run();
+        return $install->run() ? 0 : 1;
     }
 }

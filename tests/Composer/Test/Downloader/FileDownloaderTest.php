@@ -17,6 +17,13 @@ use Composer\Util\Filesystem;
 
 class FileDownloaderTest extends \PHPUnit_Framework_TestCase
 {
+    protected function getDownloader($io = null, $rfs = null)
+    {
+        $io = $io ?: $this->getMock('Composer\IO\IOInterface');
+        $rfs = $rfs ?: $this->getMockBuilder('Composer\Util\RemoteFilesystem')->disableOriginalConstructor()->getMock();
+        return new FileDownloader($io, $rfs);
+    }
+
     /**
      * @expectedException \InvalidArgumentException
      */
@@ -28,7 +35,7 @@ class FileDownloaderTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(null))
         ;
 
-        $downloader = new FileDownloader($this->getMock('Composer\IO\IOInterface'));
+        $downloader = $this->getDownloader();
         $downloader->download($packageMock, '/path');
     }
 
@@ -42,7 +49,7 @@ class FileDownloaderTest extends \PHPUnit_Framework_TestCase
 
         $path = tempnam(sys_get_temp_dir(), 'c');
 
-        $downloader = new FileDownloader($this->getMock('Composer\IO\IOInterface'));
+        $downloader = $this->getDownloader();
         try {
             $downloader->download($packageMock, $path);
             $this->fail();
@@ -63,7 +70,7 @@ class FileDownloaderTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue('http://example.com/script.js'))
         ;
 
-        $downloader = new FileDownloader($this->getMock('Composer\IO\IOInterface'));
+        $downloader = $this->getDownloader();
         $method = new \ReflectionMethod($downloader, 'getFileName');
         $method->setAccessible(true);
 
@@ -93,7 +100,7 @@ class FileDownloaderTest extends \PHPUnit_Framework_TestCase
             }))
         ;
 
-        $downloader = new FileDownloader($ioMock);
+        $downloader = $this->getDownloader($ioMock);
         try {
             $downloader->download($packageMock, $path);
             $this->fail();
@@ -126,7 +133,12 @@ class FileDownloaderTest extends \PHPUnit_Framework_TestCase
             $path = sys_get_temp_dir().'/'.md5(time().rand());
         } while (file_exists($path));
 
-        $downloader = new FileDownloader($this->getMock('Composer\IO\IOInterface'));
+        $downloader = $this->getDownloader();
+
+        // make sure the file expected to be downloaded is on disk already
+        mkdir($path, 0777, true);
+        touch($path.'/script.js');
+
         try {
             $downloader->download($packageMock, $path);
             $this->fail();

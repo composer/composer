@@ -16,6 +16,7 @@ use Composer\Json\JsonFile;
 use Composer\IO\IOInterface;
 use Composer\Repository\RepositoryManager;
 use Composer\Util\ProcessExecutor;
+use Composer\Util\RemoteFilesystem;
 
 /**
  * Creates an configured instance of composer.
@@ -38,7 +39,7 @@ class Factory
             $composerFile = getenv('COMPOSER') ?: 'composer.json';
         }
 
-        $file = new JsonFile($composerFile);
+        $file = new JsonFile($composerFile, new RemoteFilesystem($io));
         if (!$file->exists()) {
             if ($composerFile === 'composer.json') {
                 $message = 'Composer could not find a composer.json file in '.getcwd();
@@ -78,18 +79,7 @@ class Factory
         $rm = $this->createRepositoryManager($io);
 
         // load default repository unless it's explicitly disabled
-        $loadPackagist = true;
-        if (isset($packageConfig['repositories'])) {
-            foreach ($packageConfig['repositories'] as $repo) {
-                if (isset($repo['packagist']) && $repo['packagist'] === false) {
-                    $loadPackagist = false;
-                    break;
-                }
-            }
-        }
-        if ($loadPackagist) {
-            $this->addPackagistRepository($rm);
-        }
+        $packageConfig = $this->addPackagistRepository($packageConfig);
 
         // load local repository
         $this->addLocalRepository($rm, $vendorDir);
@@ -104,9 +94,12 @@ class Factory
         // initialize installation manager
         $im = $this->createInstallationManager($rm, $dm, $vendorDir, $binDir, $io);
 
+        // purge packages if they have been deleted on the filesystem
+        $this->purgePackages($rm, $im);
+
         // init locker
         $lockFile = substr($composerFile, -5) === '.json' ? substr($composerFile, 0, -4).'lock' : $composerFile . '.lock';
-        $locker = new Package\Locker(new JsonFile($lockFile), $rm, md5_file($composerFile));
+        $locker = new Package\Locker(new JsonFile($lockFile, new RemoteFilesystem($io)), $rm, md5_file($composerFile));
 
         // initialize composer
         $composer = new Composer();
@@ -138,9 +131,33 @@ class Factory
         $rm->setLocalRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/.composer/installed.json')));
     }
 
-    protected function addPackagistRepository(RepositoryManager $rm)
+    protected function addPackagistRepository(array $packageConfig)
     {
-        $rm->addRepository(new Repository\ComposerRepository(array('url' => 'http://packagist.org')));
+        $loadPackagist = true;
+        $packagistConfig = array(
+                'type' => 'composer',
+                'url' => 'http://packagist.org'
+        );
+        if (isset($packageConfig['repositories'])) {
+            foreach ($packageConfig['repositories'] as $key => $repo) {
+                if (isset($repo['packagist'])) {
+                    if (true === $repo['packagist']) {
+                        $packageConfig['repositories'][$key] = $packagistConfig;
+                    }
+
+                    $loadPackagist = false;
+                    break;
+                }
+            }
+        } else {
+            $packageConfig['repositories'] = array();
+        }
+
+        if ($loadPackagist) {
+            $packageConfig['repositories'][] = $packagistConfig;
+        }
+
+        return $packageConfig;
     }
 
     public function createDownloadManager(IOInterface $io)
@@ -165,6 +182,15 @@ class Factory
         $im->addInstaller(new Installer\InstallerInstaller($vendorDir, $binDir, $dm, $rm->getLocalRepository(), $io, $im));
 
         return $im;
+    }
+
+    protected function purgePackages(Repository\RepositoryManager $rm, Installer\InstallationManager $im)
+    {
+        foreach ($rm->getLocalRepository()->getPackages() as $package) {
+            if (!$im->isPackageInstalled($package)) {
+                $rm->getLocalRepository()->removePackage($package);
+            }
+        }
     }
 
     static public function create(IOInterface $io, $composerFile = null)

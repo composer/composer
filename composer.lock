@@ -1,5 +1,5 @@
 {
-    "hash": "959be339ea6f0b140f09215c4ef451cc",
+    "hash": "df0b80bd7287f1783e3bf2a2c4b9db63",
     "packages": [
         {
             "package": "justinrainbow/json-schema",
@@ -9,23 +9,25 @@
         {
             "package": "seld/jsonlint",
             "version": "dev-master",
-            "source-reference": "12f0b1e5334a52b7035e1d15f36974db7c06b78d"
+            "source-reference": "869e5d011fe1c82501ae0a3b427a686c21fd5baf"
         },
         {
             "package": "symfony/console",
             "version": "dev-master",
-            "source-reference": "2ee50c7c845ef7f8bce9c540709ecfd64cbcda87"
+            "source-reference": "88a283f6c18d1e644ebca1e3df4c870eac8108dd"
         },
         {
             "package": "symfony/finder",
             "version": "dev-master",
-            "source-reference": "b3adc8d5c29593db93c0abc4711a1e25fd3a6fa0"
+            "source-reference": "be30ecc95281d729ee51b9e89644d442bcf60451"
         },
         {
             "package": "symfony/process",
             "version": "dev-master",
-            "source-reference": "6aceac404d8574cf7da57e7e29b00a665b7bd559"
+            "source-reference": "0aad81ae9f884cf7df6387cb52a11b5b4f07b3d6"
         }
     ],
-    "aliases": []
+    "aliases": [
+
+    ]
 }

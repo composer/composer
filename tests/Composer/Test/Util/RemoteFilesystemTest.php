@@ -31,7 +31,8 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(null))
         ;
 
-        $this->assertEquals(array(), $this->callGetOptionsForUrl($io, array('http://example.org')));
+        $res = $this->callGetOptionsForUrl($io, array('http://example.org'));
+        $this->assertTrue(isset($res['http']['header']) && false !== strpos($res['http']['header'], 'User-Agent'), 'getOptions must return an array with a header containing a User-Agent');
     }
 
     public function testGetOptionsForUrlWithAuthorization()
@@ -105,41 +106,14 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
     public function testCallbackGetNotifyFailure404()
     {
         $fs = new RemoteFilesystem($this->getMock('Composer\IO\IOInterface'));
-        $this->setAttribute($fs, 'firstCall', false);
 
         try {
-            $this->callCallbackGet($fs, STREAM_NOTIFY_FAILURE, 0, '', 404, 0, 0);
+            $this->callCallbackGet($fs, STREAM_NOTIFY_FAILURE, 0, 'HTTP/1.1 404 Not Found', 404, 0, 0);
             $this->fail();
         } catch (\Exception $e) {
             $this->assertInstanceOf('Composer\Downloader\TransportException', $e);
-            $this->assertContains('URL not found', $e->getMessage());
-        }
-    }
-
-    public function testCallbackGetNotifyFailure404FirstCall()
-    {
-        $io = $this->getMock('Composer\IO\IOInterface');
-        $io
-            ->expects($this->once())
-            ->method('getAuthorization')
-            ->will($this->returnValue(array('username' => null)))
-        ;
-        $io
-            ->expects($this->once())
-            ->method('isInteractive')
-            ->will($this->returnValue(false))
-        ;
-
-        $fs = new RemoteFilesystem($io);
-        $this->setAttribute($fs, 'firstCall', true);
-
-        try {
-            $this->callCallbackGet($fs, STREAM_NOTIFY_FAILURE, 0, '', 404, 0, 0);
-            $this->fail();
-        } catch (\Exception $e) {
-            $this->assertInstanceOf('Composer\Downloader\TransportException', $e);
-            $this->assertContains('URL required authentication', $e->getMessage());
-            $this->assertAttributeEquals(false, 'firstCall', $fs);
+            $this->assertEquals(404, $e->getCode());
+            $this->assertContains('HTTP/1.1 404 Not Found', $e->getMessage());
         }
     }
 
