@@ -144,7 +144,7 @@ means that we can just start using classes from it, and they will be
 autoloaded.
 
     $log = new Monolog\Logger('name');
-    $log->pushHandler(new Monolog\Handler\StreamHandler('app.log', Logger::WARNING));
+    $log->pushHandler(new Monolog\Handler\StreamHandler('app.log', Monolog\Logger::WARNING));
 
     $log->addWarning('Foo');
 
