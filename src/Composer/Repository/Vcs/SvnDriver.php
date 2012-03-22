@@ -4,6 +4,7 @@ namespace Composer\Repository\Vcs;
 
 use Composer\Json\JsonFile;
 use Composer\Util\ProcessExecutor;
+use Composer\Util\Svn as SvnUtil;
 use Composer\IO\IOInterface;
 
 /**
@@ -39,6 +40,11 @@ class SvnDriver extends VcsDriver
     protected $svnPassword = '';
 
     /**
+     * @var Composer\Util\Svn $util
+     */
+    protected $util;
+
+    /**
      * __construct
      *
      * @param string          $url
@@ -56,8 +62,8 @@ class SvnDriver extends VcsDriver
         if (false !== ($pos = strrpos($url, '/trunk'))) {
             $this->baseUrl = substr($url, 0, $pos);
         }
-
-        $this->detectSvnAuth();
+        $this->util    = new SvnUtil($this->baseUrl, $io);
+        $this->useAuth = $this->util->hasAuth();
     }
 
     /**
@@ -68,13 +74,13 @@ class SvnDriver extends VcsDriver
      * @param string $url     The SVN URL.
      *
      * @return string
-     * @uses   self::getSvnCommand()
+     * @uses   Composer\Util\Svn::getCommand()
      * @uses   parent::$process
      * @see    ProcessExecutor::execute()
      */
     public function execute($command, $url)
     {
-        $svnCommand = $this->getSvnCommand($command, $url);
+        $svnCommand = $this->util->getCommand($command, $url);
 
         $status = $this->process->execute(
             $svnCommand,
@@ -240,77 +246,6 @@ class SvnDriver extends VcsDriver
     }
 
     /**
-     * Return the no-auth-cache switch.
-     *
-     * @return string
-     */
-    public function getSvnAuthCache()
-    {
-        if (!$this->useCache) {
-            return '--no-auth-cache ';
-        }
-        return '';
-    }
-
-    /**
-     * A method to create the svn commands run.
-     *
-     * @string $cmd  Usually 'svn ls' or something like that.
-     * @string $url  Repo URL.
-     * @string $pipe Optional pipe for the output.
-     *
-     * @return string
-     */
-    public function getSvnCommand($cmd, $url, $pipe = null)
-    {
-        $cmd = sprintf('%s %s%s %s',
-            $cmd,
-            $this->getSvnInteractiveSetting(),
-            $this->getSvnCredentialString(),
-            escapeshellarg($url)
-        );
-        if ($pipe !== null) {
-            $cmd .= ' ' . $pipe;
-        }
-        return $cmd;
-    }
-
-    /**
-     * Return the credential string for the svn command.
-     *
-     * Adds --no-auth-cache when credentials are present.
-     *
-     * @return string
-     * @uses   self::$useAuth
-     */
-    public function getSvnCredentialString()
-    {
-        if ($this->useAuth !== true) {
-            return '';
-        }
-        $str = ' %s--username %s --password %s ';
-        return sprintf(
-            $str,
-            $this->getSvnAuthCache(),
-            escapeshellarg($this->svnUsername),
-            escapeshellarg($this->svnPassword)
-        );
-    }
-
-    /**
-     * Always run commands 'non-interactive':
-     *
-     * It's easier to spot potential issues (e.g. auth-failure) because
-     * non-interactive svn fails fast and does not wait for user input.
-     *
-     * @return string
-     */
-    public function getSvnInteractiveSetting()
-    {
-        return '--non-interactive ';
-    }
-
-    /**
      * {@inheritDoc}
      */
     public static function supports($url, $deep = false)
@@ -330,6 +265,7 @@ class SvnDriver extends VcsDriver
             "svn info --non-interactive {$url}",
             $ignoredOutput
         );
+
         return $exit === 0;
     }
 
@@ -346,29 +282,5 @@ class SvnDriver extends VcsDriver
             $url = 'file://' . $url;
         }
         return $url;
-    }
-
-    /**
-     * This is quick and dirty - thoughts?
-     *
-     * @return void
-     * @uses   parent::$baseUrl
-     * @uses   self::$useAuth, self::$svnUsername, self::$svnPassword
-     * @see    self::__construct()
-     */
-    protected function detectSvnAuth()
-    {
-        $uri = parse_url($this->baseUrl);
-        if (empty($uri['user'])) {
-            return;
-        }
-
-        $this->svnUsername = $uri['user'];
-
-        if (!empty($uri['pass'])) {
-            $this->svnPassword = $uri['pass'];
-        }
-
-        $this->useAuth = true;
     }
 }
