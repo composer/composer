@@ -40,6 +40,11 @@ class Svn
     protected $url;
 
     /**
+     * @var bool $useCache Cache credentials.
+     */
+    protected $useCache = false;
+
+    /**
      * __construct
      *
      * @param string                   $url
@@ -54,13 +59,42 @@ class Svn
     }
 
     /**
+     * doAuthDance
+     *
+     * Repositories requests credentials, let's put them in.
+     *
+     * @return \Composer\Util\Svn
+     * @uses   self::$io
+     * @uses   self::$hasAuth
+     * @uses   self::$credentials
+     * @uses   self::$useCache
+     */
+    public function doAuthDance()
+    {
+        $this->io->write("The Subversion server ({$this->url}) requested credentials:");
+
+        $this->hasAuth     = true;
+        $this->credentials = new \stdClass();
+
+        $this->credentials->username = $this->io->ask("Username: ");
+        $this->credentials->password = $this->io->askAndHideAnswer("Password: ");
+
+        $pleaseCache = $this->io->askConfirmation("Should Subversion cache these credentials? (yes/no) ", false);
+        if ($pleaseCache === true) {
+            $this->useCache = true;
+        }
+        return $this;
+    }
+    /**
      * Return the no-auth-cache switch.
      *
      * @return string
+     * @uses   selfg::$useCache
+     * @see    self::doAuthDance()
      */
     public function getAuthCache()
     {
-        if (!$this->hasCache) {
+        if (!$this->useCache) {
             return '--no-auth-cache ';
         }
         return '';
