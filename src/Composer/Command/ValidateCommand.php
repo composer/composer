@@ -17,6 +17,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonValidationException;
+use Composer\Util\RemoteFilesystem;
 
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>
@@ -55,7 +56,7 @@ EOT
 
         $laxValid = false;
         try {
-            $json = new JsonFile($file);
+            $json = new JsonFile($file, new RemoteFilesystem($this->getIO()));
             $json->read();
 
             $json->validateSchema(JsonFile::LAX_SCHEMA);

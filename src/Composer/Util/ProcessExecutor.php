@@ -26,15 +26,16 @@ class ProcessExecutor
     /**
      * runs a process on the commandline
      *
-     * @param $command the command to execute
-     * @param null $output the output will be written into this var if passed
+     * @param string $command the command to execute
+     * @param null   $output  the output will be written into this var if passed
+     * @param string $cwd     the working directory
      * @return int statuscode
      */
-    public function execute($command, &$output = null)
+    public function execute($command, &$output = null, $cwd = null)
     {
         $captureOutput = count(func_get_args()) > 1;
         $this->errorOutput = null;
-        $process = new Process($command, null, null, null, static::getTimeout());
+        $process = new Process($command, $cwd, null, null, static::getTimeout());
         $process->run(function($type, $buffer) use ($captureOutput) {
             if ($captureOutput) {
                 return;

@@ -18,6 +18,7 @@ use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Solver;
+use Composer\DependencyResolver\SolverProblemsException;
 use Composer\Downloader\DownloadManager;
 use Composer\Installer\InstallationManager;
 use Composer\IO\IOInterface;
@@ -163,7 +164,7 @@ class Installer
         $installFromLock = false;
         $request = new Request($pool);
         if ($this->update) {
-            $this->io->write('<info>Updating dependencies</info>');
+            $this->io->write('Updating dependencies');
 
             $request->updateAll();
 
@@ -174,7 +175,7 @@ class Installer
             }
         } elseif ($this->locker->isLocked()) {
             $installFromLock = true;
-            $this->io->write('<info>Installing from lock file</info>');
+            $this->io->write('Installing from lock file');
 
             if (!$this->locker->isFresh()) {
                 $this->io->write('<warning>Your lock file is out of sync with your composer.json, run "composer.phar update" to update dependencies</warning>');
@@ -192,7 +193,7 @@ class Installer
                 $request->install($package->getName(), $constraint);
             }
         } else {
-            $this->io->write('<info>Installing dependencies</info>');
+            $this->io->write('Installing dependencies');
 
             $links = $this->collectLinks();
 
@@ -206,7 +207,14 @@ class Installer
         $solver = new Solver($policy, $pool, $installedRepo);
 
         // solve dependencies
-        $operations = $solver->solve($request);
+        try {
+            $operations = $solver->solve($request);
+        } catch (SolverProblemsException $e) {
+            $this->io->write('<error>Your requirements could not be solved to an installable set of packages.</error>');
+            $this->io->write($e->getMessage());
+
+            return false;
+        }
 
         // force dev packages to be updated to latest reference on update
         if ($this->update) {
@@ -299,6 +307,8 @@ class Installer
             $eventName = $this->update ? ScriptEvents::POST_UPDATE_CMD : ScriptEvents::POST_INSTALL_CMD;
             $this->eventDispatcher->dispatchCommandEvent($eventName);
         }
+
+        return true;
     }
 
     private function collectLinks()

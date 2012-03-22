@@ -229,7 +229,7 @@ EOT
         if (!$this->repos) {
             $this->repos = new CompositeRepository(array(
                 new PlatformRepository,
-                new ComposerRepository(array('url' => 'http://packagist.org'))
+                new ComposerRepository(array('url' => 'http://packagist.org'), $this->getIO())
             ));
         }
 

@@ -44,7 +44,7 @@ any version beginning with `1.0`.
 
 ## Installation
 
-### 1) Downloading the Composer Executable
+### Downloading the Composer Executable
 
 To actually get Composer, we need to do two things. The first one is installing
 Composer (again, this mean downloading it into your project):
@@ -65,7 +65,7 @@ You can place this file anywhere you wish. If you put it in your `PATH`,
 you can access it globally. On unixy systems you can even make it
 executable and invoke it without `php`.
 
-### 2) Using Composer
+### Using Composer
 
 Next, run the command the `install` command to resolve and download dependencies:
 
