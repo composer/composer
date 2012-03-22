@@ -87,32 +87,28 @@ class SvnDriver extends VcsDriver
             $output
         );
 
-        // this could be any failure
-        if ($status > 0 && $this->io->isInteractive()) {
+        if ($status == 0) {
+            return $output;
+        }
 
-            // the error is not auth-related
-            if (strpos($output, 'authorization failed:') === false) {
-                return $output;
-            }
+        // this could be any failure, since SVN exits with 1 always
+        if (!$this->io->isInteractive()) {
+            return $output;
+        }
 
-            // no authorization has been detected so far
-            if (!$this->useAuth) {
-                $this->io->write("The Subversion server ({$this->baseUrl}) requested credentials:");
+        // the error is not auth-related
+        if (strpos($output, 'authorization failed:') === false) {
+            return $output;
+        }
 
-                $this->svnUsername = $this->io->ask("Username");
-                $this->svnPassword = $this->io->askAndHideAnswer("Password");
-                $this->useAuth     = true;
+        // no authorization has been detected so far
+        if (!$this->useAuth) {
+            $this->useAuth = $this->util->doAuthDance()->hasAuth();
 
-                $pleaseCache = $this->io->askConfirmation("Should Subversion cache these credentials?", false);
-                if ($pleaseCache === true) {
-                    $this->useCache = true;
-                }
-
-                // restart the process
-                $output = $this->execute($command, $url);
-            } else {
-                $this->io->write("Authorization failed: {$svnCommand}");
-            }
+            // restart the process
+            $output = $this->execute($command, $url);
+        } else {
+            $this->io->write("Authorization failed: {$svnCommand}");
         }
         return $output;
     }
