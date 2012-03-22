@@ -31,7 +31,8 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(null))
         ;
 
-        $this->assertEquals(array(), $this->callGetOptionsForUrl($io, array('http://example.org')));
+        $res = $this->callGetOptionsForUrl($io, array('http://example.org'));
+        $this->assertTrue(isset($res['http']['header']) && false !== strpos($res['http']['header'], 'User-Agent'), 'getOptions must return an array with a header containing a User-Agent');
     }
 
     public function testGetOptionsForUrlWithAuthorization()

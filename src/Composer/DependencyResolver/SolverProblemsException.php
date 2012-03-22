@@ -19,47 +19,26 @@ class SolverProblemsException extends \RuntimeException
 {
     protected $problems;
 
-    public function __construct(array $problems, array $learnedPool)
+    public function __construct(array $problems)
     {
-        $message = '';
-        foreach ($problems as $i => $problem) {
-            $message .= '[';
-            foreach ($problem as $why) {
+        $this->problems = $problems;
 
-                if (is_int($why) && isset($learnedPool[$why])) {
-                    $rules = $learnedPool[$why];
-                } else {
-                    $rules = $why;
-                }
-
-                if (isset($rules['packages'])) {
-                    $message .= $this->jobToText($rules);
-                } else {
-                    $message .= '(';
-                    foreach ($rules as $rule) {
-                        if ($rule instanceof Rule) {
-                            if ($rule->getType() == RuleSet::TYPE_LEARNED) {
-                                $message .= 'learned: ';
-                            }
-                            $message .= $rule . ', ';
-                        } else {
-                            $message .= 'String(' . $rule . '), ';
-                        }
-                    }
-                    $message .= ')';
-                }
-                $message .= ', ';
-            }
-            $message .= "]\n";
-        }
-
-        parent::__construct($message);
+        parent::__construct($this->createMessage());
     }
 
-    public function jobToText($job)
+    protected function createMessage()
     {
-        //$output = serialize($job);
-        $output = 'Job(cmd='.$job['cmd'].', target='.$job['packageName'].', packages=['.implode(', ', $job['packages']).'])';
-        return $output;
+        $messages = array();
+
+        foreach ($this->problems as $problem) {
+            $messages[] = (string) $problem;
+        }
+
+        return "\n\tProblems:\n\t\t- ".implode("\n\t\t- ", $messages);
+    }
+
+    public function getProblems()
+    {
+        return $this->problems;
     }
 }

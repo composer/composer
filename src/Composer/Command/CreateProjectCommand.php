@@ -23,6 +23,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Json\JsonFile;
+use Composer\Util\RemoteFilesystem;
 
 /**
  * Install a package as new project into new directory.
@@ -84,11 +85,11 @@ EOT
         }
 
         if (null === $repositoryUrl) {
-            $sourceRepo = new ComposerRepository(array('url' => 'http://packagist.org'));
+            $sourceRepo = new ComposerRepository(array('url' => 'http://packagist.org'), $this->getIO());
         } elseif (".json" === substr($repositoryUrl, -5)) {
-            $sourceRepo = new FilesystemRepository(new JsonFile($repositoryUrl));
+            $sourceRepo = new FilesystemRepository(new JsonFile($repositoryUrl, new RemoteFilesystem($io)));
         } elseif (0 === strpos($repositoryUrl, 'http')) {
-            $sourceRepo = new ComposerRepository(array('url' => $repositoryUrl));
+            $sourceRepo = new ComposerRepository(array('url' => $repositoryUrl), $this->getIO());
         } else {
             throw new \InvalidArgumentException("Invalid repository url given. Has to be a .json file or an http url.");
         }

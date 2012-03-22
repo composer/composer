@@ -29,4 +29,12 @@ abstract class Command extends BaseCommand
     {
         return $this->getApplication()->getComposer($required);
     }
+
+    /**
+     * @return \Composer\IO\ConsoleIO
+     */
+    protected function getIO()
+    {
+        return $this->getApplication()->getIO();
+    }
 }

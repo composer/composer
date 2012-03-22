@@ -35,7 +35,7 @@ class VcsRepository extends ArrayRepository
 
         $this->url = $config['url'];
         $this->io = $io;
-        $this->type = $config['type'];
+        $this->type = isset($config['type']) ? $config['type'] : 'vcs';
     }
 
     public function setDebug($debug)
@@ -118,7 +118,7 @@ class VcsRepository extends ArrayRepository
                 }
             } catch (\Exception $e) {
                 if ($debug) {
-                    $this->io->write('Skipped tag '.$tag.', '.$e->getMessage());
+                    $this->io->write('Skipped tag '.$tag.', '.($e instanceof TransportException ? 'no composer file was found' : $e->getMessage()));
                 }
                 continue;
             }
