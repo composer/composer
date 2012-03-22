@@ -142,7 +142,8 @@ class SvnDriver extends VcsDriver
     public function getTags()
     {
         if (null === $this->tags) {
-            $this->process->execute(
+            $this->tags = array();
+            $status = $this->process->execute(
                 sprintf(
                     'svn ls --non-interactive %s %s',
                     $this->getSvnCredentialString(),
@@ -150,10 +151,11 @@ class SvnDriver extends VcsDriver
                 ),
                 $output
             );
-            $this->tags = array();
-            foreach ($this->process->splitLines($output) as $tag) {
-                if ($tag) {
-                    $this->tags[rtrim($tag, '/')] = '/tags/'.$tag;
+            if ($status == 0 && $output) {
+                foreach ($this->process->splitLines($output) as $tag) {
+                    if ($tag) {
+                        $this->tags[rtrim($tag, '/')] = '/tags/'.$tag;
+                    }
                 }
             }
         }
@@ -167,7 +169,9 @@ class SvnDriver extends VcsDriver
     public function getBranches()
     {
         if (null === $this->branches) {
-            $this->process->execute(
+            $this->branches = array();
+
+            $status = $this->process->execute(
                 sprintf(
                     'svn ls --verbose --non-interactive %s %s',
                     $this->getSvnCredentialString(),
@@ -176,30 +180,40 @@ class SvnDriver extends VcsDriver
                 $output
             );
 
-            $this->branches = array();
-            foreach ($this->process->splitLines($output) as $line) {
-                preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match);
-                if ($match[2] === 'trunk/') {
-                    $this->branches['trunk'] = '/trunk/@'.$match[1];
-                    break;
+            if ($status == 0 && $output) {
+                foreach ($this->process->splitLines($output) as $line) {
+                    if ($line && preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match)) {
+                        if (!empty($match[1]) && !empty($match[2])){
+                            if ($match[2] === 'trunk/') {
+                                $this->branches['trunk'] = '/trunk/@'.$match[1];
+                                break;
+                            }
+                        }
+                    }
                 }
             }
             unset($output);
 
-            $this->process->execute(
+            $status = $this->process->execute(
                 sprintf(
-                    'svn ls --verbose --non-interactive %s',
+                    'svn ls --verbose --non-interactive %s %s',
                     $this->getSvnCredentialString(),
                     escapeshellarg($this->baseUrl.'/branches')
                 ),
                 $output
             );
-            foreach ($this->process->splitLines(trim($output)) as $line) {
-                preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match);
-                if ($match[2] === './') {
-                    continue;
+            
+            if ($status == 0 && $output) {
+                foreach ($this->process->splitLines(trim($output)) as $line) {
+                    if ($line && preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match)) {
+                        if (!empty($match[1]) && !empty($match[2])){
+                            if ($match[2] === './') {
+                                continue;
+                            }
+                            $this->branches[rtrim($match[2], '/')] = '/branches/'.$match[2].'@'.$match[1];
+                        }
+                    }
                 }
-                $this->branches[rtrim($match[2], '/')] = '/branches/'.$match[2].'@'.$match[1];
             }
         }
 
