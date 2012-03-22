@@ -21,35 +21,6 @@ use Composer\IO\NullIO;
 class SvnDriverTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * Provide some examples for {@self::testCredentials()}.
-     *
-     * @return array
-     */
-    public function urlProvider()
-    {
-        return array(
-            array('http://till:test@svn.example.org/', $this->getCmd(" --no-auth-cache --username 'till' --password 'test' ")),
-            array('http://svn.apache.org/', ''),
-            array('svn://johndoe@example.org', $this->getCmd(" --no-auth-cache --username 'johndoe' --password '' ")),
-        );
-    }
-
-    /**
-     * Test the credential string.
-     *
-     * @param string $url    The SVN url.
-     * @param string $expect The expectation for the test.
-     *
-     * @dataProvider urlProvider
-     */
-    public function testCredentials($url, $expect)
-    {
-        $svn = new SvnDriver($url, new NullIO);
-
-        $this->assertEquals($expect, $svn->getSvnCredentialString());
-    }
-
-    /**
      * Test the execute method.
      */
     public function testExecute()
@@ -72,19 +43,6 @@ class SvnDriverTest extends \PHPUnit_Framework_TestCase
 
         $svn = new SvnDriver('http://till:secret@corp.svn.local/repo', $console, $process);
         $svn->execute('svn ls', 'http://corp.svn.local/repo');
-    }
-
-    public function testInteractiveString()
-    {
-        $url = 'http://svn.example.org';
-
-        $io  = new \Composer\IO\NullIO; // non-interactive by design
-        $svn = new SvnDriver($url, $io);
-
-        $this->assertEquals(
-            "svn ls --non-interactive  'http://svn.example.org'",
-            $svn->getSvnCommand('svn ls', $url)
-        );
     }
 
     private function getCmd($cmd)
