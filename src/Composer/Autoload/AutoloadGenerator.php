@@ -58,7 +58,7 @@ EOF;
 
         $filesystem = new Filesystem();
         $vendorPath = strtr(realpath($installationManager->getVendorPath()), '\\', '/');
-        $relVendorPath = $filesystem->findShortestPath(getcwd().'/inDir', $vendorPath);
+        $relVendorPath = $filesystem->findShortestPath(getcwd(), $vendorPath, true);
         $vendorDirCode = $filesystem->findShortestPathCode(realpath($targetDir), $vendorPath, true);
 
         $appBaseDir = $filesystem->findShortestPathCode($vendorPath, getcwd(), true);
@@ -125,7 +125,7 @@ EOF;
         $autoloads['classmap'] = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($autoloads['classmap']));
         foreach ($autoloads['classmap'] as $dir) {
             foreach (ClassMapGenerator::createMap($dir) as $class => $path) {
-                $path = '/'.$filesystem->findShortestPath(getcwd().'/inDir', $path);
+                $path = '/'.$filesystem->findShortestPath(getcwd(), $path, true);
                 $classmapFile .= '    '.var_export($class, true).' => $baseDir . '.var_export($path, true).",\n";
             }
         }
