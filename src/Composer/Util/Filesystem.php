@@ -58,9 +58,10 @@ class Filesystem
      *
      * @param string $from
      * @param string $to
+     * @param Boolean $inDirectory if true, the source is considered to be in the directory
      * @return string
      */
-    public function findShortestPath($from, $to)
+    public function findShortestPath($from, $to, $inDirectory = false)
     {
         if (!$this->isAbsolutePath($from) || !$this->isAbsolutePath($to)) {
             throw new \InvalidArgumentException('from and to must be absolute paths');
@@ -68,6 +69,10 @@ class Filesystem
 
         $from = lcfirst(rtrim(strtr($from, '\\', '/'), '/'));
         $to = lcfirst(rtrim(strtr($to, '\\', '/'), '/'));
+
+        if ($inDirectory) {
+            $from .= '/dummy_file';
+        }
 
         if (dirname($from) === dirname($to)) {
             return './'.basename($to);

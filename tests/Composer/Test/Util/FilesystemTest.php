@@ -58,10 +58,10 @@ class FilesystemTest extends TestCase
     /**
      * @dataProvider providePathCouples
      */
-    public function testFindShortestPath($a, $b, $expected)
+    public function testFindShortestPath($a, $b, $expected, $inDirectory = false)
     {
         $fs = new Filesystem;
-        $this->assertEquals($expected, $fs->findShortestPath($a, $b));
+        $this->assertEquals($expected, $fs->findShortestPath($a, $b, $inDirectory));
     }
 
     public function providePathCouples()
@@ -69,8 +69,13 @@ class FilesystemTest extends TestCase
         return array(
             array('/foo/bar', '/foo/bar', "./bar"),
             array('/foo/bar', '/foo/baz', "./baz"),
+            array('/foo/bar/', '/foo/baz', "./baz"),
+            array('/foo/bar', '/foo/bar', "./", true),
+            array('/foo/bar', '/foo/baz', "../baz", true),
+            array('/foo/bar/', '/foo/baz', "../baz", true),
             array('/foo/bin/run', '/foo/vendor/acme/bin/run', "../vendor/acme/bin/run"),
             array('/foo/bin/run', '/bar/bin/run', "/bar/bin/run"),
+            array('/foo/bin/run', '/bar/bin/run', "/bar/bin/run", true),
             array('c:/bin/run', 'c:/vendor/acme/bin/run', "../vendor/acme/bin/run"),
             array('c:\\bin\\run', 'c:/vendor/acme/bin/run', "../vendor/acme/bin/run"),
             array('c:/bin/run', 'd:/vendor/acme/bin/run', "d:/vendor/acme/bin/run"),
@@ -79,6 +84,7 @@ class FilesystemTest extends TestCase
             array('/tmp/test', '/tmp', "./"),
             array('C:/Temp/test/sub', 'C:\Temp', "../"),
             array('/tmp/test/sub', '/tmp', "../"),
+            array('/tmp/test/sub', '/tmp', "../../", true),
             array('/tmp', '/tmp/test', "test"),
             array('C:/Temp', 'C:\Temp\test', "test"),
             array('C:/Temp', 'c:\Temp\test', "test"),
