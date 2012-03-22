@@ -14,6 +14,7 @@ namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
 use Composer\Util\ProcessExecutor;
+use Composer\Util\Svn as SvnUtil;
 
 /**
  * @author Ben Bieker <mail@ben-bieker.de>
@@ -21,15 +22,24 @@ use Composer\Util\ProcessExecutor;
 class SvnDownloader extends VcsDownloader
 {
     /**
+     * @var \Composer\Util\Svn $util
+     */
+    protected $util;
+
+    /**
      * {@inheritDoc}
      */
     public function doDownload(PackageInterface $package, $path)
     {
-        $url = escapeshellarg($package->getSourceUrl());
-        $ref = escapeshellarg($package->getSourceReference());
-        $path = escapeshellarg($path);
+        $url =  $package->getSourceUrl();
+        $ref =  $package->getSourceReference();
+
+        $util = $this->getUtil($url);
+
+        $command = $util->getCommand("svn co", sprintf("%s/%s", $url, $ref), $path);
+
         $this->io->write("    Checking out ".$package->getSourceReference());
-        $this->process->execute(sprintf('svn co %s/%s %s', $url, $ref, $path));
+        $this->process->execute($command);
     }
 
     /**
@@ -37,11 +47,14 @@ class SvnDownloader extends VcsDownloader
      */
     public function doUpdate(PackageInterface $initial, PackageInterface $target, $path)
     {
-        $ref = escapeshellarg($target->getSourceReference());
-        $path = escapeshellarg($path);
-        $url = escapeshellarg($target->getSourceUrl());
-        $this->io->write("    Checking out ".$target->getSourceReference());
-        $this->process->execute(sprintf('cd %s && svn switch %s/%s', $path, $url, $ref));
+        $url = $target->getSourceUrl();
+        $ref = $target->getSourceReference();
+
+        $util    = $this->getUtil($url);
+        $command = $util->getCommand("svn switch", sprintf("%s/%s", $url, $ref));
+
+        $this->io->write("    Checking out " . $ref);
+        $this->process->execute(sprintf('cd %s && %s', $path, $command));
     }
 
     /**
@@ -53,5 +66,18 @@ class SvnDownloader extends VcsDownloader
         if (trim($output)) {
             throw new \RuntimeException('Source directory ' . $path . ' has uncommitted changes');
         }
+    }
+
+    /**
+     * This is heavy - recreating Util often.
+     *
+     * @param string $url
+     *
+     * @return \Composer\Util\Svn
+     */
+    protected function getUtil($url)
+    {
+        $util = new SvnUtil($url, $this->io);
+        return $util;
     }
 }
