@@ -20,7 +20,7 @@ In fact, internally composer sees every version as a separate package. While
 this distinction does not matter when you are using composer, it's quite
 important when you want to change it.
 
-In addition to the name and the version, there is useful data. The information
+In addition to the name and the version, there is useful metadata. The information
 most relevant for installation is the source definition, which describes where
 to get the package contents. The package data points to the contents of the
 package. And there are two options here: dist and source.
@@ -38,11 +38,16 @@ be preferred.
 
 ### Repository
 
-A repository is a package source. It's a list of packages, of which you can
-pick some to install.
+A repository is a package source. It's a list of packages/versions. Composer
+will look in all your repositories to find the packages your project requires.
 
-You can also add more repositories to your project by declaring them in
-`composer.json`.
+By default only the Packagist repository is registered in Composer. You can
+add more repositories to your project by declaring them in `composer.json`.
+
+Repositories are only available to the root package and the repositories
+defined in your dependencies will not be loaded. Read the
+[FAQ entry](faqs/why-can't-composer-load-repositories-recursively.md) if you
+want to learn why.
 
 ## Types
 
@@ -229,7 +234,9 @@ There are a few tools that can help you create a `composer` repository.
 
 The underlying application used by packagist is open source. This means that you
 can just install your own copy of packagist, re-brand, and use it. It's really
-quite straight-forward to do.
+quite straight-forward to do. However due to its size and complexity, for most
+small and medium sized companies willing to track a few packages will be better
+off using Satis.
 
 Packagist is a Symfony2 application, and it is [available on
 GitHub](https://github.com/composer/packagist). It uses composer internally and
@@ -249,12 +256,13 @@ You give it a `composer.json` containing repositories, typically VCS and
 package repository definitions. It will fetch all the packages that are
 `require`d and dump a `packages.json` that is your `composer` repository.
 
-Check [the satis GitHub repository](https://github.com/composer/satis) for more
+Check [the satis GitHub repository](https://github.com/composer/satis) and
+the [Satis article](articles/handling-private-packages-with-satis.md) for more
 information.
 
-## Disabling packagist
+## Disabling Packagist
 
-You can disable the default packagist repository by adding this to your
+You can disable the default Packagist repository by adding this to your
 `composer.json`:
 
     {
