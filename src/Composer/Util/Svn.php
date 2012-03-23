@@ -19,34 +19,32 @@ use Composer\IO\IOInterface;
 class Svn
 {
     /**
-     * @var mixed $credentials
-     * @see self::hasAuth()
+     * @var mixed
      */
     protected $credentials;
 
     /**
-     * @var boolean $hasAuth
+     * @var bool
      */
     protected $hasAuth;
 
     /**
-     * @var \Composer\IO\IOInterface $io
+     * @var \Composer\IO\IOInterface
      */
     protected $io;
 
     /**
-     * @var string $url
+     * @var string
      */
     protected $url;
 
     /**
-     * @var bool $useCache Cache credentials.
+     * Cache credentials.
+     * @var bool
      */
     protected $useCache = false;
 
     /**
-     * __construct
-     *
      * @param string                   $url
      * @param \Composer\IO\IOInterface $io
      *
@@ -59,15 +57,9 @@ class Svn
     }
 
     /**
-     * doAuthDance
-     *
      * Repositories requests credentials, let's put them in.
      *
      * @return \Composer\Util\Svn
-     * @uses   self::$io
-     * @uses   self::$hasAuth
-     * @uses   self::$credentials
-     * @uses   self::$useCache
      */
     public function doAuthDance()
     {
@@ -80,7 +72,7 @@ class Svn
         $this->credentials->password = $this->io->askAndHideAnswer("Password: ");
 
         $pleaseCache = $this->io->askConfirmation("Should Subversion cache these credentials? (yes/no) ", false);
-        if ($pleaseCache === true) {
+        if ($pleaseCache) {
             $this->useCache = true;
         }
         return $this;
@@ -89,8 +81,6 @@ class Svn
      * Return the no-auth-cache switch.
      *
      * @return string
-     * @uses   selfg::$useCache
-     * @see    self::doAuthDance()
      */
     public function getAuthCache()
     {

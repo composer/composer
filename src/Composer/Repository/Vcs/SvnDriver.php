@@ -9,6 +9,7 @@ use Composer\IO\IOInterface;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
+ * @author Till Klampaeckel <till@php.net>
  */
 class SvnDriver extends VcsDriver
 {
@@ -18,41 +19,38 @@ class SvnDriver extends VcsDriver
     protected $infoCache = array();
 
     /**
-     * @var boolean $useAuth Contains credentials, or not?
+     * Contains credentials, or not?
+     * @var boolean
      */
     protected $useAuth = false;
 
     /**
-     * @var boolean $useCache To determine if we should cache the credentials
-     *                        supplied by the user. By default: no cache.
-     * @see self::getSvnAuthCache()
+     * To determine if we should cache the credentials supplied by the user. By default: no cache.
+     * @var boolean
      */
     protected $useCache = false;
 
     /**
-     * @var string $svnUsername
+     * @var string
      */
     protected $svnUsername = '';
 
     /**
-     * @var string $svnPassword
+     * @var string
      */
     protected $svnPassword = '';
 
     /**
-     * @var Composer\Util\Svn $util
+     * @var \Composer\Util\Svn
      */
     protected $util;
 
     /**
-     * __construct
-     *
      * @param string          $url
      * @param IOInterface     $io
      * @param ProcessExecutor $process
      *
      * @return $this
-     * @uses   self::detectSvnAuth()
      */
     public function __construct($url, IOInterface $io, ProcessExecutor $process = null)
     {
@@ -74,9 +72,6 @@ class SvnDriver extends VcsDriver
      * @param string $url     The SVN URL.
      *
      * @return string
-     * @uses   Composer\Util\Svn::getCommand()
-     * @uses   parent::$process
-     * @see    ProcessExecutor::execute()
      */
     public function execute($command, $url)
     {

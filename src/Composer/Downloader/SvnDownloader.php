@@ -18,16 +18,17 @@ use Composer\Util\Svn as SvnUtil;
 
 /**
  * @author Ben Bieker <mail@ben-bieker.de>
+ * @author Till Klampaeckel <till@php.net>
  */
 class SvnDownloader extends VcsDownloader
 {
     /**
-     * @var bool $useAuth
+     * @var bool
      */
     protected $useAuth = false;
 
     /**
-     * @var \Composer\Util\Svn $util
+     * @var \Composer\Util\Svn
      */
     protected $util;
 
@@ -99,7 +100,7 @@ class SvnDownloader extends VcsDownloader
         }
 
         // the error is not auth-related
-        if (strpos($output, 'authorization failed:') === false) {
+        if (false === strpos($output, 'authorization failed:')) {
             return $output;
         }
 
@@ -117,7 +118,7 @@ class SvnDownloader extends VcsDownloader
     }
 
     /**
-     * This is heavy - recreating Util often.
+     * This is potentially heavy - recreating Util often.
      *
      * @param string $url
      *
