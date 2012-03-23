@@ -1,5 +1,5 @@
 {
-    "hash": "df0b80bd7287f1783e3bf2a2c4b9db63",
+    "hash": "7a92f4830e9f86b2542acb8e4127b9cd",
     "packages": [
         {
             "package": "justinrainbow/json-schema",
@@ -14,17 +14,20 @@
         {
             "package": "symfony/console",
             "version": "dev-master",
-            "source-reference": "88a283f6c18d1e644ebca1e3df4c870eac8108dd"
+            "source-reference": "5fcd408b7b34f3e544f9743cf33e179767e9a000",
+            "alias": "2.1.9999999.9999999-dev"
         },
         {
             "package": "symfony/finder",
             "version": "dev-master",
-            "source-reference": "be30ecc95281d729ee51b9e89644d442bcf60451"
+            "source-reference": "be30ecc95281d729ee51b9e89644d442bcf60451",
+            "alias": "2.1.9999999.9999999-dev"
         },
         {
             "package": "symfony/process",
             "version": "dev-master",
-            "source-reference": "d08c4ea1530453ce270fcba78f0bff57a0869a9b"
+            "source-reference": "d08c4ea1530453ce270fcba78f0bff57a0869a9b",
+            "alias": "2.1.9999999.9999999-dev"
         }
     ],
     "aliases": [
