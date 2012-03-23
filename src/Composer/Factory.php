@@ -46,7 +46,7 @@ class Factory
             } else {
                 $message = 'Composer could not find the config file: '.$composerFile;
             }
-            $instructions = 'To initialize a project, please create a composer.json file as described on the http://packagist.org/ "Getting Started" section';
+            $instructions = 'To initialize a project, please create a composer.json file as described in the http://getcomposer.org/ "Getting Started" section';
             throw new \InvalidArgumentException($message.PHP_EOL.$instructions);
         }
 
