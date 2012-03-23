@@ -85,7 +85,7 @@ class SvnDownloader extends VcsDownloader
     protected function execute($command, SvnUtil $util)
     {
         $status = $this->process->execute($command, $output);
-        if ($status == 0) {
+        if (0 === $status) {
             return $output;
         }
 
