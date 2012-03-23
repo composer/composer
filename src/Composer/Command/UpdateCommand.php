@@ -48,7 +48,7 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $composer = $this->getComposer();
-        $io = $this->getApplication()->getIO();
+        $io = $this->getIO();
         $install = Installer::create($io, $composer);
 
         $install
