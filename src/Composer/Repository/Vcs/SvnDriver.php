@@ -82,7 +82,7 @@ class SvnDriver extends VcsDriver
             $output
         );
 
-        if ($status == 0) {
+        if (0 === $status) {
             return $output;
         }
 
