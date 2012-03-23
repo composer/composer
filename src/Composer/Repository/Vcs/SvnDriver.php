@@ -198,11 +198,14 @@ class SvnDriver extends VcsDriver
     public function getTags()
     {
         if (null === $this->tags) {
-            $output     = $this->execute('svn ls', $this->baseUrl . '/tags');
             $this->tags = array();
-            foreach ($this->process->splitLines($output) as $tag) {
-                if ($tag) {
-                    $this->tags[rtrim($tag, '/')] = '/tags/'.$tag;
+
+            $output = $this->execute('svn ls', $this->baseUrl . '/tags');
+            if ($output) {
+                foreach ($this->process->splitLines($output) as $tag) {
+                    if ($tag) {
+                        $this->tags[rtrim($tag, '/')] = '/tags/'.$tag;
+                    }
                 }
             }
         }
@@ -216,25 +219,32 @@ class SvnDriver extends VcsDriver
     public function getBranches()
     {
         if (null === $this->branches) {
-            $output         = $this->execute('svn ls --verbose', $this->baseUrl . '/');
             $this->branches = array();
-            foreach ($this->process->splitLines($output) as $line) {
-                preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match);
-                if ($match[2] === 'trunk/') {
-                    $this->branches['trunk'] = '/trunk/@'.$match[1];
-                    break;
+
+            $output = $this->execute('svn ls --verbose', $this->baseUrl . '/');
+            if ($output) {
+                foreach ($this->process->splitLines($output) as $line) {
+                    $line = trim($line);
+                    if ($line && preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match)) {
+                        if (isset($match[1]) && isset($match[2]) && $match[2] === 'trunk/') {
+                            $this->branches['trunk'] = '/trunk/@'.$match[1];
+                            break;
+                        }
+                    }
                 }
             }
             unset($output);
 
             $output = $this->execute('svn ls --verbose', $this->baseUrl . '/branches');
-
-            foreach ($this->process->splitLines(trim($output)) as $line) {
-                preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match);
-                if ($match[2] === './') {
-                    continue;
+            if ($output) {
+                foreach ($this->process->splitLines(trim($output)) as $line) {
+                    $line = trim($line);
+                    if ($line && preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match)) {
+                        if (isset($match[1]) && isset($match[2]) && $match[2] !== './') {
+                            $this->branches[rtrim($match[2], '/')] = '/branches/'.$match[2].'@'.$match[1];
+                        }
+                    }
                 }
-                $this->branches[rtrim($match[2], '/')] = '/branches/'.$match[2].'@'.$match[1];
             }
         }
 
