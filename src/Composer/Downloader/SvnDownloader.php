@@ -29,7 +29,7 @@ class SvnDownloader extends VcsDownloader
         $ref = escapeshellarg($package->getSourceReference());
         $path = escapeshellarg($path);
         $this->io->write("    Checking out ".$package->getSourceReference());
-        $this->process->execute(sprintf('svn co %s/%s %s', $url, $ref, $path));
+        $this->process->execute(sprintf('svn co -q %s/%s %s', $url, $ref, $path));
     }
 
     /**
