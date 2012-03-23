@@ -24,7 +24,7 @@
         {
             "package": "symfony/process",
             "version": "dev-master",
-            "source-reference": "0aad81ae9f884cf7df6387cb52a11b5b4f07b3d6"
+            "source-reference": "d08c4ea1530453ce270fcba78f0bff57a0869a9b"
         }
     ],
     "aliases": [
