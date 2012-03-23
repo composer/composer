@@ -23,6 +23,8 @@ use Composer\Downloader\TransportException;
  */
 class PearRepository extends ArrayRepository
 {
+    private static $channelNames = array();
+
     private $url;
     private $channel;
     private $io;
@@ -54,11 +56,12 @@ class PearRepository extends ArrayRepository
 
     protected function fetchFromServer()
     {
+        $channelXML = $this->requestXml($this->url . "/channel.xml");
         if (!$this->channel) {
-            $channelXML = $this->requestXml($this->url . "/channel.xml");
             $this->channel = $channelXML->getElementsByTagName("suggestedalias")->item(0)->nodeValue
                                     ?: $channelXML->getElementsByTagName("name")->item(0)->nodeValue;
         }
+        self::$channelNames[$channelXML->getElementsByTagName("name")->item(0)->nodeValue] = $this->channel;
 
         $categoryXML = $this->requestXml($this->url . "/rest/c/categories.xml");
         $categories = $categoryXML->getElementsByTagName("c");
@@ -177,7 +180,10 @@ class PearRepository extends ArrayRepository
                 foreach ($options as $key => $value) {
                     if (is_array($value)) {
                         $dataKey = $value['name'];
-                        $data[$dataKey] = $this->parseVersion($value);
+                        if (false === strpos($dataKey, '/')) {
+                            $dataKey = $this->getChannelShorthand($value['channel']).'/'.$dataKey;
+                        }
+                        $data['pear-'.$dataKey] = $this->parseVersion($value);
                     }
                 }
             } elseif ('extension' == $name) {
@@ -298,5 +304,21 @@ class PearRepository extends ArrayRepository
         $dom->loadXML($content);
 
         return $dom;
+    }
+
+    private function getChannelShorthand($url)
+    {
+        if (!isset(self::$channelNames[$url])) {
+            try {
+                $channelXML = $this->requestXml('http://'.$url."/channel.xml");
+                $shorthand = $channelXML->getElementsByTagName("suggestedalias")->item(0)->nodeValue
+                    ?: $channelXML->getElementsByTagName("name")->item(0)->nodeValue;
+                self::$channelNames[$url] = $shorthand;
+            } catch (\Exception $e) {
+                self::$channelNames[$url] = substr($url, 0, strpos($url, '.'));
+            }
+        }
+
+        return self::$channelNames[$url];
     }
 }
