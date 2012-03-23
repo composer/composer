@@ -65,7 +65,7 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $io = $this->getApplication()->getIO();
+        $io = $this->getIO();
 
         return $this->installProject(
             $io,
