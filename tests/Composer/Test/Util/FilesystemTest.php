@@ -58,10 +58,10 @@ class FilesystemTest extends TestCase
     /**
      * @dataProvider providePathCouples
      */
-    public function testFindShortestPath($a, $b, $expected, $inDirectory = false)
+    public function testFindShortestPath($a, $b, $expected, $directory = false)
     {
         $fs = new Filesystem;
-        $this->assertEquals($expected, $fs->findShortestPath($a, $b, $inDirectory));
+        $this->assertEquals($expected, $fs->findShortestPath($a, $b, $directory));
     }
 
     public function providePathCouples()
