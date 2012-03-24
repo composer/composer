@@ -18,6 +18,7 @@ use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
+use Composer\Util\Filesystem;
 
 /**
  * Package operation manager.
@@ -39,13 +40,15 @@ class InstallationManager
      */
     public function __construct($vendorDir = 'vendor')
     {
-        if (substr($vendorDir, 0, 1) === '/' || substr($vendorDir, 1, 1) === ':') {
+        $fs = new Filesystem();
+
+        if ($fs->isAbsolutePath($vendorDir)) {
             $basePath = getcwd();
-            if (0 !== strpos($vendorDir, $basePath)) {
-                throw new \InvalidArgumentException("Vendor dir ($vendorDir) must be within the current working directory ($basePath).");
+            $relativePath = $fs->findShortestPath($basePath.'/file', $vendorDir);
+            if ($fs->isAbsolutePath($relativePath)) {
+                throw new \InvalidArgumentException("Vendor dir ($vendorDir) must be accessible from the directory ($basePath).");
             }
-            // convert to relative path
-            $this->vendorPath = rtrim(substr($vendorDir, strlen($basePath)+1), '/');
+            $this->vendorPath = $relativePath;
         } else {
             $this->vendorPath = rtrim($vendorDir, '/');
         }
