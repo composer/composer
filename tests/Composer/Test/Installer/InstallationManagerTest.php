@@ -19,6 +19,21 @@ use Composer\DependencyResolver\Operation\UninstallOperation;
 
 class InstallationManagerTest extends \PHPUnit_Framework_TestCase
 {
+    public function testVendorDirOutsideTheWorkingDir()
+    {
+        $manager = new InstallationManager(realpath(getcwd().'/../'));
+        $this->assertSame('../', $manager->getVendorPath());
+    }
+
+    /**
+     * @expectedException InvalidArgumentException
+     */
+    public function testVendorDirNotAccessible()
+    {
+        $manager = new InstallationManager('/oops');
+        $this->assertSame('../', $manager->getVendorPath());
+    }
+
     public function testAddGetInstaller()
     {
         $installer = $this->createInstallerMock();
