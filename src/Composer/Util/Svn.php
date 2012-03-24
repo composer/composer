@@ -97,11 +97,10 @@ class Svn
      * @param string $cmd  Usually 'svn ls' or something like that.
      * @param string $url  Repo URL.
      * @param string $path The path to run this against (e.g. a 'co' into)
-     * @param mixed  $pipe Optional pipe for the output.
      *
      * @return string
      */
-    public function getCommand($cmd, $url, $path = '', $pipe = null)
+    public function getCommand($cmd, $url, $path = '')
     {
         $cmd = sprintf('%s %s%s %s',
             $cmd,
@@ -112,9 +111,7 @@ class Svn
         if (!empty($path)) {
             $cmd .= ' ' . escapeshellarg($path);
         }
-        if ($pipe !== null) {
-            $cmd .= ' ' . $pipe;
-        }
+
         return $cmd;
     }
 
