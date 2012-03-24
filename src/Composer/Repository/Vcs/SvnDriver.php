@@ -17,6 +17,7 @@ use Composer\Util\ProcessExecutor;
 use Composer\Util\Filesystem;
 use Composer\Util\Svn as SvnUtil;
 use Composer\IO\IOInterface;
+use Composer\Downloader\TransportException;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -128,9 +129,13 @@ class SvnDriver extends VcsDriver
                 $rev = '';
             }
 
-            $output = $this->execute('svn cat', $this->baseUrl . $identifier . 'composer.json' . $rev);
-            if (!trim($output)) {
-                return;
+            try {
+                $output = $this->execute('svn cat', $this->baseUrl . $identifier . 'composer.json' . $rev);
+                if (!trim($output)) {
+                    return;
+                }
+            } catch (\RuntimeException $e) {
+                throw new TransportException($e->getMessage());
             }
 
             $composer = JsonFile::parseJson($output);

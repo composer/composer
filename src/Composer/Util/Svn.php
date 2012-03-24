@@ -89,13 +89,13 @@ class Svn
 
         // the error is not auth-related
         if (false === stripos($output, 'authorization failed:')) {
-            throw new \RuntimeException('Package could not be downloaded: '.$output);
+            throw new \RuntimeException($output);
         }
 
         // no auth supported for non interactive calls
         if (!$this->io->isInteractive()) {
             throw new \RuntimeException(
-                'Package could not be downloaded, can not ask for authentication in non interactive mode ('.$output.')'
+                'can not ask for authentication in non interactive mode ('.$output.')'
             );
         }
 
@@ -111,7 +111,7 @@ class Svn
         }
 
         throw new \RuntimeException(
-            'Repository '.$this->url.' could not be processed, wrong credentials provided ('.$output.')'
+            'wrong credentials provided ('.$output.')'
         );
     }
 
