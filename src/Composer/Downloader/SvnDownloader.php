@@ -68,7 +68,7 @@ class SvnDownloader extends VcsDownloader
      */
     protected function enforceCleanDirectory($path)
     {
-        $this->process->execute(sprintf('cd %s && svn status', escapeshellarg($path)), $output);
+        $this->process->execute('svn status', $output, $path);
         if (trim($output)) {
             throw new \RuntimeException('Source directory ' . $path . ' has uncommitted changes');
         }
@@ -90,7 +90,6 @@ class SvnDownloader extends VcsDownloader
         }
 
         // this could be any failure, since SVN exits with 1 always
-
         if (empty($output)) {
             $output = $this->process->getErrorOutput();
         }
@@ -100,7 +99,7 @@ class SvnDownloader extends VcsDownloader
         }
 
         // the error is not auth-related
-        if (false === strpos($output, 'authorization failed:')) {
+        if (false === stripos($output, 'authorization failed:')) {
             return $output;
         }
 
@@ -114,19 +113,17 @@ class SvnDownloader extends VcsDownloader
         } else {
             $this->io->write("Authorization failed: {$command}");
         }
+
         return $output;
     }
 
     /**
-     * This is potentially heavy - recreating Util often.
-     *
      * @param string $url
      *
      * @return \Composer\Util\Svn
      */
     protected function getUtil($url)
     {
-        $util = new SvnUtil($url, $this->io);
-        return $util;
+        return new SvnUtil($url, $this->io);
     }
 }

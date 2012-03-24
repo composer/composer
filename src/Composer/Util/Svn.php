@@ -16,11 +16,12 @@ use Composer\IO\IOInterface;
 
 /**
  * @author Till Klampaeckel <till@php.net>
+ * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 class Svn
 {
     /**
-     * @var mixed
+     * @var array
      */
     protected $credentials;
 
@@ -40,10 +41,9 @@ class Svn
     protected $url;
 
     /**
-     * Cache credentials.
      * @var bool
      */
-    protected $useCache = false;
+    protected $cacheCredentials = false;
 
     /**
      * @param string                   $url
@@ -66,29 +66,13 @@ class Svn
     {
         $this->io->write("The Subversion server ({$this->url}) requested credentials:");
 
-        $this->hasAuth     = true;
-        $this->credentials = new \stdClass();
+        $this->hasAuth = true;
+        $this->credentials['username'] = $this->io->ask("Username: ");
+        $this->credentials['password'] = $this->io->askAndHideAnswer("Password: ");
 
-        $this->credentials->username = $this->io->ask("Username: ");
-        $this->credentials->password = $this->io->askAndHideAnswer("Password: ");
+        $this->cacheCredentials = $this->io->askConfirmation("Should Subversion cache these credentials? (yes/no) ", false);
 
-        $pleaseCache = $this->io->askConfirmation("Should Subversion cache these credentials? (yes/no) ", false);
-        if ($pleaseCache) {
-            $this->useCache = true;
-        }
         return $this;
-    }
-    /**
-     * Return the no-auth-cache switch.
-     *
-     * @return string
-     */
-    public function getAuthCache()
-    {
-        if (!$this->useCache) {
-            return '--no-auth-cache ';
-        }
-        return '';
     }
 
     /**
@@ -100,7 +84,7 @@ class Svn
      *
      * @return string
      */
-    public function getCommand($cmd, $url, $path = '')
+    public function getCommand($cmd, $url, $path = null)
     {
         $cmd = sprintf('%s %s%s %s',
             $cmd,
@@ -108,7 +92,8 @@ class Svn
             $this->getCredentialString(),
             escapeshellarg($url)
         );
-        if (!empty($path)) {
+
+        if ($path) {
             $cmd .= ' ' . escapeshellarg($path);
         }
 
@@ -121,16 +106,13 @@ class Svn
      * Adds --no-auth-cache when credentials are present.
      *
      * @return string
-     * @uses   self::$useAuth
      */
     public function getCredentialString()
     {
-        if ($this->hasAuth === null) {
-            $this->hasAuth();
-        }
-        if (!$this->hasAuth) {
+        if (!$this->hasAuth()) {
             return '';
         }
+
         return sprintf(
             ' %s--username %s --password %s ',
             $this->getAuthCache(),
@@ -148,12 +130,10 @@ class Svn
     public function getPassword()
     {
         if ($this->credentials === null) {
-            throw new \LogicException("No auth detected.");
+            throw new \LogicException("No svn auth detected.");
         }
-        if (isset($this->credentials->password)) {
-            return $this->credentials->password;
-        }
-        return ''; // could be empty
+
+        return isset($this->credentials['password']) ? $this->credentials['password'] : '';
     }
 
     /**
@@ -165,9 +145,10 @@ class Svn
     public function getUsername()
     {
         if ($this->credentials === null) {
-            throw new \LogicException("No auth detected.");
+            throw new \LogicException("No svn auth detected.");
         }
-        return $this->credentials->username;
+
+        return $this->credentials['username'];
     }
 
     /**
@@ -175,29 +156,34 @@ class Svn
      *
      * @param string $url
      *
-     * @return \stdClass
+     * @return Boolean
      */
     public function hasAuth()
     {
-        if ($this->hasAuth !== null) {
+        if (null !== $this->hasAuth) {
             return $this->hasAuth;
         }
 
         $uri = parse_url($this->url);
         if (empty($uri['user'])) {
-            $this->hasAuth = false;
-            return $this->hasAuth;
+            return $this->hasAuth = false;
         }
 
-        $this->hasAuth     = true;
-        $this->credentials = new \stdClass();
-
-        $this->credentials->username = $uri['user'];
-
+        $this->credentials['username'] = $uri['user'];
         if (!empty($uri['pass'])) {
-            $this->credentials->password = $uri['pass'];
+            $this->credentials['password'] = $uri['pass'];
         }
 
-        return $this->hasAuth;
+        return $this->hasAuth = true;
+    }
+
+    /**
+     * Return the no-auth-cache switch.
+     *
+     * @return string
+     */
+    protected function getAuthCache()
+    {
+        return $this->cacheCredentials ? '' : '--no-auth-cache ';
     }
 }

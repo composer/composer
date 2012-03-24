@@ -83,7 +83,7 @@ class SvnDriver extends VcsDriver
      *
      * @return string
      */
-    public function execute($command, $url)
+    protected function execute($command, $url)
     {
         $svnCommand = $this->util->getCommand($command, $url);
 
@@ -102,7 +102,7 @@ class SvnDriver extends VcsDriver
         }
 
         // the error is not auth-related
-        if (strpos($output, 'authorization failed:') === false) {
+        if (false === stripos($output, 'authorization failed:')) {
             return $output;
         }
 
@@ -281,11 +281,13 @@ class SvnDriver extends VcsDriver
             // This is definitely a Subversion repository.
             return true;
         }
-        if (preg_match('/authorization failed/i', $processExecutor->getErrorOutput())) {
+
+        if (false !== stripos($processExecutor->getErrorOutput(), 'authorization failed:')) {
             // This is likely a remote Subversion repository that requires
             // authentication. We will handle actual authentication later.
             return true;
         }
+
         return false;
     }
 
