@@ -21,28 +21,28 @@ use Composer\IO\NullIO;
 class SvnDriverTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * Provide some examples for {@self::testCredentials()}.
-     *
-     * @return array
+     * Test the execute method.
      */
-    public function urlProvider()
+    public function testExecute()
     {
-        return array(
-            array('http://till:test@svn.example.org/', $this->getCmd(" --no-auth-cache --username 'till' --password 'test' ")),
-            array('http://svn.apache.org/', ''),
-            array('svn://johndoe@example.org', $this->getCmd(" --no-auth-cache --username 'johndoe' --password '' ")),
-        );
-    }
+        $this->markTestIncomplete("Currently no way to mock the output value which is passed by reference.");
 
-    /**
-     * @dataProvider urlProvider
-     */
-    public function testCredentials($url, $expect)
-    {
-        $io  = new \Composer\IO\NullIO;
-        $svn = new SvnDriver($url, $io);
+        $console = $this->getMock('Composer\IO\IOInterface');
+        $console->expects($this->once())
+            ->method('isInteractive')
+            ->will($this->returnValue(true));
 
-        $this->assertEquals($expect, $svn->getSvnCredentialString());
+        $output  = "svn: OPTIONS of 'http://corp.svn.local/repo':";
+        $output .= " authorization failed: Could not authenticate to server:";
+        $output .= " rejected Basic challenge (http://corp.svn.local/)";
+
+        $process = $this->getMock('Composer\Util\ProcessExecutor');
+        $process->expects($this->once())
+            ->method('execute')
+            ->will($this->returnValue(1));
+
+        $svn = new SvnDriver('http://till:secret@corp.svn.local/repo', $console, $process);
+        $svn->execute('svn ls', 'http://corp.svn.local/repo');
     }
 
     private function getCmd($cmd)
@@ -52,5 +52,32 @@ class SvnDriverTest extends \PHPUnit_Framework_TestCase
         }
 
         return $cmd;
+    }
+
+    public static function supportProvider()
+    {
+        return array(
+            array('http://svn.apache.org', true),
+            array('https://svn.sf.net', true),
+            array('svn://example.org', true),
+            array('svn+ssh://example.org', true),
+            array('file:///d:/repository_name/project', true),
+            array('file:///repository_name/project', true),
+            array('/absolute/path', true),
+        );
+    }
+
+    /**
+     * Nail a bug in {@link SvnDriver::support()}.
+     *
+     * @dataProvider supportProvider
+     */
+    public function testSupport($url, $assertion)
+    {
+        if ($assertion === true) {
+            $this->assertTrue(SvnDriver::supports($url));
+        } else {
+            $this->assertFalse(SvnDriver::supports($url));
+        }
     }
 }
