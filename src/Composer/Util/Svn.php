@@ -43,7 +43,7 @@ class Svn
     /**
      * @var bool
      */
-    protected $cacheCredentials = false;
+    protected $cacheCredentials = true;
 
     /**
      * @param string                   $url
@@ -70,7 +70,7 @@ class Svn
         $this->credentials['username'] = $this->io->ask("Username: ");
         $this->credentials['password'] = $this->io->askAndHideAnswer("Password: ");
 
-        $this->cacheCredentials = $this->io->askConfirmation("Should Subversion cache these credentials? (yes/no) ", false);
+        $this->cacheCredentials = $this->io->askConfirmation("Should Subversion cache these credentials? (yes/no) ", true);
 
         return $this;
     }
