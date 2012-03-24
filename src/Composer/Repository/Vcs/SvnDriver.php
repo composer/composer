@@ -14,6 +14,7 @@ namespace Composer\Repository\Vcs;
 
 use Composer\Json\JsonFile;
 use Composer\Util\ProcessExecutor;
+use Composer\Util\Filesystem;
 use Composer\Util\Svn as SvnUtil;
 use Composer\IO\IOInterface;
 
@@ -64,7 +65,7 @@ class SvnDriver extends VcsDriver
      */
     public function __construct($url, IOInterface $io, ProcessExecutor $process = null)
     {
-        $url = self::fixSvnUrl($url);
+        $url = self::normalizeUrl($url);
         parent::__construct($this->baseUrl = rtrim($url, '/'), $io, $process);
 
         if (false !== ($pos = strrpos($url, '/trunk'))) {
@@ -298,11 +299,13 @@ class SvnDriver extends VcsDriver
      *
      * @return string
      */
-    protected static function fixSvnUrl($url)
+    protected static function normalizeUrl($url)
     {
-        if (strpos($url, '/', 0) === 0) {
-            $url = 'file://' . $url;
+        $fs = new Filesystem();
+        if ($fs->isAbsolutePath($url)) {
+            return 'file://' . strtr($url, '\\', '/');
         }
+
         return $url;
     }
 }
