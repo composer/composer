@@ -18,12 +18,10 @@ use Composer\IO\NullIO;
 class SvnDriverTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * Test the execute method.
+     * @expectedException RuntimeException
      */
-    public function testExecute()
+    public function testWrongCredentialsInUrl()
     {
-        $this->markTestIncomplete("Currently no way to mock the output value which is passed by reference.");
-
         $console = $this->getMock('Composer\IO\IOInterface');
         $console->expects($this->once())
             ->method('isInteractive')
@@ -37,9 +35,12 @@ class SvnDriverTest extends \PHPUnit_Framework_TestCase
         $process->expects($this->once())
             ->method('execute')
             ->will($this->returnValue(1));
+        $process->expects($this->once())
+            ->method('getErrorOutput')
+            ->will($this->returnValue($output));
 
         $svn = new SvnDriver('http://till:secret@corp.svn.local/repo', $console, $process);
-        $svn->execute('svn ls', 'http://corp.svn.local/repo');
+        $svn->getTags();
     }
 
     private function getCmd($cmd)

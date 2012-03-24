@@ -46,15 +46,70 @@ class Svn
     protected $cacheCredentials = true;
 
     /**
+     * @var ProcessExecutor
+     */
+    protected $process;
+
+    /**
      * @param string                   $url
      * @param \Composer\IO\IOInterface $io
-     *
-     * @return \Composer\Util\Svn
+     * @param ProcessExecutor          $process
      */
-    public function __construct($url, IOInterface $io)
+    public function __construct($url, IOInterface $io, ProcessExecutor $process = null)
     {
         $this->url = $url;
         $this->io  = $io;
+        $this->process = $process ?: new ProcessExecutor;
+    }
+
+    /**
+     * Execute an SVN command and try to fix up the process with credentials
+     * if necessary.
+     *
+     * @param string $command SVN command to run
+     * @param string $url     SVN url
+     * @param string $cwd     Working directory
+     * @param string $path Target for a checkout
+     *
+     * @return string
+     *
+     * @throws \RuntimeException
+     */
+    public function execute($command, $url, $cwd = null, $path = null)
+    {
+        $svnCommand = $this->getCommand($command, $url, $path);
+        $status = $this->process->execute($svnCommand, $output, $cwd);
+        if (0 === $status) {
+            return $output;
+        }
+
+        if (empty($output)) {
+            $output = $this->process->getErrorOutput();
+        }
+
+        // the error is not auth-related
+        if (false === stripos($output, 'authorization failed:')) {
+            throw new \RuntimeException('Package could not be downloaded: '.$output);
+        }
+
+        // no auth supported for non interactive calls
+        if (!$this->io->isInteractive()) {
+            throw new \RuntimeException(
+                'Package could not be downloaded, can not ask for authentication in non interactive mode ('.$output.')'
+            );
+        }
+
+        // try to authenticate
+        if (!$this->hasAuth()) {
+            $this->doAuthDance();
+
+            // restart the process
+            return $this->execute($command, $url, $cwd, $path);
+        }
+
+        throw new \RuntimeException(
+            'Repository '.$this->url.' could not be processed, wrong credentials provided ('.$output.')'
+        );
     }
 
     /**
@@ -62,7 +117,7 @@ class Svn
      *
      * @return \Composer\Util\Svn
      */
-    public function doAuthDance()
+    protected function doAuthDance()
     {
         $this->io->write("The Subversion server ({$this->url}) requested credentials:");
 
@@ -80,11 +135,11 @@ class Svn
      *
      * @param string $cmd  Usually 'svn ls' or something like that.
      * @param string $url  Repo URL.
-     * @param string $path The path to run this against (e.g. a 'co' into)
+     * @param string $path Target for a checkout
      *
      * @return string
      */
-    public function getCommand($cmd, $url, $path = null)
+    protected function getCommand($cmd, $url, $path = null)
     {
         $cmd = sprintf('%s %s%s %s',
             $cmd,
@@ -107,7 +162,7 @@ class Svn
      *
      * @return string
      */
-    public function getCredentialString()
+    protected function getCredentialString()
     {
         if (!$this->hasAuth()) {
             return '';
@@ -127,7 +182,7 @@ class Svn
      * @return string
      * @throws \LogicException
      */
-    public function getPassword()
+    protected function getPassword()
     {
         if ($this->credentials === null) {
             throw new \LogicException("No svn auth detected.");
@@ -142,7 +197,7 @@ class Svn
      * @return string
      * @throws \LogicException
      */
-    public function getUsername()
+    protected function getUsername()
     {
         if ($this->credentials === null) {
             throw new \LogicException("No svn auth detected.");
@@ -158,7 +213,7 @@ class Svn
      *
      * @return Boolean
      */
-    public function hasAuth()
+    protected function hasAuth()
     {
         if (null !== $this->hasAuth) {
             return $this->hasAuth;

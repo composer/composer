@@ -23,16 +23,6 @@ use Composer\Util\Svn as SvnUtil;
 class SvnDownloader extends VcsDownloader
 {
     /**
-     * @var bool
-     */
-    protected $useAuth = false;
-
-    /**
-     * @var \Composer\Util\Svn
-     */
-    protected $util;
-
-    /**
      * {@inheritDoc}
      */
     public function doDownload(PackageInterface $package, $path)
@@ -40,12 +30,8 @@ class SvnDownloader extends VcsDownloader
         $url =  $package->getSourceUrl();
         $ref =  $package->getSourceReference();
 
-        $util = $this->getUtil($url);
-
-        $command = $util->getCommand("svn co", sprintf("%s/%s", $url, $ref), $path);
-
         $this->io->write("    Checking out ".$package->getSourceReference());
-        $this->execute($command, $util);
+        $this->execute($url, "svn co", sprintf("%s/%s", $url, $ref), null, $path);
     }
 
     /**
@@ -56,11 +42,8 @@ class SvnDownloader extends VcsDownloader
         $url = $target->getSourceUrl();
         $ref = $target->getSourceReference();
 
-        $util    = $this->getUtil($url);
-        $command = $util->getCommand("svn switch", sprintf("%s/%s", $url, $ref));
-
         $this->io->write("    Checking out " . $ref);
-        $this->execute(sprintf('cd %s && %s', $path, $command), $util);
+        $this->execute($url, "svn switch", sprintf("%s/%s", $url, $ref), $path);
     }
 
     /**
@@ -75,55 +58,26 @@ class SvnDownloader extends VcsDownloader
     }
 
     /**
-     * Wrap {@link \Composer\Util\ProcessExecutor::execute().
+     * Execute an SVN command and try to fix up the process with credentials
+     * if necessary.
      *
-     * @param string  $cmd
-     * @param SvnUtil $util
+     * @param string $baseUrl Base URL of the repository
+     * @param string $command SVN command to run
+     * @param string $url     SVN url
+     * @param string $cwd     Working directory
+     * @param string $path    Target for a checkout
      *
      * @return string
      */
-    protected function execute($command, SvnUtil $util)
+    protected function execute($baseUrl, $command, $url, $cwd = null, $path = null)
     {
-        $status = $this->process->execute($command, $output);
-        if (0 === $status) {
-            return $output;
+        $util = new SvnUtil($baseUrl, $this->io);
+        try {
+            return $util->execute($command, $url, $cwd, $path);
+        } catch (\RuntimeException $e) {
+            throw new \RuntimeException(
+                'Package could not be downloaded, '.$e->getMessage()
+            );
         }
-
-        // this could be any failure, since SVN exits with 1 always
-        if (empty($output)) {
-            $output = $this->process->getErrorOutput();
-        }
-
-        if (!$this->io->isInteractive()) {
-            return $output;
-        }
-
-        // the error is not auth-related
-        if (false === stripos($output, 'authorization failed:')) {
-            return $output;
-        }
-
-        // no authorization has been detected so far
-        if (!$this->useAuth) {
-            $this->useAuth = $util->doAuthDance()->hasAuth();
-            $credentials   = $util->getCredentialString();
-
-            // restart the process
-            $output = $this->execute($command . ' ' . $credentials, $util);
-        } else {
-            $this->io->write("Authorization failed: {$command}");
-        }
-
-        return $output;
-    }
-
-    /**
-     * @param string $url
-     *
-     * @return \Composer\Util\Svn
-     */
-    protected function getUtil($url)
-    {
-        return new SvnUtil($url, $this->io);
     }
 }
