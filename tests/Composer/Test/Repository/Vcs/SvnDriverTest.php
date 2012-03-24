@@ -58,15 +58,10 @@ class SvnDriverTest extends \PHPUnit_Framework_TestCase
             array('https://svn.sf.net', true),
             array('svn://example.org', true),
             array('svn+ssh://example.org', true),
-            array('file:///d:/repository_name/project', true),
-            array('file:///repository_name/project', true),
-            array('/absolute/path', true),
         );
     }
 
     /**
-     * Nail a bug in {@link SvnDriver::support()}.
-     *
      * @dataProvider supportProvider
      */
     public function testSupport($url, $assertion)
