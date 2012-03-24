@@ -15,9 +15,6 @@ namespace Composer\Test\Repository\Vcs;
 use Composer\Repository\Vcs\SvnDriver;
 use Composer\IO\NullIO;
 
-/**
- * @author Till Klampaeckel <till@php.net>
- */
 class SvnDriverTest extends \PHPUnit_Framework_TestCase
 {
     /**
