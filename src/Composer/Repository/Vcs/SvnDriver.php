@@ -30,28 +30,6 @@ class SvnDriver extends VcsDriver
     protected $infoCache = array();
 
     /**
-     * Contains credentials, or not?
-     * @var boolean
-     */
-    protected $useAuth = false;
-
-    /**
-     * To determine if we should cache the credentials supplied by the user. By default: no cache.
-     * @var boolean
-     */
-    protected $useCache = false;
-
-    /**
-     * @var string
-     */
-    protected $svnUsername = '';
-
-    /**
-     * @var string
-     */
-    protected $svnPassword = '';
-
-    /**
      * @var \Composer\Util\Svn
      */
     protected $util;
@@ -71,13 +49,12 @@ class SvnDriver extends VcsDriver
         if (false !== ($pos = strrpos($url, '/trunk'))) {
             $this->baseUrl = substr($url, 0, $pos);
         }
-        $this->util    = new SvnUtil($this->baseUrl, $io);
-        $this->useAuth = $this->util->hasAuth();
+        $this->util    = new SvnUtil($this->baseUrl, $io, $this->process);
     }
 
     /**
      * Execute an SVN command and try to fix up the process with credentials
-     * if necessary. The command is 'fixed up' with {@link self::getSvnCommand()}.
+     * if necessary.
      *
      * @param string $command The svn command to run.
      * @param string $url     The SVN URL.
@@ -86,37 +63,13 @@ class SvnDriver extends VcsDriver
      */
     protected function execute($command, $url)
     {
-        $svnCommand = $this->util->getCommand($command, $url);
-
-        $status = $this->process->execute(
-            $svnCommand,
-            $output
-        );
-
-        if (0 === $status) {
-            return $output;
+        try {
+            return $this->util->execute($command, $url);
+        } catch (\RuntimeException $e) {
+            throw new \RuntimeException(
+                'Repository '.$this->url.' could not be processed, '.$e->getMessage()
+            );
         }
-
-        // this could be any failure, since SVN exits with 1 always
-        if (!$this->io->isInteractive()) {
-            return $output;
-        }
-
-        // the error is not auth-related
-        if (false === stripos($output, 'authorization failed:')) {
-            return $output;
-        }
-
-        // no authorization has been detected so far
-        if (!$this->useAuth) {
-            $this->useAuth = $this->util->doAuthDance()->hasAuth();
-
-            // restart the process
-            $output = $this->execute($command, $url);
-        } else {
-            $this->io->write("Authorization failed: {$svnCommand}");
-        }
-        return $output;
     }
 
     /**
