@@ -25,7 +25,7 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
 
     public function getTestCreateMapTests()
     {
-        return array(
+        $data = array(
             array(__DIR__.'/Fixtures/Namespaced', array(
                 'Namespaced\\Bar' => realpath(__DIR__).'/Fixtures/Namespaced/Bar.php',
                 'Namespaced\\Foo' => realpath(__DIR__).'/Fixtures/Namespaced/Foo.php',
@@ -44,6 +44,7 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
             array(__DIR__.'/Fixtures/classmap', array(
                 'Foo\\Bar\\A'             => realpath(__DIR__).'/Fixtures/classmap/sameNsMultipleClasses.php',
                 'Foo\\Bar\\B'             => realpath(__DIR__).'/Fixtures/classmap/sameNsMultipleClasses.php',
+                'A'                       => realpath(__DIR__).'/Fixtures/classmap/multipleNs.php',
                 'Alpha\\A'                => realpath(__DIR__).'/Fixtures/classmap/multipleNs.php',
                 'Alpha\\B'                => realpath(__DIR__).'/Fixtures/classmap/multipleNs.php',
                 'Beta\\A'                 => realpath(__DIR__).'/Fixtures/classmap/multipleNs.php',
@@ -53,6 +54,19 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
                 'ClassMap\\SomeClass'     => realpath(__DIR__).'/Fixtures/classmap/SomeClass.php',
             )),
         );
+
+        if (version_compare(PHP_VERSION, '5.4', '>=')) {
+            $data[] = array(__DIR__.'/Fixtures/php5.4', array(
+                'TFoo' => __DIR__.'/Fixtures/php5.4/traits.php',
+                'CFoo' => __DIR__.'/Fixtures/php5.4/traits.php',
+                'Foo\\TBar' => __DIR__.'/Fixtures/php5.4/traits.php',
+                'Foo\\IBar' => __DIR__.'/Fixtures/php5.4/traits.php',
+                'Foo\\TFooBar' => __DIR__.'/Fixtures/php5.4/traits.php',
+                'Foo\\CBar' => __DIR__.'/Fixtures/php5.4/traits.php',
+            ));
+        }
+
+        return $data;
     }
 
     public function testCreateMapFinderSupport()
