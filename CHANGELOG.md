@@ -3,7 +3,7 @@
   * Added `create-project` command to install a project from scratch with composer
   * Added automated `classmap` autoloading support for non-PSR-0 compliant projects
   * Added human readable error reporting when deps can not be solved
-  * Added support for private GitHub repositories (use --no-interaction for CI)
+  * Added support for private GitHub and SVN repositories (use --no-interaction for CI)
   * Added "file" downloader type to download plain files
   * Added support for authentication with svn repositories
   * Improved clones from GitHub which now automatically select between git/https/http protocols
