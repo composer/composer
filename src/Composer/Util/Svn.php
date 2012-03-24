@@ -99,6 +99,9 @@ class Svn
             );
         }
 
+        // TODO keep a count of user auth attempts and ask 5 times before
+        // failing hard (currently it fails hard directly if the URL has credentials)
+
         // try to authenticate
         if (!$this->hasAuth()) {
             $this->doAuthDance();
