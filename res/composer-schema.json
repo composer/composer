@@ -9,7 +9,7 @@
             "required": true
         },
         "type": {
-            "description": "Package type, either 'library' for common packages, 'composer-installer' for custom installers, or a custom type defined by whatever project this package applies to.",
+            "description": "Package type, either 'library' for common packages, 'composer-installer' for custom installers, 'metapackage' for empty packages, or a custom type defined by whatever project this package applies to.",
             "type": "string"
         },
         "target-dir": {
