@@ -262,12 +262,13 @@ class SvnDriver extends VcsDriver
      */
     public static function supports($url, $deep = false)
     {
-        $url = self::fixSvnUrl($url);
-        if (preg_match('#((^svn://)|(^svn\+ssh://)|(^file:///)|(^http)|(svn\.))#i', $url)) {
+        $url = self::normalizeUrl($url);
+        if (preg_match('#(^svn://|^svn\+ssh://|svn\.)#i', $url)) {
             return true;
         }
 
-        if (!$deep) {
+        // proceed with deep check for local urls since they are fast to process
+        if (!$deep && !static::isLocalUrl($url)) {
             return false;
         }
 
