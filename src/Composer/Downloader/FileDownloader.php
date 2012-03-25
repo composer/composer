@@ -28,16 +28,18 @@ class FileDownloader implements DownloaderInterface
 {
     protected $io;
     protected $rfs;
+    protected $filesystem;
 
     /**
      * Constructor.
      *
      * @param IOInterface  $io  The IO instance
      */
-    public function __construct(IOInterface $io, RemoteFilesystem $rfs = null)
+    public function __construct(IOInterface $io, RemoteFilesystem $rfs = null, Filesystem $filesystem = null)
     {
         $this->io = $io;
         $this->rfs = $rfs ?: new RemoteFilesystem($io);
+        $this->filesystem = $filesystem ?: new Filesystem();
     }
 
     /**
@@ -58,14 +60,7 @@ class FileDownloader implements DownloaderInterface
             throw new \InvalidArgumentException('The given package is missing url information');
         }
 
-        if (!is_dir($path)) {
-            if (file_exists($path)) {
-                throw new \UnexpectedValueException($path.' exists and is not a directory');
-            }
-            if (!mkdir($path, 0777, true)) {
-                throw new \UnexpectedValueException($path.' does not exist and could not be created');
-            }
-        }
+        $this->filesystem->ensureDirectoryExists($path);
 
         $fileName = $this->getFileName($package, $path);
 
@@ -73,16 +68,22 @@ class FileDownloader implements DownloaderInterface
 
         $url = $this->processUrl($url);
 
-        $this->rfs->copy($package->getSourceUrl(), $url, $fileName);
+        try {
+            $this->rfs->copy($package->getSourceUrl(), $url, $fileName);
 
-        if (!file_exists($fileName)) {
-            throw new \UnexpectedValueException($url.' could not be saved to '.$fileName.', make sure the'
-                .' directory is writable and you have internet connectivity');
-        }
+            if (!file_exists($fileName)) {
+                throw new \UnexpectedValueException($url.' could not be saved to '.$fileName.', make sure the'
+                    .' directory is writable and you have internet connectivity');
+            }
 
-        $checksum = $package->getDistSha1Checksum();
-        if ($checksum && hash_file('sha1', $fileName) !== $checksum) {
-            throw new \UnexpectedValueException('The checksum verification of the file failed (downloaded from '.$url.')');
+            $checksum = $package->getDistSha1Checksum();
+            if ($checksum && hash_file('sha1', $fileName) !== $checksum) {
+                throw new \UnexpectedValueException('The checksum verification of the file failed (downloaded from '.$url.')');
+            }
+        } catch (\Exception $e) {
+            // clean up
+            $this->fs->removeDirectory($path);
+            throw $e;
         }
     }
 
@@ -100,8 +101,7 @@ class FileDownloader implements DownloaderInterface
      */
     public function remove(PackageInterface $package, $path)
     {
-        $fs = new Filesystem();
-        $fs->removeDirectory($path);
+        $this->fs->removeDirectory($path);
     }
 
     /**
