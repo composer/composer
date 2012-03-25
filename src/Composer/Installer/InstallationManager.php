@@ -100,13 +100,7 @@ class InstallationManager
      */
     public function isPackageInstalled(PackageInterface $package)
     {
-        foreach ($this->installers as $installer) {
-            if ($installer->isInstalled($package)) {
-                return true;
-            }
-        }
-
-        return false;
+        return $this->getInstaller($package->getType())->isInstalled($package);
     }
 
     /**
