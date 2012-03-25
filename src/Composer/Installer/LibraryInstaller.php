@@ -78,7 +78,7 @@ class LibraryInstaller implements InstallerInterface
      */
     public function install(PackageInterface $package)
     {
-        $this->initializeDirs();
+        $this->initializeVendorDir();
         $downloadPath = $this->getInstallPath($package);
 
         // remove the binaries if it appears the package files are missing
@@ -102,7 +102,7 @@ class LibraryInstaller implements InstallerInterface
             throw new \InvalidArgumentException('Package is not installed: '.$initial);
         }
 
-        $this->initializeDirs();
+        $this->initializeVendorDir();
         $downloadPath = $this->getInstallPath($initial);
 
         $this->removeBinaries($initial);
@@ -147,6 +147,7 @@ class LibraryInstaller implements InstallerInterface
             return;
         }
         foreach ($package->getBinaries() as $bin) {
+            $this->initializeBinDir();
             $link = $this->binDir.'/'.basename($bin);
             if (file_exists($link)) {
                 if (is_link($link)) {
@@ -196,11 +197,15 @@ class LibraryInstaller implements InstallerInterface
         }
     }
 
-    protected function initializeDirs()
+    protected function initializeVendorDir()
     {
         $this->filesystem->ensureDirectoryExists($this->vendorDir);
-        $this->filesystem->ensureDirectoryExists($this->binDir);
         $this->vendorDir = realpath($this->vendorDir);
+    }
+
+    protected function initializeBinDir()
+    {
+        $this->filesystem->ensureDirectoryExists($this->binDir);
         $this->binDir = realpath($this->binDir);
     }
 
