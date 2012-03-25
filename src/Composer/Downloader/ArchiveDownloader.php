@@ -14,7 +14,6 @@ namespace Composer\Downloader;
 
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
-use Composer\Util\Filesystem;
 
 /**
  * Base downloader for archives
@@ -34,28 +33,34 @@ abstract class ArchiveDownloader extends FileDownloader
 
         $fileName = $this->getFileName($package, $path);
         $this->io->write('    Unpacking archive');
-        $this->extract($fileName, $path);
+        try {
+            $this->extract($fileName, $path);
 
-        $this->io->write('    Cleaning up');
-        unlink($fileName);
+            $this->io->write('    Cleaning up');
+            unlink($fileName);
 
-        // If we have only a one dir inside it suppose to be a package itself
-        $contentDir = glob($path . '/*');
-        if (1 === count($contentDir)) {
-            $contentDir = $contentDir[0];
+            // If we have only a one dir inside it suppose to be a package itself
+            $contentDir = glob($path . '/*');
+            if (1 === count($contentDir)) {
+                $contentDir = $contentDir[0];
 
-            // Rename the content directory to avoid error when moving up
-            // a child folder with the same name
-            $temporaryName = md5(time().rand());
-            rename($contentDir, $temporaryName);
-            $contentDir = $temporaryName;
+                // Rename the content directory to avoid error when moving up
+                // a child folder with the same name
+                $temporaryName = md5(time().rand());
+                rename($contentDir, $temporaryName);
+                $contentDir = $temporaryName;
 
-            foreach (array_merge(glob($contentDir . '/.*'), glob($contentDir . '/*')) as $file) {
-                if (trim(basename($file), '.')) {
-                    rename($file, $path . '/' . basename($file));
+                foreach (array_merge(glob($contentDir . '/.*'), glob($contentDir . '/*')) as $file) {
+                    if (trim(basename($file), '.')) {
+                        rename($file, $path . '/' . basename($file));
+                    }
                 }
+                rmdir($contentDir);
             }
-            rmdir($contentDir);
+        } catch (\Exception $e) {
+            // clean up
+            $this->fs->removeDirectory($path);
+            throw $e;
         }
 
         $this->io->write('');
