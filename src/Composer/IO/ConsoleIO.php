@@ -126,20 +126,11 @@ class ConsoleIO implements IOInterface
      */
     public function askAndHideAnswer($question)
     {
-        // for windows OS (does not hide the answer in the popup, but it never appears in the STDIN history)
+        // handle windows
         if (defined('PHP_WINDOWS_VERSION_BUILD')) {
-            $vbscript = sys_get_temp_dir() . '/prompt_password.vbs';
-            file_put_contents($vbscript,
-                    'wscript.echo(Inputbox("' . addslashes($question) . '","'
-                            . addslashes($question) . '", ""))');
-            $command = "cscript //nologo " . escapeshellarg($vbscript);
-
             $this->write($question, false);
-
-            $value = rtrim(shell_exec($command));
-            unlink($vbscript);
-
-            $this->write('***');
+            $value = rtrim(shell_exec(__DIR__.'\\hiddeninput.exe'));
+            $this->write('');
 
             return $value;
         }
@@ -148,14 +139,8 @@ class ConsoleIO implements IOInterface
         $command = "/usr/bin/env bash -c 'echo OK'";
         if (rtrim(shell_exec($command)) === 'OK') {
             $this->write($question, false);
-
             $command = "/usr/bin/env bash -c 'read -s mypassword && echo \$mypassword'";
             $value = rtrim(shell_exec($command));
-
-            for ($i = 0; $i < strlen($value); ++$i) {
-                $this->write('*', false);
-            }
-
             $this->write('');
 
             return $value;
