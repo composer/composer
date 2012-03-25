@@ -82,7 +82,7 @@ class FileDownloader implements DownloaderInterface
             }
         } catch (\Exception $e) {
             // clean up
-            $this->fs->removeDirectory($path);
+            $this->filesystem->removeDirectory($path);
             throw $e;
         }
     }
@@ -101,7 +101,7 @@ class FileDownloader implements DownloaderInterface
      */
     public function remove(PackageInterface $package, $path)
     {
-        $this->fs->removeDirectory($path);
+        $this->filesystem->removeDirectory($path);
     }
 
     /**

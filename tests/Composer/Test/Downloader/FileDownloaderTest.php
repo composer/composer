@@ -39,7 +39,7 @@ class FileDownloaderTest extends \PHPUnit_Framework_TestCase
         $downloader->download($packageMock, '/path');
     }
 
-    public function testDownloadToExistFile()
+    public function testDownloadToExistingFile()
     {
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $packageMock->expects($this->once())
@@ -57,7 +57,7 @@ class FileDownloaderTest extends \PHPUnit_Framework_TestCase
             if (file_exists($path)) {
                 unset($path);
             }
-            $this->assertInstanceOf('UnexpectedValueException', $e);
+            $this->assertInstanceOf('RuntimeException', $e);
             $this->assertContains('exists and is not a directory', $e->getMessage());
         }
     }

@@ -59,7 +59,7 @@ abstract class ArchiveDownloader extends FileDownloader
             }
         } catch (\Exception $e) {
             // clean up
-            $this->fs->removeDirectory($path);
+            $this->filesystem->removeDirectory($path);
             throw $e;
         }
 
