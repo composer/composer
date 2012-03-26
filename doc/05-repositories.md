@@ -92,7 +92,7 @@ The `composer` repository is also what packagist uses. To reference a
 `composer` repository, just supply the path before the `packages.json` file.
 In case of packagist, that file is located at `/packages.json`, so the URL of
 the repository would be `http://packagist.org`. For
-`http://example.org/packages.org` the repository URL would be
+`http://example.org/packages.json` the repository URL would be
 `http://example.org`.
 
 ### VCS
