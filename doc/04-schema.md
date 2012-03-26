@@ -335,59 +335,7 @@ Example:
 Composer allows you to hook into various parts of the installation process
 through the use of scripts.
 
-These events are supported:
-
-* **pre-install-cmd:** Occurs before the install command is executed, contains
-  one or more Class::method callables.
-* **post-install-cmd:** Occurs after the install command is executed, contains
-  one or more Class::method callables.
-* **pre-update-cmd:** Occurs before the update command is executed, contains
-  one or more Class::method callables.
-* **post-update-cmd:** Occurs after the update command is executed, contains
-  one or more Class::method callables.
-* **pre-package-install:** Occurs before a package is installed, contains one
-  or more Class::method callables.
-* **post-package-install:** Occurs after a package is installed, contains one
-  or more Class::method callables.
-* **pre-package-update:** Occurs before a package is updated, contains one or
-  more Class::method callables.
-* **post-package-update:** Occurs after a package is updated, contains one or
-  more Class::method callables.
-* **pre-package-uninstall:** Occurs before a package has been uninstalled,
-  contains one or more Class::method callables.
-* **post-package-uninstall:** Occurs after a package has been uninstalled,
-  contains one or more Class::method callables.
-
-For each of these events you can provide a static method on a class that will
-handle it.
-
-Example:
-
-    {
-        "scripts": {
-            "post-install-cmd": [
-                "Acme\\ScriptHandler::doSomething"
-            ]
-        }
-    }
-
-The event handler receives a `Composer\Script\Event` object as an argument,
-which gives you access to the `Composer\Composer` instance through the
-`getComposer` method.
-
-    namespace Acme;
-
-    use Composer\Script\Event;
-
-    class ScriptHandler
-    {
-        static public function doSomething(Event $event)
-        {
-            $composer = $event->getComposer();
-
-            // custom logic
-        }
-    }
+See [Scripts](articles/scripts.md) for events details and examples.
 
 ### extra
 
