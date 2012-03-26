@@ -52,7 +52,8 @@ class HgDownloaderTest extends \PHPUnit_Framework_TestCase
         $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
         $processExecutor->expects($this->once())
             ->method('execute')
-            ->with($this->equalTo($expectedGitCommand));
+            ->with($this->equalTo($expectedGitCommand))
+            ->will($this->returnValue(0));
 
         $downloader = $this->getDownloaderMock(null, $processExecutor);
         $downloader->download($packageMock, 'composerPath');
@@ -91,7 +92,8 @@ class HgDownloaderTest extends \PHPUnit_Framework_TestCase
             ->with($this->equalTo($expectedResetCommand));
         $processExecutor->expects($this->at(1))
             ->method('execute')
-            ->with($this->equalTo($expectedUpdateCommand));
+            ->with($this->equalTo($expectedUpdateCommand))
+            ->will($this->returnValue(0));
 
         $downloader = $this->getDownloaderMock(null, $processExecutor);
         $downloader->update($packageMock, $packageMock, 'composerPath');
