@@ -78,15 +78,13 @@ See [Repositories](05-repositories.md) for more information.
 
 ## Lock file
 
-For projects it is recommended to commit the `composer.lock` file into version
-control. For libraries this is not the case. You do not want your library to
-be tied to exact versions of the dependencies. It should work with any
-compatible version, so make sure you specify your version constraints so that
-they include all compatible versions.
+For your library you may commit the `composer.lock` file if you want to. This
+can help your team to always test against the same dependency versions.
+However, this lock file will not have any effect on other projects that depend
+on it. It only has an effect on the main project.
 
-**Do not commit your library's `composer.lock` into version control.**
-
-If you are using git, add it to the `.gitignore`.
+If you do not want to commit the lock file and you are using git, add it to
+the `.gitignore`.
 
 ## Publishing to a VCS
 
