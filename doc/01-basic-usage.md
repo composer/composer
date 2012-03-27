@@ -115,9 +115,8 @@ the lock file with the new version.
 
     $ php composer.phar update
 
-> **Note:** For your library you may commit the `composer.lock` file too, but it
-> will not have any effect on other projects that depend on it. See also
-> [Libraries - Lock file](02-libraries.md#lock-file).
+> **Note:** For libraries it is not necessarily recommended to commit the lock file,
+> see also: [Libraries - Lock file](02-libraries.md#lock-file).
 
 ## Packagist
 
