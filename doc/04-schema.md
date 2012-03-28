@@ -204,6 +204,14 @@ Example:
     }
 
 Optional, but it is highly recommended that you follow PSR-0 and use this.
+If you need to search for a same namespace prefix in multiple directories,
+you can specify them as an array as such:
+
+    {
+        "autoload": {
+            "psr-0": { "Monolog": ["src/", "lib/"] }
+        }
+    }
 
 You can use the classmap generation support to define autoloading for all libraries
 that do not follow "PSR-0". To configure this you specify all directories
