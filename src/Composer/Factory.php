@@ -135,8 +135,8 @@ class Factory
     {
         $loadPackagist = true;
         $packagistConfig = array(
-                'type' => 'composer',
-                'url' => 'http://packagist.org'
+            'type' => 'composer',
+            'url' => 'http://packagist.org'
         );
         if (isset($packageConfig['repositories'])) {
             foreach ($packageConfig['repositories'] as $key => $repo) {
