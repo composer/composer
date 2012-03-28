@@ -98,7 +98,7 @@ After installing the dependencies, Composer writes the list of the exact
 versions it installed into a `composer.lock` file. This locks the project
 to those specific versions.
 
-**Commit your project's `composer.lock` (along with `composer.json`) into version control.**
+**Commit your application's `composer.lock` (along with `composer.json`) into version control.**
 
 This is important because the `install` command checks if a lock file is present,
 and if it is, it downloads the versions specified there (regardless of what `composer.json`
@@ -114,6 +114,9 @@ the latest matching versions (according to your `composer.json` file) and also u
 the lock file with the new version.
 
     $ php composer.phar update
+
+> **Note:** For libraries it is not necessarily recommended to commit the lock file,
+> see also: [Libraries - Lock file](02-libraries.md#lock-file).
 
 ## Packagist
 
