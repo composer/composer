@@ -172,11 +172,12 @@ EOF;
             }
 
             foreach ($package->getAutoload() as $type => $mapping) {
-                foreach ($mapping as $namespace => $path) {
-                    $autoloads[$type][$namespace][] = empty($installPath) ? $path : $installPath.'/'.$path;
+                foreach ($mapping as $namespace => $paths) {
+                    foreach ((array) $paths as $path) {
+                        $autoloads[$type][$namespace][] = empty($installPath) ? $path : $installPath.'/'.$path;
+                    }
                 }
             }
-
         }
 
         foreach ($autoloads as $type => $maps) {

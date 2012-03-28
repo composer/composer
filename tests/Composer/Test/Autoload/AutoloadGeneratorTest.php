@@ -77,7 +77,7 @@ class AutoloadGeneratorTest extends TestCase
     {
         $package = new MemoryPackage('a', '1.0', '1.0');
         $package->setAutoload(array(
-            'psr-0' => array('Main' => 'src/', 'Lala' => 'src/'),
+            'psr-0' => array('Main' => 'src/', 'Lala' => array('src/', 'lib/')),
             'classmap' => array('.composersrc/'),
         ));
 
