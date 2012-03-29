@@ -121,7 +121,7 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
     {
         $fs = new RemoteFilesystem($this->getMock('Composer\IO\IOInterface'));
 
-        $this->assertContains('RFC 2606', $fs->getContents('http://example.org', 'http://example.org'));
+        $this->assertContains('testGetContents', $fs->getContents('http://example.org', 'file://'.__FILE__));
     }
 
     public function testCopy()
@@ -129,9 +129,9 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
         $fs = new RemoteFilesystem($this->getMock('Composer\IO\IOInterface'));
 
         $file = tempnam(sys_get_temp_dir(), 'c');
-        $this->assertTrue($fs->copy('http://example.org', 'http://example.org', $file));
+        $this->assertTrue($fs->copy('http://example.org', 'file://'.__FILE__, $file));
         $this->assertFileExists($file);
-        $this->assertContains('RFC 2606', file_get_contents($file));
+        $this->assertContains('testCopy', file_get_contents($file));
         unlink($file);
     }
 
