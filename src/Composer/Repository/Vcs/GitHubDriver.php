@@ -216,7 +216,7 @@ class GitHubDriver extends VcsDriver
             }
             try {
                 $repoData = JsonFile::parseJson($this->getContents($repoDataUrl));
-                $this->rootIdentifier = $repoData['master_branch'] ?: 'master';
+                $this->rootIdentifier = $repoData['default_branch'] ?: 'master';
             } catch (TransportException $e) {
                 switch($e->getCode()) {
                     case 401:
