@@ -46,10 +46,38 @@ class ZipDownloader extends ArchiveDownloader
         $zipArchive = new \ZipArchive();
 
         if (true !== ($retval = $zipArchive->open($file))) {
-            throw new \UnexpectedValueException($file.' is not a valid zip archive, got error code '.$retval);
+            $this->handleZipError($retval, $file);
         }
 
         $zipArchive->extractTo($path);
         $zipArchive->close();
+    }
+
+    protected function handleZipError($retval, $file)
+    {
+        switch ($retval) {
+        case \ZIPARCHIVE::ER_EXISTS:
+            throw new \UnexpectedValueException(sprintf("File '%s' already exists.", $file));
+        case \ZIPARCHIVE::ER_INCONS:
+            throw new \UnexpectedValueException(sprintf("Zip archive '%s' is inconsistent.", $file));
+        case \ZIPARCHIVE::ER_INVAL:
+            throw new \UnexpectedValueException(sprintf("Invalid argument. (%s)", $file));
+        case \ZIPARCHIVE::ER_MEMORY:
+            throw new \UnexpectedValueException(sprintf("Malloc failure. (%s)", $file));
+        case \ZIPARCHIVE::ER_NOENT:
+            throw new \UnexpectedValueException(sprintf("No such file: '%s'", $file));
+        case \ZIPARCHIVE::ER_NOZIP:
+            throw new \UnexpectedValueException(sprintf("'%s' is not a zip archive.", $file));
+        case \ZIPARCHIVE::ER_OPEN:
+            throw new \UnexpectedValueException(sprintf("Can't open file: %s", $file));
+        case \ZIPARCHIVE::ER_READ:
+            throw new \UnexpectedValueException(sprintf("Read error. (%s)", $file));
+        case \ZIPARCHIVE::ER_SEEK:
+            throw new \UnexpectedValueException(sprintf("Seek error. (%s)", $file));
+        default:
+            throw new \UnexpectedValueException(
+                sprintf("'%s' is not a valid zip archive, got error code: %s", $file, $retval)
+            );
+        }
     }
 }
