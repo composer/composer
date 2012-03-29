@@ -33,14 +33,14 @@ class GitHubDriver extends VcsDriver
 
     /**
      * Git Driver
-     * 
+     *
      * @var GitDriver
      */
     protected $gitDriver;
 
     /**
      * Constructor
-     * 
+     *
      * @param string $url
      * @param IOInterface $io
      * @param ProcessExecutor $process
@@ -193,7 +193,7 @@ class GitHubDriver extends VcsDriver
 
     /**
      * Generate an SSH URL
-     * 
+     *
      * @return string
      */
     protected function generateSshUrl()
@@ -203,7 +203,7 @@ class GitHubDriver extends VcsDriver
 
     /**
      * Fetch root identifier from GitHub
-     * 
+     *
      * @throws TransportException
      */
     protected function fetchRootIdentifier()
@@ -216,7 +216,13 @@ class GitHubDriver extends VcsDriver
             }
             try {
                 $repoData = JsonFile::parseJson($this->getContents($repoDataUrl));
-                $this->rootIdentifier = $repoData['master_branch'] ?: 'master';
+                if (isset($repoData['default_branch'])) {
+                    $this->rootIdentifier = $repoData['default_branch'];
+                } elseif (isset($repoData['master_branch'])) {
+                    $this->rootIdentifier = $repoData['master_branch'];
+                } else {
+                    $this->rootIdentifier = 'master';
+                }
             } catch (TransportException $e) {
                 switch($e->getCode()) {
                     case 401:
