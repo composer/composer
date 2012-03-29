@@ -53,6 +53,14 @@ class ZipDownloader extends ArchiveDownloader
         $zipArchive->close();
     }
 
+    /**
+     * Handle the error and give a meaningful error message to the user.
+     *
+     * @param int $retval
+     * @param string $file
+     *
+     * @throws \UnexpectedValueException
+     */
     protected function handleZipError($retval, $file)
     {
         switch ($retval) {
