@@ -14,19 +14,19 @@
         {
             "package": "symfony/console",
             "version": "dev-master",
-            "source-reference": "5fcd408b7b34f3e544f9743cf33e179767e9a000",
+            "source-reference": "81b09796160a382f6c01a54f6c7d7e091ae1b7bf",
             "alias": "2.1.9999999.9999999-dev"
         },
         {
             "package": "symfony/finder",
             "version": "dev-master",
-            "source-reference": "be30ecc95281d729ee51b9e89644d442bcf60451",
+            "source-reference": "713ba1dbd03b424afd1f944626dc0ce1b5b8c442",
             "alias": "2.1.9999999.9999999-dev"
         },
         {
             "package": "symfony/process",
             "version": "dev-master",
-            "source-reference": "d08c4ea1530453ce270fcba78f0bff57a0869a9b",
+            "source-reference": "05d2c2b0372a616b1e9adaf90fd6c547c60b5d58",
             "alias": "2.1.9999999.9999999-dev"
         }
     ],
