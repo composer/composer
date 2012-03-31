@@ -293,4 +293,14 @@ class JsonFile
 
         throw $result;
     }
+
+    /**
+     * Returns the content of the file
+     *
+     * @return string result
+     */
+    public function getResult()
+    {
+        return $this->rfs->getContents($this->path, $this->path, false);
+    }
 }
