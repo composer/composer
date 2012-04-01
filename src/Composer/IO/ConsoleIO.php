@@ -128,8 +128,17 @@ class ConsoleIO implements IOInterface
     {
         // handle windows
         if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+            $exe = __DIR__.'\\hiddeninput.exe';
+
+            // handle code running from a phar
+            if ('phar:' === substr(__FILE__, 0, 5)) {
+                $tmpExe = sys_get_temp_dir().'/hiddeninput.exe';
+                copy($exe, $tmpExe);
+                $exe = $tmpExe;
+            }
+
             $this->write($question, false);
-            $value = rtrim(shell_exec(__DIR__.'\\hiddeninput.exe'));
+            $value = rtrim(shell_exec($exe));
             $this->write('');
 
             return $value;
