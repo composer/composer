@@ -622,6 +622,33 @@ class SolverTest extends TestCase
         }
     }
 
+    public function testLearnLiteralsWithSortedRuleLiterals()
+    {
+        $this->repo->addPackage($packageTwig2 = $this->getPackage('twig/twig', '2.0'));
+        $this->repo->addPackage($packageTwig16 = $this->getPackage('twig/twig', '1.6'));
+        $this->repo->addPackage($packageTwig15 = $this->getPackage('twig/twig', '1.5'));
+        $this->repo->addPackage($packageSymfony = $this->getPackage('symfony/symfony', '2.0'));
+        $this->repo->addPackage($packageTwigBridge = $this->getPackage('symfony/twig-bridge', '2.0'));
+
+        $packageTwigBridge->setRequires(array(
+            new Link('symfony/twig-bridge', 'twig/twig', $this->getVersionConstraint('<', '2.0'), 'requires'),
+        ));
+
+        $packageSymfony->setReplaces(array(
+            new Link('symfony/symfony', 'symfony/twig-bridge', $this->getVersionConstraint('==', '2.0'), 'replaces'),
+        ));
+
+        $this->reposComplete();
+
+        $this->request->install('symfony/twig-bridge');
+        $this->request->install('twig/twig');
+
+        $this->checkSolverResult(array(
+            array('job' => 'install', 'package' => $packageTwig16),
+            array('job' => 'install', 'package' => $packageTwigBridge),
+        ));
+    }
+
     protected function reposComplete()
     {
         $this->pool->addRepository($this->repoInstalled);
