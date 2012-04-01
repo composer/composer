@@ -162,7 +162,7 @@ class HgDriver extends VcsDriver
     /**
      * {@inheritDoc}
      */
-    public static function supports($url, $deep = false)
+    public static function supports(IOInterface $io, $url, $deep = false)
     {
         if (preg_match('#(^(?:https?|ssh)://(?:[^@]@)?bitbucket.org|https://(?:.*?)\.kilnhg.com)#i', $url)) {
             return true;

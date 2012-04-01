@@ -186,9 +186,20 @@ class GitHubDriver extends VcsDriver
     /**
      * {@inheritDoc}
      */
-    public static function supports($url, $deep = false)
+    public static function supports(IOInterface $io, $url, $deep = false)
     {
-        return extension_loaded('openssl') && preg_match('#^(?:https?|git)://github\.com/([^/]+)/(.+?)(?:\.git)?$#', $url);
+        if (!preg_match('#^(?:https?|git)://github\.com/([^/]+)/(.+?)(?:\.git)?$#', $url)) {
+            return false;
+        }
+
+        if (!extension_loaded('openssl')) {
+            if ($io->isVerbose()) {
+                $io->write('Skipping GitHub driver for '.$url.' because the OpenSSL PHP extension is missing.');
+            }
+            return false;
+        }
+
+        return true;
     }
 
     /**
