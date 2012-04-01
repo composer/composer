@@ -58,6 +58,14 @@ class ConsoleIO implements IOInterface
     /**
      * {@inheritDoc}
      */
+    public function isVerbose()
+    {
+        return (Boolean) $this->input->getOption('verbose');
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function write($messages, $newline = true)
     {
         $this->output->write($messages, $newline);
