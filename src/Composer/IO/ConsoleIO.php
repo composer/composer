@@ -134,44 +134,40 @@ class ConsoleIO implements IOInterface
      */
     public function askAndHideAnswer($question)
     {
-        // for windows OS (does not hide the answer in the popup, but it never appears in the STDIN history)
+        // handle windows
         if (defined('PHP_WINDOWS_VERSION_BUILD')) {
-            $vbscript = sys_get_temp_dir() . '/prompt_password.vbs';
-            file_put_contents($vbscript,
-                    'wscript.echo(Inputbox("' . addslashes($question) . '","'
-                            . addslashes($question) . '", ""))');
-            $command = "cscript //nologo " . escapeshellarg($vbscript);
+            $exe = __DIR__.'\\hiddeninput.exe';
+
+            // handle code running from a phar
+            if ('phar:' === substr(__FILE__, 0, 5)) {
+                $tmpExe = sys_get_temp_dir().'/hiddeninput.exe';
+                copy($exe, $tmpExe);
+                $exe = $tmpExe;
+            }
 
             $this->write($question, false);
+            $value = rtrim(shell_exec($exe));
+            $this->write('');
 
-            $value = rtrim(shell_exec($command));
-            unlink($vbscript);
-
-            $this->write('***');
+            // clean up
+            if (isset($tmpExe)) {
+                unlink($tmpExe);
+            }
 
             return $value;
         }
 
-        // for other OS with shell_exec (hide the answer)
-        $command = "/usr/bin/env bash -c 'echo OK'";
-        if (rtrim(shell_exec($command)) === 'OK') {
+        // handle other OSs with bash if available to hide the answer
+        if ('OK' === rtrim(shell_exec("/usr/bin/env bash -c 'echo OK'"))) {
             $this->write($question, false);
-
             $command = "/usr/bin/env bash -c 'read -s mypassword && echo \$mypassword'";
             $value = rtrim(shell_exec($command));
-
-            for ($i = 0; $i < strlen($value); ++$i) {
-                $this->write('*', false);
-            }
-
             $this->write('');
 
             return $value;
         }
 
-        // for other OS without shell_exec (does not hide the answer)
-        $this->write('');
-
+        // not able to hide the answer, proceed with normal question handling
         return $this->ask($question);
     }
 
