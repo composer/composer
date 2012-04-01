@@ -1,32 +1,30 @@
 {
-    "hash": "7a92f4830e9f86b2542acb8e4127b9cd",
+    "hash": "4c4d0c5fe9463c0bc507921d46045821",
     "packages": [
         {
             "package": "justinrainbow/json-schema",
-            "version": "dev-master",
-            "source-reference": "bb6175a2790118241c8f6d014ddc04192267e5d1"
+            "version": "1.1.0"
         },
         {
             "package": "seld/jsonlint",
-            "version": "dev-master",
-            "source-reference": "869e5d011fe1c82501ae0a3b427a686c21fd5baf"
+            "version": "1.0.0"
         },
         {
             "package": "symfony/console",
             "version": "dev-master",
-            "source-reference": "81b09796160a382f6c01a54f6c7d7e091ae1b7bf",
+            "source-reference": "8e3c42aa976f18a9bfcb0694553e5f99def3309c",
             "alias": "2.1.9999999.9999999-dev"
         },
         {
             "package": "symfony/finder",
             "version": "dev-master",
-            "source-reference": "713ba1dbd03b424afd1f944626dc0ce1b5b8c442",
+            "source-reference": "57ec7198a70e6c40e450ba66cc2f8ecab98746c8",
             "alias": "2.1.9999999.9999999-dev"
         },
         {
             "package": "symfony/process",
             "version": "dev-master",
-            "source-reference": "05d2c2b0372a616b1e9adaf90fd6c547c60b5d58",
+            "source-reference": "2e4da8c8076744bafed97451bb1574c96cda0e68",
             "alias": "2.1.9999999.9999999-dev"
         }
     ],
