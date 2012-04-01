@@ -15,6 +15,7 @@ namespace Composer\Repository;
 use Composer\IO\IOInterface;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Util\RemoteFilesystem;
+use Composer\Json\JsonFile;
 use Composer\Downloader\TransportException;
 
 /**
@@ -51,18 +52,46 @@ class PearRepository extends ArrayRepository
         parent::initialize();
 
         $this->io->write('Initializing PEAR repository '.$this->url);
+        $this->initializeChannel();
+        $this->io->write('Packages names will be prefixed with: pear-'.$this->channel.'/');
+
+        // try to load as a composer repo
+        try {
+            $json     = new JsonFile($this->url.'/packages.json', new RemoteFilesystem($this->io));
+            $packages = $json->read();
+
+            if ($this->io->isVerbose()) {
+                $this->io->write('Repository is Composer-compatible, loading via packages.json instead of PEAR protocol');
+            }
+
+            $loader = new ArrayLoader();
+            foreach ($packages as $data) {
+                foreach ($data['versions'] as $rev) {
+                    $rev['name'] = 'pear-'.$this->channel.'/'.$rev['name'];
+                    $this->addPackage($loader->load($rev));
+                }
+            }
+
+            return;
+        } catch (\Exception $e) {
+        }
+
         $this->fetchFromServer();
     }
 
-    protected function fetchFromServer()
+    protected function initializeChannel()
     {
         $channelXML = $this->requestXml($this->url . "/channel.xml");
         if (!$this->channel) {
             $this->channel = $channelXML->getElementsByTagName("suggestedalias")->item(0)->nodeValue
                                     ?: $channelXML->getElementsByTagName("name")->item(0)->nodeValue;
         }
-        self::$channelNames[$channelXML->getElementsByTagName("name")->item(0)->nodeValue] = $this->channel;
 
+        self::$channelNames[$channelXML->getElementsByTagName("name")->item(0)->nodeValue] = $this->channel;
+    }
+
+    protected function fetchFromServer()
+    {
         $categoryXML = $this->requestXml($this->url . "/rest/c/categories.xml");
         $categories = $categoryXML->getElementsByTagName("c");
 
