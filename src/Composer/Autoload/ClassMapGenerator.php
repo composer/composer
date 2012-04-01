@@ -47,7 +47,11 @@ class ClassMapGenerator
     static public function createMap($dir)
     {
         if (is_string($dir)) {
-            $dir = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir));
+            if (is_file($dir)) {
+                $dir = array(new \SplFileInfo($dir));
+            } else {
+                $dir = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir));
+            }
         }
 
         $map = array();
