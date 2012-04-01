@@ -68,9 +68,9 @@ class SvnDriverTest extends \PHPUnit_Framework_TestCase
     public function testSupport($url, $assertion)
     {
         if ($assertion === true) {
-            $this->assertTrue(SvnDriver::supports($url));
+            $this->assertTrue(SvnDriver::supports($this->getMock('Composer\IO\IOInterface'), $url));
         } else {
-            $this->assertFalse(SvnDriver::supports($url));
+            $this->assertFalse(SvnDriver::supports($this->getMock('Composer\IO\IOInterface'), $url));
         }
     }
 }

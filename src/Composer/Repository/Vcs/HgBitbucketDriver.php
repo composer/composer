@@ -143,8 +143,19 @@ class HgBitbucketDriver extends VcsDriver
     /**
      * {@inheritDoc}
      */
-    public static function supports($url, $deep = false)
+    public static function supports(IOInterface $io, $url, $deep = false)
     {
-        return extension_loaded('openssl') && preg_match('#^https://bitbucket\.org/([^/]+)/([^/]+)/?$#', $url);
+        if (!preg_match('#^https://bitbucket\.org/([^/]+)/([^/]+)/?$#', $url)) {
+            return false;
+        }
+
+        if (!extension_loaded('openssl')) {
+            if ($io->isVerbose()) {
+                $io->write('Skipping Bitbucket hg driver for '.$url.' because the OpenSSL PHP extension is missing.');
+            }
+            return false;
+        }
+
+        return true;
     }
 }
