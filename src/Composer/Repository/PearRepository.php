@@ -120,6 +120,9 @@ class PearRepository extends ArrayRepository
                     'type' => 'library',
                     'dist' => array('type' => 'pear', 'url' => $this->url.'/get/'.$packageName.'-'.$pearVersion.".tgz"),
                     'version' => $pearVersion,
+                    'autoload' => array(
+                        'classmap' => array(''),
+                    ),
                 );
 
                 try {
@@ -135,7 +138,13 @@ class PearRepository extends ArrayRepository
 
                 try {
                     $this->addPackage($loader->load($packageData));
+                    if ($this->io->isVerbose()) {
+                        $this->io->write('Loaded '.$packageData['name'].' '.$packageData['version']);
+                    }
                 } catch (\UnexpectedValueException $e) {
+                    if ($this->io->isVerbose()) {
+                        $this->io->write('Could not load '.$packageData['name'].' '.$packageData['version'].': '.$e->getMessage());
+                    }
                     continue;
                 }
             }
@@ -241,7 +250,10 @@ class PearRepository extends ArrayRepository
             $fullName = 'pear-'.$this->channel.'/'.$packageName;
             $packageData = array(
                 'name' => $fullName,
-                'type' => 'library'
+                'type' => 'library',
+                'autoload' => array(
+                    'classmap' => array(''),
+                ),
             );
             $packageKeys = array('l' => 'license', 'd' => 'description');
             foreach ($packageKeys as $pear => $composer) {
@@ -279,11 +291,16 @@ class PearRepository extends ArrayRepository
                     $releaseData += $depsData[$version];
                 }
 
+                $package = $packageData + $releaseData;
                 try {
-                    $this->addPackage(
-                        $loader->load($packageData + $releaseData)
-                    );
+                    $this->addPackage($loader->load($package));
+                    if ($this->io->isVerbose()) {
+                        $this->io->write('Loaded '.$package['name'].' '.$package['version']);
+                    }
                 } catch (\UnexpectedValueException $e) {
+                    if ($this->io->isVerbose()) {
+                        $this->io->write('Could not load '.$package['name'].' '.$package['version'].': '.$e->getMessage());
+                    }
                     continue;
                 }
             }
