@@ -30,6 +30,14 @@ class NullIO implements IOInterface
     /**
      * {@inheritDoc}
      */
+    public function isVerbose()
+    {
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function write($messages, $newline = true)
     {
     }
