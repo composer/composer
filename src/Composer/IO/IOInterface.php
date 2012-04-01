@@ -27,6 +27,13 @@ interface IOInterface
     function isInteractive();
 
     /**
+     * Is this input verbose?
+     *
+     * @return Boolean
+     */
+    function isVerbose();
+
+    /**
      * Writes a message to the output.
      *
      * @param string|array $messages The message as an array of lines or a single string
