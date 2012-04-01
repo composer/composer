@@ -196,6 +196,43 @@ class AutoloadGeneratorTest extends TestCase
         $this->assertAutoloadFiles('classmap4', $this->vendorDir.'/.composer', 'classmap');
     }
 
+    public function testClassMapAutoloadingEmptyDirAndExactFile()
+    {
+        $package = new MemoryPackage('a', '1.0', '1.0');
+
+        $packages = array();
+        $packages[] = $a = new MemoryPackage('a/a', '1.0', '1.0');
+        $packages[] = $b = new MemoryPackage('b/b', '1.0', '1.0');
+        $packages[] = $c = new MemoryPackage('c/c', '1.0', '1.0');
+        $a->setAutoload(array('classmap' => array('')));
+        $b->setAutoload(array('classmap' => array('test.php')));
+        $c->setAutoload(array('classmap' => array('./')));
+
+        $this->repository->expects($this->once())
+            ->method('getPackages')
+            ->will($this->returnValue($packages));
+
+        @mkdir($this->vendorDir.'/.composer', 0777, true);
+        mkdir($this->vendorDir.'/a/a/src', 0777, true);
+        mkdir($this->vendorDir.'/b/b', 0777, true);
+        mkdir($this->vendorDir.'/c/c/foo', 0777, true);
+        file_put_contents($this->vendorDir.'/a/a/src/a.php', '<?php class ClassMapFoo {}');
+        file_put_contents($this->vendorDir.'/b/b/test.php', '<?php class ClassMapBar {}');
+        file_put_contents($this->vendorDir.'/c/c/foo/test.php', '<?php class ClassMapBaz {}');
+
+        $this->generator->dump($this->repository, $package, $this->im, $this->vendorDir.'/.composer');
+        $this->assertTrue(file_exists($this->vendorDir.'/.composer/autoload_classmap.php'), "ClassMap file needs to be generated.");
+        $this->assertEquals(
+            array(
+                'ClassMapFoo' => $this->workingDir.'/composer-test-autoload/a/a/src/a.php',
+                'ClassMapBar' => $this->workingDir.'/composer-test-autoload/b/b/test.php',
+                'ClassMapBaz' => $this->workingDir.'/composer-test-autoload/c/c/foo/test.php',
+            ),
+            include ($this->vendorDir.'/.composer/autoload_classmap.php')
+        );
+        $this->assertAutoloadFiles('classmap5', $this->vendorDir.'/.composer', 'classmap');
+    }
+
     public function testOverrideVendorsAutoloading()
     {
         $package = new MemoryPackage('a', '1.0', '1.0');
