@@ -120,6 +120,9 @@ class PearRepository extends ArrayRepository
                     'type' => 'library',
                     'dist' => array('type' => 'pear', 'url' => $this->url.'/get/'.$packageName.'-'.$pearVersion.".tgz"),
                     'version' => $pearVersion,
+                    'autoload' => array(
+                        'classmap' => array(''),
+                    ),
                 );
 
                 try {
@@ -133,20 +136,15 @@ class PearRepository extends ArrayRepository
 
                 $packageData += $this->parseDependencies($deps);
 
-                // figure out autoload info
-                try {
-                    $packageInfo = simplexml_load_string($this->rfs->getContents($this->url, $releaseLink . "/package.".$pearVersion.".xml", false));
-                    $packageData += $this->guessAutoload($packageInfo);
-                } catch (TransportException $e) {
-                    if (strpos($e->getMessage(), '404')) {
-                        continue;
-                    }
-                    throw $e;
-                }
-
                 try {
                     $this->addPackage($loader->load($packageData));
+                    if ($this->io->isVerbose()) {
+                        $this->io->write('Loaded '.$packageData['name'].' '.$packageData['version']);
+                    }
                 } catch (\UnexpectedValueException $e) {
+                    if ($this->io->isVerbose()) {
+                        $this->io->write('Could not load '.$packageData['name'].' '.$packageData['version'].': '.$e->getMessage());
+                    }
                     continue;
                 }
             }
@@ -252,7 +250,10 @@ class PearRepository extends ArrayRepository
             $fullName = 'pear-'.$this->channel.'/'.$packageName;
             $packageData = array(
                 'name' => $fullName,
-                'type' => 'library'
+                'type' => 'library',
+                'autoload' => array(
+                    'classmap' => array(''),
+                ),
             );
             $packageKeys = array('l' => 'license', 'd' => 'description');
             foreach ($packageKeys as $pear => $composer) {
@@ -290,73 +291,20 @@ class PearRepository extends ArrayRepository
                     $releaseData += $depsData[$version];
                 }
 
-                // figure out autoload info
+                $package = $packageData + $releaseData;
                 try {
-                    $releaseLink = $this->url . "/rest/r/".strtolower($packageName);
-                    $packageInfo = simplexml_load_string($this->rfs->getContents($this->url, $releaseLink . "/package.".$version.".xml", false));
-                    $packageData += $this->guessAutoload($packageInfo);
-                } catch (TransportException $e) {
-                    if (strpos($e->getMessage(), '404')) {
-                        continue;
+                    $this->addPackage($loader->load($package));
+                    if ($this->io->isVerbose()) {
+                        $this->io->write('Loaded '.$package['name'].' '.$package['version']);
                     }
-                    throw $e;
-                }
-
-                try {
-                    $this->addPackage(
-                        $loader->load($packageData + $releaseData)
-                    );
                 } catch (\UnexpectedValueException $e) {
-                    // TODO add debug mode with --verbose that outputs those failures
+                    if ($this->io->isVerbose()) {
+                        $this->io->write('Could not load '.$package['name'].' '.$package['version'].': '.$e->getMessage());
+                    }
                     continue;
                 }
             }
         }
-    }
-
-    private function guessAutoload(\SimpleXMLElement $packageInfo)
-    {
-        $files = array();
-        if (count($packageInfo->contents->dir)) {
-            foreach ($packageInfo->contents->dir as $dir) {
-                if (count($dir->file)) {
-                    foreach ($dir->file as $file) {
-                        if ('php' !== (string) $file['role']) {
-                            continue;
-                        }
-
-                        $files[] = ltrim($dir['name'].$file['name'], '/');
-                    }
-                }
-            }
-        }
-
-        // reduce to meaningful unique paths
-        while (true) {
-            foreach ($files as $key => $file) {
-                foreach ($files as $key2 => $file2) {
-                    if ($key === $key2) {
-                        continue;
-                    }
-                    if (false !== strpos($file, '/') && dirname($file) === dirname($file2)) {
-                        unset($files[$key2]);
-                        $files[$key] = dirname($file);
-                        continue 3;
-                    }
-                    if (0 === strpos($file2, $file.'/') || $file === $file2) {
-                        unset($files[$key2]);
-                        continue 3;
-                    }
-                }
-            }
-            break;
-        }
-
-        return array(
-            'autoload' => array(
-                'classmap' => $files,
-            ),
-        );
     }
 
     /**
