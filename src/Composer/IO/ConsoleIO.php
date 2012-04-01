@@ -135,9 +135,8 @@ class ConsoleIO implements IOInterface
             return $value;
         }
 
-        // for other OS with shell_exec (hide the answer)
-        $command = "/usr/bin/env bash -c 'echo OK'";
-        if (rtrim(shell_exec($command)) === 'OK') {
+        // handle other OSs with bash if available to hide the answer
+        if ('OK' === rtrim(shell_exec("/usr/bin/env bash -c 'echo OK'"))) {
             $this->write($question, false);
             $command = "/usr/bin/env bash -c 'read -s mypassword && echo \$mypassword'";
             $value = rtrim(shell_exec($command));
@@ -146,9 +145,7 @@ class ConsoleIO implements IOInterface
             return $value;
         }
 
-        // for other OS without shell_exec (does not hide the answer)
-        $this->write('');
-
+        // not able to hide the answer, proceed with normal question handling
         return $this->ask($question);
     }
 
