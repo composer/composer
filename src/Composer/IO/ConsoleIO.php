@@ -141,6 +141,11 @@ class ConsoleIO implements IOInterface
             $value = rtrim(shell_exec($exe));
             $this->write('');
 
+            // clean up
+            if (isset($tmpExe)) {
+                unlink($tmpExe);
+            }
+
             return $value;
         }
 
