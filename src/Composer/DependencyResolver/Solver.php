@@ -1352,7 +1352,7 @@ class Solver
             }
 
             // conflict
-            list($newLevel, $newRule, $why) = $this->analyze($level, $rule);
+            list($learnLiteral, $newLevel, $newRule, $why) = $this->analyze($level, $rule);
 
             assert($newLevel > 0);
             assert($newLevel < $level);
@@ -1369,9 +1369,8 @@ class Solver
             $this->watch2OnHighest($newRule);
             $this->addWatchesToRule($newRule);
 
-            $literals = $newRule->getLiterals();
-            $this->addDecision($literals[0], $level);
-            $this->decisionQueue[] = $literals[0];
+            $this->addDecision($learnLiteral, $level);
+            $this->decisionQueue[] = $learnLiteral;
             $this->decisionQueueWhy[] = $newRule;
         }
 
@@ -1437,7 +1436,6 @@ class Solver
 
             $l1retry = true;
             while ($l1retry) {
-
                 $l1retry = false;
 
                 if (!$num && !--$l1num) {
@@ -1483,7 +1481,7 @@ class Solver
         assert($learnedLiterals[0] !== null);
         $newRule = new Rule($learnedLiterals, Rule::RULE_LEARNED, $why);
 
-        return array($ruleLevel, $newRule, $why);
+        return array($learnedLiterals[0], $ruleLevel, $newRule, $why);
     }
 
     private function analyzeUnsolvableRule($problem, $conflictRule, &$lastWeakWhy)
@@ -2029,7 +2027,7 @@ class Solver
     {
         echo "DecisionQueue: \n";
         foreach ($this->decisionQueue as $i => $literal) {
-            echo '    ' . $literal . ' ' . $this->decisionQueueWhy[$i]."\n";
+            echo '    ' . $literal . ' ' . $this->decisionQueueWhy[$i]." level ".$this->decisionMap[$literal->getPackageId()]."\n";
         }
         echo "\n";
     }
