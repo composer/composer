@@ -219,10 +219,6 @@ class Installer
         // force dev packages to be updated to latest reference on update
         if ($this->update) {
             foreach ($localRepo->getPackages() as $package) {
-                if ($package instanceof AliasPackage) {
-                    $package = $package->getAliasOf();
-                }
-
                 // skip non-dev packages
                 if (!$package->isDev()) {
                     continue;
@@ -230,8 +226,8 @@ class Installer
 
                 // skip packages that will be updated/uninstalled
                 foreach ($operations as $operation) {
-                    if (('update' === $operation->getJobType() && $package === $operation->getInitialPackage())
-                        || ('uninstall' === $operation->getJobType() && $package === $operation->getPackage())
+                    if (('update' === $operation->getJobType() && $operation->getInitialPackage()->equals($package))
+                        || ('uninstall' === $operation->getJobType() && $operation->getPackage()->equals($package))
                     ) {
                         continue 2;
                     }
