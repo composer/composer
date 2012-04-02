@@ -171,11 +171,12 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
 
         // clean local clone if present
         $fs = new Filesystem();
-        $fs->removeDirectory(sys_get_temp_dir() . '/composer-' . preg_replace('{[^a-z0-9]}i', '-', $repoSshUrl) . '/');
+        $fs->removeDirectory(sys_get_temp_dir() . '/composer-' . preg_replace('{[^a-z0-9.]}i', '-', $repoSshUrl) . '/');
 
         $process->expects($this->at(0))
             ->method('execute')
-            ->with($this->stringContains($repoSshUrl));
+            ->with($this->stringContains($repoSshUrl))
+            ->will($this->returnValue(0));
 
         $process->expects($this->at(1))
             ->method('execute')
@@ -187,19 +188,19 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
 
         $process->expects($this->at(3))
             ->method('execute')
-            ->with($this->stringContains('git branch'));
+            ->with($this->stringContains('git branch --no-color --no-abbrev -v'));
 
         $process->expects($this->at(4))
             ->method('splitLines')
-            ->will($this->returnValue(array('  test_master                              edf93f1fccaebd8764383dc12016d0a1a9672d89 Fix test & behavior')));
+            ->will($this->returnValue(array('  test_master     edf93f1fccaebd8764383dc12016d0a1a9672d89 Fix test & behavior')));
 
         $process->expects($this->at(5))
             ->method('execute')
-            ->with($this->stringContains('git branch'));
+            ->with($this->stringContains('git branch --no-color'));
 
         $process->expects($this->at(6))
             ->method('splitLines')
-            ->will($this->returnValue(array('  upstream/HEAD -> upstream/test_master')));
+            ->will($this->returnValue(array('* test_master')));
 
         $gitHubDriver = new GitHubDriver($repoUrl, $io, $process, $remoteFilesystem);
         $gitHubDriver->initialize();
