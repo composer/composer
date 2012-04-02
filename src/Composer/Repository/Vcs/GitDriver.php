@@ -14,6 +14,7 @@ namespace Composer\Repository\Vcs;
 
 use Composer\Json\JsonFile;
 use Composer\Util\ProcessExecutor;
+use Composer\Util\Filesystem;
 use Composer\IO\IOInterface;
 
 /**
@@ -26,7 +27,6 @@ class GitDriver extends VcsDriver
     protected $rootIdentifier;
     protected $repoDir;
     protected $infoCache = array();
-    protected $isLocal = false;
 
     public function __construct($url, IOInterface $io, ProcessExecutor $process = null)
     {
@@ -38,17 +38,23 @@ class GitDriver extends VcsDriver
      */
     public function initialize()
     {
-        $url = escapeshellarg($this->url);
-
         if (static::isLocalUrl($this->url)) {
-            $this->isLocal = true;
             $this->repoDir = $this->url;
         } else {
-            $this->repoDir = sys_get_temp_dir() . '/composer-' . preg_replace('{[^a-z0-9]}i', '-', $url) . '/';
-            if (is_dir($this->repoDir)) {
-                $this->process->execute('git fetch origin', $output, $this->repoDir);
+            $this->repoDir = sys_get_temp_dir() . '/composer-' . preg_replace('{[^a-z0-9.]}i', '-', $this->url) . '/';
+
+            // update the repo if it is a valid git repository
+            if (is_dir($this->repoDir) && 0 === $this->process->execute('git remote', $output, $this->repoDir)) {
+                $this->process->execute('git fetch --tags '.escapeshellarg($this->url), $output, $this->repoDir);
             } else {
-                $this->process->execute(sprintf('git clone %s %s', $url, escapeshellarg($this->repoDir)), $output);
+                // clean up directory and do a fresh clone into it
+                $fs = new Filesystem();
+                $fs->removeDirectory($this->repoDir);
+
+                $command = sprintf('git clone --mirror %s %s', escapeshellarg($this->url), escapeshellarg($this->repoDir));
+                if (0 !== $this->process->execute($command, $output)) {
+                    throw new \RuntimeException('Failed to clone '.$this->url.', could not read packages from it ('.$this->process->getErrorOutput().')');
+                }
             }
         }
 
@@ -64,23 +70,12 @@ class GitDriver extends VcsDriver
         if (null === $this->rootIdentifier) {
             $this->rootIdentifier = 'master';
 
-            if ($this->isLocal) {
-                // select currently checked out branch if master is not available
-                $this->process->execute('git branch --no-color', $output, $this->repoDir);
-                $branches = $this->process->splitLines($output);
-                if (!in_array('* master', $branches)) {
-                    foreach ($branches as $branch) {
-                        if ($branch && preg_match('{^\* +(\S+)}', $branch, $match)) {
-                            $this->rootIdentifier = $match[1];
-                            break;
-                        }
-                    }
-                }
-            } else {
-                // try to find a non-master remote HEAD branch
-                $this->process->execute('git branch --no-color -r', $output, $this->repoDir);
-                foreach ($this->process->splitLines($output) as $branch) {
-                    if ($branch && preg_match('{/HEAD +-> +[^/]+/(\S+)}', $branch, $match)) {
+            // select currently checked out branch if master is not available
+            $this->process->execute('git branch --no-color', $output, $this->repoDir);
+            $branches = $this->process->splitLines($output);
+            if (!in_array('* master', $branches)) {
+                foreach ($branches as $branch) {
+                    if ($branch && preg_match('{^\* +(\S+)}', $branch, $match)) {
                         $this->rootIdentifier = $match[1];
                         break;
                     }
@@ -164,10 +159,7 @@ class GitDriver extends VcsDriver
         if (null === $this->branches) {
             $branches = array();
 
-            $this->process->execute(sprintf(
-                'git branch --no-color --no-abbrev -v %s',
-                $this->isLocal ? '' : '-r'
-            ), $output, $this->repoDir);
+            $this->process->execute('git branch --no-color --no-abbrev -v', $output, $this->repoDir);
             foreach ($this->process->splitLines($output) as $branch) {
                 if ($branch && !preg_match('{^ *[^/]+/HEAD }', $branch)) {
                     preg_match('{^(?:\* )? *(?:[^/]+/)?(\S+) *([a-f0-9]+) .*$}', $branch, $match);
