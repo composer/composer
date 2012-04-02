@@ -216,8 +216,8 @@ class Installer
             return false;
         }
 
-        // force dev packages to be updated to latest reference on update
-        if ($this->update) {
+        // force dev packages to be updated if we update or install from a (potentially new) lock
+        if ($this->update || $installFromLock) {
             foreach ($localRepo->getPackages() as $package) {
                 // skip non-dev packages
                 if (!$package->isDev()) {
@@ -233,10 +233,26 @@ class Installer
                     }
                 }
 
-                // force update
-                $newPackage = $this->repositoryManager->findPackage($package->getName(), $package->getVersion());
-                if ($newPackage && $newPackage->getSourceReference() !== $package->getSourceReference()) {
-                    $operations[] = new UpdateOperation($package, $newPackage);
+                // force update to latest on update
+                if ($this->update) {
+                    $newPackage = $this->repositoryManager->findPackage($package->getName(), $package->getVersion());
+                    if ($newPackage && $newPackage->getSourceReference() !== $package->getSourceReference()) {
+                        $operations[] = new UpdateOperation($package, $newPackage);
+                    }
+                } elseif ($installFromLock) {
+                    // force update to locked version if it does not match the installed version
+                    $lockData = $this->locker->getLockData();
+                    unset($lockedReference);
+                    foreach ($lockData['packages'] as $lockedPackage) {
+                        if (!empty($lockedPackage['source-reference']) && strtolower($lockedPackage['package']) === $package->getName()) {
+                            $lockedReference = $lockedPackage['source-reference'];
+                            break;
+                        }
+                    }
+                    if (isset($lockedReference) && $lockedReference !== $package->getSourceReference()) {
+                        // changing the source ref to update to will be handled in the operations loop below
+                        $operations[] = new UpdateOperation($package, $package);
+                    }
                 }
             }
         }
