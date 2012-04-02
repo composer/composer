@@ -173,10 +173,11 @@ class GitHubDriver extends VcsDriver
             return $this->gitDriver->getBranches();
         }
         if (null === $this->branches) {
-            $branchData = JsonFile::parseJson($this->getContents($this->getScheme() . '://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/branches'));
+            $branchData = JsonFile::parseJson($this->getContents($this->getScheme() . '://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/git/refs/heads'));
             $this->branches = array();
             foreach ($branchData as $branch) {
-                $this->branches[$branch['name']] = $branch['commit']['sha'];
+                $name = substr($branch['ref'], 11);
+                $this->branches[$name] = $branch['object']['sha'];
             }
         }
 
