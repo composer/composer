@@ -165,6 +165,18 @@ abstract class BasePackage implements PackageInterface
         return $this->getName().'-'.$this->getVersion();
     }
 
+    public function equals(PackageInterface $package)
+    {
+        $self = $this;
+        if ($this instanceof AliasPackage) {
+            $self = $this->getAliasOf();
+        }
+        if ($package instanceof AliasPackage) {
+            $package = $package->getAliasOf();
+        }
+        return $package === $self;
+    }
+
     /**
      * Converts the package into a readable and unique string
      *
