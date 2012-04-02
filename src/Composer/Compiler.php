@@ -71,6 +71,7 @@ class Compiler
         $finder->files()
             ->ignoreVCS(true)
             ->name('*.php')
+            ->exclude('Tests')
             ->in(__DIR__.'/../../vendor/symfony/')
             ->in(__DIR__.'/../../vendor/seld/jsonlint/src/')
             ->in(__DIR__.'/../../vendor/justinrainbow/json-schema/src/')
