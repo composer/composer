@@ -26,6 +26,7 @@ class Locker
     private $lockFile;
     private $repositoryManager;
     private $hash;
+    private $lockDataCache;
 
     /**
      * Initializes packages locker.
@@ -108,7 +109,11 @@ class Locker
             throw new \LogicException('No lockfile found. Unable to read locked packages');
         }
 
-        return $this->lockFile->read();
+        if (null !== $this->lockDataCache) {
+            return $this->lockDataCache;
+        }
+
+        return $this->lockDataCache = $this->lockFile->read();
     }
 
     /**
@@ -150,5 +155,8 @@ class Locker
         });
 
         $this->lockFile->write($lock);
+
+        // invalidate cache
+        $this->lockDataCache = null;
     }
 }
