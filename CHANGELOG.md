@@ -1,4 +1,6 @@
-* 1.0.0-alpha2 (2012-03-03)
+* 1.0.0-alpha3
+
+* 1.0.0-alpha2 (2012-04-03)
 
   * Added `create-project` command to install a project from scratch with composer
   * Added automated `classmap` autoloading support for non-PSR-0 compliant projects
