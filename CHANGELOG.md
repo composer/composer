@@ -1,4 +1,4 @@
-* 1.0.0-alpha2
+* 1.0.0-alpha2 (2012-03-03)
 
   * Added `create-project` command to install a project from scratch with composer
   * Added automated `classmap` autoloading support for non-PSR-0 compliant projects
@@ -11,7 +11,7 @@
   * Improved `validate` command to give more feedback
   * Improved the `search` & `show` commands output
   * Removed dependency on filter_var
-  * Various robustness & error handling improvements, docs fixes and more
+  * Various robustness & error handling improvements, docs fixes and more bug fixes
 
 * 1.0.0-alpha1 (2012-03-01)
 
