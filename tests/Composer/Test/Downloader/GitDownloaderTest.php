@@ -89,7 +89,7 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
             ->with($this->equalTo($expectedGitCommand))
             ->will($this->returnValue(0));
 
-        $expectedGitCommand = $this->getCmd("cd 'composerPath' && git remote set-url --push origin 'git@github.com:composer/composer.git'");
+        $expectedGitCommand = $this->getCmd("git remote set-url --push origin 'git@github.com:composer/composer.git'");
         $processExecutor->expects($this->at(3))
             ->method('execute')
             ->with($this->equalTo($expectedGitCommand))
@@ -139,7 +139,7 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
 
     public function testUpdate()
     {
-        $expectedGitUpdateCommand = $this->getCmd("cd 'composerPath' && git remote set-url origin 'git://github.com/composer/composer' && git fetch && git checkout 'ref' && git reset --hard 'ref'");
+        $expectedGitUpdateCommand = $this->getCmd("cd 'composerPath' && git remote set-url origin 'git://github.com/composer/composer' && git fetch --tags origin && git checkout 'ref' && git reset --hard 'ref'");
         $expectedGitResetCommand = $this->getCmd("cd 'composerPath' && git status --porcelain");
 
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
@@ -168,7 +168,7 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
      */
     public function testUpdateThrowsRuntimeExceptionIfGitCommandFails()
     {
-        $expectedGitUpdateCommand = $this->getCmd("cd 'composerPath' && git remote set-url origin 'git://github.com/composer/composer' && git fetch && git checkout 'ref' && git reset --hard 'ref'");
+        $expectedGitUpdateCommand = $this->getCmd("cd 'composerPath' && git remote set-url origin 'git://github.com/composer/composer' && git fetch --tags origin && git checkout 'ref' && git reset --hard 'ref'");
         $expectedGitResetCommand = $this->getCmd("cd 'composerPath' && git status --porcelain");
 
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
