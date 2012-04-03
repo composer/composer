@@ -34,13 +34,7 @@ class GitDownloader extends VcsDownloader
         };
 
         $this->runCommand($commandCallable, $package->getSourceUrl(), $path);
-
-        // set push url for github projects
-        if (preg_match('{^(?:https?|git)://github.com/([^/]+)/([^/]+?)(?:\.git)?$}', $package->getSourceUrl(), $match)) {
-            $pushUrl = 'git@github.com:'.$match[1].'/'.$match[2].'.git';
-            $cmd = sprintf('cd %s && git remote set-url --push origin %s', escapeshellarg($path), escapeshellarg($pushUrl));
-            $this->process->execute($cmd, $ignoredOutput);
-        }
+        $this->setPushUrl($package, $path);
     }
 
     /**
@@ -58,6 +52,7 @@ class GitDownloader extends VcsDownloader
         };
 
         $this->runCommand($commandCallable, $target->getSourceUrl());
+        $this->setPushUrl($target, $path);
     }
 
     /**
@@ -104,6 +99,16 @@ class GitDownloader extends VcsDownloader
         $command = call_user_func($commandCallable, $url);
         if (0 !== $this->process->execute($command, $ignoredOutput)) {
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+        }
+    }
+
+    protected function setPushUrl(PackageInterface $package, $path)
+    {
+        // set push url for github projects
+        if (preg_match('{^(?:https?|git)://github.com/([^/]+)/([^/]+?)(?:\.git)?$}', $package->getSourceUrl(), $match)) {
+            $pushUrl = 'git@github.com:'.$match[1].'/'.$match[2].'.git';
+            $cmd = sprintf('git remote set-url --push origin %s', escapeshellarg($pushUrl));
+            $this->process->execute($cmd, $ignoredOutput, $path);
         }
     }
 }
