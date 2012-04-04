@@ -39,7 +39,7 @@ class GitDriver extends VcsDriver
     public function initialize()
     {
         if (static::isLocalUrl($this->url)) {
-            $this->repoDir = $this->url;
+            $this->repoDir = str_replace('file://', '', $this->url);
         } else {
             $this->repoDir = sys_get_temp_dir() . '/composer-' . preg_replace('{[^a-z0-9.]}i', '-', $this->url) . '/';
 
