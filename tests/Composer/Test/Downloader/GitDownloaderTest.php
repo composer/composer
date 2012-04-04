@@ -92,7 +92,7 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
         $expectedGitCommand = $this->getCmd("git remote set-url --push origin 'git@github.com:composer/composer.git'");
         $processExecutor->expects($this->at(3))
             ->method('execute')
-            ->with($this->equalTo($expectedGitCommand))
+            ->with($this->equalTo($expectedGitCommand), $this->equalTo(null), $this->equalTo('composerPath'))
             ->will($this->returnValue(0));
 
         $downloader = $this->getDownloaderMock(null, $processExecutor);
