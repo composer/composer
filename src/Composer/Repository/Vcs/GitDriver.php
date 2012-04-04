@@ -45,7 +45,7 @@ class GitDriver extends VcsDriver
 
             // update the repo if it is a valid git repository
             if (is_dir($this->repoDir) && 0 === $this->process->execute('git remote', $output, $this->repoDir)) {
-                $this->process->execute('git remote update', $output, $this->repoDir);
+                $this->process->execute('git remote update --prune origin', $output, $this->repoDir);
             } else {
                 // clean up directory and do a fresh clone into it
                 $fs = new Filesystem();
