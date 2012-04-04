@@ -35,6 +35,11 @@ if (!class_exists('Composer\\Autoload\\ClassLoader', false)) {
     require __DIR__.'/ClassLoader.php';
 }
 
+$includePaths = require __DIR__.'/include_paths.php';
+array_unshift($includePaths, get_include_path());
+
+set_include_path(join(PATH_SEPARATOR, $includePaths));
+
 return call_user_func(function() {
     $loader = new \Composer\Autoload\ClassLoader();
 
@@ -134,6 +139,7 @@ EOF;
         file_put_contents($targetDir.'/autoload.php', $autoloadFile);
         file_put_contents($targetDir.'/autoload_namespaces.php', $namespacesFile);
         file_put_contents($targetDir.'/autoload_classmap.php', $classmapFile);
+        file_put_contents($targetDir.'/include_paths.php', $this->getIncludePathsFile($packageMap));
         copy(__DIR__.'/ClassLoader.php', $targetDir.'/ClassLoader.php');
     }
 
@@ -204,5 +210,26 @@ EOF;
         }
 
         return $loader;
+    }
+
+    protected function getIncludePathsFile(array $packageMap)
+    {
+        $includePaths = array();
+
+        foreach ($packageMap as $item) {
+            list($package, $installPath) = $item;
+
+            if (null !== $package->getTargetDir()) {
+                $installPath = substr($installPath, 0, -strlen('/'.$package->getTargetDir()));
+            }
+
+            foreach ($package->getIncludePaths() as $includePath) {
+                $includePaths[] = empty($installPath) ? $includePath : $installPath.'/'.$includePath;
+            }
+        }
+
+        return sprintf(
+            "<?php\nreturn %s;\n", var_export($includePaths, true)
+        );
     }
 }
