@@ -73,7 +73,7 @@ class SvnDownloader extends VcsDownloader
     {
         $util = new SvnUtil($baseUrl, $this->io);
         try {
-            return $util->execute($command, $url, $cwd, $path);
+            return $util->execute($command, $url, $cwd, $path, $this->io->isVerbose());
         } catch (\RuntimeException $e) {
             throw new \RuntimeException(
                 'Package could not be downloaded, '.$e->getMessage()
