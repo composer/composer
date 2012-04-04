@@ -89,7 +89,7 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
             ->with($this->equalTo($expectedGitCommand))
             ->will($this->returnValue(0));
 
-        $expectedGitCommand = $this->getCmd("cd 'composerPath' && git remote set-url --push origin 'git@github.com:composer/composer.git'");
+        $expectedGitCommand = $this->getCmd("git remote set-url --push origin 'git@github.com:composer/composer.git'");
         $processExecutor->expects($this->at(3))
             ->method('execute')
             ->with($this->equalTo($expectedGitCommand))
