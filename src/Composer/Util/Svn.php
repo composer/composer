@@ -69,16 +69,28 @@ class Svn
      * @param string $command SVN command to run
      * @param string $url     SVN url
      * @param string $cwd     Working directory
-     * @param string $path Target for a checkout
+     * @param string $path    Target for a checkout
+     * @param Boolean $verbose Output all output to the user
      *
      * @return string
      *
      * @throws \RuntimeException
      */
-    public function execute($command, $url, $cwd = null, $path = null)
+    public function execute($command, $url, $cwd = null, $path = null, $verbose = false)
     {
         $svnCommand = $this->getCommand($command, $url, $path);
-        $status = $this->process->execute($svnCommand, $output, $cwd);
+        $output = null;
+        $io = $this->io;
+        $handler = function ($type, $buffer) use (&$output, $io, $verbose) {
+            if ($type !== 'out') {
+                return;
+            }
+            $output .= $buffer;
+            if ($verbose) {
+                $io->write($buffer, false);
+            }
+        };
+        $status = $this->process->execute($svnCommand, $handler, $cwd);
         if (0 === $status) {
             return $output;
         }
@@ -107,7 +119,7 @@ class Svn
             $this->doAuthDance();
 
             // restart the process
-            return $this->execute($command, $url, $cwd, $path);
+            return $this->execute($command, $url, $cwd, $path, $verbose);
         }
 
         throw new \RuntimeException(

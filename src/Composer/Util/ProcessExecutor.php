@@ -21,30 +21,28 @@ class ProcessExecutor
 {
     static protected $timeout = 300;
 
+    protected $captureOutput;
     protected $errorOutput;
 
     /**
      * runs a process on the commandline
      *
      * @param string $command the command to execute
-     * @param null   $output  the output will be written into this var if passed
+     * @param mixed  $output  the output will be written into this var if passed by ref
+     *                        if a callable is passed it will be used as output handler
      * @param string $cwd     the working directory
      * @return int statuscode
      */
     public function execute($command, &$output = null, $cwd = null)
     {
-        $captureOutput = count(func_get_args()) > 1;
+        $this->captureOutput = count(func_get_args()) > 1;
         $this->errorOutput = null;
         $process = new Process($command, $cwd, null, null, static::getTimeout());
-        $process->run(function($type, $buffer) use ($captureOutput) {
-            if ($captureOutput) {
-                return;
-            }
 
-            echo $buffer;
-        });
+        $callback = is_callable($output) ? $output : array($this, 'outputHandler');
+        $process->run($callback);
 
-        if ($captureOutput) {
+        if ($this->captureOutput && !is_callable($output)) {
             $output = $process->getOutput();
         }
 
@@ -66,6 +64,15 @@ class ProcessExecutor
     public function getErrorOutput()
     {
         return $this->errorOutput;
+    }
+
+    public function outputHandler($type, $buffer)
+    {
+        if ($this->captureOutput) {
+            return;
+        }
+
+        echo $buffer;
     }
 
     static public function getTimeout()
