@@ -36,9 +36,11 @@ if (!class_exists('Composer\\Autoload\\ClassLoader', false)) {
 }
 
 $includePaths = require __DIR__.'/include_paths.php';
-array_unshift($includePaths, get_include_path());
 
-set_include_path(join(PATH_SEPARATOR, $includePaths));
+if ($includePaths) {
+    array_unshift($includePaths, get_include_path());
+    set_include_path(join(PATH_SEPARATOR, $includePaths));
+}
 
 return call_user_func(function() {
     $loader = new \Composer\Autoload\ClassLoader();
