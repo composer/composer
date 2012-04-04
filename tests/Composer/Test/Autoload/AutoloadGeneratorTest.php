@@ -253,6 +253,89 @@ class AutoloadGeneratorTest extends TestCase
         $this->assertAutoloadFiles('override_vendors', $this->vendorDir.'/.composer');
     }
 
+    public function testIncludePathFileGeneration()
+    {
+        $package = new MemoryPackage('a', '1.0', '1.0');
+        $packages = array();
+
+        $a = new MemoryPackage("a/a", "1.0", "1.0");
+        $a->setIncludePaths(array("lib/"));
+
+        $b = new MemoryPackage("b/b", "1.0", "1.0");
+        $b->setIncludePaths(array("library"));
+
+        $packages[] = $a;
+        $packages[] = $b;
+
+        $this->repository->expects($this->once())
+            ->method("getPackages")
+            ->will($this->returnValue($packages));
+
+        mkdir($this->vendorDir."/.composer", 0777, true);
+
+        $this->generator->dump($this->repository, $package, $this->im, $this->vendorDir."/.composer");
+
+        $this->assertEquals(
+            array(
+                $this->vendorDir."/a/a/lib/",
+                $this->vendorDir."/b/b/library"
+            ),
+            require($this->vendorDir."/.composer/include_paths.php")
+        );
+    }
+    
+    public function testIncludePathsAreAppendedInAutoloadFile()
+    {
+        $package = new MemoryPackage('a', '1.0', '1.0');
+        $packages = array();
+
+        $a = new MemoryPackage("a/a", "1.0", "1.0");
+        $a->setIncludePaths(array("lib/"));
+
+        $packages[] = $a;
+
+        $this->repository->expects($this->once())
+            ->method("getPackages")
+            ->will($this->returnValue($packages));
+
+        mkdir($this->vendorDir."/.composer", 0777, true);
+
+        $this->generator->dump($this->repository, $package, $this->im, $this->vendorDir."/.composer");
+
+        $oldIncludePath = get_include_path();
+
+        require($this->vendorDir."/.composer/autoload.php");
+
+        $this->assertEquals(
+            $oldIncludePath.PATH_SEPARATOR.$this->vendorDir."/a/a/lib/",
+            get_include_path()
+        );
+
+        set_include_path($oldIncludePath);
+    }
+
+    public function testIncludePathFileGenerationWithoutPaths()
+    {
+        $package = new MemoryPackage('a', '1.0', '1.0');
+        $packages = array();
+
+        $a = new MemoryPackage("a/a", "1.0", "1.0");
+        $packages[] = $a;
+
+        $this->repository->expects($this->once())
+            ->method("getPackages")
+            ->will($this->returnValue($packages));
+
+        mkdir($this->vendorDir."/.composer", 0777, true);
+
+        $this->generator->dump($this->repository, $package, $this->im, $this->vendorDir."/.composer");
+
+        $this->assertEquals(
+            array(),
+            require($this->vendorDir."/.composer/include_paths.php")
+        );
+    }
+
     private function createClassFile($basedir)
     {
         if (!is_dir($basedir.'/.composersrc')) {
