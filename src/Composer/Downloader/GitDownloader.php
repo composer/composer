@@ -80,12 +80,14 @@ class GitDownloader extends VcsDownloader
      */
     protected function runCommand($commandCallable, $url, $path = null)
     {
+        $handler = array($this, 'outputHandler');
+
         // github, autoswitch protocols
         if (preg_match('{^(?:https?|git)(://github.com/.*)}', $url, $match)) {
             $protocols = array('git', 'https', 'http');
             foreach ($protocols as $protocol) {
                 $url = escapeshellarg($protocol . $match[1]);
-                if (0 === $this->process->execute(call_user_func($commandCallable, $url), $ignoredOutput)) {
+                if (0 === $this->process->execute(call_user_func($commandCallable, $url), $handler)) {
                     return;
                 }
                 if (null !== $path) {
@@ -97,8 +99,18 @@ class GitDownloader extends VcsDownloader
 
         $url = escapeshellarg($url);
         $command = call_user_func($commandCallable, $url);
-        if (0 !== $this->process->execute($command, $ignoredOutput)) {
+        if (0 !== $this->process->execute($command, $handler)) {
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+        }
+    }
+
+    public function outputHandler($type, $buffer)
+    {
+        if ($type !== 'out') {
+            return;
+        }
+        if ($this->io->isVerbose()) {
+            $this->io->write($buffer, false);
         }
     }
 

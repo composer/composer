@@ -32,11 +32,15 @@ abstract class ArchiveDownloader extends FileDownloader
         parent::download($package, $path);
 
         $fileName = $this->getFileName($package, $path);
-        $this->io->write('    Unpacking archive');
+        if ($this->io->isVerbose()) {
+            $this->io->write('    Unpacking archive');
+        }
         try {
             $this->extract($fileName, $path);
 
-            $this->io->write('    Cleaning up');
+            if ($this->io->isVerbose()) {
+                $this->io->write('    Cleaning up');
+            }
             unlink($fileName);
 
             // If we have only a one dir inside it suppose to be a package itself
