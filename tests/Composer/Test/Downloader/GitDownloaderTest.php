@@ -139,7 +139,7 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
 
     public function testUpdate()
     {
-        $expectedGitUpdateCommand = $this->getCmd("cd 'composerPath' && git remote set-url origin 'git://github.com/composer/composer' && git fetch --tags origin && git checkout 'ref' && git reset --hard 'ref'");
+        $expectedGitUpdateCommand = $this->getCmd("cd 'composerPath' && git remote set-url origin 'git://github.com/composer/composer' && git fetch origin && git fetch --tags origin && git checkout 'ref' && git reset --hard 'ref'");
         $expectedGitResetCommand = $this->getCmd("cd 'composerPath' && git status --porcelain");
 
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
@@ -168,7 +168,7 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
      */
     public function testUpdateThrowsRuntimeExceptionIfGitCommandFails()
     {
-        $expectedGitUpdateCommand = $this->getCmd("cd 'composerPath' && git remote set-url origin 'git://github.com/composer/composer' && git fetch --tags origin && git checkout 'ref' && git reset --hard 'ref'");
+        $expectedGitUpdateCommand = $this->getCmd("cd 'composerPath' && git remote set-url origin 'git://github.com/composer/composer' && git fetch origin && git fetch --tags origin && git checkout 'ref' && git reset --hard 'ref'");
         $expectedGitResetCommand = $this->getCmd("cd 'composerPath' && git status --porcelain");
 
         $packageMock = $this->getMock('Composer\Package\PackageInterface');

@@ -45,7 +45,7 @@ class GitDownloader extends VcsDownloader
         $ref = escapeshellarg($target->getSourceReference());
         $path = escapeshellarg($path);
         $this->io->write("    Checking out ".$target->getSourceReference());
-        $command = 'cd %s && git remote set-url origin %s && git fetch --tags origin && git checkout %3$s && git reset --hard %3$s';
+        $command = 'cd %s && git remote set-url origin %s && git fetch origin && git fetch --tags origin && git checkout %3$s && git reset --hard %3$s';
 
         $commandCallable = function($url) use ($ref, $path, $command) {
             return sprintf($command, $path, $url, $ref);
