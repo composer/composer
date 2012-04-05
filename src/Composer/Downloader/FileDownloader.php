@@ -101,7 +101,9 @@ class FileDownloader implements DownloaderInterface
      */
     public function remove(PackageInterface $package, $path)
     {
-        $this->filesystem->removeDirectory($path);
+        if (!$this->filesystem->removeDirectory($path)) {
+            throw new \RuntimeException('Could not completely delete '.$path.', aborting.');
+        }
     }
 
     /**
