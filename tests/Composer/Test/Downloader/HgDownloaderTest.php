@@ -111,7 +111,8 @@ class HgDownloaderTest extends \PHPUnit_Framework_TestCase
         $filesystem = $this->getMock('Composer\Util\Filesystem');
         $filesystem->expects($this->any())
             ->method('removeDirectory')
-            ->with($this->equalTo('composerPath'));
+            ->with($this->equalTo('composerPath'))
+            ->will($this->returnValue(true));
 
         $downloader = $this->getDownloaderMock(null, $processExecutor, $filesystem);
         $downloader->remove($packageMock, 'composerPath');
