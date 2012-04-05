@@ -101,6 +101,7 @@ class GitDownloader extends VcsDownloader
             } else {
                 throw new \RuntimeException('Failed to checkout ' . $url .' via git, https and http protocols, aborting.' . "\n\n" . $output);
             }
+        }
 
         $command = call_user_func($commandCallable, $url);
         if (0 !== $this->process->execute($command, $handler)) {
