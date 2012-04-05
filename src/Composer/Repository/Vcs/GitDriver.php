@@ -53,7 +53,13 @@ class GitDriver extends VcsDriver
 
                 $command = sprintf('git clone --mirror %s %s', escapeshellarg($this->url), escapeshellarg($this->repoDir));
                 if (0 !== $this->process->execute($command, $output)) {
-                    throw new \RuntimeException('Failed to clone '.$this->url.', could not read packages from it ('.$this->process->getErrorOutput().')');
+                    $output = $this->process->getErrorOutput();
+            
+                    if (127 === $this->process->execute('git --version', $handler)) {
+                        throw new \RuntimeException('Failed to clone '.$this->url.', git isn\'t accessible through the console, please check your installation and your PATH env.' . "\n\n" . $this->process->getErrorOutput());
+                    }
+                    
+                    throw new \RuntimeException('Failed to clone '.$this->url.', could not read packages from it ('.$output.')');
                 }
             }
         }
