@@ -34,7 +34,7 @@ class Filesystem
         // clear stat cache because external processes aren't tracked by the php stat cache
         clearstatcache();
 
-        return $result;
+        return $result && !is_dir($directory);
     }
 
     public function ensureDirectoryExists($directory)
