@@ -96,11 +96,10 @@ class GitDownloader extends VcsDownloader
             
             // failed to checkout, first check git accessibility
             $output = $this->process->getErrorOutput();
-            if (false === strpos($this->process->execute('git --version', $handler), 'git version')) {
-                throw new \RuntimeException('It looks like git isn\'t accessible through the console, please check your installation and your PATH env.' . "\n\n" . $this->process->getErrorOutput());
-            } else {
-                throw new \RuntimeException('Failed to checkout ' . $url .' via git, https and http protocols, aborting.' . "\n\n" . $output);
-            }
+            if (127 === $this->process->execute('git --version', $handler)) {
+                throw new \RuntimeException('Failed to checkout ' . $url . ' via git, it isn\'t accessible through the console, please check your installation and your PATH env.' . "\n\n" . $this->process->getErrorOutput());
+
+            throw new \RuntimeException('Failed to checkout ' . $url .' via git, https and http protocols, aborting.' . "\n\n" . $output);
         }
 
         $command = call_user_func($commandCallable, $url);
