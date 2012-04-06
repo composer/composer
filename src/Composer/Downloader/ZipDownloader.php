@@ -35,7 +35,7 @@ class ZipDownloader extends ArchiveDownloader
         if (!class_exists('ZipArchive')) {
             // try to use unzip on *nix
             if (!defined('PHP_WINDOWS_VERSION_BUILD')) {
-                $result = $this->process->execute('unzip '.escapeshellarg($file).' -d '.escapeshellarg($path));
+                $result = $this->process->execute('unzip '.escapeshellarg($file).' -d '.escapeshellarg($path), $ignoredOutput);
                 if (0 == $result) {
                     return;
                 }
