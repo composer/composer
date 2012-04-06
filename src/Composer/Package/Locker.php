@@ -121,6 +121,8 @@ class Locker
      *
      * @param array $packages array of packages
      * @param array $aliases array of aliases
+     *
+     * @return Boolean
      */
     public function setLockData(array $packages, array $aliases)
     {
@@ -129,6 +131,7 @@ class Locker
             'packages' => array(),
             'aliases' => $aliases,
         );
+
         foreach ($packages as $package) {
             $name    = $package->getPrettyName();
             $version = $package->getPrettyVersion();
@@ -144,19 +147,25 @@ class Locker
             if ($package->isDev()) {
                 $spec['source-reference'] = $package->getSourceReference();
             }
+
             if ($package->getAlias() && $package->isInstalledAsAlias()) {
                 $spec['alias'] = $package->getAlias();
             }
 
             $lock['packages'][] = $spec;
         }
+
         usort($lock['packages'], function ($a, $b) {
             return strcmp($a['package'], $b['package']);
         });
 
-        $this->lockFile->write($lock);
+        if ($lock !== $this->getLockData()) {
+            $this->lockFile->write($lock);
+            $this->lockDataCache = null;
 
-        // invalidate cache
-        $this->lockDataCache = null;
+            return true;
+        }
+
+        return false;
     }
 }
