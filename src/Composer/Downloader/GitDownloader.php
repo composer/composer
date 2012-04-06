@@ -93,19 +93,14 @@ class GitDownloader extends VcsDownloader
                     $this->filesystem->removeDirectory($path);
                 }
             }
-            
-            // failed to checkout, first check git accessibility
-            $output = $this->process->getErrorOutput();
-            if (127 === $this->process->execute('git --version', $handler)) {
-                throw new \RuntimeException('Failed to checkout ' . $url . ' via git, it isn\'t accessible through the console, please check your installation and your PATH env.' . "\n\n" . $this->process->getErrorOutput());
-            }
 
-            throw new \RuntimeException('Failed to checkout ' . $url .' via git, https and http protocols, aborting.' . "\n\n" . $output);
+            // failed to checkout, first check git accessibility
+            $this->throwException('Failed to clone ' . $url .' via git, https and http protocols, aborting.' . "\n\n" . $this->process->getErrorOutput(), $url);
         }
 
         $command = call_user_func($commandCallable, $url);
         if (0 !== $this->process->execute($command, $handler)) {
-            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+            $this->throwException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput(), $url);
         }
     }
 
@@ -117,6 +112,15 @@ class GitDownloader extends VcsDownloader
         if ($this->io->isVerbose()) {
             $this->io->write($buffer, false);
         }
+    }
+
+    protected function throwException($message, $url)
+    {
+        if (0 !== $this->process->execute('git --version', $ignoredOutput)) {
+            throw new \RuntimeException('Failed to clone '.$url.', git was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput());
+        }
+
+        throw new \RuntimeException($message);
     }
 
     protected function setPushUrl(PackageInterface $package, $path)
