@@ -51,6 +51,11 @@ class ComposerRepository extends ArrayRepository
             throw new \UnexpectedValueException('Could not parse package list from the '.$this->url.' repository');
         }
 
+        if (isset($packages['includes'])) {
+            $this->io->write('<error>Your version of composer is too old, please run `php composer.phar self-update` to update it.</error>');
+            exit(1);
+        }
+
         $loader = new ArrayLoader();
         foreach ($packages as $data) {
             foreach ($data['versions'] as $rev) {
