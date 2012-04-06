@@ -45,21 +45,38 @@ class ComposerRepository extends ArrayRepository
     protected function initialize()
     {
         parent::initialize();
-        $json     = new JsonFile($this->url.'/packages.json', new RemoteFilesystem($this->io));
-        $packages = $json->read();
-        if (!$packages) {
-            throw new \UnexpectedValueException('Could not parse package list from the '.$this->url.' repository');
-        }
-
-        if (isset($packages['includes'])) {
-            $this->io->write('<error>Your version of composer is too old, please run `php composer.phar self-update` to update it.</error>');
-            exit(1);
-        }
+        $json = new JsonFile($this->url.'/packages.json', new RemoteFilesystem($this->io));
+        $data = $json->read();
 
         $loader = new ArrayLoader();
-        foreach ($packages as $data) {
-            foreach ($data['versions'] as $rev) {
-                $this->addPackage($loader->load($rev));
+        $this->loadRepository($loader, $data);
+    }
+
+    protected function loadRepository(ArrayLoader $loader, $data)
+    {
+        // legacy repo handling
+        if (!isset($data['packages']) && !isset($data['includes'])) {
+            foreach ($data as $pkg) {
+                foreach ($pkg['versions'] as $metadata) {
+                    $this->addPackage($loader->load($metadata));
+                }
+            }
+
+            return;
+        }
+
+        if (isset($data['packages'])) {
+            foreach ($data['packages'] as $package => $versions) {
+                foreach ($versions as $version => $metadata) {
+                    $this->addPackage($loader->load($metadata));
+                }
+            }
+        }
+
+        if (isset($data['includes'])) {
+            foreach ($data['includes'] as $include => $metadata) {
+                $json = new JsonFile($this->url.'/'.$include, new RemoteFilesystem($this->io));
+                $this->loadRepository($loader, $json->read());
             }
         }
     }
