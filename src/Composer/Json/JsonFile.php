@@ -18,6 +18,7 @@ use JsonSchema\Validator;
 use Seld\JsonLint\JsonParser;
 use Composer\Util\StreamContextFactory;
 use Composer\Util\RemoteFilesystem;
+use Composer\Downloader\TransportException;
 
 /**
  * Reads/writes json files.
@@ -81,8 +82,10 @@ class JsonFile
             } else {
                 $json = file_get_contents($this->path);
             }
+        } catch (TransportException $e) {
+            throw new \RuntimeException('Could not read '.$this->path.', either you or the remote host is probably offline'."\n\n".$e->getMessage());
         } catch (\Exception $e) {
-            throw new \RuntimeException('Could not read '.$this->path.', you are probably offline ('.$e->getMessage().')');
+            throw new \RuntimeException('Could not read '.$this->path."\n\n".$e->getMessage());
         }
 
         return static::parseJson($json);
