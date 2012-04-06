@@ -159,7 +159,7 @@ class Locker
             return strcmp($a['package'], $b['package']);
         });
 
-        if ($lock !== $this->getLockData()) {
+        if (!$this->isLocked() || $lock !== $this->getLockData()) {
             $this->lockFile->write($lock);
             $this->lockDataCache = null;
 
