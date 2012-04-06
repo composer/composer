@@ -113,7 +113,7 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
             ->method('getSourceUrl')
             ->will($this->returnValue('https://example.com/composer/composer'));
         $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
-        $processExecutor->expects($this->once())
+        $processExecutor->expects($this->at(0))
             ->method('execute')
             ->with($this->equalTo($expectedGitCommand))
             ->will($this->returnValue(1));
