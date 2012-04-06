@@ -203,7 +203,7 @@ class VcsRepository extends ArrayRepository
             }
 
             if ($verbose) {
-                $this->io->write('Importing branch '.$branch.' ('.$data['version_normalized'].')');
+                $this->io->write('Importing branch '.$branch.' ('.$data['version'].')');
             }
 
             $this->addPackage($loader->load($this->preProcess($driver, $data, $identifier)));
