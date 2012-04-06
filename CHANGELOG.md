@@ -1,5 +1,8 @@
 * 1.0.0-alpha3
 
+  * Added caching of repository metadata (faster startup times & failover if packagist is down)
+  * Improved repository protocol to have large cacheable parts
+
 * 1.0.0-alpha2 (2012-04-03)
 
   * Added `create-project` command to install a project from scratch with composer
