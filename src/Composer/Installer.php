@@ -305,8 +305,9 @@ class Installer
 
         if (!$this->dryRun) {
             if ($this->update || !$this->locker->isLocked()) {
-                $this->locker->setLockData($localRepo->getPackages(), $aliases);
-                $this->io->write('<info>Writing lock file</info>');
+                if ($this->locker->setLockData($localRepo->getPackages(), $aliases)) {
+                    $this->io->write('<info>Writing lock file</info>');
+                }
             }
 
             $localRepo->write();
