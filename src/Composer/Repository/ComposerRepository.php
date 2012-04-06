@@ -15,6 +15,7 @@ namespace Composer\Repository;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Json\JsonFile;
+use Composer\Cache;
 use Composer\IO\IOInterface;
 use Composer\Util\RemoteFilesystem;
 
@@ -26,6 +27,7 @@ class ComposerRepository extends ArrayRepository
     protected $url;
     protected $io;
     protected $packages;
+    protected $cache;
 
     public function __construct(array $config, IOInterface $io)
     {
@@ -40,13 +42,25 @@ class ComposerRepository extends ArrayRepository
 
         $this->url = $config['url'];
         $this->io = $io;
+        $this->cache = new Cache($io, preg_replace('{[^a-z0-9.]}', '-', $this->url));
     }
 
     protected function initialize()
     {
         parent::initialize();
-        $json = new JsonFile($this->url.'/packages.json', new RemoteFilesystem($this->io));
-        $data = $json->read();
+
+        try {
+            $json = new JsonFile($this->url.'/packages.json', new RemoteFilesystem($this->io));
+            $data = $json->read();
+            $this->cache->write('packages.json', json_encode($data));
+        } catch (\Exception $e) {
+            if ($contents = $this->cache->read('packages.json')) {
+                $this->io->write('<warning>'.$this->url.' could not be loaded, package information was loaded from the local cache and may be out of date</warning>');
+                $data = json_decode($contents, true);
+            } else {
+                throw $e;
+            }
+        }
 
         $loader = new ArrayLoader();
         $this->loadRepository($loader, $data);
@@ -75,8 +89,14 @@ class ComposerRepository extends ArrayRepository
 
         if (isset($data['includes'])) {
             foreach ($data['includes'] as $include => $metadata) {
-                $json = new JsonFile($this->url.'/'.$include, new RemoteFilesystem($this->io));
-                $this->loadRepository($loader, $json->read());
+                if ($this->cache->sha1($include) === $metadata['sha1']) {
+                    $includedData = json_decode($this->cache->read($include), true);
+                } else {
+                    $json = new JsonFile($this->url.'/'.$include, new RemoteFilesystem($this->io));
+                    $includedData = $json->read();
+                    $this->cache->write($include, json_encode($includedData));
+                }
+                $this->loadRepository($loader, $includedData);
             }
         }
     }
