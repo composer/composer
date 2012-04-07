@@ -97,7 +97,7 @@ class InstallerInstaller extends LibraryInstaller
         }
 
         $extra = $package->getExtra();
-        $installer = new $class($this->vendorDir, $this->binDir, $this->downloadManager, $this->repository);
+        $installer = new $class($this->vendorDir, $this->binDir, $this->downloadManager, $this->repository, $this->io);
         $this->installationManager->addInstaller($installer);
     }
 }
