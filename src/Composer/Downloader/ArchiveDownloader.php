@@ -36,30 +36,31 @@ abstract class ArchiveDownloader extends FileDownloader
             $this->io->write('    Unpacking archive');
         }
         try {
-            $this->extract($fileName, $path);
-
-            if ($this->io->isVerbose()) {
-                $this->io->write('    Cleaning up');
-            }
-            unlink($fileName);
-
-            // If we have only a one dir inside it suppose to be a package itself
-            $contentDir = glob($path . '/*');
-            if (1 === count($contentDir)) {
-                $contentDir = $contentDir[0];
-
-                // Rename the content directory to avoid error when moving up
-                // a child folder with the same name
-                $temporaryName = md5(time().rand());
-                rename($contentDir, $temporaryName);
-                $contentDir = $temporaryName;
-
-                foreach (array_merge(glob($contentDir . '/.*'), glob($contentDir . '/*')) as $file) {
-                    if (trim(basename($file), '.')) {
-                        rename($file, $path . '/' . basename($file));
-                    }
+            if ($package->getDistType() !== 'phar' || $package->getDistExtract()) {
+                $this->extract($fileName, $path);
+                if ($this->io->isVerbose()) {
+                    $this->io->write('    Cleaning up');
                 }
-                rmdir($contentDir);
+                unlink($fileName);
+                
+                // If we have only a one dir inside it suppose to be a package itself
+                $contentDir = glob($path . '/*');
+                if (1 === count($contentDir)) {
+                    $contentDir = $contentDir[0];
+
+                    // Rename the content directory to avoid error when moving up
+                    // a child folder with the same name
+                    $temporaryName = md5(time().rand());
+                    rename($contentDir, $temporaryName);
+                    $contentDir = $temporaryName;
+
+                    foreach (array_merge(glob($contentDir . '/.*'), glob($contentDir . '/*')) as $file) {
+                        if (trim(basename($file), '.')) {
+                            rename($file, $path . '/' . basename($file));
+                        }
+                    }
+                    rmdir($contentDir);
+                }
             }
         } catch (\Exception $e) {
             // clean up
@@ -75,7 +76,12 @@ abstract class ArchiveDownloader extends FileDownloader
      */
     protected function getFileName(PackageInterface $package, $path)
     {
-        return rtrim($path.'/'.md5($path.spl_object_hash($package)).'.'.pathinfo($package->getDistUrl(), PATHINFO_EXTENSION), '.');
+        if ($package->getDistType() == 'phar' && !$package->getDistExtract()) {
+            $filename = pathinfo($package->getDistUrl(), PATHINFO_BASENAME);
+        } else {
+            $filename = md5($path.spl_object_hash($package)).'.'.pathinfo($package->getDistUrl(), PATHINFO_EXTENSION);
+        }
+        return rtrim($path.'/'.$filename, '.');
     }
 
     /**

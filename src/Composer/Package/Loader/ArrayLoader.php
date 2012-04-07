@@ -127,6 +127,7 @@ class ArrayLoader
                 ));
             }
             $package->setDistType($config['dist']['type']);
+            $package->setDistExtract(isset($config['dist']['extract']) ? (bool) $config['dist']['extract'] : true);
             $package->setDistUrl($config['dist']['url']);
             $package->setDistReference(isset($config['dist']['reference']) ? $config['dist']['reference'] : null);
             $package->setDistSha1Checksum(isset($config['dist']['shasum']) ? $config['dist']['shasum'] : null);
