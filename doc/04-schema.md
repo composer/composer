@@ -308,6 +308,18 @@ Example:
                     }
                 }
             }
+            {
+                "type": "package",
+                "package": {
+                    "name": "silex/silexphar",
+                    "version": "1.0",
+                    "dist": {
+                        "url": "http://silex.sensiolabs.org/get/silex.phar",
+                        "type": "phar",
+                        "extract": false
+                    }
+                }
+            }
         ]
     }
 

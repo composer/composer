@@ -212,6 +212,30 @@ Here is an example for the smarty template engine:
 
 Typically you would leave the source part off, as you don't really need it.
 
+For type phar , you can add extract option to not extract the phar archive
+
+example with silex microframework phar archive: 
+
+    {
+        "repositories": [
+            {
+                "type": "package",
+                "package": {
+                    "name": "silex/silex-phar",
+                    "version": "1.0",
+                    "dist": {
+                        "url": "http://silex.sensiolabs.org/get/silex.phar",
+                        "type": "phar",
+                        "extract": false
+                    }
+                }
+            }
+        ],
+        "require": {
+            "silex/silex-phar": "1.0"
+        }
+    }
+
 ## Hosting your own
 
 While you will probably want to put your packages on packagist most of the time,
