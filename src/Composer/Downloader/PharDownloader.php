@@ -35,4 +35,23 @@ class PharDownloader extends ArchiveDownloader
          * http://blog.kotowicz.net/2010/08/hardening-php-how-to-securely-include.html
          */
     }
+    
+    /**
+     * {@inheritdoc} 
+     */
+    protected function canExtract(PackageInterface $package)
+    {
+        return $package->getDistExtract();
+    }
+    
+    /**
+     * {@inheritdoc}
+     */
+    protected function getFileName(PackageInterface $package, $path)
+    {
+        if (!$this->canExtract($package)) {
+            return rtrim($path.'/'.pathinfo($package->getDistUrl(), PATHINFO_BASENAME), '.');
+        }
+        return parent::getFileName($package, $path);
+    }
 }

@@ -48,4 +48,15 @@ class ArchiveDownloaderTest extends \PHPUnit_Framework_TestCase
             $this->assertEquals('http://nodeload.github.com/composer/composer/zipball/master', $url);
         }
     }
+    
+    public function testCanExtract()
+    {
+        $packageMock = $this->getMock('Composer\Package\PackageInterface');
+        
+        $downloader = $this->getMockForAbstractClass('Composer\Downloader\ArchiveDownloader', array($this->getMock('Composer\IO\IOInterface')));
+        $method = new \ReflectionMethod($downloader, 'canExtract');
+        $method->setAccessible(true);
+        
+        $this->assertTrue($method->invoke($downloader, $packageMock));
+    }
 }

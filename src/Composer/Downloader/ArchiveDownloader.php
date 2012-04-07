@@ -36,7 +36,7 @@ abstract class ArchiveDownloader extends FileDownloader
             $this->io->write('    Unpacking archive');
         }
         try {
-            if ($package->getDistType() !== 'phar' || $package->getDistExtract()) {
+            if ($this->canExtract($package)) {
                 $this->extract($fileName, $path);
                 if ($this->io->isVerbose()) {
                     $this->io->write('    Cleaning up');
@@ -72,16 +72,23 @@ abstract class ArchiveDownloader extends FileDownloader
     }
 
     /**
+     * check if the dowloader can extract the dowloaded archive
+     * 
+     * @param  PackageInterface    $package    package instance
+     * 
+     * @return boolean 
+     */
+    protected function canExtract(PackageInterface $package)
+    {
+        return true;
+    }
+    
+    /**
      * {@inheritdoc}
      */
     protected function getFileName(PackageInterface $package, $path)
     {
-        if ($package->getDistType() == 'phar' && !$package->getDistExtract()) {
-            $filename = pathinfo($package->getDistUrl(), PATHINFO_BASENAME);
-        } else {
-            $filename = md5($path.spl_object_hash($package)).'.'.pathinfo($package->getDistUrl(), PATHINFO_EXTENSION);
-        }
-        return rtrim($path.'/'.$filename, '.');
+        return rtrim($path.'/'.md5($path.spl_object_hash($package)).'.'.pathinfo($package->getDistUrl(), PATHINFO_EXTENSION), '.');
     }
 
     /**
