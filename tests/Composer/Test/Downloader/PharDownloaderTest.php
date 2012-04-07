@@ -19,8 +19,8 @@ class PharDownloaderTest extends \PHPUnit_Framework_TestCase
 {
     public function setUp()
     {
-        if (!class_exists('Phar')) {
-            $this->markTestSkipped('zip extension missing');
+        if (!class_exists('\Phar')) {
+            $this->markTestSkipped('Phar support is not enabled');
         }
     }
 
