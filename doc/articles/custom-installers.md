@@ -32,7 +32,7 @@ An example composer.json of such a template would be:
 
     {
         "name": "phpdocumentor/template-responsive",
-        "type": "phpdocumentor-template",
+        "type": "phpdocumentor-template"
     }
 
 With the package definition shown in the example will any project that includes
