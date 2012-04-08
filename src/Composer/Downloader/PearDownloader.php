@@ -28,7 +28,11 @@ class PearDownloader extends TarDownloader
     protected function extract($file, $path)
     {
         parent::extract($file, $path);
-        @unlink($path . '/package.sig');
-        @unlink($path . '/package.xml');
+        if (file_exists($path . '/package.sig')) {
+            unlink($path . '/package.sig');
+        }
+        if (file_exists($path . '/package.xml')) {
+            unlink($path . '/package.xml');
+        }
     }
 }
