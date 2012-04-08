@@ -149,12 +149,13 @@ class VersionParser
 
     private function parseConstraint($constraint)
     {
-        if ('*' === $constraint || '*.*' === $constraint || '*.*.*' === $constraint || '*.*.*.*' === $constraint) {
+        $normalized = strtr($constraint, 'x', '*');
+        if ('*' === $normalized || '*.*' === $normalized || '*.*.*' === $normalized || '*.*.*.*' === $normalized) {
             return array();
         }
 
         // match wildcard constraints
-        if (preg_match('{^(\d+)(?:\.(\d+))?(?:\.(\d+))?\.\*$}', $constraint, $matches)) {
+        if (preg_match('{^(\d+)(?:\.(\d+))?(?:\.(\d+))?\.\*$}', $normalized, $matches)) {
             if (isset($matches[3])) {
                 $highVersion = $matches[1] . '.' . $matches[2] . '.' . $matches[3] . '.9999999';
                 if ($matches[3] === '0') {
@@ -185,7 +186,7 @@ class VersionParser
         }
 
         // match operators constraints
-        if (preg_match('{^(>=?|<=?|==?)?\s*(.*)}', $constraint, $matches)) {
+        if (preg_match('{^(>=?|<=?|==?)?\s*(.*)}', $normalized, $matches)) {
             try {
                 $version = $this->normalize($matches[2]);
                 return array(new VersionConstraint($matches[1] ?: '=', $version));
