@@ -50,6 +50,10 @@ class ArrayLoader
         $package = new Package\MemoryPackage($config['name'], $version, $config['version']);
         $package->setType(isset($config['type']) ? strtolower($config['type']) : 'library');
 
+        if (isset($config['install-dir'])) {
+            $package->setInstallDir($config['install-dir']);
+        }
+
         if (isset($config['target-dir'])) {
             $package->setTargetDir($config['target-dir']);
         }
