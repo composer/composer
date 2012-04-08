@@ -323,11 +323,16 @@ EOT
         $finder = new ExecutableFinder();
         $gitBin = $finder->find('git');
 
-        $cmd = new Process(sprintf('%s config -l', $gitBin));
+        $cmd = new Process(sprintf('%s config -l', escapeshellarg($gitBin)));
         $cmd->run();
 
         if ($cmd->isSuccessful()) {
-            return $this->gitConfig = parse_ini_string($cmd->getOutput(), false, INI_SCANNER_RAW);
+            $this->gitConfig = array();
+            preg_match_all('{^([^=]+)=(.*)$}m', $cmd->getOutput(), $matches, PREG_SET_ORDER);
+            foreach ($matches as $match) {
+                $this->gitConfig[$match[1]] = $match[2];
+            }
+            return $this->gitConfig;
         }
 
         return $this->gitConfig = array();
