@@ -56,6 +56,7 @@ class MemoryPackage extends BasePackage
     protected $recommends = array();
     protected $suggests = array();
     protected $autoload = array();
+    protected $includePaths = array();
 
     /**
      * Creates a new in memory package.
@@ -622,5 +623,23 @@ class MemoryPackage extends BasePackage
     public function getAutoload()
     {
         return $this->autoload;
+    }
+
+    /**
+     * Sets the list of paths added to PHP's include path.
+     *
+     * @param array $includePaths List of directories.
+     */
+    public function setIncludePaths(array $includePaths)
+    {
+        $this->includePaths = $includePaths;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getIncludePaths()
+    {
+        return $this->includePaths;
     }
 }
