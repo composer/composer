@@ -33,7 +33,7 @@ class InitCommand extends Command
 
     public function parseAuthorString($author)
     {
-        if (preg_match('/^(?P<name>[- \.,\w]+) <(?P<email>.+?)>$/u', $author, $match)) {
+        if (preg_match('/^(?P<name>[- \.,\w\'’]+) <(?P<email>.+?)>$/u', $author, $match)) {
             if (!function_exists('filter_var') || $match['email'] === filter_var($match['email'], FILTER_VALIDATE_EMAIL)) {
                 return array(
                     'name'  => trim($match['name']),
