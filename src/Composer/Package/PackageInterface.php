@@ -183,7 +183,7 @@ interface PackageInterface
     /**
      * Returns the package license, e.g. MIT, BSD, GPL
      *
-     * @return string The package license
+     * @return array The package licenses
      */
     function getLicense();
 
@@ -304,7 +304,7 @@ interface PackageInterface
     /**
      * Returns the package binaries
      *
-     * @return string
+     * @return array
      */
     function getBinaries();
 
