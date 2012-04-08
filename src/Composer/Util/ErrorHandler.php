@@ -37,6 +37,11 @@ class ErrorHandler
             return;
         }
 
+        if (ini_get('xdebug.scream')) {
+            $message .= "\n\nWarning: You have xdebug.scream enabled, the warning above may be".
+            "\na legitimately suppressed error that you were not supposed to see.";
+        }
+
         throw new \ErrorException($message, 0, $level, $file, $line);
     }
 
