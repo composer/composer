@@ -1,4 +1,7 @@
-# Custom installers
+<!--
+    tagline: Custom installers can be used to modify the way some packages are installed
+-->
+# Setting up and using custom installers
 
 ## Synopsis
 
@@ -28,24 +31,23 @@ An example use-case would be:
 > `phpdocumentor-template` [type][1] and create a Custom Installer to send
 > these templates to the correct folder.
 
-An example composer.json of such a template would be:
+An example composer.json of such a template package would be:
 
     {
         "name": "phpdocumentor/template-responsive",
-        "type": "phpdocumentor-template"
+        "type": "phpdocumentor-template",
+        "require": {
+            "phpdocumentor/template-installer": "*"
+        }
     }
 
-With the package definition shown in the example will any project that includes
-this package try to find an appropriate installer and use that to execute this
-[type][1].
-
-> **IMPORTANT**: the host project will not recognize the [type][1] if the
-> installer's package is not included. Thus a composer.json consuming a template
-> package will always need to _require_ the template's installer as well.
+> **IMPORTANT**: to make sure that the template installer is present at the
+> time the template package is installed, template packages should require
+> the installer package.
 
 ## Creating an Installer
 
-A Custom Installer is a defined as a class that implements the
+A Custom Installer is defined as a class that implements the
 [\Composer\Installer\InstallerInterface][3] and is contained in a Composer
 package that has the [type][1] `composer-installer`.
 
@@ -54,8 +56,8 @@ A basic Installer would thus compose of two files:
 1. the package file: composer.json
 2. The Installer class, i.e.: \Composer\Installer\MyInstaller.php
 
-> **NOTE**: _The namespace does not need to be \Composer\Installer, it may be
-> anything that you would want._
+> **NOTE**: _The namespace does not need to be \Composer\Installer, it must
+> only implement the right interface._
 
 ### composer.json
 
@@ -69,13 +71,15 @@ requirements:
 Example:
 
     {
-      "name": "phpdocumentor/template-installer",
-      "type": "composer-installer",
-      "license": "MIT",
-      "autoload": {
-        "psr-0": {"phpDocumentor\\Composer": "src/"}
-      },
-      "extra": {"class": "\\phpDocumentor\\Composer\\TemplateInstaller"}
+        "name": "phpdocumentor/template-installer",
+        "type": "composer-installer",
+        "license": "MIT",
+        "autoload": {
+            "psr-0": {"phpDocumentor\\Composer": "src/"}
+        },
+        "extra": {
+            "class": "phpDocumentor\\Composer\\TemplateInstaller"
+        }
     }
 
 ### The Custom Installer class
@@ -84,8 +88,8 @@ The class that executes the custom installation should implement the
 [\Composer\Installer\InstallerInterface][3] (or extend another installer that
 implements that interface).
 
-The class may be placed in any location and have any name, as long as it
-matches the `extra.class` element in the package definition.
+The class may be placed in any location and have any name, as long as it is
+autoloadable and matches the `extra.class` element in the package definition.
 It will also define the [type][1] string as it will be recognized by packages
 that will use this installer in the `supports()` method.
 
@@ -122,7 +126,7 @@ Example:
         public function getInstallPath(PackageInterface $package)
         {
             $prefix = substr($package->getPrettyName(), 0, 23);
-            if ('phpdocumentor/template-' != $prefix) {
+            if ('phpdocumentor/template-' !== $prefix) {
                 throw new \InvalidArgumentException(
                     'Unable to install template, phpdocumentor templates '
                     .'should always start their package name with '
@@ -138,7 +142,7 @@ Example:
          */
         public function supports($packageType)
         {
-            return ('phpdocumentor-template' === $packageType);
+            return 'phpdocumentor-template' === $packageType;
         }
     }
 
@@ -147,10 +151,10 @@ The example demonstrates that it is quite simple to extend the
 (`phpdocumentor/template-`) and use the remaining part to assemble a completely
 different installation path.
 
-> _Instead of installing to `/vendor` will any package installed using this
-> Installer be put in the `/data/templates/<stripped name>` folder._
+> _Instead of being installed in `/vendor` any package installed using this
+> Installer will be put in the `/data/templates/<stripped name>` folder._
 
-[1]: http://getcomposer.org/doc/04-schema.md#type
-[2]: http://getcomposer.org/doc/04-schema.md#extra
+[1]: ../04-schema.md#type
+[2]: ../04-schema.md#extra
 [3]: https://github.com/composer/composer/blob/master/src/Composer/Installer/InstallerInterface.php
 [4]: https://github.com/composer/composer/blob/master/src/Composer/Installer/LibraryInstaller.php
