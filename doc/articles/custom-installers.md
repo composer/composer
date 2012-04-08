@@ -112,8 +112,9 @@ Example:
     namespace phpDocumentor\Composer;
 
     use Composer\Package\PackageInterface;
+    use Composer\Installer\LibraryInstaller;
 
-    class TemplateInstaller extends \Composer\Installer\LibraryInstaller
+    class TemplateInstaller extends LibraryInstaller
     {
         /**
          * {@inheritDoc}
@@ -137,7 +138,7 @@ Example:
          */
         public function supports($packageType)
         {
-            return (bool)('phpdocumentor-template' === $packageType);
+            return ('phpdocumentor-template' === $packageType);
         }
     }
 
