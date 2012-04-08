@@ -43,6 +43,8 @@ class CreateProjectCommand extends Command
                 new InputArgument('version', InputArgument::OPTIONAL, 'Version, will defaults to latest'),
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('repository-url', null, InputOption::VALUE_REQUIRED, 'Pick a different repository url to look for the package.'),
+                new InputOption('no-install-recommends', null, InputOption::VALUE_NONE, 'Do not install recommended packages (ignored when installing from an existing lock file).'),
+                new InputOption('install-suggests', null, InputOption::VALUE_NONE, 'Also install suggested packages (ignored when installing from an existing lock file).'),
             ))
             ->setHelp(<<<EOT
 The <info>create-project</info> command creates a new project from a given
@@ -73,11 +75,13 @@ EOT
             $input->getArgument('directory'),
             $input->getArgument('version'),
             (Boolean)$input->getOption('prefer-source'),
-            $input->getOption('repository-url')
+            $input->getOption('repository-url'),
+            !$input->getOption('no-install-recommends'),
+            $input->getOption('install-suggests')
         );
     }
 
-    public function installProject(IOInterface $io, $packageName, $directory = null, $version = null, $preferSource = false, $repositoryUrl = null)
+    public function installProject(IOInterface $io, $packageName, $directory = null, $version = null, $preferSource = false, $repositoryUrl = null, $installRecommends = true, $installSuggests = false)
     {
         $dm = $this->createDownloadManager($io);
         if ($preferSource) {
@@ -124,6 +128,8 @@ EOT
 
         $installer
             ->setPreferSource($preferSource)
+            ->setInstallRecommends($installRecommends)
+            ->setInstallSuggests($installSuggests)
             ->run();
     }
 
