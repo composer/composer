@@ -225,14 +225,16 @@ Example:
         }
     }
 
-### include-paths
+### include-path
+
+> **DEPRECATED**: This is only present to support legacy projects, and all new code should preferably use autoloading.
 
 A list of paths which should get appended to PHP's `include_path`.
 
 Example:
 
     {
-        "include-paths": ["lib/"]
+        "include-path": ["lib/"]
     }
 
 ### target-dir
