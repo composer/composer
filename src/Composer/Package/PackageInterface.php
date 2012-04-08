@@ -250,6 +250,14 @@ interface PackageInterface
     function getAutoload();
 
     /**
+     * Returns a list of directories which should get added to PHP's
+     * include path.
+     *
+     * @return array
+     */
+    function getIncludePaths();
+
+    /**
      * Returns an array of repositories
      *
      * {"<type>": {<config key/values>}}

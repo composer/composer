@@ -150,6 +150,13 @@
                 "type": "string"
             }
         },
+        "include-path": {
+            "type": ["array"],
+            "description": "DEPRECATED: A list of directories which should get added to PHP's include path. This is only present to support legacy projects, and all new code should preferably use autoloading.",
+            "items": {
+                "type": "string"
+            }
+        },
         "scripts": {
             "type": ["object"],
             "description": "Scripts listeners that will be executed before/after some events.",

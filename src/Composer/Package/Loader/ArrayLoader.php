@@ -173,6 +173,10 @@ class ArrayLoader
             $package->setAutoload($config['autoload']);
         }
 
+        if (isset($config['include-path'])) {
+            $package->setIncludePaths($config['include-path']);
+        }
+
         return $package;
     }
 

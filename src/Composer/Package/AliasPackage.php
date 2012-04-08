@@ -242,6 +242,10 @@ class AliasPackage extends BasePackage
     {
         return $this->aliasOf->getAutoload();
     }
+    public function getIncludePaths()
+    {
+        return $this->aliasOf->getIncludePaths();
+    }
     public function getRepositories()
     {
         return $this->aliasOf->getRepositories();
