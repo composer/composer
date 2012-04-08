@@ -146,9 +146,9 @@
                 "type": "string"
             }
         },
-        "include-paths": {
+        "include-path": {
             "type": ["array"],
-            "description": "A list of directories which should get added to PHP's include path.",
+            "description": "DEPRECATED: A list of directories which should get added to PHP's include path. This is only present to support legacy projects, and all new code should preferably use autoloading.",
             "items": {
                 "type": "string"
             }

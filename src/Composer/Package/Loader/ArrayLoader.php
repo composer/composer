@@ -169,8 +169,8 @@ class ArrayLoader
             $package->setAutoload($config['autoload']);
         }
 
-        if (isset($config['include-paths'])) {
-            $package->setIncludePaths($config['include-paths']);
+        if (isset($config['include-path'])) {
+            $package->setIncludePaths($config['include-path']);
         }
 
         return $package;

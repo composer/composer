@@ -283,7 +283,7 @@ class AutoloadGeneratorTest extends TestCase
             require($this->vendorDir."/.composer/include_paths.php")
         );
     }
-    
+
     public function testIncludePathsAreAppendedInAutoloadFile()
     {
         $package = new MemoryPackage('a', '1.0', '1.0');
@@ -314,7 +314,7 @@ class AutoloadGeneratorTest extends TestCase
         set_include_path($oldIncludePath);
     }
 
-    public function testIncludePathFileGenerationWithoutPaths()
+    public function testIncludePathFileWithoutPathsIsSkipped()
     {
         $package = new MemoryPackage('a', '1.0', '1.0');
         $packages = array();
@@ -330,10 +330,7 @@ class AutoloadGeneratorTest extends TestCase
 
         $this->generator->dump($this->repository, $package, $this->im, $this->vendorDir."/.composer");
 
-        $this->assertEquals(
-            array(),
-            require($this->vendorDir."/.composer/include_paths.php")
-        );
+        $this->assertFalse(file_exists($this->vendorDir."/.composer/include_paths.php"));
     }
 
     private function createClassFile($basedir)
