@@ -169,6 +169,10 @@ class ArrayLoader
             $package->setAutoload($config['autoload']);
         }
 
+        if (isset($config['support'])) {
+            $package->setSupport($config['support']);
+        }
+
         return $package;
     }
 

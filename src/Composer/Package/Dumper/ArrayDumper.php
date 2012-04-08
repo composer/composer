@@ -36,6 +36,7 @@ class ArrayDumper
             'keywords',
             'autoload',
             'repositories',
+            'support',
         );
 
         $data = array();
