@@ -3,7 +3,7 @@
 
 require __DIR__.'/../src/bootstrap.php';
 
-use Composer\Compiler;
+use Composer\Compiler\ComposerCompiler;
 
-$compiler = new Compiler();
-$compiler->compile();
+$compiler = new ComposerCompiler(__DIR__.'/..', 'res'.DIRECTORY_SEPARATOR.'stub.php');
+$compiler->compile('composer.phar');
