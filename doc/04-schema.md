@@ -72,10 +72,8 @@ Out of the box, composer supports two types:
   filesystem. As such, it does not require a dist or source key to be
   installable.
 - **composer-installer:** A package of type `composer-installer` provides an
-  installer for other packages that have a custom type. Symfony could supply a
-  `symfony/bundle-installer` package, which every bundle would depend on.
-  Whenever you install a bundle, it will fetch the installer and register it, in
-  order to be able to install the bundle.
+  installer for other packages that have a custom type. Read more in the
+  [dedicated article](articles/custom-installers.md).
 
 Only use a custom type if you need custom logic during installation. It is
 recommended to omit this field and have it just default to `library`.
