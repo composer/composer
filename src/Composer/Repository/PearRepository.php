@@ -216,6 +216,15 @@ class PearRepository extends ArrayRepository
                 $data[$name] = $this->parseVersion($options);
             } elseif ('package' == $name) {
                 foreach ($options as $key => $value) {
+                    if (isset($value['providesextension'])) {
+                        // skip PECL dependencies
+                        continue;
+                    }
+                    if (isset($value['uri'])) {
+                        // skip uri-based dependencies
+                        continue;
+                    }
+
                     if (is_array($value)) {
                         $dataKey = $value['name'];
                         if (false === strpos($dataKey, '/')) {
