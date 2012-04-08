@@ -46,4 +46,14 @@ class ErrorHandlerTest extends TestCase
 
         array_merge(array(), 'string');
     }
+
+    /**
+     * Test ErrorHandler handles warnings
+     */
+    public function testErrorHandlerRespectsAtOperator()
+    {
+        ErrorHandler::register();
+
+        @trigger_error('test', E_USER_NOTICE);
+    }
 }
