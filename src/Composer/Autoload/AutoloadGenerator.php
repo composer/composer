@@ -49,6 +49,14 @@ return call_user_func(function() {
         $loader->addClassMap($classMap);
     }
 
+    $generatedClassMapPath = __DIR__.'/autoload_generatedclassmap.php';
+    if (true === @is_readable($generatedClassMapPath)) {
+        $generatedClassMap = require $generatedClassMapPath;
+        if ($generatedClassMap) {
+            $loader->addClassMap($generatedClassMap);
+        }
+    }
+
     $loader->register();
 
     return $loader;
