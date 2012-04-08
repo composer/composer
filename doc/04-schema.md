@@ -225,6 +225,16 @@ Example:
         }
     }
 
+### include-paths
+
+A list of paths which should get appended to PHP's `include_path`.
+
+Example:
+
+    {
+        "include-paths": ["lib/"]
+    }
+
 ### target-dir
 
 Defines the installation target.

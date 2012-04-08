@@ -146,6 +146,13 @@
                 "type": "string"
             }
         },
+        "include-paths": {
+            "type": ["array"],
+            "description": "A list of directories which should get added to PHP's include path.",
+            "items": {
+                "type": "string"
+            }
+        },
         "scripts": {
             "type": ["object"],
             "description": "Scripts listeners that will be executed before/after some events.",
