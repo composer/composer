@@ -179,6 +179,7 @@ class Factory
     {
         $im = new Installer\InstallationManager($vendorDir);
         $im->addInstaller(new Installer\LibraryInstaller($vendorDir, $binDir, $dm, $rm->getLocalRepository(), $io, null));
+        $im->addInstaller(new Installer\AssetInstaller($vendorDir, $binDir, $dm, $rm->getLocalRepository(), $io));
         $im->addInstaller(new Installer\InstallerInstaller($vendorDir, $binDir, $dm, $rm->getLocalRepository(), $io, $im));
         $im->addInstaller(new Installer\MetapackageInstaller($rm->getLocalRepository(), $io));
 
