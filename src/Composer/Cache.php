@@ -25,15 +25,10 @@ class Cache
     private $root;
     private $enabled = true;
 
-    public function __construct(IOInterface $io, $cacheKey = null)
+    public function __construct(IOInterface $io, $cacheDir)
     {
         $this->io = $io;
-
-        if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
-            $this->root = getenv('APPDATA') . rtrim('/Composer/cache/' . $cacheKey, '/') . '/';
-        } else {
-            $this->root = getenv('HOME') . rtrim('/.composer/cache/' . $cacheKey, '/') . '/';
-        }
+        $this->root = rtrim($cacheDir, '/\\') . '/';
 
         if (!is_dir($this->root)) {
             if (!@mkdir($this->root, 0777, true)) {

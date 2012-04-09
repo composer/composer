@@ -16,6 +16,7 @@ use Composer\IO\IOInterface;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Util\RemoteFilesystem;
 use Composer\Json\JsonFile;
+use Composer\Config;
 use Composer\Downloader\TransportException;
 
 /**
@@ -31,18 +32,18 @@ class PearRepository extends ArrayRepository
     private $io;
     private $rfs;
 
-    public function __construct(array $config, IOInterface $io, RemoteFilesystem $rfs = null)
+    public function __construct(array $repoConfig, IOInterface $io, Config $config, RemoteFilesystem $rfs = null)
     {
-        if (!preg_match('{^https?://}', $config['url'])) {
-            $config['url'] = 'http://'.$config['url'];
+        if (!preg_match('{^https?://}', $repoConfig['url'])) {
+            $repoConfig['url'] = 'http://'.$repoConfig['url'];
         }
 
-        if (function_exists('filter_var') && !filter_var($config['url'], FILTER_VALIDATE_URL)) {
-            throw new \UnexpectedValueException('Invalid url given for PEAR repository: '.$config['url']);
+        if (function_exists('filter_var') && !filter_var($repoConfig['url'], FILTER_VALIDATE_URL)) {
+            throw new \UnexpectedValueException('Invalid url given for PEAR repository: '.$repoConfig['url']);
         }
 
-        $this->url = rtrim($config['url'], '/');
-        $this->channel = !empty($config['channel']) ? $config['channel'] : null;
+        $this->url = rtrim($repoConfig['url'], '/');
+        $this->channel = !empty($repoConfig['channel']) ? $repoConfig['channel'] : null;
         $this->io = $io;
         $this->rfs = $rfs ?: new RemoteFilesystem($this->io);
     }

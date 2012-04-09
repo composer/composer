@@ -13,6 +13,7 @@
 namespace Composer\Repository;
 
 use Composer\IO\IOInterface;
+use Composer\Config;
 
 /**
  * Repositories manager.
@@ -27,10 +28,12 @@ class RepositoryManager
     private $repositories = array();
     private $repositoryClasses = array();
     private $io;
+    private $config;
 
-    public function __construct(IOInterface $io)
+    public function __construct(IOInterface $io, Config $config)
     {
         $this->io = $io;
+        $this->config = $config;
     }
 
     /**
@@ -94,7 +97,7 @@ class RepositoryManager
         }
 
         $class = $this->repositoryClasses[$type];
-        return new $class($config, $this->io);
+        return new $class($config, $this->io, $this->config);
     }
 
     /**
