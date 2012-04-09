@@ -65,14 +65,12 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $io = $this->getIO();
-
         return $this->installProject(
-            $io,
+            $this->getIO(),
             $input->getArgument('package'),
             $input->getArgument('directory'),
             $input->getArgument('version'),
-            (Boolean)$input->getOption('prefer-source'),
+            (Boolean) $input->getOption('prefer-source'),
             $input->getOption('repository-url')
         );
     }
@@ -85,11 +83,11 @@ EOT
         }
 
         if (null === $repositoryUrl) {
-            $sourceRepo = new ComposerRepository(array('url' => 'http://packagist.org'), $this->getIO());
+            $sourceRepo = new ComposerRepository(array('url' => 'http://packagist.org'), $io);
         } elseif (".json" === substr($repositoryUrl, -5)) {
             $sourceRepo = new FilesystemRepository(new JsonFile($repositoryUrl, new RemoteFilesystem($io)));
         } elseif (0 === strpos($repositoryUrl, 'http')) {
-            $sourceRepo = new ComposerRepository(array('url' => $repositoryUrl), $this->getIO());
+            $sourceRepo = new ComposerRepository(array('url' => $repositoryUrl), $io);
         } else {
             throw new \InvalidArgumentException("Invalid repository url given. Has to be a .json file or an http url.");
         }
