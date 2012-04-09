@@ -32,18 +32,21 @@ class Factory
         // load main Composer configuration
         if (!$home = getenv('COMPOSER_HOME')) {
             if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
-                $home = getenv('APPDATA') . '/Composer/';
+                $home = getenv('APPDATA') . '/Composer';
             } else {
-                $home = getenv('HOME') . '/.composer/';
+                $home = getenv('HOME') . '/.composer';
             }
         }
 
         $config = new Config();
 
-        $file = new JsonFile($home.'config.json');
+        $file = new JsonFile($home.'/config.json');
         if ($file->exists()) {
             $config->merge($file->read());
         }
+
+        // add home dir to the config
+        $config->merge(array('config' => array('home' => $home)));
 
         return $config;
     }
@@ -91,7 +94,7 @@ class Factory
         ProcessExecutor::setTimeout((int) $config->get('process-timeout'));
 
         // initialize repository manager
-        $rm = $this->createRepositoryManager($io);
+        $rm = $this->createRepositoryManager($io, $config);
 
         // load default repository unless it's explicitly disabled
         $localConfig = $this->addPackagistRepository($localConfig);
@@ -130,9 +133,9 @@ class Factory
         return $composer;
     }
 
-    protected function createRepositoryManager(IOInterface $io)
+    protected function createRepositoryManager(IOInterface $io, Config $config)
     {
-        $rm = new RepositoryManager($io);
+        $rm = new RepositoryManager($io, $config);
         $rm->setRepositoryClass('composer', 'Composer\Repository\ComposerRepository');
         $rm->setRepositoryClass('vcs', 'Composer\Repository\VcsRepository');
         $rm->setRepositoryClass('package', 'Composer\Repository\PackageRepository');

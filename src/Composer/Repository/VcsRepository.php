@@ -19,6 +19,7 @@ use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\IO\IOInterface;
+use Composer\Config;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -32,7 +33,7 @@ class VcsRepository extends ArrayRepository
     protected $versionParser;
     protected $type;
 
-    public function __construct(array $config, IOInterface $io, array $drivers = null)
+    public function __construct(array $repoConfig, IOInterface $io, Config $config = null, array $drivers = null)
     {
         $this->drivers = $drivers ?: array(
             'github'        => 'Composer\Repository\Vcs\GitHubDriver',
@@ -43,9 +44,9 @@ class VcsRepository extends ArrayRepository
             'hg'            => 'Composer\Repository\Vcs\HgDriver',
         );
 
-        $this->url = $config['url'];
+        $this->url = $repoConfig['url'];
         $this->io = $io;
-        $this->type = isset($config['type']) ? $config['type'] : 'vcs';
+        $this->type = isset($repoConfig['type']) ? $repoConfig['type'] : 'vcs';
         $this->verbose = $io->isVerbose();
     }
 
