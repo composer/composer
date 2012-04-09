@@ -84,7 +84,7 @@ EOT
 
         if (null === $repositoryUrl) {
             $sourceRepo = new ComposerRepository(array('url' => 'http://packagist.org'), $io);
-        } elseif (".json" === substr($repositoryUrl, -5)) {
+        } elseif ("json" === pathinfo($repositoryUrl, PATHINFO_EXTENSION)) {
             $sourceRepo = new FilesystemRepository(new JsonFile($repositoryUrl, new RemoteFilesystem($io)));
         } elseif (0 === strpos($repositoryUrl, 'http')) {
             $sourceRepo = new ComposerRepository(array('url' => $repositoryUrl), $io);

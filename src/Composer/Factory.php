@@ -125,7 +125,9 @@ class Factory
 
         // init locker if possible
         if (isset($composerFile)) {
-            $lockFile = substr($composerFile, -5) === '.json' ? substr($composerFile, 0, -4).'lock' : $composerFile . '.lock';
+            $lockFile = "json" === pathinfo($composerFile, PATHINFO_EXTENSION)
+                ? substr($composerFile, 0, -4).'lock'
+                : $composerFile . '.lock';
             $locker = new Package\Locker(new JsonFile($lockFile, new RemoteFilesystem($io)), $rm, md5_file($composerFile));
             $composer->setLocker($locker);
         }
