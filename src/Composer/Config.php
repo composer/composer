@@ -38,7 +38,7 @@ class Config
     {
         // override defaults with given config
         if (!empty($config['config']) && is_array($config['config'])) {
-            $this->config = array_merge_recursive($this->config, $config['config']);
+            $this->config = array_replace_recursive($this->config, $config['config']);
         }
     }
 
