@@ -16,6 +16,7 @@ use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Json\JsonFile;
 use Composer\Cache;
+use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Util\RemoteFilesystem;
 
@@ -29,20 +30,20 @@ class ComposerRepository extends ArrayRepository
     protected $packages;
     protected $cache;
 
-    public function __construct(array $config, IOInterface $io)
+    public function __construct(array $repoConfig, IOInterface $io, Config $config)
     {
-        if (!preg_match('{^\w+://}', $config['url'])) {
+        if (!preg_match('{^\w+://}', $repoConfig['url'])) {
             // assume http as the default protocol
-            $config['url'] = 'http://'.$config['url'];
+            $repoConfig['url'] = 'http://'.$repoConfig['url'];
         }
-        $config['url'] = rtrim($config['url'], '/');
-        if (function_exists('filter_var') && !filter_var($config['url'], FILTER_VALIDATE_URL)) {
-            throw new \UnexpectedValueException('Invalid url given for Composer repository: '.$config['url']);
+        $repoConfig['url'] = rtrim($repoConfig['url'], '/');
+        if (function_exists('filter_var') && !filter_var($repoConfig['url'], FILTER_VALIDATE_URL)) {
+            throw new \UnexpectedValueException('Invalid url given for Composer repository: '.$repoConfig['url']);
         }
 
-        $this->url = $config['url'];
+        $this->url = $repoConfig['url'];
         $this->io = $io;
-        $this->cache = new Cache($io, preg_replace('{[^a-z0-9.]}', '-', $this->url));
+        $this->cache = new Cache($io, $config->get('home').'/cache/'.preg_replace('{[^a-z0-9.]}', '-', $this->url));
     }
 
     protected function initialize()
