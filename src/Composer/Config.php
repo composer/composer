@@ -29,6 +29,11 @@ class Config
         );
     }
 
+    /**
+     * Merges new config values with the existing ones (overriding)
+     *
+     * @param array $config
+     */
     public function merge(array $config)
     {
         // override defaults with given config
@@ -37,6 +42,12 @@ class Config
         }
     }
 
+    /**
+     * Returns a setting
+     *
+     * @param string $key
+     * @return mixed
+     */
     public function get($key)
     {
         switch ($key) {
@@ -52,6 +63,12 @@ class Config
         }
     }
 
+    /**
+     * Checks whether a setting exists
+     *
+     * @param string $key
+     * @return Boolean
+     */
     public function has($key)
     {
         return array_key_exists($key, $this->config);
