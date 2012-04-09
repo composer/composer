@@ -58,6 +58,9 @@ class Config
                 $env = 'COMPOSER_' . strtoupper(strtr($key, '-', '_'));
                 return $this->process(getenv($env) ?: $this->config[$key]);
 
+            case 'home':
+                return rtrim($this->process($this->config[$key]), '/\\');
+
             default:
                 return $this->process($this->config[$key]);
         }
