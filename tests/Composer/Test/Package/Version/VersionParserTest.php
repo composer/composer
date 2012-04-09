@@ -117,6 +117,10 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
     public function simpleConstraints()
     {
         return array(
+            'match any'         => array('*',           new MultiConstraint(array())),
+            'match any/2'       => array('*.*',         new MultiConstraint(array())),
+            'match any/3'       => array('*.x.*',       new MultiConstraint(array())),
+            'match any/4'       => array('x.x.x.*',     new MultiConstraint(array())),
             'greater than'      => array('>1.0.0',      new VersionConstraint('>', '1.0.0.0')),
             'lesser than'       => array('<1.2.3.4',    new VersionConstraint('<', '1.2.3.4')),
             'less/eq than'      => array('<=1.2.3',     new VersionConstraint('<=', '1.2.3.0')),
@@ -129,6 +133,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'accepts master'    => array('>=dev-master',    new VersionConstraint('>=', '9999999-dev')),
             'accepts master/2'  => array('dev-master',      new VersionConstraint('=', '9999999-dev')),
             'accepts arbitrary' => array('dev-feature-a',   new VersionConstraint('=', 'dev-feature-a')),
+            'regression #550'   => array('dev-some-fix',    new VersionConstraint('=', 'dev-some-fix')),
             'ignores aliases'   => array('dev-master as 1.0.0', new VersionConstraint('=', '1.0.0.0')),
         );
     }
