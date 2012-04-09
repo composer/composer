@@ -32,8 +32,8 @@ class LibraryInstaller implements InstallerInterface
     protected $downloadManager;
     protected $repository;
     protected $io;
-    private $type;
-    private $filesystem;
+    protected $type;
+    protected $filesystem;
 
     /**
      * Initializes library installer.
