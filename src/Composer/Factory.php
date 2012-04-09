@@ -27,66 +27,84 @@ use Composer\Util\RemoteFilesystem;
  */
 class Factory
 {
+    public static function createConfig()
+    {
+        // load main Composer configuration
+        if (!$home = getenv('COMPOSER_HOME')) {
+            if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
+                $home = getenv('APPDATA') . '/Composer';
+            } else {
+                $home = getenv('HOME') . '/.composer';
+            }
+        }
+
+        $config = new Config();
+
+        $file = new JsonFile($home.'/config.json');
+        if ($file->exists()) {
+            $config->merge($file->read());
+        }
+
+        // add home dir to the config
+        $config->merge(array('config' => array('home' => $home)));
+
+        return $config;
+    }
+
     /**
      * Creates a Composer instance
      *
+     * @param IOInterface $io IO instance
+     * @param mixed $localConfig either a configuration array or a filename to read from, if null it will read from the default filename
      * @return Composer
      */
-    public function createComposer(IOInterface $io, $composerFile = null)
+    public function createComposer(IOInterface $io, $localConfig = null)
     {
         // load Composer configuration
-        if (null === $composerFile) {
-            $composerFile = getenv('COMPOSER') ?: 'composer.json';
+        if (null === $localConfig) {
+            $localConfig = getenv('COMPOSER') ?: 'composer.json';
         }
 
-        $file = new JsonFile($composerFile, new RemoteFilesystem($io));
-        if (!$file->exists()) {
-            if ($composerFile === 'composer.json') {
-                $message = 'Composer could not find a composer.json file in '.getcwd();
-            } else {
-                $message = 'Composer could not find the config file: '.$composerFile;
+        if (is_string($localConfig)) {
+            $composerFile = $localConfig;
+            $file = new JsonFile($localConfig, new RemoteFilesystem($io));
+
+            if (!$file->exists()) {
+                if ($localConfig === 'composer.json') {
+                    $message = 'Composer could not find a composer.json file in '.getcwd();
+                } else {
+                    $message = 'Composer could not find the config file: '.$localConfig;
+                }
+                $instructions = 'To initialize a project, please create a composer.json file as described in the http://getcomposer.org/ "Getting Started" section';
+                throw new \InvalidArgumentException($message.PHP_EOL.$instructions);
             }
-            $instructions = 'To initialize a project, please create a composer.json file as described in the http://getcomposer.org/ "Getting Started" section';
-            throw new \InvalidArgumentException($message.PHP_EOL.$instructions);
+
+            $file->validateSchema(JsonFile::LAX_SCHEMA);
+            $localConfig = $file->read();
         }
 
         // Configuration defaults
-        $composerConfig = array(
-            'vendor-dir' => 'vendor',
-            'process-timeout' => 300,
-        );
+        $config = $this->createConfig();
+        $config->merge($localConfig);
 
-        $packageConfig = $file->read();
-        $file->validateSchema(JsonFile::LAX_SCHEMA);
-
-        if (isset($packageConfig['config']) && is_array($packageConfig['config'])) {
-            $packageConfig['config'] = array_merge($composerConfig, $packageConfig['config']);
-        } else {
-            $packageConfig['config'] = $composerConfig;
-        }
-
-        $vendorDir = getenv('COMPOSER_VENDOR_DIR') ?: $packageConfig['config']['vendor-dir'];
-        if (!isset($packageConfig['config']['bin-dir'])) {
-            $packageConfig['config']['bin-dir'] = $vendorDir.'/bin';
-        }
-        $binDir = getenv('COMPOSER_BIN_DIR') ?: $packageConfig['config']['bin-dir'];
+        $vendorDir = $config->get('vendor-dir');
+        $binDir = $config->get('bin-dir');
 
         // setup process timeout
-        $processTimeout = getenv('COMPOSER_PROCESS_TIMEOUT') ?: $packageConfig['config']['process-timeout'];
-        ProcessExecutor::setTimeout((int) $processTimeout);
+        ProcessExecutor::setTimeout((int) $config->get('process-timeout'));
 
         // initialize repository manager
-        $rm = $this->createRepositoryManager($io);
+        $rm = $this->createRepositoryManager($io, $config);
 
         // load default repository unless it's explicitly disabled
-        $packageConfig = $this->addPackagistRepository($packageConfig);
+        $localConfig = $this->addPackagistRepository($localConfig);
 
         // load local repository
         $this->addLocalRepository($rm, $vendorDir);
 
         // load package
         $loader  = new Package\Loader\RootPackageLoader($rm);
-        $package = $loader->load($packageConfig);
+        $package = $loader->load($localConfig);
 
         // initialize download manager
         $dm = $this->createDownloadManager($io);
@@ -97,24 +115,27 @@ class Factory
         // purge packages if they have been deleted on the filesystem
         $this->purgePackages($rm, $im);
 
-        // init locker
-        $lockFile = substr($composerFile, -5) === '.json' ? substr($composerFile, 0, -4).'lock' : $composerFile . '.lock';
-        $locker = new Package\Locker(new JsonFile($lockFile, new RemoteFilesystem($io)), $rm, md5_file($composerFile));
-
         // initialize composer
         $composer = new Composer();
+        $composer->setConfig($config);
         $composer->setPackage($package);
-        $composer->setLocker($locker);
         $composer->setRepositoryManager($rm);
         $composer->setDownloadManager($dm);
         $composer->setInstallationManager($im);
 
+        // init locker if possible
+        if (isset($composerFile)) {
+            $lockFile = substr($composerFile, -5) === '.json' ? substr($composerFile, 0, -4).'lock' : $composerFile . '.lock';
+            $locker = new Package\Locker(new JsonFile($lockFile, new RemoteFilesystem($io)), $rm, md5_file($composerFile));
+            $composer->setLocker($locker);
+        }
+
         return $composer;
     }
 
-    protected function createRepositoryManager(IOInterface $io)
+    protected function createRepositoryManager(IOInterface $io, Config $config)
     {
-        $rm = new RepositoryManager($io);
+        $rm = new RepositoryManager($io, $config);
         $rm->setRepositoryClass('composer', 'Composer\Repository\ComposerRepository');
         $rm->setRepositoryClass('vcs', 'Composer\Repository\VcsRepository');
         $rm->setRepositoryClass('package', 'Composer\Repository\PackageRepository');
@@ -131,18 +152,19 @@ class Factory
         $rm->setLocalRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/.composer/installed.json')));
     }
 
-    protected function addPackagistRepository(array $packageConfig)
+    protected function addPackagistRepository(array $localConfig)
     {
         $loadPackagist = true;
         $packagistConfig = array(
             'type' => 'composer',
             'url' => 'http://packagist.org'
         );
-        if (isset($packageConfig['repositories'])) {
-            foreach ($packageConfig['repositories'] as $key => $repo) {
+
+        if (isset($localConfig['repositories'])) {
+            foreach ($localConfig['repositories'] as $key => $repo) {
                 if (isset($repo['packagist'])) {
                     if (true === $repo['packagist']) {
-                        $packageConfig['repositories'][$key] = $packagistConfig;
+                        $localConfig['repositories'][$key] = $packagistConfig;
                     }
 
                     $loadPackagist = false;
@@ -150,14 +172,14 @@ class Factory
                 }
             }
         } else {
-            $packageConfig['repositories'] = array();
+            $localConfig['repositories'] = array();
         }
 
         if ($loadPackagist) {
-            $packageConfig['repositories'][] = $packagistConfig;
+            $localConfig['repositories'][] = $packagistConfig;
         }
 
-        return $packageConfig;
+        return $localConfig;
     }
 
     public function createDownloadManager(IOInterface $io)
@@ -194,10 +216,15 @@ class Factory
         }
     }
 
-    static public function create(IOInterface $io, $composerFile = null)
+    /**
+     * @param IOInterface $io IO instance
+     * @param mixed $config either a configuration array or a filename to read from, if null it will read from the default filename
+     * @return Composer
+     */
+    static public function create(IOInterface $io, $config = null)
     {
         $factory = new static();
 
-        return $factory->createComposer($io, $composerFile);
+        return $factory->createComposer($io, $config);
     }
 }
