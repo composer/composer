@@ -102,9 +102,9 @@ class ArrayRepository implements RepositoryInterface
         }
     }
 
-    protected function createAliasPackage(PackageInterface $package)
+    protected function createAliasPackage(PackageInterface $package, $alias = null, $prettyAlias = null)
     {
-        return new AliasPackage($package, $package->getAlias(), $package->getPrettyAlias());
+        return new AliasPackage($package, $alias ?: $package->getAlias(), $prettyAlias ?: $package->getPrettyAlias());
     }
 
     /**

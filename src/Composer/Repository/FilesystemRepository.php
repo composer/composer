@@ -59,8 +59,11 @@ class FilesystemRepository extends ArrayRepository implements WritableRepository
 
             // package was installed as alias, so we only add the alias
             if ($this instanceof InstalledRepositoryInterface && !empty($packageData['installed-as-alias'])) {
+                $alias = $packageData['installed-as-alias'];
+                $package->setAlias($alias);
+                $package->setPrettyAlias($alias);
                 $package->setInstalledAsAlias(true);
-                $this->addPackage($this->createAliasPackage($package));
+                $this->addPackage($this->createAliasPackage($package, $alias, $alias));
             } else {
                 // only add regular package - if it's not an installed repo the alias will be created on the fly
                 $this->addPackage($package);
@@ -78,7 +81,7 @@ class FilesystemRepository extends ArrayRepository implements WritableRepository
         foreach ($this->getPackages() as $package) {
             $data = $dumper->dump($package);
             if ($this instanceof InstalledRepositoryInterface && $package->isInstalledAsAlias()) {
-                $data['installed-as-alias'] = true;
+                $data['installed-as-alias'] = $package->getAlias();
             }
             $packages[] = $data;
         }
