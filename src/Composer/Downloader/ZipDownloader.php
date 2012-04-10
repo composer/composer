@@ -33,15 +33,19 @@ class ZipDownloader extends ArchiveDownloader
     protected function extract($file, $path)
     {
         if (!class_exists('ZipArchive')) {
+            $error = 'You need the zip extension enabled to use the ZipDownloader';
+
             // try to use unzip on *nix
             if (!defined('PHP_WINDOWS_VERSION_BUILD')) {
-                $result = $this->process->execute('unzip '.escapeshellarg($file).' -d '.escapeshellarg($path), $ignoredOutput);
-                if (0 == $result) {
+                $command = 'unzip '.escapeshellarg($file).' -d '.escapeshellarg($path);
+                if (0 === $this->process->execute($command, $ignoredOutput)) {
                     return;
                 }
+
+                $error = 'Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput();
             }
 
-            throw new \RuntimeException('You need the zip extension enabled to use the ZipDownloader');
+            throw new \RuntimeException($error);
         }
 
         $zipArchive = new ZipArchive();
