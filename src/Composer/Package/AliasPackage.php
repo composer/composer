@@ -182,6 +182,10 @@ class AliasPackage extends BasePackage
     {
         return $this->aliasOf->getTargetDir();
     }
+    public function getInstallDir()
+    {
+        return $this->aliasOf->getInstallDir();
+    }
     public function getExtra()
     {
         return $this->aliasOf->getExtra();

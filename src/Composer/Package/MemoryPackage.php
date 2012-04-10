@@ -22,6 +22,7 @@ use Composer\Package\Version\VersionParser;
 class MemoryPackage extends BasePackage
 {
     protected $type;
+    protected $installDir;
     protected $targetDir;
     protected $installationSource;
     protected $sourceType;
@@ -97,6 +98,22 @@ class MemoryPackage extends BasePackage
     public function getType()
     {
         return $this->type ?: 'library';
+    }
+
+    /**
+     * @param string $installDir
+     */
+    public function setInstallDir($installDir) 
+    {
+        $this->installDir = $installDir;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getInstallDir()
+    {
+        return $this->installDir;
     }
 
     /**
