@@ -130,18 +130,21 @@ class RemoteFilesystem
             }
         }
 
+        if ($this->progress) {
+            $this->io->overwrite("    Downloading: <comment>100%</comment>");
+        }
+
         // handle copy command if download was successful
         if (false !== $result && null !== $fileName) {
             $result = (Boolean) @file_put_contents($fileName, $result);
+            if (false === $result) {
+                throw new TransportException('The "'.$fileUrl.'" file could not be written to '.$fileName);
+            }
         }
 
         // avoid overriding if content was loaded by a sub-call to get()
         if (null === $this->result) {
             $this->result = $result;
-        }
-
-        if ($this->progress) {
-            $this->io->overwrite("    Downloading: <comment>100%</comment>");
         }
 
         if (false === $this->result) {
