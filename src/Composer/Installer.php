@@ -139,9 +139,13 @@ class Installer
         }
         foreach ($aliases as $alias) {
             foreach ($this->repositoryManager->findPackages($alias['package'], $alias['version']) as $package) {
+                $package->setAlias($alias['alias_normalized']);
+                $package->setPrettyAlias($alias['alias']);
                 $package->getRepository()->addPackage(new AliasPackage($package, $alias['alias_normalized'], $alias['alias']));
             }
             foreach ($this->repositoryManager->getLocalRepository()->findPackages($alias['package'], $alias['version']) as $package) {
+                $package->setAlias($alias['alias_normalized']);
+                $package->setPrettyAlias($alias['alias']);
                 $this->repositoryManager->getLocalRepository()->addPackage(new AliasPackage($package, $alias['alias_normalized'], $alias['alias']));
                 $this->repositoryManager->getLocalRepository()->removePackage($package);
             }
