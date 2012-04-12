@@ -271,7 +271,7 @@ class Installer
 
         // execute operations
         if (!$operations) {
-            $this->io->write('<info>Nothing to install/update</info>');
+            $this->io->write('<info>Nothing to install or update</info>');
         }
 
         foreach ($operations as $operation) {
