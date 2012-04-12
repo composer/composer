@@ -3,7 +3,7 @@ Composer - Package Management for PHP
 
 Composer is a package manager tracking local dependencies of your projects and libraries.
 
-See the [about page](http://packagist.org/about) on [packagist.org](http://packagist.org/) for more information.
+See [http://getcomposer.org/](http://getcomposer.org/) for more information and documentation.
 
 [![Build Status](https://secure.travis-ci.org/composer/composer.png)](http://travis-ci.org/composer/composer)
 
@@ -42,51 +42,36 @@ file as described above.
 2. Download the [`composer.phar`](http://getcomposer.org/composer.phar) executable
 3. Run Composer to get the dependencies: `php composer.phar install`
 
-Global installation of composer (manual)
+Global installation of Composer (manual)
 ----------------------------------------
 
-Since composer works with the current working directory it is possible to install it
+Since Composer works with the current working directory it is possible to install it
 in a system wide way.
 
 1. Change into a directory in your path like `cd /usr/local/bin`
-2. Get composer `curl -s http://getcomposer.org/installer | php`
+2. Get Composer `curl -s http://getcomposer.org/installer | php`
 3. Make the phar executeable `chmod a+x composer.phar`
 4. Change into a project directory `cd /path/to/my/project`
-5. Use composer as you normally would `composer.phar install`
+5. Use Composer as you normally would `composer.phar install`
 6. Optionally you can rename the composer.phar to composer to make it easier
 
-Global installation of composer (via homebrew)
+Global installation of Composer (via homebrew)
 ----------------------------------------------
 
-Installing via this homebrew formula will always get you the latest composer version.
+Installing via this homebrew formula will always get you the latest Composer version.
 
 1. run `brew uninstall composer ; brew install --HEAD https://raw.github.com/gist/1574469/composer.rb`
 2. Change into a project directory `cd /path/to/my/project`
-3. Use composer as you normally would `composer.phar install`
+3. Use Composer as you normally would `composer.phar install`
 
 *You will see a warning "Warning: Cannot verify package integrity"; however,
 this is benign and expected.*
 
-Updating composer
+Updating Composer
 -----------------
 
 Running `php composer.phar self-update` or equivalent will update a phar
 install with the latest version.
-
-Configuration
--------------
-
-Additional options for composer can be configured in `composer.json` by using the `config` section.
-
-``` json
-{
-    "config": {
-        "vendor-dir": "custom/path/for/vendor"
-    }
-}
-```
-
-* `vendor-dir`: The location to install vendor packages. The location can be supplied as an absolute or relative path but **must** be within the current working directory.
 
 Contributing
 ------------
