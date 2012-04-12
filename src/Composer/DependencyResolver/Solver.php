@@ -29,7 +29,6 @@ class Solver
 
     protected $ruleToJob = array();
     protected $addedMap = array();
-    protected $fixMap = array();
     protected $updateMap = array();
     protected $noObsoletes = array();
     protected $watches = array();
@@ -214,37 +213,13 @@ class Solver
 
             $this->addedMap[$package->getId()] = true;
 
-            $dontFix = 0;
-            if (isset($this->installedMap[$package->getId()]) && !isset($this->fixMap[$package->getId()])) {
-                $dontFix = 1;
-            }
-
-            if (!$dontFix && !$this->policy->installable($this, $this->pool, $this->installedMap, $package)) {
+            if (!$this->policy->installable($this, $this->pool, $this->installedMap, $package)) {
                 $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRemoveRule($package, Rule::RULE_NOT_INSTALLABLE, (string) $package));
                 continue;
             }
 
             foreach ($package->getRequires() as $link) {
                 $possibleRequires = $this->pool->whatProvides($link->getTarget(), $link->getConstraint());
-
-                // the strategy here is to not insist on dependencies
-                // that are already broken. so if we find one provider
-                // that was already installed, we know that the
-                // dependency was not broken before so we enforce it
-                if ($dontFix) {
-                    $foundInstalled = false;
-                    foreach ($possibleRequires as $require) {
-                        if (isset($this->installedMap[$require->getId()])) {
-                            $foundInstalled = true;
-                            break;
-                        }
-                    }
-
-                    // no installed provider found: previously broken dependency => don't add rule
-                    if (!$foundInstalled) {
-                        continue;
-                    }
-                }
 
                 $this->addRule(RuleSet::TYPE_PACKAGE, $rule = $this->createRequireRule($package, $possibleRequires, Rule::RULE_PACKAGE_REQUIRES, (string) $link));
 
@@ -257,10 +232,6 @@ class Solver
                 $possibleConflicts = $this->pool->whatProvides($link->getTarget(), $link->getConstraint());
 
                 foreach ($possibleConflicts as $conflict) {
-                    if ($dontFix && isset($this->installedMap[$conflict->getId()])) {
-                        continue;
-                    }
-
                     $this->addRule(RuleSet::TYPE_PACKAGE, $this->createConflictRule($package, $conflict, Rule::RULE_PACKAGE_CONFLICT, (string) $link));
                 }
             }
@@ -282,20 +253,15 @@ class Solver
                             continue;
                         }
 
-                        if ($isInstalled && $dontFix && isset($this->installedMap[$provider->getId()])) {
-                            continue; // don't repair installed/installed problems
-                        }
-
                         $reason = ($isInstalled) ? Rule::RULE_INSTALLED_PACKAGE_OBSOLETES : Rule::RULE_PACKAGE_OBSOLETES;
                         $this->addRule(RuleSet::TYPE_PACKAGE, $this->createConflictRule($package, $provider, $reason, (string) $link));
                     }
                 }
 
                 // check implicit obsoletes
-                // for installed packages we only need to check installed/installed problems (and
-                // only when dontFix is not set), as the others are picked up when looking at the
-                // uninstalled package.
-                if (!$isInstalled || !$dontFix) {
+                // for installed packages we only need to check installed/installed problems,
+                // as the others are picked up when looking at the uninstalled package.
+                if (!$isInstalled) {
                     $obsoleteProviders = $this->pool->whatProvides($package->getName(), null);
 
                     foreach ($obsoleteProviders as $provider) {
@@ -912,11 +878,6 @@ class Solver
         foreach ($this->jobs as $job) {
             foreach ($job['packages'] as $package) {
                 switch ($job['cmd']) {
-                    case 'fix':
-                        if (isset($this->installedMap[$package->getId()])) {
-                            $this->fixMap[$package->getId()] = true;
-                        }
-                        break;
                     case 'update':
                         if (isset($this->installedMap[$package->getId()])) {
                             $this->updateMap[$package->getId()] = true;
