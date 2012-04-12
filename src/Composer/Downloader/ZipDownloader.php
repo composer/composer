@@ -42,7 +42,8 @@ class ZipDownloader extends ArchiveDownloader
                     return;
                 }
 
-                $error = 'Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput();
+                $error = "Could not decompress the archive, enable the PHP zip extension or install unzip.\n".
+                    'Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput();
             }
 
             throw new \RuntimeException($error);
