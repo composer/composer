@@ -151,7 +151,7 @@ class ArrayLoader
                 }
 
                 $package->setAlias($validatedTargetBranch);
-                $package->setPrettyAlias($targetBranch);
+                $package->setPrettyAlias(preg_replace('{(\.9{7})+}', '.x', $validatedTargetBranch));
                 break;
             }
         }
