@@ -165,7 +165,7 @@ An example:
 
 Optional, but highly recommended.
 
-### Link types
+### Link types <span>(require, recommend, suggest, replace, provide)</span>
 
 Each of these takes an object which maps package names to version constraints.
 
