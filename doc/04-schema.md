@@ -1,17 +1,27 @@
 # composer.json
 
-This chapter will explain all of the options available in `composer.json`.
+This chapter will explain all of the fields available in `composer.json`.
 
 ## JSON schema
 
 We have a [JSON schema](http://json-schema.org) that documents the format and
 can also be used to validate your `composer.json`. In fact, it is used by the
 `validate` command. You can find it at:
-[`Resources/composer-schema.json`](https://github.com/composer/composer/blob/master/res/composer-schema.json).
+[`res/composer-schema.json`](https://github.com/composer/composer/blob/master/res/composer-schema.json).
 
-## Package root
+## Root Package
 
-The root of the package definition is a JSON object.
+The root package is the package defined by the `composer.json` at the root of
+your project. It is the main `composer.json` that defines your project
+requirements.
+
+Certain fields only apply when in the root package context. One example of
+this is the `config` field. Only the root package can define configuration.
+The config of dependencies is ignored. This makes the `config` field
+`root-only`.
+
+If you clone one of those dependencies to work on it, then that package is the
+root package. The `composer.json` is identical, but the context is different.
 
 ## Properties
 
@@ -155,7 +165,7 @@ An example:
 
 Optional, but highly recommended.
 
-### Link types
+### Link types <span>(require, recommend, suggest, replace, provide)</span>
 
 Each of these takes an object which maps package names to version constraints.
 
@@ -188,7 +198,7 @@ Optional.
 Autoload mapping for a PHP autoloader.
 
 Currently [PSR-0](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-0.md)
-autoloading and ClassMap generation are supported.
+autoloading and classmap generation are supported.
 
 Under the `psr-0` key you define a mapping from namespaces to paths, relative to the
 package root.
@@ -212,7 +222,7 @@ you can specify them as an array as such:
     }
 
 You can use the classmap generation support to define autoloading for all libraries
-that do not follow "PSR-0". To configure this you specify all directories
+that do not follow PSR-0. To configure this you specify all directories
 to search for classes.
 
 Example:
@@ -234,6 +244,8 @@ Example:
     {
         "include-path": ["lib/"]
     }
+
+Optional.
 
 ### target-dir
 
@@ -260,7 +272,7 @@ To do that, `autoload` and `target-dir` are defined as follows:
 
 Optional.
 
-### repositories
+### repositories <span>(root-only)</span>
 
 Custom package repositories to use.
 
@@ -326,7 +338,7 @@ will look from the first to the last repository, and pick the first match.
 By default Packagist is added last which means that custom repositories can
 override packages from it.
 
-### config
+### config <span>(root-only)</span>
 
 A set of configuration options. It is only used for projects.
 
@@ -348,7 +360,7 @@ Example:
         }
     }
 
-### scripts
+### scripts <span>(root-only)</span>
 
 Composer allows you to hook into various parts of the installation process
 through the use of scripts.

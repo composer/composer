@@ -1,5 +1,5 @@
 <!--
-    tagline: Custom installers can be used to modify the way some packages are installed
+    tagline: Modify the way certain types of packages are installed
 -->
 # Setting up and using custom installers
 

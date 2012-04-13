@@ -103,7 +103,7 @@ to those specific versions.
 This is important because the `install` command checks if a lock file is present,
 and if it is, it downloads the versions specified there (regardless of what `composer.json`
 says). This means that anyone who sets up the project will download the exact
-same version of the dependencies. 
+same version of the dependencies.
 
 If no `composer.json` lock file exists, it will read the dependencies and
 versions from `composer.json` and  create the lock file.
@@ -135,16 +135,15 @@ but it makes life quite a bit simpler.
 
 ## Autoloading
 
-For libraries that follow the [PSR-0](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-0.md)
-naming standard, Composer generates a `vendor/.composer/autoload.php` file
-for autoloading. You can simply include this file and you will get autoloading
-for free.
+For libraries that specify autoload information, Composer generates a
+`vendor/.composer/autoload.php` file. You can simply include this file and you
+will get autoloading for free.
 
     require 'vendor/.composer/autoload.php';
 
-This makes it really easy to use third party code: For monolog, it
-means that we can just start using classes from it, and they will be
-autoloaded.
+This makes it really easy to use third party code. For example: If your
+project depends on monolog, you can just start using classes from it, and they
+will be autoloaded.
 
     $log = new Monolog\Logger('name');
     $log->pushHandler(new Monolog\Handler\StreamHandler('app.log', Monolog\Logger::WARNING));
@@ -160,8 +159,12 @@ to `composer.json`.
         }
     }
 
-This is a mapping from namespaces to directories. The `src` directory would be
-in your project root. An example filename would be `src/Acme/Foo.php`
+Composer will register a
+[PSR-0](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-0.md)
+autoloader for the `Acme` namespace.
+
+You define a mapping from namespaces to directories. The `src` directory would
+be in your project root. An example filename would be `src/Acme/Foo.php`
 containing an `Acme\Foo` class.
 
 After adding the `autoload` field, you have to re-run `install` to re-generate
@@ -173,6 +176,10 @@ This can be useful for autoloading classes in a test suite, for example.
 
     $loader = require 'vendor/.composer/autoload.php';
     $loader->add('Acme\Test', __DIR__);
+
+In addition to PSR-0 autoloading, classmap is also supported. This allows
+classes to be autoloaded even if they do not conform to PSR-0. See the
+[autoload reference](04-schema.md#autoload) for more details.
 
 > **Note:** Composer provides its own autoloader. If you don't want to use
 that one, you can just include `vendor/.composer/autoload_namespaces.php`,
