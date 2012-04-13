@@ -231,6 +231,8 @@ Example:
         "include-path": ["lib/"]
     }
 
+Optional.
+
 ### target-dir
 
 Defines the installation target.
@@ -256,7 +258,7 @@ To do that, `autoload` and `target-dir` are defined as follows:
 
 Optional.
 
-### repositories
+### repositories <span>(root-only)</span>
 
 Custom package repositories to use.
 
@@ -322,7 +324,7 @@ will look from the first to the last repository, and pick the first match.
 By default Packagist is added last which means that custom repositories can
 override packages from it.
 
-### config
+### config <span>(root-only)</span>
 
 A set of configuration options. It is only used for projects.
 
