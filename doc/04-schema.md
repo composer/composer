@@ -9,10 +9,6 @@ can also be used to validate your `composer.json`. In fact, it is used by the
 `validate` command. You can find it at:
 [`Resources/composer-schema.json`](https://github.com/composer/composer/blob/master/res/composer-schema.json).
 
-## Package root
-
-The root of the package definition is a JSON object.
-
 ## Properties
 
 ### name
