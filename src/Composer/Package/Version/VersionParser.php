@@ -87,6 +87,7 @@ class VersionParser
             return $version;
         }
 
+        // match dev branches
         if (preg_match('{(.*?)[.-]?dev$}i', $version, $match)) {
             try {
                 return $this->normalizeBranch($match[1]);
