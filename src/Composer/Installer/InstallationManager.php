@@ -14,6 +14,7 @@ namespace Composer\Installer;
 
 use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
+use Composer\Repository\NotifiableRepositoryInterface;
 use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
@@ -128,6 +129,7 @@ class InstallationManager
         }
         $installer = $this->getInstaller($package->getType());
         $installer->install($package);
+        $this->notifyInstall($package);
     }
 
     /**
@@ -153,6 +155,7 @@ class InstallationManager
         if ($initialType === $targetType) {
             $installer = $this->getInstaller($initialType);
             $installer->update($initial, $target);
+            $this->notifyInstall($target);
         } else {
             $this->getInstaller($initialType)->uninstall($initial);
             $this->getInstaller($targetType)->install($target);
@@ -199,5 +202,12 @@ class InstallationManager
         }
 
         return getcwd().DIRECTORY_SEPARATOR.$this->vendorPath;
+    }
+
+    protected function notifyInstall(PackageInterface $package)
+    {
+        if ($package->getRepository() instanceof NotifiableRepositoryInterface) {
+            $package->getRepository()->notifyInstall($package);
+        }
     }
 }
