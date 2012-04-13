@@ -188,7 +188,7 @@ Optional.
 Autoload mapping for a PHP autoloader.
 
 Currently [PSR-0](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-0.md)
-autoloading and ClassMap generation are supported.
+autoloading and classmap generation are supported.
 
 Under the `psr-0` key you define a mapping from namespaces to paths, relative to the
 package root.
@@ -212,7 +212,7 @@ you can specify them as an array as such:
     }
 
 You can use the classmap generation support to define autoloading for all libraries
-that do not follow "PSR-0". To configure this you specify all directories
+that do not follow PSR-0. To configure this you specify all directories
 to search for classes.
 
 Example:
