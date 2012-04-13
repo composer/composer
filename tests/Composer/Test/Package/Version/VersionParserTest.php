@@ -51,6 +51,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'parses dt+patch'   => array('20100102-203040-p1',  '20100102-203040-patch1'),
             'parses master'     => array('dev-master',          '9999999-dev'),
             'parses trunk'      => array('dev-trunk',           '9999999-dev'),
+            'parses branches'   => array('1.x-dev',             '1.9999999.9999999.9999999-dev'),
             'parses arbitrary'  => array('dev-feature-foo',     'dev-feature-foo'),
             'parses arbitrary2' => array('DEV-FOOBAR',          'dev-foobar'),
             'ignores aliases'   => array('dev-master as 1.0.0', '1.0.0.0'),
