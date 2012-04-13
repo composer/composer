@@ -87,7 +87,7 @@ class VcsRepositoryTest extends \PHPUnit_Framework_TestCase
         $process->execute('git branch 1.0', $null);
 
         // add 1.0.x branch
-        $process->execute('git branch 1.0.x', $null);
+        $process->execute('git branch 1.1.x', $null);
 
         // update master to 2.0
         $composer['version'] = '2.0.0';
@@ -116,8 +116,8 @@ class VcsRepositoryTest extends \PHPUnit_Framework_TestCase
         $expected = array(
             '0.6.0' => true,
             '1.0.0' => true,
-            '1.0-dev' => true,
             '1.0.x-dev' => true,
+            '1.1.x-dev' => true,
             'dev-feature-b' => true,
             'dev-feature-a' => true,
             'dev-master' => true,
