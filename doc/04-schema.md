@@ -1,13 +1,27 @@
 # composer.json
 
-This chapter will explain all of the options available in `composer.json`.
+This chapter will explain all of the fields available in `composer.json`.
 
 ## JSON schema
 
 We have a [JSON schema](http://json-schema.org) that documents the format and
 can also be used to validate your `composer.json`. In fact, it is used by the
 `validate` command. You can find it at:
-[`Resources/composer-schema.json`](https://github.com/composer/composer/blob/master/res/composer-schema.json).
+[`res/composer-schema.json`](https://github.com/composer/composer/blob/master/res/composer-schema.json).
+
+## Root Package
+
+The root package is the package defined by the `composer.json` at the root of
+your project. It is the main `composer.json` that defines your project
+requirements.
+
+Certain fields only apply when in the root package context. One example of
+this is the `config` field. Only the root package can define configuration.
+The config of dependencies is ignored. This makes the `config` field
+`root-only`.
+
+If you clone one of those dependencies to work on it, then that package is the
+root package. The `composer.json` is identical, but the context is different.
 
 ## Properties
 
@@ -346,7 +360,7 @@ Example:
         }
     }
 
-### scripts
+### scripts <span>(root-only)</span>
 
 Composer allows you to hook into various parts of the installation process
 through the use of scripts.
