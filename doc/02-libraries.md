@@ -151,8 +151,8 @@ packagist is available automatically through composer. Since monolog
 [is on packagist](http://packagist.org/packages/monolog/monolog), we can depend
 on it without having to specify any additional repositories.
 
-Assuming we want to share `hello-world` with the world, we would want to
-publish it on packagist as well. And this is really easy.
+If we wanted to share `hello-world` with the world, we would publish it on
+packagist as well. Doing so is really easy.
 
 You simply hit the big "Submit Package" button and sign up. Then you submit
 the URL to your VCS repository, at which point packagist will start crawling
