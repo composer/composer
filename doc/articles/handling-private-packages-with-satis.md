@@ -1,3 +1,6 @@
+<!--
+    tagline: Host your own composer repository
+-->
 # Handling private packages with Satis
 
 Satis can be used to host the metadata of your company's private packages, or
