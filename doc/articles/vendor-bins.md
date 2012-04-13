@@ -1,3 +1,6 @@
+<!--
+    tagline: Expose command-line scripts from packages
+-->
 # bin and vendor/bin
 
 ## What is a bin?
