@@ -14,6 +14,7 @@ namespace Composer\Repository;
 
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\LinkConstraint\VersionConstraint;
+use Composer\Package\PackageInterface;
 use Composer\Json\JsonFile;
 use Composer\Cache;
 use Composer\Config;
@@ -23,12 +24,14 @@ use Composer\Util\RemoteFilesystem;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class ComposerRepository extends ArrayRepository
+class ComposerRepository extends ArrayRepository implements NotifiableRepositoryInterface
 {
+    protected $config;
     protected $url;
     protected $io;
     protected $packages;
     protected $cache;
+    protected $notifyUrl;
 
     public function __construct(array $repoConfig, IOInterface $io, Config $config)
     {
@@ -41,9 +44,39 @@ class ComposerRepository extends ArrayRepository
             throw new \UnexpectedValueException('Invalid url given for Composer repository: '.$repoConfig['url']);
         }
 
+        $this->config = $config;
         $this->url = $repoConfig['url'];
         $this->io = $io;
         $this->cache = new Cache($io, $config->get('home').'/cache/'.preg_replace('{[^a-z0-9.]}', '-', $this->url));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function notifyInstall(PackageInterface $package)
+    {
+        if (!$this->notifyUrl || !$this->config->get('notify-on-install')) {
+            return;
+        }
+
+        // TODO use an optional curl_multi pool for all the notifications
+        $url = str_replace('%package%', $package->getPrettyName(), $this->notifyUrl);
+
+        $params = array(
+            'version' => $package->getPrettyVersion(),
+            'version_normalized' => $package->getVersion(),
+        );
+        $opts = array('http' =>
+            array(
+                'method'  => 'POST',
+                'header'  => 'Content-type: application/x-www-form-urlencoded',
+                'content' => http_build_query($params),
+                'timeout' => 3,
+            )
+        );
+
+        $context = stream_context_create($opts);
+        @file_get_contents($url, false, $context);
     }
 
     protected function initialize()
@@ -53,6 +86,11 @@ class ComposerRepository extends ArrayRepository
         try {
             $json = new JsonFile($this->url.'/packages.json', new RemoteFilesystem($this->io));
             $data = $json->read();
+
+            if (!empty($data['notify'])) {
+                $this->notifyUrl = preg_replace('{(https?://[^/]+).*}i', '$1' . $data['notify'], $this->url);
+            }
+
             $this->cache->write('packages.json', json_encode($data));
         } catch (\Exception $e) {
             if ($contents = $this->cache->read('packages.json')) {
