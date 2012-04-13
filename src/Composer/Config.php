@@ -26,6 +26,7 @@ class Config
             'process-timeout' => 300,
             'vendor-dir' => 'vendor',
             'bin-dir' => '{$vendor-dir}/bin',
+            'notify-on-install' => true,
         );
     }
 
