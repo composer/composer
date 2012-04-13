@@ -142,6 +142,34 @@ command. It will replace your `composer.phar` with the latest version.
 
     $ php composer.phar self-update
 
+## create-project
+
+You can use Composer to create new projects from an existing package.
+There are several applications for this:
+
+1. You can deploy application packages.
+2. You can check out any package and start developing on patches for example.
+3. Projects with multiple developers can use this feature to bootstrap the
+   initial application for development.
+
+To create a new project using composer you can use the "create-project" command.
+Pass it a package name, and the directory to create the project in. You can also
+provide a version as third argument, otherwise the latest version is used.
+
+The directory is not allowed to exist, it will be created during installation.
+
+    php composer.phar create-project doctrine/orm path 2.2.0
+
+By default the command checks for the packages on packagist.org.
+
+### Options
+
+* **--repository-url:** Provide a custom repository to search for the package,
+  which will be used instead of packagist. Can be either an HTTP URL pointing
+  to a `composer` repository, or a path to a local `packages.json` file.
+* **--prefer-source:** Get a development version of the code checked out
+  from version control.
+
 ## help
 
 To get more information about a certain command, just use `help`.
