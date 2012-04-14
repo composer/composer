@@ -69,13 +69,17 @@ class Locker
      *
      * @return array
      */
-    public function getLockedPackages()
+    public function getLockedPackages($dev = false)
     {
         $lockList = $this->getLockData();
         $packages = array();
-        foreach ($lockList['packages'] as $info) {
+
+        $lockedPackages = $dev ? $lockList['packages-dev'] : $lockList['packages'];
+        $repo = $dev ? $this->repositoryManager->getLocalDevRepository() : $this->repositoryManager->getLocalRepository();
+
+        foreach ($lockedPackages as $info) {
             $resolvedVersion = !empty($info['alias']) ? $info['alias'] : $info['version'];
-            $package = $this->repositoryManager->getLocalRepository()->findPackage($info['package'], $resolvedVersion);
+            $package = $repo->findPackage($info['package'], $resolvedVersion);
 
             if (!$package) {
                 $package = $this->repositoryManager->findPackage($info['package'], $info['version']);
@@ -120,17 +124,36 @@ class Locker
      * Locks provided data into lockfile.
      *
      * @param array $packages array of packages
+     * @param array $packages array of dev packages
      * @param array $aliases array of aliases
      *
      * @return Boolean
      */
-    public function setLockData(array $packages, array $aliases)
+    public function setLockData(array $packages, array $devPackages, array $aliases)
     {
         $lock = array(
             'hash' => $this->hash,
             'packages' => array(),
+            'packages-dev' => array(),
             'aliases' => $aliases,
         );
+
+        $lock['packages'] = $this->lockPackages($packages);
+        $lock['packages-dev'] = $this->lockPackages($devPackages);
+
+        if (!$this->isLocked() || $lock !== $this->getLockData()) {
+            $this->lockFile->write($lock);
+            $this->lockDataCache = null;
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private function lockPackages(array $packages)
+    {
+        $locked = array();
 
         foreach ($packages as $package) {
             $name    = $package->getPrettyName();
@@ -152,20 +175,13 @@ class Locker
                 $spec['alias'] = $package->getAlias();
             }
 
-            $lock['packages'][] = $spec;
+            $locked[] = $spec;
         }
 
-        usort($lock['packages'], function ($a, $b) {
+        usort($locked, function ($a, $b) {
             return strcmp($a['package'], $b['package']);
         });
 
-        if (!$this->isLocked() || $lock !== $this->getLockData()) {
-            $this->lockFile->write($lock);
-            $this->lockDataCache = null;
-
-            return true;
-        }
-
-        return false;
+        return $locked;
     }
 }

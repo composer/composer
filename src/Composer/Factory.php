@@ -152,6 +152,7 @@ class Factory
     protected function addLocalRepository(RepositoryManager $rm, $vendorDir)
     {
         $rm->setLocalRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/.composer/installed.json')));
+        $rm->setLocalDevRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/.composer/installed_dev.json')));
     }
 
     protected function addPackagistRepository(array $localConfig)
@@ -202,18 +203,20 @@ class Factory
     protected function createInstallationManager(Repository\RepositoryManager $rm, Downloader\DownloadManager $dm, $vendorDir, $binDir, IOInterface $io)
     {
         $im = new Installer\InstallationManager($vendorDir);
-        $im->addInstaller(new Installer\LibraryInstaller($vendorDir, $binDir, $dm, $rm->getLocalRepository(), $io, null));
-        $im->addInstaller(new Installer\InstallerInstaller($vendorDir, $binDir, $dm, $rm->getLocalRepository(), $io, $im));
-        $im->addInstaller(new Installer\MetapackageInstaller($rm->getLocalRepository(), $io));
+        $im->addInstaller(new Installer\LibraryInstaller($vendorDir, $binDir, $dm, $io, null));
+        $im->addInstaller(new Installer\InstallerInstaller($vendorDir, $binDir, $dm, $io, $im, $rm->getLocalRepositories()));
+        $im->addInstaller(new Installer\MetapackageInstaller($io));
 
         return $im;
     }
 
     protected function purgePackages(Repository\RepositoryManager $rm, Installer\InstallationManager $im)
     {
-        foreach ($rm->getLocalRepository()->getPackages() as $package) {
-            if (!$im->isPackageInstalled($package)) {
-                $rm->getLocalRepository()->removePackage($package);
+        foreach ($rm->getLocalRepositories() as $repo) {
+            foreach ($repo->getPackages() as $package) {
+                if (!$im->isPackageInstalled($repo, $package)) {
+                    $repo->removePackage($package);
+                }
             }
         }
     }
