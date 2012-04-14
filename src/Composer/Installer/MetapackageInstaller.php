@@ -12,7 +12,6 @@
 
 namespace Composer\Installer;
 
-use Composer\IO\IOInterface;
 use Composer\Repository\WritableRepositoryInterface;
 use Composer\Package\PackageInterface;
 
@@ -23,19 +22,6 @@ use Composer\Package\PackageInterface;
  */
 class MetapackageInstaller implements InstallerInterface
 {
-    protected $repository;
-    protected $io;
-
-    /**
-     * @param   WritableRepositoryInterface $repository repository controller
-     * @param   IOInterface                 $io         io instance
-     */
-    public function __construct(WritableRepositoryInterface $repository, IOInterface $io)
-    {
-        $this->repository = $repository;
-        $this->io = $io;
-    }
-
     /**
      * {@inheritDoc}
      */
@@ -47,44 +33,44 @@ class MetapackageInstaller implements InstallerInterface
     /**
      * {@inheritDoc}
      */
-    public function isInstalled(PackageInterface $package)
+    public function isInstalled(WritableRepositoryInterface $repo, PackageInterface $package)
     {
-        return $this->repository->hasPackage($package);
+        return $repo->hasPackage($package);
     }
 
     /**
      * {@inheritDoc}
      */
-    public function install(PackageInterface $package)
+    public function install(WritableRepositoryInterface $repo, PackageInterface $package)
     {
-        $this->repository->addPackage(clone $package);
+        $repo->addPackage(clone $package);
     }
 
     /**
      * {@inheritDoc}
      */
-    public function update(PackageInterface $initial, PackageInterface $target)
+    public function update(WritableRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
     {
-        if (!$this->repository->hasPackage($initial)) {
+        if (!$repo->hasPackage($initial)) {
             throw new \InvalidArgumentException('Package is not installed: '.$initial);
         }
 
-        $this->repository->removePackage($initial);
-        $this->repository->addPackage(clone $target);
+        $repo->removePackage($initial);
+        $repo->addPackage(clone $target);
     }
 
     /**
      * {@inheritDoc}
      */
-    public function uninstall(PackageInterface $package)
+    public function uninstall(WritableRepositoryInterface $repo, PackageInterface $package)
     {
-        if (!$this->repository->hasPackage($package)) {
+        if (!$repo->hasPackage($package)) {
             // TODO throw exception again here, when update is fixed and we don't have to remove+install (see #125)
             return;
             throw new \InvalidArgumentException('Package is not installed: '.$package);
         }
 
-        $this->repository->removePackage($package);
+        $repo->removePackage($package);
     }
 
     /**

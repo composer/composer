@@ -14,6 +14,7 @@ namespace Composer\Installer;
 
 use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
+use Composer\Repository\RepositoryInterface;
 use Composer\Repository\NotifiableRepositoryInterface;
 use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\DependencyResolver\Operation\InstallOperation;
@@ -95,32 +96,35 @@ class InstallationManager
     /**
      * Checks whether provided package is installed in one of the registered installers.
      *
+     * @param   RepositoryInterface    $repo    repository in which to check
      * @param   PackageInterface    $package    package instance
      *
      * @return  Boolean
      */
-    public function isPackageInstalled(PackageInterface $package)
+    public function isPackageInstalled(RepositoryInterface $repo, PackageInterface $package)
     {
-        return $this->getInstaller($package->getType())->isInstalled($package);
+        return $this->getInstaller($package->getType())->isInstalled($repo, $package);
     }
 
     /**
      * Executes solver operation.
      *
+     * @param   RepositoryInterface $repo       repository in which to check
      * @param   OperationInterface  $operation  operation instance
      */
-    public function execute(OperationInterface $operation)
+    public function execute(RepositoryInterface $repo, OperationInterface $operation)
     {
         $method = $operation->getJobType();
-        $this->$method($operation);
+        $this->$method($repo, $operation);
     }
 
     /**
      * Executes install operation.
      *
+     * @param   RepositoryInterface $repo       repository in which to check
      * @param   InstallOperation    $operation  operation instance
      */
-    public function install(InstallOperation $operation)
+    public function install(RepositoryInterface $repo, InstallOperation $operation)
     {
         $package = $operation->getPackage();
         if ($package instanceof AliasPackage) {
@@ -128,16 +132,17 @@ class InstallationManager
             $package->setInstalledAsAlias(true);
         }
         $installer = $this->getInstaller($package->getType());
-        $installer->install($package);
+        $installer->install($repo, $package);
         $this->notifyInstall($package);
     }
 
     /**
      * Executes update operation.
      *
+     * @param   RepositoryInterface $repo       repository in which to check
      * @param   InstallOperation    $operation  operation instance
      */
-    public function update(UpdateOperation $operation)
+    public function update(RepositoryInterface $repo, UpdateOperation $operation)
     {
         $initial = $operation->getInitialPackage();
         if ($initial instanceof AliasPackage) {
@@ -154,27 +159,28 @@ class InstallationManager
 
         if ($initialType === $targetType) {
             $installer = $this->getInstaller($initialType);
-            $installer->update($initial, $target);
+            $installer->update($repo, $initial, $target);
             $this->notifyInstall($target);
         } else {
-            $this->getInstaller($initialType)->uninstall($initial);
-            $this->getInstaller($targetType)->install($target);
+            $this->getInstaller($initialType)->uninstall($repo, $initial);
+            $this->getInstaller($targetType)->install($repo, $target);
         }
     }
 
     /**
      * Uninstalls package.
      *
+     * @param   RepositoryInterface $repo       repository in which to check
      * @param   UninstallOperation  $operation  operation instance
      */
-    public function uninstall(UninstallOperation $operation)
+    public function uninstall(RepositoryInterface $repo, UninstallOperation $operation)
     {
         $package = $operation->getPackage();
         if ($package instanceof AliasPackage) {
             $package = $package->getAliasOf();
         }
         $installer = $this->getInstaller($package->getType());
-        $installer->uninstall($package);
+        $installer->uninstall($repo, $package);
     }
 
     /**
