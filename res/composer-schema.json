@@ -90,14 +90,14 @@
             "description": "This is a hash of package name (keys) and version constraints (values) that this package provides in addition to this package's name.",
             "additionalProperties": true
         },
-        "recommend": {
+        "require-dev": {
             "type": "object",
-            "description": "This is a hash of package name (keys) and version constraints (values) that this package recommends to be installed (typically this will be installed as well).",
+            "description": "This is a hash of package name (keys) and version constraints (values) that this package requires for developing it (testing tools and such).",
             "additionalProperties": true
         },
         "suggest": {
             "type": "object",
-            "description": "This is a hash of package name (keys) and version constraints (values) that this package suggests work well with it (typically this will only be suggested to the user).",
+            "description": "This is a hash of package name (keys) and descriptions (values) that this package suggests work well with it (this will be suggested to the user during installation).",
             "additionalProperties": true
         },
         "config": {
