@@ -41,7 +41,7 @@ Required for published packages (libraries).
 
 A short description of the package. Usually this is just one line long.
 
-Optional but recommended.
+Required for published packages (libraries).
 
 ### version
 
@@ -165,14 +165,13 @@ An example:
 
 Optional, but highly recommended.
 
-### Link types <span>(require, recommend, suggest, replace, provide)</span>
+### Package links <span>(require, require-dev, conflict, replace, provide)</span>
 
 Each of these takes an object which maps package names to version constraints.
 
 * **require:** Packages required by this package.
-* **recommend:** Recommended packages, installed by default.
-* **suggest:**  Suggested packages. These are displayed after installation,
-  but not installed by default.
+* **require-dev:** Packages required for developing this package, or running
+  tests, etc. They are installed if install or update is ran with `--dev`.
 * **conflict:** Mark this version of this package as conflicting with other
   packages.
 * **replace:** Packages that can be replaced by this package. This is useful
@@ -192,6 +191,24 @@ Example:
     }
 
 Optional.
+
+### suggest
+
+Suggested packages that can enhance or work well with this package. These are
+just informational and are displayed after the package is installed, to give
+your users a hint that they could add more packages, even though they are not
+strictly required.
+
+The format is like package links above, except that the values are free text
+and not version constraints.
+
+Example:
+
+    {
+        "suggest": {
+            "monolog/monolog": "Allows more advanced logging of the application flow"
+        }
+    }
 
 ### autoload
 
