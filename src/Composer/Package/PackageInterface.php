@@ -220,20 +220,18 @@ interface PackageInterface
     function getReplaces();
 
     /**
-     * Returns a set of links to packages which are recommended in
-     * combination with this package. These would most likely be installed
-     * automatically in combination with this package.
+     * Returns a set of links to packages which are required to develop
+     * this package. These are installed if in dev mode.
      *
-     * @return array An array of package links defining recommended packages
+     * @return array An array of package links defining packages required for development
      */
-    function getRecommends();
+    function getDevRequires();
 
     /**
-     * Returns a set of links to packages which are suggested in combination
-     * with this package. These can be suggested to the user, but will not be
-     * automatically installed with this package.
+     * Returns a set of package names and reasons why they are useful in
+     * combination with this package.
      *
-     * @return array An array of package links defining suggested packages
+     * @return array An array of package suggestions with descriptions
      */
     function getSuggests();
 

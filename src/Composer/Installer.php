@@ -77,10 +77,9 @@ class Installer
     protected $eventDispatcher;
 
     protected $preferSource = false;
+    protected $devMode = false;
     protected $dryRun = false;
     protected $verbose = false;
-    protected $installRecommends = true;
-    protected $installSuggests = false;
     protected $update = false;
 
     /**
@@ -332,14 +331,6 @@ class Installer
     {
         $links = $this->package->getRequires();
 
-        if ($this->installRecommends) {
-            $links = array_merge($links, $this->package->getRecommends());
-        }
-
-        if ($this->installSuggests) {
-            $links = array_merge($links, $this->package->getSuggests());
-        }
-
         return $links;
     }
 
@@ -379,35 +370,9 @@ class Installer
      * @param boolean $dryRun
      * @return Installer
      */
-    public function setDryRun($dryRun=true)
+    public function setDryRun($dryRun = true)
     {
         $this->dryRun = (boolean) $dryRun;
-
-        return $this;
-    }
-
-    /**
-     * install recommend packages
-     *
-     * @param boolean $noInstallRecommends
-     * @return Installer
-     */
-    public function setInstallRecommends($installRecommends=true)
-    {
-        $this->installRecommends = (boolean) $installRecommends;
-
-        return $this;
-    }
-
-    /**
-     * also install suggested packages
-     *
-     * @param boolean $installSuggests
-     * @return Installer
-     */
-    public function setInstallSuggests($installSuggests=true)
-    {
-        $this->installSuggests = (boolean) $installSuggests;
 
         return $this;
     }
@@ -418,7 +383,7 @@ class Installer
      * @param boolean $preferSource
      * @return Installer
      */
-    public function setPreferSource($preferSource=true)
+    public function setPreferSource($preferSource = true)
     {
         $this->preferSource = (boolean) $preferSource;
 
@@ -431,9 +396,22 @@ class Installer
      * @param boolean $update
      * @return Installer
      */
-    public function setUpdate($update=true)
+    public function setUpdate($update = true)
     {
         $this->update = (boolean) $update;
+
+        return $this;
+    }
+
+    /**
+     * enables dev packages
+     *
+     * @param boolean $update
+     * @return Installer
+     */
+    public function setDevMode($devMode = true)
+    {
+        $this->devMode = (boolean) $devMode;
 
         return $this;
     }
@@ -444,7 +422,7 @@ class Installer
      * @param boolean $verbose
      * @return Installer
      */
-    public function setVerbose($verbose=true)
+    public function setVerbose($verbose = true)
     {
         $this->verbose = (boolean) $verbose;
 
