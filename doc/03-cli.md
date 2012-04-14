@@ -39,11 +39,9 @@ resolution.
 * **--dry-run:** If you want to run through an installation without actually
   installing a package, you can use `--dry-run`. This will simulate the
   installation and show you what would happen.
-* **--no-install-recommends:** By default composer will install all packages
-  that are referenced by `recommend`. By passing this option you can disable
-  that.
-* **--install-suggests:** The packages referenced by `suggest` will not be
-  installed by default. By passing this option, you can install them.
+* **--dev:** By default composer will only install required packages. By
+  passing this option you can also make it install packages referenced by
+  `require-dev`.
 
 ## update
 
@@ -59,8 +57,7 @@ into `composer.lock`.
 
 * **--prefer-source:** Install packages from `source` when available.
 * **--dry-run:** Simulate the command without actually doing anything.
-* **--no-install-recommends:** Do not install packages referenced by `recommend`.
-* **--install-suggests:** Install packages referenced by `suggest`.
+* **--dev:** Install packages listed in `require-dev`.
 
 ## search
 
@@ -111,8 +108,8 @@ specific version.
 ## depends
 
 The `depends` command tells you which other packages depend on a certain
-package. You can specify which link types (`require`, `recommend`, `suggest`)
-should be included in the listing.
+package. You can specify which link types (`require`, `require-dev`)
+should be included in the listing. By default both are used.
 
     $ php composer.phar depends --link-type=require monolog/monolog
 

@@ -25,12 +25,11 @@ use Composer\Repository\PlatformRepository;
 abstract class BasePackage implements PackageInterface
 {
     public static $supportedLinkTypes = array(
-        'require'   => 'requires',
-        'conflict'  => 'conflicts',
-        'provide'   => 'provides',
-        'replace'   => 'replaces',
-        'recommend' => 'recommends',
-        'suggest'   => 'suggests',
+        'require'   => array('description' => 'requires', 'method' => 'requires'),
+        'conflict'  => array('description' => 'conflicts', 'method' => 'conflicts'),
+        'provide'   => array('description' => 'provides', 'method' => 'provides'),
+        'replace'   => array('description' => 'replaces', 'method' => 'replaces'),
+        'require-dev' => array('description' => 'requires (for development)', 'method' => 'devRequires'),
     );
 
     protected $name;

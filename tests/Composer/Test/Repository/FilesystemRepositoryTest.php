@@ -95,7 +95,7 @@ class FilesystemRepositoryTest extends TestCase
             ->expects($this->once())
             ->method('write')
             ->with(array(
-                array('name' => 'mypkg', 'type' => 'library', 'names' => array('mypkg'), 'version' => '0.1.10', 'version_normalized' => '0.1.10.0')
+                array('name' => 'mypkg', 'type' => 'library', 'version' => '0.1.10', 'version_normalized' => '0.1.10.0')
             ));
 
         $repository->addPackage($this->getPackage('mypkg', '0.1.10'));

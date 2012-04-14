@@ -13,6 +13,7 @@
 namespace Composer\Test\Package\Loader;
 
 use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\Dumper\ArrayDumper;
 
 class ArrayLoaderTest extends \PHPUnit_Framework_TestCase
 {
@@ -34,5 +35,89 @@ class ArrayLoaderTest extends \PHPUnit_Framework_TestCase
         $package = $this->loader->load($config);
         $replaces = $package->getReplaces();
         $this->assertEquals('== 1.2.3.4', (string) $replaces[0]->getConstraint());
+    }
+
+    public function testTypeDefault()
+    {
+        $config = array(
+            'name' => 'A',
+            'version' => '1.0',
+        );
+
+        $package = $this->loader->load($config);
+        $this->assertEquals('library', $package->getType());
+
+        $config = array(
+            'name' => 'A',
+            'version' => '1.0',
+            'type' => 'foo',
+        );
+
+        $package = $this->loader->load($config);
+        $this->assertEquals('foo', $package->getType());
+    }
+
+    public function testNormalizedVersionOptimization()
+    {
+        $config = array(
+            'name' => 'A',
+            'version' => '1.2.3',
+        );
+
+        $package = $this->loader->load($config);
+        $this->assertEquals('1.2.3.0', $package->getVersion());
+
+        $config = array(
+            'name' => 'A',
+            'version' => '1.2.3',
+            'version_normalized' => '1.2.3.4',
+        );
+
+        $package = $this->loader->load($config);
+        $this->assertEquals('1.2.3.4', $package->getVersion());
+    }
+
+    public function testParseDump()
+    {
+        $config = array(
+            'name' => 'A/B',
+            'version' => '1.2.3',
+            'version_normalized' => '1.2.3.0',
+            'description' => 'Foo bar',
+            'type' => 'library',
+            'keywords' => array('a', 'b', 'c'),
+            'homepage' => 'http://example.com',
+            'license' => array('MIT', 'GPLv3'),
+            'authors' => array(
+                array('name' => 'Bob', 'email' => 'bob@example.org', 'homepage' => 'example.org'),
+            ),
+            'require' => array(
+                'foo/bar' => '1.0',
+            ),
+            'require-dev' => array(
+                'foo/baz' => '1.0',
+            ),
+            'replace' => array(
+                'foo/qux' => '1.0',
+            ),
+            'conflict' => array(
+                'foo/quux' => '1.0',
+            ),
+            'provide' => array(
+                'foo/quuux' => '1.0',
+            ),
+            'autoload' => array(
+                'psr-0' => array('Ns\Prefix' => 'path'),
+                'classmap' => array('path', 'path2'),
+            ),
+            'include-path' => array('path3', 'path4'),
+            'target-dir' => 'some/prefix',
+            'extra' => array('random' => array('things' => 'of', 'any' => 'shape')),
+            'bin' => array('bin1', 'bin/foo'),
+        );
+
+        $package = $this->loader->load($config);
+        $dumper = new ArrayDumper;
+        $this->assertEquals($config, $dumper->dump($package));
     }
 }
