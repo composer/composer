@@ -273,10 +273,23 @@ class Installer
             $this->io->write('<info>Nothing to install or update</info>');
         }
 
+        $suggestedPackages = array();
         foreach ($operations as $operation) {
             if ($this->verbose) {
                 $this->io->write((string) $operation);
             }
+
+            // collect suggestions
+            if ('install' === $operation->getJobType()) {
+                foreach ($operation->getPackage()->getSuggests() as $target => $reason) {
+                    $suggestedPackages[] = array(
+                        'source' => $operation->getPackage()->getPrettyName(),
+                        'target' => $target,
+                        'reason' => $reason,
+                    );
+                }
+            }
+
             if (!$this->dryRun) {
                 $this->eventDispatcher->dispatchPackageEvent(constant('Composer\Script\ScriptEvents::PRE_PACKAGE_'.strtoupper($operation->getJobType())), $operation);
 
@@ -306,15 +319,20 @@ class Installer
             }
         }
 
+        // dump suggestions
+        foreach ($suggestedPackages as $suggestion) {
+            $this->io->write($suggestion['source'].' suggests installing '.$suggestion['target'].' ('.$suggestion['reason'].')');
+        }
+
         if (!$this->dryRun) {
+            // write lock
             if ($this->update || !$this->locker->isLocked()) {
                 if ($this->locker->setLockData($localRepo->getPackages(), $aliases)) {
                     $this->io->write('<info>Writing lock file</info>');
                 }
             }
 
-            $localRepo->write();
-
+            // write autoloader
             $this->io->write('<info>Generating autoload files</info>');
             $generator = new AutoloadGenerator;
             $generator->dump($localRepo, $this->package, $this->installationManager, $this->installationManager->getVendorPath().'/.composer');
