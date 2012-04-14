@@ -72,7 +72,6 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
             $this->createPackageMock(), $this->createPackageMock()
         );
 
-
         $manager
             ->expects($this->once())
             ->method('install')
