@@ -48,16 +48,20 @@ EOT
 
             $remoteFilename = 'http://getcomposer.org/composer.phar';
             $localFilename = $_SERVER['argv'][0];
-            $tempFilename = $localFilename.'temp';
+            $tempFilename = basename($localFilename, '.phar').'-temp.phar';
 
             $rfs->copy('getcomposer.org', $remoteFilename, $tempFilename);
 
             try {
+                // test the phar validity
                 $phar = new \Phar($tempFilename);
+                // free the variable to unlock the file
+                unset($phar);
                 rename($tempFilename, $localFilename);
             } catch (\UnexpectedValueException $e) {
                 unlink($tempFilename);
-                $output->writeln("<error>The download is corrupt. Please re-run the self-update command.</error>");
+                $output->writeln('<error>The download is corrupt ('.$e->getMessage().').</error>');
+                $output->writeln('<error>Please re-run the self-update command to try again.</error>');
             }
         } else {
             $output->writeln("<info>You are using the latest composer version.</info>");
