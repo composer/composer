@@ -283,18 +283,6 @@ class Solver
                     }
                 }
             }
-
-            foreach ($package->getRecommends() as $link) {
-                foreach ($this->pool->whatProvides($link->getTarget(), $link->getConstraint()) as $recommend) {
-                    $workQueue->enqueue($recommend);
-                }
-            }
-
-            foreach ($package->getSuggests() as $link) {
-                foreach ($this->pool->whatProvides($link->getTarget(), $link->getConstraint()) as $suggest) {
-                    $workQueue->enqueue($suggest);
-                }
-            }
         }
     }
 

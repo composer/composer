@@ -32,8 +32,7 @@ class InstallCommand extends Command
             ->setDefinition(array(
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('dry-run', null, InputOption::VALUE_NONE, 'Outputs the operations but will not execute anything (implicitly enables --verbose).'),
-                new InputOption('no-install-recommends', null, InputOption::VALUE_NONE, 'Do not install recommended packages (ignored when installing from an existing lock file).'),
-                new InputOption('install-suggests', null, InputOption::VALUE_NONE, 'Also install suggested packages (ignored when installing from an existing lock file).'),
+                new InputOption('dev', null, InputOption::VALUE_NONE, 'Enables installation of dev-require packages.'),
             ))
             ->setHelp(<<<EOT
 The <info>install</info> command reads the composer.json file from the
@@ -57,8 +56,7 @@ EOT
             ->setDryRun($input->getOption('dry-run'))
             ->setVerbose($input->getOption('verbose'))
             ->setPreferSource($input->getOption('prefer-source'))
-            ->setInstallRecommends(!$input->getOption('no-install-recommends'))
-            ->setInstallSuggests($input->getOption('install-suggests'))
+            ->setDevMode($input->getOption('dev'))
         ;
 
         return $install->run() ? 0 : 1;

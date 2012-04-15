@@ -1,5 +1,8 @@
 * 1.0.0-alpha3
 
+  * Schema: Added 'require-dev' for development-time requirements (tests, etc), install with --dev
+  * Schema: Removed 'recommend'
+  * Schema: 'suggest' is now informational and can use any description for a package, not only a constraint
   * Added caching of repository metadata (faster startup times & failover if packagist is down)
   * Added include_path support for legacy projects that are full of require_once statements
   * Added installation notifications API to allow better statistics on Composer repositories

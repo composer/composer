@@ -52,7 +52,7 @@ class AliasPackage extends BasePackage
         $this->dev = VersionParser::isDev($version);
 
         // replace self.version dependencies
-        foreach (array('requires', 'recommends', 'suggests') as $type) {
+        foreach (array('requires', 'devRequires') as $type) {
             $links = $aliasOf->{'get'.ucfirst($type)}();
             foreach ($links as $index => $link) {
                 // link is self.version, but must be replacing also the replaced version
@@ -141,17 +141,9 @@ class AliasPackage extends BasePackage
     /**
      * {@inheritDoc}
      */
-    public function getRecommends()
+    public function getDevRequires()
     {
-        return $this->recommends;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getSuggests()
-    {
-        return $this->suggests;
+        return $this->devRequires;
     }
 
     /**
@@ -265,6 +257,10 @@ class AliasPackage extends BasePackage
     public function getHomepage()
     {
         return $this->aliasOf->getHomepage();
+    }
+    public function getSuggests()
+    {
+        return $this->aliasOf->getSuggests();
     }
     public function getAuthors()
     {

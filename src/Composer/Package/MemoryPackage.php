@@ -53,7 +53,7 @@ class MemoryPackage extends BasePackage
     protected $conflicts = array();
     protected $provides = array();
     protected $replaces = array();
-    protected $recommends = array();
+    protected $devRequires = array();
     protected $suggests = array();
     protected $autoload = array();
     protected $includePaths = array();
@@ -484,25 +484,25 @@ class MemoryPackage extends BasePackage
     /**
      * Set the recommended packages
      *
-     * @param array $recommends A set of package links
+     * @param array $devRequires A set of package links
      */
-    public function setRecommends(array $recommends)
+    public function setDevRequires(array $devRequires)
     {
-        $this->recommends = $recommends;
+        $this->devRequires = $devRequires;
     }
 
     /**
      * {@inheritDoc}
      */
-    public function getRecommends()
+    public function getDevRequires()
     {
-        return $this->recommends;
+        return $this->devRequires;
     }
 
     /**
      * Set the suggested packages
      *
-     * @param array $suggests A set of package links
+     * @param array $suggests A set of package names/comments
      */
     public function setSuggests(array $suggests)
     {

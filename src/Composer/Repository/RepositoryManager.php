@@ -25,6 +25,7 @@ use Composer\Config;
 class RepositoryManager
 {
     private $localRepository;
+    private $localDevRepository;
     private $repositories = array();
     private $repositoryClasses = array();
     private $io;
@@ -139,5 +140,35 @@ class RepositoryManager
     public function getLocalRepository()
     {
         return $this->localRepository;
+    }
+
+    /**
+     * Sets localDev repository for the project.
+     *
+     * @param   RepositoryInterface $repository repository instance
+     */
+    public function setLocalDevRepository(RepositoryInterface $repository)
+    {
+        $this->localDevRepository = $repository;
+    }
+
+    /**
+     * Returns localDev repository for the project.
+     *
+     * @return  RepositoryInterface
+     */
+    public function getLocalDevRepository()
+    {
+        return $this->localDevRepository;
+    }
+
+    /**
+     * Returns all local repositories for the project.
+     *
+     * @return  array[RepositoryInterface]
+     */
+    public function getLocalRepositories()
+    {
+        return array($this->localRepository, $this->localDevRepository);
     }
 }

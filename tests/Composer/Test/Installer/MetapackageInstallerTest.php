@@ -26,7 +26,7 @@ class MetapackageInstallerTest extends \PHPUnit_Framework_TestCase
 
         $this->io = $this->getMock('Composer\IO\IOInterface');
 
-        $this->installer = new MetapackageInstaller($this->repository, $this->io);
+        $this->installer = new MetapackageInstaller();
     }
 
     public function testInstall()
@@ -38,7 +38,7 @@ class MetapackageInstallerTest extends \PHPUnit_Framework_TestCase
             ->method('addPackage')
             ->with($package);
 
-        $this->installer->install($package);
+        $this->installer->install($this->repository, $package);
     }
 
     public function testUpdate()
@@ -62,11 +62,11 @@ class MetapackageInstallerTest extends \PHPUnit_Framework_TestCase
             ->method('addPackage')
             ->with($target);
 
-        $this->installer->update($initial, $target);
+        $this->installer->update($this->repository, $initial, $target);
 
         $this->setExpectedException('InvalidArgumentException');
 
-        $this->installer->update($initial, $target);
+        $this->installer->update($this->repository, $initial, $target);
     }
 
     public function testUninstall()
@@ -84,12 +84,12 @@ class MetapackageInstallerTest extends \PHPUnit_Framework_TestCase
             ->method('removePackage')
             ->with($package);
 
-        $this->installer->uninstall($package);
+        $this->installer->uninstall($this->repository, $package);
 
         // TODO re-enable once #125 is fixed and we throw exceptions again
 //        $this->setExpectedException('InvalidArgumentException');
 
-        $this->installer->uninstall($package);
+        $this->installer->uninstall($this->repository, $package);
     }
 
     private function createPackageMock()

@@ -151,10 +151,11 @@ class LockerTest extends \PHPUnit_Framework_TestCase
                     array('package' => 'pkg1', 'version' => '1.0.0-beta'),
                     array('package' => 'pkg2', 'version' => '0.1.10')
                 ),
+                'packages-dev' => array(),
                 'aliases' => array(),
             ));
 
-        $locker->setLockData(array($package1, $package2), array());
+        $locker->setLockData(array($package1, $package2), array(), array());
     }
 
     public function testLockBadPackages()
@@ -172,7 +173,7 @@ class LockerTest extends \PHPUnit_Framework_TestCase
 
         $this->setExpectedException('LogicException');
 
-        $locker->setLockData(array($package1), array());
+        $locker->setLockData(array($package1), array(), array());
     }
 
     public function testIsFresh()
