@@ -26,7 +26,7 @@
         "symfony/process": "2.1.*"
     },
     "suggest": {
-        "ext-zip": "Enabling the zip extension allows you to zip archives, and allows gzip compression of all internet traffic"
+        "ext-zip": "Enabling the zip extension allows you to unzip archives, and allows gzip compression of all internet traffic"
     },
     "autoload": {
         "psr-0": { "Composer": "src/" }
