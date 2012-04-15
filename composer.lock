@@ -1,5 +1,5 @@
 {
-    "hash": "25c80534204714cf48b2e67611a370c5",
+    "hash": "c4a3809551d45254dd0b45eb282d6285",
     "packages": [
         {
             "package": "justinrainbow/json-schema",
@@ -28,6 +28,7 @@
             "alias": "2.1.9999999.9999999-dev"
         }
     ],
+    "packages-dev": null,
     "aliases": [
 
     ]
