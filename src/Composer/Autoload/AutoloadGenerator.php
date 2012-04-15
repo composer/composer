@@ -28,6 +28,8 @@ class AutoloadGenerator
     public function dump(RepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir)
     {
         $filesystem = new Filesystem();
+        $filesystem->ensureDirectoryExists($installationManager->getVendorPath());
+        $filesystem->ensureDirectoryExists($targetDir);
         $vendorPath = strtr(realpath($installationManager->getVendorPath()), '\\', '/');
         $relVendorPath = $filesystem->findShortestPath(getcwd(), $vendorPath, true);
         $vendorDirCode = $filesystem->findShortestPathCode(realpath($targetDir), $vendorPath, true);
