@@ -22,9 +22,13 @@ class LockerTest extends \PHPUnit_Framework_TestCase
         $locker = new Locker($json, $this->createRepositoryManagerMock(), 'md5');
 
         $json
-            ->expects($this->once())
+            ->expects($this->any())
             ->method('exists')
             ->will($this->returnValue(true));
+        $json
+            ->expects($this->any())
+            ->method('read')
+            ->will($this->returnValue(array('packages' => array())));
 
         $this->assertTrue($locker->isLocked());
     }
