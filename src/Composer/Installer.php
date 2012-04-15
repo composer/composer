@@ -83,6 +83,11 @@ class Installer
     protected $update = false;
 
     /**
+     * @var array
+     */
+    protected $suggestedPackages;
+
+    /**
      * @var RepositoryInterface
      */
     protected $additionalInstalledRepository;
@@ -144,14 +149,18 @@ class Installer
             $this->eventDispatcher->dispatchCommandEvent($eventName);
         }
 
-        $suggestedPackages = $this->doInstall($this->repositoryManager->getLocalRepository(), $installedRepo, $pool, $aliases);
+        $this->suggestedPackages = array();
+        if (!$this->doInstall($this->repositoryManager->getLocalRepository(), $installedRepo, $pool, $aliases)) {
+            return false;
+        }
         if ($this->devMode) {
-            $devSuggested = $this->doInstall($this->repositoryManager->getLocalDevRepository(), $installedRepo, $pool, $aliases, true);
-            $suggestedPackages = array_merge($suggestedPackages, $devSuggested);
+            if (!$this->doInstall($this->repositoryManager->getLocalDevRepository(), $installedRepo, $pool, $aliases, true)) {
+                return false;
+            }
         }
 
         // dump suggestions
-        foreach ($suggestedPackages as $suggestion) {
+        foreach ($this->suggestedPackages as $suggestion) {
             $this->io->write($suggestion['source'].' suggests installing '.$suggestion['target'].' ('.$suggestion['reason'].')');
         }
 
@@ -304,7 +313,6 @@ class Installer
             $this->io->write('Nothing to install or update');
         }
 
-        $suggestedPackages = array();
         foreach ($operations as $operation) {
             if ($this->verbose) {
                 $this->io->write((string) $operation);
@@ -313,7 +321,7 @@ class Installer
             // collect suggestions
             if ('install' === $operation->getJobType()) {
                 foreach ($operation->getPackage()->getSuggests() as $target => $reason) {
-                    $suggestedPackages[] = array(
+                    $this->suggestedPackages[] = array(
                         'source' => $operation->getPackage()->getPrettyName(),
                         'target' => $target,
                         'reason' => $reason,
@@ -350,7 +358,7 @@ class Installer
             }
         }
 
-        return $suggestedPackages;
+        return true;
     }
 
     private function aliasPackages()
