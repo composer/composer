@@ -77,10 +77,9 @@ class Installer
     protected $eventDispatcher;
 
     protected $preferSource = false;
+    protected $devMode = false;
     protected $dryRun = false;
     protected $verbose = false;
-    protected $installRecommends = true;
-    protected $installSuggests = false;
     protected $update = false;
 
     /**
@@ -123,33 +122,14 @@ class Installer
             $this->downloadManager->setPreferSource(true);
         }
 
-        // create local repo, this contains all packages that are installed in the local project
-        $localRepo = $this->repositoryManager->getLocalRepository();
         // create installed repo, this contains all local packages + platform packages (php & extensions)
-        $installedRepo = new CompositeRepository(array($localRepo, new PlatformRepository()));
+        $repos = array_merge($this->repositoryManager->getLocalRepositories(), array(new PlatformRepository()));
+        $installedRepo = new CompositeRepository($repos);
         if ($this->additionalInstalledRepository) {
             $installedRepo->addRepository($this->additionalInstalledRepository);
         }
 
-        // prepare aliased packages
-        if (!$this->update && $this->locker->isLocked()) {
-            $aliases = $this->locker->getAliases();
-        } else {
-            $aliases = $this->package->getAliases();
-        }
-        foreach ($aliases as $alias) {
-            foreach ($this->repositoryManager->findPackages($alias['package'], $alias['version']) as $package) {
-                $package->setAlias($alias['alias_normalized']);
-                $package->setPrettyAlias($alias['alias']);
-                $package->getRepository()->addPackage(new AliasPackage($package, $alias['alias_normalized'], $alias['alias']));
-            }
-            foreach ($this->repositoryManager->getLocalRepository()->findPackages($alias['package'], $alias['version']) as $package) {
-                $package->setAlias($alias['alias_normalized']);
-                $package->setPrettyAlias($alias['alias']);
-                $this->repositoryManager->getLocalRepository()->addPackage(new AliasPackage($package, $alias['alias_normalized'], $alias['alias']));
-                $this->repositoryManager->getLocalRepository()->removePackage($package);
-            }
-        }
+        $aliases = $this->aliasPackages();
 
         // creating repository pool
         $pool = new Pool;
@@ -158,34 +138,74 @@ class Installer
             $pool->addRepository($repository);
         }
 
-        // dispatch pre event
         if (!$this->dryRun) {
+            // dispatch pre event
             $eventName = $this->update ? ScriptEvents::PRE_UPDATE_CMD : ScriptEvents::PRE_INSTALL_CMD;
             $this->eventDispatcher->dispatchCommandEvent($eventName);
         }
 
+        $suggestedPackages = $this->doInstall($this->repositoryManager->getLocalRepository(), $installedRepo, $pool, $aliases);
+        if ($this->devMode) {
+            $devSuggested = $this->doInstall($this->repositoryManager->getLocalDevRepository(), $installedRepo, $pool, $aliases, true);
+            $suggestedPackages = array_merge($suggestedPackages, $devSuggested);
+        }
+
+        // dump suggestions
+        foreach ($suggestedPackages as $suggestion) {
+            $this->io->write($suggestion['source'].' suggests installing '.$suggestion['target'].' ('.$suggestion['reason'].')');
+        }
+
+        if (!$this->dryRun) {
+            // write lock
+            if ($this->update || !$this->locker->isLocked()) {
+                $updatedLock = $this->locker->setLockData(
+                    $this->repositoryManager->getLocalRepository()->getPackages(),
+                    $this->repositoryManager->getLocalDevRepository()->getPackages(),
+                    $aliases
+                );
+                if ($updatedLock) {
+                    $this->io->write('<info>Writing lock file</info>');
+                }
+            }
+
+            // write autoloader
+            $this->io->write('<info>Generating autoload files</info>');
+            $generator = new AutoloadGenerator;
+            $localRepos = new CompositeRepository($this->repositoryManager->getLocalRepositories());
+            $generator->dump($localRepos, $this->package, $this->installationManager, $this->installationManager->getVendorPath().'/.composer');
+
+            // dispatch post event
+            $eventName = $this->update ? ScriptEvents::POST_UPDATE_CMD : ScriptEvents::POST_INSTALL_CMD;
+            $this->eventDispatcher->dispatchCommandEvent($eventName);
+        }
+
+        return true;
+    }
+
+    protected function doInstall($localRepo, $installedRepo, $pool, $aliases, $devMode = false)
+    {
         // creating requirements request
         $installFromLock = false;
         $request = new Request($pool);
         if ($this->update) {
-            $this->io->write('Updating dependencies');
+            $this->io->write('<info>Updating '.($devMode ? 'dev ': '').'dependencies</info>');
 
             $request->updateAll();
 
-            $links = $this->collectLinks();
+            $links = $devMode ? $this->package->getDevRequires() : $this->package->getRequires();
 
             foreach ($links as $link) {
                 $request->install($link->getTarget(), $link->getConstraint());
             }
         } elseif ($this->locker->isLocked()) {
             $installFromLock = true;
-            $this->io->write('Installing from lock file');
+            $this->io->write('<info>Installing '.($devMode ? 'dev ': '').'dependencies from lock file</info>');
 
-            if (!$this->locker->isFresh()) {
+            if (!$this->locker->isFresh() && !$devMode) {
                 $this->io->write('<warning>Your lock file is out of sync with your composer.json, run "composer.phar update" to update dependencies</warning>');
             }
 
-            foreach ($this->locker->getLockedPackages() as $package) {
+            foreach ($this->locker->getLockedPackages($devMode) as $package) {
                 $version = $package->getVersion();
                 foreach ($aliases as $alias) {
                     if ($alias['package'] === $package->getName() && $alias['version'] === $package->getVersion()) {
@@ -197,13 +217,23 @@ class Installer
                 $request->install($package->getName(), $constraint);
             }
         } else {
-            $this->io->write('Installing dependencies');
+            $this->io->write('<info>Installing '.($devMode ? 'dev ': '').'dependencies</info>');
 
-            $links = $this->collectLinks();
+            $links = $devMode ? $this->package->getDevRequires() : $this->package->getRequires();
 
             foreach ($links as $link) {
                 $request->install($link->getTarget(), $link->getConstraint());
             }
+        }
+
+        // fix the version all installed packages that are not in the current local repo to prevent rogue updates
+        foreach ($installedRepo->getPackages() as $package) {
+            if ($package->getRepository() === $localRepo || $package->getRepository() instanceof PlatformRepository) {
+                continue;
+            }
+
+            $constraint = new VersionConstraint('=', $package->getVersion());
+            $request->install($package->getName(), $constraint);
         }
 
         // prepare solver
@@ -262,22 +292,35 @@ class Installer
         }
 
         // anti-alias local repository to allow updates to work fine
-        foreach ($this->repositoryManager->getLocalRepository()->getPackages() as $package) {
+        foreach ($localRepo->getPackages() as $package) {
             if ($package instanceof AliasPackage) {
-                $this->repositoryManager->getLocalRepository()->addPackage(clone $package->getAliasOf());
-                $this->repositoryManager->getLocalRepository()->removePackage($package);
+                $package->getRepository()->addPackage(clone $package->getAliasOf());
+                $package->getRepository()->removePackage($package);
             }
         }
 
         // execute operations
         if (!$operations) {
-            $this->io->write('<info>Nothing to install or update</info>');
+            $this->io->write('Nothing to install or update');
         }
 
+        $suggestedPackages = array();
         foreach ($operations as $operation) {
             if ($this->verbose) {
                 $this->io->write((string) $operation);
             }
+
+            // collect suggestions
+            if ('install' === $operation->getJobType()) {
+                foreach ($operation->getPackage()->getSuggests() as $target => $reason) {
+                    $suggestedPackages[] = array(
+                        'source' => $operation->getPackage()->getPrettyName(),
+                        'target' => $target,
+                        'reason' => $reason,
+                    );
+                }
+            }
+
             if (!$this->dryRun) {
                 $this->eventDispatcher->dispatchPackageEvent(constant('Composer\Script\ScriptEvents::PRE_PACKAGE_'.strtoupper($operation->getJobType())), $operation);
 
@@ -299,7 +342,7 @@ class Installer
                         }
                     }
                 }
-                $this->installationManager->execute($operation);
+                $this->installationManager->execute($localRepo, $operation);
 
                 $this->eventDispatcher->dispatchPackageEvent(constant('Composer\Script\ScriptEvents::POST_PACKAGE_'.strtoupper($operation->getJobType())), $operation);
 
@@ -307,40 +350,34 @@ class Installer
             }
         }
 
-        if (!$this->dryRun) {
-            if ($this->update || !$this->locker->isLocked()) {
-                if ($this->locker->setLockData($localRepo->getPackages(), $aliases)) {
-                    $this->io->write('<info>Writing lock file</info>');
-                }
-            }
-
-            $localRepo->write();
-
-            $this->io->write('<info>Generating autoload files</info>');
-            $generator = new AutoloadGenerator;
-            $generator->dump($localRepo, $this->package, $this->installationManager, $this->installationManager->getVendorPath().'/.composer');
-
-            // dispatch post event
-            $eventName = $this->update ? ScriptEvents::POST_UPDATE_CMD : ScriptEvents::POST_INSTALL_CMD;
-            $this->eventDispatcher->dispatchCommandEvent($eventName);
-        }
-
-        return true;
+        return $suggestedPackages;
     }
 
-    private function collectLinks()
+    private function aliasPackages()
     {
-        $links = $this->package->getRequires();
-
-        if ($this->installRecommends) {
-            $links = array_merge($links, $this->package->getRecommends());
+        if (!$this->update && $this->locker->isLocked()) {
+            $aliases = $this->locker->getAliases();
+        } else {
+            $aliases = $this->package->getAliases();
         }
 
-        if ($this->installSuggests) {
-            $links = array_merge($links, $this->package->getSuggests());
+        foreach ($aliases as $alias) {
+            foreach ($this->repositoryManager->findPackages($alias['package'], $alias['version']) as $package) {
+                $package->setAlias($alias['alias_normalized']);
+                $package->setPrettyAlias($alias['alias']);
+                $package->getRepository()->addPackage(new AliasPackage($package, $alias['alias_normalized'], $alias['alias']));
+            }
+            foreach ($this->repositoryManager->getLocalRepositories() as $repo) {
+                foreach ($repo->findPackages($alias['package'], $alias['version']) as $package) {
+                    $package->setAlias($alias['alias_normalized']);
+                    $package->setPrettyAlias($alias['alias']);
+                    $package->getRepository()->addPackage(new AliasPackage($package, $alias['alias_normalized'], $alias['alias']));
+                    $package->getRepository()->removePackage($package);
+                }
+            }
         }
 
-        return $links;
+        return $aliases;
     }
 
     /**
@@ -379,35 +416,9 @@ class Installer
      * @param boolean $dryRun
      * @return Installer
      */
-    public function setDryRun($dryRun=true)
+    public function setDryRun($dryRun = true)
     {
         $this->dryRun = (boolean) $dryRun;
-
-        return $this;
-    }
-
-    /**
-     * install recommend packages
-     *
-     * @param boolean $noInstallRecommends
-     * @return Installer
-     */
-    public function setInstallRecommends($installRecommends=true)
-    {
-        $this->installRecommends = (boolean) $installRecommends;
-
-        return $this;
-    }
-
-    /**
-     * also install suggested packages
-     *
-     * @param boolean $installSuggests
-     * @return Installer
-     */
-    public function setInstallSuggests($installSuggests=true)
-    {
-        $this->installSuggests = (boolean) $installSuggests;
 
         return $this;
     }
@@ -418,7 +429,7 @@ class Installer
      * @param boolean $preferSource
      * @return Installer
      */
-    public function setPreferSource($preferSource=true)
+    public function setPreferSource($preferSource = true)
     {
         $this->preferSource = (boolean) $preferSource;
 
@@ -431,9 +442,22 @@ class Installer
      * @param boolean $update
      * @return Installer
      */
-    public function setUpdate($update=true)
+    public function setUpdate($update = true)
     {
         $this->update = (boolean) $update;
+
+        return $this;
+    }
+
+    /**
+     * enables dev packages
+     *
+     * @param boolean $update
+     * @return Installer
+     */
+    public function setDevMode($devMode = true)
+    {
+        $this->devMode = (boolean) $devMode;
 
         return $this;
     }
@@ -444,7 +468,7 @@ class Installer
      * @param boolean $verbose
      * @return Installer
      */
-    public function setVerbose($verbose=true)
+    public function setVerbose($verbose = true)
     {
         $this->verbose = (boolean) $verbose;
 

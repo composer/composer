@@ -12,6 +12,7 @@
 
 namespace Composer\Package\Dumper;
 
+use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
 
 /**
@@ -26,7 +27,6 @@ class ArrayDumper
             'binaries' => 'bin',
             'scripts',
             'type',
-            'names',
             'extra',
             'installationSource' => 'installation-source',
             'license',
@@ -36,6 +36,7 @@ class ArrayDumper
             'keywords',
             'autoload',
             'repositories',
+            'includePaths' => 'include-path',
         );
 
         $data = array();
@@ -64,12 +65,16 @@ class ArrayDumper
             $data['dist']['shasum'] = $package->getDistSha1Checksum();
         }
 
-        foreach (array('require', 'conflict', 'provide', 'replace', 'suggest', 'recommend') as $linkType) {
-            if ($links = $package->{'get'.ucfirst($linkType).'s'}()) {
+        foreach (BasePackage::$supportedLinkTypes as $type => $opts) {
+            if ($links = $package->{'get'.ucfirst($opts['method'])}()) {
                 foreach ($links as $link) {
-                    $data[$linkType][$link->getTarget()] = $link->getPrettyConstraint();
+                    $data[$type][$link->getTarget()] = $link->getPrettyConstraint();
                 }
             }
+        }
+
+        if ($packages = $package->getSuggests()) {
+            $data['suggest'] = $packages;
         }
 
         foreach ($keys as $method => $key) {

@@ -33,17 +33,20 @@ class InstallerInstaller extends LibraryInstaller
      * @param   string                      $vendorDir  relative path for packages home
      * @param   string                      $binDir     relative path for binaries
      * @param   DownloadManager             $dm         download manager
-     * @param   WritableRepositoryInterface $repository repository controller
      * @param   IOInterface                 $io         io instance
+     * @param   InstallationManager         $im         installation manager
+     * @param   array                       $localRepositories array of WritableRepositoryInterface
      */
-    public function __construct($vendorDir, $binDir, DownloadManager $dm, WritableRepositoryInterface $repository, IOInterface $io, InstallationManager $im)
+    public function __construct($vendorDir, $binDir, DownloadManager $dm, IOInterface $io, InstallationManager $im, array $localRepositories)
     {
-        parent::__construct($vendorDir, $binDir, $dm, $repository, $io, 'composer-installer');
+        parent::__construct($vendorDir, $binDir, $dm, $io, 'composer-installer');
         $this->installationManager = $im;
 
-        foreach ($repository->getPackages() as $package) {
-            if ('composer-installer' === $package->getType()) {
-                $this->registerInstaller($package);
+        foreach ($localRepositories as $repo) {
+            foreach ($repo->getPackages() as $package) {
+                if ('composer-installer' === $package->getType()) {
+                    $this->registerInstaller($package);
+                }
             }
         }
     }
@@ -51,28 +54,28 @@ class InstallerInstaller extends LibraryInstaller
     /**
      * {@inheritDoc}
      */
-    public function install(PackageInterface $package)
+    public function install(WritableRepositoryInterface $repo, PackageInterface $package)
     {
         $extra = $package->getExtra();
         if (empty($extra['class'])) {
             throw new \UnexpectedValueException('Error while installing '.$package->getPrettyName().', composer-installer packages should have a class defined in their extra key to be usable.');
         }
 
-        parent::install($package);
+        parent::install($repo, $package);
         $this->registerInstaller($package);
     }
 
     /**
      * {@inheritDoc}
      */
-    public function update(PackageInterface $initial, PackageInterface $target)
+    public function update(WritableRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
     {
         $extra = $target->getExtra();
         if (empty($extra['class'])) {
             throw new \UnexpectedValueException('Error while installing '.$target->getPrettyName().', composer-installer packages should have a class defined in their extra key to be usable.');
         }
 
-        parent::update($initial, $target);
+        parent::update($repo, $initial, $target);
         $this->registerInstaller($target);
     }
 
@@ -97,7 +100,7 @@ class InstallerInstaller extends LibraryInstaller
         }
 
         $extra = $package->getExtra();
-        $installer = new $class($this->vendorDir, $this->binDir, $this->downloadManager, $this->repository, $this->io);
+        $installer = new $class($this->vendorDir, $this->binDir, $this->downloadManager, $this->io);
         $this->installationManager->addInstaller($installer);
     }
 }

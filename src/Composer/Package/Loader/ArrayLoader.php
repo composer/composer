@@ -156,13 +156,17 @@ class ArrayLoader
             }
         }
 
-        foreach (Package\BasePackage::$supportedLinkTypes as $type => $description) {
+        foreach (Package\BasePackage::$supportedLinkTypes as $type => $opts) {
             if (isset($config[$type])) {
-                $method = 'set'.ucfirst($description);
+                $method = 'set'.ucfirst($opts['method']);
                 $package->{$method}(
-                    $this->loadLinksFromConfig($package, $description, $config[$type])
+                    $this->loadLinksFromConfig($package, $opts['description'], $config[$type])
                 );
             }
+        }
+
+        if (isset($config['suggest']) && is_array($config['suggest'])) {
+            $package->setSuggests($config['suggest']);
         }
 
         if (isset($config['autoload'])) {
