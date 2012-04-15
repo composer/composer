@@ -169,6 +169,10 @@ class Locker
         $locked = array();
 
         foreach ($packages as $package) {
+            if ($package instanceof AliasPackage) {
+                $package = $package->getAliasOf();
+            }
+
             $name    = $package->getPrettyName();
             $version = $package->getPrettyVersion();
 
