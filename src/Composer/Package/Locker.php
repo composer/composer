@@ -45,11 +45,21 @@ class Locker
     /**
      * Checks whether locker were been locked (lockfile found).
      *
+     * @param Boolean $dev true to check if dev packages are locked
      * @return Boolean
      */
-    public function isLocked()
+    public function isLocked($dev = false)
     {
-        return $this->lockFile->exists();
+        if (!$this->lockFile->exists()) {
+            return false;
+        }
+
+        $data = $this->getLockData();
+        if ($dev) {
+            return isset($data['packages-dev']);
+        }
+
+        return isset($data['packages']);
     }
 
     /**
@@ -67,6 +77,7 @@ class Locker
     /**
      * Searches and returns an array of locked packages, retrieved from registered repositories.
      *
+     * @param Boolean $dev true to retrieve the locked dev packages
      * @return array
      */
     public function getLockedPackages($dev = false)
@@ -109,7 +120,7 @@ class Locker
 
     public function getLockData()
     {
-        if (!$this->isLocked()) {
+        if (!$this->lockFile->exists()) {
             throw new \LogicException('No lockfile found. Unable to read locked packages');
         }
 
@@ -124,22 +135,24 @@ class Locker
      * Locks provided data into lockfile.
      *
      * @param array $packages array of packages
-     * @param array $packages array of dev packages
+     * @param mixed $packages array of dev packages or null if installed without --dev
      * @param array $aliases array of aliases
      *
      * @return Boolean
      */
-    public function setLockData(array $packages, array $devPackages, array $aliases)
+    public function setLockData(array $packages, $devPackages, array $aliases)
     {
         $lock = array(
             'hash' => $this->hash,
-            'packages' => array(),
-            'packages-dev' => array(),
+            'packages' => null,
+            'packages-dev' => null,
             'aliases' => $aliases,
         );
 
         $lock['packages'] = $this->lockPackages($packages);
-        $lock['packages-dev'] = $this->lockPackages($devPackages);
+        if (null !== $devPackages) {
+            $lock['packages-dev'] = $this->lockPackages($devPackages);
+        }
 
         if (!$this->isLocked() || $lock !== $this->getLockData()) {
             $this->lockFile->write($lock);

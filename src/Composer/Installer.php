@@ -162,7 +162,7 @@ class Installer
             if ($this->update || !$this->locker->isLocked()) {
                 $updatedLock = $this->locker->setLockData(
                     $this->repositoryManager->getLocalRepository()->getPackages(),
-                    $this->repositoryManager->getLocalDevRepository()->getPackages(),
+                    $this->devMode ? $this->repositoryManager->getLocalDevRepository()->getPackages() : null,
                     $aliases
                 );
                 if ($updatedLock) {
@@ -206,7 +206,7 @@ class Installer
             foreach ($links as $link) {
                 $request->install($link->getTarget(), $link->getConstraint());
             }
-        } elseif ($this->locker->isLocked()) {
+        } elseif ($this->locker->isLocked($devMode)) {
             $installFromLock = true;
             $this->io->write('<info>Installing '.($devMode ? 'dev ': '').'dependencies from lock file</info>');
 
