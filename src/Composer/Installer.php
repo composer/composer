@@ -136,13 +136,6 @@ class Installer
 
         $aliases = $this->aliasPackages();
 
-        // creating repository pool
-        $pool = new Pool;
-        $pool->addRepository($installedRepo);
-        foreach ($this->repositoryManager->getRepositories() as $repository) {
-            $pool->addRepository($repository);
-        }
-
         if (!$this->dryRun) {
             // dispatch pre event
             $eventName = $this->update ? ScriptEvents::PRE_UPDATE_CMD : ScriptEvents::PRE_INSTALL_CMD;
@@ -150,11 +143,11 @@ class Installer
         }
 
         $this->suggestedPackages = array();
-        if (!$this->doInstall($this->repositoryManager->getLocalRepository(), $installedRepo, $pool, $aliases)) {
+        if (!$this->doInstall($this->repositoryManager->getLocalRepository(), $installedRepo, $aliases)) {
             return false;
         }
         if ($this->devMode) {
-            if (!$this->doInstall($this->repositoryManager->getLocalDevRepository(), $installedRepo, $pool, $aliases, true)) {
+            if (!$this->doInstall($this->repositoryManager->getLocalDevRepository(), $installedRepo, $aliases, true)) {
                 return false;
             }
         }
@@ -191,8 +184,15 @@ class Installer
         return true;
     }
 
-    protected function doInstall($localRepo, $installedRepo, $pool, $aliases, $devMode = false)
+    protected function doInstall($localRepo, $installedRepo, $aliases, $devMode = false)
     {
+        // creating repository pool
+        $pool = new Pool;
+        $pool->addRepository($installedRepo);
+        foreach ($this->repositoryManager->getRepositories() as $repository) {
+            $pool->addRepository($repository);
+        }
+
         // creating requirements request
         $installFromLock = false;
         $request = new Request($pool);
@@ -356,6 +356,11 @@ class Installer
 
                 $localRepo->write();
             }
+        }
+
+        // reload local repository for the dev pass to work ok with aliases since it was anti-aliased above
+        if (!$devMode) {
+            $localRepo->reload();
         }
 
         return true;

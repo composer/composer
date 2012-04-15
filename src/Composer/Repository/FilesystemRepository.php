@@ -21,6 +21,7 @@ use Composer\Package\Dumper\ArrayDumper;
  * Filesystem repository.
  *
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
+ * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 class FilesystemRepository extends ArrayRepository implements WritableRepositoryInterface
 {
@@ -69,6 +70,12 @@ class FilesystemRepository extends ArrayRepository implements WritableRepository
                 $this->addPackage($package);
             }
         }
+    }
+
+    public function reload()
+    {
+        $this->packages = null;
+        $this->initialize();
     }
 
     /**
