@@ -271,7 +271,7 @@ class JsonFile
     public static function parseJson($json)
     {
         $data = json_decode($json, true);
-        if (null === $data && json_last_error()) {
+        if (null === $data && JSON_ERROR_NONE !== json_last_error()) {
             self::validateSyntax($json);
         }
 
@@ -290,7 +290,7 @@ class JsonFile
         $parser = new JsonParser();
         $result = $parser->lint($json);
         if (null === $result) {
-            if (defined('JSON_ERROR_UTF8') && json_last_error() === JSON_ERROR_UTF8) {
+            if (defined('JSON_ERROR_UTF8') && JSON_ERROR_UTF8 === json_last_error()) {
                 throw new \UnexpectedValueException('JSON file is not UTF-8 encoded');
             }
 
