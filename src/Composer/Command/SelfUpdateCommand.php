@@ -59,7 +59,10 @@ EOT
                 // free the variable to unlock the file
                 unset($phar);
                 rename($tempFilename, $localFilename);
-            } catch (\UnexpectedValueException $e) {
+            } catch (\Exception $e) {
+                if (!$e instanceof \UnexpectedValueException && !$e instanceof \PharException) {
+                    throw $e;
+                }
                 unlink($tempFilename);
                 $output->writeln('<error>The download is corrupt ('.$e->getMessage().').</error>');
                 $output->writeln('<error>Please re-run the self-update command to try again.</error>');
