@@ -81,7 +81,7 @@ To fetch the defined dependencies into your local project, just run the
     $ php composer.phar install
 
 This will find the latest version of `monolog/monolog` that matches the
-supplied version constraint and download it into the the `vendor` directory.
+supplied version constraint and download it into the `vendor` directory.
 It's a convention to put third party code into a directory named `vendor`.
 In case of monolog it will put it into `vendor/monolog/monolog`.
 
