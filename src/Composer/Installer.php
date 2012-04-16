@@ -88,6 +88,7 @@ class Installer
     protected $dryRun = false;
     protected $verbose = false;
     protected $update = false;
+    protected $skipScripts = false;
 
     /**
      * @var array
@@ -151,7 +152,7 @@ class Installer
 
         $aliases = $this->aliasPackages();
 
-        if (!$this->dryRun) {
+        if (!$this->dryRun && !$this->skipScripts) {
             // dispatch pre event
             $eventName = $this->update ? ScriptEvents::PRE_UPDATE_CMD : ScriptEvents::PRE_INSTALL_CMD;
             $this->eventDispatcher->dispatchCommandEvent($eventName);
@@ -194,9 +195,11 @@ class Installer
             $localRepos = new CompositeRepository($this->repositoryManager->getLocalRepositories());
             $this->autoloadGenerator->dump($localRepos, $this->package, $this->installationManager, $this->installationManager->getVendorPath() . '/composer', true);
 
-            // dispatch post event
-            $eventName = $this->update ? ScriptEvents::POST_UPDATE_CMD : ScriptEvents::POST_INSTALL_CMD;
-            $this->eventDispatcher->dispatchCommandEvent($eventName);
+            if (!$this->skipScripts) {
+                // dispatch post event
+                $eventName = $this->update ? ScriptEvents::POST_UPDATE_CMD : ScriptEvents::POST_INSTALL_CMD;
+                $this->eventDispatcher->dispatchCommandEvent($eventName);
+            }
         }
 
         return true;
@@ -496,12 +499,25 @@ class Installer
     /**
      * enables dev packages
      *
-     * @param boolean $update
+     * @param boolean $devMode
      * @return Installer
      */
     public function setDevMode($devMode = true)
     {
         $this->devMode = (boolean) $devMode;
+
+        return $this;
+    }
+
+    /**
+     * skips scripts execution
+     *
+     * @param boolean $skipScripts
+     * @return Installer
+     */
+    public function setSkipScripts($skipScripts = true)
+    {
+        $this->skipScripts = (boolean) $skipScripts;
 
         return $this;
     }
