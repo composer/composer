@@ -53,6 +53,7 @@ EOT
             $rfs->copy('getcomposer.org', $remoteFilename, $tempFilename);
 
             try {
+                chmod($tempFilename, 0755);
                 // test the phar validity
                 $phar = new \Phar($tempFilename);
                 // free the variable to unlock the file
