@@ -28,6 +28,7 @@ class PearRepository extends ArrayRepository
     private static $channelNames = array();
 
     private $url;
+    private $baseUrl;
     private $channel;
     private $io;
     private $rfs;
@@ -68,7 +69,9 @@ class PearRepository extends ArrayRepository
             $loader = new ArrayLoader();
             foreach ($packages as $data) {
                 foreach ($data['versions'] as $rev) {
-                    $rev['name'] = 'pear-'.$this->channel.'/'.$rev['name'];
+                    if (strpos($rev['name'], 'pear-'.$this->channel) !== 0) {
+                        $rev['name'] = 'pear-'.$this->channel.'/'.$rev['name'];
+                    }
                     $this->addPackage($loader->load($rev));
                 }
             }
@@ -87,26 +90,31 @@ class PearRepository extends ArrayRepository
             $this->channel = $channelXML->getElementsByTagName("suggestedalias")->item(0)->nodeValue
                                     ?: $channelXML->getElementsByTagName("name")->item(0)->nodeValue;
         }
+        if (!$this->baseUrl) {
+            $this->baseUrl = $channelXML->getElementsByTagName("baseurl")->item(0)->nodeValue
+                                    ? trim($channelXML->getElementsByTagName("baseurl")->item(0)->nodeValue, '/')
+                                    : $this->url . '/rest';
+        }
 
         self::$channelNames[$channelXML->getElementsByTagName("name")->item(0)->nodeValue] = $this->channel;
     }
 
     protected function fetchFromServer()
     {
-        $categoryXML = $this->requestXml($this->url . "/rest/c/categories.xml");
+        $categoryXML = $this->requestXml($this->baseUrl . "/c/categories.xml");
         $categories = $categoryXML->getElementsByTagName("c");
 
         foreach ($categories as $category) {
-            $link = '/' . ltrim($category->getAttribute("xlink:href"), '/');
+            $link = $this->baseUrl . '/c/' . $category->nodeValue;
             try {
-                $packagesLink = str_replace("info.xml", "packagesinfo.xml", $link);
-                $this->fetchPear2Packages($this->url . $packagesLink);
+                $packagesLink = $link . "/packagesinfo.xml";
+                $this->fetchPear2Packages($packagesLink);
             } catch (TransportException $e) {
                 if (false === strpos($e->getMessage(), '404')) {
                     throw $e;
                 }
-                $categoryLink = str_replace("info.xml", "packages.xml", $link);
-                $this->fetchPearPackages($this->url . $categoryLink);
+                $categoryLink = $link . "/packages.xml";
+                $this->fetchPearPackages($categoryLink);
             }
 
         }
@@ -126,8 +134,7 @@ class PearRepository extends ArrayRepository
             $packageName = $package->nodeValue;
             $fullName = 'pear-'.$this->channel.'/'.$packageName;
 
-            $packageLink = $package->getAttribute('xlink:href');
-            $releaseLink = $this->url . str_replace("/rest/p/", "/rest/r/", $packageLink);
+            $releaseLink = $this->baseUrl . "/r/" . $packageName;
             $allReleasesLink = $releaseLink . "/allreleases2.xml";
 
             try {
@@ -357,7 +364,7 @@ class PearRepository extends ArrayRepository
             throw new \UnexpectedValueException('The PEAR channel at '.$url.' did not respond.');
         }
         $dom = new \DOMDocument('1.0', 'UTF-8');
-        $dom->loadXML($content);
+        $dom->loadXML($content, LIBXML_NOERROR);
 
         return $dom;
     }
