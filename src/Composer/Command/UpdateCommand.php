@@ -31,7 +31,7 @@ class UpdateCommand extends Command
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('dry-run', null, InputOption::VALUE_NONE, 'Outputs the operations but will not execute anything (implicitly enables --verbose).'),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Enables installation of dev-require packages.'),
-                new InputOption('skip-scripts', null, InputOption::VALUE_NONE, 'Skips the execution of all scripts defines in composer.json file.'),
+                new InputOption('skip-scripts', null, InputOption::VALUE_NONE, 'Skips the execution of all scripts defined in composer.json file.'),
             ))
             ->setHelp(<<<EOT
 The <info>update</info> command reads the composer.json file from the
