@@ -14,7 +14,7 @@ namespace Composer\Installer;
 
 use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\Package\PackageInterface;
-use Composer\Repository\WritableRepositoryInterface;
+use Composer\Repository\InstalledRepositoryInterface;
 
 /**
  * Interface for the package installation manager.
@@ -35,39 +35,39 @@ interface InstallerInterface
     /**
      * Checks that provided package is installed.
      *
-     * @param   WritableRepositoryInterface $repo    repository in which to check
+     * @param   InstalledRepositoryInterface $repo    repository in which to check
      * @param   PackageInterface    $package    package instance
      *
      * @return  Boolean
      */
-    function isInstalled(WritableRepositoryInterface $repo, PackageInterface $package);
+    function isInstalled(InstalledRepositoryInterface $repo, PackageInterface $package);
 
     /**
      * Installs specific package.
      *
-     * @param   WritableRepositoryInterface $repo    repository in which to check
+     * @param   InstalledRepositoryInterface $repo    repository in which to check
      * @param   PackageInterface    $package    package instance
      */
-    function install(WritableRepositoryInterface $repo, PackageInterface $package);
+    function install(InstalledRepositoryInterface $repo, PackageInterface $package);
 
     /**
      * Updates specific package.
      *
-     * @param   WritableRepositoryInterface $repo    repository in which to check
+     * @param   InstalledRepositoryInterface $repo    repository in which to check
      * @param   PackageInterface    $initial    already installed package version
      * @param   PackageInterface    $target     updated version
      *
      * @throws  InvalidArgumentException        if $from package is not installed
      */
-    function update(WritableRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target);
+    function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target);
 
     /**
      * Uninstalls specific package.
      *
-     * @param   WritableRepositoryInterface $repo    repository in which to check
+     * @param   InstalledRepositoryInterface $repo    repository in which to check
      * @param   PackageInterface    $package    package instance
      */
-    function uninstall(WritableRepositoryInterface $repo, PackageInterface $package);
+    function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package);
 
     /**
      * Returns the installation path of a package
