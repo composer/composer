@@ -73,6 +73,9 @@ class PearRepository extends ArrayRepository
                         $rev['name'] = 'pear-'.$this->channel.'/'.$rev['name'];
                     }
                     $this->addPackage($loader->load($rev));
+                    if ($this->io->isVerbose()) {
+                        $this->io->write('Loaded '.$packageData['name'].' '.$packageData['version']);
+                    }
                 }
             }
 
