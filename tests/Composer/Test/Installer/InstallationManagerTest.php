@@ -21,7 +21,7 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
 {
     public function setUp()
     {
-        $this->repository = $this->getMock('Composer\Repository\WritableRepositoryInterface');
+        $this->repository = $this->getMock('Composer\Repository\InstalledRepositoryInterface');
     }
 
     public function testVendorDirOutsideTheWorkingDir()
