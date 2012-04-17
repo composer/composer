@@ -207,7 +207,7 @@ class Installer
         }
 
         // creating repository pool
-        $pool = new Pool;
+        $pool = new Pool($this->package->getMinimumStability());
         $pool->addRepository($installedRepo);
         foreach ($this->repositoryManager->getRepositories() as $repository) {
             $pool->addRepository($repository);

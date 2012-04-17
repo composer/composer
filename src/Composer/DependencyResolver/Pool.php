@@ -14,17 +14,35 @@ namespace Composer\DependencyResolver;
 
 use Composer\Package\LinkConstraint\LinkConstraintInterface;
 use Composer\Repository\RepositoryInterface;
+use Composer\Repository\CompositeRepository;
+use Composer\Repository\InstalledRepositoryInterface;
+use Composer\Repository\PlatformRepository;
 
 /**
  * A package pool contains repositories that provide packages.
  *
  * @author Nils Adermann <naderman@naderman.de>
+ * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 class Pool
 {
     protected $repositories = array();
     protected $packages = array();
     protected $packageByName = array();
+    protected $acceptableStabilities;
+
+    public function __construct($minimumStability = 'dev')
+    {
+        $stabilities = array(
+            'stable',
+            'RC',
+            'beta',
+            'alpha',
+            'dev',
+        );
+
+        $this->acceptableStabilities = array_flip(array_splice($stabilities, 0, array_search($minimumStability, $stabilities) + 1));
+    }
 
     /**
      * Adds a repository and its packages to this package pool
@@ -33,14 +51,27 @@ class Pool
      */
     public function addRepository(RepositoryInterface $repo)
     {
-        $this->repositories[] = $repo;
+        if ($repo instanceof CompositeRepository) {
+            $repos = $repo->getRepositories();
+        } else {
+            $repos = array($repo);
+        }
 
-        foreach ($repo->getPackages() as $package) {
-            $package->setId(count($this->packages) + 1);
-            $this->packages[] = $package;
+        foreach ($repos as $repo) {
+            $this->repositories[] = $repo;
 
-            foreach ($package->getNames() as $name) {
-                $this->packageByName[$name][] = $package;
+            $exempt = $repo instanceof PlatformRepository || $repo instanceof InstalledRepositoryInterface;
+            foreach ($repo->getPackages() as $package) {
+                if (!$exempt && !isset($this->acceptableStabilities[$package->getStability()])) {
+                    continue;
+                }
+
+                $package->setId(count($this->packages) + 1);
+                $this->packages[] = $package;
+
+                foreach ($package->getNames() as $name) {
+                    $this->packageByName[$name][] = $package;
+                }
             }
         }
     }
