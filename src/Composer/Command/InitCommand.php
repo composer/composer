@@ -13,6 +13,7 @@
 namespace Composer\Command;
 
 use Composer\Json\JsonFile;
+use Composer\Factory;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\ComposerRepository;
@@ -229,7 +230,7 @@ EOT
         if (!$this->repos) {
             $this->repos = new CompositeRepository(array(
                 new PlatformRepository,
-                new ComposerRepository(array('url' => 'http://packagist.org'), $this->getIO())
+                new ComposerRepository(array('url' => 'http://packagist.org'), $this->getIO(), Factory::createConfig())
             ));
         }
 

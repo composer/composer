@@ -20,6 +20,7 @@ use Composer\Repository\PlatformRepository;
 use Composer\Repository\ComposerRepository;
 use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
+use Composer\Factory;
 
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>
@@ -54,7 +55,7 @@ EOT
         } else {
             $output->writeln('No composer.json found in the current directory, showing packages from packagist.org');
             $installedRepo = $platformRepo;
-            $packagist = new ComposerRepository(array('url' => 'http://packagist.org'), $this->getIO());
+            $packagist = new ComposerRepository(array('url' => 'http://packagist.org'), $this->getIO(), Factory::createConfig());
             $repos = new CompositeRepository(array($installedRepo, $packagist));
         }
 

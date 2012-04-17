@@ -84,7 +84,7 @@ class Factory
         }
 
         // Configuration defaults
-        $config = $this->createConfig();
+        $config = static::createConfig();
         $config->merge($localConfig);
 
         $vendorDir = $config->get('vendor-dir');
