@@ -1615,7 +1615,7 @@ class Solver
 
             $foundDisabled = false;
             foreach ($problemRules as $problemRule) {
-                if ($problemRule->disabled()) {
+                if ($problemRule->isDisabled()) {
                     $foundDisabled = true;
                     break;
                 }
