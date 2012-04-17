@@ -15,6 +15,7 @@ namespace Composer\Installer;
 use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\Package\PackageInterface;
 use Composer\Downloader\DownloadManager;
+use Composer\Repository\WritableRepositoryInterface;
 
 /**
  * Project Installer is used to install a single package into a directory as
@@ -45,23 +46,17 @@ class ProjectInstaller implements InstallerInterface
     }
 
     /**
-     * Checks that provided package is installed.
-     *
-     * @param   PackageInterface    $package    package instance
-     *
-     * @return  Boolean
+     * {@inheritDoc}
      */
-    public function isInstalled(PackageInterface $package)
+    public function isInstalled(WritableRepositoryInterface $repo, PackageInterface $package)
     {
         return false;
     }
 
     /**
-     * Installs specific package.
-     *
-     * @param   PackageInterface    $package    package instance
+     * {@inheritDoc}
      */
-    public function install(PackageInterface $package)
+    public function install(WritableRepositoryInterface $repo, PackageInterface $package)
     {
         $installPath = $this->installPath;
         if (file_exists($installPath)) {
@@ -75,24 +70,17 @@ class ProjectInstaller implements InstallerInterface
     }
 
     /**
-     * Updates specific package.
-     *
-     * @param   PackageInterface    $initial    already installed package version
-     * @param   PackageInterface    $target     updated version
-     *
-     * @throws  InvalidArgumentException        if $from package is not installed
+     * {@inheritDoc}
      */
-    public function update(PackageInterface $initial, PackageInterface $target)
+    public function update(WritableRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
     {
         throw new \InvalidArgumentException("not supported");
     }
 
     /**
-     * Uninstalls specific package.
-     *
-     * @param   PackageInterface    $package    package instance
+     * {@inheritDoc}
      */
-    public function uninstall(PackageInterface $package)
+    public function uninstall(WritableRepositoryInterface $repo, PackageInterface $package)
     {
         throw new \InvalidArgumentException("not supported");
     }
