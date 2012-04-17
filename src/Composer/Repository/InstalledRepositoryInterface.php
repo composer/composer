@@ -21,6 +21,6 @@ use Composer\Package\PackageInterface;
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-interface InstalledRepositoryInterface
+interface InstalledRepositoryInterface extends WritableRepositoryInterface
 {
 }
