@@ -71,7 +71,8 @@ class MemoryPackage extends BasePackage
         $this->version = $version;
         $this->prettyVersion = $prettyVersion;
 
-        $this->dev = VersionParser::isDev($version);
+        $this->stability = VersionParser::parseStability($version);
+        $this->dev = $this->stability === 'dev';
     }
 
     /**
@@ -96,6 +97,14 @@ class MemoryPackage extends BasePackage
     public function getType()
     {
         return $this->type ?: 'library';
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getStability()
+    {
+        return $this->stability;
     }
 
     /**
