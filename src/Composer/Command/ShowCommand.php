@@ -78,7 +78,15 @@ EOT
 
             $this->printMeta($input, $output, $package, $installedRepo, $repos);
             $this->printLinks($input, $output, $package, 'requires');
-            $this->printLinks($input, $output, $package, 'devRequires');
+            $this->printLinks($input, $output, $package, 'devRequires', 'requires (dev)');
+            if ($package->getSuggests()) {
+                $output->writeln("\n<info>suggests</info>");
+                foreach ($package->getSuggests() as $suggested => $reason) {
+                    $output->writeln($suggested . ' <comment>' . $reason . '</comment>');
+                }
+            }
+            $this->printLinks($input, $output, $package, 'provides');
+            $this->printLinks($input, $output, $package, 'conflicts');
             $this->printLinks($input, $output, $package, 'replaces');
             return;
         }
@@ -209,10 +217,11 @@ EOT
      *
      * @param string $linkType
      */
-    protected function printLinks(InputInterface $input, OutputInterface $output, PackageInterface $package, $linkType)
+    protected function printLinks(InputInterface $input, OutputInterface $output, PackageInterface $package, $linkType, $title = null)
     {
+        $title = $title ?: $linkType;
         if ($links = $package->{'get'.ucfirst($linkType)}()) {
-            $output->writeln("\n<info>" . $linkType . "</info>");
+            $output->writeln("\n<info>" . $title . "</info>");
 
             foreach ($links as $link) {
                 $output->writeln($link->getTarget() . ' <comment>' . $link->getPrettyConstraint() . '</comment>');
