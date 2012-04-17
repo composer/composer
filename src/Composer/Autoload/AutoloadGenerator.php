@@ -148,6 +148,10 @@ EOF;
             }
 
             foreach ($package->getAutoload() as $type => $mapping) {
+                // skip misconfigured packages
+                if (!is_array($mapping)) {
+                    continue;
+                }
                 foreach ($mapping as $namespace => $paths) {
                     foreach ((array) $paths as $path) {
                         $autoloads[$type][$namespace][] = empty($installPath) ? $path : $installPath.'/'.$path;
