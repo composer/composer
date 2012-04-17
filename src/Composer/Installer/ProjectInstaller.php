@@ -15,7 +15,7 @@ namespace Composer\Installer;
 use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\Package\PackageInterface;
 use Composer\Downloader\DownloadManager;
-use Composer\Repository\WritableRepositoryInterface;
+use Composer\Repository\InstalledRepositoryInterface;
 
 /**
  * Project Installer is used to install a single package into a directory as
@@ -48,7 +48,7 @@ class ProjectInstaller implements InstallerInterface
     /**
      * {@inheritDoc}
      */
-    public function isInstalled(WritableRepositoryInterface $repo, PackageInterface $package)
+    public function isInstalled(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
         return false;
     }
@@ -56,7 +56,7 @@ class ProjectInstaller implements InstallerInterface
     /**
      * {@inheritDoc}
      */
-    public function install(WritableRepositoryInterface $repo, PackageInterface $package)
+    public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
         $installPath = $this->installPath;
         if (file_exists($installPath)) {
@@ -72,7 +72,7 @@ class ProjectInstaller implements InstallerInterface
     /**
      * {@inheritDoc}
      */
-    public function update(WritableRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
+    public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
     {
         throw new \InvalidArgumentException("not supported");
     }
@@ -80,7 +80,7 @@ class ProjectInstaller implements InstallerInterface
     /**
      * {@inheritDoc}
      */
-    public function uninstall(WritableRepositoryInterface $repo, PackageInterface $package)
+    public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
         throw new \InvalidArgumentException("not supported");
     }
