@@ -78,7 +78,7 @@ EOT
 
             $this->printMeta($input, $output, $package, $installedRepo, $repos);
             $this->printLinks($input, $output, $package, 'requires');
-            $this->printLinks($input, $output, $package, 'recommends');
+            $this->printLinks($input, $output, $package, 'devRequires');
             $this->printLinks($input, $output, $package, 'replaces');
             return;
         }
