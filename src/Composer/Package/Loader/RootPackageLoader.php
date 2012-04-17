@@ -76,6 +76,10 @@ class RootPackageLoader extends ArrayLoader
             $package->setAliases($aliases);
         }
 
+        if (isset($config['minimum-stability'])) {
+            $package->setMinimumStability($config['minimum-stability']);
+        }
+
         if (isset($config['repositories'])) {
             foreach ($config['repositories'] as $index => $repo) {
                 if (isset($repo['packagist']) && $repo['packagist'] === false) {

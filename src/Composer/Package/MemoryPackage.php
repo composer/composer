@@ -48,6 +48,8 @@ class MemoryPackage extends BasePackage
     protected $prettyAlias;
     protected $dev;
 
+    protected $minimumStability = 'dev';
+
     protected $requires = array();
     protected $conflicts = array();
     protected $provides = array();
@@ -595,6 +597,24 @@ class MemoryPackage extends BasePackage
     public function getHomepage()
     {
         return $this->homepage;
+    }
+
+    /**
+     * Set the minimumStability
+     *
+     * @param string $minimumStability
+     */
+    public function setMinimumStability($minimumStability)
+    {
+        $this->minimumStability = $minimumStability;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getMinimumStability()
+    {
+        return $this->minimumStability;
     }
 
     /**

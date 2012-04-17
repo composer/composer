@@ -143,6 +143,10 @@
             "description": "A set of additional repositories where packages can be found.",
             "additionalProperties": true
         },
+        "minimum-stability": {
+            "type": ["string"],
+            "description": "The minimum stability the packages must have to be install-able. Possible values are: dev, alpha, beta, RC, stable."
+        },
         "bin": {
             "type": ["array"],
             "description": "A set of files that should be treated as binaries and symlinked into bin-dir (from config).",
