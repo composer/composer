@@ -181,6 +181,13 @@ interface PackageInterface
     function getPrettyVersion();
 
     /**
+     * Returns the stability of this package: one of (dev, alpha, beta, RC, stable)
+     *
+     * @return string
+     */
+    function getStability();
+
+    /**
      * Returns the package license, e.g. MIT, BSD, GPL
      *
      * @return array The package licenses

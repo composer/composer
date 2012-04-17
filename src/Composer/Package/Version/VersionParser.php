@@ -22,17 +22,30 @@ use Composer\Package\LinkConstraint\VersionConstraint;
  */
 class VersionParser
 {
-    private $modifierRegex = '[.-]?(?:(beta|RC|alpha|patch|pl|p)(?:[.-]?(\d+))?)?([.-]?dev)?';
+    private static $modifierRegex = '[.-]?(?:(beta|RC|alpha|patch|pl|p)(?:[.-]?(\d+))?)?([.-]?dev)?';
 
     /**
-     * Checks if a version is dev or not
+     * Returns the stability of a version
      *
      * @param string $version
-     * @return Boolean
+     * @return string
      */
-    static public function isDev($version)
+    static public function parseStability($version)
     {
-        return 'dev-' === substr($version, 0, 4) || '-dev' === substr($version, -4);
+        if ('dev-' === substr($version, 0, 4) || '-dev' === substr($version, -4)) {
+            return 'dev';
+        }
+
+        preg_match('{'.self::$modifierRegex.'$}', $version, $match);
+        if (!empty($match[3])) {
+            return 'dev';
+        }
+
+        if (!empty($match[1]) && ($match[1] === 'beta' || $match[1] === 'alpha' || $match[1] === 'RC')) {
+            return $match[1];
+        }
+
+        return 'stable';
     }
 
     /**
@@ -60,13 +73,13 @@ class VersionParser
         }
 
         // match classical versioning
-        if (preg_match('{^v?(\d{1,3})(\.\d+)?(\.\d+)?(\.\d+)?'.$this->modifierRegex.'$}i', $version, $matches)) {
+        if (preg_match('{^v?(\d{1,3})(\.\d+)?(\.\d+)?(\.\d+)?'.self::$modifierRegex.'$}i', $version, $matches)) {
             $version = $matches[1]
                 .(!empty($matches[2]) ? $matches[2] : '.0')
                 .(!empty($matches[3]) ? $matches[3] : '.0')
                 .(!empty($matches[4]) ? $matches[4] : '.0');
             $index = 5;
-        } elseif (preg_match('{^v?(\d{4}(?:[.:-]?\d{2}){1,6}(?:[.:-]?\d{1,3})?)'.$this->modifierRegex.'$}i', $version, $matches)) { // match date-based versioning
+        } elseif (preg_match('{^v?(\d{4}(?:[.:-]?\d{2}){1,6}(?:[.:-]?\d{1,3})?)'.self::$modifierRegex.'$}i', $version, $matches)) { // match date-based versioning
             $version = preg_replace('{\D}', '-', $matches[1]);
             $index = 2;
         }
