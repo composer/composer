@@ -108,7 +108,7 @@ class PearRepository extends ArrayRepository
         $categories = $categoryXML->getElementsByTagName("c");
 
         foreach ($categories as $category) {
-            $link = $this->baseUrl . '/c/' . $category->nodeValue;
+            $link = $this->baseUrl . '/c/' . str_replace(' ', '+', $category->nodeValue);
             try {
                 $packagesLink = $link . "/packagesinfo.xml";
                 $this->fetchPear2Packages($packagesLink);
