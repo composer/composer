@@ -264,8 +264,12 @@ class AutoloadGeneratorTest extends TestCase
         $b = new MemoryPackage("b/b", "1.0", "1.0");
         $b->setIncludePaths(array("library"));
 
+        $c = new MemoryPackage("c", "1.0", "1.0");
+        $c->setIncludePaths(array("library"));
+
         $packages[] = $a;
         $packages[] = $b;
+        $packages[] = $c;
 
         $this->repository->expects($this->once())
             ->method("getPackages")
@@ -275,10 +279,12 @@ class AutoloadGeneratorTest extends TestCase
 
         $this->generator->dump($this->repository, $package, $this->im, $this->vendorDir."/.composer");
 
+        $this->assertFileEquals(__DIR__.'/Fixtures/include_paths.php', $this->vendorDir.'/.composer/include_paths.php');
         $this->assertEquals(
             array(
-                $this->vendorDir."/a/a/lib/",
-                $this->vendorDir."/b/b/library"
+                $this->vendorDir."/a/a/lib",
+                $this->vendorDir."/b/b/library",
+                $this->vendorDir."/c/library",
             ),
             require($this->vendorDir."/.composer/include_paths.php")
         );
@@ -307,7 +313,7 @@ class AutoloadGeneratorTest extends TestCase
         require($this->vendorDir."/.composer/autoload.php");
 
         $this->assertEquals(
-            $oldIncludePath.PATH_SEPARATOR.$this->vendorDir."/a/a/lib/",
+            $oldIncludePath.PATH_SEPARATOR.$this->vendorDir."/a/a/lib",
             get_include_path()
         );
 
