@@ -5,7 +5,8 @@
 
 Satis can be used to host the metadata of your company's private packages, or
 your own. It basically acts as a micro-packagist. You can get it from
-[GitHub](http://github.com/composer/satis).
+[GitHub](http://github.com/composer/satis) or install via CLI:
+`composer create-project composer/satis`.
 
 ## Setup
 
@@ -13,12 +14,27 @@ For example let's assume you have a few packages you want to reuse across your
 company but don't really want to open-source. You would first define a Satis
 configuration file, which is basically a stripped-down version of a
 `composer.json` file. It contains a few repositories, and then you use the require
-key to say which packages it should dump in the static repository it creates.
+key to say which packages it should dump in the static repository it creates, or
+use require-all to select all of them.
 
 Here is an example configuration, you see that it holds a few VCS repositories,
-but those could be any types of [repositories](../05-repositories.md). Then
-the require just lists all the packages we need, using a `"*"` constraint to
-make sure all versions are selected.
+but those could be any types of [repositories](../05-repositories.md). Then it
+uses `"require-all": true` which selects all versions of all packages in the
+repositories you defined.
+
+    {
+        "repositories": [
+            { "type": "vcs", "url": "http://github.com/mycompany/privaterepo" },
+            { "type": "vcs", "url": "http://svn.example.org/private/repo" },
+            { "type": "vcs", "url": "http://github.com/mycompany/privaterepo2" }
+        ],
+        "require-all": true
+    }
+
+If you want to cherry pick which packages you want, you can list all the packages
+you want to have in your satis repository inside the classic composer `require` key,
+using a `"*"` constraint to make sure all versions are selected, or another
+constraint if you want really specific versions.
 
     {
         "repositories": [
@@ -29,7 +45,7 @@ make sure all versions are selected.
         "require": {
             "company/package": "*",
             "company/package2": "*",
-            "company/package3": "*"
+            "company/package3": "2.0.0"
         }
     }
 
