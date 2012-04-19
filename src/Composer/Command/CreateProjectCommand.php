@@ -18,6 +18,7 @@ use Composer\Installer\ProjectInstaller;
 use Composer\IO\IOInterface;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\FilesystemRepository;
+use Composer\Repository\InstalledFilesystemRepository;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -113,7 +114,7 @@ EOT
 
         $io->write('<info>Installing ' . $package->getName() . ' as new project.</info>', true);
         $projectInstaller = new ProjectInstaller($directory, $dm);
-        $projectInstaller->install(new FilesystemRepository(new JsonFile('php://memory')), $package);
+        $projectInstaller->install(new InstalledFilesystemRepository(new JsonFile('php://memory')), $package);
 
         $io->write('<info>Created project into directory ' . $directory . '</info>', true);
         chdir($directory);
