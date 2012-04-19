@@ -141,6 +141,22 @@ class AutoloadGeneratorTest extends TestCase
         $this->assertAutoloadFiles('classmap2', $this->vendorDir.'/.composer', 'classmap');
     }
 
+    public function testMainPackageAutoloadingWithTargetDir()
+    {
+        $package = new MemoryPackage('a', '1.0', '1.0');
+        $package->setAutoload(array(
+            'psr-0' => array('Main\\Foo' => '', 'Main\\Bar' => ''),
+        ));
+        $package->setTargetDir('Main/Foo/');
+
+        $this->repository->expects($this->once())
+            ->method('getPackages')
+            ->will($this->returnValue(array()));
+
+        $this->generator->dump($this->repository, $package, $this->im, $this->vendorDir.'/.composer');
+        $this->assertFileEquals(__DIR__.'/Fixtures/autoload_target_dir.php', $this->vendorDir.'/.composer/autoload.php');
+    }
+
     public function testVendorsAutoloading()
     {
         $package = new MemoryPackage('a', '1.0', '1.0');

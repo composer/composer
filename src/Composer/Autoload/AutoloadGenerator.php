@@ -79,6 +79,36 @@ return array(
 
 EOF;
 
+        // add custom psr-0 autoloading if the root package has a target dir
+        $targetDirLoader = null;
+        $mainAutoload = $mainPackage->getAutoload();
+        if ($mainPackage->getTargetDir() && $mainAutoload['psr-0']) {
+            $levels = count(explode('/', trim(strtr($mainPackage->getTargetDir(), '\\', '/'), '/')));
+            $prefixes = implode(', ', array_map(function ($prefix) {
+                return var_export($prefix, true);
+            }, array_keys($mainAutoload['psr-0'])));
+            $baseDirFromTargetDirCode = $filesystem->findShortestPathCode(realpath($targetDir), getcwd(), true);
+
+            $targetDirLoader = <<<EOF
+    spl_autoload_register(function(\$class) {
+        \$prefixes = array($prefixes);
+        foreach (\$prefixes as \$prefix) {
+            if (0 !== strpos(\$class, \$prefix)) {
+                continue;
+            }
+            \$path = $baseDirFromTargetDirCode . '/' . implode('/', array_slice(explode('\\\\', \$class), $levels)).'.php';
+            if (!stream_resolve_include_path(\$path)) {
+                return false;
+            }
+            require_once \$path;
+            return true;
+        }
+    });
+
+
+EOF;
+        }
+
         // flatten array
         $autoloads['classmap'] = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($autoloads['classmap']));
         foreach ($autoloads['classmap'] as $dir) {
@@ -94,7 +124,7 @@ EOF;
         if ($includePathFile = $this->getIncludePathsFile($packageMap, $filesystem, $relVendorPath, $vendorPath, $vendorDirCode, $appBaseDirCode)) {
             file_put_contents($targetDir.'/include_paths.php', $includePathFile);
         }
-        file_put_contents($targetDir.'/autoload.php', $this->getAutoloadFile(true, true, (Boolean) $includePathFile));
+        file_put_contents($targetDir.'/autoload.php', $this->getAutoloadFile(true, true, (Boolean) $includePathFile, $targetDirLoader));
         copy(__DIR__.'/ClassLoader.php', $targetDir.'/ClassLoader.php');
 
         // TODO BC feature, add E_DEPRECATED in autoload.php on April 30th, remove after May 30th
@@ -243,7 +273,7 @@ EOF;
         return $baseDir.var_export($path, true);
     }
 
-    protected function getAutoloadFile($usePSR0, $useClassMap, $useIncludePath)
+    protected function getAutoloadFile($usePSR0, $useClassMap, $useIncludePath, $targetDirLoader)
     {
         $file = <<<'HEADER'
 <?php
@@ -290,6 +320,8 @@ PSR0;
 
 CLASSMAP;
         }
+
+        $file .= $targetDirLoader;
 
         return $file . <<<'FOOTER'
     $loader->register();
