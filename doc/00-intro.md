@@ -80,7 +80,7 @@ capable of autoloading all of the classes in any of the libraries that it
 downloads. To use it, just add the following line to your code's bootstrap
 process:
 
-    require 'vendor/.composer/autoload.php';
+    require 'vendor/autoload.php';
 
 Woh! Now start using monolog! To keep learning more about Composer, keep
 reading the "Basic Usage" chapter.
