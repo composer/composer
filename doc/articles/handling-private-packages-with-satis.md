@@ -6,7 +6,7 @@
 Satis can be used to host the metadata of your company's private packages, or
 your own. It basically acts as a micro-packagist. You can get it from
 [GitHub](http://github.com/composer/satis) or install via CLI:
-`composer create-project composer/satis`.
+`composer.phar create-project composer/satis`.
 
 ## Setup
 
