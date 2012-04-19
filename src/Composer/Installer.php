@@ -152,7 +152,7 @@ class Installer
             }
         }
 
-        // dump suggestions
+        // output suggestions
         foreach ($this->suggestedPackages as $suggestion) {
             $this->io->write($suggestion['source'].' suggests installing '.$suggestion['target'].' ('.$suggestion['reason'].')');
         }
@@ -174,7 +174,7 @@ class Installer
             $this->io->write('<info>Generating autoload files</info>');
             $generator = new AutoloadGenerator;
             $localRepos = new CompositeRepository($this->repositoryManager->getLocalRepositories());
-            $generator->dump($localRepos, $this->package, $this->installationManager, $this->installationManager->getVendorPath().'/.composer');
+            $generator->dump($localRepos, $this->package, $this->installationManager, $this->installationManager->getVendorPath(), true);
 
             // dispatch post event
             $eventName = $this->update ? ScriptEvents::POST_UPDATE_CMD : ScriptEvents::POST_INSTALL_CMD;

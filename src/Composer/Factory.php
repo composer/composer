@@ -151,8 +151,15 @@ class Factory
 
     protected function addLocalRepository(RepositoryManager $rm, $vendorDir)
     {
-        $rm->setLocalRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/.composer/installed.json')));
-        $rm->setLocalDevRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/.composer/installed_dev.json')));
+        // TODO BC feature, remove after May 30th
+        if (file_exists($vendorDir.'/.composer/installed.json')) {
+            rename($vendorDir.'/.composer/installed.json', $vendorDir.'/installed.json');
+        }
+        if (file_exists($vendorDir.'/.composer/installed_dev.json')) {
+            rename($vendorDir.'/.composer/installed_dev.json', $vendorDir.'/installed_dev.json');
+        }
+        $rm->setLocalRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/installed.json')));
+        $rm->setLocalDevRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/installed_dev.json')));
     }
 
     protected function addPackagistRepository(array $localConfig)
