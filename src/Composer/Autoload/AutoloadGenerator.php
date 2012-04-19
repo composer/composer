@@ -25,7 +25,7 @@ use Composer\Util\Filesystem;
  */
 class AutoloadGenerator
 {
-    public function dump(RepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir)
+    public function dump(RepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir, $bcLinks = false)
     {
         $filesystem = new Filesystem();
         $filesystem->ensureDirectoryExists($installationManager->getVendorPath());
@@ -96,6 +96,17 @@ EOF;
         }
         file_put_contents($targetDir.'/autoload.php', $this->getAutoloadFile(true, true, (Boolean) $includePathFile));
         copy(__DIR__.'/ClassLoader.php', $targetDir.'/ClassLoader.php');
+
+        // TODO BC feature, add E_DEPRECATED in autoload.php on April 30th, remove after May 30th
+        if ($bcLinks) {
+            file_put_contents($targetDir.'/.composer/autoload_namespaces.php', "<?php\n// Deprecated file, use the one in root of vendor dir\nreturn include dirname(__DIR__).'/autoload_namespaces.php';\n");
+            file_put_contents($targetDir.'/.composer/autoload_classmap.php', "<?php\n// Deprecated file, use the one in root of vendor dir\nreturn include dirname(__DIR__).'/autoload_classmap.php';\n");
+            file_put_contents($targetDir.'/.composer/autoload.php', "<?php\n// Deprecated file, use the one in root of vendor dir\nreturn include dirname(__DIR__).'/autoload.php';\n");
+            file_put_contents($targetDir.'/.composer/ClassLoader.php', "<?php\n// Deprecated file, use the one in root of vendor dir\nreturn include dirname(__DIR__).'/ClassLoader.php';\n");
+            if ($includePathFile) {
+                file_put_contents($targetDir.'/.composer/include_paths.php', "<?php\n// Deprecated file, use the one in root of vendor dir\nreturn include dirname(__DIR__).'/include_paths.php';\n");
+            }
+        }
     }
 
     public function buildPackageMap(InstallationManager $installationManager, PackageInterface $mainPackage, array $packages)
