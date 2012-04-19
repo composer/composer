@@ -7,6 +7,7 @@
   * Added caching of repository metadata (faster startup times & failover if packagist is down)
   * Added include_path support for legacy projects that are full of require_once statements
   * Added installation notifications API to allow better statistics on Composer repositories
+  * Added autoloading support for root packages that use target-dir
   * Improved repository protocol to have large cacheable parts
 
 * 1.0.0-alpha2 (2012-04-03)
