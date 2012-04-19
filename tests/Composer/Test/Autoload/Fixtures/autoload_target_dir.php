@@ -19,7 +19,7 @@ return call_user_func(function() {
     }
 
     spl_autoload_register(function($class) {
-        $prefixes = array('Main\\Foo');
+        $prefixes = array('Main\\Foo', 'Main\\Bar');
         foreach ($prefixes as $prefix) {
             if (0 !== strpos($class, $prefix)) {
                 continue;

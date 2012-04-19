@@ -145,9 +145,9 @@ class AutoloadGeneratorTest extends TestCase
     {
         $package = new MemoryPackage('a', '1.0', '1.0');
         $package->setAutoload(array(
-            'psr-0' => array('Main\\Foo' => ''),
+            'psr-0' => array('Main\\Foo' => '', 'Main\\Bar' => ''),
         ));
-        $package->setTargetDir('Main/Foo');
+        $package->setTargetDir('Main/Foo/');
 
         $this->repository->expects($this->once())
             ->method('getPackages')

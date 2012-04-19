@@ -84,7 +84,7 @@ EOF;
         $mainAutoload = $mainPackage->getAutoload();
         if ($mainPackage->getTargetDir() && $mainAutoload['psr-0']) {
             $levels = count(explode('/', trim(strtr($mainPackage->getTargetDir(), '\\', '/'), '/')));
-            $prefixes = implode("', '", array_map(function ($prefix) {
+            $prefixes = implode(', ', array_map(function ($prefix) {
                 return var_export($prefix, true);
             }, array_keys($mainAutoload['psr-0'])));
             $baseDirFromTargetDirCode = $filesystem->findShortestPathCode(realpath($targetDir), getcwd(), true);
