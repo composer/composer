@@ -99,6 +99,7 @@ EOF;
 
         // TODO BC feature, add E_DEPRECATED in autoload.php on April 30th, remove after May 30th
         if ($bcLinks) {
+            $filesystem->ensureDirectoryExists($targetDir.'/.composer');
             file_put_contents($targetDir.'/.composer/autoload_namespaces.php', "<?php\n// Deprecated file, use the one in root of vendor dir\nreturn include dirname(__DIR__).'/autoload_namespaces.php';\n");
             file_put_contents($targetDir.'/.composer/autoload_classmap.php', "<?php\n// Deprecated file, use the one in root of vendor dir\nreturn include dirname(__DIR__).'/autoload_classmap.php';\n");
             file_put_contents($targetDir.'/.composer/autoload.php', "<?php\n// Deprecated file, use the one in root of vendor dir\nreturn include dirname(__DIR__).'/autoload.php';\n");
