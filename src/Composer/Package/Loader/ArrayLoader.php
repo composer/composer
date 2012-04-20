@@ -166,6 +166,11 @@ class ArrayLoader
         }
 
         if (isset($config['suggest']) && is_array($config['suggest'])) {
+            foreach ($config['suggest'] as $target => $reason) {
+                if ('self.version' === trim($reason)) {
+                    $config['suggest'][$target] = $package->getPrettyVersion();
+                }
+            }
             $package->setSuggests($config['suggest']);
         }
 
