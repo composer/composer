@@ -153,13 +153,23 @@ class Factory
     {
         // TODO BC feature, remove after May 30th
         if (file_exists($vendorDir.'/.composer/installed.json')) {
-            rename($vendorDir.'/.composer/installed.json', $vendorDir.'/installed.json');
+            if (!is_dir($vendorDir.'/composer')) { mkdir($vendorDir.'/composer/', 0777, true); }
+            rename($vendorDir.'/.composer/installed.json', $vendorDir.'/composer/installed.json');
         }
         if (file_exists($vendorDir.'/.composer/installed_dev.json')) {
-            rename($vendorDir.'/.composer/installed_dev.json', $vendorDir.'/installed_dev.json');
+            if (!is_dir($vendorDir.'/composer')) { mkdir($vendorDir.'/composer/', 0777, true); }
+            rename($vendorDir.'/.composer/installed_dev.json', $vendorDir.'/composer/installed_dev.json');
         }
-        $rm->setLocalRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/installed.json')));
-        $rm->setLocalDevRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/installed_dev.json')));
+        if (file_exists($vendorDir.'/installed.json')) {
+            if (!is_dir($vendorDir.'/composer')) { mkdir($vendorDir.'/composer/', 0777, true); }
+            rename($vendorDir.'/installed.json', $vendorDir.'/composer/installed.json');
+        }
+        if (file_exists($vendorDir.'/installed_dev.json')) {
+            if (!is_dir($vendorDir.'/composer')) { mkdir($vendorDir.'/composer/', 0777, true); }
+            rename($vendorDir.'/installed_dev.json', $vendorDir.'/composer/installed_dev.json');
+        }
+        $rm->setLocalRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/composer/installed.json')));
+        $rm->setLocalDevRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/composer/installed_dev.json')));
     }
 
     protected function addPackagistRepository(array $localConfig)

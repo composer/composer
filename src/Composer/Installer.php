@@ -174,7 +174,7 @@ class Installer
             $this->io->write('<info>Generating autoload files</info>');
             $generator = new AutoloadGenerator;
             $localRepos = new CompositeRepository($this->repositoryManager->getLocalRepositories());
-            $generator->dump($localRepos, $this->package, $this->installationManager, $this->installationManager->getVendorPath(), true);
+            $generator->dump($localRepos, $this->package, $this->installationManager, $this->installationManager->getVendorPath() . '/composer', true);
 
             // dispatch post event
             $eventName = $this->update ? ScriptEvents::POST_UPDATE_CMD : ScriptEvents::POST_INSTALL_CMD;
