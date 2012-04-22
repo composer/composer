@@ -1919,6 +1919,7 @@ class Solver
 
                 for ($i = count($this->branches) - 1; $i >= 0; $i--) {
                     list($literals, $level) = $this->branches[$i];
+                    if(!is_array($literals)) continue;
 
                     foreach ($literals as $offset => $literal) {
                         if ($literal && $literal->isWanted() && $this->decisionMap[$literal->getPackageId()] > $level + 1) {
