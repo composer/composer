@@ -278,6 +278,17 @@ class PearRepository extends ArrayRepository
             $depsData['suggest'] = $this->parseDependenciesOptions($deps['optional']);
         }
 
+        if (!empty($deps['group'])) {
+            $depsData['group'] = array();
+            foreach ($deps['group'] as $groupInfo) {
+                if (!empty($groupInfo['attribs']) && isset($groupInfo['attribs']['name'])) {
+                    $group = $groupInfo['attribs'];
+                    $group['require'] = $this->parseDependenciesOptions($groupInfo);
+                    $depsData['group'][] = $group;
+                }
+            }
+        }
+
         return $depsData;
     }
 
@@ -336,21 +347,33 @@ class PearRepository extends ArrayRepository
                     ),
                     'version' => $version
                 );
+                $groups = array();
                 if (isset($depsData[$version])) {
+                    if (isset($depsData[$version]['group'])) {
+                        $groups = $depsData[$version]['group'];
+                        unset($depsData[$version]['group']);
+                    }
                     $releaseData += $depsData[$version];
                 }
 
                 $package = $packageData + $releaseData;
-                try {
-                    $this->addPackage($loader->load($package));
-                    if ($this->io->isVerbose()) {
-                        $this->io->write('Loaded '.$package['name'].' '.$package['version']);
+                $packages = array($package);
+                if (!empty($groups)) {
+                    foreach ($groups as $group) {
+                        $packages[] = $this->createPackageGroupData($package, $group);
                     }
-                } catch (\UnexpectedValueException $e) {
-                    if ($this->io->isVerbose()) {
-                        $this->io->write('Could not load '.$package['name'].' '.$package['version'].': '.$e->getMessage());
+                }
+                foreach ($packages as $package) {
+                    try {
+                        $this->addPackage($loader->load($package));
+                        if ($this->io->isVerbose()) {
+                            $this->io->write('Loaded '.$package['name'].' '.$package['version']);
+                        }
+                    } catch (\UnexpectedValueException $e) {
+                        if ($this->io->isVerbose()) {
+                            $this->io->write('Could not load '.$package['name'].' '.$package['version'].': '.$e->getMessage());
+                        }
                     }
-                    continue;
                 }
             }
         }
@@ -386,5 +409,24 @@ class PearRepository extends ArrayRepository
         }
 
         return self::$channelNames[$url];
+    }
+
+    /**
+     * Create package data for dependency group
+     *
+     * @param array $packageData Original package data
+     * @param array $groupData   Dependency group information
+     * @return array
+     */
+    private function createPackageGroupData(array $packageData, array $groupData)
+    {
+        $groupPackage = $packageData;
+        $groupPackage['name'] = $groupPackage['name'] . '-' . $groupData['name'];
+        if (isset($groupData['hint'])) {
+            $groupPackage['description'] = $groupData['hint'] . (!empty($groupPackage['description']) ? ' ' . $groupPackage['dedscription'] : '');
+        }
+        $groupPackage['require'] = !empty($groupPackage['require']) ? $groupPackage['require'] + $groupData['require'] : $groupData['require'];
+
+        return $groupPackage;
     }
 }
