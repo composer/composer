@@ -70,7 +70,7 @@ class DefaultPolicy implements PolicyInterface
 
             $literals = $this->pruneToHighestPriorityOrInstalled($pool, $installedMap, $literals);
 
-            $literals = $this->pruneToLocalAliases($literals);
+            $literals = $this->pruneRemoteAliases($literals);
         }
 
         $selected = call_user_func_array('array_merge', $packages);
@@ -244,8 +244,10 @@ class DefaultPolicy implements PolicyInterface
 
     /**
      * Assumes that locally aliased (in root package requires) packages take priority over branch-alias ones
+     *
+     * If no package is a local alias, nothing happens
      */
-    protected function pruneToLocalAliases(array $literals)
+    protected function pruneRemoteAliases(array $literals)
     {
         $hasLocalAlias = false;
 
