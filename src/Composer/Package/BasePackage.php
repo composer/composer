@@ -32,6 +32,14 @@ abstract class BasePackage implements PackageInterface
         'require-dev' => array('description' => 'requires (for development)', 'method' => 'devRequires'),
     );
 
+    public static $stabilities = array(
+        'stable',
+        'RC',
+        'beta',
+        'alpha',
+        'dev',
+    );
+
     protected $name;
     protected $prettyName;
 
