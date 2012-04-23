@@ -12,6 +12,7 @@
 
 namespace Composer\Package\Loader;
 
+use Composer\Package\BasePackage;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\RepositoryManager;
 use Composer\Util\ProcessExecutor;
@@ -60,24 +61,22 @@ class RootPackageLoader extends ArrayLoader
 
         $package = parent::load($config);
 
+        $aliases = array();
+        $stabilityFlags = array();
         if (isset($config['require'])) {
-            $aliases = array();
-            foreach ($config['require'] as $reqName => $reqVersion) {
-                if (preg_match('{^([^,\s]+) +as +([^,\s]+)$}', $reqVersion, $match)) {
-                    $aliases[] = array(
-                        'package' => strtolower($reqName),
-                        'version' => $this->versionParser->normalize($match[1]),
-                        'alias' => $match[2],
-                        'alias_normalized' => $this->versionParser->normalize($match[2]),
-                    );
-                }
-            }
-
-            $package->setAliases($aliases);
+            $aliases = $this->extractAliases($config['require'], $aliases);
+            $stabilityFlags = $this->extractStabilityFlags($config['require'], $stabilityFlags);
+        }
+        if (isset($config['require-dev'])) {
+            $aliases = $this->extractAliases($config['require-dev'], $aliases);
+            $stabilityFlags = $this->extractStabilityFlags($config['require-dev'], $stabilityFlags);
         }
 
+        $package->setAliases($aliases);
+        $package->setStabilityFlags($stabilityFlags);
+
         if (isset($config['minimum-stability'])) {
-            $package->setMinimumStability($config['minimum-stability']);
+            $package->setMinimumStability(VersionParser::normalizeStability($config['minimum-stability']));
         }
 
         if (isset($config['repositories'])) {
@@ -98,5 +97,39 @@ class RootPackageLoader extends ArrayLoader
         }
 
         return $package;
+    }
+
+    private function extractAliases(array $requires, array $aliases)
+    {
+        foreach ($requires as $reqName => $reqVersion) {
+            if (preg_match('{^([^,\s]+) +as +([^,\s]+)$}', $reqVersion, $match)) {
+                $aliases[] = array(
+                    'package' => strtolower($reqName),
+                    'version' => $this->versionParser->normalize($match[1]),
+                    'alias' => $match[2],
+                    'alias_normalized' => $this->versionParser->normalize($match[2]),
+                );
+            }
+        }
+
+        return $aliases;
+    }
+
+    private function extractStabilityFlags(array $requires, array $stabilityFlags)
+    {
+        $stabilities = BasePackage::$stabilities;
+        foreach ($requires as $reqName => $reqVersion) {
+            if (preg_match('{^[^,\s]*?@('.implode('|', $stabilities).')$}i', $reqVersion, $match)) {
+                $name = strtolower($reqName);
+                $stability = array_search(VersionParser::normalizeStability($match[1]), $stabilities);
+
+                if (isset($stabilityFlags[$name]) && $stabilityFlags[$name] > $stability) {
+                    continue;
+                }
+                $stabilityFlags[$name] = $stability;
+            }
+        }
+
+        return $stabilityFlags;
     }
 }

@@ -106,6 +106,12 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    public function testParseConstraintsIgnoresStabilityFlag()
+    {
+        $parser = new VersionParser;
+        $this->assertSame((string) new VersionConstraint('=', '1.0.0.0'), (string) $parser->parseConstraints('1.0@dev'));
+    }
+
     /**
      * @dataProvider simpleConstraints
      */

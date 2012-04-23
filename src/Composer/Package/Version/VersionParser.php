@@ -12,6 +12,7 @@
 
 namespace Composer\Package\Version;
 
+use Composer\Package\BasePackage;
 use Composer\Package\LinkConstraint\MultiConstraint;
 use Composer\Package\LinkConstraint\VersionConstraint;
 
@@ -46,6 +47,13 @@ class VersionParser
         }
 
         return 'stable';
+    }
+
+    static public function normalizeStability($stability)
+    {
+        $stability = strtolower($stability);
+
+        return $stability === 'rc' ? 'RC' : $stability;
     }
 
     /**
@@ -143,6 +151,10 @@ class VersionParser
      */
     public function parseConstraints($constraints)
     {
+        if (preg_match('{^([^,\s]*?)@('.implode('|', BasePackage::$stabilities).')$}i', $constraints, $match)) {
+            $constraints = empty($match[1]) ? '*' : $match[1];
+        }
+
         $constraints = preg_split('{\s*,\s*}', trim($constraints));
 
         if (count($constraints) > 1) {
