@@ -12,6 +12,7 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\Package\BasePackage;
 use Composer\Package\LinkConstraint\LinkConstraintInterface;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\CompositeRepository;
@@ -30,18 +31,13 @@ class Pool
     protected $packages = array();
     protected $packageByName = array();
     protected $acceptableStabilities;
+    protected $stabilityFlags;
 
-    public function __construct($minimumStability = 'dev')
+    public function __construct($minimumStability = 'dev', array $stabilityFlags = array())
     {
-        $stabilities = array(
-            'stable',
-            'RC',
-            'beta',
-            'alpha',
-            'dev',
-        );
-
+        $stabilities = BasePackage::$stabilities;
         $this->acceptableStabilities = array_flip(array_splice($stabilities, 0, array_search($minimumStability, $stabilities) + 1));
+        $this->stabilityFlags = $stabilityFlags;
     }
 
     /**
@@ -57,20 +53,31 @@ class Pool
             $repos = array($repo);
         }
 
+        $id = count($this->packages) + 1;
         foreach ($repos as $repo) {
             $this->repositories[] = $repo;
 
             $exempt = $repo instanceof PlatformRepository || $repo instanceof InstalledRepositoryInterface;
             foreach ($repo->getPackages() as $package) {
-                if (!$exempt && !isset($this->acceptableStabilities[$package->getStability()])) {
-                    continue;
-                }
+                $name = $package->getName();
+                $stability = $package->getStability();
+                if (
+                    // always allow exempt repos
+                    $exempt
+                    // allow if package matches the global stability requirement and has no exception
+                    || (!isset($this->stabilityFlags[$name])
+                        && isset($this->acceptableStabilities[$stability]))
+                    // allow if package matches the package-specific stability flag
+                    || (isset($this->stabilityFlags[$name])
+                        && array_search($stability, BasePackage::$stabilities) <= $this->stabilityFlags[$name]
+                    )
+                ) {
+                    $package->setId($id++);
+                    $this->packages[] = $package;
 
-                $package->setId(count($this->packages) + 1);
-                $this->packages[] = $package;
-
-                foreach ($package->getNames() as $name) {
-                    $this->packageByName[$name][] = $package;
+                    foreach ($package->getNames() as $name) {
+                        $this->packageByName[$name][] = $package;
+                    }
                 }
             }
         }

@@ -49,6 +49,7 @@ class MemoryPackage extends BasePackage
     protected $dev;
 
     protected $minimumStability = 'dev';
+    protected $stabilityFlags = array();
 
     protected $requires = array();
     protected $conflicts = array();
@@ -615,6 +616,24 @@ class MemoryPackage extends BasePackage
     public function getMinimumStability()
     {
         return $this->minimumStability;
+    }
+
+    /**
+     * Set the stabilityFlags
+     *
+     * @param array $stabilityFlags
+     */
+    public function setStabilityFlags(array $stabilityFlags)
+    {
+        $this->stabilityFlags = $stabilityFlags;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getStabilityFlags()
+    {
+        return $this->stabilityFlags;
     }
 
     /**
