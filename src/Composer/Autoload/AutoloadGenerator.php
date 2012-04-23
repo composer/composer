@@ -88,12 +88,12 @@ EOF;
             $prefixes = implode(', ', array_map(function ($prefix) {
                 return var_export($prefix, true);
             }, array_keys($mainAutoload['psr-0'])));
-            $baseDirFromTargetDirCode = $filesystem->findShortestPathCode(realpath($targetDir), getcwd(), true);
+            $baseDirFromVendorDirCode = $filesystem->findShortestPathCode($vendorPath, getcwd(), true);
 
             $targetDirLoader = <<<EOF
     spl_autoload_register(function(\$class) {
-        static \$dir = $baseDirFromTargetDirCode . '/';
-        static \$prefixes = array($prefixes);
+        \$dir = $baseDirFromVendorDirCode . '/';
+        \$prefixes = array($prefixes);
         foreach (\$prefixes as \$prefix) {
             if (0 !== strpos(\$class, \$prefix)) {
                 continue;
