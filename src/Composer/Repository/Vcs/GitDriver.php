@@ -41,7 +41,7 @@ class GitDriver extends VcsDriver
         if (static::isLocalUrl($this->url)) {
             $this->repoDir = str_replace('file://', '', $this->url);
         } else {
-            $this->repoDir = sys_get_temp_dir() . '/composer-' . preg_replace('{[^a-z0-9.]}i', '-', $this->url) . '/';
+            $this->repoDir = getenv('HOME') . '/.composer/cache.git/' . preg_replace('{[^a-z0-9.]}i', '-', $this->url) . '/';
 
             // update the repo if it is a valid git repository
             if (is_dir($this->repoDir) && 0 === $this->process->execute('git remote', $output, $this->repoDir)) {
