@@ -31,14 +31,14 @@ class HgDriver extends VcsDriver
      */
     public function initialize()
     {
-        $this->tmpDir = sys_get_temp_dir() . '/composer-' . preg_replace('{[^a-z0-9]}i', '-', $url) . '/';
+        $this->tmpDir = $this->config->get('home') . '/cache.hg/' . preg_replace('{[^a-z0-9]}i', '-', $url) . '/';
 
         $url = escapeshellarg($this->url);
         $tmpDir = escapeshellarg($this->tmpDir);
         if (is_dir($this->tmpDir)) {
             $this->process->execute(sprintf('cd %s && hg pull -u', $tmpDir), $output);
         } else {
-            $this->process->execute(sprintf('cd %s && hg clone %s %s', escapeshellarg(sys_get_temp_dir()), $url, $tmpDir), $output);
+            $this->process->execute(sprintf('cd %s && hg clone %s %s', escapeshellarg(dirname($this->tmpDir)), $url, $tmpDir), $output);
         }
 
         $this->getTags();
