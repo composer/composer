@@ -186,6 +186,11 @@ class Installer
 
     protected function doInstall($localRepo, $installedRepo, $aliases, $devMode = false)
     {
+        // initialize locker to create aliased packages
+        if (!$this->update && $this->locker->isLocked($devMode)) {
+            $lockedPackages = $this->locker->getLockedPackages($devMode);
+        }
+
         // creating repository pool
         $pool = new Pool;
         $pool->addRepository($installedRepo);
@@ -214,7 +219,7 @@ class Installer
                 $this->io->write('<warning>Your lock file is out of sync with your composer.json, run "composer.phar update" to update dependencies</warning>');
             }
 
-            foreach ($this->locker->getLockedPackages($devMode) as $package) {
+            foreach ($lockedPackages as $package) {
                 $version = $package->getVersion();
                 foreach ($aliases as $alias) {
                     if ($alias['package'] === $package->getName() && $alias['version'] === $package->getVersion()) {

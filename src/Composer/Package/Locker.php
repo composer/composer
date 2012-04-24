@@ -95,7 +95,9 @@ class Locker
             if (!$package) {
                 $package = $this->repositoryManager->findPackage($info['package'], $info['version']);
                 if ($package && !empty($info['alias'])) {
-                    $package = new AliasPackage($package, $info['alias'], $info['alias']);
+                    $alias = new AliasPackage($package, $info['alias'], $info['alias']);
+                    $package->getRepository()->addPackage($alias);
+                    $package = $alias;
                 }
             }
 
