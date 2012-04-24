@@ -30,6 +30,7 @@ class VcsRepository extends ArrayRepository
     protected $packageName;
     protected $verbose;
     protected $io;
+    protected $config;
     protected $versionParser;
     protected $type;
 
@@ -48,20 +49,21 @@ class VcsRepository extends ArrayRepository
         $this->io = $io;
         $this->type = isset($repoConfig['type']) ? $repoConfig['type'] : 'vcs';
         $this->verbose = $io->isVerbose();
+        $this->config = $config;
     }
 
     public function getDriver()
     {
         if (isset($this->drivers[$this->type])) {
             $class = $this->drivers[$this->type];
-            $driver = new $class($this->url, $this->io);
+            $driver = new $class($this->url, $this->io, $this->config);
             $driver->initialize();
             return $driver;
         }
 
         foreach ($this->drivers as $driver) {
             if ($driver::supports($this->io, $this->url)) {
-                $driver = new $driver($this->url, $this->io);
+                $driver = new $driver($this->url, $this->io, $this->config);
                 $driver->initialize();
                 return $driver;
             }
@@ -69,7 +71,7 @@ class VcsRepository extends ArrayRepository
 
         foreach ($this->drivers as $driver) {
             if ($driver::supports($this->io, $this->url, true)) {
-                $driver = new $driver($this->url, $this->io);
+                $driver = new $driver($this->url, $this->io, $this->config);
                 $driver->initialize();
                 return $driver;
             }
