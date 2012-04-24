@@ -62,8 +62,8 @@ class SvnDriver extends VcsDriver
     {
         $this->url = rtrim(self::normalizeUrl($this->url), '/');
 
-        if (false !== ($pos = strrpos($url, '/trunk'))) {
-            $this->baseUrl = substr($url, 0, $pos);
+        if (false !== ($pos = strrpos($this->url, '/trunk'))) {
+            $this->baseUrl = substr($this->url, 0, $pos);
         }
         $this->util = new SvnUtil($this->baseUrl, $this->io, $this->process);
 
