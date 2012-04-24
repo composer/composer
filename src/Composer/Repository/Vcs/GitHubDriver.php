@@ -39,27 +39,14 @@ class GitHubDriver extends VcsDriver
     protected $gitDriver;
 
     /**
-     * Constructor
-     *
-     * @param string $url
-     * @param IOInterface $io
-     * @param ProcessExecutor $process
-     * @param RemoteFilesystem $remoteFilesystem
-     */
-    public function __construct($url, IOInterface $io, ProcessExecutor $process = null, RemoteFilesystem $remoteFilesystem = null)
-    {
-        preg_match('#^(?:https?|git)://github\.com/([^/]+)/(.+?)(?:\.git)?$#', $url, $match);
-        $this->owner = $match[1];
-        $this->repository = $match[2];
-
-        parent::__construct($url, $io, $process, $remoteFilesystem);
-    }
-
-    /**
      * {@inheritDoc}
      */
     public function initialize()
     {
+        preg_match('#^(?:https?|git)://github\.com/([^/]+)/(.+?)(?:\.git)?$#', $this->url, $match);
+        $this->owner = $match[1];
+        $this->repository = $match[2];
+
         $this->fetchRootIdentifier();
     }
 

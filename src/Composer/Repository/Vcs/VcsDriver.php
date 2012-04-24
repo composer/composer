@@ -40,7 +40,7 @@ abstract class VcsDriver implements VcsDriverInterface
      * @param ProcessExecutor $process  Process instance, injectable for mocking
      * @param callable $remoteFilesystem Remote Filesystem, injectable for mocking
      */
-    public function __construct($url, IOInterface $io, Config $config, ProcessExecutor $process = null, $remoteFilesystem = null)
+    final public function __construct($url, IOInterface $io, Config $config, ProcessExecutor $process = null, $remoteFilesystem = null)
     {
         $this->url = $url;
         $this->io = $io;
