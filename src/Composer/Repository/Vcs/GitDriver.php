@@ -28,11 +28,6 @@ class GitDriver extends VcsDriver
     protected $repoDir;
     protected $infoCache = array();
 
-    public function __construct($url, IOInterface $io, ProcessExecutor $process = null)
-    {
-        parent::__construct($url, $io, $process);
-    }
-
     /**
      * {@inheritDoc}
      */

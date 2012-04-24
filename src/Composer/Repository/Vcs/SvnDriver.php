@@ -36,24 +36,6 @@ class SvnDriver extends VcsDriver
     protected $util;
 
     /**
-     * @param string          $url
-     * @param IOInterface     $io
-     * @param ProcessExecutor $process
-     *
-     * @return $this
-     */
-    public function __construct($url, IOInterface $io, ProcessExecutor $process = null)
-    {
-        $url = self::normalizeUrl($url);
-        parent::__construct($this->baseUrl = rtrim($url, '/'), $io, $process);
-
-        if (false !== ($pos = strrpos($url, '/trunk'))) {
-            $this->baseUrl = substr($url, 0, $pos);
-        }
-        $this->util    = new SvnUtil($this->baseUrl, $io, $this->process);
-    }
-
-    /**
      * Execute an SVN command and try to fix up the process with credentials
      * if necessary.
      *
@@ -78,6 +60,13 @@ class SvnDriver extends VcsDriver
      */
     public function initialize()
     {
+        $this->url = rtrim(self::normalizeUrl($this->url), '/');
+
+        if (false !== ($pos = strrpos($url, '/trunk'))) {
+            $this->baseUrl = substr($url, 0, $pos);
+        }
+        $this->util = new SvnUtil($this->baseUrl, $this->io, $this->process);
+
         $this->getBranches();
         $this->getTags();
     }
