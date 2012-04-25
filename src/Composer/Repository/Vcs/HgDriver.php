@@ -38,7 +38,7 @@ class HgDriver extends VcsDriver
         } else {
             $dir = dirname($this->tmpDir);
             if (!is_dir($dir)) {
-                mkdir($dir, 0777 & ~umask(), true);
+                mkdir($dir, 0777, true);
             }
             $this->process->execute(sprintf('cd %s && hg clone %s %s', escapeshellarg($dir), escapeshellarg($this->url), escapeshellarg($this->tmpDir)), $output);
         }
