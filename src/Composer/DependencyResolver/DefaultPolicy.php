@@ -69,6 +69,8 @@ class DefaultPolicy implements PolicyInterface
             $literals = $this->pruneToBestVersion($literals);
 
             $literals = $this->pruneToHighestPriorityOrInstalled($pool, $installedMap, $literals);
+
+            $literals = $this->pruneRemoteAliases($literals);
         }
 
         $selected = call_user_func_array('array_merge', $packages);
@@ -210,8 +212,8 @@ class DefaultPolicy implements PolicyInterface
     }
 
     /**
-    * Assumes that installed packages come first and then all highest priority packages
-    */
+     * Assumes that installed packages come first and then all highest priority packages
+     */
     protected function pruneToHighestPriorityOrInstalled(Pool $pool, array $installedMap, array $literals)
     {
         $selected = array();
@@ -235,6 +237,40 @@ class DefaultPolicy implements PolicyInterface
             }
 
             $selected[] = $literal;
+        }
+
+        return $selected;
+    }
+
+    /**
+     * Assumes that locally aliased (in root package requires) packages take priority over branch-alias ones
+     *
+     * If no package is a local alias, nothing happens
+     */
+    protected function pruneRemoteAliases(array $literals)
+    {
+        $hasLocalAlias = false;
+
+        foreach ($literals as $literal) {
+            $package = $literal->getPackage();
+
+            if ($package instanceof AliasPackage && $package->isRootPackageAlias()) {
+                $hasLocalAlias = true;
+                break;
+            }
+        }
+
+        if (!$hasLocalAlias) {
+            return $literals;
+        }
+
+        $selected = array();
+        foreach ($literals as $literal) {
+            $package = $literal->getPackage();
+
+            if ($package instanceof AliasPackage && $package->isRootPackageAlias()) {
+                $selected[] = $literal;
+            }
         }
 
         return $selected;
