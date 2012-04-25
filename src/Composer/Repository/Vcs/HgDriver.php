@@ -36,7 +36,11 @@ class HgDriver extends VcsDriver
         if (is_dir($this->tmpDir)) {
             $this->process->execute(sprintf('cd %s && hg pull -u', escapeshellarg($this->tmpDir)), $output);
         } else {
-            $this->process->execute(sprintf('cd %s && hg clone %s %s', escapeshellarg(dirname($this->tmpDir)), escapeshellarg($this->url), escapeshellarg($this->tmpDir)), $output);
+            $dir = dirname($this->tmpDir);
+            if (!is_dir($dir)) {
+                mkdir($dir, 0777 & ~umask(), true);
+            }
+            $this->process->execute(sprintf('cd %s && hg clone %s %s', escapeshellarg($dir), escapeshellarg($this->url), escapeshellarg($this->tmpDir)), $output);
         }
 
         $this->getTags();
