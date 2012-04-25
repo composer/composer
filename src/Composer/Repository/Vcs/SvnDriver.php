@@ -33,7 +33,7 @@ class SvnDriver extends VcsDriver
     /**
      * @var \Composer\Util\Svn
      */
-    protected $util;
+    private $util;
 
     /**
      * Execute an SVN command and try to fix up the process with credentials
@@ -46,6 +46,10 @@ class SvnDriver extends VcsDriver
      */
     protected function execute($command, $url)
     {
+        if (null === $this->util) {
+            $this->util = new SvnUtil($this->baseUrl, $this->io, $this->process);
+        }
+
         try {
             return $this->util->execute($command, $url);
         } catch (\RuntimeException $e) {
@@ -65,7 +69,6 @@ class SvnDriver extends VcsDriver
         if (false !== ($pos = strrpos($this->url, '/trunk'))) {
             $this->baseUrl = substr($this->url, 0, $pos);
         }
-        $this->util = new SvnUtil($this->baseUrl, $this->io, $this->process);
 
         $this->getBranches();
         $this->getTags();

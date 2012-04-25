@@ -235,6 +235,7 @@ class GitHubDriver extends VcsDriver
                             $this->gitDriver = new GitDriver(
                                 $this->generateSshUrl(),
                                 $this->io,
+                                $this->config,
                                 $this->process,
                                 $this->remoteFilesystem
                             );
