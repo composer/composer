@@ -369,8 +369,8 @@ The following options are supported:
   can run before Composer assumes they died out. You may need to make this
   higher if you have a slow connection or huge vendors.
 * **notify-on-install:** Defaults to `true`. Composer allows repositories to
-  define a notification URL, so that they get notified whenever a package is
-  installed. This option allows you to disable that behaviour.
+  define a notification URL, so that they get notified whenever a package from
+  that repository is installed. This option allows you to disable that behaviour.
 
 Example:
 
