@@ -88,6 +88,18 @@ class GitDownloader extends VcsDownloader
             $protocols = array('git', 'https', 'http');
             foreach ($protocols as $protocol) {
                 $url = $protocol . $match[1];
+
+                // private repository without git access
+                if ($this->io->hasAuthorization($url) && preg_match('{^(?:https?)(://github.com/.*)}', $url, $match)) {
+                    $auth = $this->io->getAuthorization($url);
+                    $pos = strpos($url, '://') + 3;
+                    $newurl = substr($url, 0, $pos);
+                    $newurl .= $auth['username'] . ':' . $auth['password'] . '@';
+                    $newurl .= substr($url, $pos);
+
+                    $url = $newurl;
+                }
+
                 if (0 === $this->process->execute(call_user_func($commandCallable, $url), $handler)) {
                     return;
                 }
