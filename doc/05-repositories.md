@@ -97,11 +97,6 @@ Here is a minimal package definition:
 
 It may include any of the other fields specified in the [schema](04-schema.md).
 
-> **Note:** Optionally packages can contain a `version_normalized` field, with
-> the pre-parsed version. This improves performance for large repositories such
-> as packagist, as the `version` field no longer has to be converted to the
-> internal representation.
-
 #### notify
 
 The `notify` field allows you to specify an URL template for a URL that will
