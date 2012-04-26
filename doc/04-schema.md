@@ -368,6 +368,9 @@ The following options are supported:
 * **process-timeout:** Defaults to `300`. The duration processes like git clones
   can run before Composer assumes they died out. You may need to make this
   higher if you have a slow connection or huge vendors.
+* **notify-on-install:** Defaults to `true`. Composer allows repositories to
+  define a notification URL, so that they get notified whenever a package is
+  installed. This option allows you to disable that behaviour.
 
 Example:
 
