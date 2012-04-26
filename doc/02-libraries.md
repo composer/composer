@@ -76,6 +76,14 @@ Here are some examples of version branch names:
 > **Note:** When you install a dev version, it will install it from source.
 See [Repositories](05-repositories.md) for more information.
 
+### Aliases
+
+It is possible alias branch names to versions. For example, you could alias
+`dev-master` to `1.0-dev`, which would allow you to require `1.0-dev` in all
+the packages.
+
+See [Aliases](articles/aliases.md) for more information.
+
 ## Lock file
 
 For your library you may commit the `composer.lock` file if you want to. This

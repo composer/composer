@@ -199,11 +199,6 @@ directory other than `vendor`.
 By setting this option you can change the `bin` ([Vendor Bins](articles/vendor-bins.md))
 directory to something other than `vendor/bin`.
 
-### COMPOSER_PROCESS_TIMEOUT
-
-This env var controls the time composer waits for commands (such as git
-commands) to finish executing. The default value is 60 seconds.
-
 ### http_proxy or HTTP_PROXY
 
 If you are using composer from behind an HTTP proxy, you can use the standard
@@ -214,5 +209,20 @@ Using `http_proxy` (lowercased) or even defining both might be preferrable since
 some tools like git or curl will only use the lower-cased `http_proxy` version.
 Alternatively you can also define the git proxy using
 `git config --global http.proxy <proxy url>`.
+
+### COMPOSER_HOME
+
+The `COMPOSER_HOME` var allows you to change the composer home directory. This
+is a hidden, global (per-user on the machine) directory that is shared between
+all projects.
+
+By default it points to `/home/<user>/.composer` on *nix,
+`/Users/<user>/.composer` on OSX and
+`C:\Users\<user>\AppData\Roaming\Composer` on Windows.
+
+### COMPOSER_PROCESS_TIMEOUT
+
+This env var controls the time composer waits for commands (such as git
+commands) to finish executing. The default value is 300 seconds (5 minutes).
 
 &larr; [Libraries](02-libraries.md)  |  [Schema](04-schema.md) &rarr;
