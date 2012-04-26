@@ -213,11 +213,12 @@ Alternatively you can also define the git proxy using
 ### COMPOSER_HOME
 
 The `COMPOSER_HOME` var allows you to change the composer home directory. This
-is a global (per-user on the machine) hidden directory that caches repository
-data.
+is a hidden, global (per-user on the machine) directory that is shared between
+all projects.
 
-By default it points to `$HOME/.composer` on *nix and `$APPDATA/Composer` on
-Windows.
+By default it points to `/home/<user>/.composer` on *nix,
+`/Users/<user>/.composer` on OSX and
+`C:\Users\<user>\AppData\Roaming\Composer` on Windows.
 
 ### COMPOSER_PROCESS_TIMEOUT
 
