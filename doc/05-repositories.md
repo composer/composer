@@ -121,8 +121,8 @@ This field is optional.
 #### includes
 
 For large repositories it is possible to split the `packages.json` into
-multiple files. The `includes` field from the root `packages.json` allows you
-to reference these additional files.
+multiple files. The `includes` field allows you to reference these additional
+files.
 
 An example:
 
@@ -141,8 +141,7 @@ An example:
     }
 
 The SHA-1 sum of the file allows it to be cached and only re-requested if the
-hash changed. Do note that `includes` are not resolved recursively, they can
-only be specified in the root `packages.json`.
+hash changed.
 
 This field is optional. You probably don't need it for your own custom
 repository.
