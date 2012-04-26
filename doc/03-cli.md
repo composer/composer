@@ -223,6 +223,6 @@ By default it points to `/home/<user>/.composer` on *nix,
 ### COMPOSER_PROCESS_TIMEOUT
 
 This env var controls the time composer waits for commands (such as git
-commands) to finish executing. The default value is 60 seconds.
+commands) to finish executing. The default value is 300 seconds (5 minutes).
 
 &larr; [Libraries](02-libraries.md)  |  [Schema](04-schema.md) &rarr;
