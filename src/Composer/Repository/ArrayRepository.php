@@ -25,6 +25,13 @@ class ArrayRepository implements RepositoryInterface
 {
     protected $packages;
 
+    public function __construct(array $packages = array())
+    {
+        foreach ($packages as $package) {
+            $this->addPackage($package);
+        }
+    }
+
     /**
      * {@inheritDoc}
      */

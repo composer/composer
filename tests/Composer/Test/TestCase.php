@@ -19,26 +19,19 @@ use Composer\Util\Filesystem;
 
 abstract class TestCase extends \PHPUnit_Framework_TestCase
 {
-    private static $versionParser;
-
-    public static function setUpBeforeClass()
-    {
-        if (!self::$versionParser) {
-            self::$versionParser = new VersionParser();
-        }
-    }
-
     protected function getVersionConstraint($operator, $version)
     {
+        $versionParser = new VersionParser();
         return new VersionConstraint(
             $operator,
-            self::$versionParser->normalize($version)
+            $versionParser->normalize($version)
         );
     }
 
     protected function getPackage($name, $version)
     {
-        $normVersion = self::$versionParser->normalize($version);
+        $versionParser = new VersionParser();
+        $normVersion = $versionParser->normalize($version);
         return new MemoryPackage($name, $normVersion, $version);
     }
 
