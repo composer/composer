@@ -14,6 +14,7 @@ namespace Composer\DependencyResolver;
 
 use Composer\Repository\RepositoryInterface;
 use Composer\Package\PackageInterface;
+use Composer\Package\AliasPackage;
 use Composer\DependencyResolver\Operation;
 
 /**
@@ -255,8 +256,10 @@ class Solver
                         continue;
                     }
 
-                    $reason = ($isInstalled) ? Rule::RULE_INSTALLED_PACKAGE_OBSOLETES : Rule::RULE_PACKAGE_OBSOLETES;
-                    $this->addRule(RuleSet::TYPE_PACKAGE, $this->createConflictRule($package, $provider, $reason, (string) $link));
+                    if (!$this->obsoleteImpossibleForAlias($package, $provider)) {
+                        $reason = ($isInstalled) ? Rule::RULE_INSTALLED_PACKAGE_OBSOLETES : Rule::RULE_PACKAGE_OBSOLETES;
+                        $this->addRule(RuleSet::TYPE_PACKAGE, $this->createConflictRule($package, $provider, $reason, (string) $link));
+                    }
                 }
             }
 
@@ -271,15 +274,29 @@ class Solver
                         continue;
                     }
 
-                    if ($isInstalled && !isset($this->installedMap[$provider->getId()])) {
-                        continue;
+                    if (($package instanceof AliasPackage) && $package->getAliasOf() === $provider) {
+                        $this->addRule(RuleSet::TYPE_PACKAGE, $rule = $this->createRequireRule($package, array($provider), Rule::RULE_PACKAGE_ALIAS, (string) $package));
+                    } else if (!$this->obsoleteImpossibleForAlias($package, $provider)) {
+                        $reason = ($package->getName() == $provider->getName()) ? Rule::RULE_PACKAGE_SAME_NAME : Rule::RULE_PACKAGE_IMPLICIT_OBSOLETES;
+                        $this->addRule(RuleSet::TYPE_PACKAGE, $rule = $this->createConflictRule($package, $provider, $reason, (string) $package));
                     }
-
-                    $reason = ($package->getName() == $provider->getName()) ? Rule::RULE_PACKAGE_SAME_NAME : Rule::RULE_PACKAGE_IMPLICIT_OBSOLETES;
-                    $this->addRule(RuleSet::TYPE_PACKAGE, $rule = $this->createConflictRule($package, $provider, $reason, (string) $package));
                 }
             }
         }
+    }
+
+    protected function obsoleteImpossibleForAlias($package, $provider)
+    {
+        $packageIsAlias = $package instanceof AliasPackage;
+        $providerIsAlias = $provider instanceof AliasPackage;
+
+        $impossible = (
+            ($packageIsAlias && $package->getAliasOf() === $provider) ||
+            ($providerIsAlias && $provider->getAliasOf() === $package) ||
+            ($packageIsAlias && $providerIsAlias && $provider->getAliasOf() === $package->getAliasOf())
+        );
+
+        return $impossible;
     }
 
     /**
@@ -646,7 +663,15 @@ class Solver
             }
 
             if ($literal->isWanted()) {
+                if ($package instanceof AliasPackage) {
+                    $transaction[] = new Operation\MarkAliasInstalledOperation(
+                        $package, $this->decisionQueueWhy[$i]
+                    );
+                    continue;
+                }
+
                 if (isset($installMeansUpdateMap[$literal->getPackageId()])) {
+
                     $source = $installMeansUpdateMap[$literal->getPackageId()];
 
                     $transaction[] = new Operation\UpdateOperation(
@@ -662,9 +687,47 @@ class Solver
                     );
                 }
             } else if (!isset($ignoreRemove[$package->getId()])) {
-                $transaction[] = new Operation\UninstallOperation(
-                    $package, $this->decisionQueueWhy[$i]
-                );
+                if ($package instanceof AliasPackage) {
+                    $transaction[] = new Operation\MarkAliasInstalledOperation(
+                        $package, $this->decisionQueueWhy[$i]
+                    );
+                } else {
+                    $transaction[] = new Operation\UninstallOperation(
+                        $package, $this->decisionQueueWhy[$i]
+                    );
+                }
+            }
+        }
+
+        $allDecidedMap = $this->decisionMap;
+        foreach ($this->decisionMap as $packageId => $decision) {
+            if ($decision != 0) {
+                $package = $this->pool->packageById($packageId);
+                if ($package instanceof AliasPackage) {
+                    $allDecidedMap[$package->getAliasOf()->getId()] = $decision;
+                }
+            }
+        }
+
+        foreach ($allDecidedMap as $packageId => $decision) {
+            if ($packageId === 0) {
+                continue;
+            }
+
+            if (0 == $decision && isset($this->installedMap[$packageId])) {
+                $package = $this->pool->packageById($packageId);
+
+                if ($package instanceof AliasPackage) {
+                    $transaction[] = new Operation\MarkAliasInstalledOperation(
+                        $package, null
+                    );
+                } else {
+                    $transaction[] = new Operation\UninstallOperation(
+                        $package, null
+                    );
+                }
+
+                $this->decisionMap[$packageId] = -1;
             }
         }
 
@@ -674,9 +737,19 @@ class Solver
             }
 
             if (0 == $decision && isset($this->installedMap[$packageId])) {
-                $transaction[] = new Operation\UninstallOperation(
-                    $this->pool->packageById($packageId), null
-                );
+                $package = $this->pool->packageById($packageId);
+
+                if ($package instanceof AliasPackage) {
+                    $transaction[] = new Operation\MarkAliasInstalledOperation(
+                        $package, null
+                    );
+                } else {
+                    $transaction[] = new Operation\UninstallOperation(
+                        $package, null
+                    );
+                }
+
+                $this->decisionMap[$packageId] = -1;
             }
         }
 
@@ -733,7 +806,7 @@ class Solver
     protected function decisionsSatisfy(Literal $l)
     {
         return ($l->isWanted() && $this->decisionMap[$l->getPackageId()] > 0) ||
-            (!$l->isWanted() && $this->decisionMap[$l->getPackageId()] <= 0);
+            (!$l->isWanted() && $this->decisionMap[$l->getPackageId()] < 0);
     }
 
     protected function decisionsConflict(Literal $l)
@@ -875,11 +948,6 @@ class Solver
             if ($decisionLevel <= $level) {
                 break;
             }
-
-            /** TODO: implement recommendations
-             *if (v > 0 && solv->recommendations.count && v == solv->recommendations.elements[solv->recommendations.count - 1])
-             *  solv->recommendations.count--;
-             */
 
             $this->decisionMap[$literal->getPackageId()] = 0;
             array_pop($this->decisionQueue);
@@ -1060,14 +1128,19 @@ class Solver
                     $l1num++;
                     $l1retry = true;
                 }
-
-                $rule = $this->decisionQueueWhy[$decisionId];
             }
+
+            $rule = $this->decisionQueueWhy[$decisionId];
         }
 
         $why = count($this->learnedPool) - 1;
-        assert($learnedLiterals[0] !== null);
-        $newRule = new Rule($learnedLiterals, Rule::RULE_LEARNED, $why);
+
+        if (count($learnedLiterals) === 1 && $learnedLiterals[0] === null) {
+            $newRule = new Rule(array(), Rule::RULE_LEARNED, $why);
+        } else {
+            assert($learnedLiterals[0] !== null);
+            $newRule = new Rule($learnedLiterals, Rule::RULE_LEARNED, $why);
+        }
 
         return array($learnedLiterals[0], $ruleLevel, $newRule, $why);
     }
@@ -1178,7 +1251,7 @@ class Solver
             $this->disableProblem($why);
             $this->resetSolver();
 
-            return true;
+            return 1;
         }
 
         if ($disableRules) {
@@ -1191,10 +1264,10 @@ class Solver
             }
 
             $this->resetSolver();
-            return true;
+            return 1;
         }
 
-        return false;
+        return 0;
     }
 
     private function disableProblem($why)
@@ -1266,8 +1339,8 @@ class Solver
         //    * here's the main loop:
         //    * 1) propagate new decisions (only needed once)
         //    * 2) fulfill jobs
-        //    * 4) fulfill all unresolved rules
-        //    * 6) minimalize solution if we had choices
+        //    * 3) fulfill all unresolved rules
+        //    * 4) minimalize solution if we had choices
         //    * if we encounter a problem, we rewind to a safe level and restart
         //    * with step 1
         //    */
@@ -1403,16 +1476,12 @@ class Solver
                     return;
                 }
 
-                // open suse sat-solver uses this, but why is $level == 1 trouble?
-                // SYSTEMSOLVABLE related? we don't have that, so should work
-                //if ($level < $systemLevel || $level == 1) {
-
-                if ($level < $systemLevel) {
-                    break; // trouble
-                }
-
                 // something changed, so look at all rules again
                 $n = -1;
+            }
+
+            if ($level < $systemLevel) {
+                continue;
             }
 
             // minimization step

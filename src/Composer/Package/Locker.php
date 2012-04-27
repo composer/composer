@@ -89,7 +89,7 @@ class Locker
         $repo = $dev ? $this->repositoryManager->getLocalDevRepository() : $this->repositoryManager->getLocalRepository();
 
         foreach ($lockedPackages as $info) {
-            $resolvedVersion = !empty($info['alias']) ? $info['alias'] : $info['version'];
+            $resolvedVersion = !empty($info['alias-version']) ? $info['alias-version'] : $info['version'];
 
             // try to find the package in the local repo (best match)
             $package = $repo->findPackage($info['package'], $resolvedVersion);
@@ -100,10 +100,10 @@ class Locker
             }
 
             // try to find the package in any repo (second pass without alias + rebuild alias since it disappeared)
-            if (!$package && !empty($info['alias'])) {
+            if (!$package && !empty($info['alias-version'])) {
                 $package = $this->repositoryManager->findPackage($info['package'], $info['version']);
                 if ($package) {
-                    $alias = new AliasPackage($package, $info['alias'], $info['alias']);
+                    $alias = new AliasPackage($package, $info['alias-version'], $info['alias-pretty-version']);
                     $package->getRepository()->addPackage($alias);
                     $package = $alias;
                 }
@@ -179,7 +179,10 @@ class Locker
         $locked = array();
 
         foreach ($packages as $package) {
+            $alias = null;
+
             if ($package instanceof AliasPackage) {
+                $alias = $package;
                 $package = $package->getAliasOf();
             }
 
@@ -198,8 +201,9 @@ class Locker
                 $spec['source-reference'] = $package->getSourceReference();
             }
 
-            if ($package->getAlias() && $package->isInstalledAsAlias()) {
-                $spec['alias'] = $package->getAlias();
+            if ($alias) {
+                $spec['alias-pretty-version'] = $alias->getPrettyVersion();
+                $spec['alias-version'] = $alias->getVersion();
             }
 
             $locked[] = $spec;
