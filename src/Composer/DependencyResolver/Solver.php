@@ -35,7 +35,7 @@ class Solver
     protected $decisionMap;
     protected $installedMap;
 
-    protected $packageToFeatureRule = array();
+    protected $packageToUpdateRule = array();
 
     protected $decisionQueue = array();
     protected $decisionQueueWhy = array();
@@ -555,7 +555,7 @@ class Solver
             $updates = $this->policy->findUpdatePackages($this, $this->pool, $this->installedMap, $package);
             $rule = $this->createUpdateRule($package, $updates, Rule::RULE_INTERNAL_ALLOW_UPDATE, (string) $package);
 
-            $this->packageToFeatureRule[$package->getId()] = $rule;
+            $this->packageToUpdateRule[$package->getId()] = $rule;
         }
 
         foreach ($this->jobs as $job) {
@@ -625,8 +625,8 @@ class Solver
             if (!$literal->isWanted() && isset($this->installedMap[$package->getId()])) {
                 $literals = array();
 
-                if (isset($this->packageToFeatureRule[$package->getId()])) {
-                    $literals = array_merge($literals, $this->packageToFeatureRule[$package->getId()]->getLiterals());
+                if (isset($this->packageToUpdateRule[$package->getId()])) {
+                    $literals = array_merge($literals, $this->packageToUpdateRule[$package->getId()]->getLiterals());
                 }
 
                 foreach ($literals as $updateLiteral) {
