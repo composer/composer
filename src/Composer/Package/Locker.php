@@ -90,11 +90,19 @@ class Locker
 
         foreach ($lockedPackages as $info) {
             $resolvedVersion = !empty($info['alias']) ? $info['alias'] : $info['version'];
+
+            // try to find the package in the local repo (best match)
             $package = $repo->findPackage($info['package'], $resolvedVersion);
 
+            // try to find the package in any repo
             if (!$package) {
+                $package = $this->repositoryManager->findPackage($info['package'], $resolvedVersion);
+            }
+
+            // try to find the package in any repo (second pass without alias + rebuild alias since it disappeared)
+            if (!$package && !empty($info['alias'])) {
                 $package = $this->repositoryManager->findPackage($info['package'], $info['version']);
-                if ($package && !empty($info['alias'])) {
+                if ($package) {
                     $alias = new AliasPackage($package, $info['alias'], $info['alias']);
                     $package->getRepository()->addPackage($alias);
                     $package = $alias;
