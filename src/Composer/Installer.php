@@ -326,14 +326,6 @@ class Installer
             }
         }
 
-        // anti-alias local repository to allow updates to work fine
-        foreach ($localRepo->getPackages() as $package) {
-            if ($package instanceof AliasPackage) {
-                $package->getRepository()->addPackage(clone $package->getAliasOf());
-                $package->getRepository()->removePackage($package);
-            }
-        }
-
         // execute operations
         if (!$operations) {
             $this->io->write('Nothing to install or update');
@@ -356,7 +348,10 @@ class Installer
             }
 
             if (!$this->dryRun) {
-                $this->eventDispatcher->dispatchPackageEvent(constant('Composer\Script\ScriptEvents::PRE_PACKAGE_'.strtoupper($operation->getJobType())), $operation);
+                $event = 'Composer\Script\ScriptEvents::PRE_PACKAGE_'.strtoupper($operation->getJobType());
+                if (defined($event)) {
+                    $this->eventDispatcher->dispatchPackageEvent(constant($event), $operation);
+                }
 
                 // if installing from lock, restore dev packages' references to their locked state
                 if ($installFromLock) {
@@ -378,15 +373,13 @@ class Installer
                 }
                 $this->installationManager->execute($localRepo, $operation);
 
-                $this->eventDispatcher->dispatchPackageEvent(constant('Composer\Script\ScriptEvents::POST_PACKAGE_'.strtoupper($operation->getJobType())), $operation);
+                $event = 'Composer\Script\ScriptEvents::POST_PACKAGE_'.strtoupper($operation->getJobType());
+                if (defined($event)) {
+                    $this->eventDispatcher->dispatchPackageEvent(constant($event), $operation);
+                }
 
                 $localRepo->write();
             }
-        }
-
-        // reload local repository for the dev pass to work ok with aliases since it was anti-aliased above
-        if (!$devMode) {
-            $localRepo->reload();
         }
 
         return true;
