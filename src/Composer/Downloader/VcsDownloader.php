@@ -77,6 +77,7 @@ abstract class VcsDownloader implements DownloaderInterface
     public function remove(PackageInterface $package, $path)
     {
         $this->enforceCleanDirectory($path);
+        $this->io->write("  - Removing package <info>" . $package->getName() . "</info> (<comment>" . $package->getPrettyVersion() . "</comment>)");
         if (!$this->filesystem->removeDirectory($path)) {
             throw new \RuntimeException('Could not completely delete '.$path.', aborting.');
         }
