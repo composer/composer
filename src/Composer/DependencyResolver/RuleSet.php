@@ -21,15 +21,13 @@ class RuleSet implements \IteratorAggregate, \Countable
     const TYPE_PACKAGE = 0;
     const TYPE_JOB = 1;
     const TYPE_FEATURE = 3;
-    const TYPE_CHOICE = 4;
-    const TYPE_LEARNED = 5;
+    const TYPE_LEARNED = 4;
 
     protected static $types = array(
         -1 => 'UNKNOWN',
         self::TYPE_PACKAGE => 'PACKAGE',
         self::TYPE_FEATURE => 'FEATURE',
         self::TYPE_JOB => 'JOB',
-        self::TYPE_CHOICE => 'CHOICE',
         self::TYPE_LEARNED => 'LEARNED',
     );
 

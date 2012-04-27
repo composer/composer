@@ -31,7 +31,6 @@ class RuleSetTest extends TestCase
                 new Rule(array(), 'update1', null),
             ),
             RuleSet::TYPE_LEARNED => array(),
-            RuleSet::TYPE_CHOICE => array(),
         );
 
         $ruleSet = new RuleSet;
