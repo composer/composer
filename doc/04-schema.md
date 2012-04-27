@@ -246,7 +246,7 @@ Example:
 
     {
         "autoload: {
-            "classmap": ["src/", "lib/"]
+            "classmap": ["."]
         }
     }
 
