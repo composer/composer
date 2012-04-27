@@ -789,9 +789,6 @@ class Solver
 
         $installRecommended = 0;
         $this->runSat(true, $installRecommended);
-        //$this->printDecisionMap();
-        //findrecommendedsuggested(solv);
-        //solver_prepare_solutions(solv);
 
         if ($this->problems) {
             throw new SolverProblemsException($this->problems);
