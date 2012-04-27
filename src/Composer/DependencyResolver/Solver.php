@@ -730,14 +730,12 @@ class Solver
             }
         }
 
-        // solver_addrpmrulesforweak(solv, &addedmap);
-
         foreach ($this->installedMap as $package) {
             $updates = $this->policy->findUpdatePackages($this, $this->pool, $this->installedMap, $package);
             $rule = $this->createUpdateRule($package, $updates, Rule::RULE_INTERNAL_ALLOW_UPDATE, (string) $package);
 
             $rule->setWeak(true);
-            $this->addRule(RuleSet::TYPE_FEATURE, $rule);
+            //$this->addRule(RuleSet::TYPE_FEATURE, $rule);
             $this->packageToFeatureRule[$package->getId()] = $rule;
         }
 
@@ -853,6 +851,18 @@ class Solver
             } else if (!isset($ignoreRemove[$package->getId()])) {
                 $transaction[] = new Operation\UninstallOperation(
                     $package, $this->decisionQueueWhy[$i]
+                );
+            }
+        }
+
+        foreach ($this->decisionMap as $packageId => $decision) {
+            if ($packageId === 0) {
+                continue;
+            }
+
+            if (0 == $decision && isset($this->installedMap[$packageId])) {
+                $transaction[] = new Operation\UninstallOperation(
+                    $this->pool->packageById($packageId), null
                 );
             }
         }
@@ -1542,125 +1552,6 @@ class Solver
                 // jobs left
                 $iterator->next();
                 if ($iterator->valid()) {
-                    continue;
-                }
-            }
-
-            // handle installed packages
-            if ($level < $systemLevel) {
-                // use two passes if any packages are being updated
-                // -> better user experience
-                for ($pass = (count($this->updateMap)) ? 0 : 1; $pass < 2; $pass++) {
-                    $passLevel = $level;
-                    for ($i = $installedPos, $n = 0; $n < count($this->installedPackages); $i++, $n++) {
-                        $repeat = false;
-
-                        if ($i == count($this->installedPackages)) {
-                            $i = 0;
-                        }
-                        $literal = new Literal($this->installedPackages[$i], true);
-
-                        if ($this->decisionsContain($literal)) {
-                            continue;
-                        }
-
-                        // only process updates in first pass
-                        /** TODO: && or || ? **/
-                        if (0 === $pass && !isset($this->updateMap[$literal->getPackageId()])) {
-                            continue;
-                        }
-
-                        $rule = null;
-
-                        if (isset($this->packageToFeatureRule[$literal->getPackageId()])) {
-                            $rule = $this->packageToFeatureRule[$literal->getPackageId()];
-                        }
-
-                        if (!$rule || $rule->isDisabled()) {
-                            continue;
-                        }
-
-                        $updateRuleLiterals = $rule->getLiterals();
-
-                        $decisionQueue = array();
-                        if (!isset($this->noUpdate[$literal->getPackageId()]) && (
-                            $this->decidedRemove($literal->getPackage()) ||
-                            isset($this->updateMap[$literal->getPackageId()]) ||
-                            !$literal->equals($updateRuleLiterals[0])
-                        )) {
-                            foreach ($updateRuleLiterals as $ruleLiteral) {
-                                if ($this->decidedInstall($ruleLiteral->getPackage())) {
-                                    // already fulfilled
-                                    $decisionQueue = array();
-                                    break;
-                                }
-                                if ($this->undecided($ruleLiteral->getPackage())) {
-                                    $decisionQueue[] = $ruleLiteral;
-                                }
-                            }
-                        }
-
-                        if (sizeof($decisionQueue)) {
-                            $oLevel = $level;
-                            $level = $this->selectAndInstall($level, $decisionQueue, $disableRules, $rule);
-
-                            if (0 === $level) {
-                                return;
-                            }
-
-                            if ($level <= $oLevel) {
-                                $repeat = true;
-                            }
-                        } else if (!$repeat && $this->undecided($literal->getPackage())) {
-                            // still undecided? keep package.
-                            $oLevel = $level;
-                            if (isset($this->cleanDepsMap[$literal->getPackageId()])) {
-                                // clean deps removes package
-                                $level = $this->setPropagateLearn($level, $literal->invert(), $disableRules, null);
-                            } else {
-                                // ckeeping package
-                                $level = $this->setPropagateLearn($level, $literal, $disableRules, $rule);
-                            }
-
-
-                            if (0 === $level) {
-                                return;
-                            }
-
-                            if ($level <= $oLevel) {
-                                $repeat = true;
-                            }
-                        }
-
-                        if ($repeat) {
-                            if (1 === $level || $level < $passLevel) {
-                                // trouble
-                                break;
-                            }
-                            if ($level < $oLevel) {
-                                // redo all
-                                $n = 0;
-                            }
-
-                            // repeat
-                            $i--;
-                            $n--;
-                            continue;
-                        }
-                    }
-
-                    if ($n < count($this->installedPackages)) {
-                        $installedPos = $i; // retry this problem next time
-                        break;
-                    }
-
-                    $installedPos = 0;
-                }
-
-                $systemLevel = $level + 1;
-
-                if ($pass < 2) {
-                    // had trouble => retry
                     continue;
                 }
             }
