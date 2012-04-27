@@ -173,37 +173,46 @@ class GitHubDriver extends VcsDriver
      */
     protected function filterTags()
     {
-        $invalidShas = array();
+        $invalidTags = array();
 
-        $refs = $this->getFromApi('repos/'.$this->owner.'/'.$this->repository.'/git/refs/notes/composer');
+        try {
+            $refs = $this->getFromApi('repos/'.$this->owner.'/'.$this->repository.'/git/refs/notes/composer-invalidate');
+        } catch (TransportException $e) {
+            if (404 === $e->getCode()) {
+                return;
+            }
+            throw $e;
+        }
+
         if (!$refs) {
             return;
         }
-        $url = $refs['object']['url'];
 
-        $commit = json_decode($this->getContents($url), true);
-        $url = $commit['tree']['url'];
+        foreach ($refs as $ref) {
+            if (!preg_match('#^refs/notes/composer-invalidate/#', $ref['ref'])) {
+                continue;
+            }
+            $tag = preg_replace('#^refs/notes/composer-invalidate/#', '', $ref['ref']);
 
-        $tree = json_decode($this->getContents($url), true);
-        foreach ($tree['tree'] as $blob) {
-            $url = $blob['url'];
-            $note = json_decode($this->getContents($url), true);
+            $url = $ref['object']['url'];
+            $commit = JsonFile::parseJson($this->getContents($url));
 
+            try {
+                $url = $commit['tree']['url'];
+                $tree = JsonFile::parseJson($this->getContents($url));
+            } catch (TransportException $e) {
+                // github keeps deleted notes around in the main listing
+                // but returns 404 when requesting the tree
+                if (404 === $e->getCode()) {
+                    continue;
+                }
+                throw $e;
+            }
+
+            $blob = $tree['tree'][0];
             $sha = $blob['path'];
 
-            $content = ('base64' === $note['encoding'])
-                ? trim(base64_decode(trim($note['content'])))
-                : trim($note['content']);
-            $content = explode("\n", $content);
-
-            if (in_array('invalid', $content)) {
-                try {
-                    $annotatedTag = $this->getFromApi('repos/'.$this->owner.'/'.$this->repository.'/git/tags/'.$sha);
-                    $invalidShas[$annotatedTag['object']['sha']] = $annotatedTag['object']['sha'];
-                } catch (\Exception $e) {
-                    $invalidShas[$sha] = $sha;
-                }
-            }
+            $invalidTags[$tag] = $sha;
         }
 
         foreach ($this->tags as $tag => $sha) {
