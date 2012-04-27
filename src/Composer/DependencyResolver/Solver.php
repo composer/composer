@@ -39,6 +39,15 @@ class Solver
 
     protected $packageToFeatureRule = array();
 
+    protected $decisionQueue = array();
+    protected $decisionQueueWhy = array();
+    protected $decisionQueueFree = array();
+    protected $propagateIndex;
+    protected $branches = array();
+    protected $problems = array();
+    protected $learnedPool = array();
+    protected $recommendsIndex;
+
     public function __construct(PolicyInterface $policy, Pool $pool, RepositoryInterface $installed)
     {
         $this->policy = $policy;
@@ -676,15 +685,6 @@ class Solver
 
         return array_reverse($transaction);
     }
-
-    protected $decisionQueue = array();
-    protected $decisionQueueWhy = array();
-    protected $decisionQueueFree = array();
-    protected $propagateIndex;
-    protected $branches = array();
-    protected $problems = array();
-    protected $learnedPool = array();
-    protected $recommendsIndex;
 
     protected function literalFromId($id)
     {
