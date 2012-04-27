@@ -30,7 +30,6 @@ class Solver
     protected $ruleToJob = array();
     protected $addedMap = array();
     protected $updateMap = array();
-    protected $noObsoletes = array();
     protected $watches = array();
     protected $removeWatches = array();
     protected $decisionMap;
@@ -237,50 +236,38 @@ class Solver
             }
 
             // check obsoletes and implicit obsoletes of a package
-            // if ignoreinstalledsobsoletes is not set, we're also checking
-            // obsoletes of installed packages (like newer rpm versions)
-            //
-            /** TODO if ($this->noInstalledObsoletes) */
-            if (true) {
-                $noObsoletes = isset($this->noObsoletes[$package->getId()]);
-                $isInstalled = (isset($this->installedMap[$package->getId()]));
+            $isInstalled = (isset($this->installedMap[$package->getId()]));
 
-                foreach ($package->getReplaces() as $link) {
-                    $obsoleteProviders = $this->pool->whatProvides($link->getTarget(), $link->getConstraint());
+            foreach ($package->getReplaces() as $link) {
+                $obsoleteProviders = $this->pool->whatProvides($link->getTarget(), $link->getConstraint());
 
-                    foreach ($obsoleteProviders as $provider) {
-                        if ($provider === $package) {
-                            continue;
-                        }
-
-                        $reason = ($isInstalled) ? Rule::RULE_INSTALLED_PACKAGE_OBSOLETES : Rule::RULE_PACKAGE_OBSOLETES;
-                        $this->addRule(RuleSet::TYPE_PACKAGE, $this->createConflictRule($package, $provider, $reason, (string) $link));
+                foreach ($obsoleteProviders as $provider) {
+                    if ($provider === $package) {
+                        continue;
                     }
+
+                    $reason = ($isInstalled) ? Rule::RULE_INSTALLED_PACKAGE_OBSOLETES : Rule::RULE_PACKAGE_OBSOLETES;
+                    $this->addRule(RuleSet::TYPE_PACKAGE, $this->createConflictRule($package, $provider, $reason, (string) $link));
                 }
+            }
 
-                // check implicit obsoletes
-                // for installed packages we only need to check installed/installed problems,
-                // as the others are picked up when looking at the uninstalled package.
-                if (!$isInstalled) {
-                    $obsoleteProviders = $this->pool->whatProvides($package->getName(), null);
+            // check implicit obsoletes
+            // for installed packages we only need to check installed/installed problems,
+            // as the others are picked up when looking at the uninstalled package.
+            if (!$isInstalled) {
+                $obsoleteProviders = $this->pool->whatProvides($package->getName(), null);
 
-                    foreach ($obsoleteProviders as $provider) {
-                        if ($provider === $package) {
-                            continue;
-                        }
-
-                        if ($isInstalled && !isset($this->installedMap[$provider->getId()])) {
-                            continue;
-                        }
-
-                        // obsolete same packages even when noObsoletes
-                        if ($noObsoletes && (!$package->equals($provider))) {
-                            continue;
-                        }
-
-                        $reason = ($package->getName() == $provider->getName()) ? Rule::RULE_PACKAGE_SAME_NAME : Rule::RULE_PACKAGE_IMPLICIT_OBSOLETES;
-                        $this->addRule(RuleSet::TYPE_PACKAGE, $rule = $this->createConflictRule($package, $provider, $reason, (string) $package));
+                foreach ($obsoleteProviders as $provider) {
+                    if ($provider === $package) {
+                        continue;
                     }
+
+                    if ($isInstalled && !isset($this->installedMap[$provider->getId()])) {
+                        continue;
+                    }
+
+                    $reason = ($package->getName() == $provider->getName()) ? Rule::RULE_PACKAGE_SAME_NAME : Rule::RULE_PACKAGE_IMPLICIT_OBSOLETES;
+                    $this->addRule(RuleSet::TYPE_PACKAGE, $rule = $this->createConflictRule($package, $provider, $reason, (string) $package));
                 }
             }
         }
