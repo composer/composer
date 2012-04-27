@@ -186,7 +186,7 @@ class LibraryInstaller implements InstallerInterface
         if (!$package->getBinaries()) {
             return;
         }
-        foreach ($package->getBinaries() as $bin => $os) {
+        foreach ($package->getBinaries() as $bin) {
             $link = $this->binDir.'/'.basename($bin);
             if (!file_exists($link)) {
                 continue;
