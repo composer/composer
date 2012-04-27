@@ -483,174 +483,6 @@ class Solver
         }
     }
 
-    protected function addChoiceRules()
-    {
-
-// void
-// solver_addchoicerules(Solver *solv)
-// {
-//   Pool *pool = solv->pool;
-//   Map m, mneg;
-//   Rule *r;
-//   Queue q, qi;
-//   int i, j, rid, havechoice;
-//   Id p, d, *pp;
-//   Id p2, pp2;
-//   Solvable *s, *s2;
-//
-//   solv->choicerules = solv->nrules;
-//   if (!pool->installed)
-//     {
-//       solv->choicerules_end = solv->nrules;
-//       return;
-//     }
-//   solv->choicerules_ref = sat_calloc(solv->rpmrules_end, sizeof(Id));
-//   queue_init(&q);
-//   queue_init(&qi);
-//   map_init(&m, pool->nsolvables);
-//   map_init(&mneg, pool->nsolvables);
-//   /* set up negative assertion map from infarch and dup rules */
-//   for (rid = solv->infarchrules, r = solv->rules + rid; rid < solv->infarchrules_end; rid++, r++)
-//     if (r->p < 0 && !r->w2 && (r->d == 0 || r->d == -1))
-//       MAPSET(&mneg, -r->p);
-//   for (rid = solv->duprules, r = solv->rules + rid; rid < solv->duprules_end; rid++, r++)
-//     if (r->p < 0 && !r->w2 && (r->d == 0 || r->d == -1))
-//       MAPSET(&mneg, -r->p);
-//   for (rid = 1; rid < solv->rpmrules_end ; rid++)
-//     {
-//       r = solv->rules + rid;
-//       if (r->p >= 0 || ((r->d == 0 || r->d == -1) && r->w2 < 0))
-//     continue;   /* only look at requires rules */
-//       // solver_printrule(solv, SAT_DEBUG_RESULT, r);
-//       queue_empty(&q);
-//       queue_empty(&qi);
-//       havechoice = 0;
-//       FOR_RULELITERALS(p, pp, r)
-//     {
-//       if (p < 0)
-//         continue;
-//       s = pool->solvables + p;
-//       if (!s->repo)
-//         continue;
-//       if (s->repo == pool->installed)
-//         {
-//           queue_push(&q, p);
-//           continue;
-//         }
-//       /* check if this package is "blocked" by a installed package */
-//       s2 = 0;
-//       FOR_PROVIDES(p2, pp2, s->name)
-//         {
-//           s2 = pool->solvables + p2;
-//           if (s2->repo != pool->installed)
-//         continue;
-//           if (!pool->implicitobsoleteusesprovides && s->name != s2->name)
-//             continue;
-//           if (pool->obsoleteusescolors && !pool_colormatch(pool, s, s2))
-//             continue;
-//           break;
-//         }
-//       if (p2)
-//         {
-//           /* found installed package p2 that we can update to p */
-//           if (MAPTST(&mneg, p))
-//         continue;
-//           if (policy_is_illegal(solv, s2, s, 0))
-//         continue;
-//           queue_push(&qi, p2);
-//           queue_push(&q, p);
-//           continue;
-//         }
-//       if (s->obsoletes)
-//         {
-//           Id obs, *obsp = s->repo->idarraydata + s->obsoletes;
-//           s2 = 0;
-//           while ((obs = *obsp++) != 0)
-//         {
-//           FOR_PROVIDES(p2, pp2, obs)
-//             {
-//               s2 = pool->solvables + p2;
-//               if (s2->repo != pool->installed)
-//             continue;
-//               if (!pool->obsoleteusesprovides && !pool_match_nevr(pool, pool->solvables + p2, obs))
-//             continue;
-//               if (pool->obsoleteusescolors && !pool_colormatch(pool, s, s2))
-//             continue;
-//               break;
-//             }
-//           if (p2)
-//             break;
-//         }
-//           if (obs)
-//         {
-//           /* found installed package p2 that we can update to p */
-//           if (MAPTST(&mneg, p))
-//             continue;
-//           if (policy_is_illegal(solv, s2, s, 0))
-//             continue;
-//           queue_push(&qi, p2);
-//           queue_push(&q, p);
-//           continue;
-//         }
-//         }
-//       /* package p is independent of the installed ones */
-//       havechoice = 1;
-//     }
-//       if (!havechoice || !q.count)
-//     continue;   /* no choice */
-//
-//       /* now check the update rules of the installed package.
-//        * if all packages of the update rules are contained in
-//        * the dependency rules, there's no need to set up the choice rule */
-//       map_empty(&m);
-//       FOR_RULELITERALS(p, pp, r)
-//         if (p > 0)
-//       MAPSET(&m, p);
-//       for (i = 0; i < qi.count; i++)
-//     {
-//       if (!qi.elements[i])
-//         continue;
-//       Rule *ur = solv->rules + solv->updaterules + (qi.elements[i] - pool->installed->start);
-//       if (!ur->p)
-//         ur = solv->rules + solv->featurerules + (qi.elements[i] - pool->installed->start);
-//       if (!ur->p)
-//         continue;
-//       FOR_RULELITERALS(p, pp, ur)
-//         if (!MAPTST(&m, p))
-//           break;
-//       if (p)
-//         break;
-//       for (j = i + 1; j < qi.count; j++)
-//         if (qi.elements[i] == qi.elements[j])
-//           qi.elements[j] = 0;
-//     }
-//       if (i == qi.count)
-//     {
-// #if 0
-//       printf("skipping choice ");
-//       solver_printrule(solv, SAT_DEBUG_RESULT, solv->rules + rid);
-// #endif
-//       continue;
-//     }
-//       d = q.count ? pool_queuetowhatprovides(pool, &q) : 0;
-//       solver_addrule(solv, r->p, d);
-//       queue_push(&solv->weakruleq, solv->nrules - 1);
-//       solv->choicerules_ref[solv->nrules - 1 - solv->choicerules] = rid;
-// #if 0
-//       printf("OLD ");
-//       solver_printrule(solv, SAT_DEBUG_RESULT, solv->rules + rid);
-//       printf("WEAK CHOICE ");
-//       solver_printrule(solv, SAT_DEBUG_RESULT, solv->rules + solv->nrules - 1);
-// #endif
-//     }
-//   queue_free(&q);
-//   queue_free(&qi);
-//   map_free(&m);
-//   map_free(&mneg);
-//   solv->choicerules_end = solv->nrules;
-// }
-    }
-
 /***********************************************************************
  ***
  ***  Policy rule disabling/reenabling
@@ -938,8 +770,6 @@ class Solver
                 break;
             }
         }
-
-        $this->addChoiceRules();
 
         foreach ($this->rules as $rule) {
             $this->addWatchesToRule($rule);
@@ -1521,10 +1351,6 @@ class Solver
                 $why = $this->ruleToJob[$lastWeakWhy];
             } else {
                 $why = $lastWeakWhy;
-            }
-
-            if ($lastWeakWhy->getType() == RuleSet::TYPE_CHOICE) {
-                $this->disableChoiceRules($lastWeakWhy);
             }
 
             $this->disableProblem($why);
