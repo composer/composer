@@ -16,14 +16,31 @@ use Composer\Factory;
 
 class FactoryTest extends \PHPUnit_Framework_TestCase
 {
+    protected $defaultComposerRepositories;
+
+    protected function setUp()
+    {
+        $this->defaultComposerRepositories = Factory::$defaultComposerRepositories;
+    }
+
+    protected function tearDown()
+    {
+        Factory::$defaultComposerRepositories = $this->defaultComposerRepositories;
+        unset($this->defaultComposerRepositories);
+    }
+
     /**
      * @dataProvider dataAddPackagistRepository
      */
-    public function testAddPackagistRepository($expected, $config)
+    public function testAddPackagistRepository($expected, $config, $defaults = null)
     {
+        if (null !== $defaults) {
+            Factory::$defaultComposerRepositories = $defaults;
+        }
+
         $factory = new Factory();
 
-        $ref = new \ReflectionMethod($factory, 'addPackagistRepository');
+        $ref = new \ReflectionMethod($factory, 'addComposerRepositories');
         $ref->setAccessible(true);
 
         $this->assertEquals($expected, $ref->invoke($factory, $config));
@@ -58,6 +75,29 @@ class FactoryTest extends \PHPUnit_Framework_TestCase
                 array('packagist' => true),
                 array('type' => 'pear', 'url' => 'http://pear.composer.org')
             )
+        );
+
+        $multirepo = array(
+            'example.com' => 'http://example.com',
+            'packagist' => 'http://packagist.org',
+        );
+
+        $data[] = array(
+            $f(
+                array('type' => 'composer', 'url' => 'http://example.com'),
+                array('type' => 'composer', 'url' => 'http://packagist.org')
+            ),
+            $f(),
+            $multirepo,
+        );
+
+        $data[] = array(
+            $f(
+                array('type' => 'composer', 'url' => 'http://packagist.org'),
+                array('type' => 'composer', 'url' => 'http://example.com')
+            ),
+            $f(array('packagist' => true)),
+            $multirepo,
         );
 
         return $data;
