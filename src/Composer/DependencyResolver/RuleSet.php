@@ -20,13 +20,11 @@ class RuleSet implements \IteratorAggregate, \Countable
     // highest priority => lowest number
     const TYPE_PACKAGE = 0;
     const TYPE_JOB = 1;
-    const TYPE_FEATURE = 3;
     const TYPE_LEARNED = 4;
 
     protected static $types = array(
         -1 => 'UNKNOWN',
         self::TYPE_PACKAGE => 'PACKAGE',
-        self::TYPE_FEATURE => 'FEATURE',
         self::TYPE_JOB => 'JOB',
         self::TYPE_LEARNED => 'LEARNED',
     );

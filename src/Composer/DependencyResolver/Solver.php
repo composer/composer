@@ -427,7 +427,7 @@ class Solver
 
             // push all of our rules (can only be feature or job rules)
             // asserting this literal on the problem stack
-            foreach ($this->rules->getIteratorFor(array(RuleSet::TYPE_JOB, RuleSet::TYPE_FEATURE)) as $assertRule) {
+            foreach ($this->rules->getIteratorFor(RuleSet::TYPE_JOB) as $assertRule) {
                 if ($assertRule->isDisabled() || !$assertRule->isAssertion() || $assertRule->isWeak()) {
                     continue;
                 }
