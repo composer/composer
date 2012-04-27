@@ -35,8 +35,6 @@ class Solver
     protected $decisionMap;
     protected $installedMap;
 
-    protected $installedPackages;
-
     protected $packageToFeatureRule = array();
 
     protected $decisionQueue = array();
@@ -495,9 +493,8 @@ class Solver
 
     protected function setupInstalledMap()
     {
-        $this->installedPackages = $this->installed->getPackages();
         $this->installedMap = array();
-        foreach ($this->installedPackages as $package) {
+        foreach ($this->installed->getPackages() as $package) {
             $this->installedMap[$package->getId()] = $package;
         }
     }
@@ -1269,9 +1266,7 @@ class Solver
         //    * here's the main loop:
         //    * 1) propagate new decisions (only needed once)
         //    * 2) fulfill jobs
-        //    * 3) try to keep installed packages
         //    * 4) fulfill all unresolved rules
-        //    * 5) install recommended packages
         //    * 6) minimalize solution if we had choices
         //    * if we encounter a problem, we rewind to a safe level and restart
         //    * with step 1
