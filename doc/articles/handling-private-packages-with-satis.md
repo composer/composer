@@ -23,6 +23,8 @@ uses `"require-all": true` which selects all versions of all packages in the
 repositories you defined.
 
     {
+        "name": "My Repository",
+        "homepage": "http://packages.example.org",
         "repositories": [
             { "type": "vcs", "url": "http://github.com/mycompany/privaterepo" },
             { "type": "vcs", "url": "http://svn.example.org/private/repo" },
