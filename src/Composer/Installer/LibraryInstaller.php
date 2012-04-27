@@ -14,10 +14,10 @@ namespace Composer\Installer;
 
 use Composer\IO\IOInterface;
 use Composer\Downloader\DownloadManager;
-use Composer\Repository\WritableRepositoryInterface;
+use Composer\Repository\InstalledRepositoryInterface;
 use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\Package\PackageInterface;
-use Composer\Downloader\Util\Filesystem;
+use Composer\Util\Filesystem;
 
 /**
  * Package installation manager.
@@ -30,7 +30,6 @@ class LibraryInstaller implements InstallerInterface
     protected $vendorDir;
     protected $binDir;
     protected $downloadManager;
-    protected $repository;
     protected $io;
     private $type;
     private $filesystem;
@@ -41,22 +40,18 @@ class LibraryInstaller implements InstallerInterface
      * @param   string                      $vendorDir  relative path for packages home
      * @param   string                      $binDir     relative path for binaries
      * @param   DownloadManager             $dm         download manager
-     * @param   WritableRepositoryInterface $repository repository controller
      * @param   IOInterface                 $io         io instance
      * @param   string                      $type       package type that this installer handles
      */
-    public function __construct($vendorDir, $binDir, DownloadManager $dm, WritableRepositoryInterface $repository, IOInterface $io, $type = 'library')
+    public function __construct($vendorDir, $binDir, DownloadManager $dm, IOInterface $io, $type = 'library')
     {
         $this->downloadManager = $dm;
-        $this->repository = $repository;
         $this->io = $io;
         $this->type = $type;
 
         $this->filesystem = new Filesystem();
-        $this->filesystem->ensureDirectoryExists($vendorDir);
-        $this->filesystem->ensureDirectoryExists($binDir);
-        $this->vendorDir = realpath($vendorDir);
-        $this->binDir = realpath($binDir);
+        $this->vendorDir = rtrim($vendorDir, '/');
+        $this->binDir = rtrim($binDir, '/');
     }
 
     /**
@@ -70,54 +65,58 @@ class LibraryInstaller implements InstallerInterface
     /**
      * {@inheritDoc}
      */
-    public function isInstalled(PackageInterface $package)
+    public function isInstalled(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
-        return $this->repository->hasPackage($package) && is_readable($this->getInstallPath($package));
+        return $repo->hasPackage($package) && is_readable($this->getInstallPath($package));
     }
 
     /**
      * {@inheritDoc}
      */
-    public function install(PackageInterface $package)
+    public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
+        $this->initializeVendorDir();
         $downloadPath = $this->getInstallPath($package);
 
         // remove the binaries if it appears the package files are missing
-        if (!is_readable($downloadPath) && $this->repository->hasPackage($package)) {
+        if (!is_readable($downloadPath) && $repo->hasPackage($package)) {
             $this->removeBinaries($package);
         }
 
         $this->downloadManager->download($package, $downloadPath);
         $this->installBinaries($package);
-        if (!$this->repository->hasPackage($package)) {
-            $this->repository->addPackage(clone $package);
+        if (!$repo->hasPackage($package)) {
+            $repo->addPackage(clone $package);
         }
     }
 
     /**
      * {@inheritDoc}
      */
-    public function update(PackageInterface $initial, PackageInterface $target)
+    public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
     {
-        if (!$this->repository->hasPackage($initial)) {
+        if (!$repo->hasPackage($initial)) {
             throw new \InvalidArgumentException('Package is not installed: '.$initial);
         }
 
+        $this->initializeVendorDir();
         $downloadPath = $this->getInstallPath($initial);
 
         $this->removeBinaries($initial);
         $this->downloadManager->update($initial, $target, $downloadPath);
         $this->installBinaries($target);
-        $this->repository->removePackage($initial);
-        $this->repository->addPackage(clone $target);
+        $repo->removePackage($initial);
+        if (!$repo->hasPackage($target)) {
+            $repo->addPackage(clone $target);
+        }
     }
 
     /**
      * {@inheritDoc}
      */
-    public function uninstall(PackageInterface $package)
+    public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
-        if (!$this->repository->hasPackage($package)) {
+        if (!$repo->hasPackage($package)) {
             // TODO throw exception again here, when update is fixed and we don't have to remove+install (see #125)
             return;
             throw new \InvalidArgumentException('Package is not installed: '.$package);
@@ -127,7 +126,7 @@ class LibraryInstaller implements InstallerInterface
 
         $this->downloadManager->remove($package, $downloadPath);
         $this->removeBinaries($package);
-        $this->repository->removePackage($package);
+        $repo->removePackage($package);
     }
 
     /**
@@ -136,6 +135,7 @@ class LibraryInstaller implements InstallerInterface
     public function getInstallPath(PackageInterface $package)
     {
         $targetDir = $package->getTargetDir();
+
         return ($this->vendorDir ? $this->vendorDir.'/' : '') . $package->getPrettyName() . ($targetDir ? '/'.$targetDir : '');
     }
 
@@ -145,8 +145,15 @@ class LibraryInstaller implements InstallerInterface
             return;
         }
         foreach ($package->getBinaries() as $bin) {
+            $this->initializeBinDir();
             $link = $this->binDir.'/'.basename($bin);
             if (file_exists($link)) {
+                if (is_link($link)) {
+                    // likely leftover from a previous install, make sure
+                    // that the target is still executable in case this
+                    // is a fresh install of the vendor.
+                    chmod($link, 0777 & ~umask());
+                }
                 $this->io->write('Skipped installation of '.$bin.' for package '.$package->getName().', name conflicts with an existing file');
                 continue;
             }
@@ -156,14 +163,21 @@ class LibraryInstaller implements InstallerInterface
                 // add unixy support for cygwin and similar environments
                 if ('.bat' !== substr($bin, -4)) {
                     file_put_contents($link, $this->generateUnixyProxyCode($bin, $link));
-                    chmod($link, 0777);
+                    chmod($link, 0777 & ~umask());
                     $link .= '.bat';
                 }
                 file_put_contents($link, $this->generateWindowsProxyCode($bin, $link));
             } else {
-                symlink($bin, $link);
+                try {
+                    // under linux symlinks are not always supported for example
+                    // when using it in smbfs mounted folder
+                    symlink($bin, $link);
+                } catch (\ErrorException $e) {
+                    file_put_contents($link, $this->generateUnixyProxyCode($bin, $link));
+                }
+
             }
-            chmod($link, 0777);
+            chmod($link, 0777 & ~umask());
         }
     }
 
@@ -172,13 +186,25 @@ class LibraryInstaller implements InstallerInterface
         if (!$package->getBinaries()) {
             return;
         }
-        foreach ($package->getBinaries() as $bin => $os) {
+        foreach ($package->getBinaries() as $bin) {
             $link = $this->binDir.'/'.basename($bin);
             if (!file_exists($link)) {
                 continue;
             }
             unlink($link);
         }
+    }
+
+    protected function initializeVendorDir()
+    {
+        $this->filesystem->ensureDirectoryExists($this->vendorDir);
+        $this->vendorDir = realpath($this->vendorDir);
+    }
+
+    protected function initializeBinDir()
+    {
+        $this->filesystem->ensureDirectoryExists($this->binDir);
+        $this->binDir = realpath($this->binDir);
     }
 
     private function generateWindowsProxyCode($bin, $link)

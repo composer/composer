@@ -13,6 +13,7 @@
 namespace Composer\Repository;
 
 use Composer\IO\IOInterface;
+use Composer\Config;
 
 /**
  * Repositories manager.
@@ -24,13 +25,16 @@ use Composer\IO\IOInterface;
 class RepositoryManager
 {
     private $localRepository;
+    private $localDevRepository;
     private $repositories = array();
     private $repositoryClasses = array();
     private $io;
+    private $config;
 
-    public function __construct(IOInterface $io)
+    public function __construct(IOInterface $io, Config $config)
     {
         $this->io = $io;
+        $this->config = $config;
     }
 
     /**
@@ -48,6 +52,25 @@ class RepositoryManager
                 return $package;
             }
         }
+    }
+
+    /**
+     * Searches for all packages matching a name and optionally a version in managed repositories.
+     *
+     * @param   string  $name       package name
+     * @param   string  $version    package version
+     *
+     * @return  array
+     */
+    public function findPackages($name, $version)
+    {
+        $packages = array();
+
+        foreach ($this->repositories as $repository) {
+            $packages = array_merge($packages, $repository->findPackages($name, $version));
+        }
+
+        return $packages;
     }
 
     /**
@@ -75,7 +98,7 @@ class RepositoryManager
         }
 
         $class = $this->repositoryClasses[$type];
-        return new $class($config, $this->io);
+        return new $class($config, $this->io, $this->config);
     }
 
     /**
@@ -117,5 +140,35 @@ class RepositoryManager
     public function getLocalRepository()
     {
         return $this->localRepository;
+    }
+
+    /**
+     * Sets localDev repository for the project.
+     *
+     * @param   RepositoryInterface $repository repository instance
+     */
+    public function setLocalDevRepository(RepositoryInterface $repository)
+    {
+        $this->localDevRepository = $repository;
+    }
+
+    /**
+     * Returns localDev repository for the project.
+     *
+     * @return  RepositoryInterface
+     */
+    public function getLocalDevRepository()
+    {
+        return $this->localDevRepository;
+    }
+
+    /**
+     * Returns all local repositories for the project.
+     *
+     * @return  array[RepositoryInterface]
+     */
+    public function getLocalRepositories()
+    {
+        return array($this->localRepository, $this->localDevRepository);
     }
 }

@@ -14,59 +14,62 @@ namespace Composer\Test\Installer;
 
 use Composer\Installer\LibraryInstaller;
 use Composer\DependencyResolver\Operation;
-use Composer\Downloader\Util\Filesystem;
+use Composer\Util\Filesystem;
+use Composer\Test\TestCase;
 
-class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
+class LibraryInstallerTest extends TestCase
 {
     private $vendorDir;
     private $binDir;
     private $dm;
     private $repository;
-    private $library;
     private $io;
+    private $fs;
 
     protected function setUp()
     {
-        $fs = new Filesystem;
+        $this->fs = new Filesystem;
 
         $this->vendorDir = realpath(sys_get_temp_dir()).DIRECTORY_SEPARATOR.'composer-test-vendor';
-        if (is_dir($this->vendorDir)) {
-            $fs->removeDirectory($this->vendorDir);
-        }
-        mkdir($this->vendorDir);
+        $this->ensureDirectoryExistsAndClear($this->vendorDir);
 
         $this->binDir = realpath(sys_get_temp_dir()).DIRECTORY_SEPARATOR.'composer-test-bin';
-        if (is_dir($this->binDir)) {
-            $fs->removeDirectory($this->binDir);
-        }
-        mkdir($this->binDir);
+        $this->ensureDirectoryExistsAndClear($this->binDir);
 
         $this->dm = $this->getMockBuilder('Composer\Downloader\DownloadManager')
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->repository = $this->getMockBuilder('Composer\Repository\WritableRepositoryInterface')
-            ->getMock();
+        $this->repository = $this->getMock('Composer\Repository\InstalledRepositoryInterface');
 
-        $this->io = $this->getMockBuilder('Composer\IO\IOInterface')
-            ->getMock();
+        $this->io = $this->getMock('Composer\IO\IOInterface');
     }
 
-    public function testInstallerCreation()
+    protected function tearDown()
     {
-        $library = new LibraryInstaller($this->vendorDir, $this->binDir, $this->dm, $this->repository, $this->io);
-        $this->assertTrue(is_dir($this->vendorDir));
+        $this->fs->removeDirectory($this->vendorDir);
+        $this->fs->removeDirectory($this->binDir);
+    }
 
-        $file = sys_get_temp_dir().'/file';
-        touch($file);
+    public function testInstallerCreationShouldNotCreateVendorDirectory()
+    {
+        $this->fs->removeDirectory($this->vendorDir);
 
-        $this->setExpectedException('RuntimeException');
-        $library = new LibraryInstaller($file, $this->binDir, $this->dm, $this->repository, $this->io);
+        new LibraryInstaller($this->vendorDir, $this->binDir, $this->dm, $this->io);
+        $this->assertFileNotExists($this->vendorDir);
+    }
+
+    public function testInstallerCreationShouldNotCreateBinDirectory()
+    {
+        $this->fs->removeDirectory($this->binDir);
+
+        new LibraryInstaller($this->vendorDir, $this->binDir, $this->dm, $this->io);
+        $this->assertFileNotExists($this->binDir);
     }
 
     public function testIsInstalled()
     {
-        $library = new LibraryInstaller($this->vendorDir, $this->binDir, $this->dm, $this->repository, $this->io);
+        $library = new LibraryInstaller($this->vendorDir, $this->binDir, $this->dm, $this->io);
         $package = $this->createPackageMock();
 
         $this->repository
@@ -75,13 +78,17 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
             ->with($package)
             ->will($this->onConsecutiveCalls(true, false));
 
-        $this->assertTrue($library->isInstalled($package));
-        $this->assertFalse($library->isInstalled($package));
+        $this->assertTrue($library->isInstalled($this->repository, $package));
+        $this->assertFalse($library->isInstalled($this->repository, $package));
     }
 
+    /**
+     * @depends testInstallerCreationShouldNotCreateVendorDirectory
+     * @depends testInstallerCreationShouldNotCreateBinDirectory
+     */
     public function testInstall()
     {
-        $library = new LibraryInstaller($this->vendorDir, $this->binDir, $this->dm, $this->repository, $this->io);
+        $library = new LibraryInstaller($this->vendorDir, $this->binDir, $this->dm, $this->io);
         $package = $this->createPackageMock();
 
         $package
@@ -99,12 +106,18 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
             ->method('addPackage')
             ->with($package);
 
-        $library->install($package);
+        $library->install($this->repository, $package);
+        $this->assertFileExists($this->vendorDir, 'Vendor dir should be created');
+        $this->assertFileExists($this->binDir, 'Bin dir should be created');
     }
 
+    /**
+     * @depends testInstallerCreationShouldNotCreateVendorDirectory
+     * @depends testInstallerCreationShouldNotCreateBinDirectory
+     */
     public function testUpdate()
     {
-        $library = new LibraryInstaller($this->vendorDir, $this->binDir, $this->dm, $this->repository, $this->io);
+        $library = new LibraryInstaller($this->vendorDir, $this->binDir, $this->dm, $this->io);
         $initial = $this->createPackageMock();
         $target  = $this->createPackageMock();
 
@@ -114,10 +127,9 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue('package1'));
 
         $this->repository
-            ->expects($this->exactly(2))
+            ->expects($this->exactly(3))
             ->method('hasPackage')
-            ->with($initial)
-            ->will($this->onConsecutiveCalls(true, false));
+            ->will($this->onConsecutiveCalls(true, false, false));
 
         $this->dm
             ->expects($this->once())
@@ -134,16 +146,18 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
             ->method('addPackage')
             ->with($target);
 
-        $library->update($initial, $target);
+        $library->update($this->repository, $initial, $target);
+        $this->assertFileExists($this->vendorDir, 'Vendor dir should be created');
+        $this->assertFileExists($this->binDir, 'Bin dir should be created');
 
         $this->setExpectedException('InvalidArgumentException');
 
-        $library->update($initial, $target);
+        $library->update($this->repository, $initial, $target);
     }
 
     public function testUninstall()
     {
-        $library = new LibraryInstaller($this->vendorDir, $this->binDir, $this->dm, $this->repository, $this->io);
+        $library = new LibraryInstaller($this->vendorDir, $this->binDir, $this->dm, $this->io);
         $package = $this->createPackageMock();
 
         $package
@@ -167,17 +181,17 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
             ->method('removePackage')
             ->with($package);
 
-        $library->uninstall($package);
+        $library->uninstall($this->repository, $package);
 
         // TODO re-enable once #125 is fixed and we throw exceptions again
 //        $this->setExpectedException('InvalidArgumentException');
 
-        $library->uninstall($package);
+        $library->uninstall($this->repository, $package);
     }
 
     public function testGetInstallPath()
     {
-        $library = new LibraryInstaller($this->vendorDir, $this->binDir, $this->dm, $this->repository, $this->io);
+        $library = new LibraryInstaller($this->vendorDir, $this->binDir, $this->dm, $this->io);
         $package = $this->createPackageMock();
 
         $package
@@ -190,7 +204,7 @@ class LibraryInstallerTest extends \PHPUnit_Framework_TestCase
 
     public function testGetInstallPathWithTargetDir()
     {
-        $library = new LibraryInstaller($this->vendorDir, $this->binDir, $this->dm, $this->repository, $this->io);
+        $library = new LibraryInstaller($this->vendorDir, $this->binDir, $this->dm, $this->io);
         $package = $this->createPackageMock();
 
         $package

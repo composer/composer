@@ -18,12 +18,13 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
-use Symfony\Component\Finder\Finder;
 use Composer\Command;
+use Composer\Command\Helper\DialogHelper;
 use Composer\Composer;
 use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\IO\ConsoleIO;
+use Composer\Util\ErrorHandler;
 
 /**
  * The console application that handles the commands
@@ -39,6 +40,7 @@ class Application extends BaseApplication
 
     public function __construct()
     {
+        ErrorHandler::register();
         parent::__construct('Composer', Composer::VERSION);
     }
 
@@ -71,14 +73,18 @@ class Application extends BaseApplication
     /**
      * @return Composer
      */
-    public function getComposer()
+    public function getComposer($required = true)
     {
         if (null === $this->composer) {
             try {
                 $this->composer = Factory::create($this->io);
             } catch (\InvalidArgumentException $e) {
-                $this->io->write($e->getMessage());
-                exit(1);
+                if ($required) {
+                    $this->io->write($e->getMessage());
+                    exit(1);
+                }
+
+                return;
             }
         }
 
@@ -100,9 +106,10 @@ class Application extends BaseApplication
     {
         $this->add(new Command\AboutCommand());
         $this->add(new Command\DependsCommand());
+        $this->add(new Command\InitCommand());
         $this->add(new Command\InstallCommand());
+        $this->add(new Command\CreateProjectCommand());
         $this->add(new Command\UpdateCommand());
-        $this->add(new Command\DebugPackagesCommand());
         $this->add(new Command\SearchCommand());
         $this->add(new Command\ValidateCommand());
         $this->add(new Command\ShowCommand());
@@ -110,5 +117,17 @@ class Application extends BaseApplication
         if ('phar:' === substr(__FILE__, 0, 5)) {
             $this->add(new Command\SelfUpdateCommand());
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function getDefaultHelperSet()
+    {
+        $helperSet = parent::getDefaultHelperSet();
+
+        $helperSet->set(new DialogHelper());
+
+        return $helperSet;
     }
 }

@@ -24,8 +24,17 @@ use Composer\Repository\PlatformRepository;
  */
 abstract class BasePackage implements PackageInterface
 {
+    public static $supportedLinkTypes = array(
+        'require'   => array('description' => 'requires', 'method' => 'requires'),
+        'conflict'  => array('description' => 'conflicts', 'method' => 'conflicts'),
+        'provide'   => array('description' => 'provides', 'method' => 'provides'),
+        'replace'   => array('description' => 'replaces', 'method' => 'replaces'),
+        'require-dev' => array('description' => 'requires (for development)', 'method' => 'devRequires'),
+    );
+
     protected $name;
     protected $prettyName;
+
     protected $repository;
     protected $id;
 
@@ -63,18 +72,18 @@ abstract class BasePackage implements PackageInterface
     public function getNames()
     {
         $names = array(
-            $this->getName(),
+            $this->getName() => true,
         );
 
         foreach ($this->getProvides() as $link) {
-            $names[] = $link->getTarget();
+            $names[$link->getTarget()] = true;
         }
 
         foreach ($this->getReplaces() as $link) {
-            $names[] = $link->getTarget();
+            $names[$link->getTarget()] = true;
         }
 
-        return $names;
+        return array_keys($names);
     }
 
     /**
@@ -108,14 +117,14 @@ abstract class BasePackage implements PackageInterface
         }
 
         foreach ($this->getProvides() as $link) {
-            if ($link->getTarget() === $name) {
-                return $constraint->matches($link->getConstraint());
+            if ($link->getTarget() === $name && $constraint->matches($link->getConstraint())) {
+                return true;
             }
         }
 
         foreach ($this->getReplaces() as $link) {
-            if ($link->getTarget() === $name) {
-                return $constraint->matches($link->getConstraint());
+            if ($link->getTarget() === $name && $constraint->matches($link->getConstraint())) {
+                return true;
             }
         }
 
@@ -153,6 +162,18 @@ abstract class BasePackage implements PackageInterface
     public function getUniqueName()
     {
         return $this->getName().'-'.$this->getVersion();
+    }
+
+    public function equals(PackageInterface $package)
+    {
+        $self = $this;
+        if ($this instanceof AliasPackage) {
+            $self = $this->getAliasOf();
+        }
+        if ($package instanceof AliasPackage) {
+            $package = $package->getAliasOf();
+        }
+        return $package === $self;
     }
 
     /**

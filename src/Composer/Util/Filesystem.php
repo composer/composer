@@ -10,9 +10,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Downloader\Util;
-
-use Composer\Util\ProcessExecutor;
+namespace Composer\Util;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -21,13 +19,22 @@ class Filesystem
 {
     public function removeDirectory($directory)
     {
+        if (!is_dir($directory)) {
+            return true;
+        }
+
         if (defined('PHP_WINDOWS_VERSION_BUILD')) {
             $cmd = sprintf('rmdir /S /Q %s', escapeshellarg(realpath($directory)));
         } else {
             $cmd = sprintf('rm -rf %s', escapeshellarg($directory));
         }
 
-        return $this->getProcess()->execute($cmd) === 0;
+        $result = $this->getProcess()->execute($cmd) === 0;
+
+        // clear stat cache because external processes aren't tracked by the php stat cache
+        clearstatcache();
+
+        return $result && !is_dir($directory);
     }
 
     public function ensureDirectoryExists($directory)
@@ -51,19 +58,25 @@ class Filesystem
      *
      * @param string $from
      * @param string $to
+     * @param Boolean $directories if true, the source/target are considered to be directories
      * @return string
      */
-    public function findShortestPath($from, $to)
+    public function findShortestPath($from, $to, $directories = false)
     {
         if (!$this->isAbsolutePath($from) || !$this->isAbsolutePath($to)) {
             throw new \InvalidArgumentException('from and to must be absolute paths');
         }
 
+        $from = lcfirst(rtrim(strtr($from, '\\', '/'), '/'));
+        $to = lcfirst(rtrim(strtr($to, '\\', '/'), '/'));
+
+        if ($directories) {
+            $from .= '/dummy_file';
+        }
+
         if (dirname($from) === dirname($to)) {
             return './'.basename($to);
         }
-        $from = lcfirst(rtrim(strtr($from, '\\', '/'), '/'));
-        $to = lcfirst(rtrim(strtr($to, '\\', '/'), '/'));
 
         $commonPath = $to;
         while (strpos($from, $commonPath) !== 0 && '/' !== $commonPath && !preg_match('{^[a-z]:/?$}i', $commonPath) && '.' !== $commonPath) {
@@ -94,11 +107,12 @@ class Filesystem
             throw new \InvalidArgumentException('from and to must be absolute paths');
         }
 
+        $from = lcfirst(strtr($from, '\\', '/'));
+        $to = lcfirst(strtr($to, '\\', '/'));
+
         if ($from === $to) {
             return $directories ? '__DIR__' : '__FILE__';
         }
-        $from = lcfirst(strtr($from, '\\', '/'));
-        $to = lcfirst(strtr($to, '\\', '/'));
 
         $commonPath = $to;
         while (strpos($from, $commonPath) !== 0 && '/' !== $commonPath && !preg_match('{^[a-z]:/?$}i', $commonPath) && '.' !== $commonPath) {

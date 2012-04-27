@@ -43,6 +43,16 @@ class Composer
         return $this->package;
     }
 
+    public function setConfig(Config $config)
+    {
+        $this->config = $config;
+    }
+
+    public function getConfig()
+    {
+        return $this->config;
+    }
+
     public function setLocker(Locker $locker)
     {
         $this->locker = $locker;

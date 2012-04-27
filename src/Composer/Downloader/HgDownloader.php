@@ -29,7 +29,10 @@ class HgDownloader extends VcsDownloader
         $ref = escapeshellarg($package->getSourceReference());
         $path = escapeshellarg($path);
         $this->io->write("    Cloning ".$package->getSourceReference());
-        $this->process->execute(sprintf('hg clone %s %s && cd %2$s && hg up %s', $url, $path, $ref), $ignoredOutput);
+        $command = sprintf('hg clone %s %s && cd %2$s && hg up %s', $url, $path, $ref);
+        if (0 !== $this->process->execute($command, $ignoredOutput)) {
+            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+        }
     }
 
     /**
@@ -37,10 +40,14 @@ class HgDownloader extends VcsDownloader
      */
     public function doUpdate(PackageInterface $initial, PackageInterface $target, $path)
     {
+        $url = escapeshellarg($target->getSourceUrl());
         $ref = escapeshellarg($target->getSourceReference());
         $path = escapeshellarg($path);
         $this->io->write("    Updating to ".$target->getSourceReference());
-        $this->process->execute(sprintf('cd %s && hg pull && hg up %s', $path, $ref), $ignoredOutput);
+        $command = sprintf('cd %s && hg pull %s && hg up %s', $path, $url, $ref);
+        if (0 !== $this->process->execute($command, $ignoredOutput)) {
+            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+        }
     }
 
     /**
@@ -50,7 +57,7 @@ class HgDownloader extends VcsDownloader
     {
         $this->process->execute(sprintf('cd %s && hg st', escapeshellarg($path)), $output);
         if (trim($output)) {
-            throw new \RuntimeException('Source directory has uncommitted changes');
+            throw new \RuntimeException('Source directory ' . $path . ' has uncommitted changes');
         }
     }
 }

@@ -38,20 +38,39 @@ class RootPackageLoader extends ArrayLoader
             $config['name'] = '__root__';
         }
         if (!isset($config['version'])) {
-            $config['version'] = '1.0.0-dev';
+            $config['version'] = '1.0.0';
         }
 
         $package = parent::load($config);
 
+        if (isset($config['require'])) {
+            $aliases = array();
+            foreach ($config['require'] as $reqName => $reqVersion) {
+                if (preg_match('{^([^,\s]+) +as +([^,\s]+)$}', $reqVersion, $match)) {
+                    $aliases[] = array(
+                        'package' => strtolower($reqName),
+                        'version' => $this->versionParser->normalize($match[1]),
+                        'alias' => $match[2],
+                        'alias_normalized' => $this->versionParser->normalize($match[2]),
+                    );
+                }
+            }
+
+            $package->setAliases($aliases);
+        }
+
         if (isset($config['repositories'])) {
-            foreach ($config['repositories'] as $repoName => $repo) {
-                if (false === $repo && 'packagist' === $repoName) {
+            foreach ($config['repositories'] as $index => $repo) {
+                if (isset($repo['packagist']) && $repo['packagist'] === false) {
                     continue;
                 }
                 if (!is_array($repo)) {
-                    throw new \UnexpectedValueException('Repository '.$repoName.' in '.$package->getPrettyName().' '.$package->getVersion().' should be an array, '.gettype($repo).' given');
+                    throw new \UnexpectedValueException('Repository '.$index.' should be an array, '.gettype($repo).' given');
                 }
-                $repository = $this->manager->createRepository(key($repo), current($repo));
+                if (!isset($repo['type'])) {
+                    throw new \UnexpectedValueException('Repository '.$index.' ('.json_encode($repo).') must have a type defined');
+                }
+                $repository = $this->manager->createRepository($repo['type'], $repo);
                 $this->manager->addRepository($repository);
             }
             $package->setRepositories($config['repositories']);

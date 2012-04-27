@@ -25,6 +25,11 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class DependsCommand extends Command
 {
+    protected $linkTypes = array(
+        'require' => 'requires',
+        'require-dev' => 'devRequires',
+    );
+
     protected function configure()
     {
         $this
@@ -32,7 +37,7 @@ class DependsCommand extends Command
             ->setDescription('Shows which packages depend on the given package')
             ->setDefinition(array(
                 new InputArgument('package', InputArgument::REQUIRED, 'Package to inspect'),
-                new InputOption('link-type', '', InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY, 'Link types to show', array('requires', 'recommends', 'suggests'))
+                new InputOption('link-type', '', InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY, 'Link types to show (require, require-dev)', array_keys($this->linkTypes))
             ))
             ->setHelp(<<<EOT
 Displays detailed information about where a package is referenced.
@@ -74,10 +79,15 @@ EOT
 
         $repos = $composer->getRepositoryManager()->getRepositories();
         $types = $input->getOption('link-type');
+
         foreach ($repos as $repository) {
             foreach ($repository->getPackages() as $package) {
                 foreach ($types as $type) {
-                    foreach ($package->{'get'.$type}() as $link) {
+                    $type = rtrim($type, 's');
+                    if (!isset($this->linkTypes[$type])) {
+                        throw new \InvalidArgumentException('Unexpected link type: '.$type.', valid types: '.implode(', ', array_keys($this->linkTypes)));
+                    }
+                    foreach ($package->{'get'.$this->linkTypes[$type]}() as $link) {
                         if ($link->getTarget() === $needle) {
                             if ($verbose) {
                                 $references[] = array($type, $package, $link);

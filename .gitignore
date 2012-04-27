@@ -3,3 +3,8 @@
 /.buildpath
 /composer.phar
 /vendor
+/nbproject
+phpunit.xml
+.vagrant
+Vagrantfile
+.idea

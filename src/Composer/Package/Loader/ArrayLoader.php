@@ -22,15 +22,6 @@ use Composer\Repository\RepositoryManager;
  */
 class ArrayLoader
 {
-    protected $supportedLinkTypes = array(
-        'require'   => 'requires',
-        'conflict'  => 'conflicts',
-        'provide'   => 'provides',
-        'replace'   => 'replaces',
-        'recommend' => 'recommends',
-        'suggest'   => 'suggests',
-    );
-
     protected $versionParser;
 
     public function __construct(VersionParser $parser = null)
@@ -67,7 +58,10 @@ class ArrayLoader
             $package->setExtra($config['extra']);
         }
 
-        if (isset($config['bin']) && is_array($config['bin'])) {
+        if (isset($config['bin'])) {
+            if (!is_array($config['bin'])) {
+                throw new \UnexpectedValueException('Package '.$config['name'].'\'s bin key should be an array, '.gettype($config['bin']).' given.');
+            }
             foreach ($config['bin'] as $key => $bin) {
                 $config['bin'][$key]= ltrim($bin, '/');
             }
@@ -99,7 +93,9 @@ class ArrayLoader
 
         if (!empty($config['time'])) {
             try {
-                $package->setReleaseDate(new \DateTime($config['time']));
+                $date = new \DateTime($config['time']);
+                $date->setTimezone(new \DateTimeZone('UTC'));
+                $package->setReleaseDate($date);
             } catch (\Exception $e) {
             }
         }
@@ -139,17 +135,54 @@ class ArrayLoader
             $package->setDistSha1Checksum(isset($config['dist']['shasum']) ? $config['dist']['shasum'] : null);
         }
 
-        foreach ($this->supportedLinkTypes as $type => $description) {
+        // check for a branch alias (dev-master => 1.0.x-dev for example) if this is a named branch
+        if ('dev-' === substr($package->getPrettyVersion(), 0, 4) && isset($config['extra']['branch-alias']) && is_array($config['extra']['branch-alias'])) {
+            foreach ($config['extra']['branch-alias'] as $sourceBranch => $targetBranch) {
+                // ensure it is an alias to a -dev package
+                if ('-dev' !== substr($targetBranch, -4)) {
+                    continue;
+                }
+                // normalize without -dev and ensure it's a numeric branch that is parseable
+                $validatedTargetBranch = $this->versionParser->normalizeBranch(substr($targetBranch, 0, -4));
+                if ('-dev' !== substr($validatedTargetBranch, -4)) {
+                    continue;
+                }
+
+                // ensure that it is the current branch aliasing itself
+                if (strtolower($package->getPrettyVersion()) !== strtolower($sourceBranch)) {
+                    continue;
+                }
+
+                $package->setAlias($validatedTargetBranch);
+                $package->setPrettyAlias(preg_replace('{(\.9{7})+}', '.x', $validatedTargetBranch));
+                break;
+            }
+        }
+
+        foreach (Package\BasePackage::$supportedLinkTypes as $type => $opts) {
             if (isset($config[$type])) {
-                $method = 'set'.ucfirst($description);
+                $method = 'set'.ucfirst($opts['method']);
                 $package->{$method}(
-                    $this->loadLinksFromConfig($package, $description, $config[$type])
+                    $this->loadLinksFromConfig($package, $opts['description'], $config[$type])
                 );
             }
         }
 
+        if (isset($config['suggest']) && is_array($config['suggest'])) {
+            foreach ($config['suggest'] as $target => $reason) {
+                if ('self.version' === trim($reason)) {
+                    $config['suggest'][$target] = $package->getPrettyVersion();
+                }
+            }
+            $package->setSuggests($config['suggest']);
+        }
+
         if (isset($config['autoload'])) {
             $package->setAutoload($config['autoload']);
+        }
+
+        if (isset($config['include-path'])) {
+            $package->setIncludePaths($config['include-path']);
         }
 
         return $package;
@@ -160,9 +193,10 @@ class ArrayLoader
         $links = array();
         foreach ($linksSpecs as $packageName => $constraint) {
             if ('self.version' === $constraint) {
-                $constraint = $package->getPrettyVersion();
+                $parsedConstraint = $this->versionParser->parseConstraints($package->getPrettyVersion());
+            } else {
+                $parsedConstraint = $this->versionParser->parseConstraints($constraint);
             }
-            $parsedConstraint = $this->versionParser->parseConstraints($constraint);
             $links[] = new Package\Link($package->getName(), $packageName, $parsedConstraint, $description, $constraint);
         }
 

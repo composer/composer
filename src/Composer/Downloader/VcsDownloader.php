@@ -15,6 +15,7 @@ namespace Composer\Downloader;
 use Composer\Package\PackageInterface;
 use Composer\Util\ProcessExecutor;
 use Composer\IO\IOInterface;
+use Composer\Util\Filesystem;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -23,11 +24,13 @@ abstract class VcsDownloader implements DownloaderInterface
 {
     protected $io;
     protected $process;
+    protected $filesystem;
 
-    public function __construct(IOInterface $io, ProcessExecutor $process = null)
+    public function __construct(IOInterface $io, ProcessExecutor $process = null, Filesystem $fs = null)
     {
         $this->io = $io;
         $this->process = $process ?: new ProcessExecutor;
+        $this->filesystem = $fs ?: new Filesystem;
     }
 
     /**
@@ -44,10 +47,11 @@ abstract class VcsDownloader implements DownloaderInterface
     public function download(PackageInterface $package, $path)
     {
         if (!$package->getSourceReference()) {
-            throw new \InvalidArgumentException('The given package is missing reference information');
+            throw new \InvalidArgumentException('Package '.$package->getPrettyName().' is missing reference information');
         }
 
         $this->io->write("  - Package <info>" . $package->getName() . "</info> (<comment>" . $package->getPrettyVersion() . "</comment>)");
+        $this->filesystem->removeDirectory($path);
         $this->doDownload($package, $path);
         $this->io->write('');
     }
@@ -58,7 +62,7 @@ abstract class VcsDownloader implements DownloaderInterface
     public function update(PackageInterface $initial, PackageInterface $target, $path)
     {
         if (!$target->getSourceReference()) {
-            throw new \InvalidArgumentException('The given package is missing reference information');
+            throw new \InvalidArgumentException('Package '.$target->getPrettyName().' is missing reference information');
         }
 
         $this->io->write("  - Package <info>" . $target->getName() . "</info> (<comment>" . $target->getPrettyVersion() . "</comment>)");
@@ -73,8 +77,9 @@ abstract class VcsDownloader implements DownloaderInterface
     public function remove(PackageInterface $package, $path)
     {
         $this->enforceCleanDirectory($path);
-        $fs = new Util\Filesystem();
-        $fs->removeDirectory($path);
+        if (!$this->filesystem->removeDirectory($path)) {
+            throw new \RuntimeException('Could not completely delete '.$path.', aborting.');
+        }
     }
 
     /**

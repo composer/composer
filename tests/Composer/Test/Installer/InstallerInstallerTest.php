@@ -34,11 +34,9 @@ class InstallerInstallerTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->repository = $this->getMockBuilder('Composer\Repository\WritableRepositoryInterface')
-            ->getMock();
+        $this->repository = $this->getMock('Composer\Repository\InstalledRepositoryInterface');
 
-        $this->io = $this->getMockBuilder('Composer\IO\IOInterface')
-            ->getMock();
+        $this->io = $this->getMock('Composer\IO\IOInterface');
     }
 
     public function testInstallNewInstaller()
@@ -47,7 +45,7 @@ class InstallerInstallerTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('getPackages')
             ->will($this->returnValue(array()));
-        $installer = new InstallerInstallerMock(__DIR__.'/Fixtures/', __DIR__.'/Fixtures/bin', $this->dm, $this->repository, $this->io, $this->im);
+        $installer = new InstallerInstallerMock(__DIR__.'/Fixtures/', __DIR__.'/Fixtures/bin', $this->dm, $this->io, $this->im, array($this->repository));
 
         $test = $this;
         $this->im
@@ -57,7 +55,7 @@ class InstallerInstallerTest extends \PHPUnit_Framework_TestCase
                 $test->assertEquals('installer-v1', $installer->version);
             }));
 
-        $installer->install($this->packages[0]);
+        $installer->install($this->repository, $this->packages[0]);
     }
 
     public function testUpgradeWithNewClassName()
@@ -67,10 +65,10 @@ class InstallerInstallerTest extends \PHPUnit_Framework_TestCase
             ->method('getPackages')
             ->will($this->returnValue(array($this->packages[0])));
         $this->repository
-            ->expects($this->once())
+            ->expects($this->exactly(2))
             ->method('hasPackage')
-            ->will($this->returnValue(true));
-        $installer = new InstallerInstallerMock(__DIR__.'/Fixtures/', __DIR__.'/Fixtures/bin', $this->dm, $this->repository, $this->io, $this->im);
+            ->will($this->onConsecutiveCalls(true, false));
+        $installer = new InstallerInstallerMock(__DIR__.'/Fixtures/', __DIR__.'/Fixtures/bin', $this->dm, $this->io, $this->im, array($this->repository));
 
         $test = $this;
         $this->im
@@ -80,7 +78,7 @@ class InstallerInstallerTest extends \PHPUnit_Framework_TestCase
                 $test->assertEquals('installer-v2', $installer->version);
             }));
 
-        $installer->update($this->packages[0], $this->packages[1]);
+        $installer->update($this->repository, $this->packages[0], $this->packages[1]);
     }
 
     public function testUpgradeWithSameClassName()
@@ -90,10 +88,10 @@ class InstallerInstallerTest extends \PHPUnit_Framework_TestCase
             ->method('getPackages')
             ->will($this->returnValue(array($this->packages[1])));
         $this->repository
-            ->expects($this->once())
+            ->expects($this->exactly(2))
             ->method('hasPackage')
-            ->will($this->returnValue(true));
-        $installer = new InstallerInstallerMock(__DIR__.'/Fixtures/', __DIR__.'/Fixtures/bin', $this->dm, $this->repository, $this->io, $this->im);
+            ->will($this->onConsecutiveCalls(true, false));
+        $installer = new InstallerInstallerMock(__DIR__.'/Fixtures/', __DIR__.'/Fixtures/bin', $this->dm, $this->io, $this->im, array($this->repository));
 
         $test = $this;
         $this->im
@@ -103,7 +101,7 @@ class InstallerInstallerTest extends \PHPUnit_Framework_TestCase
                 $test->assertEquals('installer-v3', $installer->version);
             }));
 
-        $installer->update($this->packages[1], $this->packages[2]);
+        $installer->update($this->repository, $this->packages[1], $this->packages[2]);
     }
 }
 

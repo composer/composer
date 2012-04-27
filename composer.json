@@ -18,16 +18,23 @@
         }
     ],
     "require": {
-        "php": ">=5.3.0",
-        "symfony/console": "2.1.0-dev",
-        "symfony/finder": ">2.0,<2.2-dev",
-        "symfony/process": ">2.0,<2.2-dev"
+        "php": ">=5.3.2",
+        "justinrainbow/json-schema": "1.1.*",
+        "seld/jsonlint": "1.*",
+        "symfony/console": "2.1.*",
+        "symfony/finder": "2.1.*",
+        "symfony/process": "2.1.*"
     },
-    "recommend": {
-        "ext-zip": "*"
+    "suggest": {
+        "ext-zip": "Enabling the zip extension allows you to unzip archives, and allows gzip compression of all internet traffic"
     },
     "autoload": {
         "psr-0": { "Composer": "src/" }
     },
-    "bin": ["bin/composer"]
+    "bin": ["bin/composer"],
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0-dev"
+        }
+    }
 }

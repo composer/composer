@@ -14,6 +14,7 @@ namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
 use Composer\Downloader\DownloaderInterface;
+use Composer\Util\Filesystem;
 
 /**
  * Downloaders manager.
@@ -23,6 +24,7 @@ use Composer\Downloader\DownloaderInterface;
 class DownloadManager
 {
     private $preferSource = false;
+    private $filesystem;
     private $downloaders  = array();
 
     /**
@@ -30,9 +32,10 @@ class DownloadManager
      *
      * @param   Boolean $preferSource   prefer downloading from source
      */
-    public function __construct($preferSource = false)
+    public function __construct($preferSource = false, Filesystem $filesystem = null)
     {
         $this->preferSource = $preferSource;
+        $this->filesystem = $filesystem ?: new Filesystem();
     }
 
     /**
@@ -124,19 +127,18 @@ class DownloadManager
         $sourceType   = $package->getSourceType();
         $distType     = $package->getDistType();
 
-        if (!($preferSource && $sourceType) && $distType) {
+        if (!$package->isDev() && !($preferSource && $sourceType) && $distType) {
             $package->setInstallationSource('dist');
         } elseif ($sourceType) {
             $package->setInstallationSource('source');
+        } elseif ($package->isDev()) {
+            throw new \InvalidArgumentException('Dev package '.$package.' must have a source specified');
         } else {
-            throw new \InvalidArgumentException(
-                'Package '.$package.' should have source or dist specified'
-            );
+            throw new \InvalidArgumentException('Package '.$package.' must have a source or dist specified');
         }
 
-        $fs = new Util\Filesystem();
-        $fs->ensureDirectoryExists($targetDir);
-        
+        $this->filesystem->ensureDirectoryExists($targetDir);
+
         $downloader = $this->getDownloaderForInstalledPackage($package);
         $downloader->download($package, $targetDir);
     }
@@ -161,6 +163,13 @@ class DownloadManager
         } else {
             $initialType = $initial->getSourceType();
             $targetType  = $target->getSourceType();
+        }
+
+        // upgrading from a dist stable package to a dev package, force source reinstall
+        if ($target->isDev() && 'dist' === $installationSource) {
+            $downloader->remove($initial, $targetDir);
+            $this->download($target, $targetDir);
+            return;
         }
 
         if ($initialType === $targetType) {

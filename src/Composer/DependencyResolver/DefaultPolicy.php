@@ -14,6 +14,7 @@ namespace Composer\DependencyResolver;
 
 use Composer\Repository\RepositoryInterface;
 use Composer\Package\PackageInterface;
+use Composer\Package\AliasPackage;
 use Composer\Package\LinkConstraint\VersionConstraint;
 
 /**
@@ -21,16 +22,6 @@ use Composer\Package\LinkConstraint\VersionConstraint;
  */
 class DefaultPolicy implements PolicyInterface
 {
-    public function allowUninstall()
-    {
-        return true;
-    }
-
-    public function allowDowngrade()
-    {
-        return true;
-    }
-
     public function versionCompare(PackageInterface $a, PackageInterface $b, $operator)
     {
         $constraint = new VersionConstraint($operator, $b->getVersion());
@@ -39,16 +30,11 @@ class DefaultPolicy implements PolicyInterface
         return $constraint->matchSpecific($version);
     }
 
-    public function findUpdatePackages(Solver $solver, Pool $pool, array $installedMap, PackageInterface $package, $allowAll = false)
+    public function findUpdatePackages(Solver $solver, Pool $pool, array $installedMap, PackageInterface $package)
     {
         $packages = array();
 
         foreach ($pool->whatProvides($package->getName()) as $candidate) {
-            // skip old packages unless downgrades are an option
-            if (!$allowAll && !$this->allowDowngrade() && $this->versionCompare($package, $candidate, '>')) {
-                continue;
-            }
-
             if ($candidate !== $package) {
                 $packages[] = $candidate;
             }
@@ -83,6 +69,8 @@ class DefaultPolicy implements PolicyInterface
             $literals = $this->pruneToBestVersion($literals);
 
             $literals = $this->pruneToHighestPriorityOrInstalled($pool, $installedMap, $literals);
+
+            $literals = $this->pruneRemoteAliases($literals);
         }
 
         $selected = call_user_func_array('array_merge', $packages);
@@ -118,6 +106,17 @@ class DefaultPolicy implements PolicyInterface
     public function compareByPriorityPreferInstalled(Pool $pool, array $installedMap, PackageInterface $a, PackageInterface $b, $ignoreReplace = false)
     {
         if ($a->getRepository() === $b->getRepository()) {
+            // prefer aliases to the original package
+            if ($a->getName() === $b->getName()) {
+                $aAliased = $a instanceof AliasPackage;
+                $bAliased = $b instanceof AliasPackage;
+                if ($aAliased && !$bAliased) {
+                    return -1; // use a
+                }
+                if (!$aAliased && $bAliased) {
+                    return 1; // use b
+                }
+            }
 
             if (!$ignoreReplace) {
                 // return original, not replaced
@@ -213,8 +212,8 @@ class DefaultPolicy implements PolicyInterface
     }
 
     /**
-    * Assumes that installed packages come first and then all highest priority packages
-    */
+     * Assumes that installed packages come first and then all highest priority packages
+     */
     protected function pruneToHighestPriorityOrInstalled(Pool $pool, array $installedMap, array $literals)
     {
         $selected = array();
@@ -238,6 +237,40 @@ class DefaultPolicy implements PolicyInterface
             }
 
             $selected[] = $literal;
+        }
+
+        return $selected;
+    }
+
+    /**
+     * Assumes that locally aliased (in root package requires) packages take priority over branch-alias ones
+     *
+     * If no package is a local alias, nothing happens
+     */
+    protected function pruneRemoteAliases(array $literals)
+    {
+        $hasLocalAlias = false;
+
+        foreach ($literals as $literal) {
+            $package = $literal->getPackage();
+
+            if ($package instanceof AliasPackage && $package->isRootPackageAlias()) {
+                $hasLocalAlias = true;
+                break;
+            }
+        }
+
+        if (!$hasLocalAlias) {
+            return $literals;
+        }
+
+        $selected = array();
+        foreach ($literals as $literal) {
+            $package = $literal->getPackage();
+
+            if ($package instanceof AliasPackage && $package->isRootPackageAlias()) {
+                $selected[] = $literal;
+            }
         }
 
         return $selected;

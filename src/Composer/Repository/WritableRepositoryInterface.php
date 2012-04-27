@@ -39,4 +39,9 @@ interface WritableRepositoryInterface extends RepositoryInterface
      * @param   PackageInterface    $package    package instance
      */
     function removePackage(PackageInterface $package);
+
+    /**
+     * Forces a reload of all packages
+     */
+    function reload();
 }

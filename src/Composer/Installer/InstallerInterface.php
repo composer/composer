@@ -14,11 +14,13 @@ namespace Composer\Installer;
 
 use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\Package\PackageInterface;
+use Composer\Repository\InstalledRepositoryInterface;
 
 /**
  * Interface for the package installation manager.
  *
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
+ * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 interface InstallerInterface
 {
@@ -33,35 +35,39 @@ interface InstallerInterface
     /**
      * Checks that provided package is installed.
      *
+     * @param   InstalledRepositoryInterface $repo    repository in which to check
      * @param   PackageInterface    $package    package instance
      *
      * @return  Boolean
      */
-    function isInstalled(PackageInterface $package);
+    function isInstalled(InstalledRepositoryInterface $repo, PackageInterface $package);
 
     /**
      * Installs specific package.
      *
+     * @param   InstalledRepositoryInterface $repo    repository in which to check
      * @param   PackageInterface    $package    package instance
      */
-    function install(PackageInterface $package);
+    function install(InstalledRepositoryInterface $repo, PackageInterface $package);
 
     /**
      * Updates specific package.
      *
+     * @param   InstalledRepositoryInterface $repo    repository in which to check
      * @param   PackageInterface    $initial    already installed package version
      * @param   PackageInterface    $target     updated version
      *
      * @throws  InvalidArgumentException        if $from package is not installed
      */
-    function update(PackageInterface $initial, PackageInterface $target);
+    function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target);
 
     /**
      * Uninstalls specific package.
      *
+     * @param   InstalledRepositoryInterface $repo    repository in which to check
      * @param   PackageInterface    $package    package instance
      */
-    function uninstall(PackageInterface $package);
+    function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package);
 
     /**
      * Returns the installation path of a package

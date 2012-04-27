@@ -35,11 +35,16 @@ class Compiler
             unlink($pharFile);
         }
 
-        $process = new Process('git log --pretty="%h" -n1 HEAD');
+        $process = new Process('git log --pretty="%h" -n1 HEAD', __DIR__);
         if ($process->run() != 0) {
-            throw new \RuntimeException('The git binary cannot be found.');
+            throw new \RuntimeException('Can\'t run git log. You must ensure to run compile from composer git repository clone and that git binary is available.');
         }
         $this->version = trim($process->getOutput());
+
+        $process = new Process('git describe --tags HEAD');
+        if ($process->run() == 0) {
+            $this->version = trim($process->getOutput());
+        }
 
         $phar = new \Phar($pharFile, 0, 'composer.phar');
         $phar->setSignatureAlgorithm(\Phar::SHA1);
@@ -51,27 +56,35 @@ class Compiler
             ->ignoreVCS(true)
             ->name('*.php')
             ->notName('Compiler.php')
+            ->notName('ClassLoader.php')
             ->in(__DIR__.'/..')
         ;
 
         foreach ($finder as $file) {
             $this->addFile($phar, $file);
         }
+        $this->addFile($phar, new \SplFileInfo(__DIR__.'/Autoload/ClassLoader.php'), false);
+        $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../res/composer-schema.json'), false);
+        $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../src/Composer/IO/hiddeninput.exe'), false);
 
         $finder = new Finder();
         $finder->files()
             ->ignoreVCS(true)
             ->name('*.php')
+            ->exclude('Tests')
             ->in(__DIR__.'/../../vendor/symfony/')
+            ->in(__DIR__.'/../../vendor/seld/jsonlint/src/')
+            ->in(__DIR__.'/../../vendor/justinrainbow/json-schema/src/')
         ;
 
         foreach ($finder as $file) {
             $this->addFile($phar, $file);
         }
 
-        $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/.composer/ClassLoader.php'));
-        $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/.composer/autoload.php'));
-        $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/.composer/autoload_namespaces.php'));
+        $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/autoload.php'));
+        $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/composer/autoload_namespaces.php'));
+        $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/composer/autoload_classmap.php'));
+        $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/composer/ClassLoader.php'));
         $this->addComposerBin($phar);
 
         // Stubs
@@ -79,7 +92,8 @@ class Compiler
 
         $phar->stopBuffering();
 
-        $phar->compressFiles(\Phar::GZ);
+        // disabled for interoperability with systems without gzip ext
+        // $phar->compressFiles(\Phar::GZ);
 
         $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../LICENSE'), false);
 
@@ -90,10 +104,11 @@ class Compiler
     {
         $path = str_replace(dirname(dirname(__DIR__)).DIRECTORY_SEPARATOR, '', $file->getRealPath());
 
+        $content = file_get_contents($file);
         if ($strip) {
-            $content = php_strip_whitespace($file);
-        } else {
-            $content = "\n".file_get_contents($file)."\n";
+            $content = $this->stripWhitespace($content);
+        } elseif ('LICENSE' === basename($file)) {
+            $content = "\n".$content."\n";
         }
 
         $content = str_replace('@package_version@', $this->version, $content);
@@ -106,6 +121,40 @@ class Compiler
         $content = file_get_contents(__DIR__.'/../../bin/composer');
         $content = preg_replace('{^#!/usr/bin/env php\s*}', '', $content);
         $phar->addFromString('bin/composer', $content);
+    }
+
+    /**
+     * Removes whitespace from a PHP source string while preserving line numbers.
+     *
+     * @param string $source A PHP string
+     * @return string The PHP string with the whitespace removed
+     */
+    private function stripWhitespace($source)
+    {
+        if (!function_exists('token_get_all')) {
+            return $source;
+        }
+
+        $output = '';
+        foreach (token_get_all($source) as $token) {
+            if (is_string($token)) {
+                $output .= $token;
+            } elseif (in_array($token[0], array(T_COMMENT, T_DOC_COMMENT))) {
+                $output .= str_repeat("\n", substr_count($token[1], "\n"));
+            } elseif (T_WHITESPACE === $token[0]) {
+                // reduce wide spaces
+                $whitespace = preg_replace('{[ \t]+}', ' ', $token[1]);
+                // normalize newlines to \n
+                $whitespace = preg_replace('{(?:\r\n|\r|\n)}', "\n", $whitespace);
+                // trim leading spaces
+                $whitespace = preg_replace('{\n +}', "\n", $whitespace);
+                $output .= $whitespace;
+            } else {
+                $output .= $token[1];
+            }
+        }
+
+        return $output;
     }
 
     private function getStub()

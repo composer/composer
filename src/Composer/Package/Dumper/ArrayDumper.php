@@ -12,6 +12,7 @@
 
 namespace Composer\Package\Dumper;
 
+use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
 
 /**
@@ -24,21 +25,31 @@ class ArrayDumper
     {
         $keys = array(
             'binaries' => 'bin',
+            'scripts',
             'type',
-            'names',
             'extra',
             'installationSource' => 'installation-source',
             'license',
+            'authors',
+            'description',
+            'homepage',
+            'keywords',
             'autoload',
             'repositories',
+            'includePaths' => 'include-path',
         );
 
         $data = array();
         $data['name'] = $package->getPrettyName();
         $data['version'] = $package->getPrettyVersion();
         $data['version_normalized'] = $package->getVersion();
+
         if ($package->getTargetDir()) {
             $data['target-dir'] = $package->getTargetDir();
+        }
+
+        if ($package->getReleaseDate()) {
+            $data['time'] = $package->getReleaseDate()->format('Y-m-d H:i:s');
         }
 
         if ($package->getSourceType()) {
@@ -54,12 +65,16 @@ class ArrayDumper
             $data['dist']['shasum'] = $package->getDistSha1Checksum();
         }
 
-        foreach (array('require', 'conflict', 'provide', 'replace', 'suggest', 'recommend') as $linkType) {
-            if ($links = $package->{'get'.ucfirst($linkType).'s'}()) {
+        foreach (BasePackage::$supportedLinkTypes as $type => $opts) {
+            if ($links = $package->{'get'.ucfirst($opts['method'])}()) {
                 foreach ($links as $link) {
-                    $data[$linkType][$link->getTarget()] = $link->getPrettyConstraint();
+                    $data[$type][$link->getTarget()] = $link->getPrettyConstraint();
                 }
             }
+        }
+
+        if ($packages = $package->getSuggests()) {
+            $data['suggest'] = $packages;
         }
 
         foreach ($keys as $method => $key) {

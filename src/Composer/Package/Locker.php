@@ -14,6 +14,7 @@ namespace Composer\Package;
 
 use Composer\Json\JsonFile;
 use Composer\Repository\RepositoryManager;
+use Composer\Package\AliasPackage;
 
 /**
  * Reads/writes project lockfile (composer.lock).
@@ -25,6 +26,7 @@ class Locker
     private $lockFile;
     private $repositoryManager;
     private $hash;
+    private $lockDataCache;
 
     /**
      * Initializes packages locker.
@@ -43,11 +45,21 @@ class Locker
     /**
      * Checks whether locker were been locked (lockfile found).
      *
+     * @param Boolean $dev true to check if dev packages are locked
      * @return Boolean
      */
-    public function isLocked()
+    public function isLocked($dev = false)
     {
-        return $this->lockFile->exists();
+        if (!$this->lockFile->exists()) {
+            return false;
+        }
+
+        $data = $this->getLockData();
+        if ($dev) {
+            return isset($data['packages-dev']);
+        }
+
+        return isset($data['packages']);
     }
 
     /**
@@ -65,21 +77,28 @@ class Locker
     /**
      * Searches and returns an array of locked packages, retrieved from registered repositories.
      *
+     * @param Boolean $dev true to retrieve the locked dev packages
      * @return array
      */
-    public function getLockedPackages()
+    public function getLockedPackages($dev = false)
     {
-        if (!$this->isLocked()) {
-            throw new \LogicException('No lockfile found. Unable to read locked packages');
-        }
-
-        $lockList = $this->lockFile->read();
+        $lockList = $this->getLockData();
         $packages = array();
-        foreach ($lockList['packages'] as $info) {
-            $package = $this->repositoryManager->getLocalRepository()->findPackage($info['package'], $info['version']);
+
+        $lockedPackages = $dev ? $lockList['packages-dev'] : $lockList['packages'];
+        $repo = $dev ? $this->repositoryManager->getLocalDevRepository() : $this->repositoryManager->getLocalRepository();
+
+        foreach ($lockedPackages as $info) {
+            $resolvedVersion = !empty($info['alias']) ? $info['alias'] : $info['version'];
+            $package = $repo->findPackage($info['package'], $resolvedVersion);
 
             if (!$package) {
                 $package = $this->repositoryManager->findPackage($info['package'], $info['version']);
+                if ($package && !empty($info['alias'])) {
+                    $alias = new AliasPackage($package, $info['alias'], $info['alias']);
+                    $package->getRepository()->addPackage($alias);
+                    $package = $alias;
+                }
             }
 
             if (!$package) {
@@ -95,18 +114,67 @@ class Locker
         return $packages;
     }
 
+    public function getAliases()
+    {
+        $lockList = $this->getLockData();
+        return isset($lockList['aliases']) ? $lockList['aliases'] : array();
+    }
+
+    public function getLockData()
+    {
+        if (!$this->lockFile->exists()) {
+            throw new \LogicException('No lockfile found. Unable to read locked packages');
+        }
+
+        if (null !== $this->lockDataCache) {
+            return $this->lockDataCache;
+        }
+
+        return $this->lockDataCache = $this->lockFile->read();
+    }
+
     /**
-     * Locks provided packages into lockfile.
+     * Locks provided data into lockfile.
      *
      * @param array $packages array of packages
+     * @param mixed $packages array of dev packages or null if installed without --dev
+     * @param array $aliases array of aliases
+     *
+     * @return Boolean
      */
-    public function lockPackages(array $packages)
+    public function setLockData(array $packages, $devPackages, array $aliases)
     {
         $lock = array(
             'hash' => $this->hash,
-            'packages' => array(),
+            'packages' => null,
+            'packages-dev' => null,
+            'aliases' => $aliases,
         );
+
+        $lock['packages'] = $this->lockPackages($packages);
+        if (null !== $devPackages) {
+            $lock['packages-dev'] = $this->lockPackages($devPackages);
+        }
+
+        if (!$this->isLocked() || $lock !== $this->getLockData()) {
+            $this->lockFile->write($lock);
+            $this->lockDataCache = null;
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private function lockPackages(array $packages)
+    {
+        $locked = array();
+
         foreach ($packages as $package) {
+            if ($package instanceof AliasPackage) {
+                $package = $package->getAliasOf();
+            }
+
             $name    = $package->getPrettyName();
             $version = $package->getPrettyVersion();
 
@@ -116,9 +184,23 @@ class Locker
                 ));
             }
 
-            $lock['packages'][] = array('package' => $name, 'version' => $version);
+            $spec = array('package' => $name, 'version' => $version);
+
+            if ($package->isDev()) {
+                $spec['source-reference'] = $package->getSourceReference();
+            }
+
+            if ($package->getAlias() && $package->isInstalledAsAlias()) {
+                $spec['alias'] = $package->getAlias();
+            }
+
+            $locked[] = $spec;
         }
 
-        $this->lockFile->write($lock);
+        usort($locked, function ($a, $b) {
+            return strcmp($a['package'], $b['package']);
+        });
+
+        return $locked;
     }
 }

@@ -19,7 +19,7 @@ use Composer\IO\IOInterface;
 /**
  * @author Per Bernhardt <plb@webfactory.de>
  */
-class HgDriver extends VcsDriver implements VcsDriverInterface
+class HgDriver extends VcsDriver
 {
     protected $tags;
     protected $branches;
@@ -100,14 +100,14 @@ class HgDriver extends VcsDriver implements VcsDriverInterface
             $this->process->execute(sprintf('cd %s && hg cat -r %s composer.json', escapeshellarg($this->tmpDir), escapeshellarg($identifier)), $composer);
 
             if (!trim($composer)) {
-                throw new \UnexpectedValueException('Failed to retrieve composer information for identifier ' . $identifier . ' in ' . $this->getUrl());
+                return;
             }
 
             $composer = JsonFile::parseJson($composer);
 
             if (!isset($composer['time'])) {
                 $this->process->execute(sprintf('cd %s && hg log --template "{date|rfc822date}" -r %s', escapeshellarg($this->tmpDir), escapeshellarg($identifier)), $output);
-                $date = new \DateTime($output[0]);
+                $date = new \DateTime(trim($output));
                 $composer['time'] = $date->format('Y-m-d H:i:s');
             }
             $this->infoCache[$identifier] = $composer;
@@ -130,6 +130,7 @@ class HgDriver extends VcsDriver implements VcsDriverInterface
                     $tags[$match[1]] = $match[2];
                 }
             }
+            unset($tags['tip']);
 
             $this->tags = $tags;
         }
@@ -161,21 +162,7 @@ class HgDriver extends VcsDriver implements VcsDriverInterface
     /**
      * {@inheritDoc}
      */
-    public function hasComposerFile($identifier)
-    {
-        try {
-            $this->getComposerInformation($identifier);
-            return true;
-        } catch (\Exception $e) {
-        }
-
-        return false;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public static function supports($url, $deep = false)
+    public static function supports(IOInterface $io, $url, $deep = false)
     {
         if (preg_match('#(^(?:https?|ssh)://(?:[^@]@)?bitbucket.org|https://(?:.*?)\.kilnhg.com)#i', $url)) {
             return true;

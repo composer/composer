@@ -1,6 +1,18 @@
 <?php
 
+/*
+ * This file is part of Composer.
+ *
+ * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Composer\Repository\Vcs;
+
+use Composer\IO\IOInterface;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -72,9 +84,10 @@ interface VcsDriverInterface
     /**
      * Checks if this driver can handle a given url
      *
+     * @param IOInterface $io IO instance
      * @param string $url
      * @param Boolean $shallow unless true, only shallow checks (url matching typically) should be done
      * @return Boolean
      */
-    static function supports($url, $deep = false);
+    static function supports(IOInterface $io, $url, $deep = false);
 }

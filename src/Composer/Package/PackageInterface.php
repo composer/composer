@@ -69,6 +69,13 @@ interface PackageInterface
     function matches($name, LinkConstraintInterface $constraint);
 
     /**
+     * Returns whether the package is a development virtual package or a concrete one
+     *
+     * @return Boolean
+     */
+    function isDev();
+
+    /**
      * Returns the package type, e.g. library
      *
      * @return string The package type
@@ -176,7 +183,7 @@ interface PackageInterface
     /**
      * Returns the package license, e.g. MIT, BSD, GPL
      *
-     * @return string The package license
+     * @return array The package licenses
      */
     function getLicense();
 
@@ -213,20 +220,18 @@ interface PackageInterface
     function getReplaces();
 
     /**
-     * Returns a set of links to packages which are recommended in
-     * combination with this package. These would most likely be installed
-     * automatically in combination with this package.
+     * Returns a set of links to packages which are required to develop
+     * this package. These are installed if in dev mode.
      *
-     * @return array An array of package links defining recommended packages
+     * @return array An array of package links defining packages required for development
      */
-    function getRecommends();
+    function getDevRequires();
 
     /**
-     * Returns a set of links to packages which are suggested in combination
-     * with this package. These can be suggested to the user, but will not be
-     * automatically installed with this package.
+     * Returns a set of package names and reasons why they are useful in
+     * combination with this package.
      *
-     * @return array An array of package links defining suggested packages
+     * @return array An array of package suggestions with descriptions
      */
     function getSuggests();
 
@@ -241,6 +246,14 @@ interface PackageInterface
      * @return array Mapping of autoloading rules
      */
     function getAutoload();
+
+    /**
+     * Returns a list of directories which should get added to PHP's
+     * include path.
+     *
+     * @return array
+     */
+    function getIncludePaths();
 
     /**
      * Returns an array of repositories
@@ -287,6 +300,13 @@ interface PackageInterface
     function getDescription();
 
     /**
+     * Returns the package binaries
+     *
+     * @return array
+     */
+    function getBinaries();
+
+    /**
      * Returns the package homepage
      *
      * @return string
@@ -301,6 +321,20 @@ interface PackageInterface
      * @return array
      */
     function getAuthors();
+
+    /**
+     * Returns a version this package should be aliased to
+     *
+     * @return string
+     */
+    function getAlias();
+
+    /**
+     * Returns a non-normalized version this package should be aliased to
+     *
+     * @return string
+     */
+    function getPrettyAlias();
 
     /**
      * Returns package unique name, constructed from name and version.

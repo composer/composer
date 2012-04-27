@@ -52,7 +52,13 @@ class Request
             'packages' => $packages,
             'cmd' => $cmd,
             'packageName' => $packageName,
+            'constraint' => $constraint,
         );
+    }
+
+    public function updateAll()
+    {
+        $this->jobs[] = array('cmd' => 'update-all', 'packages' => array());
     }
 
     public function getJobs()

@@ -36,14 +36,15 @@ class PlatformRepository extends ArrayRepository
         }
 
         $php = new MemoryPackage('php', $version, $prettyVersion);
+        $php->setDescription('The PHP interpreter');
         parent::addPackage($php);
 
-        foreach (get_loaded_extensions() as $ext) {
-            if (in_array($ext, array('standard', 'Core'))) {
+        foreach (get_loaded_extensions() as $name) {
+            if (in_array($name, array('standard', 'Core'))) {
                 continue;
             }
 
-            $reflExt = new \ReflectionExtension($ext);
+            $reflExt = new \ReflectionExtension($name);
             try {
                 $prettyVersion = $reflExt->getVersion();
                 $version = $versionParser->normalize($prettyVersion);
@@ -52,7 +53,8 @@ class PlatformRepository extends ArrayRepository
                 $version = $versionParser->normalize($prettyVersion);
             }
 
-            $ext = new MemoryPackage('ext-'.strtolower($ext), $version, $prettyVersion);
+            $ext = new MemoryPackage('ext-'.$name, $version, $prettyVersion);
+            $ext->setDescription('The '.$name.' PHP extension');
             parent::addPackage($ext);
         }
     }

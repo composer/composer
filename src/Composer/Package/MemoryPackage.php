@@ -12,6 +12,8 @@
 
 namespace Composer\Package;
 
+use Composer\Package\Version\VersionParser;
+
 /**
  * A package with setters for all members to create it dynamically in memory
  *
@@ -41,14 +43,20 @@ class MemoryPackage extends BasePackage
     protected $extra = array();
     protected $binaries = array();
     protected $scripts = array();
+    protected $aliases = array();
+    protected $alias;
+    protected $prettyAlias;
+    protected $installedAsAlias;
+    protected $dev;
 
     protected $requires = array();
     protected $conflicts = array();
     protected $provides = array();
     protected $replaces = array();
-    protected $recommends = array();
+    protected $devRequires = array();
     protected $suggests = array();
     protected $autoload = array();
+    protected $includePaths = array();
 
     /**
      * Creates a new in memory package.
@@ -63,6 +71,16 @@ class MemoryPackage extends BasePackage
 
         $this->version = $version;
         $this->prettyVersion = $prettyVersion;
+
+        $this->dev = VersionParser::isDev($version);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function isDev()
+    {
+        return $this->dev;
     }
 
     /**
@@ -143,6 +161,72 @@ class MemoryPackage extends BasePackage
     public function getScripts()
     {
         return $this->scripts;
+    }
+
+    /**
+     * @param array $aliases
+     */
+    public function setAliases(array $aliases)
+    {
+        $this->aliases = $aliases;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getAliases()
+    {
+        return $this->aliases;
+    }
+
+    /**
+     * @param string $alias
+     */
+    public function setAlias($alias)
+    {
+        $this->alias = $alias;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getAlias()
+    {
+        return $this->alias;
+    }
+
+    /**
+     * @param string $prettyAlias
+     */
+    public function setPrettyAlias($prettyAlias)
+    {
+        $this->prettyAlias = $prettyAlias;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getPrettyAlias()
+    {
+        return $this->prettyAlias;
+    }
+
+    /**
+     * Enabled if the package is installed from its alias package
+     *
+     * @param string $installedAsAlias
+     */
+    public function setInstalledAsAlias($installedAsAlias)
+    {
+        $this->installedAsAlias = $installedAsAlias;
+    }
+
+    /**
+     * @return string
+     */
+    public function isInstalledAsAlias()
+    {
+        return $this->installedAsAlias;
     }
 
     /**
@@ -400,25 +484,25 @@ class MemoryPackage extends BasePackage
     /**
      * Set the recommended packages
      *
-     * @param array $recommends A set of package links
+     * @param array $devRequires A set of package links
      */
-    public function setRecommends(array $recommends)
+    public function setDevRequires(array $devRequires)
     {
-        $this->recommends = $recommends;
+        $this->devRequires = $devRequires;
     }
 
     /**
      * {@inheritDoc}
      */
-    public function getRecommends()
+    public function getDevRequires()
     {
-        return $this->recommends;
+        return $this->devRequires;
     }
 
     /**
      * Set the suggested packages
      *
-     * @param array $suggests A set of package links
+     * @param array $suggests A set of package names/comments
      */
     public function setSuggests(array $suggests)
     {
@@ -438,7 +522,7 @@ class MemoryPackage extends BasePackage
      *
      * @param DateTime $releaseDate
      */
-    public function setReleasedate(\DateTime $releaseDate)
+    public function setReleaseDate(\DateTime $releaseDate)
     {
         $this->releaseDate = $releaseDate;
     }
@@ -539,5 +623,23 @@ class MemoryPackage extends BasePackage
     public function getAutoload()
     {
         return $this->autoload;
+    }
+
+    /**
+     * Sets the list of paths added to PHP's include path.
+     *
+     * @param array $includePaths List of directories.
+     */
+    public function setIncludePaths(array $includePaths)
+    {
+        $this->includePaths = $includePaths;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getIncludePaths()
+    {
+        return $this->includePaths;
     }
 }

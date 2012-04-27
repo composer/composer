@@ -25,6 +25,17 @@ class VersionParser
     private $modifierRegex = '[.-]?(?:(beta|RC|alpha|patch|pl|p)(?:[.-]?(\d+))?)?([.-]?dev)?';
 
     /**
+     * Checks if a version is dev or not
+     *
+     * @param string $version
+     * @return Boolean
+     */
+    static public function isDev($version)
+    {
+        return 'dev-' === substr($version, 0, 4) || '-dev' === substr($version, -4);
+    }
+
+    /**
      * Normalizes a version string to be able to perform comparisons on it
      *
      * @param string $version
@@ -34,8 +45,18 @@ class VersionParser
     {
         $version = trim($version);
 
-        if (preg_match('{^(?:master|trunk|default)(?:[.-]?dev)?$}i', $version)) {
+        // ignore aliases and just assume the alias is required instead of the source
+        if (preg_match('{^([^,\s]+) +as +([^,\s]+)$}', $version, $match)) {
+            $version = $match[2];
+        }
+
+        // match master-like branches
+        if (preg_match('{^(?:dev-)?(?:master|trunk|default)$}i', $version)) {
             return '9999999-dev';
+        }
+
+        if ('dev-' === strtolower(substr($version, 0, 4))) {
+            return strtolower($version);
         }
 
         // match classical versioning
@@ -53,7 +74,7 @@ class VersionParser
         // add version modifiers if a version was matched
         if (isset($index)) {
             if (!empty($matches[$index])) {
-                $mod = array('{^pl?$}', '{^rc$}');
+                $mod = array('{^pl?$}i', '{^rc$}i');
                 $modNormalized = array('patch', 'RC');
                 $version .= '-'.preg_replace($mod, $modNormalized, strtolower($matches[$index]))
                     . (!empty($matches[$index+1]) ? $matches[$index+1] : '');
@@ -66,6 +87,7 @@ class VersionParser
             return $version;
         }
 
+        // match dev branches
         if (preg_match('{(.*?)[.-]?dev$}i', $version, $match)) {
             try {
                 return $this->normalizeBranch($match[1]);
@@ -97,7 +119,7 @@ class VersionParser
             return str_replace('x', '9999999', $version).'-dev';
         }
 
-        throw new \UnexpectedValueException('Invalid branch name '.$name);
+        return 'dev-'.$name;
     }
 
     /**
@@ -128,12 +150,12 @@ class VersionParser
 
     private function parseConstraint($constraint)
     {
-        if ('*' === $constraint || '*.*' === $constraint || '*.*.*' === $constraint || '*.*.*.*' === $constraint) {
+        if (preg_match('{^[x*](\.[x*])*$}i', $constraint)) {
             return array();
         }
 
         // match wildcard constraints
-        if (preg_match('{^(\d+)(?:\.(\d+))?(?:\.(\d+))?\.\*$}', $constraint, $matches)) {
+        if (preg_match('{^(\d+)(?:\.(\d+))?(?:\.(\d+))?\.[x*]$}', $constraint, $matches)) {
             if (isset($matches[3])) {
                 $highVersion = $matches[1] . '.' . $matches[2] . '.' . $matches[3] . '.9999999';
                 if ($matches[3] === '0') {

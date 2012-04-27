@@ -15,6 +15,12 @@ namespace Composer\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
+use Composer\Repository\CompositeRepository;
+use Composer\Repository\PlatformRepository;
+use Composer\Repository\ComposerRepository;
+use Composer\Package\PackageInterface;
+use Composer\Package\AliasPackage;
+use Composer\Factory;
 
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>
@@ -40,28 +46,65 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $composer = $this->getComposer();
+        // init repos
+        $platformRepo = new PlatformRepository;
+        if ($composer = $this->getComposer(false)) {
+            $localRepo = $composer->getRepositoryManager()->getLocalRepository();
+            $installedRepo = new CompositeRepository(array($localRepo, $platformRepo));
+            $repos = new CompositeRepository(array_merge(array($installedRepo), $composer->getRepositoryManager()->getRepositories()));
+        } else {
+            $output->writeln('No composer.json found in the current directory, showing packages from packagist.org');
+            $installedRepo = $platformRepo;
+            $packagist = new ComposerRepository(array('url' => 'http://packagist.org'), $this->getIO(), Factory::createConfig());
+            $repos = new CompositeRepository(array($installedRepo, $packagist));
+        }
 
-        // create local repo, this contains all packages that are installed in the local project
-        $localRepo = $composer->getRepositoryManager()->getLocalRepository();
+        $tokens = $input->getArgument('tokens');
+        $packages = array();
 
-        $tokens = array_map('strtolower', $input->getArgument('tokens'));
-        foreach ($composer->getRepositoryManager()->getRepositories() as $repository) {
-            foreach ($repository->getPackages() as $package) {
-                foreach ($tokens as $token) {
-                    if (false === ($pos = strpos($package->getName(), $token))) {
-                        continue;
-                    }
+        foreach ($repos->getPackages() as $package) {
+            if ($package instanceof AliasPackage || isset($packages[$package->getName()])) {
+                continue;
+            }
 
-                    $state = $localRepo->hasPackage($package) ? '<info>installed</info>' : $state = '<comment>available</comment>';
+            foreach ($tokens as $token) {
+                if (!$this->matchPackage($package, $token)) {
+                    continue;
+                }
 
+                if (false !== ($pos = stripos($package->getName(), $token))) {
                     $name = substr($package->getPrettyName(), 0, $pos)
                         . '<highlight>' . substr($package->getPrettyName(), $pos, strlen($token)) . '</highlight>'
                         . substr($package->getPrettyName(), $pos + strlen($token));
-                    $output->writeln($state . ': ' . $name . ' <comment>' . $package->getPrettyVersion() . '</comment>');
-                    continue 2;
+                } else {
+                    $name = $package->getPrettyName();
                 }
+
+                $packages[$package->getName()] = array(
+                    'name' => $name,
+                    'description' => strtok($package->getDescription(), "\r\n")
+                );
+                continue 2;
             }
         }
+
+        foreach ($packages as $details) {
+            $output->writeln($details['name'] .' <comment>:</comment> '. $details['description']);
+        }
+    }
+
+    /**
+     * tries to find a token within the name/keywords/description
+     *
+     * @param PackageInterface $package
+     * @param string $token
+     * @return boolean
+     */
+    private function matchPackage(PackageInterface $package, $token)
+    {
+        return (false !== stripos($package->getName(), $token))
+            || (false !== stripos(join(',', $package->getKeywords() ?: array()), $token))
+            || (false !== stripos($package->getDescription(), $token))
+        ;
     }
 }

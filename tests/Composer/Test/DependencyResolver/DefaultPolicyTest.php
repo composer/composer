@@ -18,6 +18,7 @@ use Composer\DependencyResolver\DefaultPolicy;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Literal;
 use Composer\Package\Link;
+use Composer\Package\AliasPackage;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Test\TestCase;
 
@@ -80,7 +81,7 @@ class DefaultPolicyTest extends TestCase
         $this->assertEquals($expected, $selected);
     }
 
-    public function testSelectLastRepo()
+    public function testSelectFirstRepo()
     {
         $this->repoImportant = new ArrayRepository;
 
@@ -88,11 +89,40 @@ class DefaultPolicyTest extends TestCase
         $this->repoImportant->addPackage($packageAImportant = $this->getPackage('A', '1.0'));
 
         $this->pool->addRepository($this->repoInstalled);
-        $this->pool->addRepository($this->repo);
         $this->pool->addRepository($this->repoImportant);
+        $this->pool->addRepository($this->repo);
 
         $literals = array(new Literal($packageA, true), new Literal($packageAImportant, true));
         $expected = array(new Literal($packageAImportant, true));
+
+        $selected = $this->policy->selectPreferedPackages($this->pool, array(), $literals);
+
+        $this->assertEquals($expected, $selected);
+    }
+
+    public function testSelectLocalReposFirst()
+    {
+        $this->repoImportant = new ArrayRepository;
+
+        $this->repo->addPackage($packageA = $this->getPackage('A', 'dev-master'));
+        $this->repo->addPackage($packageAAlias = new AliasPackage($packageA, '2.1.9999999.9999999-dev', '2.1.x-dev'));
+        $this->repoImportant->addPackage($packageAImportant = $this->getPackage('A', 'dev-feature-a'));
+        $this->repoImportant->addPackage($packageAAliasImportant = new AliasPackage($packageAImportant, '2.1.9999999.9999999-dev', '2.1.x-dev'));
+        $this->repoImportant->addPackage($packageA2Important = $this->getPackage('A', 'dev-master'));
+        $this->repoImportant->addPackage($packageA2AliasImportant = new AliasPackage($packageA2Important, '2.1.9999999.9999999-dev', '2.1.x-dev'));
+        $packageAAliasImportant->setRootPackageAlias(true);
+
+        $this->pool->addRepository($this->repoInstalled);
+        $this->pool->addRepository($this->repoImportant);
+        $this->pool->addRepository($this->repo);
+
+        $packages = $this->pool->whatProvides('a', new VersionConstraint('=', '2.1.9999999.9999999-dev'));
+        $literals = array();
+        foreach ($packages as $package) {
+            $literals[] = new Literal($package, true);
+        }
+
+        $expected = array(new Literal($packageAAliasImportant, true));
 
         $selected = $this->policy->selectPreferedPackages($this->pool, array(), $literals);
 

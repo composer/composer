@@ -10,9 +10,9 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Test\Repository;
+namespace Composer\Test\Util;
 
-use Composer\Downloader\Util\Filesystem;
+use Composer\Util\Filesystem;
 use Composer\Test\TestCase;
 
 class FilesystemTest extends TestCase
@@ -32,7 +32,6 @@ class FilesystemTest extends TestCase
             array('/foo/bar', '/foo/bar', false, "__FILE__"),
             array('/foo/bar', '/foo/baz', false, "__DIR__.'/baz'"),
             array('/foo/bin/run', '/foo/vendor/acme/bin/run', false, "dirname(__DIR__).'/vendor/acme/bin/run'"),
-            array('/foo/bin/run', '/foo/vendor/acme/bin/run', false, "dirname(__DIR__).'/vendor/acme/bin/run'"),
             array('/foo/bin/run', '/bar/bin/run', false, "'/bar/bin/run'"),
             array('c:/bin/run', 'c:/vendor/acme/bin/run', false, "dirname(__DIR__).'/vendor/acme/bin/run'"),
             array('c:\\bin\\run', 'c:/vendor/acme/bin/run', false, "dirname(__DIR__).'/vendor/acme/bin/run'"),
@@ -41,8 +40,9 @@ class FilesystemTest extends TestCase
             array('/foo/bar', '/foo/bar', true, "__DIR__"),
             array('/foo/bar', '/foo/baz', true, "dirname(__DIR__).'/baz'"),
             array('/foo/bin/run', '/foo/vendor/acme/bin/run', true, "dirname(dirname(__DIR__)).'/vendor/acme/bin/run'"),
-            array('/foo/bin/run', '/foo/vendor/acme/bin/run', true, "dirname(dirname(__DIR__)).'/vendor/acme/bin/run'"),
             array('/foo/bin/run', '/bar/bin/run', true, "'/bar/bin/run'"),
+            array('/bin/run', '/bin/run', true, "__DIR__"),
+            array('c:/bin/run', 'c:\\bin/run', true, "__DIR__"),
             array('c:/bin/run', 'c:/vendor/acme/bin/run', true, "dirname(dirname(__DIR__)).'/vendor/acme/bin/run'"),
             array('c:\\bin\\run', 'c:/vendor/acme/bin/run', true, "dirname(dirname(__DIR__)).'/vendor/acme/bin/run'"),
             array('c:/bin/run', 'd:/vendor/acme/bin/run', true, "'d:/vendor/acme/bin/run'"),
@@ -58,10 +58,10 @@ class FilesystemTest extends TestCase
     /**
      * @dataProvider providePathCouples
      */
-    public function testFindShortestPath($a, $b, $expected)
+    public function testFindShortestPath($a, $b, $expected, $directory = false)
     {
         $fs = new Filesystem;
-        $this->assertEquals($expected, $fs->findShortestPath($a, $b));
+        $this->assertEquals($expected, $fs->findShortestPath($a, $b, $directory));
     }
 
     public function providePathCouples()
@@ -69,9 +69,15 @@ class FilesystemTest extends TestCase
         return array(
             array('/foo/bar', '/foo/bar', "./bar"),
             array('/foo/bar', '/foo/baz', "./baz"),
-            array('/foo/bin/run', '/foo/vendor/acme/bin/run', "../vendor/acme/bin/run"),
+            array('/foo/bar/', '/foo/baz', "./baz"),
+            array('/foo/bar', '/foo/bar', "./", true),
+            array('/foo/bar', '/foo/baz', "../baz", true),
+            array('/foo/bar/', '/foo/baz', "../baz", true),
+            array('C:/foo/bar/', 'c:/foo/baz', "../baz", true),
             array('/foo/bin/run', '/foo/vendor/acme/bin/run', "../vendor/acme/bin/run"),
             array('/foo/bin/run', '/bar/bin/run', "/bar/bin/run"),
+            array('/foo/bin/run', '/bar/bin/run', "/bar/bin/run", true),
+            array('c:/foo/bin/run', 'd:/bar/bin/run', "d:/bar/bin/run", true),
             array('c:/bin/run', 'c:/vendor/acme/bin/run', "../vendor/acme/bin/run"),
             array('c:\\bin\\run', 'c:/vendor/acme/bin/run', "../vendor/acme/bin/run"),
             array('c:/bin/run', 'd:/vendor/acme/bin/run', "d:/vendor/acme/bin/run"),
@@ -80,6 +86,8 @@ class FilesystemTest extends TestCase
             array('/tmp/test', '/tmp', "./"),
             array('C:/Temp/test/sub', 'C:\Temp', "../"),
             array('/tmp/test/sub', '/tmp', "../"),
+            array('/tmp/test/sub', '/tmp', "../../", true),
+            array('c:/tmp/test/sub', 'c:/tmp', "../../", true),
             array('/tmp', '/tmp/test', "test"),
             array('C:/Temp', 'C:\Temp\test', "test"),
             array('C:/Temp', 'c:\Temp\test', "test"),

@@ -1,3 +1,6 @@
+<!--
+    tagline: Script are callbacks that are called before/after installing packages
+-->
 # Scripts
 
 ## What is a script?
@@ -34,33 +37,38 @@ functionality.
 
 Script definition example:
 
-```json
-{
-    "scripts": {
-        "post-update-cmd": "MyVendor\\MyClass::postUpdate",
-        "post-package-install": ["MyVendor\\MyClass::postPackageInstall"]
-    }
-}
-```
-
-Script listener example:
-
-```php
-<?php
-
-namespace MyVendor;
-
-class MyClass
-{
-    public static function postUpdate($event)
     {
-        // do stuff
+        "scripts": {
+            "post-update-cmd": "MyVendor\\MyClass::postUpdate",
+            "post-package-install": [
+                "MyVendor\\MyClass::postPackageInstall"
+            ]
+        }
     }
 
-    public static function postPackageInstall($event)
+The event handler receives a `Composer\Script\Event` object as an argument,
+which gives you access to the `Composer\Composer` instance through the
+`getComposer` method.
+
+Using the previous example, here's an event listener example :
+
+    <?php
+
+    namespace MyVendor;
+
+    use Composer\Script\Event;
+
+    class MyClass
     {
-        $installedPackage = $event->getOperation()->getPackage();
-        // do stuff
+        public static function postUpdate(Event $event)
+        {
+            $composer = $event->getComposer();
+            // do stuff
+        }
+
+        public static function postPackageInstall(Event $event)
+        {
+            $installedPackage = $event->getOperation()->getPackage();
+            // do stuff
+        }
     }
-}
-```

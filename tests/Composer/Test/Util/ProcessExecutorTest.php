@@ -33,6 +33,21 @@ class ProcessExecutorTest extends TestCase
         $this->assertEquals("foo".PHP_EOL, $output);
     }
 
+    public function testExecuteCapturesStderr()
+    {
+        $process = new ProcessExecutor;
+        $process->execute('cat foo', $output);
+        $this->assertNotNull($process->getErrorOutput());
+    }
+
+    public function testTimeout()
+    {
+        ProcessExecutor::setTimeout(1);
+        $process = new ProcessExecutor;
+        $this->assertEquals(1, $process->getTimeout());
+        ProcessExecutor::setTimeout(60);
+    }
+
     public function testSplitLines()
     {
         $process = new ProcessExecutor;

@@ -16,6 +16,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Json\JsonFile;
+use Composer\Json\JsonValidationException;
+use Composer\Util\RemoteFilesystem;
 
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>
@@ -52,9 +54,27 @@ EOT
             return 1;
         }
 
+        $laxValid = false;
         try {
-            JsonFile::parseJson(file_get_contents($file));
+            $json = new JsonFile($file, new RemoteFilesystem($this->getIO()));
+            $json->read();
+
+            $json->validateSchema(JsonFile::LAX_SCHEMA);
+            $laxValid = true;
+            $json->validateSchema();
+        } catch (JsonValidationException $e) {
+            if ($laxValid) {
+                $output->writeln('<info>'.$file.' is valid for simple usage with composer but has</info>');
+                $output->writeln('<info>strict errors that make it unable to be published as a package:</info>');
+            } else {
+                $output->writeln('<error>'.$file.' is invalid, the following errors were found:</error>');
+            }
+            foreach ($e->getErrors() as $message) {
+                $output->writeln('<error>'.$message.'</error>');
+            }
+            return 1;
         } catch (\Exception $e) {
+            $output->writeln('<error>'.$file.' contains a JSON Syntax Error:</error>');
             $output->writeln('<error>'.$e->getMessage().'</error>');
             return 1;
         }
