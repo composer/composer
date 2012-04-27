@@ -176,7 +176,6 @@ class LibraryInstaller implements InstallerInterface
                     chdir(dirname($link));
                     symlink($relativeBin, $link);
                 } catch (\ErrorException $e) {
-                    var_dump($e->getMessage());
                     file_put_contents($link, $this->generateUnixyProxyCode($bin, $link));
                 }
                 chdir($cwd);
