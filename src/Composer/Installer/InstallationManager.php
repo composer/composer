@@ -33,7 +33,7 @@ class InstallationManager
 {
     private $installers = array();
     private $cache = array();
-    private $vendorPath;
+    protected $vendorPath;
 
     /**
      * Creates an instance of InstallationManager
@@ -204,7 +204,7 @@ class InstallationManager
         }
     }
 
-    private function antiAlias(PackageInterface $package)
+    protected function antiAlias(PackageInterface $package)
     {
         if ($package instanceof AliasPackage) {
             $alias = $package;
