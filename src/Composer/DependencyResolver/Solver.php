@@ -15,6 +15,7 @@ namespace Composer\DependencyResolver;
 use Composer\Repository\RepositoryInterface;
 use Composer\Package\PackageInterface;
 use Composer\DependencyResolver\Operation;
+use Composer\Package\AliasPackage;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -275,8 +276,14 @@ class Solver
                         continue;
                     }
 
-                    $reason = ($package->getName() == $provider->getName()) ? Rule::RULE_PACKAGE_SAME_NAME : Rule::RULE_PACKAGE_IMPLICIT_OBSOLETES;
-                    $this->addRule(RuleSet::TYPE_PACKAGE, $rule = $this->createConflictRule($package, $provider, $reason, (string) $package));
+                    if (($provider instanceof AliasPackage && $provider->getAliasOf() === $package) ||
+                        ($package instanceof AliasPackage && $package->getAliasOf() === $provider)) {
+
+                        $this->addRule(RuleSet::TYPE_PACKAGE, $rule = $this->createRequireRule($package, array($provider), Rule::RULE_PACKAGE_ALIAS, (string) $package));
+                    } else {
+                        $reason = ($package->getName() == $provider->getName()) ? Rule::RULE_PACKAGE_SAME_NAME : Rule::RULE_PACKAGE_IMPLICIT_OBSOLETES;
+                        $this->addRule(RuleSet::TYPE_PACKAGE, $rule = $this->createConflictRule($package, $provider, $reason, (string) $package));
+                    }
                 }
             }
         }

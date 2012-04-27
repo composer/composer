@@ -670,6 +670,55 @@ class SolverTest extends TestCase
         ));
     }
 
+    public function testInstallRecursiveAliasDependencies()
+    {
+        $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
+        $this->repo->addPackage($packageB = $this->getPackage('B', '2.0'));
+        $this->repo->addPackage($packageA2 = $this->getPackage('A', '2.0'));
+
+        $packageA2->setRequires(array(
+            new Link('A', 'B', $this->getVersionConstraint('==', '2.0'), 'requires', '== 2.0'),
+        ));
+        $packageB->setRequires(array(
+            new Link('B', 'A', $this->getVersionConstraint('>=', '2.0'), 'requires'),
+        ));
+
+        $this->repo->addPackage($packageA2Alias = $this->getAliasPackage($packageA2, '1.1'));
+
+        $this->reposComplete();
+
+        $this->request->install('A', $this->getVersionConstraint('==', '1.1.0.0'));
+
+        $this->checkSolverResult(array(
+            array('job' => 'install', 'package' => $packageB),
+            array('job' => 'install', 'package' => $packageA2),
+            array('job' => 'install', 'package' => $packageA2Alias),
+        ));
+    }
+
+    public function testInstallDevAlias()
+    {
+        $this->repo->addPackage($packageA = $this->getPackage('A', '2.0'));
+        $this->repo->addPackage($packageB = $this->getPackage('B', '1.0'));
+
+        $packageB->setRequires(array(
+            new Link('B', 'A', $this->getVersionConstraint('<', '2.0'), 'requires'),
+        ));
+
+        $this->repo->addPackage($packageAAlias = $this->getAliasPackage($packageA, '1.1'));
+
+        $this->reposComplete();
+
+        $this->request->install('A', $this->getVersionConstraint('==', '2.0'));
+        $this->request->install('B');
+
+        $this->checkSolverResult(array(
+            array('job' => 'install', 'package' => $packageAAlias),
+            array('job' => 'install', 'package' => $packageB),
+            array('job' => 'install', 'package' => $packageA),
+        ));
+    }
+
     protected function reposComplete()
     {
         $this->pool->addRepository($this->repoInstalled);
