@@ -108,7 +108,7 @@ same version of the dependencies.
 If no `composer.json` lock file exists, it will read the dependencies and
 versions from `composer.json` and  create the lock file.
 
-This means that if any of the dependencies get a new version, you won't get the updates.
+This means that if any of the dependencies get a new version, you won't get the updates
 automatically. To update to the new version, use `update` command. This will fetch
 the latest matching versions (according to your `composer.json` file) and also update
 the lock file with the new version.
