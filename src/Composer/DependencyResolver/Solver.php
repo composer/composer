@@ -35,6 +35,8 @@ class Solver
     protected $decisionMap;
     protected $installedMap;
 
+    protected $installedPackages;
+
     protected $packageToFeatureRule = array();
 
     public function __construct(PolicyInterface $policy, Pool $pool, RepositoryInterface $installed)
@@ -667,14 +669,20 @@ class Solver
         }
     }
 
+    protected function setupInstalledMap()
+    {
+        $this->installedPackages = $this->installed->getPackages();
+        $this->installedMap = array();
+        foreach ($this->installedPackages as $package) {
+            $this->installedMap[$package->getId()] = $package;
+        }
+    }
+
     public function solve(Request $request)
     {
         $this->jobs = $request->getJobs();
-        $installedPackages = $this->installed->getPackages();
-        $this->installedMap = array();
-        foreach ($installedPackages as $package) {
-            $this->installedMap[$package->getId()] = $package;
-        }
+
+        $this->setupInstalledMap();
 
         if (version_compare(PHP_VERSION, '5.3.4', '>=')) {
             $this->decisionMap = new \SplFixedArray($this->pool->getMaxId() + 1);
@@ -695,18 +703,18 @@ class Solver
 
             switch ($job['cmd']) {
                 case 'update-all':
-                    foreach ($installedPackages as $package) {
+                    foreach ($this->installedMap as $package) {
                         $this->updateMap[$package->getId()] = true;
                     }
                 break;
             }
         }
 
-        foreach ($installedPackages as $package) {
+        foreach ($this->installedMap as $package) {
             $this->addRulesForPackage($package);
         }
 
-        foreach ($installedPackages as $package) {
+        foreach ($this->installedMap as $package) {
             $this->addRulesForUpdatePackages($package);
         }
 
@@ -724,7 +732,7 @@ class Solver
 
         // solver_addrpmrulesforweak(solv, &addedmap);
 
-        foreach ($installedPackages as $package) {
+        foreach ($this->installedMap as $package) {
             $updates = $this->policy->findUpdatePackages($this, $this->pool, $this->installedMap, $package);
             $rule = $this->createUpdateRule($package, $updates, Rule::RULE_INTERNAL_ALLOW_UPDATE, (string) $package);
 
@@ -1466,8 +1474,6 @@ class Solver
         $systemLevel = $level + 1;
         $minimizationSteps = 0;
         $installedPos = 0;
-
-        $this->installedPackages = $this->installed->getPackages();
 
         while (true) {
 
