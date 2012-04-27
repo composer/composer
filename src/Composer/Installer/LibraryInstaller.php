@@ -168,14 +168,18 @@ class LibraryInstaller implements InstallerInterface
                 }
                 file_put_contents($link, $this->generateWindowsProxyCode($bin, $link));
             } else {
+                $cwd = getcwd();
                 try {
                     // under linux symlinks are not always supported for example
                     // when using it in smbfs mounted folder
-                    symlink($bin, $link);
+                    $relativeBin = $this->filesystem->findShortestPath($link, $bin);
+                    chdir(dirname($link));
+                    symlink($relativeBin, $link);
                 } catch (\ErrorException $e) {
+                    var_dump($e->getMessage());
                     file_put_contents($link, $this->generateUnixyProxyCode($bin, $link));
                 }
-
+                chdir($cwd);
             }
             chmod($link, 0777 & ~umask());
         }
