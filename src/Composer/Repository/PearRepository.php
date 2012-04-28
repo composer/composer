@@ -423,7 +423,7 @@ class PearRepository extends ArrayRepository
         $groupPackage = $packageData;
         $groupPackage['name'] = $groupPackage['name'] . '-' . $groupData['name'];
         if (isset($groupData['hint'])) {
-            $groupPackage['description'] = $groupData['hint'] . (!empty($groupPackage['description']) ? ' ' . $groupPackage['dedscription'] : '');
+            $groupPackage['description'] = $groupData['hint'] . (!empty($groupPackage['description']) ? ' ' . $groupPackage['description'] : '');
         }
         $groupPackage['require'] = !empty($groupPackage['require']) ? $groupPackage['require'] + $groupData['require'] : $groupData['require'];
 
