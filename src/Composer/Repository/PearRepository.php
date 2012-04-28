@@ -74,7 +74,7 @@ class PearRepository extends ArrayRepository
                     }
                     $this->addPackage($loader->load($rev));
                     if ($this->io->isVerbose()) {
-                        $this->io->write('Loaded '.$packageData['name'].' '.$packageData['version']);
+                        $this->io->write('Loaded '.$rev['name'].' '.$rev['version']);
                     }
                 }
             }
