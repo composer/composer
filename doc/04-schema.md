@@ -145,6 +145,7 @@ Each author object can have following properties:
 * **name:** The author's name. Usually his real name.
 * **email:** The author's email address.
 * **homepage:** An URL to the author's website.
+* **role:** The authors role in the project (for e.g. developer or translator)
 
 An example:
 
@@ -153,12 +154,14 @@ An example:
             {
                 "name": "Nils Adermann",
                 "email": "naderman@naderman.de",
-                "homepage": "http://www.naderman.de"
+                "homepage": "http://www.naderman.de",
+                "role": "Developer"
             },
             {
                 "name": "Jordi Boggiano",
                 "email": "j.boggiano@seld.be",
-                "homepage": "http://seld.be"
+                "homepage": "http://seld.be",
+                "role": "Developer"
             }
         ]
     }
