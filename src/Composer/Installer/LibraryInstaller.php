@@ -127,6 +127,13 @@ class LibraryInstaller implements InstallerInterface
         $this->downloadManager->remove($package, $downloadPath);
         $this->removeBinaries($package);
         $repo->removePackage($package);
+
+        if (strpos($package->getName(), '/')) {
+            $packageVendorDir = dirname($downloadPath);
+            if (is_dir($packageVendorDir) && !glob($packageVendorDir.'/*')) {
+                @rmdir($packageVendorDir);
+            }
+        }
     }
 
     /**
