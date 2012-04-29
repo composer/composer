@@ -41,7 +41,7 @@ class GitDriver extends VcsDriver
             // update the repo if it is a valid git repository
             if (is_dir($this->repoDir) && 0 === $this->process->execute('git remote', $output, $this->repoDir)) {
                 if (0 !== $this->process->execute('git remote update --prune origin', $output, $this->repoDir)) {
-                    throw new \RuntimeException('Failed to update '.$this->url.', could not read packages from it' . "\n\n" .$this->process->getErrorOutput());
+                    $this->io->write('<error>Failed to update '.$this->url.', package information from this repository may be outdated ('.$this->process->getErrorOutput().')</error>');
                 }
             } else {
                 // clean up directory and do a fresh clone into it
