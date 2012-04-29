@@ -24,28 +24,19 @@ class InstallationManagerMock extends InstallationManager
     private $updated = array();
     private $uninstalled = array();
 
-    public function __construct($vendorDir = 'vendor')
-    {
-        $this->vendorPath = $vendorDir;
-    }
-
     public function install(RepositoryInterface $repo, InstallOperation $operation)
     {
-        $package = $this->antiAlias($operation->getPackage());
-        $this->installed[] = $package;
+        $this->installed[] = $operation->getPackage();
     }
 
     public function update(RepositoryInterface $repo, UpdateOperation $operation)
     {
-        $initial = $this->antiAlias($operation->getInitialPackage());
-        $target = $this->antiAlias($operation->getTargetPackage());
-        $this->updated[] = $target;
+        $this->updated[] = array($operation->getInitialPackage(), $operation->getTargetPackage());
     }
 
     public function uninstall(RepositoryInterface $repo, UninstallOperation $operation)
     {
-        $package = $this->antiAlias($operation->getPackage());
-        $this->uninstalled[] = $package;
+        $this->uninstalled[] = $operation->getPackage();
     }
 
     public function getInstalledPackages()
