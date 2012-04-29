@@ -40,7 +40,10 @@ class Factory
 
         // Protect directory against web access
         if (!file_exists($home . '/.htaccess')) {
-            @mkdir($home, 0777, true) && @file_put_contents($home . '/.htaccess', 'deny from all');
+            if (!is_dir($home)) {
+                @mkdir($home, 0777, true);
+            }
+            @file_put_contents($home . '/.htaccess', 'Deny from all');
         }
 
         $config = new Config();
