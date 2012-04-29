@@ -25,14 +25,9 @@ class InstallerTest extends TestCase
     /**
      * @dataProvider provideInstaller
      */
-    public function testInstaller(array $expectedInstalled, array $expectedUpdated, array $expectedUninstalled, PackageInterface $package, RepositoryInterface $repository)
+    public function testInstaller(PackageInterface $rootPackage, $repositories, array $options)
     {
         $io = $this->getMock('Composer\IO\IOInterface');
-
-        $package = $this->getPackage('A', '1.0.0');
-        $package->setRequires(array(
-            new Link('A', 'B', $this->getVersionConstraint('=', '1.0.0')),
-        ));
 
         $downloadManager = $this->getMock('Composer\Downloader\DownloadManager');
         $config = $this->getMock('Composer\Config');
@@ -40,25 +35,35 @@ class InstallerTest extends TestCase
         $repositoryManager = new RepositoryManager($io, $config);
         $repositoryManager->setLocalRepository(new WritableRepositoryMock());
         $repositoryManager->setLocalDevRepository(new WritableRepositoryMock());
-        $repositoryManager->addRepository($repository);
+
+        if (!is_array($repositories)) {
+            $repositories = array($repositories);
+        }
+        foreach ($repositories as $repository) {
+            $repositoryManager->addRepository($repository);
+        }
 
         $locker = $this->getMockBuilder('Composer\Package\Locker')->disableOriginalConstructor()->getMock();
         $installationManager = new InstallationManagerMock();
         $eventDispatcher = $this->getMockBuilder('Composer\Script\EventDispatcher')->disableOriginalConstructor()->getMock();
         $autoloadGenerator = $this->getMock('Composer\Autoload\AutoloadGenerator');
 
-        $installer = new Installer($io, $package, $downloadManager, $repositoryManager, $locker, $installationManager, $eventDispatcher, $autoloadGenerator);
+        $installer = new Installer($io, clone $rootPackage, $downloadManager, $repositoryManager, $locker, $installationManager, $eventDispatcher, $autoloadGenerator);
         $result = $installer->run();
         $this->assertTrue($result);
 
+        $expectedInstalled   = isset($options['install']) ? $options['install'] : array();
+        $expectedUpdated     = isset($options['update']) ? $options['update'] : array();
+        $expectedUninstalled = isset($options['uninstall']) ? $options['uninstall'] : array();
+
         $installed = $installationManager->getInstalledPackages();
-        $this->assertSame($expectedInstalled, array_map(array($this, 'getPackageString'), $installed));
+        $this->assertSame($expectedInstalled, $installed);
 
         $updated = $installationManager->getUpdatedPackages();
-        $this->assertSame($expectedUpdated, array_map(array($this, 'getPackageString'), $updated));
+        $this->assertSame($expectedUpdated, $updated);
 
         $uninstalled = $installationManager->getUninstalledPackages();
-        $this->assertSame($expectedUninstalled, array_map(array($this, 'getPackageString'), $uninstalled));
+        $this->assertSame($expectedUninstalled, $uninstalled);
     }
 
     public function provideInstaller()
@@ -78,11 +83,11 @@ class InstallerTest extends TestCase
         ));
 
         $cases[] = array(
-            array('b-1.0.0.0'),
-            array(),
-            array(),
             $a,
             new ArrayRepository(array($b)),
+            array(
+                'install' => array($b)
+            ),
         );
 
         // #480: when A requires B and B requires A, and A is a published root package
@@ -98,18 +103,13 @@ class InstallerTest extends TestCase
         ));
 
         $cases[] = array(
-            array('b-1.0.0.0'),
-            array(),
-            array(),
             $a,
             new ArrayRepository(array($a, $b)),
+            array(
+                'install' => array($b)
+            ),
         );
 
         return $cases;
-    }
-
-    public function getPackageString(PackageInterface $package)
-    {
-        return (string) $package;
     }
 }
