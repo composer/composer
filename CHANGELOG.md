@@ -5,10 +5,15 @@
   * Schema: 'suggest' is now informational and can use any description for a package, not only a constraint
   * Break: vendor/.composer/autoload.php has been moved to vendor/autoload.php, other files are now in vendor/composer/
   * Added caching of repository metadata (faster startup times & failover if packagist is down)
+  * Added removal of packages that are not needed anymore
   * Added include_path support for legacy projects that are full of require_once statements
   * Added installation notifications API to allow better statistics on Composer repositories
   * Added autoloading support for root packages that use target-dir
+  * Added awareness of the root package presence and support for it's provide/replace/conflict keys
+  * Added IOInterface::isDecorated to test for colored output support
   * Improved repository protocol to have large cacheable parts
+  * Fixed various bugs relating to package aliasing, proxy configuration, binaries
+  * Various bug fixes and docs improvements
 
 * 1.0.0-alpha2 (2012-04-03)
 
