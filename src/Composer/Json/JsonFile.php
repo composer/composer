@@ -237,7 +237,7 @@ class JsonFile
                     }
                 } else {
                     // Collapse empty {} and []
-                    $result = rtrim($result);
+                    $result = rtrim($result)."\n\n".$indentStr;
                 }
             }
 
