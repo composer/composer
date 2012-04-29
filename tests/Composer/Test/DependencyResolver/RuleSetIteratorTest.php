@@ -27,7 +27,7 @@ class ResultSetIteratorTest extends \PHPUnit_Framework_TestCase
                 new Rule(array(), 'job1', null),
                 new Rule(array(), 'job2', null),
             ),
-            RuleSet::TYPE_LEARNED => array(
+            RuleSet::TYPE_FEATURE => array(
                 new Rule(array(), 'update1', null),
             ),
             RuleSet::TYPE_PACKAGE => array(),
@@ -46,7 +46,7 @@ class ResultSetIteratorTest extends \PHPUnit_Framework_TestCase
         $expected = array(
             $this->rules[RuleSet::TYPE_JOB][0],
             $this->rules[RuleSet::TYPE_JOB][1],
-            $this->rules[RuleSet::TYPE_LEARNED][0],
+            $this->rules[RuleSet::TYPE_FEATURE][0],
         );
 
         $this->assertEquals($expected, $result);
@@ -64,7 +64,7 @@ class ResultSetIteratorTest extends \PHPUnit_Framework_TestCase
         $expected = array(
             RuleSet::TYPE_JOB,
             RuleSet::TYPE_JOB,
-            RuleSet::TYPE_LEARNED,
+            RuleSet::TYPE_FEATURE,
         );
 
         $this->assertEquals($expected, $result);

@@ -259,11 +259,9 @@ class Installer
             }
         }
 
-        // fix the version of all installed packages (+ platform) that are not
-        // in the current local repo to prevent rogue updates (e.g. non-dev
-        // updating when in dev)
+        // fix the version all installed packages that are not in the current local repo to prevent rogue updates
         foreach ($installedRepo->getPackages() as $package) {
-            if ($package->getRepository() === $localRepo) {
+            if ($package->getRepository() === $localRepo || $package->getRepository() instanceof PlatformRepository) {
                 continue;
             }
 

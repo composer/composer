@@ -30,21 +30,13 @@ class Solver
     protected $ruleToJob = array();
     protected $addedMap = array();
     protected $updateMap = array();
+    protected $noObsoletes = array();
     protected $watches = array();
     protected $removeWatches = array();
     protected $decisionMap;
     protected $installedMap;
 
-    protected $packageToUpdateRule = array();
-
-    protected $decisionQueue = array();
-    protected $decisionQueueWhy = array();
-    protected $decisionQueueFree = array();
-    protected $propagateIndex;
-    protected $branches = array();
-    protected $problems = array();
-    protected $learnedPool = array();
-    protected $recommendsIndex;
+    protected $packageToFeatureRule = array();
 
     public function __construct(PolicyInterface $policy, Pool $pool, RepositoryInterface $installed)
     {
@@ -245,38 +237,50 @@ class Solver
             }
 
             // check obsoletes and implicit obsoletes of a package
-            $isInstalled = (isset($this->installedMap[$package->getId()]));
+            // if ignoreinstalledsobsoletes is not set, we're also checking
+            // obsoletes of installed packages (like newer rpm versions)
+            //
+            /** TODO if ($this->noInstalledObsoletes) */
+            if (true) {
+                $noObsoletes = isset($this->noObsoletes[$package->getId()]);
+                $isInstalled = (isset($this->installedMap[$package->getId()]));
 
-            foreach ($package->getReplaces() as $link) {
-                $obsoleteProviders = $this->pool->whatProvides($link->getTarget(), $link->getConstraint());
+                foreach ($package->getReplaces() as $link) {
+                    $obsoleteProviders = $this->pool->whatProvides($link->getTarget(), $link->getConstraint());
 
-                foreach ($obsoleteProviders as $provider) {
-                    if ($provider === $package) {
-                        continue;
+                    foreach ($obsoleteProviders as $provider) {
+                        if ($provider === $package) {
+                            continue;
+                        }
+
+                        $reason = ($isInstalled) ? Rule::RULE_INSTALLED_PACKAGE_OBSOLETES : Rule::RULE_PACKAGE_OBSOLETES;
+                        $this->addRule(RuleSet::TYPE_PACKAGE, $this->createConflictRule($package, $provider, $reason, (string) $link));
                     }
-
-                    $reason = ($isInstalled) ? Rule::RULE_INSTALLED_PACKAGE_OBSOLETES : Rule::RULE_PACKAGE_OBSOLETES;
-                    $this->addRule(RuleSet::TYPE_PACKAGE, $this->createConflictRule($package, $provider, $reason, (string) $link));
                 }
-            }
 
-            // check implicit obsoletes
-            // for installed packages we only need to check installed/installed problems,
-            // as the others are picked up when looking at the uninstalled package.
-            if (!$isInstalled) {
-                $obsoleteProviders = $this->pool->whatProvides($package->getName(), null);
+                // check implicit obsoletes
+                // for installed packages we only need to check installed/installed problems,
+                // as the others are picked up when looking at the uninstalled package.
+                if (!$isInstalled) {
+                    $obsoleteProviders = $this->pool->whatProvides($package->getName(), null);
 
-                foreach ($obsoleteProviders as $provider) {
-                    if ($provider === $package) {
-                        continue;
+                    foreach ($obsoleteProviders as $provider) {
+                        if ($provider === $package) {
+                            continue;
+                        }
+
+                        if ($isInstalled && !isset($this->installedMap[$provider->getId()])) {
+                            continue;
+                        }
+
+                        // obsolete same packages even when noObsoletes
+                        if ($noObsoletes && (!$package->equals($provider))) {
+                            continue;
+                        }
+
+                        $reason = ($package->getName() == $provider->getName()) ? Rule::RULE_PACKAGE_SAME_NAME : Rule::RULE_PACKAGE_IMPLICIT_OBSOLETES;
+                        $this->addRule(RuleSet::TYPE_PACKAGE, $rule = $this->createConflictRule($package, $provider, $reason, (string) $package));
                     }
-
-                    if ($isInstalled && !isset($this->installedMap[$provider->getId()])) {
-                        continue;
-                    }
-
-                    $reason = ($package->getName() == $provider->getName()) ? Rule::RULE_PACKAGE_SAME_NAME : Rule::RULE_PACKAGE_IMPLICIT_OBSOLETES;
-                    $this->addRule(RuleSet::TYPE_PACKAGE, $rule = $this->createConflictRule($package, $provider, $reason, (string) $package));
                 }
             }
         }
@@ -427,7 +431,7 @@ class Solver
 
             // push all of our rules (can only be feature or job rules)
             // asserting this literal on the problem stack
-            foreach ($this->rules->getIteratorFor(RuleSet::TYPE_JOB) as $assertRule) {
+            foreach ($this->rules->getIteratorFor(array(RuleSet::TYPE_JOB, RuleSet::TYPE_FEATURE)) as $assertRule) {
                 if ($assertRule->isDisabled() || !$assertRule->isAssertion() || $assertRule->isWeak()) {
                     continue;
                 }
@@ -488,22 +492,370 @@ class Solver
             }
 
             $this->disableProblem($why);
+            /** TODO solver_reenablepolicyrules(solv, -(v + 1)); */
         }
     }
 
-    protected function setupInstalledMap()
+    protected function addChoiceRules()
     {
-        $this->installedMap = array();
-        foreach ($this->installed->getPackages() as $package) {
-            $this->installedMap[$package->getId()] = $package;
+
+// void
+// solver_addchoicerules(Solver *solv)
+// {
+//   Pool *pool = solv->pool;
+//   Map m, mneg;
+//   Rule *r;
+//   Queue q, qi;
+//   int i, j, rid, havechoice;
+//   Id p, d, *pp;
+//   Id p2, pp2;
+//   Solvable *s, *s2;
+//
+//   solv->choicerules = solv->nrules;
+//   if (!pool->installed)
+//     {
+//       solv->choicerules_end = solv->nrules;
+//       return;
+//     }
+//   solv->choicerules_ref = sat_calloc(solv->rpmrules_end, sizeof(Id));
+//   queue_init(&q);
+//   queue_init(&qi);
+//   map_init(&m, pool->nsolvables);
+//   map_init(&mneg, pool->nsolvables);
+//   /* set up negative assertion map from infarch and dup rules */
+//   for (rid = solv->infarchrules, r = solv->rules + rid; rid < solv->infarchrules_end; rid++, r++)
+//     if (r->p < 0 && !r->w2 && (r->d == 0 || r->d == -1))
+//       MAPSET(&mneg, -r->p);
+//   for (rid = solv->duprules, r = solv->rules + rid; rid < solv->duprules_end; rid++, r++)
+//     if (r->p < 0 && !r->w2 && (r->d == 0 || r->d == -1))
+//       MAPSET(&mneg, -r->p);
+//   for (rid = 1; rid < solv->rpmrules_end ; rid++)
+//     {
+//       r = solv->rules + rid;
+//       if (r->p >= 0 || ((r->d == 0 || r->d == -1) && r->w2 < 0))
+//     continue;   /* only look at requires rules */
+//       // solver_printrule(solv, SAT_DEBUG_RESULT, r);
+//       queue_empty(&q);
+//       queue_empty(&qi);
+//       havechoice = 0;
+//       FOR_RULELITERALS(p, pp, r)
+//     {
+//       if (p < 0)
+//         continue;
+//       s = pool->solvables + p;
+//       if (!s->repo)
+//         continue;
+//       if (s->repo == pool->installed)
+//         {
+//           queue_push(&q, p);
+//           continue;
+//         }
+//       /* check if this package is "blocked" by a installed package */
+//       s2 = 0;
+//       FOR_PROVIDES(p2, pp2, s->name)
+//         {
+//           s2 = pool->solvables + p2;
+//           if (s2->repo != pool->installed)
+//         continue;
+//           if (!pool->implicitobsoleteusesprovides && s->name != s2->name)
+//             continue;
+//           if (pool->obsoleteusescolors && !pool_colormatch(pool, s, s2))
+//             continue;
+//           break;
+//         }
+//       if (p2)
+//         {
+//           /* found installed package p2 that we can update to p */
+//           if (MAPTST(&mneg, p))
+//         continue;
+//           if (policy_is_illegal(solv, s2, s, 0))
+//         continue;
+//           queue_push(&qi, p2);
+//           queue_push(&q, p);
+//           continue;
+//         }
+//       if (s->obsoletes)
+//         {
+//           Id obs, *obsp = s->repo->idarraydata + s->obsoletes;
+//           s2 = 0;
+//           while ((obs = *obsp++) != 0)
+//         {
+//           FOR_PROVIDES(p2, pp2, obs)
+//             {
+//               s2 = pool->solvables + p2;
+//               if (s2->repo != pool->installed)
+//             continue;
+//               if (!pool->obsoleteusesprovides && !pool_match_nevr(pool, pool->solvables + p2, obs))
+//             continue;
+//               if (pool->obsoleteusescolors && !pool_colormatch(pool, s, s2))
+//             continue;
+//               break;
+//             }
+//           if (p2)
+//             break;
+//         }
+//           if (obs)
+//         {
+//           /* found installed package p2 that we can update to p */
+//           if (MAPTST(&mneg, p))
+//             continue;
+//           if (policy_is_illegal(solv, s2, s, 0))
+//             continue;
+//           queue_push(&qi, p2);
+//           queue_push(&q, p);
+//           continue;
+//         }
+//         }
+//       /* package p is independent of the installed ones */
+//       havechoice = 1;
+//     }
+//       if (!havechoice || !q.count)
+//     continue;   /* no choice */
+//
+//       /* now check the update rules of the installed package.
+//        * if all packages of the update rules are contained in
+//        * the dependency rules, there's no need to set up the choice rule */
+//       map_empty(&m);
+//       FOR_RULELITERALS(p, pp, r)
+//         if (p > 0)
+//       MAPSET(&m, p);
+//       for (i = 0; i < qi.count; i++)
+//     {
+//       if (!qi.elements[i])
+//         continue;
+//       Rule *ur = solv->rules + solv->updaterules + (qi.elements[i] - pool->installed->start);
+//       if (!ur->p)
+//         ur = solv->rules + solv->featurerules + (qi.elements[i] - pool->installed->start);
+//       if (!ur->p)
+//         continue;
+//       FOR_RULELITERALS(p, pp, ur)
+//         if (!MAPTST(&m, p))
+//           break;
+//       if (p)
+//         break;
+//       for (j = i + 1; j < qi.count; j++)
+//         if (qi.elements[i] == qi.elements[j])
+//           qi.elements[j] = 0;
+//     }
+//       if (i == qi.count)
+//     {
+// #if 0
+//       printf("skipping choice ");
+//       solver_printrule(solv, SAT_DEBUG_RESULT, solv->rules + rid);
+// #endif
+//       continue;
+//     }
+//       d = q.count ? pool_queuetowhatprovides(pool, &q) : 0;
+//       solver_addrule(solv, r->p, d);
+//       queue_push(&solv->weakruleq, solv->nrules - 1);
+//       solv->choicerules_ref[solv->nrules - 1 - solv->choicerules] = rid;
+// #if 0
+//       printf("OLD ");
+//       solver_printrule(solv, SAT_DEBUG_RESULT, solv->rules + rid);
+//       printf("WEAK CHOICE ");
+//       solver_printrule(solv, SAT_DEBUG_RESULT, solv->rules + solv->nrules - 1);
+// #endif
+//     }
+//   queue_free(&q);
+//   queue_free(&qi);
+//   map_free(&m);
+//   map_free(&mneg);
+//   solv->choicerules_end = solv->nrules;
+// }
+    }
+
+/***********************************************************************
+ ***
+ ***  Policy rule disabling/reenabling
+ ***
+ ***  Disable all policy rules that conflict with our jobs. If a job
+ ***  gets disabled later on, reenable the involved policy rules again.
+ ***
+ *** /
+
+#define DISABLE_UPDATE  1
+#define DISABLE_INFARCH 2
+#define DISABLE_DUP 3
+*/
+    protected function jobToDisableQueue(array $job, array $disableQueue)
+    {
+        switch ($job['cmd']) {
+            case 'install':
+                foreach ($job['packages'] as $package) {
+                    if (isset($this->installedMap[$package->getId()])) {
+                        $disableQueue[] = array('type' => 'update', 'package' => $package);
+                    }
+
+      /* all job packages obsolete * /
+      qstart = q->count;
+      pass = 0;
+      memset(&omap, 0, sizeof(omap));
+      FOR_JOB_SELECT(p, pp, select, what)
+    {
+      Id p2, pp2;
+
+      if (pass == 1)
+        map_grow(&omap, installed->end - installed->start);
+      s = pool->solvables + p;
+      if (s->obsoletes)
+        {
+          Id obs, *obsp;
+          obsp = s->repo->idarraydata + s->obsoletes;
+          while ((obs = *obsp++) != 0)
+        FOR_PROVIDES(p2, pp2, obs)
+          {
+            Solvable *ps = pool->solvables + p2;
+            if (ps->repo != installed)
+              continue;
+            if (!pool->obsoleteusesprovides && !pool_match_nevr(pool, ps, obs))
+              continue;
+            if (pool->obsoleteusescolors && !pool_colormatch(pool, s, ps))
+              continue;
+            if (pass)
+              MAPSET(&omap, p2 - installed->start);
+            else
+              queue_push2(q, DISABLE_UPDATE, p2);
+          }
+        }
+      FOR_PROVIDES(p2, pp2, s->name)
+        {
+          Solvable *ps = pool->solvables + p2;
+          if (ps->repo != installed)
+        continue;
+          if (!pool->implicitobsoleteusesprovides && ps->name != s->name)
+        continue;
+          if (pool->obsoleteusescolors && !pool_colormatch(pool, s, ps))
+        continue;
+          if (pass)
+            MAPSET(&omap, p2 - installed->start);
+              else
+            queue_push2(q, DISABLE_UPDATE, p2);
+        }
+      if (pass)
+        {
+          for (i = j = qstart; i < q->count; i += 2)
+        {
+          if (MAPTST(&omap, q->elements[i + 1] - installed->start))
+            {
+              MAPCLR(&omap, q->elements[i + 1] - installed->start);
+              q->elements[j + 1] = q->elements[i + 1];
+              j += 2;
+            }
+        }
+          queue_truncate(q, j);
+        }
+      if (q->count == qstart)
+        break;
+      pass++;
+    }
+      if (omap.size)
+        map_free(&omap);
+
+      if (qstart == q->count)
+    return;     /* nothing to prune * /
+      if ((set & (SOLVER_SETEVR | SOLVER_SETARCH | SOLVER_SETVENDOR)) == (SOLVER_SETEVR | SOLVER_SETARCH | SOLVER_SETVENDOR))
+    return;     /* all is set */
+
+      /* now that we know which installed packages are obsoleted check each of them * /
+      for (i = j = qstart; i < q->count; i += 2)
+    {
+      Solvable *is = pool->solvables + q->elements[i + 1];
+      FOR_JOB_SELECT(p, pp, select, what)
+        {
+          int illegal = 0;
+          s = pool->solvables + p;
+          if ((set & SOLVER_SETEVR) != 0)
+        illegal |= POLICY_ILLEGAL_DOWNGRADE;    /* ignore * /
+          if ((set & SOLVER_SETARCH) != 0)
+        illegal |= POLICY_ILLEGAL_ARCHCHANGE;   /* ignore * /
+          if ((set & SOLVER_SETVENDOR) != 0)
+        illegal |= POLICY_ILLEGAL_VENDORCHANGE; /* ignore * /
+          illegal = policy_is_illegal(solv, is, s, illegal);
+          if (illegal && illegal == POLICY_ILLEGAL_DOWNGRADE && (set & SOLVER_SETEV) != 0)
+        {
+          /* it's ok if the EV is different * /
+          if (evrcmp(pool, is->evr, s->evr, EVRCMP_COMPARE_EVONLY) != 0)
+            illegal = 0;
+        }
+          if (illegal)
+        break;
+        }
+      if (!p)
+        {
+          /* no package conflicts with the update rule * /
+          /* thus keep the DISABLE_UPDATE * /
+          q->elements[j + 1] = q->elements[i + 1];
+          j += 2;
+        }
+    }
+      queue_truncate(q, j);
+      return;*/
+                }
+            break;
+
+            case 'remove':
+                foreach ($job['packages'] as $package) {
+                    if (isset($this->installedMap[$package->getId()])) {
+                        $disableQueue[] = array('type' => 'update', 'package' => $package);
+                    }
+                }
+            break;
+        }
+
+        return $disableQueue;
+    }
+
+    protected function disableUpdateRule($package)
+    {
+        if (isset($this->packageToFeatureRule[$package->getId()])) {
+            $this->packageToFeatureRule[$package->getId()]->disable();
+        }
+    }
+
+    /**
+    * Disables all policy rules that conflict with jobs
+    */
+    protected function disablePolicyRules()
+    {
+        $lastJob = null;
+        $allQueue = array();
+
+        $iterator = $this->rules->getIteratorFor(RuleSet::TYPE_JOB);
+        foreach ($iterator as $rule) {
+            if ($rule->isDisabled()) {
+                continue;
+            }
+
+            $job = $this->ruleToJob[$rule->getId()];
+
+            if ($job === $lastJob) {
+                continue;
+            }
+
+            $lastJob = $job;
+
+            $allQueue = $this->jobToDisableQueue($job, $allQueue);
+        }
+
+        foreach ($allQueue as $disable) {
+            switch ($disable['type']) {
+                case 'update':
+                    $this->disableUpdateRule($disable['package']);
+                break;
+                default:
+                    throw new \RuntimeException("Unsupported disable type: " . $disable['type']);
+            }
         }
     }
 
     public function solve(Request $request)
     {
         $this->jobs = $request->getJobs();
-
-        $this->setupInstalledMap();
+        $installedPackages = $this->installed->getPackages();
+        $this->installedMap = array();
+        foreach ($installedPackages as $package) {
+            $this->installedMap[$package->getId()] = $package;
+        }
 
         if (version_compare(PHP_VERSION, '5.3.4', '>=')) {
             $this->decisionMap = new \SplFixedArray($this->pool->getMaxId() + 1);
@@ -524,18 +876,18 @@ class Solver
 
             switch ($job['cmd']) {
                 case 'update-all':
-                    foreach ($this->installedMap as $package) {
+                    foreach ($installedPackages as $package) {
                         $this->updateMap[$package->getId()] = true;
                     }
                 break;
             }
         }
 
-        foreach ($this->installedMap as $package) {
+        foreach ($installedPackages as $package) {
             $this->addRulesForPackage($package);
         }
 
-        foreach ($this->installedMap as $package) {
+        foreach ($installedPackages as $package) {
             $this->addRulesForUpdatePackages($package);
         }
 
@@ -551,11 +903,15 @@ class Solver
             }
         }
 
-        foreach ($this->installedMap as $package) {
+        // solver_addrpmrulesforweak(solv, &addedmap);
+
+        foreach ($installedPackages as $package) {
             $updates = $this->policy->findUpdatePackages($this, $this->pool, $this->installedMap, $package);
             $rule = $this->createUpdateRule($package, $updates, Rule::RULE_INTERNAL_ALLOW_UPDATE, (string) $package);
 
-            $this->packageToUpdateRule[$package->getId()] = $rule;
+            $rule->setWeak(true);
+            $this->addRule(RuleSet::TYPE_FEATURE, $rule);
+            $this->packageToFeatureRule[$package->getId()] = $rule;
         }
 
         foreach ($this->jobs as $job) {
@@ -596,15 +952,23 @@ class Solver
             }
         }
 
+        $this->addChoiceRules();
+
         foreach ($this->rules as $rule) {
             $this->addWatchesToRule($rule);
         }
+
+        /* disable update rules that conflict with our job */
+        $this->disablePolicyRules();
 
         /* make decisions based on job/update assertions */
         $this->makeAssertionRuleDecisions();
 
         $installRecommended = 0;
         $this->runSat(true, $installRecommended);
+        //$this->printDecisionMap();
+        //findrecommendedsuggested(solv);
+        //solver_prepare_solutions(solv);
 
         if ($this->problems) {
             throw new SolverProblemsException($this->problems);
@@ -625,8 +989,8 @@ class Solver
             if (!$literal->isWanted() && isset($this->installedMap[$package->getId()])) {
                 $literals = array();
 
-                if (isset($this->packageToUpdateRule[$package->getId()])) {
-                    $literals = array_merge($literals, $this->packageToUpdateRule[$package->getId()]->getLiterals());
+                if (isset($this->packageToFeatureRule[$package->getId()])) {
+                    $literals = array_merge($literals, $this->packageToFeatureRule[$package->getId()]->getLiterals());
                 }
 
                 foreach ($literals as $updateLiteral) {
@@ -668,20 +1032,17 @@ class Solver
             }
         }
 
-        foreach ($this->decisionMap as $packageId => $decision) {
-            if ($packageId === 0) {
-                continue;
-            }
-
-            if (0 == $decision && isset($this->installedMap[$packageId])) {
-                $transaction[] = new Operation\UninstallOperation(
-                    $this->pool->packageById($packageId), null
-                );
-            }
-        }
-
         return array_reverse($transaction);
     }
+
+    protected $decisionQueue = array();
+    protected $decisionQueueWhy = array();
+    protected $decisionQueueFree = array();
+    protected $propagateIndex;
+    protected $branches = array();
+    protected $problems = array();
+    protected $learnedPool = array();
+    protected $recommendsIndex;
 
     protected function literalFromId($id)
     {
@@ -1175,7 +1536,17 @@ class Solver
                 $why = $lastWeakWhy;
             }
 
+            if ($lastWeakWhy->getType() == RuleSet::TYPE_CHOICE) {
+                $this->disableChoiceRules($lastWeakWhy);
+            }
+
             $this->disableProblem($why);
+
+            /**
+@TODO what does v < 0 mean here? ($why == v)
+      if (v < 0)
+    solver_reenablepolicyrules(solv, -(v + 1));
+*/
             $this->resetSolver();
 
             return true;
@@ -1266,7 +1637,9 @@ class Solver
         //    * here's the main loop:
         //    * 1) propagate new decisions (only needed once)
         //    * 2) fulfill jobs
+        //    * 3) try to keep installed packages
         //    * 4) fulfill all unresolved rules
+        //    * 5) install recommended packages
         //    * 6) minimalize solution if we had choices
         //    * if we encounter a problem, we rewind to a safe level and restart
         //    * with step 1
@@ -1280,6 +1653,8 @@ class Solver
         $systemLevel = $level + 1;
         $minimizationSteps = 0;
         $installedPos = 0;
+
+        $this->installedPackages = $this->installed->getPackages();
 
         while (true) {
 
@@ -1348,6 +1723,125 @@ class Solver
                 // jobs left
                 $iterator->next();
                 if ($iterator->valid()) {
+                    continue;
+                }
+            }
+
+            // handle installed packages
+            if ($level < $systemLevel) {
+                // use two passes if any packages are being updated
+                // -> better user experience
+                for ($pass = (count($this->updateMap)) ? 0 : 1; $pass < 2; $pass++) {
+                    $passLevel = $level;
+                    for ($i = $installedPos, $n = 0; $n < count($this->installedPackages); $i++, $n++) {
+                        $repeat = false;
+
+                        if ($i == count($this->installedPackages)) {
+                            $i = 0;
+                        }
+                        $literal = new Literal($this->installedPackages[$i], true);
+
+                        if ($this->decisionsContain($literal)) {
+                            continue;
+                        }
+
+                        // only process updates in first pass
+                        /** TODO: && or || ? **/
+                        if (0 === $pass && !isset($this->updateMap[$literal->getPackageId()])) {
+                            continue;
+                        }
+
+                        $rule = null;
+
+                        if (isset($this->packageToFeatureRule[$literal->getPackageId()])) {
+                            $rule = $this->packageToFeatureRule[$literal->getPackageId()];
+                        }
+
+                        if (!$rule || $rule->isDisabled()) {
+                            continue;
+                        }
+
+                        $updateRuleLiterals = $rule->getLiterals();
+
+                        $decisionQueue = array();
+                        if (!isset($this->noUpdate[$literal->getPackageId()]) && (
+                            $this->decidedRemove($literal->getPackage()) ||
+                            isset($this->updateMap[$literal->getPackageId()]) ||
+                            !$literal->equals($updateRuleLiterals[0])
+                        )) {
+                            foreach ($updateRuleLiterals as $ruleLiteral) {
+                                if ($this->decidedInstall($ruleLiteral->getPackage())) {
+                                    // already fulfilled
+                                    $decisionQueue = array();
+                                    break;
+                                }
+                                if ($this->undecided($ruleLiteral->getPackage())) {
+                                    $decisionQueue[] = $ruleLiteral;
+                                }
+                            }
+                        }
+
+                        if (sizeof($decisionQueue)) {
+                            $oLevel = $level;
+                            $level = $this->selectAndInstall($level, $decisionQueue, $disableRules, $rule);
+
+                            if (0 === $level) {
+                                return;
+                            }
+
+                            if ($level <= $oLevel) {
+                                $repeat = true;
+                            }
+                        } else if (!$repeat && $this->undecided($literal->getPackage())) {
+                            // still undecided? keep package.
+                            $oLevel = $level;
+                            if (isset($this->cleanDepsMap[$literal->getPackageId()])) {
+                                // clean deps removes package
+                                $level = $this->setPropagateLearn($level, $literal->invert(), $disableRules, null);
+                            } else {
+                                // ckeeping package
+                                $level = $this->setPropagateLearn($level, $literal, $disableRules, $rule);
+                            }
+
+
+                            if (0 === $level) {
+                                return;
+                            }
+
+                            if ($level <= $oLevel) {
+                                $repeat = true;
+                            }
+                        }
+
+                        if ($repeat) {
+                            if (1 === $level || $level < $passLevel) {
+                                // trouble
+                                break;
+                            }
+                            if ($level < $oLevel) {
+                                // redo all
+                                $n = 0;
+                            }
+
+                            // repeat
+                            $i--;
+                            $n--;
+                            continue;
+                        }
+                    }
+
+                    if ($n < count($this->installedPackages)) {
+                        $installedPos = $i; // retry this problem next time
+                        break;
+                    }
+
+                    $installedPos = 0;
+                }
+
+                $systemLevel = $level + 1;
+
+                if ($pass < 2) {
+                    // had trouble => retry
                     continue;
                 }
             }
