@@ -89,7 +89,7 @@ class ArrayLoaderTest extends \PHPUnit_Framework_TestCase
             'homepage' => 'http://example.com',
             'license' => array('MIT', 'GPLv3'),
             'authors' => array(
-                array('name' => 'Bob', 'email' => 'bob@example.org', 'homepage' => 'example.org'),
+                array('name' => 'Bob', 'email' => 'bob@example.org', 'homepage' => 'example.org', 'role' => 'Developer'),
             ),
             'require' => array(
                 'foo/bar' => '1.0',
