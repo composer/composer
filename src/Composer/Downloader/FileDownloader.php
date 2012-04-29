@@ -64,7 +64,7 @@ class FileDownloader implements DownloaderInterface
 
         $fileName = $this->getFileName($package, $path);
 
-        $this->io->write("  - Package <info>" . $package->getName() . "</info> (<comment>" . $package->getPrettyVersion() . "</comment>)");
+        $this->io->write("  - Installing <info>" . $package->getName() . "</info> (<comment>" . $package->getPrettyVersion() . "</comment>)");
 
         $processUrl = $this->processUrl($url);
 
@@ -101,6 +101,7 @@ class FileDownloader implements DownloaderInterface
      */
     public function remove(PackageInterface $package, $path)
     {
+        $this->io->write("  - Removing <info>" . $package->getName() . "</info> (<comment>" . $package->getPrettyVersion() . "</comment>)");
         if (!$this->filesystem->removeDirectory($path)) {
             throw new \RuntimeException('Could not completely delete '.$path.', aborting.');
         }
