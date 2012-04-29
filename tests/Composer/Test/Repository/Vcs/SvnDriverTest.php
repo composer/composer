@@ -41,7 +41,7 @@ class SvnDriverTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue($output));
 
         $svn = new SvnDriver('http://till:secret@corp.svn.local/repo', $console, new Config(), $process);
-        $svn->getTags();
+        $svn->initialize();
     }
 
     private function getCmd($cmd)
