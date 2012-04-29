@@ -50,7 +50,7 @@ abstract class VcsDownloader implements DownloaderInterface
             throw new \InvalidArgumentException('Package '.$package->getPrettyName().' is missing reference information');
         }
 
-        $this->io->write("  - Installing <info>" . $package->getName() . "</info> (<comment>" . $package->getPrettyVersion() . "</comment>)");
+        $this->io->write("  - Package <info>" . $package->getName() . "</info> (<comment>" . $package->getPrettyVersion() . "</comment>)");
         $this->filesystem->removeDirectory($path);
         $this->doDownload($package, $path);
         $this->io->write('');
@@ -65,7 +65,7 @@ abstract class VcsDownloader implements DownloaderInterface
             throw new \InvalidArgumentException('Package '.$target->getPrettyName().' is missing reference information');
         }
 
-        $this->io->write("  - Installing <info>" . $target->getName() . "</info> (<comment>" . $target->getPrettyVersion() . "</comment>)");
+        $this->io->write("  - Package <info>" . $target->getName() . "</info> (<comment>" . $target->getPrettyVersion() . "</comment>)");
         $this->enforceCleanDirectory($path);
         $this->doUpdate($initial, $target, $path);
         $this->io->write('');
@@ -77,7 +77,6 @@ abstract class VcsDownloader implements DownloaderInterface
     public function remove(PackageInterface $package, $path)
     {
         $this->enforceCleanDirectory($path);
-        $this->io->write("  - Removing <info>" . $package->getName() . "</info> (<comment>" . $package->getPrettyVersion() . "</comment>)");
         if (!$this->filesystem->removeDirectory($path)) {
             throw new \RuntimeException('Could not completely delete '.$path.', aborting.');
         }
