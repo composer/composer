@@ -14,6 +14,7 @@ namespace Composer\Package\Loader;
 
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\RepositoryManager;
+use Composer\Util\ProcessExecutor;
 
 /**
  * ArrayLoader built for the sole purpose of loading the root package
@@ -25,10 +26,12 @@ use Composer\Repository\RepositoryManager;
 class RootPackageLoader extends ArrayLoader
 {
     private $manager;
+    private $process;
 
-    public function __construct(RepositoryManager $manager, VersionParser $parser = null)
+    public function __construct(RepositoryManager $manager, VersionParser $parser = null, ProcessExecutor $process = null)
     {
         $this->manager = $manager;
+        $this->process = $process ?: new ProcessExecutor();
         parent::__construct($parser);
     }
 
@@ -38,7 +41,25 @@ class RootPackageLoader extends ArrayLoader
             $config['name'] = '__root__';
         }
         if (!isset($config['version'])) {
-            $config['version'] = '1.0.0';
+            $version = '1.0.0';
+
+            // try to fetch current version from git branch
+            if (0 === $this->process->execute('git branch --no-color --no-abbrev -v', $output)) {
+                foreach ($this->process->splitLines($output) as $branch) {
+                    if ($branch && preg_match('{^(?:\* ) *(?:[^/ ]+?/)?(\S+) *[a-f0-9]+ .*$}', $branch, $match)) {
+                        $version = 'dev-'.$match[1];
+                        if (isset($config['extra']['branch-alias'][$version])
+                            && substr($config['extra']['branch-alias'][$version], -4) === '-dev'
+                        ) {
+                            $targetBranch = $config['extra']['branch-alias'][$version];
+                            $normalized = $this->versionParser->normalizeBranch(substr($targetBranch, 0, -4));
+                            $version = preg_replace('{(\.9{7})+}', '.x', $normalized);
+                        }
+                    }
+                }
+            }
+
+            $config['version'] = $version;
         }
 
         $package = parent::load($config);
