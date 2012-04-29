@@ -33,7 +33,7 @@ class InstallationManager
 {
     private $installers = array();
     private $cache = array();
-    protected $vendorPath;
+    private $vendorPath;
 
     /**
      * Creates an instance of InstallationManager
@@ -197,14 +197,14 @@ class InstallationManager
         return getcwd().DIRECTORY_SEPARATOR.$this->vendorPath;
     }
 
-    protected function notifyInstall(PackageInterface $package)
+    private function notifyInstall(PackageInterface $package)
     {
         if ($package->getRepository() instanceof NotifiableRepositoryInterface) {
             $package->getRepository()->notifyInstall($package);
         }
     }
 
-    protected function antiAlias(PackageInterface $package)
+    private function antiAlias(PackageInterface $package)
     {
         if ($package instanceof AliasPackage) {
             $alias = $package;
