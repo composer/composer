@@ -26,24 +26,21 @@ class HgDriver extends VcsDriver
     protected $rootIdentifier;
     protected $infoCache = array();
 
-    public function __construct($url, IOInterface $io, ProcessExecutor $process = null)
-    {
-        $this->tmpDir = sys_get_temp_dir() . '/composer-' . preg_replace('{[^a-z0-9]}i', '-', $url) . '/';
-
-        parent::__construct($url, $io, $process);
-    }
-
     /**
      * {@inheritDoc}
      */
     public function initialize()
     {
-        $url = escapeshellarg($this->url);
-        $tmpDir = escapeshellarg($this->tmpDir);
+        $this->tmpDir = $this->config->get('home') . '/cache.hg/' . preg_replace('{[^a-z0-9]}i', '-', $this->url) . '/';
+
         if (is_dir($this->tmpDir)) {
-            $this->process->execute(sprintf('cd %s && hg pull -u', $tmpDir), $output);
+            $this->process->execute(sprintf('cd %s && hg pull -u', escapeshellarg($this->tmpDir)), $output);
         } else {
-            $this->process->execute(sprintf('cd %s && hg clone %s %s', escapeshellarg(sys_get_temp_dir()), $url, $tmpDir), $output);
+            $dir = dirname($this->tmpDir);
+            if (!is_dir($dir)) {
+                mkdir($dir, 0777, true);
+            }
+            $this->process->execute(sprintf('cd %s && hg clone %s %s', escapeshellarg($dir), escapeshellarg($this->url), escapeshellarg($this->tmpDir)), $output);
         }
 
         $this->getTags();

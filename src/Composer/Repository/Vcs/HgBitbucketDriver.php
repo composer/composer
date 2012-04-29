@@ -27,20 +27,14 @@ class HgBitbucketDriver extends VcsDriver
     protected $rootIdentifier;
     protected $infoCache = array();
 
-    public function __construct($url, IOInterface $io)
-    {
-        preg_match('#^https://bitbucket\.org/([^/]+)/([^/]+)/?$#', $url, $match);
-        $this->owner = $match[1];
-        $this->repository = $match[2];
-
-        parent::__construct($url, $io);
-    }
-
     /**
      * {@inheritDoc}
      */
     public function initialize()
     {
+        preg_match('#^https://bitbucket\.org/([^/]+)/([^/]+)/?$#', $this->url, $match);
+        $this->owner = $match[1];
+        $this->repository = $match[2];
     }
 
     /**
