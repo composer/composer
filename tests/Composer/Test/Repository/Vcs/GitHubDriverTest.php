@@ -15,6 +15,7 @@ namespace Composer\Test\Repository\Vcs;
 use Composer\Downloader\TransportException;
 use Composer\Repository\Vcs\GitHubDriver;
 use Composer\Util\Filesystem;
+use Composer\Config;
 
 /**
  * @author Beau Simensen <beau@dflydev.com>
@@ -64,7 +65,7 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
             ->with($this->equalTo($repoUrl), $this->equalTo($repoApiUrl), $this->equalTo(false))
             ->will($this->returnValue('{"master_branch": "test_master"}'));
 
-        $gitHubDriver = new GitHubDriver($repoUrl, $io, null, $remoteFilesystem);
+        $gitHubDriver = new GitHubDriver($repoUrl, $io, new Config(), null, $remoteFilesystem);
         $gitHubDriver->initialize();
         $this->setAttribute($gitHubDriver, 'tags', array($identifier => $sha));
 
@@ -114,7 +115,7 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
             ->with($this->equalTo($repoUrl), $this->equalTo($repoApiUrl), $this->equalTo(false))
             ->will($this->returnValue('{"master_branch": "test_master"}'));
 
-        $gitHubDriver = new GitHubDriver($repoUrl, $io, null, $remoteFilesystem);
+        $gitHubDriver = new GitHubDriver($repoUrl, $io, new Config(), null, $remoteFilesystem);
         $gitHubDriver->initialize();
         $this->setAttribute($gitHubDriver, 'tags', array($identifier => $sha));
 
@@ -171,7 +172,14 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
 
         // clean local clone if present
         $fs = new Filesystem();
-        $fs->removeDirectory(sys_get_temp_dir() . '/composer-' . preg_replace('{[^a-z0-9.]}i', '-', $repoSshUrl) . '/');
+        $fs->removeDirectory(sys_get_temp_dir() . '/composer-test');
+
+        $config = new Config();
+        $config->merge(array(
+            'config' => array(
+                'home' => sys_get_temp_dir() . '/composer-test',
+            ),
+        ));
 
         $process->expects($this->at(0))
             ->method('execute')
@@ -202,7 +210,7 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
             ->method('splitLines')
             ->will($this->returnValue(array('* test_master')));
 
-        $gitHubDriver = new GitHubDriver($repoUrl, $io, $process, $remoteFilesystem);
+        $gitHubDriver = new GitHubDriver($repoUrl, $io, $config, $process, $remoteFilesystem);
         $gitHubDriver->initialize();
 
         $this->assertEquals('test_master', $gitHubDriver->getRootIdentifier());

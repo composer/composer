@@ -38,6 +38,11 @@ class Factory
             }
         }
 
+        // Protect directory against web access
+        if (!file_exists($home . '/.htaccess')) {
+            @mkdir($home, 0777, true) && @file_put_contents($home . '/.htaccess', 'deny from all');
+        }
+
         $config = new Config();
 
         $file = new JsonFile($home.'/config.json');
