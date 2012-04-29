@@ -27,6 +27,7 @@ use Composer\Package\Link;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Package\Locker;
 use Composer\Package\PackageInterface;
+use Composer\Repository\ArrayRepository;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
@@ -76,6 +77,11 @@ class Installer
      */
     protected $eventDispatcher;
 
+    /**
+     * @var AutoloadGenerator
+     */
+    protected $autoloadGenerator;
+
     protected $preferSource = false;
     protected $devMode = false;
     protected $dryRun = false;
@@ -102,8 +108,9 @@ class Installer
      * @param Locker $locker
      * @param InstallationManager $installationManager
      * @param EventDispatcher $eventDispatcher
+     * @param AutoloadGenerator $autoloadGenerator
      */
-    public function __construct(IOInterface $io, PackageInterface $package, DownloadManager $downloadManager, RepositoryManager $repositoryManager, Locker $locker, InstallationManager $installationManager, EventDispatcher $eventDispatcher)
+    public function __construct(IOInterface $io, PackageInterface $package, DownloadManager $downloadManager, RepositoryManager $repositoryManager, Locker $locker, InstallationManager $installationManager, EventDispatcher $eventDispatcher, autoloadGenerator $autoloadGenerator)
     {
         $this->io = $io;
         $this->package = $package;
@@ -112,6 +119,7 @@ class Installer
         $this->locker = $locker;
         $this->installationManager = $installationManager;
         $this->eventDispatcher = $eventDispatcher;
+        $this->autoloadGenerator = $autoloadGenerator;
     }
 
     /**
@@ -128,7 +136,13 @@ class Installer
         }
 
         // create installed repo, this contains all local packages + platform packages (php & extensions)
-        $repos = array_merge($this->repositoryManager->getLocalRepositories(), array(new PlatformRepository()));
+        $repos = array_merge(
+            $this->repositoryManager->getLocalRepositories(),
+            array(
+                new ArrayRepository(array($this->package)),
+                new PlatformRepository(),
+            )
+        );
         $installedRepo = new CompositeRepository($repos);
         if ($this->additionalInstalledRepository) {
             $installedRepo->addRepository($this->additionalInstalledRepository);
@@ -174,9 +188,8 @@ class Installer
 
             // write autoloader
             $this->io->write('<info>Generating autoload files</info>');
-            $generator = new AutoloadGenerator;
             $localRepos = new CompositeRepository($this->repositoryManager->getLocalRepositories());
-            $generator->dump($localRepos, $this->package, $this->installationManager, $this->installationManager->getVendorPath() . '/composer', true);
+            $this->autoloadGenerator->dump($localRepos, $this->package, $this->installationManager, $this->installationManager->getVendorPath() . '/composer', true);
 
             // dispatch post event
             $eventName = $this->update ? ScriptEvents::POST_UPDATE_CMD : ScriptEvents::POST_INSTALL_CMD;
@@ -203,6 +216,10 @@ class Installer
         // creating requirements request
         $installFromLock = false;
         $request = new Request($pool);
+
+        $constraint = new VersionConstraint('=', $this->package->getVersion());
+        $request->install($this->package->getName(), $constraint);
+
         if ($this->update) {
             $this->io->write('<info>Updating '.($devMode ? 'dev ': '').'dependencies</info>');
 
@@ -408,11 +425,13 @@ class Installer
      * @param IOInterface $io
      * @param Composer $composer
      * @param EventDispatcher $eventDispatcher
+     * @param AutoloadGenerator $autoloadGenerator
      * @return Installer
      */
-    static public function create(IOInterface $io, Composer $composer, EventDispatcher $eventDispatcher = null)
+    static public function create(IOInterface $io, Composer $composer, EventDispatcher $eventDispatcher = null, AutoloadGenerator $autoloadGenerator = null)
     {
         $eventDispatcher = $eventDispatcher ?: new EventDispatcher($composer, $io);
+        $autoloadGenerator = $autoloadGenerator ?: new AutoloadGenerator;
 
         return new static(
             $io,
@@ -421,7 +440,8 @@ class Installer
             $composer->getRepositoryManager(),
             $composer->getLocker(),
             $composer->getInstallationManager(),
-            $eventDispatcher
+            $eventDispatcher,
+            $autoloadGenerator
         );
     }
 
