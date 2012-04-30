@@ -110,7 +110,7 @@ class Installer
      * @param EventDispatcher $eventDispatcher
      * @param AutoloadGenerator $autoloadGenerator
      */
-    public function __construct(IOInterface $io, PackageInterface $package, DownloadManager $downloadManager, RepositoryManager $repositoryManager, Locker $locker, InstallationManager $installationManager, EventDispatcher $eventDispatcher, autoloadGenerator $autoloadGenerator)
+    public function __construct(IOInterface $io, PackageInterface $package, DownloadManager $downloadManager, RepositoryManager $repositoryManager, Locker $locker, InstallationManager $installationManager, EventDispatcher $eventDispatcher, AutoloadGenerator $autoloadGenerator)
     {
         $this->io = $io;
         $this->package = $package;
