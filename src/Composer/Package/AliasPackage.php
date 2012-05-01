@@ -244,6 +244,14 @@ class AliasPackage extends BasePackage
     {
         return $this->aliasOf->getScripts();
     }
+    public function setAliases(array $aliases)
+    {
+        return $this->aliasOf->setAliases($aliases);
+    }
+    public function getAliases()
+    {
+        return $this->aliasOf->getAliases();
+    }
     public function getLicense()
     {
         return $this->aliasOf->getLicense();
