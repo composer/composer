@@ -145,7 +145,7 @@ Each author object can have following properties:
 * **name:** The author's name. Usually his real name.
 * **email:** The author's email address.
 * **homepage:** An URL to the author's website.
-* **role:** The authors role in the project (for e.g. developer or translator)
+* **role:** The authors' role in the project (e.g. developer or translator)
 
 An example:
 
