@@ -54,6 +54,8 @@ class RootPackageLoader extends ArrayLoader
             }
 
             $config['version'] = $version;
+        } else {
+            $version = $config['version'];
         }
 
         $package = parent::load($config);
