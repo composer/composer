@@ -22,6 +22,28 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
 {
     private static $parser;
 
+    protected $testDir;
+
+    /**
+     * Init test directory if needed
+     */
+    protected function setUp()
+    {
+        if ($this->testDir) {
+            $this->ensureDirectoryExistsAndClear($this->testDir);
+        }
+    }
+
+    /**
+     * Clean test directory if it was used
+     */
+    protected function tearDown()
+    {
+        if ($this->testDir) {
+            $this->clearDirectory($this->testDir);
+        }
+    }
+
     protected static function getVersionParser()
     {
         if (!self::$parser) {
@@ -59,10 +81,15 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
 
     protected function ensureDirectoryExistsAndClear($directory)
     {
+        $this->clearDirectory($directory);
+        mkdir($directory, 0777, true);
+    }
+
+    protected function clearDirectory($directory)
+    {
         $fs = new Filesystem();
         if (is_dir($directory)) {
             $fs->removeDirectory($directory);
         }
-        mkdir($directory, 0777, true);
     }
 }
