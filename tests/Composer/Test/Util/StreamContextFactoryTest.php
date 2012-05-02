@@ -97,7 +97,7 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
             $context = StreamContextFactory::getContext();
             $options = stream_context_get_options($context);
 
-						$this->assertEquals(array('http' => array(
+			$this->assertEquals(array('http' => array(
                 'proxy' => $expected,
                 'request_fulluri' => true,
             )), $options);
