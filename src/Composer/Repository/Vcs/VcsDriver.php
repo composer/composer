@@ -13,6 +13,7 @@
 namespace Composer\Repository\Vcs;
 
 use Composer\Downloader\TransportException;
+use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
@@ -26,6 +27,7 @@ abstract class VcsDriver implements VcsDriverInterface
 {
     protected $url;
     protected $io;
+    protected $config;
     protected $process;
     protected $remoteFilesystem;
 
@@ -34,13 +36,15 @@ abstract class VcsDriver implements VcsDriverInterface
      *
      * @param string      $url The URL
      * @param IOInterface $io  The IO instance
+     * @param Config      $config The composer configuration
      * @param ProcessExecutor $process  Process instance, injectable for mocking
      * @param callable $remoteFilesystem Remote Filesystem, injectable for mocking
      */
-    public function __construct($url, IOInterface $io, ProcessExecutor $process = null, $remoteFilesystem = null)
+    final public function __construct($url, IOInterface $io, Config $config, ProcessExecutor $process = null, $remoteFilesystem = null)
     {
         $this->url = $url;
         $this->io = $io;
+        $this->config = $config;
         $this->process = $process ?: new ProcessExecutor;
         $this->remoteFilesystem = $remoteFilesystem ?: new RemoteFilesystem($io);
     }
@@ -57,7 +61,6 @@ abstract class VcsDriver implements VcsDriverInterface
 
         return false;
     }
-
 
     /**
      * Get the https or http protocol depending on SSL support.

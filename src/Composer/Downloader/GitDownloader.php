@@ -26,7 +26,7 @@ class GitDownloader extends VcsDownloader
     public function doDownload(PackageInterface $package, $path)
     {
         $ref = $package->getSourceReference();
-        $command = 'git clone %s %s && cd %2$s && git checkout %3$s && git reset --hard %3$s';
+        $command = 'git clone %s %s && cd %2$s && git checkout %3$s && git reset --hard %3$s && git remote add composer %1$s';
         $this->io->write("    Cloning ".$package->getSourceReference());
 
         $commandCallable = function($url) use ($ref, $path, $command) {
@@ -44,14 +44,16 @@ class GitDownloader extends VcsDownloader
     {
         $ref = $target->getSourceReference();
         $this->io->write("    Checking out ".$target->getSourceReference());
-        $command = 'cd %s && git remote set-url origin %s && git fetch origin && git fetch --tags origin && git checkout %3$s && git reset --hard %3$s';
+        $command = 'cd %s && git remote set-url composer %s && git fetch composer && git fetch --tags composer && git checkout %3$s && git reset --hard %3$s';
+
+        // TODO: BC for the composer remote that didn't exist, to be remove after May 18th.
+        $this->process->execute(sprintf('cd %s && git remote add composer %s', escapeshellarg($path), escapeshellarg($initial->getSourceUrl())), $ignoredOutput);
 
         $commandCallable = function($url) use ($ref, $path, $command) {
             return sprintf($command, escapeshellarg($path), escapeshellarg($url), escapeshellarg($ref));
         };
 
         $this->runCommand($commandCallable, $target->getSourceUrl());
-        $this->setPushUrl($target, $path);
     }
 
     /**
@@ -59,7 +61,7 @@ class GitDownloader extends VcsDownloader
      */
     protected function enforceCleanDirectory($path)
     {
-        $command = sprintf('cd %s && git status --porcelain', escapeshellarg($path));
+        $command = sprintf('cd %s && git status --porcelain --untracked-files=no', escapeshellarg($path));
         if (0 !== $this->process->execute($command, $output)) {
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
         }

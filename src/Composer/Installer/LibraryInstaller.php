@@ -14,7 +14,7 @@ namespace Composer\Installer;
 
 use Composer\IO\IOInterface;
 use Composer\Downloader\DownloadManager;
-use Composer\Repository\WritableRepositoryInterface;
+use Composer\Repository\InstalledRepositoryInterface;
 use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\Package\PackageInterface;
 use Composer\Util\Filesystem;
@@ -65,7 +65,7 @@ class LibraryInstaller implements InstallerInterface
     /**
      * {@inheritDoc}
      */
-    public function isInstalled(WritableRepositoryInterface $repo, PackageInterface $package)
+    public function isInstalled(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
         return $repo->hasPackage($package) && is_readable($this->getInstallPath($package));
     }
@@ -73,7 +73,7 @@ class LibraryInstaller implements InstallerInterface
     /**
      * {@inheritDoc}
      */
-    public function install(WritableRepositoryInterface $repo, PackageInterface $package)
+    public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
         $this->initializeVendorDir();
         $downloadPath = $this->getInstallPath($package);
@@ -93,7 +93,7 @@ class LibraryInstaller implements InstallerInterface
     /**
      * {@inheritDoc}
      */
-    public function update(WritableRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
+    public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
     {
         if (!$repo->hasPackage($initial)) {
             throw new \InvalidArgumentException('Package is not installed: '.$initial);
@@ -114,7 +114,7 @@ class LibraryInstaller implements InstallerInterface
     /**
      * {@inheritDoc}
      */
-    public function uninstall(WritableRepositoryInterface $repo, PackageInterface $package)
+    public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
         if (!$repo->hasPackage($package)) {
             // TODO throw exception again here, when update is fixed and we don't have to remove+install (see #125)
@@ -152,7 +152,7 @@ class LibraryInstaller implements InstallerInterface
                     // likely leftover from a previous install, make sure
                     // that the target is still executable in case this
                     // is a fresh install of the vendor.
-                    chmod($link, 0755);
+                    chmod($link, 0777 & ~umask());
                 }
                 $this->io->write('Skipped installation of '.$bin.' for package '.$package->getName().', name conflicts with an existing file');
                 continue;
@@ -163,21 +163,24 @@ class LibraryInstaller implements InstallerInterface
                 // add unixy support for cygwin and similar environments
                 if ('.bat' !== substr($bin, -4)) {
                     file_put_contents($link, $this->generateUnixyProxyCode($bin, $link));
-                    chmod($link, 0755);
+                    chmod($link, 0777 & ~umask());
                     $link .= '.bat';
                 }
                 file_put_contents($link, $this->generateWindowsProxyCode($bin, $link));
             } else {
+                $cwd = getcwd();
                 try {
                     // under linux symlinks are not always supported for example
                     // when using it in smbfs mounted folder
-                    symlink($bin, $link);
+                    $relativeBin = $this->filesystem->findShortestPath($link, $bin);
+                    chdir(dirname($link));
+                    symlink($relativeBin, $link);
                 } catch (\ErrorException $e) {
                     file_put_contents($link, $this->generateUnixyProxyCode($bin, $link));
                 }
-
+                chdir($cwd);
             }
-            chmod($link, 0755);
+            chmod($link, 0777 & ~umask());
         }
     }
 
@@ -186,7 +189,7 @@ class LibraryInstaller implements InstallerInterface
         if (!$package->getBinaries()) {
             return;
         }
-        foreach ($package->getBinaries() as $bin => $os) {
+        foreach ($package->getBinaries() as $bin) {
             $link = $this->binDir.'/'.basename($bin);
             if (!file_exists($link)) {
                 continue;

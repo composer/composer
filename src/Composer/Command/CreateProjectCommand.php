@@ -18,6 +18,7 @@ use Composer\Installer\ProjectInstaller;
 use Composer\IO\IOInterface;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\FilesystemRepository;
+use Composer\Repository\InstalledFilesystemRepository;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -82,12 +83,13 @@ EOT
             $dm->setPreferSource(true);
         }
 
+        $config = Factory::createConfig();
         if (null === $repositoryUrl) {
-            $sourceRepo = new ComposerRepository(array('url' => 'http://packagist.org'), $io);
+            $sourceRepo = new ComposerRepository(array('url' => 'http://packagist.org'), $io, $config);
         } elseif ("json" === pathinfo($repositoryUrl, PATHINFO_EXTENSION)) {
             $sourceRepo = new FilesystemRepository(new JsonFile($repositoryUrl, new RemoteFilesystem($io)));
         } elseif (0 === strpos($repositoryUrl, 'http')) {
-            $sourceRepo = new ComposerRepository(array('url' => $repositoryUrl), $io);
+            $sourceRepo = new ComposerRepository(array('url' => $repositoryUrl), $io, $config);
         } else {
             throw new \InvalidArgumentException("Invalid repository url given. Has to be a .json file or an http url.");
         }
@@ -112,7 +114,7 @@ EOT
 
         $io->write('<info>Installing ' . $package->getName() . ' as new project.</info>', true);
         $projectInstaller = new ProjectInstaller($directory, $dm);
-        $projectInstaller->install($package);
+        $projectInstaller->install(new InstalledFilesystemRepository(new JsonFile('php://memory')), $package);
 
         $io->write('<info>Created project into directory ' . $directory . '</info>', true);
         chdir($directory);

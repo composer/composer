@@ -27,6 +27,7 @@ class AliasPackage extends BasePackage
     protected $prettyVersion;
     protected $dev;
     protected $aliasOf;
+    protected $rootPackageAlias = false;
 
     protected $requires;
     protected $conflicts;
@@ -147,6 +148,27 @@ class AliasPackage extends BasePackage
     }
 
     /**
+     * Stores whether this is an alias created by an aliasing in the requirements of the root package or not
+     *
+     * Use by the policy for sorting manually aliased packages first, see #576
+     *
+     * @param Boolean $value
+     */
+    public function setRootPackageAlias($value)
+    {
+        return $this->rootPackageAlias = $value;
+    }
+
+    /**
+     * @see setRootPackageAlias
+     * @return Boolean
+     */
+    public function isRootPackageAlias()
+    {
+        return $this->rootPackageAlias;
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function getAlias()
@@ -221,6 +243,14 @@ class AliasPackage extends BasePackage
     public function getScripts()
     {
         return $this->aliasOf->getScripts();
+    }
+    public function setAliases(array $aliases)
+    {
+        return $this->aliasOf->setAliases($aliases);
+    }
+    public function getAliases()
+    {
+        return $this->aliasOf->getAliases();
     }
     public function getLicense()
     {

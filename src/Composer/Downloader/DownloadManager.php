@@ -24,6 +24,7 @@ use Composer\Util\Filesystem;
 class DownloadManager
 {
     private $preferSource = false;
+    private $filesystem;
     private $downloaders  = array();
 
     /**
@@ -31,9 +32,10 @@ class DownloadManager
      *
      * @param   Boolean $preferSource   prefer downloading from source
      */
-    public function __construct($preferSource = false)
+    public function __construct($preferSource = false, Filesystem $filesystem = null)
     {
         $this->preferSource = $preferSource;
+        $this->filesystem = $filesystem ?: new Filesystem();
     }
 
     /**
@@ -135,8 +137,7 @@ class DownloadManager
             throw new \InvalidArgumentException('Package '.$package.' must have a source or dist specified');
         }
 
-        $fs = new Filesystem();
-        $fs->ensureDirectoryExists($targetDir);
+        $this->filesystem->ensureDirectoryExists($targetDir);
 
         $downloader = $this->getDownloaderForInstalledPackage($package);
         $downloader->download($package, $targetDir);

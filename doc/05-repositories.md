@@ -54,15 +54,24 @@ want to learn why.
 ### Composer
 
 The main repository type is the `composer` repository. It uses a single
-`packages.json` file that contains all of the package metadata. The JSON
-format is as follows:
+`packages.json` file that contains all of the package metadata.
+
+This is also the repository type that packagist uses. To reference a
+`composer` repository, just supply the path before the `packages.json` file.
+In case of packagist, that file is located at `/packages.json`, so the URL of
+the repository would be `packagist.org`. For `example.org/packages.json` the
+repository URL would be `example.org`.
+
+#### packages
+
+The only required field is `packages`. The JSON structure is as follows:
 
     {
-        "vendor/packageName": {
-            "name": "vendor/packageName",
-            "description": "Package description",
-            "versions": {
+        "packages": {
+            "vendor/packageName": {
                 "master-dev": { @composer.json },
+                "1.0.x-dev": { @composer.json },
+                "0.0.1": { @composer.json },
                 "1.0.0": { @composer.json }
             }
         }
@@ -88,12 +97,54 @@ Here is a minimal package definition:
 
 It may include any of the other fields specified in the [schema](04-schema.md).
 
-The `composer` repository is also what packagist uses. To reference a
-`composer` repository, just supply the path before the `packages.json` file.
-In case of packagist, that file is located at `/packages.json`, so the URL of
-the repository would be `http://packagist.org`. For
-`http://example.org/packages.json` the repository URL would be
-`http://example.org`.
+#### notify
+
+The `notify` field allows you to specify an URL template for a URL that will
+be called every time a user installs a package.
+
+An example value:
+
+    {
+        "notify": "/downloads/%package%"
+    }
+
+For `example.org/packages.json` containing a `monolog/monolog` package, this
+would send a `POST` request to `example.org/downloads/monolog/monolog` with
+following parameters:
+
+* **version:** The version of the package.
+* **version_normalized:** The normalized internal representation of the
+  version.
+
+This field is optional.
+
+#### includes
+
+For large repositories it is possible to split the `packages.json` into
+multiple files. The `includes` field allows you to reference these additional
+files.
+
+An example:
+
+    {
+        "includes": {
+            "packages-2011.json": {
+                "sha1": "525a85fb37edd1ad71040d429928c2c0edec9d17"
+            },
+            "packages-2012-01.json": {
+                "sha1": "897cde726f8a3918faf27c803b336da223d400dd"
+            },
+            "packages-2012-02.json": {
+                "sha1": "26f911ad717da26bbcac3f8f435280d13917efa5"
+            }
+        }
+    }
+
+The SHA-1 sum of the file allows it to be cached and only re-requested if the
+hash changed.
+
+This field is optional. You probably don't need it for your own custom
+repository.
 
 ### VCS
 

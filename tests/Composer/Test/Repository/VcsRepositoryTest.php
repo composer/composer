@@ -19,6 +19,7 @@ use Composer\Repository\Vcs\GitDriver;
 use Composer\Util\Filesystem;
 use Composer\Util\ProcessExecutor;
 use Composer\IO\NullIO;
+use Composer\Config;
 
 class VcsRepositoryTest extends \PHPUnit_Framework_TestCase
 {
@@ -123,7 +124,7 @@ class VcsRepositoryTest extends \PHPUnit_Framework_TestCase
             'dev-master' => true,
         );
 
-        $repo = new VcsRepository(array('url' => self::$gitRepo, 'type' => 'vcs'), new NullIO);
+        $repo = new VcsRepository(array('url' => self::$gitRepo, 'type' => 'vcs'), new NullIO, new Config());
         $packages = $repo->getPackages();
         $dumper = new ArrayDumper();
 

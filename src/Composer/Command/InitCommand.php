@@ -13,6 +13,7 @@
 namespace Composer\Command;
 
 use Composer\Json\JsonFile;
+use Composer\Factory;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\ComposerRepository;
@@ -34,7 +35,7 @@ class InitCommand extends Command
     public function parseAuthorString($author)
     {
         if (preg_match('/^(?P<name>[- \.,\w\'’]+) <(?P<email>.+?)>$/u', $author, $match)) {
-            if (!function_exists('filter_var') || $match['email'] === filter_var($match['email'], FILTER_VALIDATE_EMAIL)) {
+            if (!function_exists('filter_var') || version_compare(PHP_VERSION, '5.3.3', '<') || $match['email'] === filter_var($match['email'], FILTER_VALIDATE_EMAIL)) {
                 return array(
                     'name'  => trim($match['name']),
                     'email' => $match['email']
@@ -229,7 +230,7 @@ EOT
         if (!$this->repos) {
             $this->repos = new CompositeRepository(array(
                 new PlatformRepository,
-                new ComposerRepository(array('url' => 'http://packagist.org'), $this->getIO())
+                new ComposerRepository(array('url' => 'http://packagist.org'), $this->getIO(), Factory::createConfig())
             ));
         }
 
