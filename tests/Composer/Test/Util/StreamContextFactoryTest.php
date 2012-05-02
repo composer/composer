@@ -57,31 +57,30 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
 
     public function testHttpProxy()
     {
-        $_SERVER['http_proxy'] = 'http://username:password@proxyserver.net:port/';
-        $_SERVER['HTTP_PROXY'] = 'http://proxyserver/';
+        $_SERVER['http_proxy'] = 'http://username:password@proxyserver.net:1234';
+        $_SERVER['HTTP_PROXY'] = 'http://proxyserver';
 
         $context = StreamContextFactory::getContext(array('http' => array('method' => 'GET')));
         $options = stream_context_get_options($context);
 
-        $this->assertSame('http://proxyserver/', $_SERVER['HTTP_PROXY']);
-
         $this->assertEquals(array('http' => array(
-            'proxy' => 'tcp://username:password@proxyserver.net:port/',
+            'proxy' => 'tcp://proxyserver.net:1234',
             'request_fulluri' => true,
             'method' => 'GET',
+            'header' => "Proxy-Authorization: Basic " . base64_encode('username:password') . "\r\n"
         )), $options);
     }
 
     public function testSSLProxy()
     {
-        $_SERVER['http_proxy'] = 'https://proxyserver/';
+        $_SERVER['http_proxy'] = 'https://proxyserver';
 
         if (extension_loaded('openssl')) {
             $context = StreamContextFactory::getContext();
             $options = stream_context_get_options($context);
 
             $this->assertSame(array('http' => array(
-                'proxy' => 'ssl://proxyserver/',
+                'proxy' => 'ssl://proxyserver',
                 'request_fulluri' => true,
             )), $options);
         } else {
