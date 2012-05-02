@@ -42,20 +42,20 @@ final class StreamContextFactory
             $proxyPort = parse_url($proxy, PHP_URL_PORT);
             
             if (isset($proxyPort)) {
-            	$proxyURL .= ":" . $proxyPort;
+                $proxyURL .= ":" . $proxyPort;
             } else {
-            	if ('http://' == substr($proxyURL, 0, 7)) {
-            		$proxyURL .= ":80";
-            	} else if ('https://' == substr($proxyURL, 0, 8)) {
-            		$proxyURL .= ":443";
-            	}
+                if ('http://' == substr($proxyURL, 0, 7)) {
+                    $proxyURL .= ":80";
+                } else if ('https://' == substr($proxyURL, 0, 8)) {
+                    $proxyURL .= ":443";
+                }
             }
             
             // http(s):// is not supported in proxy
             $proxyURL = str_replace(array('http://', 'https://'), array('tcp://', 'ssl://'), $proxyURL);
 
             if (0 === strpos($proxyURL, 'ssl:') && !extension_loaded('openssl')) {
-            	throw new \RuntimeException('You must enable the openssl extension to use a proxy over https');
+                throw new \RuntimeException('You must enable the openssl extension to use a proxy over https');
             }
 
             $options['http'] = array(
@@ -68,18 +68,18 @@ final class StreamContextFactory
             $pass = parse_url($proxy, PHP_URL_PASS);
             
             if (isset($user)) {
-            	$auth = $user;
-            	if (isset($pass)) {
-            		$auth .= ":{$pass}";
-            	}
-            	$auth = base64_encode($auth);
-            	
-            	// Preserve headers if already set in default options 
-            	if (isset($defaultOptions['http']) && isset($defaultOptions['http']['header'])) {
-            		$defaultOptions['http']['header'] .=  "Proxy-Authorization: Basic {$auth}\r\n";
-            	} else {
-            		$options['http']['header'] = "Proxy-Authorization: Basic {$auth}\r\n";
-            	}
+                $auth = $user;
+                if (isset($pass)) {
+                    $auth .= ":{$pass}";
+                }
+                $auth = base64_encode($auth);
+                
+                // Preserve headers if already set in default options 
+                if (isset($defaultOptions['http']) && isset($defaultOptions['http']['header'])) {
+                    $defaultOptions['http']['header'] .=  "Proxy-Authorization: Basic {$auth}\r\n";
+                } else {
+                    $options['http']['header'] = "Proxy-Authorization: Basic {$auth}\r\n";
+                }
             }
         }
         
