@@ -149,9 +149,61 @@ class GitDriver extends VcsDriver
             $this->process->execute('git tag', $output, $this->repoDir);
             $output = $this->process->splitLines($output);
             $this->tags = $output ? array_combine($output, $output) : array();
+
+            $this->filterTags();
         }
 
         return $this->tags;
+    }
+
+    /**
+     * Filter out invalid tags
+     *
+     * This is done by searching the tag's commit for a
+     * git note with a `refs/notes/composer-invalidate/<version>`
+     * name. If found, the version is considered invalid and is
+     * discarded.
+     *
+     * To invalidate a version, e.g. 1.0.0, assuming it is
+     * using the `v1.0.0` tag, here is how you would do it:
+     *
+     *     git notes --ref=composer-invalidate/v1.0.0 add -m 'foo' -f v1.0.0
+     *     git push -f origin refs/notes/composer-invalidate/*
+     *
+     * To check if a tag has been invalidated, you can use:
+     *
+     *     git fetch origin refs/notes/composer-invalidate/*:refs/notes/composer-invalidate/*
+     *     git notes --ref=composer-invalidate/v1.0.0 show v1.0.0
+     *
+     * To remove the note and make the version valid again,
+     * you can do:
+     *
+     *     git fetch origin refs/notes/composer-invalidate:refs/notes/composer-invalidate
+     *     git notes --ref=composer-invalidate/v1.0.0 remove v1.0.0
+     *     git push -f origin refs/notes/composer-invalidate/*
+     */
+    protected function filterTags()
+    {
+        $this->process->execute(sprintf('cd %s && git fetch -f origin refs/notes/composer-invalidate/*:refs/notes/composer-invalidate/*', escapeshellarg($this->repoDir)));
+        $invalidTags = array();
+        foreach ($this->tags as $tag) {
+            $this->process->execute(sprintf(
+                'cd %s && git notes --ref=%s show %s',
+                escapeshellarg($this->repoDir),
+                escapeshellarg("composer-invalidate/$tag"),
+                escapeshellarg($tag)
+            ), $output);
+            $output = $this->process->splitLines(trim($output));
+            if ($output) {
+                $invalidTags[$tag] = $tag;
+            }
+        }
+
+        foreach ($this->tags as $tag) {
+            if (isset($invalidTags[$tag])) {
+                unset($this->tags[$tag]);
+            }
+        }
     }
 
     /**

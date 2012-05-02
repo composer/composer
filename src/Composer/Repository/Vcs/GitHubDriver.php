@@ -123,7 +123,7 @@ class GitHubDriver extends VcsDriver
             $composer = JsonFile::parseJson($composer);
 
             if (!isset($composer['time'])) {
-                $commit = JsonFile::parseJson($this->getContents($this->getScheme() . '://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/commits/'.$identifier));
+                $commit = $this->getFromApi('repos/'.$this->owner.'/'.$this->repository.'/commits/'.$identifier);
                 $composer['time'] = $commit['commit']['committer']['date'];
             }
             $this->infoCache[$identifier] = $composer;
@@ -141,14 +141,72 @@ class GitHubDriver extends VcsDriver
             return $this->gitDriver->getTags();
         }
         if (null === $this->tags) {
-            $tagsData = JsonFile::parseJson($this->getContents($this->getScheme() . '://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/tags'));
+            $tagsData = $this->getFromApi('repos/'.$this->owner.'/'.$this->repository.'/tags');
             $this->tags = array();
             foreach ($tagsData as $tag) {
                 $this->tags[$tag['name']] = $tag['commit']['sha'];
             }
+
+            $this->filterTags();
         }
 
         return $this->tags;
+    }
+
+    /**
+     * Filter out invalid tags
+     *
+     * @see Composer\Repository\Vcs\GitDriver::filterTags
+     */
+    protected function filterTags()
+    {
+        $invalidTags = array();
+
+        try {
+            $refs = $this->getFromApi('repos/'.$this->owner.'/'.$this->repository.'/git/refs/notes/composer-invalidate');
+        } catch (TransportException $e) {
+            if (404 === $e->getCode()) {
+                return;
+            }
+            throw $e;
+        }
+
+        if (!$refs) {
+            return;
+        }
+
+        foreach ($refs as $ref) {
+            if (!preg_match('#^refs/notes/composer-invalidate/#', $ref['ref'])) {
+                continue;
+            }
+            $tag = preg_replace('#^refs/notes/composer-invalidate/#', '', $ref['ref']);
+
+            $url = $ref['object']['url'];
+            $commit = JsonFile::parseJson($this->getContents($url));
+
+            try {
+                $url = $commit['tree']['url'];
+                $tree = JsonFile::parseJson($this->getContents($url));
+            } catch (TransportException $e) {
+                // github keeps deleted notes around in the main listing
+                // but returns 404 when requesting the tree
+                if (404 === $e->getCode()) {
+                    continue;
+                }
+                throw $e;
+            }
+
+            $blob = $tree['tree'][0];
+            $sha = $blob['path'];
+
+            $invalidTags[$tag] = $sha;
+        }
+
+        foreach ($this->tags as $tag => $sha) {
+            if (isset($invalidShas[$sha]) && $sha === $invalidShas[$sha]) {
+                unset($this->tags[$tag]);
+            }
+        }
     }
 
     /**
@@ -160,7 +218,7 @@ class GitHubDriver extends VcsDriver
             return $this->gitDriver->getBranches();
         }
         if (null === $this->branches) {
-            $branchData = JsonFile::parseJson($this->getContents($this->getScheme() . '://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/git/refs/heads'));
+            $branchData = $this->getFromApi('repos/'.$this->owner.'/'.$this->repository.'/git/refs/heads');
             $this->branches = array();
             foreach ($branchData as $branch) {
                 $name = substr($branch['ref'], 11);
@@ -191,6 +249,16 @@ class GitHubDriver extends VcsDriver
     }
 
     /**
+     * Make a request to the GitHub API
+     */
+    protected function getFromApi($path)
+    {
+        $url = $this->getScheme().'://api.github.com/'.$path;
+        return JsonFile::parseJson($this->getContents($url));
+    }
+
+    /**
+     * {@inheritDoc}
      * Generate an SSH URL
      *
      * @return string
