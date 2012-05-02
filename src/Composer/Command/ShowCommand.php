@@ -13,6 +13,7 @@
 namespace Composer\Command;
 
 use Composer\Composer;
+use Composer\Factory;
 use Composer\Package\PackageInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
@@ -65,7 +66,7 @@ EOT
         } else {
             $output->writeln('No composer.json found in the current directory, showing packages from packagist.org');
             $installedRepo = $platformRepo;
-            $packagist = new ComposerRepository(array('url' => 'http://packagist.org'), $this->getIO());
+            $packagist = new ComposerRepository(array('url' => 'http://packagist.org'), $this->getIO(), Factory::createConfig());
             $repos = new CompositeRepository(array($installedRepo, $packagist));
         }
 
@@ -78,7 +79,15 @@ EOT
 
             $this->printMeta($input, $output, $package, $installedRepo, $repos);
             $this->printLinks($input, $output, $package, 'requires');
-            $this->printLinks($input, $output, $package, 'recommends');
+            $this->printLinks($input, $output, $package, 'devRequires', 'requires (dev)');
+            if ($package->getSuggests()) {
+                $output->writeln("\n<info>suggests</info>");
+                foreach ($package->getSuggests() as $suggested => $reason) {
+                    $output->writeln($suggested . ' <comment>' . $reason . '</comment>');
+                }
+            }
+            $this->printLinks($input, $output, $package, 'provides');
+            $this->printLinks($input, $output, $package, 'conflicts');
             $this->printLinks($input, $output, $package, 'replaces');
             return;
         }
@@ -209,10 +218,11 @@ EOT
      *
      * @param string $linkType
      */
-    protected function printLinks(InputInterface $input, OutputInterface $output, PackageInterface $package, $linkType)
+    protected function printLinks(InputInterface $input, OutputInterface $output, PackageInterface $package, $linkType, $title = null)
     {
+        $title = $title ?: $linkType;
         if ($links = $package->{'get'.ucfirst($linkType)}()) {
-            $output->writeln("\n<info>" . $linkType . "</info>");
+            $output->writeln("\n<info>" . $title . "</info>");
 
             foreach ($links as $link) {
                 $output->writeln($link->getTarget() . ' <comment>' . $link->getPrettyConstraint() . '</comment>');

@@ -46,7 +46,11 @@ final class StreamContextFactory
             }
             
             // http(s):// is not supported in proxy
-            $proxyURL = str_replace(array('http://', 'https://'), array('tcp://', 'ssl://'), $proxyURL);
+            if ('http://' == substr($proxy, 0, 7)) {
+                $proxy = 'tcp://' . rtrim(substr($proxy, 7), '/') . (parse_url($proxy, PHP_URL_PORT) ? '' : ':80');
+            } else if ('https://' == substr($proxy, 0, 8)) {
+                $proxy = 'ssl://' . rtrim(substr($proxy, 8), '/') . (parse_url($proxy, PHP_URL_PORT) ? '' : ':443');
+            }
 
             if (0 === strpos($proxyURL, 'ssl:') && !extension_loaded('openssl')) {
                 throw new \RuntimeException('You must enable the openssl extension to use a proxy over https');

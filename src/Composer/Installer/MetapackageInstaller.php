@@ -12,7 +12,7 @@
 
 namespace Composer\Installer;
 
-use Composer\Repository\WritableRepositoryInterface;
+use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
 
 /**
@@ -33,7 +33,7 @@ class MetapackageInstaller implements InstallerInterface
     /**
      * {@inheritDoc}
      */
-    public function isInstalled(WritableRepositoryInterface $repo, PackageInterface $package)
+    public function isInstalled(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
         return $repo->hasPackage($package);
     }
@@ -41,7 +41,7 @@ class MetapackageInstaller implements InstallerInterface
     /**
      * {@inheritDoc}
      */
-    public function install(WritableRepositoryInterface $repo, PackageInterface $package)
+    public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
         $repo->addPackage(clone $package);
     }
@@ -49,7 +49,7 @@ class MetapackageInstaller implements InstallerInterface
     /**
      * {@inheritDoc}
      */
-    public function update(WritableRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
+    public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
     {
         if (!$repo->hasPackage($initial)) {
             throw new \InvalidArgumentException('Package is not installed: '.$initial);
@@ -62,7 +62,7 @@ class MetapackageInstaller implements InstallerInterface
     /**
      * {@inheritDoc}
      */
-    public function uninstall(WritableRepositoryInterface $repo, PackageInterface $package)
+    public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
         if (!$repo->hasPackage($package)) {
             // TODO throw exception again here, when update is fixed and we don't have to remove+install (see #125)

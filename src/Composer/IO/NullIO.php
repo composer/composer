@@ -38,6 +38,14 @@ class NullIO implements IOInterface
     /**
      * {@inheritDoc}
      */
+    public function isDecorated()
+    {
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function write($messages, $newline = true)
     {
     }

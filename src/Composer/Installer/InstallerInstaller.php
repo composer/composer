@@ -15,7 +15,7 @@ namespace Composer\Installer;
 use Composer\IO\IOInterface;
 use Composer\Autoload\AutoloadGenerator;
 use Composer\Downloader\DownloadManager;
-use Composer\Repository\WritableRepositoryInterface;
+use Composer\Repository\InstalledRepositoryInterface;
 use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\Package\PackageInterface;
 
@@ -35,7 +35,7 @@ class InstallerInstaller extends LibraryInstaller
      * @param   DownloadManager             $dm         download manager
      * @param   IOInterface                 $io         io instance
      * @param   InstallationManager         $im         installation manager
-     * @param   array                       $localRepositories array of WritableRepositoryInterface
+     * @param   array                       $localRepositories array of InstalledRepositoryInterface
      */
     public function __construct($vendorDir, $binDir, DownloadManager $dm, IOInterface $io, InstallationManager $im, array $localRepositories)
     {
@@ -54,7 +54,7 @@ class InstallerInstaller extends LibraryInstaller
     /**
      * {@inheritDoc}
      */
-    public function install(WritableRepositoryInterface $repo, PackageInterface $package)
+    public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
         $extra = $package->getExtra();
         if (empty($extra['class'])) {
@@ -68,7 +68,7 @@ class InstallerInstaller extends LibraryInstaller
     /**
      * {@inheritDoc}
      */
-    public function update(WritableRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
+    public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
     {
         $extra = $target->getExtra();
         if (empty($extra['class'])) {

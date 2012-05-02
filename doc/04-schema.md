@@ -145,6 +145,7 @@ Each author object can have following properties:
 * **name:** The author's name. Usually his real name.
 * **email:** The author's email address.
 * **homepage:** An URL to the author's website.
+* **role:** The authors' role in the project (e.g. developer or translator)
 
 An example:
 
@@ -153,12 +154,14 @@ An example:
             {
                 "name": "Nils Adermann",
                 "email": "naderman@naderman.de",
-                "homepage": "http://www.naderman.de"
+                "homepage": "http://www.naderman.de",
+                "role": "Developer"
             },
             {
                 "name": "Jordi Boggiano",
                 "email": "j.boggiano@seld.be",
-                "homepage": "http://seld.be"
+                "homepage": "http://seld.be",
+                "role": "Developer"
             }
         ]
     }
@@ -215,21 +218,26 @@ Example:
 Autoload mapping for a PHP autoloader.
 
 Currently [PSR-0](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-0.md)
-autoloading and classmap generation are supported.
+autoloading and classmap generation are supported. PSR-0 is the recommended way though
+since it offers greater flexibility (no need to regenerate the autoloader when you add
+classes).
 
 Under the `psr-0` key you define a mapping from namespaces to paths, relative to the
-package root.
+package root. Note that this also supports the PEAR-style convention.
 
 Example:
 
     {
         "autoload": {
-            "psr-0": { "Monolog": "src/" }
+            "psr-0": {
+                "Monolog": "src/",
+                "Vendor\\Namespace": "src/",
+                "Pear_Style": "src/"
+            }
         }
     }
 
-Optional, but it is highly recommended that you follow PSR-0 and use this.
-If you need to search for a same namespace prefix in multiple directories,
+If you need to search for a same prefix in multiple directories,
 you can specify them as an array as such:
 
     {
@@ -238,15 +246,24 @@ you can specify them as an array as such:
         }
     }
 
+If you want to have a fallback directory where any namespace can be, you can
+use an empty prefix like:
+
+    {
+        "autoload": {
+            "psr-0": { "": "src/" }
+        }
+    }
+
 You can use the classmap generation support to define autoloading for all libraries
-that do not follow PSR-0. To configure this you specify all directories
+that do not follow PSR-0. To configure this you specify all directories or files
 to search for classes.
 
 Example:
 
     {
         "autoload: {
-            "classmap": ["src/", "lib/"]
+            "classmap": ["src/", "lib/", "Something.php"]
         }
     }
 
@@ -368,6 +385,9 @@ The following options are supported:
 * **process-timeout:** Defaults to `300`. The duration processes like git clones
   can run before Composer assumes they died out. You may need to make this
   higher if you have a slow connection or huge vendors.
+* **notify-on-install:** Defaults to `true`. Composer allows repositories to
+  define a notification URL, so that they get notified whenever a package from
+  that repository is installed. This option allows you to disable that behaviour.
 
 Example:
 

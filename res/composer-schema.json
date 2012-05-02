@@ -66,6 +66,10 @@
                         "type": "string",
                         "description": "Homepage URL for the author.",
                         "format": "uri"
+                    },
+                    "role": {
+                        "type": "string",
+                        "description": "Author's role in the project."
                     }
                 }
             }
