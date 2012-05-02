@@ -43,12 +43,10 @@ final class StreamContextFactory
             
             if (isset($proxyPort)) {
                 $proxyURL .= ":" . $proxyPort;
-            } else {
-                if ('http://' == substr($proxyURL, 0, 7)) {
-                    $proxyURL .= ":80";
-                } else if ('https://' == substr($proxyURL, 0, 8)) {
-                    $proxyURL .= ":443";
-                }
+            } else if ('http://' == substr($proxyURL, 0, 7)) {
+                $proxyURL .= ":80";
+            } else if ('https://' == substr($proxyURL, 0, 8)) {
+                $proxyURL .= ":443";
             }
             
             // http(s):// is not supported in proxy
@@ -75,14 +73,13 @@ final class StreamContextFactory
                 $auth = base64_encode($auth);
                 
                 // Preserve headers if already set in default options 
-                if (isset($defaultOptions['http']) && isset($defaultOptions['http']['header'])) {
+                if (isset($defaultOptions['http']['header'])) {
                     $defaultOptions['http']['header'] .=  "Proxy-Authorization: Basic {$auth}\r\n";
                 } else {
                     $options['http']['header'] = "Proxy-Authorization: Basic {$auth}\r\n";
                 }
             }
         }
-        
         $options = array_merge_recursive($options, $defaultOptions);
         
         return stream_context_create($options, $defaultParams);
