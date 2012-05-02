@@ -96,7 +96,7 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
         if (extension_loaded('openssl')) {
             $context = StreamContextFactory::getContext();
             $options = stream_context_get_options($context);
-            
+
             $this->assertEquals(array('http' => array(
                 'proxy' => $expected,
                 'request_fulluri' => true,
