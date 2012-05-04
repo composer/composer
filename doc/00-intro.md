@@ -67,7 +67,7 @@ executable and invoke it without `php`.
 
 ### Using Composer
 
-Next, run the command the `install` command to resolve and download dependencies:
+Next, run the `install` command to resolve and download dependencies:
 
     $ php composer.phar install
 
