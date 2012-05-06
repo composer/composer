@@ -39,7 +39,7 @@ class PearRepository extends ArrayRepository
             $repoConfig['url'] = 'http://'.$repoConfig['url'];
         }
 
-        if (function_exists('filter_var') && !filter_var($repoConfig['url'], FILTER_VALIDATE_URL)) {
+        if (function_exists('filter_var') && version_compare(PHP_VERSION, '5.3.3', '>=') && !filter_var($repoConfig['url'], FILTER_VALIDATE_URL)) {
             throw new \UnexpectedValueException('Invalid url given for PEAR repository: '.$repoConfig['url']);
         }
 
@@ -74,7 +74,7 @@ class PearRepository extends ArrayRepository
                     }
                     $this->addPackage($loader->load($rev));
                     if ($this->io->isVerbose()) {
-                        $this->io->write('Loaded '. $data['name'].' '. $data['version']);
+                        $this->io->write('Loaded '.$rev['name'].' '.$rev['version']);
                     }
                 }
             }

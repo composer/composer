@@ -27,6 +27,7 @@ use Composer\Package\Link;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Package\Locker;
 use Composer\Package\PackageInterface;
+use Composer\Repository\ArrayRepository;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
@@ -76,6 +77,11 @@ class Installer
      */
     protected $eventDispatcher;
 
+    /**
+     * @var AutoloadGenerator
+     */
+    protected $autoloadGenerator;
+
     protected $preferSource = false;
     protected $devMode = false;
     protected $dryRun = false;
@@ -102,8 +108,9 @@ class Installer
      * @param Locker $locker
      * @param InstallationManager $installationManager
      * @param EventDispatcher $eventDispatcher
+     * @param AutoloadGenerator $autoloadGenerator
      */
-    public function __construct(IOInterface $io, PackageInterface $package, DownloadManager $downloadManager, RepositoryManager $repositoryManager, Locker $locker, InstallationManager $installationManager, EventDispatcher $eventDispatcher)
+    public function __construct(IOInterface $io, PackageInterface $package, DownloadManager $downloadManager, RepositoryManager $repositoryManager, Locker $locker, InstallationManager $installationManager, EventDispatcher $eventDispatcher, AutoloadGenerator $autoloadGenerator)
     {
         $this->io = $io;
         $this->package = $package;
@@ -112,6 +119,7 @@ class Installer
         $this->locker = $locker;
         $this->installationManager = $installationManager;
         $this->eventDispatcher = $eventDispatcher;
+        $this->autoloadGenerator = $autoloadGenerator;
     }
 
     /**
@@ -128,7 +136,13 @@ class Installer
         }
 
         // create installed repo, this contains all local packages + platform packages (php & extensions)
-        $repos = array_merge($this->repositoryManager->getLocalRepositories(), array(new PlatformRepository()));
+        $repos = array_merge(
+            $this->repositoryManager->getLocalRepositories(),
+            array(
+                new ArrayRepository(array($this->package)),
+                new PlatformRepository(),
+            )
+        );
         $installedRepo = new CompositeRepository($repos);
         if ($this->additionalInstalledRepository) {
             $installedRepo->addRepository($this->additionalInstalledRepository);
@@ -152,9 +166,11 @@ class Installer
             }
         }
 
-        // dump suggestions
+        // output suggestions
         foreach ($this->suggestedPackages as $suggestion) {
-            $this->io->write($suggestion['source'].' suggests installing '.$suggestion['target'].' ('.$suggestion['reason'].')');
+            if (!$installedRepo->findPackages($suggestion['target'])) {
+                $this->io->write($suggestion['source'].' suggests installing '.$suggestion['target'].' ('.$suggestion['reason'].')');
+            }
         }
 
         if (!$this->dryRun) {
@@ -172,9 +188,8 @@ class Installer
 
             // write autoloader
             $this->io->write('<info>Generating autoload files</info>');
-            $generator = new AutoloadGenerator;
             $localRepos = new CompositeRepository($this->repositoryManager->getLocalRepositories());
-            $generator->dump($localRepos, $this->package, $this->installationManager, $this->installationManager->getVendorPath().'/.composer');
+            $this->autoloadGenerator->dump($localRepos, $this->package, $this->installationManager, $this->installationManager->getVendorPath() . '/composer', true);
 
             // dispatch post event
             $eventName = $this->update ? ScriptEvents::POST_UPDATE_CMD : ScriptEvents::POST_INSTALL_CMD;
@@ -186,6 +201,11 @@ class Installer
 
     protected function doInstall($localRepo, $installedRepo, $aliases, $devMode = false)
     {
+        // initialize locker to create aliased packages
+        if (!$this->update && $this->locker->isLocked($devMode)) {
+            $lockedPackages = $this->locker->getLockedPackages($devMode);
+        }
+
         // creating repository pool
         $pool = new Pool;
         $pool->addRepository($installedRepo);
@@ -196,6 +216,10 @@ class Installer
         // creating requirements request
         $installFromLock = false;
         $request = new Request($pool);
+
+        $constraint = new VersionConstraint('=', $this->package->getVersion());
+        $request->install($this->package->getName(), $constraint);
+
         if ($this->update) {
             $this->io->write('<info>Updating '.($devMode ? 'dev ': '').'dependencies</info>');
 
@@ -214,7 +238,7 @@ class Installer
                 $this->io->write('<warning>Your lock file is out of sync with your composer.json, run "composer.phar update" to update dependencies</warning>');
             }
 
-            foreach ($this->locker->getLockedPackages($devMode) as $package) {
+            foreach ($lockedPackages as $package) {
                 $version = $package->getVersion();
                 foreach ($aliases as $alias) {
                     if ($alias['package'] === $package->getName() && $alias['version'] === $package->getVersion()) {
@@ -378,14 +402,16 @@ class Installer
             foreach ($this->repositoryManager->findPackages($alias['package'], $alias['version']) as $package) {
                 $package->setAlias($alias['alias_normalized']);
                 $package->setPrettyAlias($alias['alias']);
-                $package->getRepository()->addPackage(new AliasPackage($package, $alias['alias_normalized'], $alias['alias']));
+                $package->getRepository()->addPackage($aliasPackage = new AliasPackage($package, $alias['alias_normalized'], $alias['alias']));
+                $aliasPackage->setRootPackageAlias(true);
             }
             foreach ($this->repositoryManager->getLocalRepositories() as $repo) {
                 foreach ($repo->findPackages($alias['package'], $alias['version']) as $package) {
                     $package->setAlias($alias['alias_normalized']);
                     $package->setPrettyAlias($alias['alias']);
-                    $package->getRepository()->addPackage(new AliasPackage($package, $alias['alias_normalized'], $alias['alias']));
+                    $package->getRepository()->addPackage($aliasPackage = new AliasPackage($package, $alias['alias_normalized'], $alias['alias']));
                     $package->getRepository()->removePackage($package);
+                    $aliasPackage->setRootPackageAlias(true);
                 }
             }
         }
@@ -399,11 +425,13 @@ class Installer
      * @param IOInterface $io
      * @param Composer $composer
      * @param EventDispatcher $eventDispatcher
+     * @param AutoloadGenerator $autoloadGenerator
      * @return Installer
      */
-    static public function create(IOInterface $io, Composer $composer, EventDispatcher $eventDispatcher = null)
+    static public function create(IOInterface $io, Composer $composer, EventDispatcher $eventDispatcher = null, AutoloadGenerator $autoloadGenerator = null)
     {
         $eventDispatcher = $eventDispatcher ?: new EventDispatcher($composer, $io);
+        $autoloadGenerator = $autoloadGenerator ?: new AutoloadGenerator;
 
         return new static(
             $io,
@@ -412,7 +440,8 @@ class Installer
             $composer->getRepositoryManager(),
             $composer->getLocker(),
             $composer->getInstallationManager(),
-            $eventDispatcher
+            $eventDispatcher,
+            $autoloadGenerator
         );
     }
 

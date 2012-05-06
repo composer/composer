@@ -108,7 +108,7 @@ same version of the dependencies.
 If no `composer.json` lock file exists, it will read the dependencies and
 versions from `composer.json` and  create the lock file.
 
-This means that if any of the dependencies get a new version, you won't get the updates.
+This means that if any of the dependencies get a new version, you won't get the updates
 automatically. To update to the new version, use `update` command. This will fetch
 the latest matching versions (according to your `composer.json` file) and also update
 the lock file with the new version.
@@ -136,10 +136,10 @@ but it makes life quite a bit simpler.
 ## Autoloading
 
 For libraries that specify autoload information, Composer generates a
-`vendor/.composer/autoload.php` file. You can simply include this file and you
+`vendor/autoload.php` file. You can simply include this file and you
 will get autoloading for free.
 
-    require 'vendor/.composer/autoload.php';
+    require 'vendor/autoload.php';
 
 This makes it really easy to use third party code. For example: If your
 project depends on monolog, you can just start using classes from it, and they
@@ -168,13 +168,13 @@ be in your project root. An example filename would be `src/Acme/Foo.php`
 containing an `Acme\Foo` class.
 
 After adding the `autoload` field, you have to re-run `install` to re-generate
-the `vendor/.composer/autoload.php` file.
+the `vendor/autoload.php` file.
 
 Including that file will also return the autoloader instance, so you can store
 the return value of the include call in a variable and add more namespaces.
 This can be useful for autoloading classes in a test suite, for example.
 
-    $loader = require 'vendor/.composer/autoload.php';
+    $loader = require 'vendor/autoload.php';
     $loader->add('Acme\Test', __DIR__);
 
 In addition to PSR-0 autoloading, classmap is also supported. This allows
@@ -182,7 +182,7 @@ classes to be autoloaded even if they do not conform to PSR-0. See the
 [autoload reference](04-schema.md#autoload) for more details.
 
 > **Note:** Composer provides its own autoloader. If you don't want to use
-that one, you can just include `vendor/.composer/autoload_namespaces.php`,
+that one, you can just include `vendor/autoload_namespaces.php`,
 which returns an associative array mapping namespaces to directories.
 
 &larr; [Intro](00-intro.md)  |  [Libraries](02-libraries.md) &rarr;

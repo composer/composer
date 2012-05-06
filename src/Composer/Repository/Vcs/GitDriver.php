@@ -28,11 +28,6 @@ class GitDriver extends VcsDriver
     protected $repoDir;
     protected $infoCache = array();
 
-    public function __construct($url, IOInterface $io, ProcessExecutor $process = null)
-    {
-        parent::__construct($url, $io, $process);
-    }
-
     /**
      * {@inheritDoc}
      */
@@ -41,11 +36,13 @@ class GitDriver extends VcsDriver
         if (static::isLocalUrl($this->url)) {
             $this->repoDir = str_replace('file://', '', $this->url);
         } else {
-            $this->repoDir = sys_get_temp_dir() . '/composer-' . preg_replace('{[^a-z0-9.]}i', '-', $this->url) . '/';
+            $this->repoDir = $this->config->get('home') . '/cache.git/' . preg_replace('{[^a-z0-9.]}i', '-', $this->url) . '/';
 
             // update the repo if it is a valid git repository
             if (is_dir($this->repoDir) && 0 === $this->process->execute('git remote', $output, $this->repoDir)) {
-                $this->process->execute('git remote update --prune origin', $output, $this->repoDir);
+                if (0 !== $this->process->execute('git remote update --prune origin', $output, $this->repoDir)) {
+                    $this->io->write('<error>Failed to update '.$this->url.', package information from this repository may be outdated ('.$this->process->getErrorOutput().')</error>');
+                }
             } else {
                 // clean up directory and do a fresh clone into it
                 $fs = new Filesystem();

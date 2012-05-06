@@ -34,6 +34,13 @@ interface IOInterface
     function isVerbose();
 
     /**
+     * Is this output decorated?
+     *
+     * @return Boolean
+     */
+    function isDecorated();
+
+    /**
      * Writes a message to the output.
      *
      * @param string|array $messages The message as an array of lines or a single string

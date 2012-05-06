@@ -6,5 +6,5 @@ $vendorDir = dirname(__DIR__);
 $baseDir = $vendorDir;
 
 return array(
-    'ClassMapFoo' => $baseDir . '/.composersrc/foo.php',
+    'ClassMapFoo' => $baseDir . '/composersrc/foo.php',
 );
