@@ -109,20 +109,6 @@ interface IOInterface
     function askAndHideAnswer($question);
 
     /**
-     * Get the last username entered.
-     *
-     * @return string The username
-     */
-    function getLastUsername();
-
-    /**
-     * Get the last password entered.
-     *
-     * @return string The password
-     */
-    function getLastPassword();
-
-    /**
      * Get all authorization informations entered.
      *
      * @return array The map of authorization
