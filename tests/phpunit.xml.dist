@@ -9,25 +9,19 @@
          processIsolation="false"
          stopOnFailure="false"
          syntaxCheck="false"
-         bootstrap="tests/bootstrap.php"
+         bootstrap="./bootstrap.php"
 >
     <testsuites>
-        <testsuite name="Composer Test Suite">
-            <directory>./tests/Composer/</directory>
+        <testsuite name="Full Composer Test Suite">
+            <directory>./Composer/</directory>
         </testsuite>
     </testsuites>
 
-    <groups>
-        <exclude>
-            <group>slow</group>
-        </exclude>
-    </groups>
-
     <filter>
         <whitelist>
-            <directory>./src/Composer/</directory>
+            <directory>../src/Composer/</directory>
             <exclude>
-                <file>./src/Composer/Autoload/ClassLoader.php</file>
+                <file>../src/Composer/Autoload/ClassLoader.php</file>
             </exclude>
         </whitelist>
     </filter>

@@ -9,4 +9,4 @@ before_script:
   - wget -nc http://getcomposer.org/composer.phar
   - php composer.phar install
 
-script: phpunit
+script: phpunit -c tests/

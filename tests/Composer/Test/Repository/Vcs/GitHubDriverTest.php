@@ -17,9 +17,6 @@ use Composer\Repository\Vcs\GitHubDriver;
 use Composer\Util\Filesystem;
 use Composer\Config;
 
-/**
- * @author Beau Simensen <beau@dflydev.com>
- */
 class GitHubDriverTest extends \PHPUnit_Framework_TestCase
 {
     public function testPrivateRepository()
