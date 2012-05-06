@@ -22,6 +22,7 @@ use Symfony\Component\Console\Helper\HelperSet;
  * The Input/Output helper.
  *
  * @author François Pluchino <francois.pluchino@opendisplay.com>
+ * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 class ConsoleIO implements IOInterface
 {
@@ -29,8 +30,6 @@ class ConsoleIO implements IOInterface
     protected $output;
     protected $helperSet;
     protected $authorizations = array();
-    protected $lastUsername;
-    protected $lastPassword;
     protected $lastMessage;
 
     /**
@@ -182,22 +181,6 @@ class ConsoleIO implements IOInterface
     /**
      * {@inheritDoc}
      */
-    public function getLastUsername()
-    {
-        return $this->lastUsername;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getLastPassword()
-    {
-        return $this->lastPassword;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public function getAuthorizations()
     {
         return $this->authorizations;
@@ -209,6 +192,7 @@ class ConsoleIO implements IOInterface
     public function hasAuthorization($repositoryName)
     {
         $auths = $this->getAuthorizations();
+
         return isset($auths[$repositoryName]);
     }
 
@@ -218,6 +202,7 @@ class ConsoleIO implements IOInterface
     public function getAuthorization($repositoryName)
     {
         $auths = $this->getAuthorizations();
+
         return isset($auths[$repositoryName]) ? $auths[$repositoryName] : array('username' => null, 'password' => null);
     }
 
@@ -226,11 +211,6 @@ class ConsoleIO implements IOInterface
      */
     public function setAuthorization($repositoryName, $username, $password = null)
     {
-        $auths = $this->getAuthorizations();
-        $auths[$repositoryName] = array('username' => $username, 'password' => $password);
-
-        $this->authorizations = $auths;
-        $this->lastUsername = $username;
-        $this->lastPassword = $password;
+        $this->authorizations[$repositoryName] = array('username' => $username, 'password' => $password);
     }
 }

@@ -25,11 +25,6 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
             ->method('hasAuthorization')
             ->will($this->returnValue(false))
         ;
-        $io
-            ->expects($this->once())
-            ->method('getLastUsername')
-            ->will($this->returnValue(null))
-        ;
 
         $res = $this->callGetOptionsForUrl($io, array('http://example.org'));
         $this->assertTrue(isset($res['http']['header']) && false !== strpos($res['http']['header'], 'User-Agent'), 'getOptions must return an array with a header containing a User-Agent');
@@ -47,33 +42,6 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('getAuthorization')
             ->will($this->returnValue(array('username' => 'login', 'password' => 'password')))
-        ;
-
-        $options = $this->callGetOptionsForUrl($io, array('http://example.org'));
-        $this->assertContains('Authorization: Basic', $options['http']['header']);
-    }
-
-    public function testGetOptionsForUrlWithLastUsername()
-    {
-        $io = $this->getMock('Composer\IO\IOInterface');
-        $io
-            ->expects($this->once())
-            ->method('hasAuthorization')
-            ->will($this->returnValue(false))
-        ;
-        $io
-            ->expects($this->any())
-            ->method('getLastUsername')
-            ->will($this->returnValue('login'))
-        ;
-        $io
-            ->expects($this->any())
-            ->method('getLastPassword')
-            ->will($this->returnValue('password'))
-        ;
-        $io
-            ->expects($this->once())
-            ->method('setAuthorization')
         ;
 
         $options = $this->callGetOptionsForUrl($io, array('http://example.org'));
