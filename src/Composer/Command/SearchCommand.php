@@ -102,7 +102,7 @@ EOT
      */
     private function matchPackage(PackageInterface $package, $token)
     {
-        return (false !== stripos($package->getName(), $token))
+        return preg_match("($token)i", $package->getName())
             || (false !== stripos(join(',', $package->getKeywords() ?: array()), $token))
             || (false !== stripos($package->getDescription(), $token))
         ;
