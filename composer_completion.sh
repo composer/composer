@@ -1,8 +1,13 @@
 # Copy to /etc/bash_completion.d/composer and restart your bash
 
+_composer_search()
+{
+	composer search "^$1" 2>/dev/null | awk '{ print $1; }'
+}
+
 _composer()
 {
-	local cur prev opts commands
+	local cur prev opts commands isOpts
 	COMPREPLY=()
 	cur="${COMP_WORDS[COMP_CWORD]}"
 	prev="${COMP_WORDS[COMP_CWORD-1]}"
@@ -11,6 +16,12 @@ _composer()
 	local base_commands="about create-project depends help init install list search self-update show update validate"
 
 	opts="${base_opts}"
+
+	if [[ ${cur} == -* ]]; then
+		isOpts=1
+	else
+		isOpts=0
+	fi
 
 	case "${prev}" in
 	composer)
@@ -28,7 +39,9 @@ _composer()
 
 	depends)
 		opts="${opts} --link-type"
-		# commands - should autocomplete repos
+		if [ $isOpts == 0 ]; then
+			commands=$(_composer_search $cur)
+		fi
 		;;
 
 	help)
@@ -60,7 +73,9 @@ _composer()
 
 	show)
 		opts="${opts} --installed --platform"
-		# commands - should autocomplete repos
+		if [ $isOpts == 0 ]; then
+			commands=$(_composer_search $cur)
+		fi
 		;;
 
 	update)
