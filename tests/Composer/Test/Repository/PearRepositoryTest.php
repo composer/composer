@@ -15,9 +15,11 @@ namespace Composer\Repository;
 use Composer\Repository\FilesystemRepository;
 use Composer\Test\TestCase;
 
+/**
+ * @group slow
+ */
 class PearRepositoryTest extends TestCase
 {
-
     /**
      * @var PearRepository
      */

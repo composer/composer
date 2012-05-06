@@ -17,8 +17,6 @@ use Composer\Test\TestCase;
 
 /**
  * ErrorHandler test case
- *
- * @author Artem Lopata <biozshock@gmail.com>
  */
 class ErrorHandlerTest extends TestCase
 {
