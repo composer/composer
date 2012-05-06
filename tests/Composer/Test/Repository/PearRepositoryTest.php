@@ -15,7 +15,8 @@ namespace Composer\Repository;
 use Composer\Repository\FilesystemRepository;
 use Composer\Test\TestCase;
 
-class PearRepositoryTest extends TestCase {
+class PearRepositoryTest extends TestCase
+{
 
     /**
      * @var PearRepository
@@ -32,7 +33,8 @@ class PearRepositoryTest extends TestCase {
      * @param string $url
      * @param array $expectedPackages
      */
-    public function testRepositoryRead($url, array $expectedPackages) {
+    public function testRepositoryRead($url, array $expectedPackages)
+    {
         $repoConfig = array(
             'url' => $url
         );
@@ -46,10 +48,10 @@ class PearRepositoryTest extends TestCase {
                 ' not found in pear channel ' . $url
             );
         }
-
     }
 
-    public function repositoryDataProvider() {
+    public function repositoryDataProvider()
+    {
         return array(
             array(
                 'pear.phpunit.de',
@@ -103,7 +105,8 @@ class PearRepositoryTest extends TestCase {
         );
     }
 
-    private function createRepository($repoConfig) {
+    private function createRepository($repoConfig)
+    {
         $ioInterface = $this->getMockBuilder('Composer\IO\IOInterface')
             ->getMock();
 
@@ -116,7 +119,8 @@ class PearRepositoryTest extends TestCase {
         $this->repository = new PearRepository($repoConfig, $ioInterface, $config, null);
     }
 
-    protected function tearDown() {
+    protected function tearDown()
+    {
         $this->repository = null;
         $this->remoteFilesystem = null;
     }
