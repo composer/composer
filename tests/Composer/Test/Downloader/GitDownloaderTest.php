@@ -140,7 +140,7 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
     public function testUpdate()
     {
         $expectedGitUpdateCommand = $this->getCmd("cd 'composerPath' && git remote set-url composer 'git://github.com/composer/composer' && git fetch composer && git fetch --tags composer && git checkout 'ref' && git reset --hard 'ref'");
-        $expectedGitResetCommand = $this->getCmd("cd 'composerPath' && git status --porcelain");
+        $expectedGitResetCommand = $this->getCmd("cd 'composerPath' && git status --porcelain --untracked-files=no");
 
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $packageMock->expects($this->any())
@@ -173,7 +173,7 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
     public function testUpdateThrowsRuntimeExceptionIfGitCommandFails()
     {
         $expectedGitUpdateCommand = $this->getCmd("cd 'composerPath' && git remote set-url composer 'git://github.com/composer/composer' && git fetch composer && git fetch --tags composer && git checkout 'ref' && git reset --hard 'ref'");
-        $expectedGitResetCommand = $this->getCmd("cd 'composerPath' && git status --porcelain");
+        $expectedGitResetCommand = $this->getCmd("cd 'composerPath' && git status --porcelain --untracked-files=no");
 
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $packageMock->expects($this->any())
@@ -202,7 +202,7 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
 
     public function testRemove()
     {
-        $expectedGitResetCommand = $this->getCmd("cd 'composerPath' && git status --porcelain");
+        $expectedGitResetCommand = $this->getCmd("cd 'composerPath' && git status --porcelain --untracked-files=no");
 
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');

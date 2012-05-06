@@ -62,19 +62,28 @@ Here are a few examples of valid tag names:
 
 For every branch, a package development version will be created. If the branch
 name looks like a version, the version will be `{branchname}-dev`. For example
-a branch `2.0` will get a version `2.0-dev`. If the branch does not look like
-a version, it will be `dev-{branchname}`. `master` results in a `dev-master`
-version.
+a branch `2.0` will get a version `2.0.x-dev` (the `.x` is added for technical
+reasons, to make sure it is recognized as a branch, a `2.0.x` branch would also
+be valid and be turned into `2.0.x-dev` as well. If the branch does not look
+like a version, it will be `dev-{branchname}`. `master` results in a 
+`dev-master` version.
 
 Here are some examples of version branch names:
 
-    1.0
-    1.*
+    1.x
+    1.0 (equals 1.0.x)
     1.1.x
-    1.1.*
 
 > **Note:** When you install a dev version, it will install it from source.
 See [Repositories](05-repositories.md) for more information.
+
+### Aliases
+
+It is possible alias branch names to versions. For example, you could alias
+`dev-master` to `1.0.x-dev`, which would allow you to require `1.0.x-dev` in all
+the packages.
+
+See [Aliases](articles/aliases.md) for more information.
 
 ## Lock file
 

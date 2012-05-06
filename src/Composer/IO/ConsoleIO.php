@@ -58,6 +58,14 @@ class ConsoleIO implements IOInterface
     /**
      * {@inheritDoc}
      */
+    public function isDecorated()
+    {
+        return $this->output->isDecorated();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function isVerbose()
     {
         return (Boolean) $this->input->getOption('verbose');

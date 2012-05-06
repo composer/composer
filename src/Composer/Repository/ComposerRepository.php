@@ -40,7 +40,7 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
             $repoConfig['url'] = 'http://'.$repoConfig['url'];
         }
         $repoConfig['url'] = rtrim($repoConfig['url'], '/');
-        if (function_exists('filter_var') && !filter_var($repoConfig['url'], FILTER_VALIDATE_URL)) {
+        if (function_exists('filter_var') && version_compare(PHP_VERSION, '5.3.3', '>=') && !filter_var($repoConfig['url'], FILTER_VALIDATE_URL)) {
             throw new \UnexpectedValueException('Invalid url given for Composer repository: '.$repoConfig['url']);
         }
 
@@ -70,7 +70,7 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
             array(
                 'method'  => 'POST',
                 'header'  => 'Content-type: application/x-www-form-urlencoded',
-                'content' => http_build_query($params),
+                'content' => http_build_query($params, '', '&'),
                 'timeout' => 3,
             )
         );

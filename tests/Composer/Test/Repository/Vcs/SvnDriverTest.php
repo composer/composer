@@ -14,6 +14,7 @@ namespace Composer\Test\Repository\Vcs;
 
 use Composer\Repository\Vcs\SvnDriver;
 use Composer\IO\NullIO;
+use Composer\Config;
 
 class SvnDriverTest extends \PHPUnit_Framework_TestCase
 {
@@ -39,8 +40,8 @@ class SvnDriverTest extends \PHPUnit_Framework_TestCase
             ->method('getErrorOutput')
             ->will($this->returnValue($output));
 
-        $svn = new SvnDriver('http://till:secret@corp.svn.local/repo', $console, $process);
-        $svn->getTags();
+        $svn = new SvnDriver('http://till:secret@corp.svn.local/repo', $console, new Config(), $process);
+        $svn->initialize();
     }
 
     private function getCmd($cmd)

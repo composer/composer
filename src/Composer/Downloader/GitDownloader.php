@@ -61,7 +61,7 @@ class GitDownloader extends VcsDownloader
      */
     protected function enforceCleanDirectory($path)
     {
-        $command = sprintf('cd %s && git status --porcelain', escapeshellarg($path));
+        $command = sprintf('cd %s && git status --porcelain --untracked-files=no', escapeshellarg($path));
         if (0 !== $this->process->execute($command, $output)) {
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
         }
