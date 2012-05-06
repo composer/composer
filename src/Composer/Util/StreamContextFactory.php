@@ -35,11 +35,9 @@ final class StreamContextFactory
         if (isset($_SERVER['HTTP_PROXY']) || isset($_SERVER['http_proxy'])) {
             // Some systems seem to rely on a lowercased version instead...
             $proxy = parse_url(isset($_SERVER['http_proxy']) ? $_SERVER['http_proxy'] : $_SERVER['HTTP_PROXY']);
-        } else {
-            $proxy = false;
         }
 
-        if (false !== $proxy) {
+        if (!empty($proxy)) {
             $proxyURL = (isset($proxy['scheme']) ? $proxy['scheme'] : '') . '://';
             $proxyURL .= isset($proxy['host']) ? $proxy['host'] : '';
 
@@ -70,16 +68,16 @@ final class StreamContextFactory
                 }
                 $auth = base64_encode($auth);
 
-                // Preserve headers if already set in default options 
+                // Preserve headers if already set in default options
                 if (isset($defaultOptions['http']['header'])) {
-                    $defaultOptions['http']['header'] .=  "Proxy-Authorization: Basic {$auth}\r\n";
+                    $defaultOptions['http']['header'] .= "Proxy-Authorization: Basic {$auth}\r\n";
                 } else {
                     $options['http']['header'] = "Proxy-Authorization: Basic {$auth}\r\n";
                 }
             }
         }
 
-        $options = array_merge_recursive($options, $defaultOptions);
+        $options = array_replace_recursive($options, $defaultOptions);
 
         return stream_context_create($options, $defaultParams);
     }

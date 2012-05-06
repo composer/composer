@@ -71,6 +71,21 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
         )), $options);
     }
 
+    public function testOptionsArePreserved()
+    {
+        $_SERVER['http_proxy'] = 'http://username:password@proxyserver.net:3128/';
+
+        $context = StreamContextFactory::getContext(array('http' => array('method' => 'GET', 'header' => "X-Foo: bar\r\n", 'request_fulluri' => false)));
+        $options = stream_context_get_options($context);
+
+        $this->assertEquals(array('http' => array(
+            'proxy' => 'tcp://proxyserver.net:3128',
+            'request_fulluri' => false,
+            'method' => 'GET',
+            'header' => "X-Foo: bar\r\nProxy-Authorization: Basic " . base64_encode('username:password') . "\r\n"
+        )), $options);
+    }
+
     public function testHttpProxyWithoutPort()
     {
         $_SERVER['http_proxy'] = 'http://username:password@proxyserver.net';
