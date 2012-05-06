@@ -74,7 +74,7 @@ class PearRepository extends ArrayRepository
                     }
                     $this->addPackage($loader->load($rev));
                     if ($this->io->isVerbose()) {
-                        $this->io->write('Loaded '.$packageData['name'].' '.$packageData['version']);
+                        $this->io->write('Loaded '. $data['name'].' '. $data['version']);
                     }
                 }
             }
@@ -126,7 +126,7 @@ class PearRepository extends ArrayRepository
     /**
      * @param   string $categoryLink
      * @throws  TransportException
-     * @throws  InvalidArgumentException
+     * @throws  \InvalidArgumentException
      */
     private function fetchPearPackages($categoryLink)
     {
@@ -212,7 +212,7 @@ class PearRepository extends ArrayRepository
 
     /**
      * @todo    Improve dependencies resolution of pear packages.
-     * @param   array $options
+     * @param   array $depsOptions
      * @return  array
      */
     private function parseDependenciesOptions(array $depsOptions)
@@ -257,7 +257,7 @@ class PearRepository extends ArrayRepository
     /**
      * @param   string $deps
      * @return  array
-     * @throws  InvalidArgumentException
+     * @throws  \InvalidArgumentException
      */
     private function parseDependencies($deps)
     {
@@ -284,7 +284,7 @@ class PearRepository extends ArrayRepository
     /**
      * @param   string $packagesLink
      * @return  void
-     * @throws  InvalidArgumentException
+     * @throws  \InvalidArgumentException
      */
     private function fetchPear2Packages($packagesLink)
     {
@@ -358,7 +358,7 @@ class PearRepository extends ArrayRepository
 
     /**
      * @param  string $url
-     * @return DOMDocument
+     * @return \DOMDocument
      */
     private function requestXml($url)
     {
@@ -367,7 +367,7 @@ class PearRepository extends ArrayRepository
             throw new \UnexpectedValueException('The PEAR channel at '.$url.' did not respond.');
         }
         $dom = new \DOMDocument('1.0', 'UTF-8');
-        $dom->loadXML($content, LIBXML_NOERROR);
+        $dom->loadXML($content);
 
         return $dom;
     }
