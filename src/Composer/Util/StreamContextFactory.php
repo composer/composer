@@ -34,27 +34,53 @@ final class StreamContextFactory
         // Handle system proxy
         if (isset($_SERVER['HTTP_PROXY']) || isset($_SERVER['http_proxy'])) {
             // Some systems seem to rely on a lowercased version instead...
-            $proxy = isset($_SERVER['http_proxy']) ? $_SERVER['http_proxy'] : $_SERVER['HTTP_PROXY'];
+            $proxy = parse_url(isset($_SERVER['http_proxy']) ? $_SERVER['http_proxy'] : $_SERVER['HTTP_PROXY']);
+        } else {
+            $proxy = false;
+        }
 
-            // http(s):// is not supported in proxy
-            if ('http://' == substr($proxy, 0, 7)) {
-                $proxy = 'tcp://' . rtrim(substr($proxy, 7), '/') . (parse_url($proxy, PHP_URL_PORT) ? '' : ':80');
-            } else if ('https://' == substr($proxy, 0, 8)) {
-                $proxy = 'ssl://' . rtrim(substr($proxy, 8), '/') . (parse_url($proxy, PHP_URL_PORT) ? '' : ':443');
+        if (false !== $proxy) {
+            $proxyURL = (isset($proxy['scheme']) ? $proxy['scheme'] : '') . '://';
+            $proxyURL .= isset($proxy['host']) ? $proxy['host'] : '';
+
+            if (isset($proxy['port'])) {
+                $proxyURL .= ":" . $proxy['port'];
+            } elseif ('http://' == substr($proxyURL, 0, 7)) {
+                $proxyURL .= ":80";
+            } elseif ('https://' == substr($proxyURL, 0, 8)) {
+                $proxyURL .= ":443";
             }
 
-            if (0 === strpos($proxy, 'ssl:') && !extension_loaded('openssl')) {
+            // http(s):// is not supported in proxy
+            $proxyURL = str_replace(array('http://', 'https://'), array('tcp://', 'ssl://'), $proxyURL);
+
+            if (0 === strpos($proxyURL, 'ssl:') && !extension_loaded('openssl')) {
                 throw new \RuntimeException('You must enable the openssl extension to use a proxy over https');
             }
 
             $options['http'] = array(
-                'proxy'           => $proxy,
+                'proxy'           => $proxyURL,
                 'request_fulluri' => true,
             );
+
+            if (isset($proxy['user'])) {
+                $auth = $proxy['user'];
+                if (isset($proxy['pass'])) {
+                    $auth .= ':' . $proxy['pass'];
+                }
+                $auth = base64_encode($auth);
+
+                // Preserve headers if already set in default options 
+                if (isset($defaultOptions['http']['header'])) {
+                    $defaultOptions['http']['header'] .=  "Proxy-Authorization: Basic {$auth}\r\n";
+                } else {
+                    $options['http']['header'] = "Proxy-Authorization: Basic {$auth}\r\n";
+                }
+            }
         }
 
         $options = array_merge_recursive($options, $defaultOptions);
-        
+
         return stream_context_create($options, $defaultParams);
     }
 }
