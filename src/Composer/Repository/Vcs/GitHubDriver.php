@@ -46,6 +46,7 @@ class GitHubDriver extends VcsDriver
         preg_match('#^(?:https?|git)://github\.com/([^/]+)/(.+?)(?:\.git)?$#', $this->url, $match);
         $this->owner = $match[1];
         $this->repository = $match[2];
+        $this->originUrl = 'github.com';
 
         $this->fetchRootIdentifier();
     }
@@ -245,7 +246,7 @@ class GitHubDriver extends VcsDriver
                         $this->io->write('Authentication required (<info>'.$this->url.'</info>):');
                         $username = $this->io->ask('Username: ');
                         $password = $this->io->askAndHideAnswer('Password: ');
-                        $this->io->setAuthorization($this->url, $username, $password);
+                        $this->io->setAuthorization($this->originUrl, $username, $password);
                         break;
 
                     default:

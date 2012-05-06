@@ -40,7 +40,7 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
 
         $remoteFilesystem->expects($this->at(0))
             ->method('getContents')
-            ->with($this->equalTo($repoUrl), $this->equalTo($repoApiUrl), $this->equalTo(false))
+            ->with($this->equalTo('github.com'), $this->equalTo($repoApiUrl), $this->equalTo(false))
             ->will($this->throwException(new TransportException('HTTP/1.1 404 Not Found', 404)));
 
         $io->expects($this->once())
@@ -55,11 +55,11 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
 
         $io->expects($this->once())
             ->method('setAuthorization')
-            ->with($this->equalTo($repoUrl), 'someuser', 'somepassword');
+            ->with($this->equalTo('github.com'), 'someuser', 'somepassword');
 
         $remoteFilesystem->expects($this->at(1))
             ->method('getContents')
-            ->with($this->equalTo($repoUrl), $this->equalTo($repoApiUrl), $this->equalTo(false))
+            ->with($this->equalTo('github.com'), $this->equalTo($repoApiUrl), $this->equalTo(false))
             ->will($this->returnValue('{"master_branch": "test_master"}'));
 
         $gitHubDriver = new GitHubDriver($repoUrl, $io, new Config(), null, $remoteFilesystem);
@@ -109,7 +109,7 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
 
         $remoteFilesystem->expects($this->at(0))
             ->method('getContents')
-            ->with($this->equalTo($repoUrl), $this->equalTo($repoApiUrl), $this->equalTo(false))
+            ->with($this->equalTo('github.com'), $this->equalTo($repoApiUrl), $this->equalTo(false))
             ->will($this->returnValue('{"master_branch": "test_master"}'));
 
         $gitHubDriver = new GitHubDriver($repoUrl, $io, new Config(), null, $remoteFilesystem);
@@ -164,7 +164,7 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
 
         $remoteFilesystem->expects($this->at(0))
             ->method('getContents')
-            ->with($this->equalTo($repoUrl), $this->equalTo($repoApiUrl), $this->equalTo(false))
+            ->with($this->equalTo('github.com'), $this->equalTo($repoApiUrl), $this->equalTo(false))
             ->will($this->throwException(new TransportException('HTTP/1.1 404 Not Found', 404)));
 
         // clean local clone if present

@@ -35,6 +35,7 @@ class HgBitbucketDriver extends VcsDriver
         preg_match('#^https://bitbucket\.org/([^/]+)/([^/]+)/?$#', $this->url, $match);
         $this->owner = $match[1];
         $this->repository = $match[2];
+        $this->originUrl = 'bitbucket.org';
     }
 
     /**
