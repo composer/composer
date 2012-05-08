@@ -67,6 +67,8 @@ abstract class Command extends BaseCommand
             if ($application instanceof ComposerApplication) {
                 /* @var $application    ComposerApplication */
                 $this->io = $application->getIO();
+            } else {
+                $this->io = new \Composer\IO\NullIO();
             }
         }
         return $this->io;
