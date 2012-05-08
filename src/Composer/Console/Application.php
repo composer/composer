@@ -35,7 +35,14 @@ use Composer\Util\ErrorHandler;
  */
 class Application extends BaseApplication
 {
+    /**
+     * @var Composer
+     */
     protected $composer;
+
+    /**
+     * @var ConsoleIO
+     */
     protected $io;
 
     public function __construct()
@@ -75,7 +82,8 @@ class Application extends BaseApplication
     }
 
     /**
-     * @return Composer
+     * @param   bool                $required
+     * @return  \Composer\Composer
      */
     public function getComposer($required = true)
     {
@@ -87,8 +95,6 @@ class Application extends BaseApplication
                     $this->io->write($e->getMessage());
                     exit(1);
                 }
-
-                return;
             }
         }
 
