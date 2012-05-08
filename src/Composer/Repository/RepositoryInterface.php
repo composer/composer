@@ -57,4 +57,11 @@ interface RepositoryInterface extends \Countable
      * @return  array
      */
     function getPackages();
+
+    /**
+     * @abstract
+     * @param       \Composer\Package\PackageInterface  $package
+     * @return      void
+     */
+    function removePackage(PackageInterface $package);
 }
