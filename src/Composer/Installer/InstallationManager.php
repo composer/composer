@@ -21,6 +21,8 @@ use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
+use Composer\DependencyResolver\Operation\MarkAliasInstalledOperation;
+use Composer\DependencyResolver\Operation\MarkAliasUninstalledOperation;
 use Composer\Util\Filesystem;
 
 /**
@@ -104,6 +106,10 @@ class InstallationManager
      */
     public function isPackageInstalled(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
+        if ($package instanceof AliasPackage) {
+            return $repo->hasPackage($package);
+        }
+
         return $this->getInstaller($package->getType())->isInstalled($repo, $package);
     }
 
@@ -127,7 +133,7 @@ class InstallationManager
      */
     public function install(RepositoryInterface $repo, InstallOperation $operation)
     {
-        $package = $this->antiAlias($operation->getPackage());
+        $package = $operation->getPackage();
         $installer = $this->getInstaller($package->getType());
         $installer->install($repo, $package);
         $this->notifyInstall($package);
@@ -141,8 +147,8 @@ class InstallationManager
      */
     public function update(RepositoryInterface $repo, UpdateOperation $operation)
     {
-        $initial = $this->antiAlias($operation->getInitialPackage());
-        $target = $this->antiAlias($operation->getTargetPackage());
+        $initial = $operation->getInitialPackage();
+        $target = $operation->getTargetPackage();
 
         $initialType = $initial->getType();
         $targetType  = $target->getType();
@@ -165,9 +171,39 @@ class InstallationManager
      */
     public function uninstall(RepositoryInterface $repo, UninstallOperation $operation)
     {
-        $package = $this->antiAlias($operation->getPackage());
+        $package = $operation->getPackage();
         $installer = $this->getInstaller($package->getType());
         $installer->uninstall($repo, $package);
+    }
+
+    /**
+     * Executes markAliasInstalled operation.
+     *
+     * @param   RepositoryInterface $repo       repository in which to check
+     * @param   MarkAliasInstalledOperation    $operation  operation instance
+     */
+    public function markAliasInstalled(RepositoryInterface $repo, MarkAliasInstalledOperation $operation)
+    {
+        $package = $operation->getPackage();
+
+        if (!$repo->hasPackage($package)) {
+            $repo->addPackage(clone $package);
+        }
+
+        $this->notifyInstall($package);
+    }
+
+    /**
+     * Executes markAlias operation.
+     *
+     * @param   RepositoryInterface $repo       repository in which to check
+     * @param   MarkAliasUninstalledOperation    $operation  operation instance
+     */
+    public function markAliasUninstalled(RepositoryInterface $repo, MarkAliasUninstalledOperation $operation)
+    {
+        $package = $operation->getPackage();
+
+        $repo->removePackage($package);
     }
 
     /**
@@ -202,18 +238,5 @@ class InstallationManager
         if ($package->getRepository() instanceof NotifiableRepositoryInterface) {
             $package->getRepository()->notifyInstall($package);
         }
-    }
-
-    private function antiAlias(PackageInterface $package)
-    {
-        if ($package instanceof AliasPackage) {
-            $alias = $package;
-            $package = $package->getAliasOf();
-            $package->setInstalledAsAlias(true);
-            $package->setAlias($alias->getVersion());
-            $package->setPrettyAlias($alias->getPrettyVersion());
-        }
-
-        return $package;
     }
 }

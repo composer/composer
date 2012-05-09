@@ -29,6 +29,7 @@ class Rule
     const RULE_PACKAGE_SAME_NAME = 10;
     const RULE_PACKAGE_IMPLICIT_OBSOLETES = 11;
     const RULE_LEARNED = 12;
+    const RULE_PACKAGE_ALIAS = 13;
 
     protected $disabled;
     protected $literals;
@@ -235,6 +236,8 @@ class Rule
                 return $ruleText;
             case self::RULE_LEARNED:
                 return 'learned: '.$ruleText;
+            case self::RULE_PACKAGE_ALIAS:
+                return $ruleText;
         }
     }
 

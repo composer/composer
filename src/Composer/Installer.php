@@ -242,7 +242,7 @@ class Installer
                 $version = $package->getVersion();
                 foreach ($aliases as $alias) {
                     if ($alias['package'] === $package->getName() && $alias['version'] === $package->getVersion()) {
-                        $version = $alias['alias'];
+                        $version = $alias['alias_normalized'];
                         break;
                     }
                 }
@@ -259,9 +259,11 @@ class Installer
             }
         }
 
-        // fix the version all installed packages that are not in the current local repo to prevent rogue updates
+        // fix the version of all installed packages (+ platform) that are not
+        // in the current local repo to prevent rogue updates (e.g. non-dev
+        // updating when in dev)
         foreach ($installedRepo->getPackages() as $package) {
-            if ($package->getRepository() === $localRepo || $package->getRepository() instanceof PlatformRepository) {
+            if ($package->getRepository() === $localRepo) {
                 continue;
             }
 
@@ -324,14 +326,6 @@ class Installer
             }
         }
 
-        // anti-alias local repository to allow updates to work fine
-        foreach ($localRepo->getPackages() as $package) {
-            if ($package instanceof AliasPackage) {
-                $package->getRepository()->addPackage(clone $package->getAliasOf());
-                $package->getRepository()->removePackage($package);
-            }
-        }
-
         // execute operations
         if (!$operations) {
             $this->io->write('Nothing to install or update');
@@ -354,7 +348,10 @@ class Installer
             }
 
             if (!$this->dryRun) {
-                $this->eventDispatcher->dispatchPackageEvent(constant('Composer\Script\ScriptEvents::PRE_PACKAGE_'.strtoupper($operation->getJobType())), $operation);
+                $event = 'Composer\Script\ScriptEvents::PRE_PACKAGE_'.strtoupper($operation->getJobType());
+                if (defined($event)) {
+                    $this->eventDispatcher->dispatchPackageEvent(constant($event), $operation);
+                }
 
                 // if installing from lock, restore dev packages' references to their locked state
                 if ($installFromLock) {
@@ -376,15 +373,13 @@ class Installer
                 }
                 $this->installationManager->execute($localRepo, $operation);
 
-                $this->eventDispatcher->dispatchPackageEvent(constant('Composer\Script\ScriptEvents::POST_PACKAGE_'.strtoupper($operation->getJobType())), $operation);
+                $event = 'Composer\Script\ScriptEvents::POST_PACKAGE_'.strtoupper($operation->getJobType());
+                if (defined($event)) {
+                    $this->eventDispatcher->dispatchPackageEvent(constant($event), $operation);
+                }
 
                 $localRepo->write();
             }
-        }
-
-        // reload local repository for the dev pass to work ok with aliases since it was anti-aliased above
-        if (!$devMode) {
-            $localRepo->reload();
         }
 
         return true;
@@ -410,7 +405,6 @@ class Installer
                     $package->setAlias($alias['alias_normalized']);
                     $package->setPrettyAlias($alias['alias']);
                     $package->getRepository()->addPackage($aliasPackage = new AliasPackage($package, $alias['alias_normalized'], $alias['alias']));
-                    $package->getRepository()->removePackage($package);
                     $aliasPackage->setRootPackageAlias(true);
                 }
             }
