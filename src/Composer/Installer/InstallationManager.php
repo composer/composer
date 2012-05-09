@@ -189,8 +189,6 @@ class InstallationManager
         if (!$repo->hasPackage($package)) {
             $repo->addPackage(clone $package);
         }
-
-        $this->notifyInstall($package);
     }
 
     /**
