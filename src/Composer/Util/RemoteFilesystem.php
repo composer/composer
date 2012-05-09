@@ -223,10 +223,6 @@ class RemoteFilesystem
             $auth = $this->io->getAuthorization($originUrl);
             $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
             $options['http']['header'] .= "Authorization: Basic $authStr\r\n";
-        } elseif (null !== $this->io->getLastUsername()) {
-            $authStr = base64_encode($this->io->getLastUsername() . ':' . $this->io->getLastPassword());
-            $options['http']['header'] .= "Authorization: Basic $authStr\r\n";
-            $this->io->setAuthorization($originUrl, $this->io->getLastUsername(), $this->io->getLastPassword());
         }
 
         return $options;

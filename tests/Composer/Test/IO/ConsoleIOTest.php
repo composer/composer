@@ -190,30 +190,4 @@ class ConsoleIOTest extends TestCase
         $this->assertTrue($consoleIO->hasAuthorization('repoName'));
         $this->assertFalse($consoleIO->hasAuthorization('repoName2'));
     }
-
-    public function testGetLastUsername()
-    {
-        $inputMock = $this->getMock('Symfony\Component\Console\Input\InputInterface');
-        $outputMock = $this->getMock('Symfony\Component\Console\Output\OutputInterface');
-        $helperMock = $this->getMock('Symfony\Component\Console\Helper\HelperSet');
-
-        $consoleIO = new ConsoleIO($inputMock, $outputMock, $helperMock);
-        $consoleIO->setAuthorization('repoName', 'l3l0', 'passwd');
-        $consoleIO->setAuthorization('repoName2', 'l3l02', 'passwd2');
-
-        $this->assertEquals('l3l02', $consoleIO->getLastUsername());
-    }
-
-    public function testGetLastPassword()
-    {
-        $inputMock = $this->getMock('Symfony\Component\Console\Input\InputInterface');
-        $outputMock = $this->getMock('Symfony\Component\Console\Output\OutputInterface');
-        $helperMock = $this->getMock('Symfony\Component\Console\Helper\HelperSet');
-
-        $consoleIO = new ConsoleIO($inputMock, $outputMock, $helperMock);
-        $consoleIO->setAuthorization('repoName', 'l3l0', 'passwd');
-        $consoleIO->setAuthorization('repoName2', 'l3l02', 'passwd2');
-
-        $this->assertEquals('passwd2', $consoleIO->getLastPassword());
-    }
 }

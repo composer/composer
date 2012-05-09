@@ -35,6 +35,7 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
         preg_match('#^https://bitbucket\.org/([^/]+)/(.+?)\.git$#', $this->url, $match);
         $this->owner = $match[1];
         $this->repository = $match[2];
+        $this->originUrl = 'bitbucket.org';
     }
 
     /**

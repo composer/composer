@@ -26,6 +26,7 @@ use Composer\Util\RemoteFilesystem;
 abstract class VcsDriver implements VcsDriverInterface
 {
     protected $url;
+    protected $originUrl;
     protected $io;
     protected $config;
     protected $process;
@@ -43,6 +44,7 @@ abstract class VcsDriver implements VcsDriverInterface
     final public function __construct($url, IOInterface $io, Config $config, ProcessExecutor $process = null, $remoteFilesystem = null)
     {
         $this->url = $url;
+        $this->originUrl = $url;
         $this->io = $io;
         $this->config = $config;
         $this->process = $process ?: new ProcessExecutor;
@@ -86,7 +88,7 @@ abstract class VcsDriver implements VcsDriverInterface
      */
     protected function getContents($url)
     {
-        return $this->remoteFilesystem->getContents($this->url, $url, false);
+        return $this->remoteFilesystem->getContents($this->originUrl, $url, false);
     }
 
     protected static function isLocalUrl($url)

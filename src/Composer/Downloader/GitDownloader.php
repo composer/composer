@@ -46,6 +46,12 @@ class GitDownloader extends VcsDownloader
         $this->io->write("    Checking out ".$target->getSourceReference());
         $command = 'cd %s && git remote set-url composer %s && git fetch composer && git fetch --tags composer && git checkout %3$s && git reset --hard %3$s';
 
+        // capture username/password from github URL if there is one
+        $this->process->execute(sprintf('cd %s && git remote -v', escapeshellarg($path)), $output);
+        if (preg_match('{^composer\s+https://(.+):(.+)@github.com/}im', $output, $match)) {
+            $this->io->setAuthorization('github.com', $match[1], $match[2]);
+        }
+
         // TODO: BC for the composer remote that didn't exist, to be remove after May 18th.
         $this->process->execute(sprintf('cd %s && git remote add composer %s', escapeshellarg($path), escapeshellarg($initial->getSourceUrl())), $ignoredOutput);
 
@@ -102,6 +108,30 @@ class GitDownloader extends VcsDownloader
 
         $command = call_user_func($commandCallable, $url);
         if (0 !== $this->process->execute($command, $handler)) {
+            if (preg_match('{^git@github.com:(.+?)\.git$}i', $url, $match) && $this->io->isInteractive()) {
+                // private repository without git access, try https with auth
+                $retries = 3;
+                $retrying = false;
+                do {
+                    if ($retrying) {
+                        $this->io->write('Invalid credentials');
+                    }
+                    if (!$this->io->hasAuthorization('github.com') || $retrying) {
+                        $username = $this->io->ask('Username: ');
+                        $password = $this->io->askAndHideAnswer('Password: ');
+                        $this->io->setAuthorization('github.com', $username, $password);
+                    }
+
+                    $auth = $this->io->getAuthorization('github.com');
+                    $url = 'https://'.$auth['username'] . ':' . $auth['password'] . '@github.com/'.$match[1].'.git';
+
+                    $command = call_user_func($commandCallable, $url);
+                    if (0 === $this->process->execute($command, $handler)) {
+                        return;
+                    }
+                    $retrying = true;
+                } while (--$retries);
+            }
             $this->throwException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput(), $url);
         }
     }
