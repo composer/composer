@@ -93,16 +93,6 @@ class RootPackageLoader extends ArrayLoader
             $package->setRepositories($config['repositories']);
         }
 
-        if (isset($config['extra']['branch-alias'][$version])
-            && substr($config['extra']['branch-alias'][$version], -4) === '-dev'
-        ) {
-            $targetBranch = $config['extra']['branch-alias'][$version];
-            $normalized = $this->versionParser->normalizeBranch(substr($targetBranch, 0, -4));
-            $version = preg_replace('{(\.9{7})+}', '.x', $normalized);
-
-            return new AliasPackage($package, $normalized, $version);
-        }
-
         return $package;
     }
 }
