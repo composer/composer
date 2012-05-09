@@ -119,10 +119,23 @@ class RootPackageLoader extends ArrayLoader
     {
         $stabilities = BasePackage::$stabilities;
         foreach ($requires as $reqName => $reqVersion) {
+            // parse explicit stability flags
             if (preg_match('{^[^,\s]*?@('.implode('|', $stabilities).')$}i', $reqVersion, $match)) {
                 $name = strtolower($reqName);
                 $stability = array_search(VersionParser::normalizeStability($match[1]), $stabilities);
 
+                if (isset($stabilityFlags[$name]) && $stabilityFlags[$name] > $stability) {
+                    continue;
+                }
+                $stabilityFlags[$name] = $stability;
+
+                continue;
+            }
+
+            // infer flags for requirements that have an explicit -dev or -beta version specified for example
+            if (preg_match('{^[^,\s@]+$}', $reqVersion) && 'stable' !== ($stabilityName = VersionParser::parseStability($reqVersion))) {
+                $name = strtolower($reqName);
+                $stability = array_search($stabilityName, $stabilities);
                 if (isset($stabilityFlags[$name]) && $stabilityFlags[$name] > $stability) {
                     continue;
                 }
