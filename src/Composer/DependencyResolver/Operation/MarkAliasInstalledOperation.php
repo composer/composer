@@ -17,7 +17,7 @@ use Composer\Package\AliasPackage;
 /**
  * Solver install operation.
  *
- * @author Konstantin Kudryashov <ever.zet@gmail.com>
+ * @author Nils Adermann <naderman@naderman.de>
  */
 class MarkAliasInstalledOperation extends SolverOperation
 {
