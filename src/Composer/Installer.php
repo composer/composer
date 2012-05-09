@@ -29,6 +29,7 @@ use Composer\Package\Locker;
 use Composer\Package\PackageInterface;
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\CompositeRepository;
+use Composer\Repository\InstalledArrayRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositoryManager;
@@ -139,7 +140,7 @@ class Installer
         $repos = array_merge(
             $this->repositoryManager->getLocalRepositories(),
             array(
-                new ArrayRepository(array($this->package)),
+                new InstalledArrayRepository(array($this->package)),
                 new PlatformRepository(),
             )
         );
