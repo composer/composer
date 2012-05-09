@@ -28,7 +28,6 @@ use Composer\Util\RemoteFilesystem;
 class Factory
 {
     /**
-     * @static
      * @return  Config
      */
     public static function createConfig()
@@ -66,9 +65,9 @@ class Factory
     /**
      * Creates a Composer instance
      *
-     * @param   IOInterface     $io             IO instance
-     * @param   array|null      $localConfig    either a configuration array or a filename to read from, if null it will
-     *                                          read from the default filename
+     * @param   IOInterface $io IO instance
+     * @param   array|string|null $localConfig either a configuration array or a filename to read from, if null it will
+     *          read from the default filename
      * @throws  \InvalidArgumentException
      * @return  Composer
      */
@@ -169,8 +168,8 @@ class Factory
     }
 
     /**
-     * @param   Repository\RepositoryManager    $rm
-     * @param   $vendorDir
+     * @param   Repository\RepositoryManager $rm
+     * @param   string $vendorDir
      */
     protected function addLocalRepository(RepositoryManager $rm, $vendorDir)
     {
@@ -273,7 +272,7 @@ class Factory
     protected function purgePackages(Repository\RepositoryManager $rm, Installer\InstallationManager $im)
     {
         foreach ($rm->getLocalRepositories() as $repo) {
-            /* @var $repo   Repository\RepositoryInterface */
+            /* @var $repo   Repository\WritableRepositoryInterface */
             foreach ($repo->getPackages() as $package) {
                 if (!$im->isPackageInstalled($repo, $package)) {
                     $repo->removePackage($package);

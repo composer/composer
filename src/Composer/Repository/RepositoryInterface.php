@@ -57,13 +57,4 @@ interface RepositoryInterface extends \Countable
      * @return  array
      */
     function getPackages();
-
-    /**
-     * Removes a package from the repository.
-     *
-     * @abstract
-     * @param       \Composer\Package\PackageInterface  $package
-     * @return      void
-     */
-    function removePackage(PackageInterface $package);
 }
