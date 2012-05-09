@@ -242,7 +242,7 @@ class Installer
                 $version = $package->getVersion();
                 foreach ($aliases as $alias) {
                     if ($alias['package'] === $package->getName() && $alias['version'] === $package->getVersion()) {
-                        $version = $alias['alias'];
+                        $version = $alias['alias_normalized'];
                         break;
                     }
                 }
