@@ -31,20 +31,6 @@ class NullIOTest extends TestCase
         $this->assertFalse($io->hasAuthorization('foo'));
     }
 
-    public function testGetLastPassword()
-    {
-        $io = new NullIO();
-
-        $this->assertNull($io->getLastPassword());
-    }
-
-    public function testGetLastUsername()
-    {
-        $io = new NullIO();
-
-        $this->assertNull($io->getLastUsername());
-    }
-
     public function testAskAndHideAnswer()
     {
         $io = new NullIO();
