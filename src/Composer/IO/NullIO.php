@@ -92,22 +92,6 @@ class NullIO implements IOInterface
     /**
      * {@inheritDoc}
      */
-    public function getLastUsername()
-    {
-        return null;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getLastPassword()
-    {
-        return null;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public function getAuthorizations()
     {
         return array();
