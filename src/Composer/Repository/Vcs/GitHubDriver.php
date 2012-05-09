@@ -82,9 +82,11 @@ class GitHubDriver extends VcsDriver
             return $this->gitDriver->getSource($identifier);
         }
         $label = array_search($identifier, $this->getTags()) ?: $identifier;
-        if ($this->isPrivate) {
-            // Private GitHub repositories should be accessed using the
-            // SSH version of the URL.
+        if ($this->isPrivate && !$this->io->isInteractive()) {
+            // If this repository may be private (hard to say for sure,
+            // GitHub returns 404 for private repositories) and we
+            // cannot ask for authentication credentials (because we
+            // are not interactive) then we fallback to GitDriver.
             $url = $this->generateSshUrl();
         } else {
             $url = $this->getUrl();
