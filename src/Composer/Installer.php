@@ -405,7 +405,6 @@ class Installer
                     $package->setAlias($alias['alias_normalized']);
                     $package->setPrettyAlias($alias['alias']);
                     $package->getRepository()->addPackage($aliasPackage = new AliasPackage($package, $alias['alias_normalized'], $alias['alias']));
-                    $package->getRepository()->removePackage($package);
                     $aliasPackage->setRootPackageAlias(true);
                 }
             }
