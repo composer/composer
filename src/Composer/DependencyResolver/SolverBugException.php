@@ -17,8 +17,6 @@ namespace Composer\DependencyResolver;
  */
 class SolverBugException extends \RuntimeException
 {
-    protected $problems;
-
     public function __construct($message)
     {
         parent::__construct(
