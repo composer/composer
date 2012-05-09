@@ -14,6 +14,7 @@ namespace Composer\Repository;
 
 use Composer\Json\JsonFile;
 use Composer\Package\PackageInterface;
+use Composer\Package\AliasPackage;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
 
@@ -54,21 +55,32 @@ class FilesystemRepository extends ArrayRepository implements WritableRepository
             throw new \UnexpectedValueException('Could not parse package list from the '.$this->file->getPath().' repository');
         }
 
+        $aliases = array();
+
         $loader = new ArrayLoader();
         foreach ($packages as $packageData) {
             $package = $loader->load($packageData);
 
-            // package was installed as alias, so we only add the alias
-            if ($this instanceof InstalledRepositoryInterface && !empty($packageData['installed-as-alias'])) {
-                $alias = $packageData['installed-as-alias'];
-                $package->setAlias($alias);
-                $package->setPrettyAlias($alias);
-                $package->setInstalledAsAlias(true);
-                $this->addPackage($this->createAliasPackage($package, $alias, $alias));
-            } else {
-                // only add regular package - if it's not an installed repo the alias will be created on the fly
-                $this->addPackage($package);
+            // aliases need to be looked up in the end to set up references correctly
+            if ($this instanceof InstalledRepositoryInterface && !empty($packageData['alias'])) {
+                $aliases[] = array(
+                    'package' => $package,
+                    'alias' => $packageData['alias'],
+                    'alias_pretty' => $packageData['alias_pretty']
+                );
             }
+
+            $this->addPackage($package);
+        }
+
+        foreach ($aliases as $aliasData) {
+            $temporaryPackage = $aliasData['package'];
+
+            $package = $this->findPackage($package->getName(), $package->getVersion());
+
+            $package->setAlias($aliasData['alias']);
+            $package->setPrettyAlias($aliasData['alias_pretty']);
+            $this->addPackage($this->createAliasPackage($package, $aliasData['alias'], $aliasData['alias_pretty']));
         }
     }
 
@@ -86,11 +98,10 @@ class FilesystemRepository extends ArrayRepository implements WritableRepository
         $packages = array();
         $dumper   = new ArrayDumper();
         foreach ($this->getPackages() as $package) {
-            $data = $dumper->dump($package);
-            if ($this instanceof InstalledRepositoryInterface && $package->isInstalledAsAlias()) {
-                $data['installed-as-alias'] = $package->getAlias();
+            if (!$package instanceof AliasPackage) {
+                $data = $dumper->dump($package);
+                $packages[] = $data;
             }
-            $packages[] = $data;
         }
 
         $this->file->write($packages);

@@ -12,14 +12,14 @@
 
 namespace Composer\DependencyResolver\Operation;
 
-use Composer\Package\PackageInterface;
+use Composer\Package\AliasPackage;
 
 /**
- * Solver uninstall operation.
+ * Solver install operation.
  *
- * @author Konstantin Kudryashov <ever.zet@gmail.com>
+ * @author Nils Adermann <naderman@naderman.de>
  */
-class UninstallOperation extends SolverOperation
+class MarkAliasUninstalledOperation extends SolverOperation
 {
     protected $package;
 
@@ -29,7 +29,7 @@ class UninstallOperation extends SolverOperation
      * @param   PackageInterface    $package    package instance
      * @param   string              $reason     operation reason
      */
-    public function __construct(PackageInterface $package, $reason = null)
+    public function __construct(AliasPackage $package, $reason = null)
     {
         parent::__construct($reason);
 
@@ -53,7 +53,7 @@ class UninstallOperation extends SolverOperation
      */
     public function getJobType()
     {
-        return 'uninstall';
+        return 'markAliasUninstalled';
     }
 
     /**
@@ -61,6 +61,6 @@ class UninstallOperation extends SolverOperation
      */
     public function __toString()
     {
-        return 'Uninstalling '.$this->package->getPrettyName().' ('.$this->formatVersion($this->package).')';
+        return 'Marking '.$this->package->getPrettyName().' ('.$this->package->getPrettyVersion().') as uninstalled, alias of '.$this->package->getAliasOf()->getPrettyName().' ('.$this->package->getAliasOf()->getPrettyVersion().')';
     }
 }
