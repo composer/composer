@@ -12,8 +12,11 @@
 
 namespace Composer\Command;
 
+use Composer\Composer;
+use Composer\Console\Application;
+use Composer\IO\IOInterface;
+use Composer\IO\NullIO;
 use Symfony\Component\Console\Command\Command as BaseCommand;
-use Composer\Console\Application as ComposerApplication;
 
 /**
  * Base class for Composer commands
@@ -41,43 +44,45 @@ abstract class Command extends BaseCommand
     {
         if (null === $this->composer) {
             $application = $this->getApplication();
-            if ($application instanceof ComposerApplication) {
-                /* @var $application    ComposerApplication */
+            if ($application instanceof Application) {
+                /* @var $application    Application */
                 $this->composer = $application->getComposer();
             }
         }
+
         return $this->composer;
     }
 
     /**
      * @param   \Composer\Composer  $composer
      */
-    public function setComposer(\Composer\Composer $composer)
+    public function setComposer(Composer $composer)
     {
         $this->composer = $composer;
     }
 
     /**
-     * @return \Composer\IO\ConsoleIO
+     * @return \Composer\IO\IOInterface
      */
     public function getIO()
     {
         if (null === $this->io) {
             $application = $this->getApplication();
-            if ($application instanceof ComposerApplication) {
-                /* @var $application    ComposerApplication */
+            if ($application instanceof Application) {
+                /* @var $application    Application */
                 $this->io = $application->getIO();
             } else {
-                $this->io = new \Composer\IO\NullIO();
+                $this->io = new NullIO();
             }
         }
+
         return $this->io;
     }
 
     /**
      * @param   \Composer\IO\IOInterface    $io
      */
-    public function setIO(\Composer\IO\IOInterface $io)
+    public function setIO(IOInterface $io)
     {
         $this->io = $io;
     }
