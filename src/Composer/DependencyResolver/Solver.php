@@ -764,20 +764,20 @@ class Solver
 
     protected function addDecision(Literal $l, $level)
     {
-        assert($this->decisionMap[$l->getPackageId()] == 0);
-
-        if ($l->isWanted()) {
-            $this->decisionMap[$l->getPackageId()] = $level;
-        } else {
-            $this->decisionMap[$l->getPackageId()] = -$level;
-        }
+        $this->addDecisionId($l->getId(), $level);
     }
 
     protected function addDecisionId($literalId, $level)
     {
         $packageId = abs($literalId);
 
-        assert($this->decisionMap[$packageId] == 0);
+        $previousDecision = $this->decisionMap[$packageId];
+        if ($previousDecision != 0) {
+            $literal = $this->literalFromId($literalId);
+            throw new SolverBugException(
+                "Trying to decide $literal on level $level, even though ".$literal->getPackage()." was previously decided as ".(int) $previousDecision."."
+            );
+        }
 
         if ($literalId > 0) {
             $this->decisionMap[$packageId] = $level;
@@ -986,9 +986,6 @@ class Solver
      */
     private function setPropagateLearn($level, Literal $literal, $disableRules, Rule $rule)
     {
-        assert($rule != null);
-        assert($literal != null);
-
         $level++;
 
         $this->addDecision($literal, $level);
@@ -1010,14 +1007,20 @@ class Solver
             // conflict
             list($learnLiteral, $newLevel, $newRule, $why) = $this->analyze($level, $rule);
 
-            assert($newLevel > 0);
-            assert($newLevel < $level);
+            if ($newLevel <= 0 || $newLevel >= $level) {
+                throw new SolverBugException(
+                    "Trying to revert to invalid level ".(int) $newLevel." from level ".(int) $level."."
+                );
+            } else if (!$newRule) {
+                throw new SolverBugException(
+                    "No rule was learned from analyzing $rule at level $level."
+                );
+            }
 
             $level = $newLevel;
 
             $this->revert($level);
 
-            assert($newRule != null);
             $this->addRule(RuleSet::TYPE_LEARNED, $newRule);
 
             $this->learnedWhy[$newRule->getId()] = $why;
@@ -1050,6 +1053,7 @@ class Solver
 
     protected function analyze($level, $rule)
     {
+        $analyzedRule = $rule;
         $ruleLevel = 1;
         $num = 0;
         $l1num = 0;
@@ -1100,7 +1104,12 @@ class Solver
                 }
 
                 while (true) {
-                    assert($decisionId > 0);
+                    if ($decisionId <= 0) {
+                        throw new SolverBugException(
+                            "Reached invalid decision id $decisionId while looking through $rule for a literal present in the analyzed rule $analyzedRule."
+                        );
+                    }
+
                     $decisionId--;
 
                     $literal = $this->decisionQueue[$decisionId];
@@ -1135,12 +1144,13 @@ class Solver
 
         $why = count($this->learnedPool) - 1;
 
-        if (count($learnedLiterals) === 1 && $learnedLiterals[0] === null) {
-            $newRule = new Rule(array(), Rule::RULE_LEARNED, $why);
-        } else {
-            assert($learnedLiterals[0] !== null);
-            $newRule = new Rule($learnedLiterals, Rule::RULE_LEARNED, $why);
+        if (!$learnedLiterals[0]) {
+            throw new SolverBugException(
+                "Did not find a learnable literal in analyzed rule $analyzedRule."
+            );
         }
+
+        $newRule = new Rule($learnedLiterals, Rule::RULE_LEARNED, $why);
 
         return array($learnedLiterals[0], $ruleLevel, $newRule, $why);
     }
