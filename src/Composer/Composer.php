@@ -26,68 +26,128 @@ class Composer
 {
     const VERSION = '@package_version@';
 
+    /**
+     * @var Package\PackageInterface
+     */
     private $package;
+
+    /**
+     * @var Locker
+     */
     private $locker;
 
+    /**
+     * @var Repository\RepositoryManager
+     */
     private $repositoryManager;
+
+    /**
+     * @var Downloader\DownloadManager
+     */
     private $downloadManager;
+
+    /**
+     * @var Installer\InstallationManager
+     */
     private $installationManager;
 
+    /**
+     * @var Config
+     */
+    private $config;
+
+    /**
+     * @param   Package\PackageInterface    $package
+     * @return  void
+     */
     public function setPackage(PackageInterface $package)
     {
         $this->package = $package;
     }
 
+    /**
+     * @return  Package\PackageInterface
+     */
     public function getPackage()
     {
         return $this->package;
     }
 
+    /**
+     * @param   Config  $config
+     */
     public function setConfig(Config $config)
     {
         $this->config = $config;
     }
 
+    /**
+     * @return  Config
+     */
     public function getConfig()
     {
         return $this->config;
     }
 
+    /**
+     * @param   Package\Locker  $locker
+     */
     public function setLocker(Locker $locker)
     {
         $this->locker = $locker;
     }
 
+    /**
+     * @return  Package\Locker
+     */
     public function getLocker()
     {
         return $this->locker;
     }
 
+    /**
+     * @param   Repository\RepositoryManager    $manager
+     */
     public function setRepositoryManager(RepositoryManager $manager)
     {
         $this->repositoryManager = $manager;
     }
 
+    /**
+     * @return  Repository\RepositoryManager
+     */
     public function getRepositoryManager()
     {
         return $this->repositoryManager;
     }
 
+    /**
+     * @param   Downloader\DownloadManager  $manager
+     */
     public function setDownloadManager(DownloadManager $manager)
     {
         $this->downloadManager = $manager;
     }
 
+    /**
+     * @return  Doenloader\DownloadManager
+     */
     public function getDownloadManager()
     {
         return $this->downloadManager;
     }
 
+    /**
+     * @param   Installer\InstallationManager   $manager
+     */
     public function setInstallationManager(InstallationManager $manager)
     {
         $this->installationManager = $manager;
     }
 
+    /**
+     * @return  Installer\InstallationManager
+     */
     public function getInstallationManager()
     {
         return $this->installationManager;
