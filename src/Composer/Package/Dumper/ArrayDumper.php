@@ -41,9 +41,8 @@ class ArrayDumper
 
         $data = array();
         $data['name'] = $package->getPrettyName();
-
         $data['version'] = $package->getPrettyVersion();
-        $data['version_normalized'] = $package->getVersion();;
+        $data['version_normalized'] = $package->getVersion();
 
         if ($package->getTargetDir()) {
             $data['target-dir'] = $package->getTargetDir();
