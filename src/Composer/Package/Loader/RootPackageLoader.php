@@ -12,6 +12,7 @@
 
 namespace Composer\Package\Loader;
 
+use Composer\Factory;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\RepositoryManager;
 use Composer\Util\ProcessExecutor;
@@ -76,10 +77,14 @@ class RootPackageLoader extends ArrayLoader
             $package->setAliases($aliases);
         }
 
+        $defaultRepositories = array_keys(Factory::$defaultComposerRepositories);
+
         if (isset($config['repositories'])) {
             foreach ($config['repositories'] as $index => $repo) {
-                if (isset($repo['packagist']) && $repo['packagist'] === false) {
-                    continue;
+                foreach ($defaultRepositories as $name) {
+                    if (isset($repo[$name]) && $repo[$name] === false) {
+                        continue 2;
+                    }
                 }
                 if (!is_array($repo)) {
                     throw new \UnexpectedValueException('Repository '.$index.' should be an array, '.gettype($repo).' given');
