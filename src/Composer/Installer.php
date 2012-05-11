@@ -82,6 +82,11 @@ class Installer
      */
     protected $autoloadGenerator;
 
+    /**
+     * @var array
+     */
+    protected $dryRunOperations;
+
     protected $preferSource = false;
     protected $devMode = false;
     protected $dryRun = false;
@@ -127,6 +132,8 @@ class Installer
      */
     public function run()
     {
+        $this->dryRunOperations = array();
+
         if ($this->dryRun) {
             $this->verbose = true;
         }
@@ -332,6 +339,10 @@ class Installer
         }
 
         foreach ($operations as $operation) {
+            if ($this->dryRun && isset($this->dryRunOperations[(string) $operation])) {
+                continue;
+            }
+
             if ($this->verbose) {
                 $this->io->write((string) $operation);
             }
@@ -379,6 +390,8 @@ class Installer
                 }
 
                 $localRepo->write();
+            } else {
+                $this->dryRunOperations[(string) $operation] = true;
             }
         }
 
