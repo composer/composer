@@ -151,7 +151,7 @@ class VersionParser
      */
     public function parseConstraints($constraints)
     {
-        if (preg_match('{^([^,\s]*?)@('.implode('|', BasePackage::$stabilities).')$}i', $constraints, $match)) {
+        if (preg_match('{^([^,\s]*?)@('.implode('|', array_keys(BasePackage::$stabilities)).')$}i', $constraints, $match)) {
             $constraints = empty($match[1]) ? '*' : $match[1];
         }
 

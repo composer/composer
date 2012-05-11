@@ -32,12 +32,18 @@ abstract class BasePackage implements PackageInterface
         'require-dev' => array('description' => 'requires (for development)', 'method' => 'devRequires'),
     );
 
+    const STABILITY_STABLE  = 0;
+    const STABILITY_RC      = 5;
+    const STABILITY_BETA    = 10;
+    const STABILITY_ALPHA   = 15;
+    const STABILITY_DEV     = 20;
+
     public static $stabilities = array(
-        'stable',
-        'RC',
-        'beta',
-        'alpha',
-        'dev',
+        'stable' => self::STABILITY_STABLE,
+        'RC'     => self::STABILITY_RC,
+        'beta'   => self::STABILITY_BETA,
+        'alpha'  => self::STABILITY_ALPHA,
+        'dev'    => self::STABILITY_DEV,
     );
 
     protected $name;

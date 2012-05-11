@@ -33,10 +33,16 @@ class Pool
     protected $acceptableStabilities;
     protected $stabilityFlags;
 
+    // TODO BC change to stable end of june?
     public function __construct($minimumStability = 'dev', array $stabilityFlags = array())
     {
         $stabilities = BasePackage::$stabilities;
-        $this->acceptableStabilities = array_flip(array_splice($stabilities, 0, array_search($minimumStability, $stabilities) + 1));
+        $this->acceptableStabilities = array();
+        foreach (BasePackage::$stabilities as $stability => $value) {
+            if ($value <= BasePackage::$stabilities[$minimumStability]) {
+                $this->acceptableStabilities[$stability] = $value;
+            }
+        }
         $this->stabilityFlags = $stabilityFlags;
     }
 
@@ -69,7 +75,7 @@ class Pool
                         && isset($this->acceptableStabilities[$stability]))
                     // allow if package matches the package-specific stability flag
                     || (isset($this->stabilityFlags[$name])
-                        && array_search($stability, BasePackage::$stabilities) <= $this->stabilityFlags[$name]
+                        && BasePackage::$stabilities[$stability] <= $this->stabilityFlags[$name]
                     )
                 ) {
                     $package->setId($id++);

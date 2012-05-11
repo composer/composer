@@ -14,6 +14,7 @@ namespace Composer\Test\DependencyResolver;
 
 use Composer\DependencyResolver\Pool;
 use Composer\Repository\ArrayRepository;
+use Composer\Package\BasePackage;
 use Composer\Test\TestCase;
 
 class PoolTest extends TestCase
@@ -29,6 +30,22 @@ class PoolTest extends TestCase
 
         $this->assertEquals(array($package), $pool->whatProvides('foo'));
         $this->assertEquals(array($package), $pool->whatProvides('foo'));
+    }
+
+    public function testPoolIgnoresIrrelevantPackages()
+    {
+        $pool = new Pool('stable', array('bar' => BasePackage::STABILITY_BETA));
+        $repo = new ArrayRepository;
+        $repo->addPackage($package = $this->getPackage('bar', '1'));
+        $repo->addPackage($betaPackage = $this->getPackage('bar', '1-beta'));
+        $repo->addPackage($alphaPackage = $this->getPackage('bar', '1-alpha'));
+        $repo->addPackage($package2 = $this->getPackage('foo', '1'));
+        $repo->addPackage($rcPackage2 = $this->getPackage('foo', '1rc'));
+
+        $pool->addRepository($repo);
+
+        $this->assertEquals(array($package, $betaPackage), $pool->whatProvides('bar'));
+        $this->assertEquals(array($package2), $pool->whatProvides('foo'));
     }
 
     /**
