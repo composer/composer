@@ -101,8 +101,10 @@ EOT
         if (!empty($manifest['license'])) {
             $licenseValidator = new SpdxLicenseIdentifier();
             if (!$licenseValidator->validate($manifest['license'])) {
-                $warnings[] = sprintf('License %s is not a valid SPDX license identifier', json_encode($manifest['license']));
-                $warnings[] = 'see http://www.spdx.org/licenses/';
+                $warnings[] = sprintf(
+                    'License %s is not a valid SPDX license identifier, see http://www.spdx.org/licenses/',
+                    json_encode($manifest['license'])
+                );
             }
         } else {
             $warnings[] = 'No license specified, it is recommended to do so';
