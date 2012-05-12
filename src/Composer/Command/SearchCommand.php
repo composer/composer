@@ -84,10 +84,10 @@ EOT
                 $packages[$package->getName()] = array(
                     'name' => $name,
                     'description' => strtok($package->getDescription(), "\r\n"),
-                    'length' => strlen($package->getPrettyName())
+                    'length' => $length = strlen($package->getPrettyName())
                 );
 
-                $maxPackageLength = max($maxPackageLength, strlen($package->getPrettyName()));
+                $maxPackageLength = max($maxPackageLength, $length);
 
                 continue 2;
             }
