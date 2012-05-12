@@ -43,7 +43,7 @@ class GitHubDriver extends VcsDriver
      */
     public function initialize()
     {
-        preg_match('#^(?:https?|git)://github\.com/([^/]+)/(.+?)(?:\.git)?$#', $this->url, $match);
+        preg_match('#^(?:(?:https?|git)://github\.com/|git@github\.com:)([^/]+)/(.+?)(?:\.git)?$#', $this->url, $match);
         $this->owner = $match[1];
         $this->repository = $match[2];
         $this->originUrl = 'github.com';
@@ -177,7 +177,7 @@ class GitHubDriver extends VcsDriver
      */
     public static function supports(IOInterface $io, $url, $deep = false)
     {
-        if (!preg_match('#^(?:https?|git)://github\.com/([^/]+)/(.+?)(?:\.git)?$#', $url)) {
+        if (!preg_match('#^((?:https?|git)://github\.com/|git@github\.com:)([^/]+)/(.+?)(?:\.git)?$#', $url)) {
             return false;
         }
 

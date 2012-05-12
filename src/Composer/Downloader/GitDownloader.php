@@ -129,8 +129,15 @@ class GitDownloader extends VcsDownloader
                     if (0 === $this->process->execute($command, $handler)) {
                         return;
                     }
+                    if (null !== $path) {
+                        $this->filesystem->removeDirectory($path);
+                    }
                     $retrying = true;
                 } while (--$retries);
+            }
+
+            if (null !== $path) {
+                $this->filesystem->removeDirectory($path);
             }
             $this->throwException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput(), $url);
         }
