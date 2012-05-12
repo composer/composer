@@ -2,11 +2,10 @@
 namespace Composer\Test\Util;
 
 use Composer\Test\TestCase;
-use Composer\Util\SPDXLicenseIdentifier;
+use Composer\Util\SpdxLicenseIdentifier;
 
-class SPDXLicenseIdentifierTest extends TestCase
+class SpdxLicenseIdentifierTest extends TestCase
 {
-
     public static function provideValidLicenses()
     {
         $valid = array_merge(
@@ -32,7 +31,6 @@ class SPDXLicenseIdentifierTest extends TestCase
     public static function provideInvalidLicenses()
     {
         return array(
-            array(NULL),
             array(""),
             array("The system pwns you"),
             array("()"),
@@ -56,28 +54,28 @@ class SPDXLicenseIdentifierTest extends TestCase
      * @dataProvider provideValidLicenses
      * @param $license
      */
-    public function testConstructor($license)
+    public function testValidate($license)
     {
-        $identifier = new SPDXLicenseIdentifier($license);
-        $this->assertInstanceOf('Composer\Util\SPDXLicenseIdentifier', $identifier);
+        $validator = new SpdxLicenseIdentifier();
+        $this->assertTrue($validator->validate($license));
     }
 
     /**
      * @dataProvider provideInvalidLicenses
-     * @expectedException InvalidArgumentException
      * @param string|array $invalidLicense
      */
     public function testInvalidLicenses($invalidLicense)
     {
-        $identifier = new SPDXLicenseIdentifier($invalidLicense);
+        $validator = new SpdxLicenseIdentifier();
+        $this->assertFalse($validator->validate($invalidLicense));
     }
 
-    public function testGetLicense()
+    /**
+     * @expectedException InvalidArgumentException
+     */
+    public function testInvalidArgument()
     {
-        $license = new SPDXLicenseIdentifier('NONE');
-        $string = $license->getLicense();
-        $this->assertInternalType('string', $string);
-        $string = (string)$license;
-        $this->assertInternalType('string', $string);
+        $validator = new SpdxLicenseIdentifier();
+        $validator->validate(null);
     }
 }
