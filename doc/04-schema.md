@@ -147,7 +147,7 @@ An Example:
     }
 
 
-For a package, when there is a choice between licenses (“disjunctive license”),
+For a package, when there is a choice between licenses ("disjunctive license"),
 multiple can be specified as array.
 
 An Example for disjunctive licenses:
@@ -159,14 +159,14 @@ An Example for disjunctive licenses:
         ]
     }
 
-Alternatively they can be separated with “or” and enclosed in brackets;
+Alternatively they can be separated with "or" and enclosed in brackets;
 
     {
         "license": "(LGPL-2.0 or GPL-3.0+)"
     }
 
-Similarly when multiple licenses need to be applied (“conjunctive license”),
-they should be separated with “and” and enclosed in brackets.
+Similarly when multiple licenses need to be applied ("conjunctive license"),
+they should be separated with "and" and enclosed in brackets.
 
 ### authors
 
