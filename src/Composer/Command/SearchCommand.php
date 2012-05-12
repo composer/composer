@@ -62,6 +62,7 @@ EOT
         $tokens = $input->getArgument('tokens');
         $packages = array();
 
+        $maxPackageLength = 0;
         foreach ($repos->getPackages() as $package) {
             if ($package instanceof AliasPackage || isset($packages[$package->getName()])) {
                 continue;
@@ -82,14 +83,19 @@ EOT
 
                 $packages[$package->getName()] = array(
                     'name' => $name,
-                    'description' => strtok($package->getDescription(), "\r\n")
+                    'description' => strtok($package->getDescription(), "\r\n"),
+                    'length' => strlen($package->getPrettyName())
                 );
+
+                $maxPackageLength = max($maxPackageLength, strlen($package->getPrettyName()));
+
                 continue 2;
             }
         }
 
         foreach ($packages as $details) {
-            $output->writeln($details['name'] .' <comment>:</comment> '. $details['description']);
+            $extraSpaces = $maxPackageLength - $details['length'];
+            $output->writeln($details['name'] . str_repeat(' ', $extraSpaces) .' <comment>:</comment> '. $details['description']);
         }
     }
 
