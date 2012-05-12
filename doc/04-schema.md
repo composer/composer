@@ -121,20 +121,52 @@ Optional.
 
 The license of the package. This can be either a string or an array of strings.
 
-The recommended notation for the most common licenses is:
+The recommended notation for the most common licenses is (alphabetical):
 
+    Apache-2.0
+    BSD-2-Clause
+    BSD-3-Clause
+    BSD-4-Clause
+    GPL-2.0
+    GPL-2.0+
+    GPL-3.0
+    GPL-3.0+
+    LGPL-2.0
+    LGPL-2.0+
+    LGPL-3.0
+    LGPL-3.0+
     MIT
-    BSD-2
-    BSD-3
-    BSD-4
-    GPLv2
-    GPLv3
-    LGPLv2
-    LGPLv3
-    Apache2
-    WTFPL
 
-Optional, but it is highly recommended to supply this.
+Optional, but it is highly recommended to supply this. More identifiers are
+listed at the [SPDX Open Source License Registry](http://www.spdx.org/licenses/).
+
+An Example:
+
+    {
+        "license": "MIT"
+    }
+
+
+For a package, when there is a choice between licenses (“disjunctive license”),
+multiple can be specified as array.
+
+An Example for disjunctive licenses:
+
+    {
+        "license": [
+           "LGPL-2.0",
+           "GPL-3.0+"
+        ]
+    }
+
+Alternatively they can be separated with “or” and enclosed in brackets;
+
+    {
+        "license": "(LGPL-2.0 or GPL-3.0+)"
+    }
+
+Similarly when multiple licenses need to be applied (“conjunctive license”),
+they should be separated with “and” and enclosed in brackets.
 
 ### authors
 
