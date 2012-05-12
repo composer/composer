@@ -14,6 +14,7 @@
   * Added autoloading support for root packages that use target-dir
   * Added awareness of the root package presence and support for it's provide/replace/conflict keys
   * Added IOInterface::isDecorated to test for colored output support
+  * Added validation of licenses based on the [SPDX registry](http://www.spdx.org/licenses/)
   * Improved repository protocol to have large cacheable parts
   * Fixed various bugs relating to package aliasing, proxy configuration, binaries
   * Various bug fixes and docs improvements

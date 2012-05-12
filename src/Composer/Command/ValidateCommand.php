@@ -67,7 +67,13 @@ EOT
             return 1;
         }
 
+        $errors = array();
+        $publishErrors = array();
+        $warnings = array();
+
+        // validate json schema
         $laxValid = false;
+        $valid = false;
         try {
             $json = new JsonFile($file, new RemoteFilesystem($this->getIO()));
             $manifest = $json->read();
@@ -75,18 +81,15 @@ EOT
             $json->validateSchema(JsonFile::LAX_SCHEMA);
             $laxValid = true;
             $json->validateSchema();
+            $valid = true;
         } catch (JsonValidationException $e) {
-            if ($laxValid) {
-                $output->writeln('<info>' . $file . ' is valid for simple usage with composer but has</info>');
-                $output->writeln('<info>strict errors that make it unable to be published as a package:</info>');
-            } else {
-                $output->writeln('<error>' . $file . ' is invalid, the following errors were found:</error>');
-            }
             foreach ($e->getErrors() as $message) {
-                $output->writeln('<error>' . $message . '</error>');
+                if ($laxValid) {
+                    $publishErrors[] = '<error>Publish Error: ' . $message . '</error>';
+                } else {
+                    $errors[] = '<error>' . $message . '</error>';
+                }
             }
-
-            return 1;
         } catch (\Exception $e) {
             $output->writeln('<error>' . $file . ' contains a JSON Syntax Error:</error>');
             $output->writeln('<error>' . $e->getMessage() . '</error>');
@@ -94,21 +97,43 @@ EOT
             return 1;
         }
 
-        if (isset($manifest['license'])) {
+        // validate actual data
+        if (!empty($manifest['license'])) {
             $licenseValidator = new SpdxLicenseIdentifier();
             if (!$licenseValidator->validate($manifest['license'])) {
-                $output->writeln(sprintf(
-                    '<warning>License "%s" is not a valid SPDX license identifier</warning>'."\n".
-                    '<warning>see http://www.spdx.org/licenses/ and http://getcomposer.org/doc/04-schema.md#license</warning>',
-                    print_r($manifest['license'], true)
-                ));
+                $warnings[] = sprintf('License %s is not a valid SPDX license identifier', json_encode($manifest['license']));
+                $warnings[] = 'see http://www.spdx.org/licenses/';
             }
         } else {
-            $output->writeln('<warning>No license specified.</warning>');
+            $warnings[] = 'No license specified, it is recommended to do so';
         }
 
-        $output->writeln('<info>' . $file . ' is valid</info>');
+        // output errors/warnings
+        if (!$errors && !$publishErrors && !$warnings) {
+            $output->writeln('<info>' . $file . ' is valid</info>');
+        } elseif (!$errors && !$publishErrors) {
+            $output->writeln('<info>' . $file . ' is valid, but with a few warnings</info>');
+            $output->writeln('<warning>See http://getcomposer.org/doc/04-schema.md for details on the schema</warning>');
+        } elseif (!$errors) {
+            $output->writeln('<info>' . $file . ' is valid for simple usage with composer but has</info>');
+            $output->writeln('<info>strict errors that make it unable to be published as a package:</info>');
+            $output->writeln('<warning>See http://getcomposer.org/doc/04-schema.md for details on the schema</warning>');
+        } else {
+            $output->writeln('<error>' . $file . ' is invalid, the following errors/warnings were found:</error>');
+        }
 
-        return 0;
+        $messages = array(
+            'error' => $errors,
+            'error' => $publishErrors,
+            'warning' => $warnings,
+        );
+
+        foreach ($messages as $style => $msgs) {
+            foreach ($msgs as $msg) {
+                $output->writeln('<' . $style . '>' . $msg . '</' . $style . '>');
+            }
+        }
+
+        return $errors || $publishErrors ? 1 : 0;
     }
 }
