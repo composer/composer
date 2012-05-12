@@ -37,6 +37,16 @@ class CompositeRepository implements RepositoryInterface
     }
 
     /**
+     * Returns all the wrapped repositories
+     *
+     * @return array
+     */
+    public function getRepositories()
+    {
+        return $this->repositories;
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function hasPackage(PackageInterface $package)

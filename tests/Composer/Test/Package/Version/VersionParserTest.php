@@ -106,6 +106,12 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    public function testParseConstraintsIgnoresStabilityFlag()
+    {
+        $parser = new VersionParser;
+        $this->assertSame((string) new VersionConstraint('=', '1.0.0.0'), (string) $parser->parseConstraints('1.0@dev'));
+    }
+
     /**
      * @dataProvider simpleConstraints
      */
@@ -195,21 +201,25 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @dataProvider dataIsDev
+     * @dataProvider stabilityProvider
      */
-    public function testIsDev($expected, $version)
+    public function testParseStability($expected, $version)
     {
-        $this->assertSame($expected, VersionParser::isDev($version));
+        $this->assertSame($expected, VersionParser::parseStability($version));
     }
 
-    public function dataIsDev()
+    public function stabilityProvider()
     {
         return array(
-            array(false, '1.0'),
-            array(false, 'v2.0.*'),
-            array(false, '3.0dev'),
-            array(true, 'dev-master'),
-            array(true, '3.1.2-dev'),
+            array('stable', '1.0'),
+            array('dev',    'v2.0.x-dev'),
+            array('RC',     '3.0-RC2'),
+            array('dev',    'dev-master'),
+            array('dev',    '3.1.2-dev'),
+            array('stable', '3.1.2-pl2'),
+            array('stable', '3.1.2-patch'),
+            array('alpha',  '3.1.2-alpha5'),
+            array('beta',   '3.1.2-beta'),
         );
     }
 }

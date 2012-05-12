@@ -48,6 +48,10 @@ class MemoryPackage extends BasePackage
     protected $prettyAlias;
     protected $dev;
 
+    // TODO BC change dev to stable end of june?
+    protected $minimumStability = 'dev';
+    protected $stabilityFlags = array();
+
     protected $requires = array();
     protected $conflicts = array();
     protected $provides = array();
@@ -71,7 +75,8 @@ class MemoryPackage extends BasePackage
         $this->version = $version;
         $this->prettyVersion = $prettyVersion;
 
-        $this->dev = VersionParser::isDev($version);
+        $this->stability = VersionParser::parseStability($version);
+        $this->dev = $this->stability === 'dev';
     }
 
     /**
@@ -96,6 +101,14 @@ class MemoryPackage extends BasePackage
     public function getType()
     {
         return $this->type ?: 'library';
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getStability()
+    {
+        return $this->stability;
     }
 
     /**
@@ -586,6 +599,42 @@ class MemoryPackage extends BasePackage
     public function getHomepage()
     {
         return $this->homepage;
+    }
+
+    /**
+     * Set the minimumStability
+     *
+     * @param string $minimumStability
+     */
+    public function setMinimumStability($minimumStability)
+    {
+        $this->minimumStability = $minimumStability;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getMinimumStability()
+    {
+        return $this->minimumStability;
+    }
+
+    /**
+     * Set the stabilityFlags
+     *
+     * @param array $stabilityFlags
+     */
+    public function setStabilityFlags(array $stabilityFlags)
+    {
+        $this->stabilityFlags = $stabilityFlags;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getStabilityFlags()
+    {
+        return $this->stabilityFlags;
     }
 
     /**
