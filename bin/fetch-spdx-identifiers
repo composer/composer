@@ -16,7 +16,7 @@ class SPDXLicenseIdentifiersOnline
     private $identifiers;
 
     /**
-     * @return string[]
+     * @return array
      */
     public function getStrings()
     {
@@ -59,7 +59,7 @@ class JsonPrinter
 {
     /**
      *
-     * @param string[] $array
+     * @param array $array
      */
     public function printStringArray(array $array)
     {

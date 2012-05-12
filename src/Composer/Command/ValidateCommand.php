@@ -18,7 +18,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonValidationException;
 use Composer\Util\RemoteFilesystem;
-use Composer\Util\SPDXLicenseIdentifier;
+use Composer\Util\SpdxLicenseIdentifier;
 
 /**
  * ValidateCommand
@@ -37,8 +37,8 @@ class ValidateCommand extends Command
             ->setName('validate')
             ->setDescription('Validates a composer.json')
             ->setDefinition(array(
-            new InputArgument('file', InputArgument::OPTIONAL, 'path to composer.json file', './composer.json')
-        ))
+                new InputArgument('file', InputArgument::OPTIONAL, 'path to composer.json file', './composer.json')
+            ))
             ->setHelp(<<<EOT
 The validate command validates a given composer.json
 
@@ -47,8 +47,8 @@ EOT
     }
 
     /**
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     * @param InputInterface $input
+     * @param OutputInterface $output
      *
      * @return int
      */
@@ -95,11 +95,11 @@ EOT
         }
 
         if (isset($manifest['license'])) {
-            try {
-                $identifier = new SPDXLicenseIdentifier($manifest['license']);
-            } catch (\InvalidArgumentException $e) {
+            $licenseValidator = new SpdxLicenseIdentifier();
+            if (!$licenseValidator->validate($manifest['license'])) {
                 $output->writeln(sprintf(
-                    '<warning>License "%s" is not a SPDX license identifier.</warning>',
+                    '<warning>License "%s" is not a valid SPDX license identifier</warning>'."\n".
+                    '<warning>see http://www.spdx.org/licenses/ and http://getcomposer.org/doc/04-schema.md#license</warning>',
                     print_r($manifest['license'], true)
                 ));
             }

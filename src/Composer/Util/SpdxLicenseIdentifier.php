@@ -12,48 +12,24 @@
 
 namespace Composer\Util;
 
+use Composer\Json\JsonFile;
+
 /**
- * SPDX License Identifier
- *
  * Supports composer array and SPDX tag notation for disjunctive/conjunctive
  * licenses.
  *
  * @author Tom Klingenberg <tklingenberg@lastflood.net>
  */
-class SPDXLicenseIdentifier
+class SpdxLicenseIdentifier
 {
     /**
      * @var array
      */
     private $identifiers;
-    /**
-     * @var array|string
-     */
-    private $license;
 
-    /**
-     * @param string|string[] $license
-     */
-    public function __construct($license)
+    public function __construct()
     {
         $this->initIdentifiers();
-        $this->setLicense($license);
-    }
-
-    /**
-     * @return string
-     */
-    public function __toString()
-    {
-        return $this->getLicense();
-    }
-
-    /**
-     * @return string
-     */
-    public function getLicense()
-    {
-        return $this->license;
     }
 
     /**
@@ -61,10 +37,10 @@ class SPDXLicenseIdentifier
      *
      * @throws \InvalidArgumentException
      */
-    public function setLicense($license)
+    public function validate($license)
     {
         if (is_array($license)) {
-            $license = $this->getLicenseFromArray($license);
+            $license = count($license) > 1 ? '('.implode(' or ', $license).')' : reset($license);
         }
         if (!is_string($license)) {
             throw new \InvalidArgumentException(sprintf(
@@ -72,52 +48,19 @@ class SPDXLicenseIdentifier
             ));
         }
         if (!$this->isValidLicenseString($license)) {
-            throw new \InvalidArgumentException(sprintf(
-                'Invalid license: "%s"', $license
-            ));
+            return false;
         }
-        $this->license = $license;
+
+        return true;
     }
 
     /**
-     * @param array $licenses
-     *
-     * @return string
-     */
-    private function getLicenseFromArray(array $licenses)
-    {
-        $buffer = '';
-        foreach ($licenses as $license) {
-            $buffer .= ($buffer ? ' or ' : '(') . (string)$license;
-        }
-        $buffer .= $buffer ? ')' : '';
-
-        return $buffer;
-    }
-
-    /**
-     * init SPDX identifiers
+     * Loads SPDX identifiers
      */
     private function initIdentifiers()
     {
-        $jsonFile = __DIR__ . '/../../../res/spdx-identifier.json';
-        $this->identifiers = $this->arrayFromJSONFile($jsonFile);
-    }
-
-    /**
-     * @param string $file
-     *
-     * @return array
-     * @throws \RuntimeException
-     */
-    private function arrayFromJSONFile($file)
-    {
-        $data = json_decode(file_get_contents($file));
-        if (!$data || !is_array($data)) {
-            throw new \RuntimeException(sprintf('Not a json array in file "%s"', $file));
-        }
-
-        return $data;
+        $jsonFile = new JsonFile(__DIR__ . '/../../../res/spdx-identifier.json');
+        $this->identifiers = $jsonFile->read();
     }
 
     /**
@@ -148,14 +91,16 @@ class SPDXLicenseIdentifier
             'ws' => '\s+',
             '_' => '.',
         );
-        $next = function () use ($license, $tokens)
-        {
+
+        $next = function () use ($license, $tokens) {
             static $offset = 0;
+
             if ($offset >= strlen($license)) {
                 return null;
             }
+
             foreach ($tokens as $name => $token) {
-                if (false === $r = preg_match("~$token~", $license, $matches, PREG_OFFSET_CAPTURE, $offset)) {
+                if (false === $r = preg_match('{' . $token . '}', $license, $matches, PREG_OFFSET_CAPTURE, $offset)) {
                     throw new \RuntimeException('Pattern for token %s failed (regex error).', $name);
                 }
                 if ($r === 0) {
@@ -168,12 +113,15 @@ class SPDXLicenseIdentifier
 
                 return array($name, $matches[0][0]);
             }
+
             throw new \RuntimeException('At least the last pattern needs to match, but it did not (dot-match-all is missing?).');
         };
+
         $open = 0;
         $require = 1;
         $lastop = null;
-        while (list ($token, $string) = $next()) {
+
+        while (list($token, $string) = $next()) {
             switch ($token) {
                 case 'po':
                     if ($open || !$require) {
