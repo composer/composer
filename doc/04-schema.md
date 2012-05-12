@@ -200,22 +200,10 @@ An example:
 
 Optional, but highly recommended.
 
-### Package links <span>(require, require-dev, conflict, replace, provide)</span>
+### Package links
 
-Each of these takes an object which maps package names to version constraints.
-
-* **require:** Packages required by this package.
-* **require-dev:** Packages required for developing this package, or running
-  tests, etc. They are installed if install or update is ran with `--dev`.
-* **conflict:** Mark this version of this package as conflicting with other
-  packages.
-* **replace:** Packages that can be replaced by this package. This is useful
-  for large repositories with subtree splits. It allows the main package to
-  replace all of it's child packages.
-* **provide:** List of other packages that are provided by this package. This
-  is mostly useful for common interfaces. A package could depend on some virtual
-  `logger` package, any library that provides this logger, would simply list it
-  in `provide`.
+All of the following take an object which maps package names to
+[version constraints](01-basic-usage.md#package-versions).
 
 Example:
 
@@ -225,7 +213,59 @@ Example:
         }
     }
 
-Optional.
+All links are optional fields.
+
+`require` and `require-dev` additionally support stability flags (root-only).
+These allow you to further restrict or expand the stability of a package beyond
+the scope of the [minimum-stability](#minimum-stability) setting. You can apply
+them to a constraint, or just apply them to an empty constraint if you want to
+allow unstable packages of a dependency's dependency for example.
+
+Example:
+
+    {
+        "require": {
+            "monolog/monolog": "1.0.*@beta"
+            "acme/foo": "@dev"
+        }
+    }
+
+#### require
+
+Lists packages required by this package. The package will not be installed
+unless those requirements can be met.
+
+#### require-dev
+
+Lists packages required for developing this package, or running
+tests, etc. They are installed if install or update is ran with `--dev`.
+
+#### conflict
+
+Lists packages that conflict with this version of this package. They
+will not be allowed to be installed together with your package.
+
+#### replace
+
+Lists packages that are replaced by this package.
+
+This is useful for packages that contain sub-packages, for example the main
+symfony/symfony package contains all the Symfony Components which are also
+available as individual packages. If you require the main package it will
+automatically fulfill any requirement of one of the individual components,
+since it replaces them.
+
+Caution is advised when using replace however, for the sub-package example
+above you should typically only replace using `self.version` as a version
+constraint, to make sure the main package only replaces the sub-packages of
+that exact version, and not any other version, which would be incorrect.
+
+#### provide
+
+List of other packages that are provided by this package. This is mostly
+useful for common interfaces. A package could depend on some virtual
+`logger` package, any library that implements this logger interface would
+simply list it in `provide`.
 
 ### suggest
 
@@ -339,6 +379,19 @@ To do that, `autoload` and `target-dir` are defined as follows:
     }
 
 Optional.
+
+### minimum-stability <span>(root-only)</span>
+
+This defines the default behavior for filtering packages by stability. This
+defaults to `dev` but in the future will be switched to `stable`. As such if
+you rely on a default of `dev` you should specify it in your file to avoid
+surprises.
+
+All versions of each package is checked for stability, and those that are less
+stable than the `minimum-stability` setting will be ignored when resolving
+your project dependencies. Specific changes to the stability requirements of
+a given package can be done in `require` or `require-dev` (see
+[package links](#package-links)).
 
 ### repositories <span>(root-only)</span>
 

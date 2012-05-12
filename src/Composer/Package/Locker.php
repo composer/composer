@@ -82,10 +82,10 @@ class Locker
      */
     public function getLockedPackages($dev = false)
     {
-        $lockList = $this->getLockData();
+        $lockData = $this->getLockData();
         $packages = array();
 
-        $lockedPackages = $dev ? $lockList['packages-dev'] : $lockList['packages'];
+        $lockedPackages = $dev ? $lockData['packages-dev'] : $lockData['packages'];
         $repo = $dev ? $this->repositoryManager->getLocalDevRepository() : $this->repositoryManager->getLocalRepository();
 
         foreach ($lockedPackages as $info) {
@@ -128,20 +128,36 @@ class Locker
         return $packages;
     }
 
+    public function getMinimumStability()
+    {
+        $lockData = $this->getLockData();
+
+        // TODO BC change dev to stable end of june?
+        return isset($lockData['minimum-stability']) ? $lockData['minimum-stability'] : 'dev';
+    }
+
+    public function getStabilityFlags()
+    {
+        $lockData = $this->getLockData();
+
+        return isset($lockData['stability-flags']) ? $lockData['stability-flags'] : array();
+    }
+
     public function getAliases()
     {
-        $lockList = $this->getLockData();
-        return isset($lockList['aliases']) ? $lockList['aliases'] : array();
+        $lockData = $this->getLockData();
+
+        return isset($lockData['aliases']) ? $lockData['aliases'] : array();
     }
 
     public function getLockData()
     {
-        if (!$this->lockFile->exists()) {
-            throw new \LogicException('No lockfile found. Unable to read locked packages');
-        }
-
         if (null !== $this->lockDataCache) {
             return $this->lockDataCache;
+        }
+
+        if (!$this->lockFile->exists()) {
+            throw new \LogicException('No lockfile found. Unable to read locked packages');
         }
 
         return $this->lockDataCache = $this->lockFile->read();
@@ -156,13 +172,15 @@ class Locker
      *
      * @return Boolean
      */
-    public function setLockData(array $packages, $devPackages, array $aliases)
+    public function setLockData(array $packages, $devPackages, array $aliases, $minimumStability, array $stabilityFlags)
     {
         $lock = array(
             'hash' => $this->hash,
             'packages' => null,
             'packages-dev' => null,
             'aliases' => $aliases,
+            'minimum-stability' => $minimumStability,
+            'stability-flags' => $stabilityFlags,
         );
 
         $lock['packages'] = $this->lockPackages($packages);

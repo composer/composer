@@ -12,19 +12,39 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\Package\BasePackage;
 use Composer\Package\LinkConstraint\LinkConstraintInterface;
 use Composer\Repository\RepositoryInterface;
+use Composer\Repository\CompositeRepository;
+use Composer\Repository\InstalledRepositoryInterface;
+use Composer\Repository\PlatformRepository;
 
 /**
  * A package pool contains repositories that provide packages.
  *
  * @author Nils Adermann <naderman@naderman.de>
+ * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 class Pool
 {
     protected $repositories = array();
     protected $packages = array();
     protected $packageByName = array();
+    protected $acceptableStabilities;
+    protected $stabilityFlags;
+
+    // TODO BC change to stable end of june?
+    public function __construct($minimumStability = 'dev', array $stabilityFlags = array())
+    {
+        $stabilities = BasePackage::$stabilities;
+        $this->acceptableStabilities = array();
+        foreach (BasePackage::$stabilities as $stability => $value) {
+            if ($value <= BasePackage::$stabilities[$minimumStability]) {
+                $this->acceptableStabilities[$stability] = $value;
+            }
+        }
+        $this->stabilityFlags = $stabilityFlags;
+    }
 
     /**
      * Adds a repository and its packages to this package pool
@@ -33,14 +53,38 @@ class Pool
      */
     public function addRepository(RepositoryInterface $repo)
     {
-        $this->repositories[] = $repo;
+        if ($repo instanceof CompositeRepository) {
+            $repos = $repo->getRepositories();
+        } else {
+            $repos = array($repo);
+        }
 
-        foreach ($repo->getPackages() as $package) {
-            $package->setId(count($this->packages) + 1);
-            $this->packages[] = $package;
+        $id = count($this->packages) + 1;
+        foreach ($repos as $repo) {
+            $this->repositories[] = $repo;
 
-            foreach ($package->getNames() as $name) {
-                $this->packageByName[$name][] = $package;
+            $exempt = $repo instanceof PlatformRepository || $repo instanceof InstalledRepositoryInterface;
+            foreach ($repo->getPackages() as $package) {
+                $name = $package->getName();
+                $stability = $package->getStability();
+                if (
+                    // always allow exempt repos
+                    $exempt
+                    // allow if package matches the global stability requirement and has no exception
+                    || (!isset($this->stabilityFlags[$name])
+                        && isset($this->acceptableStabilities[$stability]))
+                    // allow if package matches the package-specific stability flag
+                    || (isset($this->stabilityFlags[$name])
+                        && BasePackage::$stabilities[$stability] <= $this->stabilityFlags[$name]
+                    )
+                ) {
+                    $package->setId($id++);
+                    $this->packages[] = $package;
+
+                    foreach ($package->getNames() as $name) {
+                        $this->packageByName[$name][] = $package;
+                    }
+                }
             }
         }
     }
