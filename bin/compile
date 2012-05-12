@@ -5,7 +5,8 @@ require __DIR__.'/../src/bootstrap.php';
 
 use Composer\Compiler;
 
-error_reporting(~0); ini_set('display_errors', 1);
+error_reporting(-1);
+ini_set('display_errors', 1);
 
 $compiler = new Compiler();
 $compiler->compile();
