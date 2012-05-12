@@ -269,7 +269,9 @@ Example:
 
 ### include-path
 
-> **DEPRECATED**: This is only present to support legacy projects, and all new code should preferably use autoloading.
+> **DEPRECATED**: This is only present to support legacy projects, and all new code
+> should preferably use autoloading. As such it is a deprecated practice, but the
+> feature itself will not likely disappear from Composer.
 
 A list of paths which should get appended to PHP's `include_path`.
 
