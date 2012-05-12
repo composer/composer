@@ -69,7 +69,7 @@ EOT
             }
 
             foreach ($tokens as $token) {
-                if (!$this->matchPackage($package, $token)) {
+                if (!$score = $this->matchPackage($package, $token)) {
                     continue;
                 }
 
@@ -81,10 +81,18 @@ EOT
                     $name = $package->getPrettyName();
                 }
 
+                $description = strtok($package->getDescription(), "\r\n");
+                if (false !== ($pos = stripos($description, $token))) {
+                    $description = substr($description, 0, $pos)
+                        . '<highlight>' . substr($description, $pos, strlen($token)) . '</highlight>'
+                        . substr($description, $pos + strlen($token));
+                }
+
                 $packages[$package->getName()] = array(
                     'name' => $name,
-                    'description' => strtok($package->getDescription(), "\r\n"),
-                    'length' => $length = strlen($package->getPrettyName())
+                    'description' => $description,
+                    'length' => $length = strlen($package->getPrettyName()),
+                    'score' => $score,
                 );
 
                 $maxPackageLength = max($maxPackageLength, $length);
@@ -92,6 +100,14 @@ EOT
                 continue 2;
             }
         }
+
+        usort($packages, function ($a, $b) {
+            if ($a['score'] === $b['score']) {
+                return 0;
+            }
+
+            return $a['score'] > $b['score'] ? -1 : 1;
+        });
 
         foreach ($packages as $details) {
             $extraSpaces = $maxPackageLength - $details['length'];
@@ -108,9 +124,20 @@ EOT
      */
     private function matchPackage(PackageInterface $package, $token)
     {
-        return (false !== stripos($package->getName(), $token))
-            || (false !== stripos(join(',', $package->getKeywords() ?: array()), $token))
-            || (false !== stripos($package->getDescription(), $token))
-        ;
+        $score = 0;
+
+        if (false !== stripos($package->getName(), $token)) {
+            $score += 5;
+        }
+
+        if (false !== stripos(join(',', $package->getKeywords() ?: array()), $token)) {
+            $score += 3;
+        }
+
+        if (false !== stripos($package->getDescription(), $token)) {
+            $score += 1;
+        }
+
+        return $score;
     }
 }
