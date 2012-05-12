@@ -2,6 +2,7 @@
 
   * Schema: Added 'require-dev' for development-time requirements (tests, etc), install with --dev
   * Schema: Added author.role to list the author's role in the project
+  * Schema: Added 'minimum-stability' + '@<stability>' flags in require for restricting packages to a certain stability
   * Schema: Removed 'recommend'
   * Schema: 'suggest' is now informational and can use any description for a package, not only a constraint
   * Break: vendor/.composer/autoload.php has been moved to vendor/autoload.php, other files are now in vendor/composer/
