@@ -63,9 +63,18 @@ class Compiler
         foreach ($finder as $file) {
             $this->addFile($phar, $file);
         }
-        $this->addFile($phar, new \SplFileInfo(__DIR__.'/Autoload/ClassLoader.php'), false);
-        $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../res/composer-schema.json'), false);
-        $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../src/Composer/IO/hiddeninput.exe'), false);
+        $this->addFile($phar, new \SplFileInfo(__DIR__ . '/Autoload/ClassLoader.php'), false);
+
+        $finder = new Finder();
+        $finder->files()
+            ->name('*.json')
+            ->in(__DIR__ . '/../../res')
+        ;
+
+        foreach ($finder as $file) {
+            $this->addFile($phar, $file, false);
+        }
+        $this->addFile($phar, new \SplFileInfo(__DIR__ . '/../../src/Composer/IO/hiddeninput.exe'), false);
 
         $finder = new Finder();
         $finder->files()
