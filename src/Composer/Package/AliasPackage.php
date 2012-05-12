@@ -28,6 +28,7 @@ class AliasPackage extends BasePackage
     protected $dev;
     protected $aliasOf;
     protected $rootPackageAlias = false;
+    protected $stability;
 
     protected $requires;
     protected $conflicts;
@@ -50,7 +51,8 @@ class AliasPackage extends BasePackage
         $this->version = $version;
         $this->prettyVersion = $prettyVersion;
         $this->aliasOf = $aliasOf;
-        $this->dev = VersionParser::isDev($version);
+        $this->stability = VersionParser::parseStability($version);
+        $this->dev = $this->stability === 'dev';
 
         // replace self.version dependencies
         foreach (array('requires', 'devRequires') as $type) {
@@ -89,6 +91,14 @@ class AliasPackage extends BasePackage
     public function getVersion()
     {
         return $this->version;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getStability()
+    {
+        return $this->stability;
     }
 
     /**

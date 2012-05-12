@@ -29,6 +29,7 @@ use Composer\Package\Locker;
 use Composer\Package\PackageInterface;
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\CompositeRepository;
+use Composer\Repository\InstalledArrayRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositoryManager;
@@ -139,7 +140,7 @@ class Installer
         $repos = array_merge(
             $this->repositoryManager->getLocalRepositories(),
             array(
-                new ArrayRepository(array($this->package)),
+                new InstalledArrayRepository(array($this->package)),
                 new PlatformRepository(),
             )
         );
@@ -179,7 +180,9 @@ class Installer
                 $updatedLock = $this->locker->setLockData(
                     $this->repositoryManager->getLocalRepository()->getPackages(),
                     $this->devMode ? $this->repositoryManager->getLocalDevRepository()->getPackages() : null,
-                    $aliases
+                    $aliases,
+                    $this->package->getMinimumStability(),
+                    $this->package->getStabilityFlags()
                 );
                 if ($updatedLock) {
                     $this->io->write('<info>Writing lock file</info>');
@@ -201,13 +204,18 @@ class Installer
 
     protected function doInstall($localRepo, $installedRepo, $aliases, $devMode = false)
     {
+        $minimumStability = $this->package->getMinimumStability();
+        $stabilityFlags = $this->package->getStabilityFlags();
+
         // initialize locker to create aliased packages
         if (!$this->update && $this->locker->isLocked($devMode)) {
             $lockedPackages = $this->locker->getLockedPackages($devMode);
+            $minimumStability = $this->locker->getMinimumStability();
+            $stabilityFlags = $this->locker->getStabilityFlags();
         }
 
         // creating repository pool
-        $pool = new Pool;
+        $pool = new Pool($minimumStability, $stabilityFlags);
         $pool->addRepository($installedRepo);
         foreach ($this->repositoryManager->getRepositories() as $repository) {
             $pool->addRepository($repository);
