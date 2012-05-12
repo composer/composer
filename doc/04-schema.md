@@ -247,16 +247,19 @@ will not be allowed to be installed together with your package.
 
 #### replace
 
-Lists packages that are replaced by this package.
+Lists packages that are replaced by this package. This allows you to fork a
+package, publish it under a different name with its own version numbers, while
+packages requiring the original package continue to work with your fork because
+it replaces the original package.
 
-This is useful for packages that contain sub-packages, for example the main
+This is also useful for packages that contain sub-packages, for example the main
 symfony/symfony package contains all the Symfony Components which are also
 available as individual packages. If you require the main package it will
 automatically fulfill any requirement of one of the individual components,
 since it replaces them.
 
-Caution is advised when using replace however, for the sub-package example
-above you should typically only replace using `self.version` as a version
+Caution is advised when using replace for the sub-package purpose explained
+above. You should then typically only replace using `self.version` as a version
 constraint, to make sure the main package only replaces the sub-packages of
 that exact version, and not any other version, which would be incorrect.
 
