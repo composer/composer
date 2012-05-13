@@ -159,7 +159,7 @@ class Factory
 
     protected function addLocalRepository(RepositoryManager $rm, $vendorDir)
     {
-        // TODO BC feature, remove after May 30th
+        // TODO BC feature, remove after June 15th
         if (file_exists($vendorDir.'/.composer/installed.json')) {
             if (!is_dir($vendorDir.'/composer')) { mkdir($vendorDir.'/composer/', 0777, true); }
             rename($vendorDir.'/.composer/installed.json', $vendorDir.'/composer/installed.json');
