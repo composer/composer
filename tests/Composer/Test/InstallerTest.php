@@ -196,13 +196,14 @@ class InstallerTest extends TestCase
 
             $test = file_get_contents($file->getRealpath());
 
+            $content = '(?:.(?!--[A-Z]))+';
             $pattern = '{^
                 --TEST--\s*(?P<test>.*?)\s*
-                (?:--CONDITION--\s*(?P<condition>.*?))?\s*
-                --COMPOSER--\s*(?P<composer>.*?)\s*
-                (?:--LOCK--\s*(?P<lock>.*?))?\s*
-                (?:--INSTALLED--\s*(?P<installed>.*?))?\s*
-                (?:--INSTALLED:DEV--\s*(?P<installedDev>.*?))?\s*
+                (?:--CONDITION--\s*(?P<condition>'.$content.'))?\s*
+                --COMPOSER--\s*(?P<composer>'.$content.')\s*
+                (?:--LOCK--\s*(?P<lock>'.$content.'))?\s*
+                (?:--INSTALLED--\s*(?P<installed>'.$content.'))?\s*
+                (?:--INSTALLED:DEV--\s*(?P<installedDev>'.$content.'))?\s*
                 --EXPECT(?P<update>:UPDATE)?(?P<dev>:DEV)?--\s*(?P<expect>.*?)\s*
             $}xs';
 

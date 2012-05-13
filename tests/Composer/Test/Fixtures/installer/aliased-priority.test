@@ -1,0 +1,53 @@
+--TEST--
+Aliases take precedence over default package
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "a/c", "version": "dev-feature-foo",
+                    "source": { "reference": "feat.f", "type": "git", "url": "" }
+                },
+                {
+                    "name": "a/b", "version": "dev-master",
+                    "extra": { "branch-alias": { "dev-master": "1.0.x-dev" } },
+                    "source": { "reference": "forked", "type": "git", "url": "" }
+                }
+            ]
+        },
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "a/a", "version": "dev-master",
+                    "extra": { "branch-alias": { "dev-master": "1.0.x-dev" } },
+                    "source": { "reference": "master", "type": "git", "url": "" },
+                    "require": {
+                        "a/b": "dev-master",
+                        "a/c": "dev-master"
+                    }
+                },
+                {
+                    "name": "a/b", "version": "dev-master",
+                    "extra": { "branch-alias": { "dev-master": "1.0.x-dev" } },
+                    "source": { "reference": "master", "type": "git", "url": "" }
+                },
+                { "name": "a/c", "version": "dev-master" }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.*",
+        "a/b": "1.*",
+        "a/c": "dev-feature-foo as dev-master"
+    }
+}
+--EXPECT--
+Installing a/c (dev-feature-foo feat.f)
+Marking a/c (dev-master feat.f) as installed, alias of a/c (dev-feature-foo feat.f)
+Installing a/b (dev-master forked)
+Marking a/b (1.0.x-dev forked) as installed, alias of a/b (dev-master forked)
+Installing a/a (dev-master master)
+Marking a/a (1.0.x-dev master) as installed, alias of a/a (dev-master master)

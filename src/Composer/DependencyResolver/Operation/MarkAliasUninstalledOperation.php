@@ -61,6 +61,6 @@ class MarkAliasUninstalledOperation extends SolverOperation
      */
     public function __toString()
     {
-        return 'Marking '.$this->package->getPrettyName().' ('.$this->package->getPrettyVersion().') as uninstalled, alias of '.$this->package->getAliasOf()->getPrettyName().' ('.$this->package->getAliasOf()->getPrettyVersion().')';
+        return 'Marking '.$this->package->getPrettyName().' ('.$this->formatVersion($this->package).') as uninstalled, alias of '.$this->package->getAliasOf()->getPrettyName().' ('.$this->formatVersion($this->package->getAliasOf()).')';
     }
 }

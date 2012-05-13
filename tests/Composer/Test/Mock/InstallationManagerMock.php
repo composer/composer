@@ -17,6 +17,8 @@ use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
+use Composer\DependencyResolver\Operation\MarkAliasInstalledOperation;
+use Composer\DependencyResolver\Operation\MarkAliasUninstalledOperation;
 
 class InstallationManagerMock extends InstallationManager
 {
@@ -41,6 +43,20 @@ class InstallationManagerMock extends InstallationManager
     }
 
     public function uninstall(RepositoryInterface $repo, UninstallOperation $operation)
+    {
+        $this->uninstalled[] = $operation->getPackage();
+        $this->trace[] = (string) $operation;
+        $repo->removePackage($operation->getPackage());
+    }
+
+    public function markAliasInstalled(RepositoryInterface $repo, MarkAliasInstalledOperation $operation)
+    {
+        $this->installed[] = $operation->getPackage();
+        $this->trace[] = (string) $operation;
+        $repo->addPackage(clone $operation->getPackage());
+    }
+
+    public function markAliasUninstalled(RepositoryInterface $repo, MarkAliasUninstalledOperation $operation)
     {
         $this->uninstalled[] = $operation->getPackage();
         $this->trace[] = (string) $operation;
