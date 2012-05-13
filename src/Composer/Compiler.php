@@ -168,7 +168,7 @@ class Compiler
 
     private function getStub()
     {
-        return <<<'EOF'
+        $stub = <<<'EOF'
 #!/usr/bin/env php
 <?php
 /*
@@ -183,6 +183,16 @@ class Compiler
 
 Phar::mapPhar('composer.phar');
 
+EOF;
+
+        // add warning once the phar is older than 30 days
+        if (preg_match('{^[a-f0-9]+$}', $this->version)) {
+            $stub .= 'if (time() > '.(time()+30*86400).') {'.
+                "\n    echo 'This dev build of composer is outdated, please run \"'.\$argv[0].' self-update\" to get the latest.'.PHP_EOL;".
+                "\n}\n";
+        }
+
+        return $stub .= <<<'EOF'
 require 'phar://composer.phar/bin/composer';
 
 __HALT_COMPILER();
