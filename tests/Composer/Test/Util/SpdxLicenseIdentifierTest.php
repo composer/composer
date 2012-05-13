@@ -32,6 +32,7 @@ class SpdxLicenseIdentifierTest extends TestCase
     {
         return array(
             array(""),
+            array(array()),
             array("The system pwns you"),
             array("()"),
             array("(MIT)"),
@@ -47,6 +48,17 @@ class SpdxLicenseIdentifierTest extends TestCase
             array("(MIT Or MIT)"),
             array("(NONE or MIT)"),
             array("(NOASSERTION or MIT)"),
+        );
+    }
+
+    public static function provideInvalidArgument()
+    {
+        return array(
+            array(null),
+            array(new \stdClass),
+            array(array(new \stdClass)),
+            array(array("mixed", new \stdClass)),
+            array(array(new \stdClass, new \stdClass)),
         );
     }
 
@@ -71,11 +83,12 @@ class SpdxLicenseIdentifierTest extends TestCase
     }
 
     /**
+     * @dataProvider provideInvalidArgument
      * @expectedException InvalidArgumentException
      */
-    public function testInvalidArgument()
+    public function testInvalidArgument($invalidArgument)
     {
         $validator = new SpdxLicenseIdentifier();
-        $validator->validate(null);
+        $validator->validate($invalidArgument);
     }
 }

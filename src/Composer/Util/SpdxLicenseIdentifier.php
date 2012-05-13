@@ -40,18 +40,19 @@ class SpdxLicenseIdentifier
     public function validate($license)
     {
         if (is_array($license)) {
-            $license = count($license) > 1 ? '('.implode(' or ', $license).')' : reset($license);
+            $count = count($license);
+            if ($count !== count(array_filter($license, 'is_string'))) {
+                throw new \InvalidArgumentException('Array of strings expected.');
+            }
+            $license = $count > 1  ? '('.implode(' or ', $license).')' : (string) reset($license);
         }
         if (!is_string($license)) {
             throw new \InvalidArgumentException(sprintf(
                 'Array or String expected, %s given.', gettype($license)
             ));
         }
-        if (!$this->isValidLicenseString($license)) {
-            return false;
-        }
 
-        return true;
+        return $this->isValidLicenseString($license);
     }
 
     /**
