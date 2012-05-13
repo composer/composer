@@ -1,3 +1,7 @@
+* 1.0.0-alpha4
+
+
+
 * 1.0.0-alpha3 (2012-05-13)
 
   * Schema: Added 'require-dev' for development-time requirements (tests, etc), install with --dev
