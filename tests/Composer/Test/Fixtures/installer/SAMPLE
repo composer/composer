@@ -1,0 +1,14 @@
+--TEST--
+<test description>
+--CONDITION--
+<php code that checks if test can run, must return a Boolean>
+--COMPOSER--
+<composer.json file definition>
+--LOCK--
+<composer.lock file definition>
+--INSTALLED--
+<installed.json file definition>
+--INSTALLED:DEV--
+<installed_dev.json file definition>
+--EXPECT-- or --EXPECT:UPDATE-- or --EXPECT:DEV-- or --EXPECT:UPDATE:DEV--
+<output (stringified operations)>
