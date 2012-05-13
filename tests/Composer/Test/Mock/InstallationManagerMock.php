@@ -23,20 +23,33 @@ class InstallationManagerMock extends InstallationManager
     private $installed = array();
     private $updated = array();
     private $uninstalled = array();
+    private $trace = array();
 
     public function install(RepositoryInterface $repo, InstallOperation $operation)
     {
         $this->installed[] = $operation->getPackage();
+        $this->trace[] = (string) $operation;
+        $repo->addPackage(clone $operation->getPackage());
     }
 
     public function update(RepositoryInterface $repo, UpdateOperation $operation)
     {
         $this->updated[] = array($operation->getInitialPackage(), $operation->getTargetPackage());
+        $this->trace[] = (string) $operation;
+        $repo->removePackage($operation->getInitialPackage());
+        $repo->addPackage(clone $operation->getTargetPackage());
     }
 
     public function uninstall(RepositoryInterface $repo, UninstallOperation $operation)
     {
         $this->uninstalled[] = $operation->getPackage();
+        $this->trace[] = (string) $operation;
+        $repo->removePackage($operation->getPackage());
+    }
+
+    public function getTrace()
+    {
+        return $this->trace;
     }
 
     public function getInstalledPackages()
