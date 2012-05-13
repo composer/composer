@@ -125,8 +125,7 @@ EOT
         }
 
         $messages = array(
-            'error' => $errors,
-            'error' => $publishErrors,
+            'error' => array_merge($errors, $publishErrors),
             'warning' => $warnings,
         );
 
