@@ -19,6 +19,18 @@ use Composer\Config;
 
 class GitHubDriverTest extends \PHPUnit_Framework_TestCase
 {
+    private $config;
+
+    public function setUp()
+    {
+        $this->config = new Config();
+        $this->config->merge(array(
+            'config' => array(
+                'home' => sys_get_temp_dir() . '/composer-test',
+            ),
+        ));
+    }
+
     public function testPrivateRepository()
     {
         $scheme = extension_loaded('openssl') ? 'https' : 'http';
@@ -62,7 +74,7 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
             ->with($this->equalTo('github.com'), $this->equalTo($repoApiUrl), $this->equalTo(false))
             ->will($this->returnValue('{"master_branch": "test_master"}'));
 
-        $gitHubDriver = new GitHubDriver($repoUrl, $io, new Config(), null, $remoteFilesystem);
+        $gitHubDriver = new GitHubDriver($repoUrl, $io, $this->config, null, $remoteFilesystem);
         $gitHubDriver->initialize();
         $this->setAttribute($gitHubDriver, 'tags', array($identifier => $sha));
 
@@ -112,7 +124,7 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
             ->with($this->equalTo('github.com'), $this->equalTo($repoApiUrl), $this->equalTo(false))
             ->will($this->returnValue('{"master_branch": "test_master"}'));
 
-        $gitHubDriver = new GitHubDriver($repoUrl, $io, new Config(), null, $remoteFilesystem);
+        $gitHubDriver = new GitHubDriver($repoUrl, $io, $this->config, null, $remoteFilesystem);
         $gitHubDriver->initialize();
         $this->setAttribute($gitHubDriver, 'tags', array($identifier => $sha));
 
@@ -171,13 +183,6 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
         $fs = new Filesystem();
         $fs->removeDirectory(sys_get_temp_dir() . '/composer-test');
 
-        $config = new Config();
-        $config->merge(array(
-            'config' => array(
-                'home' => sys_get_temp_dir() . '/composer-test',
-            ),
-        ));
-
         $process->expects($this->at(0))
             ->method('execute')
             ->with($this->stringContains($repoSshUrl))
@@ -207,7 +212,7 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
             ->method('splitLines')
             ->will($this->returnValue(array('* test_master')));
 
-        $gitHubDriver = new GitHubDriver($repoUrl, $io, $config, $process, $remoteFilesystem);
+        $gitHubDriver = new GitHubDriver($repoUrl, $io, $this->config, $process, $remoteFilesystem);
         $gitHubDriver->initialize();
 
         $this->assertEquals('test_master', $gitHubDriver->getRootIdentifier());
