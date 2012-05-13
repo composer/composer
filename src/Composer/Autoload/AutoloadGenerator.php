@@ -129,15 +129,17 @@ EOF;
         file_put_contents($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, true, true, (Boolean) $includePathFile, $targetDirLoader));
         copy(__DIR__.'/ClassLoader.php', $targetDir.'/ClassLoader.php');
 
-        // TODO BC feature, add E_DEPRECATED in autoload.php on April 30th, remove after May 30th
+        // TODO BC feature, remove after June 15th
         if ($bcLinks) {
             $filesystem->ensureDirectoryExists($vendorPath.'/.composer');
-            file_put_contents($vendorPath.'/.composer/autoload_namespaces.php', "<?php\n// Deprecated file, use the one in root of vendor dir\nreturn include dirname(__DIR__).'/composer/autoload_namespaces.php';\n");
-            file_put_contents($vendorPath.'/.composer/autoload_classmap.php', "<?php\n// Deprecated file, use the one in root of vendor dir\nreturn include dirname(__DIR__).'/composer/autoload_classmap.php';\n");
-            file_put_contents($vendorPath.'/.composer/autoload.php', "<?php\n// Deprecated file, use the one in root of vendor dir\nreturn include dirname(__DIR__).'/autoload.php';\n");
-            file_put_contents($vendorPath.'/.composer/ClassLoader.php', "<?php\n// Deprecated file, use the one in root of vendor dir\nreturn include dirname(__DIR__).'/composer/ClassLoader.php';\n");
+            $deprecated = "// Deprecated file, use the one in root of vendor dir\n".
+                "trigger_error(__FILE__.' is deprecated, please use vendor/autoload.php or vendor/composer/autoload_* instead'.PHP_EOL.'See https://groups.google.com/forum/#!msg/composer-dev/fWIs3KocwoA/nU3aLko9LhQJ for details', E_USER_DEPRECATED);\n";
+            file_put_contents($vendorPath.'/.composer/autoload_namespaces.php', "<?php\n{$deprecated}\nreturn include dirname(__DIR__).'/composer/autoload_namespaces.php';\n");
+            file_put_contents($vendorPath.'/.composer/autoload_classmap.php', "<?php\n{$deprecated}\nreturn include dirname(__DIR__).'/composer/autoload_classmap.php';\n");
+            file_put_contents($vendorPath.'/.composer/autoload.php', "<?php\n{$deprecated}\nreturn include dirname(__DIR__).'/autoload.php';\n");
+            file_put_contents($vendorPath.'/.composer/ClassLoader.php', "<?php\n{$deprecated}\nreturn include dirname(__DIR__).'/composer/ClassLoader.php';\n");
             if ($includePathFile) {
-                file_put_contents($vendorPath.'/.composer/include_paths.php', "<?php\n// Deprecated file, use the one in root of vendor dir\nreturn include dirname(__DIR__).'/composer/include_paths.php';\n");
+                file_put_contents($vendorPath.'/.composer/include_paths.php', "<?php\n{$deprecated}\nreturn include dirname(__DIR__).'/composer/include_paths.php';\n");
             }
         }
     }
