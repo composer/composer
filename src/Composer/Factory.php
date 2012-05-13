@@ -27,6 +27,9 @@ use Composer\Util\RemoteFilesystem;
  */
 class Factory
 {
+    /**
+     * @return Config
+     */
     public static function createConfig()
     {
         // load main Composer configuration

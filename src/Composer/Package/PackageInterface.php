@@ -288,7 +288,7 @@ interface PackageInterface
     /**
      * Returns the release date of the package
      *
-     * @return DateTime
+     * @return \DateTime
      */
     function getReleaseDate();
 
