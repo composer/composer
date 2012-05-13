@@ -1,0 +1,23 @@
+--TEST--
+Installs a package in dev env
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.0" },
+                { "name": "a/b", "version": "1.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.0.0"
+    },
+    "require-dev": {
+        "a/b": "1.0.0"
+    }
+}
+--EXPECT:DEV--
+Installing a/a (1.0.0)
+Installing a/b (1.0.0)
