@@ -58,7 +58,7 @@ EOT
             ->setVerbose($input->getOption('verbose'))
             ->setPreferSource($input->getOption('prefer-source'))
             ->setDevMode($input->getOption('dev'))
-            ->setSkipScripts($input->getOption('skip-scripts'))
+            ->setRunScripts(!$input->getOption('skip-scripts'))
         ;
 
         return $install->run() ? 0 : 1;
