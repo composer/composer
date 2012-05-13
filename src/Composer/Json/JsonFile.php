@@ -162,6 +162,8 @@ class JsonFile
      * This code is based on the function found at:
      *  http://recursive-design.com/blog/2008/03/11/format-json-with-php/
      *
+     * Originally licensed under MIT by Dave Perrett <mail@recursive-design.com>
+     *
      * @param mixed $data Data to encode into a formatted JSON string
      * @param int $options json_encode options (defaults to JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
      * @return string Encoded json
