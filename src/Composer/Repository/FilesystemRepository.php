@@ -76,7 +76,7 @@ class FilesystemRepository extends ArrayRepository implements WritableRepository
         foreach ($aliases as $aliasData) {
             $temporaryPackage = $aliasData['package'];
 
-            $package = $this->findPackage($package->getName(), $package->getVersion());
+            $package = $this->findPackage($temporaryPackage->getName(), $temporaryPackage->getVersion());
 
             $package->setAlias($aliasData['alias']);
             $package->setPrettyAlias($aliasData['alias_pretty']);
