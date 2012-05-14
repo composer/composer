@@ -14,6 +14,7 @@ namespace Composer\Autoload;
 
 use Composer\Installer\InstallationManager;
 use Composer\Json\JsonFile;
+use Composer\Package\AliasPackage;
 use Composer\Package\Loader\JsonLoader;
 use Composer\Package\PackageInterface;
 use Composer\Repository\RepositoryInterface;
@@ -153,6 +154,9 @@ EOF;
         $packageMap[] = array($mainPackage, '');
 
         foreach ($packages as $package) {
+            if ($package instanceof AliasPackage) {
+                continue;
+            }
             $packageMap[] = array(
                 $package,
                 $installationManager->getInstallPath($package)

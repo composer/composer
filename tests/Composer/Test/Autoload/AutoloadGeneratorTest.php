@@ -14,6 +14,7 @@ namespace Composer\Test\Autoload;
 
 use Composer\Autoload\AutoloadGenerator;
 use Composer\Util\Filesystem;
+use Composer\Package\AliasPackage;
 use Composer\Package\MemoryPackage;
 use Composer\Test\TestCase;
 
@@ -164,6 +165,7 @@ class AutoloadGeneratorTest extends TestCase
         $packages = array();
         $packages[] = $a = new MemoryPackage('a/a', '1.0', '1.0');
         $packages[] = $b = new MemoryPackage('b/b', '1.0', '1.0');
+        $packages[] = $c = new AliasPackage($b, '1.2', '1.2');
         $a->setAutoload(array('psr-0' => array('A' => 'src/', 'A\\B' => 'lib/')));
         $b->setAutoload(array('psr-0' => array('B\\Sub\\Name' => 'src/')));
 
