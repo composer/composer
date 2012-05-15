@@ -13,11 +13,11 @@
 namespace Composer\Autoload;
 
 /**
- * ClassLoader implements an PSR-0 class loader
+ * ClassLoader implements a PSR-0 class loader
  *
  * See https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-0.md
  *
- *     $loader = new ComposerClassLoader();
+ *     $loader = new \Composer\Autoload\ClassLoader();
  *
  *     // register classes with namespaces
  *     $loader->add('Symfony\Component', __DIR__.'/component');
@@ -99,7 +99,7 @@ class ClassLoader
     }
 
     /**
-     * Turns on searching the include for class files.
+     * Turns on searching the include path for class files.
      *
      * @param Boolean $useIncludePath
      */
