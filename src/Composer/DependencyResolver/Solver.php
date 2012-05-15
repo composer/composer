@@ -42,7 +42,6 @@ class Solver
     protected $branches = array();
     protected $problems = array();
     protected $learnedPool = array();
-    protected $recommendsIndex;
 
     public function __construct(PolicyInterface $policy, Pool $pool, RepositoryInterface $installed)
     {
@@ -581,8 +580,7 @@ class Solver
         /* make decisions based on job/update assertions */
         $this->makeAssertionRuleDecisions();
 
-        $installRecommended = 0;
-        $this->runSat(true, $installRecommended);
+        $this->runSat(true);
 
         if ($this->problems) {
             throw new SolverProblemsException($this->problems);
@@ -801,8 +799,6 @@ class Solver
 
             array_pop($this->branches);
         }
-
-        $this->recommendsIndex = -1;
     }
 
     /**-------------------------------------------------------------------
@@ -1139,9 +1135,7 @@ class Solver
 
         $this->decisionQueueWhy = array();
         $this->decisionQueueFree = array();
-        $this->recommendsIndex = -1;
         $this->propagateIndex = 0;
-        $this->recommendations = array();
         $this->branches = array();
 
         $this->enableDisableLearnedRules();
@@ -1177,7 +1171,7 @@ class Solver
         }
     }
 
-    private function runSat($disableRules = true, $installRecommended = false)
+    private function runSat($disableRules = true)
     {
         $this->propagateIndex = 0;
 
