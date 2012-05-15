@@ -12,8 +12,6 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\Repository\RepositoryInterface;
-use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\DependencyResolver\Operation;
 
