@@ -198,11 +198,6 @@ class Solver
 
             $this->addedMap[$package->getId()] = true;
 
-            if (!$this->policy->installable($this, $this->pool, $this->installedMap, $package)) {
-                $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRemoveRule($package, Rule::RULE_NOT_INSTALLABLE, (string) $package));
-                continue;
-            }
-
             foreach ($package->getRequires() as $link) {
                 $possibleRequires = $this->pool->whatProvides($link->getTarget(), $link->getConstraint());
 

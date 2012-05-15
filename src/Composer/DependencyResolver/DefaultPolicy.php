@@ -43,12 +43,6 @@ class DefaultPolicy implements PolicyInterface
         return $packages;
     }
 
-    public function installable(Solver $solver, Pool $pool, array $installedMap, PackageInterface $package)
-    {
-        // todo: package blacklist?
-        return true;
-    }
-
     public function getPriority(Pool $pool, PackageInterface $package)
     {
         return $pool->getPriority($package->getRepository());

@@ -21,7 +21,6 @@ class Rule
     const RULE_JOB_INSTALL = 2;
     const RULE_JOB_REMOVE = 3;
     const RULE_JOB_LOCK = 4;
-    const RULE_NOT_INSTALLABLE = 5;
     const RULE_PACKAGE_CONFLICT = 6;
     const RULE_PACKAGE_REQUIRES = 7;
     const RULE_PACKAGE_OBSOLETES = 8;
@@ -199,9 +198,6 @@ class Rule
 
             case self::RULE_JOB_LOCK:
                 return "Lock command rule ($ruleText)";
-
-            case self::RULE_NOT_INSTALLABLE:
-                return $ruleText;
 
             case self::RULE_PACKAGE_CONFLICT:
                 $package1 = $this->literals[0]->getPackage();
