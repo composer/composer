@@ -277,8 +277,6 @@ class Solver
     {
         $updates = $this->policy->findUpdatePackages($this->pool, $this->installedMap, $package);
 
-        $this->addRulesForPackage($package);
-
         foreach ($updates as $update) {
             $this->addRulesForPackage($update);
         }
@@ -517,12 +515,8 @@ class Solver
 
         foreach ($this->installedMap as $package) {
             $this->addRulesForPackage($package);
-        }
-
-        foreach ($this->installedMap as $package) {
             $this->addRulesForUpdatePackages($package);
         }
-
 
         foreach ($this->jobs as $job) {
             foreach ($job['packages'] as $package) {
