@@ -118,8 +118,6 @@ class Solver
     // aka solver_makeruledecisions
     private function makeAssertionRuleDecisions()
     {
-        // do we need to decide a SYSTEMSOLVABLE at level 1?
-
         $decisionStart = count($this->decisionQueue);
 
         for ($ruleIndex = 0; $ruleIndex < count($this->rules); $ruleIndex++) {
@@ -150,7 +148,6 @@ class Solver
             }
 
             $conflict = $this->findDecisionRule($literal->getPackage());
-            /** TODO: handle conflict with systemsolvable? */
 
             if ($conflict && RuleSet::TYPE_PACKAGE === $conflict->getType()) {
 
