@@ -35,6 +35,8 @@ class Rule
     protected $id;
     protected $weak;
 
+    protected $job;
+
     public $watch1;
     public $watch2;
 
@@ -43,7 +45,7 @@ class Rule
 
     public $ruleHash;
 
-    public function __construct(array $literals, $reason, $reasonData)
+    public function __construct(array $literals, $reason, $reasonData, $job = null)
     {
         // sort all packages ascending by id
         usort($literals, array($this, 'compareLiteralsById'));
@@ -54,6 +56,8 @@ class Rule
 
         $this->disabled = false;
         $this->weak = false;
+
+        $this->job = $job;
 
         $this->watch1 = (count($this->literals) > 0) ? $literals[0]->getId() : 0;
         $this->watch2 = (count($this->literals) > 1) ? $literals[1]->getId() : 0;
@@ -78,6 +82,11 @@ class Rule
     public function getId()
     {
         return $this->id;
+    }
+
+    public function getJob()
+    {
+        return $this->job;
     }
 
     /**

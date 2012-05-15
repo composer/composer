@@ -26,9 +26,9 @@ class Solver
     protected $pool;
     protected $installed;
     protected $rules;
+    protected $ruleSetGenerator;
     protected $updateAll;
 
-    protected $ruleToJob = array();
     protected $addedMap = array();
     protected $updateMap = array();
     protected $watches = array();
@@ -48,238 +48,7 @@ class Solver
         $this->policy = $policy;
         $this->pool = $pool;
         $this->installed = $installed;
-        $this->rules = new RuleSet;
-    }
-
-    /**
-     * Creates a new rule for the requirements of a package
-     *
-     * This rule is of the form (-A|B|C), where B and C are the providers of
-     * one requirement of the package A.
-     *
-     * @param PackageInterface $package    The package with a requirement
-     * @param array            $providers  The providers of the requirement
-     * @param int              $reason     A RULE_* constant describing the
-     *                                     reason for generating this rule
-     * @param mixed            $reasonData Any data, e.g. the requirement name,
-     *                                     that goes with the reason
-     * @return Rule                        The generated rule or null if tautological
-     */
-    protected function createRequireRule(PackageInterface $package, array $providers, $reason, $reasonData = null)
-    {
-        $literals = array(new Literal($package, false));
-
-        foreach ($providers as $provider) {
-            // self fulfilling rule?
-            if ($provider === $package) {
-                return null;
-            }
-            $literals[] = new Literal($provider, true);
-        }
-
-        return new Rule($literals, $reason, $reasonData);
-    }
-
-    /**
-     * Creates a new rule for installing a package
-     *
-     * The rule is simply (A) for a package A to be installed.
-     *
-     * @param PackageInterface $package    The package to be installed
-     * @param int              $reason     A RULE_* constant describing the
-     *                                     reason for generating this rule
-     * @param mixed            $reasonData Any data, e.g. the package name, that
-     *                                     goes with the reason
-     * @return Rule                        The generated rule
-     */
-    protected function createInstallRule(PackageInterface $package, $reason, $reasonData = null)
-    {
-        return new Rule(new Literal($package, true));
-    }
-
-    /**
-     * Creates a rule to install at least one of a set of packages
-     *
-     * The rule is (A|B|C) with A, B and C different packages. If the given
-     * set of packages is empty an impossible rule is generated.
-     *
-     * @param array   $packages   The set of packages to choose from
-     * @param int     $reason     A RULE_* constant describing the reason for
-     *                            generating this rule
-     * @param mixed   $reasonData Any data, e.g. the package name, that goes with
-     *                            the reason
-     * @return Rule               The generated rule
-     */
-    protected function createInstallOneOfRule(array $packages, $reason, $reasonData = null)
-    {
-        $literals = array();
-        foreach ($packages as $package) {
-            $literals[] = new Literal($package, true);
-        }
-
-        return new Rule($literals, $reason, $reasonData);
-    }
-
-    /**
-     * Creates a rule to remove a package
-     *
-     * The rule for a package A is (-A).
-     *
-     * @param PackageInterface $package    The package to be removed
-     * @param int              $reason     A RULE_* constant describing the
-     *                                     reason for generating this rule
-     * @param mixed            $reasonData Any data, e.g. the package name, that
-     *                                     goes with the reason
-     * @return Rule                        The generated rule
-     */
-    protected function createRemoveRule(PackageInterface $package, $reason, $reasonData = null)
-    {
-        return new Rule(array(new Literal($package, false)), $reason, $reasonData);
-    }
-
-    /**
-     * Creates a rule for two conflicting packages
-     *
-     * The rule for conflicting packages A and B is (-A|-B). A is called the issuer
-     * and B the provider.
-     *
-     * @param PackageInterface $issuer     The package declaring the conflict
-     * @param Package          $provider   The package causing the conflict
-     * @param int              $reason     A RULE_* constant describing the
-     *                                     reason for generating this rule
-     * @param mixed            $reasonData Any data, e.g. the package name, that
-     *                                     goes with the reason
-     * @return Rule                        The generated rule
-     */
-    protected function createConflictRule(PackageInterface $issuer, PackageInterface $provider, $reason, $reasonData = null)
-    {
-        // ignore self conflict
-        if ($issuer === $provider) {
-            return null;
-        }
-
-        return new Rule(array(new Literal($issuer, false), new Literal($provider, false)), $reason, $reasonData);
-    }
-
-    /**
-     * Adds a rule unless it duplicates an existing one of any type
-     *
-     * To be able to directly pass in the result of one of the rule creation
-     * methods the rule may also be null to indicate that no rule should be
-     * added.
-     *
-     * @param int  $type    A TYPE_* constant defining the rule type
-     * @param Rule $newRule The rule about to be added
-     */
-    private function addRule($type, Rule $newRule = null) {
-        if ($newRule) {
-            if ($this->rules->containsEqual($newRule)) {
-                return;
-            }
-
-            $this->rules->add($newRule, $type);
-        }
-    }
-
-    protected function addRulesForPackage(PackageInterface $package)
-    {
-        $workQueue = new \SplQueue;
-        $workQueue->enqueue($package);
-
-        while (!$workQueue->isEmpty()) {
-            $package = $workQueue->dequeue();
-            if (isset($this->addedMap[$package->getId()])) {
-                continue;
-            }
-
-            $this->addedMap[$package->getId()] = true;
-
-            foreach ($package->getRequires() as $link) {
-                $possibleRequires = $this->pool->whatProvides($link->getTarget(), $link->getConstraint());
-
-                $this->addRule(RuleSet::TYPE_PACKAGE, $rule = $this->createRequireRule($package, $possibleRequires, Rule::RULE_PACKAGE_REQUIRES, (string) $link));
-
-                foreach ($possibleRequires as $require) {
-                    $workQueue->enqueue($require);
-                }
-            }
-
-            foreach ($package->getConflicts() as $link) {
-                $possibleConflicts = $this->pool->whatProvides($link->getTarget(), $link->getConstraint());
-
-                foreach ($possibleConflicts as $conflict) {
-                    $this->addRule(RuleSet::TYPE_PACKAGE, $this->createConflictRule($package, $conflict, Rule::RULE_PACKAGE_CONFLICT, (string) $link));
-                }
-            }
-
-            // check obsoletes and implicit obsoletes of a package
-            $isInstalled = (isset($this->installedMap[$package->getId()]));
-
-            foreach ($package->getReplaces() as $link) {
-                $obsoleteProviders = $this->pool->whatProvides($link->getTarget(), $link->getConstraint());
-
-                foreach ($obsoleteProviders as $provider) {
-                    if ($provider === $package) {
-                        continue;
-                    }
-
-                    if (!$this->obsoleteImpossibleForAlias($package, $provider)) {
-                        $reason = ($isInstalled) ? Rule::RULE_INSTALLED_PACKAGE_OBSOLETES : Rule::RULE_PACKAGE_OBSOLETES;
-                        $this->addRule(RuleSet::TYPE_PACKAGE, $this->createConflictRule($package, $provider, $reason, (string) $link));
-                    }
-                }
-            }
-
-            // check implicit obsoletes
-            // for installed packages we only need to check installed/installed problems,
-            // as the others are picked up when looking at the uninstalled package.
-            if (!$isInstalled) {
-                $obsoleteProviders = $this->pool->whatProvides($package->getName(), null);
-
-                foreach ($obsoleteProviders as $provider) {
-                    if ($provider === $package) {
-                        continue;
-                    }
-
-                    if (($package instanceof AliasPackage) && $package->getAliasOf() === $provider) {
-                        $this->addRule(RuleSet::TYPE_PACKAGE, $rule = $this->createRequireRule($package, array($provider), Rule::RULE_PACKAGE_ALIAS, (string) $package));
-                    } else if (!$this->obsoleteImpossibleForAlias($package, $provider)) {
-                        $reason = ($package->getName() == $provider->getName()) ? Rule::RULE_PACKAGE_SAME_NAME : Rule::RULE_PACKAGE_IMPLICIT_OBSOLETES;
-                        $this->addRule(RuleSet::TYPE_PACKAGE, $rule = $this->createConflictRule($package, $provider, $reason, (string) $package));
-                    }
-                }
-            }
-        }
-    }
-
-    protected function obsoleteImpossibleForAlias($package, $provider)
-    {
-        $packageIsAlias = $package instanceof AliasPackage;
-        $providerIsAlias = $provider instanceof AliasPackage;
-
-        $impossible = (
-            ($packageIsAlias && $package->getAliasOf() === $provider) ||
-            ($providerIsAlias && $provider->getAliasOf() === $package) ||
-            ($packageIsAlias && $providerIsAlias && $provider->getAliasOf() === $package->getAliasOf())
-        );
-
-        return $impossible;
-    }
-
-    /**
-     * Adds all rules for all update packages of a given package
-     *
-     * @param PackageInterface $package  Rules for this package's updates are to
-     *                                   be added
-     * @param bool             $allowAll Whether downgrades are allowed
-     */
-    private function addRulesForUpdatePackages(PackageInterface $package)
-    {
-        $updates = $this->policy->findUpdatePackages($this->pool, $this->installedMap, $package);
-
-        foreach ($updates as $update) {
-            $this->addRulesForPackage($update);
-        }
+        $this->ruleSetGenerator = new RuleSetGenerator($policy, $pool);
     }
 
     /**
@@ -387,17 +156,9 @@ class Solver
 
                 $problem = new Problem;
 
-                if ($rule->getType() == RuleSet::TYPE_JOB) {
-                    $job = $this->ruleToJob[$rule->getId()];
-
-                    $problem->addJobRule($job, $rule);
-                    $problem->addRule($conflict);
-                    $this->disableProblem($job);
-                } else {
-                    $problem->addRule($rule);
-                    $problem->addRule($conflict);
-                    $this->disableProblem($rule);
-                }
+                $problem->addRule($rule);
+                $problem->addRule($conflict);
+                $this->disableProblem($rule);
                 $this->problems[] = $problem;
                 continue;
             }
@@ -421,15 +182,8 @@ class Solver
                     continue;
                 }
 
-                if ($assertRule->getType() === RuleSet::TYPE_JOB) {
-                    $job = $this->ruleToJob[$assertRule->getId()];
-
-                    $problem->addJobRule($job, $assertRule);
-                    $this->disableProblem($job);
-                } else {
-                    $problem->addRule($assertRule);
-                    $this->disableProblem($assertRule);
-                }
+                $problem->addRule($assertRule);
+                $this->disableProblem($assertRule);
             }
             $this->problems[] = $problem;
 
@@ -463,13 +217,7 @@ class Solver
             }
 
             // conflict, but this is a weak rule => disable
-            if ($rule->getType() == RuleSet::TYPE_JOB) {
-                $why = $this->ruleToJob[$rule->getId()];
-            } else {
-                $why = $rule;
-            }
-
-            $this->disableProblem($why);
+            $this->disableProblem($rule);
         }
     }
 
@@ -479,10 +227,7 @@ class Solver
         foreach ($this->installed->getPackages() as $package) {
             $this->installedMap[$package->getId()] = $package;
         }
-    }
 
-    protected function addRulesForJobs()
-    {
         foreach ($this->jobs as $job) {
             switch ($job['cmd']) {
                 case 'update':
@@ -498,30 +243,12 @@ class Solver
                         $this->updateMap[$package->getId()] = true;
                     }
                 break;
-                case 'install':
-                    if (empty($job['packages'])) {
-                        $problem = new Problem();
-                        $problem->addJobRule($job);
-                        $this->problems[] = $problem;
-                    } else {
-                        foreach ($job['packages'] as $package) {
-                            if (!isset($this->installedMap[$package->getId()])) {
-                                $this->addRulesForPackage($package);
-                            }
-                        }
 
-                        $rule = $this->createInstallOneOfRule($job['packages'], Rule::RULE_JOB_INSTALL, $job['packageName']);
-                        $this->addRule(RuleSet::TYPE_JOB, $rule);
-                        $this->ruleToJob[$rule->getId()] = $job;
-                    }
-                break;
-                case 'remove':
-                    // remove all packages with this name including uninstalled
-                    // ones to make sure none of them are picked as replacements
-                    foreach ($job['packages'] as $package) {
-                        $rule = $this->createRemoveRule($package, Rule::RULE_JOB_REMOVE);
-                        $this->addRule(RuleSet::TYPE_JOB, $rule);
-                        $this->ruleToJob[$rule->getId()] = $job;
+                case 'install':
+                    if (!$job['packages']) {
+                        $problem = new Problem();
+                        $problem->addRule(new Rule(array(), null, null, $job));
+                        $this->problems[] = $problem;
                     }
                 break;
             }
@@ -540,12 +267,7 @@ class Solver
             $this->decisionMap = array_fill(0, $this->pool->getMaxId() + 1, 0);
         }
 
-        foreach ($this->installedMap as $package) {
-            $this->addRulesForPackage($package);
-            $this->addRulesForUpdatePackages($package);
-        }
-
-        $this->addRulesForJobs();
+        $this->rules = $this->ruleSetGenerator->getRulesFor($this->jobs, $this->installedMap);
 
         foreach ($this->rules as $rule) {
             $this->addWatchesToRule($rule);
@@ -827,7 +549,7 @@ class Solver
 
             $this->revert($level);
 
-            $this->addRule(RuleSet::TYPE_LEARNED, $newRule);
+            $this->rules->add($newRule, RuleSet::TYPE_LEARNED);
 
             $this->learnedWhy[$newRule->getId()] = $why;
 
@@ -987,12 +709,7 @@ class Solver
             }
         }
 
-        if ($conflictRule->getType() == RuleSet::TYPE_JOB) {
-            $job = $this->ruleToJob[$conflictRule->getId()];
-            $problem->addJobRule($job, $conflictRule);
-        } else {
-            $problem->addRule($conflictRule);
-        }
+        $problem->addRule($conflictRule);
     }
 
     private function analyzeUnsolvable($conflictRule, $disableRules)
@@ -1058,13 +775,7 @@ class Solver
         if ($lastWeakWhy) {
             array_pop($this->problems);
 
-            if ($lastWeakWhy->getType() === RuleSet::TYPE_JOB) {
-                $why = $this->ruleToJob[$lastWeakWhy];
-            } else {
-                $why = $lastWeakWhy;
-            }
-
-            $this->disableProblem($why);
+            $this->disableProblem($lastWeakWhy);
             $this->resetSolver();
 
             return 1;
@@ -1072,11 +783,7 @@ class Solver
 
         if ($disableRules) {
             foreach ($this->problems[count($this->problems) - 1] as $reason) {
-                if ($reason['job']) {
-                    $this->disableProblem($reason['job']);
-                } else {
-                    $this->disableProblem($reason['rule']);
-                }
+                $this->disableProblem($reason['rule']);
             }
 
             $this->resetSolver();
@@ -1088,14 +795,15 @@ class Solver
 
     private function disableProblem($why)
     {
-        if ($why instanceof Rule) {
-            $why->disable();
-        } else if (is_array($why)) {
+        $job = $why->getJob();
 
+        if (!$job) {
+            $why->disable();
+        } else {
             // disable all rules of this job
-            foreach ($this->ruleToJob as $ruleId => $job) {
-                if ($why === $job) {
-                    $this->rules->ruleById($ruleId)->disable();
+            foreach ($this->rules as $rule) {
+                if ($job === $rule->getJob()) {
+                    $rule->disable();
                 }
             }
         }
