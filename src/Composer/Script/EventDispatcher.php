@@ -94,7 +94,11 @@ class EventDispatcher
             try {
                 $className::$methodName($event);
             } catch (\Exception $e) {
-                throw new \RuntimeException("'{$callable}' terminated with an exception.");
+                $message = "%s terminated with an exception.\n[%s] %s";
+                throw new \RuntimeException(sprintf($message,
+                                                    $callable,
+                                                    get_class($e),
+                                                    $e->getMessage()));
             }
         }
     }
