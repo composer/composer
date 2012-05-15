@@ -32,11 +32,8 @@ class Solver
     protected $addedMap = array();
     protected $updateMap = array();
     protected $watches = array();
-    protected $removeWatches = array();
     protected $decisionMap;
     protected $installedMap;
-
-    protected $packageToUpdateRule = array();
 
     protected $decisionQueue = array();
     protected $decisionQueueWhy = array();
