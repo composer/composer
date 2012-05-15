@@ -30,7 +30,7 @@ class DefaultPolicy implements PolicyInterface
         return $constraint->matchSpecific($version);
     }
 
-    public function findUpdatePackages(Solver $solver, Pool $pool, array $installedMap, PackageInterface $package)
+    public function findUpdatePackages(Pool $pool, array $installedMap, PackageInterface $package)
     {
         $packages = array();
 

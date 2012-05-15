@@ -85,30 +85,6 @@ class Solver
     }
 
     /**
-     * Create a new rule for updating a package
-     *
-     * If package A1 can be updated to A2 or A3 the rule is (A1|A2|A3).
-     *
-     * @param PackageInterface $package    The package to be updated
-     * @param array            $updates    An array of update candidate packages
-     * @param int              $reason     A RULE_* constant describing the
-     *                                     reason for generating this rule
-     * @param mixed            $reasonData Any data, e.g. the package name, that
-     *                                     goes with the reason
-     * @return Rule                        The generated rule or null if tautology
-     */
-    protected function createUpdateRule(PackageInterface $package, array $updates, $reason, $reasonData = null)
-    {
-        $literals = array(new Literal($package, true));
-
-        foreach ($updates as $update) {
-            $literals[] = new Literal($update, true);
-        }
-
-        return new Rule($literals, $reason, $reasonData);
-    }
-
-    /**
      * Creates a new rule for installing a package
      *
      * The rule is simply (A) for a package A to be installed.
@@ -308,7 +284,7 @@ class Solver
      */
     private function addRulesForUpdatePackages(PackageInterface $package)
     {
-        $updates = $this->policy->findUpdatePackages($this, $this->pool, $this->installedMap, $package);
+        $updates = $this->policy->findUpdatePackages($this->pool, $this->installedMap, $package);
 
         $this->addRulesForPackage($package);
 
@@ -568,13 +544,6 @@ class Solver
             }
         }
 
-        foreach ($this->installedMap as $package) {
-            $updates = $this->policy->findUpdatePackages($this, $this->pool, $this->installedMap, $package);
-            $rule = $this->createUpdateRule($package, $updates, Rule::RULE_INTERNAL_ALLOW_UPDATE, (string) $package);
-
-            $this->packageToUpdateRule[$package->getId()] = $rule;
-        }
-
         foreach ($this->jobs as $job) {
             switch ($job['cmd']) {
                 case 'install':
@@ -627,133 +596,8 @@ class Solver
             throw new SolverProblemsException($this->problems);
         }
 
-        return $this->createTransaction();
-    }
-
-    protected function createTransaction()
-    {
-        $transaction = array();
-        $installMeansUpdateMap = array();
-
-        foreach ($this->decisionQueue as $i => $literal) {
-            $package = $literal->getPackage();
-
-            // !wanted & installed
-            if (!$literal->isWanted() && isset($this->installedMap[$package->getId()])) {
-                $literals = array();
-
-                if (isset($this->packageToUpdateRule[$package->getId()])) {
-                    $literals = array_merge($literals, $this->packageToUpdateRule[$package->getId()]->getLiterals());
-                }
-
-                foreach ($literals as $updateLiteral) {
-                    if (!$updateLiteral->equals($literal)) {
-                        $installMeansUpdateMap[$updateLiteral->getPackageId()] = $package;
-                    }
-                }
-            }
-        }
-
-        foreach ($this->decisionQueue as $i => $literal) {
-            $package = $literal->getPackage();
-
-            // wanted & installed || !wanted & !installed
-            if ($literal->isWanted() == (isset($this->installedMap[$package->getId()]))) {
-                continue;
-            }
-
-            if ($literal->isWanted()) {
-                if ($package instanceof AliasPackage) {
-                    $transaction[] = new Operation\MarkAliasInstalledOperation(
-                        $package, $this->decisionQueueWhy[$i]
-                    );
-                    continue;
-                }
-
-                if (isset($installMeansUpdateMap[$literal->getPackageId()])) {
-
-                    $source = $installMeansUpdateMap[$literal->getPackageId()];
-
-                    $transaction[] = new Operation\UpdateOperation(
-                        $source, $package, $this->decisionQueueWhy[$i]
-                    );
-
-                    // avoid updates to one package from multiple origins
-                    unset($installMeansUpdateMap[$literal->getPackageId()]);
-                    $ignoreRemove[$source->getId()] = true;
-                } else {
-                    $transaction[] = new Operation\InstallOperation(
-                        $package, $this->decisionQueueWhy[$i]
-                    );
-                }
-            } else if (!isset($ignoreRemove[$package->getId()])) {
-                if ($package instanceof AliasPackage) {
-                    $transaction[] = new Operation\MarkAliasInstalledOperation(
-                        $package, $this->decisionQueueWhy[$i]
-                    );
-                } else {
-                    $transaction[] = new Operation\UninstallOperation(
-                        $package, $this->decisionQueueWhy[$i]
-                    );
-                }
-            }
-        }
-
-        $allDecidedMap = $this->decisionMap;
-        foreach ($this->decisionMap as $packageId => $decision) {
-            if ($decision != 0) {
-                $package = $this->pool->packageById($packageId);
-                if ($package instanceof AliasPackage) {
-                    $allDecidedMap[$package->getAliasOf()->getId()] = $decision;
-                }
-            }
-        }
-
-        foreach ($allDecidedMap as $packageId => $decision) {
-            if ($packageId === 0) {
-                continue;
-            }
-
-            if (0 == $decision && isset($this->installedMap[$packageId])) {
-                $package = $this->pool->packageById($packageId);
-
-                if ($package instanceof AliasPackage) {
-                    $transaction[] = new Operation\MarkAliasInstalledOperation(
-                        $package, null
-                    );
-                } else {
-                    $transaction[] = new Operation\UninstallOperation(
-                        $package, null
-                    );
-                }
-
-                $this->decisionMap[$packageId] = -1;
-            }
-        }
-
-        foreach ($this->decisionMap as $packageId => $decision) {
-            if ($packageId === 0) {
-                continue;
-            }
-
-            if (0 == $decision && isset($this->installedMap[$packageId])) {
-                $package = $this->pool->packageById($packageId);
-
-                if ($package instanceof AliasPackage) {
-                    $transaction[] = new Operation\MarkAliasInstalledOperation(
-                        $package, null
-                    );
-                } else {
-                    $transaction[] = new Operation\UninstallOperation(
-                        $package, null
-                    );
-                }
-
-                $this->decisionMap[$packageId] = -1;
-            }
-        }
-
-        return array_reverse($transaction);
+        $transaction = new Transaction($this->policy, $this->pool, $this->installedMap, $this->decisionMap, $this->decisionQueue, $this->decisionQueueWhy);
+        return $transaction->getOperations();
     }
 
     protected function literalFromId($id)
