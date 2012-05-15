@@ -55,32 +55,10 @@ class FilesystemRepository extends ArrayRepository implements WritableRepository
             throw new \UnexpectedValueException('Could not parse package list from the '.$this->file->getPath().' repository');
         }
 
-        $aliases = array();
-
         $loader = new ArrayLoader();
         foreach ($packages as $packageData) {
             $package = $loader->load($packageData);
-
-            // aliases need to be looked up in the end to set up references correctly
-            if ($this instanceof InstalledRepositoryInterface && !empty($packageData['alias'])) {
-                $aliases[] = array(
-                    'package' => $package,
-                    'alias' => $packageData['alias'],
-                    'alias_pretty' => $packageData['alias_pretty']
-                );
-            }
-
             $this->addPackage($package);
-        }
-
-        foreach ($aliases as $aliasData) {
-            $temporaryPackage = $aliasData['package'];
-
-            $package = $this->findPackage($temporaryPackage->getName(), $temporaryPackage->getVersion());
-
-            $package->setAlias($aliasData['alias']);
-            $package->setPrettyAlias($aliasData['alias_pretty']);
-            $this->addPackage($this->createAliasPackage($package, $aliasData['alias'], $aliasData['alias_pretty']));
         }
     }
 
