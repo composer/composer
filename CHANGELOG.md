@@ -1,6 +1,6 @@
 * 1.0.0-alpha4
 
-  * Added caching of github metadata (faster startup time with custom github VCS repos)
+  * Added caching of GitHub metadata (faster startup time with custom GitHub VCS repos)
 
 * 1.0.0-alpha3 (2012-05-13)
 
