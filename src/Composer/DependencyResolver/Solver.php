@@ -481,6 +481,53 @@ class Solver
         }
     }
 
+    protected function addRulesForJobs()
+    {
+        foreach ($this->jobs as $job) {
+            switch ($job['cmd']) {
+                case 'update':
+                    foreach ($job['packages'] as $package) {
+                        if (isset($this->installedMap[$package->getId()])) {
+                            $this->updateMap[$package->getId()] = true;
+                        }
+                    }
+                break;
+
+                case 'update-all':
+                    foreach ($this->installedMap as $package) {
+                        $this->updateMap[$package->getId()] = true;
+                    }
+                break;
+                case 'install':
+                    if (empty($job['packages'])) {
+                        $problem = new Problem();
+                        $problem->addJobRule($job);
+                        $this->problems[] = $problem;
+                    } else {
+                        foreach ($job['packages'] as $package) {
+                            if (!isset($this->installedMap[$package->getId()])) {
+                                $this->addRulesForPackage($package);
+                            }
+                        }
+
+                        $rule = $this->createInstallOneOfRule($job['packages'], Rule::RULE_JOB_INSTALL, $job['packageName']);
+                        $this->addRule(RuleSet::TYPE_JOB, $rule);
+                        $this->ruleToJob[$rule->getId()] = $job;
+                    }
+                break;
+                case 'remove':
+                    // remove all packages with this name including uninstalled
+                    // ones to make sure none of them are picked as replacements
+                    foreach ($job['packages'] as $package) {
+                        $rule = $this->createRemoveRule($package, Rule::RULE_JOB_REMOVE);
+                        $this->addRule(RuleSet::TYPE_JOB, $rule);
+                        $this->ruleToJob[$rule->getId()] = $job;
+                    }
+                break;
+            }
+        }
+    }
+
     public function solve(Request $request)
     {
         $this->jobs = $request->getJobs();
@@ -493,79 +540,12 @@ class Solver
             $this->decisionMap = array_fill(0, $this->pool->getMaxId() + 1, 0);
         }
 
-        foreach ($this->jobs as $job) {
-            foreach ($job['packages'] as $package) {
-                switch ($job['cmd']) {
-                    case 'update':
-                        if (isset($this->installedMap[$package->getId()])) {
-                            $this->updateMap[$package->getId()] = true;
-                        }
-                        break;
-                }
-            }
-
-            switch ($job['cmd']) {
-                case 'update-all':
-                    foreach ($this->installedMap as $package) {
-                        $this->updateMap[$package->getId()] = true;
-                    }
-                break;
-            }
-        }
-
         foreach ($this->installedMap as $package) {
             $this->addRulesForPackage($package);
             $this->addRulesForUpdatePackages($package);
         }
 
-        foreach ($this->jobs as $job) {
-            foreach ($job['packages'] as $package) {
-                switch ($job['cmd']) {
-                    case 'install':
-                        $this->installCandidateMap[$package->getId()] = true;
-                        $this->addRulesForPackage($package);
-                    break;
-                }
-            }
-        }
-
-        foreach ($this->jobs as $job) {
-            switch ($job['cmd']) {
-                case 'install':
-                    if (empty($job['packages'])) {
-                        $problem = new Problem();
-                        $problem->addJobRule($job);
-                        $this->problems[] = $problem;
-                    } else {
-                        $rule = $this->createInstallOneOfRule($job['packages'], Rule::RULE_JOB_INSTALL, $job['packageName']);
-                        $this->addRule(RuleSet::TYPE_JOB, $rule);
-                        $this->ruleToJob[$rule->getId()] = $job;
-                    }
-                    break;
-                case 'remove':
-                    // remove all packages with this name including uninstalled
-                    // ones to make sure none of them are picked as replacements
-
-                    // todo: cleandeps
-                    foreach ($job['packages'] as $package) {
-                        $rule = $this->createRemoveRule($package, Rule::RULE_JOB_REMOVE);
-                        $this->addRule(RuleSet::TYPE_JOB, $rule);
-                        $this->ruleToJob[$rule->getId()] = $job;
-                    }
-                    break;
-                case 'lock':
-                    foreach ($job['packages'] as $package) {
-                        if (isset($this->installedMap[$package->getId()])) {
-                            $rule = $this->createInstallRule($package, Rule::RULE_JOB_LOCK);
-                        } else {
-                            $rule = $this->createRemoveRule($package, Rule::RULE_JOB_LOCK);
-                        }
-                        $this->addRule(RuleSet::TYPE_JOB, $rule);
-                        $this->ruleToJob[$rule->getId()] = $job;
-                    }
-                break;
-            }
-        }
+        $this->addRulesForJobs();
 
         foreach ($this->rules as $rule) {
             $this->addWatchesToRule($rule);
