@@ -14,6 +14,7 @@ namespace Composer\Repository\Vcs;
 
 use Composer\Downloader\TransportException;
 use Composer\Json\JsonFile;
+use Composer\Cache;
 use Composer\IO\IOInterface;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
@@ -23,6 +24,7 @@ use Composer\Util\RemoteFilesystem;
  */
 class GitHubDriver extends VcsDriver
 {
+    protected $cache;
     protected $owner;
     protected $repository;
     protected $tags;
@@ -47,6 +49,7 @@ class GitHubDriver extends VcsDriver
         $this->owner = $match[1];
         $this->repository = $match[2];
         $this->originUrl = 'github.com';
+        $this->cache = new Cache($this->io, $this->config->get('home').'/cache.github/'.$this->owner.'/'.$this->repository);
 
         $this->fetchRootIdentifier();
     }
@@ -115,18 +118,36 @@ class GitHubDriver extends VcsDriver
         if ($this->gitDriver) {
             return $this->gitDriver->getComposerInformation($identifier);
         }
+
+        if (preg_match('{[a-f0-9]{40}}i', $identifier) && $res = $this->cache->read($identifier)) {
+            $this->infoCache[$identifier] = JsonFile::parseJson($res);
+        }
+
         if (!isset($this->infoCache[$identifier])) {
-            $composer = $this->getContents($this->getScheme() . '://raw.github.com/'.$this->owner.'/'.$this->repository.'/'.$identifier.'/composer.json');
-            if (!$composer) {
-                return;
+            try {
+                $composer = $this->getContents($this->getScheme() . '://raw.github.com/'.$this->owner.'/'.$this->repository.'/'.$identifier.'/composer.json');
+            } catch (TransportException $e) {
+                if (404 !== $e->getCode()) {
+                    throw $e;
+                }
+
+                $composer = false;
             }
 
-            $composer = JsonFile::parseJson($composer);
+            if ($composer) {
+                $composer = JsonFile::parseJson($composer);
 
-            if (!isset($composer['time'])) {
-                $commit = JsonFile::parseJson($this->getContents($this->getScheme() . '://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/commits/'.$identifier));
-                $composer['time'] = $commit['commit']['committer']['date'];
+                if (!isset($composer['time'])) {
+                    $commit = JsonFile::parseJson($this->getContents($this->getScheme() . '://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/commits/'.$identifier));
+                    $composer['time'] = $commit['commit']['committer']['date'];
+                }
+
             }
+
+            if (preg_match('{[a-f0-9]{40}}i', $identifier)) {
+                $this->cache->write($identifier, json_encode($composer));
+            }
+
             $this->infoCache[$identifier] = $composer;
         }
 
