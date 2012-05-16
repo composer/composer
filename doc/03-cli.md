@@ -187,6 +187,8 @@ The `help completion` command will provide you with the following information:
     complete -W "$(php `which composer.phar` completion)" composer.phar
     complete -W "$(php `which composer.phar` completion)" php composer.phar
 
+The only prerequisite is that `composer.phar` must be in your `$PATH`.
+
 ## Environment variables
 
 You can set a number of environment variables that override certain settings.
