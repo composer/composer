@@ -29,7 +29,11 @@ class CompletionCommand extends Command
             ->setDescription('Command Completion for Composer')
             ->setHelp(<<<EOT
 <info>Command Completion for Composer:</info>
+<info></info>
+<info>Add the following to `\$HOME/.bashrc` or your shell's equivalent configuration file:</info>
 <info>complete -W "$(php composer.phar completion)" composer</info>
+<info>complete -W "$(php composer.phar completion)" composer.phar</info>
+<info>complete -W "$(php composer.phar completion)" php composer.phar</info>
 EOT
             )
         ;
@@ -37,11 +41,11 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-      $default  = array('help', 'list');
-      $defined  = array_keys($this->getApplication()->all());
-      $commands = array_diff($defined, $default);
+        $default  = array('help', 'list');
+        $defined  = array_keys($this->getApplication()->all());
+        $commands = array_diff($defined, $default);
 
-      sort($commands);
-      $output->writeln(join(' ', $commands));
+        sort($commands);
+        $output->writeln(join(' ', $commands));
     }
 }
