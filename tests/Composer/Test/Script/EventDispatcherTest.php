@@ -11,20 +11,24 @@
 
 namespace Composer\Test\Script;
 
-use Exception;
 use Composer\Test\TestCase;
 use Composer\Script\Event;
 use Composer\Script\EventDispatcher;
 
 /**
+ * Event Dispatcher Test Case
  *
- * @group
+ * @group event-dispatcher
  * @ticket #693
  * @author Andrea Turso <turso@officinesoftware.co.uk>
  */
 class EventDispatcherTest extends TestCase
 {
     /**
+     * Test the doDispatch method properly catches any exception
+     * thrown from the listener invocation, i.e., <code>$className::$methodName($event)</code>,
+     * and replaces it with a \RuntimeException.
+     *
      * @expectedException \RuntimeException
      */
     public function testListenerExceptionsAreSuppressed()
@@ -53,6 +57,6 @@ class EventDispatcherTest extends TestCase
 
     public static function call()
     {
-        throw new Exception();
+        throw new \Exception();
     }
 }
