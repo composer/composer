@@ -294,42 +294,50 @@ class Installer
         }
 
         // force dev packages to be updated if we update or install from a (potentially new) lock
-        if ($this->update || $installFromLock) {
-            foreach ($localRepo->getPackages() as $package) {
-                // skip non-dev packages
-                if (!$package->isDev()) {
-                    continue;
-                }
+        foreach ($localRepo->getPackages() as $package) {
+            // skip non-dev packages
+            if (!$package->isDev()) {
+                continue;
+            }
 
-                // skip packages that will be updated/uninstalled
-                foreach ($operations as $operation) {
-                    if (('update' === $operation->getJobType() && $operation->getInitialPackage()->equals($package))
-                        || ('uninstall' === $operation->getJobType() && $operation->getPackage()->equals($package))
-                    ) {
-                        continue 2;
+            // skip packages that will be updated/uninstalled
+            foreach ($operations as $operation) {
+                if (('update' === $operation->getJobType() && $operation->getInitialPackage()->equals($package))
+                    || ('uninstall' === $operation->getJobType() && $operation->getPackage()->equals($package))
+                ) {
+                    continue 2;
+                }
+            }
+
+            // force update to locked version if it does not match the installed version
+            if ($installFromLock) {
+                $lockData = $this->locker->getLockData();
+                unset($lockedReference);
+                foreach ($lockData['packages'] as $lockedPackage) {
+                    if (!empty($lockedPackage['source-reference']) && strtolower($lockedPackage['package']) === $package->getName()) {
+                        $lockedReference = $lockedPackage['source-reference'];
+                        break;
                     }
                 }
-
+                if (isset($lockedReference) && $lockedReference !== $package->getSourceReference()) {
+                    // changing the source ref to update to will be handled in the operations loop below
+                    $operations[] = new UpdateOperation($package, clone $package);
+                }
+            } else {
                 // force update to latest on update
                 if ($this->update) {
                     $newPackage = $this->repositoryManager->findPackage($package->getName(), $package->getVersion());
                     if ($newPackage && $newPackage->getSourceReference() !== $package->getSourceReference()) {
                         $operations[] = new UpdateOperation($package, $newPackage);
                     }
-                } elseif ($installFromLock) {
-                    // force update to locked version if it does not match the installed version
-                    $lockData = $this->locker->getLockData();
-                    unset($lockedReference);
-                    foreach ($lockData['packages'] as $lockedPackage) {
-                        if (!empty($lockedPackage['source-reference']) && strtolower($lockedPackage['package']) === $package->getName()) {
-                            $lockedReference = $lockedPackage['source-reference'];
-                            break;
-                        }
-                    }
-                    if (isset($lockedReference) && $lockedReference !== $package->getSourceReference()) {
-                        // changing the source ref to update to will be handled in the operations loop below
-                        $operations[] = new UpdateOperation($package, $package);
-                    }
+                }
+
+                // force installed package to update to referenced version if it does not match the installed version
+                $references = $this->package->getReferences();
+
+                if (isset($references[$package->getName()]) && $references[$package->getName()] !== $package->getSourceReference()) {
+                    // changing the source ref to update to will be handled in the operations loop below
+                    $operations[] = new UpdateOperation($package, clone $package);
                 }
             }
         }
@@ -378,7 +386,22 @@ class Installer
                             }
                         }
                     }
+                } else {
+                    // not installing from lock, force dev packages' references if they're in root package refs
+                    $package = null;
+                    if ('update' === $operation->getJobType()) {
+                        $package = $operation->getTargetPackage();
+                    } elseif ('install' === $operation->getJobType()) {
+                        $package = $operation->getPackage();
+                    }
+                    if ($package && $package->isDev()) {
+                        $references = $this->package->getReferences();
+                        if (isset($references[$package->getName()])) {
+                            $package->setSourceReference($references[$package->getName()]);
+                        }
+                    }
                 }
+
                 $this->installationManager->execute($localRepo, $operation);
 
                 $event = 'Composer\Script\ScriptEvents::POST_PACKAGE_'.strtoupper($operation->getJobType());

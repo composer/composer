@@ -1,5 +1,6 @@
 * 1.0.0-alpha4
 
+  * Schema: Added references for dev versions, requiring 'dev-master#abcdef' for example will force the abcdef commit
   * Added caching of GitHub metadata (faster startup time with custom GitHub VCS repos)
 
 * 1.0.0-alpha3 (2012-05-13)
