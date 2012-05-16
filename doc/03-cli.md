@@ -173,6 +173,20 @@ To get more information about a certain command, just use `help`.
 
     $ php composer.phar help install
 
+## shell completion
+
+Composer currently provides a BASH shell completion helper. To find out
+how to use it, type `help completion`:
+
+    $ php composer.phar help completion
+
+The `help completion` command will provide you with the following information:
+
+    Add the following to `$HOME/.bashrc` or your shell's equivalent configuration file:
+    complete -W "$(php composer.phar completion)" composer
+    complete -W "$(php composer.phar completion)" composer.phar
+    complete -W "$(php composer.phar completion)" php composer.phar
+
 ## Environment variables
 
 You can set a number of environment variables that override certain settings.
