@@ -183,9 +183,9 @@ how to use it, type `help completion`:
 The `help completion` command will provide you with the following information:
 
     Add the following to `$HOME/.bashrc` or your shell's equivalent configuration file:
-    complete -W "$(php composer.phar completion)" composer
-    complete -W "$(php composer.phar completion)" composer.phar
-    complete -W "$(php composer.phar completion)" php composer.phar
+    complete -W "$(php `which composer.phar` completion)" composer
+    complete -W "$(php `which composer.phar` completion)" composer.phar
+    complete -W "$(php `which composer.phar` completion)" php composer.phar
 
 ## Environment variables
 

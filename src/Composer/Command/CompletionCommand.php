@@ -31,9 +31,9 @@ class CompletionCommand extends Command
 <info>Command Completion for Composer:</info>
 <info></info>
 <info>Add the following to `\$HOME/.bashrc` or your shell's equivalent configuration file:</info>
-<info>complete -W "$(php composer.phar completion)" composer</info>
-<info>complete -W "$(php composer.phar completion)" composer.phar</info>
-<info>complete -W "$(php composer.phar completion)" php composer.phar</info>
+<info>complete -W "$(php `which composer.phar` completion)" composer</info>
+<info>complete -W "$(php `which composer.phar` completion)" composer.phar</info>
+<info>complete -W "$(php `which composer.phar` completion)" php composer.phar</info>
 EOT
             )
         ;
