@@ -181,7 +181,7 @@ class GitDriver extends VcsDriver
      */
     public static function supports(IOInterface $io, $url, $deep = false)
     {
-        if (preg_match('#(^git://|\.git$|git@|//git\.|//github.com/)#i', $url)) {
+        if (preg_match('#(^file://|^git://|\.git$|git@|//git\.|//github.com/)#i', $url)) {
             return true;
         }
 
