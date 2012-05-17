@@ -44,6 +44,7 @@ class DownloadManager
     public function setPreferSource($preferSource)
     {
         $this->preferSource = $preferSource;
+        return $this;
     }
 
     /**
@@ -54,7 +55,9 @@ class DownloadManager
      */
     public function setDownloader($type, DownloaderInterface $downloader)
     {
+        $type = strtolower($type);
         $this->downloaders[$type] = $downloader;
+        return $this;
     }
 
     /**
@@ -68,6 +71,7 @@ class DownloadManager
      */
     public function getDownloader($type)
     {
+        $type = strtolower($type);
         if (!isset($this->downloaders[$type])) {
             throw new \InvalidArgumentException('Unknown downloader type: '.$type);
         }
