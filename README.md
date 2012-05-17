@@ -58,14 +58,11 @@ in a system wide way.
 Global installation of Composer (via homebrew)
 ----------------------------------------------
 
-Installing via this homebrew formula will always get you the latest Composer version.
+Composer is part of the homebrew-php project.
 
-1. run `brew uninstall composer ; brew install --HEAD https://raw.github.com/gist/1574469/composer.rb`
-2. Change into a project directory `cd /path/to/my/project`
-3. Use Composer as you normally would `composer.phar install`
-
-*You will see a warning "Warning: Cannot verify package integrity"; however,
-this is benign and expected.*
+1. Tap the homebrew-php repository into your brew installation if you haven't done yet: `brew tap josegonzalez/homebrew-php`
+2. Run `brew install composer-php`.
+3. Use Composer with the `composer` command.
 
 Updating Composer
 -----------------
