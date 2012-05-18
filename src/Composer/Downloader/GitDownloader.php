@@ -92,18 +92,20 @@ class GitDownloader extends VcsDownloader
         // github, autoswitch protocols
         if (preg_match('{^(?:https?|git)(://github.com/.*)}', $url, $match)) {
             $protocols = array('git', 'https', 'http');
+            $messages = array();
             foreach ($protocols as $protocol) {
                 $url = $protocol . $match[1];
                 if (0 === $this->process->execute(call_user_func($commandCallable, $url), $handler)) {
                     return;
                 }
+                $messages[] = '- ' . $url . "\n" . preg_replace('#^#m', '  ', $this->process->getErrorOutput());
                 if (null !== $path) {
                     $this->filesystem->removeDirectory($path);
                 }
             }
 
             // failed to checkout, first check git accessibility
-            $this->throwException('Failed to clone ' . $url .' via git, https and http protocols, aborting.' . "\n\n" . $this->process->getErrorOutput(), $url);
+            $this->throwException('Failed to clone ' . $url .' via git, https and http protocols, aborting.' . "\n\n" . implode("\n", $messages), $url);
         }
 
         $command = call_user_func($commandCallable, $url);
