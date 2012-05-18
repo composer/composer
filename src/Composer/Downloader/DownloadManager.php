@@ -46,6 +46,7 @@ class DownloadManager
     public function setPreferSource($preferSource)
     {
         $this->preferSource = $preferSource;
+
         return $this;
     }
 
@@ -59,6 +60,7 @@ class DownloadManager
     {
         $type = strtolower($type);
         $this->downloaders[$type] = $downloader;
+
         return $this;
     }
 
