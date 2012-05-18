@@ -31,7 +31,7 @@ class Solver
 
     protected $addedMap = array();
     protected $updateMap = array();
-    protected $watches = array();
+    protected $watchGraph;
     protected $decisionMap;
     protected $installedMap;
 
@@ -49,59 +49,6 @@ class Solver
         $this->pool = $pool;
         $this->installed = $installed;
         $this->ruleSetGenerator = new RuleSetGenerator($policy, $pool);
-    }
-
-    /**
-     * Alters watch chains for a rule.
-     *
-     * Next1/2 always points to the next rule that is watching the same package.
-     * The watches array contains rules to start from for each package
-     *
-     */
-    private function addWatchesToRule(Rule $rule)
-    {
-        // skip simple assertions of the form (A) or (-A)
-        if ($rule->isAssertion()) {
-            return;
-        }
-
-        if (!isset($this->watches[$rule->watch1])) {
-            $this->watches[$rule->watch1] = null;
-        }
-
-        $rule->next1 = $this->watches[$rule->watch1];
-        $this->watches[$rule->watch1] = $rule;
-
-        if (!isset($this->watches[$rule->watch2])) {
-            $this->watches[$rule->watch2] = null;
-        }
-
-        $rule->next2 = $this->watches[$rule->watch2];
-        $this->watches[$rule->watch2] = $rule;
-    }
-
-    /**
-     * Put watch2 on rule's literal with highest level
-     */
-    private function watch2OnHighest(Rule $rule)
-    {
-        $literals = $rule->getLiterals();
-
-        // if there are only 2 elements, both are being watched anyway
-        if ($literals < 3) {
-            return;
-        }
-
-        $watchLevel = 0;
-
-        foreach ($literals as $literal) {
-            $level = abs($this->decisionMap[$literal->getPackageId()]);
-
-            if ($level > $watchLevel) {
-                $rule->watch2 = $literal->getId();
-                $watchLevel = $level;
-            }
-        }
     }
 
     private function findDecisionRule(PackageInterface $package)
@@ -265,9 +212,10 @@ class Solver
         }
 
         $this->rules = $this->ruleSetGenerator->getRulesFor($this->jobs, $this->installedMap);
+        $this->watchGraph = new RuleWatchGraph;
 
         foreach ($this->rules as $rule) {
-            $this->addWatchesToRule($rule);
+            $this->watchGraph->insert(new RuleWatchNode($rule));
         }
 
         /* make decisions based on job/update assertions */
@@ -313,6 +261,13 @@ class Solver
         }
     }
 
+    public function decide($literal, $level, $why)
+    {
+        $this->addDecisionId($literal, $level);
+        $this->decisionQueue[] = $this->literalFromId($literal);
+        $this->decisionQueueWhy[] = $why;
+    }
+
     protected function decisionsContain(Literal $l)
     {
         return (
@@ -321,7 +276,7 @@ class Solver
         );
     }
 
-    protected function decisionsContainId($literalId)
+    public function decisionsContainId($literalId)
     {
         $packageId = abs($literalId);
         return (
@@ -344,7 +299,7 @@ class Solver
         );
     }
 
-    protected function decisionsConflictId($literalId)
+    public function decisionsConflictId($literalId)
     {
         $packageId = abs($literalId);
         return (
@@ -390,68 +345,16 @@ class Solver
 
             $this->propagateIndex++;
 
-            // /* foreach rule where 'pkg' is now FALSE */
-            //for (rp = watches + pkg; *rp; rp = next_rp)
-            if (!isset($this->watches[$literal->getId()])) {
-                continue;
-            }
+            $conflict = $this->watchGraph->walkLiteral(
+                $literal->getId(),
+                $level,
+                array($this, 'decisionsContainId'),
+                array($this, 'decisionsConflictId'),
+                array($this, 'decide')
+            );
 
-            $prevRule = null;
-            for ($rule = $this->watches[$literal->getId()]; $rule !== null; $prevRule = $rule, $rule = $nextRule) {
-                $nextRule = $rule->getNext($literal);
-
-                if ($rule->isDisabled()) {
-                    continue;
-                }
-
-                $otherWatch = $rule->getOtherWatch($literal);
-
-                if ($this->decisionsContainId($otherWatch)) {
-                    continue;
-                }
-
-                $ruleLiterals = $rule->getLiterals();
-
-                if (sizeof($ruleLiterals) > 2) {
-                    foreach ($ruleLiterals as $ruleLiteral) {
-                        if ($otherWatch !== $ruleLiteral->getId() &&
-                            !$this->decisionsConflict($ruleLiteral)) {
-
-                            if ($literal->getId() === $rule->watch1) {
-                                $rule->watch1 = $ruleLiteral->getId();
-                                $rule->next1 = (isset($this->watches[$ruleLiteral->getId()])) ? $this->watches[$ruleLiteral->getId()] : null;
-                            } else {
-                                $rule->watch2 = $ruleLiteral->getId();
-                                $rule->next2 = (isset($this->watches[$ruleLiteral->getId()])) ? $this->watches[$ruleLiteral->getId()] : null;
-                            }
-
-                            if ($prevRule) {
-                                if ($prevRule->next1 == $rule) {
-                                    $prevRule->next1 = $nextRule;
-                                } else {
-                                    $prevRule->next2 = $nextRule;
-                                }
-                            } else {
-                                $this->watches[$literal->getId()] = $nextRule;
-                            }
-
-                            $this->watches[$ruleLiteral->getId()] = $rule;
-
-                            $rule = $prevRule;
-                            continue 2;
-                        }
-                    }
-                }
-
-                // yay, we found a unit clause! try setting it to true
-                if ($this->decisionsConflictId($otherWatch)) {
-                    return $rule;
-                }
-
-                $this->addDecisionId($otherWatch, $level);
-
-                $this->decisionQueue[] = $this->literalFromId($otherWatch);
-                $this->decisionQueueWhy[] = $rule;
+            if ($conflict) {
+                return $conflict;
             }
         }
 
@@ -550,8 +453,9 @@ class Solver
 
             $this->learnedWhy[$newRule->getId()] = $why;
 
-            $this->watch2OnHighest($newRule);
-            $this->addWatchesToRule($newRule);
+            $ruleNode = new RuleWatchNode($newRule);
+            $ruleNode->watch2OnHighest($this->decisionMap);
+            $this->watchGraph->insert($ruleNode);
 
             $this->addDecision($learnLiteral, $level);
             $this->decisionQueue[] = $learnLiteral;

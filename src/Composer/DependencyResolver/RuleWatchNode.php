@@ -1,0 +1,84 @@
+<?php
+
+/*
+ * This file is part of Composer.
+ *
+ * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+namespace Composer\DependencyResolver;
+
+/**
+ * @author Nils Adermann <naderman@naderman.de>
+ */
+class RuleWatchNode
+{
+    protected $rule;
+
+    public $watch1;
+    public $watch2;
+
+    public $next1;
+    public $next2;
+
+    public function __construct($rule)
+    {
+        $this->rule = $rule;
+
+        $literals = $rule->getLiterals();
+
+        $this->watch1 = (count($literals) > 0) ? $literals[0]->getId() : 0;
+        $this->watch2 = (count($literals) > 1) ? $literals[1]->getId() : 0;
+    }
+
+    /**
+     * Put watch2 on rule's literal with highest level
+     */
+    public function watch2OnHighest($decisionMap)
+    {
+        $literals = $this->rule->getLiterals();
+
+        // if there are only 2 elements, both are being watched anyway
+        if ($literals < 3) {
+            return;
+        }
+
+        $watchLevel = 0;
+
+        foreach ($literals as $literal) {
+            $level = abs($decisionMap[$literal->getPackageId()]);
+
+            if ($level > $watchLevel) {
+                $this->rule->watch2 = $literal->getId();
+                $watchLevel = $level;
+            }
+        }
+    }
+
+    public function getRule()
+    {
+        return $this->rule;
+    }
+
+    public function getNext($literalId)
+    {
+        if ($this->watch1 == $literalId) {
+            return $this->next1;
+        } else {
+            return $this->next2;
+        }
+    }
+
+    public function getOtherWatch($literalId)
+    {
+        if ($this->watch1 == $literalId) {
+            return $this->watch2;
+        } else {
+            return $this->watch1;
+        }
+    }
+}
