@@ -78,19 +78,19 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(1));
 
         $expectedGitCommand = $this->getCmd("git clone 'https://github.com/composer/composer' 'composerPath' && cd 'composerPath' && git checkout 'ref' && git reset --hard 'ref' && git remote add composer 'https://github.com/composer/composer'");
-        $processExecutor->expects($this->at(1))
+        $processExecutor->expects($this->at(2))
             ->method('execute')
             ->with($this->equalTo($expectedGitCommand))
             ->will($this->returnValue(1));
 
         $expectedGitCommand = $this->getCmd("git clone 'http://github.com/composer/composer' 'composerPath' && cd 'composerPath' && git checkout 'ref' && git reset --hard 'ref' && git remote add composer 'http://github.com/composer/composer'");
-        $processExecutor->expects($this->at(2))
+        $processExecutor->expects($this->at(4))
             ->method('execute')
             ->with($this->equalTo($expectedGitCommand))
             ->will($this->returnValue(0));
 
         $expectedGitCommand = $this->getCmd("git remote set-url --push origin 'git@github.com:composer/composer.git'");
-        $processExecutor->expects($this->at(3))
+        $processExecutor->expects($this->at(5))
             ->method('execute')
             ->with($this->equalTo($expectedGitCommand), $this->equalTo(null), $this->equalTo('composerPath'))
             ->will($this->returnValue(0));
