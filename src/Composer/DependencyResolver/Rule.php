@@ -35,7 +35,6 @@ class Rule
     protected $literals;
     protected $type;
     protected $id;
-    protected $weak;
 
     protected $job;
 
@@ -53,7 +52,6 @@ class Rule
         $this->reasonData = $reasonData;
 
         $this->disabled = false;
-        $this->weak = false;
 
         $this->job = $job;
 
@@ -137,16 +135,6 @@ class Rule
     public function isEnabled()
     {
         return !$this->disabled;
-    }
-
-    public function isWeak()
-    {
-        return $this->weak;
-    }
-
-    public function setWeak($weak)
-    {
-        $this->weak = $weak;
     }
 
     public function getLiterals()

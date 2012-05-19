@@ -69,7 +69,7 @@ class Solver
         for ($ruleIndex = 0; $ruleIndex < count($this->rules); $ruleIndex++) {
             $rule = $this->rules->ruleById($ruleIndex);
 
-            if ($rule->isWeak() || !$rule->isAssertion() || $rule->isDisabled()) {
+            if (!$rule->isAssertion() || $rule->isDisabled()) {
                 continue;
             }
 
@@ -104,15 +104,15 @@ class Solver
                 continue;
             }
 
-            // conflict with another job or update/feature rule
+            // conflict with another job
             $problem = new Problem;
             $problem->addRule($rule);
             $problem->addRule($conflict);
 
-            // push all of our rules (can only be feature or job rules)
+            // push all of our rules (can only be job rules)
             // asserting this literal on the problem stack
             foreach ($this->rules->getIteratorFor(RuleSet::TYPE_JOB) as $assertRule) {
-                if ($assertRule->isDisabled() || !$assertRule->isAssertion() || $assertRule->isWeak()) {
+                if ($assertRule->isDisabled() || !$assertRule->isAssertion()) {
                     continue;
                 }
 
@@ -136,27 +136,6 @@ class Solver
                 $this->decisionMap[abs($decisionLiteral)] = 0;
             }
             $ruleIndex = -1;
-        }
-
-        foreach ($this->rules as $rule) {
-            if (!$rule->isWeak() || !$rule->isAssertion() || $rule->isDisabled()) {
-                continue;
-            }
-
-            $literals = $rule->getLiterals();
-            $literal = $literals[0];
-
-            if ($this->decisionMap[abs($literal)] == 0) {
-                $this->decide($literal, 1, $rule);
-                continue;
-            }
-
-            if ($this->decisionsSatisfy($literals[0])) {
-                continue;
-            }
-
-            // conflict, but this is a weak rule => disable
-            $this->disableProblem($rule);
         }
     }
 
@@ -553,7 +532,7 @@ class Solver
         return array($learnedLiterals[0], $ruleLevel, $newRule, $why);
     }
 
-    private function analyzeUnsolvableRule($problem, $conflictRule, &$lastWeakWhy)
+    private function analyzeUnsolvableRule($problem, $conflictRule)
     {
         $why = $conflictRule->getId();
 
@@ -562,7 +541,7 @@ class Solver
             $problemRules = $this->learnedPool[$learnedWhy];
 
             foreach ($problemRules as $problemRule) {
-                $this->analyzeUnsolvableRule($problem, $problemRule, $lastWeakWhy);
+                $this->analyzeUnsolvableRule($problem, $problemRule);
             }
             return;
         }
@@ -572,23 +551,15 @@ class Solver
             return;
         }
 
-        if ($conflictRule->isWeak()) {
-            /** TODO why > or < lastWeakWhy? */
-            if (!$lastWeakWhy || $why > $lastWeakWhy->getId()) {
-                $lastWeakWhy = $conflictRule;
-            }
-        }
-
         $problem->addRule($conflictRule);
     }
 
     private function analyzeUnsolvable($conflictRule, $disableRules)
     {
-        $lastWeakWhy = null;
         $problem = new Problem;
         $problem->addRule($conflictRule);
 
-        $this->analyzeUnsolvableRule($problem, $conflictRule, $lastWeakWhy);
+        $this->analyzeUnsolvableRule($problem, $conflictRule);
 
         $this->problems[] = $problem;
 
@@ -618,7 +589,7 @@ class Solver
             $why = $this->decisionQueueWhy[$decisionId];
             $problem->addRule($why);
 
-            $this->analyzeUnsolvableRule($problem, $why, $lastWeakWhy);
+            $this->analyzeUnsolvableRule($problem, $why);
 
             $literals = $why->getLiterals();
 
@@ -629,15 +600,6 @@ class Solver
                 }
                 $seen[abs($literal)] = true;
             }
-        }
-
-        if ($lastWeakWhy) {
-            array_pop($this->problems);
-
-            $this->disableProblem($lastWeakWhy);
-            $this->resetSolver();
-
-            return 1;
         }
 
         if ($disableRules) {
