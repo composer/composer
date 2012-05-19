@@ -151,4 +151,15 @@ class Pool
 
         return $result;
     }
+
+    public function literalToPackage($literal)
+    {
+        $packageId = abs($literal);
+        return $this->packageById($packageId);
+    }
+
+    public function literalToString($literal)
+    {
+        return ($literal > 0 ? '+' : '-') . $this->literalToPackage($literal);
+    }
 }

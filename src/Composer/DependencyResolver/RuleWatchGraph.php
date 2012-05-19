@@ -38,33 +38,31 @@ class RuleWatchGraph
         }
     }
 
-    public function contains($literalId)
+    public function contains($literal)
     {
-        return isset($this->watches[$literalId]);
+        return isset($this->watches[$literal]);
     }
 
-    public function walkLiteral($literalId, $level, $skipCallback, $conflictCallback, $decideCallback)
+    public function walkLiteral($literal, $level, $skipCallback, $conflictCallback, $decideCallback)
     {
-        if (!isset($this->watches[$literalId])) {
+        if (!isset($this->watches[$literal])) {
             return null;
         }
 
-        $this->watches[$literalId]->rewind();
-        while ($this->watches[$literalId]->valid()) {
-            $node = $this->watches[$literalId]->current();
-            $otherWatch = $node->getOtherWatch($literalId);
+        $this->watches[$literal]->rewind();
+        while ($this->watches[$literal]->valid()) {
+            $node = $this->watches[$literal]->current();
+            $otherWatch = $node->getOtherWatch($literal);
 
             if (!$node->getRule()->isDisabled() && !call_user_func($skipCallback, $otherWatch)) {
                 $ruleLiterals = $node->getRule()->getLiterals();
 
                 foreach ($ruleLiterals as $ruleLiteral) {
-                    $ruleLiteralId = $ruleLiteral->getId();
+                    if ($literal !== $ruleLiteral &&
+                        $otherWatch !== $ruleLiteral &&
+                        !call_user_func($conflictCallback, $ruleLiteral)) {
 
-                    if ($literalId !== $ruleLiteralId &&
-                        $otherWatch !== $ruleLiteralId &&
-                        !call_user_func($conflictCallback, $ruleLiteralId)) {
-
-                        $this->moveWatch($literalId, $ruleLiteralId, $node);
+                        $this->moveWatch($literal, $ruleLiteral, $node);
 
                         continue 2;
                     }
@@ -77,7 +75,7 @@ class RuleWatchGraph
                 call_user_func($decideCallback, $otherWatch, $level, $node->getRule());
             }
 
-            $this->watches[$literalId]->next();
+            $this->watches[$literal]->next();
         }
 
         return null;

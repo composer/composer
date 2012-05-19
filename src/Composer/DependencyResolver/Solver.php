@@ -13,7 +13,6 @@
 namespace Composer\DependencyResolver;
 
 use Composer\Repository\RepositoryInterface;
-use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\DependencyResolver\Operation;
 
@@ -51,10 +50,10 @@ class Solver
         $this->ruleSetGenerator = new RuleSetGenerator($policy, $pool);
     }
 
-    private function findDecisionRule(PackageInterface $package)
+    private function findDecisionRule($packageId)
     {
         foreach ($this->decisionQueue as $i => $literal) {
-            if ($package === $literal->getPackage()) {
+            if ($packageId === abs($literal)) {
                 return $this->decisionQueueWhy[$i];
             }
         }
@@ -77,10 +76,8 @@ class Solver
             $literals = $rule->getLiterals();
             $literal = $literals[0];
 
-            if (!$this->decided($literal->getPackage())) {
-                $this->decisionQueue[] = $literal;
-                $this->decisionQueueWhy[] = $rule;
-                $this->addDecision($literal, 1);
+            if (!$this->decided(abs($literal))) {
+                $this->decide($literal, 1, $rule);
                 continue;
             }
 
@@ -94,7 +91,7 @@ class Solver
                 continue;
             }
 
-            $conflict = $this->findDecisionRule($literal->getPackage());
+            $conflict = $this->findDecisionRule(abs($literal));
 
             if ($conflict && RuleSet::TYPE_PACKAGE === $conflict->getType()) {
 
@@ -122,7 +119,7 @@ class Solver
                 $assertRuleLiterals = $assertRule->getLiterals();
                 $assertRuleLiteral = $assertRuleLiterals[0];
 
-                if  ($literal->getPackageId() !== $assertRuleLiteral->getPackageId()) {
+                if  (abs($literal) !== abs($assertRuleLiteral)) {
                     continue;
                 }
 
@@ -136,7 +133,7 @@ class Solver
                 $decisionLiteral = array_pop($this->decisionQueue);
                 array_pop($this->decisionQueueWhy);
                 unset($this->decisionQueueFree[count($this->decisionQueue)]);
-                $this->decisionMap[$decisionLiteral->getPackageId()] = 0;
+                $this->decisionMap[abs($decisionLiteral)] = 0;
             }
             $ruleIndex = -1;
         }
@@ -149,10 +146,8 @@ class Solver
             $literals = $rule->getLiterals();
             $literal = $literals[0];
 
-            if ($this->decisionMap[$literal->getPackageId()] == 0) {
-                $this->decisionQueue[] = $literal;
-                $this->decisionQueueWhy[] = $rule;
-                $this->addDecision($literal, 1);
+            if ($this->decisionMap[abs($literal)] == 0) {
+                $this->decide($literal, 1, $rule);
                 continue;
             }
 
@@ -191,7 +186,7 @@ class Solver
                 case 'install':
                     if (!$job['packages']) {
                         $problem = new Problem();
-                        $problem->addRule(new Rule(array(), null, null, $job));
+                        $problem->addRule(new Rule($this->pool, array(), null, null, $job));
                         $this->problems[] = $problem;
                     }
                 break;
@@ -237,24 +232,20 @@ class Solver
         return new Literal($package, $id > 0);
     }
 
-    protected function addDecision(Literal $l, $level)
+    protected function addDecision($literal, $level)
     {
-        $this->addDecisionId($l->getId(), $level);
-    }
-
-    protected function addDecisionId($literalId, $level)
-    {
-        $packageId = abs($literalId);
+        $packageId = abs($literal);
 
         $previousDecision = $this->decisionMap[$packageId];
         if ($previousDecision != 0) {
-            $literal = $this->literalFromId($literalId);
+            $literalString = $this->pool->literalToString($literal);
+            $package = $this->pool->literalToPackage($literal);
             throw new SolverBugException(
-                "Trying to decide $literal on level $level, even though ".$literal->getPackage()." was previously decided as ".(int) $previousDecision."."
+                "Trying to decide $literalString on level $level, even though $package was previously decided as ".(int) $previousDecision."."
             );
         }
 
-        if ($literalId > 0) {
+        if ($literal > 0) {
             $this->decisionMap[$packageId] = $level;
         } else {
             $this->decisionMap[$packageId] = -$level;
@@ -263,67 +254,49 @@ class Solver
 
     public function decide($literal, $level, $why)
     {
-        $this->addDecisionId($literal, $level);
-        $this->decisionQueue[] = $this->literalFromId($literal);
+        $this->addDecision($literal, $level);
+        $this->decisionQueue[] = $literal;
         $this->decisionQueueWhy[] = $why;
     }
 
-    protected function decisionsContain(Literal $l)
+    public function decisionsContain($literal)
     {
+        $packageId = abs($literal);
         return (
-            $this->decisionMap[$l->getPackageId()] > 0 && $l->isWanted() ||
-            $this->decisionMap[$l->getPackageId()] < 0 && !$l->isWanted()
+            $this->decisionMap[$packageId] > 0 && $literal > 0 ||
+            $this->decisionMap[$packageId] < 0 && $literal < 0
         );
     }
 
-    public function decisionsContainId($literalId)
+    protected function decisionsSatisfy($literal)
     {
-        $packageId = abs($literalId);
+        $packageId = abs($literal);
         return (
-            $this->decisionMap[$packageId] > 0 && $literalId > 0 ||
-            $this->decisionMap[$packageId] < 0 && $literalId < 0
+            $literal > 0 && $this->decisionMap[$packageId] > 0 ||
+            $literal < 0 && $this->decisionMap[$packageId] < 0
         );
     }
 
-    protected function decisionsSatisfy(Literal $l)
+    public function decisionsConflict($literal)
     {
-        return ($l->isWanted() && $this->decisionMap[$l->getPackageId()] > 0) ||
-            (!$l->isWanted() && $this->decisionMap[$l->getPackageId()] < 0);
-    }
-
-    protected function decisionsConflict(Literal $l)
-    {
+        $packageId = abs($literal);
         return (
-            $this->decisionMap[$l->getPackageId()] > 0 && !$l->isWanted() ||
-            $this->decisionMap[$l->getPackageId()] < 0 && $l->isWanted()
+            ($this->decisionMap[$packageId] > 0 && $literal < 0) ||
+            ($this->decisionMap[$packageId] < 0 && $literal > 0)
         );
     }
-
-    public function decisionsConflictId($literalId)
+    protected function decided($packageId)
     {
-        $packageId = abs($literalId);
-        return (
-            ($this->decisionMap[$packageId] > 0 && $literalId < 0) ||
-            ($this->decisionMap[$packageId] < 0 && $literalId > 0)
-        );
+        return $this->decisionMap[$packageId] != 0;
     }
 
-    protected function decided(PackageInterface $p)
+    protected function undecided($packageId)
     {
-        return $this->decisionMap[$p->getId()] != 0;
+        return $this->decisionMap[$packageId] == 0;
     }
 
-    protected function undecided(PackageInterface $p)
-    {
-        return $this->decisionMap[$p->getId()] == 0;
-    }
-
-    protected function decidedInstall(PackageInterface $p) {
-        return $this->decisionMap[$p->getId()] > 0;
-    }
-
-    protected function decidedRemove(PackageInterface $p) {
-        return $this->decisionMap[$p->getId()] < 0;
+    protected function decidedInstall($packageId) {
+        return $this->decisionMap[$packageId] > 0;
     }
 
     /**
@@ -341,15 +314,15 @@ class Solver
             // A was decided => (-A|B) now requires B to be true, so we look for
             // rules which are fulfilled by -A, rather than A.
 
-            $literal = $this->decisionQueue[$this->propagateIndex]->inverted();
+            $literal = -$this->decisionQueue[$this->propagateIndex];
 
             $this->propagateIndex++;
 
             $conflict = $this->watchGraph->walkLiteral(
-                $literal->getId(),
+                $literal,
                 $level,
-                array($this, 'decisionsContainId'),
-                array($this, 'decisionsConflictId'),
+                array($this, 'decisionsContain'),
+                array($this, 'decisionsConflict'),
                 array($this, 'decide')
             );
 
@@ -369,17 +342,17 @@ class Solver
         while (!empty($this->decisionQueue)) {
             $literal = $this->decisionQueue[count($this->decisionQueue) - 1];
 
-            if (!$this->decisionMap[$literal->getPackageId()]) {
+            if (!$this->decisionMap[abs($literal)]) {
                 break;
             }
 
-            $decisionLevel = abs($this->decisionMap[$literal->getPackageId()]);
+            $decisionLevel = abs($this->decisionMap[abs($literal)]);
 
             if ($decisionLevel <= $level) {
                 break;
             }
 
-            $this->decisionMap[$literal->getPackageId()] = 0;
+            $this->decisionMap[abs($literal)] = 0;
             array_pop($this->decisionQueue);
             array_pop($this->decisionQueueWhy);
 
@@ -412,13 +385,11 @@ class Solver
      * returns the new solver level or 0 if unsolvable
      *
      */
-    private function setPropagateLearn($level, Literal $literal, $disableRules, Rule $rule)
+    private function setPropagateLearn($level, $literal, $disableRules, Rule $rule)
     {
         $level++;
 
-        $this->addDecision($literal, $level);
-        $this->decisionQueue[] = $literal;
-        $this->decisionQueueWhy[] = $rule;
+        $this->decide($literal, $level, $rule);
         $this->decisionQueueFree[count($this->decisionQueueWhy) - 1] = true;
 
         while (true) {
@@ -457,9 +428,7 @@ class Solver
             $ruleNode->watch2OnHighest($this->decisionMap);
             $this->watchGraph->insert($ruleNode);
 
-            $this->addDecision($learnLiteral, $level);
-            $this->decisionQueue[] = $learnLiteral;
-            $this->decisionQueueWhy[] = $newRule;
+            $this->decide($learnLiteral, $level, $newRule);
         }
 
         return $level;
@@ -502,12 +471,12 @@ class Solver
                     continue;
                 }
 
-                if (isset($seen[$literal->getPackageId()])) {
+                if (isset($seen[abs($literal)])) {
                     continue;
                 }
-                $seen[$literal->getPackageId()] = true;
+                $seen[abs($literal)] = true;
 
-                $l = abs($this->decisionMap[$literal->getPackageId()]);
+                $l = abs($this->decisionMap[abs($literal)]);
 
                 if (1 === $l) {
                     $l1num++;
@@ -543,15 +512,15 @@ class Solver
 
                     $literal = $this->decisionQueue[$decisionId];
 
-                    if (isset($seen[$literal->getPackageId()])) {
+                    if (isset($seen[abs($literal)])) {
                         break;
                     }
                 }
 
-                unset($seen[$literal->getPackageId()]);
+                unset($seen[abs($literal)]);
 
                 if ($num && 0 === --$num) {
-                    $learnedLiterals[0] = $this->literalFromId(-$literal->getPackageId());
+                    $learnedLiterals[0] = -abs($literal);
 
                     if (!$l1num) {
                         break 2;
@@ -559,7 +528,7 @@ class Solver
 
                     foreach ($learnedLiterals as $i => $learnedLiteral) {
                         if ($i !== 0) {
-                            unset($seen[$literal->getPackageId()]);
+                            unset($seen[abs($learnedLiteral)]);
                         }
                     }
                     // only level 1 marks left
@@ -579,7 +548,7 @@ class Solver
             );
         }
 
-        $newRule = new Rule($learnedLiterals, Rule::RULE_LEARNED, $why);
+        $newRule = new Rule($this->pool, $learnedLiterals, Rule::RULE_LEARNED, $why);
 
         return array($learnedLiterals[0], $ruleLevel, $newRule, $why);
     }
@@ -626,18 +595,12 @@ class Solver
         $seen = array();
         $literals = $conflictRule->getLiterals();
 
-/* unnecessary because unlike rule.d, watch2 == 2nd literal, unless watch2 changed
-        if (sizeof($literals) == 2) {
-            $literals[1] = $this->literalFromId($conflictRule->watch2);
-        }
-*/
-
         foreach ($literals as $literal) {
             // skip the one true literal
             if ($this->decisionsSatisfy($literal)) {
                 continue;
             }
-            $seen[$literal->getPackageId()] = true;
+            $seen[abs($literal)] = true;
         }
 
         $decisionId = count($this->decisionQueue);
@@ -648,7 +611,7 @@ class Solver
             $literal = $this->decisionQueue[$decisionId];
 
             // skip literals that are not in this rule
-            if (!isset($seen[$literal->getPackageId()])) {
+            if (!isset($seen[abs($literal)])) {
                 continue;
             }
 
@@ -658,18 +621,13 @@ class Solver
             $this->analyzeUnsolvableRule($problem, $why, $lastWeakWhy);
 
             $literals = $why->getLiterals();
-/* unnecessary because unlike rule.d, watch2 == 2nd literal, unless watch2 changed
-            if (sizeof($literals) == 2) {
-                $literals[1] = $this->literalFromId($why->watch2);
-            }
-*/
 
             foreach ($literals as $literal) {
                 // skip the one true literal
                 if ($this->decisionsSatisfy($literal)) {
                     continue;
                 }
-                $seen[$literal->getPackageId()] = true;
+                $seen[abs($literal)] = true;
             }
         }
 
@@ -713,7 +671,7 @@ class Solver
     private function resetSolver()
     {
         while ($literal = array_pop($this->decisionQueue)) {
-            $this->decisionMap[$literal->getPackageId()] = 0;
+            $this->decisionMap[abs($literal)] = 0;
         }
 
         $this->decisionQueueWhy = array();
@@ -812,9 +770,9 @@ class Solver
                             if (count($this->installed) != count($this->updateMap)) {
                                 $prunedQueue = array();
                                 foreach ($decisionQueue as $literal) {
-                                    if (isset($this->installedMap[$literal->getPackageId()])) {
+                                    if (isset($this->installedMap[abs($literal)])) {
                                         $prunedQueue[] = $literal;
-                                        if (isset($this->updateMap[$literal->getPackageId()])) {
+                                        if (isset($this->updateMap[abs($literal)])) {
                                             $prunedQueue = $decisionQueue;
                                             break;
                                         }
@@ -873,15 +831,15 @@ class Solver
                 // just need to decide on the positive literals
                 //
                 foreach ($literals as $literal) {
-                    if (!$literal->isWanted()) {
-                        if (!$this->decidedInstall($literal->getPackage())) {
+                    if ($literal <= 0) {
+                        if (!$this->decidedInstall(abs($literal))) {
                             continue 2; // next rule
                         }
                     } else {
-                        if ($this->decidedInstall($literal->getPackage())) {
+                        if ($this->decidedInstall(abs($literal))) {
                             continue 2; // next rule
                         }
-                        if ($this->undecided($literal->getPackage())) {
+                        if ($this->undecided(abs($literal))) {
                             $decisionQueue[] = $literal;
                         }
                     }
@@ -919,7 +877,7 @@ class Solver
                     list($literals, $level) = $this->branches[$i];
 
                     foreach ($literals as $offset => $literal) {
-                        if ($literal && $literal->isWanted() && $this->decisionMap[$literal->getPackageId()] > $level + 1) {
+                        if ($literal && $literal > 0 && $this->decisionMap[abs($literal)] > $level + 1) {
                             $lastLiteral = $literal;
                             $lastBranchIndex = $i;
                             $lastBranchOffset = $offset;
