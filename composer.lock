@@ -12,11 +12,6 @@
         {
             "package": "symfony/console",
             "version": "dev-master",
-            "source-reference": "0e67dc701ff55d2a1899a1e638a13a4be96d19b9"
-        },
-        {
-            "package": "symfony/console",
-            "version": "dev-master",
             "source-reference": "0e67dc701ff55d2a1899a1e638a13a4be96d19b9",
             "alias-pretty-version": "2.1.x-dev",
             "alias-version": "2.1.9999999.9999999-dev"
@@ -24,16 +19,12 @@
         {
             "package": "symfony/console",
             "version": "dev-master",
-            "source-reference": "ec3d45fafea157507b7dce339ce5a7c29de7642d",
-            "alias-pretty-version": "2.1.x-dev",
-            "alias-version": "2.1.9999999.9999999-dev"
+            "source-reference": "0e67dc701ff55d2a1899a1e638a13a4be96d19b9"
         },
         {
             "package": "symfony/finder",
             "version": "dev-master",
-            "source-reference": "3c9379f3726401a1faf274204bd0ef3f5b24258a",
-            "alias-pretty-version": "2.1.x-dev",
-            "alias-version": "2.1.9999999.9999999-dev"
+            "source-reference": "a464fd63f0b1bf0feef1ea1dd9642728c2c2060a"
         },
         {
             "package": "symfony/finder",
@@ -43,21 +34,16 @@
             "alias-version": "2.1.9999999.9999999-dev"
         },
         {
-            "package": "symfony/finder",
-            "version": "dev-master",
-            "source-reference": "a464fd63f0b1bf0feef1ea1dd9642728c2c2060a"
-        },
-        {
-            "package": "symfony/process",
-            "version": "dev-master",
-            "source-reference": "106f2db51cecf2fe5ee59e428b8f4a918c4034fa"
-        },
-        {
             "package": "symfony/process",
             "version": "dev-master",
             "source-reference": "106f2db51cecf2fe5ee59e428b8f4a918c4034fa",
             "alias-pretty-version": "2.1.x-dev",
             "alias-version": "2.1.9999999.9999999-dev"
+        },
+        {
+            "package": "symfony/process",
+            "version": "dev-master",
+            "source-reference": "106f2db51cecf2fe5ee59e428b8f4a918c4034fa"
         }
     ],
     "packages-dev": null,
