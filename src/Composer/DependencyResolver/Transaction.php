@@ -43,35 +43,35 @@ class Transaction
         $installMeansUpdateMap = array();
 
         foreach ($this->decisionQueue as $i => $literal) {
-            $package = $literal->getPackage();
+            $package = $this->pool->literalToPackage($literal);
 
             // !wanted & installed
-            if (!$literal->isWanted() && isset($this->installedMap[$package->getId()])) {
+            if ($literal <= 0 && isset($this->installedMap[$package->getId()])) {
                 $updates = $this->policy->findUpdatePackages($this->pool, $this->installedMap, $package);
 
-                $literals = array(new Literal($package, true));
+                $literals = array($package->getId());
 
                 foreach ($updates as $update) {
-                    $literals[] = new Literal($update, true);
+                    $literals[] = $update->getId();
                 }
 
                 foreach ($literals as $updateLiteral) {
-                    if (!$updateLiteral->equals($literal)) {
-                        $installMeansUpdateMap[$updateLiteral->getPackageId()] = $package;
+                    if ($updateLiteral !== $literal) {
+                        $installMeansUpdateMap[abs($updateLiteral)] = $package;
                     }
                 }
             }
         }
 
         foreach ($this->decisionQueue as $i => $literal) {
-            $package = $literal->getPackage();
+            $package = $this->pool->literalToPackage($literal);
 
             // wanted & installed || !wanted & !installed
-            if ($literal->isWanted() == (isset($this->installedMap[$package->getId()]))) {
+            if (($literal > 0) == (isset($this->installedMap[$package->getId()]))) {
                 continue;
             }
 
-            if ($literal->isWanted()) {
+            if ($literal > 0) {
                 if ($package instanceof AliasPackage) {
                     $transaction[] = new Operation\MarkAliasInstalledOperation(
                         $package, $this->decisionQueueWhy[$i]
@@ -79,16 +79,16 @@ class Transaction
                     continue;
                 }
 
-                if (isset($installMeansUpdateMap[$literal->getPackageId()])) {
+                if (isset($installMeansUpdateMap[abs($literal)])) {
 
-                    $source = $installMeansUpdateMap[$literal->getPackageId()];
+                    $source = $installMeansUpdateMap[abs($literal)];
 
                     $transaction[] = new Operation\UpdateOperation(
                         $source, $package, $this->decisionQueueWhy[$i]
                     );
 
                     // avoid updates to one package from multiple origins
-                    unset($installMeansUpdateMap[$literal->getPackageId()]);
+                    unset($installMeansUpdateMap[abs($literal)]);
                     $ignoreRemove[$source->getId()] = true;
                 } else {
                     $transaction[] = new Operation\InstallOperation(

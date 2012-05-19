@@ -28,8 +28,8 @@ class RuleWatchNode
 
         $literals = $rule->getLiterals();
 
-        $this->watch1 = (count($literals) > 0) ? $literals[0]->getId() : 0;
-        $this->watch2 = (count($literals) > 1) ? $literals[1]->getId() : 0;
+        $this->watch1 = (count($literals) > 0) ? $literals[0] : 0;
+        $this->watch2 = (count($literals) > 1) ? $literals[1] : 0;
     }
 
     /**
@@ -47,10 +47,10 @@ class RuleWatchNode
         $watchLevel = 0;
 
         foreach ($literals as $literal) {
-            $level = abs($decisionMap[$literal->getPackageId()]);
+            $level = abs($decisionMap[abs($literal)]);
 
             if ($level > $watchLevel) {
-                $this->rule->watch2 = $literal->getId();
+                $this->rule->watch2 = $literal;
                 $watchLevel = $level;
             }
         }
@@ -61,9 +61,9 @@ class RuleWatchNode
         return $this->rule;
     }
 
-    public function getOtherWatch($literalId)
+    public function getOtherWatch($literal)
     {
-        if ($this->watch1 == $literalId) {
+        if ($this->watch1 == $literal) {
             return $this->watch2;
         } else {
             return $this->watch1;

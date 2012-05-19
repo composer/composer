@@ -50,34 +50,17 @@ class RuleSetGenerator
      */
     protected function createRequireRule(PackageInterface $package, array $providers, $reason, $reasonData = null)
     {
-        $literals = array(new Literal($package, false));
+        $literals = array(-$package->getId());
 
         foreach ($providers as $provider) {
             // self fulfilling rule?
             if ($provider === $package) {
                 return null;
             }
-            $literals[] = new Literal($provider, true);
+            $literals[] = $provider->getId();
         }
 
-        return new Rule($literals, $reason, $reasonData);
-    }
-
-    /**
-     * Creates a new rule for installing a package
-     *
-     * The rule is simply (A) for a package A to be installed.
-     *
-     * @param PackageInterface $package    The package to be installed
-     * @param int              $reason     A RULE_* constant describing the
-     *                                     reason for generating this rule
-     * @param mixed            $reasonData Any data, e.g. the package name, that
-     *                                     goes with the reason
-     * @return Rule                        The generated rule
-     */
-    protected function createInstallRule(PackageInterface $package, $reason, $reasonData = null)
-    {
-        return new Rule(new Literal($package, true));
+        return new Rule($this->pool, $literals, $reason, $reasonData);
     }
 
     /**
@@ -96,10 +79,10 @@ class RuleSetGenerator
     {
         $literals = array();
         foreach ($packages as $package) {
-            $literals[] = new Literal($package, true);
+            $literals[] = $package->getId();
         }
 
-        return new Rule($literals, $reason, $job['packageName'], $job);
+        return new Rule($this->pool, $literals, $reason, $job['packageName'], $job);
     }
 
     /**
@@ -115,7 +98,7 @@ class RuleSetGenerator
      */
     protected function createRemoveRule(PackageInterface $package, $reason, $job)
     {
-        return new Rule(array(new Literal($package, false)), $reason, $job['packageName'], $job);
+        return new Rule($this->pool, array(-$package->getId()), $reason, $job['packageName'], $job);
     }
 
     /**
@@ -139,7 +122,7 @@ class RuleSetGenerator
             return null;
         }
 
-        return new Rule(array(new Literal($issuer, false), new Literal($provider, false)), $reason, $reasonData);
+        return new Rule($this->pool, array(-$issuer->getId(), -$provider->getId()), $reason, $reasonData);
     }
 
     /**
