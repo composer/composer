@@ -318,7 +318,7 @@ class Solver
 
             $this->propagateIndex++;
 
-            $conflict = $this->watchGraph->walkLiteral(
+            $conflict = $this->watchGraph->propagateLiteral(
                 $literal,
                 $level,
                 array($this, 'decisionsContain'),
