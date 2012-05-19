@@ -22,9 +22,6 @@ class RuleWatchNode
     public $watch1;
     public $watch2;
 
-    public $next1;
-    public $next2;
-
     public function __construct($rule)
     {
         $this->rule = $rule;
@@ -64,21 +61,21 @@ class RuleWatchNode
         return $this->rule;
     }
 
-    public function getNext($literalId)
-    {
-        if ($this->watch1 == $literalId) {
-            return $this->next1;
-        } else {
-            return $this->next2;
-        }
-    }
-
     public function getOtherWatch($literalId)
     {
         if ($this->watch1 == $literalId) {
             return $this->watch2;
         } else {
             return $this->watch1;
+        }
+    }
+
+    public function moveWatch($from, $to)
+    {
+        if ($this->watch1 == $from) {
+            $this->watch1 = $to;
+        } else {
+            $this->watch2 = $to;
         }
     }
 }
