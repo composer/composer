@@ -110,18 +110,6 @@ class RuleTest extends TestCase
         $this->assertFalse($rule->isEnabled());
     }
 
-    public function testSetWeak()
-    {
-        $rule = new Rule($this->pool, array(), 'job1', null);
-        $rule->setWeak(true);
-
-        $rule2 = new Rule($this->pool, array(), 'job1', null);
-        $rule2->setWeak(false);
-
-        $this->assertTrue($rule->isWeak());
-        $this->assertFalse($rule2->isWeak());
-    }
-
     public function testIsAssertions()
     {
         $rule = new Rule($this->pool, array(1, 12), 'job1', null);
