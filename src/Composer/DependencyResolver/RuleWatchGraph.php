@@ -57,15 +57,16 @@ class RuleWatchGraph
             if (!$node->getRule()->isDisabled() && !call_user_func($skipCallback, $otherWatch)) {
                 $ruleLiterals = $node->getRule()->getLiterals();
 
-                if (sizeof($ruleLiterals) > 2) {
-                    foreach ($ruleLiterals as $ruleLiteral) {
-                        if ($otherWatch !== $ruleLiteral->getId() &&
-                            !call_user_func($conflictCallback, $ruleLiteral->getId())) {
+                foreach ($ruleLiterals as $ruleLiteral) {
+                    $ruleLiteralId = $ruleLiteral->getId();
 
-                            $this->moveWatch($literalId, $ruleLiteral->getId(), $node);
+                    if ($literalId !== $ruleLiteralId &&
+                        $otherWatch !== $ruleLiteralId &&
+                        !call_user_func($conflictCallback, $ruleLiteralId)) {
 
-                            continue 2;
-                        }
+                        $this->moveWatch($literalId, $ruleLiteralId, $node);
+
+                        continue 2;
                     }
                 }
 
