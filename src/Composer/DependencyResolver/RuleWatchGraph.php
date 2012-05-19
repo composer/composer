@@ -43,7 +43,7 @@ class RuleWatchGraph
         return isset($this->watches[$literal]);
     }
 
-    public function walkLiteral($literal, $level, $skipCallback, $conflictCallback, $decideCallback)
+    public function propagateLiteral($literal, $level, $skipCallback, $conflictCallback, $decideCallback)
     {
         if (!isset($this->watches[$literal])) {
             return null;
