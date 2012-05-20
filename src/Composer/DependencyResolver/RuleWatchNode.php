@@ -17,10 +17,10 @@ namespace Composer\DependencyResolver;
  */
 class RuleWatchNode
 {
-    protected $rule;
-
     public $watch1;
     public $watch2;
+
+    protected $rule;
 
     public function __construct($rule)
     {
