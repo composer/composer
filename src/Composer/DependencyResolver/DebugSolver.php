@@ -17,7 +17,7 @@ namespace Composer\DependencyResolver;
  */
 class DebugSolver extends Solver
 {
-    private function printDecisionMap()
+    protected function printDecisionMap()
     {
         echo "\nDecisionMap: \n";
         foreach ($this->decisionMap as $packageId => $level) {
@@ -35,16 +35,16 @@ class DebugSolver extends Solver
         echo "\n";
     }
 
-    private function printDecisionQueue()
+    protected function printDecisionQueue()
     {
         echo "DecisionQueue: \n";
         foreach ($this->decisionQueue as $i => $literal) {
-            echo '    ' . $literal . ' ' . $this->decisionQueueWhy[$i]." level ".$this->decisionMap[$literal->getPackageId()]."\n";
+            echo '    ' . $this->pool->literalToString($literal) . ' ' . $this->decisionQueueWhy[$i]." level ".$this->decisionMap[abs($literal)]."\n";
         }
         echo "\n";
     }
 
-    private function printWatches()
+    protected function printWatches()
     {
         echo "\nWatches:\n";
         foreach ($this->watches as $literalId => $watch) {
