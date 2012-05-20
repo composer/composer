@@ -173,14 +173,23 @@ To get more information about a certain command, just use `help`.
 
     $ php composer.phar help install
 
-## shell completion
+## completion
 
-Composer currently provides a BASH shell completion helper. To find out
-how to use it, type `help completion`:
+Composer provides a shell `completion` helper. Currently, when you invoke the `completion`
+command it generates and returns a list of default Composer commands.
+
+    $ php composer.phar completion
+
+The `completion` command queries the installed Composer commands to generate the following list:
+
+    about completion create-project depends init install search self-update show update validate
+
+To find out how to use it with your particular shell (it currently supports BASH), type
+`help completion`:
 
     $ php composer.phar help completion
 
-The `help completion` command will provide you with the following information:
+Typing `help completion` will provide you with information similar to:
 
     Add the following to `$HOME/.bashrc` or your shell's equivalent configuration file:
     complete -W "$(php `which composer.phar` completion)" composer
