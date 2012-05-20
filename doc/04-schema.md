@@ -230,6 +230,23 @@ Example:
         }
     }
 
+`require` and `require-dev` additionally support explicit references (i.e.
+commit) for dev versions to make sure they are blocked to a given state, even
+when you run update. These only work if you explicitly require a dev version
+and append the reference with `#<ref>`. Note that while this is convenient at
+times, it should not really be how you use packages in the long term. You
+should always try to switch to tagged releases as soon as you can, especially
+if the project you work on will not be touched for a while.
+
+Example:
+
+    {
+        "require": {
+            "monolog/monolog": "dev-master#2eb0c0978d290a1c45346a1955188929cb4e5db7"
+            "acme/foo": "1.0.x-dev#abc123"
+        }
+    }
+
 #### require
 
 Lists packages required by this package. The package will not be installed

@@ -51,6 +51,7 @@ class MemoryPackage extends BasePackage
     // TODO BC change dev to stable end of june?
     protected $minimumStability = 'dev';
     protected $stabilityFlags = array();
+    protected $references = array();
 
     protected $requires = array();
     protected $conflicts = array();
@@ -635,6 +636,24 @@ class MemoryPackage extends BasePackage
     public function getStabilityFlags()
     {
         return $this->stabilityFlags;
+    }
+
+    /**
+     * Set the references
+     *
+     * @param array $references
+     */
+    public function setReferences(array $references)
+    {
+        $this->references = $references;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getReferences()
+    {
+        return $this->references;
     }
 
     /**

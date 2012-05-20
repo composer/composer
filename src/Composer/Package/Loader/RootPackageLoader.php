@@ -63,17 +63,18 @@ class RootPackageLoader extends ArrayLoader
 
         $aliases = array();
         $stabilityFlags = array();
-        if (isset($config['require'])) {
-            $aliases = $this->extractAliases($config['require'], $aliases);
-            $stabilityFlags = $this->extractStabilityFlags($config['require'], $stabilityFlags);
-        }
-        if (isset($config['require-dev'])) {
-            $aliases = $this->extractAliases($config['require-dev'], $aliases);
-            $stabilityFlags = $this->extractStabilityFlags($config['require-dev'], $stabilityFlags);
+        $references = array();
+        foreach (array('require', 'require-dev') as $linkType) {
+            if (isset($config[$linkType])) {
+                $aliases = $this->extractAliases($config[$linkType], $aliases);
+                $stabilityFlags = $this->extractStabilityFlags($config[$linkType], $stabilityFlags);
+                $references = $this->extractReferences($config[$linkType], $references);
+            }
         }
 
         $package->setAliases($aliases);
         $package->setStabilityFlags($stabilityFlags);
+        $package->setReferences($references);
 
         if (isset($config['minimum-stability'])) {
             $package->setMinimumStability(VersionParser::normalizeStability($config['minimum-stability']));
@@ -144,5 +145,17 @@ class RootPackageLoader extends ArrayLoader
         }
 
         return $stabilityFlags;
+    }
+
+    private function extractReferences(array $requires, array $references)
+    {
+        foreach ($requires as $reqName => $reqVersion) {
+            if (preg_match('{^[^,\s@]+?#([a-f0-9]+)$}', $reqVersion, $match) && 'dev' === ($stabilityName = VersionParser::parseStability($reqVersion))) {
+                $name = strtolower($reqName);
+                $references[$name] = $match[1];
+            }
+        }
+
+        return $references;
     }
 }
