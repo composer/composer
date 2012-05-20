@@ -723,7 +723,9 @@ class Solver
                                 $noneSatisfied = false;
                                 break;
                             }
-                            $decisionQueue[] = $literal;
+                            if ($literal > 0 && $this->undecided($literal)) {
+                                $decisionQueue[] = $literal;
+                            }
                         }
 
                         if ($noneSatisfied && count($decisionQueue)) {
