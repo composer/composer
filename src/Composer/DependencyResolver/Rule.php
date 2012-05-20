@@ -38,7 +38,7 @@ class Rule
 
     protected $job;
 
-    public $ruleHash;
+    protected $ruleHash;
 
     public function __construct(Pool $pool, array $literals, $reason, $reasonData, $job = null)
     {

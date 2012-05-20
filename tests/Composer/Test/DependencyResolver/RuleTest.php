@@ -28,10 +28,9 @@ class RuleTest extends TestCase
 
     public function testGetHash()
     {
-        $rule = new Rule($this->pool, array(), 'job1', null);
-        $rule->ruleHash = '123';
+        $rule = new Rule($this->pool, array(123), 'job1', null);
 
-        $this->assertEquals('123', $rule->getHash());
+        $this->assertEquals(substr(md5('123'), 0, 5), $rule->getHash());
     }
 
     public function testSetAndGetId()
@@ -44,22 +43,8 @@ class RuleTest extends TestCase
 
     public function testEqualsForRulesWithDifferentHashes()
     {
-        $rule = new Rule($this->pool, array(), 'job1', null);
-        $rule->ruleHash = '123';
-
-        $rule2 = new Rule($this->pool, array(), 'job1', null);
-        $rule2->ruleHash = '321';
-
-        $this->assertFalse($rule->equals($rule2));
-    }
-
-    public function testEqualsForRulesWithDifferentLiterals()
-    {
-        $rule = new Rule($this->pool, array(1), 'job1', null);
-        $rule->ruleHash = '123';
-
-        $rule2 = new Rule($this->pool, array(12), 'job1', null);
-        $rule2->ruleHash = '123';
+        $rule = new Rule($this->pool, array(1, 2), 'job1', null);
+        $rule2 = new Rule($this->pool, array(1, 3), 'job1', null);
 
         $this->assertFalse($rule->equals($rule2));
     }
@@ -67,14 +52,12 @@ class RuleTest extends TestCase
     public function testEqualsForRulesWithDifferLiteralsQuantity()
     {
         $rule = new Rule($this->pool, array(1, 12), 'job1', null);
-        $rule->ruleHash = '123';
         $rule2 = new Rule($this->pool, array(1), 'job1', null);
-        $rule2->ruleHash = '123';
 
         $this->assertFalse($rule->equals($rule2));
     }
 
-    public function testEqualsForRulesWithThisSameLiterals()
+    public function testEqualsForRulesWithSameLiterals()
     {
         $rule = new Rule($this->pool, array(1, 12), 'job1', null);
         $rule2 = new Rule($this->pool, array(1, 12), 'job1', null);
