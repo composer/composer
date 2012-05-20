@@ -1,0 +1,21 @@
+--TEST--
+Installs a dev package forcing it's reference
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "a/a", "version": "dev-master",
+                    "source": { "reference": "abc123", "url": "", "type": "git" }
+                }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "dev-master#def000"
+    }
+}
+--EXPECT--
+Installing a/a (dev-master def000)
