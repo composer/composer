@@ -289,16 +289,8 @@ class Solver
     protected function propagate($level)
     {
         while ($this->propagateIndex < count($this->decisionQueue)) {
-            // we invert the decided literal here, example:
-            // A was decided => (-A|B) now requires B to be true, so we look for
-            // rules which are fulfilled by -A, rather than A.
-
-            $literal = -$this->decisionQueue[$this->propagateIndex];
-
-            $this->propagateIndex++;
-
             $conflict = $this->watchGraph->propagateLiteral(
-                $literal,
+                $this->decisionQueue[$this->propagateIndex++],
                 $level,
                 array($this, 'decisionsContain'),
                 array($this, 'decisionsConflict'),
