@@ -13,18 +13,36 @@
 namespace Composer\DependencyResolver;
 
 /**
+ * An extension of SplDoublyLinkedList with seek and removal of current element
+ *
+ * SplDoublyLinkedList only allows deleting a particular offset and has no
+ * method to set the internal iterator to a particular offset.
+ *
  * @author Nils Adermann <naderman@naderman.de>
  */
 class RuleWatchChain extends \SplDoublyLinkedList
 {
     protected $offset = 0;
 
+    /**
+     * Moves the internal iterator to the specified offset
+     *
+     * @param int $offset The offset to seek to.
+     */
     public function seek($offset)
     {
         $this->rewind();
         for ($i = 0; $i < $offset; $i++, $this->next());
     }
 
+    /**
+     * Removes the current element from the list
+     *
+     * As SplDoublyLinkedList only allows deleting a particular offset and
+     * incorrectly sets the internal iterator if you delete the current value
+     * this method sets the internal iterator back to the following element
+     * using the seek method.
+     */
     public function remove()
     {
         $offset = $this->key();
