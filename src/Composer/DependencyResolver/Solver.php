@@ -381,7 +381,7 @@ class Solver
                 throw new SolverBugException(
                     "Trying to revert to invalid level ".(int) $newLevel." from level ".(int) $level."."
                 );
-            } else if (!$newRule) {
+            } elseif (!$newRule) {
                 throw new SolverBugException(
                     "No rule was learned from analyzing $rule at level $level."
                 );
@@ -451,7 +451,7 @@ class Solver
 
                 if (1 === $l) {
                     $l1num++;
-                } else if ($level === $l) {
+                } elseif ($level === $l) {
                     $num++;
                 } else {
                     // not level1 or conflict level, add to new rule
@@ -660,7 +660,7 @@ class Solver
 
             if ($foundDisabled && $rule->isEnabled()) {
                 $rule->disable();
-            } else if (!$foundDisabled && $rule->isDisabled()) {
+            } elseif (!$foundDisabled && $rule->isDisabled()) {
                 $rule->enable();
             }
         }
