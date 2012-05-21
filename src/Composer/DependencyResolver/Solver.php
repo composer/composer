@@ -731,7 +731,7 @@ class Solver
             }
         }
 
-        foreach ($this->decisionMap as $packageId => $decision) {
+        foreach ($allDecidedMap as $packageId => $decision) {
             if ($packageId === 0) {
                 continue;
             }
