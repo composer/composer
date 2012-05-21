@@ -15,6 +15,7 @@ namespace Composer\Test\DependencyResolver;
 use Composer\DependencyResolver\Rule;
 use Composer\DependencyResolver\RuleSet;
 use Composer\DependencyResolver\RuleSetIterator;
+use Composer\DependencyResolver\Pool;
 
 class ResultSetIteratorTest extends \PHPUnit_Framework_TestCase
 {
@@ -22,13 +23,15 @@ class ResultSetIteratorTest extends \PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
+        $this->pool = new Pool;
+
         $this->rules = array(
             RuleSet::TYPE_JOB => array(
-                new Rule(array(), 'job1', null),
-                new Rule(array(), 'job2', null),
+                new Rule($this->pool, array(), 'job1', null),
+                new Rule($this->pool, array(), 'job2', null),
             ),
             RuleSet::TYPE_LEARNED => array(
-                new Rule(array(), 'update1', null),
+                new Rule($this->pool, array(), 'update1', null),
             ),
             RuleSet::TYPE_PACKAGE => array(),
         );
