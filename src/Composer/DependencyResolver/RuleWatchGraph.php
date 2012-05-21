@@ -17,7 +17,7 @@ namespace Composer\DependencyResolver;
  */
 class RuleWatchGraph
 {
-    protected $watches = array();
+    protected $watchChains = array();
 
     /**
      * Alters watch chains for a rule.
@@ -30,28 +30,30 @@ class RuleWatchGraph
         }
 
         foreach (array($node->watch1, $node->watch2) as $literal) {
-            if (!isset($this->watches[$literal])) {
-                $this->watches[$literal] = new RuleWatchChain;
+            if (!isset($this->watchChains[$literal])) {
+                $this->watchChains[$literal] = new RuleWatchChain;
             }
 
-            $this->watches[$literal]->unshift($node);
+            $this->watchChains[$literal]->unshift($node);
         }
     }
 
     public function contains($literal)
     {
-        return isset($this->watches[$literal]);
+        return isset($this->watchChains[$literal]);
     }
 
     public function propagateLiteral($literal, $level, $skipCallback, $conflictCallback, $decideCallback)
     {
-        if (!isset($this->watches[$literal])) {
+        if (!isset($this->watchChains[$literal])) {
             return null;
         }
 
-        $this->watches[$literal]->rewind();
-        while ($this->watches[$literal]->valid()) {
-            $node = $this->watches[$literal]->current();
+        $chain = $this->watchChains[$literal];
+
+        $chain->rewind();
+        while ($chain->valid()) {
+            $node = $chain->current();
             $otherWatch = $node->getOtherWatch($literal);
 
             if (!$node->getRule()->isDisabled() && !call_user_func($skipCallback, $otherWatch)) {
@@ -76,7 +78,7 @@ class RuleWatchGraph
                 call_user_func($decideCallback, $otherWatch, $level, $node->getRule());
             }
 
-            $this->watches[$literal]->next();
+            $chain->next();
         }
 
         return null;
@@ -84,12 +86,12 @@ class RuleWatchGraph
 
     protected function moveWatch($fromLiteral, $toLiteral, $node)
     {
-        if (!isset($this->watches[$toLiteral])) {
-            $this->watches[$toLiteral] = new RuleWatchChain;
+        if (!isset($this->watchChains[$toLiteral])) {
+            $this->watchChains[$toLiteral] = new RuleWatchChain;
         }
 
         $node->moveWatch($fromLiteral, $toLiteral);
-        $this->watches[$fromLiteral]->remove();
-        $this->watches[$toLiteral]->unshift($node);
+        $this->watchChains[$fromLiteral]->remove();
+        $this->watchChains[$toLiteral]->unshift($node);
     }
 }
