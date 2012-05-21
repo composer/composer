@@ -175,17 +175,18 @@ To get more information about a certain command, just use `help`.
 
 ## completion
 
-Composer provides a shell `completion` helper. Currently, when you invoke the `completion`
-command it generates and returns a list of default Composer commands.
+Composer provides a `completion` command, which, when invoked, generates and
+outputs a list of default Composer commands.
 
     $ php composer.phar completion
 
-The `completion` command queries the installed Composer commands to generate the following list:
+The `completion` command queries the installed Composer commands to generate
+a definitive list that looks similar to:
 
     about completion create-project depends init install search self-update show update validate
 
-To find out how to use it with your particular shell (it currently supports BASH), type
-`help completion`:
+To find out how to use it with your particular shell (it currently supports BASH),
+type `help completion`:
 
     $ php composer.phar help completion
 
