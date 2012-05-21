@@ -257,6 +257,16 @@ unless those requirements can be met.
 Lists packages required for developing this package, or running
 tests, etc. They are installed if install or update is ran with `--dev`.
 
+Packages listed here and their dependencies can not overrule the resolution
+found with the packages listed in require. This is even true if a different
+version of a package would be installable and solve the conflict. The reason
+is that `install --dev` produces the exact same state as just `install`, apart
+from the additional dev packages.
+
+If you run into such a conflict, you can specify the conflicting package in
+the require section and require the right version number to resolve the
+conflict.
+
 #### conflict
 
 Lists packages that conflict with this version of this package. They
