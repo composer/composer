@@ -13,6 +13,10 @@
 namespace Composer\DependencyResolver;
 
 /**
+ * Wrapper around a Rule which keeps track of the two literals it watches
+ *
+ * Used by RuleWatchGraph to store rules in two RuleWatchChains.
+ *
  * @author Nils Adermann <naderman@naderman.de>
  */
 class RuleWatchNode
@@ -22,6 +26,11 @@ class RuleWatchNode
 
     protected $rule;
 
+    /**
+     * Creates a new node watching the first and second literals of the rule.
+     *
+     * @param Rule $rule The rule to wrap
+     */
     public function __construct($rule)
     {
         $this->rule = $rule;
@@ -33,7 +42,12 @@ class RuleWatchNode
     }
 
     /**
-     * Put watch2 on rule's literal with highest level
+     * Places the second watch on the rule's literal, decided at the highest level
+     *
+     * Useful for learned rules where the literal for the highest rule is most
+     * likely to quickly lead to further decisions.
+     *
+     * @param SplFixedArray $decisionMap A package to decision lookup table
      */
     public function watch2OnHighest($decisionMap)
     {
@@ -56,11 +70,22 @@ class RuleWatchNode
         }
     }
 
+    /**
+     * Returns the rule this node wraps
+     *
+     * @return Rule
+     */
     public function getRule()
     {
         return $this->rule;
     }
 
+    /**
+     * Given one watched literal, this method returns the other watched literal
+     *
+     * @param int The watched literal that should not be returned
+     * @return int A literal
+     */
     public function getOtherWatch($literal)
     {
         if ($this->watch1 == $literal) {
@@ -70,6 +95,12 @@ class RuleWatchNode
         }
     }
 
+    /**
+     * Moves a watch from one literal to another
+     *
+     * @param int $from The previously watched literal
+     * @param int $to The literal to be watched now
+     */
     public function moveWatch($from, $to)
     {
         if ($this->watch1 == $from) {
