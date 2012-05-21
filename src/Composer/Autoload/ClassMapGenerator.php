@@ -88,7 +88,11 @@ class ClassMapGenerator
     static private function findClasses($path)
     {
         $contents = file_get_contents($path);
-        $tokens   = token_get_all($contents);
+        try {
+            $tokens   = token_get_all($contents);
+        } catch (\Exception $e) {
+            throw new RuntimeException('Could not scan for classes inside '.$path.": \n".$e->getMessage(), 0, $e);
+        }
         $T_TRAIT  = version_compare(PHP_VERSION, '5.4', '<') ? -1 : T_TRAIT;
 
         $classes = array();
