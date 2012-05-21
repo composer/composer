@@ -154,13 +154,13 @@ class Solver
                             $this->updateMap[$package->getId()] = true;
                         }
                     }
-                break;
+                    break;
 
                 case 'update-all':
                     foreach ($this->installedMap as $package) {
                         $this->updateMap[$package->getId()] = true;
                     }
-                break;
+                    break;
 
                 case 'install':
                     if (!$job['packages']) {
@@ -168,7 +168,7 @@ class Solver
                         $problem->addRule(new Rule($this->pool, array(), null, null, $job));
                         $this->problems[] = $problem;
                     }
-                break;
+                    break;
             }
         }
     }

@@ -258,7 +258,7 @@ class RuleSetGenerator
                         $rule = $this->createInstallOneOfRule($job['packages'], Rule::RULE_JOB_INSTALL, $job);
                         $this->addRule(RuleSet::TYPE_JOB, $rule);
                     }
-                break;
+                    break;
                 case 'remove':
                     // remove all packages with this name including uninstalled
                     // ones to make sure none of them are picked as replacements
@@ -266,7 +266,7 @@ class RuleSetGenerator
                         $rule = $this->createRemoveRule($package, Rule::RULE_JOB_REMOVE, $job);
                         $this->addRule(RuleSet::TYPE_JOB, $rule);
                     }
-                break;
+                    break;
             }
         }
     }
