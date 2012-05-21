@@ -173,6 +173,32 @@ To get more information about a certain command, just use `help`.
 
     $ php composer.phar help install
 
+## completion
+
+Composer provides a `completion` command, which, when invoked, generates and
+outputs a list of default Composer commands.
+
+    $ php composer.phar completion
+
+The `completion` command queries the installed Composer commands to generate
+a definitive list that looks similar to:
+
+    about completion create-project depends init install search self-update show update validate
+
+To find out how to use it with your particular shell (it currently supports BASH),
+type `help completion`:
+
+    $ php composer.phar help completion
+
+Typing `help completion` will provide you with information similar to:
+
+    Add the following to `$HOME/.bashrc` or your shell's equivalent configuration file:
+    complete -W "$(php `which composer.phar` completion)" composer
+    complete -W "$(php `which composer.phar` completion)" composer.phar
+    complete -W "$(php `which composer.phar` completion)" php composer.phar
+
+The only prerequisite is that `composer.phar` must be in your `$PATH`.
+
 ## Environment variables
 
 You can set a number of environment variables that override certain settings.
