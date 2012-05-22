@@ -88,7 +88,15 @@ class EventDispatcher
                 throw new \UnexpectedValueException('Method '.$callable.' is not callable, can not call '.$event->getName().' script');
             }
 
-            $className::$methodName($event);
+            try {
+                $className::$methodName($event);
+            } catch (\Exception $e) {
+                $message = "%s terminated with an exception.\n[%s] %s";
+                throw new \RuntimeException(sprintf($message,
+                                                    $callable,
+                                                    get_class($e),
+                                                    $e->getMessage()));
+            }
         }
     }
 
