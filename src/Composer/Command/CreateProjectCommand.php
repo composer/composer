@@ -44,6 +44,7 @@ class CreateProjectCommand extends Command
                 new InputArgument('version', InputArgument::OPTIONAL, 'Version, will defaults to latest'),
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('repository-url', null, InputOption::VALUE_REQUIRED, 'Pick a different repository url to look for the package.'),
+                new InputOption('dev', null, InputOption::VALUE_NONE, 'Whether to install dependencies for development.')
             ))
             ->setHelp(<<<EOT
 The <info>create-project</info> command creates a new project from a given
@@ -54,7 +55,9 @@ for developers of your project.
 <info>php composer.phar create-project vendor/project target-directory [version]</info>
 
 To setup a developer workable version you should create the project using the source
-controlled code by appending the <info>'--prefer-source'</info> flag.
+controlled code by appending the <info>'--prefer-source'</info> flag. Also, it is
+advisable to install all dependencies required for development by appending the
+<info>'--dev'</info> flag.
 
 To install a package from another repository repository than the default one you
 can pass the <info>'--repository-url=http://myrepository.org'</info> flag.
@@ -71,12 +74,13 @@ EOT
             $input->getArgument('package'),
             $input->getArgument('directory'),
             $input->getArgument('version'),
-            (Boolean) $input->getOption('prefer-source'),
+            $input->hasOption('prefer-source'),
+            $input->hasOption('dev'),
             $input->getOption('repository-url')
         );
     }
 
-    public function installProject(IOInterface $io, $packageName, $directory = null, $version = null, $preferSource = false, $repositoryUrl = null)
+    public function installProject(IOInterface $io, $packageName, $directory = null, $version = null, $preferSource = false, $installDevPackages = false, $repositoryUrl = null)
     {
         $dm = $this->createDownloadManager($io);
         if ($preferSource) {
@@ -124,6 +128,7 @@ EOT
 
         $installer
             ->setPreferSource($preferSource)
+            ->setDevMode($installDevPackages)
             ->run();
     }
 
