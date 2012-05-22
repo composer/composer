@@ -166,7 +166,7 @@ class JsonFile
      * @param  int    $options json_encode options (defaults to JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
      * @return string Encoded json
      */
-    static public function encode($data, $options = 448)
+    public static function encode($data, $options = 448)
     {
         if (version_compare(PHP_VERSION, '5.4', '>=')) {
             return json_encode($data, $options);

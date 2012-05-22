@@ -19,6 +19,6 @@ namespace Composer\Package\LinkConstraint;
  */
 interface LinkConstraintInterface
 {
-    function matches(LinkConstraintInterface $provider);
-    function __toString();
+    public function matches(LinkConstraintInterface $provider);
+    public function __toString();
 }

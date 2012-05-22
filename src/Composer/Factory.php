@@ -254,7 +254,7 @@ class Factory
      * @param  mixed       $config either a configuration array or a filename to read from, if null it will read from the default filename
      * @return Composer
      */
-    static public function create(IOInterface $io, $config = null)
+    public static function create(IOInterface $io, $config = null)
     {
         $factory = new static();
 

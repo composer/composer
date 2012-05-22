@@ -24,5 +24,5 @@ interface NotifiableRepositoryInterface extends RepositoryInterface
      *
      * @param PackageInterface $package Package that is installed
      */
-    function notifyInstall(PackageInterface $package);
+    public function notifyInstall(PackageInterface $package);
 }

@@ -25,19 +25,19 @@ interface OperationInterface
      *
      * @return string
      */
-    function getJobType();
+    public function getJobType();
 
     /**
      * Returns operation reason.
      *
      * @return string
      */
-    function getReason();
+    public function getReason();
 
     /**
      * Serializes the operation in a human readable format
      *
      * @return string
      */
-    function __toString();
+    public function __toString();
 }

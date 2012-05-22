@@ -19,7 +19,7 @@ use Symfony\Component\Process\Process;
  */
 class ProcessExecutor
 {
-    static protected $timeout = 300;
+    protected static $timeout = 300;
 
     protected $captureOutput;
     protected $errorOutput;
@@ -75,12 +75,12 @@ class ProcessExecutor
         echo $buffer;
     }
 
-    static public function getTimeout()
+    public static function getTimeout()
     {
         return static::$timeout;
     }
 
-    static public function setTimeout($timeout)
+    public static function setTimeout($timeout)
     {
         static::$timeout = $timeout;
     }

@@ -24,21 +24,21 @@ interface IOInterface
      *
      * @return Boolean
      */
-    function isInteractive();
+    public function isInteractive();
 
     /**
      * Is this input verbose?
      *
      * @return Boolean
      */
-    function isVerbose();
+    public function isVerbose();
 
     /**
      * Is this output decorated?
      *
      * @return Boolean
      */
-    function isDecorated();
+    public function isDecorated();
 
     /**
      * Writes a message to the output.
@@ -46,7 +46,7 @@ interface IOInterface
      * @param string|array $messages The message as an array of lines or a single string
      * @param Boolean      $newline  Whether to add a newline or not
      */
-    function write($messages, $newline = true);
+    public function write($messages, $newline = true);
 
     /**
      * Overwrites a previous message to the output.
@@ -55,7 +55,7 @@ interface IOInterface
      * @param Boolean      $newline  Whether to add a newline or not
      * @param integer      $size     The size of line
      */
-    function overwrite($messages, $newline = true, $size = 80);
+    public function overwrite($messages, $newline = true, $size = 80);
 
     /**
      * Asks a question to the user.
@@ -67,7 +67,7 @@ interface IOInterface
      *
      * @throws \RuntimeException If there is no data to read in the input stream
      */
-    function ask($question, $default = null);
+    public function ask($question, $default = null);
 
     /**
      * Asks a confirmation to the user.
@@ -79,7 +79,7 @@ interface IOInterface
      *
      * @return Boolean true if the user has confirmed, false otherwise
      */
-    function askConfirmation($question, $default = true);
+    public function askConfirmation($question, $default = true);
 
     /**
      * Asks for a value and validates the response.
@@ -97,7 +97,7 @@ interface IOInterface
      *
      * @throws \Exception When any of the validators return an error
      */
-    function askAndValidate($question, $validator, $attempts = false, $default = null);
+    public function askAndValidate($question, $validator, $attempts = false, $default = null);
 
     /**
      * Asks a question to the user and hide the answer.
@@ -106,14 +106,14 @@ interface IOInterface
      *
      * @return string The answer
      */
-    function askAndHideAnswer($question);
+    public function askAndHideAnswer($question);
 
     /**
      * Get all authorization informations entered.
      *
      * @return array The map of authorization
      */
-    function getAuthorizations();
+    public function getAuthorizations();
 
     /**
      * Verify if the repository has a authorization informations.
@@ -122,7 +122,7 @@ interface IOInterface
      *
      * @return boolean
      */
-    function hasAuthorization($repositoryName);
+    public function hasAuthorization($repositoryName);
 
     /**
      * Get the username and password of repository.
@@ -131,7 +131,7 @@ interface IOInterface
      *
      * @return array The 'username' and 'password'
      */
-    function getAuthorization($repositoryName);
+    public function getAuthorization($repositoryName);
 
     /**
      * Set the authorization informations for the repository.
@@ -140,5 +140,5 @@ interface IOInterface
      * @param string $username       The username
      * @param string $password       The password
      */
-    function setAuthorization($repositoryName, $username, $password = null);
+    public function setAuthorization($repositoryName, $username, $password = null);
 }

@@ -29,7 +29,7 @@ interface InstallerInterface
      * @param  string  $packageType
      * @return Boolean
      */
-    function supports($packageType);
+    public function supports($packageType);
 
     /**
      * Checks that provided package is installed.
@@ -39,7 +39,7 @@ interface InstallerInterface
      *
      * @return Boolean
      */
-    function isInstalled(InstalledRepositoryInterface $repo, PackageInterface $package);
+    public function isInstalled(InstalledRepositoryInterface $repo, PackageInterface $package);
 
     /**
      * Installs specific package.
@@ -47,7 +47,7 @@ interface InstallerInterface
      * @param InstalledRepositoryInterface $repo    repository in which to check
      * @param PackageInterface             $package package instance
      */
-    function install(InstalledRepositoryInterface $repo, PackageInterface $package);
+    public function install(InstalledRepositoryInterface $repo, PackageInterface $package);
 
     /**
      * Updates specific package.
@@ -58,7 +58,7 @@ interface InstallerInterface
      *
      * @throws InvalidArgumentException if $from package is not installed
      */
-    function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target);
+    public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target);
 
     /**
      * Uninstalls specific package.
@@ -66,7 +66,7 @@ interface InstallerInterface
      * @param InstalledRepositoryInterface $repo    repository in which to check
      * @param PackageInterface             $package package instance
      */
-    function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package);
+    public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package);
 
     /**
      * Returns the installation path of a package
@@ -74,5 +74,5 @@ interface InstallerInterface
      * @param  PackageInterface $package
      * @return string           path
      */
-    function getInstallPath(PackageInterface $package);
+    public function getInstallPath(PackageInterface $package);
 }
