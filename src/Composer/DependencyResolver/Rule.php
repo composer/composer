@@ -20,8 +20,6 @@ class Rule
     const RULE_INTERNAL_ALLOW_UPDATE = 1;
     const RULE_JOB_INSTALL = 2;
     const RULE_JOB_REMOVE = 3;
-    const RULE_JOB_LOCK = 4;
-    const RULE_NOT_INSTALLABLE = 5;
     const RULE_PACKAGE_CONFLICT = 6;
     const RULE_PACKAGE_REQUIRES = 7;
     const RULE_PACKAGE_OBSOLETES = 8;
@@ -31,40 +29,35 @@ class Rule
     const RULE_LEARNED = 12;
     const RULE_PACKAGE_ALIAS = 13;
 
+    protected $pool;
+
     protected $disabled;
     protected $literals;
     protected $type;
     protected $id;
-    protected $weak;
 
-    public $watch1;
-    public $watch2;
+    protected $job;
 
-    public $next1;
-    public $next2;
+    protected $ruleHash;
 
-    public $ruleHash;
-
-    public function __construct(array $literals, $reason, $reasonData)
+    public function __construct(Pool $pool, array $literals, $reason, $reasonData, $job = null)
     {
+        $this->pool = $pool;
+
         // sort all packages ascending by id
-        usort($literals, array($this, 'compareLiteralsById'));
+        sort($literals);
 
         $this->literals = $literals;
         $this->reason = $reason;
         $this->reasonData = $reasonData;
 
         $this->disabled = false;
-        $this->weak = false;
 
-        $this->watch1 = (count($this->literals) > 0) ? $literals[0]->getId() : 0;
-        $this->watch2 = (count($this->literals) > 1) ? $literals[1]->getId() : 0;
+        $this->job = $job;
 
         $this->type = -1;
 
-        $this->ruleHash = substr(md5(implode(',', array_map(function ($l) {
-            return $l->getId();
-        }, $this->literals))), 0, 5);
+        $this->ruleHash = substr(md5(implode(',', $this->literals)), 0, 5);
     }
 
     public function getHash()
@@ -80,6 +73,11 @@ class Rule
     public function getId()
     {
         return $this->id;
+    }
+
+    public function getJob()
+    {
+        return $this->job;
     }
 
     /**
@@ -101,7 +99,7 @@ class Rule
         }
 
         for ($i = 0, $n = count($this->literals); $i < $n; $i++) {
-            if ($this->literals[$i]->getId() !== $rule->literals[$i]->getId()) {
+            if ($this->literals[$i] !== $rule->literals[$i]) {
                 return false;
             }
         }
@@ -139,16 +137,6 @@ class Rule
         return !$this->disabled;
     }
 
-    public function isWeak()
-    {
-        return $this->weak;
-    }
-
-    public function setWeak($weak)
-    {
-        $this->weak = $weak;
-    }
-
     public function getLiterals()
     {
         return $this->literals;
@@ -159,24 +147,6 @@ class Rule
         return 1 === count($this->literals);
     }
 
-    public function getNext(Literal $literal)
-    {
-        if ($this->watch1 == $literal->getId()) {
-            return $this->next1;
-        } else {
-            return $this->next2;
-        }
-    }
-
-    public function getOtherWatch(Literal $literal)
-    {
-        if ($this->watch1 == $literal->getId()) {
-            return $this->watch2;
-        } else {
-            return $this->watch1;
-        }
-    }
-
     public function toHumanReadableString()
     {
         $ruleText = '';
@@ -184,7 +154,7 @@ class Rule
             if ($i != 0) {
                 $ruleText .= '|';
             }
-            $ruleText .= $literal;
+            $ruleText .= $this->pool->literalToString($literal);
         }
 
         switch ($this->reason) {
@@ -197,25 +167,19 @@ class Rule
             case self::RULE_JOB_REMOVE:
                 return "Remove command rule ($ruleText)";
 
-            case self::RULE_JOB_LOCK:
-                return "Lock command rule ($ruleText)";
-
-            case self::RULE_NOT_INSTALLABLE:
-                return $ruleText;
-
             case self::RULE_PACKAGE_CONFLICT:
-                $package1 = $this->literals[0]->getPackage();
-                $package2 = $this->literals[1]->getPackage();
+                $package1 = $this->pool->literalToPackage($this->literals[0]);
+                $package2 = $this->pool->literalToPackage($this->literals[1]);
                 return 'Package "'.$package1.'" conflicts with "'.$package2.'"';
 
             case self::RULE_PACKAGE_REQUIRES:
                 $literals = $this->literals;
                 $sourceLiteral = array_shift($literals);
-                $sourcePackage = $sourceLiteral->getPackage();
+                $sourcePackage = $this->pool->literalToPackage($sourceLiteral);
 
                 $requires = array();
                 foreach ($literals as $literal) {
-                    $requires[] = $literal->getPackage();
+                    $requires[] = $this->pool->literalToPackage($literal);
                 }
 
                 $text = 'Package "'.$sourcePackage.'" contains the rule '.$this->reasonData.'. ';
@@ -254,26 +218,11 @@ class Rule
             if ($i != 0) {
                 $result .= '|';
             }
-            $result .= $literal;
+            $result .= $this->pool->literalToString($literal);
         }
 
         $result .= ')';
 
         return $result;
-    }
-
-    /**
-     * Comparison function for sorting literals by their id
-     *
-     * @param  Literal $a
-     * @param  Literal $b
-     * @return int        0 if the literals are equal, 1 if b is larger than a, -1 else
-     */
-    private function compareLiteralsById(Literal $a, Literal $b)
-    {
-        if ($a->getId() === $b->getId()) {
-            return 0;
-        }
-        return $a->getId() < $b->getId() ? -1 : 1;
     }
 }

@@ -30,7 +30,7 @@ class DefaultPolicy implements PolicyInterface
         return $constraint->matchSpecific($version);
     }
 
-    public function findUpdatePackages(Solver $solver, Pool $pool, array $installedMap, PackageInterface $package)
+    public function findUpdatePackages(Pool $pool, array $installedMap, PackageInterface $package)
     {
         $packages = array();
 
@@ -43,12 +43,6 @@ class DefaultPolicy implements PolicyInterface
         return $packages;
     }
 
-    public function installable(Solver $solver, Pool $pool, array $installedMap, PackageInterface $package)
-    {
-        // todo: package blacklist?
-        return true;
-    }
-
     public function getPriority(Pool $pool, PackageInterface $package)
     {
         return $pool->getPriority($package->getRepository());
@@ -56,44 +50,44 @@ class DefaultPolicy implements PolicyInterface
 
     public function selectPreferedPackages(Pool $pool, array $installedMap, array $literals)
     {
-        $packages = $this->groupLiteralsByNamePreferInstalled($installedMap, $literals);
+        $packages = $this->groupLiteralsByNamePreferInstalled($pool,$installedMap, $literals);
 
         foreach ($packages as &$literals) {
             $policy = $this;
             usort($literals, function ($a, $b) use ($policy, $pool, $installedMap) {
-                return $policy->compareByPriorityPreferInstalled($pool, $installedMap, $a->getPackage(), $b->getPackage(), true);
+                return $policy->compareByPriorityPreferInstalled($pool, $installedMap, $pool->literalToPackage($a), $pool->literalToPackage($b), true);
             });
         }
 
         foreach ($packages as &$literals) {
-            $literals = $this->pruneToBestVersion($literals);
+            $literals = $this->pruneToBestVersion($pool, $literals);
 
             $literals = $this->pruneToHighestPriorityOrInstalled($pool, $installedMap, $literals);
 
-            $literals = $this->pruneRemoteAliases($literals);
+            $literals = $this->pruneRemoteAliases($pool, $literals);
         }
 
         $selected = call_user_func_array('array_merge', $packages);
 
         // now sort the result across all packages to respect replaces across packages
         usort($selected, function ($a, $b) use ($policy, $pool, $installedMap) {
-            return $policy->compareByPriorityPreferInstalled($pool, $installedMap, $a->getPackage(), $b->getPackage());
+            return $policy->compareByPriorityPreferInstalled($pool, $installedMap, $pool->literalToPackage($a), $pool->literalToPackage($b));
         });
 
         return $selected;
     }
 
-    protected function groupLiteralsByNamePreferInstalled(array $installedMap, $literals)
+    protected function groupLiteralsByNamePreferInstalled(Pool $pool, array $installedMap, $literals)
     {
         $packages = array();
         foreach ($literals as $literal) {
-            $packageName = $literal->getPackage()->getName();
+            $packageName = $pool->literalToPackage($literal)->getName();
 
             if (!isset($packages[$packageName])) {
                 $packages[$packageName] = array();
             }
 
-            if (isset($installedMap[$literal->getPackageId()])) {
+            if (isset($installedMap[abs($literal)])) {
                 array_unshift($packages[$packageName], $literal);
             } else {
                 $packages[$packageName][] = $literal;
@@ -171,19 +165,21 @@ class DefaultPolicy implements PolicyInterface
         return false;
     }
 
-    protected function pruneToBestVersion($literals)
+    protected function pruneToBestVersion(Pool $pool, $literals)
     {
         $bestLiterals = array($literals[0]);
-        $bestPackage = $literals[0]->getPackage();
+        $bestPackage = $pool->literalToPackage($literals[0]);
         foreach ($literals as $i => $literal) {
             if (0 === $i) {
                 continue;
             }
 
-            if ($this->versionCompare($literal->getPackage(), $bestPackage, '>')) {
-                $bestPackage = $literal->getPackage();
+            $package = $pool->literalToPackage($literal);
+
+            if ($this->versionCompare($package, $bestPackage, '>')) {
+                $bestPackage = $package;
                 $bestLiterals = array($literal);
-            } else if ($this->versionCompare($literal->getPackage(), $bestPackage, '==')) {
+            } else if ($this->versionCompare($package, $bestPackage, '==')) {
                 $bestLiterals[] = $literal;
             }
         }
@@ -221,7 +217,7 @@ class DefaultPolicy implements PolicyInterface
         $priority = null;
 
         foreach ($literals as $literal) {
-            $package = $literal->getPackage();
+            $package = $pool->literalToPackage($literal);
 
             if (isset($installedMap[$package->getId()])) {
                 $selected[] = $literal;
@@ -247,12 +243,12 @@ class DefaultPolicy implements PolicyInterface
      *
      * If no package is a local alias, nothing happens
      */
-    protected function pruneRemoteAliases(array $literals)
+    protected function pruneRemoteAliases(Pool $pool, array $literals)
     {
         $hasLocalAlias = false;
 
         foreach ($literals as $literal) {
-            $package = $literal->getPackage();
+            $package = $pool->literalToPackage($literal);
 
             if ($package instanceof AliasPackage && $package->isRootPackageAlias()) {
                 $hasLocalAlias = true;
@@ -266,7 +262,7 @@ class DefaultPolicy implements PolicyInterface
 
         $selected = array();
         foreach ($literals as $literal) {
-            $package = $literal->getPackage();
+            $package = $pool->literalToPackage($literal);
 
             if ($package instanceof AliasPackage && $package->isRootPackageAlias()) {
                 $selected[] = $literal;
