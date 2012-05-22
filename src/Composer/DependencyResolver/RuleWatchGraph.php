@@ -17,7 +17,7 @@ namespace Composer\DependencyResolver;
  *
  * All rules generated for solving a SAT problem should be inserted into the
  * graph. When a decision on a literal is made, the graph can be used to
- * propagate the decision to all other rules involving the rule, leading to
+ * propagate the decision to all other rules involving the literal, leading to
  * other trivial decisions resulting from unit clauses.
  *
  * @author Nils Adermann <naderman@naderman.de>
