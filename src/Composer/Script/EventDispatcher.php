@@ -91,11 +91,9 @@ class EventDispatcher
             try {
                 $className::$methodName($event);
             } catch (\Exception $e) {
-                $message = "%s terminated with an exception.\n[%s] %s";
-                throw new \RuntimeException(sprintf($message,
-                                                    $callable,
-                                                    get_class($e),
-                                                    $e->getMessage()));
+                $message = "Script %s handling the %s event terminated with an exception";
+                $this->io->write('<error>'.sprintf($message, $callable, $event->getName()).'</error>');
+                throw $e;
             }
         }
     }

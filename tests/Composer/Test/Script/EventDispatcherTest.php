@@ -1,4 +1,5 @@
 <?php
+
 /*
  * This file is part of Composer.
  *
@@ -15,48 +16,44 @@ use Composer\Test\TestCase;
 use Composer\Script\Event;
 use Composer\Script\EventDispatcher;
 
-/**
- * Event Dispatcher Test Case
- *
- * @group event-dispatcher
- * @ticket #693
- * @author Andrea Turso <turso@officinesoftware.co.uk>
- */
 class EventDispatcherTest extends TestCase
 {
     /**
-     * Test the doDispatch method properly catches any exception
-     * thrown from the listener invocation, i.e., <code>$className::$methodName($event)</code>,
-     * and replaces it with a \RuntimeException.
-     *
-     * @expectedException \RuntimeException
+     * @expectedException RuntimeException
      */
-    public function testListenerExceptionsAreSuppressed()
+    public function testListenerExceptionsAreCaught()
     {
+        $io = $this->getMock('Composer\IO\IOInterface');
         $dispatcher = $this->getDispatcherStubForListenersTest(array(
-                "Composer\Test\Script\EventDispatcherTest::call"
-            ));
+            "Composer\Test\Script\EventDispatcherTest::call"
+        ), $io);
+
+        $io->expects($this->once())
+            ->method('write')
+            ->with('<error>Script Composer\Test\Script\EventDispatcherTest::call handling the post-install-cmd event terminated with an exception</error>');
+
         $dispatcher->dispatchCommandEvent("post-install-cmd");
     }
 
-    private function getDispatcherStubForListenersTest($listeners)
+    private function getDispatcherStubForListenersTest($listeners, $io)
     {
         $dispatcher = $this->getMockBuilder('Composer\Script\EventDispatcher')
-                           ->setConstructorArgs(array(
-                               $this->getMock('Composer\Composer'),
-                               $this->getMock('Composer\IO\IOInterface')))
-                           ->setMethods(array('getListeners'))
-                           ->getMock();
+            ->setConstructorArgs(array(
+                $this->getMock('Composer\Composer'),
+                $io,
+            ))
+            ->setMethods(array('getListeners'))
+            ->getMock();
 
         $dispatcher->expects($this->atLeastOnce())
-                   ->method('getListeners')
-                   ->will($this->returnValue($listeners));
+            ->method('getListeners')
+            ->will($this->returnValue($listeners));
 
         return $dispatcher;
     }
 
     public static function call()
     {
-        throw new \Exception();
+        throw new \RuntimeException();
     }
 }
