@@ -26,20 +26,6 @@ class Problem
     protected $reasons;
 
     /**
-     * Add a job as a reason
-     *
-     * @param   array   $job    A job descriptor which is a reason for this problem
-     * @param   Rule    $rule   An optional rule associated with the job
-     */
-    public function addJobRule($job, Rule $rule = null)
-    {
-        $this->addReason(serialize($job), array(
-            'rule' => $rule,
-            'job' => $job,
-        ));
-    }
-
-    /**
      * Add a rule as a reason
      *
      * @param   Rule    $rule   A rule which is a reason for this problem
@@ -48,7 +34,7 @@ class Problem
     {
         $this->addReason($rule->getId(), array(
             'rule' => $rule,
-            'job' => null,
+            'job' => $rule->getJob(),
         ));
     }
 
