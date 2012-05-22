@@ -24,7 +24,9 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Json\JsonFile;
+use Composer\Util\Filesystem;
 use Composer\Util\RemoteFilesystem;
+use Composer\Package\Version\VersionParser;
 
 /**
  * Install a package as new project into new directory.
@@ -116,11 +118,14 @@ EOT
             }
         }
 
-        $io->write('<info>Installing ' . $package->getName() . ' as new project.</info>', true);
+        $fs = new Filesystem();
+        $prettyDirectory = rtrim($fs->isAbsolutePath($directory) ? $fs->findShortestPath(getcwd(), $directory, true) : $directory, '\\/') . '/';
+
+        $io->write('<info>Installing ' . $package->getName() . ' (' . VersionParser::formatVersion($package) . ') in '.$prettyDirectory.'</info>', true);
         $projectInstaller = new ProjectInstaller($directory, $dm);
         $projectInstaller->install(new InstalledFilesystemRepository(new JsonFile('php://memory')), $package);
 
-        $io->write('<info>Created project into directory ' . $directory . '</info>', true);
+        $io->write('<info>Created project in ' . $directory . '</info>', true);
         chdir($directory);
 
         $composer = Factory::create($io);

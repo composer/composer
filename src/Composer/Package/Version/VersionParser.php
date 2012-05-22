@@ -13,6 +13,7 @@
 namespace Composer\Package\Version;
 
 use Composer\Package\BasePackage;
+use Composer\Package\PackageInterface;
 use Composer\Package\LinkConstraint\MultiConstraint;
 use Composer\Package\LinkConstraint\VersionConstraint;
 
@@ -56,6 +57,15 @@ class VersionParser
         $stability = strtolower($stability);
 
         return $stability === 'rc' ? 'RC' : $stability;
+    }
+
+    static public function formatVersion(PackageInterface $package)
+    {
+        if (!$package->isDev() || !in_array($package->getSourceType(), array('hg', 'git'))) {
+            return $package->getPrettyVersion();
+        }
+
+        return $package->getPrettyVersion().' '.substr($package->getSourceReference(), 0, 6);
     }
 
     /**
