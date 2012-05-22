@@ -178,6 +178,7 @@ class Installer
             // write lock
             if ($this->update || !$this->locker->isLocked()) {
                 $updatedLock = $this->locker->setLockData(
+                    $this->package->getSourceReference(),
                     $this->repositoryManager->getLocalRepository()->getPackages(),
                     $this->devMode ? $this->repositoryManager->getLocalDevRepository()->getPackages() : null,
                     $aliases,

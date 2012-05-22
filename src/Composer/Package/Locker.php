@@ -166,16 +166,18 @@ class Locker
     /**
      * Locks provided data into lockfile.
      *
+     * @param string $sourceReference the source reference for the root package
      * @param array $packages array of packages
      * @param mixed $packages array of dev packages or null if installed without --dev
      * @param array $aliases array of aliases
      *
      * @return Boolean
      */
-    public function setLockData(array $packages, $devPackages, array $aliases, $minimumStability, array $stabilityFlags)
+    public function setLockData($sourceReference, array $packages, $devPackages, array $aliases, $minimumStability, array $stabilityFlags)
     {
         $lock = array(
             'hash' => $this->hash,
+            'source-reference' => $sourceReference,
             'packages' => null,
             'packages-dev' => null,
             'aliases' => $aliases,

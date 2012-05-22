@@ -120,6 +120,7 @@ EOT
         chdir($directory);
 
         $composer = Factory::create($io);
+        $composer->setPackage(clone $package);
         $installer = Installer::create($io, $composer);
 
         $installer
