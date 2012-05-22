@@ -15,8 +15,6 @@ namespace Composer\Repository;
 use Composer\Downloader\TransportException;
 use Composer\Repository\Vcs\VcsDriverInterface;
 use Composer\Package\Version\VersionParser;
-use Composer\Package\PackageInterface;
-use Composer\Package\AliasPackage;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\IO\IOInterface;
 use Composer\Config;
@@ -58,6 +56,7 @@ class VcsRepository extends ArrayRepository
             $class = $this->drivers[$this->type];
             $driver = new $class($this->url, $this->io, $this->config);
             $driver->initialize();
+
             return $driver;
         }
 
@@ -65,6 +64,7 @@ class VcsRepository extends ArrayRepository
             if ($driver::supports($this->io, $this->url)) {
                 $driver = new $driver($this->url, $this->io, $this->config);
                 $driver->initialize();
+
                 return $driver;
             }
         }
@@ -73,6 +73,7 @@ class VcsRepository extends ArrayRepository
             if ($driver::supports($this->io, $this->url, true)) {
                 $driver = new $driver($this->url, $this->io, $this->config);
                 $driver->initialize();
+
                 return $driver;
             }
         }

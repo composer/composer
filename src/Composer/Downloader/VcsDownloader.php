@@ -86,17 +86,17 @@ abstract class VcsDownloader implements DownloaderInterface
     /**
      * Downloads specific package into specific folder.
      *
-     * @param   PackageInterface    $package    package instance
-     * @param   string              $path       download path
+     * @param PackageInterface $package package instance
+     * @param string           $path    download path
      */
     abstract protected function doDownload(PackageInterface $package, $path);
 
     /**
      * Updates specific package in specific folder from initial to target version.
      *
-     * @param   PackageInterface    $initial    initial package
-     * @param   PackageInterface    $target     updated package
-     * @param   string              $path       download path
+     * @param PackageInterface $initial initial package
+     * @param PackageInterface $target  updated package
+     * @param string           $path    download path
      */
     abstract protected function doUpdate(PackageInterface $initial, PackageInterface $target, $path);
 

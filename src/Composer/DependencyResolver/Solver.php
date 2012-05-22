@@ -13,8 +13,6 @@
 namespace Composer\DependencyResolver;
 
 use Composer\Repository\RepositoryInterface;
-use Composer\Package\AliasPackage;
-use Composer\DependencyResolver\Operation;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -119,7 +117,7 @@ class Solver
                 $assertRuleLiterals = $assertRule->getLiterals();
                 $assertRuleLiteral = $assertRuleLiterals[0];
 
-                if  (abs($literal) !== abs($assertRuleLiteral)) {
+                if (abs($literal) !== abs($assertRuleLiteral)) {
                     continue;
                 }
 
@@ -202,12 +200,14 @@ class Solver
         }
 
         $transaction = new Transaction($this->policy, $this->pool, $this->installedMap, $this->decisionMap, $this->decisionQueue, $this->decisionQueueWhy);
+
         return $transaction->getOperations();
     }
 
     protected function literalFromId($id)
     {
         $package = $this->pool->packageById(abs($id));
+
         return new Literal($package, $id > 0);
     }
 
@@ -241,6 +241,7 @@ class Solver
     public function decisionsContain($literal)
     {
         $packageId = abs($literal);
+
         return (
             $this->decisionMap[$packageId] > 0 && $literal > 0 ||
             $this->decisionMap[$packageId] < 0 && $literal < 0
@@ -250,6 +251,7 @@ class Solver
     protected function decisionsSatisfy($literal)
     {
         $packageId = abs($literal);
+
         return (
             $literal > 0 && $this->decisionMap[$packageId] > 0 ||
             $literal < 0 && $this->decisionMap[$packageId] < 0
@@ -259,6 +261,7 @@ class Solver
     public function decisionsConflict($literal)
     {
         $packageId = abs($literal);
+
         return (
             ($this->decisionMap[$packageId] > 0 && $literal < 0) ||
             ($this->decisionMap[$packageId] < 0 && $literal > 0)
@@ -274,7 +277,8 @@ class Solver
         return $this->decisionMap[$packageId] == 0;
     }
 
-    protected function decidedInstall($packageId) {
+    protected function decidedInstall($packageId)
+    {
         return $this->decisionMap[$packageId] > 0;
     }
 
@@ -433,7 +437,7 @@ class Solver
 
         $this->learnedPool[] = array();
 
-        while(true) {
+        while (true) {
             $this->learnedPool[count($this->learnedPool) - 1][] = $rule;
 
             foreach ($rule->getLiterals() as $literal) {
@@ -535,6 +539,7 @@ class Solver
             foreach ($problemRules as $problemRule) {
                 $this->analyzeUnsolvableRule($problem, $problemRule);
             }
+
             return;
         }
 
@@ -600,6 +605,7 @@ class Solver
             }
 
             $this->resetSolver();
+
             return 1;
         }
 

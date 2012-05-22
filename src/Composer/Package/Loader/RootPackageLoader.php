@@ -16,7 +16,6 @@ use Composer\Package\BasePackage;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\RepositoryManager;
 use Composer\Util\ProcessExecutor;
-use Composer\Package\AliasPackage;
 
 /**
  * ArrayLoader built for the sole purpose of loading the root package

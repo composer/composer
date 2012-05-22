@@ -12,10 +12,7 @@
 
 namespace Composer\Package;
 
-use Composer\Package\LinkConstraint\LinkConstraintInterface;
 use Composer\Package\LinkConstraint\VersionConstraint;
-use Composer\Repository\RepositoryInterface;
-use Composer\Repository\PlatformRepository;
 use Composer\Package\Version\VersionParser;
 
 /**
@@ -40,9 +37,9 @@ class AliasPackage extends BasePackage
     /**
      * All descendants' constructors should call this parent constructor
      *
-     * @param PackageInterface $aliasOf The package this package is an alias of
-     * @param string $version The version the alias must report
-     * @param string $prettyVersion The alias's non-normalized version
+     * @param PackageInterface $aliasOf       The package this package is an alias of
+     * @param string           $version       The version the alias must report
+     * @param string           $prettyVersion The alias's non-normalized version
      */
     public function __construct(PackageInterface $aliasOf, $version, $prettyVersion)
     {

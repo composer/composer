@@ -31,6 +31,7 @@ return call_user_func(function() {
                 return false;
             }
             require_once $path;
+
             return true;
         }
     });

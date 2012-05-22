@@ -22,9 +22,9 @@ final class StreamContextFactory
     /**
      * Creates a context supporting HTTP proxies
      *
-     * @param array $defaultOptions Options to merge with the default
-     * @param array $defaultParams  Parameters to specify on the context
-     * @return resource Default context
+     * @param  array             $defaultOptions Options to merge with the default
+     * @param  array             $defaultParams  Parameters to specify on the context
+     * @return resource          Default context
      * @throws \RuntimeException if https proxy required and OpenSSL uninstalled
      */
     static public function getContext(array $defaultOptions = array(), array $defaultParams = array())

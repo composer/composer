@@ -12,10 +12,7 @@
 
 namespace Composer\Script;
 
-use Composer\Json\JsonFile;
-use Composer\Repository\FilesystemRepository;
 use Composer\Autoload\AutoloadGenerator;
-use Composer\Package\PackageInterface;
 use Composer\IO\IOInterface;
 use Composer\Composer;
 use Composer\DependencyResolver\Operation\OperationInterface;
@@ -53,7 +50,7 @@ class EventDispatcher
     /**
      * Dispatch a package event.
      *
-     * @param string $eventName The constant in ScriptEvents
+     * @param string             $eventName The constant in ScriptEvents
      * @param OperationInterface $operation The package being installed/updated/removed
      */
     public function dispatchPackageEvent($eventName, OperationInterface $operation)
@@ -96,7 +93,7 @@ class EventDispatcher
     }
 
     /**
-     * @param Event $event Event object
+     * @param  Event $event Event object
      * @return array Listeners
      */
     protected function getListeners(Event $event)

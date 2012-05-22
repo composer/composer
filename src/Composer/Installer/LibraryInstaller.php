@@ -15,7 +15,6 @@ namespace Composer\Installer;
 use Composer\IO\IOInterface;
 use Composer\Downloader\DownloadManager;
 use Composer\Repository\InstalledRepositoryInterface;
-use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\Package\PackageInterface;
 use Composer\Util\Filesystem;
 
@@ -37,11 +36,11 @@ class LibraryInstaller implements InstallerInterface
     /**
      * Initializes library installer.
      *
-     * @param   string                      $vendorDir  relative path for packages home
-     * @param   string                      $binDir     relative path for binaries
-     * @param   DownloadManager             $dm         download manager
-     * @param   IOInterface                 $io         io instance
-     * @param   string                      $type       package type that this installer handles
+     * @param string          $vendorDir relative path for packages home
+     * @param string          $binDir    relative path for binaries
+     * @param DownloadManager $dm        download manager
+     * @param IOInterface     $io        io instance
+     * @param string          $type      package type that this installer handles
      */
     public function __construct($vendorDir, $binDir, DownloadManager $dm, IOInterface $io, $type = 'library')
     {

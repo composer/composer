@@ -12,10 +12,7 @@
 
 namespace Composer\Repository;
 
-use Composer\Json\JsonFile;
-use Composer\Package\PackageInterface;
 use Composer\Package\Loader\ArrayLoader;
-use Composer\Package\Dumper\ArrayDumper;
 
 /**
  * Package repository.

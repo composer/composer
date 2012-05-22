@@ -13,8 +13,6 @@
 namespace Composer\Script;
 
 use Composer\Composer;
-use Composer\IO\IOInterface;
-use Composer\Package\PackageInterface;
 
 /**
  * The Command Event.

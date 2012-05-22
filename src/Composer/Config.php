@@ -46,7 +46,7 @@ class Config
     /**
      * Returns a setting
      *
-     * @param string $key
+     * @param  string $key
      * @return mixed
      */
     public function get($key)
@@ -57,6 +57,7 @@ class Config
             case 'process-timeout':
                 // convert foo-bar to COMPOSER_FOO_BAR and check if it exists since it overrides the local config
                 $env = 'COMPOSER_' . strtoupper(strtr($key, '-', '_'));
+
                 return $this->process(getenv($env) ?: $this->config[$key]);
 
             case 'home':
@@ -70,7 +71,7 @@ class Config
     /**
      * Checks whether a setting exists
      *
-     * @param string $key
+     * @param  string  $key
      * @return Boolean
      */
     public function has($key)
@@ -87,6 +88,7 @@ class Config
     private function process($value)
     {
         $config = $this;
+
         return preg_replace_callback('#\{\$(.+)\}#', function ($match) use ($config) {
             return $config->get($match[1]);
         }, $value);

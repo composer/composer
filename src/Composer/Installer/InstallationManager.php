@@ -40,8 +40,8 @@ class InstallationManager
     /**
      * Creates an instance of InstallationManager
      *
-     * @param    string    $vendorDir    Relative path to the vendor directory
-     * @throws   \InvalidArgumentException
+     * @param  string                    $vendorDir Relative path to the vendor directory
+     * @throws \InvalidArgumentException
      */
     public function __construct($vendorDir = 'vendor')
     {
@@ -62,7 +62,7 @@ class InstallationManager
     /**
      * Adds installer
      *
-     * @param   InstallerInterface  $installer  installer instance
+     * @param InstallerInterface $installer installer instance
      */
     public function addInstaller(InstallerInterface $installer)
     {
@@ -73,11 +73,11 @@ class InstallationManager
     /**
      * Returns installer for a specific package type.
      *
-     * @param   string              $type       package type
+     * @param string $type package type
      *
-     * @return  InstallerInterface
+     * @return InstallerInterface
      *
-     * @throws  InvalidArgumentException        if installer for provided type is not registered
+     * @throws InvalidArgumentException if installer for provided type is not registered
      */
     public function getInstaller($type)
     {
@@ -99,10 +99,10 @@ class InstallationManager
     /**
      * Checks whether provided package is installed in one of the registered installers.
      *
-     * @param   InstalledRepositoryInterface    $repo    repository in which to check
-     * @param   PackageInterface    $package    package instance
+     * @param InstalledRepositoryInterface $repo    repository in which to check
+     * @param PackageInterface             $package package instance
      *
-     * @return  Boolean
+     * @return Boolean
      */
     public function isPackageInstalled(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
@@ -116,8 +116,8 @@ class InstallationManager
     /**
      * Executes solver operation.
      *
-     * @param   RepositoryInterface $repo       repository in which to check
-     * @param   OperationInterface  $operation  operation instance
+     * @param RepositoryInterface $repo      repository in which to check
+     * @param OperationInterface  $operation operation instance
      */
     public function execute(RepositoryInterface $repo, OperationInterface $operation)
     {
@@ -128,8 +128,8 @@ class InstallationManager
     /**
      * Executes install operation.
      *
-     * @param   RepositoryInterface $repo       repository in which to check
-     * @param   InstallOperation    $operation  operation instance
+     * @param RepositoryInterface $repo      repository in which to check
+     * @param InstallOperation    $operation operation instance
      */
     public function install(RepositoryInterface $repo, InstallOperation $operation)
     {
@@ -142,8 +142,8 @@ class InstallationManager
     /**
      * Executes update operation.
      *
-     * @param   RepositoryInterface $repo       repository in which to check
-     * @param   InstallOperation    $operation  operation instance
+     * @param RepositoryInterface $repo      repository in which to check
+     * @param InstallOperation    $operation operation instance
      */
     public function update(RepositoryInterface $repo, UpdateOperation $operation)
     {
@@ -166,8 +166,8 @@ class InstallationManager
     /**
      * Uninstalls package.
      *
-     * @param   RepositoryInterface $repo       repository in which to check
-     * @param   UninstallOperation  $operation  operation instance
+     * @param RepositoryInterface $repo      repository in which to check
+     * @param UninstallOperation  $operation operation instance
      */
     public function uninstall(RepositoryInterface $repo, UninstallOperation $operation)
     {
@@ -179,8 +179,8 @@ class InstallationManager
     /**
      * Executes markAliasInstalled operation.
      *
-     * @param   RepositoryInterface $repo       repository in which to check
-     * @param   MarkAliasInstalledOperation    $operation  operation instance
+     * @param RepositoryInterface         $repo      repository in which to check
+     * @param MarkAliasInstalledOperation $operation operation instance
      */
     public function markAliasInstalled(RepositoryInterface $repo, MarkAliasInstalledOperation $operation)
     {
@@ -194,8 +194,8 @@ class InstallationManager
     /**
      * Executes markAlias operation.
      *
-     * @param   RepositoryInterface $repo       repository in which to check
-     * @param   MarkAliasUninstalledOperation    $operation  operation instance
+     * @param RepositoryInterface           $repo      repository in which to check
+     * @param MarkAliasUninstalledOperation $operation operation instance
      */
     public function markAliasUninstalled(RepositoryInterface $repo, MarkAliasUninstalledOperation $operation)
     {
@@ -207,20 +207,21 @@ class InstallationManager
     /**
      * Returns the installation path of a package
      *
-     * @param   PackageInterface    $package
-     * @return  string path
+     * @param  PackageInterface $package
+     * @return string           path
      */
     public function getInstallPath(PackageInterface $package)
     {
         $installer = $this->getInstaller($package->getType());
+
         return $installer->getInstallPath($package);
     }
 
     /**
      * Returns the vendor path
      *
-     * @param   boolean  $absolute  Whether or not to return an absolute path
-     * @return  string path
+     * @param  boolean $absolute Whether or not to return an absolute path
+     * @return string  path
      */
     public function getVendorPath($absolute = false)
     {

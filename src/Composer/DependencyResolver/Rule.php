@@ -86,7 +86,7 @@ class Rule
      * Ignores whether either of the rules is disabled.
      *
      * @param  Rule $rule The rule to check against
-     * @return bool       Whether the rules are equal
+     * @return bool Whether the rules are equal
      */
     public function equals(Rule $rule)
     {
@@ -170,6 +170,7 @@ class Rule
             case self::RULE_PACKAGE_CONFLICT:
                 $package1 = $this->pool->literalToPackage($this->literals[0]);
                 $package2 = $this->pool->literalToPackage($this->literals[1]);
+
                 return 'Package "'.$package1.'" conflicts with "'.$package2.'"';
 
             case self::RULE_PACKAGE_REQUIRES:
@@ -188,6 +189,7 @@ class Rule
                 } else {
                     $text .= 'No package satisfies this dependency.';
                 }
+
                 return $text;
 
             case self::RULE_PACKAGE_OBSOLETES:

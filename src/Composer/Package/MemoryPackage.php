@@ -65,8 +65,8 @@ class MemoryPackage extends BasePackage
     /**
      * Creates a new in memory package.
      *
-     * @param string $name        The package's name
-     * @param string $version     The package's version
+     * @param string $name          The package's name
+     * @param string $version       The package's version
      * @param string $prettyVersion The package's non-normalized version
      */
     public function __construct($name, $version, $prettyVersion)

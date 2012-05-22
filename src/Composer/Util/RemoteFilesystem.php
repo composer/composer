@@ -34,7 +34,7 @@ class RemoteFilesystem
     /**
      * Constructor.
      *
-     * @param IOInterface  $io  The IO instance
+     * @param IOInterface $io The IO instance
      */
     public function __construct(IOInterface $io)
     {

@@ -27,7 +27,6 @@ use Composer\Package\Link;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Package\Locker;
 use Composer\Package\PackageInterface;
-use Composer\Repository\ArrayRepository;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\InstalledArrayRepository;
 use Composer\Repository\PlatformRepository;
@@ -102,14 +101,14 @@ class Installer
     /**
      * Constructor
      *
-     * @param IOInterface $io
-     * @param PackageInterface $package
-     * @param DownloadManager $downloadManager
-     * @param RepositoryManager $repositoryManager
-     * @param Locker $locker
+     * @param IOInterface         $io
+     * @param PackageInterface    $package
+     * @param DownloadManager     $downloadManager
+     * @param RepositoryManager   $repositoryManager
+     * @param Locker              $locker
      * @param InstallationManager $installationManager
-     * @param EventDispatcher $eventDispatcher
-     * @param AutoloadGenerator $autoloadGenerator
+     * @param EventDispatcher     $eventDispatcher
+     * @param AutoloadGenerator   $autoloadGenerator
      */
     public function __construct(IOInterface $io, PackageInterface $package, DownloadManager $downloadManager, RepositoryManager $repositoryManager, Locker $locker, InstallationManager $installationManager, EventDispatcher $eventDispatcher, AutoloadGenerator $autoloadGenerator)
     {
@@ -447,10 +446,10 @@ class Installer
     /**
      * Create Installer
      *
-     * @param IOInterface $io
-     * @param Composer $composer
-     * @param EventDispatcher $eventDispatcher
-     * @param AutoloadGenerator $autoloadGenerator
+     * @param  IOInterface       $io
+     * @param  Composer          $composer
+     * @param  EventDispatcher   $eventDispatcher
+     * @param  AutoloadGenerator $autoloadGenerator
      * @return Installer
      */
     static public function create(IOInterface $io, Composer $composer, EventDispatcher $eventDispatcher = null, AutoloadGenerator $autoloadGenerator = null)
@@ -480,7 +479,7 @@ class Installer
     /**
      * wether to run in drymode or not
      *
-     * @param boolean $dryRun
+     * @param  boolean   $dryRun
      * @return Installer
      */
     public function setDryRun($dryRun = true)
@@ -493,7 +492,7 @@ class Installer
     /**
      * prefer source installation
      *
-     * @param boolean $preferSource
+     * @param  boolean   $preferSource
      * @return Installer
      */
     public function setPreferSource($preferSource = true)
@@ -506,7 +505,7 @@ class Installer
     /**
      * update packages
      *
-     * @param boolean $update
+     * @param  boolean   $update
      * @return Installer
      */
     public function setUpdate($update = true)
@@ -519,7 +518,7 @@ class Installer
     /**
      * enables dev packages
      *
-     * @param boolean $update
+     * @param  boolean   $update
      * @return Installer
      */
     public function setDevMode($devMode = true)
@@ -532,7 +531,7 @@ class Installer
     /**
      * run in verbose mode
      *
-     * @param boolean $verbose
+     * @param  boolean   $verbose
      * @return Installer
      */
     public function setVerbose($verbose = true)

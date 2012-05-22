@@ -56,9 +56,9 @@ class Filesystem
     /**
      * Returns the shortest path from $from to $to
      *
-     * @param string $from
-     * @param string $to
-     * @param Boolean $directories if true, the source/target are considered to be directories
+     * @param  string  $from
+     * @param  string  $to
+     * @param  Boolean $directories if true, the source/target are considered to be directories
      * @return string
      */
     public function findShortestPath($from, $to, $directories = false)
@@ -90,15 +90,16 @@ class Filesystem
         $commonPath = rtrim($commonPath, '/') . '/';
         $sourcePathDepth = substr_count(substr($from, strlen($commonPath)), '/');
         $commonPathCode = str_repeat('../', $sourcePathDepth);
+
         return ($commonPathCode . substr($to, strlen($commonPath))) ?: './';
     }
 
     /**
      * Returns PHP code that, when executed in $from, will return the path to $to
      *
-     * @param string $from
-     * @param string $to
-     * @param Boolean $directories if true, the source/target are considered to be directories
+     * @param  string  $from
+     * @param  string  $to
+     * @param  Boolean $directories if true, the source/target are considered to be directories
      * @return string
      */
     public function findShortestPathCode($from, $to, $directories = false)
@@ -130,13 +131,14 @@ class Filesystem
         $sourcePathDepth = substr_count(substr($from, strlen($commonPath)), '/') + $directories;
         $commonPathCode = str_repeat('dirname(', $sourcePathDepth).'__DIR__'.str_repeat(')', $sourcePathDepth);
         $relTarget = substr($to, strlen($commonPath));
+
         return $commonPathCode . (strlen($relTarget) ? '.' . var_export('/' . $relTarget, true) : '');
     }
 
     /**
      * Checks if the given path is absolute
      *
-     * @param string $path
+     * @param  string  $path
      * @return Boolean
      */
     public function isAbsolutePath($path)

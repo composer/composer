@@ -77,8 +77,8 @@ class ClassLoader
     /**
      * Registers a set of classes
      *
-     * @param string       $prefix  The classes prefix
-     * @param array|string $paths   The location(s) of the classes
+     * @param string       $prefix The classes prefix
+     * @param array|string $paths  The location(s) of the classes
      */
     public function add($prefix, $paths)
     {
@@ -86,6 +86,7 @@ class ClassLoader
             foreach ((array) $paths as $path) {
                 $this->fallbackDirs[] = $path;
             }
+
             return;
         }
         if (isset($this->prefixes[$prefix])) {
@@ -140,13 +141,14 @@ class ClassLoader
     /**
      * Loads the given class or interface.
      *
-     * @param string $class The name of the class
+     * @param  string       $class The name of the class
      * @return Boolean|null True, if loaded
      */
     public function loadClass($class)
     {
         if ($file = $this->findFile($class)) {
             require $file;
+
             return true;
         }
     }

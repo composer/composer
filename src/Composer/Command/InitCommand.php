@@ -333,6 +333,7 @@ EOT
             foreach ($matches as $match) {
                 $this->gitConfig[$match[1]] = $match[2];
             }
+
             return $this->gitConfig;
         }
 

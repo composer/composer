@@ -13,7 +13,6 @@
 namespace Composer\Command\Helper;
 
 use Symfony\Component\Console\Helper\DialogHelper as BaseDialogHelper;
-use Symfony\Component\Console\Output\OutputInterface;
 
 class DialogHelper extends BaseDialogHelper
 {
@@ -23,8 +22,8 @@ class DialogHelper extends BaseDialogHelper
      *  "Do you want to continue [yes]:"
      *
      * @param string $question The question you want to ask
-     * @param mixed $default Default value to add to message, if false no default will be shown
-     * @param string $sep Separation char for between message and user input
+     * @param mixed  $default  Default value to add to message, if false no default will be shown
+     * @param string $sep      Separation char for between message and user input
      *
      * @return string
      */

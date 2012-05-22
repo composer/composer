@@ -127,7 +127,7 @@ class Pool
      * @param string                  $name       The package name to be searched for
      * @param LinkConstraintInterface $constraint A constraint that all returned
      *                                            packages must match or null to return all
-     * @return array                              A set of packages
+     * @return array A set of packages
      */
     public function whatProvides($name, LinkConstraintInterface $constraint = null)
     {
@@ -155,6 +155,7 @@ class Pool
     public function literalToPackage($literal)
     {
         $packageId = abs($literal);
+
         return $this->packageById($packageId);
     }
 

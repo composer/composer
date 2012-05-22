@@ -12,7 +12,6 @@
 
 namespace Composer\Downloader;
 
-use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 
 /**

@@ -13,7 +13,6 @@
 namespace Composer\Command;
 
 use Composer\Composer;
-use Composer\Package\PackageInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -64,9 +63,9 @@ EOT
     /**
      * finds a list of packages which depend on another package
      *
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @param Composer $composer
+     * @param  InputInterface            $input
+     * @param  OutputInterface           $output
+     * @param  Composer                  $composer
      * @return array
      * @throws \InvalidArgumentException
      */

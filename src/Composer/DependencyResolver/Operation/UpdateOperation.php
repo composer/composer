@@ -27,9 +27,9 @@ class UpdateOperation extends SolverOperation
     /**
      * Initializes update operation.
      *
-     * @param   PackageInterface    $initial    initial package
-     * @param   PackageInterface    $target     target package (updated)
-     * @param   string              $reason     update reason
+     * @param PackageInterface $initial initial package
+     * @param PackageInterface $target  target package (updated)
+     * @param string           $reason  update reason
      */
     public function __construct(PackageInterface $initial, PackageInterface $target, $reason = null)
     {
@@ -42,7 +42,7 @@ class UpdateOperation extends SolverOperation
     /**
      * Returns initial package.
      *
-     * @return  PackageInterface
+     * @return PackageInterface
      */
     public function getInitialPackage()
     {
@@ -52,7 +52,7 @@ class UpdateOperation extends SolverOperation
     /**
      * Returns target package.
      *
-     * @return  PackageInterface
+     * @return PackageInterface
      */
     public function getTargetPackage()
     {
@@ -62,7 +62,7 @@ class UpdateOperation extends SolverOperation
     /**
      * Returns job type.
      *
-     * @return  string
+     * @return string
      */
     public function getJobType()
     {

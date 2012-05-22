@@ -28,7 +28,7 @@ class Problem
     /**
      * Add a rule as a reason
      *
-     * @param   Rule    $rule   A rule which is a reason for this problem
+     * @param Rule $rule A rule which is a reason for this problem
      */
     public function addRule(Rule $rule)
     {
@@ -41,7 +41,7 @@ class Problem
     /**
      * Retrieve all reasons for this problem
      *
-     * @return  array   The problem's reasons
+     * @return array The problem's reasons
      */
     public function getReasons()
     {
@@ -65,8 +65,10 @@ class Problem
                 if (0 === stripos($job['packageName'], 'ext-')) {
                     $ext = substr($job['packageName'], 4);
                     $error = extension_loaded($ext) ? 'has the wrong version ('.phpversion($ext).') installed' : 'is missing from your system';
+
                     return 'The requested PHP extension "'.$job['packageName'].'" '.$this->constraintToText($job['constraint']).$error.'.';
                 }
+
                 return 'The requested package "'.$job['packageName'].'" '.$this->constraintToText($job['constraint']).'could not be found.';
             }
         }
@@ -93,8 +95,8 @@ class Problem
     /**
      * Store a reason descriptor but ignore duplicates
      *
-     * @param   string  $id         A canonical identifier for the reason
-     * @param   string  $reason     The reason descriptor
+     * @param string $id     A canonical identifier for the reason
+     * @param string $reason The reason descriptor
      */
     protected function addReason($id, $reason)
     {
@@ -106,8 +108,8 @@ class Problem
     /**
      * Turns a job into a human readable description
      *
-     * @param   array   $job
-     * @return  string
+     * @param  array  $job
+     * @return string
      */
     protected function jobToText($job)
     {
@@ -126,8 +128,8 @@ class Problem
     /**
      * Turns a constraint into text usable in a sentence describing a job
      *
-     * @param   LinkConstraint  $constraint
-     * @return  string
+     * @param  LinkConstraint $constraint
+     * @return string
      */
     protected function constraintToText($constraint)
     {

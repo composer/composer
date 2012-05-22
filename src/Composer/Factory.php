@@ -65,8 +65,8 @@ class Factory
     /**
      * Creates a Composer instance
      *
-     * @param IOInterface $io IO instance
-     * @param mixed $localConfig either a configuration array or a filename to read from, if null it will read from the default filename
+     * @param  IOInterface $io          IO instance
+     * @param  mixed       $localConfig either a configuration array or a filename to read from, if null it will read from the default filename
      * @return Composer
      */
     public function createComposer(IOInterface $io, $localConfig = null)
@@ -250,8 +250,8 @@ class Factory
     }
 
     /**
-     * @param IOInterface $io IO instance
-     * @param mixed $config either a configuration array or a filename to read from, if null it will read from the default filename
+     * @param  IOInterface $io     IO instance
+     * @param  mixed       $config either a configuration array or a filename to read from, if null it will read from the default filename
      * @return Composer
      */
     static public function create(IOInterface $io, $config = null)

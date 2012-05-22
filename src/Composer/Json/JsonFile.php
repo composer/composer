@@ -12,11 +12,9 @@
 
 namespace Composer\Json;
 
-use Composer\Repository\RepositoryManager;
 use Composer\Composer;
 use JsonSchema\Validator;
 use Seld\JsonLint\JsonParser;
-use Composer\Util\StreamContextFactory;
 use Composer\Util\RemoteFilesystem;
 use Composer\Downloader\TransportException;
 
@@ -41,8 +39,8 @@ class JsonFile
     /**
      * Initializes json file reader/parser.
      *
-     * @param   string  $lockFile   path to a lockfile
-     * @param   RemoteFilesystem  $rfs   required for loading http/https json files
+     * @param string           $lockFile path to a lockfile
+     * @param RemoteFilesystem $rfs      required for loading http/https json files
      */
     public function __construct($path, RemoteFilesystem $rfs = null)
     {
@@ -62,7 +60,7 @@ class JsonFile
     /**
      * Checks whether json file exists.
      *
-     * @return  Boolean
+     * @return Boolean
      */
     public function exists()
     {
@@ -72,7 +70,7 @@ class JsonFile
     /**
      * Reads json file.
      *
-     * @return  array
+     * @return array
      */
     public function read()
     {
@@ -94,8 +92,8 @@ class JsonFile
     /**
      * Writes json file.
      *
-     * @param array $hash writes hash into json file
-     * @param int $options json_encode options (defaults to JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+     * @param array $hash    writes hash into json file
+     * @param int   $options json_encode options (defaults to JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
      */
     public function write(array $hash, $options = 448)
     {
@@ -118,8 +116,8 @@ class JsonFile
     /**
      * Validates the schema of the current json file according to composer-schema.json rules
      *
-     * @param int $schema a JsonFile::*_SCHEMA constant
-     * @return Boolean true on success
+     * @param  int                       $schema a JsonFile::*_SCHEMA constant
+     * @return Boolean                   true on success
      * @throws \UnexpectedValueException
      */
     public function validateSchema($schema = self::STRICT_SCHEMA)
@@ -164,8 +162,8 @@ class JsonFile
      *
      * Originally licensed under MIT by Dave Perrett <mail@recursive-design.com>
      *
-     * @param mixed $data Data to encode into a formatted JSON string
-     * @param int $options json_encode options (defaults to JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+     * @param  mixed  $data    Data to encode into a formatted JSON string
+     * @param  int    $options json_encode options (defaults to JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
      * @return string Encoded json
      */
     static public function encode($data, $options = 448)
@@ -268,7 +266,7 @@ class JsonFile
      *
      * @param string $json json string
      *
-     * @return  mixed
+     * @return mixed
      */
     public static function parseJson($json)
     {
@@ -283,8 +281,8 @@ class JsonFile
     /**
      * Validates the syntax of a JSON string
      *
-     * @param string $json
-     * @return Boolean true on success
+     * @param  string                    $json
+     * @return Boolean                   true on success
      * @throws \UnexpectedValueException
      */
     protected static function validateSyntax($json)

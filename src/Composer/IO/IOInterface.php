@@ -60,8 +60,8 @@ interface IOInterface
     /**
      * Asks a question to the user.
      *
-     * @param string|array    $question The question to ask
-     * @param string          $default  The default answer if none is given by the user
+     * @param string|array $question The question to ask
+     * @param string       $default  The default answer if none is given by the user
      *
      * @return string The user answer
      *
@@ -74,8 +74,8 @@ interface IOInterface
      *
      * The question will be asked until the user answers by nothing, yes, or no.
      *
-     * @param string|array    $question The question to ask
-     * @param Boolean         $default  The default answer if the user enters nothing
+     * @param string|array $question The question to ask
+     * @param Boolean      $default  The default answer if the user enters nothing
      *
      * @return Boolean true if the user has confirmed, false otherwise
      */
@@ -88,10 +88,10 @@ interface IOInterface
      * validated data when the data is valid and throw an exception
      * otherwise.
      *
-     * @param string|array    $question  The question to ask
-     * @param callback        $validator A PHP callback
-     * @param integer         $attempts  Max number of times to ask before giving up (false by default, which means infinite)
-     * @param string          $default  The default answer if none is given by the user
+     * @param string|array $question  The question to ask
+     * @param callback     $validator A PHP callback
+     * @param integer      $attempts  Max number of times to ask before giving up (false by default, which means infinite)
+     * @param string       $default   The default answer if none is given by the user
      *
      * @return mixed
      *

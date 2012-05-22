@@ -171,6 +171,7 @@ class HgDriver extends VcsDriver
 
         $processExecutor = new ProcessExecutor();
         $exit = $processExecutor->execute(sprintf('cd %s && hg identify %s', escapeshellarg(sys_get_temp_dir()), escapeshellarg($url)), $ignored);
+
         return $exit === 0;
     }
 }

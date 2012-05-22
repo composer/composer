@@ -27,8 +27,8 @@ interface VcsDriverInterface
     /**
      * Return the composer.json file information
      *
-     * @param string $identifier Any identifier to a specific branch/tag/commit
-     * @return array containing all infos from the composer.json file
+     * @param  string $identifier Any identifier to a specific branch/tag/commit
+     * @return array  containing all infos from the composer.json file
      */
     function getComposerInformation($identifier);
 
@@ -54,14 +54,14 @@ interface VcsDriverInterface
     function getTags();
 
     /**
-     * @param string $identifier Any identifier to a specific branch/tag/commit
-     * @return array With type, url reference and shasum keys.
+     * @param  string $identifier Any identifier to a specific branch/tag/commit
+     * @return array  With type, url reference and shasum keys.
      */
     function getDist($identifier);
 
     /**
-     * @param string $identifier Any identifier to a specific branch/tag/commit
-     * @return array With type, url and reference keys.
+     * @param  string $identifier Any identifier to a specific branch/tag/commit
+     * @return array  With type, url and reference keys.
      */
     function getSource($identifier);
 
@@ -76,7 +76,7 @@ interface VcsDriverInterface
      * Return true if the repository has a composer file for a given identifier,
      * false otherwise.
      *
-     * @param string $identifier Any identifier to a specific branch/tag/commit
+     * @param  string  $identifier Any identifier to a specific branch/tag/commit
      * @return boolean Whether the repository has a composer file for a given identifier.
      */
     function hasComposerFile($identifier);
@@ -84,9 +84,9 @@ interface VcsDriverInterface
     /**
      * Checks if this driver can handle a given url
      *
-     * @param IOInterface $io IO instance
-     * @param string $url
-     * @param Boolean $shallow unless true, only shallow checks (url matching typically) should be done
+     * @param  IOInterface $io      IO instance
+     * @param  string      $url
+     * @param  Boolean     $shallow unless true, only shallow checks (url matching typically) should be done
      * @return Boolean
      */
     static function supports(IOInterface $io, $url, $deep = false);

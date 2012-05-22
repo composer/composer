@@ -62,9 +62,9 @@ interface PackageInterface
      * Checks if the package matches the given constraint directly or through
      * provided or replaced packages
      *
-     * @param string                  $name       Name of the package to be matched
-     * @param LinkConstraintInterface $constraint The constraint to verify
-     * @return bool                               Whether this package matches the name and constraint
+     * @param  string                  $name       Name of the package to be matched
+     * @param  LinkConstraintInterface $constraint The constraint to verify
+     * @return bool                    Whether this package matches the name and constraint
      */
     function matches($name, LinkConstraintInterface $constraint);
 
@@ -99,14 +99,14 @@ interface PackageInterface
     /**
      * Sets source from which this package was installed (source/dist).
      *
-     * @param   string  $type   source/dist
+     * @param string $type source/dist
      */
     function setInstallationSource($type);
 
     /**
      * Returns source from which this package was installed (source/dist).
      *
-     * @param   string  $type   source/dist
+     * @param string $type source/dist
      */
     function getInstallationSource();
 

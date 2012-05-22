@@ -12,10 +12,8 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\Repository\RepositoryInterface;
 use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
-use Composer\DependencyResolver\Operation;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -40,13 +38,13 @@ class RuleSetGenerator
      * This rule is of the form (-A|B|C), where B and C are the providers of
      * one requirement of the package A.
      *
-     * @param PackageInterface $package    The package with a requirement
-     * @param array            $providers  The providers of the requirement
-     * @param int              $reason     A RULE_* constant describing the
+     * @param PackageInterface $package   The package with a requirement
+     * @param array            $providers The providers of the requirement
+     * @param int              $reason    A RULE_* constant describing the
      *                                     reason for generating this rule
-     * @param mixed            $reasonData Any data, e.g. the requirement name,
+     * @param mixed $reasonData Any data, e.g. the requirement name,
      *                                     that goes with the reason
-     * @return Rule                        The generated rule or null if tautological
+     * @return Rule The generated rule or null if tautological
      */
     protected function createRequireRule(PackageInterface $package, array $providers, $reason, $reasonData = null)
     {
@@ -69,11 +67,11 @@ class RuleSetGenerator
      * The rule is (A|B|C) with A, B and C different packages. If the given
      * set of packages is empty an impossible rule is generated.
      *
-     * @param array   $packages   The set of packages to choose from
-     * @param int     $reason     A RULE_* constant describing the reason for
+     * @param array $packages The set of packages to choose from
+     * @param int   $reason   A RULE_* constant describing the reason for
      *                            generating this rule
-     * @param array   $job        The job this rule was created from
-     * @return Rule               The generated rule
+     * @param  array $job The job this rule was created from
+     * @return Rule  The generated rule
      */
     protected function createInstallOneOfRule(array $packages, $reason, $job)
     {
@@ -90,11 +88,11 @@ class RuleSetGenerator
      *
      * The rule for a package A is (-A).
      *
-     * @param PackageInterface $package    The package to be removed
-     * @param int              $reason     A RULE_* constant describing the
+     * @param PackageInterface $package The package to be removed
+     * @param int              $reason  A RULE_* constant describing the
      *                                     reason for generating this rule
-     * @param array            $job        The job this rule was created from
-     * @return Rule                        The generated rule
+     * @param  array $job The job this rule was created from
+     * @return Rule  The generated rule
      */
     protected function createRemoveRule(PackageInterface $package, $reason, $job)
     {
@@ -107,13 +105,13 @@ class RuleSetGenerator
      * The rule for conflicting packages A and B is (-A|-B). A is called the issuer
      * and B the provider.
      *
-     * @param PackageInterface $issuer     The package declaring the conflict
-     * @param Package          $provider   The package causing the conflict
-     * @param int              $reason     A RULE_* constant describing the
+     * @param PackageInterface $issuer   The package declaring the conflict
+     * @param Package          $provider The package causing the conflict
+     * @param int              $reason   A RULE_* constant describing the
      *                                     reason for generating this rule
-     * @param mixed            $reasonData Any data, e.g. the package name, that
+     * @param mixed $reasonData Any data, e.g. the package name, that
      *                                     goes with the reason
-     * @return Rule                        The generated rule
+     * @return Rule The generated rule
      */
     protected function createConflictRule(PackageInterface $issuer, PackageInterface $provider, $reason, $reasonData = null)
     {
@@ -134,7 +132,8 @@ class RuleSetGenerator
      * @param int  $type    A TYPE_* constant defining the rule type
      * @param Rule $newRule The rule about to be added
      */
-    private function addRule($type, Rule $newRule = null) {
+    private function addRule($type, Rule $newRule = null)
+    {
         if ($this->rules->containsEqual($newRule)) {
             return;
         }
@@ -230,9 +229,9 @@ class RuleSetGenerator
     /**
      * Adds all rules for all update packages of a given package
      *
-     * @param PackageInterface $package  Rules for this package's updates are to
+     * @param PackageInterface $package Rules for this package's updates are to
      *                                   be added
-     * @param bool             $allowAll Whether downgrades are allowed
+     * @param bool $allowAll Whether downgrades are allowed
      */
     private function addRulesForUpdatePackages(PackageInterface $package)
     {

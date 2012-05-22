@@ -13,9 +13,7 @@
 namespace Composer\Autoload;
 
 use Composer\Installer\InstallationManager;
-use Composer\Json\JsonFile;
 use Composer\Package\AliasPackage;
-use Composer\Package\Loader\JsonLoader;
 use Composer\Package\PackageInterface;
 use Composer\Repository\RepositoryInterface;
 use Composer\Util\Filesystem;
@@ -104,6 +102,7 @@ EOF;
                 return false;
             }
             require_once \$path;
+
             return true;
         }
     });
@@ -169,7 +168,7 @@ EOF;
     /**
      * Compiles an ordered list of namespace => path mappings
      *
-     * @param array $packageMap array of array(package, installDir-relative-to-composer.json)
+     * @param  array $packageMap array of array(package, installDir-relative-to-composer.json)
      * @return array array('psr-0' => array('Ns\\Foo' => array('installDir')))
      */
     public function parseAutoloads(array $packageMap)
@@ -205,7 +204,7 @@ EOF;
     /**
      * Registers an autoloader based on an autoload map returned by parseAutoloads
      *
-     * @param array $autoloads see parseAutoloads return value
+     * @param  array       $autoloads see parseAutoloads return value
      * @return ClassLoader
      */
     public function createLoader(array $autoloads)
@@ -278,6 +277,7 @@ EOF;
             $path = substr($path, strlen($vendorPath));
             $baseDir = '$vendorDir . ';
         }
+
         return $baseDir.var_export($path, true);
     }
 

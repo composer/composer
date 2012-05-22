@@ -16,7 +16,6 @@ use Composer\Downloader\TransportException;
 use Composer\Json\JsonFile;
 use Composer\Cache;
 use Composer\IO\IOInterface;
-use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
 
 /**
@@ -62,6 +61,7 @@ class GitHubDriver extends VcsDriver
         if ($this->gitDriver) {
             return $this->gitDriver->getRootIdentifier();
         }
+
         return $this->rootIdentifier;
     }
 
@@ -73,6 +73,7 @@ class GitHubDriver extends VcsDriver
         if ($this->gitDriver) {
             return $this->gitDriver->getUrl();
         }
+
         return $this->url;
     }
 
@@ -206,6 +207,7 @@ class GitHubDriver extends VcsDriver
             if ($io->isVerbose()) {
                 $io->write('Skipping GitHub driver for '.$url.' because the OpenSSL PHP extension is missing.');
             }
+
             return false;
         }
 
@@ -245,7 +247,7 @@ class GitHubDriver extends VcsDriver
                     $this->rootIdentifier = 'master';
                 }
             } catch (TransportException $e) {
-                switch($e->getCode()) {
+                switch ($e->getCode()) {
                     case 401:
                     case 404:
                         $this->isPrivate = true;
@@ -262,6 +264,7 @@ class GitHubDriver extends VcsDriver
                                 $this->remoteFilesystem
                             );
                             $this->gitDriver->initialize();
+
                             return;
                         }
                         $this->io->write('Authentication required (<info>'.$this->url.'</info>):');

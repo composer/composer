@@ -120,9 +120,9 @@ abstract class BasePackage implements PackageInterface
      * Checks if the package matches the given constraint directly or through
      * provided or replaced packages
      *
-     * @param string                  $name       Name of the package to be matched
-     * @param LinkConstraintInterface $constraint The constraint to verify
-     * @return bool                               Whether this package matches the name and constraint
+     * @param  string                  $name       Name of the package to be matched
+     * @param  LinkConstraintInterface $constraint The constraint to verify
+     * @return bool                    Whether this package matches the name and constraint
      */
     public function matches($name, LinkConstraintInterface $constraint)
     {
@@ -187,6 +187,7 @@ abstract class BasePackage implements PackageInterface
         if ($package instanceof AliasPackage) {
             $package = $package->getAliasOf();
         }
+
         return $package === $self;
     }
 
