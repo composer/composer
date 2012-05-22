@@ -19,7 +19,7 @@ use Composer\Package\PackageInterface;
  */
 interface PolicyInterface
 {
-    function versionCompare(PackageInterface $a, PackageInterface $b, $operator);
-    function findUpdatePackages(Pool $pool, array $installedMap, PackageInterface $package);
-    function selectPreferedPackages(Pool $pool, array $installedMap, array $literals);
+    public function versionCompare(PackageInterface $a, PackageInterface $b, $operator);
+    public function findUpdatePackages(Pool $pool, array $installedMap, PackageInterface $package);
+    public function selectPreferedPackages(Pool $pool, array $installedMap, array $literals);
 }

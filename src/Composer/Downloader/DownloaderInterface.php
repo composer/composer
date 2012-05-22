@@ -27,7 +27,7 @@ interface DownloaderInterface
      *
      * @return string "source" or "dist"
      */
-    function getInstallationSource();
+    public function getInstallationSource();
 
     /**
      * Downloads specific package into specific folder.
@@ -35,7 +35,7 @@ interface DownloaderInterface
      * @param PackageInterface $package package instance
      * @param string           $path    download path
      */
-    function download(PackageInterface $package, $path);
+    public function download(PackageInterface $package, $path);
 
     /**
      * Updates specific package in specific folder from initial to target version.
@@ -44,7 +44,7 @@ interface DownloaderInterface
      * @param PackageInterface $target  updated package
      * @param string           $path    download path
      */
-    function update(PackageInterface $initial, PackageInterface $target, $path);
+    public function update(PackageInterface $initial, PackageInterface $target, $path);
 
     /**
      * Removes specific package from specific folder.
@@ -52,5 +52,5 @@ interface DownloaderInterface
      * @param PackageInterface $package package instance
      * @param string           $path    download path
      */
-    function remove(PackageInterface $package, $path);
+    public function remove(PackageInterface $package, $path);
 }

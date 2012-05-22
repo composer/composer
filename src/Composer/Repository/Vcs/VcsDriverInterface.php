@@ -22,7 +22,7 @@ interface VcsDriverInterface
     /**
      * Initializes the driver (git clone, svn checkout, fetch info etc)
      */
-    function initialize();
+    public function initialize();
 
     /**
      * Return the composer.json file information
@@ -30,47 +30,47 @@ interface VcsDriverInterface
      * @param  string $identifier Any identifier to a specific branch/tag/commit
      * @return array  containing all infos from the composer.json file
      */
-    function getComposerInformation($identifier);
+    public function getComposerInformation($identifier);
 
     /**
      * Return the root identifier (trunk, master, default/tip ..)
      *
      * @return string Identifier
      */
-    function getRootIdentifier();
+    public function getRootIdentifier();
 
     /**
      * Return list of branches in the repository
      *
      * @return array Branch names as keys, identifiers as values
      */
-    function getBranches();
+    public function getBranches();
 
     /**
      * Return list of tags in the repository
      *
      * @return array Tag names as keys, identifiers as values
      */
-    function getTags();
+    public function getTags();
 
     /**
      * @param  string $identifier Any identifier to a specific branch/tag/commit
      * @return array  With type, url reference and shasum keys.
      */
-    function getDist($identifier);
+    public function getDist($identifier);
 
     /**
      * @param  string $identifier Any identifier to a specific branch/tag/commit
      * @return array  With type, url and reference keys.
      */
-    function getSource($identifier);
+    public function getSource($identifier);
 
     /**
      * Return the URL of the repository
      *
      * @return string
      */
-    function getUrl();
+    public function getUrl();
 
     /**
      * Return true if the repository has a composer file for a given identifier,
@@ -79,7 +79,7 @@ interface VcsDriverInterface
      * @param  string  $identifier Any identifier to a specific branch/tag/commit
      * @return boolean Whether the repository has a composer file for a given identifier.
      */
-    function hasComposerFile($identifier);
+    public function hasComposerFile($identifier);
 
     /**
      * Checks if this driver can handle a given url
@@ -89,5 +89,5 @@ interface VcsDriverInterface
      * @param  Boolean     $shallow unless true, only shallow checks (url matching typically) should be done
      * @return Boolean
      */
-    static function supports(IOInterface $io, $url, $deep = false);
+    public static function supports(IOInterface $io, $url, $deep = false);
 }

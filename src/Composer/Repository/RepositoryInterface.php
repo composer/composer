@@ -29,7 +29,7 @@ interface RepositoryInterface extends \Countable
      *
      * @return Boolean
      */
-    function hasPackage(PackageInterface $package);
+    public function hasPackage(PackageInterface $package);
 
     /**
      * Searches for the first match of a package by name and version.
@@ -39,7 +39,7 @@ interface RepositoryInterface extends \Countable
      *
      * @return PackageInterface|null
      */
-    function findPackage($name, $version);
+    public function findPackage($name, $version);
 
     /**
      * Searches for all packages matching a name and optionally a version.
@@ -49,12 +49,12 @@ interface RepositoryInterface extends \Countable
      *
      * @return array
      */
-    function findPackages($name, $version = null);
+    public function findPackages($name, $version = null);
 
     /**
      * Returns list of registered packages.
      *
      * @return array
      */
-    function getPackages();
+    public function getPackages();
 }

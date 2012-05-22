@@ -32,7 +32,7 @@ class VersionParser
      * @param  string $version
      * @return string
      */
-    static public function parseStability($version)
+    public static function parseStability($version)
     {
         $version = preg_replace('{#[a-f0-9]+$}i', '', $version);
 
@@ -52,14 +52,14 @@ class VersionParser
         return 'stable';
     }
 
-    static public function normalizeStability($stability)
+    public static function normalizeStability($stability)
     {
         $stability = strtolower($stability);
 
         return $stability === 'rc' ? 'RC' : $stability;
     }
 
-    static public function formatVersion(PackageInterface $package, $truncate = true)
+    public static function formatVersion(PackageInterface $package, $truncate = true)
     {
         if (!$package->isDev() || !in_array($package->getSourceType(), array('hg', 'git'))) {
             return $package->getPrettyVersion();

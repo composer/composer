@@ -452,7 +452,7 @@ class Installer
      * @param  AutoloadGenerator $autoloadGenerator
      * @return Installer
      */
-    static public function create(IOInterface $io, Composer $composer, EventDispatcher $eventDispatcher = null, AutoloadGenerator $autoloadGenerator = null)
+    public static function create(IOInterface $io, Composer $composer, EventDispatcher $eventDispatcher = null, AutoloadGenerator $autoloadGenerator = null)
     {
         $eventDispatcher = $eventDispatcher ?: new EventDispatcher($composer, $io);
         $autoloadGenerator = $autoloadGenerator ?: new AutoloadGenerator;

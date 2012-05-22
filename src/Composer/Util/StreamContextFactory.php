@@ -27,7 +27,7 @@ final class StreamContextFactory
      * @return resource          Default context
      * @throws \RuntimeException if https proxy required and OpenSSL uninstalled
      */
-    static public function getContext(array $defaultOptions = array(), array $defaultParams = array())
+    public static function getContext(array $defaultOptions = array(), array $defaultParams = array())
     {
         $options = array('http' => array());
 

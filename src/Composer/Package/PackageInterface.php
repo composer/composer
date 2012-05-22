@@ -25,14 +25,14 @@ interface PackageInterface
      *
      * @return string package name
      */
-    function getName();
+    public function getName();
 
     /**
      * Returns the package's pretty (i.e. with proper case) name
      *
      * @return string package name
      */
-    function getPrettyName();
+    public function getPrettyName();
 
     /**
      * Returns a set of names that could refer to this package
@@ -42,21 +42,21 @@ interface PackageInterface
      *
      * @return array An array of strings referring to this package
      */
-    function getNames();
+    public function getNames();
 
     /**
      * Allows the solver to set an id for this package to refer to it.
      *
      * @param int $id
      */
-    function setId($id);
+    public function setId($id);
 
     /**
      * Retrieves the package's id set through setId
      *
      * @return int The previously set package id
      */
-    function getId();
+    public function getId();
 
     /**
      * Checks if the package matches the given constraint directly or through
@@ -66,133 +66,133 @@ interface PackageInterface
      * @param  LinkConstraintInterface $constraint The constraint to verify
      * @return bool                    Whether this package matches the name and constraint
      */
-    function matches($name, LinkConstraintInterface $constraint);
+    public function matches($name, LinkConstraintInterface $constraint);
 
     /**
      * Returns whether the package is a development virtual package or a concrete one
      *
      * @return Boolean
      */
-    function isDev();
+    public function isDev();
 
     /**
      * Returns the package type, e.g. library
      *
      * @return string The package type
      */
-    function getType();
+    public function getType();
 
     /**
      * Returns the package targetDir property
      *
      * @return string The package targetDir
      */
-    function getTargetDir();
+    public function getTargetDir();
 
     /**
      * Returns the package extra data
      *
      * @return array The package extra data
      */
-    function getExtra();
+    public function getExtra();
 
     /**
      * Sets source from which this package was installed (source/dist).
      *
      * @param string $type source/dist
      */
-    function setInstallationSource($type);
+    public function setInstallationSource($type);
 
     /**
      * Returns source from which this package was installed (source/dist).
      *
      * @param string $type source/dist
      */
-    function getInstallationSource();
+    public function getInstallationSource();
 
     /**
      * Returns the repository type of this package, e.g. git, svn
      *
      * @return string The repository type
      */
-    function getSourceType();
+    public function getSourceType();
 
     /**
      * Returns the repository url of this package, e.g. git://github.com/naderman/composer.git
      *
      * @return string The repository url
      */
-    function getSourceUrl();
+    public function getSourceUrl();
 
     /**
      * Returns the repository reference of this package, e.g. master, 1.0.0 or a commit hash for git
      *
      * @return string The repository reference
      */
-    function getSourceReference();
+    public function getSourceReference();
 
     /**
      * Returns the type of the distribution archive of this version, e.g. zip, tarball
      *
      * @return string The repository type
      */
-    function getDistType();
+    public function getDistType();
 
     /**
      * Returns the url of the distribution archive of this version
      *
      * @return string
      */
-    function getDistUrl();
+    public function getDistUrl();
 
     /**
      * Returns the reference of the distribution archive of this version, e.g. master, 1.0.0 or a commit hash for git
      *
      * @return string
      */
-    function getDistReference();
+    public function getDistReference();
 
     /**
      * Returns the sha1 checksum for the distribution archive of this version
      *
      * @return string
      */
-    function getDistSha1Checksum();
+    public function getDistSha1Checksum();
 
     /**
      * Returns the scripts of this package
      *
      * @return array array('script name' => array('listeners'))
      */
-    function getScripts();
+    public function getScripts();
 
     /**
      * Returns the version of this package
      *
      * @return string version
      */
-    function getVersion();
+    public function getVersion();
 
     /**
      * Returns the pretty (i.e. non-normalized) version string of this package
      *
      * @return string version
      */
-    function getPrettyVersion();
+    public function getPrettyVersion();
 
     /**
      * Returns the stability of this package: one of (dev, alpha, beta, RC, stable)
      *
      * @return string
      */
-    function getStability();
+    public function getStability();
 
     /**
      * Returns the package license, e.g. MIT, BSD, GPL
      *
      * @return array The package licenses
      */
-    function getLicense();
+    public function getLicense();
 
     /**
      * Returns a set of links to packages which need to be installed before
@@ -200,7 +200,7 @@ interface PackageInterface
      *
      * @return array An array of package links defining required packages
      */
-    function getRequires();
+    public function getRequires();
 
     /**
      * Returns a set of links to packages which must not be installed at the
@@ -208,7 +208,7 @@ interface PackageInterface
      *
      * @return array An array of package links defining conflicting packages
      */
-    function getConflicts();
+    public function getConflicts();
 
     /**
      * Returns a set of links to virtual packages that are provided through
@@ -216,7 +216,7 @@ interface PackageInterface
      *
      * @return array An array of package links defining provided packages
      */
-    function getProvides();
+    public function getProvides();
 
     /**
      * Returns a set of links to packages which can alternatively be
@@ -224,7 +224,7 @@ interface PackageInterface
      *
      * @return array An array of package links defining replaced packages
      */
-    function getReplaces();
+    public function getReplaces();
 
     /**
      * Returns a set of links to packages which are required to develop
@@ -232,7 +232,7 @@ interface PackageInterface
      *
      * @return array An array of package links defining packages required for development
      */
-    function getDevRequires();
+    public function getDevRequires();
 
     /**
      * Returns a set of package names and reasons why they are useful in
@@ -240,7 +240,7 @@ interface PackageInterface
      *
      * @return array An array of package suggestions with descriptions
      */
-    function getSuggests();
+    public function getSuggests();
 
     /**
      * Returns an associative array of autoloading rules
@@ -252,7 +252,7 @@ interface PackageInterface
      *
      * @return array Mapping of autoloading rules
      */
-    function getAutoload();
+    public function getAutoload();
 
     /**
      * Returns a list of directories which should get added to PHP's
@@ -260,7 +260,7 @@ interface PackageInterface
      *
      * @return array
      */
-    function getIncludePaths();
+    public function getIncludePaths();
 
     /**
      * Returns an array of repositories
@@ -269,56 +269,56 @@ interface PackageInterface
      *
      * @return array Repositories
      */
-    function getRepositories();
+    public function getRepositories();
 
     /**
      * Stores a reference to the repository that owns the package
      *
      * @param RepositoryInterface $repository
      */
-    function setRepository(RepositoryInterface $repository);
+    public function setRepository(RepositoryInterface $repository);
 
     /**
      * Returns a reference to the repository that owns the package
      *
      * @return RepositoryInterface
      */
-    function getRepository();
+    public function getRepository();
 
     /**
      * Returns the release date of the package
      *
      * @return \DateTime
      */
-    function getReleaseDate();
+    public function getReleaseDate();
 
     /**
      * Returns an array of keywords relating to the package
      *
      * @return array
      */
-    function getKeywords();
+    public function getKeywords();
 
     /**
      * Returns the package description
      *
      * @return string
      */
-    function getDescription();
+    public function getDescription();
 
     /**
      * Returns the package binaries
      *
      * @return array
      */
-    function getBinaries();
+    public function getBinaries();
 
     /**
      * Returns the package homepage
      *
      * @return string
      */
-    function getHomepage();
+    public function getHomepage();
 
     /**
      * Returns an array of authors of the package
@@ -327,33 +327,33 @@ interface PackageInterface
      *
      * @return array
      */
-    function getAuthors();
+    public function getAuthors();
 
     /**
      * Returns a version this package should be aliased to
      *
      * @return string
      */
-    function getAlias();
+    public function getAlias();
 
     /**
      * Returns a non-normalized version this package should be aliased to
      *
      * @return string
      */
-    function getPrettyAlias();
+    public function getPrettyAlias();
 
     /**
      * Returns package unique name, constructed from name and version.
      *
      * @return string
      */
-    function getUniqueName();
+    public function getUniqueName();
 
     /**
      * Converts the package into a readable and unique string
      *
      * @return string
      */
-    function __toString();
+    public function __toString();
 }
