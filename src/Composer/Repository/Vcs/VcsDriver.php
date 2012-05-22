@@ -35,11 +35,11 @@ abstract class VcsDriver implements VcsDriverInterface
     /**
      * Constructor.
      *
-     * @param string      $url The URL
-     * @param IOInterface $io  The IO instance
-     * @param Config      $config The composer configuration
-     * @param ProcessExecutor $process  Process instance, injectable for mocking
-     * @param callable $remoteFilesystem Remote Filesystem, injectable for mocking
+     * @param string          $url              The URL
+     * @param IOInterface     $io               The IO instance
+     * @param Config          $config           The composer configuration
+     * @param ProcessExecutor $process          Process instance, injectable for mocking
+     * @param callable        $remoteFilesystem Remote Filesystem, injectable for mocking
      */
     final public function __construct($url, IOInterface $io, Config $config, ProcessExecutor $process = null, $remoteFilesystem = null)
     {
@@ -76,6 +76,7 @@ abstract class VcsDriver implements VcsDriverInterface
         if (extension_loaded('openssl')) {
             return 'https';
         }
+
         return 'http';
     }
 

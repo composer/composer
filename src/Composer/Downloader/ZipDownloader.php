@@ -12,7 +12,6 @@
 
 namespace Composer\Downloader;
 
-use Composer\Package\PackageInterface;
 use Composer\Util\ProcessExecutor;
 use Composer\IO\IOInterface;
 use ZipArchive;
@@ -62,8 +61,8 @@ class ZipDownloader extends ArchiveDownloader
     /**
      * Give a meaningful error message to the user.
      *
-     * @param int $retval
-     * @param string $file
+     * @param  int    $retval
+     * @param  string $file
      * @return string
      */
     protected function getErrorMessage($retval, $file)

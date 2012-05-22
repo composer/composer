@@ -95,7 +95,7 @@ class Transaction
                         $package, $this->decisionQueueWhy[$i]
                     );
                 }
-            } else if (!isset($ignoreRemove[$package->getId()])) {
+            } elseif (!isset($ignoreRemove[$package->getId()])) {
                 if ($package instanceof AliasPackage) {
                     $transaction[] = new Operation\MarkAliasInstalledOperation(
                         $package, $this->decisionQueueWhy[$i]

@@ -13,7 +13,6 @@
 namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
-use Composer\Util\ProcessExecutor;
 
 /**
  * @author Per Bernhardt <plb@webfactory.de>

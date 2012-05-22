@@ -13,7 +13,6 @@
 namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
-use Composer\Util\ProcessExecutor;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -80,9 +79,9 @@ class GitDownloader extends VcsDownloader
     /**
      * Runs a command doing attempts for each protocol supported by github.
      *
-     * @param callable $commandCallable A callable building the command for the given url
-     * @param string $url
-     * @param string $path The directory to remove for each attempt (null if not needed)
+     * @param  callable          $commandCallable A callable building the command for the given url
+     * @param  string            $url
+     * @param  string            $path            The directory to remove for each attempt (null if not needed)
      * @throws \RuntimeException
      */
     protected function runCommand($commandCallable, $url, $path = null)

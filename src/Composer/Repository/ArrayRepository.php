@@ -117,7 +117,7 @@ class ArrayRepository implements RepositoryInterface
     /**
      * Removes package from repository.
      *
-     * @param   PackageInterface    $package    package instance
+     * @param PackageInterface $package package instance
      */
     public function removePackage(PackageInterface $package)
     {
@@ -140,6 +140,7 @@ class ArrayRepository implements RepositoryInterface
         if (null === $this->packages) {
             $this->initialize();
         }
+
         return $this->packages;
     }
 

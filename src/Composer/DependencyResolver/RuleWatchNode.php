@@ -99,7 +99,7 @@ class RuleWatchNode
      * Moves a watch from one literal to another
      *
      * @param int $from The previously watched literal
-     * @param int $to The literal to be watched now
+     * @param int $to   The literal to be watched now
      */
     public function moveWatch($from, $to)
     {

@@ -28,7 +28,7 @@ class VersionParser
     /**
      * Returns the stability of a version
      *
-     * @param string $version
+     * @param  string $version
      * @return string
      */
     static public function parseStability($version)
@@ -61,7 +61,7 @@ class VersionParser
     /**
      * Normalizes a version string to be able to perform comparisons on it
      *
-     * @param string $version
+     * @param  string $version
      * @return array
      */
     public function normalize($version)
@@ -123,7 +123,7 @@ class VersionParser
     /**
      * Normalizes a branch name to be able to perform comparisons on it
      *
-     * @param string $version
+     * @param  string $version
      * @return array
      */
     public function normalizeBranch($name)
@@ -139,6 +139,7 @@ class VersionParser
             for ($i = 1; $i < 5; $i++) {
                 $version .= isset($matches[$i]) ? str_replace('*', 'x', $matches[$i]) : '.x';
             }
+
             return str_replace('x', '9999999', $version).'-dev';
         }
 
@@ -148,7 +149,7 @@ class VersionParser
     /**
      * Parses as constraint string into LinkConstraint objects
      *
-     * @param string $constraints
+     * @param  string                                                   $constraints
      * @return \Composer\Package\LinkConstraint\LinkConstraintInterface
      */
     public function parseConstraints($constraints)
@@ -220,6 +221,7 @@ class VersionParser
         if (preg_match('{^(>=?|<=?|==?)?\s*(.*)}', $constraint, $matches)) {
             try {
                 $version = $this->normalize($matches[2]);
+
                 return array(new VersionConstraint($matches[1] ?: '=', $version));
             } catch (\Exception $e) {}
         }

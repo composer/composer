@@ -12,7 +12,6 @@
 
 namespace Composer\Installer;
 
-use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\Package\PackageInterface;
 use Composer\Downloader\DownloadManager;
 use Composer\Repository\InstalledRepositoryInterface;
@@ -37,8 +36,8 @@ class ProjectInstaller implements InstallerInterface
     /**
      * Decides if the installer supports the given type
      *
-     * @param   string  $packageType
-     * @return  Boolean
+     * @param  string  $packageType
+     * @return Boolean
      */
     public function supports($packageType)
     {
@@ -88,8 +87,8 @@ class ProjectInstaller implements InstallerInterface
     /**
      * Returns the installation path of a package
      *
-     * @param   PackageInterface    $package
-     * @return  string path
+     * @param  PackageInterface $package
+     * @return string           path
      */
     public function getInstallPath(PackageInterface $package)
     {

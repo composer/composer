@@ -40,10 +40,10 @@ class RepositoryManager
     /**
      * Searches for a package by it's name and version in managed repositories.
      *
-     * @param   string  $name       package name
-     * @param   string  $version    package version
+     * @param string $name    package name
+     * @param string $version package version
      *
-     * @return  PackageInterface|null
+     * @return PackageInterface|null
      */
     public function findPackage($name, $version)
     {
@@ -57,10 +57,10 @@ class RepositoryManager
     /**
      * Searches for all packages matching a name and optionally a version in managed repositories.
      *
-     * @param   string  $name       package name
-     * @param   string  $version    package version
+     * @param string $name    package name
+     * @param string $version package version
      *
-     * @return  array
+     * @return array
      */
     public function findPackages($name, $version)
     {
@@ -76,7 +76,7 @@ class RepositoryManager
     /**
      * Adds repository
      *
-     * @param   RepositoryInterface $repository repository instance
+     * @param RepositoryInterface $repository repository instance
      */
     public function addRepository(RepositoryInterface $repository)
     {
@@ -86,10 +86,10 @@ class RepositoryManager
     /**
      * Returns a new repository for a specific installation type.
      *
-     * @param   string $type repository type
-     * @param   string $config repository configuration
-     * @return  RepositoryInterface
-     * @throws  InvalidArgumentException     if repository for provided type is not registeterd
+     * @param  string                   $type   repository type
+     * @param  string                   $config repository configuration
+     * @return RepositoryInterface
+     * @throws InvalidArgumentException if repository for provided type is not registeterd
      */
     public function createRepository($type, $config)
     {
@@ -98,14 +98,15 @@ class RepositoryManager
         }
 
         $class = $this->repositoryClasses[$type];
+
         return new $class($config, $this->io, $this->config);
     }
 
     /**
      * Stores repository class for a specific installation type.
      *
-     * @param   string  $type   installation type
-     * @param   string  $class  class name of the repo implementation
+     * @param string $type  installation type
+     * @param string $class class name of the repo implementation
      */
     public function setRepositoryClass($type, $class)
     {
@@ -115,7 +116,7 @@ class RepositoryManager
     /**
      * Returns all repositories, except local one.
      *
-     * @return  array
+     * @return array
      */
     public function getRepositories()
     {
@@ -125,7 +126,7 @@ class RepositoryManager
     /**
      * Sets local repository for the project.
      *
-     * @param   RepositoryInterface $repository repository instance
+     * @param RepositoryInterface $repository repository instance
      */
     public function setLocalRepository(RepositoryInterface $repository)
     {
@@ -135,7 +136,7 @@ class RepositoryManager
     /**
      * Returns local repository for the project.
      *
-     * @return  RepositoryInterface
+     * @return RepositoryInterface
      */
     public function getLocalRepository()
     {
@@ -145,7 +146,7 @@ class RepositoryManager
     /**
      * Sets localDev repository for the project.
      *
-     * @param   RepositoryInterface $repository repository instance
+     * @param RepositoryInterface $repository repository instance
      */
     public function setLocalDevRepository(RepositoryInterface $repository)
     {
@@ -155,7 +156,7 @@ class RepositoryManager
     /**
      * Returns localDev repository for the project.
      *
-     * @return  RepositoryInterface
+     * @return RepositoryInterface
      */
     public function getLocalDevRepository()
     {
@@ -165,7 +166,7 @@ class RepositoryManager
     /**
      * Returns all local repositories for the project.
      *
-     * @return  array[RepositoryInterface]
+     * @return array[RepositoryInterface]
      */
     public function getLocalRepositories()
     {

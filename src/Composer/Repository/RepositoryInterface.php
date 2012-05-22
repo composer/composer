@@ -25,36 +25,36 @@ interface RepositoryInterface extends \Countable
     /**
      * Checks if specified package registered (installed).
      *
-     * @param   PackageInterface    $package    package instance
+     * @param PackageInterface $package package instance
      *
-     * @return  Boolean
+     * @return Boolean
      */
     function hasPackage(PackageInterface $package);
 
     /**
      * Searches for the first match of a package by name and version.
      *
-     * @param   string  $name       package name
-     * @param   string  $version    package version
+     * @param string $name    package name
+     * @param string $version package version
      *
-     * @return  PackageInterface|null
+     * @return PackageInterface|null
      */
     function findPackage($name, $version);
 
     /**
      * Searches for all packages matching a name and optionally a version.
      *
-     * @param   string  $name       package name
-     * @param   string  $version    package version
+     * @param string $name    package name
+     * @param string $version package version
      *
-     * @return  array
+     * @return array
      */
     function findPackages($name, $version = null);
 
     /**
      * Returns list of registered packages.
      *
-     * @return  array
+     * @return array
      */
     function getPackages();
 }

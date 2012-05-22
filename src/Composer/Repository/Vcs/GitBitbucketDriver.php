@@ -148,6 +148,7 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
             if ($io->isVerbose()) {
                 $io->write('Skipping Bitbucket git driver for '.$url.' because the OpenSSL PHP extension is missing.');
             }
+
             return false;
         }
 

@@ -26,8 +26,8 @@ class InstallOperation extends SolverOperation
     /**
      * Initializes operation.
      *
-     * @param   PackageInterface    $package    package instance
-     * @param   string              $reason     operation reason
+     * @param PackageInterface $package package instance
+     * @param string           $reason  operation reason
      */
     public function __construct(PackageInterface $package, $reason = null)
     {
@@ -39,7 +39,7 @@ class InstallOperation extends SolverOperation
     /**
      * Returns package instance.
      *
-     * @return  PackageInterface
+     * @return PackageInterface
      */
     public function getPackage()
     {
@@ -49,7 +49,7 @@ class InstallOperation extends SolverOperation
     /**
      * Returns job type.
      *
-     * @return  string
+     * @return string
      */
     public function getJobType()
     {

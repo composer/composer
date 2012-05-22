@@ -57,6 +57,7 @@ class CompositeRepository implements RepositoryInterface
                 return true;
             }
         }
+
         return false;
     }
 
@@ -72,6 +73,7 @@ class CompositeRepository implements RepositoryInterface
                 return $package;
             }
         }
+
         return null;
     }
 
@@ -85,6 +87,7 @@ class CompositeRepository implements RepositoryInterface
             /* @var $repository RepositoryInterface */
             $packages[] = $repository->findPackages($name, $version);
         }
+
         return call_user_func_array('array_merge', $packages);
     }
 
@@ -98,6 +101,7 @@ class CompositeRepository implements RepositoryInterface
             /* @var $repository RepositoryInterface */
             $packages[] = $repository->getPackages();
         }
+
         return call_user_func_array('array_merge', $packages);
     }
 
@@ -111,6 +115,7 @@ class CompositeRepository implements RepositoryInterface
             /* @var $repository RepositoryInterface */
             $total += $repository->count();
         }
+
         return $total;
     }
 

@@ -48,6 +48,7 @@ class MultiConstraint implements LinkConstraintInterface
         foreach ($this->constraints as $constraint) {
             $constraints[] = $constraint->__toString();
         }
+
         return '['.implode(', ', $constraints).']';
     }
 }

@@ -27,7 +27,7 @@ class Compiler
      * Compiles composer into a single phar file
      *
      * @throws \RuntimeException
-     * @param string $pharFile The full path to the file to create
+     * @param  string            $pharFile The full path to the file to create
      */
     public function compile($pharFile = 'composer.phar')
     {
@@ -135,7 +135,7 @@ class Compiler
     /**
      * Removes whitespace from a PHP source string while preserving line numbers.
      *
-     * @param string $source A PHP string
+     * @param  string $source A PHP string
      * @return string The PHP string with the whitespace removed
      */
     private function stripWhitespace($source)

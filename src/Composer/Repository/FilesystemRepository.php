@@ -13,7 +13,6 @@
 namespace Composer\Repository;
 
 use Composer\Json\JsonFile;
-use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
@@ -31,7 +30,7 @@ class FilesystemRepository extends ArrayRepository implements WritableRepository
     /**
      * Initializes filesystem repository.
      *
-     * @param   JsonFile    $repositoryFile repository json file
+     * @param JsonFile $repositoryFile repository json file
      */
     public function __construct(JsonFile $repositoryFile)
     {

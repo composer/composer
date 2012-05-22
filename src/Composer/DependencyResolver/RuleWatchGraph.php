@@ -70,7 +70,7 @@ class RuleWatchGraph
      * B must now be decided true as well.
      *
      * @param int $decidedLiteral The literal which was decided (A in our example)
-     * @param int $level The level at which the decision took place and at which
+     * @param int $level          The level at which the decision took place and at which
      *     all resulting decisions should be made.
      * @param Callable $decisionsSatisfyCallback A callback which checks if a
      *     literal has already been positively decided and the rule is thus

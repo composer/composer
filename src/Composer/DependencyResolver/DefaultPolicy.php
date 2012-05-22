@@ -12,7 +12,6 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\Repository\RepositoryInterface;
 use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\LinkConstraint\VersionConstraint;
@@ -179,7 +178,7 @@ class DefaultPolicy implements PolicyInterface
             if ($this->versionCompare($package, $bestPackage, '>')) {
                 $bestPackage = $package;
                 $bestLiterals = array($literal);
-            } else if ($this->versionCompare($package, $bestPackage, '==')) {
+            } elseif ($this->versionCompare($package, $bestPackage, '==')) {
                 $bestLiterals[] = $literal;
             }
         }
@@ -199,7 +198,7 @@ class DefaultPolicy implements PolicyInterface
             if ($this->versionCompare($literal->getPackage(), $maxPackage, '>')) {
                 $maxPackage = $literal->getPackage();
                 $maxLiterals = array($literal);
-            } else if ($this->versionCompare($literal->getPackage(), $maxPackage, '==')) {
+            } elseif ($this->versionCompare($literal->getPackage(), $maxPackage, '==')) {
                 $maxLiterals[] = $literal;
             }
         }

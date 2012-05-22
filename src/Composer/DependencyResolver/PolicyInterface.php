@@ -12,7 +12,6 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\Repository\RepositoryInterface;
 use Composer\Package\PackageInterface;
 
 /**

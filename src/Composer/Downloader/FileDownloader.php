@@ -33,7 +33,7 @@ class FileDownloader implements DownloaderInterface
     /**
      * Constructor.
      *
-     * @param IOInterface  $io  The IO instance
+     * @param IOInterface $io The IO instance
      */
     public function __construct(IOInterface $io, RemoteFilesystem $rfs = null, Filesystem $filesystem = null)
     {
@@ -110,9 +110,9 @@ class FileDownloader implements DownloaderInterface
     /**
      * Gets file name for specific package
      *
-     * @param  PackageInterface $package   package instance
-     * @param  string           $path      download path
-     * @return string file name
+     * @param  PackageInterface $package package instance
+     * @param  string           $path    download path
+     * @return string           file name
      */
     protected function getFileName(PackageInterface $package, $path)
     {
@@ -122,7 +122,7 @@ class FileDownloader implements DownloaderInterface
     /**
      * Process the download url
      *
-     * @param  string           $url       download url
+     * @param  string $url download url
      * @return string url
      *
      * @throws \RuntimeException If any problem with the url

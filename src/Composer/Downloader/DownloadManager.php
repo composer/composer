@@ -30,7 +30,7 @@ class DownloadManager
     /**
      * Initializes download manager.
      *
-     * @param   Boolean $preferSource   prefer downloading from source
+     * @param Boolean $preferSource prefer downloading from source
      */
     public function __construct($preferSource = false, Filesystem $filesystem = null)
     {
@@ -41,7 +41,7 @@ class DownloadManager
     /**
      * Makes downloader prefer source installation over the dist.
      *
-     * @param   Boolean $preferSource   prefer downloading from source
+     * @param Boolean $preferSource prefer downloading from source
      */
     public function setPreferSource($preferSource)
     {
@@ -53,8 +53,8 @@ class DownloadManager
     /**
      * Sets installer downloader for a specific installation type.
      *
-     * @param   string              $type       installation type
-     * @param   DownloaderInterface $downloader downloader instance
+     * @param string              $type       installation type
+     * @param DownloaderInterface $downloader downloader instance
      */
     public function setDownloader($type, DownloaderInterface $downloader)
     {
@@ -67,11 +67,11 @@ class DownloadManager
     /**
      * Returns downloader for a specific installation type.
      *
-     * @param   string  $type   installation type
+     * @param string $type installation type
      *
-     * @return  DownloaderInterface
+     * @return DownloaderInterface
      *
-     * @throws  UnexpectedValueException    if downloader for provided type is not registeterd
+     * @throws UnexpectedValueException if downloader for provided type is not registeterd
      */
     public function getDownloader($type)
     {
@@ -86,12 +86,12 @@ class DownloadManager
     /**
      * Returns downloader for already installed package.
      *
-     * @param   PackageInterface    $package    package instance
+     * @param PackageInterface $package package instance
      *
-     * @return  DownloaderInterface
+     * @return DownloaderInterface
      *
-     * @throws  InvalidArgumentException        if package has no installation source specified
-     * @throws  LogicException                  if specific downloader used to load package with
+     * @throws InvalidArgumentException if package has no installation source specified
+     * @throws LogicException           if specific downloader used to load package with
      *                                          wrong type
      */
     public function getDownloaderForInstalledPackage(PackageInterface $package)
@@ -121,11 +121,11 @@ class DownloadManager
     /**
      * Downloads package into target dir.
      *
-     * @param   PackageInterface    $package        package instance
-     * @param   string              $targetDir      target dir
-     * @param   Boolean             $preferSource   prefer installation from source
+     * @param PackageInterface $package      package instance
+     * @param string           $targetDir    target dir
+     * @param Boolean          $preferSource prefer installation from source
      *
-     * @throws  InvalidArgumentException            if package have no urls to download from
+     * @throws InvalidArgumentException if package have no urls to download from
      */
     public function download(PackageInterface $package, $targetDir, $preferSource = null)
     {
@@ -152,11 +152,11 @@ class DownloadManager
     /**
      * Updates package from initial to target version.
      *
-     * @param   PackageInterface    $initial    initial package version
-     * @param   PackageInterface    $target     target package version
-     * @param   string              $targetDir  target dir
+     * @param PackageInterface $initial   initial package version
+     * @param PackageInterface $target    target package version
+     * @param string           $targetDir target dir
      *
-     * @throws  InvalidArgumentException        if initial package is not installed
+     * @throws InvalidArgumentException if initial package is not installed
      */
     public function update(PackageInterface $initial, PackageInterface $target, $targetDir)
     {
@@ -175,6 +175,7 @@ class DownloadManager
         if ($target->isDev() && 'dist' === $installationSource) {
             $downloader->remove($initial, $targetDir);
             $this->download($target, $targetDir);
+
             return;
         }
 
@@ -190,8 +191,8 @@ class DownloadManager
     /**
      * Removes package from target dir.
      *
-     * @param   PackageInterface    $package    package instance
-     * @param   string              $targetDir  target dir
+     * @param PackageInterface $package   package instance
+     * @param string           $targetDir target dir
      */
     public function remove(PackageInterface $package, $targetDir)
     {

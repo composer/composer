@@ -30,8 +30,8 @@ class ProcessExecutor
      * @param string $command the command to execute
      * @param mixed  $output  the output will be written into this var if passed by ref
      *                        if a callable is passed it will be used as output handler
-     * @param string $cwd     the working directory
-     * @return int statuscode
+     * @param  string $cwd the working directory
+     * @return int    statuscode
      */
     public function execute($command, &$output = null, $cwd = null)
     {

@@ -124,9 +124,9 @@ class PearRepository extends ArrayRepository
     }
 
     /**
-     * @param   string $categoryLink
-     * @throws  TransportException
-     * @throws  \InvalidArgumentException
+     * @param  string                    $categoryLink
+     * @throws TransportException
+     * @throws \InvalidArgumentException
      */
     private function fetchPearPackages($categoryLink)
     {
@@ -192,8 +192,8 @@ class PearRepository extends ArrayRepository
     }
 
     /**
-     * @param   array $data
-     * @return  string
+     * @param  array  $data
+     * @return string
      */
     private function parseVersion(array $data)
     {
@@ -207,13 +207,14 @@ class PearRepository extends ArrayRepository
         if (isset($data['max'])) {
             $versions[] = '<=' . $data['max'];
         }
+
         return implode(',', $versions);
     }
 
     /**
      * @todo    Improve dependencies resolution of pear packages.
-     * @param   array $depsOptions
-     * @return  array
+     * @param  array $depsOptions
+     * @return array
      */
     private function parseDependenciesOptions(array $depsOptions)
     {
@@ -251,13 +252,14 @@ class PearRepository extends ArrayRepository
                 }
             }
         }
+
         return $data;
     }
 
     /**
-     * @param   string $deps
-     * @return  array
-     * @throws  \InvalidArgumentException
+     * @param  string                    $deps
+     * @return array
+     * @throws \InvalidArgumentException
      */
     private function parseDependencies($deps)
     {
@@ -282,9 +284,9 @@ class PearRepository extends ArrayRepository
     }
 
     /**
-     * @param   string $packagesLink
-     * @return  void
-     * @throws  \InvalidArgumentException
+     * @param  string                    $packagesLink
+     * @return void
+     * @throws \InvalidArgumentException
      */
     private function fetchPear2Packages($packagesLink)
     {
@@ -357,7 +359,7 @@ class PearRepository extends ArrayRepository
     }
 
     /**
-     * @param  string $url
+     * @param  string       $url
      * @return \DOMDocument
      */
     private function requestXml($url)

@@ -14,7 +14,6 @@ namespace Composer\Package\Loader;
 
 use Composer\Package;
 use Composer\Package\Version\VersionParser;
-use Composer\Repository\RepositoryManager;
 
 /**
  * @author Konstantin Kudryashiv <ever.zet@gmail.com>

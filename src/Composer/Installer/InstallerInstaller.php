@@ -16,7 +16,6 @@ use Composer\IO\IOInterface;
 use Composer\Autoload\AutoloadGenerator;
 use Composer\Downloader\DownloadManager;
 use Composer\Repository\InstalledRepositoryInterface;
-use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\Package\PackageInterface;
 
 /**
@@ -30,12 +29,12 @@ class InstallerInstaller extends LibraryInstaller
     private static $classCounter = 0;
 
     /**
-     * @param   string                      $vendorDir  relative path for packages home
-     * @param   string                      $binDir     relative path for binaries
-     * @param   DownloadManager             $dm         download manager
-     * @param   IOInterface                 $io         io instance
-     * @param   InstallationManager         $im         installation manager
-     * @param   array                       $localRepositories array of InstalledRepositoryInterface
+     * @param string              $vendorDir         relative path for packages home
+     * @param string              $binDir            relative path for binaries
+     * @param DownloadManager     $dm                download manager
+     * @param IOInterface         $io                io instance
+     * @param InstallationManager $im                installation manager
+     * @param array               $localRepositories array of InstalledRepositoryInterface
      */
     public function __construct($vendorDir, $binDir, DownloadManager $dm, IOInterface $io, InstallationManager $im, array $localRepositories)
     {

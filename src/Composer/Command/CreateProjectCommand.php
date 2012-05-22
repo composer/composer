@@ -135,6 +135,7 @@ EOT
     protected function createDownloadManager(IOInterface $io)
     {
         $factory = new Factory();
+
         return $factory->createDownloadManager($io);
     }
 }

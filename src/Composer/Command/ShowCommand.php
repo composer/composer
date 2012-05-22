@@ -89,6 +89,7 @@ EOT
             $this->printLinks($input, $output, $package, 'provides');
             $this->printLinks($input, $output, $package, 'conflicts');
             $this->printLinks($input, $output, $package, 'replaces');
+
             return;
         }
 
@@ -125,7 +126,7 @@ EOT
     /**
      * finds a package by name and version if provided
      *
-     * @param InputInterface $input
+     * @param  InputInterface            $input
      * @return PackageInterface
      * @throws \InvalidArgumentException
      */
@@ -192,6 +193,7 @@ EOT
     {
         if ($input->getArgument('version')) {
             $output->writeln('<info>version</info>  : ' . $package->getPrettyVersion());
+
             return;
         }
 

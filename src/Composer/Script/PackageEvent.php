@@ -31,9 +31,9 @@ class PackageEvent extends Event
     /**
      * Constructor.
      *
-     * @param string      $name     The event name
-     * @param Composer    $composer The composer objet
-     * @param IOInterface $io       The IOInterface object
+     * @param string             $name      The event name
+     * @param Composer           $composer  The composer objet
+     * @param IOInterface        $io        The IOInterface object
      * @param OperationInterface $operation The operation object
      */
     public function __construct($name, Composer $composer, IOInterface $io, OperationInterface $operation)
