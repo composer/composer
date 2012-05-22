@@ -24,7 +24,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Json\JsonFile;
-use Composer\Util\Filesystem;
 use Composer\Util\RemoteFilesystem;
 use Composer\Package\Version\VersionParser;
 
@@ -118,10 +117,7 @@ EOT
             }
         }
 
-        $fs = new Filesystem();
-        $prettyDirectory = rtrim($fs->isAbsolutePath($directory) ? $fs->findShortestPath(getcwd(), $directory, true) : $directory, '\\/') . '/';
-
-        $io->write('<info>Installing ' . $package->getName() . ' (' . VersionParser::formatVersion($package) . ') in '.$prettyDirectory.'</info>', true);
+        $io->write('<info>Installing ' . $package->getName() . ' (' . VersionParser::formatVersion($package, false) . ')</info>', true);
         $projectInstaller = new ProjectInstaller($directory, $dm);
         $projectInstaller->install(new InstalledFilesystemRepository(new JsonFile('php://memory')), $package);
 

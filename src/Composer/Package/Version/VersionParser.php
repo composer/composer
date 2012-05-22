@@ -59,13 +59,13 @@ class VersionParser
         return $stability === 'rc' ? 'RC' : $stability;
     }
 
-    static public function formatVersion(PackageInterface $package)
+    static public function formatVersion(PackageInterface $package, $truncate = true)
     {
         if (!$package->isDev() || !in_array($package->getSourceType(), array('hg', 'git'))) {
             return $package->getPrettyVersion();
         }
 
-        return $package->getPrettyVersion().' '.substr($package->getSourceReference(), 0, 6);
+        return $package->getPrettyVersion() . ' ' . ($truncate ? substr($package->getSourceReference(), 0, 6) : $package->getSourceReference());
     }
 
     /**
