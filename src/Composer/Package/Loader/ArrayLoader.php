@@ -187,16 +187,20 @@ class ArrayLoader
         return $package;
     }
 
+    protected function createLink(Package\PackageInterface $package, $target, $constraint, $description)
+    {
+        $parsedConstraint = $this->versionParser->parseConstraints(
+            'self.version' === $constraint ? $package->getPrettyVersion() : $constraint
+        );
+
+        return new Package\Link($package->getName(), $target, $parsedConstraint, $description, $constraint);
+    }
+
     private function loadLinksFromConfig($package, $description, array $linksSpecs)
     {
         $links = array();
         foreach ($linksSpecs as $packageName => $constraint) {
-            if ('self.version' === $constraint) {
-                $parsedConstraint = $this->versionParser->parseConstraints($package->getPrettyVersion());
-            } else {
-                $parsedConstraint = $this->versionParser->parseConstraints($constraint);
-            }
-            $links[] = new Package\Link($package->getName(), $packageName, $parsedConstraint, $description, $constraint);
+            $links[] = $this->createLink($package, $packageName, $constraint, $description);
         }
 
         return $links;
