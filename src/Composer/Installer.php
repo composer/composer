@@ -353,10 +353,6 @@ class Installer
         }
 
         foreach ($operations as $operation) {
-            if ($this->verbose) {
-                $this->io->write((string) $operation);
-            }
-
             // collect suggestions
             if ('install' === $operation->getJobType()) {
                 foreach ($operation->getPackage()->getSuggests() as $target => $reason) {
@@ -404,6 +400,10 @@ class Installer
                         $package->setSourceReference($references[$package->getName()]);
                     }
                 }
+            }
+
+            if ($this->verbose) {
+                $this->io->write((string) $operation);
             }
 
             $this->installationManager->execute($localRepo, $operation);
