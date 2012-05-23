@@ -367,7 +367,7 @@ class Installer
 
             if (!$this->dryRun) {
                 $event = 'Composer\Script\ScriptEvents::PRE_PACKAGE_'.strtoupper($operation->getJobType());
-                if (defined($event)) {
+                if (defined($event) && $this->runScripts) {
                     $this->eventDispatcher->dispatchPackageEvent(constant($event), $operation);
                 }
 
@@ -407,7 +407,7 @@ class Installer
                 $this->installationManager->execute($localRepo, $operation);
 
                 $event = 'Composer\Script\ScriptEvents::POST_PACKAGE_'.strtoupper($operation->getJobType());
-                if (defined($event)) {
+                if (defined($event) && $this->runScripts) {
                     $this->eventDispatcher->dispatchPackageEvent(constant($event), $operation);
                 }
 
