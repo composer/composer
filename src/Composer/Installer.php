@@ -87,6 +87,7 @@ class Installer
     protected $dryRun = false;
     protected $verbose = false;
     protected $update = false;
+    protected $runScripts = true;
 
     /**
      * @var array
@@ -150,7 +151,7 @@ class Installer
 
         $aliases = $this->aliasPackages();
 
-        if (!$this->dryRun) {
+        if (!$this->dryRun && $this->runScripts) {
             // dispatch pre event
             $eventName = $this->update ? ScriptEvents::PRE_UPDATE_CMD : ScriptEvents::PRE_INSTALL_CMD;
             $this->eventDispatcher->dispatchCommandEvent($eventName);
@@ -193,9 +194,11 @@ class Installer
             $localRepos = new CompositeRepository($this->repositoryManager->getLocalRepositories());
             $this->autoloadGenerator->dump($localRepos, $this->package, $this->installationManager, $this->installationManager->getVendorPath() . '/composer', true);
 
-            // dispatch post event
-            $eventName = $this->update ? ScriptEvents::POST_UPDATE_CMD : ScriptEvents::POST_INSTALL_CMD;
-            $this->eventDispatcher->dispatchCommandEvent($eventName);
+            if ($this->runScripts) {
+                // dispatch post event
+                $eventName = $this->update ? ScriptEvents::POST_UPDATE_CMD : ScriptEvents::POST_INSTALL_CMD;
+                $this->eventDispatcher->dispatchCommandEvent($eventName);
+            }
         }
 
         return true;
@@ -518,12 +521,25 @@ class Installer
     /**
      * enables dev packages
      *
-     * @param  boolean   $update
+     * @param  boolean   $devMode
      * @return Installer
      */
     public function setDevMode($devMode = true)
     {
         $this->devMode = (boolean) $devMode;
+
+        return $this;
+    }
+
+    /**
+     * set whether to run scripts or not
+     *
+     * @param boolean $runScripts
+     * @return Installer
+     */
+    public function setRunScripts($runScripts = true)
+    {
+        $this->runScripts = (boolean) $runScripts;
 
         return $this;
     }
