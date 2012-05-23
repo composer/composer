@@ -21,6 +21,7 @@ use Composer\DependencyResolver\Solver;
 use Composer\DependencyResolver\SolverProblemsException;
 use Composer\Downloader\DownloadManager;
 use Composer\Installer\InstallationManager;
+use Composer\Installer\NoopInstaller;
 use Composer\IO\IOInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\Link;
@@ -131,6 +132,7 @@ class Installer
         if ($this->dryRun) {
             $this->verbose = true;
             $this->runScripts = false;
+            $this->installationManager->addInstaller(new NoopInstaller);
         }
 
         if ($this->preferSource) {
@@ -404,9 +406,7 @@ class Installer
                 }
             }
 
-            if (!$this->dryRun) {
-                $this->installationManager->execute($localRepo, $operation);
-            }
+            $this->installationManager->execute($localRepo, $operation);
 
             $event = 'Composer\Script\ScriptEvents::POST_PACKAGE_'.strtoupper($operation->getJobType());
             if (defined($event) && $this->runScripts) {
