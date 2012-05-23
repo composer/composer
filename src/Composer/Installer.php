@@ -130,6 +130,7 @@ class Installer
     {
         if ($this->dryRun) {
             $this->verbose = true;
+            $this->runScripts = false;
         }
 
         if ($this->preferSource) {
@@ -151,7 +152,7 @@ class Installer
 
         $aliases = $this->aliasPackages();
 
-        if (!$this->dryRun && $this->runScripts) {
+        if ($this->runScripts) {
             // dispatch pre event
             $eventName = $this->update ? ScriptEvents::PRE_UPDATE_CMD : ScriptEvents::PRE_INSTALL_CMD;
             $this->eventDispatcher->dispatchCommandEvent($eventName);
@@ -365,52 +366,54 @@ class Installer
                 }
             }
 
+            $event = 'Composer\Script\ScriptEvents::PRE_PACKAGE_'.strtoupper($operation->getJobType());
+            if (defined($event) && $this->runScripts) {
+                $this->eventDispatcher->dispatchPackageEvent(constant($event), $operation);
+            }
+
+            // if installing from lock, restore dev packages' references to their locked state
+            if ($installFromLock) {
+                $package = null;
+                if ('update' === $operation->getJobType()) {
+                    $package = $operation->getTargetPackage();
+                } elseif ('install' === $operation->getJobType()) {
+                    $package = $operation->getPackage();
+                }
+                if ($package && $package->isDev()) {
+                    $lockData = $this->locker->getLockData();
+                    foreach ($lockData['packages'] as $lockedPackage) {
+                        if (!empty($lockedPackage['source-reference']) && strtolower($lockedPackage['package']) === $package->getName()) {
+                            $package->setSourceReference($lockedPackage['source-reference']);
+                            break;
+                        }
+                    }
+                }
+            } else {
+                // not installing from lock, force dev packages' references if they're in root package refs
+                $package = null;
+                if ('update' === $operation->getJobType()) {
+                    $package = $operation->getTargetPackage();
+                } elseif ('install' === $operation->getJobType()) {
+                    $package = $operation->getPackage();
+                }
+                if ($package && $package->isDev()) {
+                    $references = $this->package->getReferences();
+                    if (isset($references[$package->getName()])) {
+                        $package->setSourceReference($references[$package->getName()]);
+                    }
+                }
+            }
+
             if (!$this->dryRun) {
-                $event = 'Composer\Script\ScriptEvents::PRE_PACKAGE_'.strtoupper($operation->getJobType());
-                if (defined($event) && $this->runScripts) {
-                    $this->eventDispatcher->dispatchPackageEvent(constant($event), $operation);
-                }
-
-                // if installing from lock, restore dev packages' references to their locked state
-                if ($installFromLock) {
-                    $package = null;
-                    if ('update' === $operation->getJobType()) {
-                        $package = $operation->getTargetPackage();
-                    } elseif ('install' === $operation->getJobType()) {
-                        $package = $operation->getPackage();
-                    }
-                    if ($package && $package->isDev()) {
-                        $lockData = $this->locker->getLockData();
-                        foreach ($lockData['packages'] as $lockedPackage) {
-                            if (!empty($lockedPackage['source-reference']) && strtolower($lockedPackage['package']) === $package->getName()) {
-                                $package->setSourceReference($lockedPackage['source-reference']);
-                                break;
-                            }
-                        }
-                    }
-                } else {
-                    // not installing from lock, force dev packages' references if they're in root package refs
-                    $package = null;
-                    if ('update' === $operation->getJobType()) {
-                        $package = $operation->getTargetPackage();
-                    } elseif ('install' === $operation->getJobType()) {
-                        $package = $operation->getPackage();
-                    }
-                    if ($package && $package->isDev()) {
-                        $references = $this->package->getReferences();
-                        if (isset($references[$package->getName()])) {
-                            $package->setSourceReference($references[$package->getName()]);
-                        }
-                    }
-                }
-
                 $this->installationManager->execute($localRepo, $operation);
+            }
 
-                $event = 'Composer\Script\ScriptEvents::POST_PACKAGE_'.strtoupper($operation->getJobType());
-                if (defined($event) && $this->runScripts) {
-                    $this->eventDispatcher->dispatchPackageEvent(constant($event), $operation);
-                }
+            $event = 'Composer\Script\ScriptEvents::POST_PACKAGE_'.strtoupper($operation->getJobType());
+            if (defined($event) && $this->runScripts) {
+                $this->eventDispatcher->dispatchPackageEvent(constant($event), $operation);
+            }
 
+            if (!$this->dryRun) {
                 $localRepo->write();
             }
         }
