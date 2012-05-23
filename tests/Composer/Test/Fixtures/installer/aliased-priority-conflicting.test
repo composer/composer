@@ -1,0 +1,49 @@
+--TEST--
+Aliases take precedence over default package even if default is selected
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "a/req", "version": "dev-feature-foo",
+                    "source": { "reference": "feat.f", "type": "git", "url": "" }
+                },
+                {
+                    "name": "a/req", "version": "dev-master",
+                    "extra": { "branch-alias": { "dev-master": "1.0.x-dev" } },
+                    "source": { "reference": "forked", "type": "git", "url": "" }
+                }
+            ]
+        },
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "a/a", "version": "dev-master",
+                    "require": { "a/req": "1.*" }
+                },
+                {
+                    "name": "a/b", "version": "dev-master",
+                    "require": { "a/req": "dev-master" }
+                },
+                {
+                    "name": "a/req", "version": "dev-master",
+                    "extra": { "branch-alias": { "dev-master": "1.0.x-dev" } },
+                    "source": { "reference": "master", "type": "git", "url": "" }
+                }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "dev-master",
+        "a/b": "dev-master",
+        "a/req": "dev-feature-foo as dev-master"
+    }
+}
+--EXPECT--
+Installing a/req (dev-feature-foo feat.f)
+Marking a/req (dev-master feat.f) as installed, alias of a/req (dev-master feat.f)
+Installing a/b (dev-master)
+Installing a/a (dev-master)
