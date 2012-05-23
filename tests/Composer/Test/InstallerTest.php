@@ -130,7 +130,13 @@ class InstallerTest extends TestCase
             }
         }
 
+        $output = null;
         $io = $this->getMock('Composer\IO\IOInterface');
+        $io->expects($this->any())
+            ->method('write')
+            ->will($this->returnCallback(function ($text, $newline) use (&$output) {
+                $output .= $text . ($newline ? "\n":"");
+            }));
 
         $composer = FactoryMock::create($io, $composer);
 
@@ -174,7 +180,7 @@ class InstallerTest extends TestCase
         $installer->setDevMode($dev)->setUpdate($update);
 
         $result = $installer->run();
-        $this->assertTrue($result);
+        $this->assertTrue($result, $output);
 
         $expectedInstalled   = isset($options['install']) ? $options['install'] : array();
         $expectedUpdated     = isset($options['update']) ? $options['update'] : array();
