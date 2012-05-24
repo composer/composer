@@ -189,6 +189,11 @@ For example:
 
     $ COMPOSER=composer-other.json php composer.phar install
 
+### COMPOSER_ROOT_VERSION
+
+By setting this var you can specify the version of the root package, if it can
+not be guessed from VCS info and is not present in `composer.json`.
+
 ### COMPOSER_VENDOR_DIR
 
 By setting this var you can make composer install the dependencies into a
