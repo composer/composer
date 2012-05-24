@@ -54,7 +54,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'parses branches'   => array('1.x-dev',             '1.9999999.9999999.9999999-dev'),
             'parses arbitrary'  => array('dev-feature-foo',     'dev-feature-foo'),
             'parses arbitrary2' => array('DEV-FOOBAR',          'dev-foobar'),
-            'ignores aliases'   => array('dev-master as 1.0.0', '1.0.0.0'),
+            'ignores aliases'   => array('dev-master as 1.0.0', '9999999-dev'),
         );
     }
 
@@ -156,7 +156,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'accepts master/2'  => array('dev-master',      new VersionConstraint('=', '9999999-dev')),
             'accepts arbitrary' => array('dev-feature-a',   new VersionConstraint('=', 'dev-feature-a')),
             'regression #550'   => array('dev-some-fix',    new VersionConstraint('=', 'dev-some-fix')),
-            'ignores aliases'   => array('dev-master as 1.0.0', new VersionConstraint('=', '1.0.0.0')),
+            'ignores aliases'   => array('dev-master as 1.0.0', new VersionConstraint('=', '9999999-dev')),
         );
     }
 
