@@ -61,7 +61,7 @@ Global installation of Composer (via homebrew)
 Composer is part of the homebrew-php project.
 
 1. Tap the homebrew-php repository into your brew installation if you haven't done yet: `brew tap josegonzalez/homebrew-php`
-2. Run `brew install composer-php`.
+2. Run `brew install josegonzalez/php/composer`.
 3. Use Composer with the `composer` command.
 
 Updating Composer
