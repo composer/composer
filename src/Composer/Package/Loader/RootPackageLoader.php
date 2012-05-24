@@ -70,7 +70,19 @@ class RootPackageLoader extends ArrayLoader
         $references = array();
         foreach (array('require', 'require-dev') as $linkType) {
             if (isset($config[$linkType])) {
-                $aliases = $this->extractAliases($config[$linkType], $aliases);
+                $opts = BasePackage::$supportedLinkTypes[$linkType];
+                $method = ucfirst($opts['method']);
+
+                if ($newAliases = $this->extractAliases($config[$linkType])) {
+                    $aliases = array_merge($aliases, $newAliases);
+
+                    // add links to require(-dev) the aliased version to be sure it is selected
+                    $packageLinks = array();
+                    foreach ($newAliases as $alias) {
+                        $packageLinks[] = $this->createLink($package, $alias['package'], $alias['version'], $opts['description']);
+                    }
+                    $package->{'set'.$method}(array_merge($package->{'get'.$method}(), $packageLinks));
+                }
                 $stabilityFlags = $this->extractStabilityFlags($config[$linkType], $stabilityFlags);
                 $references = $this->extractReferences($config[$linkType], $references);
             }
@@ -104,8 +116,10 @@ class RootPackageLoader extends ArrayLoader
         return $package;
     }
 
-    private function extractAliases(array $requires, array $aliases)
+    private function extractAliases(array $requires)
     {
+        $aliases = array();
+
         foreach ($requires as $reqName => $reqVersion) {
             if (preg_match('{^([^,\s]+) +as +([^,\s]+)$}', $reqVersion, $match)) {
                 $aliases[] = array(
