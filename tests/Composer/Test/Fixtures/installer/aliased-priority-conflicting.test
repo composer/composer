@@ -22,7 +22,7 @@ Aliases take precedence over default package even if default is selected
             "package": [
                 {
                     "name": "a/a", "version": "dev-master",
-                    "require": { "a/req": "1.*" }
+                    "require": { "a/req": "dev-master" }
                 },
                 {
                     "name": "a/b", "version": "dev-master",
@@ -43,7 +43,7 @@ Aliases take precedence over default package even if default is selected
     }
 }
 --EXPECT--
+Marking a/req (dev-master feat.f) as installed, alias of a/req (dev-feature-foo feat.f)
 Installing a/req (dev-feature-foo feat.f)
-Marking a/req (dev-master feat.f) as installed, alias of a/req (dev-master feat.f)
 Installing a/b (dev-master)
 Installing a/a (dev-master)
