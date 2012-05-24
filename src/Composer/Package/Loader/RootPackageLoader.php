@@ -53,6 +53,11 @@ class RootPackageLoader extends ArrayLoader
                 }
             }
 
+            // override with env var if available
+            if (getenv('COMPOSER_ROOT_VERSION')) {
+                $version = getenv('COMPOSER_ROOT_VERSION');
+            }
+
             $config['version'] = $version;
         } else {
             $version = $config['version'];
