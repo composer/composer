@@ -75,8 +75,8 @@ EOT
             $input->getArgument('package'),
             $input->getArgument('directory'),
             $input->getArgument('version'),
-            $input->hasOption('prefer-source'),
-            $input->hasOption('dev'),
+            $input->getOption('prefer-source'),
+            $input->getOption('dev'),
             $input->getOption('repository-url')
         );
     }
