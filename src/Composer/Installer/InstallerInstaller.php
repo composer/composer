@@ -83,23 +83,24 @@ class InstallerInstaller extends LibraryInstaller
         $downloadPath = $this->getInstallPath($package);
 
         $extra = $package->getExtra();
-        $class = $extra['class'];
+        $classes = is_array($extra['class']) ? $extra['class'] : array($extra['class']);
 
         $generator = new AutoloadGenerator;
         $map = $generator->parseAutoloads(array(array($package, $downloadPath)));
         $classLoader = $generator->createLoader($map);
         $classLoader->register();
 
-        if (class_exists($class, false)) {
-            $code = file_get_contents($classLoader->findFile($class));
-            $code = preg_replace('{^class\s+(\S+)}mi', 'class $1_composer_tmp'.self::$classCounter, $code);
-            eval('?>'.$code);
-            $class .= '_composer_tmp'.self::$classCounter;
-            self::$classCounter++;
-        }
+        foreach ($classes as $class) {
+            if (class_exists($class, false)) {
+                $code = file_get_contents($classLoader->findFile($class));
+                $code = preg_replace('{^class\s+(\S+)}mi', 'class $1_composer_tmp'.self::$classCounter, $code);
+                eval('?>'.$code);
+                $class .= '_composer_tmp'.self::$classCounter;
+                self::$classCounter++;
+            }
 
-        $extra = $package->getExtra();
-        $installer = new $class($this->vendorDir, $this->binDir, $this->downloadManager, $this->io);
-        $this->installationManager->addInstaller($installer);
+            $installer = new $class($this->vendorDir, $this->binDir, $this->downloadManager, $this->io);
+            $this->installationManager->addInstaller($installer);
+        }
     }
 }

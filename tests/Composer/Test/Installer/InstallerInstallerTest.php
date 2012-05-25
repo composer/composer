@@ -22,7 +22,7 @@ class InstallerInstallerTest extends \PHPUnit_Framework_TestCase
     {
         $loader = new JsonLoader();
         $this->packages = array();
-        for ($i = 1; $i <= 3; $i++) {
+        for ($i = 1; $i <= 4; $i++) {
             $this->packages[] = $loader->load(__DIR__.'/Fixtures/installer-v'.$i.'/composer.json');
         }
 
@@ -56,6 +56,43 @@ class InstallerInstallerTest extends \PHPUnit_Framework_TestCase
             }));
 
         $installer->install($this->repository, $this->packages[0]);
+    }
+
+    public function testInstallMultipleInstallers()
+    {
+        $this->repository
+            ->expects($this->once())
+            ->method('getPackages')
+            ->will($this->returnValue(array()));
+
+        $installer = new InstallerInstallerMock(
+            __DIR__.'/Fixtures/',
+            __DIR__.'/Fixtures/bin',
+            $this->dm,
+            $this->io,
+            $this->im,
+            array($this->repository)
+        );
+
+        $test = $this;
+
+        $this->im
+            ->expects($this->at(0))
+            ->method('addInstaller')
+            ->will($this->returnCallback(function ($installer) use ($test) {
+                $test->assertEquals('custom1', $installer->name);
+                $test->assertEquals('installer-v4', $installer->version);
+            }));
+
+        $this->im
+            ->expects($this->at(1))
+            ->method('addInstaller')
+            ->will($this->returnCallback(function ($installer) use ($test) {
+                $test->assertEquals('custom2', $installer->name);
+                $test->assertEquals('installer-v4', $installer->version);
+            }));
+
+        $installer->install($this->repository, $this->packages[3]);
     }
 
     public function testUpgradeWithNewClassName()
