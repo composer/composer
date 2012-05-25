@@ -436,14 +436,6 @@ class Installer
                 $package->getRepository()->addPackage($aliasPackage = new AliasPackage($package, $alias['alias_normalized'], $alias['alias']));
                 $aliasPackage->setRootPackageAlias(true);
             }
-            foreach ($this->repositoryManager->getLocalRepositories() as $repo) {
-                foreach ($repo->findPackages($alias['package'], $alias['version']) as $package) {
-                    $package->setAlias($alias['alias_normalized']);
-                    $package->setPrettyAlias($alias['alias']);
-                    $package->getRepository()->addPackage($aliasPackage = new AliasPackage($package, $alias['alias_normalized'], $alias['alias']));
-                    $aliasPackage->setRootPackageAlias(true);
-                }
-            }
         }
 
         return $aliases;
