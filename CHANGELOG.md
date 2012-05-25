@@ -1,15 +1,23 @@
 * 1.0.0-alpha4
 
-  * Schema: Added references for dev versions, requiring 'dev-master#abcdef' for example will force the abcdef commit
+  * Schema: Added references for dev versions, requiring `dev-master#abcdef` for example will force the abcdef commit
   * Added caching of GitHub metadata (faster startup time with custom GitHub VCS repos)
+  * Added support for file:// URLs to GitDriver
+  * Added --dev flag to `create-project` command
+  * Added --no-scripts to `install` and `update` commands to avoid triggering the scripts
+  * Added `COMPOSER_ROOT_VERSION` env var to specify the version of the root package (fixes some edge cases)
+  * Added support for multiple custom installers in one package
+  * Improved and fixed the output of various commands
+  * Cleaned up / refactored the dependency solver code
+  * Various bug fixes and docs improvements
 
 * 1.0.0-alpha3 (2012-05-13)
 
-  * Schema: Added 'require-dev' for development-time requirements (tests, etc), install with --dev
+  * Schema: Added `require-dev` for development-time requirements (tests, etc), install with --dev
   * Schema: Added author.role to list the author's role in the project
-  * Schema: Added 'minimum-stability' + '@<stability>' flags in require for restricting packages to a certain stability
-  * Schema: Removed 'recommend'
-  * Schema: 'suggest' is now informational and can use any description for a package, not only a constraint
+  * Schema: Added `minimum-stability` + `@<stability>` flags in require for restricting packages to a certain stability
+  * Schema: Removed `recommend`
+  * Schema: `suggest` is now informational and can use any description for a package, not only a constraint
   * Break: vendor/.composer/autoload.php has been moved to vendor/autoload.php, other files are now in vendor/composer/
   * Added caching of repository metadata (faster startup times & failover if packagist is down)
   * Added removal of packages that are not needed anymore
