@@ -66,7 +66,8 @@ requirements:
 
 1. the [type][1] attribute must be `composer-installer`.
 2. the [extra][2] attribute must contain an element `class` defining the
-   class name of the installer (including namespace).
+   class name of the installer (including namespace). If a package contains
+   multiple installers this can be array of class names.
 
 Example:
 
