@@ -60,7 +60,8 @@ class InitCommand extends Command
                 new InputOption('author', null, InputOption::VALUE_NONE, 'Author name of package'),
                 // new InputOption('version', null, InputOption::VALUE_NONE, 'Version of package'),
                 new InputOption('homepage', null, InputOption::VALUE_NONE, 'Homepage of package'),
-                new InputOption('require', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'An array required packages'),
+                new InputOption('require', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Package to require with a version constraint, e.g. foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"'),
+                new InputOption('require-dev', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Package to require for development with a version constraint, e.g. foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"'),
             ))
             ->setHelp(<<<EOT
 The <info>init</info> command creates a basic composer.json file
@@ -216,10 +217,15 @@ EOT
         ));
 
         $requirements = array();
-        if ($dialog->askConfirmation($output, $dialog->getQuestion('Would you like to define your dependencies interactively', 'yes', '?'), true)) {
-            $requirements = $this->determineRequirements($input, $output);
+        if ($dialog->askConfirmation($output, $dialog->getQuestion('Would you like to define your dependencies (require) interactively', 'yes', '?'), true)) {
+            $requirements = $this->determineRequirements($input, $output, $input->getOption('require'));
         }
         $input->setOption('require', $requirements);
+        $devRequirements = array();
+        if ($dialog->askConfirmation($output, $dialog->getQuestion('Would you like to define your dev dependencies (require-dev) interactively', 'yes', '?'), true)) {
+            $devRequirements = $this->determineRequirements($input, $output, $input->getOption('require-dev'));
+        }
+        $input->setOption('require-dev', $devRequirements);
     }
 
     protected function findPackages($name)
@@ -246,12 +252,18 @@ EOT
         return $packages;
     }
 
-    protected function determineRequirements(InputInterface $input, OutputInterface $output)
+    protected function determineRequirements(InputInterface $input, OutputInterface $output, $requires = array())
     {
         $dialog = $this->getHelperSet()->get('dialog');
         $prompt = $dialog->getQuestion('Search for a package', false, ':');
 
-        $requires = $input->getOption('require') ?: array();
+        if ($requires) {
+            foreach ($requires as $key => $requirement) {
+                $requires[$key] = preg_replace('{^([^=: ]+)[=: ](.*)$}', '$1 $2', $requirement);
+            }
+
+            return $requires;
+        }
 
         while (null !== $package = $dialog->ask($output, $prompt)) {
             $matches = $this->findPackages($package);
@@ -287,7 +299,7 @@ EOT
                     return sprintf('%s %s', $package->getName(), $package->getPrettyVersion());
                 };
 
-                $package = $dialog->askAndValidate($output, $dialog->getQuestion('Enter package # to add, or a <package> <version> couple if it is not listed', false, ':'), $validator, 3);
+                $package = $dialog->askAndValidate($output, $dialog->getQuestion('Enter package # to add, or a "[package] [version]" couple if it is not listed', false, ':'), $validator, 3);
 
                 if (false !== $package) {
                     $requires[] = $package;
