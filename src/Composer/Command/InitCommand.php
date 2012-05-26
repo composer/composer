@@ -260,6 +260,15 @@ EOT
         if ($requires) {
             foreach ($requires as $key => $requirement) {
                 $requires[$key] = preg_replace('{^([^=: ]+)[=: ](.*)$}', '$1 $2', $requirement);
+                if (false === strpos($requires[$key], ' ') && $input->isInteractive()) {
+                    $question = $dialog->getQuestion('Please provide a version constraint for the '.$requirement.' requirement');
+                    if ($constraint = $dialog->ask($output, $question)) {
+                        $requires[$key] .= ' ' . $constraint;
+                    }
+                }
+                if (false === strpos($requires[$key], ' ')) {
+                    throw new \InvalidArgumentException('The requirement '.$requirement.' must contain a version constraint');
+                }
             }
 
             return $requires;
