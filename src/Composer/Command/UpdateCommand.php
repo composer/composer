@@ -15,6 +15,7 @@ namespace Composer\Command;
 use Composer\Installer;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -28,6 +29,7 @@ class UpdateCommand extends Command
             ->setName('update')
             ->setDescription('Updates your dependencies to the latest version, and updates the composer.lock file.')
             ->setDefinition(array(
+                new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Packages that should be updated, if not provided all packages are.'),
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('dry-run', null, InputOption::VALUE_NONE, 'Outputs the operations but will not execute anything (implicitly enables --verbose).'),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Enables installation of dev-require packages.'),
@@ -58,6 +60,7 @@ EOT
             ->setDevMode($input->getOption('dev'))
             ->setRunScripts(!$input->getOption('no-scripts'))
             ->setUpdate(true)
+            ->setUpdateWhitelist($input->getArgument('packages'))
         ;
 
         return $install->run() ? 0 : 1;
