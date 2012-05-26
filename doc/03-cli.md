@@ -59,6 +59,18 @@ into `composer.lock`.
 * **--dry-run:** Simulate the command without actually doing anything.
 * **--dev:** Install packages listed in `require-dev`.
 
+## require
+
+The `require` command adds new packages to the `composer.json` file from the current
+directory.
+
+    $ php composer.phar require
+
+This will update your `composer.json` file keeping previous required packages.
+If a package is already in the `composer.json` file you will be asked to choose which version you want.
+
+Like the `init` command, `require` allows you to search for packages.
+
 ## search
 
 The search command allows you to search through the current project's package
