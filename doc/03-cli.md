@@ -53,6 +53,10 @@ In order to get the latest versions of the dependencies and to update the
 This will resolve all dependencies of the project and write the exact versions
 into `composer.lock`.
 
+If you just want to update a few packages and not all, you can list them as such:
+
+    $ php composer.phar update vendor/package vendor/package2
+
 ### Options
 
 * **--prefer-source:** Install packages from `source` when available.
@@ -61,15 +65,23 @@ into `composer.lock`.
 
 ## require
 
-The `require` command adds new packages to the `composer.json` file from the current
-directory.
+The `require` command adds new packages to the `composer.json` file from 
+the current directory.
 
     $ php composer.phar require
 
-This will update your `composer.json` file keeping previous required packages.
-If a package is already in the `composer.json` file you will be asked to choose which version you want.
+After adding/changing the requirements, the modified requirements will be
+installed or updated. 
 
-Like the `init` command, `require` allows you to search for packages.
+If you do not want to choose requirements interactively, you can just pass them
+to the command.
+
+    $ php composer.phar require vendor/package:2.* vendor/package2:dev-master
+
+### Options
+
+* **--prefer-source:** Install packages from `source` when available.
+* **--dev:** Add packages to `require-dev`.
 
 ## search
 
