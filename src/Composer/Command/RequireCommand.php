@@ -16,12 +16,15 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Composer\Factory;
 use Composer\Json\JsonFile;
+use Composer\Json\JsonManipulator;
 use Composer\Json\JsonValidationException;
 use Composer\Util\RemoteFilesystem;
 
 /**
  * @author Jérémy Romey <jeremy@free-agent.fr>
+ * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 class RequireCommand extends InitCommand
 {
@@ -31,11 +34,11 @@ class RequireCommand extends InitCommand
             ->setName('require')
             ->setDescription('Adds a required package to a composer.json')
             ->setDefinition(array(
-                new InputArgument('file', InputArgument::OPTIONAL, 'path to composer.json file', './composer.json'),
-                new InputOption('require', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'An array of required packages'),
+                new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Required package with a version constraint, e.g. foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"'),
+                new InputOption('dev', null, InputOption::VALUE_NONE, 'Add requirement to require-dev.'),
             ))
             ->setHelp(<<<EOT
-The add package command adds a required package to a given composer.json
+The require command adds requirements to your composer.json
 
 EOT
             )
@@ -44,7 +47,8 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $file = $input->getArgument('file');
+        $factory = new Factory;
+        $file = $factory->getComposerFile();
 
         if (!file_exists($file)) {
             $output->writeln('<error>'.$file.' not found.</error>');
@@ -55,52 +59,44 @@ EOT
             return 1;
         }
 
-        $laxValid = false;
-        try {
-            $json = new JsonFile($file, new RemoteFilesystem($this->getIO()));
-            $json->read();
-
-            $json->validateSchema(JsonFile::LAX_SCHEMA);
-            $laxValid = true;
-            $json->validateSchema();
-
-        } catch (\Exception $e) {
-            $output->writeln('<error>'.$file.' has an error. Run the validate command for more info</error>');
-            return 1;
-        }
-
-        $output->writeln(array(
-            '',
-            'Updating your dependencies.',
-            ''
-        ));
-
         $dialog = $this->getHelperSet()->get('dialog');
 
-        $options = json_decode($json->getResult(), true);
+        $json = new JsonFile($file);
+        $composer = $json->read();
 
-        $requirements = array();
-        $requirements = $this->determineRequirements($input, $output);
+        $requirements = $this->determineRequirements($input, $output, $input->getArgument('packages'));
 
-        $baseRequirements = array_key_exists('require', $options) ? $options['require'] : array();
+        $requireKey = $input->getOption('dev') ? 'require-dev' : 'require';
+        $baseRequirements = array_key_exists($requireKey, $composer) ? $composer[$requireKey] : array();
         $requirements     = $this->formatRequirements($requirements);
 
-        foreach ($requirements as $package => $version) {
-            if (array_key_exists($package, $baseRequirements)) {
-                if ($dialog->askConfirmation($output, $dialog->getQuestion('The package '.$package.' is already in requirements. Would you like to update the version required from '.$baseRequirements[$package].' to '.$version, 'yes', '?'), true)) {
-                    $baseRequirements[$package] = $version;
-                }
-            } else {
+        if (!$this->updateFileCleanly($json, $baseRequirements, $requirements, $requireKey)) {
+            foreach ($requirements as $package => $version) {
                 $baseRequirements[$package] = $version;
+            }
+
+            $composer[$requireKey] = $baseRequirements;
+            $json->write($composer);
+        }
+
+        $output->writeln('<info>'.$file.' has been updated</info>');
+    }
+
+    private function updateFileCleanly($json, array $base, array $new, $requireKey)
+    {
+        $contents = file_get_contents($json->getPath());
+
+        $manipulator = new JsonManipulator($contents);
+
+        foreach ($new as $package => $constraint) {
+            if (!$manipulator->addLink($requireKey, $package, $constraint)) {
+                return false;
             }
         }
 
-        $options['require'] = $baseRequirements;
+        file_put_contents($json->getPath(), $manipulator->getContents());
 
-        $json->encode($options);
-        $json->write($options);
-
-        $output->writeln('<info>'.$file.' has been updated</info>');
+        return true;
     }
 
     protected function interact(InputInterface $input, OutputInterface $output)
