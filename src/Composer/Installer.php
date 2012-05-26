@@ -89,6 +89,7 @@ class Installer
     protected $verbose = false;
     protected $update = false;
     protected $runScripts = true;
+    protected $updateWhitelist = null;
 
     /**
      * @var array
@@ -275,8 +276,13 @@ class Installer
         // fix the version of all installed packages (+ platform) that are not
         // in the current local repo to prevent rogue updates (e.g. non-dev
         // updating when in dev)
+        //
+        // if the updateWhitelist is enabled, packages not in it are also fixed
+        // to their currently installed version
         foreach ($installedRepo->getPackages() as $package) {
-            if ($package->getRepository() === $localRepo) {
+            if ($package->getRepository() === $localRepo
+                && (!$this->updateWhitelist || in_array($package->getName(), $this->updateWhitelist))
+            ) {
                 continue;
             }
 
@@ -331,6 +337,11 @@ class Installer
             } else {
                 // force update to latest on update
                 if ($this->update) {
+                    // skip package is the whitelist is enabled and it is not in it
+                    if ($this->updateWhitelist && !in_array($package->getName(), $this->updateWhitelist)) {
+                        continue;
+                    }
+
                     $newPackage = $this->repositoryManager->findPackage($package->getName(), $package->getVersion());
                     if ($newPackage && $newPackage->getSourceReference() !== $package->getSourceReference()) {
                         $operations[] = new UpdateOperation($package, $newPackage);
@@ -548,6 +559,20 @@ class Installer
     public function setVerbose($verbose = true)
     {
         $this->verbose = (boolean) $verbose;
+
+        return $this;
+    }
+
+    /**
+     * restrict the update operation to a few packages, all other packages
+     * that are already installed will be kept at their current version
+     *
+     * @param  array     $packages
+     * @return Installer
+     */
+    public function setUpdateWhitelist(array $packages)
+    {
+        $this->updateWhitelist = array_map('strtolower', $packages);
 
         return $this;
     }
