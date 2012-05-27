@@ -2,7 +2,7 @@
 
   * Schema: Added references for dev versions, requiring `dev-master#abcdef` for example will force the abcdef commit
   * Added `require` command to add a package to your requirements and install it
-  * Added a whitelist to `update. Calling `composer update foo/bar foo/baz` allows you to update only those packages
+  * Added a whitelist to `update`. Calling `composer update foo/bar foo/baz` allows you to update only those packages
   * Added caching of GitHub metadata (faster startup time with custom GitHub VCS repos)
   * Added support for file:// URLs to GitDriver
   * Added --dev flag to `create-project` command
