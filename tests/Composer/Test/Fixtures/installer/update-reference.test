@@ -24,5 +24,7 @@ Updates a dev package forcing it's reference
         "source": { "reference": "abc123", "url": "", "type": "git" }
     }
 ]
+--RUN--
+install
 --EXPECT--
 Updating a/a (dev-master abc123) to a/a (dev-master def000)

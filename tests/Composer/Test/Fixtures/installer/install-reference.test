@@ -17,5 +17,7 @@ Installs a dev package forcing it's reference
         "a/a": "dev-master#def000"
     }
 }
+--RUN--
+install
 --EXPECT--
 Installing a/a (dev-master def000)
