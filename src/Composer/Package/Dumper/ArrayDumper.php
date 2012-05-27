@@ -37,6 +37,7 @@ class ArrayDumper
             'autoload',
             'repositories',
             'includePaths' => 'include-path',
+            'support',
         );
 
         $data = array();

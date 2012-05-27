@@ -61,6 +61,7 @@ class MemoryPackage extends BasePackage
     protected $suggests = array();
     protected $autoload = array();
     protected $includePaths = array();
+    protected $support = array();
 
     /**
      * Creates a new in memory package.
@@ -690,5 +691,25 @@ class MemoryPackage extends BasePackage
     public function getIncludePaths()
     {
         return $this->includePaths;
+    }
+
+    /**
+     * Set the support information
+     *
+     * @param array $support
+     */
+    public function setSupport(array $support)
+    {
+        $this->support = $support;
+    }
+
+    /**
+     * Returns the support information
+     *
+     * @return array
+     */
+    public function getSupport()
+    {
+        return $this->support;
     }
 }

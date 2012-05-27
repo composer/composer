@@ -170,6 +170,13 @@ EOT
         $output->writeln('<info>dist</info>     : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getDistType(), $package->getDistUrl(), $package->getDistReference()));
         $output->writeln('<info>names</info>    : ' . implode(', ', $package->getNames()));
 
+        if ($package->getSupport()) {
+            $output->writeln("\n<info>support</info>");
+            foreach ($package->getSupport() as $type => $url) {
+                $output->writeln('<comment>' . $type . '</comment> : '.$url);
+            }
+        }
+
         if ($package->getAutoload()) {
             $output->writeln("\n<info>autoload</info>");
             foreach ($package->getAutoload() as $type => $autoloads) {
