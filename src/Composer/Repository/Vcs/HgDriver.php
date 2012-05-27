@@ -75,7 +75,7 @@ class HgDriver extends VcsDriver
      */
     public function getSource($identifier)
     {
-        $label = array_search($identifier, (array)$this->tags) ? : $identifier;
+        $label = array_search($identifier, (array) $this->tags) ? : $identifier;
 
         return array('type' => 'hg', 'url' => $this->getUrl(), 'reference' => $label);
     }

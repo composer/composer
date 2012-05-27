@@ -12,11 +12,8 @@
 
 namespace Composer\Installer;
 
-use Composer\IO\IOInterface;
-use Composer\Downloader\DownloadManager;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
-use Composer\Util\Filesystem;
 
 /**
  * Does not install anything but marks packages installed in the repo

@@ -107,7 +107,6 @@ class RuleSet implements \IteratorAggregate, \Countable
         return new RuleSetIterator($rules);
     }
 
-
     public function getIteratorWithout($types)
     {
         if (!is_array($types)) {

@@ -529,7 +529,7 @@ class Installer
     /**
      * set whether to run scripts or not
      *
-     * @param boolean $runScripts
+     * @param  boolean   $runScripts
      * @return Installer
      */
     public function setRunScripts($runScripts = true)

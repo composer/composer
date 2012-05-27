@@ -12,7 +12,6 @@
 
 namespace Composer\Downloader;
 
-
 /**
  * Downloader for phar files
  *
