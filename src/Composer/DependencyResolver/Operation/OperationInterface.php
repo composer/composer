@@ -12,7 +12,6 @@
 
 namespace Composer\DependencyResolver\Operation;
 
-
 /**
  * Solver operation interface.
  *

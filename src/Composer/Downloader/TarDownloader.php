@@ -12,7 +12,6 @@
 
 namespace Composer\Downloader;
 
-
 /**
  * Downloader for tar files: tar, tar.gz or tar.bz2
  *

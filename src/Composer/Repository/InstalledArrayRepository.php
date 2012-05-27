@@ -12,7 +12,6 @@
 
 namespace Composer\Repository;
 
-
 /**
  * Installed array repository.
  *
