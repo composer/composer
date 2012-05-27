@@ -209,11 +209,10 @@
         },
         "support": {
             "type": "object",
-            "additionalProperties": true,
             "properties": {
                 "email": {
                     "type": "string",
-                    "description": "Email address of the community.",
+                    "description": "Email address for support.",
                     "format": "email"
                 },
                 "issues": {
@@ -233,15 +232,15 @@
                 },
                 "irc": {
                     "type": "string",
-                    "description": "Irc support channel"
+                    "description": "IRC channel for support, as irc://server/channel.",
+                    "format": "uri"
                 },
                 "source": {
                     "type": "string",
-                    "description": "URL to the sources",
+                    "description": "URL to browse or download the sources.",
                     "format": "uri"
                 }
             }
         }
-
     }
 }
