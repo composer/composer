@@ -220,6 +220,8 @@ class Installer
             $stabilityFlags = $this->locker->getStabilityFlags();
         }
 
+        $this->whitelistUpdateDependencies($localRepo, $devMode);
+
         // creating repository pool
         $pool = new Pool($minimumStability, $stabilityFlags);
         $pool->addRepository($installedRepo);
@@ -456,17 +458,56 @@ class Installer
             throw new \LogicException('isUpdateable should only be called when a whitelist is present');
         }
 
-        if (in_array($package->getName(), $this->updateWhitelist)) {
-            return true;
+        return isset($this->updateWhitelist[$package->getName()]);
+    }
+
+    /**
+     * Adds all dependencies of the update whitelist to the whitelist, too.
+     *
+     * @param RepositoryInterface $localRepo
+     * @param boolean $devMode
+     */
+    private function whitelistUpdateDependencies($localRepo, $devMode)
+    {
+        if (!$this->updateWhitelist) {
+            return;
         }
 
-        foreach ($this->package->getRequires() as $link) {
-            if ($link->getTarget() === $package->getName()) {
-                return false;
+        $pool = new Pool;
+        $pool->addRepository($localRepo);
+
+        $seen = array();
+
+        foreach ($this->updateWhitelist as $packageName => $void) {
+            $packageQueue = new \SplQueue;
+
+            foreach ($pool->whatProvides($packageName) as $depPackage) {
+                $packageQueue->enqueue($depPackage);
+            }
+
+            while (!$packageQueue->isEmpty()) {
+                $package = $packageQueue->dequeue();
+                if (isset($seen[$package->getId()])) {
+                    continue;
+                }
+
+                $seen[$package->getId()] = true;
+                $this->updateWhitelist[$package->getName()] = true;
+
+                $requires = $package->getRequires();
+                if ($devMode) {
+                    $requires = array_merge($requires, $package->getDevRequires());
+                }
+
+                foreach ($requires as $require) {
+                    $requirePackages = $pool->whatProvides($require->getTarget());
+
+                    foreach ($requirePackages as $requirePackage) {
+                        $packageQueue->enqueue($requirePackage);
+                    }
+                }
             }
         }
-
-        return true;
     }
 
     /**
@@ -589,7 +630,7 @@ class Installer
      */
     public function setUpdateWhitelist(array $packages)
     {
-        $this->updateWhitelist = array_map('strtolower', $packages);
+        $this->updateWhitelist = array_flip(array_map('strtolower', $packages));
 
         return $this;
     }
