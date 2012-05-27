@@ -184,6 +184,10 @@ class ArrayLoader
             $package->setIncludePaths($config['include-path']);
         }
 
+        if (isset($config['support'])) {
+            $package->setSupport($config['support']);
+        }
+
         return $package;
     }
 
