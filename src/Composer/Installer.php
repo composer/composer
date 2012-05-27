@@ -280,9 +280,7 @@ class Installer
         // if the updateWhitelist is enabled, packages not in it are also fixed
         // to their currently installed version
         foreach ($installedRepo->getPackages() as $package) {
-            if ($package->getRepository() === $localRepo
-                && (!$this->updateWhitelist || in_array($package->getName(), $this->updateWhitelist))
-            ) {
+            if ($package->getRepository() === $localRepo && (!$this->updateWhitelist || $this->isUpdateable($package))) {
                 continue;
             }
 
@@ -338,7 +336,7 @@ class Installer
                 // force update to latest on update
                 if ($this->update) {
                     // skip package if the whitelist is enabled and it is not in it
-                    if ($this->updateWhitelist && !in_array($package->getName(), $this->updateWhitelist)) {
+                    if ($this->updateWhitelist && !$this->isUpdateable($package)) {
                         continue;
                     }
 
@@ -450,6 +448,25 @@ class Installer
         }
 
         return $aliases;
+    }
+
+    private function isUpdateable(PackageInterface $package)
+    {
+        if (!$this->updateWhitelist) {
+            throw new \LogicException('isUpdateable should only be called when a whitelist is present');
+        }
+
+        if (in_array($package->getName(), $this->updateWhitelist)) {
+            return true;
+        }
+
+        foreach ($this->package->getRequires() as $link) {
+            if ($link->getTarget() === $package->getName()) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
