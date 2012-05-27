@@ -64,7 +64,6 @@ class Application extends BaseApplication
      */
     public function doRun(InputInterface $input, OutputInterface $output)
     {
-        $this->registerCommands();
         $this->io = new ConsoleIO($input, $output, $this->getHelperSet());
 
         if (version_compare(PHP_VERSION, '5.3.2', '<')) {
@@ -106,22 +105,25 @@ class Application extends BaseApplication
     /**
      * Initializes all the composer commands
      */
-    protected function registerCommands()
+    protected function getDefaultCommands()
     {
-        $this->add(new Command\AboutCommand());
-        $this->add(new Command\DependsCommand());
-        $this->add(new Command\InitCommand());
-        $this->add(new Command\InstallCommand());
-        $this->add(new Command\CreateProjectCommand());
-        $this->add(new Command\UpdateCommand());
-        $this->add(new Command\SearchCommand());
-        $this->add(new Command\ValidateCommand());
-        $this->add(new Command\ShowCommand());
-        $this->add(new Command\RequireCommand());
+        $commands = parent::getDefaultCommands();
+        $commands[] = new Command\AboutCommand();
+        $commands[] = new Command\DependsCommand();
+        $commands[] = new Command\InitCommand();
+        $commands[] = new Command\InstallCommand();
+        $commands[] = new Command\CreateProjectCommand();
+        $commands[] = new Command\UpdateCommand();
+        $commands[] = new Command\SearchCommand();
+        $commands[] = new Command\ValidateCommand();
+        $commands[] = new Command\ShowCommand();
+        $commands[] = new Command\RequireCommand();
 
         if ('phar:' === substr(__FILE__, 0, 5)) {
-            $this->add(new Command\SelfUpdateCommand());
+            $commands[] = new Command\SelfUpdateCommand();
         }
+
+        return $commands;
     }
 
     /**
