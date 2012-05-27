@@ -337,7 +337,7 @@ class Installer
             } else {
                 // force update to latest on update
                 if ($this->update) {
-                    // skip package is the whitelist is enabled and it is not in it
+                    // skip package if the whitelist is enabled and it is not in it
                     if ($this->updateWhitelist && !in_array($package->getName(), $this->updateWhitelist)) {
                         continue;
                     }

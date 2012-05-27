@@ -70,7 +70,7 @@ EOT
 
         $requireKey = $input->getOption('dev') ? 'require-dev' : 'require';
         $baseRequirements = array_key_exists($requireKey, $composer) ? $composer[$requireKey] : array();
-        $requirements     = $this->formatRequirements($requirements);
+        $requirements = $this->formatRequirements($requirements);
 
         if (!$this->updateFileCleanly($json, $baseRequirements, $requirements, $requireKey)) {
             foreach ($requirements as $package => $version) {

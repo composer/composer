@@ -23,11 +23,12 @@ class JsonManipulator
 
     public function __construct($contents)
     {
-        if (!preg_match('#^\{(.*)\}$#s', trim($contents), $match)) {
+        $contents = trim($contents);
+        if (!preg_match('#^\{(.*)\}$#s', $contents)) {
             throw new \InvalidArgumentException('The json file must be an object ({})');
         }
         $this->newline = false !== strpos("\r\n", $contents) ? "\r\n": "\n";
-        $this->contents = '{' . $match[1] . '}';
+        $this->contents = $contents;
         $this->detectIndenting();
     }
 
