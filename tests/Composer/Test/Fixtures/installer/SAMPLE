@@ -10,5 +10,7 @@
 <installed.json file definition>
 --INSTALLED:DEV--
 <installed_dev.json file definition>
---EXPECT-- or --EXPECT:UPDATE-- or --EXPECT:DEV-- or --EXPECT:UPDATE:DEV--
+--RUN--
+install
+--EXPECT--
 <output (stringified operations)>
