@@ -220,7 +220,11 @@ class Installer
             $stabilityFlags = $this->locker->getStabilityFlags();
         }
 
-        $this->whitelistUpdateDependencies($localRepo, $devMode);
+        $this->whitelistUpdateDependencies(
+            $localRepo,
+            $devMode,
+            $this->package->getRequires(),
+            $this->package->getDevRequires());
 
         // creating repository pool
         $pool = new Pool($minimumStability, $stabilityFlags);
@@ -464,13 +468,28 @@ class Installer
     /**
      * Adds all dependencies of the update whitelist to the whitelist, too.
      *
+     * Packages which are listed as requirements in the root package will be
+     * skipped including their dependencies, unless they are listed in the
+     * update whitelist themselves.
+     *
      * @param RepositoryInterface $localRepo
      * @param boolean $devMode
+     * @param array $rootRequires An array of links to packages in require of the root package
+     * @param array $rootDevRequires An array of links to packages in require-dev of the root package
      */
-    private function whitelistUpdateDependencies($localRepo, $devMode)
+    private function whitelistUpdateDependencies($localRepo, $devMode, array $rootRequires, array $rootDevRequires)
     {
         if (!$this->updateWhitelist) {
             return;
+        }
+
+        if ($devMode) {
+            $rootRequires = array_merge($rootRequires, $rootDevRequires);
+        }
+
+        $skipPackages = array();
+        foreach ($rootRequires as $require) {
+            $skipPackages[$require->getTarget()] = true;
         }
 
         $pool = new Pool;
@@ -503,6 +522,9 @@ class Installer
                     $requirePackages = $pool->whatProvides($require->getTarget());
 
                     foreach ($requirePackages as $requirePackage) {
+                        if (isset($skipPackages[$requirePackage->getName()])) {
+                            continue;
+                        }
                         $packageQueue->enqueue($requirePackage);
                     }
                 }
