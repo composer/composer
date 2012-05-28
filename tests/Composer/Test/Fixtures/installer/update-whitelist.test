@@ -1,5 +1,5 @@
 --TEST--
-Update with a package whitelist only updates those packages and their dependencies if they are not present in composer.json
+Update with a package whitelist only updates those packages and their dependencies listed as command arguments
 --COMPOSER--
 {
     "repositories": [
