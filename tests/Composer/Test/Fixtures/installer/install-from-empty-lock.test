@@ -1,0 +1,32 @@
+--TEST--
+Requirements from the composer file are not installed if the lock file is present
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "required", "version": "1.0.0" },
+                { "name": "newly-required", "version": "1.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "required": "1.0.0",
+        "newly-required": "1.0.0"
+    }
+}
+--LOCK--
+{
+    "packages": [
+        { "package": "required", "version": "1.0.0" }
+    ],
+    "packages-dev": null,
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": []
+}
+--RUN--
+install
+--EXPECT--
+Installing required (1.0.0)

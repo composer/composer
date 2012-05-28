@@ -141,10 +141,14 @@ class Installer
         }
 
         // create installed repo, this contains all local packages + platform packages (php & extensions)
+        $installedRootPackage = clone $this->package;
+        $installedRootPackage->setRequires(array());
+        $installedRootPackage->setDevRequires(array());
+
         $repos = array_merge(
             $this->repositoryManager->getLocalRepositories(),
             array(
-                new InstalledArrayRepository(array($this->package)),
+                new InstalledArrayRepository(array($installedRootPackage)),
                 new PlatformRepository(),
             )
         );
