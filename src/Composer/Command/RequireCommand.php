@@ -20,8 +20,6 @@ use Composer\Factory;
 use Composer\Installer;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
-use Composer\Json\JsonValidationException;
-use Composer\Util\RemoteFilesystem;
 
 /**
  * @author Jérémy Romey <jeremy@free-agent.fr>
@@ -54,10 +52,12 @@ EOT
 
         if (!file_exists($file)) {
             $output->writeln('<error>'.$file.' not found.</error>');
+
             return 1;
         }
         if (!is_readable($file)) {
             $output->writeln('<error>'.$file.' is not readable.</error>');
+
             return 1;
         }
 
