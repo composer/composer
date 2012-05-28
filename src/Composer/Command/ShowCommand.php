@@ -172,8 +172,8 @@ EOT
 
         if ($package->getSupport()) {
             $output->writeln("\n<info>support</info>");
-            foreach ($package->getSupport() as $type => $url) {
-                $output->writeln('<comment>' . $type . '</comment> : '.$url);
+            foreach ($package->getSupport() as $type => $value) {
+                $output->writeln('<comment>' . $type . '</comment> : '.$value);
             }
         }
 
