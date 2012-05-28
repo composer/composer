@@ -24,7 +24,7 @@ Update with a package whitelist only updates those packages and their dependenci
 }
 --INSTALLED--
 [
-    { "name": "whitelisted", "version": "1.0.0", "require": { "dependency": "1.0.0", "fixed-dependency": "1.0.0" } },
+    { "name": "whitelisted", "version": "1.0.0", "require": { "dependency": "1.0.0", "fixed-dependency": "1.*" } },
     { "name": "dependency", "version": "1.0.0" },
     { "name": "fixed-dependency", "version": "1.0.0", "require": { "fixed-sub-dependency": "1.*" } },
     { "name": "fixed-sub-dependency", "version": "1.0.0" }
