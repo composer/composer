@@ -89,6 +89,7 @@ class Installer
     protected $verbose = false;
     protected $update = false;
     protected $runScripts = true;
+    protected $updateWhitelist = null;
 
     /**
      * @var array
@@ -219,6 +220,8 @@ class Installer
             $stabilityFlags = $this->locker->getStabilityFlags();
         }
 
+        $this->whitelistUpdateDependencies($localRepo, $devMode);
+
         // creating repository pool
         $pool = new Pool($minimumStability, $stabilityFlags);
         $pool->addRepository($installedRepo);
@@ -275,8 +278,11 @@ class Installer
         // fix the version of all installed packages (+ platform) that are not
         // in the current local repo to prevent rogue updates (e.g. non-dev
         // updating when in dev)
+        //
+        // if the updateWhitelist is enabled, packages not in it are also fixed
+        // to their currently installed version
         foreach ($installedRepo->getPackages() as $package) {
-            if ($package->getRepository() === $localRepo) {
+            if ($package->getRepository() === $localRepo && (!$this->updateWhitelist || $this->isUpdateable($package))) {
                 continue;
             }
 
@@ -331,6 +337,11 @@ class Installer
             } else {
                 // force update to latest on update
                 if ($this->update) {
+                    // skip package if the whitelist is enabled and it is not in it
+                    if ($this->updateWhitelist && !$this->isUpdateable($package)) {
+                        continue;
+                    }
+
                     $newPackage = $this->repositoryManager->findPackage($package->getName(), $package->getVersion());
                     if ($newPackage && $newPackage->getSourceReference() !== $package->getSourceReference()) {
                         $operations[] = new UpdateOperation($package, $newPackage);
@@ -441,6 +452,64 @@ class Installer
         return $aliases;
     }
 
+    private function isUpdateable(PackageInterface $package)
+    {
+        if (!$this->updateWhitelist) {
+            throw new \LogicException('isUpdateable should only be called when a whitelist is present');
+        }
+
+        return isset($this->updateWhitelist[$package->getName()]);
+    }
+
+    /**
+     * Adds all dependencies of the update whitelist to the whitelist, too.
+     *
+     * @param RepositoryInterface $localRepo
+     * @param boolean $devMode
+     */
+    private function whitelistUpdateDependencies($localRepo, $devMode)
+    {
+        if (!$this->updateWhitelist) {
+            return;
+        }
+
+        $pool = new Pool;
+        $pool->addRepository($localRepo);
+
+        $seen = array();
+
+        foreach ($this->updateWhitelist as $packageName => $void) {
+            $packageQueue = new \SplQueue;
+
+            foreach ($pool->whatProvides($packageName) as $depPackage) {
+                $packageQueue->enqueue($depPackage);
+            }
+
+            while (!$packageQueue->isEmpty()) {
+                $package = $packageQueue->dequeue();
+                if (isset($seen[$package->getId()])) {
+                    continue;
+                }
+
+                $seen[$package->getId()] = true;
+                $this->updateWhitelist[$package->getName()] = true;
+
+                $requires = $package->getRequires();
+                if ($devMode) {
+                    $requires = array_merge($requires, $package->getDevRequires());
+                }
+
+                foreach ($requires as $require) {
+                    $requirePackages = $pool->whatProvides($require->getTarget());
+
+                    foreach ($requirePackages as $requirePackage) {
+                        $packageQueue->enqueue($requirePackage);
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * Create Installer
      *
@@ -548,6 +617,20 @@ class Installer
     public function setVerbose($verbose = true)
     {
         $this->verbose = (boolean) $verbose;
+
+        return $this;
+    }
+
+    /**
+     * restrict the update operation to a few packages, all other packages
+     * that are already installed will be kept at their current version
+     *
+     * @param  array     $packages
+     * @return Installer
+     */
+    public function setUpdateWhitelist(array $packages)
+    {
+        $this->updateWhitelist = array_flip(array_map('strtolower', $packages));
 
         return $this;
     }

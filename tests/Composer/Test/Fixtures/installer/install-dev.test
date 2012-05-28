@@ -18,6 +18,8 @@ Installs a package in dev env
         "a/b": "1.0.0"
     }
 }
---EXPECT:DEV--
+--RUN--
+install --dev
+--EXPECT--
 Installing a/a (1.0.0)
 Installing a/b (1.0.0)
