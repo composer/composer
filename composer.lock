@@ -12,7 +12,6 @@
         {
             "package": "symfony/console",
             "version": "dev-master",
-            "source-reference": "1edd7b739561e87bde81ff1c2ce08bd89e92277e",
             "alias-pretty-version": "2.1.x-dev",
             "alias-version": "2.1.9999999.9999999-dev"
         },
@@ -24,7 +23,6 @@
         {
             "package": "symfony/finder",
             "version": "dev-master",
-            "source-reference": "a2cef64d5072b284b671ee8e06b8ebc38c2969e1",
             "alias-pretty-version": "2.1.x-dev",
             "alias-version": "2.1.9999999.9999999-dev"
         },
@@ -36,7 +34,6 @@
         {
             "package": "symfony/process",
             "version": "dev-master",
-            "source-reference": "106f2db51cecf2fe5ee59e428b8f4a918c4034fa",
             "alias-pretty-version": "2.1.x-dev",
             "alias-version": "2.1.9999999.9999999-dev"
         },
