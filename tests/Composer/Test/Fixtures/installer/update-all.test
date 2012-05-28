@@ -36,6 +36,8 @@ Updates updateable packages
 [
     { "name": "a/b", "version": "1.0.0" }
 ]
---EXPECT:UPDATE:DEV--
+--RUN--
+update --dev
+--EXPECT--
 Updating a/a (1.0.0) to a/a (1.0.1)
 Updating a/b (1.0.0) to a/b (2.0.0)
