@@ -1,6 +1,7 @@
 * 1.0.0-alpha4
 
   * Schema: Added references for dev versions, requiring `dev-master#abcdef` for example will force the abcdef commit
+  * Schema: Added `support` key with some more metadata (email, issues, forum, wiki, irc, source)
   * Added `require` command to add a package to your requirements and install it
   * Added a whitelist to `update`. Calling `composer update foo/bar foo/baz` allows you to update only those packages
   * Added caching of GitHub metadata (faster startup time with custom GitHub VCS repos)
