@@ -112,6 +112,9 @@ class VcsRepository extends ArrayRepository
                 $this->io->overwrite($msg, false);
             }
 
+            // strip the release- prefix from tags if present
+            $tag = str_replace('release-', '', $tag);
+
             if (!$parsedTag = $this->validateTag($tag)) {
                 if ($verbose) {
                     $this->io->write('Skipped tag '.$tag.', invalid tag name');
