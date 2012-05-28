@@ -124,7 +124,7 @@ class InstallerTest extends TestCase
     /**
      * @dataProvider getIntegrationTests
      */
-    public function testIntegration($file, $message, $condition, $composer, $lock, $installed, $installedDev, $run, $expect)
+    public function testIntegration($file, $message, $condition, $composerConfig, $lock, $installed, $installedDev, $run, $expect)
     {
         if ($condition) {
             eval('$res = '.$condition.';');
@@ -141,7 +141,7 @@ class InstallerTest extends TestCase
                 $output .= $text . ($newline ? "\n":"");
             }));
 
-        $composer = FactoryMock::create($io, $composer);
+        $composer = FactoryMock::create($io, $composerConfig);
 
         $jsonMock = $this->getMockBuilder('Composer\Json\JsonFile')->disableOriginalConstructor()->getMock();
         $jsonMock->expects($this->any())
@@ -167,8 +167,11 @@ class InstallerTest extends TestCase
         $lockJsonMock->expects($this->any())
             ->method('read')
             ->will($this->returnValue($lock));
+        $lockJsonMock->expects($this->any())
+            ->method('exists')
+            ->will($this->returnValue(true));
 
-        $locker = new Locker($lockJsonMock, $repositoryManager, isset($lock['hash']) ? $lock['hash'] : '');
+        $locker = new Locker($lockJsonMock, $repositoryManager, md5(json_encode($composerConfig)));
         $composer->setLocker($locker);
 
         $autoloadGenerator = $this->getMock('Composer\Autoload\AutoloadGenerator');
@@ -245,6 +248,9 @@ class InstallerTest extends TestCase
                     $composer = JsonFile::parseJson($match['composer']);
                     if (!empty($match['lock'])) {
                         $lock = JsonFile::parseJson($match['lock']);
+                        if (!isset($lock['hash'])) {
+                            $lock['hash'] = md5(json_encode($composer));
+                        }
                     }
                     if (!empty($match['installed'])) {
                         $installed = JsonFile::parseJson($match['installed']);
