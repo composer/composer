@@ -259,7 +259,7 @@ EOT
 
         if ($requires) {
             foreach ($requires as $key => $requirement) {
-                $requires[$key] = preg_replace('{^([^=: ]+)[=: ](.*)$}', '$1 $2', $requirement);
+                $requires[$key] = $this->normalizeRequirement($requirement);
                 if (false === strpos($requires[$key], ' ') && $input->isInteractive()) {
                     $question = $dialog->getQuestion('Please provide a version constraint for the '.$requirement.' requirement');
                     if ($constraint = $dialog->ask($output, $question)) {
@@ -328,12 +328,18 @@ EOT
     {
         $requires = array();
         foreach ($requirements as $requirement) {
+            $requirement = $this->normalizeRequirement($requirement);
             list($packageName, $packageVersion) = explode(" ", $requirement, 2);
 
             $requires[$packageName] = $packageVersion;
         }
 
         return empty($requires) ? new \stdClass : $requires;
+    }
+
+    protected function normalizeRequirement($requirement)
+    {
+        return preg_replace('{^([^=: ]+)[=: ](.*)$}', '$1 $2', $requirement);
     }
 
     protected function getGitConfig()
