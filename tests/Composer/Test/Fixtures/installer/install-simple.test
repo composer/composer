@@ -14,5 +14,7 @@ Installs a simple package with exact match requirement
         "a/a": "1.0.0"
     }
 }
+--RUN--
+install
 --EXPECT--
 Installing a/a (1.0.0)

@@ -42,6 +42,8 @@ Aliases take precedence over default package even if default is selected
         "a/req": "dev-feature-foo as dev-master"
     }
 }
+--RUN--
+install
 --EXPECT--
 Marking a/req (dev-master feat.f) as installed, alias of a/req (dev-feature-foo feat.f)
 Installing a/req (dev-feature-foo feat.f)

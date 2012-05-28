@@ -12,6 +12,7 @@
 namespace Composer\Test;
 
 use Composer\Installer;
+use Composer\Console\Application;
 use Composer\Config;
 use Composer\Json\JsonFile;
 use Composer\Repository\ArrayRepository;
@@ -24,6 +25,8 @@ use Composer\Test\Mock\FactoryMock;
 use Composer\Test\Mock\InstalledFilesystemRepositoryMock;
 use Composer\Test\Mock\InstallationManagerMock;
 use Composer\Test\Mock\WritableRepositoryMock;
+use Symfony\Component\Console\Input\StringInput;
+use Symfony\Component\Console\Output\StreamOutput;
 
 class InstallerTest extends TestCase
 {
@@ -121,7 +124,7 @@ class InstallerTest extends TestCase
     /**
      * @dataProvider getIntegrationTests
      */
-    public function testIntegration($file, $message, $condition, $composer, $lock, $installed, $installedDev, $update, $dev, $expect)
+    public function testIntegration($file, $message, $condition, $composer, $lock, $installed, $installedDev, $run, $expect)
     {
         if ($condition) {
             eval('$res = '.$condition.';');
@@ -177,14 +180,31 @@ class InstallerTest extends TestCase
             $autoloadGenerator
         );
 
-        $installer->setDevMode($dev)->setUpdate($update);
+        $application = new Application;
+        $application->get('install')->setCode(function ($input, $output) use ($installer) {
+            $installer->setDevMode($input->getOption('dev'));
 
-        $result = $installer->run();
-        $this->assertTrue($result, $output);
+            return $installer->run();
+        });
 
-        $expectedInstalled   = isset($options['install']) ? $options['install'] : array();
-        $expectedUpdated     = isset($options['update']) ? $options['update'] : array();
-        $expectedUninstalled = isset($options['uninstall']) ? $options['uninstall'] : array();
+        $application->get('update')->setCode(function ($input, $output) use ($installer) {
+            $installer
+                ->setDevMode($input->getOption('dev'))
+                ->setUpdate(true)
+                ->setUpdateWhitelist($input->getArgument('packages'));
+
+            return $installer->run();
+        });
+
+        if (!preg_match('{^(install|update)\b}', $run)) {
+            throw new \UnexpectedValueException('The run command only supports install and update');
+        }
+
+        $application->setAutoExit(false);
+        $appOutput = fopen('php://memory', 'w+');
+        $result = $application->run(new StringInput($run), new StreamOutput($appOutput));
+        fseek($appOutput, 0);
+        $this->assertEquals(0, $result, $output . stream_get_contents($appOutput));
 
         $installationManager = $composer->getInstallationManager();
         $this->assertSame($expect, implode("\n", $installationManager->getTrace()));
@@ -210,7 +230,8 @@ class InstallerTest extends TestCase
                 (?:--LOCK--\s*(?P<lock>'.$content.'))?\s*
                 (?:--INSTALLED--\s*(?P<installed>'.$content.'))?\s*
                 (?:--INSTALLED:DEV--\s*(?P<installedDev>'.$content.'))?\s*
-                --EXPECT(?P<update>:UPDATE)?(?P<dev>:DEV)?--\s*(?P<expect>.*?)\s*
+                --RUN--\s*(?P<run>.*?)\s*
+                --EXPECT--\s*(?P<expect>.*?)\s*
             $}xs';
 
             $installed = array();
@@ -231,8 +252,7 @@ class InstallerTest extends TestCase
                     if (!empty($match['installedDev'])) {
                         $installedDev = JsonFile::parseJson($match['installedDev']);
                     }
-                    $update = !empty($match['update']);
-                    $dev = !empty($match['dev']);
+                    $run = $match['run'];
                     $expect = $match['expect'];
                 } catch (\Exception $e) {
                     die(sprintf('Test "%s" is not valid: '.$e->getMessage(), str_replace($fixturesDir.'/', '', $file)));
@@ -241,7 +261,7 @@ class InstallerTest extends TestCase
                 die(sprintf('Test "%s" is not valid, did not match the expected format.', str_replace($fixturesDir.'/', '', $file)));
             }
 
-            $tests[] = array(str_replace($fixturesDir.'/', '', $file), $message, $condition, $composer, $lock, $installed, $installedDev, $update, $dev, $expect);
+            $tests[] = array(str_replace($fixturesDir.'/', '', $file), $message, $condition, $composer, $lock, $installed, $installedDev, $run, $expect);
         }
 
         return $tests;

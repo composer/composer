@@ -62,6 +62,11 @@ class Factory
         return $config;
     }
 
+    public function getComposerFile()
+    {
+        return getenv('COMPOSER') ?: 'composer.json';
+    }
+
     /**
      * Creates a Composer instance
      *
@@ -73,7 +78,7 @@ class Factory
     {
         // load Composer configuration
         if (null === $localConfig) {
-            $localConfig = getenv('COMPOSER') ?: 'composer.json';
+            $localConfig = $this->getComposerFile();
         }
 
         if (is_string($localConfig)) {
