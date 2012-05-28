@@ -473,9 +473,9 @@ class Installer
      * update whitelist themselves.
      *
      * @param RepositoryInterface $localRepo
-     * @param boolean $devMode
-     * @param array $rootRequires An array of links to packages in require of the root package
-     * @param array $rootDevRequires An array of links to packages in require-dev of the root package
+     * @param boolean             $devMode
+     * @param array               $rootRequires    An array of links to packages in require of the root package
+     * @param array               $rootDevRequires An array of links to packages in require-dev of the root package
      */
     private function whitelistUpdateDependencies($localRepo, $devMode, array $rootRequires, array $rootDevRequires)
     {

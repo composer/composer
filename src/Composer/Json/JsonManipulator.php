@@ -104,6 +104,7 @@ class JsonManipulator
             foreach ($data as $key => $val) {
                 $elems[] = $this->indent . $this->indent . JsonFile::encode($key). ': '.$this->format($val);
             }
+
             return $out . implode(','.$this->newline, $elems) . $this->newline . $this->indent . '}';
         }
 
