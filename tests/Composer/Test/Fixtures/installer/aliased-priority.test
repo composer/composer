@@ -47,8 +47,8 @@ Aliases take precedence over default package
 --RUN--
 install
 --EXPECT--
-Installing a/b (dev-master forked)
 Marking a/b (1.0.x-dev forked) as installed, alias of a/b (dev-master forked)
+Installing a/b (dev-master forked)
 Marking a/c (dev-master feat.f) as installed, alias of a/c (dev-feature-foo feat.f)
 Installing a/a (dev-master master)
 Installing a/c (dev-feature-foo feat.f)
