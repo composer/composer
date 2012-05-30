@@ -18,19 +18,28 @@ namespace Composer\Downloader;
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  */
-class PearDownloader extends TarDownloader
+class PearDownloader extends ArchiveDownloader
 {
     /**
-     * {@inheritDoc}
+     * Extract pear package archive to directory.
+     * Note: Do not call parent::extract cause it can do some unwanted renames.
+     *
+     * @param string $file archive file
+     * @param string $path target dir
+     *
+     * @throws \UnexpectedValueException If can not extract downloaded file to path
      */
     protected function extract($file, $path)
     {
-        parent::extract($file, $path);
-        if (file_exists($path . '/package.sig')) {
-            unlink($path . '/package.sig');
-        }
-        if (file_exists($path . '/package.xml')) {
-            unlink($path . '/package.xml');
+        try {
+            // Can throw an UnexpectedValueException
+            $archive = new \PharData($file);
+            $archive->extractTo($path, null, true);
+
+            $pearInstaller = new PearPackageExtractor();
+            $pearInstaller->install($path, $path);
+        } catch (\RuntimeException $exception) {
+            throw new \UnexpectedValueException(sprintf('Failed to extract PEAR package %s to %s. Reason: %s', $file, $path, $exception->getMessage()), 0, $exception);
         }
     }
 }

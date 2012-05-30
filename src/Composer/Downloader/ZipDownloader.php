@@ -56,6 +56,8 @@ class ZipDownloader extends ArchiveDownloader
 
         $zipArchive->extractTo($path);
         $zipArchive->close();
+
+        parent::extract($file, $path);
     }
 
     /**

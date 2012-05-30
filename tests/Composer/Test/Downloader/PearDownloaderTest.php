@@ -12,17 +12,10 @@
 
 namespace Composer\Test\Downloader;
 
-use Composer\Downloader\ZipDownloader;
+use Composer\Downloader\PearDownloader;
 
-class ZipDownloaderTest extends \PHPUnit_Framework_TestCase
+class PearDownloaderTest extends \PHPUnit_Framework_TestCase
 {
-    public function setUp()
-    {
-        if (!class_exists('ZipArchive')) {
-            $this->markTestSkipped('zip extension missing');
-        }
-    }
-
     public function testErrorMessages()
     {
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
@@ -32,13 +25,14 @@ class ZipDownloaderTest extends \PHPUnit_Framework_TestCase
         ;
 
         $io = $this->getMock('Composer\IO\IOInterface');
-        $downloader = new ZipDownloader($io);
+        $downloader = new PearDownloader($io);
 
         try {
-            $downloader->download($packageMock, sys_get_temp_dir().'/composer-zip-test');
-            $this->fail('Download of invalid zip files should throw an exception');
+            $downloader->download($packageMock, sys_get_temp_dir().'/composer-pear-test');
+            $this->fail('Download of invalid pear packages should throw an exception');
         } catch (\UnexpectedValueException $e) {
-            $this->assertContains('is not a zip archive', $e->getMessage());
+            $this->assertContains('internal corruption of phar ', $e->getMessage());
         }
     }
+
 }

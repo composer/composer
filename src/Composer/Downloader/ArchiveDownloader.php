@@ -41,25 +41,6 @@ abstract class ArchiveDownloader extends FileDownloader
                 $this->io->write('    Cleaning up');
             }
             unlink($fileName);
-
-            // If we have only a one dir inside it suppose to be a package itself
-            $contentDir = glob($path . '/*');
-            if (1 === count($contentDir)) {
-                $contentDir = $contentDir[0];
-
-                // Rename the content directory to avoid error when moving up
-                // a child folder with the same name
-                $temporaryName = md5(time().rand());
-                rename($contentDir, $temporaryName);
-                $contentDir = $temporaryName;
-
-                foreach (array_merge(glob($contentDir . '/.*'), glob($contentDir . '/*')) as $file) {
-                    if (trim(basename($file), '.')) {
-                        rename($file, $path . '/' . basename($file));
-                    }
-                }
-                rmdir($contentDir);
-            }
         } catch (\Exception $e) {
             // clean up
             $this->filesystem->removeDirectory($path);
@@ -85,7 +66,7 @@ abstract class ArchiveDownloader extends FileDownloader
         if (!extension_loaded('openssl') && (0 === strpos($url, 'https:') || 0 === strpos($url, 'http://github.com'))) {
             // bypass https for github if openssl is disabled
             if (preg_match('{^https?://(github.com/[^/]+/[^/]+/(zip|tar)ball/[^/]+)$}i', $url, $match)) {
-                $url = 'http://nodeload.'.$match[1];
+                $url = 'http://nodeload.' . $match[1];
             } else {
                 throw new \RuntimeException('You must enable the openssl extension to download files via https');
             }
@@ -95,12 +76,36 @@ abstract class ArchiveDownloader extends FileDownloader
     }
 
     /**
-     * Extract file to directory
+     * Extract file to directory.
+     * If we have only one directory inside, this is the package itself, so move its content to $path.
      *
      * @param string $file Extracted file
      * @param string $path Directory
      *
      * @throws \UnexpectedValueException If can not extract downloaded file to path
      */
-    abstract protected function extract($file, $path);
+    protected function extract($file, $path)
+    {
+        $contentDir = glob($path . '/*');
+        if (2 === count($contentDir)) { // there are two objects: archive file and extracted dir
+            $contentDir = $contentDir[0] != $file ? $contentDir[0] : $contentDir[1];
+
+            // Rename the content directory to avoid error when moving up
+            // a child folder with the same name
+            $temporaryName = md5(time() . rand());
+            if (!rename($contentDir, $temporaryName)) {
+                throw new \UnexpectedValueException(sprintf('Failed to rename %s to %s', $contentDir, $temporaryName));
+            }
+            $contentDir = $temporaryName;
+
+            foreach (array_merge(glob($contentDir . '/.*'), glob($contentDir . '/*')) as $file) {
+                if (trim(basename($file), '.')) {
+                    if (!rename($file, $path . '/' . basename($file))) {
+                        throw new \UnexpectedValueException(sprintf('Failed to rename %s to %s', $file, $path . '/' . basename($file)));
+                    }
+                }
+            }
+            rmdir($contentDir);
+        }
+    }
 }
