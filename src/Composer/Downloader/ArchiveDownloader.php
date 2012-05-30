@@ -41,25 +41,6 @@ abstract class ArchiveDownloader extends FileDownloader
                 $this->io->write('    Cleaning up');
             }
             unlink($fileName);
-
-            // If we have only a one dir inside it suppose to be a package itself
-            $contentDir = glob($path . '/*');
-            if (1 === count($contentDir)) {
-                $contentDir = $contentDir[0];
-
-                // Rename the content directory to avoid error when moving up
-                // a child folder with the same name
-                $temporaryName = md5(time().rand());
-                rename($contentDir, $temporaryName);
-                $contentDir = $temporaryName;
-
-                foreach (array_merge(glob($contentDir . '/.*'), glob($contentDir . '/*')) as $file) {
-                    if (trim(basename($file), '.')) {
-                        rename($file, $path . '/' . basename($file));
-                    }
-                }
-                rmdir($contentDir);
-            }
         } catch (\Exception $e) {
             // clean up
             $this->filesystem->removeDirectory($path);
@@ -102,5 +83,25 @@ abstract class ArchiveDownloader extends FileDownloader
      *
      * @throws \UnexpectedValueException If can not extract downloaded file to path
      */
-    abstract protected function extract($file, $path);
+//    abstract protected function extract($file, $path);
+    protected function extract($file, $path) {
+        // If we have only a one dir inside it suppose to be a package itself
+        $contentDir = glob($path . '/*');
+        if (2 === count($contentDir)) { // there are two objects: archive file and extracted dir
+            $contentDir = $contentDir[0] != $file ? $contentDir[0] : $contentDir[1];
+
+            // Rename the content directory to avoid error when moving up
+            // a child folder with the same name
+            $temporaryName = md5(time().rand());
+            rename($contentDir, $temporaryName);
+            $contentDir = $temporaryName;
+
+            foreach (array_merge(glob($contentDir . '/.*'), glob($contentDir . '/*')) as $file) {
+                if (trim(basename($file), '.')) {
+                    rename($file, $path . '/' . basename($file));
+                }
+            }
+            rmdir($contentDir);
+        }
+    }
 }

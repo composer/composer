@@ -18,19 +18,20 @@ namespace Composer\Downloader;
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  */
-class PearDownloader extends TarDownloader
+use Composer\Package\PackageInterface;
+
+class PearDownloader extends ArchiveDownloader
 {
-    /**
-     * {@inheritDoc}
-     */
     protected function extract($file, $path)
     {
-        parent::extract($file, $path);
-        if (file_exists($path . '/package.sig')) {
-            unlink($path . '/package.sig');
-        }
-        if (file_exists($path . '/package.xml')) {
-            unlink($path . '/package.xml');
-        }
+        // Can throw an UnexpectedValueException
+        $archive = new \PharData($file);
+        $archive->extractTo($path, null, true);
+
+        $pearInstaller = new PearPackageExtractor();
+        $pearInstaller->install($path, $path);
+
+        // do not call for parent cause we don't want post processing of our files
+        // parent::extract($file, $path);
     }
 }
