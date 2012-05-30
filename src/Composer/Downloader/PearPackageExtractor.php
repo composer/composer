@@ -25,7 +25,6 @@ use Composer\Util\Filesystem;
  */
 class PearPackageExtractor
 {
-
     /** @var Filesystem */
     private $filesystem;
 
@@ -36,14 +35,14 @@ class PearPackageExtractor
      * @param $target string target install location. all source installation would be performed relative to target path.
      * @param $role string type of files to install. default role for PEAR source files are 'php'.
      *
-     * @throws \UnexpectedValueException
+     * @throws \RuntimeException
      */
     public function install($source, $target, $role = 'php')
     {
         $this->filesystem = new Filesystem();
 
         if (!is_file($this->combine($source, '/package.xml'))) {
-            throw new \UnexpectedValueException('Invalid PEAR package. It must contain package.xml file.');
+            throw new \RuntimeException('Invalid PEAR package. It must contain package.xml file.');
         }
 
         $fileActions = $this->buildFileActions($source, $role);
@@ -84,20 +83,26 @@ class PearPackageExtractor
     private function copyFile($from, $to)
     {
         if (!is_file($from)) {
-            throw new \UnexpectedValueException('Invalid PEAR package. package.xml defines file that is not located inside tarball.');
+            throw new \RuntimeException('Invalid PEAR package. package.xml defines file that is not located inside tarball.');
         }
 
         $this->filesystem->ensureDirectoryExists(dirname($to));
 
-        copy($from, $to);
+        if (!copy($from, $to)) {
+            throw new \RuntimeException(sprintf('Failed to copy %s to %s', $from, $to));
+        }
     }
 
     private function unlinkFile($from)
     {
         if (is_dir($from)) {
-            $this->filesystem->removeDirectory($from);
+            if (!$this->filesystem->removeDirectory($from)) {
+                throw new \RuntimeException(sprintf('Failed to remove directory %s', $from));
+            }
         } elseif (is_file($from)) {
-            unlink($from);
+            if (!unlink($from)) {
+                throw new \RuntimeException(sprintf('Failed to unlink %s', $from));
+            }
         }
     }
 
@@ -133,7 +138,7 @@ class PearPackageExtractor
             $result['remove'][] = array('from' => $sourceDir);
             $result['copy'] = $this->buildSourceList20($children, $role, $sourceDir);
         } else {
-            throw new \UnexpectedValueException('Unsupported schema version of package.xml.');
+            throw new \RuntimeException('Unsupported schema version of package.xml.');
         }
 
         return $result;

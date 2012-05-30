@@ -31,11 +31,15 @@ class PearDownloader extends ArchiveDownloader
      */
     protected function extract($file, $path)
     {
-        // Can throw an UnexpectedValueException
-        $archive = new \PharData($file);
-        $archive->extractTo($path, null, true);
+        try {
+            // Can throw an UnexpectedValueException
+            $archive = new \PharData($file);
+            $archive->extractTo($path, null, true);
 
-        $pearInstaller = new PearPackageExtractor();
-        $pearInstaller->install($path, $path);
+            $pearInstaller = new PearPackageExtractor();
+            $pearInstaller->install($path, $path);
+        } catch (\RuntimeException $exception) {
+            throw new \UnexpectedValueException(sprintf('Failed to extract PEAR package %s to %s. Reason: %s', $file, $path, $exception->getMessage()), 0, $exception);
+        }
     }
 }
