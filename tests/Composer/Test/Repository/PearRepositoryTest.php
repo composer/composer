@@ -47,7 +47,7 @@ class PearRepositoryTest extends TestCase
             $this->assertInstanceOf('Composer\Package\PackageInterface',
                 $package,
                 'Expected package ' . $expectedPackage['name'] . ', version ' . $expectedPackage['version'] .
-                    ' not found in pear channel ' . $url
+                ' not found in pear channel ' . $url
             );
             $this->assertSame(array('/'), $package->getIncludePaths());
         }
