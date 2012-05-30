@@ -18,8 +18,6 @@ namespace Composer\Downloader;
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  */
-use Composer\Package\PackageInterface;
-
 class PearDownloader extends ArchiveDownloader
 {
     protected function extract($file, $path)

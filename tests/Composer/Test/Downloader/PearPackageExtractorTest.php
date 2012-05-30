@@ -17,7 +17,8 @@ use Composer\Downloader\PearPackageExtractor;
 
 class PearPackageExtractorTest extends \PHPUnit_Framework_TestCase
 {
-    public function testShouldExtractPackage_1_0() {
+    public function testShouldExtractPackage_1_0()
+    {
         $extractor = $this->getMockForAbstractClass('Composer\Downloader\PearPackageExtractor');
         $method = new \ReflectionMethod($extractor, 'buildFileActions');
         $method->setAccessible(true);
@@ -25,32 +26,34 @@ class PearPackageExtractorTest extends \PHPUnit_Framework_TestCase
         $fileActions = $method->invoke($extractor, __DIR__ . '/Fixtures/Package_v1.0', 'php');
 
         $expectedFileActions = array(
-           'copy' => Array (
-                0 => Array (
+            'copy' => Array(
+                0 => Array(
                     'from' => 'PEAR_Frontend_Gtk-0.4.0/Gtk.php',
                     'to' => 'PEAR/Frontend/Gtk.php',
                 ),
-                1 => Array (
+                1 => Array(
                     'from' => 'PEAR_Frontend_Gtk-0.4.0/Gtk/Config.php',
                     'to' => 'PEAR/Frontend/Gtk/Config.php',
                 ),
-                2 => Array (
+                2 => Array(
                     'from' => 'PEAR_Frontend_Gtk-0.4.0/Gtk/xpm/black_close_icon.xpm',
                     'to' => 'PEAR/Frontend/Gtk/xpm/black_close_icon.xpm',
                 )
             ),
-            'remove' => Array (
-                0 => Array (
+            'remove' => Array(
+                0 => Array(
                     'from' => 'package.xml'
                 ),
-                1 => Array (
+                1 => Array(
                     'from' => 'PEAR_Frontend_Gtk-0.4.0'
                 )
             ),
         );
         $this->assertSame($expectedFileActions, $fileActions);
     }
-    public function testShouldExtractPackage_2_0() {
+
+    public function testShouldExtractPackage_2_0()
+    {
         $extractor = $this->getMockForAbstractClass('Composer\Downloader\PearPackageExtractor');
         $method = new \ReflectionMethod($extractor, 'buildFileActions');
         $method->setAccessible(true);
@@ -58,17 +61,17 @@ class PearPackageExtractorTest extends \PHPUnit_Framework_TestCase
         $fileActions = $method->invoke($extractor, __DIR__ . '/Fixtures/Package_v2.0', 'php');
 
         $expectedFileActions = array(
-            'copy' => Array (
-                0 => Array (
+            'copy' => Array(
+                0 => Array(
                     'from' => 'Net_URL-1.0.15/URL.php',
                     'to' => 'Net/URL.php',
                 )
             ),
-            'remove' => Array (
-                    0 => Array (
-                        'from' => 'package.xml',
-                    ),
-                1 => Array (
+            'remove' => Array(
+                0 => Array(
+                    'from' => 'package.xml',
+                ),
+                1 => Array(
                     'from' => 'Net_URL-1.0.15',
                 ),
             )

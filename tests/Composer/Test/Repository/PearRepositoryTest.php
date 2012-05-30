@@ -12,7 +12,6 @@
 
 namespace Composer\Repository;
 
-use Composer\Repository\FilesystemRepository;
 use Composer\Test\TestCase;
 
 /**
@@ -30,7 +29,8 @@ class PearRepositoryTest extends TestCase
      */
     private $remoteFilesystem;
 
-    public function testComposerNonCompatibleRepositoryShouldSetIncludePath() {
+    public function testComposerNonCompatibleRepositoryShouldSetIncludePath()
+    {
         $url = 'pear.phpmd.org';
         $expectedPackages = array(
                     array('name' => 'pear-phpmd/PHP_PMD', 'version' => '1.3.3'),
@@ -56,7 +56,7 @@ class PearRepositoryTest extends TestCase
     /**
      * @dataProvider repositoryDataProvider
      * @param string $url
-     * @param array $expectedPackages
+     * @param array  $expectedPackages
      */
     public function testRepositoryRead($url, array $expectedPackages)
     {
@@ -75,7 +75,7 @@ class PearRepositoryTest extends TestCase
         }
     }
 
-    public static function repositoryDataProvider()
+    public function repositoryDataProvider()
     {
         return array(
             array(
