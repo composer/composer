@@ -33,8 +33,8 @@ class PearRepositoryTest extends TestCase
     {
         $url = 'pear.phpmd.org';
         $expectedPackages = array(
-                    array('name' => 'pear-phpmd/PHP_PMD', 'version' => '1.3.3'),
-                );
+            array('name' => 'pear-phpmd/PHP_PMD', 'version' => '1.3.3'),
+        );
 
         $repoConfig = array(
             'url' => $url
@@ -70,7 +70,7 @@ class PearRepositoryTest extends TestCase
             $this->assertInstanceOf('Composer\Package\PackageInterface',
                 $this->repository->findPackage($expectedPackage['name'], $expectedPackage['version']),
                 'Expected package ' . $expectedPackage['name'] . ', version ' . $expectedPackage['version'] .
-                ' not found in pear channel ' . $url
+                    ' not found in pear channel ' . $url
             );
         }
     }
