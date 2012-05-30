@@ -5,14 +5,26 @@ things. This chapter documents all the available commands.
 
 ## init
 
-In the [Libraries](02-libraries.md) chapter we looked at how to create a `composer.json` by
-hand. There is also an `init` command available that makes it a bit easier to
-do this.
+In the [Libraries](02-libraries.md) chapter we looked at how to create a
+`composer.json` by hand. There is also an `init` command available that makes
+it a bit easier to do this.
 
 When you run the command it will interactively ask you to fill in the fields,
 while using some smart defaults.
 
     $ php composer.phar init
+
+### Options
+
+* **--no-interaction:** (**-n**) Run the command in non-interactive mode.
+  The rest of these options only make sense when you are in this mode.
+* **--name:** Name of the package.
+* **--description:** Description of the package.
+* **--author:** Author name of the package.
+* **--homepage:** Homepage of the package.
+* **--require:** Package to require with a version constraint. Should be
+  in format `foo/bar:1.0.0`.
+* **--require-dev:** Development requirements, see **--require**.
 
 ## install
 
@@ -42,6 +54,7 @@ resolution.
 * **--dev:** By default composer will only install required packages. By
   passing this option you can also make it install packages referenced by
   `require-dev`.
+* **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 
 ## update
 
@@ -62,16 +75,17 @@ If you just want to update a few packages and not all, you can list them as such
 * **--prefer-source:** Install packages from `source` when available.
 * **--dry-run:** Simulate the command without actually doing anything.
 * **--dev:** Install packages listed in `require-dev`.
+* **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 
 ## require
 
-The `require` command adds new packages to the `composer.json` file from 
+The `require` command adds new packages to the `composer.json` file from
 the current directory.
 
     $ php composer.phar require
 
 After adding/changing the requirements, the modified requirements will be
-installed or updated. 
+installed or updated.
 
 If you do not want to choose requirements interactively, you can just pass them
 to the command.
@@ -190,6 +204,7 @@ By default the command checks for the packages on packagist.org.
   to a `composer` repository, or a path to a local `packages.json` file.
 * **--prefer-source:** Get a development version of the code checked out
   from version control.
+* **--dev:** Install packages listed in `require-dev`.
 
 ## help
 
