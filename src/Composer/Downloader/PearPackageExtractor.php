@@ -120,15 +120,15 @@ class PearPackageExtractor
         $packageSchemaVersion = $package['version'];
         if ($packageSchemaVersion == '1.0') {
             $children = $package->release->filelist->children();
-            $packageName = (string)$package->name;
-            $packageVersion = (string)$package->release->version;
+            $packageName = (string) $package->name;
+            $packageVersion = (string) $package->release->version;
             $sourceDir = $packageName . '-' . $packageVersion;
             $result['remove'][] = array('from' => $sourceDir);
             $result['copy'] = $this->buildSourceList10($children, $role, $sourceDir);
         } elseif ($packageSchemaVersion == '2.0') {
             $children = $package->contents->children();
-            $packageName = (string)$package->name;
-            $packageVersion = (string)$package->version->release;
+            $packageName = (string) $package->name;
+            $packageVersion = (string) $package->version->release;
             $sourceDir = $packageName . '-' . $packageVersion;
             $result['remove'][] = array('from' => $sourceDir);
             $result['copy'] = $this->buildSourceList20($children, $role, $sourceDir);
@@ -147,16 +147,16 @@ class PearPackageExtractor
         foreach ($children as $child) {
             /** @var $child \SimpleXMLElement */
             if ($child->getName() == 'dir') {
-                $dirSource = $this->combine($source, (string)$child['name']);
+                $dirSource = $this->combine($source, (string) $child['name']);
                 $dirTarget = $child['baseinstalldir'] ? : $target;
                 $dirRole = $child['role'] ? : $role;
                 $dirFiles = $this->buildSourceList10($child->children(), $targetRole, $dirSource, $dirTarget, $role);
                 $result = array_merge($result, $dirFiles);
             } elseif ($child->getName() == 'file') {
                 if (($child['role'] ? : $role) == $targetRole) {
-                    $fileName = (string)($child['name'] ? : $child[0]); // $child[0] means text content
+                    $fileName = (string) ($child['name'] ? : $child[0]); // $child[0] means text content
                     $fileSource = $this->combine($source, $fileName);
-                    $fileTarget = $this->combine((string)$child['baseinstalldir'] ? : $target, $fileName);
+                    $fileTarget = $this->combine((string) $child['baseinstalldir'] ? : $target, $fileName);
                     $result[] = array('from' => $fileSource, 'to' => $fileTarget);
                 }
             }
@@ -180,8 +180,8 @@ class PearPackageExtractor
                 $result = array_merge($result, $dirFiles);
             } elseif ($child->getName() == 'file') {
                 if (is_null($child['role']) || $child['role'] == $targetRole) {
-                    $fileSource = $this->combine($source, (string)$child['name']);
-                    $fileTarget = $this->combine((string)($child['baseinstalldir'] ? : $target), (string)$child['name']);
+                    $fileSource = $this->combine($source, (string) $child['name']);
+                    $fileTarget = $this->combine((string) ($child['baseinstalldir'] ? : $target), (string) $child['name']);
                     $result[] = array('from' => $fileSource, 'to' => $fileTarget);
                 }
             }

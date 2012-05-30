@@ -12,7 +12,6 @@
 
 namespace Composer\Test\Downloader;
 
-use Composer\Util\Filesystem;
 use Composer\Downloader\ZipDownloader;
 
 class ZipDownloaderTest extends \PHPUnit_Framework_TestCase

@@ -56,7 +56,7 @@ class ArchiveDownloaderTest extends \PHPUnit_Framework_TestCase
         $method->setAccessible(true);
 
         $filesystem = new Filesystem();
-        $path = sys_get_temp_dir().'/composer'.(string)md5(time());
+        $path = sys_get_temp_dir().'/composer'.md5(time());
 
         try {
             $filesystem->ensureDirectoryExists($path);
@@ -74,7 +74,7 @@ class ArchiveDownloaderTest extends \PHPUnit_Framework_TestCase
             $this->assertFileExists($path . '/packageFile.php');
             $this->assertFileNotExists($path . '/somePackage-1.1.1');
             $this->assertFileExists($path . '/somePackage.tgz');
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             // cleanup
             $filesystem->removeDirectory($path);
 
@@ -91,7 +91,7 @@ class ArchiveDownloaderTest extends \PHPUnit_Framework_TestCase
         $method->setAccessible(true);
 
         $filesystem = new Filesystem();
-        $path = sys_get_temp_dir().'/composer'.(string)md5(time());
+        $path = sys_get_temp_dir().'/composer'.md5(time());
 
         try {
             $filesystem->ensureDirectoryExists($path);
@@ -111,7 +111,7 @@ class ArchiveDownloaderTest extends \PHPUnit_Framework_TestCase
             $this->assertFileExists($packagePath1);
             $this->assertFileExists($packagePath2);
             $this->assertFileExists($extractedFile);
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             // cleanup
             $filesystem->removeDirectory($path);
 

@@ -12,7 +12,6 @@
 
 namespace Composer\Test\Downloader;
 
-use Composer\Util\Filesystem;
 use Composer\Downloader\PearDownloader;
 
 class PearDownloaderTest extends \PHPUnit_Framework_TestCase

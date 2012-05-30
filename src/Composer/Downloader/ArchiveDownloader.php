@@ -98,7 +98,7 @@ abstract class ArchiveDownloader extends FileDownloader
 
             foreach (array_merge(glob($contentDir . '/.*'), glob($contentDir . '/*')) as $file) {
                 if (trim(basename($file), '.')) {
-                    if(!rename($file, $path . '/' . basename($file))) {
+                    if (!rename($file, $path . '/' . basename($file))) {
                         throw new \UnexpectedValueException(sprintf('Failed to rename %s to %s', $file, $path . '/' . basename($file)));
                     }
                 }
