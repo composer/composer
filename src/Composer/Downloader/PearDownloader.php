@@ -20,6 +20,15 @@ namespace Composer\Downloader;
  */
 class PearDownloader extends ArchiveDownloader
 {
+    /**
+     * Extract pear package archive to directory.
+     * Note: Do not call parent::extract cause it can do some unwanted renames.
+     *
+     * @param string $file archive file
+     * @param string $path target dir
+     *
+     * @throws \UnexpectedValueException If can not extract downloaded file to path
+     */
     protected function extract($file, $path)
     {
         // Can throw an UnexpectedValueException
@@ -28,8 +37,5 @@ class PearDownloader extends ArchiveDownloader
 
         $pearInstaller = new PearPackageExtractor();
         $pearInstaller->install($path, $path);
-
-        // do not call for parent cause we don't want post processing of our files
-        // parent::extract($file, $path);
     }
 }

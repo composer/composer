@@ -31,21 +31,17 @@ abstract class ArchiveDownloader extends FileDownloader
         parent::download($package, $path);
 
         $fileName = $this->getFileName($package, $path);
-        if ($this->io->isVerbose())
-        {
+        if ($this->io->isVerbose()) {
             $this->io->write('    Unpacking archive');
         }
-        try
-        {
+        try {
             $this->extract($fileName, $path);
 
-            if ($this->io->isVerbose())
-            {
+            if ($this->io->isVerbose()) {
                 $this->io->write('    Cleaning up');
             }
             unlink($fileName);
-        } catch (\Exception $e)
-        {
+        } catch (\Exception $e) {
             // clean up
             $this->filesystem->removeDirectory($path);
             throw $e;
@@ -59,7 +55,7 @@ abstract class ArchiveDownloader extends FileDownloader
      */
     protected function getFileName(PackageInterface $package, $path)
     {
-        return rtrim($path . '/' . md5($path . spl_object_hash($package)) . '.' . pathinfo($package->getDistUrl(), PATHINFO_EXTENSION), '.');
+        return rtrim($path.'/'.md5($path.spl_object_hash($package)).'.'.pathinfo($package->getDistUrl(), PATHINFO_EXTENSION), '.');
     }
 
     /**
@@ -67,14 +63,11 @@ abstract class ArchiveDownloader extends FileDownloader
      */
     protected function processUrl($url)
     {
-        if (!extension_loaded('openssl') && (0 === strpos($url, 'https:') || 0 === strpos($url, 'http://github.com')))
-        {
+        if (!extension_loaded('openssl') && (0 === strpos($url, 'https:') || 0 === strpos($url, 'http://github.com'))) {
             // bypass https for github if openssl is disabled
-            if (preg_match('{^https?://(github.com/[^/]+/[^/]+/(zip|tar)ball/[^/]+)$}i', $url, $match))
-            {
+            if (preg_match('{^https?://(github.com/[^/]+/[^/]+/(zip|tar)ball/[^/]+)$}i', $url, $match)) {
                 $url = 'http://nodeload.' . $match[1];
-            } else
-            {
+            } else {
                 throw new \RuntimeException('You must enable the openssl extension to download files via https');
             }
         }
@@ -83,7 +76,8 @@ abstract class ArchiveDownloader extends FileDownloader
     }
 
     /**
-     * Extract file to directory
+     * Extract file to directory.
+     * If we have only one directory inside, this is the package itself, so move its content to $path.
      *
      * @param string $file Extracted file
      * @param string $path Directory
@@ -92,10 +86,8 @@ abstract class ArchiveDownloader extends FileDownloader
      */
     protected function extract($file, $path)
     {
-        // If we have only a one dir inside it suppose to be a package itself
         $contentDir = glob($path . '/*');
-        if (2 === count($contentDir))
-        { // there are two objects: archive file and extracted dir
+        if (2 === count($contentDir)) { // there are two objects: archive file and extracted dir
             $contentDir = $contentDir[0] != $file ? $contentDir[0] : $contentDir[1];
 
             // Rename the content directory to avoid error when moving up
@@ -104,11 +96,11 @@ abstract class ArchiveDownloader extends FileDownloader
             rename($contentDir, $temporaryName);
             $contentDir = $temporaryName;
 
-            foreach (array_merge(glob($contentDir . '/.*'), glob($contentDir . '/*')) as $file)
-            {
-                if (trim(basename($file), '.'))
-                {
-                    rename($file, $path . '/' . basename($file));
+            foreach (array_merge(glob($contentDir . '/.*'), glob($contentDir . '/*')) as $file) {
+                if (trim(basename($file), '.')) {
+                    if(!rename($file, $path . '/' . basename($file))) {
+                        throw new \UnexpectedValueException(sprintf('Failed to rename %s to %s', $file, $path . '/' . basename($file)));
+                    }
                 }
             }
             rmdir($contentDir);

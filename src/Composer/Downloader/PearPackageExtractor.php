@@ -35,14 +35,15 @@ class PearPackageExtractor
      * @param $source string path to extracted package files (it must contain 'package.xml' and '{pear}-{version}' dir
      * @param $target string target install location. all source installation would be performed relative to target path.
      * @param $role string type of files to install. default role for PEAR source files are 'php'.
+     *
+     * @throws \UnexpectedValueException
      */
     public function install($source, $target, $role = 'php')
     {
         $this->filesystem = new Filesystem();
 
-        if (!is_file($this->combine($source, '/package.xml')))
-        {
-            throw new \RuntimeException('Invalid PEAR package. It must contain package.xml file.');
+        if (!is_file($this->combine($source, '/package.xml'))) {
+            throw new \UnexpectedValueException('Invalid PEAR package. It must contain package.xml file.');
         }
 
         $fileActions = $this->buildFileActions($source, $role);
@@ -59,8 +60,7 @@ class PearPackageExtractor
      */
     private function copyFiles($files, $source, $target)
     {
-        foreach ($files as $file)
-        {
+        foreach ($files as $file) {
             $from = $this->combine($source, $file['from']);
             $to = $this->combine($target, $file['to']);
             $this->copyFile($from, $to);
@@ -75,8 +75,7 @@ class PearPackageExtractor
      */
     private function unlinkFiles($files, $source)
     {
-        foreach ($files as $file)
-        {
+        foreach ($files as $file) {
             $from = $this->combine($source, $file['from']);
             $this->unlinkFile($from);
         }
@@ -84,32 +83,21 @@ class PearPackageExtractor
 
     private function copyFile($from, $to)
     {
-        if (!is_file($from))
-        {
-            throw new \RuntimeException('Invalid PEAR package. package.xml defines file that is not located inside tarball.');
+        if (!is_file($from)) {
+            throw new \UnexpectedValueException('Invalid PEAR package. package.xml defines file that is not located inside tarball.');
         }
 
         $this->filesystem->ensureDirectoryExists(dirname($to));
 
         copy($from, $to);
-
-        if (!is_file($to))
-        {
-            throw new \RuntimeException("Failed to copy {$from} => {$to}.");
-        }
     }
 
     private function unlinkFile($from)
     {
-        if (is_dir($from))
-        {
+        if (is_dir($from)) {
             $this->filesystem->removeDirectory($from);
-        } elseif (is_file($from))
-        {
+        } elseif (is_file($from)) {
             unlink($from);
-        } else
-        {
-            throw new \RuntimeException("Failed to unlink {$from}.");
         }
     }
 
@@ -123,32 +111,30 @@ class PearPackageExtractor
             'remove' => array(),
         );
         $result['remove'][] = array('from' => 'package.xml');
-        if (file_exists($source . '/package.sig'))
-        {
+        if (file_exists($source . '/package.sig')) {
             $result['remove'][] = array('from' => 'package.sig');
         }
 
         /** @var $package \SimpleXmlElement */
         $package = simplexml_load_file($this->combine($source, 'package.xml'));
         $packageSchemaVersion = $package['version'];
-        if ($packageSchemaVersion == '1.0')
-        {
+        if ($packageSchemaVersion == '1.0') {
             $children = $package->release->filelist->children();
             $packageName = (string)$package->name;
             $packageVersion = (string)$package->release->version;
             $sourceDir = $packageName . '-' . $packageVersion;
             $result['remove'][] = array('from' => $sourceDir);
             $result['copy'] = $this->buildSourceList10($children, $role, $sourceDir);
-        } elseif ($packageSchemaVersion == '2.0')
-        {
+        } elseif ($packageSchemaVersion == '2.0') {
             $children = $package->contents->children();
             $packageName = (string)$package->name;
             $packageVersion = (string)$package->version->release;
             $sourceDir = $packageName . '-' . $packageVersion;
             $result['remove'][] = array('from' => $sourceDir);
             $result['copy'] = $this->buildSourceList20($children, $role, $sourceDir);
-        } else
-            throw new \RuntimeException('Unsupported schema version of package.xml.');
+        } else {
+            throw new \UnexpectedValueException('Unsupported schema version of package.xml.');
+        }
 
         return $result;
     }
@@ -158,20 +144,16 @@ class PearPackageExtractor
         $result = array();
 
         // enumerating files
-        foreach ($children as $child)
-        {
+        foreach ($children as $child) {
             /** @var $child \SimpleXMLElement */
-            if ($child->getName() == 'dir')
-            {
+            if ($child->getName() == 'dir') {
                 $dirSource = $this->combine($source, (string)$child['name']);
                 $dirTarget = $child['baseinstalldir'] ? : $target;
                 $dirRole = $child['role'] ? : $role;
                 $dirFiles = $this->buildSourceList10($child->children(), $targetRole, $dirSource, $dirTarget, $role);
                 $result = array_merge($result, $dirFiles);
-            } elseif ($child->getName() == 'file')
-            {
-                if (($child['role'] ? : $role) == $targetRole)
-                {
+            } elseif ($child->getName() == 'file') {
+                if (($child['role'] ? : $role) == $targetRole) {
                     $fileName = (string)($child['name'] ? : $child[0]); // $child[0] means text content
                     $fileSource = $this->combine($source, $fileName);
                     $fileTarget = $this->combine((string)$child['baseinstalldir'] ? : $target, $fileName);
@@ -188,20 +170,16 @@ class PearPackageExtractor
         $result = array();
 
         // enumerating files
-        foreach ($children as $child)
-        {
+        foreach ($children as $child) {
             /** @var $child \SimpleXMLElement */
-            if ($child->getName() == 'dir')
-            {
+            if ($child->getName() == 'dir') {
                 $dirSource = $this->combine($source, $child['name']);
                 $dirTarget = $child['baseinstalldir'] ? : $target;
                 $dirRole = $child['role'] ? : $role;
                 $dirFiles = $this->buildSourceList20($child->children(), $targetRole, $dirSource, $dirTarget, $dirRole);
                 $result = array_merge($result, $dirFiles);
-            } elseif ($child->getName() == 'file')
-            {
-                if (is_null($child['role']) || $child['role'] == $targetRole)
-                {
+            } elseif ($child->getName() == 'file') {
+                if (is_null($child['role']) || $child['role'] == $targetRole) {
                     $fileSource = $this->combine($source, (string)$child['name']);
                     $fileTarget = $this->combine((string)($child['baseinstalldir'] ? : $target), (string)$child['name']);
                     $result[] = array('from' => $fileSource, 'to' => $fileTarget);
