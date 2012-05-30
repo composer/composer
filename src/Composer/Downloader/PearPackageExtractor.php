@@ -48,7 +48,7 @@ class PearPackageExtractor
 
         $fileActions = $this->buildFileActions($source, $role);
         $this->copyFiles($fileActions['copy'], $source, $target);
-        $this->unlinkFiles($fileActions['remove'], $source, $target);
+        $this->unlinkFiles($fileActions['remove'], $source);
     }
 
     /**
@@ -150,7 +150,7 @@ class PearPackageExtractor
                 $dirSource = $this->combine($source, (string) $child['name']);
                 $dirTarget = $child['baseinstalldir'] ? : $target;
                 $dirRole = $child['role'] ? : $role;
-                $dirFiles = $this->buildSourceList10($child->children(), $targetRole, $dirSource, $dirTarget, $role);
+                $dirFiles = $this->buildSourceList10($child->children(), $targetRole, $dirSource, $dirTarget, $dirRole);
                 $result = array_merge($result, $dirFiles);
             } elseif ($child->getName() == 'file') {
                 if (($child['role'] ? : $role) == $targetRole) {
@@ -179,7 +179,7 @@ class PearPackageExtractor
                 $dirFiles = $this->buildSourceList20($child->children(), $targetRole, $dirSource, $dirTarget, $dirRole);
                 $result = array_merge($result, $dirFiles);
             } elseif ($child->getName() == 'file') {
-                if (is_null($child['role']) || $child['role'] == $targetRole) {
+                if (($child['role'] ? : $role) == $targetRole) {
                     $fileSource = $this->combine($source, (string) $child['name']);
                     $fileTarget = $this->combine((string) ($child['baseinstalldir'] ? : $target), (string) $child['name']);
                     $result[] = array('from' => $fileSource, 'to' => $fileTarget);
