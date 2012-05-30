@@ -21,7 +21,13 @@ namespace Composer\Downloader;
  *
  * @author Alexey Prilipko <palex@farpost.com>
  */
+use Composer\Util\Filesystem;
+
 class PearPackageExtractor {
+
+    /** @var Filesystem */
+    private $filesystem;
+
     /**
      * Installs PEAR source files according to package.xml definitions and removes extracted files
      *
@@ -30,6 +36,8 @@ class PearPackageExtractor {
      * @param $role string type of files to install. default role for PEAR source files are 'php'.
      */
     public function install($source, $target, $role = 'php') {
+        $this->filesystem = new Filesystem();
+
         if(!is_file($this->combine($source, '/package.xml')))
             throw new \RuntimeException('Invalid PEAR package. It must contain package.xml file.');
 
@@ -70,27 +78,21 @@ class PearPackageExtractor {
         if(!is_file($from))
             throw new \RuntimeException('Invalid PEAR package. package.xml defines file that is not located inside tarball.');
 
-
-        $this->ensureDirectoryExists(dirname($to));
+        $this->filesystem->ensureDirectoryExists(dirname($to));
 
         copy($from, $to);
 
         if(!is_file($to))
-            print "failed to copy {$from} = > {$to}\n";
+            throw new \RuntimeException("Failed to copy {$from} => {$to}.");
     }
 
     private function unlinkFile($from) {
         if(is_dir($from))
-            exec('rm -rf '.escapeshellarg($from));
+            $this->filesystem->removeDirectory($from);
         elseif(is_file($from))
             unlink($from);
         else
-            print "tarball does not have $from\n";
-    }
-
-    private function ensureDirectoryExists($dir) {
-        if(!is_dir($dir))
-            mkdir($dir, 0777, true);
+            throw new \RuntimeException("Failed to unlink {$from}.");
     }
 
     /**
