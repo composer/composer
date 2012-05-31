@@ -29,6 +29,7 @@ class GitHubDriver extends VcsDriver
     protected $tags;
     protected $branches;
     protected $rootIdentifier;
+    protected $hasIssues;
     protected $infoCache = array();
     protected $isPrivate = false;
 
@@ -106,7 +107,7 @@ class GitHubDriver extends VcsDriver
             return $this->gitDriver->getDist($identifier);
         }
         $label = array_search($identifier, $this->getTags()) ?: $identifier;
-        $url = $this->getScheme() . '://github.com/'.$this->owner.'/'.$this->repository.'/zipball/'.$label;
+        $url = 'https://github.com/'.$this->owner.'/'.$this->repository.'/zipball/'.$label;
 
         return array('type' => 'zip', 'url' => $url, 'reference' => $label, 'shasum' => '');
     }
@@ -126,7 +127,7 @@ class GitHubDriver extends VcsDriver
 
         if (!isset($this->infoCache[$identifier])) {
             try {
-                $composer = $this->getContents($this->getScheme() . '://raw.github.com/'.$this->owner.'/'.$this->repository.'/'.$identifier.'/composer.json');
+                $composer = $this->getContents('https://raw.github.com/'.$this->owner.'/'.$this->repository.'/'.$identifier.'/composer.json');
             } catch (TransportException $e) {
                 if (404 !== $e->getCode()) {
                     throw $e;
@@ -139,10 +140,15 @@ class GitHubDriver extends VcsDriver
                 $composer = JsonFile::parseJson($composer);
 
                 if (!isset($composer['time'])) {
-                    $commit = JsonFile::parseJson($this->getContents($this->getScheme() . '://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/commits/'.$identifier));
+                    $commit = JsonFile::parseJson($this->getContents('https://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/commits/'.$identifier));
                     $composer['time'] = $commit['commit']['committer']['date'];
                 }
-
+                if (!isset($composer['support']['source'])) {
+                    $composer['support']['source'] = sprintf('https://github.com/%s/%s/tree/%s', $this->owner, $this->repository, $identifier);
+                }
+                if (!isset($composer['support']['issues']) && $this->hasIssues) {
+                    $composer['support']['issues'] = sprintf('https://github.com/%s/%s/issues', $this->owner, $this->repository);
+                }
             }
 
             if (preg_match('{[a-f0-9]{40}}i', $identifier)) {
@@ -164,7 +170,7 @@ class GitHubDriver extends VcsDriver
             return $this->gitDriver->getTags();
         }
         if (null === $this->tags) {
-            $tagsData = JsonFile::parseJson($this->getContents($this->getScheme() . '://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/tags'));
+            $tagsData = JsonFile::parseJson($this->getContents('https://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/tags'));
             $this->tags = array();
             foreach ($tagsData as $tag) {
                 $this->tags[$tag['name']] = $tag['commit']['sha'];
@@ -183,7 +189,7 @@ class GitHubDriver extends VcsDriver
             return $this->gitDriver->getBranches();
         }
         if (null === $this->branches) {
-            $branchData = JsonFile::parseJson($this->getContents($this->getScheme() . '://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/git/refs/heads'));
+            $branchData = JsonFile::parseJson($this->getContents('https://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/git/refs/heads'));
             $this->branches = array();
             foreach ($branchData as $branch) {
                 $name = substr($branch['ref'], 11);
@@ -231,7 +237,7 @@ class GitHubDriver extends VcsDriver
      */
     protected function fetchRootIdentifier()
     {
-        $repoDataUrl = $this->getScheme() . '://api.github.com/repos/'.$this->owner.'/'.$this->repository;
+        $repoDataUrl = 'https://api.github.com/repos/'.$this->owner.'/'.$this->repository;
         $attemptCounter = 0;
         while (null === $this->rootIdentifier) {
             if (5 == $attemptCounter++) {
@@ -246,6 +252,7 @@ class GitHubDriver extends VcsDriver
                 } else {
                     $this->rootIdentifier = 'master';
                 }
+                $this->hasIssues = !empty($repoData['has_issues']);
             } catch (TransportException $e) {
                 switch ($e->getCode()) {
                     case 401:
