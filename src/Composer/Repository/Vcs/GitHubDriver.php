@@ -144,7 +144,8 @@ class GitHubDriver extends VcsDriver
                     $composer['time'] = $commit['commit']['committer']['date'];
                 }
                 if (!isset($composer['support']['source'])) {
-                    $composer['support']['source'] = sprintf('https://github.com/%s/%s/tree/%s', $this->owner, $this->repository, $identifier);
+                    $label = array_search($identifier, $this->getTags()) ?: array_search($identifier, $this->getBranches()) ?: $identifier;
+                    $composer['support']['source'] = sprintf('https://github.com/%s/%s/tree/%s', $this->owner, $this->repository, $label);
                 }
                 if (!isset($composer['support']['issues']) && $this->hasIssues) {
                     $composer['support']['issues'] = sprintf('https://github.com/%s/%s/issues', $this->owner, $this->repository);
