@@ -42,20 +42,11 @@ class RootPackageLoader extends ArrayLoader
             $config['name'] = '__root__';
         }
         if (!isset($config['version'])) {
-            $version = '1.0.0';
-
-            // try to fetch current version from git branch
-            if (0 === $this->process->execute('git branch --no-color --no-abbrev -v', $output)) {
-                foreach ($this->process->splitLines($output) as $branch) {
-                    if ($branch && preg_match('{^(?:\* ) *(?:[^/ ]+?/)?(\S+) *[a-f0-9]+ .*$}', $branch, $match)) {
-                        $version = 'dev-'.$match[1];
-                    }
-                }
-            }
-
             // override with env var if available
             if (getenv('COMPOSER_ROOT_VERSION')) {
                 $version = getenv('COMPOSER_ROOT_VERSION');
+            } else {
+                $version = $this->guessVersion($config);
             }
 
             $config['version'] = $version;
@@ -161,5 +152,63 @@ class RootPackageLoader extends ArrayLoader
         }
 
         return $references;
+    }
+
+    private function guessVersion(array $config)
+    {
+        // try to fetch current version from git branch
+        if (0 === $this->process->execute('git branch --no-color --no-abbrev -v', $output)) {
+            $branches = array();
+            foreach ($this->process->splitLines($output) as $branch) {
+                if ($branch && preg_match('{^(?:\* ) *(?:[^/ ]+?/)?(\S+|\(no branch\)) *([a-f0-9]+) .*$}', $branch, $match)) {
+                    if ($match[1] === '(no branch)') {
+                        $version = $match[2];
+                        $isFeatureBranch = true;
+                    } else {
+                        $version = $this->versionParser->normalizeBranch($match[1]);
+                        $isFeatureBranch = 0 === strpos($version, 'dev-');
+                        if ('9999999-dev' === $version) {
+                            $version = 'dev-'.$match[1];
+                        }
+                    }
+                }
+
+                if ($branch && !preg_match('{^ *[^/]+/HEAD }', $branch)) {
+                    if (preg_match('{^(?:\* )? *(?:[^/ ]+?/)?(\S+) *([a-f0-9]+) .*$}', $branch, $match)) {
+                        $branches[] = $match[1];
+                    }
+                }
+            }
+
+            if (!$isFeatureBranch) {
+                return $version;
+            }
+
+            // ignore feature branches if they have no branch-alias or self.version is used
+            // and find the branch they came from to use as a version instead
+            if ((isset($config['extra']['branch-alias']) && !isset($config['extra']['branch-alias'][$version]))
+                || strpos(json_encode($config), '"self.version"')
+            ) {
+                $branch = preg_replace('{^dev-}', '', $version);
+                $length = PHP_INT_MAX;
+                foreach ($branches as $candidate) {
+                    // do not compare against other feature branches
+                    if ($candidate === $branch || !preg_match('{^(master|trunk|default|develop|\d+\..+)$}', $candidate)) {
+                        continue;
+                    }
+                    if (0 !== $this->process->execute('git rev-list '.$candidate.'..'.$branch, $output)) {
+                        continue;
+                    }
+                    if (strlen($output) < $length) {
+                        $length = strlen($output);
+                        $version = $this->versionParser->normalizeBranch($candidate);
+                    }
+                }
+            }
+
+            return $version;
+        }
+
+        return '1.0.0';
     }
 }

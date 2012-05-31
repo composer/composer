@@ -128,6 +128,8 @@ EOT
         $io->write('<info>Created project in ' . $directory . '</info>', true);
         chdir($directory);
 
+        putenv('COMPOSER_ROOT_VERSION='.$package->getPrettyVersion());
+
         $composer = Factory::create($io);
         $installer = Installer::create($io, $composer);
 
