@@ -190,6 +190,10 @@ EOT
                     $output->writeln(implode(', ', $autoloads));
                 }
             }
+            if ($package->getIncludePaths()) {
+                $output->writeln('<comment>include-path</comment>');
+                $output->writeln(implode(', ', $package->getIncludePaths()));
+            }
         }
     }
 
