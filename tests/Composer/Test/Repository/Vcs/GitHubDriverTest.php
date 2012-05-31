@@ -33,10 +33,8 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
 
     public function testPrivateRepository()
     {
-        $scheme = extension_loaded('openssl') ? 'https' : 'http';
-
         $repoUrl = 'http://github.com/composer/packagist';
-        $repoApiUrl = $scheme.'://api.github.com/repos/composer/packagist';
+        $repoApiUrl = 'https://api.github.com/repos/composer/packagist';
         $repoSshUrl = 'git@github.com:composer/packagist.git';
         $identifier = 'v0.0.0';
         $sha = 'SOMESHA';
@@ -82,7 +80,7 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
 
         $dist = $gitHubDriver->getDist($identifier);
         $this->assertEquals('zip', $dist['type']);
-        $this->assertEquals($scheme.'://github.com/composer/packagist/zipball/v0.0.0', $dist['url']);
+        $this->assertEquals('https://github.com/composer/packagist/zipball/v0.0.0', $dist['url']);
         $this->assertEquals('v0.0.0', $dist['reference']);
 
         $source = $gitHubDriver->getSource($identifier);
@@ -92,7 +90,7 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
 
         $dist = $gitHubDriver->getDist($sha);
         $this->assertEquals('zip', $dist['type']);
-        $this->assertEquals($scheme.'://github.com/composer/packagist/zipball/v0.0.0', $dist['url']);
+        $this->assertEquals('https://github.com/composer/packagist/zipball/v0.0.0', $dist['url']);
         $this->assertEquals('v0.0.0', $dist['reference']);
 
         $source = $gitHubDriver->getSource($sha);
@@ -103,10 +101,8 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
 
     public function testPublicRepository()
     {
-        $scheme = extension_loaded('openssl') ? 'https' : 'http';
-
         $repoUrl = 'http://github.com/composer/packagist';
-        $repoApiUrl = $scheme.'://api.github.com/repos/composer/packagist';
+        $repoApiUrl = 'https://api.github.com/repos/composer/packagist';
         $identifier = 'v0.0.0';
         $sha = 'SOMESHA';
 
@@ -132,7 +128,7 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
 
         $dist = $gitHubDriver->getDist($identifier);
         $this->assertEquals('zip', $dist['type']);
-        $this->assertEquals($scheme.'://github.com/composer/packagist/zipball/v0.0.0', $dist['url']);
+        $this->assertEquals('https://github.com/composer/packagist/zipball/v0.0.0', $dist['url']);
         $this->assertEquals($identifier, $dist['reference']);
 
         $source = $gitHubDriver->getSource($identifier);
@@ -142,7 +138,7 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
 
         $dist = $gitHubDriver->getDist($sha);
         $this->assertEquals('zip', $dist['type']);
-        $this->assertEquals($scheme.'://github.com/composer/packagist/zipball/v0.0.0', $dist['url']);
+        $this->assertEquals('https://github.com/composer/packagist/zipball/v0.0.0', $dist['url']);
         $this->assertEquals($identifier, $dist['reference']);
 
         $source = $gitHubDriver->getSource($sha);
@@ -153,10 +149,8 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
 
     public function testPrivateRepositoryNoInteraction()
     {
-        $scheme = extension_loaded('openssl') ? 'https' : 'http';
-
         $repoUrl = 'http://github.com/composer/packagist';
-        $repoApiUrl = $scheme.'://api.github.com/repos/composer/packagist';
+        $repoApiUrl = 'https://api.github.com/repos/composer/packagist';
         $repoSshUrl = 'git@github.com:composer/packagist.git';
         $identifier = 'v0.0.0';
         $sha = 'SOMESHA';
