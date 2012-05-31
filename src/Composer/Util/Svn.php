@@ -100,7 +100,7 @@ class Svn
         }
 
         // the error is not auth-related
-        if (false === stripos($output, 'authorization failed:')) {
+        if (false === stripos($output, 'Could not authenticate to server:')) {
             throw new \RuntimeException($output);
         }
 
