@@ -162,7 +162,7 @@ class RootPackageLoader extends ArrayLoader
             foreach ($this->process->splitLines($output) as $branch) {
                 if ($branch && preg_match('{^(?:\* ) *(?:[^/ ]+?/)?(\S+|\(no branch\)) *([a-f0-9]+) .*$}', $branch, $match)) {
                     if ($match[1] === '(no branch)') {
-                        $version = $match[2];
+                        $version = 'dev-'.$match[2];
                         $isFeatureBranch = true;
                     } else {
                         $version = $this->versionParser->normalizeBranch($match[1]);
@@ -202,6 +202,9 @@ class RootPackageLoader extends ArrayLoader
                     if (strlen($output) < $length) {
                         $length = strlen($output);
                         $version = $this->versionParser->normalizeBranch($candidate);
+                        if ('9999999-dev' === $version) {
+                            $version = 'dev-'.$match[1];
+                        }
                     }
                 }
             }
