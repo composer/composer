@@ -214,7 +214,7 @@ class RemoteFilesystem
 
     protected function getOptionsForUrl($originUrl)
     {
-        $options['http']['header'] = 'User-Agent: Composer/'.Composer::VERSION."\r\n";
+        $options['http']['header'] = sprintf("User-Agent: Composer/%s (%s; %s)\r\n", Composer::VERSION, php_uname('s'), php_uname('r'));
         if (extension_loaded('zlib')) {
             $options['http']['header'] .= 'Accept-Encoding: gzip'."\r\n";
         }
