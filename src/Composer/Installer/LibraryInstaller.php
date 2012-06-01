@@ -226,7 +226,7 @@ class LibraryInstaller implements InstallerInterface
             $line = fgets($handle);
             fclose($handle);
             if (preg_match('{^#!/(?:usr/bin/env )?(?:[^/]+/)*(.+)$}m', $line, $match)) {
-                $caller = $match[1];
+                $caller = trim($match[1]);
             } else {
                 $caller = 'php';
             }
