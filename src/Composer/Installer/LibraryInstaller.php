@@ -238,7 +238,7 @@ class LibraryInstaller implements InstallerInterface
             "cd ".escapeshellarg(dirname($binPath))."\r\n".
             "set BIN_TARGET=%CD%\\".basename($binPath)."\r\n".
             "popd\r\n".
-            $caller." %BIN_TARGET% %*\r\n";
+            $caller." \"%BIN_TARGET%\" %*\r\n";
     }
 
     private function generateUnixyProxyCode($bin, $link)
