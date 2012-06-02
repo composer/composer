@@ -159,6 +159,8 @@ class RootPackageLoader extends ArrayLoader
         // try to fetch current version from git branch
         if (0 === $this->process->execute('git branch --no-color --no-abbrev -v', $output)) {
             $branches = array();
+            $isFeatureBranch = true;
+            $version = null;
             foreach ($this->process->splitLines($output) as $branch) {
                 if ($branch && preg_match('{^(?:\* ) *(?:[^/ ]+?/)?(\S+|\(no branch\)) *([a-f0-9]+) .*$}', $branch, $match)) {
                     if ($match[1] === '(no branch)') {
