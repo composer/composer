@@ -35,6 +35,7 @@ class SpdxLicenseIdentifier
     /**
      * @param array|string $license
      *
+     * @return bool
      * @throws \InvalidArgumentException
      */
     public function validate($license)
