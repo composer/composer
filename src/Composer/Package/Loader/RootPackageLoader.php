@@ -157,7 +157,7 @@ class RootPackageLoader extends ArrayLoader
     private function guessVersion(array $config)
     {
         // try to fetch current version from git branch
-        if (0 === $this->process->execute('git branch --no-color --no-abbrev -v', $output)) {
+        if (function_exists('proc_open') && 0 === $this->process->execute('git branch --no-color --no-abbrev -v', $output)) {
             $branches = array();
             $isFeatureBranch = true;
             $version = null;
