@@ -344,7 +344,7 @@ Example:
 Autoload mapping for a PHP autoloader.
 
 Currently [PSR-0](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-0.md)
-autoloading and classmap generation are supported. PSR-0 is the recommended way though
+autoloading, classmap generation and files are supported. PSR-0 is the recommended way though
 since it offers greater flexibility (no need to regenerate the autoloader when you add
 classes).
 
@@ -390,6 +390,18 @@ Example:
     {
         "autoload: {
             "classmap": ["src/", "lib/", "Something.php"]
+        }
+    }
+
+If you want to require certain files explicitly on every request then you can use
+the 'files' autoloading mechanism. This is useful if your package includes PHP functions
+that cannot be autoloaded by PHP.
+
+Example:
+
+    {
+        "autoload": {
+            "files": ["src/MyLibrary/functions.php"]
         }
     }
 
