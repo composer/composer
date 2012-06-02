@@ -135,6 +135,10 @@
                 "classmap": {
                     "type": "array",
                     "description": "This is an array of directories that contain classes to be included in the class-map generation process."
+                },
+                "files": {
+                    "type": "array",
+                    "description": "This is an array of files that are always required on every request."
                 }
             }
         },
