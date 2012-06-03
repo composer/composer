@@ -49,6 +49,10 @@ class RootPackageLoader extends ArrayLoader
                 $version = $this->guessVersion($config);
             }
 
+            if (!$version) {
+                $version = '1.0.0';
+            }
+
             $config['version'] = $version;
         } else {
             $version = $config['version'];
@@ -159,8 +163,9 @@ class RootPackageLoader extends ArrayLoader
         // try to fetch current version from git branch
         if (function_exists('proc_open') && 0 === $this->process->execute('git branch --no-color --no-abbrev -v', $output)) {
             $branches = array();
-            $isFeatureBranch = true;
+            $isFeatureBranch = false;
             $version = null;
+
             foreach ($this->process->splitLines($output) as $branch) {
                 if ($branch && preg_match('{^(?:\* ) *(?:[^/ ]+?/)?(\S+|\(no branch\)) *([a-f0-9]+) .*$}', $branch, $match)) {
                     if ($match[1] === '(no branch)') {
@@ -213,7 +218,5 @@ class RootPackageLoader extends ArrayLoader
 
             return $version;
         }
-
-        return '1.0.0';
     }
 }
