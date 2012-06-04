@@ -29,12 +29,9 @@ class Solver
     protected $addedMap = array();
     protected $updateMap = array();
     protected $watchGraph;
-    protected $decisionMap;
+    protected $decisions;
     protected $installedMap;
 
-    protected $decisionQueue = array();
-    protected $decisionQueueWhy = array();
-    protected $decisionQueueFree = array();
     protected $propagateIndex;
     protected $branches = array();
     protected $problems = array();
@@ -48,21 +45,10 @@ class Solver
         $this->ruleSetGenerator = new RuleSetGenerator($policy, $pool);
     }
 
-    private function findDecisionRule($packageId)
-    {
-        foreach ($this->decisionQueue as $i => $literal) {
-            if ($packageId === abs($literal)) {
-                return $this->decisionQueueWhy[$i];
-            }
-        }
-
-        return null;
-    }
-
     // aka solver_makeruledecisions
     private function makeAssertionRuleDecisions()
     {
-        $decisionStart = count($this->decisionQueue);
+        $decisionStart = $this->decisions->getMaxOffset();
 
         for ($ruleIndex = 0; $ruleIndex < count($this->rules); $ruleIndex++) {
             $rule = $this->rules->ruleById($ruleIndex);
@@ -74,12 +60,12 @@ class Solver
             $literals = $rule->getLiterals();
             $literal = $literals[0];
 
-            if (!$this->decided(abs($literal))) {
-                $this->decide($literal, 1, $rule);
+            if (!$this->decisions->decided(abs($literal))) {
+                $this->decisions->decide($literal, 1, $rule);
                 continue;
             }
 
-            if ($this->decisionsSatisfy($literal)) {
+            if ($this->decisions->satisfy($literal)) {
                 continue;
             }
 
@@ -89,7 +75,7 @@ class Solver
                 continue;
             }
 
-            $conflict = $this->findDecisionRule(abs($literal));
+            $conflict = $this->decisions->decisionRule($literal);
 
             if ($conflict && RuleSet::TYPE_PACKAGE === $conflict->getType()) {
 
@@ -126,13 +112,7 @@ class Solver
             }
             $this->problems[] = $problem;
 
-            // start over
-            while (count($this->decisionQueue) > $decisionStart) {
-                $decisionLiteral = array_pop($this->decisionQueue);
-                array_pop($this->decisionQueueWhy);
-                unset($this->decisionQueueFree[count($this->decisionQueue)]);
-                $this->decisionMap[abs($decisionLiteral)] = 0;
-            }
+            $this->resetToOffset($decisionStart);
             $ruleIndex = -1;
         }
     }
@@ -177,11 +157,7 @@ class Solver
 
         $this->setupInstalledMap();
 
-        if (version_compare(PHP_VERSION, '5.3.4', '>=')) {
-            $this->decisionMap = new \SplFixedArray($this->pool->getMaxId() + 1);
-        } else {
-            $this->decisionMap = array_fill(0, $this->pool->getMaxId() + 1, 0);
-        }
+        $this->decisions = new Decisions($this->pool);
 
         $this->rules = $this->ruleSetGenerator->getRulesFor($this->jobs, $this->installedMap);
         $this->watchGraph = new RuleWatchGraph;
@@ -199,7 +175,7 @@ class Solver
             throw new SolverProblemsException($this->problems);
         }
 
-        $transaction = new Transaction($this->policy, $this->pool, $this->installedMap, $this->decisionMap, $this->decisionQueue, $this->decisionQueueWhy);
+        $transaction = new Transaction($this->policy, $this->pool, $this->installedMap, $this->decisions);
 
         return $transaction->getOperations();
     }
@@ -209,77 +185,6 @@ class Solver
         $package = $this->pool->packageById(abs($id));
 
         return new Literal($package, $id > 0);
-    }
-
-    protected function addDecision($literal, $level)
-    {
-        $packageId = abs($literal);
-
-        $previousDecision = $this->decisionMap[$packageId];
-        if ($previousDecision != 0) {
-            $literalString = $this->pool->literalToString($literal);
-            $package = $this->pool->literalToPackage($literal);
-            throw new SolverBugException(
-                "Trying to decide $literalString on level $level, even though $package was previously decided as ".(int) $previousDecision."."
-            );
-        }
-
-        if ($literal > 0) {
-            $this->decisionMap[$packageId] = $level;
-        } else {
-            $this->decisionMap[$packageId] = -$level;
-        }
-    }
-
-    public function decide($literal, $level, $why)
-    {
-        $this->addDecision($literal, $level);
-        $this->decisionQueue[] = $literal;
-        $this->decisionQueueWhy[] = $why;
-    }
-
-    public function decisionsContain($literal)
-    {
-        $packageId = abs($literal);
-
-        return (
-            $this->decisionMap[$packageId] > 0 && $literal > 0 ||
-            $this->decisionMap[$packageId] < 0 && $literal < 0
-        );
-    }
-
-    protected function decisionsSatisfy($literal)
-    {
-        $packageId = abs($literal);
-
-        return (
-            $literal > 0 && $this->decisionMap[$packageId] > 0 ||
-            $literal < 0 && $this->decisionMap[$packageId] < 0
-        );
-    }
-
-    public function decisionsConflict($literal)
-    {
-        $packageId = abs($literal);
-
-        return (
-            ($this->decisionMap[$packageId] > 0 && $literal < 0) ||
-            ($this->decisionMap[$packageId] < 0 && $literal > 0)
-        );
-    }
-    protected function decided($packageId)
-    {
-        return $this->decisionMap[$packageId] != 0;
-    }
-
-    protected function undecided($packageId)
-    {
-        return $this->decisionMap[$packageId] == 0;
-    }
-
-    protected function decidedInstall($packageId)
-    {
-        return $this->decisionMap[$packageId] > 0;
     }
 
     /**
@@ -292,14 +197,16 @@ class Solver
      */
     protected function propagate($level)
     {
-        while ($this->propagateIndex < count($this->decisionQueue)) {
+        while ($this->decisions->validOffset($this->propagateIndex)) {
+            $decision = $this->decisions->atOffset($this->propagateIndex);
+
             $conflict = $this->watchGraph->propagateLiteral(
-                $this->decisionQueue[$this->propagateIndex++],
+                $decision[Decisions::DECISION_LITERAL],
                 $level,
-                array($this, 'decisionsContain'),
-                array($this, 'decisionsConflict'),
-                array($this, 'decide')
+                $this->decisions
             );
+
+            $this->propagateIndex++;
 
             if ($conflict) {
                 return $conflict;
@@ -314,24 +221,21 @@ class Solver
      */
     private function revert($level)
     {
-        while (!empty($this->decisionQueue)) {
-            $literal = $this->decisionQueue[count($this->decisionQueue) - 1];
+        while (!$this->decisions->isEmpty()) {
+            $literal = $this->decisions->lastLiteral();
 
-            if (!$this->decisionMap[abs($literal)]) {
+            if ($this->decisions->undecided($literal)) {
                 break;
             }
 
-            $decisionLevel = abs($this->decisionMap[abs($literal)]);
+            $decisionLevel = $this->decisions->decisionLevel($literal);
 
             if ($decisionLevel <= $level) {
                 break;
             }
 
-            $this->decisionMap[abs($literal)] = 0;
-            array_pop($this->decisionQueue);
-            array_pop($this->decisionQueueWhy);
-
-            $this->propagateIndex = count($this->decisionQueue);
+            $this->decisions->revertLast();
+            $this->propagateIndex = $this->decisions->getMaxOffset() + 1;
         }
 
         while (!empty($this->branches)) {
@@ -349,7 +253,7 @@ class Solver
      *
      * setpropagatelearn
      *
-     * add free decision (solvable to install) to decisionq
+     * add free decision (a positive literal) to decision queue
      * increase level and propagate decision
      * return if no conflict.
      *
@@ -364,8 +268,7 @@ class Solver
     {
         $level++;
 
-        $this->decide($literal, $level, $rule);
-        $this->decisionQueueFree[count($this->decisionQueueWhy) - 1] = true;
+        $this->decisions->decide($literal, $level, $rule, true);
 
         while (true) {
             $rule = $this->propagate($level);
@@ -400,10 +303,10 @@ class Solver
             $this->learnedWhy[$newRule->getId()] = $why;
 
             $ruleNode = new RuleWatchNode($newRule);
-            $ruleNode->watch2OnHighest($this->decisionMap);
+            $ruleNode->watch2OnHighest($this->decisions);
             $this->watchGraph->insert($ruleNode);
 
-            $this->decide($learnLiteral, $level, $newRule);
+            $this->decisions->decide($learnLiteral, $level, $newRule);
         }
 
         return $level;
@@ -433,7 +336,7 @@ class Solver
         $seen = array();
         $learnedLiterals = array(null);
 
-        $decisionId = count($this->decisionQueue);
+        $decisionId = $this->decisions->getMaxOffset() + 1;
 
         $this->learnedPool[] = array();
 
@@ -442,7 +345,7 @@ class Solver
 
             foreach ($rule->getLiterals() as $literal) {
                 // skip the one true literal
-                if ($this->decisionsSatisfy($literal)) {
+                if ($this->decisions->satisfy($literal)) {
                     continue;
                 }
 
@@ -451,7 +354,7 @@ class Solver
                 }
                 $seen[abs($literal)] = true;
 
-                $l = abs($this->decisionMap[abs($literal)]);
+                $l = $this->decisions->decisionLevel($literal);
 
                 if (1 === $l) {
                     $l1num++;
@@ -485,7 +388,8 @@ class Solver
 
                     $decisionId--;
 
-                    $literal = $this->decisionQueue[$decisionId];
+                    $decision = $this->decisions->atOffset($decisionId);
+                    $literal = $decision[Decisions::DECISION_LITERAL];
 
                     if (isset($seen[abs($literal)])) {
                         break;
@@ -512,7 +416,8 @@ class Solver
                 }
             }
 
-            $rule = $this->decisionQueueWhy[$decisionId];
+            $decision = $this->decisions->atOffset($decisionId);
+            $rule = $decision[Decisions::DECISION_REASON];
         }
 
         $why = count($this->learnedPool) - 1;
@@ -565,34 +470,35 @@ class Solver
 
         foreach ($literals as $literal) {
             // skip the one true literal
-            if ($this->decisionsSatisfy($literal)) {
+            if ($this->decisions->satisfy($literal)) {
                 continue;
             }
             $seen[abs($literal)] = true;
         }
 
-        $decisionId = count($this->decisionQueue);
+        $decisionId = $this->decisions->getMaxOffset() + 1;
 
         while ($decisionId > 0) {
             $decisionId--;
 
-            $literal = $this->decisionQueue[$decisionId];
+            $decision = $this->decisions->atOffset($decisionId);
+            $literal = $decision[Decisions::DECISION_LITERAL];
 
             // skip literals that are not in this rule
             if (!isset($seen[abs($literal)])) {
                 continue;
             }
 
-            $why = $this->decisionQueueWhy[$decisionId];
-            $problem->addRule($why);
+            $why = $decision[Decisions::DECISION_REASON];
 
+            $problem->addRule($why);
             $this->analyzeUnsolvableRule($problem, $why);
 
             $literals = $why->getLiterals();
 
             foreach ($literals as $literal) {
                 // skip the one true literal
-                if ($this->decisionsSatisfy($literal)) {
+                if ($this->decisions->satisfy($literal)) {
                     continue;
                 }
                 $seen[abs($literal)] = true;
@@ -630,12 +536,8 @@ class Solver
 
     private function resetSolver()
     {
-        while ($literal = array_pop($this->decisionQueue)) {
-            $this->decisionMap[abs($literal)] = 0;
-        }
+        $this->decisions->reset();
 
-        $this->decisionQueueWhy = array();
-        $this->decisionQueueFree = array();
         $this->propagateIndex = 0;
         $this->branches = array();
 
@@ -717,11 +619,11 @@ class Solver
                         $noneSatisfied = true;
 
                         foreach ($rule->getLiterals() as $literal) {
-                            if ($this->decisionsSatisfy($literal)) {
+                            if ($this->decisions->satisfy($literal)) {
                                 $noneSatisfied = false;
                                 break;
                             }
-                            if ($literal > 0 && $this->undecided($literal)) {
+                            if ($literal > 0 && $this->decisions->undecided($literal)) {
                                 $decisionQueue[] = $literal;
                             }
                         }
@@ -794,14 +696,14 @@ class Solver
                 //
                 foreach ($literals as $literal) {
                     if ($literal <= 0) {
-                        if (!$this->decidedInstall(abs($literal))) {
+                        if (!$this->decisions->decidedInstall(abs($literal))) {
                             continue 2; // next rule
                         }
                     } else {
-                        if ($this->decidedInstall(abs($literal))) {
+                        if ($this->decisions->decidedInstall(abs($literal))) {
                             continue 2; // next rule
                         }
-                        if ($this->undecided(abs($literal))) {
+                        if ($this->decisions->undecided(abs($literal))) {
                             $decisionQueue[] = $literal;
                         }
                     }
@@ -839,7 +741,7 @@ class Solver
                     list($literals, $level) = $this->branches[$i];
 
                     foreach ($literals as $offset => $literal) {
-                        if ($literal && $literal > 0 && $this->decisionMap[abs($literal)] > $level + 1) {
+                        if ($literal && $literal > 0 && $this->decisions->decisionLevel($literal) > $level + 1) {
                             $lastLiteral = $literal;
                             $lastBranchIndex = $i;
                             $lastBranchOffset = $offset;
@@ -855,7 +757,7 @@ class Solver
                     $level = $lastLevel;
                     $this->revert($level);
 
-                    $why = $this->decisionQueueWhy[count($this->decisionQueueWhy) - 1];
+                    $why = $this->decisions->lastReason();
 
                     $oLevel = $level;
                     $level = $this->setPropagateLearn($level, $lastLiteral, $disableRules, $why);

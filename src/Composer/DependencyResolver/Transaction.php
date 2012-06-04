@@ -23,26 +23,30 @@ class Transaction
     protected $policy;
     protected $pool;
     protected $installedMap;
-    protected $decisionMap;
-    protected $decisionQueue;
-    protected $decisionQueueWhy;
+    protected $decisions;
+    protected $transaction;
 
-    public function __construct($policy, $pool, $installedMap, $decisionMap, array $decisionQueue, $decisionQueueWhy)
+    public function __construct($policy, $pool, $installedMap, $decisions)
     {
         $this->policy = $policy;
         $this->pool = $pool;
         $this->installedMap = $installedMap;
-        $this->decisionMap = $decisionMap;
-        $this->decisionQueue = $decisionQueue;
-        $this->decisionQueueWhy = $decisionQueueWhy;
+        $this->decisions = $decisions;
+        $this->transaction = array();
     }
 
     public function getOperations()
     {
-        $transaction = array();
         $installMeansUpdateMap = array();
 
-        foreach ($this->decisionQueue as $i => $literal) {
+        foreach ($this->installedMap as $packageId => $void) {
+            if ($this->decisions->undecided($packageId)) {
+                $this->decisions->decide(-$packageId, 1, null);
+            }
+        }
+
+        foreach ($this->decisions as $i => $decision) {
+            $literal = $decision[Decisions::DECISION_LITERAL];
             $package = $this->pool->literalToPackage($literal);
 
             // !wanted & installed
@@ -63,7 +67,8 @@ class Transaction
             }
         }
 
-        foreach ($this->decisionQueue as $i => $literal) {
+        foreach ($this->decisions as $i => $decision) {
+            $literal = $decision[Decisions::DECISION_LITERAL];
             $package = $this->pool->literalToPackage($literal);
 
             // wanted & installed || !wanted & !installed
@@ -73,9 +78,7 @@ class Transaction
 
             if ($literal > 0) {
                 if ($package instanceof AliasPackage) {
-                    $transaction[] = new Operation\MarkAliasInstalledOperation(
-                        $package, $this->decisionQueueWhy[$i]
-                    );
+                    $this->markAliasInstalled($package, $decision[Decisions::DECISION_REASON]);
                     continue;
                 }
 
@@ -83,85 +86,64 @@ class Transaction
 
                     $source = $installMeansUpdateMap[abs($literal)];
 
-                    $transaction[] = new Operation\UpdateOperation(
-                        $source, $package, $this->decisionQueueWhy[$i]
-                    );
+                    $this->update($source, $package, $decision[Decisions::DECISION_REASON]);
 
                     // avoid updates to one package from multiple origins
                     unset($installMeansUpdateMap[abs($literal)]);
                     $ignoreRemove[$source->getId()] = true;
                 } else {
-                    $transaction[] = new Operation\InstallOperation(
-                        $package, $this->decisionQueueWhy[$i]
-                    );
-                }
-            } elseif (!isset($ignoreRemove[$package->getId()])) {
-                if ($package instanceof AliasPackage) {
-                    $transaction[] = new Operation\MarkAliasInstalledOperation(
-                        $package, $this->decisionQueueWhy[$i]
-                    );
-                } else {
-                    $transaction[] = new Operation\UninstallOperation(
-                        $package, $this->decisionQueueWhy[$i]
-                    );
+                    $this->install($package, $decision[Decisions::DECISION_REASON]);
                 }
             }
         }
 
-        $allDecidedMap = $this->decisionMap;
-        foreach ($this->decisionMap as $packageId => $decision) {
-            if ($decision != 0) {
-                $package = $this->pool->packageById($packageId);
-                if ($package instanceof AliasPackage) {
-                    $allDecidedMap[$package->getAliasOf()->getId()] = $decision;
-                }
-            }
-        }
+        foreach ($this->decisions as $i => $decision) {
+            $literal = $decision[Decisions::DECISION_LITERAL];
+            $package = $this->pool->literalToPackage($literal);
 
-        foreach ($allDecidedMap as $packageId => $decision) {
-            if ($packageId === 0) {
+            // wanted & installed || !wanted & !installed
+            if (($literal > 0) == (isset($this->installedMap[$package->getId()]))) {
                 continue;
             }
 
-            if (0 == $decision && isset($this->installedMap[$packageId])) {
-                $package = $this->pool->packageById($packageId);
-
-                if ($package instanceof AliasPackage) {
-                    $transaction[] = new Operation\MarkAliasInstalledOperation(
-                        $package, null
-                    );
-                } else {
-                    $transaction[] = new Operation\UninstallOperation(
-                        $package, null
-                    );
-                }
-
-                $this->decisionMap[$packageId] = -1;
+            if ($literal <= 0 && !isset($ignoreRemove[$package->getId()])) {
+                $this->uninstall($package, $decision[Decisions::DECISION_REASON]);
             }
         }
 
-        foreach ($allDecidedMap as $packageId => $decision) {
-            if ($packageId === 0) {
-                continue;
-            }
+        return $this->transaction;
+    }
 
-            if (0 == $decision && isset($this->installedMap[$packageId])) {
-                $package = $this->pool->packageById($packageId);
-
-                if ($package instanceof AliasPackage) {
-                    $transaction[] = new Operation\MarkAliasInstalledOperation(
-                        $package, null
-                    );
-                } else {
-                    $transaction[] = new Operation\UninstallOperation(
-                        $package, null
-                    );
-                }
-
-                $this->decisionMap[$packageId] = -1;
-            }
+    protected function install($package, $reason)
+    {
+        if ($package instanceof AliasPackage) {
+            return $this->markAliasInstalled($package, $reason);
         }
 
-        return array_reverse($transaction);
+        $this->transaction[] = new Operation\InstallOperation($package, $reason);
+    }
+
+    protected function update($from, $to, $reason)
+    {
+        $this->transaction[] = new Operation\UpdateOperation($from, $to, $reason);
+    }
+
+    protected function uninstall($package, $reason)
+    {
+        if ($package instanceof AliasPackage) {
+            return $this->markAliasUninstalled($package, $reason);
+        }
+
+        $this->transaction[] = new Operation\UninstallOperation($package, $reason);
+    }
+
+    protected function markAliasInstalled($package, $reason)
+    {
+        $this->transaction[] = new Operation\MarkAliasInstalledOperation($package, $reason);
+    }
+
+    protected function markAliasUninstalled($package, $reason)
+    {
+        $this->transaction[] = new Operation\MarkAliasUninstalledOperation($package, $reason);
     }
 }

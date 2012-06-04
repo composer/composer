@@ -292,14 +292,15 @@ class SolverTest extends TestCase
 
         $this->checkSolverResult(array(
             array(
-                'job' => 'remove',
-                'package' => $packageB,
-            ),
-            array(
                 'job' => 'update',
                 'from' => $packageA,
                 'to' => $newPackageA,
-        )));
+            ),
+            array(
+                'job' => 'remove',
+                'package' => $packageB,
+            ),
+        ));
     }
 
     public function testSolverAllJobs()
@@ -324,8 +325,8 @@ class SolverTest extends TestCase
         $this->checkSolverResult(array(
             array('job' => 'update',  'from' => $oldPackageC, 'to' => $packageC),
             array('job' => 'install', 'package' => $packageB),
-            array('job' => 'remove',  'package' => $packageD),
             array('job' => 'install', 'package' => $packageA),
+            array('job' => 'remove',  'package' => $packageD),
         ));
     }
 
