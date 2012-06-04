@@ -118,6 +118,33 @@ class SolverTest extends TestCase
         ));
     }
 
+    public function testSolverInstallWithDepsInOrder()
+    {
+        $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
+        $this->repo->addPackage($packageB = $this->getPackage('B', '1.0'));
+        $this->repo->addPackage($packageC = $this->getPackage('C', '1.0'));
+
+        $packageB->setRequires(array(
+            new Link('B', 'A', $this->getVersionConstraint('>=', '1.0'), 'requires'),
+            new Link('B', 'C', $this->getVersionConstraint('>=', '1.0'), 'requires'),
+        ));
+        $packageC->setRequires(array(
+            new Link('C', 'A', $this->getVersionConstraint('>=', '1.0'), 'requires'),
+        ));
+
+        $this->reposComplete();
+
+        $this->request->install('A');
+        $this->request->install('B');
+        $this->request->install('C');
+
+        $this->checkSolverResult(array(
+            array('job' => 'install', 'package' => $packageA),
+            array('job' => 'install', 'package' => $packageC),
+            array('job' => 'install', 'package' => $packageB),
+        ));
+    }
+
     public function testSolverInstallInstalled()
     {
         $this->repoInstalled->addPackage($this->getPackage('A', '1.0'));
