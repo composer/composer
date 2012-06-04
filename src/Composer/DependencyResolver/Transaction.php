@@ -37,13 +37,147 @@ class Transaction
 
     public function getOperations()
     {
-        $installMeansUpdateMap = array();
+        $installMeansUpdateMap = $this->findUpdates();
 
-        foreach ($this->installedMap as $packageId => $void) {
-            if ($this->decisions->undecided($packageId)) {
-                $this->decisions->decide(-$packageId, 1, null);
+        $updateMap = array();
+        $installMap = array();
+        $uninstallMap = array();
+
+        foreach ($this->decisions as $i => $decision) {
+            $literal = $decision[Decisions::DECISION_LITERAL];
+            $reason = $decision[Decisions::DECISION_REASON];
+
+            $package = $this->pool->literalToPackage($literal);
+
+            // wanted & installed || !wanted & !installed
+            if (($literal > 0) == (isset($this->installedMap[$package->getId()]))) {
+                continue;
+            }
+
+            if ($literal > 0) {
+                if (isset($installMeansUpdateMap[abs($literal)]) && !$package instanceof AliasPackage) {
+
+                    $source = $installMeansUpdateMap[abs($literal)];
+
+                    $updateMap[$package->getId()] = array(
+                        'package' => $package,
+                        'source' => $source,
+                        'reason' => $reason,
+                    );
+
+                    // avoid updates to one package from multiple origins
+                    unset($installMeansUpdateMap[abs($literal)]);
+                    $ignoreRemove[$source->getId()] = true;
+                } else {
+                    $installMap[$package->getId()] = array(
+                        'package' => $package,
+                        'reason' => $reason,
+                    );
+                }
             }
         }
+
+        foreach ($this->decisions as $i => $decision) {
+            $literal = $decision[Decisions::DECISION_LITERAL];
+            $package = $this->pool->literalToPackage($literal);
+
+            if ($literal <= 0 &&
+                isset($this->installedMap[$package->getId()]) &&
+                !isset($ignoreRemove[$package->getId()])) {
+                $uninstallMap[$package->getId()] = array(
+                    'package' => $package,
+                    'reason' => $reason,
+                );
+
+            }
+        }
+
+        $this->transactionFromMaps($installMap, $updateMap, $uninstallMap);
+
+        return $this->transaction;
+    }
+
+    protected function transactionFromMaps($installMap, $updateMap, $uninstallMap)
+    {
+        $queue = array_map(function ($operation) {
+                return $operation['package'];
+            },
+            $this->findRootPackages($installMap, $updateMap)
+        );
+
+        $visited = array();
+
+        while (!empty($queue)) {
+            $package = array_pop($queue);
+            $packageId = $package->getId();
+
+            if (!isset($visited[$packageId])) {
+                array_push($queue, $package);
+
+                if ($package instanceof AliasPackage) {
+                    array_push($queue, $package->getAliasOf());
+                } else {
+                    foreach ($package->getRequires() as $link) {
+                        $possibleRequires = $this->pool->whatProvides($link->getTarget(), $link->getConstraint());
+
+                        foreach ($possibleRequires as $require) {
+                            array_push($queue, $require);
+                        }
+                    }
+                }
+
+                $visited[$package->getId()] = true;
+            } else {
+                if (isset($installMap[$packageId])) {
+                    $this->install(
+                        $installMap[$packageId]['package'],
+                        $installMap[$packageId]['reason']
+                    );
+                    unset($installMap[$packageId]);
+                }
+                if (isset($updateMap[$packageId])) {
+                    $this->update(
+                        $updateMap[$packageId]['source'],
+                        $updateMap[$packageId]['package'],
+                        $updateMap[$packageId]['reason']
+                    );
+                    unset($updateMap[$packageId]);
+                }
+            }
+        }
+
+        foreach ($uninstallMap as $uninstall) {
+            $this->uninstall($uninstall['package'], $uninstall['reason']);
+        }
+    }
+
+    protected function findRootPackages($installMap, $updateMap)
+    {
+        $packages = $installMap + $updateMap;
+        $roots = $packages;
+
+        foreach ($packages as $packageId => $operation) {
+            $package = $operation['package'];
+
+            if (!isset($roots[$packageId])) {
+                continue;
+            }
+
+            foreach ($package->getRequires() as $link) {
+                $possibleRequires = $this->pool->whatProvides($link->getTarget(), $link->getConstraint());
+
+                foreach ($possibleRequires as $require) {
+                    unset($roots[$require->getId()]);
+                }
+            }
+        }
+
+        return $roots;
+    }
+
+    protected function findUpdates()
+    {
+        $installMeansUpdateMap = array();
 
         foreach ($this->decisions as $i => $decision) {
             $literal = $decision[Decisions::DECISION_LITERAL];
@@ -67,51 +201,7 @@ class Transaction
             }
         }
 
-        foreach ($this->decisions as $i => $decision) {
-            $literal = $decision[Decisions::DECISION_LITERAL];
-            $package = $this->pool->literalToPackage($literal);
-
-            // wanted & installed || !wanted & !installed
-            if (($literal > 0) == (isset($this->installedMap[$package->getId()]))) {
-                continue;
-            }
-
-            if ($literal > 0) {
-                if ($package instanceof AliasPackage) {
-                    $this->markAliasInstalled($package, $decision[Decisions::DECISION_REASON]);
-                    continue;
-                }
-
-                if (isset($installMeansUpdateMap[abs($literal)])) {
-
-                    $source = $installMeansUpdateMap[abs($literal)];
-
-                    $this->update($source, $package, $decision[Decisions::DECISION_REASON]);
-
-                    // avoid updates to one package from multiple origins
-                    unset($installMeansUpdateMap[abs($literal)]);
-                    $ignoreRemove[$source->getId()] = true;
-                } else {
-                    $this->install($package, $decision[Decisions::DECISION_REASON]);
-                }
-            }
-        }
-
-        foreach ($this->decisions as $i => $decision) {
-            $literal = $decision[Decisions::DECISION_LITERAL];
-            $package = $this->pool->literalToPackage($literal);
-
-            // wanted & installed || !wanted & !installed
-            if (($literal > 0) == (isset($this->installedMap[$package->getId()]))) {
-                continue;
-            }
-
-            if ($literal <= 0 && !isset($ignoreRemove[$package->getId()])) {
-                $this->uninstall($package, $decision[Decisions::DECISION_REASON]);
-            }
-        }
-
-        return $this->transaction;
+        return $installMeansUpdateMap;
     }
 
     protected function install($package, $reason)
