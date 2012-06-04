@@ -50,9 +50,9 @@ class SvnDownloader extends VcsDownloader
      */
     protected function enforceCleanDirectory($path)
     {
-        $this->process->execute('svn status', $output, $path);
-        if (trim($output)) {
-            throw new \RuntimeException('Source directory ' . $path . ' has uncommitted changes');
+        $this->process->execute('svn status --ignore-externals', $output, $path);
+        if (preg_match('{^ *[^X ] +}m', $output)) {
+            throw new \RuntimeException('Source directory ' . $path . ' has uncommitted changes:'."\n\n".rtrim($output));
         }
     }
 
