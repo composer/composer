@@ -395,10 +395,6 @@ use an empty prefix like:
         }
     }
 
-***Note: This will have an impact on performance and also keep in minh that this 
-method forfeits it's uniqueness and there is nothing preventing another "" entry,
-from another packoge perhaps, taking its place. Use with caution.***
-
 The `classmap` references are all combined, during install/update, into a single 
 key => value array which may be found in the generated file 
 `vendor/composer/autoload_classmap.php`.
