@@ -171,6 +171,13 @@ class Solver
 
         $this->runSat(true);
 
+        // decide to remove everything that's installed and undecided
+        foreach ($this->installedMap as $packageId => $void) {
+            if ($this->decisions->undecided($packageId)) {
+                $this->decisions->decide(-$packageId, 1, null);
+            }
+        }
+
         if ($this->problems) {
             throw new SolverProblemsException($this->problems);
         }
