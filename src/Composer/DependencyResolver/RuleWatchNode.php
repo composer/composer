@@ -47,9 +47,9 @@ class RuleWatchNode
      * Useful for learned rules where the literal for the highest rule is most
      * likely to quickly lead to further decisions.
      *
-     * @param SplFixedArray $decisionMap A package to decision lookup table
+     * @param Decisions $decisions The decisions made so far by the solver
      */
-    public function watch2OnHighest($decisionMap)
+    public function watch2OnHighest(Decisions $decisions)
     {
         $literals = $this->rule->getLiterals();
 
@@ -61,7 +61,7 @@ class RuleWatchNode
         $watchLevel = 0;
 
         foreach ($literals as $literal) {
-            $level = abs($decisionMap[abs($literal)]);
+            $level = $decisions->decisionLevel($literal);
 
             if ($level > $watchLevel) {
                 $this->rule->watch2 = $literal;

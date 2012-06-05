@@ -72,16 +72,11 @@ class RuleWatchGraph
      * @param int $decidedLiteral The literal which was decided (A in our example)
      * @param int $level          The level at which the decision took place and at which
      *     all resulting decisions should be made.
-     * @param Callable $decisionsSatisfyCallback A callback which checks if a
-     *     literal has already been positively decided and the rule is thus
-     *     already true and can be skipped.
-     * @param Callable $conflictCallback A callback which checks if a literal
-     *     would conflict with previously made decisions on the same package
-     * @param Callable $decideCallback A callback which is responsible for
-     *     registering decided literals resulting from unit clauses
+     * @param Decisions $decisions Used to check previous decisions and to
+     *     register decisions resulting from propagation
      * @return Rule|null If a conflict is found the conflicting rule is returned
      */
-    public function propagateLiteral($decidedLiteral, $level, $decisionsSatisfyCallback, $conflictCallback, $decideCallback)
+    public function propagateLiteral($decidedLiteral, $level, $decisions)
     {
         // we invert the decided literal here, example:
         // A was decided => (-A|B) now requires B to be true, so we look for
@@ -99,13 +94,13 @@ class RuleWatchGraph
             $node = $chain->current();
             $otherWatch = $node->getOtherWatch($literal);
 
-            if (!$node->getRule()->isDisabled() && !call_user_func($decisionsSatisfyCallback, $otherWatch)) {
+            if (!$node->getRule()->isDisabled() && !$decisions->contain($otherWatch)) {
                 $ruleLiterals = $node->getRule()->getLiterals();
 
-                $alternativeLiterals = array_filter($ruleLiterals, function ($ruleLiteral) use ($literal, $otherWatch, $conflictCallback) {
+                $alternativeLiterals = array_filter($ruleLiterals, function ($ruleLiteral) use ($literal, $otherWatch, $decisions) {
                     return $literal !== $ruleLiteral &&
                         $otherWatch !== $ruleLiteral &&
-                        !call_user_func($conflictCallback, $ruleLiteral);
+                        !$decisions->conflict($ruleLiteral);
                 });
 
                 if ($alternativeLiterals) {
@@ -114,11 +109,11 @@ class RuleWatchGraph
                     continue;
                 }
 
-                if (call_user_func($conflictCallback, $otherWatch)) {
+                if ($decisions->conflict($otherWatch)) {
                     return $node->getRule();
                 }
 
-                call_user_func($decideCallback, $otherWatch, $level, $node->getRule());
+                $decisions->decide($otherWatch, $level, $node->getRule());
             }
 
             $chain->next();
