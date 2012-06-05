@@ -145,11 +145,12 @@ class Installer
         $installedRootPackage->setRequires(array());
         $installedRootPackage->setDevRequires(array());
 
+        $platformRepo = new PlatformRepository();
         $repos = array_merge(
             $this->repositoryManager->getLocalRepositories(),
             array(
                 new InstalledArrayRepository(array($installedRootPackage)),
-                new PlatformRepository(),
+                $platformRepo,
             )
         );
         $installedRepo = new CompositeRepository($repos);
@@ -157,7 +158,7 @@ class Installer
             $installedRepo->addRepository($this->additionalInstalledRepository);
         }
 
-        $aliases = $this->aliasPackages();
+        $aliases = $this->aliasPackages($platformRepo);
 
         if ($this->runScripts) {
             // dispatch pre event
@@ -440,7 +441,7 @@ class Installer
         return true;
     }
 
-    private function aliasPackages()
+    private function aliasPackages(PlatformRepository $platformRepo)
     {
         if (!$this->update && $this->locker->isLocked()) {
             $aliases = $this->locker->getAliases();
@@ -449,7 +450,11 @@ class Installer
         }
 
         foreach ($aliases as $alias) {
-            foreach ($this->repositoryManager->findPackages($alias['package'], $alias['version']) as $package) {
+            $packages = array_merge(
+                $platformRepo->findPackages($alias['package'], $alias['version']),
+                $this->repositoryManager->findPackages($alias['package'], $alias['version'])
+            );
+            foreach ($packages as $package) {
                 $package->setAlias($alias['alias_normalized']);
                 $package->setPrettyAlias($alias['alias']);
                 $package->getRepository()->addPackage($aliasPackage = new AliasPackage($package, $alias['alias_normalized'], $alias['alias']));
