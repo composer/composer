@@ -118,6 +118,33 @@ class SolverTest extends TestCase
         ));
     }
 
+    public function testSolverInstallWithDepsInOrder()
+    {
+        $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
+        $this->repo->addPackage($packageB = $this->getPackage('B', '1.0'));
+        $this->repo->addPackage($packageC = $this->getPackage('C', '1.0'));
+
+        $packageB->setRequires(array(
+            new Link('B', 'A', $this->getVersionConstraint('>=', '1.0'), 'requires'),
+            new Link('B', 'C', $this->getVersionConstraint('>=', '1.0'), 'requires'),
+        ));
+        $packageC->setRequires(array(
+            new Link('C', 'A', $this->getVersionConstraint('>=', '1.0'), 'requires'),
+        ));
+
+        $this->reposComplete();
+
+        $this->request->install('A');
+        $this->request->install('B');
+        $this->request->install('C');
+
+        $this->checkSolverResult(array(
+            array('job' => 'install', 'package' => $packageA),
+            array('job' => 'install', 'package' => $packageC),
+            array('job' => 'install', 'package' => $packageB),
+        ));
+    }
+
     public function testSolverInstallInstalled()
     {
         $this->repoInstalled->addPackage($this->getPackage('A', '1.0'));
@@ -292,14 +319,15 @@ class SolverTest extends TestCase
 
         $this->checkSolverResult(array(
             array(
-                'job' => 'remove',
-                'package' => $packageB,
-            ),
-            array(
                 'job' => 'update',
                 'from' => $packageA,
                 'to' => $newPackageA,
-        )));
+            ),
+            array(
+                'job' => 'remove',
+                'package' => $packageB,
+            ),
+        ));
     }
 
     public function testSolverAllJobs()
@@ -324,8 +352,8 @@ class SolverTest extends TestCase
         $this->checkSolverResult(array(
             array('job' => 'update',  'from' => $oldPackageC, 'to' => $packageC),
             array('job' => 'install', 'package' => $packageB),
-            array('job' => 'remove',  'package' => $packageD),
             array('job' => 'install', 'package' => $packageA),
+            array('job' => 'remove',  'package' => $packageD),
         ));
     }
 
@@ -477,8 +505,8 @@ class SolverTest extends TestCase
         $this->request->install('X');
 
         $this->checkSolverResult(array(
-            array('job' => 'install', 'package' => $packageA),
             array('job' => 'install', 'package' => $newPackageB),
+            array('job' => 'install', 'package' => $packageA),
             array('job' => 'install', 'package' => $packageX),
         ));
     }
@@ -520,9 +548,9 @@ class SolverTest extends TestCase
         $this->request->install('A');
 
         $this->checkSolverResult(array(
-            array('job' => 'install', 'package' => $packageC),
             array('job' => 'install', 'package' => $packageB),
             array('job' => 'install', 'package' => $packageA),
+            array('job' => 'install', 'package' => $packageC),
         ));
     }
 
@@ -690,8 +718,8 @@ class SolverTest extends TestCase
         $this->request->install('A', $this->getVersionConstraint('==', '1.1.0.0'));
 
         $this->checkSolverResult(array(
-            array('job' => 'install', 'package' => $packageB),
             array('job' => 'install', 'package' => $packageA2),
+            array('job' => 'install', 'package' => $packageB),
             array('job' => 'install', 'package' => $packageA2Alias),
         ));
     }
@@ -713,9 +741,9 @@ class SolverTest extends TestCase
         $this->request->install('B');
 
         $this->checkSolverResult(array(
+            array('job' => 'install', 'package' => $packageA),
             array('job' => 'install', 'package' => $packageAAlias),
             array('job' => 'install', 'package' => $packageB),
-            array('job' => 'install', 'package' => $packageA),
         ));
     }
 
