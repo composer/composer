@@ -758,7 +758,7 @@ class Solver
                 }
 
                 if ($lastLiteral) {
-                    $this->branches[$lastBranchIndex][$lastBranchOffset] = null;
+                    $this->branches[$lastBranchIndex][$lastBranchOffset] = array();
                     $minimizationSteps++;
 
                     $level = $lastLevel;
