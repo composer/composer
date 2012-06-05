@@ -190,23 +190,18 @@ class RuleSetGenerator
                 }
             }
 
-            // check implicit obsoletes
-            // for installed packages we only need to check installed/installed problems,
-            // as the others are picked up when looking at the uninstalled package.
-            if (!$isInstalled) {
-                $obsoleteProviders = $this->pool->whatProvides($package->getName(), null);
+            $obsoleteProviders = $this->pool->whatProvides($package->getName(), null);
 
-                foreach ($obsoleteProviders as $provider) {
-                    if ($provider === $package) {
-                        continue;
-                    }
+            foreach ($obsoleteProviders as $provider) {
+                if ($provider === $package) {
+                    continue;
+                }
 
-                    if (($package instanceof AliasPackage) && $package->getAliasOf() === $provider) {
-                        $this->addRule(RuleSet::TYPE_PACKAGE, $rule = $this->createRequireRule($package, array($provider), Rule::RULE_PACKAGE_ALIAS, (string) $package));
-                    } elseif (!$this->obsoleteImpossibleForAlias($package, $provider)) {
-                        $reason = ($package->getName() == $provider->getName()) ? Rule::RULE_PACKAGE_SAME_NAME : Rule::RULE_PACKAGE_IMPLICIT_OBSOLETES;
-                        $this->addRule(RuleSet::TYPE_PACKAGE, $rule = $this->createConflictRule($package, $provider, $reason, (string) $package));
-                    }
+                if (($package instanceof AliasPackage) && $package->getAliasOf() === $provider) {
+                    $this->addRule(RuleSet::TYPE_PACKAGE, $rule = $this->createRequireRule($package, array($provider), Rule::RULE_PACKAGE_ALIAS, (string) $package));
+                } elseif (!$this->obsoleteImpossibleForAlias($package, $provider)) {
+                    $reason = ($package->getName() == $provider->getName()) ? Rule::RULE_PACKAGE_SAME_NAME : Rule::RULE_PACKAGE_IMPLICIT_OBSOLETES;
+                    $this->addRule(RuleSet::TYPE_PACKAGE, $rule = $this->createConflictRule($package, $provider, $reason, (string) $package));
                 }
             }
         }
