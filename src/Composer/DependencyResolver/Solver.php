@@ -248,7 +248,7 @@ class Solver
         while (!empty($this->branches)) {
             list($literals, $branchLevel) = $this->branches[count($this->branches) - 1];
 
-            if ($branchLevel >= $level) {
+            if ($branchLevel < $level) {
                 break;
             }
 
@@ -743,22 +743,24 @@ class Solver
                 $lastLevel = null;
                 $lastBranchIndex = 0;
                 $lastBranchOffset  = 0;
+                $l = 0;
 
                 for ($i = count($this->branches) - 1; $i >= 0; $i--) {
-                    list($literals, $level) = $this->branches[$i];
+                    list($literals, $l) = $this->branches[$i];
 
                     foreach ($literals as $offset => $literal) {
-                        if ($literal && $literal > 0 && $this->decisions->decisionLevel($literal) > $level + 1) {
+                        if ($literal && $literal > 0 && $this->decisions->decisionLevel($literal) > $l + 1) {
                             $lastLiteral = $literal;
                             $lastBranchIndex = $i;
                             $lastBranchOffset = $offset;
-                            $lastLevel = $level;
+                            $lastLevel = $l;
                         }
                     }
                 }
 
                 if ($lastLiteral) {
-                    $this->branches[$lastBranchIndex][$lastBranchOffset] = array();
+                    unset($this->branches[$lastBranchIndex][0][$lastBranchOffset]);
+                    $this->branches[$lastBranchIndex][0] = array_values($this->branches[$lastBranchIndex][0]);
                     $minimizationSteps++;
 
                     $level = $lastLevel;
