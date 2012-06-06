@@ -19,6 +19,9 @@ use Composer\Repository\RepositoryInterface;
  */
 class Solver
 {
+    const BRANCH_LITERALS = 0;
+    const BRANCH_LEVEL = 1;
+
     protected $policy;
     protected $pool;
     protected $installed;
@@ -245,13 +248,7 @@ class Solver
             $this->propagateIndex = count($this->decisions);
         }
 
-        while (!empty($this->branches)) {
-            list($literals, $branchLevel) = $this->branches[count($this->branches) - 1];
-
-            if ($branchLevel < $level) {
-                break;
-            }
-
+        while (!empty($this->branches) && $this->branches[count($this->branches) - 1][self::BRANCH_LEVEL] >= $level) {
             array_pop($this->branches);
         }
     }
@@ -596,7 +593,6 @@ class Solver
 
         $level = 1;
         $systemLevel = $level + 1;
-        $minimizationSteps = 0;
         $installedPos = 0;
 
         while (true) {
@@ -754,9 +750,8 @@ class Solver
                 }
 
                 if ($lastLiteral) {
-                    unset($this->branches[$lastBranchIndex][0][$lastBranchOffset]);
-                    $this->branches[$lastBranchIndex][0] = array_values($this->branches[$lastBranchIndex][0]);
-                    $minimizationSteps++;
+                    unset($this->branches[$lastBranchIndex][self::BRANCH_LITERALS][$lastBranchOffset]);
+                    array_values($this->branches[$lastBranchIndex][self::BRANCH_LITERALS]);
 
                     $level = $lastLevel;
                     $this->revert($level);
