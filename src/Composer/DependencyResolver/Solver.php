@@ -48,7 +48,7 @@ class Solver
     // aka solver_makeruledecisions
     private function makeAssertionRuleDecisions()
     {
-        $decisionStart = $this->decisions->getMaxOffset();
+        $decisionStart = count($this->decisions) - 1;
 
         for ($ruleIndex = 0; $ruleIndex < count($this->rules); $ruleIndex++) {
             $rule = $this->rules->ruleById($ruleIndex);
@@ -242,7 +242,7 @@ class Solver
             }
 
             $this->decisions->revertLast();
-            $this->propagateIndex = $this->decisions->getMaxOffset() + 1;
+            $this->propagateIndex = count($this->decisions);
         }
 
         while (!empty($this->branches)) {
@@ -343,7 +343,7 @@ class Solver
         $seen = array();
         $learnedLiterals = array(null);
 
-        $decisionId = $this->decisions->getMaxOffset() + 1;
+        $decisionId = count($this->decisions);
 
         $this->learnedPool[] = array();
 
@@ -483,12 +483,7 @@ class Solver
             $seen[abs($literal)] = true;
         }
 
-        $decisionId = $this->decisions->getMaxOffset() + 1;
-
-        while ($decisionId > 0) {
-            $decisionId--;
-
-            $decision = $this->decisions->atOffset($decisionId);
+        foreach ($this->decisions as $decision) {
             $literal = $decision[Decisions::DECISION_LITERAL];
 
             // skip literals that are not in this rule

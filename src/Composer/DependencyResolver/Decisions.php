@@ -17,7 +17,7 @@ namespace Composer\DependencyResolver;
  *
  * @author Nils Adermann <naderman@naderman.de>
  */
-class Decisions implements \Iterator
+class Decisions implements \Iterator, \Countable
 {
     const DECISION_LITERAL = 0;
     const DECISION_REASON = 1;
@@ -178,9 +178,9 @@ class Decisions implements \Iterator
         array_pop($this->decisionQueue);
     }
 
-    public function getMaxOffset()
+    public function count()
     {
-        return count($this->decisionQueue) - 1;
+        return count($this->decisionQueue);
     }
 
     public function rewind()
