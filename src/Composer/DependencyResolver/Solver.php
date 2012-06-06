@@ -275,7 +275,7 @@ class Solver
     {
         $level++;
 
-        $this->decisions->decide($literal, $level, $rule, true);
+        $this->decisions->decide($literal, $level, $rule);
 
         while (true) {
             $rule = $this->propagate($level);
