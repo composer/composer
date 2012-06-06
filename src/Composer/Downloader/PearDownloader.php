@@ -12,25 +12,41 @@
 
 namespace Composer\Downloader;
 
+use Composer\Package\PackageInterface;
+
 /**
  * Downloader for pear packages
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  */
-class PearDownloader extends TarDownloader
+class PearDownloader extends FileDownloader
 {
     /**
      * {@inheritDoc}
      */
-    protected function extract($file, $path)
+    public function download(PackageInterface $package, $path)
     {
-        parent::extract($file, $path);
-        if (file_exists($path . '/package.sig')) {
-            unlink($path . '/package.sig');
+        parent::download($package, $path);
+
+        $fileName = $this->getFileName($package, $path);
+        if ($this->io->isVerbose()) {
+            $this->io->write('    Installing PEAR package');
         }
-        if (file_exists($path . '/package.xml')) {
-            unlink($path . '/package.xml');
+        try {
+            $pearExtractor = new PearPackageExtractor($fileName);
+            $pearExtractor->extractTo($path);
+
+            if ($this->io->isVerbose()) {
+                $this->io->write('    Cleaning up');
+            }
+            unlink($fileName);
+        } catch (\Exception $e) {
+            // clean up
+            $this->filesystem->removeDirectory($path);
+            throw $e;
         }
+
+        $this->io->write('');
     }
 }
