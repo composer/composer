@@ -163,6 +163,7 @@ class PearRepository extends ArrayRepository
                     'autoload' => array(
                         'classmap' => array(''),
                     ),
+                    'include-path' => array('/'),
                 );
 
                 try {
@@ -305,6 +306,7 @@ class PearRepository extends ArrayRepository
                 'autoload' => array(
                     'classmap' => array(''),
                 ),
+                'include-path' => array('/'),
             );
             $packageKeys = array('l' => 'license', 'd' => 'description');
             foreach ($packageKeys as $pear => $composer) {
