@@ -46,16 +46,6 @@ class Decisions implements \Iterator, \Countable
         );
     }
 
-    public function contain($literal)
-    {
-        $packageId = abs($literal);
-
-        return (
-            $this->decisionMap[$packageId] > 0 && $literal > 0 ||
-            $this->decisionMap[$packageId] < 0 && $literal < 0
-        );
-    }
-
     public function satisfy($literal)
     {
         $packageId = abs($literal);
