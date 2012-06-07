@@ -77,7 +77,7 @@ class SolverTest extends TestCase
         } catch (SolverProblemsException $e) {
             $problems = $e->getProblems();
             $this->assertEquals(1, count($problems));
-            $this->assertEquals('The requested package "b" with constraint == 1.0.0.0 could not be found.', (string) $problems[0]);
+            $this->assertEquals('The requested package b == 1.0.0.0 could not be found.', (string) $problems[0]);
         }
     }
 
