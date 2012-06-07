@@ -351,7 +351,7 @@ classes).
 Under the `psr-0` key you define a mapping from namespaces to paths, relative to the
 package root. Note that this also supports the PEAR-style non-namespaced convention.
 
-The PSR-0 references are all combined, during install/update, into a single key => value 
+The PSR-0 references are all combined, during install/update, into a single key => value
 array which may be found in the generated file `vendor/composer/autoload_namespaces.php`.
 
 Example:
@@ -375,12 +375,12 @@ you can specify them as an array as such:
         }
     }
 
-The PSR-0 style is not limited to namespace declarations only but may be 
-specified right down to the class level. This can be useful for libraries with 
-only one class in the global namespace. If the php source file is also located 
+The PSR-0 style is not limited to namespace declarations only but may be
+specified right down to the class level. This can be useful for libraries with
+only one class in the global namespace. If the php source file is also located
 in the root of the package, for example, it may be declared like this:
 
-    }
+    {
         "autoload": {
             "psr-0": { "UniqueGlobalClass": "" }
         }
@@ -395,8 +395,8 @@ use an empty prefix like:
         }
     }
 
-The `classmap` references are all combined, during install/update, into a single 
-key => value array which may be found in the generated file 
+The `classmap` references are all combined, during install/update, into a single
+key => value array which may be found in the generated file
 `vendor/composer/autoload_classmap.php`.
 
 You can use the classmap generation support to define autoloading for all libraries
