@@ -171,7 +171,7 @@ class Rule
                 $package1 = $this->pool->literalToPackage($this->literals[0]);
                 $package2 = $this->pool->literalToPackage($this->literals[1]);
 
-                return 'Package "'.$package1.'" conflicts with "'.$package2.'"';
+                return 'Package '.$package1->getPrettyString().' conflicts with '.$package2->getPrettyString().'"';
 
             case self::RULE_PACKAGE_REQUIRES:
                 $literals = $this->literals;

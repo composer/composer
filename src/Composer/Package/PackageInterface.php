@@ -356,4 +356,11 @@ interface PackageInterface
      * @return string
      */
     public function __toString();
+
+    /**
+     * Converts the package into a pretty readable string
+     *
+     * @return string
+     */
+    public function getPrettyString();
 }
