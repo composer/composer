@@ -1,0 +1,12 @@
+<channel xmlns="http://pear.php.net/channel-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.0" xsi:schemaLocation="http://pear.php.net/channel-1.0 http://pear.php.net/dtd/channel-1.0.xsd">
+    <name>pear.net</name>
+    <summary>Test PEAR channel</summary>
+    <suggestedalias>test_alias</suggestedalias>
+    <servers>
+        <primary>
+            <rest>
+                <baseurl type="REST1.1">http://test.loc/rest11/</baseurl>
+            </rest>
+        </primary>
+    </servers>
+</channel>

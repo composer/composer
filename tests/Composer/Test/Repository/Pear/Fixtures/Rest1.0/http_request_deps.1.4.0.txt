@@ -1,0 +1,1 @@
+a:1:{s:8:"required";a:3:{s:3:"php";a:1:{s:3:"min";s:5:"4.0.0";}s:13:"pearinstaller";a:1:{s:3:"min";s:7:"1.4.0b1";}s:7:"package";a:2:{i:0;a:3:{s:4:"name";s:7:"Net_URL";s:7:"channel";s:12:"pear.dev.loc";s:3:"min";s:6:"1.0.12";}i:1;a:3:{s:4:"name";s:10:"Net_Socket";s:7:"channel";s:8:"pear.net";s:3:"min";s:5:"1.0.2";}}}}
