@@ -29,11 +29,11 @@ class PearRepositoryTest extends TestCase
      */
     private $remoteFilesystem;
 
-    public function testComposerNonCompatibleRepositoryShouldSetIncludePath()
+    public function testComposerShouldSetIncludePath()
     {
         $url = 'pear.phpmd.org';
         $expectedPackages = array(
-            array('name' => 'pear-phpmd/PHP_PMD', 'version' => '1.3.3'),
+            array('name' => 'pear-pear.phpmd.org/PHP_PMD', 'version' => '1.3.3'),
         );
 
         $repoConfig = array(
@@ -78,53 +78,47 @@ class PearRepositoryTest extends TestCase
     public function repositoryDataProvider()
     {
         return array(
-            array(
+           array(
                 'pear.phpunit.de',
                 array(
-                    array('name' => 'pear-phpunit/PHPUnit_MockObject', 'version' => '1.1.1'),
-                    array('name' => 'pear-phpunit/PHPUnit', 'version' => '3.6.10'),
+                    array('name' => 'pear-pear.phpunit.de/PHPUnit_MockObject', 'version' => '1.1.1'),
+                    array('name' => 'pear-pear.phpunit.de/PHPUnit', 'version' => '3.6.10'),
                 )
             ),
             array(
                 'pear.php.net',
                 array(
-                    array('name' => 'pear-pear/PEAR', 'version' => '1.9.4'),
+                    array('name' => 'pear-pear.php.net/PEAR', 'version' => '1.9.4'),
                 )
             ),
             array(
                 'pear.pdepend.org',
                 array(
-                    array('name' => 'pear-pdepend/PHP_Depend', 'version' => '1.0.5'),
+                    array('name' => 'pear-pear.pdepend.org/PHP_Depend', 'version' => '1.0.5'),
                 )
             ),
             array(
                 'pear.phpmd.org',
                 array(
-                    array('name' => 'pear-phpmd/PHP_PMD', 'version' => '1.3.3'),
+                    array('name' => 'pear-pear.phpmd.org/PHP_PMD', 'version' => '1.3.3'),
                 )
             ),
             array(
                 'pear.doctrine-project.org',
                 array(
-                    array('name' => 'pear-doctrine/DoctrineORM', 'version' => '2.2.2'),
+                    array('name' => 'pear-pear.doctrine-project.org/DoctrineORM', 'version' => '2.2.2'),
                 )
             ),
             array(
                 'pear.symfony-project.com',
                 array(
-                    array('name' => 'pear-symfony/YAML', 'version' => '1.0.6'),
+                    array('name' => 'pear-pear.symfony-project.com/YAML', 'version' => '1.0.6'),
                 )
             ),
             array(
                 'pear.pirum-project.org',
                 array(
-                    array('name' => 'pear-pirum/Pirum', 'version' => '1.1.4'),
-                )
-            ),
-            array(
-                'packages.zendframework.com',
-                array(
-                    array('name' => 'pear-zf2/Zend_Code', 'version' => '2.0.0.0-beta3'),
+                    array('name' => 'pear-pear.pirum-project.org/Pirum', 'version' => '1.1.4'),
                 )
             ),
         );

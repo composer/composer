@@ -13,6 +13,7 @@
 namespace Composer\Test\Mock;
 
 use Composer\Util\RemoteFilesystem;
+use Composer\Downloader\TransportException;
 
 /**
  * Remote filesystem mock
@@ -29,10 +30,11 @@ class RemoteFilesystemMock extends RemoteFilesystem
 
     public function getContents($originUrl, $fileUrl, $progress = true)
     {
-        if(!empty($this->contentMap[$fileUrl]))
+        if (!empty($this->contentMap[$fileUrl])) {
             return $this->contentMap[$fileUrl];
+        }
 
-        throw new \Composer\Downloader\TransportException('The "'.$fileUrl.'" file could not be downloaded (NOT FOUND)', 404);
+        throw new TransportException('The "'.$fileUrl.'" file could not be downloaded (NOT FOUND)', 404);
     }
 
 }
