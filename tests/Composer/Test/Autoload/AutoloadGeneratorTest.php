@@ -271,13 +271,9 @@ class AutoloadGeneratorTest extends TestCase
         file_put_contents($this->vendorDir.'/b/b/test2.php', '<?php function testFilesAutoloadGeneration2() {}');
 
         $this->generator->dump($this->repository, $package, $this->im, $this->vendorDir.'/composer');
-
-        $code = file_get_contents($this->vendorDir.'/autoload.php');
-        $this->assertContains('a/a/test.php', $code);
-        $this->assertContains('b/b/test2.php', $code);
+        $this->assertFileEquals(__DIR__.'/Fixtures/autoload_functions.php', $this->vendorDir.'/autoload.php');
 
         include $this->vendorDir . '/autoload.php';
-
         $this->assertTrue(function_exists('testFilesAutoloadGeneration1'));
         $this->assertTrue(function_exists('testFilesAutoloadGeneration2'));
     }
