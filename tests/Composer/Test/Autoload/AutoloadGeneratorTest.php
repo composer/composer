@@ -251,6 +251,37 @@ class AutoloadGeneratorTest extends TestCase
         $this->assertAutoloadFiles('classmap5', $this->vendorDir.'/composer', 'classmap');
     }
 
+    public function testFilesAutoloadGeneration()
+    {
+        $package = new MemoryPackage('a', '1.0', '1.0');
+
+        $packages = array();
+        $packages[] = $a = new MemoryPackage('a/a', '1.0', '1.0');
+        $packages[] = $b = new MemoryPackage('b/b', '1.0', '1.0');
+        $a->setAutoload(array('files' => array('test.php')));
+        $b->setAutoload(array('files' => array('test2.php')));
+
+        $this->repository->expects($this->once())
+            ->method('getPackages')
+            ->will($this->returnValue($packages));
+
+        mkdir($this->vendorDir.'/a/a', 0777, true);
+        mkdir($this->vendorDir.'/b/b', 0777, true);
+        file_put_contents($this->vendorDir.'/a/a/test.php', '<?php function testFilesAutoloadGeneration1() {}');
+        file_put_contents($this->vendorDir.'/b/b/test2.php', '<?php function testFilesAutoloadGeneration2() {}');
+
+        $this->generator->dump($this->repository, $package, $this->im, $this->vendorDir.'/composer');
+
+        $code = file_get_contents($this->vendorDir.'/autoload.php');
+        $this->assertContains('a/a/test.php', $code);
+        $this->assertContains('b/b/test2.php', $code);
+
+        include $this->vendorDir . '/autoload.php';
+
+        $this->assertTrue(function_exists('testFilesAutoloadGeneration1'));
+        $this->assertTrue(function_exists('testFilesAutoloadGeneration2'));
+    }
+
     public function testOverrideVendorsAutoloading()
     {
         $package = new MemoryPackage('a', '1.0', '1.0');
