@@ -5,6 +5,9 @@ if (!class_exists('Composer\\Autoload\\ClassLoader', false)) {
     require __DIR__ . '/composer' . '/ClassLoader.php';
 }
 
+require __DIR__ . '/a/a/test.php';
+require __DIR__ . '/b/b/test2.php';
+
 return call_user_func(function() {
     $loader = new \Composer\Autoload\ClassLoader();
     $composerDir = __DIR__ . '/composer';
@@ -18,23 +21,6 @@ return call_user_func(function() {
     if ($classMap) {
         $loader->addClassMap($classMap);
     }
-
-    spl_autoload_register(function($class) {
-        $dir = dirname(__DIR__) . '/';
-        $prefixes = array('Main\\Foo', 'Main\\Bar');
-        foreach ($prefixes as $prefix) {
-            if (0 !== strpos($class, $prefix)) {
-                continue;
-            }
-            $path = $dir . implode('/', array_slice(explode('\\', $class), 2)).'.php';
-            if (!$path = stream_resolve_include_path($path)) {
-                return false;
-            }
-            require $path;
-
-            return true;
-        }
-    });
 
     $loader->register();
 

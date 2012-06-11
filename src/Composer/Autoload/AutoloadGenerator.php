@@ -98,10 +98,10 @@ EOF;
                 continue;
             }
             \$path = \$dir . implode('/', array_slice(explode('\\\\', \$class), $levels)).'.php';
-            if (!stream_resolve_include_path(\$path)) {
+            if (!\$path = stream_resolve_include_path(\$path)) {
                 return false;
             }
-            require_once \$path;
+            require \$path;
 
             return true;
         }
@@ -121,12 +121,11 @@ EOF;
         }
         $classmapFile .= ");\n";
 
-        $filesCode          = "";
+        $filesCode = "";
         $autoloads['files'] = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($autoloads['files']));
         foreach ($autoloads['files'] as $functionFile) {
-            $filesCode .= 'require "' . $filesystem->findShortestPath(getcwd(), $functionFile) .'";' . "\n";
+            $filesCode .= 'require __DIR__ . '. var_export('/'.$filesystem->findShortestPath($vendorPath, $functionFile), true).";\n";
         }
-        $filesCode = rtrim($filesCode);
 
         file_put_contents($targetDir.'/autoload_namespaces.php', $namespacesFile);
         file_put_contents($targetDir.'/autoload_classmap.php', $classmapFile);
@@ -290,6 +289,10 @@ EOF;
 
     protected function getAutoloadFile($vendorPathToTargetDirCode, $usePSR0, $useClassMap, $useIncludePath, $targetDirLoader, $filesCode)
     {
+        if ($filesCode) {
+            $filesCode = "\n".$filesCode;
+        }
+
         $file = <<<HEADER
 <?php
 
@@ -297,9 +300,7 @@ EOF;
 if (!class_exists('Composer\\\\Autoload\\\\ClassLoader', false)) {
     require $vendorPathToTargetDirCode . '/ClassLoader.php';
 }
-
 $filesCode
-
 return call_user_func(function() {
     \$loader = new \\Composer\\Autoload\\ClassLoader();
     \$composerDir = $vendorPathToTargetDirCode;
