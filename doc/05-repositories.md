@@ -69,7 +69,7 @@ The only required field is `packages`. The JSON structure is as follows:
     {
         "packages": {
             "vendor/packageName": {
-                "master-dev": { @composer.json },
+                "dev-master": { @composer.json },
                 "1.0.x-dev": { @composer.json },
                 "0.0.1": { @composer.json },
                 "1.0.0": { @composer.json }
