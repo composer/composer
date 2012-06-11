@@ -17,7 +17,7 @@ namespace Composer\DependencyResolver;
  *
  * @author Nils Adermann <naderman@naderman.de>
  */
-class Decisions implements \Iterator
+class Decisions implements \Iterator, \Countable
 {
     const DECISION_LITERAL = 0;
     const DECISION_REASON = 1;
@@ -25,7 +25,6 @@ class Decisions implements \Iterator
     protected $pool;
     protected $decisionMap;
     protected $decisionQueue = array();
-    protected $decisionQueueFree = array();
 
     public function __construct($pool)
     {
@@ -38,46 +37,12 @@ class Decisions implements \Iterator
         }
     }
 
-    protected function addDecision($literal, $level)
-    {
-        $packageId = abs($literal);
-
-        $previousDecision = $this->decisionMap[$packageId];
-        if ($previousDecision != 0) {
-            $literalString = $this->pool->literalToString($literal);
-            $package = $this->pool->literalToPackage($literal);
-            throw new SolverBugException(
-                "Trying to decide $literalString on level $level, even though $package was previously decided as ".(int) $previousDecision."."
-            );
-        }
-
-        if ($literal > 0) {
-            $this->decisionMap[$packageId] = $level;
-        } else {
-            $this->decisionMap[$packageId] = -$level;
-        }
-    }
-
-    public function decide($literal, $level, $why, $addToFreeQueue = false)
+    public function decide($literal, $level, $why)
     {
         $this->addDecision($literal, $level);
         $this->decisionQueue[] = array(
             self::DECISION_LITERAL => $literal,
             self::DECISION_REASON => $why,
-        );
-
-        if ($addToFreeQueue) {
-            $this->decisionQueueFree[count($this->decisionQueue) - 1] = true;
-        }
-    }
-
-    public function contain($literal)
-    {
-        $packageId = abs($literal);
-
-        return (
-            $this->decisionMap[$packageId] > 0 && $literal > 0 ||
-            $this->decisionMap[$packageId] < 0 && $literal < 0
         );
     }
 
@@ -159,15 +124,12 @@ class Decisions implements \Iterator
         while ($decision = array_pop($this->decisionQueue)) {
             $this->decisionMap[abs($decision[self::DECISION_LITERAL])] = 0;
         }
-
-        $this->decisionQueueFree = array();
     }
 
     public function resetToOffset($offset)
     {
         while (count($this->decisionQueue) > $offset + 1) {
             $decision = array_pop($this->decisionQueue);
-            unset($this->decisionQueueFree[count($this->decisionQueue)]);
             $this->decisionMap[abs($decision[self::DECISION_LITERAL])] = 0;
         }
     }
@@ -178,9 +140,9 @@ class Decisions implements \Iterator
         array_pop($this->decisionQueue);
     }
 
-    public function getMaxOffset()
+    public function count()
     {
-        return count($this->decisionQueue) - 1;
+        return count($this->decisionQueue);
     }
 
     public function rewind()
@@ -211,5 +173,25 @@ class Decisions implements \Iterator
     public function isEmpty()
     {
         return count($this->decisionQueue) === 0;
+    }
+
+    protected function addDecision($literal, $level)
+    {
+        $packageId = abs($literal);
+
+        $previousDecision = $this->decisionMap[$packageId];
+        if ($previousDecision != 0) {
+            $literalString = $this->pool->literalToString($literal);
+            $package = $this->pool->literalToPackage($literal);
+            throw new SolverBugException(
+                "Trying to decide $literalString on level $level, even though $package was previously decided as ".(int) $previousDecision."."
+            );
+        }
+
+        if ($literal > 0) {
+            $this->decisionMap[$packageId] = $level;
+        } else {
+            $this->decisionMap[$packageId] = -$level;
+        }
     }
 }
