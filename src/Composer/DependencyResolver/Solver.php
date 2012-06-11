@@ -19,6 +19,9 @@ use Composer\Repository\RepositoryInterface;
  */
 class Solver
 {
+    const BRANCH_LITERALS = 0;
+    const BRANCH_LEVEL = 1;
+
     protected $policy;
     protected $pool;
     protected $installed;
@@ -48,7 +51,7 @@ class Solver
     // aka solver_makeruledecisions
     private function makeAssertionRuleDecisions()
     {
-        $decisionStart = $this->decisions->getMaxOffset();
+        $decisionStart = count($this->decisions) - 1;
 
         for ($ruleIndex = 0; $ruleIndex < count($this->rules); $ruleIndex++) {
             $rule = $this->rules->ruleById($ruleIndex);
@@ -242,16 +245,10 @@ class Solver
             }
 
             $this->decisions->revertLast();
-            $this->propagateIndex = $this->decisions->getMaxOffset() + 1;
+            $this->propagateIndex = count($this->decisions);
         }
 
-        while (!empty($this->branches)) {
-            list($literals, $branchLevel) = $this->branches[count($this->branches) - 1];
-
-            if ($branchLevel < $level) {
-                break;
-            }
-
+        while (!empty($this->branches) && $this->branches[count($this->branches) - 1][self::BRANCH_LEVEL] >= $level) {
             array_pop($this->branches);
         }
     }
@@ -275,7 +272,7 @@ class Solver
     {
         $level++;
 
-        $this->decisions->decide($literal, $level, $rule, true);
+        $this->decisions->decide($literal, $level, $rule);
 
         while (true) {
             $rule = $this->propagate($level);
@@ -343,7 +340,7 @@ class Solver
         $seen = array();
         $learnedLiterals = array(null);
 
-        $decisionId = $this->decisions->getMaxOffset() + 1;
+        $decisionId = count($this->decisions);
 
         $this->learnedPool[] = array();
 
@@ -483,12 +480,7 @@ class Solver
             $seen[abs($literal)] = true;
         }
 
-        $decisionId = $this->decisions->getMaxOffset() + 1;
-
-        while ($decisionId > 0) {
-            $decisionId--;
-
-            $decision = $this->decisions->atOffset($decisionId);
+        foreach ($this->decisions as $decision) {
             $literal = $decision[Decisions::DECISION_LITERAL];
 
             // skip literals that are not in this rule
@@ -601,7 +593,6 @@ class Solver
 
         $level = 1;
         $systemLevel = $level + 1;
-        $minimizationSteps = 0;
         $installedPos = 0;
 
         while (true) {
@@ -759,9 +750,8 @@ class Solver
                 }
 
                 if ($lastLiteral) {
-                    unset($this->branches[$lastBranchIndex][0][$lastBranchOffset]);
-                    $this->branches[$lastBranchIndex][0] = array_values($this->branches[$lastBranchIndex][0]);
-                    $minimizationSteps++;
+                    unset($this->branches[$lastBranchIndex][self::BRANCH_LITERALS][$lastBranchOffset]);
+                    array_values($this->branches[$lastBranchIndex][self::BRANCH_LITERALS]);
 
                     $level = $lastLevel;
                     $this->revert($level);

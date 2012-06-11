@@ -201,6 +201,11 @@ abstract class BasePackage implements PackageInterface
         return $this->getUniqueName();
     }
 
+    public function getPrettyString()
+    {
+        return $this->getPrettyName().'-'.$this->getPrettyVersion();
+    }
+
     public function __clone()
     {
         $this->repository = null;

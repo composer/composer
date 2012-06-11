@@ -66,10 +66,10 @@ class Problem
                     $ext = substr($job['packageName'], 4);
                     $error = extension_loaded($ext) ? 'has the wrong version ('.phpversion($ext).') installed' : 'is missing from your system';
 
-                    return 'The requested PHP extension "'.$job['packageName'].'" '.$this->constraintToText($job['constraint']).$error.'.';
+                    return 'The requested PHP extension '.$job['packageName'].$this->constraintToText($job['constraint']).' '.$error.'.';
                 }
 
-                return 'The requested package "'.$job['packageName'].'" '.$this->constraintToText($job['constraint']).'could not be found.';
+                return 'The requested package '.$job['packageName'].$this->constraintToText($job['constraint']).' could not be found.';
             }
         }
 
@@ -115,14 +115,27 @@ class Problem
     {
         switch ($job['cmd']) {
             case 'install':
-                return 'Installation of package "'.$job['packageName'].'" '.$this->constraintToText($job['constraint']).'was requested. Satisfiable by packages ['.implode(', ', $job['packages']).'].';
+                if (!$job['packages']) {
+                    return 'No package found to satisfy install request for '.$job['packageName'].$this->constraintToText($job['constraint']);
+                }
+
+                return 'Installation request for '.$job['packageName'].$this->constraintToText($job['constraint']).': Satisfiable by ['.$this->getPackageList($job['packages']).'].';
             case 'update':
-                return 'Update of package "'.$job['packageName'].'" '.$this->constraintToText($job['constraint']).'was requested.';
+                return 'Update request for '.$job['packageName'].$this->constraintToText($job['constraint']).'.';
             case 'remove':
-                return 'Removal of package "'.$job['packageName'].'" '.$this->constraintToText($job['constraint']).'was requested.';
+                return 'Removal request for '.$job['packageName'].$this->constraintToText($job['constraint']).'';
         }
 
-        return 'Job(cmd='.$job['cmd'].', target='.$job['packageName'].', packages=['.implode(', ', $job['packages']).'])';
+        return 'Job(cmd='.$job['cmd'].', target='.$job['packageName'].', packages=['.$this->packageList($job['packages']).'])';
+    }
+
+    protected function getPackageList($packages)
+    {
+        return implode(', ', array_map(function ($package) {
+                return $package->getPrettyString();
+            },
+            $packages
+        ));
     }
 
     /**
@@ -133,6 +146,6 @@ class Problem
      */
     protected function constraintToText($constraint)
     {
-        return ($constraint) ? 'with constraint '.$constraint.' ' : '';
+        return ($constraint) ? ' '.$constraint : '';
     }
 }
