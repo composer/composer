@@ -10,6 +10,7 @@
   * Added --no-scripts to `install` and `update` commands to avoid triggering the scripts
   * Added `COMPOSER_ROOT_VERSION` env var to specify the version of the root package (fixes some edge cases)
   * Added support for multiple custom installers in one package
+  * Added files autoloading method which requires files on every request, e.g. to load functions that are not autoloadable
   * Improved and fixed the output of various commands
   * Cleaned up / refactored the dependency solver code
   * Various bug fixes and docs improvements
