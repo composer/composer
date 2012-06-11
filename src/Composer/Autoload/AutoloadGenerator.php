@@ -121,12 +121,19 @@ EOF;
         }
         $classmapFile .= ");\n";
 
+        $filesCode          = "";
+        $autoloads['files'] = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($autoloads['files']));
+        foreach ($autoloads['files'] as $functionFile) {
+            $filesCode .= 'require "' . $filesystem->findShortestPath(getcwd(), $functionFile) .'";' . "\n";
+        }
+        $filesCode = rtrim($filesCode);
+
         file_put_contents($targetDir.'/autoload_namespaces.php', $namespacesFile);
         file_put_contents($targetDir.'/autoload_classmap.php', $classmapFile);
         if ($includePathFile = $this->getIncludePathsFile($packageMap, $filesystem, $relVendorPath, $vendorPath, $vendorPathCode, $appBaseDirCode)) {
             file_put_contents($targetDir.'/include_paths.php', $includePathFile);
         }
-        file_put_contents($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, true, true, (Boolean) $includePathFile, $targetDirLoader));
+        file_put_contents($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, true, true, (Boolean) $includePathFile, $targetDirLoader, $filesCode));
         copy(__DIR__.'/ClassLoader.php', $targetDir.'/ClassLoader.php');
 
         // TODO BC feature, remove after June 15th
@@ -173,7 +180,7 @@ EOF;
      */
     public function parseAutoloads(array $packageMap)
     {
-        $autoloads = array('classmap' => array(), 'psr-0' => array());
+        $autoloads = array('classmap' => array(), 'psr-0' => array(), 'files' => array());
         foreach ($packageMap as $item) {
             list($package, $installPath) = $item;
 
@@ -281,7 +288,7 @@ EOF;
         return $baseDir.var_export($path, true);
     }
 
-    protected function getAutoloadFile($vendorPathToTargetDirCode, $usePSR0, $useClassMap, $useIncludePath, $targetDirLoader)
+    protected function getAutoloadFile($vendorPathToTargetDirCode, $usePSR0, $useClassMap, $useIncludePath, $targetDirLoader, $filesCode)
     {
         $file = <<<HEADER
 <?php
@@ -290,6 +297,8 @@ EOF;
 if (!class_exists('Composer\\\\Autoload\\\\ClassLoader', false)) {
     require $vendorPathToTargetDirCode . '/ClassLoader.php';
 }
+
+$filesCode
 
 return call_user_func(function() {
     \$loader = new \\Composer\\Autoload\\ClassLoader();
