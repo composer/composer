@@ -40,7 +40,9 @@ file as described above.
 
 1. Run `git clone https://github.com/composer/composer.git`
 2. Download the [`composer.phar`](http://getcomposer.org/composer.phar) executable
-3. Run Composer to get the dependencies: `php composer.phar install`
+3. Run Composer to get the dependencies: `cd composer && php ../composer.phar install`
+
+You can now run Composer by executing the `bin/composer` script: `php /path/to/composer/bin/composer`
 
 Global installation of Composer (manual)
 ----------------------------------------
