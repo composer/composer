@@ -233,7 +233,7 @@ EOF;
         foreach ($packageMap as $item) {
             list($package, $installPath) = $item;
 
-            if (null !== $package->getTargetDir()) {
+            if (null !== $package->getTargetDir() && strlen($package->getTargetDir()) > 0) {
                 $installPath = substr($installPath, 0, -strlen('/'.$package->getTargetDir()));
             }
 
