@@ -91,7 +91,7 @@ class ClassMapGenerator
         try {
             $tokens   = token_get_all($contents);
         } catch (\Exception $e) {
-            throw new RuntimeException('Could not scan for classes inside '.$path.": \n".$e->getMessage(), 0, $e);
+            throw new \RuntimeException('Could not scan for classes inside '.$path.": \n".$e->getMessage(), 0, $e);
         }
         $T_TRAIT  = version_compare(PHP_VERSION, '5.4', '<') ? -1 : T_TRAIT;
 
