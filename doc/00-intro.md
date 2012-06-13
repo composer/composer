@@ -62,7 +62,7 @@ option and providing a target directory (it can be an absolute or relative path)
     $ curl -s http://getcomposer.org/installer | php -- --install-dir=bin
 
 You can place this file anywhere you wish. If you put it in your `PATH`,
-you can access it globally. On unixy systems you can even make it
+you can access it globally. On unix systems you can even make it
 executable and invoke it without `php`.
 
 ### Using Composer
