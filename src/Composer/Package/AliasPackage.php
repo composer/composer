@@ -235,6 +235,10 @@ class AliasPackage extends BasePackage
     {
         return $this->aliasOf->getDistType();
     }
+    public function getDistExtract()
+    {
+        return $this->aliasOf->getDistExtract();
+    }
     public function getDistUrl()
     {
         return $this->aliasOf->getDistUrl();

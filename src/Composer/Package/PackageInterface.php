@@ -139,6 +139,13 @@ interface PackageInterface
     public function getDistType();
 
     /**
+     * Returns if the archive downloader must extract the archive (only for phar archive)
+     *
+     * @return bool
+     */
+    function getDistExtract();
+    
+    /**
      * Returns the url of the distribution archive of this version
      *
      * @return string

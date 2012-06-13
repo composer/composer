@@ -28,6 +28,7 @@ class MemoryPackage extends BasePackage
     protected $sourceUrl;
     protected $sourceReference;
     protected $distType;
+    protected $distExtract;
     protected $distUrl;
     protected $distReference;
     protected $distSha1Checksum;
@@ -303,6 +304,23 @@ class MemoryPackage extends BasePackage
     public function getDistType()
     {
         return $this->distType;
+    }
+    
+    /**
+     *
+     * @param bool $extract 
+     */
+    public function setDistExtract($extract)
+    {
+        $this->distExtract = $extract;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public function getDistExtract()
+    {
+        return $this->distExtract;
     }
 
     /**
