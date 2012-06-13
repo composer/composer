@@ -177,6 +177,11 @@ command. It will replace your `composer.phar` with the latest version.
 
     $ php composer.phar self-update
 
+If you have installed composer for your entire system (see [global installation](00-intro.md#globally)),
+you have to run the command with `root` privileges
+
+    $ sudo composer self-update
+
 ## create-project
 
 You can use Composer to create new projects from an existing package.
