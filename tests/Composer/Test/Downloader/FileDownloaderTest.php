@@ -21,6 +21,7 @@ class FileDownloaderTest extends \PHPUnit_Framework_TestCase
     {
         $io = $io ?: $this->getMock('Composer\IO\IOInterface');
         $rfs = $rfs ?: $this->getMockBuilder('Composer\Util\RemoteFilesystem')->disableOriginalConstructor()->getMock();
+
         return new FileDownloader($io, $rfs);
     }
 
@@ -96,6 +97,7 @@ class FileDownloaderTest extends \PHPUnit_Framework_TestCase
                 if (is_file($path.'/script.js')) {
                     unlink($path.'/script.js');
                 }
+
                 return $messages;
             }))
         ;
@@ -108,7 +110,7 @@ class FileDownloaderTest extends \PHPUnit_Framework_TestCase
             if (is_dir($path)) {
                 $fs = new Filesystem();
                 $fs->removeDirectory($path);
-            } else if (is_file($path)) {
+            } elseif (is_file($path)) {
                 unset($path);
             }
 
@@ -146,7 +148,7 @@ class FileDownloaderTest extends \PHPUnit_Framework_TestCase
             if (is_dir($path)) {
                 $fs = new Filesystem();
                 $fs->removeDirectory($path);
-            } else if (is_file($path)) {
+            } elseif (is_file($path)) {
                 unset($path);
             }
 
