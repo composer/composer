@@ -33,6 +33,7 @@ class FactoryTest extends \PHPUnit_Framework_TestCase
     {
         $f = function() {
             $repositories = func_get_args();
+
             return array('repositories' => $repositories);
         };
 

@@ -13,7 +13,6 @@
 namespace Composer\Test\Installer;
 
 use Composer\Installer\LibraryInstaller;
-use Composer\DependencyResolver\Operation;
 use Composer\Util\Filesystem;
 use Composer\Test\TestCase;
 
