@@ -13,7 +13,6 @@
 namespace Composer\Test\Repository\Vcs;
 
 use Composer\Repository\Vcs\SvnDriver;
-use Composer\IO\NullIO;
 use Composer\Config;
 
 class SvnDriverTest extends \PHPUnit_Framework_TestCase

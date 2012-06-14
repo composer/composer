@@ -15,7 +15,6 @@ namespace Composer\Test\Repository;
 use Symfony\Component\Process\ExecutableFinder;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Repository\VcsRepository;
-use Composer\Repository\Vcs\GitDriver;
 use Composer\Util\Filesystem;
 use Composer\Util\ProcessExecutor;
 use Composer\IO\NullIO;
@@ -37,10 +36,12 @@ class VcsRepositoryTest extends \PHPUnit_Framework_TestCase
         $locator = new ExecutableFinder();
         if (!$locator->find('git')) {
             $this->skipped = 'This test needs a git binary in the PATH to be able to run';
+
             return;
         }
         if (!mkdir(self::$gitRepo) || !chdir(self::$gitRepo)) {
             $this->skipped = 'Could not create and move into the temp git repo '.self::$gitRepo;
+
             return;
         }
 
