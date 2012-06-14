@@ -64,6 +64,10 @@ Optional if the package repository can infer the version from somewhere, such
 as the VCS tag name in the VCS repository. In that case it is also recommended
 to omit it.
 
+> **Note:** Packagist uses VCS repositories, so the statement above is very
+> much true for Packagist as well. Specifying the version yourself will
+> most likely end up creating problems at some point due to human error.
+
 ### type
 
 The type of the package. It defaults to `library`.
