@@ -147,6 +147,7 @@ class InstallerInstallerMock extends InstallerInstaller
     public function getInstallPath(PackageInterface $package)
     {
         $version = $package->getVersion();
+
         return __DIR__.'/Fixtures/installer-v'.$version[0].'/';
     }
 }

@@ -49,6 +49,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
     protected function getAliasPackage($package, $version)
     {
         $normVersion = self::getVersionParser()->normalize($version);
+
         return new AliasPackage($package, $normVersion, $version);
     }
 
