@@ -234,7 +234,17 @@ class Locker
         }
 
         usort($locked, function ($a, $b) {
-            return strcmp($a['package'], $b['package']);
+            $comparison = strcmp($a['package'], $b['package']);
+
+            if (0 !== $comparison) {
+                return $comparison;
+            }
+
+            // If it is the same package, compare the versions to make the order deterministic
+            $aVersion = isset($a['alias-version']) ? $a['alias-version'] : $a['version'];
+            $bVersion = isset($b['alias-version']) ? $b['alias-version'] : $b['version'];
+
+            return strcmp($aVersion, $bVersion);
         });
 
         return $locked;
