@@ -28,18 +28,18 @@ convention is all lowercase and dashes for word separation.
 
 ## Specifying the version
 
-You need to specify the version some way. Depending on the type of repository
-you are using, it might be possible to omit it from `composer.json`, because
-the repository is able to infer the version from elsewhere.
+You need to specify the package's version some way. When you publish your
+package on Packagist, it is able to infer the version from the VCS (git, svn,
+hg) information, so in that case you do not have to specify it, and it is
+recommended not to. See [tags](#tags) and [branches](#branches) to see how
+version numbers are extracted from these.
 
-If you do want to specify it explicitly, you can just add a `version` field:
+If you are creating packages by hand and really have to specify it explicitly,
+you can just add a `version` field:
 
     {
         "version": "1.0.0"
     }
-
-However if you are using git, svn or hg, you don't have to specify it.
-Composer will detect versions as follows:
 
 ### Tags
 
@@ -65,7 +65,7 @@ name looks like a version, the version will be `{branchname}-dev`. For example
 a branch `2.0` will get a version `2.0.x-dev` (the `.x` is added for technical
 reasons, to make sure it is recognized as a branch, a `2.0.x` branch would also
 be valid and be turned into `2.0.x-dev` as well. If the branch does not look
-like a version, it will be `dev-{branchname}`. `master` results in a 
+like a version, it will be `dev-{branchname}`. `master` results in a
 `dev-master` version.
 
 Here are some examples of version branch names:
@@ -75,7 +75,6 @@ Here are some examples of version branch names:
     1.1.x
 
 > **Note:** When you install a dev version, it will install it from source.
-See [Repositories](05-repositories.md) for more information.
 
 ### Aliases
 
