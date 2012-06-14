@@ -13,7 +13,6 @@
 namespace Composer\Test\Util;
 
 use Composer\Util\RemoteFilesystem;
-use Composer\Test\TestCase;
 
 class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
 {

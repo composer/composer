@@ -12,7 +12,6 @@
 
 namespace Composer\Repository;
 
-use Composer\Repository\FilesystemRepository;
 use Composer\Test\TestCase;
 
 /**
@@ -33,7 +32,7 @@ class PearRepositoryTest extends TestCase
     /**
      * @dataProvider repositoryDataProvider
      * @param string $url
-     * @param array $expectedPackages
+     * @param array  $expectedPackages
      */
     public function testRepositoryRead($url, array $expectedPackages)
     {
