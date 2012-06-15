@@ -48,7 +48,7 @@ class ZipDumper extends BaseDumper implements DumperInterface
             $command = sprintf(
                 'git archive --format %s --output %s %s',
                 $this->format,
-                sprintf('%s/%s', $cwd, $fileName),
+                sprintf('%s/%s', $this->path, $fileName),
                 $sourceRef
             );
 
