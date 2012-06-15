@@ -12,6 +12,8 @@
 
 namespace Composer\Package\Dumper;
 
+use Composer\Package\Dumper\BaseDumper;
+use Composer\Package\Dumper\DumperInterface;
 use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
 
@@ -19,27 +21,10 @@ use Composer\Package\PackageInterface;
  * @author Konstantin Kudryashiv <ever.zet@gmail.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class ArrayDumper
+class ArrayDumper extends BaseDumper implements DumperInterface
 {
     public function dump(PackageInterface $package)
     {
-        $keys = array(
-            'binaries' => 'bin',
-            'scripts',
-            'type',
-            'extra',
-            'installationSource' => 'installation-source',
-            'license',
-            'authors',
-            'description',
-            'homepage',
-            'keywords',
-            'autoload',
-            'repositories',
-            'includePaths' => 'include-path',
-            'support',
-        );
-
         $data = array();
         $data['name'] = $package->getPrettyName();
         $data['version'] = $package->getPrettyVersion();
@@ -78,7 +63,7 @@ class ArrayDumper
             $data['suggest'] = $packages;
         }
 
-        foreach ($keys as $method => $key) {
+        foreach (self::$keys as $method => $key) {
             if (is_numeric($method)) {
                 $method = $key;
             }
