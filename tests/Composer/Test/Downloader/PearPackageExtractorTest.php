@@ -57,4 +57,25 @@ class PearPackageExtractorTest extends \PHPUnit_Framework_TestCase
         );
         $this->assertSame($expectedFileActions, $fileActions);
     }
+
+    public function testShouldExtractPackage_2_1()
+    {
+        $extractor = $this->getMockForAbstractClass('Composer\Downloader\PearPackageExtractor', array(), '', false);
+        $method = new \ReflectionMethod($extractor, 'buildCopyActions');
+        $method->setAccessible(true);
+
+        $fileActions = $method->invoke($extractor, __DIR__ . '/Fixtures/Package_v2.1', 'php');
+
+        $expectedFileActions = array(
+            0 => Array(
+                'from' => 'Zend_Authentication-2.0.0beta4/php/Zend/Authentication/Storage/StorageInterface.php',
+                'to' => '/php/Zend/Authentication/Storage/StorageInterface.php',
+            ),
+            1 => Array(
+                'from' => 'Zend_Authentication-2.0.0beta4/php/Zend/Authentication/Result.php',
+                'to' => '/php/Zend/Authentication/Result.php',
+            )
+        );
+        $this->assertSame($expectedFileActions, $fileActions);
+    }
 }

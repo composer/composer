@@ -115,13 +115,13 @@ class PearPackageExtractor
             throw new \RuntimeException('Package definition file is not valid.');
 
         $packageSchemaVersion = $package['version'];
-        if ($packageSchemaVersion == '1.0') {
+        if ('1.0' == $packageSchemaVersion) {
             $children = $package->release->filelist->children();
             $packageName = (string) $package->name;
             $packageVersion = (string) $package->release->version;
             $sourceDir = $packageName . '-' . $packageVersion;
             $result = $this->buildSourceList10($children, $role, $sourceDir);
-        } elseif ($packageSchemaVersion == '2.0') {
+        } elseif ('2.0' == $packageSchemaVersion || '2.1' == $packageSchemaVersion) {
             $children = $package->contents->children();
             $packageName = (string) $package->name;
             $packageVersion = (string) $package->version->release;
