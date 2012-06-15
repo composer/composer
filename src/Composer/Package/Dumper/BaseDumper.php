@@ -65,21 +65,22 @@ class BaseDumper
     protected $temp;
 
     /**
-     * @param mixed $path
+     * @param mixed                               $path
+     * @param \Composer\Util\ProcessExecutor|null $process
      *
-     * @return $this
+     * @return \Composer\Package\Dumper\BaseDumper
      * @throws \InvalidArgumentException
      */
-    public function __construct($path = null)
+    public function __construct($path = null, ProcessExecutor $process = null)
     {
         if (!empty($path)) {
             if (!is_writable($path)) {
                 throw new \InvalidArgumentException("Not authorized to write to '{$path}'");
             }
             $this->path    = $path;
-            $this->process = new ProcessExecutor;
-            $this->temp    = sys_get_temp_dir();
         }
+        $this->process = ($process !== null)?$process:new ProcessExecutor;
+        $this->temp    = sys_get_temp_dir();
     }
 
     /**
