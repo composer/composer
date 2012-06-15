@@ -14,6 +14,8 @@ namespace Composer\Package\Dumper;
 use Composer\Package\PackageInterface;
 use Composer\Util\ProcessExecutor;
 use Composer\Downloader\GitDownloader;
+use Composer\Downloader\HgDownloader;
+use Composer\Downloader\SvnDownloader;
 use Composer\IO\NullIO;
 
 /**
@@ -113,14 +115,26 @@ class BaseDumper
         $downloader->download($package, $workDir);
     }
 
+    /**
+     * @param \Composer\Package\PackageInterface $package
+     * @param string                             $workDir
+     */
     protected function downloadHg(PackageInterface $package, $workDir)
     {
-        throw new \DomainException("Not yet implemented.");
+        $downloader = new HgDownloader(
+            new NullIO(),
+            $this->process
+        );
+        $downloader->download($package, $workDir);
     }
 
     protected function downloadSvn(PackageInterface $package, $workDir)
     {
-        throw new \DomainException("Not yet implemented.");
+        $downloader = new SvnDownloader(
+            new NullIO(),
+            $this->process
+        );
+        $downloader->download($package, $workDir);
     }
 
     protected function getAndEnsureWorkDirectory(PackageInterface $package)
@@ -171,6 +185,23 @@ class BaseDumper
             $this->format,
             escapeshellarg(sprintf('%s/%s', $this->path, $fileName)),
             $sourceRef
+        );
+        $this->process->execute($command, $output, $workDir);
+    }
+
+    /**
+     * @param string $fileName
+     * @param string $sourceRef
+     * @param string $workDir
+     */
+    protected function packageHg($fileName, $sourceRef, $workDir)
+    {
+        $format  = ($this->format == 'tarball')?'tar':$this->format;
+        $command = sprintf(
+            'hg archive --rev %s --type %s %s',
+            $sourceRef,
+            $format,
+            escapeshellarg('%s/%s', $this->path, $fileName)
         );
         $this->process->execute($command, $output, $workDir);
     }
