@@ -36,7 +36,7 @@ class ZipDumper extends BaseDumper implements DumperInterface
 
         switch ($sourceType) {
         case 'git':
-            $this->downloadGit($package, $this->process, $workDir);
+            $this->downloadGit($package, $workDir);
             $this->packageGit($fileName, $sourceRef, $workDir);
             break;
         default:
