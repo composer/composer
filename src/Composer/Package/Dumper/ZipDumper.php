@@ -32,8 +32,7 @@ class ZipDumper extends BaseDumper implements DumperInterface
             mkdir($workDir, 0777, true);
         }
 
-        $cwd        = getcwd();
-        $fileName   = $this->getFilename($package);
+        $fileName   = $this->getFilename($package, 'zip');
         $process    = new ProcessExecutor;
         $sourceType = $package->getSourceType();
         $sourceRef  = $package->getSourceReference();
