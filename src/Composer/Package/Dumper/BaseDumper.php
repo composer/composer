@@ -12,6 +12,9 @@
 namespace Composer\Package\Dumper;
 
 use Composer\Package\PackageInterface;
+use Composer\Util\ProcessExecutor;
+use Composer\Downloader\GitDownloader;
+use Composer\IO\NullIO;
 
 /**
  * @author Till Klampaeckel <till@php.net>
@@ -68,8 +71,9 @@ class BaseDumper
             if (!is_writable($path)) {
                 throw new \InvalidArgumentException("Not authorized to write to '{$path}'");
             }
-            $this->path = $path;
-            $this->temp = sys_get_temp_dir();
+            $this->path    = $path;
+            $this->process = new ProcessExecutor;
+            $this->temp    = sys_get_temp_dir();
         }
     }
 
@@ -88,5 +92,34 @@ class BaseDumper
             $extension
         );
         return $fileName;
+    }
+
+    /**
+     * @param \Composer\Package\PackageInterface $package
+     * @param string                             $workDir
+     */
+    protected function downloadGit(PackageInterface $package, $workDir)
+    {
+        $downloader = new GitDownloader(
+            new NullIO(),
+            $this->process
+        );
+        $downloader->download($package, $workDir);
+    }
+
+    /**
+     * @param string $fileName
+     * @param string $sourceRef
+     * @param string $workDir
+     */
+    protected function packageGit($fileName, $sourceRef, $workDir)
+    {
+        $command = sprintf(
+            'git archive --format %s --output %s %s',
+            $this->format,
+            escapeshellarg(sprintf('%s/%s', $this->path, $fileName)),
+            $sourceRef
+        );
+        $this->process->execute($command, $output, $workDir);
     }
 }

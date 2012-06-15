@@ -15,8 +15,6 @@ use Composer\Package\Dumper\BaseDumper;
 use Composer\Package\Dumper\DumperInterface;
 use Composer\Package\PackageInterface;
 use Composer\Util\ProcessExecutor;
-use Composer\Downloader\GitDownloader;
-use Composer\IO\NullIO;
 
 /**
  * @author Till Klampaeckel <till@php.net>
@@ -39,23 +37,9 @@ class ZipDumper extends BaseDumper implements DumperInterface
 
         switch ($sourceType) {
         case 'git':
-            $downloader = new GitDownloader(
-                new NullIO(),
-                $process
-            );
-            $downloader->download($package, $workDir);
-
-            $command = sprintf(
-                'git archive --format %s --output %s %s',
-                $this->format,
-                sprintf('%s/%s', $this->path, $fileName),
-                $sourceRef
-            );
-
-            $process->execute($command, $output, $workDir);
-
+            $this->downloadGit($package, $process, $workDir);
+            $this->packageGit($fileName, $sourceRef, $workDir);
             break;
-
         default:
             throw new \InvalidArgumentException("Unable to handle repos of type {$sourceType} currently");
         }
