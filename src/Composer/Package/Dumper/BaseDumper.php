@@ -113,6 +113,16 @@ class BaseDumper
         $downloader->download($package, $workDir);
     }
 
+    protected function downloadHg(PackageInterface $package, $workDir)
+    {
+        throw new \DomainException("Not yet implemented.");
+    }
+
+    protected function downloadSvn(PackageInterface $package, $workDir)
+    {
+        throw new \DomainException("Not yet implemented.");
+    }
+
     protected function getAndEnsureWorkDirectory(PackageInterface $package)
     {
         $workDir = sprintf('%s/%s/%s', $this->temp, $this->format, $package->getName());
