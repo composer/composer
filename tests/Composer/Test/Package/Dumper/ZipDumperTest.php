@@ -26,12 +26,18 @@ class ZipDumperTest extends \PHPUnit_Framework_TestCase
         $package->setSourceReference('0.5.0');
         $package->setSourceType('git');
 
-        $zip = new ZipDumper('/tmp');
+        $temp = sys_get_temp_dir();
+
+        $zip = new ZipDumper($temp);
         $zip->dump($package);
 
-        $dist = sprintf('/%s-%s.zip', $package->getName(), $package->getVersion());
+        $name = preg_replace('#[^a-z0-9_-]#', '-', $package->getUniqueName());
 
-        $this->assertFileExists(getcwd() . $dist);
+        $dist = sprintf('%s/%s.zip',
+            $temp, $name
+        );
+        $this->assertFileExists($dist);
+        unlink($dist);
     }
 
     /**
