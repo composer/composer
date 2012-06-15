@@ -36,6 +36,14 @@ class ZipDumper extends BaseDumper implements DumperInterface
             $this->downloadGit($package, $workDir);
             $this->packageGit($fileName, $sourceRef, $workDir);
             break;
+        case 'hg':
+            $this->downloadHg($package, $workDir);
+            $this->package($fileName, $workDir, \Phar::ZIP);
+            break;
+        case 'svn':
+            $this->downloadSvn($package, $workDir);
+            $this->package($fileName, $workDir, \Phar::ZIP);
+            break;
         default:
             throw new \InvalidArgumentException("Unable to handle repositories of type '{$sourceType}'.");
         }
