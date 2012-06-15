@@ -92,7 +92,7 @@ class BaseDumper
      */
     public function getFilename(PackageInterface $package, $extension)
     {
-        $name = preg_replace('[^a-z0-9_-]', '-', $package->getUniqueName());
+        $name = preg_replace('#[^a-z0-9_-]#', '-', $package->getUniqueName());
         $fileName = sprintf('%s.%s',
             $name,
             $extension
