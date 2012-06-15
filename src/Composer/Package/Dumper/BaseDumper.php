@@ -75,27 +75,17 @@ class BaseDumper
 
     /**
      * @param \Composer\Package\PackageInterface $package
+     * @param string                             $extension
      *
      * @return string
      * @throws \InvalidArgumentException When unknown 'format' is encountered.
      */
-    public function getFilename(PackageInterface $package)
+    public function getFilename(PackageInterface $package, $extension)
     {
-        switch ($this->format) {
-        case 'tarball':
-            $ext = 'tar';
-            break;
-        case 'zip':
-            $ext = 'zip';
-            break;
-        default:
-            throw new \InvalidArgumentException("Format '{$this->format}' is not supported.");
-        }
-
-        $fileName = sprintf('%s-%s.%s',
-            $package->getPrettyName(),
-            $package->getVersion(),
-            $ext
+        $name = preg_replace('[^a-z0-9_-]', '-', $package->getUniqueName());
+        $fileName = sprintf('%s.%s',
+            $name,
+            $extension
         );
         return $fileName;
     }
