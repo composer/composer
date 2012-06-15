@@ -31,13 +31,12 @@ class ZipDumper extends BaseDumper implements DumperInterface
         }
 
         $fileName   = $this->getFilename($package, 'zip');
-        $process    = new ProcessExecutor;
         $sourceType = $package->getSourceType();
         $sourceRef  = $package->getSourceReference();
 
         switch ($sourceType) {
         case 'git':
-            $this->downloadGit($package, $process, $workDir);
+            $this->downloadGit($package, $this->process, $workDir);
             $this->packageGit($fileName, $sourceRef, $workDir);
             break;
         default:

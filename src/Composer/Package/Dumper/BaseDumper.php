@@ -54,6 +54,11 @@ class BaseDumper
     protected $path;
 
     /**
+     * @var \Composer\Util\ProcessExecutor
+     */
+    protected $process;
+
+    /**
      * Working directory.
      * @var string
      */
