@@ -38,11 +38,12 @@ class ZipDumper extends BaseDumper implements DumperInterface
             break;
         case 'hg':
             $this->downloadHg($package, $workDir);
-            $this->package($fileName, $workDir, \Phar::ZIP);
+            $this->packageHg($fileName, $sourceRef, $workDir);
             break;
         case 'svn':
+            $dir = $workDir . (substr($sourceRef, 0, 1) !== '/')?'/':'' . $sourceRef;
             $this->downloadSvn($package, $workDir);
-            $this->package($fileName, $workDir, \Phar::ZIP);
+            $this->package($fileName, $dir, \Phar::ZIP);
             break;
         default:
             throw new \InvalidArgumentException("Unable to handle repositories of type '{$sourceType}'.");
