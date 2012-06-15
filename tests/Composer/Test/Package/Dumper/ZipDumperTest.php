@@ -16,9 +16,12 @@ use Composer\Package\MemoryPackage;
 
 class ZipDumperTest extends \PHPUnit_Framework_TestCase
 {
+    /**
+     * @todo Replace with local git repo to run offline.
+     */
     public function testThis()
     {
-        $package = new MemoryPackage('Lagged_Session_SaveHandler_Memcache', '0.5.0', '0.5.0');
+        $package = new MemoryPackage('lagged/Lagged_Session_SaveHandler_Memcache', '0.5.0', '0.5.0');
         $package->setSourceUrl('git://github.com/lagged/Lagged_Session_SaveHandler_Memcache.git');
         $package->setSourceReference('0.5.0');
         $package->setSourceType('git');
