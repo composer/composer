@@ -37,7 +37,7 @@ class ZipDumper extends BaseDumper implements DumperInterface
             $this->packageGit($fileName, $sourceRef, $workDir);
             break;
         default:
-            throw new \InvalidArgumentException("Unable to handle repos of type {$sourceType} currently");
+            throw new \InvalidArgumentException("Unable to handle repositories of type '{$sourceType}'.");
         }
     }
 }
