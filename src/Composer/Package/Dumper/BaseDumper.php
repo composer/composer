@@ -113,6 +113,18 @@ class BaseDumper
         $downloader->download($package, $workDir);
     }
 
+    protected function getAndEnsureWorkDirectory(PackageInterface $package)
+    {
+        $workDir = sprintf('%s/%s/%s', $this->temp, $this->format, $package->getName());
+        if (!file_exists($workDir)) {
+            mkdir($workDir, 0777, true);
+        }
+        if (!file_exists($workDir)) {
+            throw new \RuntimeException("Could not find '{$workDir}' directory.");
+        }
+        return $workDir;
+    }
+
     /**
      * @param string $fileName
      * @param string $sourceRef

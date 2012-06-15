@@ -25,10 +25,7 @@ class ZipDumper extends BaseDumper implements DumperInterface
 
     public function dump(PackageInterface $package)
     {
-        $workDir = sprintf('%s/zip/%s', $this->temp, $package->getName());
-        if (!file_exists($workDir)) {
-            mkdir($workDir, 0777, true);
-        }
+        $workDir = $this->getAndEnsureWorkDirectory($package);
 
         $fileName   = $this->getFilename($package, 'zip');
         $sourceType = $package->getSourceType();
