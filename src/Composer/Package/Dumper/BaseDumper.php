@@ -136,6 +136,30 @@ class BaseDumper
     }
 
     /**
+     * Package the given directory into an archive.
+     *
+     * The format is most likely \Phar::TAR or \Phar::ZIP.
+     *
+     * @param string $filename
+     * @param string $workDir
+     * @param int    $format
+     *
+     * @throws \RuntimeException
+     */
+    protected function package($filename, $workDir, $format)
+    {
+        try {
+            $phar = new \PharData($filename, null, null, $format);
+            $phar->buildFromDirectory($workDir);
+        } catch (\UnexpectedValueException $e) {
+            $message  = "Original PHAR exception: " . (string) $e;
+            $message .= PHP_EOL . PHP_EOL;
+            $message .= sprintf("Could not create archive '%s' from '%s'.", $filename, $workDir);
+            throw new \RuntimeException($message);
+        }
+    }
+
+    /**
      * @param string $fileName
      * @param string $sourceRef
      * @param string $workDir
