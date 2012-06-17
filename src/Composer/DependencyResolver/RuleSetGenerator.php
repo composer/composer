@@ -127,14 +127,14 @@ class RuleSetGenerator
      * Adds a rule unless it duplicates an existing one of any type
      *
      * To be able to directly pass in the result of one of the rule creation
-     * methods.
+     * methods null is allowed which will not insert a rule.
      *
      * @param int  $type    A TYPE_* constant defining the rule type
      * @param Rule $newRule The rule about to be added
      */
     private function addRule($type, Rule $newRule = null)
     {
-        if ($this->rules->containsEqual($newRule)) {
+        if (!$newRule || $this->rules->containsEqual($newRule)) {
             return;
         }
 
