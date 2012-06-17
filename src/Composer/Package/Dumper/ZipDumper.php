@@ -19,7 +19,7 @@ use Composer\Util\ProcessExecutor;
 /**
  * @author Till Klampaeckel <till@php.net>
  */
-class ZipDumper extends BaseDumper implements DumperInterface
+class ZipDumper extends BaseDumper
 {
     protected $format = 'zip';
 

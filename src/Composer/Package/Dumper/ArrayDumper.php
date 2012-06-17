@@ -21,7 +21,7 @@ use Composer\Package\PackageInterface;
  * @author Konstantin Kudryashiv <ever.zet@gmail.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class ArrayDumper extends BaseDumper implements DumperInterface
+class ArrayDumper extends BaseDumper
 {
     public function dump(PackageInterface $package)
     {

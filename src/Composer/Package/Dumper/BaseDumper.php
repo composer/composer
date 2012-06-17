@@ -21,7 +21,7 @@ use Composer\IO\NullIO;
 /**
  * @author Till Klampaeckel <till@php.net>
  */
-class BaseDumper
+abstract class BaseDumper implements DumperInterface
 {
     /**
      * Format: zip or tarball.
