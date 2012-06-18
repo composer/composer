@@ -17,7 +17,7 @@ abstract class DumperTest extends \PHPUnit_Framework_TestCase
 {
     protected $testdir = '';
 
-    function __construct()
+    public function setUp()
     {
         $this->testdir = sys_get_temp_dir() . '/composer_dumpertest_git_repository' . mt_rand();
     }
