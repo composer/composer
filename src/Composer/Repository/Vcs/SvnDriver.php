@@ -12,6 +12,7 @@
 
 namespace Composer\Repository\Vcs;
 
+use Composer\Cache;
 use Composer\Json\JsonFile;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Filesystem;
@@ -25,6 +26,7 @@ use Composer\Downloader\TransportException;
  */
 class SvnDriver extends VcsDriver
 {
+    protected $cache;
     protected $baseUrl;
     protected $tags;
     protected $branches;
@@ -36,30 +38,6 @@ class SvnDriver extends VcsDriver
     private $util;
 
     /**
-     * Execute an SVN command and try to fix up the process with credentials
-     * if necessary.
-     *
-     * @param string $command The svn command to run.
-     * @param string $url     The SVN URL.
-     *
-     * @return string
-     */
-    protected function execute($command, $url)
-    {
-        if (null === $this->util) {
-            $this->util = new SvnUtil($this->baseUrl, $this->io, $this->process);
-        }
-
-        try {
-            return $this->util->execute($command, $url);
-        } catch (\RuntimeException $e) {
-            throw new \RuntimeException(
-                'Repository '.$this->url.' could not be processed, '.$e->getMessage()
-            );
-        }
-    }
-
-    /**
      * {@inheritDoc}
      */
     public function initialize()
@@ -69,6 +47,8 @@ class SvnDriver extends VcsDriver
         if (false !== ($pos = strrpos($this->url, '/trunk'))) {
             $this->baseUrl = substr($this->url, 0, $pos);
         }
+
+        $this->cache = new Cache($this->io, $this->config->get('home').'/cache.svn/'.preg_replace('{[^a-z0-9.]}i', '-', $this->baseUrl));
 
         $this->getBranches();
         $this->getTags();
@@ -112,17 +92,22 @@ class SvnDriver extends VcsDriver
     public function getComposerInformation($identifier)
     {
         $identifier = '/' . trim($identifier, '/') . '/';
+
+        if ($res = $this->cache->read($identifier.'.json')) {
+            $this->infoCache[$identifier] = JsonFile::parseJson($res);
+        }
+
         if (!isset($this->infoCache[$identifier])) {
             preg_match('{^(.+?)(@\d+)?/$}', $identifier, $match);
             if (!empty($match[2])) {
-                $identifier = $match[1];
+                $path = $match[1];
                 $rev = $match[2];
             } else {
                 $rev = '';
             }
 
             try {
-                $output = $this->execute('svn cat', $this->baseUrl . $identifier . 'composer.json' . $rev);
+                $output = $this->execute('svn cat', $this->baseUrl . $path . 'composer.json' . $rev);
                 if (!trim($output)) {
                     return;
                 }
@@ -133,7 +118,7 @@ class SvnDriver extends VcsDriver
             $composer = JsonFile::parseJson($output);
 
             if (!isset($composer['time'])) {
-                $output = $this->execute('svn info', $this->baseUrl . $identifier . $rev);
+                $output = $this->execute('svn info', $this->baseUrl . $path . $rev);
                 foreach ($this->process->splitLines($output) as $line) {
                     if ($line && preg_match('{^Last Changed Date: ([^(]+)}', $line, $match)) {
                         $date = new \DateTime($match[1]);
@@ -142,6 +127,8 @@ class SvnDriver extends VcsDriver
                     }
                 }
             }
+
+            $this->cache->write($identifier.'.json', json_encode($composer));
             $this->infoCache[$identifier] = $composer;
         }
 
@@ -156,11 +143,14 @@ class SvnDriver extends VcsDriver
         if (null === $this->tags) {
             $this->tags = array();
 
-            $output = $this->execute('svn ls', $this->baseUrl . '/tags');
+            $output = $this->execute('svn ls --verbose', $this->baseUrl . '/tags');
             if ($output) {
-                foreach ($this->process->splitLines($output) as $tag) {
-                    if ($tag) {
-                        $this->tags[rtrim($tag, '/')] = '/tags/'.$tag;
+                foreach ($this->process->splitLines($output) as $line) {
+                    $line = trim($line);
+                    if ($line && preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match)) {
+                        if (isset($match[1]) && isset($match[2]) && $match[2] !== './') {
+                            $this->tags[rtrim($match[2], '/')] = '/tags/'.$match[2].'@'.$match[1];
+                        }
                     }
                 }
             }
@@ -258,5 +248,29 @@ class SvnDriver extends VcsDriver
         }
 
         return $url;
+    }
+
+    /**
+     * Execute an SVN command and try to fix up the process with credentials
+     * if necessary.
+     *
+     * @param string $command The svn command to run.
+     * @param string $url     The SVN URL.
+     *
+     * @return string
+     */
+    protected function execute($command, $url)
+    {
+        if (null === $this->util) {
+            $this->util = new SvnUtil($this->baseUrl, $this->io, $this->process);
+        }
+
+        try {
+            return $this->util->execute($command, $url);
+        } catch (\RuntimeException $e) {
+            throw new \RuntimeException(
+                'Repository '.$this->url.' could not be processed, '.$e->getMessage()
+            );
+        }
     }
 }
