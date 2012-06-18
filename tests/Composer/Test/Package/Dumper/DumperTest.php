@@ -15,19 +15,21 @@ use Composer\Package\MemoryPackage;
 
 abstract class DumperTest extends \PHPUnit_Framework_TestCase
 {
-    /**
-     * @todo Replace with local git repo to run offline.
-     */
     public function getPackageName()
     {
-        $package = new MemoryPackage('lagged/Lagged_Session_SaveHandler_Memcache', '0.5.0', '0.5.0');
-        $package->setSourceUrl('git://github.com/lagged/Lagged_Session_SaveHandler_Memcache.git');
-        $package->setSourceReference('0.5.0');
+        $testdir = '/tmp/composer_dumpertest_git_repository';
+
+        system("rm -rf $testdir; mkdir $testdir");
+        system("cd $testdir; git init; echo 'a' > b; git add b; git commit -m test");
+
+        $package = new MemoryPackage('dumpertest/dumpertest', 'master', 'master');
+        $package->setSourceUrl("file://$testdir");
+        $package->setSourceReference('master');
         $package->setSourceType('git');
 
         $name = preg_replace('#[^a-z0-9_-]#', '-', $package->getUniqueName());
 
-	$retu = array('package' => $package, 'name' => $name);
+        $retu = array('package' => $package, 'name' => $name);
         return $retu;
     }
 }

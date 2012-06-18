@@ -15,9 +15,6 @@ use Composer\Package\Dumper\TarDumper;
 
 class TarDumperTest extends DumperTest
 {
-    /**
-     * @todo Replace with local git repo to run offline.
-     */
     public function testThis()
     {
         $retu = $this->getPackageName();

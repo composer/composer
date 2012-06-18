@@ -12,26 +12,18 @@
 namespace Composer\Test\Package\Dumper;
 
 use Composer\Package\Dumper\ZipDumper;
-use Composer\Package\MemoryPackage;
 
-class ZipDumperTest extends \PHPUnit_Framework_TestCase
+class ZipDumperTest extends DumperTest
 {
-    /**
-     * @todo Replace with local git repo to run offline.
-     */
     public function testThis()
     {
-        $package = new MemoryPackage('lagged/Lagged_Session_SaveHandler_Memcache', '0.5.0', '0.5.0');
-        $package->setSourceUrl('git://github.com/lagged/Lagged_Session_SaveHandler_Memcache.git');
-        $package->setSourceReference('0.5.0');
-        $package->setSourceType('git');
+        $retu = $this->getPackageName();
+        $package = $retu['package'];
+        $name = $retu['name'];
 
         $temp = sys_get_temp_dir();
-
         $zip = new ZipDumper($temp);
         $zip->dump($package);
-
-        $name = preg_replace('#[^a-z0-9_-]#', '-', $package->getUniqueName());
 
         $dist = sprintf('%s/%s.zip',
             $temp, $name
