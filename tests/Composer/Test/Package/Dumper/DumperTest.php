@@ -12,13 +12,30 @@
 namespace Composer\Test\Package\Dumper;
 
 use Composer\Package\MemoryPackage;
+use Composer\Util\Filesystem;
+use Composer\Util\ProcessExecutor;
 
 abstract class DumperTest extends \PHPUnit_Framework_TestCase
 {
+    /**
+     * @var \Composer\Util\Filesystem
+     */
+    protected $fs;
+
+    /**
+     * @var \Composer\Util\ProcessExecutor
+     */
+    protected $process;
+
+    /**
+     * @var string
+     */
     protected $testdir = '';
 
     public function setUp()
     {
+        $this->fs      = new Filesystem;
+		$this->process = new ProcessExecutor;
         $this->testdir = sys_get_temp_dir() . '/composer_dumpertest_git_repository' . mt_rand();
     }
 
@@ -27,17 +44,40 @@ abstract class DumperTest extends \PHPUnit_Framework_TestCase
         return $this->testdir;
     }
 
+    /**
+     * Create local git repository to run tests against!
+     */
     protected function setupGitRepo()
     {
         $td = $this->getTestDir();
-        system("rm -rf $td; mkdir $td");
-        system("cd $td; git init; echo 'a' > b; git add b; git commit -m test");
+
+        $this->fs->removeDirectory($td);
+        $this->fs->ensureDirectoryExists($td);
+
+        $currentWorkDir = getcwd();
+        chdir($td);
+
+        $result = $this->process->execute("git init -q");
+		if ($result > 0) {
+            throw new \RuntimeException(
+                "Could not init: " . $this->process->getErrorOutput());
+        }
+        $result = file_put_contents('b', 'a');
+        if (false === $result) {
+            throw new \RuntimeExcepton("Could not save file.");
+        }
+        $result = $this->process->execute("git add b && git commit -m 'commit b' -q");
+        if ($result > 0) {
+            throw new \RuntimeException(
+                "Could not init: " . $this->process->getErrorOutput());
+        }
+		chdir($currentWorkDir);
     }
 
     protected function removeGitRepo()
     {
         $td = $this->getTestDir();
-        system("rm -rf $td");
+        $this->fs->removeDirectory($td);
     }
 
     protected function setupPackage()
