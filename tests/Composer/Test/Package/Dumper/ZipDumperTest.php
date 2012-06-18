@@ -17,9 +17,9 @@ class ZipDumperTest extends DumperTest
 {
     public function testThis()
     {
-        $retu = $this->getPackageName();
-        $package = $retu['package'];
-        $name = $retu['name'];
+        $this->setupGitRepo();
+        $package = $this->setupPackage();
+        $name = $this->getPackageFileName($package);
 
         $temp = sys_get_temp_dir();
         $zip = new ZipDumper($temp);
@@ -30,6 +30,7 @@ class ZipDumperTest extends DumperTest
         );
         $this->assertFileExists($dist);
         unlink($dist);
+        $this->removeGitRepo();
     }
 
     /**
