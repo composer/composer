@@ -11,9 +11,9 @@
 
 namespace Composer\Test\Package\Dumper;
 
-use Composer\Package\Dumper\ZipDumper;
+use Composer\Package\Dumper\TarDumper;
 
-class ZipDumperTest extends DumperTest
+class TarDumperTest extends DumperTest
 {
     public function testThis()
     {
@@ -22,10 +22,10 @@ class ZipDumperTest extends DumperTest
         $name = $this->getPackageFileName($package);
 
         $temp = sys_get_temp_dir();
-        $zip = new ZipDumper($temp);
-        $zip->dump($package);
+        $tar = new TarDumper($temp);
+        $tar->dump($package);
 
-        $dist = sprintf('%s/%s.zip',
+        $dist = sprintf('%s/%s.tar',
             $temp, $name
         );
         $this->assertFileExists($dist);
@@ -38,6 +38,6 @@ class ZipDumperTest extends DumperTest
      */
     public function testException()
     {
-        new ZipDumper("/totally-random-" . time());
+        new TarDumper("/totally-random-" . time());
     }
 }
