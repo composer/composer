@@ -11,29 +11,24 @@
 
 namespace Composer\Test\Package\Dumper;
 
-use Composer\Package\Dumper\TarGzDumper;
-use Composer\Package\MemoryPackage;
+use Composer\Package\Dumper\TarDumper;
 
-class TarGzDumperTest extends \PHPUnit_Framework_TestCase
+class TarDumperTest extends DumperTest
 {
     /**
      * @todo Replace with local git repo to run offline.
      */
     public function testThis()
     {
-        $package = new MemoryPackage('lagged/Lagged_Session_SaveHandler_Memcache', '0.5.0', '0.5.0');
-        $package->setSourceUrl('git://github.com/lagged/Lagged_Session_SaveHandler_Memcache.git');
-        $package->setSourceReference('0.5.0');
-        $package->setSourceType('git');
+        $retu = $this->getPackageName();
+        $package = $retu['package'];
+        $name = $retu['name'];
 
         $temp = sys_get_temp_dir();
+        $tar = new TarDumper($temp);
+        $tar->dump($package);
 
-        $targz = new TarGzDumper($temp);
-        $targz->dump($package);
-
-        $name = preg_replace('#[^a-z0-9_-]#', '-', $package->getUniqueName());
-
-        $dist = sprintf('%s/%s.tar.gz',
+        $dist = sprintf('%s/%s.tar',
             $temp, $name
         );
         $this->assertFileExists($dist);
@@ -45,6 +40,6 @@ class TarGzDumperTest extends \PHPUnit_Framework_TestCase
      */
     public function testException()
     {
-        new TarGzDumper("/totally-random-" . time());
+        new TarDumper("/totally-random-" . time());
     }
 }

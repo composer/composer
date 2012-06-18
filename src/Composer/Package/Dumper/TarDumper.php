@@ -19,15 +19,15 @@ use Composer\Util\ProcessExecutor;
 /**
  * @author Ulf Härnhammar <ulfharn@gmail.com>
  */
-class TarGzDumper extends BaseDumper
+class TarDumper extends BaseDumper
 {
-    protected $format = 'tar.gz';
+    protected $format = 'tar';
 
     public function dump(PackageInterface $package)
     {
         $workDir = $this->getAndEnsureWorkDirectory($package);
 
-        $fileName   = $this->getFilename($package, 'tar.gz');
+        $fileName   = $this->getFilename($package, 'tar');
         $sourceType = $package->getSourceType();
         $sourceRef  = $package->getSourceReference();
 
@@ -43,7 +43,7 @@ class TarGzDumper extends BaseDumper
         case 'svn':
             $dir = $workDir . (substr($sourceRef, 0, 1) !== '/')?'/':'' . $sourceRef;
             $this->downloadSvn($package, $workDir);
-            $this->package($fileName, $dir, \Phar::GZ);
+            $this->package($fileName, $dir, \Phar::TAR);
             break;
         default:
             throw new \InvalidArgumentException("Unable to handle repositories of type '{$sourceType}'.");
