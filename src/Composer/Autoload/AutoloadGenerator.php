@@ -116,12 +116,29 @@ EOF;
         }
 
         // flatten array
+        $classMap = array();
         $autoloads['classmap'] = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($autoloads['classmap']));
+        foreach ($autoloads['psr-0'] as $namespace => $paths) {
+            foreach ($paths as $dir) {
+                $dir = $this->getPath($filesystem, $relVendorPath, $vendorPath, $dir);
+                foreach (ClassMapGenerator::createMap($dir) as $class => $path) {
+                    if (0 === strpos($class, $namespace)) {
+                        $path = '/'.$filesystem->findShortestPath(getcwd(), $path, true);
+                        if (!isset($classMap[$class])) {
+                            $classMap[$class] = '$baseDir . '.var_export($path, true).",\n";
+                        }
+                    }
+                }
+            }
+        }
         foreach ($autoloads['classmap'] as $dir) {
             foreach (ClassMapGenerator::createMap($dir) as $class => $path) {
                 $path = '/'.$filesystem->findShortestPath(getcwd(), $path, true);
-                $classmapFile .= '    '.var_export($class, true).' => $baseDir . '.var_export($path, true).",\n";
+                $classMap[$class] = '$baseDir . '.var_export($path, true).",\n";
             }
+        }
+        foreach ($classMap as $class => $code) {
+            $classmapFile .= '    '.var_export($class, true).' => '.$code;
         }
         $classmapFile .= ");\n";
 
@@ -279,6 +296,20 @@ EOF;
         return $baseDir.var_export($path, true);
     }
 
+    protected function getPath(Filesystem $filesystem, $relVendorPath, $vendorPath, $path)
+    {
+        $path = strtr($path, '\\', '/');
+        if (!$filesystem->isAbsolutePath($path)) {
+            if (strpos($path, $relVendorPath) === 0) {
+                // path starts with vendor dir
+                return $vendorPath . substr($path, strlen($relVendorPath));
+            }
+            return getcwd().'/'.$path;
+        }
+
+        return $path;
+    }
+
     protected function getAutoloadFile($vendorPathToTargetDirCode, $suffix)
     {
         return <<<AUTOLOAD
@@ -383,4 +414,3 @@ FOOTER;
     }
 
 }
-
