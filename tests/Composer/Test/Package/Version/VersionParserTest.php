@@ -143,6 +143,8 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'match any/2'       => array('*.*',         new MultiConstraint(array())),
             'match any/3'       => array('*.x.*',       new MultiConstraint(array())),
             'match any/4'       => array('x.x.x.*',     new MultiConstraint(array())),
+            'not equal'         => array('<>1.0.0',     new VersionConstraint('<>', '1.0.0.0')),
+            'not equal/2'       => array('!=1.0.0',     new VersionConstraint('!=', '1.0.0.0')),
             'greater than'      => array('>1.0.0',      new VersionConstraint('>', '1.0.0.0')),
             'lesser than'       => array('<1.2.3.4',    new VersionConstraint('<', '1.2.3.4')),
             'less/eq than'      => array('<=1.2.3',     new VersionConstraint('<=', '1.2.3.0')),

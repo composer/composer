@@ -228,7 +228,7 @@ class VersionParser
         }
 
         // match operators constraints
-        if (preg_match('{^(>=?|<=?|==?)?\s*(.*)}', $constraint, $matches)) {
+        if (preg_match('{^(<>|!=|>=?|<=?|==?)?\s*(.*)}', $constraint, $matches)) {
             try {
                 $version = $this->normalize($matches[2]);
 
