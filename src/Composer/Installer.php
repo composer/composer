@@ -201,7 +201,7 @@ class Installer
             // write autoloader
             $this->io->write('<info>Generating autoload files</info>');
             $localRepos = new CompositeRepository($this->repositoryManager->getLocalRepositories());
-            $this->autoloadGenerator->dump($localRepos, $this->package, $this->installationManager, $this->installationManager->getVendorPath() . '/composer', true);
+            $this->autoloadGenerator->dump($localRepos, $this->package, $this->installationManager, $this->installationManager->getVendorPath() . '/composer');
 
             if ($this->runScripts) {
                 // dispatch post event

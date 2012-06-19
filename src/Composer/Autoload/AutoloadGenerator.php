@@ -24,7 +24,7 @@ use Composer\Util\Filesystem;
  */
 class AutoloadGenerator
 {
-    public function dump(RepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir, $bcLinks = false)
+    public function dump(RepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir)
     {
         $filesystem = new Filesystem();
         $filesystem->ensureDirectoryExists($installationManager->getVendorPath());
@@ -134,20 +134,6 @@ EOF;
         }
         file_put_contents($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, true, true, (Boolean) $includePathFile, $targetDirLoader, $filesCode));
         copy(__DIR__.'/ClassLoader.php', $targetDir.'/ClassLoader.php');
-
-        // TODO BC feature, remove after June 15th
-        if ($bcLinks) {
-            $filesystem->ensureDirectoryExists($vendorPath.'/.composer');
-            $deprecated = "// Deprecated file, use the one in root of vendor dir\n".
-                "trigger_error(__FILE__.' is deprecated, please use vendor/autoload.php or vendor/composer/autoload_* instead'.PHP_EOL.'See https://groups.google.com/forum/#!msg/composer-dev/fWIs3KocwoA/nU3aLko9LhQJ for details', E_USER_DEPRECATED);\n";
-            file_put_contents($vendorPath.'/.composer/autoload_namespaces.php', "<?php\n{$deprecated}\nreturn include dirname(__DIR__).'/composer/autoload_namespaces.php';\n");
-            file_put_contents($vendorPath.'/.composer/autoload_classmap.php', "<?php\n{$deprecated}\nreturn include dirname(__DIR__).'/composer/autoload_classmap.php';\n");
-            file_put_contents($vendorPath.'/.composer/autoload.php', "<?php\n{$deprecated}\nreturn include dirname(__DIR__).'/autoload.php';\n");
-            file_put_contents($vendorPath.'/.composer/ClassLoader.php', "<?php\n{$deprecated}\nreturn include dirname(__DIR__).'/composer/ClassLoader.php';\n");
-            if ($includePathFile) {
-                file_put_contents($vendorPath.'/.composer/include_paths.php', "<?php\n{$deprecated}\nreturn include dirname(__DIR__).'/composer/include_paths.php';\n");
-            }
-        }
     }
 
     public function buildPackageMap(InstallationManager $installationManager, PackageInterface $mainPackage, array $packages)

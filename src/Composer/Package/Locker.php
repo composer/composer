@@ -89,12 +89,6 @@ class Locker
         $repo = $dev ? $this->repositoryManager->getLocalDevRepository() : $this->repositoryManager->getLocalRepository();
 
         foreach ($lockedPackages as $info) {
-            // TODO BC remove this after June 10th
-            if (isset($info['alias']) && empty($warned)) {
-                $warned = true;
-                echo 'BC warning: your lock file appears to be of an older format than this composer version, it is recommended to run composer update'.PHP_EOL;
-            }
-
             $resolvedVersion = !empty($info['alias-version']) ? $info['alias-version'] : $info['version'];
 
             // try to find the package in the local repo (best match)
