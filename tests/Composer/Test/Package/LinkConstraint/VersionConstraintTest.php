@@ -27,6 +27,12 @@ class VersionConstraintTest extends \PHPUnit_Framework_TestCase
             array('<=', '2', '>=', '1'),
             array('>=', '1', '<=', '2'),
             array('==', '2', '>=', '2'),
+            array('!=', '1', '!=', '1'),
+            array('!=', '1', '==', '2'),
+            array('!=', '1', '<',  '1'),
+            array('!=', '1', '<=', '1'),
+            array('!=', '1', '>',  '1'),
+            array('!=', '1', '>=', '1'),
         );
     }
 
@@ -53,6 +59,8 @@ class VersionConstraintTest extends \PHPUnit_Framework_TestCase
             array('<=', '1', '>=', '2'),
             array('>=', '2', '<=', '1'),
             array('==', '2', '<', '2'),
+            array('!=', '1', '==', '1'),
+            array('==', '1', '!=', '1'),
         );
     }
 
