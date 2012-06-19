@@ -51,9 +51,6 @@ class GitDownloader extends VcsDownloader
             $this->io->setAuthorization('github.com', $match[1], $match[2]);
         }
 
-        // TODO: BC for the composer remote that didn't exist, to be remove after May 18th.
-        $this->process->execute(sprintf('cd %s && git remote add composer %s', escapeshellarg($path), escapeshellarg($initial->getSourceUrl())), $ignoredOutput);
-
         $commandCallable = function($url) use ($ref, $path, $command) {
             return sprintf($command, escapeshellarg($path), escapeshellarg($url), escapeshellarg($ref));
         };
