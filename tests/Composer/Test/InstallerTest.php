@@ -170,7 +170,7 @@ class InstallerTest extends TestCase
             ->method('exists')
             ->will($this->returnValue(true));
 
-        $locker = new Locker($lockJsonMock, $repositoryManager, md5(json_encode($composerConfig)));
+        $locker = new Locker($lockJsonMock, $repositoryManager, $composer->getInstallationManager(), md5(json_encode($composerConfig)));
         $composer->setLocker($locker);
 
         $autoloadGenerator = $this->getMock('Composer\Autoload\AutoloadGenerator');
