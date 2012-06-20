@@ -2,10 +2,10 @@
 
 A solver policy defines behaviour variables of the dependency solver. It decides
 which versions are considered newer than others, which packages should be
-prefered over others and whether operations like downgrades or uninstall are
+preferred over others and whether operations like downgrades or uninstall are
 allowed.
 
-## Selection of prefered Packages
+## Selection of preferred Packages
 
 The following describe package pool situations with user requests and the
 resulting order in which the solver will try to install them.

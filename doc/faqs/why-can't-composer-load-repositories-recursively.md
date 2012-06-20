@@ -26,7 +26,7 @@ could define the same packages inside a package repository, but with different
 dist/source. There are many many ways this could go wrong.
 
 - Fetch the repositories of root package, then fetch the repositories of the
-first level depencies, then fetch the repositories of their dependencies, etc,
+first level dependencies, then fetch the repositories of their dependencies, etc,
 then resolve requirements. This sounds more efficient, but it suffers from the
 same problems than the second solution, because loading the repositories of the
 dependencies is not as easy as it sounds. You need to load all the repos of all
