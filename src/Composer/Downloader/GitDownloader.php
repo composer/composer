@@ -35,7 +35,7 @@ class GitDownloader extends VcsDownloader
         $this->runCommand($commandCallable, $package->getSourceUrl(), $path);
         $this->setPushUrl($package, $path);
 
-        $this->updateToCommit($path, $ref, $package->getPrettyVersion(), $package->getReleaseDate()->format('U'));
+        $this->updateToCommit($path, $ref, $package->getPrettyVersion(), $package->getReleaseDate());
     }
 
     /**
@@ -58,7 +58,7 @@ class GitDownloader extends VcsDownloader
         };
 
         $this->runCommand($commandCallable, $target->getSourceUrl());
-        $this->updateToCommit($path, $ref, $target->getPrettyVersion(), $target->getReleaseDate()->format('U'));
+        $this->updateToCommit($path, $ref, $target->getPrettyVersion(), $target->getReleaseDate());
     }
 
     protected function updateToCommit($path, $reference, $branch, $date)
@@ -71,8 +71,9 @@ class GitDownloader extends VcsDownloader
         }
 
         // reference was not found (prints "fatal: reference is not a tree: $ref")
-        if (false !== strpos($this->process->getErrorOutput(), $reference)) {
+        if ($date && false !== strpos($this->process->getErrorOutput(), $reference)) {
             $branch = preg_replace('{(?:^dev-|(?:\.x)?-dev$)}i', '', $branch);
+            $date = $date->format('U');
 
             $command = 'git branch -r';
             if (1 === $this->process->execute($command, $output, $path)) {

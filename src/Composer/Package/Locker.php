@@ -223,8 +223,7 @@ class Locker
 
             if ($package->isDev() && !$alias) {
                 $spec['source-reference'] = $package->getSourceReference();
-                if ('git' === $package->getSourceType()) {
-                    $path = $this->installationManager->getInstallPath($package);
+                if ('git' === $package->getSourceType() && $path = $this->installationManager->getInstallPath($package)) {
                     $process = new ProcessExecutor();
                     if (0 === $process->execute('git log -n1 --pretty=%ct '.escapeshellarg($package->getSourceReference()), $output, $path)) {
                         $spec['commit-date'] = trim($output);
