@@ -121,7 +121,12 @@ EOF;
         foreach ($autoloads['psr-0'] as $namespace => $paths) {
             foreach ($paths as $dir) {
                 $dir = $this->getPath($filesystem, $relVendorPath, $vendorPath, $dir);
-                foreach (ClassMapGenerator::createMap($dir) as $class => $path) {
+                $whitelist = sprintf(
+                    '{%s/%s.+(?<!(?<!/)Test\.php)$}',
+                    preg_quote(rtrim($dir, '/')),
+                    strpos($namespace, '_') === false ? preg_quote(strtr($namespace, '\\', '/')) : ''
+                );
+                foreach (ClassMapGenerator::createMap($dir, $whitelist) as $class => $path) {
                     if (0 === strpos($class, $namespace)) {
                         $path = '/'.$filesystem->findShortestPath(getcwd(), $path, true);
                         if (!isset($classMap[$class])) {
@@ -304,7 +309,7 @@ EOF;
                 // path starts with vendor dir
                 return $vendorPath . substr($path, strlen($relVendorPath));
             }
-            return getcwd().'/'.$path;
+            return strtr(getcwd(), '\\', '/').'/'.$path;
         }
 
         return $path;
