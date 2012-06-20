@@ -13,6 +13,7 @@ namespace Composer\Test\Mock;
 
 use Composer\Installer\InstallationManager;
 use Composer\Repository\RepositoryInterface;
+use Composer\Package\PackageInterface;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
@@ -25,6 +26,11 @@ class InstallationManagerMock extends InstallationManager
     private $updated = array();
     private $uninstalled = array();
     private $trace = array();
+
+    public function getInstallPath(PackageInterface $package)
+    {
+        return '';
+    }
 
     public function install(RepositoryInterface $repo, InstallOperation $operation)
     {
