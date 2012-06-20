@@ -13,18 +13,22 @@
 namespace Composer\Package;
 
 use Composer\Json\JsonFile;
+use Composer\Installer\InstallationManager;
 use Composer\Repository\RepositoryManager;
+use Composer\Util\ProcessExecutor;
 use Composer\Package\AliasPackage;
 
 /**
  * Reads/writes project lockfile (composer.lock).
  *
  * @author Konstantin Kudryashiv <ever.zet@gmail.com>
+ * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 class Locker
 {
     private $lockFile;
     private $repositoryManager;
+    private $installationManager;
     private $hash;
     private $lockDataCache;
 
@@ -33,12 +37,14 @@ class Locker
      *
      * @param JsonFile          $lockFile          lockfile loader
      * @param RepositoryManager $repositoryManager repository manager instance
+     * @param InstallationManager $installationManager installation manager instance
      * @param string            $hash              unique hash of the current composer configuration
      */
-    public function __construct(JsonFile $lockFile, RepositoryManager $repositoryManager, $hash)
+    public function __construct(JsonFile $lockFile, RepositoryManager $repositoryManager, InstallationManager $installationManager, $hash)
     {
         $this->lockFile          = $lockFile;
         $this->repositoryManager = $repositoryManager;
+        $this->installationManager = $installationManager;
         $this->hash = $hash;
     }
 
@@ -217,6 +223,13 @@ class Locker
 
             if ($package->isDev() && !$alias) {
                 $spec['source-reference'] = $package->getSourceReference();
+                if ('git' === $package->getSourceType()) {
+                    $path = $this->installationManager->getInstallPath($package);
+                    $process = new ProcessExecutor();
+                    if (0 === $process->execute('git log -n1 --pretty=%ct '.escapeshellarg($package->getSourceReference()), $output, $path)) {
+                        $spec['commit-date'] = trim($output);
+                    }
+                }
             }
 
             if ($alias) {
