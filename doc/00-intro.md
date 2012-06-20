@@ -69,7 +69,7 @@ You can place this file anywhere you wish. If you put it in your `PATH`,
 you can access it globally. On unixy systems you can even make it
 executable and invoke it without `php`.
 
-You can run these commands to easily acces `composer` from anywhere on your system:
+You can run these commands to easily access `composer` from anywhere on your system:
 
     $ curl -s http://getcomposer.org/installer | php
     $ sudo mv composer.phar /usr/local/bin/composer
