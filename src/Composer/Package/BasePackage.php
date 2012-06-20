@@ -203,7 +203,7 @@ abstract class BasePackage implements PackageInterface
 
     public function getPrettyString()
     {
-        return $this->getPrettyName().'-'.$this->getPrettyVersion();
+        return $this->getPrettyName().' '.$this->getPrettyVersion();
     }
 
     public function __clone()

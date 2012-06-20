@@ -163,4 +163,17 @@ class Pool
     {
         return ($literal > 0 ? '+' : '-') . $this->literalToPackage($literal);
     }
+
+    public function literalToPrettyString($literal, $installedMap)
+    {
+        $package = $this->literalToPackage($literal);
+
+        if (isset($installedMap[$package->getId()])) {
+            $prefix = ($literal > 0 ? 'keep' : 'remove');
+        } else {
+            $prefix = ($literal > 0 ? 'install' : 'don\'t install');
+        }
+
+        return $prefix.' '.$package->getPrettyString();
+    }
 }

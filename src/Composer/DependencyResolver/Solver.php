@@ -182,7 +182,7 @@ class Solver
         }
 
         if ($this->problems) {
-            throw new SolverProblemsException($this->problems);
+            throw new SolverProblemsException($this->problems, $this->installedMap);
         }
 
         $transaction = new Transaction($this->policy, $this->pool, $this->installedMap, $this->decisions);
@@ -457,6 +457,7 @@ class Solver
             return;
         }
 
+        $problem->nextSection();
         $problem->addRule($conflictRule);
     }
 

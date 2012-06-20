@@ -13,6 +13,7 @@
 namespace Composer\Package;
 
 use Composer\Package\LinkConstraint\LinkConstraintInterface;
+use Composer\Package\PackageInterface;
 
 /**
  * Represents a link between two packages, represented by their names
@@ -70,5 +71,10 @@ class Link
     public function __toString()
     {
         return $this->source.' '.$this->description.' '.$this->target.' ('.$this->constraint.')';
+    }
+
+    public function getPrettyString(PackageInterface $sourcePackage)
+    {
+        return $sourcePackage->getPrettyString().' '.$this->description.' '.$this->target.' '.$this->constraint->getPrettyString().'';
     }
 }
