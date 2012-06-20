@@ -18,23 +18,24 @@ namespace Composer\DependencyResolver;
 class SolverProblemsException extends \RuntimeException
 {
     protected $problems;
+    protected $installedMap;
 
-    public function __construct(array $problems)
+    public function __construct(array $problems, array $installedMap)
     {
         $this->problems = $problems;
+        $this->installedMap = $installedMap;
 
         parent::__construct($this->createMessage());
     }
 
     protected function createMessage()
     {
-        $messages = array();
-
-        foreach ($this->problems as $problem) {
-            $messages[] = (string) $problem;
+        $text = "\n";
+        foreach ($this->problems as $i => $problem) {
+            $text .= "  Problem ".($i+1).$problem->getPrettyString($this->installedMap)."\n";
         }
 
-        return "\n\tProblems:\n\t\t- ".implode("\n\t\t- ", $messages);
+        return $text;
     }
 
     public function getProblems()

@@ -20,6 +20,7 @@ namespace Composer\Package\LinkConstraint;
 class MultiConstraint implements LinkConstraintInterface
 {
     protected $constraints;
+    protected $prettyString;
 
     /**
      * Sets operator and version to compare a package with
@@ -40,6 +41,19 @@ class MultiConstraint implements LinkConstraintInterface
         }
 
         return true;
+    }
+
+    public function setPrettyString($prettyString)
+    {
+        $this->prettyString = $prettyString;
+    }
+
+    public function getPrettyString()
+    {
+        if ($this->prettyString) {
+            return $this->prettyString;
+        }
+        return $this->__toString();
     }
 
     public function __toString()

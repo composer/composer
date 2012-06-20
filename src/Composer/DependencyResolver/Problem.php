@@ -20,10 +20,18 @@ namespace Composer\DependencyResolver;
 class Problem
 {
     /**
+     * A map containing the id of each rule part of this problem as a key
+     * @var array
+     */
+    protected $reasonSeen;
+
+    /**
      * A set of reasons for the problem, each is a rule or a job and a rule
      * @var array
      */
-    protected $reasons;
+    protected $reasons = array();
+
+    protected $section = 0;
 
     /**
      * Add a rule as a reason
@@ -50,12 +58,16 @@ class Problem
 
     /**
      * A human readable textual representation of the problem's reasons
+     *
+     * @param array $installedMap A map of all installed packages
      */
-    public function __toString()
+    public function getPrettyString(array $installedMap = array())
     {
-        if (count($this->reasons) === 1) {
-            reset($this->reasons);
-            $reason = current($this->reasons);
+        $reasons = call_user_func_array('array_merge', array_reverse($this->reasons));
+
+        if (count($reasons) === 1) {
+            reset($reasons);
+            $reason = current($reasons);
 
             $rule = $reason['rule'];
             $job = $reason['job'];
@@ -73,9 +85,9 @@ class Problem
             }
         }
 
-        $messages = array("Problem caused by:");
+        $messages = array();
 
-        foreach ($this->reasons as $reason) {
+        foreach ($reasons as $reason) {
 
             $rule = $reason['rule'];
             $job = $reason['job'];
@@ -84,12 +96,12 @@ class Problem
                 $messages[] = $this->jobToText($job);
             } elseif ($rule) {
                 if ($rule instanceof Rule) {
-                    $messages[] = $rule->toHumanReadableString();
+                    $messages[] = $rule->getPrettyString($installedMap);
                 }
             }
         }
 
-        return implode("\n\t\t\t- ", $messages);
+        return "\n    - ".implode("\n    - ", $messages);
     }
 
     /**
@@ -100,9 +112,15 @@ class Problem
      */
     protected function addReason($id, $reason)
     {
-        if (!isset($this->reasons[$id])) {
-            $this->reasons[$id] = $reason;
+        if (!isset($this->reasonSeen[$id])) {
+            $this->reasonSeen[$id] = true;
+            $this->reasons[$this->section][] = $reason;
         }
+    }
+
+    public function nextSection()
+    {
+        $this->section++;
     }
 
     /**
@@ -119,7 +137,7 @@ class Problem
                     return 'No package found to satisfy install request for '.$job['packageName'].$this->constraintToText($job['constraint']);
                 }
 
-                return 'Installation request for '.$job['packageName'].$this->constraintToText($job['constraint']).': Satisfiable by ['.$this->getPackageList($job['packages']).'].';
+                return 'Installation request for '.$job['packageName'].$this->constraintToText($job['constraint']).' -> satisfiable by '.$this->getPackageList($job['packages']).'.';
             case 'update':
                 return 'Update request for '.$job['packageName'].$this->constraintToText($job['constraint']).'.';
             case 'remove':
@@ -146,6 +164,6 @@ class Problem
      */
     protected function constraintToText($constraint)
     {
-        return ($constraint) ? ' '.$constraint : '';
+        return ($constraint) ? ' '.$constraint->getPrettyString() : '';
     }
 }
