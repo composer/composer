@@ -75,14 +75,16 @@ class GitDownloader extends VcsDownloader
             $branch = preg_replace('{(?:^dev-|(?:\.x)?-dev$)}i', '', $branch);
             $date = $date->format('U');
 
+            // guess which remote branch to look at first
             $command = 'git branch -r';
-            if (1 === $this->process->execute($command, $output, $path)) {
+            if (0 !== $this->process->execute($command, $output, $path)) {
                 throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
             }
 
             $guessTemplate = 'git log --until=%s --date=raw -n1 --pretty=%%H %s';
             foreach ($this->process->splitLines($output) as $line) {
                 if (preg_match('{^composer/'.preg_quote($branch).'(?:\.x)?$}i', trim($line))) {
+                    // find the previous commit by date in the given branch
                     if (0 === $this->process->execute(sprintf($guessTemplate, $date, escapeshellarg(trim($line))), $output, $path)) {
                         $newReference = trim($output);
                     }
@@ -92,12 +94,14 @@ class GitDownloader extends VcsDownloader
             }
 
             if (empty($newReference)) {
+                // no matching branch found, find the previous commit by date in all commits
                 if (0 !== $this->process->execute(sprintf($guessTemplate, $date, '--all'), $output, $path)) {
                     throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
                 }
                 $newReference = trim($output);
             }
 
+            // checkout the new recovered ref
             $command = sprintf($template, escapeshellarg($newReference));
             if (0 === $this->process->execute($command, $output, $path)) {
                 $this->io->write('    '.$reference.' is gone (history was rewritten?), recovered by checking out '.$newReference);
