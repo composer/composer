@@ -254,7 +254,7 @@ If you are using composer from behind an HTTP proxy, you can use the standard
 `http_proxy` or `HTTP_PROXY` env vars. Simply set it to the URL of your proxy.
 Many operating systems already set this variable for you.
 
-Using `http_proxy` (lowercased) or even defining both might be preferrable since
+Using `http_proxy` (lowercased) or even defining both might be preferable since
 some tools like git or curl will only use the lower-cased `http_proxy` version.
 Alternatively you can also define the git proxy using
 `git config --global http.proxy <proxy url>`.
