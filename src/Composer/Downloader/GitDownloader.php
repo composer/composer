@@ -25,8 +25,8 @@ class GitDownloader extends VcsDownloader
     public function doDownload(PackageInterface $package, $path)
     {
         $ref = $package->getSourceReference();
-        $command = 'git clone %s %s && cd %2$s && git checkout %3$s && git reset --hard %3$s && git remote add composer %1$s';
-        $this->io->write("    Cloning ".$package->getSourceReference());
+        $command = 'git clone %s %s && cd %2$s && git remote add composer %1$s && git fetch composer';
+        $this->io->write("    Cloning ".$ref);
 
         $commandCallable = function($url) use ($ref, $path, $command) {
             return sprintf($command, escapeshellarg($url), escapeshellarg($path), escapeshellarg($ref));
@@ -34,6 +34,8 @@ class GitDownloader extends VcsDownloader
 
         $this->runCommand($commandCallable, $package->getSourceUrl(), $path);
         $this->setPushUrl($package, $path);
+
+        $this->updateToCommit($path, $ref, $package->getPrettyVersion(), $package->getReleaseDate()->format('U'));
     }
 
     /**
@@ -42,8 +44,8 @@ class GitDownloader extends VcsDownloader
     public function doUpdate(PackageInterface $initial, PackageInterface $target, $path)
     {
         $ref = $target->getSourceReference();
-        $this->io->write("    Checking out ".$target->getSourceReference());
-        $command = 'cd %s && git remote set-url composer %s && git fetch composer && git fetch --tags composer && git checkout %3$s && git reset --hard %3$s';
+        $this->io->write("    Checking out ".$ref);
+        $command = 'cd %s && git remote set-url composer %s && git fetch composer && git fetch --tags composer';
 
         // capture username/password from github URL if there is one
         $this->process->execute(sprintf('cd %s && git remote -v', escapeshellarg($path)), $output);
@@ -56,6 +58,54 @@ class GitDownloader extends VcsDownloader
         };
 
         $this->runCommand($commandCallable, $target->getSourceUrl());
+        $this->updateToCommit($path, $ref, $target->getPrettyVersion(), $target->getReleaseDate()->format('U'));
+    }
+
+    protected function updateToCommit($path, $reference, $branch, $date)
+    {
+        $template = 'git checkout %s && git reset --hard %1$s';
+
+        $command = sprintf($template, escapeshellarg($reference));
+        if (0 === $this->process->execute($command, $output, $path)) {
+            return;
+        }
+
+        // reference was not found (prints "fatal: reference is not a tree: $ref")
+        if (false !== strpos($this->process->getErrorOutput(), $reference)) {
+            $branch = preg_replace('{(?:^dev-|(?:\.x)?-dev$)}i', '', $branch);
+
+            $command = 'git branch -r';
+            if (1 === $this->process->execute($command, $output, $path)) {
+                throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+            }
+
+            $guessTemplate = 'git log --until=%s --date=raw -n1 --pretty=%%H %s';
+            foreach ($this->process->splitLines($output) as $line) {
+                if (preg_match('{^composer/'.preg_quote($branch).'(?:\.x)?$}i', trim($line))) {
+                    if (0 === $this->process->execute(sprintf($guessTemplate, $date, escapeshellarg(trim($line))), $output, $path)) {
+                        $newReference = trim($output);
+                    }
+
+                    break;
+                }
+            }
+
+            if (empty($newReference)) {
+                if (0 !== $this->process->execute(sprintf($guessTemplate, $date, '--all'), $output, $path)) {
+                    throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+                }
+                $newReference = trim($output);
+            }
+
+            $command = sprintf($template, escapeshellarg($newReference));
+            if (0 === $this->process->execute($command, $output, $path)) {
+                $this->io->write('    '.$reference.' is gone (history was rewritten?), recovered by checking out '.$newReference);
+
+                return;
+            }
+        }
+
+        throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
     }
 
     /**
