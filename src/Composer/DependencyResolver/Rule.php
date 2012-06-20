@@ -147,14 +147,14 @@ class Rule
         return 1 === count($this->literals);
     }
 
-    public function toHumanReadableString()
+    public function getPrettyString(array $installedMap = array())
     {
         $ruleText = '';
         foreach ($this->literals as $i => $literal) {
             if ($i != 0) {
                 $ruleText .= '|';
             }
-            $ruleText .= $this->pool->literalToString($literal);
+            $ruleText .= $this->pool->literalToPrettyString($literal, $installedMap);
         }
 
         switch ($this->reason) {
@@ -171,7 +171,7 @@ class Rule
                 $package1 = $this->pool->literalToPackage($this->literals[0]);
                 $package2 = $this->pool->literalToPackage($this->literals[1]);
 
-                return 'Package '.$package1->getPrettyString().' conflicts with '.$package2->getPrettyString().'"';
+                return $package1->getPrettyString().' conflicts with '.$package2->getPrettyString().'.';
 
             case self::RULE_PACKAGE_REQUIRES:
                 $literals = $this->literals;
@@ -183,11 +183,15 @@ class Rule
                     $requires[] = $this->pool->literalToPackage($literal);
                 }
 
-                $text = 'Package "'.$sourcePackage.'" contains the rule '.$this->reasonData.'. ';
+                $text = $this->reasonData->getPrettyString($sourcePackage);
                 if ($requires) {
-                    $text .= 'Any of these packages satisfy the dependency: '.implode(', ', $requires).'.';
+                    $requireText = array();
+                    foreach ($requires as $require) {
+                        $requireText[] = $require->getPrettyString();
+                    }
+                    $text .= ' -> satisfiable by '.implode(', ', $requireText).'.';
                 } else {
-                    $text .= 'No package satisfies this dependency.';
+                    $text .= ' -> no matching package found.';
                 }
 
                 return $text;
@@ -197,11 +201,18 @@ class Rule
             case self::RULE_INSTALLED_PACKAGE_OBSOLETES:
                 return $ruleText;
             case self::RULE_PACKAGE_SAME_NAME:
-                return $ruleText;
+                $text = "Can only install one of: ";
+
+                $packages = array();
+                foreach ($this->literals as $i => $literal) {
+                    $packages[] = $this->pool->literalToPackage($literal)->getPrettyString();
+                }
+
+                return $text.implode(', ', $packages).'.';
             case self::RULE_PACKAGE_IMPLICIT_OBSOLETES:
                 return $ruleText;
             case self::RULE_LEARNED:
-                return 'learned: '.$ruleText;
+                return 'Conclusion: '.$ruleText;
             case self::RULE_PACKAGE_ALIAS:
                 return $ruleText;
         }
