@@ -42,6 +42,10 @@ dependencies.
 
 <info>php composer.phar update</info>
 
+To limit the update operation to a few packages, you can list the package(s)
+you want to update as such:
+
+<info>php composer.phar update vendor/package1 foo/mypackage [...]</info>
 EOT
             )
         ;
