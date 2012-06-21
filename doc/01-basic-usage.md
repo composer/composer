@@ -105,7 +105,7 @@ and if it is, it downloads the versions specified there (regardless of what `com
 says). This means that anyone who sets up the project will download the exact
 same version of the dependencies.
 
-If no `composer.json` lock file exists, it will read the dependencies and
+If no `composer.lock` file exists, Composer will read the dependencies and
 versions from `composer.json` and  create the lock file.
 
 This means that if any of the dependencies get a new version, you won't get the updates
