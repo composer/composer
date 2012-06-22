@@ -29,6 +29,30 @@ class PearRepositoryTest extends TestCase
      */
     private $remoteFilesystem;
 
+    public function testComposerNonCompatibleRepositoryShouldSetIncludePath()
+    {
+        $url = 'pear.phpmd.org';
+        $expectedPackages = array(
+            array('name' => 'pear-phpmd/PHP_PMD', 'version' => '1.3.3'),
+        );
+
+        $repoConfig = array(
+            'url' => $url
+        );
+
+        $this->createRepository($repoConfig);
+
+        foreach ($expectedPackages as $expectedPackage) {
+            $package = $this->repository->findPackage($expectedPackage['name'], $expectedPackage['version']);
+            $this->assertInstanceOf('Composer\Package\PackageInterface',
+                $package,
+                'Expected package ' . $expectedPackage['name'] . ', version ' . $expectedPackage['version'] .
+                ' not found in pear channel ' . $url
+            );
+            $this->assertSame(array('/'), $package->getIncludePaths());
+        }
+    }
+
     /**
      * @dataProvider repositoryDataProvider
      * @param string $url
