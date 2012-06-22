@@ -36,6 +36,10 @@ class VersionConstraint extends SpecificConstraint
             $operator = '==';
         }
 
+        if ('<>' === $operator) {
+            $operator = '!=';
+        }
+
         $this->operator = $operator;
         $this->version = $version;
     }
@@ -48,6 +52,18 @@ class VersionConstraint extends SpecificConstraint
     {
         $noEqualOp = str_replace('=', '', $this->operator);
         $providerNoEqualOp = str_replace('=', '', $provider->operator);
+
+        $isEqualOp = '==' === $this->operator;
+        $isNonEqualOp = '!=' === $this->operator;
+        $isProviderEqualOp = '==' === $provider->operator;
+        $isProviderNonEqualOp = '!=' === $provider->operator;
+
+        // '!=' operator is match when other operator is not '==' operator or version is not match
+        // these kinds of comparisons always have a solution
+        if ($isNonEqualOp || $isProviderNonEqualOp) {
+            return !$isEqualOp && !$isProviderEqualOp
+                || version_compare($provider->version, $this->version, '!=');
+        }
 
         // an example for the condition is <= 2.0 & < 1.0
         // these kinds of comparisons always have a solution

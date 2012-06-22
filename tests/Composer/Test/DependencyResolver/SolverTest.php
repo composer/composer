@@ -115,6 +115,30 @@ class SolverTest extends TestCase
         ));
     }
 
+    public function testSolverInstallHonoursNotEqualOperator()
+    {
+        $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
+        $this->repo->addPackage($packageB = $this->getPackage('B', '1.0'));
+        $this->repo->addPackage($newPackageB11 = $this->getPackage('B', '1.1'));
+        $this->repo->addPackage($newPackageB12 = $this->getPackage('B', '1.2'));
+        $this->repo->addPackage($newPackageB13 = $this->getPackage('B', '1.3'));
+
+        $packageA->setRequires(array(
+            new Link('A', 'B', $this->getVersionConstraint('<=', '1.3'), 'requires'),
+            new Link('A', 'B', $this->getVersionConstraint('<>', '1.3'), 'requires'),
+            new Link('A', 'B', $this->getVersionConstraint('!=', '1.2'), 'requires'),
+        ));
+
+        $this->reposComplete();
+
+        $this->request->install('A');
+
+        $this->checkSolverResult(array(
+            array('job' => 'install', 'package' => $newPackageB11),
+            array('job' => 'install', 'package' => $packageA),
+        ));
+    }
+
     public function testSolverInstallWithDepsInOrder()
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
