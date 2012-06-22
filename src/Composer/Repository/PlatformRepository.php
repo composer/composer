@@ -38,58 +38,77 @@ class PlatformRepository extends ArrayRepository
         $php = new MemoryPackage('php', $version, $prettyVersion);
         $php->setDescription('The PHP interpreter');
         parent::addPackage($php);
-
-        foreach (get_loaded_extensions() as $name) {
+        
+        $loadedExtensions = get_loaded_extensions();
+        
+        // Extensions scanning
+        foreach ($loadedExtensions as $name) {
             switch ($name) {
                 // Skipped "extensions"
                 case 'standard':
                 case 'Core':
                     continue;
-                
-                // Curl exposes its version by the curl_version function
-                case 'curl':
-                    $curlversion = curl_version();
-                    $prettyVersion = $curlversion['version'];
-                    
-                    try {
-                        $version = $versionParser->normalize($prettyVersion);
-                    } catch (\UnexpectedValueException $e) {
-                        $prettyVersion = '0';
-                        $version = $versionParser->normalize($prettyVersion);
-                    }
-                    
-                    break;
-                    
-                    
-                case 'libxml':
-                    $prettyVersion = LIBXML_DOTTED_VERSION;
-                    
-                    try {
-                        $version = $versionParser->normalize($prettyVersion);
-                    } catch (\UnexpectedValueException $e) {
-                        $prettyVersion = '0';
-                        $version = $versionParser->normalize($prettyVersion);
-                    }
-                    
-                    break;
                     
                 // All normal cases for standard extensions    
                 default:
                     $reflExt = new \ReflectionExtension($name);
-                    
-                    try {
-                        $prettyVersion = $reflExt->getVersion();
-                        $version = $versionParser->normalize($prettyVersion);
-                    } catch (\UnexpectedValueException $e) {
-                        $prettyVersion = '0';
-                        $version = $versionParser->normalize($prettyVersion);
-                    }
-                    
+                    $prettyVersion = $reflExt->getVersion();
                     break;
+            }
+            
+            try {
+                $version = $versionParser->normalize($prettyVersion);
+            } catch (\UnexpectedValueException $e) {
+                $prettyVersion = '0';
+                $version = $versionParser->normalize($prettyVersion);
             }
 
             $ext = new MemoryPackage('ext-'.$name, $version, $prettyVersion);
             $ext->setDescription('The '.$name.' PHP extension');
+            parent::addPackage($ext);
+        }
+        
+        // Another quick loop, just for possible libraries
+        foreach ($loadedExtensions as $name) {
+            switch ($name) {
+                // Skipped "extensions"
+                case 'standard':
+                case 'Core':
+                    continue;
+        
+                    // Curl exposes its version by the curl_version function
+                case 'curl':
+                    $curlVersion = curl_version();
+                    $prettyVersion = $curlVersion['version'];
+                    break;
+        
+                case 'libxml':
+                    $prettyVersion = LIBXML_DOTTED_VERSION;
+                    break;
+        
+                case 'openssl':
+                    $prettyVersion = str_replace('OpenSSL', '', OPENSSL_VERSION_TEXT);
+                    $prettyVersion = trim($prettyVersion);
+                    break;
+        
+                case 'pcre':
+                    $prettyVersion = PCRE_VERSION;
+                    break;
+                    
+                default:
+                    // None handled extensions have no special cases, skip 
+                    continue;
+            }
+        
+            try {
+                $version = $versionParser->normalize($prettyVersion);
+            } catch (\UnexpectedValueException $e) {
+                $prettyVersion = '0';
+                $version = $versionParser->normalize($prettyVersion);
+            }
+        
+            $ext = new MemoryPackage('lib-'.$name, $version, $prettyVersion);
+            $ext->setDescription('The '.$name.' PHP library');
             parent::addPackage($ext);
         }
     }
