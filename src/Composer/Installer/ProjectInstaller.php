@@ -95,4 +95,3 @@ class ProjectInstaller implements InstallerInterface
         return $this->installPath;
     }
 }
-

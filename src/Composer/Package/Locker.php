@@ -35,10 +35,10 @@ class Locker
     /**
      * Initializes packages locker.
      *
-     * @param JsonFile          $lockFile          lockfile loader
-     * @param RepositoryManager $repositoryManager repository manager instance
+     * @param JsonFile            $lockFile            lockfile loader
+     * @param RepositoryManager   $repositoryManager   repository manager instance
      * @param InstallationManager $installationManager installation manager instance
-     * @param string            $hash              unique hash of the current composer configuration
+     * @param string              $hash                unique hash of the current composer configuration
      */
     public function __construct(JsonFile $lockFile, RepositoryManager $repositoryManager, InstallationManager $installationManager, $hash)
     {

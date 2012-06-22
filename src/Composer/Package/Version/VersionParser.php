@@ -192,6 +192,7 @@ class VersionParser
         }
 
         $constraint->setPrettyString($prettyConstraint);
+
         return $constraint;
     }
 
