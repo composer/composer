@@ -53,6 +53,7 @@ class MultiConstraint implements LinkConstraintInterface
         if ($this->prettyString) {
             return $this->prettyString;
         }
+
         return $this->__toString();
     }
 

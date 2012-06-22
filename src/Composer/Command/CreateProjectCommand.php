@@ -146,4 +146,3 @@ EOT
         return $factory->createDownloadManager($io);
     }
 }
-
