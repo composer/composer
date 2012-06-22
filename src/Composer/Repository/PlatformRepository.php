@@ -43,20 +43,13 @@ class PlatformRepository extends ArrayRepository
         
         // Extensions scanning
         foreach ($loadedExtensions as $name) {
-            switch ($name) {
-                // Skipped "extensions"
-                case 'standard':
-                case 'Core':
-                    continue;
-                    
-                // All normal cases for standard extensions    
-                default:
-                    $reflExt = new \ReflectionExtension($name);
-                    $prettyVersion = $reflExt->getVersion();
-                    break;
+            if (in_array($name, array('standard', 'Core'))) {
+                continue;
             }
-            
+
+            $reflExt = new \ReflectionExtension($name);
             try {
+                $prettyVersion = $reflExt->getVersion();
                 $version = $versionParser->normalize($prettyVersion);
             } catch (\UnexpectedValueException $e) {
                 $prettyVersion = '0';
@@ -73,11 +66,6 @@ class PlatformRepository extends ArrayRepository
         // relying on them.
         foreach ($loadedExtensions as $name) {
             switch ($name) {
-                // Skipped "extensions"
-                case 'standard':
-                case 'Core':
-                    continue;
-                    
                 case 'curl':
                     $curlVersion = curl_version();
                     $prettyVersion = $curlVersion['version'];
@@ -94,11 +82,6 @@ class PlatformRepository extends ArrayRepository
                 case 'openssl':
                     $prettyVersion = str_replace('OpenSSL', '', OPENSSL_VERSION_TEXT);
                     $prettyVersion = trim($prettyVersion);
-                    break;
-                    
-                case 'mysqli':
-                    // not so pretty version
-                    $prettyVersion = mysqli_get_client_version();
                     break;
                     
                 case 'pcre':
@@ -121,8 +104,7 @@ class PlatformRepository extends ArrayRepository
             try {
                 $version = $versionParser->normalize($prettyVersion);
             } catch (\UnexpectedValueException $e) {
-                $prettyVersion = '0';
-                $version = $versionParser->normalize($prettyVersion);
+                continue;
             }
         
             $ext = new MemoryPackage('lib-'.$name, $version, $prettyVersion);
