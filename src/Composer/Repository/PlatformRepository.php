@@ -69,30 +69,48 @@ class PlatformRepository extends ArrayRepository
         }
         
         // Another quick loop, just for possible libraries
+        // Doing it this way to know that functions or constants exist before
+        // relying on them.
         foreach ($loadedExtensions as $name) {
             switch ($name) {
                 // Skipped "extensions"
                 case 'standard':
                 case 'Core':
                     continue;
-        
-                    // Curl exposes its version by the curl_version function
+                    
                 case 'curl':
                     $curlVersion = curl_version();
                     $prettyVersion = $curlVersion['version'];
                     break;
-        
+                    
+                case 'iconv':
+                    $prettyVersion = ICONV_VERSION;
+                    break;
+                    
                 case 'libxml':
                     $prettyVersion = LIBXML_DOTTED_VERSION;
                     break;
-        
+                    
                 case 'openssl':
                     $prettyVersion = str_replace('OpenSSL', '', OPENSSL_VERSION_TEXT);
                     $prettyVersion = trim($prettyVersion);
                     break;
-        
+                    
+                case 'mysqli':
+                    // not so pretty version
+                    $prettyVersion = mysqli_get_client_version();
+                    break;
+                    
                 case 'pcre':
                     $prettyVersion = PCRE_VERSION;
+                    break;
+                    
+                case 'uuid':
+                    $prettyVersion = UUID_VERSION;
+                    break;
+                    
+                case 'xsl':
+                    $prettyVersion = LIBXSLT_DOTTED_VERSION;
                     break;
                     
                 default:
