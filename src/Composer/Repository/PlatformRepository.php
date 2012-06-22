@@ -40,17 +40,52 @@ class PlatformRepository extends ArrayRepository
         parent::addPackage($php);
 
         foreach (get_loaded_extensions() as $name) {
-            if (in_array($name, array('standard', 'Core'))) {
-                continue;
-            }
-
-            $reflExt = new \ReflectionExtension($name);
-            try {
-                $prettyVersion = $reflExt->getVersion();
-                $version = $versionParser->normalize($prettyVersion);
-            } catch (\UnexpectedValueException $e) {
-                $prettyVersion = '0';
-                $version = $versionParser->normalize($prettyVersion);
+            switch ($name) {
+                // Skipped "extensions"
+                case 'standard':
+                case 'Core':
+                    continue;
+                
+                // Curl exposes its version by the curl_version function
+                case 'curl':
+                    $curlversion = curl_version();
+                    $prettyVersion = $curlversion['version'];
+                    
+                    try {
+                        $version = $versionParser->normalize($prettyVersion);
+                    } catch (\UnexpectedValueException $e) {
+                        $prettyVersion = '0';
+                        $version = $versionParser->normalize($prettyVersion);
+                    }
+                    
+                    break;
+                    
+                    
+                case 'libxml':
+                    $prettyVersion = LIBXML_DOTTED_VERSION;
+                    
+                    try {
+                        $version = $versionParser->normalize($prettyVersion);
+                    } catch (\UnexpectedValueException $e) {
+                        $prettyVersion = '0';
+                        $version = $versionParser->normalize($prettyVersion);
+                    }
+                    
+                    break;
+                    
+                // All normal cases for standard extensions    
+                default:
+                    $reflExt = new \ReflectionExtension($name);
+                    
+                    try {
+                        $prettyVersion = $reflExt->getVersion();
+                        $version = $versionParser->normalize($prettyVersion);
+                    } catch (\UnexpectedValueException $e) {
+                        $prettyVersion = '0';
+                        $version = $versionParser->normalize($prettyVersion);
+                    }
+                    
+                    break;
             }
 
             $ext = new MemoryPackage('ext-'.$name, $version, $prettyVersion);
