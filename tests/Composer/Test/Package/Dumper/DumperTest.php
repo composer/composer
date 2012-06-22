@@ -92,6 +92,6 @@ abstract class DumperTest extends \PHPUnit_Framework_TestCase
 
     protected function getPackageFileName(MemoryPackage $package)
     {
-        return preg_replace('#[^a-z0-9_-]#', '-', $package->getUniqueName());
+        return $package->getVersion();
     }
 }

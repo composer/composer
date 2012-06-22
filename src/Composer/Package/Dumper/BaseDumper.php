@@ -94,7 +94,7 @@ abstract class BaseDumper implements DumperInterface
      */
     public function getFilename(PackageInterface $package, $extension)
     {
-        $name = preg_replace('#[^a-z0-9_-]#', '-', $package->getUniqueName());
+        $name = $package->getPrettyVersion();
         $fileName = sprintf('%s.%s',
             $name,
             $extension
