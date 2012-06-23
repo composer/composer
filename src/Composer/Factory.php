@@ -70,9 +70,11 @@ class Factory
     /**
      * Creates a Composer instance
      *
-     * @param  IOInterface $io          IO instance
-     * @param  mixed       $localConfig either a configuration array or a filename to read from, if null it will read from the default filename
-     * @return Composer
+     * @param   IOInterface $io IO instance
+     * @param   array|string|null $localConfig either a configuration array or a filename to read from, if null it will
+     *          read from the default filename
+     * @throws  \InvalidArgumentException
+     * @return  Composer
      */
     public function createComposer(IOInterface $io, $localConfig = null)
     {
@@ -151,6 +153,11 @@ class Factory
         return $composer;
     }
 
+    /**
+     * @param   IO\IOInterface                  $io
+     * @param   Config                          $config
+     * @return  Repository\RepositoryManager
+     */
     protected function createRepositoryManager(IOInterface $io, Config $config)
     {
         $rm = new RepositoryManager($io, $config);
@@ -165,12 +172,20 @@ class Factory
         return $rm;
     }
 
+    /**
+     * @param   Repository\RepositoryManager $rm
+     * @param   string $vendorDir
+     */
     protected function addLocalRepository(RepositoryManager $rm, $vendorDir)
     {
         $rm->setLocalRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/composer/installed.json')));
         $rm->setLocalDevRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/composer/installed_dev.json')));
     }
 
+    /**
+     * @param   array   $localConfig
+     * @return  array
+     */
     protected function addPackagistRepository(array $localConfig)
     {
         $loadPackagist = true;
@@ -201,6 +216,10 @@ class Factory
         return $localConfig;
     }
 
+    /**
+     * @param   IO\IOInterface              $io
+     * @return  Downloader\DownloadManager
+     */
     public function createDownloadManager(IOInterface $io)
     {
         $dm = new Downloader\DownloadManager();
@@ -216,6 +235,14 @@ class Factory
         return $dm;
     }
 
+    /**
+     * @param   Repository\RepositoryManager    $rm
+     * @param   Downloader\DownloadManager      $dm
+     * @param   string                          $vendorDir
+     * @param   string                          $binDir
+     * @param   IO\IOInterface                  $io
+     * @return  Installer\InstallationManager
+     */
     protected function createInstallationManager(Repository\RepositoryManager $rm, Downloader\DownloadManager $dm, $vendorDir, $binDir, IOInterface $io)
     {
         $im = new Installer\InstallationManager($vendorDir);
@@ -226,9 +253,14 @@ class Factory
         return $im;
     }
 
+    /**
+     * @param   Repository\RepositoryManager    $rm
+     * @param   Installer\InstallationManager   $im
+     */
     protected function purgePackages(Repository\RepositoryManager $rm, Installer\InstallationManager $im)
     {
         foreach ($rm->getLocalRepositories() as $repo) {
+            /* @var $repo   Repository\WritableRepositoryInterface */
             foreach ($repo->getPackages() as $package) {
                 if (!$im->isPackageInstalled($repo, $package)) {
                     $repo->removePackage($package);
@@ -239,7 +271,8 @@ class Factory
 
     /**
      * @param  IOInterface $io     IO instance
-     * @param  mixed       $config either a configuration array or a filename to read from, if null it will read from the default filename
+     * @param  mixed       $config either a configuration array or a filename to read from, if null it will read from
+     *                             the default filename
      * @return Composer
      */
     public static function create(IOInterface $io, $config = null)
