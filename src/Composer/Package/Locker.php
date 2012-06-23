@@ -51,8 +51,8 @@ class Locker
     /**
      * Checks whether locker were been locked (lockfile found).
      *
-     * @param  Boolean $dev true to check if dev packages are locked
-     * @return Boolean
+     * @param  bool $dev true to check if dev packages are locked
+     * @return bool
      */
     public function isLocked($dev = false)
     {
@@ -71,7 +71,7 @@ class Locker
     /**
      * Checks whether the lock file is still up to date with the current hash
      *
-     * @return Boolean
+     * @return bool
      */
     public function isFresh()
     {
@@ -83,7 +83,7 @@ class Locker
     /**
      * Searches and returns an array of locked packages, retrieved from registered repositories.
      *
-     * @param  Boolean $dev true to retrieve the locked dev packages
+     * @param  bool  $dev true to retrieve the locked dev packages
      * @return array
      */
     public function getLockedPackages($dev = false)
@@ -170,7 +170,7 @@ class Locker
      * @param mixed $packages array of dev packages or null if installed without --dev
      * @param array $aliases  array of aliases
      *
-     * @return Boolean
+     * @return bool
      */
     public function setLockData(array $packages, $devPackages, array $aliases, $minimumStability, array $stabilityFlags)
     {

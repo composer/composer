@@ -110,7 +110,7 @@ class CompositeRepository implements RepositoryInterface
      */
     public function removePackage(PackageInterface $package)
     {
-        foreach($this->repositories as $repository) {
+        foreach ($this->repositories as $repository) {
             /* @var $repository RepositoryInterface */
             $repository->removePackage($package);
         }

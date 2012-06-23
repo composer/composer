@@ -65,7 +65,7 @@ class ConsoleIO implements IOInterface
      */
     public function isVerbose()
     {
-        return (Boolean) $this->input->getOption('verbose');
+        return (bool) $this->input->getOption('verbose');
     }
 
     /**

@@ -20,7 +20,6 @@ use Composer\Package\Version\VersionParser;
  */
 class PlatformRepository extends ArrayRepository
 {
-
     protected function initialize()
     {
         parent::initialize();

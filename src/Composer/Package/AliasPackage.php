@@ -159,7 +159,7 @@ class AliasPackage extends BasePackage
      *
      * Use by the policy for sorting manually aliased packages first, see #576
      *
-     * @param Boolean $value
+     * @param bool $value
      */
     public function setRootPackageAlias($value)
     {
@@ -168,7 +168,7 @@ class AliasPackage extends BasePackage
 
     /**
      * @see setRootPackageAlias
-     * @return Boolean
+     * @return bool
      */
     public function isRootPackageAlias()
     {

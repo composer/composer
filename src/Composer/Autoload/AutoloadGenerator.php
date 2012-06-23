@@ -132,7 +132,7 @@ EOF;
         if ($includePathFile = $this->getIncludePathsFile($packageMap, $filesystem, $relVendorPath, $vendorPath, $vendorPathCode, $appBaseDirCode)) {
             file_put_contents($targetDir.'/include_paths.php', $includePathFile);
         }
-        file_put_contents($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, true, true, (Boolean) $includePathFile, $targetDirLoader, $filesCode));
+        file_put_contents($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, true, true, (bool) $includePathFile, $targetDirLoader, $filesCode));
         copy(__DIR__.'/ClassLoader.php', $targetDir.'/ClassLoader.php');
     }
 

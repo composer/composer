@@ -27,18 +27,18 @@ use Symfony\Component\Console\Command\Command as BaseCommand;
 abstract class Command extends BaseCommand
 {
     /**
-     * @var \Composer\Composer
+     * @var Composer
      */
     private $composer;
 
     /**
-     * @var \Composer\IO\IOInterface
+     * @var IOInterface
      */
     private $io;
 
     /**
-     * @param   bool                $required
-     * @return  \Composer\Composer
+     * @param  bool     $required
+     * @return Composer
      */
     public function getComposer($required = true)
     {
@@ -59,7 +59,7 @@ abstract class Command extends BaseCommand
     }
 
     /**
-     * @param   \Composer\Composer  $composer
+     * @param Composer $composer
      */
     public function setComposer(Composer $composer)
     {
@@ -67,7 +67,7 @@ abstract class Command extends BaseCommand
     }
 
     /**
-     * @return \Composer\IO\IOInterface
+     * @return IOInterface
      */
     public function getIO()
     {
@@ -85,7 +85,7 @@ abstract class Command extends BaseCommand
     }
 
     /**
-     * @param   \Composer\IO\IOInterface    $io
+     * @param IOInterface $io
      */
     public function setIO(IOInterface $io)
     {

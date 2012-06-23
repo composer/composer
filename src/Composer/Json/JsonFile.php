@@ -60,7 +60,7 @@ class JsonFile
     /**
      * Checks whether json file exists.
      *
-     * @return Boolean
+     * @return bool
      */
     public function exists()
     {
@@ -117,7 +117,7 @@ class JsonFile
      * Validates the schema of the current json file according to composer-schema.json rules
      *
      * @param  int                       $schema a JsonFile::*_SCHEMA constant
-     * @return Boolean                   true on success
+     * @return bool                      true on success
      * @throws \UnexpectedValueException
      */
     public function validateSchema($schema = self::STRICT_SCHEMA)
@@ -174,9 +174,9 @@ class JsonFile
 
         $json = json_encode($data);
 
-        $prettyPrint = (Boolean) ($options & self::JSON_PRETTY_PRINT);
-        $unescapeUnicode = (Boolean) ($options & self::JSON_UNESCAPED_UNICODE);
-        $unescapeSlashes = (Boolean) ($options & self::JSON_UNESCAPED_SLASHES);
+        $prettyPrint = (bool) ($options & self::JSON_PRETTY_PRINT);
+        $unescapeUnicode = (bool) ($options & self::JSON_UNESCAPED_UNICODE);
+        $unescapeSlashes = (bool) ($options & self::JSON_UNESCAPED_SLASHES);
 
         if (!$prettyPrint && !$unescapeUnicode && !$unescapeSlashes) {
             return $json;
@@ -282,7 +282,7 @@ class JsonFile
      * Validates the syntax of a JSON string
      *
      * @param  string                    $json
-     * @return Boolean                   true on success
+     * @return bool                      true on success
      * @throws \UnexpectedValueException
      */
     protected static function validateSyntax($json)
