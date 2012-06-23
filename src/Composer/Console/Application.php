@@ -41,7 +41,7 @@ class Application extends BaseApplication
     protected $composer;
 
     /**
-     * @var ConsoleIO
+     * @var IOInterface
      */
     protected $io;
 

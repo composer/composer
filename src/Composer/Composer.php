@@ -130,7 +130,7 @@ class Composer
     }
 
     /**
-     * @return  Doenloader\DownloadManager
+     * @return  Downloader\DownloadManager
      */
     public function getDownloadManager()
     {
