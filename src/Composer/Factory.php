@@ -14,6 +14,7 @@ namespace Composer;
 
 use Composer\Json\JsonFile;
 use Composer\IO\IOInterface;
+use Composer\Repository\ComposerRepository;
 use Composer\Repository\RepositoryManager;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
@@ -27,6 +28,10 @@ use Composer\Util\RemoteFilesystem;
  */
 class Factory
 {
+    public static $defaultComposerRepositories = array(
+        'packagist' => 'http://packagist.org',
+    );
+
     /**
      * @return Config
      */
@@ -65,6 +70,17 @@ class Factory
     public function getComposerFile()
     {
         return getenv('COMPOSER') ?: 'composer.json';
+    }
+
+    public static function createComposerRepositories(IOInterface $io, Config $config)
+    {
+        $repos = array();
+
+        foreach (static::$defaultComposerRepositories as $url) {
+            $repos[$url] = new ComposerRepository(array('url' => $url), $io, $config);
+        }
+
+        return $repos;
     }
 
     /**
@@ -114,8 +130,8 @@ class Factory
         // initialize repository manager
         $rm = $this->createRepositoryManager($io, $config);
 
-        // load default repository unless it's explicitly disabled
-        $localConfig = $this->addPackagistRepository($localConfig);
+        // load default composer repositories unless they're explicitly disabled
+        $localConfig = $this->addComposerRepositories($localConfig);
 
         // load local repository
         $this->addLocalRepository($rm, $vendorDir);
@@ -186,31 +202,35 @@ class Factory
      * @param  array $localConfig
      * @return array
      */
-    protected function addPackagistRepository(array $localConfig)
+    protected function addComposerRepositories(array $localConfig)
     {
-        $loadPackagist = true;
-        $packagistConfig = array(
-            'type' => 'composer',
-            'url' => 'http://packagist.org'
-        );
+        $defaults = static::$defaultComposerRepositories;
 
         if (isset($localConfig['repositories'])) {
             foreach ($localConfig['repositories'] as $key => $repo) {
-                if (isset($repo['packagist'])) {
-                    if (true === $repo['packagist']) {
-                        $localConfig['repositories'][$key] = $packagistConfig;
-                    }
+                foreach ($defaults as $name => $url) {
+                    if (isset($repo[$name])) {
+                        if (true === $repo[$name]) {
+                            $localConfig['repositories'][$key] = array(
+                                'type' => 'composer',
+                                'url' => $url,
+                            );
+                        }
 
-                    $loadPackagist = false;
-                    break;
+                        unset($defaults[$name]);
+                        break;
+                    }
                 }
             }
         } else {
             $localConfig['repositories'] = array();
         }
 
-        if ($loadPackagist) {
-            $localConfig['repositories'][] = $packagistConfig;
+        foreach ($defaults as $name => $url) {
+            $localConfig['repositories'][] = array(
+                'type' => 'composer',
+                'url' => $url,
+            );
         }
 
         return $localConfig;

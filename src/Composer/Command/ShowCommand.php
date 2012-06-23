@@ -64,10 +64,10 @@ EOT
             $installedRepo = new CompositeRepository(array($localRepo, $platformRepo));
             $repos = new CompositeRepository(array_merge(array($installedRepo), $composer->getRepositoryManager()->getRepositories()));
         } else {
-            $output->writeln('No composer.json found in the current directory, showing packages from packagist.org');
+            $defaultRepos = Factory::createComposerRepositories($this->getIO(), Factory::createConfig());
+            $output->writeln('No composer.json found in the current directory, showing packages from ' . str_replace('http://', '', implode(', ', array_keys($defaultRepos))));
             $installedRepo = $platformRepo;
-            $packagist = new ComposerRepository(array('url' => 'http://packagist.org'), $this->getIO(), Factory::createConfig());
-            $repos = new CompositeRepository(array($installedRepo, $packagist));
+            $repos = new CompositeRepository(array_merge(array($installedRepo), $defaultRepos));
         }
 
         // show single package or single version
