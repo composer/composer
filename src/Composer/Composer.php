@@ -57,8 +57,8 @@ class Composer
     private $config;
 
     /**
-     * @param   Package\PackageInterface    $package
-     * @return  void
+     * @param  Package\PackageInterface $package
+     * @return void
      */
     public function setPackage(PackageInterface $package)
     {
@@ -66,7 +66,7 @@ class Composer
     }
 
     /**
-     * @return  Package\PackageInterface
+     * @return Package\PackageInterface
      */
     public function getPackage()
     {
@@ -74,7 +74,7 @@ class Composer
     }
 
     /**
-     * @param   Config  $config
+     * @param Config $config
      */
     public function setConfig(Config $config)
     {
@@ -82,7 +82,7 @@ class Composer
     }
 
     /**
-     * @return  Config
+     * @return Config
      */
     public function getConfig()
     {
@@ -90,7 +90,7 @@ class Composer
     }
 
     /**
-     * @param   Package\Locker  $locker
+     * @param Package\Locker $locker
      */
     public function setLocker(Locker $locker)
     {
@@ -98,7 +98,7 @@ class Composer
     }
 
     /**
-     * @return  Package\Locker
+     * @return Package\Locker
      */
     public function getLocker()
     {
@@ -106,7 +106,7 @@ class Composer
     }
 
     /**
-     * @param   Repository\RepositoryManager    $manager
+     * @param Repository\RepositoryManager $manager
      */
     public function setRepositoryManager(RepositoryManager $manager)
     {
@@ -114,7 +114,7 @@ class Composer
     }
 
     /**
-     * @return  Repository\RepositoryManager
+     * @return Repository\RepositoryManager
      */
     public function getRepositoryManager()
     {
@@ -122,7 +122,7 @@ class Composer
     }
 
     /**
-     * @param   Downloader\DownloadManager  $manager
+     * @param Downloader\DownloadManager $manager
      */
     public function setDownloadManager(DownloadManager $manager)
     {
@@ -130,7 +130,7 @@ class Composer
     }
 
     /**
-     * @return  Downloader\DownloadManager
+     * @return Downloader\DownloadManager
      */
     public function getDownloadManager()
     {
@@ -138,7 +138,7 @@ class Composer
     }
 
     /**
-     * @param   Installer\InstallationManager   $manager
+     * @param Installer\InstallationManager $manager
      */
     public function setInstallationManager(InstallationManager $manager)
     {
@@ -146,7 +146,7 @@ class Composer
     }
 
     /**
-     * @return  Installer\InstallationManager
+     * @return Installer\InstallationManager
      */
     public function getInstallationManager()
     {

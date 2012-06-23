@@ -81,8 +81,8 @@ class Application extends BaseApplication
     }
 
     /**
-     * @param   bool                $required
-     * @return  \Composer\Composer
+     * @param  bool               $required
+     * @return \Composer\Composer
      */
     public function getComposer($required = true)
     {

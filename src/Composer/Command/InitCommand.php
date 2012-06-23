@@ -381,7 +381,7 @@ EOT
      * @param string $ignoreFile
      * @param string $vendor
      *
-     * @return Boolean
+     * @return bool
      */
     protected function hasVendorIgnore($ignoreFile, $vendor = 'vendor')
     {

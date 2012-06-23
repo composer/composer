@@ -57,7 +57,7 @@ abstract class VcsDriver implements VcsDriverInterface
     public function hasComposerFile($identifier)
     {
         try {
-            return (Boolean) $this->getComposerInformation($identifier);
+            return (bool) $this->getComposerInformation($identifier);
         } catch (TransportException $e) {
         }
 
@@ -94,6 +94,6 @@ abstract class VcsDriver implements VcsDriverInterface
 
     protected static function isLocalUrl($url)
     {
-        return (Boolean) preg_match('{^(file://|/|[a-z]:[\\\\/])}i', $url);
+        return (bool) preg_match('{^(file://|/|[a-z]:[\\\\/])}i', $url);
     }
 }

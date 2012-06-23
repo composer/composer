@@ -66,11 +66,11 @@ class Svn
      * Execute an SVN command and try to fix up the process with credentials
      * if necessary.
      *
-     * @param string  $command SVN command to run
-     * @param string  $url     SVN url
-     * @param string  $cwd     Working directory
-     * @param string  $path    Target for a checkout
-     * @param Boolean $verbose Output all output to the user
+     * @param string $command SVN command to run
+     * @param string $url     SVN url
+     * @param string $cwd     Working directory
+     * @param string $path    Target for a checkout
+     * @param bool   $verbose Output all output to the user
      *
      * @return string
      *
@@ -226,7 +226,7 @@ class Svn
      *
      * @param string $url
      *
-     * @return Boolean
+     * @return bool
      */
     protected function hasAuth()
     {

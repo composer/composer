@@ -30,7 +30,7 @@ class DownloadManager
     /**
      * Initializes download manager.
      *
-     * @param Boolean $preferSource prefer downloading from source
+     * @param bool $preferSource prefer downloading from source
      */
     public function __construct($preferSource = false, Filesystem $filesystem = null)
     {
@@ -41,7 +41,7 @@ class DownloadManager
     /**
      * Makes downloader prefer source installation over the dist.
      *
-     * @param Boolean $preferSource prefer downloading from source
+     * @param bool $preferSource prefer downloading from source
      */
     public function setPreferSource($preferSource)
     {
@@ -123,7 +123,7 @@ class DownloadManager
      *
      * @param PackageInterface $package      package instance
      * @param string           $targetDir    target dir
-     * @param Boolean          $preferSource prefer installation from source
+     * @param bool             $preferSource prefer installation from source
      *
      * @throws InvalidArgumentException if package have no urls to download from
      */

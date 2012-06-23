@@ -74,7 +74,7 @@ EOT
         $needle = $input->getArgument('package');
 
         $references = array();
-        $verbose = (Boolean) $input->getOption('verbose');
+        $verbose = (bool) $input->getOption('verbose');
 
         $repos = $composer->getRepositoryManager()->getRepositories();
         $types = $input->getOption('link-type');

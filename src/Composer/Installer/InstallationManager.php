@@ -102,7 +102,7 @@ class InstallationManager
      * @param InstalledRepositoryInterface $repo    repository in which to check
      * @param PackageInterface             $package package instance
      *
-     * @return Boolean
+     * @return bool
      */
     public function isPackageInstalled(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
