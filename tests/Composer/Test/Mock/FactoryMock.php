@@ -34,7 +34,7 @@ class FactoryMock extends Factory
     {
     }
 
-    protected function addPackagistRepository(array $localConfig)
+    protected function addDefaultRepositories(Config $config, array $localConfig)
     {
         return $localConfig;
     }

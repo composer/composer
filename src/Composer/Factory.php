@@ -28,10 +28,6 @@ use Composer\Util\RemoteFilesystem;
  */
 class Factory
 {
-    public static $defaultComposerRepositories = array(
-        'packagist' => 'http://packagist.org',
-    );
-
     /**
      * @return Config
      */
@@ -72,12 +68,12 @@ class Factory
         return getenv('COMPOSER') ?: 'composer.json';
     }
 
-    public static function createComposerRepositories(IOInterface $io, Config $config)
+    public static function createDefaultRepositories(IOInterface $io, Config $config)
     {
         $repos = array();
 
-        foreach (static::$defaultComposerRepositories as $url) {
-            $repos[$url] = new ComposerRepository(array('url' => $url), $io, $config);
+        foreach ($config->getRepositories() as $repo => $url) {
+            $repos[preg_replace('{^https?://}i', '', $url)] = new ComposerRepository(array('url' => $url), $io, $config);
         }
 
         return $repos;
@@ -131,13 +127,13 @@ class Factory
         $rm = $this->createRepositoryManager($io, $config);
 
         // load default composer repositories unless they're explicitly disabled
-        $localConfig = $this->addComposerRepositories($localConfig);
+        $localConfig = $this->addDefaultRepositories($config, $localConfig);
 
         // load local repository
         $this->addLocalRepository($rm, $vendorDir);
 
         // load package
-        $loader  = new Package\Loader\RootPackageLoader($rm);
+        $loader  = new Package\Loader\RootPackageLoader($rm, $config);
         $package = $loader->load($localConfig);
 
         // initialize download manager
@@ -202,9 +198,9 @@ class Factory
      * @param  array $localConfig
      * @return array
      */
-    protected function addComposerRepositories(array $localConfig)
+    protected function addDefaultRepositories(Config $config, array $localConfig)
     {
-        $defaults = static::$defaultComposerRepositories;
+        $defaults = $config->getRepositories();
 
         if (isset($localConfig['repositories'])) {
             foreach ($localConfig['repositories'] as $key => $repo) {

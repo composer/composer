@@ -17,17 +17,25 @@ namespace Composer;
  */
 class Config
 {
+    public static $defaultConfig = array(
+        'process-timeout' => 300,
+        'vendor-dir' => 'vendor',
+        'bin-dir' => '{$vendor-dir}/bin',
+        'notify-on-install' => true,
+    );
+
+    public static $defaultRepositories = array(
+        'packagist' => 'http://packagist.org',
+    );
+
     private $config;
+    private $repositories;
 
     public function __construct()
     {
         // load defaults
-        $this->config = array(
-            'process-timeout' => 300,
-            'vendor-dir' => 'vendor',
-            'bin-dir' => '{$vendor-dir}/bin',
-            'notify-on-install' => true,
-        );
+        $this->config = static::$defaultConfig;
+        $this->repositories = static::$defaultRepositories;
     }
 
     /**
@@ -41,6 +49,18 @@ class Config
         if (!empty($config['config']) && is_array($config['config'])) {
             $this->config = array_replace_recursive($this->config, $config['config']);
         }
+
+        if (!empty($config['repositories']) && is_array($config['repositories'])) {
+            $this->repositories = $config['repositories'];
+        }
+    }
+
+    /**
+     * @return array
+     */
+    public function getRepositories()
+    {
+        return $this->repositories;
     }
 
     /**
