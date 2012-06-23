@@ -68,7 +68,6 @@ class FactoryTest extends \PHPUnit_Framework_TestCase
 
         $multirepo = array(
             'example.com' => 'http://example.com',
-            'packagist' => 'http://packagist.org',
         );
 
         $data[] = array(

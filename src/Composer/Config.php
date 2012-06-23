@@ -51,7 +51,16 @@ class Config
         }
 
         if (!empty($config['repositories']) && is_array($config['repositories'])) {
-            $this->repositories = $config['repositories'];
+            $this->repositories = array_reverse($this->repositories, true);
+            $this->repositories = array_merge($this->repositories, $config['repositories']);
+            $this->repositories = array_reverse($this->repositories, true);
+
+            // filter out disabled ones
+            foreach ($this->repositories as $name => $url) {
+                if (false === $url) {
+                    unset($this->repositories[$name]);
+                }
+            }
         }
     }
 
