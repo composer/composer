@@ -91,7 +91,7 @@ EOT
 
         $config = Factory::createConfig();
         if (null === $repositoryUrl) {
-            $sourceRepo = new CompositeRepository(Factory::createComposerRepositories($io, $config));
+            $sourceRepo = new CompositeRepository(Factory::createDefaultRepositories($io, $config));
         } elseif ("json" === pathinfo($repositoryUrl, PATHINFO_EXTENSION)) {
             $sourceRepo = new FilesystemRepository(new JsonFile($repositoryUrl, new RemoteFilesystem($io)));
         } elseif (0 === strpos($repositoryUrl, 'http')) {

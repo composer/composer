@@ -13,42 +13,30 @@
 namespace Composer\Test;
 
 use Composer\Factory;
+use Composer\Config;
 
 class FactoryTest extends \PHPUnit_Framework_TestCase
 {
-    protected $defaultComposerRepositories;
-
-    protected function setUp()
-    {
-        $this->defaultComposerRepositories = Factory::$defaultComposerRepositories;
-    }
-
-    protected function tearDown()
-    {
-        Factory::$defaultComposerRepositories = $this->defaultComposerRepositories;
-        unset($this->defaultComposerRepositories);
-    }
-
     /**
      * @dataProvider dataAddPackagistRepository
      */
-    public function testAddPackagistRepository($expected, $config, $defaults = null)
+    public function testAddPackagistRepository($expected, $composerConfig, $defaults = null)
     {
-        if (null !== $defaults) {
-            Factory::$defaultComposerRepositories = $defaults;
+        $factory = new Factory();
+        $config = new Config();
+        if ($defaults) {
+            $config->merge(array('repositories' => $defaults));
         }
 
-        $factory = new Factory();
-
-        $ref = new \ReflectionMethod($factory, 'addComposerRepositories');
+        $ref = new \ReflectionMethod($factory, 'addDefaultRepositories');
         $ref->setAccessible(true);
 
-        $this->assertEquals($expected, $ref->invoke($factory, $config));
+        $this->assertEquals($expected, $ref->invoke($factory, $config, $composerConfig));
     }
 
     public function dataAddPackagistRepository()
     {
-        $f = function() {
+        $repos = function() {
             $repositories = func_get_args();
 
             return array('repositories' => $repositories);
@@ -56,22 +44,22 @@ class FactoryTest extends \PHPUnit_Framework_TestCase
 
         $data = array();
         $data[] = array(
-            $f(array('type' => 'composer', 'url' => 'http://packagist.org')),
-            $f()
+            $repos(array('type' => 'composer', 'url' => 'http://packagist.org')),
+            $repos()
         );
 
         $data[] = array(
-            $f(array('packagist' => false)),
-            $f(array('packagist' => false))
+            $repos(array('packagist' => false)),
+            $repos(array('packagist' => false))
         );
 
         $data[] = array(
-            $f(
+            $repos(
                 array('type' => 'vcs', 'url' => 'git://github.com/composer/composer.git'),
                 array('type' => 'composer', 'url' => 'http://packagist.org'),
                 array('type' => 'pear', 'url' => 'http://pear.composer.org')
             ),
-            $f(
+            $repos(
                 array('type' => 'vcs', 'url' => 'git://github.com/composer/composer.git'),
                 array('packagist' => true),
                 array('type' => 'pear', 'url' => 'http://pear.composer.org')
@@ -84,20 +72,20 @@ class FactoryTest extends \PHPUnit_Framework_TestCase
         );
 
         $data[] = array(
-            $f(
+            $repos(
                 array('type' => 'composer', 'url' => 'http://example.com'),
                 array('type' => 'composer', 'url' => 'http://packagist.org')
             ),
-            $f(),
+            $repos(),
             $multirepo,
         );
 
         $data[] = array(
-            $f(
+            $repos(
                 array('type' => 'composer', 'url' => 'http://packagist.org'),
                 array('type' => 'composer', 'url' => 'http://example.com')
             ),
-            $f(array('packagist' => true)),
+            $repos(array('packagist' => true)),
             $multirepo,
         );
 

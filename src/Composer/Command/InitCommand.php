@@ -16,7 +16,6 @@ use Composer\Json\JsonFile;
 use Composer\Factory;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
-use Composer\Repository\ComposerRepository;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -236,7 +235,7 @@ EOT
         if (!$this->repos) {
             $this->repos = new CompositeRepository(array_merge(
                 array(new PlatformRepository),
-                Factory::createComposerRepositories($this->getIO(), Factory::createConfig())
+                Factory::createDefaultRepositories($this->getIO(), Factory::createConfig())
             ));
         }
 

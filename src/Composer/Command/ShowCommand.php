@@ -21,7 +21,6 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
-use Composer\Repository\ComposerRepository;
 use Composer\Repository\RepositoryInterface;
 
 /**
@@ -64,8 +63,8 @@ EOT
             $installedRepo = new CompositeRepository(array($localRepo, $platformRepo));
             $repos = new CompositeRepository(array_merge(array($installedRepo), $composer->getRepositoryManager()->getRepositories()));
         } else {
-            $defaultRepos = Factory::createComposerRepositories($this->getIO(), Factory::createConfig());
-            $output->writeln('No composer.json found in the current directory, showing packages from ' . str_replace('http://', '', implode(', ', array_keys($defaultRepos))));
+            $defaultRepos = Factory::createDefaultRepositories($this->getIO(), Factory::createConfig());
+            $output->writeln('No composer.json found in the current directory, showing packages from ' . implode(', ', array_keys($defaultRepos)));
             $installedRepo = $platformRepo;
             $repos = new CompositeRepository(array_merge(array($installedRepo), $defaultRepos));
         }

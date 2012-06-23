@@ -13,7 +13,7 @@
 namespace Composer\Package\Loader;
 
 use Composer\Package\BasePackage;
-use Composer\Factory;
+use Composer\Config;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\RepositoryManager;
 use Composer\Util\ProcessExecutor;
@@ -28,11 +28,13 @@ use Composer\Util\ProcessExecutor;
 class RootPackageLoader extends ArrayLoader
 {
     private $manager;
+    private $config;
     private $process;
 
-    public function __construct(RepositoryManager $manager, VersionParser $parser = null, ProcessExecutor $process = null)
+    public function __construct(RepositoryManager $manager, Config $config, VersionParser $parser = null, ProcessExecutor $process = null)
     {
         $this->manager = $manager;
+        $this->config = $config;
         $this->process = $process ?: new ProcessExecutor();
         parent::__construct($parser);
     }
@@ -80,7 +82,7 @@ class RootPackageLoader extends ArrayLoader
             $package->setMinimumStability(VersionParser::normalizeStability($config['minimum-stability']));
         }
 
-        $defaultRepositories = array_keys(Factory::$defaultComposerRepositories);
+        $defaultRepositories = array_keys($this->config->getRepositories());
 
         if (isset($config['repositories'])) {
             foreach ($config['repositories'] as $index => $repo) {
