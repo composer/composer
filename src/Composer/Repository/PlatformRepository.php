@@ -90,7 +90,7 @@ class PlatformRepository extends ArrayRepository
                     break;
 
                 case 'uuid':
-                    $prettyVersion = UUID_VERSION;
+                    $prettyVersion = phpversion('uuid');
                     break;
 
                 case 'xsl':
