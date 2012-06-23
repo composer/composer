@@ -46,7 +46,12 @@ abstract class Command extends BaseCommand
             $application = $this->getApplication();
             if ($application instanceof Application) {
                 /* @var $application    Application */
-                $this->composer = $application->getComposer();
+                $this->composer = $application->getComposer($required);
+            } elseif ($required) {
+                throw new \RuntimeException(
+                    'Could not create a Composer\Composer instance, you must inject '.
+                    'one if this command is not used with a Composer\Console\Application instance'
+                );
             }
         }
 
