@@ -234,9 +234,9 @@ EOT
 
         // init repos
         if (!$this->repos) {
-            $this->repos = new CompositeRepository(array(
-                new PlatformRepository,
-                new ComposerRepository(array('url' => 'http://packagist.org'), $this->getIO(), Factory::createConfig())
+            $this->repos = new CompositeRepository(array_merge(
+                array(new PlatformRepository),
+                Factory::createComposerRepositories($this->getIO(), Factory::createConfig())
             ));
         }
 

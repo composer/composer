@@ -14,6 +14,7 @@ namespace Composer\Test\Package\Loader;
 
 use Composer\Package\Loader\RootPackageLoader;
 use Composer\Test\Mock\ProcessExecutorMock;
+use Composer\Repository\RepositoryManager;
 
 class RootPackageLoaderTest extends \PHPUnit_Framework_TestCase
 {
@@ -44,5 +45,20 @@ class RootPackageLoaderTest extends \PHPUnit_Framework_TestCase
         $package = $loader->load(array());
 
         $this->assertEquals("dev-$commitHash", $package->getVersion());
+    }
+
+    public function testAllowsDisabledDefaultRepository()
+    {
+        $loader = new RootPackageLoader(
+            new RepositoryManager(
+                $this->getMock('Composer\\IO\\IOInterface'),
+                $this->getMock('Composer\\Config')
+            )
+        );
+
+        $repos = array(array('packagist' => false));
+        $package = $loader->load(array('repositories' => $repos));
+
+        $this->assertEquals($repos, $package->getRepositories());
     }
 }
