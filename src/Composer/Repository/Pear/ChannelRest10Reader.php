@@ -61,7 +61,7 @@ class ChannelRest10Reader extends BaseChannelReader
 
         $xmlPath = '/p/packages.xml';
         $xml = $this->requestXml($baseUrl, $xmlPath);
-        $xml->registerXPathNamespace('ns', self::allPackagesNS);
+        $xml->registerXPathNamespace('ns', self::ALL_PACKAGES_NS);
         foreach ($xml->xpath('ns:p') as $node) {
             $packageName = (string) $node;
             $packageInfo = $this->readPackage($baseUrl, $packageName);
@@ -83,7 +83,7 @@ class ChannelRest10Reader extends BaseChannelReader
     {
         $xmlPath = '/p/' . strtolower($packageName) . '/info.xml';
         $xml = $this->requestXml($baseUrl, $xmlPath);
-        $xml->registerXPathNamespace('ns', self::packageInfoNS);
+        $xml->registerXPathNamespace('ns', self::PACKAGE_INFO_NS);
 
         $channelName = (string) $xml->c;
         $packageName = (string) $xml->n;
@@ -116,7 +116,7 @@ class ChannelRest10Reader extends BaseChannelReader
         try {
             $xmlPath = '/r/' . strtolower($packageName) . '/allreleases.xml';
             $xml = $this->requestXml($baseUrl, $xmlPath);
-            $xml->registerXPathNamespace('ns', self::allReleasesNS);
+            $xml->registerXPathNamespace('ns', self::ALL_RELEASES_NS);
             foreach ($xml->xpath('ns:r') as $node) {
                 $releaseVersion = (string) $node->v;
                 $releaseStability = (string) $node->s;
