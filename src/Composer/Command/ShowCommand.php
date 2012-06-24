@@ -115,7 +115,7 @@ EOT
                 $output->writeln($type);
                 ksort($packages[$type]);
                 foreach ($packages[$type] as $package) {
-                    $output->writeln('  '.$package->getPrettyName() .' <comment>:</comment> '. strtok($package->getDescription(), "\r\n"));
+                    $output->writeln('  '.$package->getPrettyName() .' ['.$package->getVersion().'] <comment>:</comment> '. strtok($package->getDescription(), "\r\n"));
                 }
                 $output->writeln('');
             }
