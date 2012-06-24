@@ -162,22 +162,24 @@ class ConsoleIO implements IOInterface
             return $value;
         }
 
-        // handle other OSs with bash/zsh/ksh/csh if available to hide the answer
-        $test = "/usr/bin/env %s -c 'echo OK' 2> /dev/null";
-        foreach (array('bash', 'zsh', 'ksh', 'csh') as $sh) {
-            if ('OK' === rtrim(shell_exec(sprintf($test, $sh)))) {
-                $shell = $sh;
-                break;
+        if (file_exists('/usr/bin/env')) {
+            // handle other OSs with bash/zsh/ksh/csh if available to hide the answer
+            $test = "/usr/bin/env %s -c 'echo OK' 2> /dev/null";
+            foreach (array('bash', 'zsh', 'ksh', 'csh') as $sh) {
+                if ('OK' === rtrim(shell_exec(sprintf($test, $sh)))) {
+                    $shell = $sh;
+                    break;
+                }
             }
-        }
-        if (isset($shell)) {
-            $this->write($question, false);
-            $readCmd = ($shell === 'csh') ? 'set mypassword = $<' : 'read mypassword';
-            $command = sprintf("/usr/bin/env %s -c 'stty -echo; %s; stty echo; echo \$mypassword'", $shell, $readCmd);
-            $value = rtrim(shell_exec($command));
-            $this->write('');
+            if (isset($shell)) {
+                $this->write($question, false);
+                $readCmd = ($shell === 'csh') ? 'set mypassword = $<' : 'read mypassword';
+                $command = sprintf("/usr/bin/env %s -c 'stty -echo; %s; stty echo; echo \$mypassword'", $shell, $readCmd);
+                $value = rtrim(shell_exec($command));
+                $this->write('');
 
-            return $value;
+                return $value;
+            }
         }
 
         // not able to hide the answer, proceed with normal question handling
