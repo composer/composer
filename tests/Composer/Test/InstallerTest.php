@@ -55,7 +55,7 @@ class InstallerTest extends TestCase
         $eventDispatcher = $this->getMockBuilder('Composer\Script\EventDispatcher')->disableOriginalConstructor()->getMock();
         $autoloadGenerator = $this->getMock('Composer\Autoload\AutoloadGenerator');
 
-        $installer = new Installer($io, clone $rootPackage, $downloadManager, $repositoryManager, $locker, $installationManager, $eventDispatcher, $autoloadGenerator);
+        $installer = new Installer($io, $config, clone $rootPackage, $downloadManager, $repositoryManager, $locker, $installationManager, $eventDispatcher, $autoloadGenerator);
         $result = $installer->run();
         $this->assertTrue($result);
 
