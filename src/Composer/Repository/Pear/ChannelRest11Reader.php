@@ -56,7 +56,7 @@ class ChannelRest11Reader extends BaseChannelReader
         $result = array();
 
         $xml = $this->requestXml($baseUrl, "/c/categories.xml");
-        $xml->registerXPathNamespace('ns', self::allCategoriesNS);
+        $xml->registerXPathNamespace('ns', self::ALL_CATEGORIES_NS);
         foreach ($xml->xpath('ns:c') as $node) {
             $categoryName = (string) $node;
             $categoryPackages = $this->readCategoryPackages($baseUrl, $categoryName);
@@ -80,7 +80,7 @@ class ChannelRest11Reader extends BaseChannelReader
 
         $categoryPath = '/c/'.urlencode($categoryName).'/packagesinfo.xml';
         $xml = $this->requestXml($baseUrl, $categoryPath);
-        $xml->registerXPathNamespace('ns', self::categoryPackagesInfoNS);
+        $xml->registerXPathNamespace('ns', self::CATEGORY_PACKAGES_INFO_NS);
         foreach ($xml->xpath('ns:pi') as $node) {
             $packageInfo = $this->parsePackage($node);
             $result[] = $packageInfo;
@@ -97,7 +97,7 @@ class ChannelRest11Reader extends BaseChannelReader
      */
     private function parsePackage($packageInfo)
     {
-        $packageInfo->registerXPathNamespace('ns', self::categoryPackagesInfoNS);
+        $packageInfo->registerXPathNamespace('ns', self::CATEGORY_PACKAGES_INFO_NS);
         $channelName = (string) $packageInfo->p->c;
         $packageName = (string) $packageInfo->p->n;
         $license = (string) $packageInfo->p->l;

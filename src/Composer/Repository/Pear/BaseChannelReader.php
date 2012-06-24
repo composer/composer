@@ -26,17 +26,17 @@ abstract class BaseChannelReader
     /**
      * PEAR REST Interface namespaces
      */
-    const channelNS =               'http://pear.php.net/channel-1.0';
-    const allCategoriesNS =         'http://pear.php.net/dtd/rest.allcategories';
-    const categoryPackagesInfoNS =  'http://pear.php.net/dtd/rest.categorypackageinfo';
-    const allPackagesNS =           'http://pear.php.net/dtd/rest.allpackages';
-    const allReleasesNS =           'http://pear.php.net/dtd/rest.allreleases';
-    const packageInfoNS =           'http://pear.php.net/dtd/rest.package';
+    const CHANNEL_NS = 'http://pear.php.net/channel-1.0';
+    const ALL_CATEGORIES_NS = 'http://pear.php.net/dtd/rest.allcategories';
+    const CATEGORY_PACKAGES_INFO_NS = 'http://pear.php.net/dtd/rest.categorypackageinfo';
+    const ALL_PACKAGES_NS = 'http://pear.php.net/dtd/rest.allpackages';
+    const ALL_RELEASES_NS = 'http://pear.php.net/dtd/rest.allreleases';
+    const PACKAGE_INFO_NS = 'http://pear.php.net/dtd/rest.package';
 
     /** @var RemoteFilesystem */
     private $rfs;
 
-    protected function __construct($rfs)
+    protected function __construct(RemoteFilesystem $rfs)
     {
         $this->rfs = $rfs;
     }
@@ -53,7 +53,7 @@ abstract class BaseChannelReader
         $url = rtrim($origin, '/') . '/' . ltrim($path, '/');
         $content = $this->rfs->getContents($origin, $url, false);
         if (!$content) {
-            throw new \UnexpectedValueException('The PEAR channel at '.$url.' did not respond.');
+            throw new \UnexpectedValueException('The PEAR channel at ' . $url . ' did not respond.');
         }
 
         return $content;
@@ -73,7 +73,7 @@ abstract class BaseChannelReader
 
         if (false == $xml) {
             $url = rtrim($origin, '/') . '/' . ltrim($path, '/');
-            throw new \UnexpectedValueException('The PEAR channel at '.$origin.' is broken.');
+            throw new \UnexpectedValueException('The PEAR channel at ' . $origin . ' is broken.');
         }
 
         return $xml;

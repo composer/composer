@@ -13,6 +13,7 @@
 namespace Composer\Repository\Pear;
 
 use Composer\Test\TestCase;
+use Composer\Package\Version\VersionParser;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Package\Link;
 use Composer\Package\MemoryPackage;
@@ -62,45 +63,51 @@ class ChannelReaderTest extends TestCase
 
     public function testShouldCreatePackages()
     {
-        $reader = $this->getMockBuilder('\Composer\Repository\Pear\ChannelReader')
+        $reader = $this->getMockBuilder('\Composer\Repository\PearRepository')
             ->disableOriginalConstructor()
             ->getMock();
 
         $ref = new \ReflectionMethod($reader, 'buildComposerPackages');
         $ref->setAccessible(true);
 
-        $packageInfo = new PackageInfo(
+        $channelInfo = new ChannelInfo(
             'test.loc',
-            'sample',
-            'license',
-            'shortDescription',
-            'description',
+            'test',
             array(
-                '1.0.0.1' => new ReleaseInfo(
-                    'stable',
-                    new DependencyInfo(
-                        array(
-                            new DependencyConstraint(
-                                'required',
-                                '> 5.2.0.0',
-                                'php',
-                                ''
-                            ),
-                            new DependencyConstraint(
-                                'conflicts',
-                                '== 2.5.6.0',
-                                'pear.php.net',
-                                'broken'
-                            ),
-                        ),
-                        array(
-                            '*' => array(
-                                new DependencyConstraint(
-                                    'optional',
-                                    '*',
-                                    'ext',
-                                    'xml'
+                new PackageInfo(
+                    'test.loc',
+                    'sample',
+                    'license',
+                    'shortDescription',
+                    'description',
+                    array(
+                        '1.0.0.1' => new ReleaseInfo(
+                            'stable',
+                            new DependencyInfo(
+                                array(
+                                    new DependencyConstraint(
+                                        'required',
+                                        '> 5.2.0.0',
+                                        'php',
+                                        ''
+                                    ),
+                                    new DependencyConstraint(
+                                        'conflicts',
+                                        '== 2.5.6.0',
+                                        'pear.php.net',
+                                        'broken'
+                                    ),
                                 ),
+                                array(
+                                    '*' => array(
+                                        new DependencyConstraint(
+                                            'optional',
+                                            '*',
+                                            'ext',
+                                            'xml'
+                                        ),
+                                    )
+                                )
                             )
                         )
                     )
@@ -108,7 +115,7 @@ class ChannelReaderTest extends TestCase
             )
         );
 
-        $packages = $ref->invoke($reader, 'test.loc', 'test', array($packageInfo));
+        $packages = $ref->invoke($reader, $channelInfo, new VersionParser());
 
         $expectedPackage = new MemoryPackage('pear-test.loc/sample', '1.0.0.1' , '1.0.0.1');
         $expectedPackage->setType('library');

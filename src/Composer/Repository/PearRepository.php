@@ -13,6 +13,8 @@
 namespace Composer\Repository;
 
 use Composer\IO\IOInterface;
+use Composer\Package\Version\VersionParser;
+use Composer\Repository\Pear\ChannelReader;
 use Composer\Package\MemoryPackage;
 use Composer\Repository\Pear\ChannelInfo;
 use Composer\Package\Link;
@@ -34,6 +36,7 @@ class PearRepository extends ArrayRepository
     private $url;
     private $io;
     private $rfs;
+    private $versionParser;
 
     /** @var string vendor makes additional alias for each channel as {prefix}/{packagename}. It allows smoother
      * package transition to composer-like repositories.
@@ -54,6 +57,7 @@ class PearRepository extends ArrayRepository
         $this->io = $io;
         $this->rfs = $rfs ?: new RemoteFilesystem($this->io);
         $this->vendorAlias = isset($repoConfig['vendor-alias']) ? $repoConfig['vendor-alias'] : null;
+        $this->versionParser = new VersionParser();
     }
 
     protected function initialize()
@@ -62,14 +66,14 @@ class PearRepository extends ArrayRepository
 
         $this->io->write('Initializing PEAR repository '.$this->url);
 
-        $reader = new \Composer\Repository\Pear\ChannelReader($this->rfs);
+        $reader = new ChannelReader($this->rfs);
         try {
             $channelInfo = $reader->read($this->url);
         } catch (\Exception $e) {
             $this->io->write('<warning>PEAR repository from '.$this->url.' could not be loaded. '.$e->getMessage().'</warning>');
             return;
         }
-        $packages = $this->buildComposerPackages($channelInfo);
+        $packages = $this->buildComposerPackages($channelInfo, $this->versionParser);
         foreach ($packages as $package) {
             $this->addPackage($package);
         }
@@ -81,14 +85,13 @@ class PearRepository extends ArrayRepository
      * @param  ChannelInfo   $channelInfo
      * @return MemoryPackage
      */
-    private function buildComposerPackages(ChannelInfo $channelInfo)
+    private function buildComposerPackages(ChannelInfo $channelInfo, VersionParser $versionParser)
     {
-        $versionParser = new \Composer\Package\Version\VersionParser();
         $result = array();
         foreach ($channelInfo->getPackages() as $packageDefinition) {
             foreach ($packageDefinition->getReleases() as $version => $releaseInfo) {
                 $normalizedVersion = $this->parseVersion($version);
-                if (false === $normalizedVersion) {
+                if (!$normalizedVersion) {
                     continue; // skip packages with unparsable versions
                 }
 
@@ -160,18 +163,25 @@ class PearRepository extends ArrayRepository
         return $result;
     }
 
-    private function buildComposerPackageName($pearChannelName, $pearPackageName)
+    private function buildComposerPackageName($channelName, $packageName)
     {
-        if ($pearChannelName == 'php') {
+        if ('php' === $channelName) {
             return "php";
-        } elseif ($pearChannelName == 'ext') {
-            return "ext-{$pearPackageName}";
-        } else {
-            return "pear-{$pearChannelName}/{$pearPackageName}";
         }
+        if ('ext' === $channelName) {
+            return "ext-{$packageName}";
+        }
+
+        return "pear-{$channelName}/{$packageName}";
     }
 
-    protected function parseVersion($version)
+    /**
+     * Softened version parser.
+     *
+     * @param string $version
+     * @return null|string
+     */
+    private function parseVersion($version)
     {
         if (preg_match('{^v?(\d{1,3})(\.\d+)?(\.\d+)?(\.\d+)?}i', $version, $matches)) {
             $version = $matches[1]
@@ -180,8 +190,8 @@ class PearRepository extends ArrayRepository
                 .(!empty($matches[4]) ? $matches[4] : '.0');
 
             return $version;
-        } else {
-            return false;
         }
+
+        return null;
     }
 }

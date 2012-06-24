@@ -20,6 +20,23 @@ namespace Composer\Repository\Pear;
 class PackageDependencyParser
 {
     /**
+     * Builds dependency information. It detects used package.xml format.
+     *
+     * @param $depArray array
+     * @return DependencyInfo
+     */
+    public function buildDependencyInfo($depArray)
+    {
+        if (!is_array($depArray)) {
+            return new DependencyInfo(array(), array());
+        }
+        if (!$this->isHash($depArray)) {
+            return new DependencyInfo($this->buildDependency10Info($depArray), array());
+        }
+        return $this->buildDependency20Info($depArray);
+    }
+
+    /**
      * Builds dependency information from package.xml 1.0 format
      *
      * http://pear.php.net/manual/en/guide.developers.package2.dependencies.php
@@ -230,23 +247,6 @@ class PackageDependencyParser
     }
 
     /**
-     * Builds dependency information. It detects used package.xml format.
-     *
-     * @param $depArray array
-     * @return DependencyInfo
-     */
-    public function buildDependencyInfo($depArray)
-    {
-        if (!is_array($depArray)) {
-            return new DependencyInfo(array(), array());
-        } elseif (!$this->isHash($depArray)) {
-            return new DependencyInfo($this->buildDependency10Info($depArray), array());
-        } else {
-            return $this->buildDependency20Info($depArray);
-        }
-    }
-
-    /**
      * Parses version constraint
      *
      * @param  array  $data array containing serveral 'min', 'max', 'has', 'exclude' and other keys.
@@ -260,7 +260,8 @@ class PackageDependencyParser
         $values = array_intersect_key($data, $dep20toOperatorMap);
         if (0 == count($values)) {
             return '*';
-        } elseif (isset($values['min']) && isset($values['exclude']) && $data['min'] == $data['exclude']) {
+        }
+        if (isset($values['min']) && isset($values['exclude']) && $data['min'] == $data['exclude']) {
             $versions[] = '>' . $this->parseVersion($values['min']);
         } elseif (isset($values['max']) && isset($values['exclude']) && $data['max'] == $data['exclude']) {
             $versions[] = '<' . $this->parseVersion($values['max']);
@@ -283,7 +284,7 @@ class PackageDependencyParser
      * Softened version parser
      *
      * @param $version
-     * @return bool|string
+     * @return null|string
      */
     private function parseVersion($version)
     {
@@ -294,9 +295,9 @@ class PackageDependencyParser
                 .(!empty($matches[4]) ? $matches[4] : '.0');
 
             return $version;
-        } else {
-            return false;
         }
+
+        return null;
     }
 
     /**
