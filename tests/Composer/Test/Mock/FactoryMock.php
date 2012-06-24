@@ -25,18 +25,16 @@ class FactoryMock extends Factory
     {
         $config = new Config();
 
-        $config->merge(array('config' => array('home' => sys_get_temp_dir().'/composer-test')));
+        $config->merge(array(
+            'config' => array('home' => sys_get_temp_dir().'/composer-test'),
+            'repositories' => array('packagist' => false),
+        ));
 
         return $config;
     }
 
     protected function addLocalRepository(RepositoryManager $rm, $vendorDir)
     {
-    }
-
-    protected function addDefaultRepositories(Config $config, array $localConfig)
-    {
-        return $localConfig;
     }
 
     protected function createInstallationManager(Repository\RepositoryManager $rm, Downloader\DownloadManager $dm, $vendorDir, $binDir, IOInterface $io)

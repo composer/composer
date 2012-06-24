@@ -42,25 +42,11 @@ class RootPackageLoaderTest extends \PHPUnit_Framework_TestCase
             return 0;
         });
 
-        $loader = new RootPackageLoader($manager, new Config, null, $processExecutor);
+        $config = new Config;
+        $config->merge(array('repositories' => array('packagist' => false)));
+        $loader = new RootPackageLoader($manager, $config, null, $processExecutor);
         $package = $loader->load(array());
 
         $this->assertEquals("dev-$commitHash", $package->getVersion());
-    }
-
-    public function testAllowsDisabledDefaultRepository()
-    {
-        $loader = new RootPackageLoader(
-            new RepositoryManager(
-                $this->getMock('Composer\\IO\\IOInterface'),
-                $this->getMock('Composer\\Config')
-            ),
-            new Config()
-        );
-
-        $repos = array(array('packagist' => false));
-        $package = $loader->load(array('repositories' => $repos));
-
-        $this->assertEquals($repos, $package->getRepositories());
     }
 }
