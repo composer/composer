@@ -12,9 +12,9 @@
 
 namespace Composer\Installer;
 
+use Composer\Composer;
 use Composer\IO\IOInterface;
 use Composer\Autoload\AutoloadGenerator;
-use Composer\Downloader\DownloadManager;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
 
@@ -29,19 +29,15 @@ class InstallerInstaller extends LibraryInstaller
     private static $classCounter = 0;
 
     /**
-     * @param string              $vendorDir         relative path for packages home
-     * @param string              $binDir            relative path for binaries
-     * @param DownloadManager     $dm                download manager
-     * @param IOInterface         $io                io instance
-     * @param InstallationManager $im                installation manager
-     * @param array               $localRepositories array of InstalledRepositoryInterface
+     * @param IOInterface $io
+     * @param Composer    $composer
      */
-    public function __construct($vendorDir, $binDir, DownloadManager $dm, IOInterface $io, InstallationManager $im, array $localRepositories)
+    public function __construct(IOInterface $io, Composer $composer, $type = 'library')
     {
-        parent::__construct($vendorDir, $binDir, $dm, $io, 'composer-installer');
-        $this->installationManager = $im;
+        parent::__construct($io, $composer, 'composer-installer');
+        $this->installationManager = $composer->getInstallationManager();
 
-        foreach ($localRepositories as $repo) {
+        foreach ($composer->getRepositoryManager()->getLocalRepositories() as $repo) {
             foreach ($repo->getPackages() as $package) {
                 if ('composer-installer' === $package->getType()) {
                     $this->registerInstaller($package);
@@ -99,7 +95,7 @@ class InstallerInstaller extends LibraryInstaller
                 self::$classCounter++;
             }
 
-            $installer = new $class($this->vendorDir, $this->binDir, $this->downloadManager, $this->io);
+            $installer = new $class($this->io, $this->composer);
             $this->installationManager->addInstaller($installer);
         }
     }
