@@ -110,12 +110,12 @@ EOT
             $packages[$type][$package->getName()] = $package;
         }
 
-        foreach (array('<info>platform</info>:', '<comment>available</comment>:', '<info>installed</info>:') as $type) {
+        foreach (array('<info>platform</info>:' => true, '<comment>available</comment>:' => false, '<info>installed</info>:' => true) as $type => $showVersion) {
             if (isset($packages[$type])) {
                 $output->writeln($type);
                 ksort($packages[$type]);
                 foreach ($packages[$type] as $package) {
-                    $output->writeln('  '.$package->getPrettyName() .' <comment>:</comment> '. strtok($package->getDescription(), "\r\n"));
+                    $output->writeln('  '.$package->getPrettyName() .' '.($showVersion ? '['.$package->getPrettyVersion().']' : '').' <comment>:</comment> '. strtok($package->getDescription(), "\r\n"));
                 }
                 $output->writeln('');
             }
