@@ -162,10 +162,18 @@ class ConsoleIO implements IOInterface
             return $value;
         }
 
-        // handle other OSs with bash if available to hide the answer
-        if ('OK' === rtrim(shell_exec("/usr/bin/env bash -c 'echo OK'"))) {
+        // handle other OSs with bash/zsh/ksh/csh if available to hide the answer
+        $test = "/usr/bin/env %s -c 'echo OK' 2> /dev/null";
+        foreach (array('bash', 'zsh', 'ksh', 'csh') as $sh) {
+            if ('OK' === rtrim(shell_exec(sprintf($test, $sh)))) {
+                $shell = $sh;
+                break;
+            }
+        }
+        if (isset($shell)) {
             $this->write($question, false);
-            $command = "/usr/bin/env bash -c 'read -s mypassword && echo \$mypassword'";
+            $readCmd = ($shell === 'csh') ? 'set mypassword = $<' : 'read mypassword';
+            $command = sprintf("/usr/bin/env %s -c 'stty -echo; %s; stty echo; echo \$mypassword'", $shell, $readCmd);
             $value = rtrim(shell_exec($command));
             $this->write('');
 
