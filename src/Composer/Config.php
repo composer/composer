@@ -25,7 +25,10 @@ class Config
     );
 
     public static $defaultRepositories = array(
-        'packagist' => 'http://packagist.org',
+        'packagist' => array(
+            'type' => 'composer',
+            'url' => 'http://packagist.org',
+        )
     );
 
     private $config;
@@ -52,15 +55,30 @@ class Config
 
         if (!empty($config['repositories']) && is_array($config['repositories'])) {
             $this->repositories = array_reverse($this->repositories, true);
-            $this->repositories = array_merge($this->repositories, $config['repositories']);
-            $this->repositories = array_reverse($this->repositories, true);
-
-            // filter out disabled ones
-            foreach ($this->repositories as $name => $url) {
-                if (false === $url) {
+            $newRepos = array_reverse($config['repositories'], true);
+            foreach ($newRepos as $name => $repository) {
+                // disable a repository by name
+                if (false === $repository) {
                     unset($this->repositories[$name]);
+                    continue;
+                }
+
+                // disable a repository with an anonymous {"name": false} repo
+                foreach ($this->repositories as $repoName => $repoSpec) {
+                    if (isset($repository[$repoName]) && false === $repository[$repoName]) {
+                        unset($this->repositories[$repoName]);
+                        continue 2;
+                    }
+                }
+
+                // store repo
+                if (is_int($name)) {
+                    $this->repositories[] = $repository;
+                } else {
+                    $this->repositories[$name] = $repository;
                 }
             }
+            $this->repositories = array_reverse($this->repositories, true);
         }
     }
 

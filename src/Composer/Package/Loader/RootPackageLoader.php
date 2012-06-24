@@ -14,6 +14,7 @@ namespace Composer\Package\Loader;
 
 use Composer\Package\BasePackage;
 use Composer\Config;
+use Composer\Factory;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\RepositoryManager;
 use Composer\Util\ProcessExecutor;
@@ -82,26 +83,11 @@ class RootPackageLoader extends ArrayLoader
             $package->setMinimumStability(VersionParser::normalizeStability($config['minimum-stability']));
         }
 
-        $defaultRepositories = array_keys($this->config->getRepositories());
-
-        if (isset($config['repositories'])) {
-            foreach ($config['repositories'] as $index => $repo) {
-                foreach ($defaultRepositories as $name) {
-                    if (isset($repo[$name]) && $repo[$name] === false) {
-                        continue 2;
-                    }
-                }
-                if (!is_array($repo)) {
-                    throw new \UnexpectedValueException('Repository '.$index.' should be an array, '.gettype($repo).' given');
-                }
-                if (!isset($repo['type'])) {
-                    throw new \UnexpectedValueException('Repository '.$index.' ('.json_encode($repo).') must have a type defined');
-                }
-                $repository = $this->manager->createRepository($repo['type'], $repo);
-                $this->manager->addRepository($repository);
-            }
-            $package->setRepositories($config['repositories']);
+        $repos = Factory::createDefaultRepositories(null, $this->config, $this->manager);
+        foreach ($repos as $repo) {
+            $this->manager->addRepository($repo);
         }
+        $package->setRepositories($this->config->getRepositories());
 
         return $package;
     }

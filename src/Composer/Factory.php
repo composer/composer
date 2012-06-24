@@ -52,13 +52,13 @@ class Factory
 
         $config = new Config();
 
+        // add home dir to the config
+        $config->merge(array('config' => array('home' => $home)));
+
         $file = new JsonFile($home.'/config.json');
         if ($file->exists()) {
             $config->merge($file->read());
         }
-
-        // add home dir to the config
-        $config->merge(array('config' => array('home' => $home)));
 
         return $config;
     }
@@ -68,12 +68,33 @@ class Factory
         return getenv('COMPOSER') ?: 'composer.json';
     }
 
-    public static function createDefaultRepositories(IOInterface $io, Config $config)
+    public static function createDefaultRepositories(IOInterface $io = null, Config $config = null, RepositoryManager $rm = null)
     {
         $repos = array();
 
-        foreach ($config->getRepositories() as $repo => $url) {
-            $repos[preg_replace('{^https?://}i', '', $url)] = new ComposerRepository(array('url' => $url), $io, $config);
+        if (!$config) {
+            $config = static::createConfig();
+        }
+        if (!$rm) {
+            if (!$io) {
+                throw new \InvalidArgumentException('This function requires either an IOInterface or a RepositoryManager');
+            }
+            $factory = new static;
+            $rm = $factory->createRepositoryManager($io, $config);
+        }
+
+        foreach ($config->getRepositories() as $index => $repo) {
+            if (!is_array($repo)) {
+                throw new \UnexpectedValueException('Repository '.$index.' ('.json_encode($repo).') should be an array, '.gettype($repo).' given');
+            }
+            if (!isset($repo['type'])) {
+                throw new \UnexpectedValueException('Repository '.$index.' ('.json_encode($repo).') must have a type defined');
+            }
+            $name = is_int($index) && isset($repo['url']) ? preg_replace('{^https?://}i', '', $repo['url']) : $index;
+            while (isset($repos[$name])) {
+                $name .= '2';
+            }
+            $repos[$name] = $rm->createRepository($repo['type'], $repo);
         }
 
         return $repos;
@@ -125,9 +146,6 @@ class Factory
 
         // initialize repository manager
         $rm = $this->createRepositoryManager($io, $config);
-
-        // load default composer repositories unless they're explicitly disabled
-        $localConfig = $this->addDefaultRepositories($config, $localConfig);
 
         // load local repository
         $this->addLocalRepository($rm, $vendorDir);
@@ -192,44 +210,6 @@ class Factory
     {
         $rm->setLocalRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/composer/installed.json')));
         $rm->setLocalDevRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/composer/installed_dev.json')));
-    }
-
-    /**
-     * @param  array $localConfig
-     * @return array
-     */
-    protected function addDefaultRepositories(Config $config, array $localConfig)
-    {
-        $defaults = $config->getRepositories();
-
-        if (isset($localConfig['repositories'])) {
-            foreach ($localConfig['repositories'] as $key => $repo) {
-                foreach ($defaults as $name => $url) {
-                    if (isset($repo[$name])) {
-                        if (true === $repo[$name]) {
-                            $localConfig['repositories'][$key] = array(
-                                'type' => 'composer',
-                                'url' => $url,
-                            );
-                        }
-
-                        unset($defaults[$name]);
-                        break;
-                    }
-                }
-            }
-        } else {
-            $localConfig['repositories'] = array();
-        }
-
-        foreach ($defaults as $name => $url) {
-            $localConfig['repositories'][] = array(
-                'type' => 'composer',
-                'url' => $url,
-            );
-        }
-
-        return $localConfig;
     }
 
     /**
