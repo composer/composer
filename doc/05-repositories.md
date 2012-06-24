@@ -202,7 +202,7 @@ should you need to specify one for whatever reason, you can use `git`, `svn` or
 
 It is possible to install packages from any PEAR channel by using the `pear`
 repository. Composer will prefix all package names with `pear-{channelName}/` to
-avoid conflicts.
+avoid conflicts. All packages are also aliased with prefix `pear-{channelAlias}/`
 
 Example using `pear2.php.net`:
 
@@ -214,6 +214,7 @@ Example using `pear2.php.net`:
             }
         ],
         "require": {
+            "pear-pear2.php.net/PEAR2_Text_Markdown": "*",
             "pear-pear2/PEAR2_HTTP_Request": "*"
         }
     }
@@ -223,6 +224,47 @@ In this case the short name of the channel is `pear2`, so the
 
 > **Note:** The `pear` repository requires doing quite a few requests per
 > package, so this may considerably slow down the installation process.
+
+#### Custom channel alias
+It is possible to alias all pear channel packages with custom name.
+
+Example:
+ You own private pear repository and going to use composer abilities to bring
+ dependencies from vcs or transit to composer repository scheme.
+ List of packages:
+ * BasePackage, requires nothing
+ * IntermediatePackage, depends on BasePackage
+ * TopLevelPackage1 and TopLevelPackage2 both dependth on IntermediatePackage.
+
+ For composer it looks like:
+ * "pear-pear.foobar.repo/IntermediatePackage" depends on "pear-pear.foobar.repo/BasePackage",
+ * "pear-pear.foobar.repo/TopLevelPackage1" depends on "pear-pear.foobar.repo/IntermediatePackage",
+ * "pear-pear.foobar.repo/TopLevelPackage2" depends on "pear-pear.foobar.repo/IntermediatePackage"
+ When you update one of your packages to composer naming scheme or made it
+ available through vcs your older dependencies would not see new version cause it would be named
+ like "foobar/IntermediatePackage".
+
+ Specifying 'vendor-alias' for pear repository you will get all its packages aliased with composer-like names.
+ Following example would take BasePackage, TopLevelPackage1 and TopLevelPackage2 packages from pear repository
+ and IntermediatePackage from github repository:
+    {
+        "repositories": [
+            {
+                "type": "git",
+                "https://github.com/foobar/intermediate.git"
+            },
+            {
+                "type": "pear",
+                "url": "http://pear.foobar.repo",
+                "vendor-alias": "foobar"
+            }
+        ],
+        "require": {
+            "foobar/TopLevelPackage1": "*",
+            "foobar/TopLevelPackage2": "*"
+        }
+    }
+
 
 ### Package
 
