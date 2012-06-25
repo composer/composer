@@ -79,4 +79,15 @@ class SvnDownloader extends VcsDownloader
             );
         }
     }
+
+    protected function getCommitLogs($sourceReference, $targetReference, $path)
+    {
+        $command = sprintf('cd %s && svn log -r%s:%s --incremental', escapeshellarg($path), $sourceReference, $targetReference);
+
+        if (0 !== $this->process->execute($command, $output)) {
+            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+        }
+
+        return $output;
+    }
 }
