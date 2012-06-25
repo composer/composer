@@ -35,7 +35,7 @@ abstract class DumperTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         $this->fs      = new Filesystem;
-		$this->process = new ProcessExecutor;
+        $this->process = new ProcessExecutor;
         $this->testdir = sys_get_temp_dir() . '/composer_dumpertest_git_repository' . mt_rand();
     }
 
@@ -58,20 +58,20 @@ abstract class DumperTest extends \PHPUnit_Framework_TestCase
         chdir($td);
 
         $result = $this->process->execute("git init -q");
-		if ($result > 0) {
+        if ($result > 0) {
             throw new \RuntimeException(
                 "Could not init: " . $this->process->getErrorOutput());
         }
         $result = file_put_contents('b', 'a');
         if (false === $result) {
-            throw new \RuntimeExcepton("Could not save file.");
+            throw new \RuntimeException("Could not save file.");
         }
         $result = $this->process->execute("git add b && git commit -m 'commit b' -q");
         if ($result > 0) {
             throw new \RuntimeException(
                 "Could not init: " . $this->process->getErrorOutput());
         }
-		chdir($currentWorkDir);
+        chdir($currentWorkDir);
     }
 
     protected function removeGitRepo()

@@ -17,5 +17,13 @@ use Composer\Package\PackageInterface;
  */
 interface DumperInterface
 {
+    /**
+     * Return value depends on implementation - e.g. generating a tar or zip the
+     * method currently returns void, the ArrayDumper returns an array.
+     *
+     * @param PackageInterface $package
+     *
+     * @return mixed
+     */
     public function dump(PackageInterface $package);
 }

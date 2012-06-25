@@ -32,21 +32,21 @@ class ZipDumper extends BaseDumper
         $sourceRef  = $package->getSourceReference();
 
         switch ($sourceType) {
-        case 'git':
-            $this->downloadGit($package, $workDir);
-            $this->packageGit($fileName, $sourceRef, $workDir);
-            break;
-        case 'hg':
-            $this->downloadHg($package, $workDir);
-            $this->packageHg($fileName, $sourceRef, $workDir);
-            break;
-        case 'svn':
-            $dir = $workDir . (substr($sourceRef, 0, 1) !== '/')?'/':'' . $sourceRef;
-            $this->downloadSvn($package, $workDir);
-            $this->package($fileName, $dir, \Phar::ZIP);
-            break;
-        default:
-            throw new \InvalidArgumentException("Unable to handle repositories of type '{$sourceType}'.");
+            case 'git':
+                $this->downloadGit($package, $workDir);
+                $this->packageGit($fileName, $sourceRef, $workDir);
+                break;
+            case 'hg':
+                $this->downloadHg($package, $workDir);
+                $this->packageHg($fileName, $sourceRef, $workDir);
+                break;
+            case 'svn':
+                $dir = $workDir . (substr($sourceRef, 0, 1) !== '/')?'/':'' . $sourceRef;
+                $this->downloadSvn($package, $workDir);
+                $this->package($fileName, $dir, \Phar::ZIP);
+                break;
+            default:
+                throw new \InvalidArgumentException("Unable to handle repositories of type '{$sourceType}'.");
         }
     }
 }

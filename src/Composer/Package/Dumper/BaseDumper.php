@@ -32,7 +32,7 @@ abstract class BaseDumper implements DumperInterface
     /**
      * @var array
      */
-    static $keys = array(
+    protected static $keys = array(
         'binaries' => 'bin',
         'scripts',
         'type',
@@ -70,7 +70,6 @@ abstract class BaseDumper implements DumperInterface
      * @param mixed                               $path
      * @param \Composer\Util\ProcessExecutor|null $process
      *
-     * @return \Composer\Package\Dumper\BaseDumper
      * @throws \InvalidArgumentException
      */
     public function __construct($path = null, ProcessExecutor $process = null)
@@ -79,7 +78,7 @@ abstract class BaseDumper implements DumperInterface
             if (!is_writable($path)) {
                 throw new \InvalidArgumentException("Not authorized to write to '{$path}'");
             }
-            $this->path    = $path;
+            $this->path = $path;
         }
         $this->process = ($process !== null)?$process:new ProcessExecutor;
         $this->temp    = sys_get_temp_dir();
@@ -95,10 +94,7 @@ abstract class BaseDumper implements DumperInterface
     public function getFilename(PackageInterface $package, $extension)
     {
         $name = $package->getPrettyVersion();
-        $fileName = sprintf('%s.%s',
-            $name,
-            $extension
-        );
+        $fileName = sprintf('%s.%s', $name, $extension);
         return $fileName;
     }
 
