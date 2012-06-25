@@ -84,6 +84,18 @@ abstract class VcsDownloader implements DownloaderInterface
     }
 
     /**
+     * Guarantee that no changes have been made to the local copy
+     *
+     * @throws \RuntimeException if the directory is not clean
+     */
+    protected function enforceCleanDirectory($path)
+    {
+        if ($this->hasLocalChanges($path)) {
+            throw new \RuntimeException('Source directory ' . $path . ' has uncommitted changes.');
+        }
+    }
+
+    /**
      * Downloads specific package into specific folder.
      *
      * @param PackageInterface $package package instance
@@ -101,9 +113,10 @@ abstract class VcsDownloader implements DownloaderInterface
     abstract protected function doUpdate(PackageInterface $initial, PackageInterface $target, $path);
 
     /**
-     * Checks that no changes have been made to the local copy
+     * Checks for changes to the local copy
      *
-     * @throws \RuntimeException if the directory is not clean
+     * @param  string  $path package directory
+     * @return boolean       whether package has local changes
      */
-    abstract protected function enforceCleanDirectory($path);
+    abstract public function hasLocalChanges($path);
 }

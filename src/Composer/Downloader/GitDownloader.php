@@ -61,6 +61,19 @@ class GitDownloader extends VcsDownloader
         $this->updateToCommit($path, $ref, $target->getPrettyVersion(), $target->getReleaseDate());
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public function hasLocalChanges($path)
+    {
+        $command = sprintf('cd %s && git status --porcelain --untracked-files=no', escapeshellarg($path));
+        if (0 !== $this->process->execute($command, $output)) {
+            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+        }
+
+        return (bool) trim($output);
+    }
+
     protected function updateToCommit($path, $reference, $branch, $date)
     {
         $template = 'git checkout %s && git reset --hard %1$s';
@@ -111,21 +124,6 @@ class GitDownloader extends VcsDownloader
         }
 
         throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function enforceCleanDirectory($path)
-    {
-        $command = sprintf('cd %s && git status --porcelain --untracked-files=no', escapeshellarg($path));
-        if (0 !== $this->process->execute($command, $output)) {
-            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
-        }
-
-        if (trim($output)) {
-            throw new \RuntimeException('Source directory ' . $path . ' has uncommitted changes');
-        }
     }
 
     /**
