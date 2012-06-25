@@ -23,6 +23,10 @@ class ZipDumper extends BaseDumper
 {
     protected $format = 'zip';
 
+    /**
+     * @param \Composer\Package\PackageInterface $package
+     * @throws \InvalidArgumentException
+     */
     public function dump(PackageInterface $package)
     {
         $workDir = $this->getAndEnsureWorkDirectory($package);
@@ -31,18 +35,18 @@ class ZipDumper extends BaseDumper
         $sourceType = $package->getSourceType();
         $sourceRef  = $package->getSourceReference();
 
+        $dm = $this->getDownloadManager();
+        $dm->download($package, $workDir, true);
+
         switch ($sourceType) {
             case 'git':
-                $this->downloadGit($package, $workDir);
                 $this->packageGit($fileName, $sourceRef, $workDir);
                 break;
             case 'hg':
-                $this->downloadHg($package, $workDir);
                 $this->packageHg($fileName, $sourceRef, $workDir);
                 break;
             case 'svn':
                 $dir = $workDir . (substr($sourceRef, 0, 1) !== '/')?'/':'' . $sourceRef;
-                $this->downloadSvn($package, $workDir);
                 $this->package($fileName, $dir, \Phar::ZIP);
                 break;
             default:

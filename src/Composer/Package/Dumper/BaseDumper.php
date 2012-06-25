@@ -17,6 +17,7 @@ use Composer\Downloader\GitDownloader;
 use Composer\Downloader\HgDownloader;
 use Composer\Downloader\SvnDownloader;
 use Composer\IO\NullIO;
+use Composer\Factory;
 
 /**
  * @author Till Klampaeckel <till@php.net>
@@ -85,6 +86,16 @@ abstract class BaseDumper implements DumperInterface
     }
 
     /**
+     * @return \Composer\Downloader\DownloadManager
+     */
+    public function getDownloadManager()
+    {
+        $factory = new Factory;
+        $dm = $factory->createDownloadManager(new NullIO());
+        return $dm;
+    }
+
+    /**
      * @param \Composer\Package\PackageInterface $package
      * @param string                             $extension
      *
@@ -100,39 +111,10 @@ abstract class BaseDumper implements DumperInterface
 
     /**
      * @param \Composer\Package\PackageInterface $package
-     * @param string                             $workDir
+     *
+     * @return string
+     * @throws \RuntimeException
      */
-    protected function downloadGit(PackageInterface $package, $workDir)
-    {
-        $downloader = new GitDownloader(
-            new NullIO(),
-            $this->process
-        );
-        $downloader->download($package, $workDir);
-    }
-
-    /**
-     * @param \Composer\Package\PackageInterface $package
-     * @param string                             $workDir
-     */
-    protected function downloadHg(PackageInterface $package, $workDir)
-    {
-        $downloader = new HgDownloader(
-            new NullIO(),
-            $this->process
-        );
-        $downloader->download($package, $workDir);
-    }
-
-    protected function downloadSvn(PackageInterface $package, $workDir)
-    {
-        $downloader = new SvnDownloader(
-            new NullIO(),
-            $this->process
-        );
-        $downloader->download($package, $workDir);
-    }
-
     protected function getAndEnsureWorkDirectory(PackageInterface $package)
     {
         $workDir = sprintf('%s/%s/%s', $this->temp, $this->format, $package->getName());
