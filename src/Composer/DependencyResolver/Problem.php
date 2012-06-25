@@ -144,7 +144,7 @@ class Problem
                 return 'Removal request for '.$job['packageName'].$this->constraintToText($job['constraint']).'';
         }
 
-        return 'Job(cmd='.$job['cmd'].', target='.$job['packageName'].', packages=['.$this->packageList($job['packages']).'])';
+        return 'Job(cmd='.$job['cmd'].', target='.$job['packageName'].', packages=['.$this->getPackageList($job['packages']).'])';
     }
 
     protected function getPackageList($packages)
