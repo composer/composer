@@ -224,4 +224,15 @@ class GitDownloader extends VcsDownloader
             $this->process->execute($cmd, $ignoredOutput, $path);
         }
     }
+
+    protected function getCommitLogs($sourceReference, $targetReference, $path)
+    {
+        $command = sprintf('cd %s && git log %s..%s --pretty=format:"%%h - %%an: %%s"', escapeshellarg($path), $sourceReference, $targetReference);
+
+        if (0 !== $this->process->execute($command, $output)) {
+            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+        }
+
+        return $output;
+    }
 }
