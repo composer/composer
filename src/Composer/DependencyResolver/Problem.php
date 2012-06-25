@@ -149,11 +149,11 @@ class Problem
 
     protected function getPackageList($packages)
     {
-        return implode(', ', array_map(function ($package) {
+        return implode(', ', array_unique(array_map(function ($package) {
                 return $package->getPrettyString();
             },
             $packages
-        ));
+        )));
     }
 
     /**
