@@ -57,7 +57,7 @@ abstract class BaseDumper implements DumperInterface
     protected $path;
 
     /**
-     * @var \Composer\Util\ProcessExecutor
+     * @var ProcessExecutor
      */
     protected $process;
 
@@ -68,8 +68,8 @@ abstract class BaseDumper implements DumperInterface
     protected $temp;
 
     /**
-     * @param mixed                               $path
-     * @param \Composer\Util\ProcessExecutor|null $process
+     * @param mixed                $path
+     * @param ProcessExecutor|null $process
      *
      * @throws \InvalidArgumentException
      */
@@ -81,7 +81,7 @@ abstract class BaseDumper implements DumperInterface
             }
             $this->path = $path;
         }
-        $this->process = ($process !== null)?$process:new ProcessExecutor;
+        $this->process = $process ?: new ProcessExecutor();
         $this->temp    = sys_get_temp_dir();
     }
 
@@ -96,8 +96,8 @@ abstract class BaseDumper implements DumperInterface
     }
 
     /**
-     * @param \Composer\Package\PackageInterface $package
-     * @param string                             $extension
+     * @param PackageInterface $package
+     * @param string           $extension
      *
      * @return string
      * @throws \InvalidArgumentException When unknown 'format' is encountered.
@@ -110,7 +110,7 @@ abstract class BaseDumper implements DumperInterface
     }
 
     /**
-     * @param \Composer\Package\PackageInterface $package
+     * @param PackageInterface $package
      *
      * @return string
      * @throws \RuntimeException

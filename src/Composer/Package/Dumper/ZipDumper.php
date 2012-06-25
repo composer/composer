@@ -24,7 +24,7 @@ class ZipDumper extends BaseDumper
     protected $format = 'zip';
 
     /**
-     * @param \Composer\Package\PackageInterface $package
+     * @param PackageInterface $package
      * @throws \InvalidArgumentException
      */
     public function dump(PackageInterface $package)

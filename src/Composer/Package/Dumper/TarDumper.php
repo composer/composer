@@ -24,7 +24,7 @@ class TarDumper extends BaseDumper
     protected $format = 'tar';
 
     /**
-     * @param \Composer\Package\PackageInterface $package
+     * @param PackageInterface $package
      * @throws \InvalidArgumentException
      */
     public function dump(PackageInterface $package)
