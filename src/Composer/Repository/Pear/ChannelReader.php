@@ -60,7 +60,7 @@ class ChannelReader extends BaseChannelReader
         $supportedVersions = array_keys($this->readerMap);
         $selectedRestVersion = $this->selectRestVersion($xml, $supportedVersions);
         if (!$selectedRestVersion) {
-            throw new \UnexpectedValueException(sprintf('PEAR repository $s does not supports any of %s protocols.', $url, implode(', ', $supportedVersions)));
+            throw new \UnexpectedValueException(sprintf('PEAR repository %s does not supports any of %s protocols.', $url, implode(', ', $supportedVersions)));
         }
 
         $reader = $this->readerMap[$selectedRestVersion['version']];
