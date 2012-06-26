@@ -23,7 +23,7 @@ interface DumperInterface
      *
      * @param PackageInterface $package
      *
-     * @return mixed
+     * @return void
      */
     public function dump(PackageInterface $package);
 }

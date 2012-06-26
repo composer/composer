@@ -12,8 +12,6 @@
 
 namespace Composer\Package\Dumper;
 
-use Composer\Package\Dumper\BaseDumper;
-use Composer\Package\Dumper\DumperInterface;
 use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
 
@@ -21,8 +19,31 @@ use Composer\Package\PackageInterface;
  * @author Konstantin Kudryashiv <ever.zet@gmail.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class ArrayDumper extends BaseDumper
+class ArrayDumper
 {
+	/**
+     * @var array
+     */
+    protected static $keys = array(
+        'binaries' => 'bin',
+        'scripts',
+        'type',
+        'extra',
+        'installationSource' => 'installation-source',
+        'license',
+        'authors',
+        'description',
+        'homepage',
+        'keywords',
+        'autoload',
+        'repositories',
+        'includePaths' => 'include-path',
+        'support',
+    );
+
+	/**
+	 * @return array
+	 */
     public function dump(PackageInterface $package)
     {
         $data = array();

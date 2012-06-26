@@ -31,26 +31,6 @@ abstract class BaseDumper implements DumperInterface
     protected $format = '';
 
     /**
-     * @var array
-     */
-    protected static $keys = array(
-        'binaries' => 'bin',
-        'scripts',
-        'type',
-        'extra',
-        'installationSource' => 'installation-source',
-        'license',
-        'authors',
-        'description',
-        'homepage',
-        'keywords',
-        'autoload',
-        'repositories',
-        'includePaths' => 'include-path',
-        'support',
-    );
-
-    /**
      * Path to where to dump the export to.
      * @var mixed|null
      */
