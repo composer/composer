@@ -71,7 +71,7 @@ interface PackageInterface
     /**
      * Returns whether the package is a development virtual package or a concrete one
      *
-     * @return Boolean
+     * @return bool
      */
     public function isDev();
 

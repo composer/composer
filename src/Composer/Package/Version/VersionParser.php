@@ -164,6 +164,8 @@ class VersionParser
      */
     public function parseConstraints($constraints)
     {
+        $prettyConstraint = $constraints;
+
         if (preg_match('{^([^,\s]*?)@('.implode('|', array_keys(BasePackage::$stabilities)).')$}i', $constraints, $match)) {
             $constraints = empty($match[1]) ? '*' : $match[1];
         }
@@ -184,10 +186,14 @@ class VersionParser
         }
 
         if (1 === count($constraintObjects)) {
-            return $constraintObjects[0];
+            $constraint = $constraintObjects[0];
+        } else {
+            $constraint = new MultiConstraint($constraintObjects);
         }
 
-        return new MultiConstraint($constraintObjects);
+        $constraint->setPrettyString($prettyConstraint);
+
+        return $constraint;
     }
 
     private function parseConstraint($constraint)
@@ -228,7 +234,7 @@ class VersionParser
         }
 
         // match operators constraints
-        if (preg_match('{^(>=?|<=?|==?)?\s*(.*)}', $constraint, $matches)) {
+        if (preg_match('{^(<>|!=|>=?|<=?|==?)?\s*(.*)}', $constraint, $matches)) {
             try {
                 $version = $this->normalize($matches[2]);
 

@@ -67,8 +67,9 @@ Version constraints can be specified in a few different ways.
   example `1.0.2`. This is not used very often, but can be useful.
 
 * **Range:** By using comparison operators you can specify ranges of valid
-  versions. Valid operators are `>`, `>=`, `<`, `<=`. An example range would be
-  `>=1.0`. You can define multiple ranges, separated by a comma:   `>=1.0,<2.0`.
+  versions. Valid operators are `>`, `>=`, `<`, `<=`, `!=`. An example range
+  would be `>=1.0`. You can define multiple ranges, separated by a comma:
+  `>=1.0,<2.0`.
 
 * **Wildcard:** You can specify a pattern with a `*` wildcard. `1.0.*` is the
   equivalent of `>=1.0,<1.1-dev`.
@@ -105,7 +106,7 @@ and if it is, it downloads the versions specified there (regardless of what `com
 says). This means that anyone who sets up the project will download the exact
 same version of the dependencies.
 
-If no `composer.json` lock file exists, it will read the dependencies and
+If no `composer.lock` file exists, Composer will read the dependencies and
 versions from `composer.json` and  create the lock file.
 
 This means that if any of the dependencies get a new version, you won't get the updates

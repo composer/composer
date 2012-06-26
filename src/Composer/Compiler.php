@@ -187,12 +187,11 @@ EOF;
 
         // add warning once the phar is older than 30 days
         if (preg_match('{^[a-f0-9]+$}', $this->version)) {
-            $stub .= 'if (time() > '.(time()+30*86400).') {'.
-                "\n    echo 'This dev build of composer is outdated, please run \"'.\$argv[0].' self-update\" to get the latest.'.PHP_EOL;".
-                "\n}\n";
+            $warningTime = time() + 30*86400;
+            $stub .= "define('COMPOSER_DEV_WARNING_TIME', $warningTime);\n";
         }
 
-        return $stub .= <<<'EOF'
+        return $stub . <<<'EOF'
 require 'phar://composer.phar/bin/composer';
 
 __HALT_COMPILER();

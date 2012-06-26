@@ -27,7 +27,7 @@ interface RepositoryInterface extends \Countable
      *
      * @param PackageInterface $package package instance
      *
-     * @return Boolean
+     * @return bool
      */
     public function hasPackage(PackageInterface $package);
 

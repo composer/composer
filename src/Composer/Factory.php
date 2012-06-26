@@ -14,6 +14,7 @@ namespace Composer;
 
 use Composer\Json\JsonFile;
 use Composer\IO\IOInterface;
+use Composer\Repository\ComposerRepository;
 use Composer\Repository\RepositoryManager;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
@@ -51,13 +52,13 @@ class Factory
 
         $config = new Config();
 
+        // add home dir to the config
+        $config->merge(array('config' => array('home' => $home)));
+
         $file = new JsonFile($home.'/config.json');
         if ($file->exists()) {
             $config->merge($file->read());
         }
-
-        // add home dir to the config
-        $config->merge(array('config' => array('home' => $home)));
 
         return $config;
     }
@@ -67,11 +68,45 @@ class Factory
         return getenv('COMPOSER') ?: 'composer.json';
     }
 
+    public static function createDefaultRepositories(IOInterface $io = null, Config $config = null, RepositoryManager $rm = null)
+    {
+        $repos = array();
+
+        if (!$config) {
+            $config = static::createConfig();
+        }
+        if (!$rm) {
+            if (!$io) {
+                throw new \InvalidArgumentException('This function requires either an IOInterface or a RepositoryManager');
+            }
+            $factory = new static;
+            $rm = $factory->createRepositoryManager($io, $config);
+        }
+
+        foreach ($config->getRepositories() as $index => $repo) {
+            if (!is_array($repo)) {
+                throw new \UnexpectedValueException('Repository '.$index.' ('.json_encode($repo).') should be an array, '.gettype($repo).' given');
+            }
+            if (!isset($repo['type'])) {
+                throw new \UnexpectedValueException('Repository '.$index.' ('.json_encode($repo).') must have a type defined');
+            }
+            $name = is_int($index) && isset($repo['url']) ? preg_replace('{^https?://}i', '', $repo['url']) : $index;
+            while (isset($repos[$name])) {
+                $name .= '2';
+            }
+            $repos[$name] = $rm->createRepository($repo['type'], $repo);
+        }
+
+        return $repos;
+    }
+
     /**
      * Creates a Composer instance
      *
-     * @param  IOInterface $io          IO instance
-     * @param  mixed       $localConfig either a configuration array or a filename to read from, if null it will read from the default filename
+     * @param IOInterface       $io          IO instance
+     * @param array|string|null $localConfig either a configuration array or a filename to read from, if null it will
+     *                                       read from the default filename
+     * @throws \InvalidArgumentException
      * @return Composer
      */
     public function createComposer(IOInterface $io, $localConfig = null)
@@ -112,14 +147,11 @@ class Factory
         // initialize repository manager
         $rm = $this->createRepositoryManager($io, $config);
 
-        // load default repository unless it's explicitly disabled
-        $localConfig = $this->addPackagistRepository($localConfig);
-
         // load local repository
         $this->addLocalRepository($rm, $vendorDir);
 
         // load package
-        $loader  = new Package\Loader\RootPackageLoader($rm);
+        $loader  = new Package\Loader\RootPackageLoader($rm, $config);
         $package = $loader->load($localConfig);
 
         // initialize download manager
@@ -144,13 +176,18 @@ class Factory
             $lockFile = "json" === pathinfo($composerFile, PATHINFO_EXTENSION)
                 ? substr($composerFile, 0, -4).'lock'
                 : $composerFile . '.lock';
-            $locker = new Package\Locker(new JsonFile($lockFile, new RemoteFilesystem($io)), $rm, md5_file($composerFile));
+            $locker = new Package\Locker(new JsonFile($lockFile, new RemoteFilesystem($io)), $rm, $im, md5_file($composerFile));
             $composer->setLocker($locker);
         }
 
         return $composer;
     }
 
+    /**
+     * @param  IOInterface                  $io
+     * @param  Config                       $config
+     * @return Repository\RepositoryManager
+     */
     protected function createRepositoryManager(IOInterface $io, Config $config)
     {
         $rm = new RepositoryManager($io, $config);
@@ -165,59 +202,20 @@ class Factory
         return $rm;
     }
 
+    /**
+     * @param Repository\RepositoryManager $rm
+     * @param string                       $vendorDir
+     */
     protected function addLocalRepository(RepositoryManager $rm, $vendorDir)
     {
-        // TODO BC feature, remove after June 15th
-        if (file_exists($vendorDir.'/.composer/installed.json')) {
-            if (!is_dir($vendorDir.'/composer')) { mkdir($vendorDir.'/composer/', 0777, true); }
-            rename($vendorDir.'/.composer/installed.json', $vendorDir.'/composer/installed.json');
-        }
-        if (file_exists($vendorDir.'/.composer/installed_dev.json')) {
-            if (!is_dir($vendorDir.'/composer')) { mkdir($vendorDir.'/composer/', 0777, true); }
-            rename($vendorDir.'/.composer/installed_dev.json', $vendorDir.'/composer/installed_dev.json');
-        }
-        if (file_exists($vendorDir.'/installed.json')) {
-            if (!is_dir($vendorDir.'/composer')) { mkdir($vendorDir.'/composer/', 0777, true); }
-            rename($vendorDir.'/installed.json', $vendorDir.'/composer/installed.json');
-        }
-        if (file_exists($vendorDir.'/installed_dev.json')) {
-            if (!is_dir($vendorDir.'/composer')) { mkdir($vendorDir.'/composer/', 0777, true); }
-            rename($vendorDir.'/installed_dev.json', $vendorDir.'/composer/installed_dev.json');
-        }
         $rm->setLocalRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/composer/installed.json')));
         $rm->setLocalDevRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/composer/installed_dev.json')));
     }
 
-    protected function addPackagistRepository(array $localConfig)
-    {
-        $loadPackagist = true;
-        $packagistConfig = array(
-            'type' => 'composer',
-            'url' => 'http://packagist.org'
-        );
-
-        if (isset($localConfig['repositories'])) {
-            foreach ($localConfig['repositories'] as $key => $repo) {
-                if (isset($repo['packagist'])) {
-                    if (true === $repo['packagist']) {
-                        $localConfig['repositories'][$key] = $packagistConfig;
-                    }
-
-                    $loadPackagist = false;
-                    break;
-                }
-            }
-        } else {
-            $localConfig['repositories'] = array();
-        }
-
-        if ($loadPackagist) {
-            $localConfig['repositories'][] = $packagistConfig;
-        }
-
-        return $localConfig;
-    }
-
+    /**
+     * @param  IO\IOInterface             $io
+     * @return Downloader\DownloadManager
+     */
     public function createDownloadManager(IOInterface $io)
     {
         $dm = new Downloader\DownloadManager();
@@ -233,6 +231,14 @@ class Factory
         return $dm;
     }
 
+    /**
+     * @param  Repository\RepositoryManager  $rm
+     * @param  Downloader\DownloadManager    $dm
+     * @param  string                        $vendorDir
+     * @param  string                        $binDir
+     * @param  IO\IOInterface                $io
+     * @return Installer\InstallationManager
+     */
     protected function createInstallationManager(Repository\RepositoryManager $rm, Downloader\DownloadManager $dm, $vendorDir, $binDir, IOInterface $io)
     {
         $im = new Installer\InstallationManager($vendorDir);
@@ -243,9 +249,14 @@ class Factory
         return $im;
     }
 
+    /**
+     * @param Repository\RepositoryManager  $rm
+     * @param Installer\InstallationManager $im
+     */
     protected function purgePackages(Repository\RepositoryManager $rm, Installer\InstallationManager $im)
     {
         foreach ($rm->getLocalRepositories() as $repo) {
+            /* @var $repo   Repository\WritableRepositoryInterface */
             foreach ($repo->getPackages() as $package) {
                 if (!$im->isPackageInstalled($repo, $package)) {
                     $repo->removePackage($package);
@@ -255,8 +266,9 @@ class Factory
     }
 
     /**
-     * @param  IOInterface $io     IO instance
-     * @param  mixed       $config either a configuration array or a filename to read from, if null it will read from the default filename
+     * @param IOInterface $io     IO instance
+     * @param mixed       $config either a configuration array or a filename to read from, if null it will read from
+     *                             the default filename
      * @return Composer
      */
     public static function create(IOInterface $io, $config = null)

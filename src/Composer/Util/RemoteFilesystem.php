@@ -49,7 +49,7 @@ class RemoteFilesystem
      * @param string  $fileName  the local filename
      * @param boolean $progress  Display the progression
      *
-     * @return Boolean true
+     * @return bool true
      */
     public function copy($originUrl, $fileUrl, $fileName, $progress = true)
     {
@@ -136,7 +136,7 @@ class RemoteFilesystem
 
         // handle copy command if download was successful
         if (false !== $result && null !== $fileName) {
-            $result = (Boolean) @file_put_contents($fileName, $result);
+            $result = (bool) @file_put_contents($fileName, $result);
             if (false === $result) {
                 throw new TransportException('The "'.$fileUrl.'" file could not be written to '.$fileName);
             }

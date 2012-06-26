@@ -13,6 +13,8 @@
 namespace Composer\Package\Loader;
 
 use Composer\Package\BasePackage;
+use Composer\Config;
+use Composer\Factory;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\RepositoryManager;
 use Composer\Util\ProcessExecutor;
@@ -27,11 +29,13 @@ use Composer\Util\ProcessExecutor;
 class RootPackageLoader extends ArrayLoader
 {
     private $manager;
+    private $config;
     private $process;
 
-    public function __construct(RepositoryManager $manager, VersionParser $parser = null, ProcessExecutor $process = null)
+    public function __construct(RepositoryManager $manager, Config $config, VersionParser $parser = null, ProcessExecutor $process = null)
     {
         $this->manager = $manager;
+        $this->config = $config;
         $this->process = $process ?: new ProcessExecutor();
         parent::__construct($parser);
     }
@@ -79,22 +83,11 @@ class RootPackageLoader extends ArrayLoader
             $package->setMinimumStability(VersionParser::normalizeStability($config['minimum-stability']));
         }
 
-        if (isset($config['repositories'])) {
-            foreach ($config['repositories'] as $index => $repo) {
-                if (isset($repo['packagist']) && $repo['packagist'] === false) {
-                    continue;
-                }
-                if (!is_array($repo)) {
-                    throw new \UnexpectedValueException('Repository '.$index.' should be an array, '.gettype($repo).' given');
-                }
-                if (!isset($repo['type'])) {
-                    throw new \UnexpectedValueException('Repository '.$index.' ('.json_encode($repo).') must have a type defined');
-                }
-                $repository = $this->manager->createRepository($repo['type'], $repo);
-                $this->manager->addRepository($repository);
-            }
-            $package->setRepositories($config['repositories']);
+        $repos = Factory::createDefaultRepositories(null, $this->config, $this->manager);
+        foreach ($repos as $repo) {
+            $this->manager->addRepository($repo);
         }
+        $package->setRepositories($this->config->getRepositories());
 
         return $package;
     }

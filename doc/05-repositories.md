@@ -252,6 +252,9 @@ Here is an example for the smarty template engine:
                         "url": "http://smarty-php.googlecode.com/svn/",
                         "type": "svn",
                         "reference": "tags/Smarty_3_1_7/distribution/"
+                    },
+                    "autoload": {
+                        "classmap": ["libs/"]
                     }
                 }
             }

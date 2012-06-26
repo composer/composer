@@ -35,7 +35,14 @@ use Composer\Util\ErrorHandler;
  */
 class Application extends BaseApplication
 {
+    /**
+     * @var Composer
+     */
     protected $composer;
+
+    /**
+     * @var IOInterface
+     */
     protected $io;
 
     public function __construct()
@@ -70,11 +77,18 @@ class Application extends BaseApplication
             $output->writeln('<warning>Composer only officially supports PHP 5.3.2 and above, you will most likely encounter problems with your PHP '.PHP_VERSION.', upgrading is strongly recommended.</warning>');
         }
 
+        if (defined('COMPOSER_DEV_WARNING_TIME') && $this->getCommandName($input) !== 'self-update') {
+            if (time() > COMPOSER_DEV_WARNING_TIME) {
+                $output->writeln(sprintf('<warning>This dev build of composer is outdated, please run "%s self-update" to get the latest version.</warning>', $_SERVER['PHP_SELF']));
+            }
+        }
+
         return parent::doRun($input, $output);
     }
 
     /**
-     * @return Composer
+     * @param  bool               $required
+     * @return \Composer\Composer
      */
     public function getComposer($required = true)
     {
@@ -86,8 +100,6 @@ class Application extends BaseApplication
                     $this->io->write($e->getMessage());
                     exit(1);
                 }
-
-                return;
             }
         }
 

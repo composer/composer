@@ -21,7 +21,6 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
-use Composer\Repository\ComposerRepository;
 use Composer\Repository\RepositoryInterface;
 
 /**
@@ -64,10 +63,10 @@ EOT
             $installedRepo = new CompositeRepository(array($localRepo, $platformRepo));
             $repos = new CompositeRepository(array_merge(array($installedRepo), $composer->getRepositoryManager()->getRepositories()));
         } else {
-            $output->writeln('No composer.json found in the current directory, showing packages from packagist.org');
+            $defaultRepos = Factory::createDefaultRepositories($this->getIO());
+            $output->writeln('No composer.json found in the current directory, showing packages from ' . implode(', ', array_keys($defaultRepos)));
             $installedRepo = $platformRepo;
-            $packagist = new ComposerRepository(array('url' => 'http://packagist.org'), $this->getIO(), Factory::createConfig());
-            $repos = new CompositeRepository(array($installedRepo, $packagist));
+            $repos = new CompositeRepository(array_merge(array($installedRepo), $defaultRepos));
         }
 
         // show single package or single version
@@ -111,12 +110,12 @@ EOT
             $packages[$type][$package->getName()] = $package;
         }
 
-        foreach (array('<info>platform</info>:', '<comment>available</comment>:', '<info>installed</info>:') as $type) {
+        foreach (array('<info>platform</info>:' => true, '<comment>available</comment>:' => false, '<info>installed</info>:' => true) as $type => $showVersion) {
             if (isset($packages[$type])) {
                 $output->writeln($type);
                 ksort($packages[$type]);
                 foreach ($packages[$type] as $package) {
-                    $output->writeln('  '.$package->getPrettyName() .' <comment>:</comment> '. strtok($package->getDescription(), "\r\n"));
+                    $output->writeln('  '.$package->getPrettyName() .' '.($showVersion ? '['.$package->getPrettyVersion().']' : '').' <comment>:</comment> '. strtok($package->getDescription(), "\r\n"));
                 }
                 $output->writeln('');
             }

@@ -201,7 +201,7 @@ class Installer
             // write autoloader
             $this->io->write('<info>Generating autoload files</info>');
             $localRepos = new CompositeRepository($this->repositoryManager->getLocalRepositories());
-            $this->autoloadGenerator->dump($localRepos, $this->package, $this->installationManager, $this->installationManager->getVendorPath() . '/composer', true);
+            $this->autoloadGenerator->dump($localRepos, $this->package, $this->installationManager, $this->installationManager->getVendorPath() . '/composer');
 
             if ($this->runScripts) {
                 // dispatch post event
@@ -401,6 +401,10 @@ class Installer
                     $lockData = $this->locker->getLockData();
                     foreach ($lockData['packages'] as $lockedPackage) {
                         if (!empty($lockedPackage['source-reference']) && strtolower($lockedPackage['package']) === $package->getName()) {
+                            // update commit date to allow recovery in case the commit disappeared
+                            if (!empty($lockedPackage['commit-date'])) {
+                                $package->setReleaseDate(new \DateTime('@'.$lockedPackage['commit-date']));
+                            }
                             $package->setSourceReference($lockedPackage['source-reference']);
                             break;
                         }

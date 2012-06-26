@@ -39,7 +39,13 @@ class SvnDriverTest extends \PHPUnit_Framework_TestCase
             ->method('getErrorOutput')
             ->will($this->returnValue($output));
 
-        $svn = new SvnDriver('http://till:secret@corp.svn.local/repo', $console, new Config(), $process);
+        $config = new Config();
+        $config->merge(array(
+            'config' => array(
+                'home' => sys_get_temp_dir() . '/composer-test',
+            ),
+        ));
+        $svn = new SvnDriver('http://till:secret@corp.svn.local/repo', $console, $config, $process);
         $svn->initialize();
     }
 

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://pear.php.net/dtd/package-2.1" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2.1" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0 http://pear.php.net/dtd/tasks-1.0.xsd http://pear.php.net/dtd/package-2.1 http://pear.php.net/dtd/package-2.1.xsd" packagerversion="2.0.0">
+    <!-- stripped version of package-->
+    <name>Zend_Authentication</name>
+    <channel>packages.zendframework.com</channel>
+    <summary>
+        Package Zend_Authentication summary.\n\n" . "Package detailed description here (found in README)
+    </summary>
+    <description/>
+    <version>
+        <release>2.0.0beta4</release>
+        <api>2.0.0beta4</api>
+    </version>
+    <stability>
+        <release>beta</release>
+        <api>beta</api>
+    </stability>
+    <contents>
+        <dir name="/">
+            <file role="php" name="php/Zend/Authentication/Storage/StorageInterface.php"/>
+            <file role="php" name="php/Zend/Authentication/Result.php"/>
+        </dir>
+    </contents>
+    <phprelease/>
+</package>

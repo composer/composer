@@ -22,21 +22,21 @@ interface IOInterface
     /**
      * Is this input means interactive?
      *
-     * @return Boolean
+     * @return bool
      */
     public function isInteractive();
 
     /**
      * Is this input verbose?
      *
-     * @return Boolean
+     * @return bool
      */
     public function isVerbose();
 
     /**
      * Is this output decorated?
      *
-     * @return Boolean
+     * @return bool
      */
     public function isDecorated();
 
@@ -44,7 +44,7 @@ interface IOInterface
      * Writes a message to the output.
      *
      * @param string|array $messages The message as an array of lines or a single string
-     * @param Boolean      $newline  Whether to add a newline or not
+     * @param bool         $newline  Whether to add a newline or not
      */
     public function write($messages, $newline = true);
 
@@ -52,7 +52,7 @@ interface IOInterface
      * Overwrites a previous message to the output.
      *
      * @param string|array $messages The message as an array of lines or a single string
-     * @param Boolean      $newline  Whether to add a newline or not
+     * @param bool         $newline  Whether to add a newline or not
      * @param integer      $size     The size of line
      */
     public function overwrite($messages, $newline = true, $size = 80);
@@ -75,9 +75,9 @@ interface IOInterface
      * The question will be asked until the user answers by nothing, yes, or no.
      *
      * @param string|array $question The question to ask
-     * @param Boolean      $default  The default answer if the user enters nothing
+     * @param bool         $default  The default answer if the user enters nothing
      *
-     * @return Boolean true if the user has confirmed, false otherwise
+     * @return bool true if the user has confirmed, false otherwise
      */
     public function askConfirmation($question, $default = true);
 

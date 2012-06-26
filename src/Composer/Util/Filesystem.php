@@ -56,9 +56,9 @@ class Filesystem
     /**
      * Returns the shortest path from $from to $to
      *
-     * @param  string  $from
-     * @param  string  $to
-     * @param  Boolean $directories if true, the source/target are considered to be directories
+     * @param  string $from
+     * @param  string $to
+     * @param  bool   $directories if true, the source/target are considered to be directories
      * @return string
      */
     public function findShortestPath($from, $to, $directories = false)
@@ -97,9 +97,9 @@ class Filesystem
     /**
      * Returns PHP code that, when executed in $from, will return the path to $to
      *
-     * @param  string  $from
-     * @param  string  $to
-     * @param  Boolean $directories if true, the source/target are considered to be directories
+     * @param  string $from
+     * @param  string $to
+     * @param  bool   $directories if true, the source/target are considered to be directories
      * @return string
      */
     public function findShortestPathCode($from, $to, $directories = false)
@@ -138,8 +138,8 @@ class Filesystem
     /**
      * Checks if the given path is absolute
      *
-     * @param  string  $path
-     * @return Boolean
+     * @param  string $path
+     * @return bool
      */
     public function isAbsolutePath($path)
     {

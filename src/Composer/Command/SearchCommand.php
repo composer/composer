@@ -17,7 +17,6 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
-use Composer\Repository\ComposerRepository;
 use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Factory;
@@ -53,10 +52,10 @@ EOT
             $installedRepo = new CompositeRepository(array($localRepo, $platformRepo));
             $repos = new CompositeRepository(array_merge(array($installedRepo), $composer->getRepositoryManager()->getRepositories()));
         } else {
-            $output->writeln('No composer.json found in the current directory, showing packages from packagist.org');
+            $defaultRepos = Factory::createDefaultRepositories($this->getIO());
+            $output->writeln('No composer.json found in the current directory, showing packages from ' . implode(', ', array_keys($defaultRepos)));
             $installedRepo = $platformRepo;
-            $packagist = new ComposerRepository(array('url' => 'http://packagist.org'), $this->getIO(), Factory::createConfig());
-            $repos = new CompositeRepository(array($installedRepo, $packagist));
+            $repos = new CompositeRepository(array_merge(array($installedRepo), $defaultRepos));
         }
 
         $tokens = $input->getArgument('tokens');

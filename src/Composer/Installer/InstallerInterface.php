@@ -26,8 +26,8 @@ interface InstallerInterface
     /**
      * Decides if the installer supports the given type
      *
-     * @param  string  $packageType
-     * @return Boolean
+     * @param  string $packageType
+     * @return bool
      */
     public function supports($packageType);
 
@@ -37,7 +37,7 @@ interface InstallerInterface
      * @param InstalledRepositoryInterface $repo    repository in which to check
      * @param PackageInterface             $package package instance
      *
-     * @return Boolean
+     * @return bool
      */
     public function isInstalled(InstalledRepositoryInterface $repo, PackageInterface $package);
 

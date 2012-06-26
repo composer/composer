@@ -44,6 +44,7 @@ class Cache
 
     public function read($file)
     {
+        $file = preg_replace('{[^a-z0-9.]}i', '-', $file);
         if ($this->enabled && file_exists($this->root . $file)) {
             return file_get_contents($this->root . $file);
         }
@@ -52,12 +53,14 @@ class Cache
     public function write($file, $contents)
     {
         if ($this->enabled) {
+            $file = preg_replace('{[^a-z0-9.]}i', '-', $file);
             file_put_contents($this->root . $file, $contents);
         }
     }
 
     public function sha1($file)
     {
+        $file = preg_replace('{[^a-z0-9.]}i', '-', $file);
         if ($this->enabled && file_exists($this->root . $file)) {
             return sha1_file($this->root . $file);
         }

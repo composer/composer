@@ -108,6 +108,17 @@ class CompositeRepository implements RepositoryInterface
     /**
      * {@inheritdoc}
      */
+    public function removePackage(PackageInterface $package)
+    {
+        foreach ($this->repositories as $repository) {
+            /* @var $repository RepositoryInterface */
+            $repository->removePackage($package);
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function count()
     {
         $total = 0;

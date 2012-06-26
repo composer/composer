@@ -102,12 +102,12 @@ class InstallationManager
      * @param InstalledRepositoryInterface $repo    repository in which to check
      * @param PackageInterface             $package package instance
      *
-     * @return Boolean
+     * @return bool
      */
     public function isPackageInstalled(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
         if ($package instanceof AliasPackage) {
-            return $repo->hasPackage($package);
+            return $repo->hasPackage($package) && $this->isPackageInstalled($repo, $package->getAliasOf());
         }
 
         return $this->getInstaller($package->getType())->isInstalled($repo, $package);

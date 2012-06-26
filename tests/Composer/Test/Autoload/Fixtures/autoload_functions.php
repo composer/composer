@@ -5,9 +5,6 @@ if (!class_exists('Composer\\Autoload\\ClassLoader', false)) {
     require __DIR__ . '/composer' . '/ClassLoader.php';
 }
 
-require __DIR__ . '/a/a/test.php';
-require __DIR__ . '/b/b/test2.php';
-
 return call_user_func(function() {
     $loader = new \Composer\Autoload\ClassLoader();
     $composerDir = __DIR__ . '/composer';
@@ -23,6 +20,9 @@ return call_user_func(function() {
     }
 
     $loader->register();
+
+    require __DIR__ . '/a/a/test.php';
+    require __DIR__ . '/b/b/test2.php';
 
     return $loader;
 });

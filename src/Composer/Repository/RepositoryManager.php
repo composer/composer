@@ -166,7 +166,7 @@ class RepositoryManager
     /**
      * Returns all local repositories for the project.
      *
-     * @return array[RepositoryInterface]
+     * @return array[WritableRepositoryInterface]
      */
     public function getLocalRepositories()
     {

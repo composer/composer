@@ -13,40 +13,46 @@
 namespace Composer\Package;
 
 use Composer\Json\JsonFile;
+use Composer\Installer\InstallationManager;
 use Composer\Repository\RepositoryManager;
+use Composer\Util\ProcessExecutor;
 use Composer\Package\AliasPackage;
 
 /**
  * Reads/writes project lockfile (composer.lock).
  *
  * @author Konstantin Kudryashiv <ever.zet@gmail.com>
+ * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 class Locker
 {
     private $lockFile;
     private $repositoryManager;
+    private $installationManager;
     private $hash;
     private $lockDataCache;
 
     /**
      * Initializes packages locker.
      *
-     * @param JsonFile          $lockFile          lockfile loader
-     * @param RepositoryManager $repositoryManager repository manager instance
-     * @param string            $hash              unique hash of the current composer configuration
+     * @param JsonFile            $lockFile            lockfile loader
+     * @param RepositoryManager   $repositoryManager   repository manager instance
+     * @param InstallationManager $installationManager installation manager instance
+     * @param string              $hash                unique hash of the current composer configuration
      */
-    public function __construct(JsonFile $lockFile, RepositoryManager $repositoryManager, $hash)
+    public function __construct(JsonFile $lockFile, RepositoryManager $repositoryManager, InstallationManager $installationManager, $hash)
     {
         $this->lockFile          = $lockFile;
         $this->repositoryManager = $repositoryManager;
+        $this->installationManager = $installationManager;
         $this->hash = $hash;
     }
 
     /**
      * Checks whether locker were been locked (lockfile found).
      *
-     * @param  Boolean $dev true to check if dev packages are locked
-     * @return Boolean
+     * @param  bool $dev true to check if dev packages are locked
+     * @return bool
      */
     public function isLocked($dev = false)
     {
@@ -65,7 +71,7 @@ class Locker
     /**
      * Checks whether the lock file is still up to date with the current hash
      *
-     * @return Boolean
+     * @return bool
      */
     public function isFresh()
     {
@@ -77,7 +83,7 @@ class Locker
     /**
      * Searches and returns an array of locked packages, retrieved from registered repositories.
      *
-     * @param  Boolean $dev true to retrieve the locked dev packages
+     * @param  bool  $dev true to retrieve the locked dev packages
      * @return array
      */
     public function getLockedPackages($dev = false)
@@ -89,12 +95,6 @@ class Locker
         $repo = $dev ? $this->repositoryManager->getLocalDevRepository() : $this->repositoryManager->getLocalRepository();
 
         foreach ($lockedPackages as $info) {
-            // TODO BC remove this after June 10th
-            if (isset($info['alias']) && empty($warned)) {
-                $warned = true;
-                echo 'BC warning: your lock file appears to be of an older format than this composer version, it is recommended to run composer update'.PHP_EOL;
-            }
-
             $resolvedVersion = !empty($info['alias-version']) ? $info['alias-version'] : $info['version'];
 
             // try to find the package in the local repo (best match)
@@ -170,7 +170,7 @@ class Locker
      * @param mixed $packages array of dev packages or null if installed without --dev
      * @param array $aliases  array of aliases
      *
-     * @return Boolean
+     * @return bool
      */
     public function setLockData(array $packages, $devPackages, array $aliases, $minimumStability, array $stabilityFlags)
     {
@@ -223,6 +223,12 @@ class Locker
 
             if ($package->isDev() && !$alias) {
                 $spec['source-reference'] = $package->getSourceReference();
+                if ('git' === $package->getSourceType() && $path = $this->installationManager->getInstallPath($package)) {
+                    $process = new ProcessExecutor();
+                    if (0 === $process->execute('git log -n1 --pretty=%ct '.escapeshellarg($package->getSourceReference()), $output, $path)) {
+                        $spec['commit-date'] = trim($output);
+                    }
+                }
             }
 
             if ($alias) {

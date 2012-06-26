@@ -46,7 +46,7 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
         $this->config = $config;
         $this->url = $repoConfig['url'];
         $this->io = $io;
-        $this->cache = new Cache($io, $config->get('home').'/cache/'.preg_replace('{[^a-z0-9.]}', '-', $this->url));
+        $this->cache = new Cache($io, $config->get('home').'/cache/'.preg_replace('{[^a-z0-9.]}i', '-', $this->url));
     }
 
     /**

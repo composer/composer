@@ -17,6 +17,7 @@ use Composer\Installer;
 use Composer\Installer\ProjectInstaller;
 use Composer\IO\IOInterface;
 use Composer\Repository\ComposerRepository;
+use Composer\Repository\CompositeRepository;
 use Composer\Repository\FilesystemRepository;
 use Composer\Repository\InstalledFilesystemRepository;
 use Symfony\Component\Console\Input\InputArgument;
@@ -90,7 +91,7 @@ EOT
 
         $config = Factory::createConfig();
         if (null === $repositoryUrl) {
-            $sourceRepo = new ComposerRepository(array('url' => 'http://packagist.org'), $io, $config);
+            $sourceRepo = new CompositeRepository(Factory::createDefaultRepositories($io, $config));
         } elseif ("json" === pathinfo($repositoryUrl, PATHINFO_EXTENSION)) {
             $sourceRepo = new FilesystemRepository(new JsonFile($repositoryUrl, new RemoteFilesystem($io)));
         } elseif (0 === strpos($repositoryUrl, 'http')) {
@@ -146,4 +147,3 @@ EOT
         return $factory->createDownloadManager($io);
     }
 }
-

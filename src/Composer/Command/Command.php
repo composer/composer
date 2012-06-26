@@ -12,6 +12,10 @@
 
 namespace Composer\Command;
 
+use Composer\Composer;
+use Composer\Console\Application;
+use Composer\IO\IOInterface;
+use Composer\IO\NullIO;
 use Symfony\Component\Console\Command\Command as BaseCommand;
 
 /**
@@ -23,18 +27,68 @@ use Symfony\Component\Console\Command\Command as BaseCommand;
 abstract class Command extends BaseCommand
 {
     /**
-     * @return \Composer\Composer
+     * @var Composer
      */
-    protected function getComposer($required = true)
+    private $composer;
+
+    /**
+     * @var IOInterface
+     */
+    private $io;
+
+    /**
+     * @param  bool     $required
+     * @return Composer
+     */
+    public function getComposer($required = true)
     {
-        return $this->getApplication()->getComposer($required);
+        if (null === $this->composer) {
+            $application = $this->getApplication();
+            if ($application instanceof Application) {
+                /* @var $application    Application */
+                $this->composer = $application->getComposer($required);
+            } elseif ($required) {
+                throw new \RuntimeException(
+                    'Could not create a Composer\Composer instance, you must inject '.
+                    'one if this command is not used with a Composer\Console\Application instance'
+                );
+            }
+        }
+
+        return $this->composer;
     }
 
     /**
-     * @return \Composer\IO\ConsoleIO
+     * @param Composer $composer
      */
-    protected function getIO()
+    public function setComposer(Composer $composer)
     {
-        return $this->getApplication()->getIO();
+        $this->composer = $composer;
+    }
+
+    /**
+     * @return IOInterface
+     */
+    public function getIO()
+    {
+        if (null === $this->io) {
+            $application = $this->getApplication();
+            if ($application instanceof Application) {
+                /* @var $application    Application */
+                $this->io = $application->getIO();
+            } else {
+                $this->io = new NullIO();
+            }
+        }
+
+        return $this->io;
+    }
+
+    /**
+     * @param IOInterface $io
+     */
+    public function setIO(IOInterface $io)
+    {
+        $this->io = $io;
     }
 }

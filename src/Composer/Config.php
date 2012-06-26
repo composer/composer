@@ -17,17 +17,28 @@ namespace Composer;
  */
 class Config
 {
+    public static $defaultConfig = array(
+        'process-timeout' => 300,
+        'vendor-dir' => 'vendor',
+        'bin-dir' => '{$vendor-dir}/bin',
+        'notify-on-install' => true,
+    );
+
+    public static $defaultRepositories = array(
+        'packagist' => array(
+            'type' => 'composer',
+            'url' => 'http://packagist.org',
+        )
+    );
+
     private $config;
+    private $repositories;
 
     public function __construct()
     {
         // load defaults
-        $this->config = array(
-            'process-timeout' => 300,
-            'vendor-dir' => 'vendor',
-            'bin-dir' => '{$vendor-dir}/bin',
-            'notify-on-install' => true,
-        );
+        $this->config = static::$defaultConfig;
+        $this->repositories = static::$defaultRepositories;
     }
 
     /**
@@ -41,6 +52,42 @@ class Config
         if (!empty($config['config']) && is_array($config['config'])) {
             $this->config = array_replace_recursive($this->config, $config['config']);
         }
+
+        if (!empty($config['repositories']) && is_array($config['repositories'])) {
+            $this->repositories = array_reverse($this->repositories, true);
+            $newRepos = array_reverse($config['repositories'], true);
+            foreach ($newRepos as $name => $repository) {
+                // disable a repository by name
+                if (false === $repository) {
+                    unset($this->repositories[$name]);
+                    continue;
+                }
+
+                // disable a repository with an anonymous {"name": false} repo
+                foreach ($this->repositories as $repoName => $repoSpec) {
+                    if (isset($repository[$repoName]) && false === $repository[$repoName]) {
+                        unset($this->repositories[$repoName]);
+                        continue 2;
+                    }
+                }
+
+                // store repo
+                if (is_int($name)) {
+                    $this->repositories[] = $repository;
+                } else {
+                    $this->repositories[$name] = $repository;
+                }
+            }
+            $this->repositories = array_reverse($this->repositories, true);
+        }
+    }
+
+    /**
+     * @return array
+     */
+    public function getRepositories()
+    {
+        return $this->repositories;
     }
 
     /**
@@ -71,8 +118,8 @@ class Config
     /**
      * Checks whether a setting exists
      *
-     * @param  string  $key
-     * @return Boolean
+     * @param  string $key
+     * @return bool
      */
     public function has($key)
     {

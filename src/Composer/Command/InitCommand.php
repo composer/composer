@@ -16,7 +16,6 @@ use Composer\Json\JsonFile;
 use Composer\Factory;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
-use Composer\Repository\ComposerRepository;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -234,9 +233,9 @@ EOT
 
         // init repos
         if (!$this->repos) {
-            $this->repos = new CompositeRepository(array(
-                new PlatformRepository,
-                new ComposerRepository(array('url' => 'http://packagist.org'), $this->getIO(), Factory::createConfig())
+            $this->repos = new CompositeRepository(array_merge(
+                array(new PlatformRepository),
+                Factory::createDefaultRepositories($this->getIO())
             ));
         }
 
@@ -381,7 +380,7 @@ EOT
      * @param string $ignoreFile
      * @param string $vendor
      *
-     * @return Boolean
+     * @return bool
      */
     protected function hasVendorIgnore($ignoreFile, $vendor = 'vendor')
     {

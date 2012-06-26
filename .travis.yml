@@ -9,4 +9,4 @@ before_script:
   - curl -s http://getcomposer.org/installer | php
   - php composer.phar install
 
-script: phpunit -c tests/
+script: phpunit -c tests/complete.phpunit.xml
