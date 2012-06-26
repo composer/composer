@@ -19,6 +19,7 @@ use Composer\IO\IOInterface;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\FilesystemRepository;
+use Composer\Repository\NotifiableRepositoryInterface;
 use Composer\Repository\InstalledFilesystemRepository;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -125,6 +126,9 @@ EOT
         $io->write('<info>Installing ' . $package->getName() . ' (' . VersionParser::formatVersion($package, false) . ')</info>', true);
         $projectInstaller = new ProjectInstaller($directory, $dm);
         $projectInstaller->install(new InstalledFilesystemRepository(new JsonFile('php://memory')), $package);
+        if ($package->getRepository() instanceof NotifiableRepositoryInterface) {
+            $package->getRepository()->notifyInstall($package);
+        }
 
         $io->write('<info>Created project in ' . $directory . '</info>', true);
         chdir($directory);
