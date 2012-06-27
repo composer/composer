@@ -33,6 +33,7 @@ class PackageDependencyParser
         if (!$this->isHash($depArray)) {
             return new DependencyInfo($this->buildDependency10Info($depArray), array());
         }
+
         return $this->buildDependency20Info($depArray);
     }
 

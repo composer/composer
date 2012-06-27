@@ -10,5 +10,7 @@
  * file that was distributed with this source code.
  */
 
+error_reporting(E_ALL);
+
 $loader = require __DIR__.'/../src/bootstrap.php';
 $loader->add('Composer\Test', __DIR__);
