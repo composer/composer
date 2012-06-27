@@ -25,7 +25,7 @@ class GitDownloader extends VcsDownloader
     public function doDownload(PackageInterface $package, $path)
     {
         $ref = $package->getSourceReference();
-        $command = 'git clone %s %s && cd %2$s && git remote add composer %1$s && git fetch composer';
+        $command = 'git clone -c core.askpass=echo %s %s && cd %2$s && git remote add composer %1$s && git fetch composer';
         $this->io->write("    Cloning ".$ref);
 
         $commandCallable = function($url) use ($ref, $path, $command) {
@@ -140,7 +140,7 @@ class GitDownloader extends VcsDownloader
     {
         $handler = array($this, 'outputHandler');
 
-        // github, autoswitch protocols
+        // public github, autoswitch protocols
         if (preg_match('{^(?:https?|git)(://github.com/.*)}', $url, $match)) {
             $protocols = array('git', 'https', 'http');
             $messages = array();
@@ -162,7 +162,7 @@ class GitDownloader extends VcsDownloader
         $command = call_user_func($commandCallable, $url);
         if (0 !== $this->process->execute($command, $handler)) {
             if (preg_match('{^git@github.com:(.+?)\.git$}i', $url, $match) && $this->io->isInteractive()) {
-                // private repository without git access, try https with auth
+                // private github repository without git access, try https with auth
                 $retries = 3;
                 $retrying = false;
                 do {
