@@ -211,7 +211,7 @@ class Locker
             }
 
             $name    = $package->getPrettyName();
-            $version = $package->getPrettyVersion();
+            $version = $package->getVersion();
 
             if (!$name || !$version) {
                 throw new \LogicException(sprintf(
