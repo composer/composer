@@ -276,6 +276,7 @@ class GitHubDriver extends VcsDriver
 
                             return;
                         } catch (\RuntimeException $e) {
+                            $this->gitDriver = null;
                             if (!$this->io->isInteractive()) {
                                 $this->io->write('<error>Failed to clone the '.$this->generateSshUrl().' repository, try running in interactive mode so that you can enter your username and password</error>');
                                 throw $e;

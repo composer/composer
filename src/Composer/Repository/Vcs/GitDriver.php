@@ -48,7 +48,9 @@ class GitDriver extends VcsDriver
                 $fs = new Filesystem();
                 $fs->removeDirectory($this->repoDir);
 
-                $command = sprintf('git clone -c core.askpass=echo --mirror %s %s', escapeshellarg($this->url), escapeshellarg($this->repoDir));
+                // added in git 1.7.1, prevents prompting the user
+                putenv('GIT_ASKPASS=echo');
+                $command = sprintf('git clone --mirror %s %s', escapeshellarg($this->url), escapeshellarg($this->repoDir));
                 if (0 !== $this->process->execute($command, $output)) {
                     $output = $this->process->getErrorOutput();
 

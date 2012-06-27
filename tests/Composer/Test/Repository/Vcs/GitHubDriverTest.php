@@ -48,6 +48,11 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
             ->setConstructorArgs(array($io))
             ->getMock();
 
+        $process = $this->getMock('Composer\Util\ProcessExecutor');
+        $process->expects($this->any())
+            ->method('execute')
+            ->will($this->returnValue(1));
+
         $remoteFilesystem->expects($this->at(0))
             ->method('getContents')
             ->with($this->equalTo('github.com'), $this->equalTo($repoApiUrl), $this->equalTo(false))
@@ -72,7 +77,7 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
             ->with($this->equalTo('github.com'), $this->equalTo($repoApiUrl), $this->equalTo(false))
             ->will($this->returnValue('{"master_branch": "test_master"}'));
 
-        $gitHubDriver = new GitHubDriver($repoUrl, $io, $this->config, null, $remoteFilesystem);
+        $gitHubDriver = new GitHubDriver($repoUrl, $io, $this->config, $process, $remoteFilesystem);
         $gitHubDriver->initialize();
         $this->setAttribute($gitHubDriver, 'tags', array($identifier => $sha));
 
