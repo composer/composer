@@ -71,6 +71,7 @@ class PearRepository extends ArrayRepository
             $channelInfo = $reader->read($this->url);
         } catch (\Exception $e) {
             $this->io->write('<warning>PEAR repository from '.$this->url.' could not be loaded. '.$e->getMessage().'</warning>');
+
             return;
         }
         $packages = $this->buildComposerPackages($channelInfo, $this->versionParser);
@@ -146,9 +147,9 @@ class PearRepository extends ArrayRepository
                 }
 
                 $package = new MemoryPackage($composerPackageName, $normalizedVersion, $version);
-                $package->setType('library');
+                $package->setType('pear-library');
                 $package->setDescription($packageDefinition->getDescription());
-                $package->setDistType('pear');
+                $package->setDistType('file');
                 $package->setDistUrl($distUrl);
                 $package->setAutoload(array('classmap' => array('')));
                 $package->setIncludePaths(array('/'));
@@ -178,7 +179,7 @@ class PearRepository extends ArrayRepository
     /**
      * Softened version parser.
      *
-     * @param string $version
+     * @param  string      $version
      * @return null|string
      */
     private function parseVersion($version)

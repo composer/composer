@@ -138,7 +138,7 @@ class LockerTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue('pkg1'));
         $package1
             ->expects($this->once())
-            ->method('getPrettyVersion')
+            ->method('getVersion')
             ->will($this->returnValue('1.0.0-beta'));
 
         $package2
@@ -147,7 +147,7 @@ class LockerTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue('pkg2'));
         $package2
             ->expects($this->once())
-            ->method('getPrettyVersion')
+            ->method('getVersion')
             ->will($this->returnValue('0.1.10'));
 
         $json

@@ -73,7 +73,7 @@ abstract class BaseChannelReader
 
         if (false == $xml) {
             $url = rtrim($origin, '/') . '/' . ltrim($path, '/');
-            throw new \UnexpectedValueException('The PEAR channel at ' . $origin . ' is broken.');
+            throw new \UnexpectedValueException(sprintf('The PEAR channel at ' . $origin . ' is broken. (Invalid XML at file `%s`)', $path));
         }
 
         return $xml;

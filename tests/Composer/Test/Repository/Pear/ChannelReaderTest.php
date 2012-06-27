@@ -118,8 +118,8 @@ class ChannelReaderTest extends TestCase
         $packages = $ref->invoke($reader, $channelInfo, new VersionParser());
 
         $expectedPackage = new MemoryPackage('pear-test.loc/sample', '1.0.0.1' , '1.0.0.1');
-        $expectedPackage->setType('library');
-        $expectedPackage->setDistType('pear');
+        $expectedPackage->setType('pear-library');
+        $expectedPackage->setDistType('file');
         $expectedPackage->setDescription('description');
         $expectedPackage->setDistUrl("http://test.loc/get/sample-1.0.0.1.tgz");
         $expectedPackage->setAutoload(array('classmap' => array('')));

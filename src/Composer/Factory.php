@@ -225,7 +225,6 @@ class Factory
         $dm->setDownloader('git', new Downloader\GitDownloader($io));
         $dm->setDownloader('svn', new Downloader\SvnDownloader($io));
         $dm->setDownloader('hg', new Downloader\HgDownloader($io));
-        $dm->setDownloader('pear', new Downloader\PearDownloader($io));
         $dm->setDownloader('zip', new Downloader\ZipDownloader($io));
         $dm->setDownloader('tar', new Downloader\TarDownloader($io));
         $dm->setDownloader('phar', new Downloader\PharDownloader($io));
@@ -251,6 +250,7 @@ class Factory
     protected function createDefaultInstallers(Installer\InstallationManager $im, Composer $composer, IOInterface $io)
     {
         $im->addInstaller(new Installer\LibraryInstaller($io, $composer, null));
+        $im->addInstaller(new Installer\PearInstaller($io, $composer, 'pear-library'));
         $im->addInstaller(new Installer\InstallerInstaller($io, $composer));
         $im->addInstaller(new Installer\MetapackageInstaller($io));
     }

@@ -13,8 +13,6 @@
 namespace Composer\Repository\Pear;
 
 use Composer\Util\RemoteFilesystem;
-use Composer\Package\LinkConstraint\VersionConstraint;
-use Composer\Package\Link;
 
 /**
  * PEAR Channel package reader.
