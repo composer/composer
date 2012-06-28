@@ -259,7 +259,8 @@ class GitHubDriver extends VcsDriver
                     case 401:
                     case 404:
                         $this->isPrivate = true;
-                        if (!$this->io->isInteractive()) {
+
+                        try {
                             // If this repository may be private (hard to say for sure,
                             // GitHub returns 404 for private repositories) and we
                             // cannot ask for authentication credentials (because we
@@ -274,6 +275,12 @@ class GitHubDriver extends VcsDriver
                             $this->gitDriver->initialize();
 
                             return;
+                        } catch (\RuntimeException $e) {
+                            $this->gitDriver = null;
+                            if (!$this->io->isInteractive()) {
+                                $this->io->write('<error>Failed to clone the '.$this->generateSshUrl().' repository, try running in interactive mode so that you can enter your username and password</error>');
+                                throw $e;
+                            }
                         }
                         $this->io->write('Authentication required (<info>'.$this->url.'</info>):');
                         $username = $this->io->ask('Username: ');
