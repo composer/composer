@@ -1,0 +1,5 @@
+-- COMMAND --
+create-project jms/metadata %testDir%
+
+-- OUTPUTREGEX --
+#^Installing jms/metadata \(dev-master [a-f0-9]{40}\)#
