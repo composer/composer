@@ -64,11 +64,9 @@ class Config
                 }
 
                 // disable a repository with an anonymous {"name": false} repo
-                foreach ($this->repositories as $repoName => $repoSpec) {
-                    if (isset($repository[$repoName]) && false === $repository[$repoName]) {
-                        unset($this->repositories[$repoName]);
-                        continue 2;
-                    }
+                if (1 === count($repository) && false === current($repository)) {
+                    unset($this->repositories[key($repository)]);
+                    continue;
                 }
 
                 // store repo
