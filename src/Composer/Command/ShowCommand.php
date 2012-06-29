@@ -19,6 +19,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Composer\Repository\ArrayRepository;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
@@ -39,6 +40,7 @@ class ShowCommand extends Command
                 new InputArgument('version', InputArgument::OPTIONAL, 'Version to inspect'),
                 new InputOption('installed', null, InputOption::VALUE_NONE, 'List installed packages only'),
                 new InputOption('platform', null, InputOption::VALUE_NONE, 'List platform packages only'),
+                new InputOption('self', null, InputOption::VALUE_NONE, 'Show the root package information'),
             ))
             ->setHelp(<<<EOT
 The show command displays detailed information about a package, or
@@ -53,7 +55,10 @@ EOT
     {
         // init repos
         $platformRepo = new PlatformRepository;
-        if ($input->getOption('platform')) {
+        if ($input->getOption('self')) {
+            $package = $this->getComposer(false)->getPackage();
+            $repos = $installedRepo = new ArrayRepository(array($package));
+        } elseif ($input->getOption('platform')) {
             $repos = $installedRepo = $platformRepo;
         } elseif ($input->getOption('installed')) {
             $composer = $this->getComposer();
@@ -70,8 +75,10 @@ EOT
         }
 
         // show single package or single version
-        if ($input->getArgument('package')) {
-            $package = $this->getPackage($input, $output, $installedRepo, $repos);
+        if ($input->getArgument('package') || !empty($package)) {
+            if (empty($package)) {
+                $package = $this->getPackage($input, $output, $installedRepo, $repos);
+            }
             if (!$package) {
                 throw new \InvalidArgumentException('Package '.$input->getArgument('package').' not found');
             }
