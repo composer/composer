@@ -61,7 +61,8 @@ class VersionParser
 
     public static function formatVersion(PackageInterface $package, $truncate = true)
     {
-        if (!$package->isDev() || !in_array($package->getSourceType(), array('hg', 'git'))) {
+        if ($truncate && (
+                !$package->isDev() || !in_array($package->getSourceType(), array('hg', 'git')))) {
             return $package->getPrettyVersion();
         }
 
