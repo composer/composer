@@ -12,19 +12,19 @@
 
 namespace Composer\Console;
 
-use Symfony\Component\Console\Application as BaseApplication;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Output\ConsoleOutput;
-use Symfony\Component\Console\Formatter\OutputFormatter;
-use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Composer\Command;
 use Composer\Command\Helper\DialogHelper;
 use Composer\Composer;
 use Composer\Factory;
-use Composer\IO\IOInterface;
 use Composer\IO\ConsoleIO;
+use Composer\IO\IOInterface;
 use Composer\Util\ErrorHandler;
+use Symfony\Component\Console\Application as BaseApplication;
+use Symfony\Component\Console\Formatter\OutputFormatter;
+use Symfony\Component\Console\Formatter\OutputFormatterStyle;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\ConsoleOutput;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * The console application that handles the commands

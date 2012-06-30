@@ -12,12 +12,12 @@
 
 namespace Composer\Repository;
 
-use Composer\Package\Loader\ArrayLoader;
-use Composer\Package\PackageInterface;
-use Composer\Json\JsonFile;
 use Composer\Cache;
 use Composer\Config;
 use Composer\IO\IOInterface;
+use Composer\Json\JsonFile;
+use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\PackageInterface;
 use Composer\Util\RemoteFilesystem;
 
 /**

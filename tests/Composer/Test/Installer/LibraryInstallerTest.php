@@ -13,8 +13,8 @@
 namespace Composer\Test\Installer;
 
 use Composer\Installer\LibraryInstaller;
-use Composer\Util\Filesystem;
 use Composer\Test\TestCase;
+use Composer\Util\Filesystem;
 
 class LibraryInstallerTest extends TestCase
 {

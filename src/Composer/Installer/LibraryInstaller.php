@@ -12,10 +12,10 @@
 
 namespace Composer\Installer;
 
-use Composer\IO\IOInterface;
 use Composer\Downloader\DownloadManager;
-use Composer\Repository\InstalledRepositoryInterface;
+use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
+use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Util\Filesystem;
 
 /**

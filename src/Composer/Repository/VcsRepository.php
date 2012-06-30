@@ -12,12 +12,12 @@
 
 namespace Composer\Repository;
 
-use Composer\Downloader\TransportException;
-use Composer\Repository\Vcs\VcsDriverInterface;
-use Composer\Package\Version\VersionParser;
-use Composer\Package\Loader\ArrayLoader;
-use Composer\IO\IOInterface;
 use Composer\Config;
+use Composer\Downloader\TransportException;
+use Composer\IO\IOInterface;
+use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\Version\VersionParser;
+use Composer\Repository\Vcs\VcsDriverInterface;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>

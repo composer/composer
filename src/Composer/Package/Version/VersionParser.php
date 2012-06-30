@@ -13,9 +13,9 @@
 namespace Composer\Package\Version;
 
 use Composer\Package\BasePackage;
-use Composer\Package\PackageInterface;
 use Composer\Package\LinkConstraint\MultiConstraint;
 use Composer\Package\LinkConstraint\VersionConstraint;
+use Composer\Package\PackageInterface;
 
 /**
  * Version parser

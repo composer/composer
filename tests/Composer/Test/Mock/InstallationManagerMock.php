@@ -11,14 +11,14 @@
 
 namespace Composer\Test\Mock;
 
-use Composer\Installer\InstallationManager;
-use Composer\Repository\RepositoryInterface;
-use Composer\Package\PackageInterface;
 use Composer\DependencyResolver\Operation\InstallOperation;
-use Composer\DependencyResolver\Operation\UpdateOperation;
-use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\MarkAliasInstalledOperation;
 use Composer\DependencyResolver\Operation\MarkAliasUninstalledOperation;
+use Composer\DependencyResolver\Operation\UninstallOperation;
+use Composer\DependencyResolver\Operation\UpdateOperation;
+use Composer\Installer\InstallationManager;
+use Composer\Package\PackageInterface;
+use Composer\Repository\RepositoryInterface;
 
 class InstallationManagerMock extends InstallationManager
 {

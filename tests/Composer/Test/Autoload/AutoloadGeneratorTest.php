@@ -13,10 +13,10 @@
 namespace Composer\Test\Autoload;
 
 use Composer\Autoload\AutoloadGenerator;
-use Composer\Util\Filesystem;
 use Composer\Package\AliasPackage;
 use Composer\Package\MemoryPackage;
 use Composer\Test\TestCase;
+use Composer\Util\Filesystem;
 
 class AutoloadGeneratorTest extends TestCase
 {

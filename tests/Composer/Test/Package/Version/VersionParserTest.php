@@ -12,9 +12,9 @@
 
 namespace Composer\Test\Package\Version;
 
-use Composer\Package\Version\VersionParser;
 use Composer\Package\LinkConstraint\MultiConstraint;
 use Composer\Package\LinkConstraint\VersionConstraint;
+use Composer\Package\Version\VersionParser;
 
 class VersionParserTest extends \PHPUnit_Framework_TestCase
 {

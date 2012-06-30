@@ -12,8 +12,8 @@
 
 namespace Composer\Downloader;
 
-use Composer\Util\ProcessExecutor;
 use Composer\IO\IOInterface;
+use Composer\Util\ProcessExecutor;
 use ZipArchive;
 
 /**

@@ -11,13 +11,13 @@
  */
 namespace Composer\Test\DependencyResolver;
 
-use Composer\Repository\ArrayRepository;
 use Composer\DependencyResolver\DefaultPolicy;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Solver;
 use Composer\DependencyResolver\SolverProblemsException;
 use Composer\Package\Link;
+use Composer\Repository\ArrayRepository;
 use Composer\Test\TestCase;
 
 class SolverTest extends TestCase

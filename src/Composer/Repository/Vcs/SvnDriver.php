@@ -13,12 +13,12 @@
 namespace Composer\Repository\Vcs;
 
 use Composer\Cache;
-use Composer\Json\JsonFile;
-use Composer\Util\ProcessExecutor;
-use Composer\Util\Filesystem;
-use Composer\Util\Svn as SvnUtil;
-use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
+use Composer\IO\IOInterface;
+use Composer\Json\JsonFile;
+use Composer\Util\Filesystem;
+use Composer\Util\ProcessExecutor;
+use Composer\Util\Svn as SvnUtil;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>

@@ -14,8 +14,8 @@ namespace Composer\Package;
 
 use Composer\Package\LinkConstraint\LinkConstraintInterface;
 use Composer\Package\LinkConstraint\VersionConstraint;
-use Composer\Repository\RepositoryInterface;
 use Composer\Repository\PlatformRepository;
+use Composer\Repository\RepositoryInterface;
 
 /**
  * Base class for packages providing name storage and default match implementation

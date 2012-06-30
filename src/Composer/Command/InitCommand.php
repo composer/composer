@@ -12,15 +12,15 @@
 
 namespace Composer\Command;
 
-use Composer\Json\JsonFile;
 use Composer\Factory;
+use Composer\Json\JsonFile;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Process\Process;
 use Symfony\Component\Process\ExecutableFinder;
+use Symfony\Component\Process\Process;
 
 /**
  * @author Justin Rainbow <justin.rainbow@gmail.com>

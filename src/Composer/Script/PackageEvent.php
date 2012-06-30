@@ -13,8 +13,8 @@
 namespace Composer\Script;
 
 use Composer\Composer;
-use Composer\IO\IOInterface;
 use Composer\DependencyResolver\Operation\OperationInterface;
+use Composer\IO\IOInterface;
 
 /**
  * The Package Event.

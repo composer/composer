@@ -12,13 +12,13 @@
 
 namespace Composer\Test\Repository;
 
-use Symfony\Component\Process\ExecutableFinder;
+use Composer\Config;
+use Composer\IO\NullIO;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Repository\VcsRepository;
 use Composer\Util\Filesystem;
 use Composer\Util\ProcessExecutor;
-use Composer\IO\NullIO;
-use Composer\Config;
+use Symfony\Component\Process\ExecutableFinder;
 
 /**
  * @group slow

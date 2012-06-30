@@ -12,12 +12,12 @@
 
 namespace Composer\Repository;
 
-use Composer\IO\IOInterface;
-use Composer\Package\Loader\ArrayLoader;
-use Composer\Util\RemoteFilesystem;
-use Composer\Json\JsonFile;
 use Composer\Config;
 use Composer\Downloader\TransportException;
+use Composer\IO\IOInterface;
+use Composer\Json\JsonFile;
+use Composer\Package\Loader\ArrayLoader;
+use Composer\Util\RemoteFilesystem;
 
 /**
  * @author Benjamin Eberlei <kontakt@beberlei.de>

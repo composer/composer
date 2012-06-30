@@ -12,9 +12,9 @@
 
 namespace Composer\Repository\Vcs;
 
+use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Util\ProcessExecutor;
-use Composer\IO\IOInterface;
 
 /**
  * @author Per Bernhardt <plb@webfactory.de>

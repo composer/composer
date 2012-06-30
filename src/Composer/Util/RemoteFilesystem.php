@@ -13,8 +13,8 @@
 namespace Composer\Util;
 
 use Composer\Composer;
-use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
+use Composer\IO\IOInterface;
 
 /**
  * @author François Pluchino <francois.pluchino@opendisplay.com>

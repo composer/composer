@@ -13,9 +13,9 @@
 namespace Composer\Script;
 
 use Composer\Autoload\AutoloadGenerator;
-use Composer\IO\IOInterface;
 use Composer\Composer;
 use Composer\DependencyResolver\Operation\OperationInterface;
+use Composer\IO\IOInterface;
 
 /**
  * The Event Dispatcher.

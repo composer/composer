@@ -12,10 +12,10 @@
 
 namespace Composer\Test;
 
-use Composer\Package\Version\VersionParser;
-use Composer\Package\MemoryPackage;
 use Composer\Package\AliasPackage;
 use Composer\Package\LinkConstraint\VersionConstraint;
+use Composer\Package\MemoryPackage;
+use Composer\Package\Version\VersionParser;
 use Composer\Util\Filesystem;
 
 abstract class TestCase extends \PHPUnit_Framework_TestCase

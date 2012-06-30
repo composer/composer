@@ -12,12 +12,12 @@
 namespace Composer\Test\Mock;
 
 use Composer\Config;
+use Composer\Downloader;
 use Composer\Factory;
+use Composer\Installer;
+use Composer\IO\IOInterface;
 use Composer\Repository;
 use Composer\Repository\RepositoryManager;
-use Composer\Installer;
-use Composer\Downloader;
-use Composer\IO\IOInterface;
 
 class FactoryMock extends Factory
 {

@@ -12,8 +12,8 @@
 
 namespace Composer\Repository;
 
-use Composer\IO\IOInterface;
 use Composer\Config;
+use Composer\IO\IOInterface;
 
 /**
  * Repositories manager.

@@ -12,10 +12,10 @@
 
 namespace Composer\Downloader;
 
-use Composer\Package\PackageInterface;
-use Composer\Util\ProcessExecutor;
 use Composer\IO\IOInterface;
+use Composer\Package\PackageInterface;
 use Composer\Util\Filesystem;
+use Composer\Util\ProcessExecutor;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>

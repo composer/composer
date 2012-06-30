@@ -12,10 +12,10 @@
 
 namespace Composer\Test\Repository\Vcs;
 
+use Composer\Config;
 use Composer\Downloader\TransportException;
 use Composer\Repository\Vcs\GitHubDriver;
 use Composer\Util\Filesystem;
-use Composer\Config;
 
 class GitHubDriverTest extends \PHPUnit_Framework_TestCase
 {
