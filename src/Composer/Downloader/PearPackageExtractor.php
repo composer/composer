@@ -163,9 +163,10 @@ class PearPackageExtractor
     private function applyRelease(&$actions, $releaseNodes, $vars)
     {
         foreach ($releaseNodes as $releaseNode) {
-            $requiredOs = (string) ($releaseNode->installconditions && $releaseNode->installconditions->os && $releaseNode->installconditions->os->name) ?: '';
-            if ($requiredOs && $vars['os'] != $requiredOs)
+            $requiredOs = $releaseNode->installconditions && $releaseNode->installconditions->os && $releaseNode->installconditions->os->name ? (string) $releaseNode->installconditions->os->name : '';
+            if ($requiredOs && $vars['os'] != $requiredOs) {
                 continue;
+            }
 
             if ($releaseNode->filelist) {
                 foreach ($releaseNode->filelist->children() as $action) {

@@ -62,7 +62,7 @@ class PearInstaller extends LibraryInstaller
 
         $vars = array(
             'os' => $isWindows ? 'windows' : 'linux',
-            'php_bin' => ($isWindows ? getenv('PHPRC') .'php.exe' : `which php`),
+            'php_bin' => ($isWindows ? getenv('PHPRC') .'php.exe' : trim(`which php`)),
             'pear_php' => $this->getInstallPath($package),
             'bin_dir' => $this->getInstallPath($package) . '/bin',
             'php_dir' => $this->getInstallPath($package),
