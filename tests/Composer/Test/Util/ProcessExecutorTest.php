@@ -12,8 +12,8 @@
 
 namespace Composer\Test\Util;
 
-use Composer\Util\ProcessExecutor;
 use Composer\Test\TestCase;
+use Composer\Util\ProcessExecutor;
 
 class ProcessExecutorTest extends TestCase
 {

@@ -12,8 +12,8 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\Package\AliasPackage;
 use Composer\DependencyResolver\Operation;
+use Composer\Package\AliasPackage;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>

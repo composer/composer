@@ -12,10 +12,10 @@
 
 namespace Composer\Repository\Vcs;
 
-use Composer\Json\JsonFile;
-use Composer\Util\ProcessExecutor;
-use Composer\Util\Filesystem;
 use Composer\IO\IOInterface;
+use Composer\Json\JsonFile;
+use Composer\Util\Filesystem;
+use Composer\Util\ProcessExecutor;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>

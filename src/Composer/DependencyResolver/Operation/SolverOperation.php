@@ -12,8 +12,8 @@
 
 namespace Composer\DependencyResolver\Operation;
 
-use Composer\Package\Version\VersionParser;
 use Composer\Package\PackageInterface;
+use Composer\Package\Version\VersionParser;
 
 /**
  * Abstract solver operation class.

@@ -12,8 +12,8 @@
 
 namespace Composer;
 
-use Composer\Json\JsonFile;
 use Composer\IO\IOInterface;
+use Composer\Json\JsonFile;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\RepositoryManager;
 use Composer\Util\ProcessExecutor;

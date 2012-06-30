@@ -12,9 +12,9 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\LinkConstraint\VersionConstraint;
+use Composer\Package\PackageInterface;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>

@@ -12,11 +12,11 @@
 
 namespace Composer;
 
-use Composer\Package\PackageInterface;
-use Composer\Package\Locker;
-use Composer\Repository\RepositoryManager;
-use Composer\Installer\InstallationManager;
 use Composer\Downloader\DownloadManager;
+use Composer\Installer\InstallationManager;
+use Composer\Package\Locker;
+use Composer\Package\PackageInterface;
+use Composer\Repository\RepositoryManager;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>

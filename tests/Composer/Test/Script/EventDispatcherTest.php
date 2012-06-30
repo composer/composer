@@ -12,9 +12,9 @@
 
 namespace Composer\Test\Script;
 
-use Composer\Test\TestCase;
 use Composer\Script\Event;
 use Composer\Script\EventDispatcher;
+use Composer\Test\TestCase;
 
 class EventDispatcherTest extends TestCase
 {

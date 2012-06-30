@@ -13,10 +13,10 @@
 namespace Composer\Json;
 
 use Composer\Composer;
+use Composer\Downloader\TransportException;
+use Composer\Util\RemoteFilesystem;
 use JsonSchema\Validator;
 use Seld\JsonLint\JsonParser;
-use Composer\Util\RemoteFilesystem;
-use Composer\Downloader\TransportException;
 
 /**
  * Reads/writes json files.

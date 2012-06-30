@@ -12,10 +12,10 @@
 
 namespace Composer\Repository\Vcs;
 
-use Composer\Downloader\TransportException;
-use Composer\Json\JsonFile;
 use Composer\Cache;
+use Composer\Downloader\TransportException;
 use Composer\IO\IOInterface;
+use Composer\Json\JsonFile;
 use Composer\Util\RemoteFilesystem;
 
 /**

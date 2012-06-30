@@ -12,11 +12,11 @@
 
 namespace Composer\Package;
 
-use Composer\Json\JsonFile;
 use Composer\Installer\InstallationManager;
+use Composer\Json\JsonFile;
+use Composer\Package\AliasPackage;
 use Composer\Repository\RepositoryManager;
 use Composer\Util\ProcessExecutor;
-use Composer\Package\AliasPackage;
 
 /**
  * Reads/writes project lockfile (composer.lock).

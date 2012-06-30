@@ -14,8 +14,8 @@ namespace Composer\Test\Package\Loader;
 
 use Composer\Config;
 use Composer\Package\Loader\RootPackageLoader;
-use Composer\Test\Mock\ProcessExecutorMock;
 use Composer\Repository\RepositoryManager;
+use Composer\Test\Mock\ProcessExecutorMock;
 
 class RootPackageLoaderTest extends \PHPUnit_Framework_TestCase
 {

@@ -11,18 +11,18 @@
 
 namespace Composer\Test;
 
-use Composer\Installer;
-use Composer\Console\Application;
 use Composer\Config;
+use Composer\Console\Application;
+use Composer\Installer;
 use Composer\Json\JsonFile;
-use Composer\Repository\ArrayRepository;
-use Composer\Repository\RepositoryManager;
-use Composer\Package\PackageInterface;
 use Composer\Package\Link;
 use Composer\Package\Locker;
+use Composer\Package\PackageInterface;
+use Composer\Repository\ArrayRepository;
+use Composer\Repository\RepositoryManager;
 use Composer\Test\Mock\FactoryMock;
-use Composer\Test\Mock\InstalledFilesystemRepositoryMock;
 use Composer\Test\Mock\InstallationManagerMock;
+use Composer\Test\Mock\InstalledFilesystemRepositoryMock;
 use Composer\Test\Mock\WritableRepositoryMock;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\StreamOutput;

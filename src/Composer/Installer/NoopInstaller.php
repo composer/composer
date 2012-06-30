@@ -12,8 +12,8 @@
 
 namespace Composer\Installer;
 
-use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
+use Composer\Repository\InstalledRepositoryInterface;
 
 /**
  * Does not install anything but marks packages installed in the repo

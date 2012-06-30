@@ -14,10 +14,10 @@ namespace Composer\DependencyResolver;
 
 use Composer\Package\BasePackage;
 use Composer\Package\LinkConstraint\LinkConstraintInterface;
-use Composer\Repository\RepositoryInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Repository\PlatformRepository;
+use Composer\Repository\RepositoryInterface;
 
 /**
  * A package pool contains repositories that provide packages.

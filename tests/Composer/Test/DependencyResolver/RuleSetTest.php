@@ -12,9 +12,9 @@
 
 namespace Composer\Test\DependencyResolver;
 
+use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Rule;
 use Composer\DependencyResolver\RuleSet;
-use Composer\DependencyResolver\Pool;
 use Composer\Repository\ArrayRepository;
 use Composer\Test\TestCase;
 

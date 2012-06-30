@@ -16,18 +16,18 @@ use Composer\Factory;
 use Composer\Installer;
 use Composer\Installer\ProjectInstaller;
 use Composer\IO\IOInterface;
+use Composer\Json\JsonFile;
+use Composer\Package\Version\VersionParser;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\FilesystemRepository;
-use Composer\Repository\NotifiableRepositoryInterface;
 use Composer\Repository\InstalledFilesystemRepository;
+use Composer\Repository\NotifiableRepositoryInterface;
+use Composer\Util\RemoteFilesystem;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Composer\Json\JsonFile;
-use Composer\Util\RemoteFilesystem;
-use Composer\Package\Version\VersionParser;
 
 /**
  * Install a package as new project into new directory.

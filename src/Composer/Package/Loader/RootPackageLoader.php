@@ -12,9 +12,9 @@
 
 namespace Composer\Package\Loader;
 
-use Composer\Package\BasePackage;
 use Composer\Config;
 use Composer\Factory;
+use Composer\Package\BasePackage;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\RepositoryManager;
 use Composer\Util\ProcessExecutor;

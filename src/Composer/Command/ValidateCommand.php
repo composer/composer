@@ -12,13 +12,13 @@
 
 namespace Composer\Command;
 
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonValidationException;
 use Composer\Util\RemoteFilesystem;
 use Composer\Util\SpdxLicenseIdentifier;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * ValidateCommand

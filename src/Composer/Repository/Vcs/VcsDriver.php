@@ -12,8 +12,8 @@
 
 namespace Composer\Repository\Vcs;
 
-use Composer\Downloader\TransportException;
 use Composer\Config;
+use Composer\Downloader\TransportException;
 use Composer\IO\IOInterface;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;

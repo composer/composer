@@ -12,10 +12,10 @@
 
 namespace Composer\Test\Installer;
 
-use Composer\Installer\InstallationManager;
 use Composer\DependencyResolver\Operation\InstallOperation;
-use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
+use Composer\DependencyResolver\Operation\UpdateOperation;
+use Composer\Installer\InstallationManager;
 
 class InstallationManagerTest extends \PHPUnit_Framework_TestCase
 {

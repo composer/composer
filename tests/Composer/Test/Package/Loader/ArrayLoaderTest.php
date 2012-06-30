@@ -12,8 +12,8 @@
 
 namespace Composer\Test\Package\Loader;
 
-use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
+use Composer\Package\Loader\ArrayLoader;
 
 class ArrayLoaderTest extends \PHPUnit_Framework_TestCase
 {

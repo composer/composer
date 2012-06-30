@@ -12,8 +12,8 @@
 
 namespace Composer\Test\Package\LinkConstraint;
 
-use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Package\LinkConstraint\MultiConstraint;
+use Composer\Package\LinkConstraint\VersionConstraint;
 
 class MultiConstraintTest extends \PHPUnit_Framework_TestCase
 {
