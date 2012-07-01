@@ -56,9 +56,14 @@ class InstallationManagerMock extends InstallationManager
 
     public function markAliasInstalled(RepositoryInterface $repo, MarkAliasInstalledOperation $operation)
     {
-        $this->installed[] = $operation->getPackage();
+        $package = $operation->getPackage();
+
+        $this->installed[] = $package;
         $this->trace[] = (string) $operation;
-        $repo->addPackage(clone $operation->getPackage());
+
+        if (!$repo->hasPackage($package)) {
+            $repo->addPackage($package);
+        }
     }
 
     public function markAliasUninstalled(RepositoryInterface $repo, MarkAliasUninstalledOperation $operation)
