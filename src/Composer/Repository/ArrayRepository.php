@@ -105,7 +105,10 @@ class ArrayRepository implements RepositoryInterface
 
         // create alias package on the fly if needed
         if ($package->getAlias()) {
-            $this->addPackage($this->createAliasPackage($package));
+            $alias = $this->createAliasPackage($package);
+            if (!$this->hasPackage($alias)) {
+                $this->addPackage($alias);
+            }
         }
     }
 
