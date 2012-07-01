@@ -229,7 +229,8 @@ class Installer
             $localRepo,
             $devMode,
             $this->package->getRequires(),
-            $this->package->getDevRequires());
+            $this->package->getDevRequires()
+        );
 
         // creating repository pool
         $pool = new Pool($minimumStability, $stabilityFlags);
@@ -287,16 +288,46 @@ class Installer
         // fix the version of all installed packages (+ platform) that are not
         // in the current local repo to prevent rogue updates (e.g. non-dev
         // updating when in dev)
-        //
-        // if the updateWhitelist is enabled, packages not in it are also fixed
-        // to their currently installed version
         foreach ($installedRepo->getPackages() as $package) {
-            if ($package->getRepository() === $localRepo && (!$this->updateWhitelist || $this->isUpdateable($package))) {
+            if ($package->getRepository() === $localRepo) {
                 continue;
             }
 
             $constraint = new VersionConstraint('=', $package->getVersion());
             $request->install($package->getName(), $constraint);
+        }
+
+        // if the updateWhitelist is enabled, packages not in it are also fixed
+        // to the version specified in the lock, or their currently installed version
+        if ($this->update && $this->updateWhitelist) {
+            if ($this->locker->isLocked($devMode)) {
+                $currentPackages = $this->locker->getLockedPackages($devMode);
+            } else {
+                $currentPackages = $installedRepo->getPackages();
+            }
+
+            // collect links from composer as well as installed packages
+            $candidates = array();
+            foreach ($links as $link) {
+                $candidates[$link->getTarget()] = true;
+            }
+            foreach ($localRepo->getPackages() as $package) {
+                $candidates[$package->getName()] = true;
+            }
+
+            // fix them to the version in lock (or currently installed) if they are not updateable
+            foreach ($candidates as $candidate => $dummy) {
+                foreach ($currentPackages as $curPackage) {
+                    if ($curPackage->getName() === $candidate) {
+                        if ($this->isUpdateable($curPackage)) {
+                            break;
+                        }
+
+                        $constraint = new VersionConstraint('=', $curPackage->getVersion());
+                        $request->install($curPackage->getName(), $constraint);
+                    }
+                }
+            }
         }
 
         // prepare solver
