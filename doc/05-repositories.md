@@ -235,7 +235,6 @@ Example:
  * BasePackage, requires nothing
  * IntermediatePackage, depends on BasePackage
  * TopLevelPackage1 and TopLevelPackage2 both dependth on IntermediatePackage.
-
  For composer it looks like:
  * "pear-pear.foobar.repo/IntermediatePackage" depends on "pear-pear.foobar.repo/BasePackage",
  * "pear-pear.foobar.repo/TopLevelPackage1" depends on "pear-pear.foobar.repo/IntermediatePackage",
@@ -243,10 +242,10 @@ Example:
  When you update one of your packages to composer naming scheme or made it
  available through vcs your older dependencies would not see new version cause it would be named
  like "foobar/IntermediatePackage".
-
  Specifying 'vendor-alias' for pear repository you will get all its packages aliased with composer-like names.
  Following example would take BasePackage, TopLevelPackage1 and TopLevelPackage2 packages from pear repository
  and IntermediatePackage from github repository:
+
     {
         "repositories": [
             {
@@ -264,7 +263,6 @@ Example:
             "foobar/TopLevelPackage2": "*"
         }
     }
-
 
 ### Package
 

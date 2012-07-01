@@ -99,10 +99,9 @@ class LibraryInstaller implements InstallerInterface
         }
 
         $this->initializeVendorDir();
-        $downloadPath = $this->getInstallPath($initial);
 
         $this->removeBinaries($initial);
-        $this->updateCode($initial, $target, $downloadPath);
+        $this->updateCode($initial, $target);
         $this->installBinaries($target);
         $repo->removePackage($initial);
         if (!$repo->hasPackage($target)) {
