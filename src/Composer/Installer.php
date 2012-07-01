@@ -21,6 +21,7 @@ use Composer\DependencyResolver\Solver;
 use Composer\DependencyResolver\SolverProblemsException;
 use Composer\Downloader\DownloadManager;
 use Composer\Installer\InstallationManager;
+use Composer\Config;
 use Composer\Installer\NoopInstaller;
 use Composer\IO\IOInterface;
 use Composer\Package\AliasPackage;
@@ -47,6 +48,11 @@ class Installer
      * @var IOInterface
      */
     protected $io;
+
+    /**
+     * @var Config
+     */
+    protected $config;
 
     /**
      * @var PackageInterface
@@ -105,6 +111,7 @@ class Installer
      * Constructor
      *
      * @param IOInterface         $io
+     * @param Config              $config
      * @param PackageInterface    $package
      * @param DownloadManager     $downloadManager
      * @param RepositoryManager   $repositoryManager
@@ -113,9 +120,10 @@ class Installer
      * @param EventDispatcher     $eventDispatcher
      * @param AutoloadGenerator   $autoloadGenerator
      */
-    public function __construct(IOInterface $io, PackageInterface $package, DownloadManager $downloadManager, RepositoryManager $repositoryManager, Locker $locker, InstallationManager $installationManager, EventDispatcher $eventDispatcher, AutoloadGenerator $autoloadGenerator)
+    public function __construct(IOInterface $io, Config $config, PackageInterface $package, DownloadManager $downloadManager, RepositoryManager $repositoryManager, Locker $locker, InstallationManager $installationManager, EventDispatcher $eventDispatcher, AutoloadGenerator $autoloadGenerator)
     {
         $this->io = $io;
+        $this->config = $config;
         $this->package = $package;
         $this->downloadManager = $downloadManager;
         $this->repositoryManager = $repositoryManager;
@@ -201,7 +209,7 @@ class Installer
             // write autoloader
             $this->io->write('<info>Generating autoload files</info>');
             $localRepos = new CompositeRepository($this->repositoryManager->getLocalRepositories());
-            $this->autoloadGenerator->dump($localRepos, $this->package, $this->installationManager, $this->installationManager->getVendorPath() . '/composer');
+            $this->autoloadGenerator->dump($this->config, $localRepos, $this->package, $this->installationManager, 'composer');
 
             if ($this->runScripts) {
                 // dispatch post event
@@ -592,6 +600,7 @@ class Installer
 
         return new static(
             $io,
+            $composer->getConfig(),
             $composer->getPackage(),
             $composer->getDownloadManager(),
             $composer->getRepositoryManager(),
@@ -670,6 +679,19 @@ class Installer
     public function setRunScripts($runScripts = true)
     {
         $this->runScripts = (boolean) $runScripts;
+
+        return $this;
+    }
+
+    /**
+     * set the config instance
+     *
+     * @param  Config    $config
+     * @return Installer
+     */
+    public function setConfig(Config $config)
+    {
+        $this->config = $config;
 
         return $this;
     }

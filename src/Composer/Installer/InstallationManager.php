@@ -35,29 +35,6 @@ class InstallationManager
 {
     private $installers = array();
     private $cache = array();
-    private $vendorPath;
-
-    /**
-     * Creates an instance of InstallationManager
-     *
-     * @param  string                    $vendorDir Relative path to the vendor directory
-     * @throws \InvalidArgumentException
-     */
-    public function __construct($vendorDir = 'vendor')
-    {
-        $fs = new Filesystem();
-
-        if ($fs->isAbsolutePath($vendorDir)) {
-            $basePath = getcwd();
-            $relativePath = $fs->findShortestPath($basePath.'/file', $vendorDir);
-            if ($fs->isAbsolutePath($relativePath)) {
-                throw new \InvalidArgumentException("Vendor dir ($vendorDir) must be accessible from the directory ($basePath).");
-            }
-            $this->vendorPath = $relativePath;
-        } else {
-            $this->vendorPath = rtrim($vendorDir, '/');
-        }
-    }
 
     /**
      * Adds installer
@@ -215,21 +192,6 @@ class InstallationManager
         $installer = $this->getInstaller($package->getType());
 
         return $installer->getInstallPath($package);
-    }
-
-    /**
-     * Returns the vendor path
-     *
-     * @param  boolean $absolute Whether or not to return an absolute path
-     * @return string  path
-     */
-    public function getVendorPath($absolute = false)
-    {
-        if (!$absolute) {
-            return $this->vendorPath;
-        }
-
-        return getcwd().DIRECTORY_SEPARATOR.$this->vendorPath;
     }
 
     private function notifyInstall(PackageInterface $package)

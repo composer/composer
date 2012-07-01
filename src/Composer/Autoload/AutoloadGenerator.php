@@ -12,6 +12,7 @@
 
 namespace Composer\Autoload;
 
+use Composer\Config;
 use Composer\Installer\InstallationManager;
 use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
@@ -24,12 +25,14 @@ use Composer\Util\Filesystem;
  */
 class AutoloadGenerator
 {
-    public function dump(RepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir)
+    public function dump(Config $config, RepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir)
     {
         $filesystem = new Filesystem();
-        $filesystem->ensureDirectoryExists($installationManager->getVendorPath());
+        $filesystem->ensureDirectoryExists($config->get('vendor-dir'));
+        $vendorPath = strtr(realpath($config->get('vendor-dir')), '\\', '/');
+        $targetDir = $vendorPath.'/'.$targetDir;
         $filesystem->ensureDirectoryExists($targetDir);
-        $vendorPath = strtr(realpath($installationManager->getVendorPath()), '\\', '/');
+
         $relVendorPath = $filesystem->findShortestPath(getcwd(), $vendorPath, true);
         $vendorPathCode = $filesystem->findShortestPathCode(realpath($targetDir), $vendorPath, true);
         $vendorPathToTargetDirCode = $filesystem->findShortestPathCode($vendorPath, realpath($targetDir), true);
