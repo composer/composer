@@ -24,21 +24,6 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
         $this->repository = $this->getMock('Composer\Repository\InstalledRepositoryInterface');
     }
 
-    public function testVendorDirOutsideTheWorkingDir()
-    {
-        $manager = new InstallationManager(realpath(getcwd().'/../'));
-        $this->assertSame('../', $manager->getVendorPath());
-    }
-
-    /**
-     * @expectedException InvalidArgumentException
-     */
-    public function testVendorDirNotAccessible()
-    {
-        $manager = new InstallationManager('/oops');
-        $this->assertSame('../', $manager->getVendorPath());
-    }
-
     public function testAddGetInstaller()
     {
         $installer = $this->createInstallerMock();
@@ -63,7 +48,6 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
     {
         $manager = $this->getMockBuilder('Composer\Installer\InstallationManager')
             ->setMethods(array('install', 'update', 'uninstall'))
-            ->setConstructorArgs(array('vendor'))
             ->getMock();
 
         $installOperation = new InstallOperation($this->createPackageMock());
@@ -224,18 +208,6 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(true));
 
         $manager->uninstall($this->repository, $operation);
-    }
-
-    public function testGetVendorPathAbsolute()
-    {
-        $manager = new InstallationManager('vendor');
-        $this->assertEquals(getcwd().DIRECTORY_SEPARATOR.'vendor', $manager->getVendorPath(true));
-    }
-
-    public function testGetVendorPathRelative()
-    {
-        $manager = new InstallationManager('vendor');
-        $this->assertEquals('vendor', $manager->getVendorPath());
     }
 
     private function createInstallerMock()
