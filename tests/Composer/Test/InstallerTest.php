@@ -123,7 +123,7 @@ class InstallerTest extends TestCase
     /**
      * @dataProvider getIntegrationTests
      */
-    public function testIntegration($file, $message, $condition, $composerConfig, $lock, $installed, $installedDev, $run, $expect)
+    public function testIntegration($file, $message, $condition, $composerConfig, $lock, $installed, $installedDev, $run, $expectLock, $expect)
     {
         if ($condition) {
             eval('$res = '.$condition.';');
@@ -170,6 +170,17 @@ class InstallerTest extends TestCase
             ->method('exists')
             ->will($this->returnValue(true));
 
+        if ($expectLock) {
+            $actualLock = array();
+            $lockJsonMock->expects($this->atLeastOnce())
+                ->method('write')
+                ->will($this->returnCallback(function ($hash, $options) use (&$actualLock) {
+                    // need to do assertion outside of mock for nice phpunit output
+                    // so store value temporarily in reference for later assetion
+                    $actualLock = $hash;
+                }));
+        }
+
         $locker = new Locker($lockJsonMock, $repositoryManager, $composer->getInstallationManager(), md5(json_encode($composerConfig)));
         $composer->setLocker($locker);
 
@@ -208,6 +219,11 @@ class InstallerTest extends TestCase
         fseek($appOutput, 0);
         $this->assertEquals(0, $result, $output . stream_get_contents($appOutput));
 
+        if ($expectLock) {
+            unset($actualLock['hash']);
+            $this->assertEquals($expectLock, $actualLock);
+        }
+
         $installationManager = $composer->getInstallationManager();
         $this->assertSame($expect, implode("\n", $installationManager->getTrace()));
     }
@@ -233,12 +249,14 @@ class InstallerTest extends TestCase
                 (?:--INSTALLED--\s*(?P<installed>'.$content.'))?\s*
                 (?:--INSTALLED:DEV--\s*(?P<installedDev>'.$content.'))?\s*
                 --RUN--\s*(?P<run>.*?)\s*
+                (?:--EXPECT-LOCK--\s*(?P<expectLock>'.$content.'))?\s*
                 --EXPECT--\s*(?P<expect>.*?)\s*
             $}xs';
 
             $installed = array();
             $installedDev = array();
             $lock = array();
+            $expectLock = array();
 
             if (preg_match($pattern, $test, $match)) {
                 try {
@@ -258,6 +276,9 @@ class InstallerTest extends TestCase
                         $installedDev = JsonFile::parseJson($match['installedDev']);
                     }
                     $run = $match['run'];
+                    if (!empty($match['expectLock'])) {
+                        $expectLock = JsonFile::parseJson($match['expectLock']);
+                    }
                     $expect = $match['expect'];
                 } catch (\Exception $e) {
                     die(sprintf('Test "%s" is not valid: '.$e->getMessage(), str_replace($fixturesDir.'/', '', $file)));
@@ -266,7 +287,7 @@ class InstallerTest extends TestCase
                 die(sprintf('Test "%s" is not valid, did not match the expected format.', str_replace($fixturesDir.'/', '', $file)));
             }
 
-            $tests[] = array(str_replace($fixturesDir.'/', '', $file), $message, $condition, $composer, $lock, $installed, $installedDev, $run, $expect);
+            $tests[] = array(str_replace($fixturesDir.'/', '', $file), $message, $condition, $composer, $lock, $installed, $installedDev, $run, $expectLock, $expect);
         }
 
         return $tests;
