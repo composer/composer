@@ -11,6 +11,7 @@
 
 namespace Composer\Test\Mock;
 
+use Composer\Composer;
 use Composer\Config;
 use Composer\Factory;
 use Composer\Repository;
@@ -37,9 +38,13 @@ class FactoryMock extends Factory
     {
     }
 
-    protected function createInstallationManager(Repository\RepositoryManager $rm, Downloader\DownloadManager $dm, $vendorDir, $binDir, IOInterface $io)
+    protected function createInstallationManager(Config $config)
     {
         return new InstallationManagerMock;
+    }
+
+    protected function createDefaultInstallers(Installer\InstallationManager $im, Composer $composer, IOInterface $io)
+    {
     }
 
     protected function purgePackages(Repository\RepositoryManager $rm, Installer\InstallationManager $im)
