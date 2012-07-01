@@ -1,0 +1,37 @@
+--TEST--
+Update aliased package to non-aliased version
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "a/a", "version": "dev-master",
+                    "extra": { "branch-alias": { "dev-master": "1.0.x-dev" } },
+                    "source": { "reference": "master", "type": "git", "url": "" }
+                },
+                {
+                    "name": "a/a", "version": "dev-foo",
+                    "source": { "reference": "foo", "type": "git", "url": "" }
+                }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "dev-foo"
+    }
+}
+--INSTALLED--
+[
+    {
+        "name": "a/a", "version": "dev-master",
+        "extra": { "branch-alias": { "dev-master": "1.0.x-dev" } },
+        "source": { "reference": "master", "type": "git", "url": "" }
+    }
+]
+--RUN--
+update
+--EXPECT--
+Updating a/a (dev-master master) to a/a (dev-foo foo)
+Marking a/a (1.0.x-dev master) as uninstalled, alias of a/a (dev-master master)
