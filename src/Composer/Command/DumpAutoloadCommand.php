@@ -42,8 +42,9 @@ EOT
         $installationManager = $composer->getInstallationManager();
         $localRepos = new CompositeRepository($composer->getRepositoryManager()->getLocalRepositories());
         $package = $composer->getPackage();
+        $config = $composer->getConfig();
 
         $generator = new AutoloadGenerator();
-        $generator->dump($localRepos, $package, $installationManager, $installationManager->getVendorPath().'/composer');
+        $generator->dump($config, $localRepos, $package, $installationManager, 'composer');
     }
 }
