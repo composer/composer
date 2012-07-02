@@ -122,12 +122,14 @@ class GitHubDriver extends VcsDriver
         }
 
         if (preg_match('{[a-f0-9]{40}}i', $identifier) && $res = $this->cache->read($identifier)) {
+            //TODO how to get the json file here?
             $this->infoCache[$identifier] = JsonFile::parseJson($res);
         }
 
         if (!isset($this->infoCache[$identifier])) {
             try {
-                $composer = $this->getContents('https://raw.github.com/'.$this->owner.'/'.$this->repository.'/'.$identifier.'/composer.json');
+                $resource = 'https://raw.github.com/'.$this->owner.'/'.$this->repository.'/'.$identifier.'/composer.json';
+                $composer = $this->getContents($resource);
             } catch (TransportException $e) {
                 if (404 !== $e->getCode()) {
                     throw $e;
@@ -137,10 +139,11 @@ class GitHubDriver extends VcsDriver
             }
 
             if ($composer) {
-                $composer = JsonFile::parseJson($composer);
+                $composer = JsonFile::parseJson($composer, $resource);
 
                 if (!isset($composer['time'])) {
-                    $commit = JsonFile::parseJson($this->getContents('https://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/commits/'.$identifier));
+                    $resource = 'https://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/commits/'.$identifier;
+                    $commit = JsonFile::parseJson($this->getContents($resource), $resource);
                     $composer['time'] = $commit['commit']['committer']['date'];
                 }
                 if (!isset($composer['support']['source'])) {
@@ -171,7 +174,8 @@ class GitHubDriver extends VcsDriver
             return $this->gitDriver->getTags();
         }
         if (null === $this->tags) {
-            $tagsData = JsonFile::parseJson($this->getContents('https://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/tags'));
+            $resource = 'https://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/tags';
+            $tagsData = JsonFile::parseJson($this->getContents($resource), $resource);
             $this->tags = array();
             foreach ($tagsData as $tag) {
                 $this->tags[$tag['name']] = $tag['commit']['sha'];
@@ -190,7 +194,8 @@ class GitHubDriver extends VcsDriver
             return $this->gitDriver->getBranches();
         }
         if (null === $this->branches) {
-            $branchData = JsonFile::parseJson($this->getContents('https://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/git/refs/heads'));
+            $resource = 'https://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/git/refs/heads';
+            $branchData = JsonFile::parseJson($this->getContents($resource), $resource);
             $this->branches = array();
             foreach ($branchData as $branch) {
                 $name = substr($branch['ref'], 11);
@@ -245,7 +250,7 @@ class GitHubDriver extends VcsDriver
                 throw new \RuntimeException("Either you have entered invalid credentials or this GitHub repository does not exists (404)");
             }
             try {
-                $repoData = JsonFile::parseJson($this->getContents($repoDataUrl));
+                $repoData = JsonFile::parseJson($this->getContents($repoDataUrl), $repoDataUrl);
                 if (isset($repoData['default_branch'])) {
                     $this->rootIdentifier = $repoData['default_branch'];
                 } elseif (isset($repoData['master_branch'])) {

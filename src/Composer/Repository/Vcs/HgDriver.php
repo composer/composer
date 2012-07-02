@@ -94,13 +94,14 @@ class HgDriver extends VcsDriver
     public function getComposerInformation($identifier)
     {
         if (!isset($this->infoCache[$identifier])) {
-            $this->process->execute(sprintf('cd %s && hg cat -r %s composer.json', escapeshellarg($this->tmpDir), escapeshellarg($identifier)), $composer);
+            $resource = escapeshellarg($identifier);
+            $this->process->execute(sprintf('cd %s && hg cat -r %s composer.json', escapeshellarg($this->tmpDir), $resource), $composer);
 
             if (!trim($composer)) {
                 return;
             }
 
-            $composer = JsonFile::parseJson($composer);
+            $composer = JsonFile::parseJson($composer, $resource);
 
             if (!isset($composer['time'])) {
                 $this->process->execute(sprintf('cd %s && hg log --template "{date|rfc822date}" -r %s', escapeshellarg($this->tmpDir), escapeshellarg($identifier)), $output);
