@@ -200,6 +200,7 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
             $this->fail();
         } catch (JsonValidationException $e) {
             $this->assertContains($text, $e->getMessage());
+            $this->assertNotEmpty($e->getErrors());
         }
     }
 
