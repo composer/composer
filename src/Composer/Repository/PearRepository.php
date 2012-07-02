@@ -91,9 +91,13 @@ class PearRepository extends ArrayRepository
         $result = array();
         foreach ($channelInfo->getPackages() as $packageDefinition) {
             foreach ($packageDefinition->getReleases() as $version => $releaseInfo) {
-                $normalizedVersion = $this->parseVersion($version);
-                if (!$normalizedVersion) {
-                    continue; // skip packages with unparsable versions
+                try {
+                    $normalizedVersion = $versionParser->normalize($version);
+                } catch (\UnexpectedValueException $e) {
+                    if ($this->io->isVerbose()) {
+                        $this->io->write('Could not load '.$packageDefinition->getPackageName().' '.$version.': '.$e->getMessage());
+                    }
+                    continue;
                 }
 
                 $composerPackageName = $this->buildComposerPackageName($packageDefinition->getChannelName(), $packageDefinition->getPackageName());
@@ -174,25 +178,5 @@ class PearRepository extends ArrayRepository
         }
 
         return "pear-{$channelName}/{$packageName}";
-    }
-
-    /**
-     * Softened version parser.
-     *
-     * @param  string      $version
-     * @return null|string
-     */
-    private function parseVersion($version)
-    {
-        if (preg_match('{^v?(\d{1,3})(\.\d+)?(\.\d+)?(\.\d+)?}i', $version, $matches)) {
-            $version = $matches[1]
-                .(!empty($matches[2]) ? $matches[2] : '.0')
-                .(!empty($matches[3]) ? $matches[3] : '.0')
-                .(!empty($matches[4]) ? $matches[4] : '.0');
-
-            return $version;
-        }
-
-        return null;
     }
 }
