@@ -123,13 +123,14 @@ class GitDriver extends VcsDriver
     public function getComposerInformation($identifier)
     {
         if (!isset($this->infoCache[$identifier])) {
-            $this->process->execute(sprintf('git show %s:composer.json', escapeshellarg($identifier)), $composer, $this->repoDir);
+            $resource = sprintf('%s:composer.json', escapeshellarg($identifier));
+            $this->process->execute(sprintf('git show %s', $resource), $composer, $this->repoDir);
 
             if (!trim($composer)) {
                 return;
             }
 
-            $composer = JsonFile::parseJson($composer);
+            $composer = JsonFile::parseJson($composer, $resource);
 
             if (!isset($composer['time'])) {
                 $this->process->execute(sprintf('git log -1 --format=%%at %s', escapeshellarg($identifier)), $output, $this->repoDir);
