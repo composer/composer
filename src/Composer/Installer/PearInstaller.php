@@ -28,8 +28,6 @@ use Composer\Util\Filesystem;
  */
 class PearInstaller extends LibraryInstaller
 {
-    private $filesystem;
-
     /**
      * Initializes library installer.
      *
@@ -41,7 +39,6 @@ class PearInstaller extends LibraryInstaller
      */
     public function __construct(IOInterface $io, Composer $composer, $type = 'pear-library')
     {
-        $this->filesystem = new Filesystem();
         parent::__construct($io, $composer, $type);
     }
 
