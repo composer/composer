@@ -13,25 +13,35 @@
 namespace Composer\Repository;
 
 use Composer\IO\IOInterface;
-use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\Version\VersionParser;
+use Composer\Repository\Pear\ChannelReader;
+use Composer\Package\MemoryPackage;
+use Composer\Repository\Pear\ChannelInfo;
+use Composer\Package\Link;
+use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Util\RemoteFilesystem;
-use Composer\Json\JsonFile;
 use Composer\Config;
-use Composer\Downloader\TransportException;
 
 /**
+ * Builds list of package from PEAR channel.
+ *
+ * Packages read from channel are named as 'pear-{channelName}/{packageName}'
+ * and has aliased as 'pear-{channelAlias}/{packageName}'
+ *
  * @author Benjamin Eberlei <kontakt@beberlei.de>
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 class PearRepository extends ArrayRepository
 {
-    private static $channelNames = array();
-
     private $url;
-    private $baseUrl;
-    private $channel;
     private $io;
     private $rfs;
+    private $versionParser;
+
+    /** @var string vendor makes additional alias for each channel as {prefix}/{packagename}. It allows smoother
+     * package transition to composer-like repositories.
+     */
+    private $vendorAlias;
 
     public function __construct(array $repoConfig, IOInterface $io, Config $config, RemoteFilesystem $rfs = null)
     {
@@ -44,9 +54,10 @@ class PearRepository extends ArrayRepository
         }
 
         $this->url = rtrim($repoConfig['url'], '/');
-        $this->channel = !empty($repoConfig['channel']) ? $repoConfig['channel'] : null;
         $this->io = $io;
         $this->rfs = $rfs ?: new RemoteFilesystem($this->io);
+        $this->vendorAlias = isset($repoConfig['vendor-alias']) ? $repoConfig['vendor-alias'] : null;
+        $this->versionParser = new VersionParser();
     }
 
     protected function initialize()
@@ -54,341 +65,118 @@ class PearRepository extends ArrayRepository
         parent::initialize();
 
         $this->io->write('Initializing PEAR repository '.$this->url);
-        $this->initializeChannel();
-        $this->io->write('Packages names will be prefixed with: pear-'.$this->channel.'/');
 
-        // try to load as a composer repo
+        $reader = new ChannelReader($this->rfs);
         try {
-            $json     = new JsonFile($this->url.'/packages.json', new RemoteFilesystem($this->io));
-            $packages = $json->read();
-
-            if ($this->io->isVerbose()) {
-                $this->io->write('Repository is Composer-compatible, loading via packages.json instead of PEAR protocol');
-            }
-
-            $loader = new ArrayLoader();
-            foreach ($packages as $data) {
-                foreach ($data['versions'] as $rev) {
-                    if (strpos($rev['name'], 'pear-'.$this->channel) !== 0) {
-                        $rev['name'] = 'pear-'.$this->channel.'/'.$rev['name'];
-                    }
-                    $this->addPackage($loader->load($rev));
-                    if ($this->io->isVerbose()) {
-                        $this->io->write('Loaded '.$rev['name'].' '.$rev['version']);
-                    }
-                }
-            }
+            $channelInfo = $reader->read($this->url);
+        } catch (\Exception $e) {
+            $this->io->write('<warning>PEAR repository from '.$this->url.' could not be loaded. '.$e->getMessage().'</warning>');
 
             return;
-        } catch (\Exception $e) {
         }
-
-        $this->fetchFromServer();
-    }
-
-    protected function initializeChannel()
-    {
-        $channelXML = $this->requestXml($this->url . "/channel.xml");
-        if (!$this->channel) {
-            $this->channel = $channelXML->getElementsByTagName("suggestedalias")->item(0)->nodeValue
-                                    ?: $channelXML->getElementsByTagName("name")->item(0)->nodeValue;
-        }
-        if (!$this->baseUrl) {
-            $this->baseUrl = $channelXML->getElementsByTagName("baseurl")->item(0)->nodeValue
-                                    ? trim($channelXML->getElementsByTagName("baseurl")->item(0)->nodeValue, '/')
-                                    : $this->url . '/rest';
-        }
-
-        self::$channelNames[$channelXML->getElementsByTagName("name")->item(0)->nodeValue] = $this->channel;
-    }
-
-    protected function fetchFromServer()
-    {
-        $categoryXML = $this->requestXml($this->baseUrl . "/c/categories.xml");
-        $categories = $categoryXML->getElementsByTagName("c");
-
-        foreach ($categories as $category) {
-            $link = $this->baseUrl . '/c/' . str_replace(' ', '+', $category->nodeValue);
-            try {
-                $packagesLink = $link . "/packagesinfo.xml";
-                $this->fetchPear2Packages($packagesLink);
-            } catch (TransportException $e) {
-                if (false === strpos($e->getMessage(), '404')) {
-                    throw $e;
-                }
-                $categoryLink = $link . "/packages.xml";
-                $this->fetchPearPackages($categoryLink);
-            }
-
-        }
-    }
-
-    /**
-     * @param  string                    $categoryLink
-     * @throws TransportException
-     * @throws \InvalidArgumentException
-     */
-    private function fetchPearPackages($categoryLink)
-    {
-        $packagesXML = $this->requestXml($categoryLink);
-        $packages = $packagesXML->getElementsByTagName('p');
-        $loader = new ArrayLoader();
+        $packages = $this->buildComposerPackages($channelInfo, $this->versionParser);
         foreach ($packages as $package) {
-            $packageName = $package->nodeValue;
-            $fullName = 'pear-'.$this->channel.'/'.$packageName;
+            $this->addPackage($package);
+        }
+    }
 
-            $releaseLink = $this->baseUrl . "/r/" . $packageName;
-            $allReleasesLink = $releaseLink . "/allreleases2.xml";
-
-            try {
-                $releasesXML = $this->requestXml($allReleasesLink);
-            } catch (TransportException $e) {
-                if (strpos($e->getMessage(), '404')) {
-                    continue;
-                }
-                throw $e;
-            }
-
-            $releases = $releasesXML->getElementsByTagName('r');
-
-            foreach ($releases as $release) {
-                /* @var $release \DOMElement */
-                $pearVersion = $release->getElementsByTagName('v')->item(0)->nodeValue;
-
-                $packageData = array(
-                    'name' => $fullName,
-                    'type' => 'library',
-                    'dist' => array('type' => 'pear', 'url' => $this->url.'/get/'.$packageName.'-'.$pearVersion.".tgz"),
-                    'version' => $pearVersion,
-                    'autoload' => array(
-                        'classmap' => array(''),
-                    ),
-                    'include-path' => array('/'),
-                );
-
+    /**
+     * Builds MemoryPackages from PEAR package definition data.
+     *
+     * @param  ChannelInfo   $channelInfo
+     * @return MemoryPackage
+     */
+    private function buildComposerPackages(ChannelInfo $channelInfo, VersionParser $versionParser)
+    {
+        $result = array();
+        foreach ($channelInfo->getPackages() as $packageDefinition) {
+            foreach ($packageDefinition->getReleases() as $version => $releaseInfo) {
                 try {
-                    $deps = $this->rfs->getContents($this->url, $releaseLink . "/deps.".$pearVersion.".txt", false);
-                } catch (TransportException $e) {
-                    if (strpos($e->getMessage(), '404')) {
-                        continue;
-                    }
-                    throw $e;
-                }
-
-                $packageData += $this->parseDependencies($deps);
-
-                try {
-                    $this->addPackage($loader->load($packageData));
-                    if ($this->io->isVerbose()) {
-                        $this->io->write('Loaded '.$packageData['name'].' '.$packageData['version']);
-                    }
+                    $normalizedVersion = $versionParser->normalize($version);
                 } catch (\UnexpectedValueException $e) {
                     if ($this->io->isVerbose()) {
-                        $this->io->write('Could not load '.$packageData['name'].' '.$packageData['version'].': '.$e->getMessage());
+                        $this->io->write('Could not load '.$packageDefinition->getPackageName().' '.$version.': '.$e->getMessage());
                     }
                     continue;
                 }
-            }
-        }
-    }
 
-    /**
-     * @param  array  $data
-     * @return string
-     */
-    private function parseVersion(array $data)
-    {
-        if (!isset($data['min']) && !isset($data['max'])) {
-            return '*';
-        }
-        $versions = array();
-        if (isset($data['min'])) {
-            $versions[] = '>=' . $data['min'];
-        }
-        if (isset($data['max'])) {
-            $versions[] = '<=' . $data['max'];
-        }
+                $composerPackageName = $this->buildComposerPackageName($packageDefinition->getChannelName(), $packageDefinition->getPackageName());
 
-        return implode(',', $versions);
-    }
+                // distribution url must be read from /r/{packageName}/{version}.xml::/r/g:text()
+                // but this location is 'de-facto' standard
+                $distUrl = "http://{$packageDefinition->getChannelName()}/get/{$packageDefinition->getPackageName()}-{$version}.tgz";
 
-    /**
-     * @todo    Improve dependencies resolution of pear packages.
-     * @param  array $depsOptions
-     * @return array
-     */
-    private function parseDependenciesOptions(array $depsOptions)
-    {
-        $data = array();
-        foreach ($depsOptions as $name => $options) {
-            // make sure single deps are wrapped in an array
-            if (isset($options['name'])) {
-                $options = array($options);
-            }
-            if ('php' == $name) {
-                $data[$name] = $this->parseVersion($options);
-            } elseif ('package' == $name) {
-                foreach ($options as $key => $value) {
-                    if (isset($value['providesextension'])) {
-                        // skip PECL dependencies
-                        continue;
-                    }
-                    if (isset($value['uri'])) {
-                        // skip uri-based dependencies
-                        continue;
-                    }
+                $requires = array();
+                $suggests = array();
+                $conflicts = array();
+                $replaces = array();
 
-                    if (is_array($value)) {
-                        $dataKey = $value['name'];
-                        if (false === strpos($dataKey, '/')) {
-                            $dataKey = $this->getChannelShorthand($value['channel']).'/'.$dataKey;
-                        }
-                        $data['pear-'.$dataKey] = $this->parseVersion($value);
-                    }
-                }
-            } elseif ('extension' == $name) {
-                foreach ($options as $key => $value) {
-                    $dataKey = 'ext-' . $value['name'];
-                    $data[$dataKey] = $this->parseVersion($value);
-                }
-            }
-        }
-
-        return $data;
-    }
-
-    /**
-     * @param  string                    $deps
-     * @return array
-     * @throws \InvalidArgumentException
-     */
-    private function parseDependencies($deps)
-    {
-        if (preg_match('((O:([0-9])+:"([^"]+)"))', $deps, $matches)) {
-            if (strlen($matches[3]) == $matches[2]) {
-                throw new \InvalidArgumentException("Invalid dependency data, it contains serialized objects.");
-            }
-        }
-        $deps = (array) @unserialize($deps);
-        unset($deps['required']['pearinstaller']);
-
-        $depsData = array();
-        if (!empty($deps['required'])) {
-            $depsData['require'] = $this->parseDependenciesOptions($deps['required']);
-        }
-
-        if (!empty($deps['optional'])) {
-            $depsData['suggest'] = $this->parseDependenciesOptions($deps['optional']);
-        }
-
-        return $depsData;
-    }
-
-    /**
-     * @param  string                    $packagesLink
-     * @return void
-     * @throws \InvalidArgumentException
-     */
-    private function fetchPear2Packages($packagesLink)
-    {
-        $loader = new ArrayLoader();
-        $packagesXml = $this->requestXml($packagesLink);
-
-        $informations = $packagesXml->getElementsByTagName('pi');
-        foreach ($informations as $information) {
-            $package = $information->getElementsByTagName('p')->item(0);
-
-            $packageName = $package->getElementsByTagName('n')->item(0)->nodeValue;
-            $fullName = 'pear-'.$this->channel.'/'.$packageName;
-            $packageData = array(
-                'name' => $fullName,
-                'type' => 'library',
-                'autoload' => array(
-                    'classmap' => array(''),
-                ),
-                'include-path' => array('/'),
-            );
-            $packageKeys = array('l' => 'license', 'd' => 'description');
-            foreach ($packageKeys as $pear => $composer) {
-                if ($package->getElementsByTagName($pear)->length > 0
-                        && ($pear = $package->getElementsByTagName($pear)->item(0)->nodeValue)) {
-                    $packageData[$composer] = $pear;
-                }
-            }
-
-            $depsData = array();
-            foreach ($information->getElementsByTagName('deps') as $depElement) {
-                $depsVersion = $depElement->getElementsByTagName('v')->item(0)->nodeValue;
-                $depsData[$depsVersion] = $this->parseDependencies(
-                    $depElement->getElementsByTagName('d')->item(0)->nodeValue
-                );
-            }
-
-            $releases = $information->getElementsByTagName('a')->item(0);
-            if (!$releases) {
-                continue;
-            }
-
-            $releases = $releases->getElementsByTagName('r');
-            $packageUrl = $this->url . '/get/' . $packageName;
-            foreach ($releases as $release) {
-                $version = $release->getElementsByTagName('v')->item(0)->nodeValue;
-                $releaseData = array(
-                    'dist' => array(
-                        'type' => 'pear',
-                        'url' => $packageUrl . '-' . $version . '.tgz'
-                    ),
-                    'version' => $version
-                );
-                if (isset($depsData[$version])) {
-                    $releaseData += $depsData[$version];
+                // alias package only when its channel matches repository channel,
+                // cause we've know only repository channel alias
+                if ($channelInfo->getName() == $packageDefinition->getChannelName()) {
+                    $composerPackageAlias = $this->buildComposerPackageName($channelInfo->getAlias(), $packageDefinition->getPackageName());
+                    $aliasConstraint = new VersionConstraint('==', $normalizedVersion);
+                    $replaces[] = new Link($composerPackageName, $composerPackageAlias, $aliasConstraint, 'replaces', (string) $aliasConstraint);
                 }
 
-                $package = $packageData + $releaseData;
-                try {
-                    $this->addPackage($loader->load($package));
-                    if ($this->io->isVerbose()) {
-                        $this->io->write('Loaded '.$package['name'].' '.$package['version']);
-                    }
-                } catch (\UnexpectedValueException $e) {
-                    if ($this->io->isVerbose()) {
-                        $this->io->write('Could not load '.$package['name'].' '.$package['version'].': '.$e->getMessage());
-                    }
-                    continue;
+                // alias package with user-specified prefix. it makes private pear channels looks like composer's.
+                if (!empty($this->vendorAlias)) {
+                    $composerPackageAlias = "{$this->vendorAlias}/{$packageDefinition->getPackageName()}";
+                    $aliasConstraint = new VersionConstraint('==', $normalizedVersion);
+                    $replaces[] = new Link($composerPackageName, $composerPackageAlias, $aliasConstraint, 'replaces', (string) $aliasConstraint);
                 }
+
+                foreach ($releaseInfo->getDependencyInfo()->getRequires() as $dependencyConstraint) {
+                    $dependencyPackageName = $this->buildComposerPackageName($dependencyConstraint->getChannelName(), $dependencyConstraint->getPackageName());
+                    $constraint = $versionParser->parseConstraints($dependencyConstraint->getConstraint());
+                    $link = new Link($composerPackageName, $dependencyPackageName, $constraint, $dependencyConstraint->getType(), $dependencyConstraint->getConstraint());
+                    switch ($dependencyConstraint->getType()) {
+                        case 'required':
+                            $requires[] = $link;
+                            break;
+                        case 'conflicts':
+                            $conflicts[] = $link;
+                            break;
+                        case 'replaces':
+                            $replaces[] = $link;
+                            break;
+                    }
+                }
+
+                foreach ($releaseInfo->getDependencyInfo()->getOptionals() as $group => $dependencyConstraints) {
+                    foreach ($dependencyConstraints as $dependencyConstraint) {
+                        $dependencyPackageName = $this->buildComposerPackageName($dependencyConstraint->getChannelName(), $dependencyConstraint->getPackageName());
+                        $suggests[$group.'-'.$dependencyPackageName] = $dependencyConstraint->getConstraint();
+                    }
+                }
+
+                $package = new MemoryPackage($composerPackageName, $normalizedVersion, $version);
+                $package->setType('pear-library');
+                $package->setDescription($packageDefinition->getDescription());
+                $package->setDistType('file');
+                $package->setDistUrl($distUrl);
+                $package->setAutoload(array('classmap' => array('')));
+                $package->setIncludePaths(array('/'));
+                $package->setRequires($requires);
+                $package->setConflicts($conflicts);
+                $package->setSuggests($suggests);
+                $package->setReplaces($replaces);
+                $result[] = $package;
             }
         }
+
+        return $result;
     }
 
-    /**
-     * @param  string       $url
-     * @return \DOMDocument
-     */
-    private function requestXml($url)
+    private function buildComposerPackageName($channelName, $packageName)
     {
-        $content = $this->rfs->getContents($this->url, $url, false);
-        if (!$content) {
-            throw new \UnexpectedValueException('The PEAR channel at '.$url.' did not respond.');
+        if ('php' === $channelName) {
+            return "php";
         }
-        $dom = new \DOMDocument('1.0', 'UTF-8');
-        $dom->loadXML($content);
-
-        return $dom;
-    }
-
-    private function getChannelShorthand($url)
-    {
-        if (!isset(self::$channelNames[$url])) {
-            try {
-                $channelXML = $this->requestXml('http://'.$url."/channel.xml");
-                $shorthand = $channelXML->getElementsByTagName("suggestedalias")->item(0)->nodeValue
-                    ?: $channelXML->getElementsByTagName("name")->item(0)->nodeValue;
-                self::$channelNames[$url] = $shorthand;
-            } catch (\Exception $e) {
-                self::$channelNames[$url] = substr($url, 0, strpos($url, '.'));
-            }
+        if ('ext' === $channelName) {
+            return "ext-{$packageName}";
         }
 
-        return self::$channelNames[$url];
+        return "pear-{$channelName}/{$packageName}";
     }
 }

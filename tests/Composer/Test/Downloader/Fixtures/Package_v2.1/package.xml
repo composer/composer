@@ -19,7 +19,17 @@
         <dir name="/">
             <file role="php" name="php/Zend/Authentication/Storage/StorageInterface.php"/>
             <file role="php" name="php/Zend/Authentication/Result.php"/>
+            <file role="script" name="php/Test.php">
+                <tasks:replace from='@version@' to='version' />
+            </file>
+            <file role="php" name="renamedFile.php"/>
+            <file role="php" name="ignoredFile.php"/>
         </dir>
     </contents>
-    <phprelease/>
+    <phprelease>
+        <filelist>
+            <install name='renamedFile.php' as='correctFile.php' />
+            <ignore name='ignoredFile.php' />
+        </filelist>
+    </phprelease>
 </package>
