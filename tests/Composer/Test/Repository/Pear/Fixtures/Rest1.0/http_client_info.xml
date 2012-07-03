@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<p xmlns="http://pear.php.net/dtd/rest.package" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xlink="http://www.w3.org/1999/xlink" xsi:schemaLocation="http://pear.php.net/dtd/rest.package http://pear.php.net/dtd/rest.package.xsd">
+    <n>HTTP_Client</n>
+    <c>pear.net</c>
+    <ca xlink:href="/rest/c/Default">Default</ca>
+    <l>BSD</l>
+    <s>
+        Easy way to perform multiple HTTP requests and process their results
+    </s>
+    <d>
+        The HTTP_Client class wraps around HTTP_Request and provides a higher level interface for performing multiple HTTP requests. Features: * Manages cookies and referrers between requests * Handles HTTP redirection * Has methods to set default headers and request parameters * Implements the Subject-Observer design pattern: the base class sends events to listeners that do the response processing.
+    </d>
+    <r xlink:href="/rest/r/http_client"/>
+</p>

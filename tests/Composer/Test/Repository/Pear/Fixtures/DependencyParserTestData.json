@@ -1,0 +1,167 @@
+[
+    {
+        "expected": [
+            {
+                "type" : "required",
+                "constraint" : "*",
+                "channel" : "pear.php.net",
+                "name" : "Foo"
+            }
+        ],
+        "1.0": [
+            { "type": "pkg", "rel": "has", "name": "Foo" }
+        ],
+        "2.0": {
+            "required": {
+                "package": {
+                    "name": "Foo",
+                    "channel": "pear.php.net"
+                }
+            }
+        }
+    },
+    {
+        "expected": [
+            {
+                "type" : "required",
+                "constraint" : ">1.0.0.0",
+                "channel" : "pear.php.net",
+                "name" : "Foo"
+            }
+        ],
+        "1.0": [
+            { "type": "pkg", "rel": "gt", "version": "1.0.0", "name": "Foo" }
+        ],
+        "2.0": {
+            "required": {
+                "package": {
+                    "name": "Foo",
+                    "channel": "pear.php.net",
+                    "min": "1.0.0",
+                    "exclude": "1.0.0"
+                }
+            }
+        }
+    },
+    {
+        "expected": [
+            {
+                "type" : "conflicts",
+                "constraint" : "*",
+                "channel" : "pear.php.net",
+                "name" : "Foo"
+            }
+        ],
+        "1.0": [
+            { "type": "pkg", "rel": "not", "name": "Foo" }
+        ],
+        "2.0": {
+            "required": {
+                "package": {
+                    "name": "Foo",
+                    "channel": "pear.php.net",
+                    "conflicts": true
+                }
+            }
+        }
+    },
+    {
+        "expected": [
+            {
+                "type" : "required",
+                "constraint" : ">=1.0.0.0",
+                "channel" : "pear.php.net",
+                "name" : "Foo"
+            },
+            {
+                "type" : "required",
+                "constraint" : "<2.0.0.0",
+                "channel" : "pear.php.net",
+                "name" : "Foo"
+            }
+        ],
+        "1.0": [
+            { "type": "pkg", "rel": "ge", "version": "1.0.0", "name": "Foo" },
+            { "type": "pkg", "rel": "lt", "version": "2.0.0", "name": "Foo" }
+        ],
+        "2.0": {
+            "required": {
+                "package": [
+                    {
+                        "name": "Foo",
+                        "channel": "pear.php.net",
+                        "min": "1.0.0"
+                    },
+                    {
+                        "name": "Foo",
+                        "channel": "pear.php.net",
+                        "max": "2.0.0",
+                        "exclude": "2.0.0"
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "expected": [
+            {
+                "type" : "required",
+                "constraint" : ">=5.3.0.0",
+                "channel" : "php",
+                "name" : ""
+            }
+        ],
+        "1.0": [
+            { "type": "php", "rel": "ge", "version": "5.3"}
+        ],
+        "2.0": {
+            "required": {
+                "php": {
+                        "min": "5.3"
+                }
+            }
+        }
+    },
+    {
+        "expected": [
+            {
+                "type" : "required",
+                "constraint" : "*",
+                "channel" : "ext",
+                "name" : "xmllib"
+            }
+        ],
+        "1.0": [
+            { "type": "ext", "rel": "has", "name": "xmllib"}
+        ],
+        "2.0": {
+            "required": {
+                "extension": [
+                    {
+                        "name": "xmllib"
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "expected": [
+            {
+                "type" : "optional",
+                "constraint" : "*",
+                "channel" : "ext",
+                "name" : "xmllib"
+            }
+        ],
+        "1.0": false,
+        "2.0": {
+            "optional": {
+                "extension": [
+                    {
+                        "name": "xmllib"
+                    }
+                ]
+            }
+        }
+    }
+]
