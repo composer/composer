@@ -122,7 +122,6 @@ class GitHubDriver extends VcsDriver
         }
 
         if (preg_match('{[a-f0-9]{40}}i', $identifier) && $res = $this->cache->read($identifier)) {
-            //TODO how to get the json file here?
             $this->infoCache[$identifier] = JsonFile::parseJson($res);
         }
 
