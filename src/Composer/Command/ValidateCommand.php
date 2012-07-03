@@ -91,7 +91,6 @@ EOT
                 }
             }
         } catch (\Exception $e) {
-            $output->writeln('<error>' . $file . ' contains a JSON Syntax Error:</error>');
             $output->writeln('<error>' . $e->getMessage() . '</error>');
 
             return 1;

@@ -15,6 +15,7 @@ namespace Composer\Json;
 use Composer\Composer;
 use JsonSchema\Validator;
 use Seld\JsonLint\JsonParser;
+use Seld\JsonLint\ParsingException;
 use Composer\Util\RemoteFilesystem;
 use Composer\Downloader\TransportException;
 
@@ -148,7 +149,7 @@ class JsonFile
             foreach ((array) $validator->getErrors() as $error) {
                 $errors[] = ($error['property'] ? $error['property'].' : ' : '').$error['message'];
             }
-            throw new JsonValidationException('JSON file doesnt match expected schema "'.$this->path.'"', $errors);
+            throw new JsonValidationException('"'.$this->path.'" does not match the expected JSON schema', $errors);
         }
 
         return true;
@@ -294,12 +295,12 @@ class JsonFile
         $result = $parser->lint($json);
         if (null === $result) {
             if (defined('JSON_ERROR_UTF8') && JSON_ERROR_UTF8 === json_last_error()) {
-                throw new \UnexpectedValueException('JSON file is not UTF-8 encoded "'.$file.'"');
+                throw new \UnexpectedValueException('"'.$file.'" is not UTF-8, could not parse as JSON');
             }
 
             return true;
         }
 
-        throw new JsonValidationException('JSON file is not valid "'.$file.'"'."\n".$result->getMessage(), $result->getDetails());
+        throw new ParsingException('"'.$file.'" does not contain valid JSON'."\n".$result->getMessage(), $result->getDetails());
     }
 }
