@@ -31,10 +31,8 @@ class PearInstaller extends LibraryInstaller
     /**
      * Initializes library installer.
      *
-     * @param string          $vendorDir relative path for packages home
-     * @param string          $binDir    relative path for binaries
-     * @param DownloadManager $dm        download manager
      * @param IOInterface     $io        io instance
+     * @param Composer        $composer
      * @param string          $type      package type that this installer handles
      */
     public function __construct(IOInterface $io, Composer $composer, $type = 'pear-library')
@@ -88,5 +86,52 @@ class PearInstaller extends LibraryInstaller
         }
 
         return $binaries;
+    }
+
+    protected function initializeBinDir()
+    {
+        parent::initializeBinDir();
+        file_put_contents($this->binDir.'/composer-php', $this->generateUnixyPhpProxyCode());
+        chmod($this->binDir.'/composer-php', 0777);
+        file_put_contents($this->binDir.'/composer-php.bat', $this->generateWindowsPhpProxyCode());
+        chmod($this->binDir.'/composer-php.bat', 0777);
+    }
+
+    private function generateWindowsPhpProxyCode()
+    {
+        return
+            "@echo off\r\n" .
+            "setlocal enabledelayedexpansion\r\n" .
+            "set BIN_DIR=%~dp0\r\n" .
+            "set VENDOR_DIR=%BIN_DIR%..\\\r\n" .
+            "    set DIRS=.\r\n" .
+            "FOR /D %%V IN (%VENDOR_DIR%*) DO (\r\n" .
+            "    FOR /D %%P IN (%%V\\*) DO (\r\n" .
+            "        set DIRS=!DIRS!;%%~fP\r\n" .
+            "    )\r\n" .
+            ")\r\n" .
+            "php.exe -d include_path=!DIRS! %*\r\n";
+    }
+
+    private function generateUnixyPhpProxyCode()
+    {
+        return
+            "#!/usr/bin/env sh\n".
+            "SRC_DIR=`pwd`\n".
+            "BIN_DIR=`dirname $(readlink -f $0)`\n".
+            "VENDOR_DIR=`dirname \$BIN_DIR`\n".
+            "cd \$BIN_DIR\n".
+            "DIRS=\"\"\n".
+            "for vendor in \$VENDOR_DIR/*; do\n".
+            "    if [ -d \"\$vendor\" ]; then\n".
+            "        for package in \$vendor/*; do\n".
+            "            if [ -d \"\$package\" ]; then\n".
+            "                DIRS=\"\${DIRS}:\${package}\"\n".
+            "            fi\n".
+            "        done\n".
+            "    fi\n".
+            "done\n".
+            "cd \$SRC_DIR\n".
+            "`which php` -d include_path=\".\$DIRS\" $@\n";
     }
 }
