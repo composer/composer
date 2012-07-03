@@ -100,7 +100,7 @@ class HgDriver extends VcsDriver
                 return;
             }
 
-            $composer = JsonFile::parseJson($composer);
+            $composer = JsonFile::parseJson($composer, $identifier);
 
             if (!isset($composer['time'])) {
                 $this->process->execute(sprintf('cd %s && hg log --template "{date|rfc822date}" -r %s', escapeshellarg($this->tmpDir), escapeshellarg($identifier)), $output);

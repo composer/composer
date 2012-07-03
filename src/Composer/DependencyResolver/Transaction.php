@@ -183,6 +183,10 @@ class Transaction
             $literal = $decision[Decisions::DECISION_LITERAL];
             $package = $this->pool->literalToPackage($literal);
 
+            if ($package instanceof AliasPackage) {
+                continue;
+            }
+
             // !wanted & installed
             if ($literal <= 0 && isset($this->installedMap[$package->getId()])) {
                 $updates = $this->policy->findUpdatePackages($this->pool, $this->installedMap, $package);

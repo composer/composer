@@ -158,10 +158,7 @@ class Factory
         $dm = $this->createDownloadManager($io);
 
         // initialize installation manager
-        $im = $this->createInstallationManager($rm, $dm, $vendorDir, $binDir, $io);
-
-        // purge packages if they have been deleted on the filesystem
-        $this->purgePackages($rm, $im);
+        $im = $this->createInstallationManager($config);
 
         // initialize composer
         $composer = new Composer();
@@ -170,6 +167,12 @@ class Factory
         $composer->setRepositoryManager($rm);
         $composer->setDownloadManager($dm);
         $composer->setInstallationManager($im);
+
+        // add installers to the manager
+        $this->createDefaultInstallers($im, $composer, $io);
+
+        // purge packages if they have been deleted on the filesystem
+        $this->purgePackages($rm, $im);
 
         // init locker if possible
         if (isset($composerFile)) {
@@ -222,7 +225,6 @@ class Factory
         $dm->setDownloader('git', new Downloader\GitDownloader($io));
         $dm->setDownloader('svn', new Downloader\SvnDownloader($io));
         $dm->setDownloader('hg', new Downloader\HgDownloader($io));
-        $dm->setDownloader('pear', new Downloader\PearDownloader($io));
         $dm->setDownloader('zip', new Downloader\ZipDownloader($io));
         $dm->setDownloader('tar', new Downloader\TarDownloader($io));
         $dm->setDownloader('phar', new Downloader\PharDownloader($io));
@@ -232,21 +234,25 @@ class Factory
     }
 
     /**
-     * @param  Repository\RepositoryManager  $rm
-     * @param  Downloader\DownloadManager    $dm
-     * @param  string                        $vendorDir
-     * @param  string                        $binDir
-     * @param  IO\IOInterface                $io
+     * @param  Config                        $config
      * @return Installer\InstallationManager
      */
-    protected function createInstallationManager(Repository\RepositoryManager $rm, Downloader\DownloadManager $dm, $vendorDir, $binDir, IOInterface $io)
+    protected function createInstallationManager(Config $config)
     {
-        $im = new Installer\InstallationManager($vendorDir);
-        $im->addInstaller(new Installer\LibraryInstaller($vendorDir, $binDir, $dm, $io, null));
-        $im->addInstaller(new Installer\InstallerInstaller($vendorDir, $binDir, $dm, $io, $im, $rm->getLocalRepositories()));
-        $im->addInstaller(new Installer\MetapackageInstaller($io));
+        return new Installer\InstallationManager($config->get('vendor-dir'));
+    }
 
-        return $im;
+    /**
+     * @param Installer\InstallationManager $im
+     * @param Composer                      $composer
+     * @param IO\IOInterface                $io
+     */
+    protected function createDefaultInstallers(Installer\InstallationManager $im, Composer $composer, IOInterface $io)
+    {
+        $im->addInstaller(new Installer\LibraryInstaller($io, $composer, null));
+        $im->addInstaller(new Installer\PearInstaller($io, $composer, 'pear-library'));
+        $im->addInstaller(new Installer\InstallerInstaller($io, $composer));
+        $im->addInstaller(new Installer\MetapackageInstaller($io));
     }
 
     /**

@@ -12,6 +12,7 @@
 
 namespace Composer\Installer;
 
+use Composer\Composer;
 use Composer\IO\IOInterface;
 use Composer\Downloader\DownloadManager;
 use Composer\Repository\InstalledRepositoryInterface;
@@ -26,31 +27,30 @@ use Composer\Util\Filesystem;
  */
 class LibraryInstaller implements InstallerInterface
 {
+    protected $composer;
     protected $vendorDir;
     protected $binDir;
     protected $downloadManager;
     protected $io;
-    private $type;
-    private $filesystem;
+    protected $type;
+    protected $filesystem;
 
     /**
      * Initializes library installer.
      *
-     * @param string          $vendorDir relative path for packages home
-     * @param string          $binDir    relative path for binaries
-     * @param DownloadManager $dm        download manager
-     * @param IOInterface     $io        io instance
-     * @param string          $type      package type that this installer handles
+     * @param IOInterface $io
+     * @param Composer    $composer
      */
-    public function __construct($vendorDir, $binDir, DownloadManager $dm, IOInterface $io, $type = 'library')
+    public function __construct(IOInterface $io, Composer $composer, $type = 'library')
     {
-        $this->downloadManager = $dm;
+        $this->composer = $composer;
+        $this->downloadManager = $composer->getDownloadManager();
         $this->io = $io;
         $this->type = $type;
 
         $this->filesystem = new Filesystem();
-        $this->vendorDir = rtrim($vendorDir, '/');
-        $this->binDir = rtrim($binDir, '/');
+        $this->vendorDir = rtrim($composer->getConfig()->get('vendor-dir'), '/');
+        $this->binDir = rtrim($composer->getConfig()->get('bin-dir'), '/');
     }
 
     /**
@@ -82,7 +82,7 @@ class LibraryInstaller implements InstallerInterface
             $this->removeBinaries($package);
         }
 
-        $this->downloadManager->download($package, $downloadPath);
+        $this->installCode($package);
         $this->installBinaries($package);
         if (!$repo->hasPackage($package)) {
             $repo->addPackage(clone $package);
@@ -99,10 +99,9 @@ class LibraryInstaller implements InstallerInterface
         }
 
         $this->initializeVendorDir();
-        $downloadPath = $this->getInstallPath($initial);
 
         $this->removeBinaries($initial);
-        $this->downloadManager->update($initial, $target, $downloadPath);
+        $this->updateCode($initial, $target);
         $this->installBinaries($target);
         $repo->removePackage($initial);
         if (!$repo->hasPackage($target)) {
@@ -123,7 +122,7 @@ class LibraryInstaller implements InstallerInterface
 
         $downloadPath = $this->getInstallPath($package);
 
-        $this->downloadManager->remove($package, $downloadPath);
+        $this->removeCode($package);
         $this->removeBinaries($package);
         $repo->removePackage($package);
 
@@ -146,12 +145,36 @@ class LibraryInstaller implements InstallerInterface
         return ($this->vendorDir ? $this->vendorDir.'/' : '') . $package->getPrettyName() . ($targetDir ? '/'.$targetDir : '');
     }
 
+    protected function installCode(PackageInterface $package)
+    {
+        $downloadPath = $this->getInstallPath($package);
+        $this->downloadManager->download($package, $downloadPath);
+    }
+
+    protected function updateCode(PackageInterface $initial, PackageInterface $target)
+    {
+        $downloadPath = $this->getInstallPath($initial);
+        $this->downloadManager->update($initial, $target, $downloadPath);
+    }
+
+    protected function removeCode(PackageInterface $package)
+    {
+        $downloadPath = $this->getInstallPath($package);
+        $this->downloadManager->remove($package, $downloadPath);
+    }
+
+    protected function getBinaries(PackageInterface $package)
+    {
+        return $package->getBinaries();
+    }
+
     protected function installBinaries(PackageInterface $package)
     {
-        if (!$package->getBinaries()) {
+        $binaries = $this->getBinaries($package);
+        if (!$binaries) {
             return;
         }
-        foreach ($package->getBinaries() as $bin) {
+        foreach ($binaries as $bin) {
             $this->initializeBinDir();
             $link = $this->binDir.'/'.basename($bin);
             if (file_exists($link)) {
@@ -193,10 +216,11 @@ class LibraryInstaller implements InstallerInterface
 
     protected function removeBinaries(PackageInterface $package)
     {
-        if (!$package->getBinaries()) {
+        $binaries = $this->getBinaries($package);
+        if (!$binaries) {
             return;
         }
-        foreach ($package->getBinaries() as $bin) {
+        foreach ($binaries as $bin) {
             $link = $this->binDir.'/'.basename($bin);
             if (!file_exists($link)) {
                 continue;

@@ -13,6 +13,7 @@
 namespace Composer\Test\Json;
 
 use Seld\JsonLint\ParsingException;
+use Composer\Json\JsonValidationException;
 use Composer\Json\JsonFile;
 
 class JsonFileTest extends \PHPUnit_Framework_TestCase

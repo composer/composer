@@ -15,6 +15,7 @@ namespace Composer\Json;
 use Composer\Composer;
 use JsonSchema\Validator;
 use Seld\JsonLint\JsonParser;
+use Seld\JsonLint\ParsingException;
 use Composer\Util\RemoteFilesystem;
 use Composer\Downloader\TransportException;
 
@@ -86,7 +87,7 @@ class JsonFile
             throw new \RuntimeException('Could not read '.$this->path."\n\n".$e->getMessage());
         }
 
-        return static::parseJson($json);
+        return static::parseJson($json, $this->path);
     }
 
     /**
@@ -126,7 +127,7 @@ class JsonFile
         $data = json_decode($content);
 
         if (null === $data && 'null' !== $content) {
-            self::validateSyntax($content);
+            self::validateSyntax($content, $this->path);
         }
 
         $schemaFile = __DIR__ . '/../../../res/composer-schema.json';
@@ -148,7 +149,7 @@ class JsonFile
             foreach ((array) $validator->getErrors() as $error) {
                 $errors[] = ($error['property'] ? $error['property'].' : ' : '').$error['message'];
             }
-            throw new JsonValidationException($errors);
+            throw new JsonValidationException('"'.$this->path.'" does not match the expected JSON schema', $errors);
         }
 
         return true;
@@ -265,14 +266,15 @@ class JsonFile
      * Parses json string and returns hash.
      *
      * @param string $json json string
+     * @param string $file the json file
      *
      * @return mixed
      */
-    public static function parseJson($json)
+    public static function parseJson($json, $file = null)
     {
         $data = json_decode($json, true);
         if (null === $data && JSON_ERROR_NONE !== json_last_error()) {
-            self::validateSyntax($json);
+            self::validateSyntax($json, $file);
         }
 
         return $data;
@@ -282,21 +284,23 @@ class JsonFile
      * Validates the syntax of a JSON string
      *
      * @param  string                    $json
+     * @param  string                    $file
      * @return bool                      true on success
      * @throws \UnexpectedValueException
+     * @throws JsonValidationException
      */
-    protected static function validateSyntax($json)
+    protected static function validateSyntax($json, $file = null)
     {
         $parser = new JsonParser();
         $result = $parser->lint($json);
         if (null === $result) {
             if (defined('JSON_ERROR_UTF8') && JSON_ERROR_UTF8 === json_last_error()) {
-                throw new \UnexpectedValueException('JSON file is not UTF-8 encoded');
+                throw new \UnexpectedValueException('"'.$file.'" is not UTF-8, could not parse as JSON');
             }
 
             return true;
         }
 
-        throw $result;
+        throw new ParsingException('"'.$file.'" does not contain valid JSON'."\n".$result->getMessage(), $result->getDetails());
     }
 }

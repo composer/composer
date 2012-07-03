@@ -21,6 +21,7 @@ use Composer\DependencyResolver\Solver;
 use Composer\DependencyResolver\SolverProblemsException;
 use Composer\Downloader\DownloadManager;
 use Composer\Installer\InstallationManager;
+use Composer\Config;
 use Composer\Installer\NoopInstaller;
 use Composer\IO\IOInterface;
 use Composer\Package\AliasPackage;
@@ -47,6 +48,11 @@ class Installer
      * @var IOInterface
      */
     protected $io;
+
+    /**
+     * @var Config
+     */
+    protected $config;
 
     /**
      * @var PackageInterface
@@ -105,6 +111,7 @@ class Installer
      * Constructor
      *
      * @param IOInterface         $io
+     * @param Config              $config
      * @param PackageInterface    $package
      * @param DownloadManager     $downloadManager
      * @param RepositoryManager   $repositoryManager
@@ -113,9 +120,10 @@ class Installer
      * @param EventDispatcher     $eventDispatcher
      * @param AutoloadGenerator   $autoloadGenerator
      */
-    public function __construct(IOInterface $io, PackageInterface $package, DownloadManager $downloadManager, RepositoryManager $repositoryManager, Locker $locker, InstallationManager $installationManager, EventDispatcher $eventDispatcher, AutoloadGenerator $autoloadGenerator)
+    public function __construct(IOInterface $io, Config $config, PackageInterface $package, DownloadManager $downloadManager, RepositoryManager $repositoryManager, Locker $locker, InstallationManager $installationManager, EventDispatcher $eventDispatcher, AutoloadGenerator $autoloadGenerator)
     {
         $this->io = $io;
+        $this->config = $config;
         $this->package = $package;
         $this->downloadManager = $downloadManager;
         $this->repositoryManager = $repositoryManager;
@@ -201,7 +209,7 @@ class Installer
             // write autoloader
             $this->io->write('<info>Generating autoload files</info>');
             $localRepos = new CompositeRepository($this->repositoryManager->getLocalRepositories());
-            $this->autoloadGenerator->dump($localRepos, $this->package, $this->installationManager, $this->installationManager->getVendorPath() . '/composer');
+            $this->autoloadGenerator->dump($this->config, $localRepos, $this->package, $this->installationManager, 'composer');
 
             if ($this->runScripts) {
                 // dispatch post event
@@ -229,7 +237,8 @@ class Installer
             $localRepo,
             $devMode,
             $this->package->getRequires(),
-            $this->package->getDevRequires());
+            $this->package->getDevRequires()
+        );
 
         // creating repository pool
         $pool = new Pool($minimumStability, $stabilityFlags);
@@ -287,16 +296,46 @@ class Installer
         // fix the version of all installed packages (+ platform) that are not
         // in the current local repo to prevent rogue updates (e.g. non-dev
         // updating when in dev)
-        //
-        // if the updateWhitelist is enabled, packages not in it are also fixed
-        // to their currently installed version
         foreach ($installedRepo->getPackages() as $package) {
-            if ($package->getRepository() === $localRepo && (!$this->updateWhitelist || $this->isUpdateable($package))) {
+            if ($package->getRepository() === $localRepo) {
                 continue;
             }
 
             $constraint = new VersionConstraint('=', $package->getVersion());
             $request->install($package->getName(), $constraint);
+        }
+
+        // if the updateWhitelist is enabled, packages not in it are also fixed
+        // to the version specified in the lock, or their currently installed version
+        if ($this->update && $this->updateWhitelist) {
+            if ($this->locker->isLocked($devMode)) {
+                $currentPackages = $this->locker->getLockedPackages($devMode);
+            } else {
+                $currentPackages = $installedRepo->getPackages();
+            }
+
+            // collect links from composer as well as installed packages
+            $candidates = array();
+            foreach ($links as $link) {
+                $candidates[$link->getTarget()] = true;
+            }
+            foreach ($localRepo->getPackages() as $package) {
+                $candidates[$package->getName()] = true;
+            }
+
+            // fix them to the version in lock (or currently installed) if they are not updateable
+            foreach ($candidates as $candidate => $dummy) {
+                foreach ($currentPackages as $curPackage) {
+                    if ($curPackage->getName() === $candidate) {
+                        if ($this->isUpdateable($curPackage)) {
+                            break;
+                        }
+
+                        $constraint = new VersionConstraint('=', $curPackage->getVersion());
+                        $request->install($curPackage->getName(), $constraint);
+                    }
+                }
+            }
         }
 
         // prepare solver
@@ -561,6 +600,7 @@ class Installer
 
         return new static(
             $io,
+            $composer->getConfig(),
             $composer->getPackage(),
             $composer->getDownloadManager(),
             $composer->getRepositoryManager(),
@@ -639,6 +679,19 @@ class Installer
     public function setRunScripts($runScripts = true)
     {
         $this->runScripts = (boolean) $runScripts;
+
+        return $this;
+    }
+
+    /**
+     * set the config instance
+     *
+     * @param  Config    $config
+     * @return Installer
+     */
+    public function setConfig(Config $config)
+    {
+        $this->config = $config;
 
         return $this;
     }
