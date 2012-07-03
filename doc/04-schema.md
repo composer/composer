@@ -280,10 +280,11 @@ Example:
 Lists packages required by this package. The package will not be installed
 unless those requirements can be met.
 
-#### require-dev
+#### require-dev <span>(root-only)</span>
 
 Lists packages required for developing this package, or running
-tests, etc. They are installed if install or update is ran with `--dev`.
+tests, etc. The dev requirements of the root package only will be installed
+if `install` or `update` is ran with `--dev`.
 
 Packages listed here and their dependencies can not overrule the resolution
 found with the packages listed in require. This is even true if a different
