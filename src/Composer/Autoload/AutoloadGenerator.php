@@ -118,8 +118,15 @@ EOF;
         $autoloads['classmap'] = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($autoloads['classmap']));
         foreach ($autoloads['classmap'] as $dir) {
             foreach (ClassMapGenerator::createMap($dir) as $class => $path) {
-                $path = '/'.$filesystem->findShortestPath(getcwd(), $path, true);
-                $classmapFile .= '    '.var_export($class, true).' => $baseDir . '.var_export($path, true).",\n";
+
+                $classmapFile .= '    '.var_export($class, true) . ' => ';
+
+                if (0 === strpos($path, dirname($vendorPath), 0)) {
+                    // this path seems to be located within this application/package
+	                $path = '/' . $filesystem->findShortestPath(getcwd(), $path, true);
+                    $classmapFile .= '$baseDir . ';
+                }
+                $classmapFile .= var_export($path, true).",\n";
             }
         }
         $classmapFile .= ");\n";
