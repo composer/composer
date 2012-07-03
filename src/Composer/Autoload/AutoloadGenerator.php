@@ -123,7 +123,7 @@ EOF;
 
                 if (0 === strpos($path, dirname($vendorPath), 0)) {
                     // this path seems to be located within this application/package
-	                $path = '/' . $filesystem->findShortestPath(getcwd(), $path, true);
+                    $path = '/' . $filesystem->findShortestPath(getcwd(), $path, true);
                     $classmapFile .= '$baseDir . ';
                 }
                 $classmapFile .= var_export($path, true).",\n";
