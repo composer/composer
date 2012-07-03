@@ -94,7 +94,6 @@ class SvnDriver extends VcsDriver
         $identifier = '/' . trim($identifier, '/') . '/';
 
         if ($res = $this->cache->read($identifier.'.json')) {
-            //TODO how to get the json filename here?
             $this->infoCache[$identifier] = JsonFile::parseJson($res);
         }
 
@@ -117,7 +116,7 @@ class SvnDriver extends VcsDriver
                 throw new TransportException($e->getMessage());
             }
 
-            $composer = JsonFile::parseJson($output, $resource);
+            $composer = JsonFile::parseJson($output, $this->baseUrl . $resource . $rev);
 
             if (!isset($composer['time'])) {
                 $output = $this->execute('svn info', $this->baseUrl . $path . $rev);

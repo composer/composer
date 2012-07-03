@@ -300,7 +300,6 @@ class JsonFile
             return true;
         }
 
-        //throw $result;
         throw new JsonValidationException('JSON file is not valid "'.$file.'"'."\n".$result->getMessage(), $result->getDetails());
     }
 }
