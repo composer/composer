@@ -1,18 +1,29 @@
-* 1.0.0-alpha4
+* 1.0.0-alpha4 (2012-07-04)
 
+  * Break: The default `minimum-stability` is now `stable`, [read more](https://groups.google.com/d/topic/composer-dev/_g3ASeIFlrc/discussion)
+  * Break: Custom installers now receive the IO instance and a Composer instance in their constructor
   * Schema: Added references for dev versions, requiring `dev-master#abcdef` for example will force the abcdef commit
   * Schema: Added `support` key with some more metadata (email, issues, forum, wiki, irc, source)
+  * Schema: Added `!=` operator for version constraints in `require`/`require-dev`
+  * Added a recommendation for package names to be `lower-cased/with-dashes`, it will be enforced for new packages on Pacakgist
   * Added `require` command to add a package to your requirements and install it
   * Added a whitelist to `update`. Calling `composer update foo/bar foo/baz` allows you to update only those packages
+  * Added support for overriding repositories in the system config (define repositories in ~/.composer/config.json)
+  * Added `lib-*` packages to the platform repository, e.g. `lib-pcre` contains the pcre version
   * Added caching of GitHub metadata (faster startup time with custom GitHub VCS repos)
+  * Added caching of SVN metadata (faster startup time with custom SVN VCS repos)
   * Added support for file:// URLs to GitDriver
+  * Added --self flag to the `show` command to display the infos of the root package
   * Added --dev flag to `create-project` command
   * Added --no-scripts to `install` and `update` commands to avoid triggering the scripts
   * Added `COMPOSER_ROOT_VERSION` env var to specify the version of the root package (fixes some edge cases)
   * Added support for multiple custom installers in one package
-  * Added files autoloading method which requires files on every request, e.g. to load functions that are not autoloadable
+  * Added files autoloading method which requires files on every request, e.g. to load functional code
+  * Added automatic recovery for lock files that contain references to rewritten (force pushed) commits
+  * Improved PEAR repositories support and package.xml extraction
   * Improved and fixed the output of various commands
-  * Cleaned up / refactored the dependency solver code
+  * Fixed the order of installation of requirements (they are always installed before the packages requiring them)
+  * Cleaned up / refactored the dependency solver code as well as the output for unsolvable requirements
   * Various bug fixes and docs improvements
 
 * 1.0.0-alpha3 (2012-05-13)
