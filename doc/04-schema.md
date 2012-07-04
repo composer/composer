@@ -472,15 +472,16 @@ Optional.
 ### minimum-stability <span>(root-only)</span>
 
 This defines the default behavior for filtering packages by stability. This
-defaults to `dev` but in the future will be switched to `stable`. As such if
-you rely on a default of `dev` you should specify it in your file to avoid
-surprises.
+defaults to `stable`, so if you rely on a `dev` package, you should specify
+it in your file to avoid surprises.
 
-All versions of each package is checked for stability, and those that are less
+All versions of each package are checked for stability, and those that are less
 stable than the `minimum-stability` setting will be ignored when resolving
 your project dependencies. Specific changes to the stability requirements of
 a given package can be done in `require` or `require-dev` (see
 [package links](#package-links)).
+
+Available options are `dev`, `alpha`, `beta`, `RC`, and `stable`.
 
 ### repositories <span>(root-only)</span>
 
