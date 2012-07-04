@@ -699,7 +699,11 @@ class SolverTest extends TestCase
             $msg = "\n";
             $msg .= "  Problem 1\n";
             $msg .= "    - Installation request for a -> satisfiable by A 1.0.\n";
-            $msg .= "    - A 1.0 requires b >= 2.0 -> no matching package found.\n";
+            $msg .= "    - A 1.0 requires b >= 2.0 -> no matching package found.\n\n";
+            $msg .= "Potential causes:\n";
+            $msg .= " - A typo in the package name\n";
+            $msg .= " - The package is not available in a stable-enough version according to your minimum-stability setting\n";
+            $msg .= "   see https://groups.google.com/d/topic/composer-dev/_g3ASeIFlrc/discussion for more details.\n";
             $this->assertEquals($msg, $e->getMessage());
         }
     }
