@@ -74,7 +74,7 @@ class SolverTest extends TestCase
         } catch (SolverProblemsException $e) {
             $problems = $e->getProblems();
             $this->assertEquals(1, count($problems));
-            $this->assertEquals('The requested package b == 1 could not be found.', $problems[0]->getPrettyString());
+            $this->assertEquals("\n    - The requested package b == 1 could not be found.", $problems[0]->getPrettyString());
         }
     }
 
