@@ -109,12 +109,12 @@ EOT
             $warnings[] = 'No license specified, it is recommended to do so';
         }
 
-        if (preg_match('/[A-Z]/', $manifest['name'])) {
-            $suggestName = preg_replace('/(([a-z])([A-Z])|([A-Z])([A-Z][a-z]))/', '\\2\\4-\\3\\5', $manifest['name']);
+        if (preg_match('{[A-Z]}', $manifest['name'])) {
+            $suggestName = preg_replace('{(?:([a-z])([A-Z])|([A-Z])([A-Z][a-z]))}', '\\1\\3-\\2\\4', $manifest['name']);
             $suggestName = strtolower($suggestName);
 
             $warnings[] = sprintf(
-                'Name "%s" is not valid. Name should not be camelCased. May we suggest "%s" instead?',
+                'Name "%s" does not match the best practice (e.g. lower-cased/with-dashes). We suggest using "%s" instead. As such you will not be able to submit it to Packagist.',
                 $manifest['name'],
                 $suggestName
             );
