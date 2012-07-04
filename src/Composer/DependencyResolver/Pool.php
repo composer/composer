@@ -33,8 +33,7 @@ class Pool
     protected $acceptableStabilities;
     protected $stabilityFlags;
 
-    // TODO BC change to stable end of june?
-    public function __construct($minimumStability = 'dev', array $stabilityFlags = array())
+    public function __construct($minimumStability = 'stable', array $stabilityFlags = array())
     {
         $stabilities = BasePackage::$stabilities;
         $this->acceptableStabilities = array();
