@@ -54,20 +54,22 @@ class PearInstaller extends LibraryInstaller
         parent::installCode($package);
 
         $isWindows = defined('PHP_WINDOWS_VERSION_BUILD') ? true : false;
+        $php_bin = realpath($this->binDir . ($isWindows ? '/composer-php.bat' : '/composer-php'));
 
+        $installPath = $this->getInstallPath($package);
         $vars = array(
             'os' => $isWindows ? 'windows' : 'linux',
-            'php_bin' => ($isWindows ? getenv('PHPRC') .'php.exe' : trim(`which php`)),
-            'pear_php' => $this->getInstallPath($package),
-            'bin_dir' => $this->getInstallPath($package) . '/bin',
-            'php_dir' => $this->getInstallPath($package),
-            'data_dir' => '@DATA_DIR@',
+            'php_bin' => $php_bin,
+            'pear_php' => $installPath,
+            'php_dir' => $installPath,
+            'bin_dir' => $installPath . '/bin',
+            'data_dir' => $installPath . '/data',
             'version' => $package->getPrettyVersion(),
         );
 
         $packageArchive = $this->getInstallPath($package).'/'.pathinfo($package->getDistUrl(), PATHINFO_BASENAME);
         $pearExtractor = new PearPackageExtractor($packageArchive);
-        $pearExtractor->extractTo($this->getInstallPath($package), array('php' => '/', 'script' => '/bin'), $vars);
+        $pearExtractor->extractTo($this->getInstallPath($package), array('php' => '/', 'script' => '/bin', 'data' => '/data'), $vars);
 
         if ($this->io->isVerbose()) {
             $this->io->write('    Cleaning up');
