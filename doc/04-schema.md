@@ -253,7 +253,7 @@ Example:
 
     {
         "require": {
-            "monolog/monolog": "1.0.*@beta"
+            "monolog/monolog": "1.0.*@beta",
             "acme/foo": "@dev"
         }
     }
@@ -270,7 +270,7 @@ Example:
 
     {
         "require": {
-            "monolog/monolog": "dev-master#2eb0c0978d290a1c45346a1955188929cb4e5db7"
+            "monolog/monolog": "dev-master#2eb0c0978d290a1c45346a1955188929cb4e5db7",
             "acme/foo": "1.0.x-dev#abc123"
         }
     }
@@ -411,7 +411,7 @@ to search for classes.
 Example:
 
     {
-        "autoload: {
+        "autoload": {
             "classmap": ["src/", "lib/", "Something.php"]
         }
     }
