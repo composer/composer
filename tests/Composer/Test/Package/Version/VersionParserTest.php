@@ -238,6 +238,9 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             array('stable', '3.1.2-patch'),
             array('alpha',  '3.1.2-alpha5'),
             array('beta',   '3.1.2-beta'),
+            array('beta',   '2.0b1'),
+            array('alpha',  '1.2.0a1'),
+            array('alpha',  '1.2_a1'),
         );
     }
 }
