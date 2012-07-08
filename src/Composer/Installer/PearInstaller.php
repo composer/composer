@@ -15,10 +15,8 @@ namespace Composer\Installer;
 use Composer\IO\IOInterface;
 use Composer\Composer;
 use Composer\Downloader\PearPackageExtractor;
-use Composer\Downloader\DownloadManager;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
-use Composer\Util\Filesystem;
 
 /**
  * Package installation manager.
@@ -31,9 +29,9 @@ class PearInstaller extends LibraryInstaller
     /**
      * Initializes library installer.
      *
-     * @param IOInterface     $io        io instance
-     * @param Composer        $composer
-     * @param string          $type      package type that this installer handles
+     * @param IOInterface $io       io instance
+     * @param Composer    $composer
+     * @param string      $type     package type that this installer handles
      */
     public function __construct(IOInterface $io, Composer $composer, $type = 'pear-library')
     {
@@ -52,9 +50,10 @@ class PearInstaller extends LibraryInstaller
     protected function installCode(PackageInterface $package)
     {
         parent::installCode($package);
+        parent::initializeBinDir();
 
         $isWindows = defined('PHP_WINDOWS_VERSION_BUILD') ? true : false;
-        $php_bin = realpath($this->binDir . ($isWindows ? '/composer-php.bat' : '/composer-php'));
+        $php_bin = $this->binDir . ($isWindows ? '/composer-php.bat' : '/composer-php');
 
         $installPath = $this->getInstallPath($package);
         $vars = array(
@@ -82,8 +81,10 @@ class PearInstaller extends LibraryInstaller
         $binariesPath = $this->getInstallPath($package) . '/bin/';
         $binaries = array();
         if (file_exists($binariesPath)) {
-            foreach (new \FilesystemIterator($binariesPath, \FilesystemIterator::KEY_AS_FILENAME) as $fileName => $value) {
-                $binaries[] = 'bin/'.$fileName;
+            foreach (new \FilesystemIterator($binariesPath, \FilesystemIterator::KEY_AS_FILENAME | \FilesystemIterator::CURRENT_AS_FILEINFO) as $fileName => $value) {
+                if (!$value->isDir()) {
+                    $binaries[] = 'bin/'.$fileName;
+                }
             }
         }
 
