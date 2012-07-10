@@ -300,7 +300,7 @@ HEADER;
         if ($useIncludePath) {
             $file .= <<<'INCLUDE_PATH'
     $includePaths = require $composerDir . '/include_paths.php';
-    array_unshift($includePaths, get_include_path());
+    array_push($includePaths, get_include_path());
     set_include_path(join(PATH_SEPARATOR, $includePaths));
 
 

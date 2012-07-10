@@ -338,7 +338,7 @@ class AutoloadGeneratorTest extends TestCase
         );
     }
 
-    public function testIncludePathsAreAppendedInAutoloadFile()
+    public function testIncludePathsArePrependedInAutoloadFile()
     {
         $package = new MemoryPackage('a', '1.0', '1.0');
         $packages = array();
@@ -361,7 +361,7 @@ class AutoloadGeneratorTest extends TestCase
         require($this->vendorDir."/autoload.php");
 
         $this->assertEquals(
-            $oldIncludePath.PATH_SEPARATOR.$this->vendorDir."/a/a/lib",
+            $this->vendorDir."/a/a/lib".PATH_SEPARATOR.$oldIncludePath,
             get_include_path()
         );
 
