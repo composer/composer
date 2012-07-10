@@ -67,7 +67,16 @@ class GitDownloader extends VcsDownloader
     {
         $template = 'git checkout %s && git reset --hard %1$s';
 
-        $command = sprintf($template, escapeshellarg($reference));
+        // check whether non-commitish are branches or tags, and fetch branches with the remote name
+        $gitRef = $reference;
+        if (!preg_match('{^[a-f0-9]{40}$}', $reference)
+            && 0 === $this->process->execute('git branch -r', $output, $path)
+            && preg_match('{^\s+composer/'.preg_quote($reference).'$}m', $output)
+        ) {
+            $gitRef = 'composer/'.$reference;
+        }
+
+        $command = sprintf($template, escapeshellarg($gitRef));
         if (0 === $this->process->execute($command, $output, $path)) {
             return;
         }
@@ -104,7 +113,7 @@ class GitDownloader extends VcsDownloader
             }
 
             // checkout the new recovered ref
-            $command = sprintf($template, escapeshellarg($newReference));
+            $command = sprintf($template, escapeshellarg($reference));
             if (0 === $this->process->execute($command, $output, $path)) {
                 $this->io->write('    '.$reference.' is gone (history was rewritten?), recovered by checking out '.$newReference);
 
