@@ -58,7 +58,7 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
 
         $processExecutor->expects($this->at(1))
             ->method('execute')
-            ->with($this->equalTo($this->getCmd("git checkout 'ref' && git reset --hard 'ref'")), $this->equalTo(null), $this->equalTo('composerPath'))
+            ->with($this->equalTo($this->getCmd("git checkout 'composer/ref' && git reset --hard 'composer/ref'")), $this->equalTo(null), $this->equalTo('composerPath'))
             ->will($this->returnValue(0));
 
         $downloader = $this->getDownloaderMock(null, $processExecutor);
@@ -102,7 +102,7 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
 
         $processExecutor->expects($this->at(6))
             ->method('execute')
-            ->with($this->equalTo($this->getCmd("git checkout 'ref' && git reset --hard 'ref'")), $this->equalTo(null), $this->equalTo('composerPath'))
+            ->with($this->equalTo($this->getCmd("git checkout 'composer/ref' && git reset --hard 'composer/ref'")), $this->equalTo(null), $this->equalTo('composerPath'))
             ->will($this->returnValue(0));
 
         $downloader = $this->getDownloaderMock(null, $processExecutor);
@@ -174,7 +174,7 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(0));
         $processExecutor->expects($this->at(3))
             ->method('execute')
-            ->with($this->equalTo($this->getCmd("git checkout 'ref' && git reset --hard 'ref'")), $this->equalTo(null), $this->equalTo('composerPath'))
+            ->with($this->equalTo($this->getCmd("git checkout 'composer/ref' && git reset --hard 'composer/ref'")), $this->equalTo(null), $this->equalTo('composerPath'))
             ->will($this->returnValue(0));
 
         $downloader = $this->getDownloaderMock(null, $processExecutor);
