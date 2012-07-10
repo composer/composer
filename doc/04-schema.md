@@ -163,14 +163,14 @@ An Example for disjunctive licenses:
         ]
     }
 
-Alternatively they can be separated with "or" and enclosed in brackets;
+Alternatively they can be separated with "or" and enclosed in parenthesis;
 
     {
         "license": "(LGPL-2.0 or GPL-3.0+)"
     }
 
 Similarly when multiple licenses need to be applied ("conjunctive license"),
-they should be separated with "and" and enclosed in brackets.
+they should be separated with "and" and enclosed in parenthesis.
 
 ### authors
 
