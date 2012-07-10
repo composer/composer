@@ -67,8 +67,7 @@ class GitDownloader extends VcsDownloader
     {
         $template = 'git checkout %s && git reset --hard %1$s';
 
-        $gitRef = preg_match('{^[a-f0-9]{40}$}', $reference) ? $reference : 'composer/'.$reference;
-        $command = sprintf($template, escapeshellarg($gitRef));
+        $command = sprintf($template, escapeshellarg($reference));
         if (0 === $this->process->execute($command, $output, $path)) {
             return;
         }
@@ -105,8 +104,7 @@ class GitDownloader extends VcsDownloader
             }
 
             // checkout the new recovered ref
-            $gitRef = preg_match('{^[a-f0-9]{40}$}', $reference) ? $reference : 'composer/'.$reference;
-            $command = sprintf($template, escapeshellarg($gitRef));
+            $command = sprintf($template, escapeshellarg($newReference));
             if (0 === $this->process->execute($command, $output, $path)) {
                 $this->io->write('    '.$reference.' is gone (history was rewritten?), recovered by checking out '.$newReference);
 
