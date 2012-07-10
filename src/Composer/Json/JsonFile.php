@@ -40,8 +40,8 @@ class JsonFile
     /**
      * Initializes json file reader/parser.
      *
-     * @param string           $lockFile path to a lockfile
-     * @param RemoteFilesystem $rfs      required for loading http/https json files
+     * @param string           $path path to a lockfile
+     * @param RemoteFilesystem $rfs  required for loading http/https json files
      */
     public function __construct($path, RemoteFilesystem $rfs = null)
     {
@@ -53,6 +53,9 @@ class JsonFile
         $this->rfs = $rfs;
     }
 
+    /**
+     * @return string
+     */
     public function getPath()
     {
         return $this->path;
