@@ -430,7 +430,6 @@ class SolverTest extends TestCase
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageQ = $this->getPackage('Q', '1.0'));
-        $this->repo->addPackage($packageB = $this->getPackage('B', '0.8'));
         $packageA->setRequires(array(new Link('A', 'B', $this->getVersionConstraint('>=', '1.0'), 'requires')));
         $packageQ->setProvides(array(new Link('Q', 'B', $this->getVersionConstraint('=', '1.0'), 'provides')));
 
