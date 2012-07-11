@@ -54,7 +54,7 @@ class DefaultPolicy implements PolicyInterface
         foreach ($packages as &$literals) {
             $policy = $this;
             usort($literals, function ($a, $b) use ($policy, $pool, $installedMap) {
-                return $policy->compareByPriorityPreferInstalled($pool, $installedMap, $pool->literalToPackage($a), $pool->literalToPackage($b), true);
+                return $policy->compareByPriorityPreferInstalled($pool, $installedMap, $pool->literalToPackage($a), $pool->literalToPackage($b), true, true);
             });
         }
 
@@ -96,7 +96,7 @@ class DefaultPolicy implements PolicyInterface
         return $packages;
     }
 
-    public function compareByPriorityPreferInstalled(Pool $pool, array $installedMap, PackageInterface $a, PackageInterface $b, $ignoreReplace = false)
+    public function compareByPriorityPreferInstalled(Pool $pool, array $installedMap, PackageInterface $a, PackageInterface $b, $ignoreReplace = false, $ignoreProvide = false)
     {
         if ($a->getRepository() === $b->getRepository()) {
             // prefer aliases to the original package
@@ -121,6 +121,16 @@ class DefaultPolicy implements PolicyInterface
                 }
             }
 
+            if (!$ignoreProvide) {
+                // return original, not provided
+                if ($this->provides($a, $b)) {
+                    return 1; // use b
+                }
+                if ($this->provides($b, $a)) {
+                    return -1; // use a
+                }
+            }
+
             // priority equal, sort by package id to make reproducible
             if ($a->getId() === $b->getId()) {
                 return 0;
@@ -141,15 +151,15 @@ class DefaultPolicy implements PolicyInterface
     }
 
     /**
-    * Checks if source replaces a package with the same name as target.
-    *
-    * Replace constraints are ignored. This method should only be used for
-    * prioritisation, not for actual constraint verification.
-    *
-    * @param PackageInterface $source
-    * @param PackageInterface $target
-    * @return bool
-    */
+     * Checks if source replaces a package with the same name as target.
+     *
+     * Replace constraints are ignored. This method should only be used for
+     * prioritisation, not for actual constraint verification.
+     *
+     * @param PackageInterface $source
+     * @param PackageInterface $target
+     * @return bool
+     */
     protected function replaces(PackageInterface $source, PackageInterface $target)
     {
         foreach ($source->getReplaces() as $link) {
@@ -157,6 +167,27 @@ class DefaultPolicy implements PolicyInterface
 //                && (null === $link->getConstraint() ||
 //                $link->getConstraint()->matches(new VersionConstraint('==', $target->getVersion())))) {
                 ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks if source provides a package with the same name as target.
+     *
+     * Provide constraints are ignored. This method should only be used for
+     * prioritisation, not for actual constraint verification.
+     *
+     * @param PackageInterface $source
+     * @param PackageInterface $target
+     * @return bool
+     */
+    protected function provides(PackageInterface $source, PackageInterface $target)
+    {
+        foreach ($source->getProvides() as $link) {
+            if ($link->getTarget() === $target->getName()) {
                 return true;
             }
         }
