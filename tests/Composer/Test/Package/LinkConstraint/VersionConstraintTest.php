@@ -33,6 +33,13 @@ class VersionConstraintTest extends \PHPUnit_Framework_TestCase
             array('!=', '1', '<=', '1'),
             array('!=', '1', '>',  '1'),
             array('!=', '1', '>=', '1'),
+            array('==', 'dev-foo-bar', '==', 'dev-foo-bar'),
+            array('==', 'dev-foo-xyz', '==', 'dev-foo-xyz'),
+            array('>=', 'dev-foo-bar', '>=', 'dev-foo-xyz'),
+            array('<=', 'dev-foo-bar', '<', 'dev-foo-xyz'),
+            array('!=', 'dev-foo-bar', '<', 'dev-foo-xyz'),
+            array('>=', 'dev-foo-bar', '!=', 'dev-foo-bar'),
+            array('!=', 'dev-foo-bar', '!=', 'dev-foo-xyz'),
         );
     }
 
@@ -61,6 +68,10 @@ class VersionConstraintTest extends \PHPUnit_Framework_TestCase
             array('==', '2', '<', '2'),
             array('!=', '1', '==', '1'),
             array('==', '1', '!=', '1'),
+            array('==', 'dev-foo-dist', '==', 'dev-foo-zist'),
+            array('==', 'dev-foo-bist', '==', 'dev-foo-aist'),
+            array('<=', 'dev-foo-bist', '>=', 'dev-foo-aist'),
+            array('>=', 'dev-foo-bist', '<', 'dev-foo-aist'),
         );
     }
 
