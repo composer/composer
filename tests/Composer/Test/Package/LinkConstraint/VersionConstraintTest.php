@@ -33,6 +33,7 @@ class VersionConstraintTest extends \PHPUnit_Framework_TestCase
             array('!=', '1', '<=', '1'),
             array('!=', '1', '>',  '1'),
             array('!=', '1', '>=', '1'),
+            array('==', 'dev-foo-bar', '==', 'dev-foo-bar'),
         );
     }
 
@@ -61,6 +62,7 @@ class VersionConstraintTest extends \PHPUnit_Framework_TestCase
             array('==', '2', '<', '2'),
             array('!=', '1', '==', '1'),
             array('==', '1', '!=', '1'),
+            array('==', 'dev-foo-dist', '==', 'dev-foo-zist'),
         );
     }
 

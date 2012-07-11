@@ -49,7 +49,7 @@ class DefaultPolicy implements PolicyInterface
 
     public function selectPreferedPackages(Pool $pool, array $installedMap, array $literals)
     {
-        $packages = $this->groupLiteralsByNamePreferInstalled($pool,$installedMap, $literals);
+        $packages = $this->groupLiteralsByNamePreferInstalled($pool, $installedMap, $literals);
 
         foreach ($packages as &$literals) {
             $policy = $this;
