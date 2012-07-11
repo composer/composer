@@ -60,7 +60,7 @@ class VersionConstraint extends SpecificConstraint
 
         // dev- versions can not be compared with version_compare
         if ('dev-' === substr($provider->version, 0, 4) && 'dev-' === substr($this->version, 0, 4)) {
-            return $isEqualOp && $isProviderEqualOp && $provider->version === $this->version ? true : false;
+            return $isEqualOp && $isProviderEqualOp && $provider->version === $this->version;
         }
 
         // '!=' operator is match when other operator is not '==' operator or version is not match
