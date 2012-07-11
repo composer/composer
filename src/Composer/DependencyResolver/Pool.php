@@ -140,15 +140,42 @@ class Pool
             return $candidates;
         }
 
-        $result = array();
+        $matches = $provideMatches = array();
+        $nameMatch = false;
 
         foreach ($candidates as $candidate) {
-            if ($candidate->matches($name, $constraint)) {
-                $result[] = $candidate;
+            switch ($candidate->matches($name, $constraint)) {
+                case BasePackage::MATCH_NONE:
+                    break;
+
+                case BasePackage::MATCH_NAME:
+                    $nameMatch = true;
+                    break;
+
+                case BasePackage::MATCH:
+                    $nameMatch = true;
+                    $matches[] = $candidate;
+                    break;
+
+                case BasePackage::MATCH_PROVIDE:
+                    $provideMatches[] = $candidate;
+                    break;
+
+                case BasePackage::MATCH_REPLACE:
+                    $matches[] = $candidate;
+                    break;
+
+                default:
+                    throw new \UnexpectedValueException('Unexpected match type');
             }
         }
 
-        return $result;
+        // if a package with the required name exists, we ignore providers
+        if ($nameMatch) {
+            return $matches;
+        }
+
+        return array_merge($matches, $provideMatches);
     }
 
     public function literalToPackage($literal)
