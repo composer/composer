@@ -25,6 +25,7 @@ use Composer\Util\Filesystem;
  */
 class PearPackageExtractor
 {
+    private static $rolesWithoutPackageNamePrefix = array('php', 'script', 'www');
     /** @var Filesystem */
     private $filesystem;
     private $file;
@@ -141,13 +142,13 @@ class PearPackageExtractor
             $packageName = (string) $package->name;
             $packageVersion = (string) $package->release->version;
             $sourceDir = $packageName . '-' . $packageVersion;
-            $result = $this->buildSourceList10($children, $roles, $sourceDir);
+            $result = $this->buildSourceList10($children, $roles, $sourceDir, '', null, $packageName);
         } elseif ('2.0' == $packageSchemaVersion || '2.1' == $packageSchemaVersion) {
             $children = $package->contents->children();
             $packageName = (string) $package->name;
             $packageVersion = (string) $package->version->release;
             $sourceDir = $packageName . '-' . $packageVersion;
-            $result = $this->buildSourceList20($children, $roles, $sourceDir);
+            $result = $this->buildSourceList20($children, $roles, $sourceDir, '', null, $packageName);
 
             $namespaces = $package->getNamespaces();
             $package->registerXPathNamespace('ns', $namespaces['']);
@@ -188,7 +189,7 @@ class PearPackageExtractor
         }
     }
 
-    private function buildSourceList10($children, $targetRoles, $source = '', $target = '', $role = null)
+    private function buildSourceList10($children, $targetRoles, $source = '', $target = '', $role = null, $packageName)
     {
         $result = array();
 
@@ -199,7 +200,7 @@ class PearPackageExtractor
                 $dirSource = $this->combine($source, (string) $child['name']);
                 $dirTarget = $child['baseinstalldir'] ? : $target;
                 $dirRole = $child['role'] ? : $role;
-                $dirFiles = $this->buildSourceList10($child->children(), $targetRoles, $dirSource, $dirTarget, $dirRole);
+                $dirFiles = $this->buildSourceList10($child->children(), $targetRoles, $dirSource, $dirTarget, $dirRole, $packageName);
                 $result = array_merge($result, $dirFiles);
             } elseif ($child->getName() == 'file') {
                 $fileRole = (string) $child['role'] ? : $role;
@@ -207,6 +208,9 @@ class PearPackageExtractor
                     $fileName = (string) ($child['name'] ? : $child[0]); // $child[0] means text content
                     $fileSource = $this->combine($source, $fileName);
                     $fileTarget = $this->combine((string) $child['baseinstalldir'] ? : $target, $fileName);
+                    if (!in_array($fileRole, self::$rolesWithoutPackageNamePrefix)) {
+                        $fileTarget = $packageName . '/' . $fileTarget;
+                    }
                     $result[(string) $child['name']] = array('from' => $fileSource, 'to' => $fileTarget, 'role' => $fileRole, 'tasks' => array());
                 }
             }
@@ -215,7 +219,7 @@ class PearPackageExtractor
         return $result;
     }
 
-    private function buildSourceList20($children, $targetRoles, $source = '', $target = '', $role = null)
+    private function buildSourceList20($children, $targetRoles, $source = '', $target = '', $role = null, $packageName)
     {
         $result = array();
 
@@ -226,7 +230,7 @@ class PearPackageExtractor
                 $dirSource = $this->combine($source, $child['name']);
                 $dirTarget = $child['baseinstalldir'] ? : $target;
                 $dirRole = $child['role'] ? : $role;
-                $dirFiles = $this->buildSourceList20($child->children(), $targetRoles, $dirSource, $dirTarget, $dirRole);
+                $dirFiles = $this->buildSourceList20($child->children(), $targetRoles, $dirSource, $dirTarget, $dirRole, $packageName);
                 $result = array_merge($result, $dirFiles);
             } elseif ('file' == $child->getName()) {
                 $fileRole = (string) $child['role'] ? : $role;
@@ -238,6 +242,9 @@ class PearPackageExtractor
                         if ('replace' == $taskNode->getName()) {
                             $fileTasks[] = array('from' => (string) $taskNode->attributes()->from, 'to' => (string) $taskNode->attributes()->to);
                         }
+                    }
+                    if (!in_array($fileRole, self::$rolesWithoutPackageNamePrefix)) {
+                        $fileTarget = $packageName . '/' . $fileTarget;
                     }
                     $result[(string) $child['name']] = array('from' => $fileSource, 'to' => $fileTarget, 'role' => $fileRole, 'tasks' => $fileTasks);
                 }
