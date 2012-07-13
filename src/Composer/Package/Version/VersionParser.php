@@ -24,7 +24,7 @@ use Composer\Package\LinkConstraint\VersionConstraint;
  */
 class VersionParser
 {
-    private static $modifierRegex = '[.-]?(?:(beta|RC|alpha|patch|pl|p)(?:[.-]?(\d+))?)?([.-]?dev)?';
+    private static $modifierRegex = '[._-]?(?:(beta|b|RC|alpha|a|patch|pl|p)(?:[.-]?(\d+))?)?([.-]?dev)?';
 
     /**
      * Returns the stability of a version
@@ -45,8 +45,16 @@ class VersionParser
             return 'dev';
         }
 
-        if (!empty($match[1]) && ($match[1] === 'beta' || $match[1] === 'alpha' || $match[1] === 'RC')) {
-            return $match[1];
+        if (!empty($match[1])) {
+            if ('beta' === $match[1] || 'b' === $match[1]) {
+                return 'beta';
+            }
+            if ('alpha' === $match[1] || 'a' === $match[1]) {
+                return 'alpha';
+            }
+            if ('RC' === $match[1]) {
+                return 'RC';
+            }
         }
 
         return 'stable';
