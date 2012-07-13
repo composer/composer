@@ -44,7 +44,7 @@ class RemoteFilesystem
     /**
      * Copy the remote file in local.
      *
-     * @param string  $originUrl The orgin URL
+     * @param string  $originUrl The origin URL
      * @param string  $fileUrl   The file URL
      * @param string  $fileName  the local filename
      * @param boolean $progress  Display the progression
@@ -61,7 +61,7 @@ class RemoteFilesystem
     /**
      * Get the content.
      *
-     * @param string  $originUrl The orgin URL
+     * @param string  $originUrl The origin URL
      * @param string  $fileUrl   The file URL
      * @param boolean $progress  Display the progression
      *
@@ -77,7 +77,7 @@ class RemoteFilesystem
     /**
      * Get file content or copy action.
      *
-     * @param string  $originUrl The orgin URL
+     * @param string  $originUrl The origin URL
      * @param string  $fileUrl   The file URL
      * @param string  $fileName  the local filename
      * @param boolean $progress  Display the progression
