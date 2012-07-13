@@ -183,7 +183,7 @@ classes to be autoloaded even if they do not conform to PSR-0. See the
 [autoload reference](04-schema.md#autoload) for more details.
 
 > **Note:** Composer provides its own autoloader. If you don't want to use
-that one, you can just include `vendor/autoload_namespaces.php`,
+that one, you can just include `vendor/composer/autoload_namespaces.php`,
 which returns an associative array mapping namespaces to directories.
 
 &larr; [Intro](00-intro.md)  |  [Libraries](02-libraries.md) &rarr;
