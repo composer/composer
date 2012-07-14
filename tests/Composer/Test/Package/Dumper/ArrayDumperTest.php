@@ -13,23 +13,42 @@
 namespace Composer\Test\Package\Dumper;
 
 use Composer\Package\Dumper\ArrayDumper;
-use Composer\Package\MemoryPackage;
 use Composer\Package\Link;
 use Composer\Package\LinkConstraint\VersionConstraint;
 
 class ArrayDumperTest extends \PHPUnit_Framework_TestCase
 {
+    /**
+     * @var ArrayDumper
+     */
+    private $dumper;
+    /**
+     * @var \Composer\Package\PackageInterface|\PHPUnit_Framework_MockObject_MockObject
+     */
+    private $package;
+
     public function setUp()
     {
         $this->dumper = new ArrayDumper();
+        $this->package = $this->getMock('Composer\Package\PackageInterface');
     }
 
-    public function testRequiredInformations()
+    public function testRequiredInformation()
     {
-        $package = new MemoryPackage('foo', '1.0.0.0', '1.0');
+        $this
+            ->packageExpects('getPrettyName', 'foo')
+            ->packageExpects('getPrettyVersion', '1.0')
+            ->packageExpects('getVersion', '1.0.0.0');
 
-        $config = $this->dumper->dump($package);
-        $this->assertEquals(array('name', 'version', 'version_normalized', 'type'), array_keys($config));
+        $config = $this->dumper->dump($this->package);
+        $this->assertEquals(
+            array(
+                'name' => 'foo',
+                'version' => '1.0',
+                'version_normalized' => '1.0.0.0'
+            ),
+            $config
+        );
     }
 
     /**
@@ -37,21 +56,20 @@ class ArrayDumperTest extends \PHPUnit_Framework_TestCase
      */
     public function testKeys($key, $value, $method = null, $expectedValue = null)
     {
-        $package = new MemoryPackage('foo', '1.0.0.0', '1.0');
+        $this->packageExpects('get'.ucfirst($method ?: $key), $value);
 
-        $setter = 'set'.ucfirst($method ?: $key);
-        $package->$setter($value);
+        $config = $this->dumper->dump($this->package);
 
-        $config = $this->dumper->dump($package);
-        $this->assertArrayHasKey($key, $config);
-
-        $expectedValue = $expectedValue ?: $value;
-        $this->assertSame($expectedValue, $config[$key]);
+        $this->assertSame($expectedValue ?: $value, $config[$key]);
     }
 
     public function getKeys()
     {
         return array(
+            array(
+                'type',
+                'library'
+            ),
             array(
                 'time',
                 new \DateTime('2012-02-01'),
@@ -116,6 +134,20 @@ class ArrayDumperTest extends \PHPUnit_Framework_TestCase
                 array('foo/bar' => 'very useful package'),
                 'suggests'
             ),
+            array(
+                'support',
+                array('foo' => 'bar'),
+            )
         );
+    }
+
+    private function packageExpects($method, $value)
+    {
+        $this->package
+            ->expects($this->any())
+            ->method($method)
+            ->will($this->returnValue($value));
+
+        return $this;
     }
 }
