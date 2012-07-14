@@ -13,7 +13,6 @@
 namespace Composer\Test\Package\Dumper;
 
 use Composer\Package\Dumper\ArrayDumper;
-use Composer\Package\MemoryPackage;
 use Composer\Package\Link;
 use Composer\Package\LinkConstraint\VersionConstraint;
 
