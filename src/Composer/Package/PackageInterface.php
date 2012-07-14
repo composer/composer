@@ -363,4 +363,11 @@ interface PackageInterface
      * @return string
      */
     public function getPrettyString();
+
+    /**
+     * Returns the support information
+     *
+     * @return array
+     */
+    public function getSupport();
 }
