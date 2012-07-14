@@ -703,9 +703,7 @@ class MemoryPackage extends BasePackage
     }
 
     /**
-     * Returns the support information
-     *
-     * @return array
+     * {@inheritDoc}
      */
     public function getSupport()
     {
