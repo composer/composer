@@ -40,4 +40,13 @@ interface StorageInterface
      * @return PackageDistribution|null If package is not found null is returned
      */
     public function retrievePackage(PackageInterface $package);
+
+    /**
+     * Check if package exists in the storage
+     *
+     * @param PackageInterface $package
+     *
+     * @return bool
+     */
+    public function hasPackage(PackageInterface $package);
 }

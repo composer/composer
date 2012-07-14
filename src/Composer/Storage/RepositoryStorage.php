@@ -82,7 +82,23 @@ class RepositoryStorage implements StorageInterface
      */
     public function retrievePackage(PackageInterface $package)
     {
+        if (!$this->hasPackage($package)) {
+            return null;
+        }
+
         return $this->internalStorage->retrievePackage($package);
+    }
+
+    /**
+     * Check if package exists in the storage
+     *
+     * @param PackageInterface $package
+     *
+     * @return bool
+     */
+    public function hasPackage(PackageInterface $package)
+    {
+        return $this->repository->hasPackage($package) && $this->internalStorage->hasPackage($package);
     }
 
     /**

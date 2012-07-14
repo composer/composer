@@ -75,6 +75,10 @@ class ArchiveStorage implements StorageInterface
             throw new \RuntimeException('Can not initialize directory structure in ' . $dir);
         }
 
+        if (file_exists($fileName)) {
+            @unlink($fileName);
+        }
+
         $this->compressor->compressDir($sourceDir, $fileName);
 
         return $this->createDistribution($fileName);
@@ -87,7 +91,15 @@ class ArchiveStorage implements StorageInterface
     {
         $fileName = $this->packageFilename($package);
 
-        return file_exists($fileName) ? $this->createDistribution($fileName) : null;
+        return $this->hasPackage($package) ? $this->createDistribution($fileName) : null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function hasPackage(PackageInterface $package)
+    {
+        return file_exists($this->packageFilename($package));
     }
 
     /**
