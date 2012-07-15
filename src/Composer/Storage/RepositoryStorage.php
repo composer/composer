@@ -71,6 +71,10 @@ class RepositoryStorage implements StorageInterface
 
         $packageCopy = self::convertPackage($package, $dist);
 
+        // Remove old package from repository in a replace situation
+        if ($this->repository->hasPackage($package)) {
+            $this->repository->removePackage($package);
+        }
         $this->repository->addPackage($packageCopy);
         $this->repository->write();
 

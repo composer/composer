@@ -75,11 +75,11 @@ class ArchiveStorage implements StorageInterface
             throw new \RuntimeException('Can not initialize directory structure in ' . $dir);
         }
 
-        if (file_exists($fileName)) {
-            @unlink($fileName);
+        $tempFileName = sys_get_temp_dir().'/'.uniqid(basename($fileName));
+        $this->compressor->compressDir($sourceDir, $tempFileName);
+        if (!@rename($tempFileName, $fileName)) {
+            throw new \RuntimeException(sprintf('Can not rename file from %s to %s.', $tempFileName, $fileName));
         }
-
-        $this->compressor->compressDir($sourceDir, $fileName);
 
         return $this->createDistribution($fileName);
     }
