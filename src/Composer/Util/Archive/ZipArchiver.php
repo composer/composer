@@ -12,7 +12,7 @@
 
 namespace Composer\Util\Archive;
 
-use DirectoryIterator;
+use FilesystemIterator;
 use RuntimeException;
 use ZipArchive;
 
@@ -93,30 +93,23 @@ class ZipArchiver implements ArchiverInterface
      * Add directory to archive recursively
      *
      * @param ZipArchive $zip    Archive file
-     * @param string     $dir    Direory to add
+     * @param string     $dir    Directory to add
      * @param string     $parent Parent directory
      *
      * @throws RuntimeException On any error
      */
     private function addDirectoryToArchive(ZipArchive $zip, $dir, $parent = '')
     {
-        if ($parent) {
-            if (!$zip->addEmptyDir($parent)) {
-                throw new RuntimeException("Can not add directory '{$dir}' to zip archive");
-            }
+        if ($parent && !$zip->addEmptyDir($parent)) {
+            throw new RuntimeException("Can not add directory '{$dir}' to zip archive.");
         }
-        /* @var DirectoryIterator $fileInfo */
-        foreach (new DirectoryIterator($dir) as $fileInfo) {
-            if ($fileInfo->isDot()) {
-                continue;
-            }
 
+        /* @var \SplFileInfo $fileInfo */
+        foreach (new FilesystemIterator($dir, FilesystemIterator::SKIP_DOTS) as $fileInfo) {
             if ($fileInfo->isDir()) {
                 $this->addDirectoryToArchive($zip, $fileInfo->getPathname(), $parent . $fileInfo->getFilename() . '/');
-            } else {
-                if (!$zip->addFile($fileInfo->getPathname(), $parent . $fileInfo->getFilename())) {
-                    throw new RuntimeException("Can not add file '{$fileInfo->getPathname()}' to zip archive");
-                }
+            } elseif (!$zip->addFile($fileInfo->getPathname(), $parent . $fileInfo->getFilename())) {
+                throw new RuntimeException("Can not add file '{$fileInfo->getPathname()}' to zip archive.");
             }
         }
     }
