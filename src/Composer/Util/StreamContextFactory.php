@@ -32,9 +32,9 @@ final class StreamContextFactory
         $options = array('http' => array());
 
         // Handle system proxy
-        if (isset($_SERVER['HTTP_PROXY']) || isset($_SERVER['http_proxy'])) {
+        if (!empty($_SERVER['HTTP_PROXY']) || !empty($_SERVER['http_proxy'])) {
             // Some systems seem to rely on a lowercased version instead...
-            $proxy = parse_url(isset($_SERVER['http_proxy']) ? $_SERVER['http_proxy'] : $_SERVER['HTTP_PROXY']);
+            $proxy = parse_url(!empty($_SERVER['http_proxy']) ? $_SERVER['http_proxy'] : $_SERVER['HTTP_PROXY']);
         }
 
         if (!empty($proxy)) {
