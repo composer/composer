@@ -277,7 +277,7 @@ class Installer
         try {
             $operations = $solver->solve($request);
         } catch (SolverProblemsException $e) {
-            $this->io->write('<error>Your requirements could not be solved to an installable set of packages.</error>');
+            $this->io->write('<error>Your requirements could not be resolved to an installable set of packages.</error>');
             $this->io->write($e->getMessage());
 
             return false;
