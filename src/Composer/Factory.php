@@ -156,6 +156,16 @@ class Factory
         // initialize repository manager
         $rm = $this->createRepositoryManager($io, $config);
 
+        // add package cache
+        $storage = null;
+        if ($config->get('package-cache')) {
+            $systemRepository = $this->addSystemRepository($rm, $config);
+            $storage = new Storage\RepositoryStorage(
+                $systemRepository,
+                new Storage\ArchiveStorage($config->get('home') . '/repository', new Util\Archive\ZipArchiver())
+            );
+        }
+
         // load local repository
         $this->addLocalRepository($rm, $vendorDir);
 
@@ -164,7 +174,7 @@ class Factory
         $package = $loader->load($localConfig);
 
         // initialize download manager
-        $dm = $this->createDownloadManager($io, $config);
+        $dm = $this->createDownloadManager($io, $config, $storage);
 
         // initialize installation manager
         $im = $this->createInstallationManager($config);
@@ -225,13 +235,34 @@ class Factory
     }
 
     /**
-     * @param IO\IOInterface $io
-     * @param Config         $config
+     * Add system repository to the repository manager
+     *
+     * @param  Repository\RepositoryManager $rm
+     * @param  Config                       $config
+     * @return Repository\WritableRepositoryInterface
+     */
+    protected function addSystemRepository(RepositoryManager $rm, Config $config)
+    {
+        $repository = new Repository\FilesystemRepository(new JsonFile($config->get('home') . '/repository/packages.json'));
+        $rm->addRepository($repository);
+
+        return $repository;
+    }
+
+    /**
+     * @param  IO\IOInterface                $io
+     * @param  Config                        $config
+     * @param  Storage\StorageInterface|null $storage Storage if package cache is enabled, null otherwise
      * @return Downloader\DownloadManager
      */
-    public function createDownloadManager(IOInterface $io, Config $config)
+    public function createDownloadManager(IOInterface $io, Config $config, $storage = null)
     {
-        $dm = new Downloader\DownloadManager();
+        if ($storage) {
+            $dm = new Downloader\CachedDownloadManager($storage);
+        } else {
+            $dm = new Downloader\DownloadManager();
+        }
+
         $dm->setDownloader('git', new Downloader\GitDownloader($io, $config));
         $dm->setDownloader('svn', new Downloader\SvnDownloader($io, $config));
         $dm->setDownloader('hg', new Downloader\HgDownloader($io, $config));
