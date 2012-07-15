@@ -12,8 +12,9 @@
 
 namespace Composer\Downloader;
 
-use Composer\Storage\StorageInterface;
 use Composer\Package\PackageInterface;
+use Composer\Storage\StorageInterface;
+use Composer\Util\Filesystem;
 
 /**
  * DownloadManager with package cache.
@@ -31,11 +32,12 @@ class CachedDownloadManager extends DownloadManager
     /**
      * @param StorageInterface $storage      Package cache storage
      * @param bool             $preferSource Prefer downloading source
+     * @param Filesystem|null  $filesystem   Custom Filesystem object
      */
-    public function __construct(StorageInterface $storage, $preferSource = false)
+    public function __construct(StorageInterface $storage, $preferSource = false, Filesystem $filesystem = null)
     {
         $this->storage = $storage;
-        parent::__construct($preferSource);
+        parent::__construct($preferSource, $filesystem);
     }
 
     /**
