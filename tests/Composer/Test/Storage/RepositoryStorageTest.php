@@ -94,11 +94,57 @@ class RepositoryStorageTest extends TestCase
     public function testRetrievePackageProxiesToInternalStorage()
     {
         $dist = new PackageDistribution('ext', '/tmp/package.ext', sha1('test'));
-        $this->internalStorage->expects($this->once())
+
+        $this->internalStorage
+            ->expects($this->once())
             ->method('retrievePackage')
             ->with($this->package)
             ->will($this->returnValue($dist));
 
+        $this->internalStorage
+            ->expects($this->any())
+            ->method('hasPackage')
+            ->with($this->package)
+            ->will($this->returnValue(true));
+
+        $this->repository
+            ->expects($this->any())
+            ->method('hasPackage')
+            ->with($this->package)
+            ->will($this->returnValue(true));
+
         $this->assertSame($dist, $this->storage->retrievePackage($this->package));
+    }
+
+    /**
+     * Test hasPackage return true only if package exists in repository and storage
+     * @dataProvider hasPackageData
+     */
+    public function testHasPackageCheckRepositoryAndStorage($hasRepository, $hasStorage)
+    {
+
+        $this->internalStorage
+            ->expects($this->any())
+            ->method('hasPackage')
+            ->with($this->package)
+            ->will($this->returnValue($hasRepository));
+
+        $this->repository
+            ->expects($this->any())
+            ->method('hasPackage')
+            ->with($this->package)
+            ->will($this->returnValue($hasStorage));
+
+        $this->assertEquals($hasRepository && $hasStorage, $this->storage->hasPackage($this->package));
+    }
+
+    public function hasPackageData()
+    {
+        return array(
+            array(false, false),
+            array(false, true),
+            array(true, false),
+            array(true, true)
+        );
     }
 }
