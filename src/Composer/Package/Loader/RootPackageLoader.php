@@ -69,9 +69,15 @@ class RootPackageLoader extends ArrayLoader
         $references = array();
         foreach (array('require', 'require-dev') as $linkType) {
             if (isset($config[$linkType])) {
-                $aliases = $this->extractAliases($config[$linkType], $aliases);
-                $stabilityFlags = $this->extractStabilityFlags($config[$linkType], $stabilityFlags);
-                $references = $this->extractReferences($config[$linkType], $references);
+                $linkInfo = BasePackage::$supportedLinkTypes[$linkType];
+                $method = 'get'.ucfirst($linkInfo['method']);
+                $links = array();
+                foreach ($package->$method() as $link) {
+                    $links[$link->getTarget()] = $link->getConstraint()->getPrettyString();
+                }
+                $aliases = $this->extractAliases($links, $aliases);
+                $stabilityFlags = $this->extractStabilityFlags($links, $stabilityFlags);
+                $references = $this->extractReferences($links, $references);
             }
         }
 
