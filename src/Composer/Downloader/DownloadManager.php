@@ -30,7 +30,8 @@ class DownloadManager
     /**
      * Initializes download manager.
      *
-     * @param bool $preferSource prefer downloading from source
+     * @param bool             $preferSource prefer downloading from source
+     * @param Filesystem|null  $filesystem   custom Filesystem object
      */
     public function __construct($preferSource = false, Filesystem $filesystem = null)
     {
