@@ -6,7 +6,7 @@ Replace takes precedence only in higher priority repositories
         {
             "type": "package",
             "package": [
-                { "name": "forked", "version": "1.1.0", "provide": { "package2": "1.1.0" } }
+                { "name": "forked", "version": "1.1.0", "replace": { "package2": "1.1.0" } }
             ]
         },
         {
@@ -14,7 +14,7 @@ Replace takes precedence only in higher priority repositories
             "package": [
                 { "name": "package", "version": "1.0.0" },
                 { "name": "package2", "version": "1.0.0" },
-                { "name": "hijacker", "version": "1.1.0", "provide": { "package": "1.1.0" } }
+                { "name": "hijacker", "version": "1.1.0", "replace": { "package": "1.1.0" } }
             ]
         }
     ],
