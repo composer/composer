@@ -141,15 +141,15 @@ class DefaultPolicy implements PolicyInterface
     }
 
     /**
-    * Checks if source replaces a package with the same name as target.
-    *
-    * Replace constraints are ignored. This method should only be used for
-    * prioritisation, not for actual constraint verification.
-    *
-    * @param PackageInterface $source
-    * @param PackageInterface $target
-    * @return bool
-    */
+     * Checks if source replaces a package with the same name as target.
+     *
+     * Replace constraints are ignored. This method should only be used for
+     * prioritisation, not for actual constraint verification.
+     *
+     * @param PackageInterface $source
+     * @param PackageInterface $target
+     * @return bool
+     */
     protected function replaces(PackageInterface $source, PackageInterface $target)
     {
         foreach ($source->getReplaces() as $link) {
