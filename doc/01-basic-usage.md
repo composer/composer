@@ -165,8 +165,8 @@ Composer will register a
 autoloader for the `Acme` namespace.
 
 You define a mapping from namespaces to directories. The `src` directory would
-be in your project root, on the same level as `vendor` directory is. An example filename would be `src/Acme/Foo.php`
-containing an `Acme\Foo` class.
+be in your project root, on the same level as `vendor` directory is. An example
+filename would be `src/Acme/Foo.php` containing an `Acme\Foo` class.
 
 After adding the `autoload` field, you have to re-run `install` to re-generate
 the `vendor/autoload.php` file.
