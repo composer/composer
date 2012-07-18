@@ -129,7 +129,7 @@ EOT
                 $manifest['version'] = '1.0.0';
             }
             if (!isset($manifest['name'])) {
-                $manifest['version'] = 'dummy/dummy';
+                $manifest['name'] = 'dummy/dummy';
             }
             $loader->load($manifest);
         } catch (\Exception $e) {
