@@ -40,7 +40,7 @@ class RootPackageLoader extends ArrayLoader
         parent::__construct($parser);
     }
 
-    public function load($config)
+    public function load(array $config)
     {
         if (!isset($config['name'])) {
             $config['name'] = '__root__';

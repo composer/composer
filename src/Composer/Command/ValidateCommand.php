@@ -17,6 +17,8 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonValidationException;
+use Composer\Package\Loader\ValidatingArrayLoader;
+use Composer\Package\Loader\ArrayLoader;
 use Composer\Util\RemoteFilesystem;
 use Composer\Util\SpdxLicenseIdentifier;
 
@@ -109,7 +111,7 @@ EOT
             $warnings[] = 'No license specified, it is recommended to do so';
         }
 
-        if (preg_match('{[A-Z]}', $manifest['name'])) {
+        if (!empty($manifest['name']) && preg_match('{[A-Z]}', $manifest['name'])) {
             $suggestName = preg_replace('{(?:([a-z])([A-Z])|([A-Z])([A-Z][a-z]))}', '\\1\\3-\\2\\4', $manifest['name']);
             $suggestName = strtolower($suggestName);
 
@@ -118,6 +120,20 @@ EOT
                 $manifest['name'],
                 $suggestName
             );
+        }
+
+        // TODO validate package repositories' packages using the same technique as below
+        try {
+            $loader = new ValidatingArrayLoader(new ArrayLoader(), false);
+            if (!isset($manifest['version'])) {
+                $manifest['version'] = '1.0.0';
+            }
+            if (!isset($manifest['name'])) {
+                $manifest['version'] = 'dummy/dummy';
+            }
+            $loader->load($manifest);
+        } catch (\Exception $e) {
+            $errors = array_merge($errors, explode("\n", $e->getMessage()));
         }
 
         // output errors/warnings
