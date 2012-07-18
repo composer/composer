@@ -24,6 +24,7 @@ class ValidatingArrayLoader implements LoaderInterface
     private $versionParser;
     private $ignoreErrors;
     private $errors = array();
+    private $config;
 
     public function __construct(LoaderInterface $loader, $ignoreErrors = true, VersionParser $parser = null)
     {
@@ -169,7 +170,7 @@ class ValidatingArrayLoader implements LoaderInterface
 
         $package = $this->loader->load($this->config);
         $this->errors = array();
-        unset($this->config);
+        $this->config = null;
 
         return $package;
     }
