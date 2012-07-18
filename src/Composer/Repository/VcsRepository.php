@@ -16,6 +16,7 @@ use Composer\Downloader\TransportException;
 use Composer\Repository\Vcs\VcsDriverInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\Loader\LoaderInterface;
 use Composer\IO\IOInterface;
 use Composer\Config;
 
@@ -31,6 +32,7 @@ class VcsRepository extends ArrayRepository
     protected $config;
     protected $versionParser;
     protected $type;
+    protected $loader;
 
     public function __construct(array $repoConfig, IOInterface $io, Config $config, array $drivers = null)
     {
@@ -48,6 +50,11 @@ class VcsRepository extends ArrayRepository
         $this->type = isset($repoConfig['type']) ? $repoConfig['type'] : 'vcs';
         $this->verbose = $io->isVerbose();
         $this->config = $config;
+    }
+
+    public function setLoader(LoaderInterface $loader)
+    {
+        $this->loader = $loader;
     }
 
     public function getDriver()
@@ -91,7 +98,9 @@ class VcsRepository extends ArrayRepository
         }
 
         $this->versionParser = new VersionParser;
-        $loader = new ArrayLoader();
+        if (!$this->loader) {
+            $this->loader = new ArrayLoader($this->versionParser);
+        }
 
         try {
             if ($driver->hasComposerFile($driver->getRootIdentifier())) {
@@ -155,7 +164,7 @@ class VcsRepository extends ArrayRepository
                     $this->io->write('Importing tag '.$tag.' ('.$data['version_normalized'].')');
                 }
 
-                $this->addPackage($loader->load($this->preProcess($driver, $data, $identifier)));
+                $this->addPackage($this->loader->load($this->preProcess($driver, $data, $identifier)));
             } catch (\Exception $e) {
                 if ($verbose) {
                     $this->io->write('Skipped tag '.$tag.', '.($e instanceof TransportException ? 'no composer file was found' : $e->getMessage()));
@@ -204,7 +213,7 @@ class VcsRepository extends ArrayRepository
                     $this->io->write('Importing branch '.$branch.' ('.$data['version'].')');
                 }
 
-                $this->addPackage($loader->load($this->preProcess($driver, $data, $identifier)));
+                $this->addPackage($this->loader->load($this->preProcess($driver, $data, $identifier)));
             } catch (TransportException $e) {
                 if ($verbose) {
                     $this->io->write('Skipped branch '.$branch.', no composer file was found');
