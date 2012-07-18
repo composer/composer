@@ -190,7 +190,7 @@ class AutoloadGeneratorTest extends TestCase
         $packages[] = $a = new MemoryPackage('a/a', '1.0', '1.0');
         $packages[] = $b = new MemoryPackage('b/b', '1.0', '1.0');
         $a->setAutoload(array('classmap' => array('src/')));
-        $b->setAutoload(array('classmap' => array('src/', 'lib/', __FILE__)));
+        $b->setAutoload(array('classmap' => array('src/', 'lib/')));
 
         $this->repository->expects($this->once())
             ->method('getPackages')
@@ -211,12 +211,10 @@ class AutoloadGeneratorTest extends TestCase
                 'ClassMapFoo' => $this->workingDir.'/composer-test-autoload/a/a/src/a.php',
                 'ClassMapBar' => $this->workingDir.'/composer-test-autoload/b/b/src/b.php',
                 'ClassMapBaz' => $this->workingDir.'/composer-test-autoload/b/b/lib/c.php',
-                'Composer\Test\Autoload\AutoloadGeneratorTest' => __FILE__,
             ),
             include ($this->vendorDir.'/composer/autoload_classmap.php')
         );
-        $expected = str_replace('%path%', var_export(__FILE__, true), file_get_contents(__DIR__.'/Fixtures/autoload_classmap4.php'));
-        $this->assertEquals($expected, file_get_contents($this->vendorDir.'/composer/autoload_classmap.php'));
+        $this->assertAutoloadFiles('classmap4', $this->vendorDir.'/composer', 'classmap');
     }
 
     public function testClassMapAutoloadingEmptyDirAndExactFile()

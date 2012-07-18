@@ -53,7 +53,7 @@ return array(
 EOF;
 
         $packageMap = $this->buildPackageMap($installationManager, $mainPackage, $localRepo->getPackages());
-        $autoloads = $this->parseAutoloads($packageMap, $filesystem);
+        $autoloads = $this->parseAutoloads($packageMap);
 
         foreach ($autoloads['psr-0'] as $namespace => $paths) {
             $exportedPaths = array();
@@ -118,9 +118,10 @@ EOF;
         $autoloads['classmap'] = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($autoloads['classmap']));
         foreach ($autoloads['classmap'] as $dir) {
             foreach (ClassMapGenerator::createMap($dir) as $class => $path) {
+
                 $classmapFile .= '    '.var_export($class, true) . ' => ';
 
-                if (0 === strpos($path, getcwd())) {
+                if (0 === strpos($path, dirname($vendorPath), 0)) {
                     // this path seems to be located within this application/package
                     $path = '/' . $filesystem->findShortestPath(getcwd(), $path, true);
                     $classmapFile .= '$baseDir . ';
@@ -169,16 +170,11 @@ EOF;
     /**
      * Compiles an ordered list of namespace => path mappings
      *
-     * @param  array      $packageMap array of array(package, installDir-relative-to-composer.json)
-     * @param  Filesystem $filesystem optional filesystem instance to use
-     * @return array      array('psr-0' => array('Ns\\Foo' => array('installDir')))
+     * @param  array $packageMap array of array(package, installDir-relative-to-composer.json)
+     * @return array array('psr-0' => array('Ns\\Foo' => array('installDir')))
      */
-    public function parseAutoloads(array $packageMap, Filesystem $filesystem = null)
+    public function parseAutoloads(array $packageMap)
     {
-        if (!$filesystem) {
-            $filesystem = new Filesystem;
-        }
-
         $autoloads = array('classmap' => array(), 'psr-0' => array(), 'files' => array());
         foreach ($packageMap as $item) {
             list($package, $installPath) = $item;
@@ -194,13 +190,7 @@ EOF;
                 }
                 foreach ($mapping as $namespace => $paths) {
                     foreach ((array) $paths as $path) {
-                        if ($filesystem->isAbsolutePath($path)) {
-                            // handle absolute paths in raw form
-                            $autoloads[$type][$namespace][] = $path;
-                        } else {
-                            // prepend install path (including target dir) to the relative paths
-                            $autoloads[$type][$namespace][] = empty($installPath) ? $path : $installPath.'/'.$path;
-                        }
+                        $autoloads[$type][$namespace][] = empty($installPath) ? $path : $installPath.'/'.$path;
                     }
                 }
             }
