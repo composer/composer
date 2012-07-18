@@ -87,7 +87,11 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
             $data = $json->read();
 
             if (!empty($data['notify'])) {
-                $this->notifyUrl = preg_replace('{(https?://[^/]+).*}i', '$1' . $data['notify'], $this->url);
+                if ('/' === $data['notify'][0]) {
+                    $this->notifyUrl = preg_replace('{(https?://[^/]+).*}i', '$1' . $data['notify'], $this->url);
+                } else {
+                    $this->notifyUrl = $data['notify'];
+                }
             }
 
             $this->cache->write('packages.json', json_encode($data));
