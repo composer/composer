@@ -12,15 +12,13 @@ This is common if your package is intended for a specific framework such as
 CakePHP, Drupal or WordPress. Here is an example composer.json file for a
 WordPress theme:
 
-```
-{
-    "name": "you/themename",
-    "type": "wordpress-theme",
-    "require": {
-        "composer/installers": "*"
+    {
+        "name": "you/themename",
+        "type": "wordpress-theme",
+        "require": {
+            "composer/installers": "*"
+        }
     }
-}
-```
 
 Now when your theme is installed with Composer it will be placed into
 `wp-content/themes/themename/` folder. Check the
@@ -33,15 +31,13 @@ Drupal multisite setup where the package should be installed into your sites
 subdirectory. Here we are overriding the install path for a module that uses
 composer/installers:
 
-```
-{
-    "extra": {
-        "installer-paths": {
-            "sites/example.com/modules/{$name}": ["vendor/package"]
+    {
+        "extra": {
+            "installer-paths": {
+                "sites/example.com/modules/{$name}": ["vendor/package"]
+            }
         }
     }
-}
-```
 
 Now the package would be installed to your folder location, rather than the default
 composer/installers determined location.
