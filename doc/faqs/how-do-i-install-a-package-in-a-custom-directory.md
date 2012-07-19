@@ -1,18 +1,18 @@
 # How do I install a package in a custom directory?
 
 Composer can be configured to install packages to a folder other than the
-default `vendor` folder. An simple way is to use
-[composer/installers](https://github.com/composer/installers) and if you're
-using a framework, chances are a custom directory has been already configured
-for you.
+default `vendor` folder. A simple way is to use the
+[composer/installers](https://github.com/composer/installers) package and if
+you are using a framework, chances are a custom directory has been already
+configured for you.
 
-If you're a **package author** and want your package installed to a custom
+If you are a **package author** and want your package installed to a custom
 directory, simply require `composer/installers` and set the appropriate `type`.
 This is common if your package is intended for a specific framework such as
 CakePHP, Drupal or WordPress. Here is an example composer.json file for a
 WordPress theme:
 
-``` json
+```
 {
     "name": "you/themename",
     "type": "wordpress-theme",
@@ -33,7 +33,7 @@ Drupal multisite setup where the package should be installed into your sites
 subdirectory. Here we are overriding the install path for a module that uses
 composer/installers:
 
-``` json
+```
 {
     "extra": {
         "installer-paths": {
