@@ -36,9 +36,12 @@ class RequireCommand extends InitCommand
                 new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Required package with a version constraint, e.g. foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"'),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Add requirement to require-dev.'),
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
+                new InputOption('no-update', null, InputOption::VALUE_NONE, 'Disables the automatic update of the dependencies.'),
             ))
             ->setHelp(<<<EOT
 The require command adds required packages to your composer.json and installs them
+
+If you do not want to install the new dependencies immediately you can call it with --no-update
 
 EOT
             )
@@ -82,6 +85,10 @@ EOT
         }
 
         $output->writeln('<info>'.$file.' has been updated</info>');
+
+        if ($input->getOption('no-update')) {
+            return 0;
+        }
 
         // Update packages
         $composer = $this->getComposer();
