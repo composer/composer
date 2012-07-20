@@ -82,6 +82,10 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
     {
         parent::initialize();
 
+        if (!extension_loaded('openssl') && 'https' === substr($this->url, 0, 5)) {
+            throw new \RuntimeException('You must enable the openssl extension in your php.ini to load information from '.$this->url);
+        }
+
         try {
             $json = new JsonFile($this->url.'/packages.json', new RemoteFilesystem($this->io));
             $data = $json->read();
