@@ -48,7 +48,8 @@ class CreateProjectCommand extends Command
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('repository-url', null, InputOption::VALUE_REQUIRED, 'Pick a different repository url to look for the package.'),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Whether to install dependencies for development.'),
-                new InputOption('disable-custom-installers', null, InputOption::VALUE_NONE, 'Whether to disable custom installers.'),
+                new InputOption('no-custom-installers', null, InputOption::VALUE_NONE, 'Whether to disable custom installers.'),
+                new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Whether to prevent execution of all defined scripts in the root package.')
             ))
             ->setHelp(<<<EOT
 The <info>create-project</info> command creates a new project from a given
@@ -81,11 +82,12 @@ EOT
             $input->getOption('prefer-source'),
             $input->getOption('dev'),
             $input->getOption('repository-url'),
-            $input->getOption('disable-custom-installers')
+            $input->getOption('no-custom-installers'),
+            $input->getOption('no-scripts')
         );
     }
 
-    public function installProject(IOInterface $io, $packageName, $directory = null, $version = null, $preferSource = false, $installDevPackages = false, $repositoryUrl = null, $disableCustomInstallers = false)
+    public function installProject(IOInterface $io, $packageName, $directory = null, $version = null, $preferSource = false, $installDevPackages = false, $repositoryUrl = null, $disableCustomInstallers = false, $noScripts = false)
     {
         $dm = $this->createDownloadManager($io);
         if ($preferSource) {
@@ -146,7 +148,8 @@ EOT
         $installer = Installer::create($io, $composer);
 
         $installer->setPreferSource($preferSource)
-            ->setDevMode($installDevPackages);
+            ->setDevMode($installDevPackages)
+            ->setRunScripts( ! $noScripts);
 
         if ($disableCustomInstallers) {
             $installer->disableCustomInstallers();
