@@ -33,6 +33,7 @@ class InstallCommand extends Command
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('dry-run', null, InputOption::VALUE_NONE, 'Outputs the operations but will not execute anything (implicitly enables --verbose).'),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Enables installation of dev-require packages.'),
+                new InputOption('no-custom-installers', null, InputOption::VALUE_NONE, 'Disables all custom installers.'),
                 new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Skips the execution of all scripts defined in composer.json file.'),
             ))
             ->setHelp(<<<EOT
@@ -60,6 +61,10 @@ EOT
             ->setDevMode($input->getOption('dev'))
             ->setRunScripts(!$input->getOption('no-scripts'))
         ;
+
+        if ($input->getOption('no-custom-installers')) {
+            $install->disableCustomInstallers();
+        }
 
         return $install->run() ? 0 : 1;
     }
