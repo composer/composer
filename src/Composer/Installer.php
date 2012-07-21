@@ -722,4 +722,16 @@ class Installer
 
         return $this;
     }
+
+    /**
+     * Disables custom installers.
+     *
+     * Call this if you want to ensure that third-party code never gets
+     * executed. The default is to automatically install, and execute
+     * custom third-party installers.
+     */
+    public function disableCustomInstallers()
+    {
+        $this->installationManager->disableCustomInstallers();
+    }
 }

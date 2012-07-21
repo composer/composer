@@ -47,7 +47,8 @@ class CreateProjectCommand extends Command
                 new InputArgument('version', InputArgument::OPTIONAL, 'Version, will defaults to latest'),
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('repository-url', null, InputOption::VALUE_REQUIRED, 'Pick a different repository url to look for the package.'),
-                new InputOption('dev', null, InputOption::VALUE_NONE, 'Whether to install dependencies for development.')
+                new InputOption('dev', null, InputOption::VALUE_NONE, 'Whether to install dependencies for development.'),
+                new InputOption('disable-custom-installers', null, InputOption::VALUE_NONE, 'Whether to disable custom installers.'),
             ))
             ->setHelp(<<<EOT
 The <info>create-project</info> command creates a new project from a given
@@ -79,11 +80,12 @@ EOT
             $input->getArgument('version'),
             $input->getOption('prefer-source'),
             $input->getOption('dev'),
-            $input->getOption('repository-url')
+            $input->getOption('repository-url'),
+            $input->getOption('disable-custom-installers')
         );
     }
 
-    public function installProject(IOInterface $io, $packageName, $directory = null, $version = null, $preferSource = false, $installDevPackages = false, $repositoryUrl = null)
+    public function installProject(IOInterface $io, $packageName, $directory = null, $version = null, $preferSource = false, $installDevPackages = false, $repositoryUrl = null, $disableCustomInstallers = false)
     {
         $dm = $this->createDownloadManager($io);
         if ($preferSource) {
@@ -120,6 +122,11 @@ EOT
         }
 
         $io->write('<info>Installing ' . $package->getName() . ' (' . VersionParser::formatVersion($package, false) . ')</info>', true);
+
+        if ($disableCustomInstallers) {
+            $io->write('<info>Custom installers have been disabled.</info>');
+        }
+
         if (0 === strpos($package->getPrettyVersion(), 'dev-') && in_array($package->getSourceType(), array('git', 'hg'))) {
             $package->setSourceReference(substr($package->getPrettyVersion(), 4));
         }
@@ -138,10 +145,14 @@ EOT
         $composer = Factory::create($io);
         $installer = Installer::create($io, $composer);
 
-        $installer
-            ->setPreferSource($preferSource)
-            ->setDevMode($installDevPackages)
-            ->run();
+        $installer->setPreferSource($preferSource)
+            ->setDevMode($installDevPackages);
+
+        if ($disableCustomInstallers) {
+            $installer->disableCustomInstallers();
+        }
+
+        $installer->run();
     }
 
     protected function createDownloadManager(IOInterface $io)
