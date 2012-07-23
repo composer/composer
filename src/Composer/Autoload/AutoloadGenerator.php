@@ -127,8 +127,8 @@ EOF;
         $filesCode = "";
         $autoloads['files'] = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($autoloads['files']));
         foreach ($autoloads['files'] as $functionFile) {
-            if ( ! $filesystem->isAbsolutePath($functionFile)) {
-                $functionFile = dirname($vendorPath) . '/'. $functionFile;
+            if (!$filesystem->isAbsolutePath($functionFile)) {
+                $functionFile = getcwd() . '/'. $functionFile;
             }
 
             $filesCode .= '    require __DIR__ . '. var_export('/'.$filesystem->findShortestPath($vendorPath, $functionFile), true).";\n";
