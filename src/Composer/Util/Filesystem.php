@@ -14,6 +14,7 @@ namespace Composer\Util;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
+ * @author Johannes M. Schmitt <schmittjoh@gmail.com>
  */
 class Filesystem
 {
@@ -50,6 +51,20 @@ class Filesystem
                     $directory.' does not exist and could not be created.'
                 );
             }
+        }
+    }
+
+    public function rename($source, $target)
+    {
+        if (defined('PHP_WINDOWS_VERSION_BUILD') || ! function_exists('exec')) {
+            rename($source, $target);
+
+            return;
+        }
+
+        exec('mv '.escapeshellarg($source).' '.escapeshellarg($target), $output, $returnCode);
+        if (0 !== $returnCode) {
+            throw new \RuntimeException(sprintf('Could not rename "%s" to "%s".', $source, $target));
         }
     }
 
