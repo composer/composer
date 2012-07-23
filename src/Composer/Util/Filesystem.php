@@ -64,7 +64,7 @@ class Filesystem
     public function findShortestPath($from, $to, $directories = false)
     {
         if (!$this->isAbsolutePath($from) || !$this->isAbsolutePath($to)) {
-            throw new \InvalidArgumentException('from and to must be absolute paths');
+            throw new \InvalidArgumentException(sprintf('$from (%s) and $to (%s) must be absolute paths.', $from, $to));
         }
 
         $from = lcfirst(rtrim(strtr($from, '\\', '/'), '/'));
@@ -105,7 +105,7 @@ class Filesystem
     public function findShortestPathCode($from, $to, $directories = false)
     {
         if (!$this->isAbsolutePath($from) || !$this->isAbsolutePath($to)) {
-            throw new \InvalidArgumentException('from and to must be absolute paths');
+            throw new \InvalidArgumentException(sprintf('$from (%s) and $to (%s) must be absolute paths.', $from, $to));
         }
 
         $from = lcfirst(strtr($from, '\\', '/'));
