@@ -248,7 +248,7 @@ When you update one of your packages to composer naming scheme or made it availa
         "repositories": [
             {
                 "type": "git",
-                "https://github.com/foobar/intermediate.git"
+                "url": "https://github.com/foobar/intermediate.git"
             },
             {
                 "type": "pear",
