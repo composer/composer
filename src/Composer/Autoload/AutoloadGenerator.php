@@ -127,11 +127,7 @@ EOF;
         $filesCode = "";
         $autoloads['files'] = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($autoloads['files']));
         foreach ($autoloads['files'] as $functionFile) {
-            if (!$filesystem->isAbsolutePath($functionFile)) {
-                $functionFile = getcwd() . '/'. $functionFile;
-            }
-
-            $filesCode .= '    require __DIR__ . '. var_export('/'.$filesystem->findShortestPath($vendorPath, $functionFile), true).";\n";
+            $filesCode .= '    require '.$this->getPathCode($filesystem, $relVendorPath, $vendorPath, $functionFile).";\n";
         }
 
         file_put_contents($targetDir.'/autoload_namespaces.php', $namespacesFile);
