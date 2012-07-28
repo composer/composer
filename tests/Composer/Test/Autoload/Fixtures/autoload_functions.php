@@ -21,8 +21,8 @@ return call_user_func(function() {
 
     $loader->register();
 
-    require __DIR__ . '/a/a/test.php';
-    require __DIR__ . '/b/b/test2.php';
+    require $vendorDir . '/a/a/test.php';
+    require $vendorDir . '/b/b/test2.php';
 
     return $loader;
 });
