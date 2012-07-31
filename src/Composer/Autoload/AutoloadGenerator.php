@@ -25,7 +25,7 @@ use Composer\Util\Filesystem;
  */
 class AutoloadGenerator
 {
-    public function dump(Config $config, RepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir)
+    public function dump(Config $config, RepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir, $classSuffix = '')
     {
         $filesystem = new Filesystem();
         $filesystem->ensureDirectoryExists($config->get('vendor-dir'));
@@ -93,23 +93,24 @@ EOF;
             $baseDirFromVendorDirCode = $filesystem->findShortestPathCode($vendorPath, getcwd(), true);
 
             $targetDirLoader = <<<EOF
-    spl_autoload_register(function(\$class) {
-        \$dir = $baseDirFromVendorDirCode . '/';
-        \$prefixes = array($prefixes);
-        foreach (\$prefixes as \$prefix) {
-            if (0 !== strpos(\$class, \$prefix)) {
-                continue;
-            }
-            \$path = \$dir . implode('/', array_slice(explode('\\\\', \$class), $levels)).'.php';
-            if (!\$path = stream_resolve_include_path(\$path)) {
-                return false;
-            }
-            require \$path;
 
-            return true;
+        public static function autoload(\$class)
+        {
+            \$dir = $baseDirFromVendorDirCode . '/';
+            \$prefixes = array($prefixes);
+            foreach (\$prefixes as \$prefix) {
+                if (0 !== strpos(\$class, \$prefix)) {
+                    continue;
+                }
+                \$path = \$dir . implode('/', array_slice(explode('\\\\', \$class), $levels)).'.php';
+                if (!\$path = stream_resolve_include_path(\$path)) {
+                    return false;
+                }
+                require \$path;
+
+                return true;
+            }
         }
-    });
-
 
 EOF;
         }
@@ -127,7 +128,7 @@ EOF;
         $filesCode = "";
         $autoloads['files'] = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($autoloads['files']));
         foreach ($autoloads['files'] as $functionFile) {
-            $filesCode .= '    require '.$this->getPathCode($filesystem, $relVendorPath, $vendorPath, $functionFile).";\n";
+            $filesCode .= '            require '.$this->getPathCode($filesystem, $relVendorPath, $vendorPath, $functionFile).";\n";
         }
 
         file_put_contents($targetDir.'/autoload_namespaces.php', $namespacesFile);
@@ -135,7 +136,7 @@ EOF;
         if ($includePathFile = $this->getIncludePathsFile($packageMap, $filesystem, $relVendorPath, $vendorPath, $vendorPathCode, $appBaseDirCode)) {
             file_put_contents($targetDir.'/include_paths.php', $includePathFile);
         }
-        file_put_contents($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, true, true, (bool) $includePathFile, $targetDirLoader, $filesCode));
+        file_put_contents($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, true, true, (bool) $includePathFile, $targetDirLoader, $filesCode, $classSuffix));
         copy(__DIR__.'/ClassLoader.php', $targetDir.'/ClassLoader.php');
     }
 
@@ -277,8 +278,14 @@ EOF;
         return $baseDir.var_export($path, true);
     }
 
-    protected function getAutoloadFile($vendorPathToTargetDirCode, $usePSR0, $useClassMap, $useIncludePath, $targetDirLoader, $filesCode)
+    protected function getAutoloadFile($vendorPathToTargetDirCode, $usePSR0, $useClassMap, $useIncludePath, $targetDirLoader, $filesCode, $classSuffix)
     {
+        // TODO the class ComposerAutoloaderInit should be revert to a closure
+        // when APC has been fixed:
+        // - https://github.com/composer/composer/issues/959
+        // - https://bugs.php.net/bug.php?id=52144
+        // - https://bugs.php.net/bug.php?id=61576
+
         if ($filesCode) {
             $filesCode = "\n".$filesCode;
         }
@@ -291,18 +298,22 @@ if (!class_exists('Composer\\\\Autoload\\\\ClassLoader', false)) {
     require $vendorPathToTargetDirCode . '/ClassLoader.php';
 }
 
-return call_user_func(function() {
-    \$loader = new \\Composer\\Autoload\\ClassLoader();
-    \$composerDir = $vendorPathToTargetDirCode;
+if (!class_exists('ComposerAutoloaderInit$classSuffix', false)) {
+    class ComposerAutoloaderInit$classSuffix
+    {
+        public static function getLoader()
+        {
+            \$loader = new \\Composer\\Autoload\\ClassLoader();
+            \$composerDir = $vendorPathToTargetDirCode;
 
 
 HEADER;
 
         if ($useIncludePath) {
             $file .= <<<'INCLUDE_PATH'
-    $includePaths = require $composerDir . '/include_paths.php';
-    array_push($includePaths, get_include_path());
-    set_include_path(join(PATH_SEPARATOR, $includePaths));
+            $includePaths = require $composerDir . '/include_paths.php';
+            array_push($includePaths, get_include_path());
+            set_include_path(join(PATH_SEPARATOR, $includePaths));
 
 
 INCLUDE_PATH;
@@ -310,10 +321,10 @@ INCLUDE_PATH;
 
         if ($usePSR0) {
             $file .= <<<'PSR0'
-    $map = require $composerDir . '/autoload_namespaces.php';
-    foreach ($map as $namespace => $path) {
-        $loader->add($namespace, $path);
-    }
+            $map = require $composerDir . '/autoload_namespaces.php';
+            foreach ($map as $namespace => $path) {
+                $loader->add($namespace, $path);
+            }
 
 
 PSR0;
@@ -321,23 +332,42 @@ PSR0;
 
         if ($useClassMap) {
             $file .= <<<'CLASSMAP'
-    $classMap = require $composerDir . '/autoload_classmap.php';
-    if ($classMap) {
-        $loader->addClassMap($classMap);
-    }
+            $classMap = require $composerDir . '/autoload_classmap.php';
+            if ($classMap) {
+                $loader->addClassMap($classMap);
+            }
 
 
 CLASSMAP;
         }
 
+        if ($targetDirLoader) {
+            $file .= <<<REGISTER_AUTOLOAD
+            spl_autoload_register(array('ComposerAutoloaderInit$classSuffix', 'autoload'));
+
+
+REGISTER_AUTOLOAD;
+
+        }
+
+        $file .= <<<METHOD_FOOTER
+            \$loader->register();
+$filesCode
+            return \$loader;
+        }
+
+METHOD_FOOTER;
+
         $file .= $targetDirLoader;
 
         return $file . <<<FOOTER
-    \$loader->register();
-$filesCode
-    return \$loader;
-});
-
-FOOTER;
     }
 }
+
+return ComposerAutoloaderInit$classSuffix::getLoader();
+
+FOOTER;
+
+    }
+}
+
