@@ -169,7 +169,7 @@ class ClassLoader
             $class = substr($class, 1);
         }
         
-        if (false !== $pos = strrpos($class, '\\')) {
+        if (false !== ($pos = strrpos($class, '\\'))) {
             // namespaced class name
             $classPath = str_replace('\\', DIRECTORY_SEPARATOR, substr($class, 0, $pos)) . DIRECTORY_SEPARATOR;
             $className = substr($class, $pos + 1);
@@ -185,8 +185,7 @@ class ClassLoader
             if (0 === strpos($class, $prefix)) {
                 foreach ($dirs as $dir) {
                     if (file_exists($dir . DIRECTORY_SEPARATOR . $classPath)) {
-                        $this->classMap[$class] = $dir . DIRECTORY_SEPARATOR . $classPath;
-                        return $this->classMap[$class];
+                        return $this->classMap[$class] = $dir . DIRECTORY_SEPARATOR . $classPath;
                     }
                 }
             }
@@ -194,14 +193,12 @@ class ClassLoader
         
         foreach ($this->fallbackDirs as $dir) {
             if (file_exists($dir . DIRECTORY_SEPARATOR . $classPath)) {
-                $this->classMap[$class] = $dir . DIRECTORY_SEPARATOR . $classPath;
-                return $this->classMap[$class];
+                return $this->classMap[$class] = $dir . DIRECTORY_SEPARATOR . $classPath;
             }
         }
 
         if ($this->useIncludePath && $file = stream_resolve_include_path($classPath)) {
-            $this->classMap[$class] = $file;
-            return $this->classMap[$class];
+            return $this->classMap[$class] = $file;
         }
         $this->classMap[$class] = null;
     }
