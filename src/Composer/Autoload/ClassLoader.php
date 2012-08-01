@@ -170,24 +170,26 @@ class ClassLoader
             $class = substr($class, 1);
         }
 
+        // PEAR-like class name
+        $classPath = null;
+        $className = $class;
+
         if (false !== $pos = strrpos($class, '\\')) {
             // namespaced class name
             $classPath = str_replace('\\', DIRECTORY_SEPARATOR, substr($class, 0, $pos)) . DIRECTORY_SEPARATOR;
             $className = substr($class, $pos + 1);
-        } else {
-            // PEAR-like class name
-            $classPath = null;
-            $className = $class;
         }
 
         $classPath .= str_replace('_', DIRECTORY_SEPARATOR, $className) . '.php';
 
         foreach ($this->prefixes as $prefix => $dirs) {
-            if (0 === strpos($class, $prefix)) {
-                foreach ($dirs as $dir) {
-                    if (file_exists($dir . DIRECTORY_SEPARATOR . $classPath)) {
-                        return $dir . DIRECTORY_SEPARATOR . $classPath;
-                    }
+            if (0 !== strpos($class, $prefix)) {
+                continue;
+            }
+
+            foreach ($dirs as $dir) {
+                if (file_exists($dir . DIRECTORY_SEPARATOR . $classPath)) {
+                    return $this->classMap[$class] = $dir . DIRECTORY_SEPARATOR . $classPath;
                 }
             }
         }
@@ -203,3 +205,4 @@ class ClassLoader
         }
     }
 }
+
