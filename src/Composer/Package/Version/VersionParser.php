@@ -210,6 +210,28 @@ class VersionParser
             return array();
         }
 
+        // match tilde / semver style constraints
+        if (preg_match('{^~(\d+)(?:\.(\d+))?(?:\.(\d+))?$}', $constraint, $matches)) {
+            if (isset($matches[3])) {
+                $patch = $matches[3];
+                $minor = $matches[2];
+            } elseif (isset($matches[2])) {
+                $patch = 0;
+                $minor = $matches[2];
+            } else {
+                $patch = 0;
+                $minor = 0;
+            }
+
+            $lowVersion = $matches[1] . '.' . $minor . '.' . $patch . '.0';
+            $highVersion = ($matches[1] + 1) . '.0.0.0';
+
+            return array(
+                new VersionConstraint('>=', $lowVersion),
+                new VersionConstraint('<', $highVersion),
+            );
+        }
+
         // match wildcard constraints
         if (preg_match('{^(\d+)(?:\.(\d+))?(?:\.(\d+))?\.[x*]$}', $constraint, $matches)) {
             if (isset($matches[3])) {

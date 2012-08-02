@@ -190,6 +190,30 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @dataProvider semverConstraints
+     */
+    public function testParseConstraintsSemver($input, $min, $max)
+    {
+        $parser = new VersionParser;
+        if ($min) {
+            $expected = new MultiConstraint(array($min, $max));
+        } else {
+            $expected = $max;
+        }
+
+        $this->assertSame((string) $expected, (string) $parser->parseConstraints($input));
+    }
+
+    public function semverConstraints()
+    {
+        return array(
+            array('~1',      new VersionConstraint('>=', '1.0.0.0'), new VersionConstraint('<', '2.0.0.0')),
+            array('~1.2',    new VersionConstraint('>=', '1.2.0.0'), new VersionConstraint('<', '2.0.0.0')),
+            array('~1.2.3',  new VersionConstraint('>=', '1.2.3.0'), new VersionConstraint('<', '2.0.0.0')),
+        );
+    }
+
     public function testParseConstraintsMulti()
     {
         $parser = new VersionParser;
