@@ -147,7 +147,7 @@ class ClassLoader
     public function loadClass($class)
     {
         if (($file = $this->findFile($class))) {
-            include_once $file;
+            include $file;
             return true;
         }
     }
@@ -185,7 +185,7 @@ class ClassLoader
             if (0 === strpos($class, $prefix)) {
                 foreach ($dirs as $dir) {
                     if (file_exists($dir . DIRECTORY_SEPARATOR . $classPath)) {
-                        return $this->classMap[$class] = $dir . DIRECTORY_SEPARATOR . $classPath;
+                        return $dir . DIRECTORY_SEPARATOR . $classPath;
                     }
                 }
             }
@@ -193,12 +193,12 @@ class ClassLoader
         
         foreach ($this->fallbackDirs as $dir) {
             if (file_exists($dir . DIRECTORY_SEPARATOR . $classPath)) {
-                return $this->classMap[$class] = $dir . DIRECTORY_SEPARATOR . $classPath;
+                return $dir . DIRECTORY_SEPARATOR . $classPath;
             }
         }
 
         if ($this->useIncludePath && $file = stream_resolve_include_path($classPath)) {
-            return $this->classMap[$class] = $file;
+            return $file;
         }
         $this->classMap[$class] = null;
     }
