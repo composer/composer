@@ -208,9 +208,13 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
     public function semverConstraints()
     {
         return array(
-            array('~1',      new VersionConstraint('>=', '1.0.0.0'), new VersionConstraint('<', '2.0.0.0')),
-            array('~1.2',    new VersionConstraint('>=', '1.2.0.0'), new VersionConstraint('<', '2.0.0.0')),
-            array('~1.2.3',  new VersionConstraint('>=', '1.2.3.0'), new VersionConstraint('<', '2.0.0.0')),
+            array('~2',      new VersionConstraint('>', '1.9999999.9999999.9999999'), new VersionConstraint('<', '2.9999999.9999999.9999999')),
+            array('~2.0',    new VersionConstraint('>', '1.9999999.9999999.9999999'), new VersionConstraint('<', '2.9999999.9999999.9999999')),
+            array('~2.0.0',  new VersionConstraint('>', '1.9999999.9999999.9999999'), new VersionConstraint('<', '2.9999999.9999999.9999999')),
+            array('~2.1.0',  new VersionConstraint('>', '2.0.9999999.9999999'), new VersionConstraint('<', '2.9999999.9999999.9999999')),
+            array('~2.2',    new VersionConstraint('>', '2.1.9999999.9999999'), new VersionConstraint('<', '2.9999999.9999999.9999999')),
+            array('~2.2.2',  new VersionConstraint('>', '2.2.1.9999999'), new VersionConstraint('<', '2.9999999.9999999.9999999')),
+            array('~0',      null, new VersionConstraint('<', '0.9999999.9999999.9999999')),
         );
     }
 

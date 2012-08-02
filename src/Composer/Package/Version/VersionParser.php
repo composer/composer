@@ -212,22 +212,34 @@ class VersionParser
 
         // match tilde / semver style constraints
         if (preg_match('{^~(\d+)(?:\.(\d+))?(?:\.(\d+))?$}', $constraint, $matches)) {
+            $highVersion = $matches[1] . '.9999999.9999999.9999999';
+
             if (isset($matches[3])) {
-                $patch = $matches[3];
-                $minor = $matches[2];
+                if ($matches[3] === '0') {
+                    if ($matches[2] === '0') {
+                        $lowVersion = ($matches[1] - 1) . '.9999999.9999999.9999999';
+                    } else {
+                        $lowVersion = $matches[1] . '.' . ($matches[2] - 1) . '.9999999.9999999';
+                    }
+                } else {
+                    $lowVersion = $matches[1] . '.' . $matches[2] . '.' . ($matches[3] - 1). '.9999999';
+                }
             } elseif (isset($matches[2])) {
-                $patch = 0;
-                $minor = $matches[2];
+                if ($matches[2] === '0') {
+                    $lowVersion = ($matches[1] - 1) . '.9999999.9999999.9999999';
+                } else {
+                    $lowVersion = $matches[1] . '.' . ($matches[2] - 1) . '.9999999.9999999';
+                }
             } else {
-                $patch = 0;
-                $minor = 0;
+                if ($matches[1] === '0') {
+                    return array(new VersionConstraint('<', $highVersion));
+                } else {
+                    $lowVersion = ($matches[1] - 1) . '.9999999.9999999.9999999';
+                }
             }
 
-            $lowVersion = $matches[1] . '.' . $minor . '.' . $patch . '.0';
-            $highVersion = ($matches[1] + 1) . '.0.0.0';
-
             return array(
-                new VersionConstraint('>=', $lowVersion),
+                new VersionConstraint('>', $lowVersion),
                 new VersionConstraint('<', $highVersion),
             );
         }
