@@ -117,7 +117,7 @@ Test it by inspecting the zip file generated manually:
 
     git archive branchName --format zip -o file.zip
 
-> **Note:** files would be still tracked by git just not included in the distribution.
+> **Note:** files would be still tracked by git just not included in the distribution. This feature works for packages that have been tagged.
 
 ## Publishing to a VCS
 
