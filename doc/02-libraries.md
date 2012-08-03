@@ -94,6 +94,31 @@ on it. It only has an effect on the main project.
 If you do not want to commit the lock file and you are using git, add it to
 the `.gitignore`.
 
+## Light-weight distribution packages
+
+Including the tests and other useless information like .travis.yml in distributed
+packages is not a good idea.
+
+Portable-per-project-configuration `.gitattributes` file is a git specific
+file like `.gitignore` also living at the root directory of your library.
+Moreover it overrides local and global configuration (`.git/config` and
+`~/.gitconfig` respectively) when present and tracked by git.
+
+Use `.gitattributes` to prevent unwanted files from bloating the
+zip distribution packages.
+
+    // .gitattributes
+    Tests/ export-ignore
+    phpunit.xml.dist export-ignore
+    Resources/doc/ export-ignore
+    .travis.yml export-ignore
+
+Test it by inspecting the zip file generated manually:
+
+    git archive branchName --format zip -o file.zip
+
+> **Note:** files would be still tracked by git just not included in the distribution.
+
 ## Publishing to a VCS
 
 Once you have a vcs repository (version control system, e.g. git) containing a
