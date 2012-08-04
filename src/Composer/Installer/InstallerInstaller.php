@@ -99,7 +99,6 @@ class InstallerInstaller extends LibraryInstaller
 
         foreach ($classes as $class) {
             if (!class_exists($class, false)) {
-                var_dump($classLoader);
                 if ( $file = $classLoader->findFile($class) ) {
                     $code = file_get_contents($file);
                 } else {
