@@ -82,19 +82,21 @@ class CompositeRepositoryTest extends TestCase
     public function testGetPackages()
     {
         $arrayRepoOne = new ArrayRepository;
-        $arrayRepoOne->addPackage($this->getPackage('foo', '1'));
+        $firstPackage = $this->getPackage('foo', '1');
+        $arrayRepoOne->addPackage($firstPackage);
 
         $arrayRepoTwo = new ArrayRepository;
-        $arrayRepoTwo->addPackage($this->getPackage('bar', '1'));
+        $secondPackage = $this->getPackage('bar', '1');
+        $arrayRepoTwo->addPackage($secondPackage);
 
         $repo = new CompositeRepository(array($arrayRepoOne, $arrayRepoTwo));
 
         $packages = $repo->getPackages();
         $this->assertCount(2, $packages, "Should get two packages");
-        $this->assertEquals("foo", $packages[0]->getName(), "First package should have name of 'foo'");
-        $this->assertEquals("1", $packages[0]->getPrettyVersion(), "First package should have pretty version of '1'");
-        $this->assertEquals("bar", $packages[1]->getName(), "Second package should have name of 'bar'");
-        $this->assertEquals("1", $packages[1]->getPrettyVersion(), "Second package should have pretty version of '1'");
+        $this->assertEquals("foo", $packages[$firstPackage->getUniqueName()]->getName(), "First package should have name of 'foo'");
+        $this->assertEquals("1", $packages[$firstPackage->getUniqueName()]->getPrettyVersion(), "First package should have pretty version of '1'");
+        $this->assertEquals("bar", $packages[$secondPackage->getUniqueName()]->getName(), "Second package should have name of 'bar'");
+        $this->assertEquals("1", $packages[$secondPackage->getUniqueName()]->getPrettyVersion(), "Second package should have pretty version of '1'");
     }
 
     public function testAddRepository()

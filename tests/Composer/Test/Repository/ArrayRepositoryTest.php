@@ -38,7 +38,7 @@ class ArrayRepositoryTest extends TestCase
         $repo->removePackage($this->getPackage('foo', '1'));
 
         $this->assertEquals(1, count($repo));
-        $this->assertEquals(array($package), $repo->getPackages());
+        $this->assertEquals(array($package->getUniqueName() => $package), $repo->getPackages());
     }
 
     public function testHasPackage()
