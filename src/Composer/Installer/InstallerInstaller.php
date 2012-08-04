@@ -84,15 +84,15 @@ class InstallerInstaller extends LibraryInstaller
         $generator = new AutoloadGenerator;
         $map = $generator->parseAutoloads(array(array($package, $downloadPath)));
         $classLoader = $generator->createLoader($map);
-        
+
         $autoload = $package->getAutoload();
-        if ( !empty($autoload['classmap']) ) {
-            if ( !empty($downloadPath) ) {
-                foreach( $autoload['classmap'] as $class => $path ) {
+        if (!empty($autoload['classmap'])) {
+            if (!empty($downloadPath)) {
+                foreach($autoload['classmap'] as $class => $path) {
                     $autoload['classmap'][$class] = $downloadPath . '/' . $path;
                 }
             }
-            $classLoader->addClassMap( $autoload['classmap'] );
+            $classLoader->addClassMap($autoload['classmap']);
         }
         
         $classLoader->register();
@@ -106,7 +106,7 @@ class InstallerInstaller extends LibraryInstaller
                         'Unable to locate the class : ' . $class
                     );
                 }
-                
+
                 $code = preg_replace('{^class\s+(\S+)}mi', 'class $1_composer_tmp'.self::$classCounter, $code);
                 eval('?>'.$code);
                 $class .= '_composer_tmp'.self::$classCounter;
