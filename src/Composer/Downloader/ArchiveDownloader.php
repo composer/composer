@@ -58,7 +58,13 @@ abstract class ArchiveDownloader extends FileDownloader
                         rename($file, $path . '/' . basename($file));
                     }
                 }
-                rmdir($contentDir);
+                
+                if(is_file($contentDir)){
+                    unlink($contentDir);
+                }
+                else{
+                    rmdir($contentDir);
+                }
             }
         } catch (\Exception $e) {
             // clean up
