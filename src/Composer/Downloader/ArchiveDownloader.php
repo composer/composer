@@ -47,22 +47,25 @@ abstract class ArchiveDownloader extends FileDownloader
             if (1 === count($contentDir)) {
                 $contentDir = $contentDir[0];
 
-                // Rename the content directory to avoid error when moving up
-                // a child folder with the same name
-                $temporaryName = md5(time().rand());
-                rename($contentDir, $temporaryName);
-                $contentDir = $temporaryName;
-
-                foreach (array_merge(glob($contentDir . '/.*'), glob($contentDir . '/*')) as $file) {
-                    if (trim(basename($file), '.')) {
-                        rename($file, $path . '/' . basename($file));
-                    }
-                }
-                
                 if(is_file($contentDir)){
+                    rename($contentDir, $path . '/' . basename($fileName));
                     unlink($contentDir);
                 }
                 else{
+                    
+                    // Rename the content directory to avoid error when moving up
+                    // a child folder with the same name
+                    $temporaryName = md5(time().rand());
+                    rename($contentDir, $temporaryName);
+                    $contentDir = $temporaryName;
+    
+                    foreach (array_merge(glob($contentDir . '/.*'), glob($contentDir . '/*')) as $file) {
+                        if (trim(basename($file), '.')) {
+                            rename($file, $path . '/' . basename($file));
+                        }
+                    }
+                
+
                     rmdir($contentDir);
                 }
             }
