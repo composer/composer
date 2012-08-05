@@ -47,10 +47,9 @@ abstract class ArchiveDownloader extends FileDownloader
             if (1 === count($contentDir)) {
                 $contentDir = $contentDir[0];
 
-                if(is_file($contentDir)){
+                if (is_file($contentDir)) {
                     rename($contentDir, $path . '/' . basename($contentDir));
-                }
-                else{
+                } else {
                     
                     // Rename the content directory to avoid error when moving up
                     // a child folder with the same name
