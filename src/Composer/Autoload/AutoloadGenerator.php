@@ -137,7 +137,7 @@ EOF;
             file_put_contents($targetDir.'/include_paths.php', $includePathFile);
         }
         file_put_contents($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, $suffix));
-        file_put_contents($targetDir.'/autoload_real'.$suffix.'.php', $this->getAutoloadRealFile(true, true, (bool) $includePathFile, $targetDirLoader, $filesCode, $suffix));
+        file_put_contents($targetDir.'/autoload_real'.$suffix.'.php', $this->getAutoloadRealFile(true, true, (bool) $includePathFile, $targetDirLoader, $filesCode, $vendorPathCode, $appBaseDirCode, $suffix));
         copy(__DIR__.'/ClassLoader.php', $targetDir.'/ClassLoader.php');
     }
 
@@ -295,7 +295,7 @@ return ComposerAutoloaderInit$suffix::getLoader();
 AUTOLOAD;
     }
 
-    protected function getAutoloadRealFile($usePSR0, $useClassMap, $useIncludePath, $targetDirLoader, $filesCode, $suffix)
+    protected function getAutoloadRealFile($usePSR0, $useClassMap, $useIncludePath, $targetDirLoader, $filesCode, $vendorPathCode, $appBaseDirCode, $suffix)
     {
         // TODO the class ComposerAutoloaderInit should be revert to a closure
         // when APC has been fixed:
@@ -321,6 +321,8 @@ class ComposerAutoloaderInit$suffix
     public static function getLoader()
     {
         \$loader = new \\Composer\\Autoload\\ClassLoader();
+        \$vendorDir = $vendorPathCode;
+        \$baseDir = $appBaseDirCode;
 
 
 HEADER;
