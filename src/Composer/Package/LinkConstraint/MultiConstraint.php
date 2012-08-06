@@ -17,7 +17,7 @@ namespace Composer\Package\LinkConstraint;
  *
  * @author Nils Adermann <naderman@naderman.de>
  */
-class MultiConstraint implements LinkConstraintInterface
+abstract class MultiConstraint implements LinkConstraintInterface
 {
     protected $constraints;
     protected $prettyString;
@@ -32,16 +32,7 @@ class MultiConstraint implements LinkConstraintInterface
         $this->constraints = $constraints;
     }
 
-    public function matches(LinkConstraintInterface $provider)
-    {
-        foreach ($this->constraints as $constraint) {
-            if (!$constraint->matches($provider)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
+    public abstract function matches(LinkConstraintInterface $provider);
 
     public function setPrettyString($prettyString)
     {
