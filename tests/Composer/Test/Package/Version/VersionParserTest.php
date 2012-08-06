@@ -13,7 +13,8 @@
 namespace Composer\Test\Package\Version;
 
 use Composer\Package\Version\VersionParser;
-use Composer\Package\LinkConstraint\MultiConstraint;
+use Composer\Package\LinkConstraint\AndConstraint;
+use Composer\Package\LinkConstraint\OrConstraint;
 use Composer\Package\LinkConstraint\VersionConstraint;
 
 class VersionParserTest extends \PHPUnit_Framework_TestCase
@@ -139,10 +140,10 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
     public function simpleConstraints()
     {
         return array(
-            'match any'         => array('*',           new MultiConstraint(array())),
-            'match any/2'       => array('*.*',         new MultiConstraint(array())),
-            'match any/3'       => array('*.x.*',       new MultiConstraint(array())),
-            'match any/4'       => array('x.x.x.*',     new MultiConstraint(array())),
+            'match any'         => array('*',           new AndConstraint(array())),
+            'match any/2'       => array('*.*',         new AndConstraint(array())),
+            'match any/3'       => array('*.x.*',       new AndConstraint(array())),
+            'match any/4'       => array('x.x.x.*',     new AndConstraint(array())),
             'not equal'         => array('<>1.0.0',     new VersionConstraint('<>', '1.0.0.0')),
             'not equal/2'       => array('!=1.0.0',     new VersionConstraint('!=', '1.0.0.0')),
             'greater than'      => array('>1.0.0',      new VersionConstraint('>', '1.0.0.0')),
@@ -169,7 +170,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
     {
         $parser = new VersionParser;
         if ($min) {
-            $expected = new MultiConstraint(array($min, $max));
+            $expected = new AndConstraint(array($min, $max));
         } else {
             $expected = $max;
         }
@@ -190,13 +191,59 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @dataProvider semverConstraints
+     */
+    public function testParseConstraintsSemver($input, $min, $max)
+    {
+        $parser = new VersionParser;
+        if ($min) {
+            $expected = new AndConstraint(array($min, $max));
+        } else {
+            $expected = $max;
+        }
+
+        $this->assertSame((string) $expected, (string) $parser->parseConstraints($input));
+    }
+
+    public function semverConstraints()
+    {
+        return array(
+            array('~2',      new VersionConstraint('>', '1.9999999.9999999.9999999'), new VersionConstraint('<', '2.9999999.9999999.9999999')),
+            array('~2.0',    new VersionConstraint('>', '1.9999999.9999999.9999999'), new VersionConstraint('<', '2.9999999.9999999.9999999')),
+            array('~2.0.0',  new VersionConstraint('>', '1.9999999.9999999.9999999'), new VersionConstraint('<', '2.9999999.9999999.9999999')),
+            array('~2.1.0',  new VersionConstraint('>', '2.0.9999999.9999999'), new VersionConstraint('<', '2.9999999.9999999.9999999')),
+            array('~2.2',    new VersionConstraint('>', '2.1.9999999.9999999'), new VersionConstraint('<', '2.9999999.9999999.9999999')),
+            array('~2.2.2',  new VersionConstraint('>', '2.2.1.9999999'), new VersionConstraint('<', '2.9999999.9999999.9999999')),
+            array('~0',      null, new VersionConstraint('<', '0.9999999.9999999.9999999')),
+        );
+    }
+
     public function testParseConstraintsMulti()
     {
         $parser = new VersionParser;
         $first = new VersionConstraint('>', '2.0.0.0');
         $second = new VersionConstraint('<=', '3.0.0.0');
-        $multi = new MultiConstraint(array($first, $second));
+        $multi = new AndConstraint(array($first, $second));
         $this->assertSame((string) $multi, (string) $parser->parseConstraints('>2.0,<=3.0'));
+    }
+
+    public function testParseConstraintsMultiWithExplicitAnd()
+    {
+        $parser = new VersionParser;
+        $first = new VersionConstraint('>', '2.0.0.0');
+        $second = new VersionConstraint('<=', '3.0.0.0');
+        $multi = new AndConstraint(array($first, $second));
+        $this->assertSame((string) $multi, (string) $parser->parseConstraints('>2.0 && <=3.0'));
+    }
+
+    public function testParseConstraintsMultiWithExplicitOr()
+    {
+        $parser = new VersionParser;
+        $first = new VersionConstraint('>', '2.0.0.0');
+        $second = new VersionConstraint('<=', '3.0.0.0');
+        $multi = new OrConstraint(array($first, $second));
+        $this->assertSame((string) $multi, (string) $parser->parseConstraints('>2.0 || <=3.0'));
     }
 
     /**

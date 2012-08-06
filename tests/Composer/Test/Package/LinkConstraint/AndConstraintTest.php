@@ -13,9 +13,9 @@
 namespace Composer\Test\Package\LinkConstraint;
 
 use Composer\Package\LinkConstraint\VersionConstraint;
-use Composer\Package\LinkConstraint\MultiConstraint;
+use Composer\Package\LinkConstraint\AndConstraint;
 
-class MultiConstraintTest extends \PHPUnit_Framework_TestCase
+class AndConstraintTest extends \PHPUnit_Framework_TestCase
 {
     public function testMultiVersionMatchSucceeds()
     {
@@ -23,7 +23,7 @@ class MultiConstraintTest extends \PHPUnit_Framework_TestCase
         $versionRequireEnd = new VersionConstraint('<', '1.2');
         $versionProvide = new VersionConstraint('==', '1.1');
 
-        $multiRequire = new MultiConstraint(array($versionRequireStart, $versionRequireEnd));
+        $multiRequire = new AndConstraint(array($versionRequireStart, $versionRequireEnd));
 
         $this->assertTrue($multiRequire->matches($versionProvide));
     }
@@ -35,8 +35,8 @@ class MultiConstraintTest extends \PHPUnit_Framework_TestCase
         $versionProvideStart = new VersionConstraint('>=', '1.1');
         $versionProvideEnd = new VersionConstraint('<', '2.0');
 
-        $multiRequire = new MultiConstraint(array($versionRequireStart, $versionRequireEnd));
-        $multiProvide = new MultiConstraint(array($versionProvideStart, $versionProvideEnd));
+        $multiRequire = new AndConstraint(array($versionRequireStart, $versionRequireEnd));
+        $multiProvide = new AndConstraint(array($versionProvideStart, $versionProvideEnd));
 
         $this->assertTrue($multiRequire->matches($multiProvide));
     }
@@ -47,7 +47,7 @@ class MultiConstraintTest extends \PHPUnit_Framework_TestCase
         $versionRequireEnd = new VersionConstraint('<', '1.2');
         $versionProvide = new VersionConstraint('==', '1.2');
 
-        $multiRequire = new MultiConstraint(array($versionRequireStart, $versionRequireEnd));
+        $multiRequire = new AndConstraint(array($versionRequireStart, $versionRequireEnd));
 
         $this->assertFalse($multiRequire->matches($versionProvide));
     }

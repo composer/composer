@@ -14,7 +14,8 @@ namespace Composer\Package\Version;
 
 use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
-use Composer\Package\LinkConstraint\MultiConstraint;
+use Composer\Package\LinkConstraint\AndConstraint;
+use Composer\Package\LinkConstraint\OrConstraint;
 use Composer\Package\LinkConstraint\VersionConstraint;
 
 /**
@@ -182,32 +183,82 @@ class VersionParser
             $constraints = $match[1];
         }
 
-        $constraints = preg_split('{\s*,\s*}', trim($constraints));
-
-        if (count($constraints) > 1) {
-            $constraintObjects = array();
-            foreach ($constraints as $constraint) {
-                $constraintObjects = array_merge($constraintObjects, $this->parseConstraint($constraint));
-            }
-        } else {
-            $constraintObjects = $this->parseConstraint($constraints[0]);
-        }
-
-        if (1 === count($constraintObjects)) {
-            $constraint = $constraintObjects[0];
-        } else {
-            $constraint = new MultiConstraint($constraintObjects);
-        }
-
+        $constraint = $this->parseAndConstraints($constraints);
         $constraint->setPrettyString($prettyConstraint);
 
         return $constraint;
+    }
+
+    private function parseAndConstraints($constraints)
+    {
+        $constraints = preg_split('{\s*(,|&&)\s*}', trim($constraints));
+        $result = array();
+        foreach ($constraints as $subConstraints) {
+            $result[] = $this->parseOrConstraints($subConstraints);
+        }
+        if (1 === count($result)) {
+            return $result[0];
+        }
+        return new AndConstraint($result);
+    }
+
+    private function parseOrConstraints($constraints)
+    {
+        $constraints = preg_split('{\s*\|\|\s*}', trim($constraints));
+        $result = array();
+        foreach ($constraints as $subConstraint) {
+            $constraint = $this->parseConstraint($subConstraint);
+            if (1 === count($constraint)) {
+                $result[] = $constraint[0];
+            } else {
+                $result[] = new AndConstraint($constraint);
+            }
+        }
+
+        if (1 === count($result)) {
+            return $result[0];
+        }
+        return new OrConstraint($result);
     }
 
     private function parseConstraint($constraint)
     {
         if (preg_match('{^[x*](\.[x*])*$}i', $constraint)) {
             return array();
+        }
+
+        // match tilde / semver style constraints
+        if (preg_match('{^~(\d+)(?:\.(\d+))?(?:\.(\d+))?$}', $constraint, $matches)) {
+            $highVersion = $matches[1] . '.9999999.9999999.9999999';
+
+            if (isset($matches[3])) {
+                if ($matches[3] === '0') {
+                    if ($matches[2] === '0') {
+                        $lowVersion = ($matches[1] - 1) . '.9999999.9999999.9999999';
+                    } else {
+                        $lowVersion = $matches[1] . '.' . ($matches[2] - 1) . '.9999999.9999999';
+                    }
+                } else {
+                    $lowVersion = $matches[1] . '.' . $matches[2] . '.' . ($matches[3] - 1). '.9999999';
+                }
+            } elseif (isset($matches[2])) {
+                if ($matches[2] === '0') {
+                    $lowVersion = ($matches[1] - 1) . '.9999999.9999999.9999999';
+                } else {
+                    $lowVersion = $matches[1] . '.' . ($matches[2] - 1) . '.9999999.9999999';
+                }
+            } else {
+                if ($matches[1] === '0') {
+                    return array(new VersionConstraint('<', $highVersion));
+                } else {
+                    $lowVersion = ($matches[1] - 1) . '.9999999.9999999.9999999';
+                }
+            }
+
+            return array(
+                new VersionConstraint('>', $lowVersion),
+                new VersionConstraint('<', $highVersion),
+            );
         }
 
         // match wildcard constraints

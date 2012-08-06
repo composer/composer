@@ -74,6 +74,11 @@ Version constraints can be specified in a few different ways.
 * **Wildcard:** You can specify a pattern with a `*` wildcard. `1.0.*` is the
   equivalent of `>=1.0,<1.1-dev`.
 
+* **Semantic Version:** By using the semantic versioning range operator (`~`) you
+  can match the latest compatible version of a package (as specified by the rules
+  of [Semantic Versioning](http://semver.org)). For example, `~1.2` is the equivalent
+  of `>=1.2.0,<2.0.0`.
+
 ## Installing Dependencies
 
 To fetch the defined dependencies into your local project, just run the
