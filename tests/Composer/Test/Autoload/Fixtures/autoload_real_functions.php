@@ -10,6 +10,8 @@ class ComposerAutoloaderInitFilesAutoload
     public static function getLoader()
     {
         $loader = new \Composer\Autoload\ClassLoader();
+        $vendorDir = dirname(__DIR__);
+        $baseDir = dirname($vendorDir);
 
         $map = require __DIR__ . '/autoload_namespaces.php';
         foreach ($map as $namespace => $path) {
