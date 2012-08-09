@@ -41,12 +41,10 @@ class ArrayRepository implements RepositoryInterface
         $versionParser = new VersionParser();
         $version = $versionParser->normalize($version);
         $name = strtolower($name);
+        $packages = $this->getPackages();
+        $uniqueName = $name.'-'.$version;
 
-        foreach ($this->getPackages() as $package) {
-            if ($name === $package->getName() && $version === $package->getVersion()) {
-                return $package;
-            }
-        }
+        return isset($packages[$uniqueName]) ? $packages[$uniqueName] : null;
     }
 
     /**
@@ -79,15 +77,9 @@ class ArrayRepository implements RepositoryInterface
      */
     public function hasPackage(PackageInterface $package)
     {
-        $packageId = $package->getUniqueName();
+        $packages = $this->getPackages();
 
-        foreach ($this->getPackages() as $repoPackage) {
-            if ($packageId === $repoPackage->getUniqueName()) {
-                return true;
-            }
-        }
-
-        return false;
+        return isset($packages[$package->getUniqueName()]);
     }
 
     /**
@@ -101,7 +93,8 @@ class ArrayRepository implements RepositoryInterface
             $this->initialize();
         }
         $package->setRepository($this);
-        $this->packages[] = $package;
+
+        $this->packages += array($package->getUniqueName() => $package);
 
         // create alias package on the fly if needed
         if ($package->getAlias()) {
@@ -124,15 +117,7 @@ class ArrayRepository implements RepositoryInterface
      */
     public function removePackage(PackageInterface $package)
     {
-        $packageId = $package->getUniqueName();
-
-        foreach ($this->getPackages() as $key => $repoPackage) {
-            if ($packageId === $repoPackage->getUniqueName()) {
-                array_splice($this->packages, $key, 1);
-
-                return;
-            }
-        }
+        unset($this->packages[$package->getUniqueName()]);
     }
 
     /**
