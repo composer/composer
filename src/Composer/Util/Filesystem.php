@@ -18,6 +18,13 @@ namespace Composer\Util;
  */
 class Filesystem
 {
+    private $processExecutor;
+
+    public function __construct(ProcessExecutor $executor = null)
+    {
+        $this->processExecutor = $executor ?: new ProcessExecutor();
+    }
+
     public function removeDirectory($directory)
     {
         if (!is_dir($directory)) {
@@ -62,8 +69,13 @@ class Filesystem
             return;
         }
 
-        exec('mv '.escapeshellarg($source).' '.escapeshellarg($target), $output, $returnCode);
-        if (0 !== $returnCode) {
+        // We do not use PHP's "rename" function here since it does not support
+        // the case where $source, and $target are located on different partitions.
+        if (0 !== $this->processExecutor->execute('mv '.escapeshellarg($source).' '.escapeshellarg($target))) {
+            if (true === @rename($source, $target)) {
+                return;
+            }
+
             throw new \RuntimeException(sprintf('Could not rename "%s" to "%s".', $source, $target));
         }
     }
