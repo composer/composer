@@ -135,7 +135,7 @@ class VersionParser
             } catch (\Exception $e) {}
         }
 
-        throw new \UnexpectedValueException('Invalid version string '.$version);
+        throw new \UnexpectedValueException('Invalid version string "'.$version.'"');
     }
 
     /**
