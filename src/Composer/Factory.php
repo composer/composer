@@ -42,12 +42,18 @@ class Factory
             }
         }
 
-        // Protect directory against web access
-        if (!file_exists($home . '/.htaccess')) {
-            if (!is_dir($home)) {
-                @mkdir($home, 0777, true);
+        if (!is_dir($home)) {
+            @mkdir($home, 0700, true);
+        } else {
+            $check = stat($home);
+            if (false !== $check) {
+                $mode = sprintf("%o", ($check['mode'] & 000777));
+                if ($mode != '700') {
+                    // we could tell the user to secure this directory
+                    // but there is no OutputInterface here
+                    // thoughs?
+                }
             }
-            @file_put_contents($home . '/.htaccess', 'Deny from all');
         }
 
         $config = new Config();
