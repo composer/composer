@@ -14,9 +14,17 @@ namespace Composer\Util;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
+ * @author Johannes M. Schmitt <schmittjoh@gmail.com>
  */
 class Filesystem
 {
+    private $processExecutor;
+
+    public function __construct(ProcessExecutor $executor = null)
+    {
+        $this->processExecutor = $executor ?: new ProcessExecutor();
+    }
+
     public function removeDirectory($directory)
     {
         if (!is_dir($directory)) {
@@ -50,6 +58,25 @@ class Filesystem
                     $directory.' does not exist and could not be created.'
                 );
             }
+        }
+    }
+
+    public function rename($source, $target)
+    {
+        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+            rename($source, $target);
+
+            return;
+        }
+
+        // We do not use PHP's "rename" function here since it does not support
+        // the case where $source, and $target are located on different partitions.
+        if (0 !== $this->processExecutor->execute('mv '.escapeshellarg($source).' '.escapeshellarg($target))) {
+            if (true === @rename($source, $target)) {
+                return;
+            }
+
+            throw new \RuntimeException(sprintf('Could not rename "%s" to "%s".', $source, $target));
         }
     }
 
