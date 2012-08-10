@@ -147,7 +147,11 @@ class ClassLoader
     public function loadClass($class)
     {
         if ($file = $this->findFile($class)) {
-            include $file;
+            call_user_func(function () use ($file) {
+                ob_start();
+                include $file;
+                ob_end_clean();
+            });
 
             return true;
         }
