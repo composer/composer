@@ -63,7 +63,7 @@ class Filesystem
 
     public function rename($source, $target)
     {
-        if (defined('PHP_WINDOWS_VERSION_BUILD') || ! function_exists('exec')) {
+        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
             rename($source, $target);
 
             return;
