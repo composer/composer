@@ -97,7 +97,7 @@ class VersionParser
         }
 
         if ('dev-' === strtolower(substr($version, 0, 4))) {
-            return strtolower($version);
+            return 'dev-'.substr($version, 4);
         }
 
         // match classical versioning
