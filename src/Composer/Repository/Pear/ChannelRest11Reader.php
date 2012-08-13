@@ -115,13 +115,16 @@ class ChannelRest11Reader extends BaseChannelReader
         }
 
         $releases = array();
-        foreach ($packageInfo->xpath('ns:a/ns:r') as $node) {
-            $releaseVersion = (string) $node->v;
-            $releaseStability = (string) $node->s;
-            $releases[$releaseVersion] = new ReleaseInfo(
-                $releaseStability,
-                isset($dependencies[$releaseVersion]) ? $dependencies[$releaseVersion] : new DependencyInfo(array(), array())
-            );
+        $releasesInfo = $packageInfo->xpath('ns:a/ns:r');
+        if ($releasesInfo) {
+            foreach ($releasesInfo as $node) {
+                $releaseVersion = (string) $node->v;
+                $releaseStability = (string) $node->s;
+                $releases[$releaseVersion] = new ReleaseInfo(
+                    $releaseStability,
+                    isset($dependencies[$releaseVersion]) ? $dependencies[$releaseVersion] : new DependencyInfo(array(), array())
+                );
+            }
         }
 
         return new PackageInfo(

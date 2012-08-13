@@ -23,6 +23,11 @@ The config of dependencies is ignored. This makes the `config` field
 If you clone one of those dependencies to work on it, then that package is the
 root package. The `composer.json` is identical, but the context is different.
 
+> **Note:** A package can be the root package or not, depending on the context.
+> For example, if your project depends on the `monolog` library, your project
+> is the root package. However, if you clone `monolog` from GitHub in order to
+> fix a bug in it, then `monolog` is the root package.
+
 ## Properties
 
 ### name
@@ -78,7 +83,7 @@ that needs some special logic, you can define a custom type. This could be a
 all be specific to certain projects, and they will need to provide an
 installer capable of installing packages of that type.
 
-Out of the box, composer supports two types:
+Out of the box, composer supports three types:
 
 - **library:** This is the default. It will simply copy the files to `vendor`.
 - **metapackage:** An empty package that contains requirements and will trigger
@@ -163,14 +168,14 @@ An Example for disjunctive licenses:
         ]
     }
 
-Alternatively they can be separated with "or" and enclosed in brackets;
+Alternatively they can be separated with "or" and enclosed in parenthesis;
 
     {
         "license": "(LGPL-2.0 or GPL-3.0+)"
     }
 
 Similarly when multiple licenses need to be applied ("conjunctive license"),
-they should be separated with "and" and enclosed in brackets.
+they should be separated with "and" and enclosed in parenthesis.
 
 ### authors
 
@@ -253,7 +258,7 @@ Example:
 
     {
         "require": {
-            "monolog/monolog": "1.0.*@beta"
+            "monolog/monolog": "1.0.*@beta",
             "acme/foo": "@dev"
         }
     }
@@ -270,7 +275,7 @@ Example:
 
     {
         "require": {
-            "monolog/monolog": "dev-master#2eb0c0978d290a1c45346a1955188929cb4e5db7"
+            "monolog/monolog": "dev-master#2eb0c0978d290a1c45346a1955188929cb4e5db7",
             "acme/foo": "1.0.x-dev#abc123"
         }
     }
@@ -411,7 +416,7 @@ to search for classes.
 Example:
 
     {
-        "autoload: {
+        "autoload": {
             "classmap": ["src/", "lib/", "Something.php"]
         }
     }
@@ -472,15 +477,16 @@ Optional.
 ### minimum-stability <span>(root-only)</span>
 
 This defines the default behavior for filtering packages by stability. This
-defaults to `dev` but in the future will be switched to `stable`. As such if
-you rely on a default of `dev` you should specify it in your file to avoid
-surprises.
+defaults to `stable`, so if you rely on a `dev` package, you should specify
+it in your file to avoid surprises.
 
-All versions of each package is checked for stability, and those that are less
+All versions of each package are checked for stability, and those that are less
 stable than the `minimum-stability` setting will be ignored when resolving
 your project dependencies. Specific changes to the stability requirements of
 a given package can be done in `require` or `require-dev` (see
 [package links](#package-links)).
+
+Available options are `dev`, `alpha`, `beta`, `RC`, and `stable`.
 
 ### repositories <span>(root-only)</span>
 

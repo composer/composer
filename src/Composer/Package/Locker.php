@@ -132,8 +132,7 @@ class Locker
     {
         $lockData = $this->getLockData();
 
-        // TODO BC change dev to stable end of june?
-        return isset($lockData['minimum-stability']) ? $lockData['minimum-stability'] : 'dev';
+        return isset($lockData['minimum-stability']) ? $lockData['minimum-stability'] : 'stable';
     }
 
     public function getStabilityFlags()

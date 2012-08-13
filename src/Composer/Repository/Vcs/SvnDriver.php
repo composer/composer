@@ -103,6 +103,7 @@ class SvnDriver extends VcsDriver
                 $path = $match[1];
                 $rev = $match[2];
             } else {
+                $path = '';
                 $rev = '';
             }
 

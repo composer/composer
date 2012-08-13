@@ -1,0 +1,30 @@
+--TEST--
+Replace takes precedence only in higher priority repositories
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "forked", "version": "1.1.0", "replace": { "package2": "1.1.0" } }
+            ]
+        },
+        {
+            "type": "package",
+            "package": [
+                { "name": "package", "version": "1.0.0" },
+                { "name": "package2", "version": "1.0.0" },
+                { "name": "hijacker", "version": "1.1.0", "replace": { "package": "1.1.0" } }
+            ]
+        }
+    ],
+    "require": {
+        "package": "1.*",
+        "package2": "1.*"
+    }
+}
+--RUN--
+install
+--EXPECT--
+Installing package (1.0.0)
+Installing forked (1.1.0)

@@ -31,7 +31,7 @@ class DefaultPolicyTest extends TestCase
 
     public function setUp()
     {
-        $this->pool = new Pool;
+        $this->pool = new Pool('dev');
         $this->repo = new ArrayRepository;
         $this->repoInstalled = new ArrayRepository;
 

@@ -120,7 +120,9 @@ class PearRepository extends ArrayRepository
                 }
 
                 // alias package with user-specified prefix. it makes private pear channels looks like composer's.
-                if (!empty($this->vendorAlias)) {
+                if (!empty($this->vendorAlias)
+                    && ($this->vendorAlias != 'pear-'.$channelInfo->getAlias() || $channelInfo->getName() != $packageDefinition->getChannelName())
+                ) {
                     $composerPackageAlias = "{$this->vendorAlias}/{$packageDefinition->getPackageName()}";
                     $aliasConstraint = new VersionConstraint('==', $normalizedVersion);
                     $replaces[] = new Link($composerPackageName, $composerPackageAlias, $aliasConstraint, 'replaces', (string) $aliasConstraint);

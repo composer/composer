@@ -19,7 +19,7 @@ use Composer\Package\Version\VersionParser;
  * @author Konstantin Kudryashiv <ever.zet@gmail.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class ArrayLoader
+class ArrayLoader implements LoaderInterface
 {
     protected $versionParser;
 
@@ -31,7 +31,7 @@ class ArrayLoader
         $this->versionParser = $parser;
     }
 
-    public function load($config)
+    public function load(array $config)
     {
         if (!isset($config['name'])) {
             throw new \UnexpectedValueException('Unknown package has no name defined ('.json_encode($config).').');
@@ -82,8 +82,8 @@ class ArrayLoader
             $package->setHomepage($config['homepage']);
         }
 
-        if (!empty($config['keywords'])) {
-            $package->setKeywords(is_array($config['keywords']) ? $config['keywords'] : array($config['keywords']));
+        if (!empty($config['keywords']) && is_array($config['keywords'])) {
+            $package->setKeywords($config['keywords']);
         }
 
         if (!empty($config['license'])) {

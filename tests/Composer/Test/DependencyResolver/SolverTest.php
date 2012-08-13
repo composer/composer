@@ -74,7 +74,7 @@ class SolverTest extends TestCase
         } catch (SolverProblemsException $e) {
             $problems = $e->getProblems();
             $this->assertEquals(1, count($problems));
-            $this->assertEquals('The requested package b == 1 could not be found.', $problems[0]->getPrettyString());
+            $this->assertEquals("\n    - The requested package b == 1 could not be found.", $problems[0]->getPrettyString());
         }
     }
 
@@ -430,7 +430,6 @@ class SolverTest extends TestCase
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageQ = $this->getPackage('Q', '1.0'));
-        $this->repo->addPackage($packageB = $this->getPackage('B', '0.8'));
         $packageA->setRequires(array(new Link('A', 'B', $this->getVersionConstraint('>=', '1.0'), 'requires')));
         $packageQ->setProvides(array(new Link('Q', 'B', $this->getVersionConstraint('=', '1.0'), 'provides')));
 
@@ -699,7 +698,11 @@ class SolverTest extends TestCase
             $msg = "\n";
             $msg .= "  Problem 1\n";
             $msg .= "    - Installation request for a -> satisfiable by A 1.0.\n";
-            $msg .= "    - A 1.0 requires b >= 2.0 -> no matching package found.\n";
+            $msg .= "    - A 1.0 requires b >= 2.0 -> no matching package found.\n\n";
+            $msg .= "Potential causes:\n";
+            $msg .= " - A typo in the package name\n";
+            $msg .= " - The package is not available in a stable-enough version according to your minimum-stability setting\n";
+            $msg .= "   see https://groups.google.com/d/topic/composer-dev/_g3ASeIFlrc/discussion for more details.\n";
             $this->assertEquals($msg, $e->getMessage());
         }
     }

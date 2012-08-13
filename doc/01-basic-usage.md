@@ -165,8 +165,8 @@ Composer will register a
 autoloader for the `Acme` namespace.
 
 You define a mapping from namespaces to directories. The `src` directory would
-be in your project root. An example filename would be `src/Acme/Foo.php`
-containing an `Acme\Foo` class.
+be in your project root, on the same level as `vendor` directory is. An example
+filename would be `src/Acme/Foo.php` containing an `Acme\Foo` class.
 
 After adding the `autoload` field, you have to re-run `install` to re-generate
 the `vendor/autoload.php` file.
@@ -183,7 +183,7 @@ classes to be autoloaded even if they do not conform to PSR-0. See the
 [autoload reference](04-schema.md#autoload) for more details.
 
 > **Note:** Composer provides its own autoloader. If you don't want to use
-that one, you can just include `vendor/autoload_namespaces.php`,
+that one, you can just include `vendor/composer/autoload_namespaces.php`,
 which returns an associative array mapping namespaces to directories.
 
 &larr; [Intro](00-intro.md)  |  [Libraries](02-libraries.md) &rarr;

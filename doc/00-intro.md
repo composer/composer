@@ -51,7 +51,7 @@ any version beginning with `1.0`.
 To actually get Composer, we need to do two things. The first one is installing
 Composer (again, this mean downloading it into your project):
 
-    $ curl -s http://getcomposer.org/installer | php
+    $ curl -s https://getcomposer.org/installer | php
 
 This will just check a few PHP settings and then download `composer.phar` to
 your working directory. This file is the Composer binary. It is a PHAR (PHP
@@ -61,7 +61,7 @@ line, amongst other things.
 You can install Composer to a specific directory by using the `--install-dir`
 option and providing a target directory (it can be an absolute or relative path):
 
-    $ curl -s http://getcomposer.org/installer | php -- --install-dir=bin
+    $ curl -s https://getcomposer.org/installer | php -- --install-dir=bin
 
 #### Globally
 
@@ -71,7 +71,7 @@ executable and invoke it without `php`.
 
 You can run these commands to easily access `composer` from anywhere on your system:
 
-    $ curl -s http://getcomposer.org/installer | php
+    $ curl -s https://getcomposer.org/installer | php
     $ sudo mv composer.phar /usr/local/bin/composer
 
 Then, just run `composer` in order to run composer

@@ -524,12 +524,14 @@ class Solver
 
         if (!$job) {
             $why->disable();
-        } else {
-            // disable all rules of this job
-            foreach ($this->rules as $rule) {
-                if ($job === $rule->getJob()) {
-                    $rule->disable();
-                }
+            
+            return;
+        }
+
+        // disable all rules of this job
+        foreach ($this->rules as $rule) {
+            if ($job === $rule->getJob()) {
+                $rule->disable();
             }
         }
     }
@@ -600,12 +602,12 @@ class Solver
 
             if (1 === $level) {
                 $conflictRule = $this->propagate($level);
-                if ($conflictRule !== null) {
+                if (null !== $conflictRule) {
                     if ($this->analyzeUnsolvable($conflictRule, $disableRules)) {
                         continue;
-                    } else {
-                        return;
                     }
+
+                    return;
                 }
             }
 

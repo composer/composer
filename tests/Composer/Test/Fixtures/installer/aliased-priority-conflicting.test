@@ -40,7 +40,8 @@ Aliases take precedence over default package even if default is selected
         "a/a": "dev-master",
         "a/b": "dev-master",
         "a/req": "dev-feature-foo as dev-master"
-    }
+    },
+    "minimum-stability": "dev"
 }
 --RUN--
 install

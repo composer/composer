@@ -16,6 +16,7 @@ use Composer\Composer;
 use Composer\Config;
 use Composer\Installer\InstallerInstaller;
 use Composer\Package\Loader\JsonLoader;
+use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\PackageInterface;
 
 class InstallerInstallerTest extends \PHPUnit_Framework_TestCase
@@ -28,7 +29,7 @@ class InstallerInstallerTest extends \PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $loader = new JsonLoader();
+        $loader = new JsonLoader(new ArrayLoader());
         $this->packages = array();
         for ($i = 1; $i <= 4; $i++) {
             $this->packages[] = $loader->load(__DIR__.'/Fixtures/installer-v'.$i.'/composer.json');

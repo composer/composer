@@ -152,6 +152,66 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($identifier, $source['reference']);
     }
 
+    public function testPublicRepository2()
+    {
+        $repoUrl = 'http://github.com/composer/packagist';
+        $repoApiUrl = 'https://api.github.com/repos/composer/packagist';
+        $identifier = 'tree/3.2/master';
+        $sha = 'SOMESHA';
+
+        $io = $this->getMock('Composer\IO\IOInterface');
+        $io->expects($this->any())
+            ->method('isInteractive')
+            ->will($this->returnValue(true));
+
+        $remoteFilesystem = $this->getMockBuilder('Composer\Util\RemoteFilesystem')
+            ->setConstructorArgs(array($io))
+            ->getMock();
+
+        $remoteFilesystem->expects($this->at(0))
+            ->method('getContents')
+            ->with($this->equalTo('github.com'), $this->equalTo($repoApiUrl), $this->equalTo(false))
+            ->will($this->returnValue('{"master_branch": "test_master"}'));
+
+        $remoteFilesystem->expects($this->at(1))
+            ->method('getContents')
+            ->with($this->equalTo('github.com'), $this->equalTo('https://raw.github.com/composer/packagist/tree/3.2/master/composer.json'), $this->equalTo(false))
+            ->will($this->returnValue('{"support": {"source": "'.$repoUrl.'" }}'));
+
+        $remoteFilesystem->expects($this->at(2))
+            ->method('getContents')
+            ->with($this->equalTo('github.com'), $this->equalTo('https://api.github.com/repos/composer/packagist/commits/tree%2F3.2%2Fmaster'), $this->equalTo(false))
+            ->will($this->returnValue('{"commit": {"committer":{ "date": "2012-09-10"}}}'));
+
+        $gitHubDriver = new GitHubDriver($repoUrl, $io, $this->config, null, $remoteFilesystem);
+        $gitHubDriver->initialize();
+        $this->setAttribute($gitHubDriver, 'tags', array($identifier => $sha));
+
+        $this->assertEquals('test_master', $gitHubDriver->getRootIdentifier());
+
+        $dist = $gitHubDriver->getDist($identifier);
+        $this->assertEquals('zip', $dist['type']);
+        $this->assertEquals('https://github.com/composer/packagist/zipball/tree/3.2/master', $dist['url']);
+        $this->assertEquals($identifier, $dist['reference']);
+
+        $source = $gitHubDriver->getSource($identifier);
+        $this->assertEquals('git', $source['type']);
+        $this->assertEquals($repoUrl, $source['url']);
+        $this->assertEquals($identifier, $source['reference']);
+
+        $dist = $gitHubDriver->getDist($sha);
+        $this->assertEquals('zip', $dist['type']);
+        $this->assertEquals('https://github.com/composer/packagist/zipball/tree/3.2/master', $dist['url']);
+        $this->assertEquals($identifier, $dist['reference']);
+
+        $source = $gitHubDriver->getSource($sha);
+        $this->assertEquals('git', $source['type']);
+        $this->assertEquals($repoUrl, $source['url']);
+        $this->assertEquals($identifier, $source['reference']);
+
+        $gitHubDriver->getComposerInformation($identifier);
+    }
+
     public function testPrivateRepositoryNoInteraction()
     {
         $repoUrl = 'http://github.com/composer/packagist';

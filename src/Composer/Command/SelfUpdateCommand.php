@@ -26,6 +26,7 @@ class SelfUpdateCommand extends Command
     {
         $this
             ->setName('self-update')
+            ->setAliases(array('selfupdate'))
             ->setDescription('Updates composer.phar to the latest version.')
             ->setHelp(<<<EOT
 The <info>self-update</info> command checks getcomposer.org for newer
@@ -64,7 +65,7 @@ EOT
                     throw $e;
                 }
                 unlink($tempFilename);
-                $output->writeln('<error>The download is corrupt ('.$e->getMessage().').</error>');
+                $output->writeln('<error>The download is corrupted ('.$e->getMessage().').</error>');
                 $output->writeln('<error>Please re-run the self-update command to try again.</error>');
             }
         } else {

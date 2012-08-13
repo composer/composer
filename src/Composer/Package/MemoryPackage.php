@@ -48,8 +48,7 @@ class MemoryPackage extends BasePackage
     protected $prettyAlias;
     protected $dev;
 
-    // TODO BC change dev to stable end of june?
-    protected $minimumStability = 'dev';
+    protected $minimumStability = 'stable';
     protected $stabilityFlags = array();
     protected $references = array();
 
@@ -704,9 +703,7 @@ class MemoryPackage extends BasePackage
     }
 
     /**
-     * Returns the support information
-     *
-     * @return array
+     * {@inheritDoc}
      */
     public function getSupport()
     {
