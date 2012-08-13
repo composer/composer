@@ -21,7 +21,7 @@ use Composer\Package\PackageInterface;
  */
 class ArrayDumper
 {
-	/**
+    /**
      * @var array
      */
     protected static $keys = array(
@@ -41,9 +41,9 @@ class ArrayDumper
         'support',
     );
 
-	/**
-	 * @return array
-	 */
+    /**
+     * @return array
+     */
     public function dump(PackageInterface $package)
     {
         $data = array();

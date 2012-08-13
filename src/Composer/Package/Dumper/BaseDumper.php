@@ -159,7 +159,7 @@ abstract class BaseDumper implements DumperInterface
             'hg archive --rev %s --type %s %s',
             $sourceRef,
             $format,
-            escapeshellarg('%s/%s', $this->path, $fileName)
+            escapeshellarg(sprintf('%s/%s', $this->path, $fileName))
         );
         $this->process->execute($command, $output, $workDir);
     }
