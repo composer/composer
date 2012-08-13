@@ -269,6 +269,18 @@ By default it points to `/home/<user>/.composer` on *nix,
 `/Users/<user>/.composer` on OSX and
 `C:\Users\<user>\AppData\Roaming\Composer` on Windows.
 
+#### COMPOSER_HOME/config.json
+
+You may put a `config.json` file into the location which `COMPOSER_HOME` points
+to. Composer will merge this configuration with your project's `composer.json`
+when you run the `install` and `update` commands.
+
+This file allows you to set [configuration](04-schema.md#config) and
+[repositories](05-repositories.md) for the user's projects.
+
+In case global configuration matches _local_ configuration, the _local_
+configuration in the project's `composer.json` always wins.
+
 ### COMPOSER_PROCESS_TIMEOUT
 
 This env var controls the time composer waits for commands (such as git
