@@ -96,16 +96,16 @@ the `.gitignore`.
 
 ## Light-weight distribution packages
 
-Including the tests and other useless information like .travis.yml in distributed
-packages is not a good idea.
+Including the tests and other useless information like .travis.yml in
+distributed packages is not a good idea.
 
-Portable-per-project-configuration `.gitattributes` file is a git specific
-file like `.gitignore` also living at the root directory of your library.
-Moreover it overrides local and global configuration (`.git/config` and
-`~/.gitconfig` respectively) when present and tracked by git.
+The `.gitattributes` file is a git specific file like `.gitignore` also living
+at the root directory of your library. It overrides local and global
+configuration (`.git/config` and `~/.gitconfig` respectively) when present and
+tracked by git.
 
-Use `.gitattributes` to prevent unwanted files from bloating the
-zip distribution packages.
+Use `.gitattributes` to prevent unwanted files from bloating the zip
+distribution packages.
 
     // .gitattributes
     Tests/ export-ignore
@@ -117,7 +117,9 @@ Test it by inspecting the zip file generated manually:
 
     git archive branchName --format zip -o file.zip
 
-> **Note:** files would be still tracked by git just not included in the distribution. This feature works for packages that have been tagged.
+> **Note:** files would be still tracked by git just not included in the
+> distribution. This will only work for GitHub packages installed from
+> dist (i.e. tagged releases) for now.
 
 ## Publishing to a VCS
 
