@@ -32,7 +32,7 @@ Updates updateable packages
     { "name": "a/a", "version": "1.0.0" },
     { "name": "a/c", "version": "1.0.0" }
 ]
---INSTALLED:DEV--
+--INSTALLED-DEV--
 [
     { "name": "a/b", "version": "1.0.0" }
 ]

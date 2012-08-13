@@ -247,7 +247,7 @@ class InstallerTest extends TestCase
                 --COMPOSER--\s*(?P<composer>'.$content.')\s*
                 (?:--LOCK--\s*(?P<lock>'.$content.'))?\s*
                 (?:--INSTALLED--\s*(?P<installed>'.$content.'))?\s*
-                (?:--INSTALLED:DEV--\s*(?P<installedDev>'.$content.'))?\s*
+                (?:--INSTALLED-DEV--\s*(?P<installedDev>'.$content.'))?\s*
                 --RUN--\s*(?P<run>.*?)\s*
                 (?:--EXPECT-LOCK--\s*(?P<expectLock>'.$content.'))?\s*
                 --EXPECT--\s*(?P<expect>.*?)\s*

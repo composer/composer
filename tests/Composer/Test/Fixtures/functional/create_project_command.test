@@ -1,0 +1,12 @@
+--RUN--
+create-project seld/jsonlint %testDir% 1.0.0
+--EXPECT--
+Installing seld/jsonlint (1.0.0)
+  - Installing seld/jsonlint (1.0.0)
+    Downloading: 100%
+
+Created project in %testDir%
+Installing dependencies
+Nothing to install or update
+Writing lock file
+Generating autoload files
