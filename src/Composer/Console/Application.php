@@ -130,6 +130,7 @@ class Application extends BaseApplication
         $commands[] = new Command\ValidateCommand();
         $commands[] = new Command\ShowCommand();
         $commands[] = new Command\RequireCommand();
+        $commands[] = new Command\StatusCommand();
 
         if ('phar:' === substr(__FILE__, 0, 5)) {
             $commands[] = new Command\SelfUpdateCommand();
