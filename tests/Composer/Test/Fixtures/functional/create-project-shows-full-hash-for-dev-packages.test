@@ -1,0 +1,4 @@
+--RUN--
+create-project seld/jsonlint %testDir% dev-master
+--EXPECT-REGEX--
+{^Installing seld/jsonlint \(dev-master [a-f0-9]{40}\)}
