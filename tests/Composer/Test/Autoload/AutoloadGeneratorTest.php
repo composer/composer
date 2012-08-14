@@ -92,7 +92,7 @@ class AutoloadGeneratorTest extends TestCase
 
         $this->createClassFile($this->workingDir);
 
-        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', '_1');
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, '_1');
         $this->assertAutoloadFiles('main', $this->vendorDir.'/composer');
         $this->assertAutoloadFiles('classmap', $this->vendorDir.'/composer', 'classmap');
     }
@@ -117,7 +117,7 @@ class AutoloadGeneratorTest extends TestCase
 
         $this->createClassFile($this->vendorDir);
 
-        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', '_2');
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', true, '_2');
         $this->assertAutoloadFiles('main3', $this->vendorDir.'/composer');
         $this->assertAutoloadFiles('classmap3', $this->vendorDir.'/composer', 'classmap');
     }
@@ -140,7 +140,7 @@ class AutoloadGeneratorTest extends TestCase
         $this->fs->ensureDirectoryExists($this->workingDir.'/src');
 
         $this->createClassFile($this->workingDir);
-        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', '_3');
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, '_3');
         $this->assertAutoloadFiles('main2', $this->vendorDir.'/composer');
         $this->assertAutoloadFiles('classmap2', $this->vendorDir.'/composer', 'classmap');
     }
@@ -159,7 +159,7 @@ class AutoloadGeneratorTest extends TestCase
 
         $this->fs->ensureDirectoryExists($this->vendorDir.'/a');
 
-        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', 'TargetDir');
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, 'TargetDir');
         $this->assertFileEquals(__DIR__.'/Fixtures/autoload_target_dir.php', $this->vendorDir.'/autoload.php');
         $this->assertFileEquals(__DIR__.'/Fixtures/autoload_real_target_dir.php', $this->vendorDir.'/composer/autoload_realTargetDir.php');
     }
@@ -184,7 +184,7 @@ class AutoloadGeneratorTest extends TestCase
         $this->fs->ensureDirectoryExists($this->vendorDir.'/a/a/lib');
         $this->fs->ensureDirectoryExists($this->vendorDir.'/b/b/src');
 
-        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', '_5');
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, '_5');
         $this->assertAutoloadFiles('vendors', $this->vendorDir.'/composer');
         $this->assertTrue(file_exists($this->vendorDir.'/composer/autoload_classmap.php'), "ClassMap file needs to be generated, even if empty.");
     }
@@ -211,7 +211,7 @@ class AutoloadGeneratorTest extends TestCase
         file_put_contents($this->vendorDir.'/b/b/src/b.php', '<?php class ClassMapBar {}');
         file_put_contents($this->vendorDir.'/b/b/lib/c.php', '<?php class ClassMapBaz {}');
 
-        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', '_6');
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, '_6');
         $this->assertTrue(file_exists($this->vendorDir.'/composer/autoload_classmap.php'), "ClassMap file needs to be generated.");
         $this->assertEquals(
             array(
@@ -248,7 +248,7 @@ class AutoloadGeneratorTest extends TestCase
         file_put_contents($this->vendorDir.'/b/b/test.php', '<?php class ClassMapBar {}');
         file_put_contents($this->vendorDir.'/c/c/foo/test.php', '<?php class ClassMapBaz {}');
 
-        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', '_7');
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, '_7');
         $this->assertTrue(file_exists($this->vendorDir.'/composer/autoload_classmap.php'), "ClassMap file needs to be generated.");
         $this->assertEquals(
             array(
@@ -280,7 +280,7 @@ class AutoloadGeneratorTest extends TestCase
         file_put_contents($this->vendorDir.'/a/a/test.php', '<?php function testFilesAutoloadGeneration1() {}');
         file_put_contents($this->vendorDir.'/b/b/test2.php', '<?php function testFilesAutoloadGeneration2() {}');
 
-        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', 'FilesAutoload');
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, 'FilesAutoload');
         $this->assertFileEquals(__DIR__.'/Fixtures/autoload_functions.php', $this->vendorDir.'/autoload.php');
         $this->assertFileEquals(__DIR__.'/Fixtures/autoload_real_functions.php', $this->vendorDir.'/composer/autoload_realFilesAutoload.php');
 
@@ -346,7 +346,7 @@ return array(
 
 EOF;
 
-        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', '_9');
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', true, '_9');
         $this->assertEquals($expectedNamespace, file_get_contents($this->vendorDir.'/composer/autoload_namespaces.php'));
         $this->assertEquals($expectedClassmap, file_get_contents($this->vendorDir.'/composer/autoload_classmap.php'));
     }
@@ -375,7 +375,7 @@ EOF;
 
         $this->fs->ensureDirectoryExists($this->vendorDir.'/composer');
 
-        $this->generator->dump($this->config, $this->repository, $package, $this->im, "composer", '_10');
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, "composer", false, '_10');
 
         $this->assertFileEquals(__DIR__.'/Fixtures/include_paths.php', $this->vendorDir.'/composer/include_paths.php');
         $this->assertEquals(
@@ -404,7 +404,7 @@ EOF;
 
         mkdir($this->vendorDir."/composer", 0777, true);
 
-        $this->generator->dump($this->config, $this->repository, $package, $this->im, "composer", '_11');
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, "composer", false, '_11');
 
         $oldIncludePath = get_include_path();
 
@@ -435,7 +435,7 @@ EOF;
 
         mkdir($this->vendorDir."/composer", 0777, true);
 
-        $this->generator->dump($this->config, $this->repository, $package, $this->im, "composer", '_12');
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, "composer", false, '_12');
 
         $this->assertFalse(file_exists($this->vendorDir."/composer/include_paths.php"));
     }
