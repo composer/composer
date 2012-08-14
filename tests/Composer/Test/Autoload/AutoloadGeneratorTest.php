@@ -278,6 +278,9 @@ class AutoloadGeneratorTest extends TestCase
         $this->assertFileEquals(__DIR__.'/Fixtures/autoload_functions.php', $this->vendorDir.'/autoload.php');
         $this->assertFileEquals(__DIR__.'/Fixtures/autoload_real_functions.php', $this->vendorDir.'/composer/autoload_realFilesAutoload.php');
 
+        // suppress the class loader to avoid fatals if the class is redefined
+        file_put_contents($this->vendorDir.'/composer/ClassLoader.php', '');
+
         include $this->vendorDir . '/autoload.php';
         $this->assertTrue(function_exists('testFilesAutoloadGeneration1'));
         $this->assertTrue(function_exists('testFilesAutoloadGeneration2'));
@@ -359,6 +362,9 @@ class AutoloadGeneratorTest extends TestCase
         $this->generator->dump($this->config, $this->repository, $package, $this->im, "composer", '_11');
 
         $oldIncludePath = get_include_path();
+
+        // suppress the class loader to avoid fatals if the class is redefined
+        file_put_contents($this->vendorDir.'/composer/ClassLoader.php', '');
 
         require($this->vendorDir."/autoload.php");
 
