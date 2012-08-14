@@ -146,7 +146,7 @@ class ClassLoader
      */
     public function loadClass($class)
     {
-        if ($file = $this->findFile($class)) {
+        if (($file = $this->findFile($class))) {
             include $file;
 
             return true;
@@ -169,8 +169,8 @@ class ClassLoader
         if ('\\' == $class[0]) {
             $class = substr($class, 1);
         }
-
-        if (false !== $pos = strrpos($class, '\\')) {
+        
+        if (false !== ($pos = strrpos($class, '\\'))) {
             // namespaced class name
             $classPath = str_replace('\\', DIRECTORY_SEPARATOR, substr($class, 0, $pos)) . DIRECTORY_SEPARATOR;
             $className = substr($class, $pos + 1);
@@ -191,7 +191,7 @@ class ClassLoader
                 }
             }
         }
-
+        
         foreach ($this->fallbackDirs as $dir) {
             if (file_exists($dir . DIRECTORY_SEPARATOR . $classPath)) {
                 return $dir . DIRECTORY_SEPARATOR . $classPath;
@@ -201,5 +201,6 @@ class ClassLoader
         if ($this->useIncludePath && $file = stream_resolve_include_path($classPath)) {
             return $file;
         }
+        $this->classMap[$class] = false;
     }
 }
