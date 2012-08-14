@@ -14,6 +14,7 @@ namespace Composer\Command;
 
 use Composer\Json\JsonFile;
 use Composer\Factory;
+use Composer\Package\BasePackage;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Symfony\Component\Console\Input\InputInterface;
@@ -61,6 +62,7 @@ class InitCommand extends Command
                 new InputOption('homepage', null, InputOption::VALUE_NONE, 'Homepage of package'),
                 new InputOption('require', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Package to require with a version constraint, e.g. foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"'),
                 new InputOption('require-dev', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Package to require for development with a version constraint, e.g. foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"'),
+                new InputOption('minimum-stability', null, InputOption::VALUE_NONE, 'Minimum stability (empty or one of: '.implode(', ', array_keys(BasePackage::$stabilities)).')'),
             ))
             ->setHelp(<<<EOT
 The <info>init</info> command creates a basic composer.json file
@@ -77,7 +79,7 @@ EOT
     {
         $dialog = $this->getHelperSet()->get('dialog');
 
-        $whitelist = array('name', 'description', 'author', 'require');
+        $whitelist = array('name', 'description', 'author', 'homepage', 'require', 'require-dev', 'minimum-stability');
 
         $options = array_filter(array_intersect_key($input->getOptions(), array_flip($whitelist)));
 
@@ -89,6 +91,10 @@ EOT
         $options['require'] = isset($options['require']) ?
             $this->formatRequirements($options['require']) :
             new \stdClass;
+
+        if (isset($options['require-dev'])) {
+            $options['require-dev'] = $this->formatRequirements($options['require-dev']) ;
+        }
 
         $file = new JsonFile('composer.json');
 
@@ -208,6 +214,27 @@ EOT
             }
         );
         $input->setOption('author', $author);
+
+        $minimumStability = $input->getOption('minimum-stability') ?: '';
+        $minimumStability = $dialog->askAndValidate(
+            $output,
+            $dialog->getQuestion('Minimum Stability', $minimumStability),
+            function ($value) use ($self, $minimumStability) {
+                if (null === $value) {
+                    return $minimumStability;
+                }
+
+                if (!isset(BasePackage::$stabilities[$value])) {
+                    throw new \InvalidArgumentException(
+                        'Invalid minimum stability "'.$value.'". Must be empty or one of: '.
+                        implode(', ', array_keys(BasePackage::$stabilities))
+                    );
+                }
+
+                return $value;
+            }
+        );
+        $input->setOption('minimum-stability', $minimumStability);
 
         $output->writeln(array(
             '',
