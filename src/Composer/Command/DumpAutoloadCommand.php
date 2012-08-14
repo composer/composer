@@ -13,6 +13,7 @@
 namespace Composer\Command;
 
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Composer\Repository\CompositeRepository;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Autoload\AutoloadGenerator;
@@ -27,6 +28,9 @@ class DumpAutoloadCommand extends Command
         $this
             ->setName('dump-autoload')
             ->setDescription('dumps the autoloader')
+            ->setDefinition(array(
+                new InputOption('optimize', 'o', InputOption::VALUE_NONE, 'Optimizes PSR0 packages to be loaded with classmaps too, good for production.'),
+            ))
             ->setHelp(<<<EOT
 <info>php composer.phar dump-autoload</info>
 EOT
@@ -45,6 +49,6 @@ EOT
         $config = $composer->getConfig();
 
         $generator = new AutoloadGenerator();
-        $generator->dump($config, $localRepos, $package, $installationManager, 'composer');
+        $generator->dump($config, $localRepos, $package, $installationManager, 'composer', $input->getOption('optimize'));
     }
 }
