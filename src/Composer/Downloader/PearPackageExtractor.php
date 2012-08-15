@@ -107,7 +107,11 @@ class PearPackageExtractor
                 $pattern = $task['from'];
                 $varName = $task['to'];
                 if (isset($vars[$varName])) {
-                    $replacements[$pattern] = $vars[$varName];
+                    if ($varName === 'php_bin' && false === strpos($to, '.bat')) {
+                        $replacements[$pattern] = preg_replace('{\.bat$}', '', $vars[$varName]);
+                    } else {
+                        $replacements[$pattern] = $vars[$varName];
+                    }
                 }
             }
             $content = strtr($content, $replacements);
