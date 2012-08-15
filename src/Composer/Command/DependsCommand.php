@@ -36,7 +36,7 @@ class DependsCommand extends Command
             ->setDescription('Shows which packages depend on the given package')
             ->setDefinition(array(
                 new InputArgument('package', InputArgument::REQUIRED, 'Package to inspect'),
-                new InputOption('link-type', '', InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY, 'Link types to show (require, require-dev)', array_keys($this->linkTypes))
+                new InputOption('link-type', '', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Link types to show (require, require-dev)', array_keys($this->linkTypes))
             ))
             ->setHelp(<<<EOT
 Displays detailed information about where a package is referenced.

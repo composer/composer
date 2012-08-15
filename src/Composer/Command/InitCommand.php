@@ -55,14 +55,14 @@ class InitCommand extends Command
             ->setName('init')
             ->setDescription('Creates a basic composer.json file in current directory.')
             ->setDefinition(array(
-                new InputOption('name', null, InputOption::VALUE_NONE, 'Name of the package'),
-                new InputOption('description', null, InputOption::VALUE_NONE, 'Description of package'),
-                new InputOption('author', null, InputOption::VALUE_NONE, 'Author name of package'),
+                new InputOption('name', null, InputOption::VALUE_REQUIRED, 'Name of the package'),
+                new InputOption('description', null, InputOption::VALUE_REQUIRED, 'Description of package'),
+                new InputOption('author', null, InputOption::VALUE_REQUIRED, 'Author name of package'),
                 // new InputOption('version', null, InputOption::VALUE_NONE, 'Version of package'),
-                new InputOption('homepage', null, InputOption::VALUE_NONE, 'Homepage of package'),
+                new InputOption('homepage', null, InputOption::VALUE_REQUIRED, 'Homepage of package'),
                 new InputOption('require', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Package to require with a version constraint, e.g. foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"'),
                 new InputOption('require-dev', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Package to require for development with a version constraint, e.g. foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"'),
-                new InputOption('minimum-stability', null, InputOption::VALUE_NONE, 'Minimum stability (empty or one of: '.implode(', ', array_keys(BasePackage::$stabilities)).')'),
+                new InputOption('minimum-stability', null, InputOption::VALUE_REQUIRED, 'Minimum stability (empty or one of: '.implode(', ', array_keys(BasePackage::$stabilities)).')'),
             ))
             ->setHelp(<<<EOT
 The <info>init</info> command creates a basic composer.json file
@@ -153,7 +153,7 @@ EOT
 
         $cwd = realpath(".");
 
-        if (false === $name = $input->getOption('name')) {
+        if (!$name = $input->getOption('name')) {
             $name = basename($cwd);
             if (isset($git['github.user'])) {
                 $name = $git['github.user'] . '/' . $name;
@@ -193,7 +193,7 @@ EOT
         );
         $input->setOption('description', $description);
 
-        if (false === $author = $input->getOption('author')) {
+        if (null === $author = $input->getOption('author')) {
             if (isset($git['user.name']) && isset($git['user.email'])) {
                 $author = sprintf('%s <%s>', $git['user.name'], $git['user.email']);
             }
