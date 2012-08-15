@@ -211,6 +211,25 @@ By default the command checks for the packages on packagist.org.
   from version control.
 * **--dev:** Install packages listed in `require-dev`.
 
+## dump-autoload
+
+If you need to update the autoloader because of new classes in a classmap
+package for example, you can use "dump-autoload" to do that without having to
+go through an install or update.
+
+Additionally, it can dump an optimized autoloader that converts PSR-0 packages
+into classmap ones for performance reasons. In large applications with many
+classes, the autoloader can take up a substantial portion of every request's
+time. Using classmaps for everything is less convenient in development, but
+using this option you can still use PSR-0 for convenience and classmaps for
+performance.
+
+### Options
+
+* **--optimize:** Convert PSR-0 autoloading to classmap to get a faster
+  autoloader. This is recommended especially for production, but can take
+  a bit of time to run so it is currently not done by default.
+
 ## help
 
 To get more information about a certain command, just use `help`.
