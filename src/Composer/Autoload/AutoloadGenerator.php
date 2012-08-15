@@ -129,7 +129,7 @@ EOF;
                         strpos($namespace, '_') === false ? preg_quote(strtr($namespace, '\\', '/')) : ''
                     );
                     foreach (ClassMapGenerator::createMap($dir, $whitelist) as $class => $path) {
-                        if (0 === strpos($class, $namespace)) {
+                        if ('' === $namespace || 0 === strpos($class, $namespace)) {
                             $path = '/'.$filesystem->findShortestPath(getcwd(), $path, true);
                             if (!isset($classMap[$class])) {
                                 $classMap[$class] = '$baseDir . '.var_export($path, true).",\n";
