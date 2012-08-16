@@ -64,7 +64,7 @@ controlled code by appending the <info>'--prefer-source'</info> flag. Also, it i
 advisable to install all dependencies required for development by appending the
 <info>'--dev'</info> flag.
 
-To install a package from another repository repository than the default one you
+To install a package from another repository than the default one you
 can pass the <info>'--repository-url=http://myrepository.org'</info> flag.
 
 EOT
