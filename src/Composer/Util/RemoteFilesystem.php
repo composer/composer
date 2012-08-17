@@ -101,7 +101,15 @@ class RemoteFilesystem
             $this->io->write("    Downloading: <comment>connection...</comment>", false);
         }
 
-        $result = @file_get_contents($fileUrl, false, $ctx);
+        $errorMessage = null;
+        set_error_handler(function ($code, $msg) use (&$errorMessage) {
+            $errorMessage = preg_replace('{^file_get_contents\(.+?\): }', '', $msg);
+            if (!ini_get('allow_url_fopen')) {
+                $errorMessage = 'allow_url_fopen must be enabled in php.ini ('.$errorMessage.')';
+            }
+        });
+        $result = file_get_contents($fileUrl, false, $ctx);
+        restore_error_handler();
 
         // fix for 5.4.0 https://bugs.php.net/bug.php?id=61336
         if (!empty($http_response_header[0]) && preg_match('{^HTTP/\S+ 404}i', $http_response_header[0])) {
@@ -148,7 +156,7 @@ class RemoteFilesystem
         }
 
         if (false === $this->result) {
-            throw new TransportException('The "'.$fileUrl.'" file could not be downloaded');
+            throw new TransportException('The "'.$fileUrl.'" file could not be downloaded: '.$errorMessage);
         }
     }
 

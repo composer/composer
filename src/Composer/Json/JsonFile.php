@@ -85,7 +85,7 @@ class JsonFile
                 $json = file_get_contents($this->path);
             }
         } catch (TransportException $e) {
-            throw new \RuntimeException('Could not read '.$this->path.', either you or the remote host is probably offline'."\n\n".$e->getMessage());
+            throw new \RuntimeException($e->getMessage());
         } catch (\Exception $e) {
             throw new \RuntimeException('Could not read '.$this->path."\n\n".$e->getMessage());
         }
