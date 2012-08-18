@@ -27,6 +27,7 @@ class DumpAutoloadCommand extends Command
     {
         $this
             ->setName('dump-autoload')
+            ->setAliases(array('dumpautoload'))
             ->setDescription('dumps the autoloader')
             ->setDefinition(array(
                 new InputOption('optimize', 'o', InputOption::VALUE_NONE, 'Optimizes PSR0 packages to be loaded with classmaps too, good for production.'),
