@@ -154,16 +154,16 @@ abstract class VcsDownloader implements DownloaderInterface
      * Checks for changes to the local copy
      *
      * @param  string      $path package directory
-     * @return string|null       changes or null
+     * @return string|null changes or null
      */
     abstract public function getLocalChanges($path);
 
     /**
      * Fetches the commit logs between two commits
      *
-     * @param string $fromReference the source reference
-     * @param string $toReference   the target reference
-     * @param string $path          the package path
+     * @param  string $fromReference the source reference
+     * @param  string $toReference   the target reference
+     * @param  string $path          the package path
      * @return string
      */
     abstract protected function getCommitLogs($fromReference, $toReference, $path);

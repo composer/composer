@@ -22,7 +22,7 @@ interface LoaderInterface
     /**
      * Converts a package from an array to a real instance
      *
-     * @param array $package Package config
+     * @param  array                              $package Package config
      * @return \Composer\Package\PackageInterface
      */
     public function load(array $package);

@@ -312,6 +312,7 @@ EOF;
                 // path starts with vendor dir
                 return $vendorPath . substr($path, strlen($relVendorPath));
             }
+
             return strtr(getcwd(), '\\', '/').'/'.$path;
         }
 
@@ -407,6 +408,7 @@ REGISTER_AUTOLOAD;
         $file .= <<<METHOD_FOOTER
         \$loader->register();
 $filesCode
+
         return \$loader;
     }
 

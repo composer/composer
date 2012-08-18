@@ -146,8 +146,8 @@ class DefaultPolicy implements PolicyInterface
      * Replace constraints are ignored. This method should only be used for
      * prioritisation, not for actual constraint verification.
      *
-     * @param PackageInterface $source
-     * @param PackageInterface $target
+     * @param  PackageInterface $source
+     * @param  PackageInterface $target
      * @return bool
      */
     protected function replaces(PackageInterface $source, PackageInterface $target)
