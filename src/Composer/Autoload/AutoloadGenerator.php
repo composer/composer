@@ -343,7 +343,7 @@ AUTOLOAD;
         // - https://bugs.php.net/bug.php?id=59298
 
         if ($filesCode) {
-            $filesCode = "\n".$filesCode;
+            $filesCode = "\n\n".rtrim($filesCode);
         }
 
         $file = <<<HEADER
@@ -406,8 +406,7 @@ REGISTER_AUTOLOAD;
         }
 
         $file .= <<<METHOD_FOOTER
-        \$loader->register();
-$filesCode
+        \$loader->register();{$filesCode}
 
         return \$loader;
     }
