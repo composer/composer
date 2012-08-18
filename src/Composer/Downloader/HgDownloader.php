@@ -52,11 +52,10 @@ class HgDownloader extends VcsDownloader
     /**
      * {@inheritDoc}
      */
-    protected function enforceCleanDirectory($path)
+    public function hasLocalChanges($path)
     {
         $this->process->execute(sprintf('cd %s && hg st', escapeshellarg($path)), $output);
-        if (trim($output)) {
-            throw new \RuntimeException('Source directory ' . $path . ' has uncommitted changes');
-        }
+
+        return (bool) trim($output);
     }
 }
