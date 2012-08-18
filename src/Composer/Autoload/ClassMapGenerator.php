@@ -40,8 +40,8 @@ class ClassMapGenerator
     /**
      * Iterate over all files in the given directory searching for classes
      *
-     * @param Iterator|string $dir The directory to search in or an iterator
-     * @param string $whitelist Regex that matches against the file path
+     * @param Iterator|string $dir       The directory to search in or an iterator
+     * @param string          $whitelist Regex that matches against the file path
      *
      * @return array A class map array
      */

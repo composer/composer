@@ -56,7 +56,7 @@ class InstallationManager
     public function disableCustomInstallers()
     {
         foreach ($this->installers as $i => $installer) {
-            if ( ! $installer instanceof InstallerInstaller) {
+            if (!$installer instanceof InstallerInstaller) {
                 continue;
             }
 

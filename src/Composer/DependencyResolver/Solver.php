@@ -524,7 +524,7 @@ class Solver
 
         if (!$job) {
             $why->disable();
-            
+
             return;
         }
 
