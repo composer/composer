@@ -29,8 +29,11 @@ class StatusCommand extends Command
         $this
             ->setName('status')
             ->setDescription('Show a list of locally modified packages')
+            ->setDefinition(array(
+                new InputOption('verbose', 'v', InputOption::VALUE_NONE, 'Show modified files for each directory that contains changes.'),
+            ))
             ->setHelp(<<<EOT
-The status command displays a list of packages that have
+The status command displays a list of dependencies that have
 been modified locally.
 
 EOT
@@ -56,8 +59,8 @@ EOT
             if ($downloader instanceof VcsDownloader) {
                 $targetDir = $im->getInstallPath($package);
 
-                if ($downloader->hasLocalChanges($targetDir)) {
-                    $errors[] = $targetDir;
+                if ($changes = $downloader->getLocalChanges($targetDir)) {
+                    $errors[$targetDir] = $changes;
                 }
             }
         }
@@ -66,11 +69,23 @@ EOT
         if (!$errors) {
             $output->writeln('<info>No local changes</info>');
         } else {
-            $output->writeln('<error>You have changes in the following packages:</error>');
+            $output->writeln('<error>You have changes in the following dependencies:</error>');
         }
 
-        foreach ($errors as $error) {
-            $output->writeln($error);
+        foreach ($errors as $path => $changes) {
+            if ($input->getOption('verbose')) {
+                $indentedChanges = implode("\n", array_map(function ($line) {
+                    return '    ' . $line;
+                }, explode("\n", $changes)));
+                $output->writeln('<info>'.$path.'</info>:');
+                $output->writeln($indentedChanges);
+            } else {
+                $output->writeln($path);
+            }
+        }
+
+        if ($errors && !$input->getOption('verbose')) {
+            $output->writeln('Use --verbose (-v) to see modified files');
         }
 
         return $errors ? 1 : 0;

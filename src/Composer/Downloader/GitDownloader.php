@@ -66,14 +66,14 @@ class GitDownloader extends VcsDownloader
     /**
      * {@inheritDoc}
      */
-    public function hasLocalChanges($path)
+    public function getLocalChanges($path)
     {
         $command = sprintf('cd %s && git status --porcelain --untracked-files=no', escapeshellarg($path));
         if (0 !== $this->process->execute($command, $output)) {
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
         }
 
-        return (bool) trim($output);
+        return trim($output) ?: null;
     }
 
     protected function updateToCommit($path, $reference, $branch, $date)

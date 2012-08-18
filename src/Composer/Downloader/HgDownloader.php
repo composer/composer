@@ -52,10 +52,10 @@ class HgDownloader extends VcsDownloader
     /**
      * {@inheritDoc}
      */
-    public function hasLocalChanges($path)
+    public function getLocalChanges($path)
     {
         $this->process->execute(sprintf('cd %s && hg st', escapeshellarg($path)), $output);
 
-        return (bool) trim($output);
+        return trim($output) ?: null;
     }
 }
