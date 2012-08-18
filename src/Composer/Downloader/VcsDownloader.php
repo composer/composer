@@ -65,9 +65,25 @@ abstract class VcsDownloader implements DownloaderInterface
             throw new \InvalidArgumentException('Package '.$target->getPrettyName().' is missing reference information');
         }
 
-        $this->io->write("  - Updating <info>" . $target->getName() . "</info> (<comment>" . $target->getPrettyVersion() . "</comment>)");
+        if ($initial->getPrettyVersion() == $target->getPrettyVersion()) {
+            $from = $initial->getSourceReference();
+            $to = $target->getSourceReference();
+        } else {
+            $from = $initial->getPrettyVersion();
+            $to = $target->getPrettyVersion();
+        }
+
+        $this->io->write("  - Updating <info>" . $target->getName() . "</info> from (<comment>" . $from . "</comment>) to (<comment>" . $to . "</comment>)");
+
         $this->enforceCleanDirectory($path);
         $this->doUpdate($initial, $target, $path);
+
+        //print the commit logs if in verbose mode
+        if ($this->io->isVerbose()) {
+            $logs = $this->getCommitLogs($initial->getSourceReference(), $target->getSourceReference(), $path);
+            $this->io->write($logs);
+        }
+
         $this->io->write('');
     }
 
@@ -119,4 +135,14 @@ abstract class VcsDownloader implements DownloaderInterface
      * @return string|null       changes or null
      */
     abstract public function getLocalChanges($path);
+
+    /**
+     * Fetches the commit logs between two commits
+     *
+     * @param string $fromReference the source reference
+     * @param string $toReference   the target reference
+     * @param string $path          the package path
+     * @return string
+     */
+    abstract protected function getCommitLogs($fromReference, $toReference, $path);
 }
