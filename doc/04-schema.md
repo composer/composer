@@ -140,8 +140,8 @@ The recommended notation for the most common licenses is (alphabetical):
     GPL-2.0+
     GPL-3.0
     GPL-3.0+
-    LGPL-2.0
-    LGPL-2.0+
+    LGPL-2.1
+    LGPL-2.1+
     LGPL-3.0
     LGPL-3.0+
     MIT
@@ -163,7 +163,7 @@ An Example for disjunctive licenses:
 
     {
         "license": [
-           "LGPL-2.0",
+           "LGPL-2.1",
            "GPL-3.0+"
         ]
     }
@@ -171,7 +171,7 @@ An Example for disjunctive licenses:
 Alternatively they can be separated with "or" and enclosed in parenthesis;
 
     {
-        "license": "(LGPL-2.0 or GPL-3.0+)"
+        "license": "(LGPL-2.1 or GPL-3.0+)"
     }
 
 Similarly when multiple licenses need to be applied ("conjunctive license"),
