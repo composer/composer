@@ -48,11 +48,11 @@ class SvnDownloader extends VcsDownloader
     /**
      * {@inheritDoc}
      */
-    public function hasLocalChanges($path)
+    public function getLocalChanges($path)
     {
         $this->process->execute('svn status --ignore-externals', $output, $path);
 
-        return preg_match('{^ *[^X ] +}m', $output);
+        return preg_match('{^ *[^X ] +}m', $output) ? $output : null;
     }
 
     /**
