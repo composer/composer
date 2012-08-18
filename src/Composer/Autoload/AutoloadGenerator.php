@@ -354,9 +354,14 @@ require __DIR__ . '/ClassLoader.php';
 
 class ComposerAutoloaderInit$suffix
 {
+    public static \$loader;
+    
     public static function getLoader()
     {
-        \$loader = new \\Composer\\Autoload\\ClassLoader();
+        if(self::\$loader == null){
+            self::\$loader = new \\Composer\\Autoload\\ClassLoader();
+            self::\$loader->register();
+        }
         \$vendorDir = $vendorPathCode;
         \$baseDir = $appBaseDirCode;
 
@@ -377,7 +382,7 @@ INCLUDE_PATH;
             $file .= <<<'PSR0'
         $map = require __DIR__ . '/autoload_namespaces.php';
         foreach ($map as $namespace => $path) {
-            $loader->add($namespace, $path);
+            self::$loader->add($namespace, $path);
         }
 
 
@@ -388,26 +393,24 @@ PSR0;
             $file .= <<<'CLASSMAP'
         $classMap = require __DIR__ . '/autoload_classmap.php';
         if ($classMap) {
-            $loader->addClassMap($classMap);
+            self::$loader->addClassMap($classMap);
         }
-
 
 CLASSMAP;
         }
 
         if ($targetDirLoader) {
             $file .= <<<REGISTER_AUTOLOAD
-        spl_autoload_register(array('ComposerAutoloaderInit$suffix', 'autoload'));
 
+        spl_autoload_register(array('ComposerAutoloaderInit$suffix', 'autoload'));
 
 REGISTER_AUTOLOAD;
 
         }
 
         $file .= <<<METHOD_FOOTER
-        \$loader->register();
 $filesCode
-        return \$loader;
+        return self::\$loader;
     }
 
 METHOD_FOOTER;
