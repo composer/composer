@@ -13,6 +13,7 @@
 namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
+use Composer\Package\Version\VersionParser;
 use Composer\Util\ProcessExecutor;
 use Composer\IO\IOInterface;
 use Composer\Util\Filesystem;
@@ -50,7 +51,7 @@ abstract class VcsDownloader implements DownloaderInterface
             throw new \InvalidArgumentException('Package '.$package->getPrettyName().' is missing reference information');
         }
 
-        $this->io->write("  - Installing <info>" . $package->getName() . "</info> (<comment>" . $package->getPrettyVersion() . "</comment>)");
+        $this->io->write("  - Installing <info>" . $package->getName() . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
         $this->filesystem->removeDirectory($path);
         $this->doDownload($package, $path);
         $this->io->write('');
@@ -65,23 +66,44 @@ abstract class VcsDownloader implements DownloaderInterface
             throw new \InvalidArgumentException('Package '.$target->getPrettyName().' is missing reference information');
         }
 
+        $name = $target->getName();
         if ($initial->getPrettyVersion() == $target->getPrettyVersion()) {
-            $from = $initial->getSourceReference();
-            $to = $target->getSourceReference();
+            if ($target->getSourceType() === 'svn') {
+                $from = $initial->getSourceReference();
+                $to = $target->getSourceReference();
+            } else {
+                $from = substr($initial->getSourceReference(), 0, 6);
+                $to = substr($target->getSourceReference(), 0, 6);
+            }
+            $name .= ' '.$initial->getPrettyVersion();
         } else {
-            $from = $initial->getPrettyVersion();
-            $to = $target->getPrettyVersion();
+            $from = VersionParser::formatVersion($initial);
+            $to = VersionParser::formatVersion($target);
         }
 
-        $this->io->write("  - Updating <info>" . $target->getName() . "</info> from (<comment>" . $from . "</comment>) to (<comment>" . $to . "</comment>)");
+        $this->io->write("  - Updating <info>" . $name . "</info> (<comment>" . $from . "</comment> => <comment>" . $to . "</comment>)");
 
         $this->enforceCleanDirectory($path);
         $this->doUpdate($initial, $target, $path);
 
         //print the commit logs if in verbose mode
         if ($this->io->isVerbose()) {
+            $message = 'Pulling in changes:';
             $logs = $this->getCommitLogs($initial->getSourceReference(), $target->getSourceReference(), $path);
-            $this->io->write($logs);
+
+            if (!trim($logs)) {
+                $message = 'Rolling back changes:';
+                $logs = $this->getCommitLogs($target->getSourceReference(), $initial->getSourceReference(), $path);
+            }
+
+            if (trim($logs)) {
+                $logs = implode("\n", array_map(function ($line) {
+                    return '      ' . $line;
+                }, explode("\n", $logs)));
+
+                $this->io->write('    '.$message);
+                $this->io->write($logs);
+            }
         }
 
         $this->io->write('');
