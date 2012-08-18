@@ -264,6 +264,7 @@ class AutoloadGeneratorTest extends TestCase
     public function testFilesAutoloadGeneration()
     {
         $package = new MemoryPackage('a', '1.0', '1.0');
+        $package->setAutoload(array('files' => array('root.php')));
 
         $packages = array();
         $packages[] = $a = new MemoryPackage('a/a', '1.0', '1.0');
@@ -279,6 +280,7 @@ class AutoloadGeneratorTest extends TestCase
         $this->fs->ensureDirectoryExists($this->vendorDir.'/b/b');
         file_put_contents($this->vendorDir.'/a/a/test.php', '<?php function testFilesAutoloadGeneration1() {}');
         file_put_contents($this->vendorDir.'/b/b/test2.php', '<?php function testFilesAutoloadGeneration2() {}');
+        file_put_contents($this->workingDir.'/root.php', '<?php function testFilesAutoloadGenerationRoot() {}');
 
         $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, 'FilesAutoload');
         $this->assertFileEquals(__DIR__.'/Fixtures/autoload_functions.php', $this->vendorDir.'/autoload.php');
@@ -290,6 +292,7 @@ class AutoloadGeneratorTest extends TestCase
         include $this->vendorDir . '/autoload.php';
         $this->assertTrue(function_exists('testFilesAutoloadGeneration1'));
         $this->assertTrue(function_exists('testFilesAutoloadGeneration2'));
+        $this->assertTrue(function_exists('testFilesAutoloadGenerationRoot'));
     }
 
     public function testOverrideVendorsAutoloading()
