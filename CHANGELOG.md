@@ -1,3 +1,21 @@
+* 1.0.0-alpha5 (2012-08-18)
+
+  * Added `dump-autoload` command to only regenerate the autoloader
+  * Added --optimize to `dump-autoload` to generate a more performant classmap-based autoloader for production
+  * Added `status` command to show if any source-installed dependency has local changes, use --verbose to see changed files
+  * Added --verbose flag to `install` and `update` that shows the new commits when updating source-installed dependencies
+  * Added --no-update flag to `require` to only modify the composer.json file but skip the update
+  * Added --no-custom-installers and --no-scripts to `install`, `update` and `create-project` to prevent all automatic code execution
+  * Added support for installing archives that contain only a single file
+  * Fixed APC related issues in the autoload script on high load websites
+  * Fixed installation of branches containing capital letters
+  * Fixed installation of custom dev versions/branches
+  * Improved the coverage of the `validate` command
+  * Improved PEAR scripts/binaries support
+  * Improved and fixed the output of various commands
+  * Improved error reporting on network failures and some other edge cases
+  * Various minor bug fixes and docs improvements
+
 * 1.0.0-alpha4 (2012-07-04)
 
   * Break: The default `minimum-stability` is now `stable`, [read more](https://groups.google.com/d/topic/composer-dev/_g3ASeIFlrc/discussion)
