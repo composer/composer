@@ -47,7 +47,9 @@ class CreateProjectCommand extends Command
                 new InputArgument('version', InputArgument::OPTIONAL, 'Version, will defaults to latest'),
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('repository-url', null, InputOption::VALUE_REQUIRED, 'Pick a different repository url to look for the package.'),
-                new InputOption('dev', null, InputOption::VALUE_NONE, 'Whether to install dependencies for development.')
+                new InputOption('dev', null, InputOption::VALUE_NONE, 'Whether to install dependencies for development.'),
+                new InputOption('no-custom-installers', null, InputOption::VALUE_NONE, 'Whether to disable custom installers.'),
+                new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Whether to prevent execution of all defined scripts in the root package.')
             ))
             ->setHelp(<<<EOT
 The <info>create-project</info> command creates a new project from a given
@@ -62,7 +64,7 @@ controlled code by appending the <info>'--prefer-source'</info> flag. Also, it i
 advisable to install all dependencies required for development by appending the
 <info>'--dev'</info> flag.
 
-To install a package from another repository repository than the default one you
+To install a package from another repository than the default one you
 can pass the <info>'--repository-url=http://myrepository.org'</info> flag.
 
 EOT
@@ -79,11 +81,13 @@ EOT
             $input->getArgument('version'),
             $input->getOption('prefer-source'),
             $input->getOption('dev'),
-            $input->getOption('repository-url')
+            $input->getOption('repository-url'),
+            $input->getOption('no-custom-installers'),
+            $input->getOption('no-scripts')
         );
     }
 
-    public function installProject(IOInterface $io, $packageName, $directory = null, $version = null, $preferSource = false, $installDevPackages = false, $repositoryUrl = null)
+    public function installProject(IOInterface $io, $packageName, $directory = null, $version = null, $preferSource = false, $installDevPackages = false, $repositoryUrl = null, $disableCustomInstallers = false, $noScripts = false)
     {
         $dm = $this->createDownloadManager($io);
         if ($preferSource) {
@@ -120,6 +124,11 @@ EOT
         }
 
         $io->write('<info>Installing ' . $package->getName() . ' (' . VersionParser::formatVersion($package, false) . ')</info>', true);
+
+        if ($disableCustomInstallers) {
+            $io->write('<info>Custom installers have been disabled.</info>');
+        }
+
         if (0 === strpos($package->getPrettyVersion(), 'dev-') && in_array($package->getSourceType(), array('git', 'hg'))) {
             $package->setSourceReference(substr($package->getPrettyVersion(), 4));
         }
@@ -138,10 +147,15 @@ EOT
         $composer = Factory::create($io);
         $installer = Installer::create($io, $composer);
 
-        $installer
-            ->setPreferSource($preferSource)
+        $installer->setPreferSource($preferSource)
             ->setDevMode($installDevPackages)
-            ->run();
+            ->setRunScripts( ! $noScripts);
+
+        if ($disableCustomInstallers) {
+            $installer->disableCustomInstallers();
+        }
+
+        $installer->run();
     }
 
     protected function createDownloadManager(IOInterface $io)

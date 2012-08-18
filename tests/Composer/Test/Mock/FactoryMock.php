@@ -17,7 +17,6 @@ use Composer\Factory;
 use Composer\Repository;
 use Composer\Repository\RepositoryManager;
 use Composer\Installer;
-use Composer\Downloader;
 use Composer\IO\IOInterface;
 
 class FactoryMock extends Factory

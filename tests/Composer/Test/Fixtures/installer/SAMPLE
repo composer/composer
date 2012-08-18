@@ -8,9 +8,11 @@
 <composer.lock file definition>
 --INSTALLED--
 <installed.json file definition>
---INSTALLED:DEV--
+--INSTALLED-DEV--
 <installed_dev.json file definition>
 --RUN--
 install
+--EXPECT-LOCK--
+<composer.lock file after the run>
 --EXPECT--
 <output (stringified operations)>

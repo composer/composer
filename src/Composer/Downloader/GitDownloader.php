@@ -63,6 +63,19 @@ class GitDownloader extends VcsDownloader
         $this->updateToCommit($path, $ref, $target->getPrettyVersion(), $target->getReleaseDate());
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public function getLocalChanges($path)
+    {
+        $command = sprintf('cd %s && git status --porcelain --untracked-files=no', escapeshellarg($path));
+        if (0 !== $this->process->execute($command, $output)) {
+            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+        }
+
+        return trim($output) ?: null;
+    }
+
     protected function updateToCommit($path, $reference, $branch, $date)
     {
         $template = 'git checkout %s && git reset --hard %1$s';
@@ -122,21 +135,6 @@ class GitDownloader extends VcsDownloader
         }
 
         throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function enforceCleanDirectory($path)
-    {
-        $command = sprintf('cd %s && git status --porcelain --untracked-files=no', escapeshellarg($path));
-        if (0 !== $this->process->execute($command, $output)) {
-            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
-        }
-
-        if (trim($output)) {
-            throw new \RuntimeException('Source directory ' . $path . ' has uncommitted changes');
-        }
     }
 
     /**
@@ -234,5 +232,19 @@ class GitDownloader extends VcsDownloader
             $cmd = sprintf('git remote set-url --push origin %s', escapeshellarg($pushUrl));
             $this->process->execute($cmd, $ignoredOutput, $path);
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function getCommitLogs($fromReference, $toReference, $path)
+    {
+        $command = sprintf('cd %s && git log %s..%s --pretty=format:"%%h - %%an: %%s"', escapeshellarg($path), $fromReference, $toReference);
+
+        if (0 !== $this->process->execute($command, $output)) {
+            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+        }
+
+        return $output;
     }
 }

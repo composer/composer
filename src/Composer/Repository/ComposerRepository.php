@@ -101,6 +101,7 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
             $this->cache->write('packages.json', json_encode($data));
         } catch (\Exception $e) {
             if ($contents = $this->cache->read('packages.json')) {
+                $this->io->write('<warning>'.$e->getMessage().'</warning>');
                 $this->io->write('<warning>'.$this->url.' could not be loaded, package information was loaded from the local cache and may be out of date</warning>');
                 $data = json_decode($contents, true);
             } else {

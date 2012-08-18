@@ -48,12 +48,11 @@ class SvnDownloader extends VcsDownloader
     /**
      * {@inheritDoc}
      */
-    protected function enforceCleanDirectory($path)
+    public function getLocalChanges($path)
     {
         $this->process->execute('svn status --ignore-externals', $output, $path);
-        if (preg_match('{^ *[^X ] +}m', $output)) {
-            throw new \RuntimeException('Source directory ' . $path . ' has uncommitted changes:'."\n\n".rtrim($output));
-        }
+
+        return preg_match('{^ *[^X ] +}m', $output) ? $output : null;
     }
 
     /**
@@ -78,5 +77,19 @@ class SvnDownloader extends VcsDownloader
                 'Package could not be downloaded, '.$e->getMessage()
             );
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function getCommitLogs($fromReference, $toReference, $path)
+    {
+        $command = sprintf('cd %s && svn log -r%s:%s --incremental', escapeshellarg($path), $fromReference, $toReference);
+
+        if (0 !== $this->process->execute($command, $output)) {
+            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+        }
+
+        return $output;
     }
 }

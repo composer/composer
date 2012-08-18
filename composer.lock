@@ -1,5 +1,5 @@
 {
-    "hash": "34f13094ecccd74e3a821515658b66bb",
+    "hash": "a1b94e69712d09a07bb817423533c483",
     "packages": [
         {
             "package": "justinrainbow/json-schema",
@@ -30,8 +30,8 @@
         {
             "package": "symfony/finder",
             "version": "dev-master",
-            "source-reference": "v2.1.0-RC1",
-            "commit-date": "1343512949"
+            "source-reference": "1af11ab3a686f9c45f2a8d9d721d5717cdd5f1d6",
+            "commit-date": "1345026762"
         },
         {
             "package": "symfony/process",
@@ -50,8 +50,10 @@
     "aliases": [
 
     ],
-    "minimum-stability": "beta",
+    "minimum-stability": "stable",
     "stability-flags": {
-        "symfony/process": 20
+        "symfony/console": 5,
+        "symfony/finder": 5,
+        "symfony/process": 5
     }
 }

@@ -40,11 +40,12 @@ class ClassMapGenerator
     /**
      * Iterate over all files in the given directory searching for classes
      *
-     * @param Iterator|string $dir The directory to search in or an iterator
+     * @param Iterator|string $dir       The directory to search in or an iterator
+     * @param string          $whitelist Regex that matches against the file path
      *
      * @return array A class map array
      */
-    public static function createMap($dir)
+    public static function createMap($dir, $whitelist = null)
     {
         if (is_string($dir)) {
             if (is_file($dir)) {
@@ -64,6 +65,10 @@ class ClassMapGenerator
             $path = $file->getRealPath();
 
             if (pathinfo($path, PATHINFO_EXTENSION) !== 'php') {
+                continue;
+            }
+
+            if ($whitelist && !preg_match($whitelist, strtr($path, '\\', '/'))) {
                 continue;
             }
 

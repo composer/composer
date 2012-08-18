@@ -54,7 +54,10 @@ class ZipDownloader extends ArchiveDownloader
             throw new \UnexpectedValueException($this->getErrorMessage($retval, $file));
         }
 
-        $zipArchive->extractTo($path);
+        if (true !== $zipArchive->extractTo($path)) {
+            throw new \RuntimeException("There was an error extracting the ZIP file. Corrupt file?");
+        }
+
         $zipArchive->close();
     }
 

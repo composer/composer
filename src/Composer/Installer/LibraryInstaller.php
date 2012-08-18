@@ -241,7 +241,7 @@ class LibraryInstaller implements InstallerInterface
         $this->binDir = realpath($this->binDir);
     }
 
-    private function generateWindowsProxyCode($bin, $link)
+    protected function generateWindowsProxyCode($bin, $link)
     {
         $binPath = $this->filesystem->findShortestPath($link, $bin);
         if ('.bat' === substr($bin, -4)) {
@@ -266,7 +266,7 @@ class LibraryInstaller implements InstallerInterface
             $caller." \"%BIN_TARGET%\" %*\r\n";
     }
 
-    private function generateUnixyProxyCode($bin, $link)
+    protected function generateUnixyProxyCode($bin, $link)
     {
         $binPath = $this->filesystem->findShortestPath($link, $bin);
 
