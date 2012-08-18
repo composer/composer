@@ -465,8 +465,9 @@ class Installer
                 }
             }
 
-            if ($this->verbose) {
-                $this->io->write((string) $operation);
+            // output alias operations in verbose mode, or all ops in dry run
+            if ($this->dryRun || ($this->verbose && false !== strpos($operation->getJobType(), 'Alias'))) {
+                $this->io->write('  - ' . $operation);
             }
 
             $this->installationManager->execute($localRepo, $operation);

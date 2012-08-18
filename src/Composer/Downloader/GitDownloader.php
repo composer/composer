@@ -234,9 +234,12 @@ class GitDownloader extends VcsDownloader
         }
     }
 
-    protected function getCommitLogs($sourceReference, $targetReference, $path)
+    /**
+     * {@inheritDoc}
+     */
+    protected function getCommitLogs($fromReference, $toReference, $path)
     {
-        $command = sprintf('cd %s && git log %s..%s --pretty=format:"%%h - %%an: %%s"', escapeshellarg($path), $sourceReference, $targetReference);
+        $command = sprintf('cd %s && git log %s..%s --pretty=format:"%%h - %%an: %%s"', escapeshellarg($path), $fromReference, $toReference);
 
         if (0 !== $this->process->execute($command, $output)) {
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
