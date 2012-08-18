@@ -58,4 +58,15 @@ class HgDownloader extends VcsDownloader
 
         return trim($output) ?: null;
     }
+
+    protected function getCommitLogs($sourceReference, $targetReference, $path)
+    {
+        $command = sprintf('cd %s && hg log -r %s:%s --style compact', escapeshellarg($path), $sourceReference, $targetReference);
+
+        if (0 !== $this->process->execute($command, $output)) {
+            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+        }
+
+        return $output;
+    }
 }
