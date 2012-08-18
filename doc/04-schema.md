@@ -429,7 +429,7 @@ Example:
 
     {
         "autoload": {
-            "files": ["src/MyLibrary/functions.php"]
+            "files": ["/src/MyLibrary/functions.php"]
         }
     }
 
