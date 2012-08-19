@@ -198,21 +198,21 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
         $this->assertJsonFormat('"\\u018c"', $data, 0);
     }
 
-	public function testReadExtends()
-	{
+    public function testReadExtends()
+    {
         $json = '{
         "foo": "bar",
         "bar": "foo",
         "extends": "composer.json"
 }';
-		$jsonFile = new JsonFile('data://text/plain;base64,'.base64_encode($json));
-		$parsed = $jsonFile->read();
+        $jsonFile = new JsonFile('data://text/plain;base64,'.base64_encode($json));
+        $parsed = $jsonFile->read();
 
-		$this->assertArrayHasKey("foo", $parsed);
-		$this->assertContains("bar", $parsed);
-		$this->assertArrayHasKey("name", $parsed);
-		$this->assertContains("composer/composer", $parsed);
-	}
+        $this->assertArrayHasKey("foo", $parsed);
+        $this->assertContains("bar", $parsed);
+        $this->assertArrayHasKey("name", $parsed);
+        $this->assertContains("composer/composer", $parsed);
+    }
 
     private function expectParseException($text, $json)
     {

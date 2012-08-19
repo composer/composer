@@ -90,15 +90,15 @@ class JsonFile
             throw new \RuntimeException('Could not read '.$this->path."\n\n".$e->getMessage());
         }
 
-		$parsed = static::parseJson($json, $this->path);
+        $parsed = static::parseJson($json, $this->path);
 
-		if (!empty($parsed['extends']))
-		{
-			$parent = new JsonFile($parsed['extends']);
-			$parsed = array_replace($parent->read(), $parsed);
-		}
+        if (!empty($parsed['extends']))
+        {
+            $parent = new JsonFile($parsed['extends']);
+            $parsed = array_replace($parent->read(), $parsed);
+        }
 
-		return $parsed;
+        return $parsed;
     }
 
     /**
