@@ -23,9 +23,9 @@ use Composer\Package\PackageInterface;
 interface DownloaderInterface
 {
     /**
-     * Returns installation source (either source or dist).
+     * Returns installation source (either source, dist or link).
      *
-     * @return string "source" or "dist"
+     * @return string "source", "dist" or "link"
      */
     public function getInstallationSource();
 

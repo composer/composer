@@ -97,16 +97,16 @@ interface PackageInterface
     public function getExtra();
 
     /**
-     * Sets source from which this package was installed (source/dist).
+     * Sets source from which this package was installed (source/dist/link).
      *
-     * @param string $type source/dist
+     * @param string $type source/dist/link
      */
     public function setInstallationSource($type);
 
     /**
-     * Returns source from which this package was installed (source/dist).
+     * Returns source from which this package was installed (source/dist/link).
      *
-     * @param string $type source/dist
+     * @param string $type source/dist/link
      */
     public function getInstallationSource();
 

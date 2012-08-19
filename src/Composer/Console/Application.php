@@ -87,8 +87,8 @@ class Application extends BaseApplication
     }
 
     /**
-     * @param  bool               $required
-     * @return \Composer\Composer
+     * @param  bool $required
+     * @return Composer
      */
     public function getComposer($required = true)
     {
@@ -135,6 +135,10 @@ class Application extends BaseApplication
 
         if ('phar:' === substr(__FILE__, 0, 5)) {
             $commands[] = new Command\SelfUpdateCommand();
+        }
+
+        if (function_exists('symlink')) {
+            $commands[] = new Command\LinkCommand();
         }
 
         return $commands;

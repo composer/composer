@@ -27,7 +27,10 @@ class Filesystem
 
     public function removeDirectory($directory)
     {
-        if (!is_dir($directory)) {
+        if (is_link($directory)) {
+            return unlink($directory);
+
+        } elseif (!is_dir($directory)) {
             return true;
         }
 
@@ -47,17 +50,19 @@ class Filesystem
 
     public function ensureDirectoryExists($directory)
     {
-        if (!is_dir($directory)) {
-            if (file_exists($directory)) {
-                throw new \RuntimeException(
-                    $directory.' exists and is not a directory.'
-                );
-            }
-            if (!mkdir($directory, 0777, true)) {
-                throw new \RuntimeException(
-                    $directory.' does not exist and could not be created.'
-                );
-            }
+        if (is_dir($directory)) {
+            return;
+        }
+
+        if (file_exists($directory)) {
+            throw new \RuntimeException(
+                $directory . ' exists and is not a directory.'
+            );
+        }
+        if (!mkdir($directory, 0777, true)) {
+            throw new \RuntimeException(
+                $directory . ' does not exist and could not be created.'
+            );
         }
     }
 
@@ -77,6 +82,27 @@ class Filesystem
             }
 
             throw new \RuntimeException(sprintf('Could not rename "%s" to "%s".', $source, $target));
+        }
+    }
+
+    public function link($source, $target)
+    {
+        $source = realpath($source);
+        if (!$source) {
+            throw new \InvalidArgumentException(sprintf("(%) is not a local filesystem path". func_get_arg(0)));
+        }
+
+        symlink($source, $target);
+
+        if (!is_link($target) || !file_exists($target)) {
+            throw new \RuntimeException(sprintf('Could link "%s" to "%s".', $source, $target));
+        }
+    }
+
+    public function ensureHealthyLink($target)
+    {
+        if (!is_link($target) || !file_exists($target)) {
+            throw new \RuntimeException(sprintf('Link "%s" is broken.', $target));
         }
     }
 

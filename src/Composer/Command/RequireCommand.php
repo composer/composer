@@ -50,41 +50,7 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $factory = new Factory;
-        $file = $factory->getComposerFile();
-
-        if (!file_exists($file)) {
-            $output->writeln('<error>'.$file.' not found.</error>');
-
-            return 1;
-        }
-        if (!is_readable($file)) {
-            $output->writeln('<error>'.$file.' is not readable.</error>');
-
-            return 1;
-        }
-
-        $dialog = $this->getHelperSet()->get('dialog');
-
-        $json = new JsonFile($file);
-        $composer = $json->read();
-
-        $requirements = $this->determineRequirements($input, $output, $input->getArgument('packages'));
-
-        $requireKey = $input->getOption('dev') ? 'require-dev' : 'require';
-        $baseRequirements = array_key_exists($requireKey, $composer) ? $composer[$requireKey] : array();
-        $requirements = $this->formatRequirements($requirements);
-
-        if (!$this->updateFileCleanly($json, $baseRequirements, $requirements, $requireKey)) {
-            foreach ($requirements as $package => $version) {
-                $baseRequirements[$package] = $version;
-            }
-
-            $composer[$requireKey] = $baseRequirements;
-            $json->write($composer);
-        }
-
-        $output->writeln('<info>'.$file.' has been updated</info>');
+        $requirements = $this->updateComposerConfig($input, $output, $input->getArgument('packages'));
 
         if ($input->getOption('no-update')) {
             return 0;
@@ -106,7 +72,47 @@ EOT
         return $install->run() ? 0 : 1;
     }
 
-    private function updateFileCleanly($json, array $base, array $new, $requireKey)
+    protected function readComposerConfig()
+    {
+        $factory = new Factory;
+        $file = $factory->getComposerFile();
+
+        if (!file_exists($file)) {
+            throw new \RuntimeException($file . ' not found.');
+        }
+        if (!is_readable($file)) {
+            throw new \RuntimeException($file . ' is not readable.');
+        }
+
+        return new JsonFile($file);
+    }
+
+    protected function updateComposerConfig(InputInterface $input, OutputInterface $output, $requires = array())
+    {
+        $json = $this->readComposerConfig();
+        $composerConfig = $json->read();
+
+        $requireKey = $input->hasOption('dev') && $input->getOption('dev') ? 'require-dev' : 'require';
+        $baseRequirements = array_key_exists($requireKey, $composerConfig) ? $composerConfig[$requireKey] : array();
+
+        $requirements = $this->determineRequirements($input, $output, $requires);
+        $requirements = $this->formatRequirements($requirements);
+
+        if (!$this->updateFileCleanly($json, $baseRequirements, $requirements, $requireKey)) {
+            foreach ($requirements as $package => $version) {
+                $baseRequirements[$package] = $version;
+            }
+
+            $composerConfig[$requireKey] = $baseRequirements;
+            $json->write($composerConfig);
+        }
+
+        $output->writeln('<info>' . $json->getPath() . ' has been updated</info>');
+
+        return $requirements;
+    }
+
+    protected function updateFileCleanly(JsonFile $json, array $base, array $new, $requireKey)
     {
         $contents = file_get_contents($json->getPath());
 

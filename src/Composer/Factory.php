@@ -148,7 +148,7 @@ class Factory
         $rm = $this->createRepositoryManager($io, $config);
 
         // load local repository
-        $this->addLocalRepository($rm, $vendorDir);
+        $this->addLocalRepository($rm, $config);
 
         // load package
         $loader  = new Package\Loader\RootPackageLoader($rm, $config);
@@ -201,18 +201,21 @@ class Factory
         $rm->setRepositoryClass('git', 'Composer\Repository\VcsRepository');
         $rm->setRepositoryClass('svn', 'Composer\Repository\VcsRepository');
         $rm->setRepositoryClass('hg', 'Composer\Repository\VcsRepository');
+        $rm->setRepositoryClass('link', 'Composer\Repository\LocalLinksRepository');
 
         return $rm;
     }
 
     /**
      * @param Repository\RepositoryManager $rm
-     * @param string                       $vendorDir
+     * @param Config                       $config
      */
-    protected function addLocalRepository(RepositoryManager $rm, $vendorDir)
+    protected function addLocalRepository(RepositoryManager $rm, Config $config)
     {
-        $rm->setLocalRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/composer/installed.json')));
-        $rm->setLocalDevRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/composer/installed_dev.json')));
+        $composerDir = $config->get('vendor-dir') . '/composer';
+        $rm->setLocalRepository(new Repository\InstalledFilesystemRepository(new JsonFile($composerDir.'/installed.json')));
+        $rm->setLocalDevRepository(new Repository\InstalledFilesystemRepository(new JsonFile($composerDir.'/installed_dev.json')));
+        $rm->setLocalLinksRepository(new Repository\LocalLinksRepository($config));
     }
 
     /**
@@ -229,6 +232,7 @@ class Factory
         $dm->setDownloader('tar', new Downloader\TarDownloader($io));
         $dm->setDownloader('phar', new Downloader\PharDownloader($io));
         $dm->setDownloader('file', new Downloader\FileDownloader($io));
+        $dm->setDownloader('link', new Downloader\LinkDownloader($io));
 
         return $dm;
     }

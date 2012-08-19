@@ -26,6 +26,7 @@ class RepositoryManager
 {
     private $localRepository;
     private $localDevRepository;
+    private $localLinksRepository;
     private $repositories = array();
     private $repositoryClasses = array();
     private $io;
@@ -161,6 +162,23 @@ class RepositoryManager
     public function getLocalDevRepository()
     {
         return $this->localDevRepository;
+    }
+
+    /**
+     * @param RepositoryInterface $repository repository instance
+     */
+    public function setLocalLinksRepository(RepositoryInterface $repository)
+    {
+        $this->repositories[] = $repository;
+        $this->localLinksRepository = $repository;
+    }
+
+    /**
+     * @return RepositoryInterface
+     */
+    public function getLocalLinksRepository()
+    {
+        return $this->localLinksRepository;
     }
 
     /**

@@ -66,6 +66,17 @@ abstract class VcsDownloader implements DownloaderInterface
             throw new \InvalidArgumentException('Package '.$target->getPrettyName().' is missing reference information');
         }
 
+        // manually symlinked package, do not touch
+        if (is_link($path)) {
+            try {
+                $this->filesystem->ensureHealthyLink($path);
+
+            } catch (\Exception $e) {
+                $this->filesystem->removeDirectory($path);
+                throw $e;
+            }
+        }
+
         $name = $target->getName();
         if ($initial->getPrettyVersion() == $target->getPrettyVersion()) {
             if ($target->getSourceType() === 'svn') {
