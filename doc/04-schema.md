@@ -606,8 +606,6 @@ See [Vendor Bins](articles/vendor-bins.md) for more details.
 
 Optional.
 
-&larr; [Command-line interface](03-cli.md)  |  [Repositories](05-repositories.md) &rarr;
-
 ### extends
 
 Defines a parent JSON configuration filepath to a JSON file that this configuration extends.
@@ -620,3 +618,5 @@ Useful for creating environment specific configurations, e.g. `testing.json`, `p
 etc. which may need to override properties like `repositories`.
 
 Optional.
+
+&larr; [Command-line interface](03-cli.md)  |  [Repositories](05-repositories.md) &rarr;
