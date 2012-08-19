@@ -659,3 +659,16 @@ See [Vendor Binaries](articles/vendor-binaries.md) for more details.
 Optional.
 
 &larr; [Command-line interface](03-cli.md)  |  [Repositories](05-repositories.md) &rarr;
+
+### extends
+
+Defines a parent JSON configuration filepath to a JSON file that this configuration extends.
+
+All properties from the parent JSON file are loaded and any property defined in the current
+file override (replace) those properties. This is done recursively so if the parent JSON file
+defines a parent that will be loaded (with any properties of it are also replaced) and so on.
+
+Useful for creating environment specific configurations, e.g. `testing.json`, `production.json`
+etc. which may need to override properties like `repositories`.
+
+Optional.
