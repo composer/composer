@@ -25,7 +25,7 @@ use Composer\Factory;
 abstract class BaseDumper implements DumperInterface
 {
     /**
-     * Format: zip or tarball.
+     * Format: zip or tar.
      * @var string
      */
     protected $format = '';
