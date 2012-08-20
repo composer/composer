@@ -240,6 +240,8 @@ class Installer
             $this->package->getDevRequires()
         );
 
+        $this->io->write('<info>Loading composer repositories with package information</info>');
+
         // creating repository pool
         $pool = new Pool($minimumStability, $stabilityFlags);
         $pool->addRepository($installedRepo);
