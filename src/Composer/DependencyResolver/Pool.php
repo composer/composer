@@ -13,10 +13,15 @@
 namespace Composer\DependencyResolver;
 
 use Composer\Package\BasePackage;
+use Composer\Package\Version\VersionParser;
+use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\Link;
 use Composer\Package\LinkConstraint\LinkConstraintInterface;
+use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\InstalledRepositoryInterface;
+use Composer\Repository\StreamableRepositoryInterface;
 use Composer\Repository\PlatformRepository;
 
 /**
@@ -27,15 +32,25 @@ use Composer\Repository\PlatformRepository;
  */
 class Pool
 {
+    const MATCH_NAME = -1;
+    const MATCH_NONE = 0;
+    const MATCH = 1;
+    const MATCH_PROVIDE = 2;
+    const MATCH_REPLACE = 3;
+
     protected $repositories = array();
     protected $packages = array();
     protected $packageByName = array();
     protected $acceptableStabilities;
     protected $stabilityFlags;
+    protected $loader;
+    protected $versionParser;
 
     public function __construct($minimumStability = 'stable', array $stabilityFlags = array())
     {
         $stabilities = BasePackage::$stabilities;
+        $this->loader = new ArrayLoader;
+        $this->versionParser = new VersionParser;
         $this->acceptableStabilities = array();
         foreach (BasePackage::$stabilities as $stability => $value) {
             if ($value <= BasePackage::$stabilities[$minimumStability]) {
@@ -63,25 +78,65 @@ class Pool
             $this->repositories[] = $repo;
 
             $exempt = $repo instanceof PlatformRepository || $repo instanceof InstalledRepositoryInterface;
-            foreach ($repo->getPackages() as $package) {
-                $name = $package->getName();
-                $stability = $package->getStability();
-                if (
-                    // always allow exempt repos
-                    $exempt
-                    // allow if package matches the global stability requirement and has no exception
-                    || (!isset($this->stabilityFlags[$name])
-                        && isset($this->acceptableStabilities[$stability]))
-                    // allow if package matches the package-specific stability flag
-                    || (isset($this->stabilityFlags[$name])
-                        && BasePackage::$stabilities[$stability] <= $this->stabilityFlags[$name]
-                    )
-                ) {
-                    $package->setId($id++);
-                    $this->packages[] = $package;
+            if ($repo instanceof StreamableRepositoryInterface) {
+                foreach ($repo->getMinimalPackages() as $package) {
+                    $name = $package['name'];
+                    $stability = VersionParser::parseStability($package['version']);
+                    if (
+                        // always allow exempt repos
+                        $exempt
+                        // allow if package matches the global stability requirement and has no exception
+                        || (!isset($this->stabilityFlags[$name])
+                            && isset($this->acceptableStabilities[$stability]))
+                        // allow if package matches the package-specific stability flag
+                        || (isset($this->stabilityFlags[$name])
+                            && BasePackage::$stabilities[$stability] <= $this->stabilityFlags[$name]
+                        )
+                    ) {
+                        $package['id'] = $id++;
+                        $this->packages[] = $package;
 
-                    foreach ($package->getNames() as $name) {
-                        $this->packageByName[$name][] = $package;
+                        // collect names
+                        $names = array(
+                            $name => true,
+                        );
+                        if (isset($package['provide'])) {
+                            foreach ($package['provide'] as $target => $constraint) {
+                                $names[$target] = true;
+                            }
+                        }
+                        if (isset($package['replace'])) {
+                            foreach ($package['replace'] as $target => $constraint) {
+                                $names[$target] = true;
+                            }
+                        }
+
+                        foreach (array_keys($names) as $name) {
+                            $this->packageByName[$name][] =& $this->packages[$id-2];
+                        }
+                    }
+                }
+            } else {
+                foreach ($repo->getPackages() as $package) {
+                    $name = $package->getName();
+                    $stability = $package->getStability();
+                    if (
+                        // always allow exempt repos
+                        $exempt
+                        // allow if package matches the global stability requirement and has no exception
+                        || (!isset($this->stabilityFlags[$name])
+                            && isset($this->acceptableStabilities[$stability]))
+                        // allow if package matches the package-specific stability flag
+                        || (isset($this->stabilityFlags[$name])
+                            && BasePackage::$stabilities[$stability] <= $this->stabilityFlags[$name]
+                        )
+                    ) {
+                        $package->setId($id++);
+                        $this->packages[] = $package;
+
+                        foreach ($package->getNames() as $name) {
+                            $this->packageByName[$name][] = $package;
+                        }
                     }
                 }
             }
@@ -107,6 +162,8 @@ class Pool
     */
     public function packageById($id)
     {
+        $this->ensurePackageIsLoaded($this->packages[$id - 1]);
+
         return $this->packages[$id - 1];
     }
 
@@ -137,6 +194,10 @@ class Pool
         $candidates = $this->packageByName[$name];
 
         if (null === $constraint) {
+            foreach ($candidates as $key => $candidate) {
+                $candidates[$key] = $this->ensurePackageIsLoaded($candidate);
+            }
+
             return $candidates;
         }
 
@@ -144,25 +205,25 @@ class Pool
         $nameMatch = false;
 
         foreach ($candidates as $candidate) {
-            switch ($candidate->matches($name, $constraint)) {
-                case BasePackage::MATCH_NONE:
+            switch ($this->match($candidate, $name, $constraint)) {
+                case self::MATCH_NONE:
                     break;
 
-                case BasePackage::MATCH_NAME:
+                case self::MATCH_NAME:
                     $nameMatch = true;
                     break;
 
-                case BasePackage::MATCH:
+                case self::MATCH:
                     $nameMatch = true;
-                    $matches[] = $candidate;
+                    $matches[] = $this->ensurePackageIsLoaded($candidate);
                     break;
 
-                case BasePackage::MATCH_PROVIDE:
-                    $provideMatches[] = $candidate;
+                case self::MATCH_PROVIDE:
+                    $provideMatches[] = $this->ensurePackageIsLoaded($candidate);
                     break;
 
-                case BasePackage::MATCH_REPLACE:
-                    $matches[] = $candidate;
+                case self::MATCH_REPLACE:
+                    $matches[] = $this->ensurePackageIsLoaded($candidate);
                     break;
 
                 default:
@@ -202,4 +263,65 @@ class Pool
 
         return $prefix.' '.$package->getPrettyString();
     }
+
+    private function ensurePackageIsLoaded($data)
+    {
+        if (is_array($data)) {
+            $data = $this->packages[$data['id'] - 1] = $data['repo']->loadPackage($data, $data['id']);
+        }
+
+        return $data;
+    }
+
+    /**
+     * Checks if the package matches the given constraint directly or through
+     * provided or replaced packages
+     *
+     * @param  array|PackageInterface  $candidate
+     * @param  string                  $name       Name of the package to be matched
+     * @param  LinkConstraintInterface $constraint The constraint to verify
+     * @return int                     One of the MATCH* constants of this class or 0 if there is no match
+     */
+    private function match($candidate, $name, LinkConstraintInterface $constraint)
+    {
+        if (is_array($candidate)) {
+            $candidateName = $candidate['name'];
+            $candidateVersion = $candidate['version'];
+            foreach (array('provides', 'replaces') as $linkType) {
+                $$linkType = isset($candidate[rtrim($linkType, 's')]) ? $candidate[rtrim($linkType, 's')] : array();
+                foreach ($$linkType as $target => $constraintDef) {
+                    if ('self.version' === $constraintDef) {
+                        $parsedConstraint = $this->versionParser->parseConstraints($candidateVersion);
+                    } else {
+                        $parsedConstraint = $this->versionParser->parseConstraints($constraintDef);
+                    }
+                    ${$linkType}[$target] = new Link($candidateName, $target, $parsedConstraint, $linkType, $constraintDef);
+                }
+            }
+        } else {
+            $candidateName = $candidate->getName();
+            $candidateVersion = $candidate->getVersion();
+            $provides = $candidate->getProvides();
+            $replaces = $candidate->getReplaces();
+        }
+
+        if ($candidateName === $name) {
+            return $constraint->matches(new VersionConstraint('==', $candidateVersion)) ? self::MATCH : self::MATCH_NAME;
+        }
+
+        foreach ($provides as $link) {
+            if ($link->getTarget() === $name && $constraint->matches($link->getConstraint())) {
+                return self::MATCH_PROVIDE;
+            }
+        }
+
+        foreach ($replaces as $link) {
+            if ($link->getTarget() === $name && $constraint->matches($link->getConstraint())) {
+                return self::MATCH_REPLACE;
+            }
+        }
+
+        return self::MATCH_NONE;
+    }
+
 }
