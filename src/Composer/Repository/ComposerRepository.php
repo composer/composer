@@ -14,6 +14,7 @@ namespace Composer\Repository;
 
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\PackageInterface;
+use Composer\Package\Version\VersionParser;
 use Composer\Json\JsonFile;
 use Composer\Cache;
 use Composer\Config;
@@ -23,14 +24,15 @@ use Composer\Util\RemoteFilesystem;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class ComposerRepository extends ArrayRepository implements NotifiableRepositoryInterface
+class ComposerRepository extends ArrayRepository implements NotifiableRepositoryInterface, StreamableRepositoryInterface
 {
     protected $config;
     protected $url;
     protected $io;
-    protected $packages;
     protected $cache;
     protected $notifyUrl;
+    protected $minimalPackages;
+    protected $loader;
 
     public function __construct(array $repoConfig, IOInterface $io, Config $config)
     {
@@ -47,6 +49,7 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
         $this->url = $repoConfig['url'];
         $this->io = $io;
         $this->cache = new Cache($io, $config->get('home').'/cache/'.preg_replace('{[^a-z0-9.]}i', '-', $this->url));
+        $this->loader = new ArrayLoader();
     }
 
     /**
@@ -78,10 +81,60 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
         @file_get_contents($url, false, $context);
     }
 
+    public function getMinimalPackages()
+    {
+        if (isset($this->minimalPackages)) {
+            return $this->minimalPackages;
+        }
+
+        $repoData = $this->loadDataFromServer();
+
+        $this->minimalPackages = array();
+        $versionParser = new VersionParser;
+
+        foreach ($repoData as $package) {
+            $version = !empty($package['version_normalized']) ? $package['version_normalized'] : $versionParser->normalize($package['version']);
+            $data = array(
+                'name' => strtolower($package['name']),
+                'repo' => $this,
+                'version' => $version,
+                'raw' => $package,
+            );
+            if (!empty($package['replace'])) {
+                $data['replace'] = $package['replace'];
+            }
+            if (!empty($package['provide'])) {
+                $data['provide'] = $package['provide'];
+            }
+
+            $this->minimalPackages[] = $data;
+        }
+
+        return $this->minimalPackages;
+    }
+
+    public function loadPackage(array $data, $id)
+    {
+        $package = $this->loader->load($data);
+        $package->setId($id);
+        $package->setRepository($data['repo']);
+
+        return $package;
+    }
+
     protected function initialize()
     {
         parent::initialize();
 
+        $repoData = $this->loadDataFromServer();
+
+        foreach ($repoData as $package) {
+            $this->addPackage($this->loader->load($package));
+        }
+    }
+
+    protected function loadDataFromServer()
+    {
         if (!extension_loaded('openssl') && 'https' === substr($this->url, 0, 5)) {
             throw new \RuntimeException('You must enable the openssl extension in your php.ini to load information from '.$this->url);
         }
@@ -109,17 +162,18 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
             }
         }
 
-        $loader = new ArrayLoader();
-        $this->loadRepository($loader, $data);
+        return $this->loadIncludes($data);
     }
 
-    protected function loadRepository(ArrayLoader $loader, $data)
+    protected function loadIncludes($data)
     {
+        $packages = array();
+
         // legacy repo handling
         if (!isset($data['packages']) && !isset($data['includes'])) {
             foreach ($data as $pkg) {
                 foreach ($pkg['versions'] as $metadata) {
-                    $this->addPackage($loader->load($metadata));
+                    $packages[] = $metadata;
                 }
             }
 
@@ -129,7 +183,7 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
         if (isset($data['packages'])) {
             foreach ($data['packages'] as $package => $versions) {
                 foreach ($versions as $version => $metadata) {
-                    $this->addPackage($loader->load($metadata));
+                    $packages[] = $metadata;
                 }
             }
         }
@@ -143,8 +197,10 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
                     $includedData = $json->read();
                     $this->cache->write($include, json_encode($includedData));
                 }
-                $this->loadRepository($loader, $includedData);
+                $packages = array_merge($packages, $this->loadIncludes($includedData));
             }
         }
+
+        return $packages;
     }
 }
