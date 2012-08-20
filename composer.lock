@@ -1,5 +1,5 @@
 {
-    "hash": "a1b94e69712d09a07bb817423533c483",
+    "hash": "d0841c8e134ffc8a91fe9d03caf6961b",
     "packages": [
         {
             "package": "justinrainbow/json-schema",
@@ -11,27 +11,11 @@
         },
         {
             "package": "symfony/console",
-            "version": "dev-master",
-            "alias-pretty-version": "2.1.x-dev",
-            "alias-version": "2.1.9999999.9999999-dev"
-        },
-        {
-            "package": "symfony/console",
-            "version": "dev-master",
-            "source-reference": "3b66f1056f5ac37146d3b755964e8a43a205f2f5",
-            "commit-date": "1344349441"
+            "version": "v2.1.0-BETA3"
         },
         {
             "package": "symfony/finder",
-            "version": "dev-master",
-            "alias-pretty-version": "2.1.x-dev",
-            "alias-version": "2.1.9999999.9999999-dev"
-        },
-        {
-            "package": "symfony/finder",
-            "version": "dev-master",
-            "source-reference": "1af11ab3a686f9c45f2a8d9d721d5717cdd5f1d6",
-            "commit-date": "1345026762"
+            "version": "v2.1.0-BETA3"
         },
         {
             "package": "symfony/process",
@@ -42,18 +26,16 @@
         {
             "package": "symfony/process",
             "version": "dev-master",
-            "source-reference": "v2.1.0-RC1",
-            "commit-date": "1343512949"
+            "source-reference": "ae0635cf7768aeab3c7935389e651498706b87ac",
+            "commit-date": "1342632812"
         }
     ],
     "packages-dev": null,
     "aliases": [
 
     ],
-    "minimum-stability": "stable",
+    "minimum-stability": "beta",
     "stability-flags": {
-        "symfony/console": 5,
-        "symfony/finder": 5,
-        "symfony/process": 5
+        "symfony/process": 20
     }
 }
