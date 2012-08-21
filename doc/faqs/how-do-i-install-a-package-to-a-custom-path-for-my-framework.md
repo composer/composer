@@ -42,4 +42,5 @@ Now the package would be installed to your folder location, rather than the defa
 composer/installers determined location.
 
 > **Note:** You cannot use this to change the path of any package. This is only
-> applicable to packages that require `composer/installers`.
+> applicable to packages that require `composer/installers` and use a custom type
+> that it handles.
