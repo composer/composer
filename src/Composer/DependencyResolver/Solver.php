@@ -115,7 +115,7 @@ class Solver
             }
             $this->problems[] = $problem;
 
-            $this->resetToOffset($decisionStart);
+            $this->decisions->resetToOffset($decisionStart);
             $ruleIndex = -1;
         }
     }
