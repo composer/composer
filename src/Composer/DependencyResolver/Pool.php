@@ -85,17 +85,7 @@ class Pool
                     $name = $package['name'];
                     $version = $package['version'];
                     $stability = VersionParser::parseStability($version);
-                    if (
-                        // always allow exempt repos
-                        $exempt
-                        // allow if package matches the global stability requirement and has no exception
-                        || (!isset($this->stabilityFlags[$name])
-                            && isset($this->acceptableStabilities[$stability]))
-                        // allow if package matches the package-specific stability flag
-                        || (isset($this->stabilityFlags[$name])
-                            && BasePackage::$stabilities[$stability] <= $this->stabilityFlags[$name]
-                        )
-                    ) {
+                    if ($exempt || $this->isPackageAcceptable($name, $stability)) {
                         $package['id'] = $id++;
                         $this->packages[] = $package;
 
@@ -154,17 +144,7 @@ class Pool
                 foreach ($repo->getPackages() as $package) {
                     $name = $package->getName();
                     $stability = $package->getStability();
-                    if (
-                        // always allow exempt repos
-                        $exempt
-                        // allow if package matches the global stability requirement and has no exception
-                        || (!isset($this->stabilityFlags[$name])
-                            && isset($this->acceptableStabilities[$stability]))
-                        // allow if package matches the package-specific stability flag
-                        || (isset($this->stabilityFlags[$name])
-                            && BasePackage::$stabilities[$stability] <= $this->stabilityFlags[$name]
-                        )
-                    ) {
+                    if ($exempt || $this->isPackageAcceptable($name, $stability)) {
                         $package->setId($id++);
                         $this->packages[] = $package;
 
@@ -312,6 +292,21 @@ class Pool
         }
 
         return $prefix.' '.$package->getPrettyString();
+    }
+
+    private function isPackageAcceptable($name, $stability)
+    {
+        // allow if package matches the global stability requirement and has no exception
+        if (!isset($this->stabilityFlags[$name]) && isset($this->acceptableStabilities[$stability])) {
+            return true;
+        }
+
+        // allow if package matches the package-specific stability flag
+        if (isset($this->stabilityFlags[$name]) && BasePackage::$stabilities[$stability] <= $this->stabilityFlags[$name]) {
+            return true;
+        }
+
+        return false;
     }
 
     private function ensurePackageIsLoaded($data)
