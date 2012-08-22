@@ -349,8 +349,8 @@ class Pool
             $candidateName = $candidate['name'];
             $candidateVersion = $candidate['version'];
             foreach (array('provides', 'replaces') as $linkType) {
-                $$linkType = isset($candidate[rtrim($linkType, 's')]) ? $candidate[rtrim($linkType, 's')] : array();
-                foreach ($$linkType as $target => $constraintDef) {
+                ${$linkType} = isset($candidate[rtrim($linkType, 's')]) ? $candidate[rtrim($linkType, 's')] : array();
+                foreach (${$linkType} as $target => $constraintDef) {
                     if ('self.version' === $constraintDef) {
                         $parsedConstraint = $this->versionParser->parseConstraints($candidateVersion);
                     } else {
