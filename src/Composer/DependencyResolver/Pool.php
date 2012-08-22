@@ -65,9 +65,9 @@ class Pool
      * Adds a repository and its packages to this package pool
      *
      * @param RepositoryInterface $repo A package repository
-     * @param array               $aliases
+     * @param array               $rootAliases
      */
-    public function addRepository(RepositoryInterface $repo, $aliases = array())
+    public function addRepository(RepositoryInterface $repo, $rootAliases = array())
     {
         if ($repo instanceof CompositeRepository) {
             $repos = $repo->getRepositories();
@@ -119,10 +119,11 @@ class Pool
                         }
 
                         // handle root package aliases
-                        if (isset($aliases[$name][$version])) {
+                        if (isset($rootAliases[$name][$version])) {
                             $alias = $package;
-                            $alias['version'] = $aliases[$name][$version]['alias_normalized'];
-                            $alias['alias'] = $aliases[$name][$version]['alias'];
+                            unset($alias['raw']);
+                            $alias['version'] = $rootAliases[$name][$version]['alias_normalized'];
+                            $alias['alias'] = $rootAliases[$name][$version]['alias'];
                             $alias['alias_of'] = $package['id'];
                             $alias['id'] = $id++;
                             $alias['root_alias'] = true;
@@ -136,6 +137,7 @@ class Pool
                         // handle normal package aliases
                         if (isset($package['alias'])) {
                             $alias = $package;
+                            unset($alias['raw']);
                             $alias['version'] = $package['alias_normalized'];
                             $alias['alias'] = $package['alias'];
                             $alias['alias_of'] = $package['id'];
@@ -171,8 +173,8 @@ class Pool
                         }
 
                         // handle root package aliases
-                        if (isset($aliases[$name][$package->getVersion()])) {
-                            $alias = $aliases[$name][$package->getVersion()];
+                        if (isset($rootAliases[$name][$package->getVersion()])) {
+                            $alias = $rootAliases[$name][$package->getVersion()];
                             $package->setAlias($alias['alias_normalized']);
                             $package->setPrettyAlias($alias['alias']);
                             $package->getRepository()->addPackage($aliasPackage = new AliasPackage($package, $alias['alias_normalized'], $alias['alias']));
