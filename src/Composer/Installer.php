@@ -244,9 +244,9 @@ class Installer
 
         // creating repository pool
         $pool = new Pool($minimumStability, $stabilityFlags);
-        $pool->addRepository($installedRepo);
+        $pool->addRepository($installedRepo, $aliases);
         foreach ($this->repositoryManager->getRepositories() as $repository) {
-            $pool->addRepository($repository);
+            $pool->addRepository($repository, $aliases);
         }
 
         // creating requirements request
@@ -276,11 +276,8 @@ class Installer
 
             foreach ($lockedPackages as $package) {
                 $version = $package->getVersion();
-                foreach ($aliases as $alias) {
-                    if ($alias['package'] === $package->getName() && $alias['version'] === $package->getVersion()) {
-                        $version = $alias['alias_normalized'];
-                        break;
-                    }
+                if (isset($aliases[$package->getName()][$version])) {
+                    $version = $aliases[$package->getName()][$version]['alias_normalized'];
                 }
                 $constraint = new VersionConstraint('=', $version);
                 $request->install($package->getName(), $constraint);
@@ -495,11 +492,11 @@ class Installer
             $aliases = $this->package->getAliases();
         }
 
+        $normalizedAliases = array();
+
         foreach ($aliases as $alias) {
-            $packages = array_merge(
-                $platformRepo->findPackages($alias['package'], $alias['version']),
-                $this->repositoryManager->findPackages($alias['package'], $alias['version'])
-            );
+            $normalizedAliases[$alias['package']][$alias['version']] = array('alias' => $alias['alias'], 'alias_normalized' => $alias['alias_normalized']);
+            $packages = $platformRepo->findPackages($alias['package'], $alias['version']);
             foreach ($packages as $package) {
                 $package->setAlias($alias['alias_normalized']);
                 $package->setPrettyAlias($alias['alias']);
@@ -508,7 +505,7 @@ class Installer
             }
         }
 
-        return $aliases;
+        return $normalizedAliases;
     }
 
     private function isUpdateable(PackageInterface $package)
