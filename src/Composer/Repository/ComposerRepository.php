@@ -108,29 +108,9 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
             }
 
             // add branch aliases
-            if ('dev-' === substr($package['version'], 0, 4) && isset($package['extra']['branch-alias']) && is_array($package['extra']['branch-alias'])) {
-                foreach ($package['extra']['branch-alias'] as $sourceBranch => $targetBranch) {
-                    // ensure it is an alias to a -dev package
-                    if ('-dev' !== substr($targetBranch, -4)) {
-                        continue;
-                    }
-                    // normalize without -dev and ensure it's a numeric branch that is parseable
-                    $validatedTargetBranch = $versionParser->normalizeBranch(substr($targetBranch, 0, -4));
-                    if ('-dev' !== substr($validatedTargetBranch, -4)) {
-                        continue;
-                    }
-
-                    // ensure that it is the current branch aliasing itself
-                    if (strtolower($package['version']) !== strtolower($sourceBranch)) {
-                        continue;
-                    }
-
-                    $alias = preg_replace('{(\.9{7})+}', '.x', $validatedTargetBranch);
-                    $aliasNormalized = $validatedTargetBranch;
-                    $data['alias'] = $alias;
-                    $data['alias_normalized'] = $aliasNormalized;
-                    break;
-                }
+            if ($aliasNormalized = $this->loader->getBranchAlias($package)) {
+                $data['alias'] = preg_replace('{(\.9{7})+}', '.x', $aliasNormalized);
+                $data['alias_normalized'] = $aliasNormalized;
             }
 
             $this->minimalPackages[] = $data;

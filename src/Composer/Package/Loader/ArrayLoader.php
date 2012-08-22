@@ -134,28 +134,9 @@ class ArrayLoader implements LoaderInterface
             $package->setDistSha1Checksum(isset($config['dist']['shasum']) ? $config['dist']['shasum'] : null);
         }
 
-        // check for a branch alias (dev-master => 1.0.x-dev for example) if this is a named branch
-        if ('dev-' === substr($package->getPrettyVersion(), 0, 4) && isset($config['extra']['branch-alias']) && is_array($config['extra']['branch-alias'])) {
-            foreach ($config['extra']['branch-alias'] as $sourceBranch => $targetBranch) {
-                // ensure it is an alias to a -dev package
-                if ('-dev' !== substr($targetBranch, -4)) {
-                    continue;
-                }
-                // normalize without -dev and ensure it's a numeric branch that is parseable
-                $validatedTargetBranch = $this->versionParser->normalizeBranch(substr($targetBranch, 0, -4));
-                if ('-dev' !== substr($validatedTargetBranch, -4)) {
-                    continue;
-                }
-
-                // ensure that it is the current branch aliasing itself
-                if (strtolower($package->getPrettyVersion()) !== strtolower($sourceBranch)) {
-                    continue;
-                }
-
-                $package->setAlias($validatedTargetBranch);
-                $package->setPrettyAlias(preg_replace('{(\.9{7})+}', '.x', $validatedTargetBranch));
-                break;
-            }
+        if ($aliasNormalized = $this->getBranchAlias($config)) {
+            $package->setAlias($aliasNormalized);
+            $package->setPrettyAlias(preg_replace('{(\.9{7})+}', '.x', $aliasNormalized));
         }
 
         foreach (Package\BasePackage::$supportedLinkTypes as $type => $opts) {
@@ -189,6 +170,42 @@ class ArrayLoader implements LoaderInterface
         }
 
         return $package;
+    }
+
+    /**
+     * Retrieves a branch alias (dev-master => 1.0.x-dev for example) if it exists
+     *
+     * @param array        $config the entire package config
+     * @return string|null normalized version of the branch alias or null if there is none
+     */
+    public function getBranchAlias(array $config)
+    {
+        if ('dev-' !== substr($config['version'], 0, 4)
+            || !isset($config['extra']['branch-alias'])
+            || !is_array($config['extra']['branch-alias'])
+        ) {
+            return;
+        }
+
+        foreach ($config['extra']['branch-alias'] as $sourceBranch => $targetBranch) {
+            // ensure it is an alias to a -dev package
+            if ('-dev' !== substr($targetBranch, -4)) {
+                continue;
+            }
+
+            // normalize without -dev and ensure it's a numeric branch that is parseable
+            $validatedTargetBranch = $this->versionParser->normalizeBranch(substr($targetBranch, 0, -4));
+            if ('-dev' !== substr($validatedTargetBranch, -4)) {
+                continue;
+            }
+
+            // ensure that it is the current branch aliasing itself
+            if (strtolower($config['version']) !== strtolower($sourceBranch)) {
+                continue;
+            }
+
+            return $validatedTargetBranch;
+        }
     }
 
     private function loadLinksFromConfig($package, $description, array $linksSpecs)
