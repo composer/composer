@@ -12,9 +12,6 @@
 
 namespace Composer\Package;
 
-use Composer\Package\LinkConstraint\LinkConstraintInterface;
-use Composer\Repository\RepositoryInterface;
-
 /**
  * Defines additional fields that are only needed for the root package
  *

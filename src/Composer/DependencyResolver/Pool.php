@@ -15,7 +15,6 @@ namespace Composer\DependencyResolver;
 use Composer\Package\BasePackage;
 use Composer\Package\AliasPackage;
 use Composer\Package\Version\VersionParser;
-use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Link;
 use Composer\Package\LinkConstraint\LinkConstraintInterface;
 use Composer\Package\LinkConstraint\VersionConstraint;
@@ -62,7 +61,7 @@ class Pool
     /**
      * Adds a repository and its packages to this package pool
      *
-     * @param RepositoryInterface $repo A package repository
+     * @param RepositoryInterface $repo        A package repository
      * @param array               $rootAliases
      */
     public function addRepository(RepositoryInterface $repo, $rootAliases = array())

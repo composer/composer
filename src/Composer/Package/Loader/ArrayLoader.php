@@ -175,7 +175,7 @@ class ArrayLoader implements LoaderInterface
     /**
      * Retrieves a branch alias (dev-master => 1.0.x-dev for example) if it exists
      *
-     * @param array        $config the entire package config
+     * @param  array       $config the entire package config
      * @return string|null normalized version of the branch alias or null if there is none
      */
     public function getBranchAlias(array $config)
