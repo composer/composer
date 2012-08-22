@@ -12,9 +12,6 @@
 
 namespace Composer\Package;
 
-use Composer\Package\LinkConstraint\LinkConstraintInterface;
-use Composer\Repository\RepositoryInterface;
-
 /**
  * Defines package metadata that is not necessarily needed for solving and installing packages
  *

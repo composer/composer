@@ -12,8 +12,6 @@
 
 namespace Composer\Package;
 
-use Composer\Package\LinkConstraint\LinkConstraintInterface;
-use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\PlatformRepository;
 

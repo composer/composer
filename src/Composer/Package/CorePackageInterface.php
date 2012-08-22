@@ -12,7 +12,6 @@
 
 namespace Composer\Package;
 
-use Composer\Package\LinkConstraint\LinkConstraintInterface;
 use Composer\Repository\RepositoryInterface;
 
 /**

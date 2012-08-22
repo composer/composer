@@ -39,7 +39,7 @@ interface StreamableRepositoryInterface extends RepositoryInterface
     /**
      * Loads a package from minimal info of the package
      *
-     * @param array $data the minimal info as was returned by getMinimalPackage
+     * @param  array            $data the minimal info as was returned by getMinimalPackage
      * @return PackageInterface
      */
     public function loadPackage(array $data);
@@ -47,8 +47,8 @@ interface StreamableRepositoryInterface extends RepositoryInterface
     /**
      * Loads an alias package from minimal info of the package
      *
-     * @param array            $data      the minimal info as was returned by getMinimalPackage
-     * @param PackageInterface $aliasOf   the package which this alias is an alias of
+     * @param  array            $data    the minimal info as was returned by getMinimalPackage
+     * @param  PackageInterface $aliasOf the package which this alias is an alias of
      * @return AliasPackage
      */
     public function loadAliasPackage(array $data, PackageInterface $aliasOf);
