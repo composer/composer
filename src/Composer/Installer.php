@@ -166,7 +166,8 @@ class Installer
             $installedRepo->addRepository($this->additionalInstalledRepository);
         }
 
-        $aliases = $this->aliasPackages($platformRepo);
+        $aliases = $this->getRootAliases();
+        $this->aliasPlatformPackages($platformRepo, $aliases);
 
         if ($this->runScripts) {
             // dispatch pre event
@@ -484,7 +485,7 @@ class Installer
         return true;
     }
 
-    private function aliasPackages(PlatformRepository $platformRepo)
+    private function getRootAliases()
     {
         if (!$this->update && $this->locker->isLocked()) {
             $aliases = $this->locker->getAliases();
@@ -495,17 +496,29 @@ class Installer
         $normalizedAliases = array();
 
         foreach ($aliases as $alias) {
-            $normalizedAliases[$alias['package']][$alias['version']] = array('alias' => $alias['alias'], 'alias_normalized' => $alias['alias_normalized']);
-            $packages = $platformRepo->findPackages($alias['package'], $alias['version']);
-            foreach ($packages as $package) {
-                $package->setAlias($alias['alias_normalized']);
-                $package->setPrettyAlias($alias['alias']);
-                $package->getRepository()->addPackage($aliasPackage = new AliasPackage($package, $alias['alias_normalized'], $alias['alias']));
-                $aliasPackage->setRootPackageAlias(true);
-            }
+            $normalizedAliases[$alias['package']][$alias['version']] = array(
+                'alias' => $alias['alias'],
+                'alias_normalized' => $alias['alias_normalized']
+            );
         }
 
         return $normalizedAliases;
+    }
+
+    private function aliasPlatformPackages(PlatformRepository $platformRepo, $aliases)
+    {
+        foreach ($aliases as $package => $versions) {
+            foreach ($versions as $version => $alias) {
+                $packages = $platformRepo->findPackages($package, $version);
+                foreach ($packages as $package) {
+                    $package->setAlias($alias['alias_normalized']);
+                    $package->setPrettyAlias($alias['alias']);
+                    $aliasPackage = new AliasPackage($package, $alias['alias_normalized'], $alias['alias']);
+                    $aliasPackage->setRootPackageAlias(true);
+                    $platformRepo->addPackage($aliasPackage);
+                }
+            }
+        }
     }
 
     private function isUpdateable(PackageInterface $package)
