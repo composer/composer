@@ -13,6 +13,7 @@
 namespace Composer\DependencyResolver;
 
 use Composer\Package\BasePackage;
+use Composer\Package\AliasPackage;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Link;
@@ -64,8 +65,9 @@ class Pool
      * Adds a repository and its packages to this package pool
      *
      * @param RepositoryInterface $repo A package repository
+     * @param array               $aliases
      */
-    public function addRepository(RepositoryInterface $repo)
+    public function addRepository(RepositoryInterface $repo, $aliases = array())
     {
         if ($repo instanceof CompositeRepository) {
             $repos = $repo->getRepositories();
@@ -81,7 +83,8 @@ class Pool
             if ($repo instanceof StreamableRepositoryInterface) {
                 foreach ($repo->getMinimalPackages() as $package) {
                     $name = $package['name'];
-                    $stability = VersionParser::parseStability($package['version']);
+                    $version = $package['version'];
+                    $stability = VersionParser::parseStability($version);
                     if (
                         // always allow exempt repos
                         $exempt
@@ -114,6 +117,35 @@ class Pool
                         foreach (array_keys($names) as $name) {
                             $this->packageByName[$name][] =& $this->packages[$id-2];
                         }
+
+                        // handle root package aliases
+                        if (isset($aliases[$name][$version])) {
+                            $alias = $package;
+                            $alias['version'] = $aliases[$name][$version]['alias_normalized'];
+                            $alias['alias'] = $aliases[$name][$version]['alias'];
+                            $alias['alias_of'] = $package['id'];
+                            $alias['id'] = $id++;
+                            $alias['root_alias'] = true;
+                            $this->packages[] = $alias;
+
+                            foreach (array_keys($names) as $name) {
+                                $this->packageByName[$name][] =& $this->packages[$id-2];
+                            }
+                        }
+
+                        // handle normal package aliases
+                        if (isset($package['alias'])) {
+                            $alias = $package;
+                            $alias['version'] = $package['alias_normalized'];
+                            $alias['alias'] = $package['alias'];
+                            $alias['alias_of'] = $package['id'];
+                            $alias['id'] = $id++;
+                            $this->packages[] = $alias;
+
+                            foreach (array_keys($names) as $name) {
+                                $this->packageByName[$name][] =& $this->packages[$id-2];
+                            }
+                        }
                     }
                 }
             } else {
@@ -136,6 +168,22 @@ class Pool
 
                         foreach ($package->getNames() as $name) {
                             $this->packageByName[$name][] = $package;
+                        }
+
+                        // handle root package aliases
+                        if (isset($aliases[$name][$package->getVersion()])) {
+                            $alias = $aliases[$name][$package->getVersion()];
+                            $package->setAlias($alias['alias_normalized']);
+                            $package->setPrettyAlias($alias['alias']);
+                            $package->getRepository()->addPackage($aliasPackage = new AliasPackage($package, $alias['alias_normalized'], $alias['alias']));
+                            $aliasPackage->setRootPackageAlias(true);
+                            $aliasPackage->setId($id++);
+
+                            $this->packages[] = $aliasPackage;
+
+                            foreach ($aliasPackage->getNames() as $name) {
+                                $this->packageByName[$name][] = $aliasPackage;
+                            }
                         }
                     }
                 }
@@ -267,7 +315,20 @@ class Pool
     private function ensurePackageIsLoaded($data)
     {
         if (is_array($data)) {
-            $data = $this->packages[$data['id'] - 1] = $data['repo']->loadPackage($data, $data['id']);
+            if (isset($data['alias_of'])) {
+                // TODO move to $repo->loadAliasPackage?
+                $aliasOf = $this->packageById($data['alias_of']);
+                $rootAlias = !empty($data['root_alias']);
+                $package = $this->packages[$data['id'] - 1] = new AliasPackage($aliasOf, $data['version'], $data['alias']);
+                $package->setId($data['id']);
+                $package->setRootPackageAlias($rootAlias);
+
+                return $package;
+            }
+
+            $package = $this->packages[$data['id'] - 1] = $data['repo']->loadPackage($data, $data['id']);
+
+            return $package;
         }
 
         return $data;
