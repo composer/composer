@@ -44,13 +44,11 @@ class Pool
     protected $packageByName = array();
     protected $acceptableStabilities;
     protected $stabilityFlags;
-    protected $loader;
     protected $versionParser;
 
     public function __construct($minimumStability = 'stable', array $stabilityFlags = array())
     {
         $stabilities = BasePackage::$stabilities;
-        $this->loader = new ArrayLoader;
         $this->versionParser = new VersionParser;
         $this->acceptableStabilities = array();
         foreach (BasePackage::$stabilities as $stability => $value) {
@@ -313,19 +311,15 @@ class Pool
     {
         if (is_array($data)) {
             if (isset($data['alias_of'])) {
-                // TODO move to $repo->loadAliasPackage?
                 $aliasOf = $this->packageById($data['alias_of']);
-                $rootAlias = !empty($data['root_alias']);
-                $package = $this->packages[$data['id'] - 1] = new AliasPackage($aliasOf, $data['version'], $data['alias']);
-                $package->setId($data['id']);
-                $package->setRootPackageAlias($rootAlias);
-
-                return $package;
+                $package = $this->packages[$data['id'] - 1] = $data['repo']->loadAliasPackage($data, $aliasOf);
+                $package->setRootPackageAlias(!empty($data['root_alias']));
+            } else {
+                $package = $this->packages[$data['id'] - 1] = $data['repo']->loadPackage($data);
             }
 
-            $package = $this->packages[$data['id'] - 1] = $data['repo']->loadPackage($data, $data['id']);
-
-            return $package;
+            $package->setId($data['id']);
+            $data = $package;
         }
 
         return $data;
@@ -342,6 +336,7 @@ class Pool
      */
     private function match($candidate, $name, LinkConstraintInterface $constraint)
     {
+        // handle array packages
         if (is_array($candidate)) {
             $candidateName = $candidate['name'];
             $candidateVersion = $candidate['version'];
@@ -357,6 +352,7 @@ class Pool
                 }
             }
         } else {
+            // handle object packages
             $candidateName = $candidate->getName();
             $candidateVersion = $candidate->getVersion();
             $provides = $candidate->getProvides();
@@ -381,5 +377,4 @@ class Pool
 
         return self::MATCH_NONE;
     }
-
 }

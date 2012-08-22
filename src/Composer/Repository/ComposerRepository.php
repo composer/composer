@@ -81,6 +81,9 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
         @file_get_contents($url, false, $context);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getMinimalPackages()
     {
         if (isset($this->minimalPackages)) {
@@ -119,15 +122,31 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
         return $this->minimalPackages;
     }
 
-    public function loadPackage(array $data, $id)
+    /**
+     * {@inheritDoc}
+     */
+    public function loadPackage(array $data)
     {
         $package = $this->loader->load($data['raw']);
-        $package->setId($id);
         $package->setRepository($this);
 
         return $package;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public function loadAliasPackage(array $data, PackageInterface $aliasOf)
+    {
+        $aliasPackage = $this->createAliasPackage($aliasOf, $data['version'], $data['alias']);
+        $aliasPackage->setRepository($this);
+
+        return $aliasPackage;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     protected function initialize()
     {
         parent::initialize();
