@@ -23,6 +23,8 @@ interface StreamableRepositoryInterface extends RepositoryInterface
     /**
      * Return partial package data without loading them all to save on memory
      *
+     * The function must return an array of package arrays.
+     *
      * The package array must contain the following fields:
      *  - name: package name (normalized/lowercased)
      *  - repo: reference to the repository instance
@@ -31,6 +33,10 @@ interface StreamableRepositoryInterface extends RepositoryInterface
      *  - provide: array of package name => version constraint, optional
      *  - alias: pretty alias that this package should be aliased to, optional
      *  - alias_normalized: normalized alias that this package should be aliased to, optional
+     *
+     * Any additional information can be returned and will be sent back
+     * into loadPackage/loadAliasPackage for completing the package loading
+     * when it's needed.
      *
      * @return array
      */

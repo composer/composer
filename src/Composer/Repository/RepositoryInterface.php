@@ -52,7 +52,7 @@ interface RepositoryInterface extends \Countable
     public function findPackages($name, $version = null);
 
     /**
-     * Filters all the packages throuhg a callback
+     * Filters all the packages through a callback
      *
      * The packages are not guaranteed to be instances in the repository
      * and this can only be used for streaming through a list of packages.
