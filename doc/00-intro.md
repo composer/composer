@@ -42,7 +42,7 @@ which describes the project's dependencies.
 We are simply stating that our project requires some `monolog/monolog` package,
 any version beginning with `1.0`.
 
-## Installation
+## Installation - *nix
 
 ### Downloading the Composer Executable
 
@@ -83,6 +83,32 @@ Next, run the `install` command to resolve and download dependencies:
     $ php composer.phar install
 
 This will download monolog into the `vendor/monolog/monolog` directory.
+
+## Installation - Windows
+
+### Downloading the Composer Executable
+
+Change to a directory on your `PATH`
+
+    C:\Users\username>cd C:\bin
+    C:\bin>php -r "eval('?>'.file_get_contents('https://getcomposer.org/installer'));"
+
+Create a new `.BAT` file alongside composer
+
+    C:\bin>notepad composer.bat
+    
+Paste the following:
+
+    @ECHO OFF
+    SET composerScript=composer.phar
+    php %~dp0%composerScript% %*
+    
+Save the file. Close your current terminal. Test usage with a new terminal:
+
+    C:\Users\username>composer -V
+    Composer version 27d8904
+    
+    C:\Users\username>
 
 ## Autoloading
 
