@@ -14,6 +14,7 @@ namespace Composer\Console;
 
 use Symfony\Component\Console\Application as BaseApplication;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Formatter\OutputFormatter;
@@ -83,7 +84,17 @@ class Application extends BaseApplication
             }
         }
 
-        return parent::doRun($input, $output);
+        if ($input->hasParameterOption('--profile')) {
+            $startTime = microtime(true);
+        }
+
+        $result = parent::doRun($input, $output);
+
+        if (isset($startTime)) {
+            $output->writeln('<info>Memory usage: '.round(memory_get_usage() / 1024 / 1024, 2).'MB (peak: '.round(memory_get_peak_usage() / 1024 / 1024, 2).'MB), time: '.round(microtime(true) - $startTime, 2).'s');
+        }
+
+        return $result;
     }
 
     /**
@@ -138,6 +149,17 @@ class Application extends BaseApplication
         }
 
         return $commands;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function getDefaultInputDefinition()
+    {
+        $definition = parent::getDefaultInputDefinition();
+        $definition->addOption(new InputOption('--profile', null, InputOption::VALUE_NONE, 'Display timing and memory usage information'));
+
+        return $definition;
     }
 
     /**
