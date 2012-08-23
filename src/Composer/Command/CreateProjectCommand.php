@@ -123,7 +123,6 @@ EOT
 
                     return false;
                 }
-                if ($package->getName() === $name) {var_dump((string) $package);}
             });
         }
 

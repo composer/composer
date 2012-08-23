@@ -63,8 +63,6 @@ EOT
             $repos = new CompositeRepository(array_merge(array($installedRepo), $defaultRepos));
         }
 
-        $time = microtime(true);
-
         $this->tokens = $input->getArgument('tokens');
         $this->output = $output;
         $repos->filterPackages(array($this, 'processPackage'), 'Composer\Package\CompletePackage');
