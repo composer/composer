@@ -1,4 +1,5 @@
 <?php
+
 /*
  * This file is part of Composer.
  *
@@ -13,31 +14,25 @@ namespace Composer\Test\Package\Archiver;
 
 use Composer\Package\Archiver\TarArchiver;
 
+/**
+ * @author Till Klampaeckel <till@php.net>
+ * @author Matthieu Moquet <matthieu@moquet.net>
+ */
 class TarArchiverTest extends ArchiverTest
 {
-    public function testThis()
+    public function testArchive()
     {
         $this->setupGitRepo();
+
         $package = $this->setupPackage();
-        $name = $this->getPackageFileName($package);
+        $target  = sys_get_temp_dir().'/composer_archiver_test.tar';
 
-        $temp = sys_get_temp_dir();
-        $tar = new TarArchiver($temp);
-        $tar->dump($package);
+        // Test archive
+        $archiver = new TarArchiver();
+        $archiver->archive($package->getSourceUrl(), $target);
+        $this->assertFileExists($target);
 
-        $dist = sprintf('%s/%s.tar',
-            $temp, $name
-        );
-        $this->assertFileExists($dist);
-        unlink($dist);
+        unlink($target);
         $this->removeGitRepo();
-    }
-
-    /**
-     * @expectedException \InvalidArgumentException
-     */
-    public function testException()
-    {
-        new TarArchiver("/totally-random-" . time());
     }
 }
