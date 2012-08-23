@@ -125,6 +125,27 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
     /**
      * {@inheritDoc}
      */
+    public function filterPackages($callback, $class = 'Composer\Package\Package')
+    {
+        $repoData = $this->loadDataFromServer();
+
+        foreach ($repoData as $package) {
+            if (false === $callback($package = $this->loader->load($package, $class))) {
+                return false;
+            }
+            if ($package->getAlias()) {
+                if (false === $callback($this->createAliasPackage($package))) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function loadPackage(array $data)
     {
         $package = $this->loader->load($data['raw'], 'Composer\Package\Package');
@@ -154,7 +175,7 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
         $repoData = $this->loadDataFromServer();
 
         foreach ($repoData as $package) {
-            $this->addPackage($this->loader->load($package, 'Composer\Package\Package'));
+            $this->addPackage($this->loader->load($package, 'Composer\Package\CompletePackage'));
         }
     }
 
