@@ -12,11 +12,11 @@
 
 namespace Composer\Test\Package;
 
-use Composer\Package\MemoryPackage;
+use Composer\Package\Package;
 use Composer\Package\Version\VersionParser;
 use Composer\Test\TestCase;
 
-class MemoryPackageTest extends TestCase
+class CompletePackageTest extends TestCase
 {
     /**
      * Memory package naming, versioning, and marshalling semantics provider
@@ -38,11 +38,11 @@ class MemoryPackageTest extends TestCase
      * Tests memory package naming semantics
      * @dataProvider providerVersioningSchemes
      */
-    public function testMemoryPackageHasExpectedNamingSemantics($name, $version)
+    public function testPackageHasExpectedNamingSemantics($name, $version)
     {
         $versionParser = new VersionParser();
         $normVersion = $versionParser->normalize($version);
-        $package = new MemoryPackage($name, $normVersion, $version);
+        $package = new Package($name, $normVersion, $version);
         $this->assertEquals(strtolower($name), $package->getName());
     }
 
@@ -50,11 +50,11 @@ class MemoryPackageTest extends TestCase
      * Tests memory package versioning semantics
      * @dataProvider providerVersioningSchemes
      */
-    public function testMemoryPackageHasExpectedVersioningSemantics($name, $version)
+    public function testPackageHasExpectedVersioningSemantics($name, $version)
     {
         $versionParser = new VersionParser();
         $normVersion = $versionParser->normalize($version);
-        $package = new MemoryPackage($name, $normVersion, $version);
+        $package = new Package($name, $normVersion, $version);
         $this->assertEquals($version, $package->getPrettyVersion());
         $this->assertEquals($normVersion, $package->getVersion());
     }
@@ -63,11 +63,11 @@ class MemoryPackageTest extends TestCase
      * Tests memory package marshalling/serialization semantics
      * @dataProvider providerVersioningSchemes
      */
-    public function testMemoryPackageHasExpectedMarshallingSemantics($name, $version)
+    public function testPackageHasExpectedMarshallingSemantics($name, $version)
     {
         $versionParser = new VersionParser();
         $normVersion = $versionParser->normalize($version);
-        $package = new MemoryPackage($name, $normVersion, $version);
+        $package = new Package($name, $normVersion, $version);
         $this->assertEquals(strtolower($name).'-'.$normVersion, (string) $package);
     }
 

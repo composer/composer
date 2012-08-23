@@ -16,7 +16,7 @@ use Composer\Test\TestCase;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Package\Link;
-use Composer\Package\MemoryPackage;
+use Composer\Package\CompletePackage;
 use Composer\Test\Mock\RemoteFilesystemMock;
 
 class ChannelReaderTest extends TestCase
@@ -117,7 +117,7 @@ class ChannelReaderTest extends TestCase
 
         $packages = $ref->invoke($reader, $channelInfo, new VersionParser());
 
-        $expectedPackage = new MemoryPackage('pear-test.loc/sample', '1.0.0.1' , '1.0.0.1');
+        $expectedPackage = new CompletePackage('pear-test.loc/sample', '1.0.0.1' , '1.0.0.1');
         $expectedPackage->setType('pear-library');
         $expectedPackage->setDistType('file');
         $expectedPackage->setDescription('description');

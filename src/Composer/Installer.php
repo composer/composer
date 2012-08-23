@@ -29,6 +29,7 @@ use Composer\Package\Link;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Package\Locker;
 use Composer\Package\PackageInterface;
+use Composer\Package\RootPackageInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\InstalledArrayRepository;
 use Composer\Repository\PlatformRepository;
@@ -55,7 +56,7 @@ class Installer
     protected $config;
 
     /**
-     * @var PackageInterface
+     * @var RootPackageInterface
      */
     protected $package;
 
@@ -112,7 +113,7 @@ class Installer
      *
      * @param IOInterface         $io
      * @param Config              $config
-     * @param PackageInterface    $package
+     * @param RootPackageInterface    $package
      * @param DownloadManager     $downloadManager
      * @param RepositoryManager   $repositoryManager
      * @param Locker              $locker
@@ -120,7 +121,7 @@ class Installer
      * @param EventDispatcher     $eventDispatcher
      * @param AutoloadGenerator   $autoloadGenerator
      */
-    public function __construct(IOInterface $io, Config $config, PackageInterface $package, DownloadManager $downloadManager, RepositoryManager $repositoryManager, Locker $locker, InstallationManager $installationManager, EventDispatcher $eventDispatcher, AutoloadGenerator $autoloadGenerator)
+    public function __construct(IOInterface $io, Config $config, RootPackageInterface $package, DownloadManager $downloadManager, RepositoryManager $repositoryManager, Locker $locker, InstallationManager $installationManager, EventDispatcher $eventDispatcher, AutoloadGenerator $autoloadGenerator)
     {
         $this->io = $io;
         $this->config = $config;

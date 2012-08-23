@@ -17,7 +17,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
-use Composer\Package\PackageInterface;
+use Composer\Package\CompletePackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Factory;
 
@@ -117,11 +117,11 @@ EOT
     /**
      * tries to find a token within the name/keywords/description
      *
-     * @param  PackageInterface $package
+     * @param  CompletePackageInterface $package
      * @param  string           $token
      * @return boolean
      */
-    private function matchPackage(PackageInterface $package, $token)
+    private function matchPackage(CompletePackageInterface $package, $token)
     {
         $score = 0;
 
