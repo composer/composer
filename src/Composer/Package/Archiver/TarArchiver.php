@@ -1,4 +1,5 @@
 <?php
+
 /*
  * This file is part of Composer.
  *
@@ -11,47 +12,28 @@
 
 namespace Composer\Package\Archiver;
 
-use Composer\Package\Archiver\BaseArchiver;
-use Composer\Package\Archiver\ArchiverInterface;
+use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
-use Composer\Util\ProcessExecutor;
 
 /**
- * @author Ulf Härnhammar <ulfharn@gmail.com>
+ * @author Till Klampaeckel <till@php.net>
+ * @author Matthieu Moquet <matthieu@moquet.net>
  */
 class TarArchiver extends BaseArchiver
 {
-    protected $format = 'tar';
+    /**
+     * {@inheritdoc}
+     */
+    public function archive($sources, $target)
+    {
+        $this->createPharArchive($sources, $target, \Phar::TAR);
+    }
 
     /**
-     * @param PackageInterface $package
-     * @throws \InvalidArgumentException
+     * {@inheritdoc}
      */
-    public function dump(PackageInterface $package)
+    public function supports($format)
     {
-        $workDir = $this->getAndEnsureWorkDirectory($package);
-
-        $fileName   = $this->getFilename($package, 'tar');
-        $sourceType = $package->getSourceType();
-        $sourceRef  = $package->getSourceReference();
-
-        $dm = $this->getDownloadManager();
-        $dm->download($package, $workDir, true);
-
-        switch ($sourceType) {
-            case 'git':
-                $this->packageGit($fileName, $sourceRef, $workDir);
-                break;
-            case 'hg':
-                $this->packageHg($fileName, $sourceRef, $workDir);
-                break;
-            case 'svn':
-                $dir = $workDir . (substr($sourceRef, 0, 1) !== '/')?'/':'' . $sourceRef;
-                $this->package($fileName, $dir, \Phar::TAR);
-                break;
-            default:
-                throw new \InvalidArgumentException(
-                    "Unable to handle repositories of type '{$sourceType}'.");
-        }
+        return 'tar' === $format;
     }
 }

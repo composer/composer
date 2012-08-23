@@ -1,4 +1,5 @@
 <?php
+
 /*
  * This file is part of Composer.
  *
@@ -11,156 +12,34 @@
 
 namespace Composer\Package\Archiver;
 
+use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
-use Composer\Util\ProcessExecutor;
-use Composer\Downloader\GitDownloader;
-use Composer\Downloader\HgDownloader;
-use Composer\Downloader\SvnDownloader;
-use Composer\IO\NullIO;
-use Composer\Factory;
 
 /**
  * @author Till Klampaeckel <till@php.net>
+ * @author Matthieu Moquet <matthieu@moquet.net>
  */
 abstract class BaseArchiver implements ArchiverInterface
 {
     /**
-     * Format: zip or tar.
-     * @var string
-     */
-    protected $format = '';
-
-    /**
-     * Path to where to dump the export to.
-     * @var mixed|null
-     */
-    protected $path;
-
-    /**
-     * @var ProcessExecutor
-     */
-    protected $process;
-
-    /**
-     * Working directory.
-     * @var string
-     */
-    protected $temp;
-
-    /**
-     * @param mixed                $path
-     * @param ProcessExecutor|null $process
+     * Create a PHAR archive.
      *
-     * @throws \InvalidArgumentException
+     * @param string $sources Path of the directory to archive
+     * @param string $target  Path of the file archive to create
+     * @param int    $format  Format of the archive
      */
-    public function __construct($path = null, ProcessExecutor $process = null)
-    {
-        if (!empty($path)) {
-            if (!is_writable($path)) {
-                throw new \InvalidArgumentException("Not authorized to write to '{$path}'");
-            }
-            $this->path = $path;
-        }
-        $this->process = $process ?: new ProcessExecutor();
-        $this->temp    = sys_get_temp_dir();
-    }
-
-    /**
-     * @return \Composer\Downloader\DownloadManager
-     */
-    public function getDownloadManager()
-    {
-        $factory = new Factory;
-        $dm = $factory->createDownloadManager(new NullIO());
-        return $dm;
-    }
-
-    /**
-     * @param PackageInterface $package
-     * @param string           $extension
-     *
-     * @return string
-     * @throws \InvalidArgumentException When unknown 'format' is encountered.
-     */
-    public function getFilename(PackageInterface $package, $extension)
-    {
-        $name = $package->getPrettyVersion();
-        $fileName = sprintf('%s.%s', $name, $extension);
-        return $fileName;
-    }
-
-    /**
-     * @param PackageInterface $package
-     *
-     * @return string
-     * @throws \RuntimeException
-     */
-    protected function getAndEnsureWorkDirectory(PackageInterface $package)
-    {
-        $workDir = sprintf('%s/%s/%s', $this->temp, $this->format, $package->getName());
-        if (!file_exists($workDir)) {
-            mkdir($workDir, 0777, true);
-        }
-        if (!file_exists($workDir)) {
-            throw new \RuntimeException("Could not find '{$workDir}' directory.");
-        }
-        return $workDir;
-    }
-
-    /**
-     * Package the given directory into an archive.
-     *
-     * The format is most likely \Phar::TAR or \Phar::ZIP.
-     *
-     * @param string $filename
-     * @param string $workDir
-     * @param int    $format
-     *
-     * @throws \RuntimeException
-     */
-    protected function package($filename, $workDir, $format)
+    protected function createPharArchive($sources, $target, $format)
     {
         try {
-            $phar = new \PharData($filename, null, null, $format);
-            $phar->buildFromDirectory($workDir);
+            $phar = new \PharData($target, null, null, $format);
+            $phar->buildFromDirectory($sources);
         } catch (\UnexpectedValueException $e) {
-            $message  = "Original PHAR exception: " . (string) $e;
-            $message .= PHP_EOL . PHP_EOL;
-            $message .= sprintf("Could not create archive '%s' from '%s'.", $filename, $workDir);
-            throw new \RuntimeException($message);
+            throw new \RuntimeException(
+                sprintf("Could not create archive '%s' from '%s': %s",
+                    $target,
+                    $sources,
+                    $e->getMessage()
+                ));
         }
-    }
-
-    /**
-     * @param string $fileName
-     * @param string $sourceRef
-     * @param string $workDir
-     */
-    protected function packageGit($fileName, $sourceRef, $workDir)
-    {
-        $command = sprintf(
-            'git archive --format %s --output %s %s',
-            $this->format,
-            escapeshellarg(sprintf('%s/%s', $this->path, $fileName)),
-            $sourceRef
-        );
-        $this->process->execute($command, $output, $workDir);
-    }
-
-    /**
-     * @param string $fileName
-     * @param string $sourceRef
-     * @param string $workDir
-     */
-    protected function packageHg($fileName, $sourceRef, $workDir)
-    {
-        $format  = ($this->format == 'tarball')?'tar':$this->format;
-        $command = sprintf(
-            'hg archive --rev %s --type %s %s',
-            $sourceRef,
-            $format,
-            escapeshellarg(sprintf('%s/%s', $this->path, $fileName))
-        );
-        $this->process->execute($command, $output, $workDir);
     }
 }

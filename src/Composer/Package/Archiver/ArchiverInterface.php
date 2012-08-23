@@ -1,4 +1,5 @@
 <?php
+
 /*
  * This file is part of Composer.
  *
@@ -8,22 +9,31 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace Composer\Package\Archiver;
 
 use Composer\Package\PackageInterface;
 
 /**
  * @author Till Klampaeckel <till@php.net>
+ * @author Matthieu Moquet <matthieu@moquet.net>
  */
 interface ArchiverInterface
 {
     /**
-     * Return value depends on implementation - e.g. generating a tar or zip the
-     * method currently returns void, the ArrayArchiver returns an array.
+     * Create an archive from the sources.
      *
-     * @param PackageInterface $package
-     *
-     * @return void
+     * @param string $source The sources directory
+     * @param string $target The target file
      */
-    public function dump(PackageInterface $package);
+    public function archive($sources, $target);
+
+    /**
+     * Format supported by the archiver.
+     *
+     * @param string $format The format to support
+     *
+     * @return boolean true if the format is supported by the archiver
+     */
+    public function supports($format);
 }

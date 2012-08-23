@@ -1,4 +1,5 @@
 <?php
+
 /*
  * This file is part of Composer.
  *
@@ -11,16 +12,20 @@
 
 namespace Composer\Test\Package\Archiver;
 
-use Composer\Package\MemoryPackage;
 use Composer\Util\Filesystem;
 use Composer\Util\ProcessExecutor;
+use Composer\Package\MemoryPackage;
 
+/**
+ * @author Till Klampaeckel <till@php.net>
+ * @author Matthieu Moquet <matthieu@moquet.net>
+ */
 abstract class ArchiverTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @var \Composer\Util\Filesystem
      */
-    protected $fs;
+    protected $filesystem;
 
     /**
      * @var \Composer\Util\ProcessExecutor
@@ -30,18 +35,13 @@ abstract class ArchiverTest extends \PHPUnit_Framework_TestCase
     /**
      * @var string
      */
-    protected $testdir = '';
+    protected $testDir;
 
     public function setUp()
     {
-        $this->fs      = new Filesystem;
-        $this->process = new ProcessExecutor;
-        $this->testdir = sys_get_temp_dir() . '/composer_archivertest_git_repository' . mt_rand();
-    }
-
-    protected function getTestDir()
-    {
-        return $this->testdir;
+        $this->filesystem = new Filesystem();
+        $this->process    = new ProcessExecutor();
+        $this->testDir    = sys_get_temp_dir().'/composer_archivertest_git_repository'.mt_rand();
     }
 
     /**
@@ -49,49 +49,42 @@ abstract class ArchiverTest extends \PHPUnit_Framework_TestCase
      */
     protected function setupGitRepo()
     {
-        $td = $this->getTestDir();
-
-        $this->fs->removeDirectory($td);
-        $this->fs->ensureDirectoryExists($td);
+        $this->filesystem->removeDirectory($this->testDir);
+        $this->filesystem->ensureDirectoryExists($this->testDir);
 
         $currentWorkDir = getcwd();
-        chdir($td);
+        chdir($this->testDir);
 
-        $result = $this->process->execute("git init -q");
+        $result = $this->process->execute('git init -q');
         if ($result > 0) {
-            throw new \RuntimeException(
-                "Could not init: " . $this->process->getErrorOutput());
+            throw new \RuntimeException('Could not init: '.$this->process->getErrorOutput());
         }
+
         $result = file_put_contents('b', 'a');
         if (false === $result) {
-            throw new \RuntimeException("Could not save file.");
+            throw new \RuntimeException('Could not save file.');
         }
-        $result = $this->process->execute("git add b && git commit -m 'commit b' -q");
+
+        $result = $this->process->execute('git add b && git commit -m "commit b" -q');
         if ($result > 0) {
-            throw new \RuntimeException(
-                "Could not init: " . $this->process->getErrorOutput());
+            throw new \RuntimeException('Could not commit: '.$this->process->getErrorOutput());
         }
+
         chdir($currentWorkDir);
     }
 
     protected function removeGitRepo()
     {
-        $td = $this->getTestDir();
-        $this->fs->removeDirectory($td);
+        $this->filesystem->removeDirectory($this->testDir);
     }
 
     protected function setupPackage()
     {
-        $td = $this->getTestDir();
         $package = new MemoryPackage('archivertest/archivertest', 'master', 'master');
-        $package->setSourceUrl("file://$td");
+        $package->setSourceUrl(realpath($this->testDir));
         $package->setSourceReference('master');
         $package->setSourceType('git');
-        return $package;
-    }
 
-    protected function getPackageFileName(MemoryPackage $package)
-    {
-        return $package->getVersion();
+        return $package;
     }
 }
