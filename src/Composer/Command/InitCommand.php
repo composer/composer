@@ -267,13 +267,12 @@ EOT
         }
 
         $token = strtolower($name);
-        foreach ($this->repos->getPackages() as $package) {
-            if (false === ($pos = strpos($package->getName(), $token))) {
-                continue;
-            }
 
-            $packages[] = $package;
-        }
+        $this->repos->filterPackages(function ($package) use ($token, &$packages) {
+            if (false !== strpos($package->getName(), $token)) {
+                $packages[] = $package;
+            }
+        });
 
         return $packages;
     }
