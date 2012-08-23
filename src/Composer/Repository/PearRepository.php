@@ -15,7 +15,7 @@ namespace Composer\Repository;
 use Composer\IO\IOInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\Pear\ChannelReader;
-use Composer\Package\MemoryPackage;
+use Composer\Package\CompletePackage;
 use Composer\Repository\Pear\ChannelInfo;
 use Composer\Package\Link;
 use Composer\Package\LinkConstraint\VersionConstraint;
@@ -81,10 +81,10 @@ class PearRepository extends ArrayRepository
     }
 
     /**
-     * Builds MemoryPackages from PEAR package definition data.
+     * Builds CompletePackages from PEAR package definition data.
      *
      * @param  ChannelInfo   $channelInfo
-     * @return MemoryPackage
+     * @return CompletePackage
      */
     private function buildComposerPackages(ChannelInfo $channelInfo, VersionParser $versionParser)
     {
@@ -152,7 +152,7 @@ class PearRepository extends ArrayRepository
                     }
                 }
 
-                $package = new MemoryPackage($composerPackageName, $normalizedVersion, $version);
+                $package = new CompletePackage($composerPackageName, $normalizedVersion, $version);
                 $package->setType('pear-library');
                 $package->setDescription($packageDefinition->getDescription());
                 $package->setDistType('file');

@@ -17,7 +17,7 @@ namespace Composer\Package;
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-interface RootPackageInterface extends PackageInterface
+interface RootPackageInterface extends CompletePackageInterface
 {
     /**
      * Returns the minimum stability of the package

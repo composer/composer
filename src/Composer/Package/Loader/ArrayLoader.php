@@ -31,7 +31,7 @@ class ArrayLoader implements LoaderInterface
         $this->versionParser = $parser;
     }
 
-    public function load(array $config)
+    public function load(array $config, $class = 'Composer\Package\CompletePackage')
     {
         if (!isset($config['name'])) {
             throw new \UnexpectedValueException('Unknown package has no name defined ('.json_encode($config).').');
@@ -46,7 +46,7 @@ class ArrayLoader implements LoaderInterface
         } else {
             $version = $this->versionParser->normalize($config['version']);
         }
-        $package = new Package\MemoryPackage($config['name'], $version, $config['version']);
+        $package = new $class($config['name'], $version, $config['version']);
         $package->setType(isset($config['type']) ? strtolower($config['type']) : 'library');
 
         if (isset($config['target-dir'])) {
@@ -65,42 +65,6 @@ class ArrayLoader implements LoaderInterface
                 $config['bin'][$key]= ltrim($bin, '/');
             }
             $package->setBinaries($config['bin']);
-        }
-
-        if (isset($config['scripts']) && is_array($config['scripts'])) {
-            foreach ($config['scripts'] as $event => $listeners) {
-                $config['scripts'][$event]= (array) $listeners;
-            }
-            $package->setScripts($config['scripts']);
-        }
-
-        if (!empty($config['description']) && is_string($config['description'])) {
-            $package->setDescription($config['description']);
-        }
-
-        if (!empty($config['homepage']) && is_string($config['homepage'])) {
-            $package->setHomepage($config['homepage']);
-        }
-
-        if (!empty($config['keywords']) && is_array($config['keywords'])) {
-            $package->setKeywords($config['keywords']);
-        }
-
-        if (!empty($config['license'])) {
-            $package->setLicense(is_array($config['license']) ? $config['license'] : array($config['license']));
-        }
-
-        if (!empty($config['time'])) {
-            try {
-                $date = new \DateTime($config['time']);
-                $date->setTimezone(new \DateTimeZone('UTC'));
-                $package->setReleaseDate($date);
-            } catch (\Exception $e) {
-            }
-        }
-
-        if (!empty($config['authors']) && is_array($config['authors'])) {
-            $package->setAuthors($config['authors']);
         }
 
         if (isset($config['installation-source'])) {
@@ -165,8 +129,46 @@ class ArrayLoader implements LoaderInterface
             $package->setIncludePaths($config['include-path']);
         }
 
-        if (isset($config['support'])) {
-            $package->setSupport($config['support']);
+        if (!empty($config['time'])) {
+            try {
+                $date = new \DateTime($config['time']);
+                $date->setTimezone(new \DateTimeZone('UTC'));
+                $package->setReleaseDate($date);
+            } catch (\Exception $e) {
+            }
+        }
+
+        if ($package instanceof Package\CompletePackageInterface) {
+            if (isset($config['scripts']) && is_array($config['scripts'])) {
+                foreach ($config['scripts'] as $event => $listeners) {
+                    $config['scripts'][$event]= (array) $listeners;
+                }
+                $package->setScripts($config['scripts']);
+            }
+
+            if (!empty($config['description']) && is_string($config['description'])) {
+                $package->setDescription($config['description']);
+            }
+
+            if (!empty($config['homepage']) && is_string($config['homepage'])) {
+                $package->setHomepage($config['homepage']);
+            }
+
+            if (!empty($config['keywords']) && is_array($config['keywords'])) {
+                $package->setKeywords($config['keywords']);
+            }
+
+            if (!empty($config['license'])) {
+                $package->setLicense(is_array($config['license']) ? $config['license'] : array($config['license']));
+            }
+
+            if (!empty($config['authors']) && is_array($config['authors'])) {
+                $package->setAuthors($config['authors']);
+            }
+
+            if (isset($config['support'])) {
+                $package->setSupport($config['support']);
+            }
         }
 
         return $package;

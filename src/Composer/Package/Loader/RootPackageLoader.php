@@ -40,7 +40,7 @@ class RootPackageLoader extends ArrayLoader
         parent::__construct($parser);
     }
 
-    public function load(array $config)
+    public function load(array $config, $class = 'Composer\Package\RootPackage')
     {
         if (!isset($config['name'])) {
             $config['name'] = '__root__';
@@ -62,7 +62,7 @@ class RootPackageLoader extends ArrayLoader
             $version = $config['version'];
         }
 
-        $package = parent::load($config);
+        $package = parent::load($config, $class);
 
         $aliases = array();
         $stabilityFlags = array();

@@ -14,7 +14,7 @@ namespace Composer\Command;
 
 use Composer\Composer;
 use Composer\Factory;
-use Composer\Package\PackageInterface;
+use Composer\Package\CompletePackageInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -133,7 +133,7 @@ EOT
      * finds a package by name and version if provided
      *
      * @param  InputInterface            $input
-     * @return PackageInterface
+     * @return CompletePackageInterface
      * @throws \InvalidArgumentException
      */
     protected function getPackage(InputInterface $input, OutputInterface $output, RepositoryInterface $installedRepo, RepositoryInterface $repos)
@@ -164,7 +164,7 @@ EOT
     /**
      * prints package meta data
      */
-    protected function printMeta(InputInterface $input, OutputInterface $output, PackageInterface $package, RepositoryInterface $installedRepo, RepositoryInterface $repos)
+    protected function printMeta(InputInterface $input, OutputInterface $output, CompletePackageInterface $package, RepositoryInterface $installedRepo, RepositoryInterface $repos)
     {
         $output->writeln('<info>name</info>     : ' . $package->getPrettyName());
         $output->writeln('<info>descrip.</info> : ' . $package->getDescription());
@@ -206,7 +206,7 @@ EOT
     /**
      * prints all available versions of this package and highlights the installed one if any
      */
-    protected function printVersions(InputInterface $input, OutputInterface $output, PackageInterface $package, RepositoryInterface $installedRepo, RepositoryInterface $repos)
+    protected function printVersions(InputInterface $input, OutputInterface $output, CompletePackageInterface $package, RepositoryInterface $installedRepo, RepositoryInterface $repos)
     {
         if ($input->getArgument('version')) {
             $output->writeln('<info>version</info>  : ' . $package->getPrettyVersion());
@@ -237,7 +237,7 @@ EOT
      *
      * @param string $linkType
      */
-    protected function printLinks(InputInterface $input, OutputInterface $output, PackageInterface $package, $linkType, $title = null)
+    protected function printLinks(InputInterface $input, OutputInterface $output, CompletePackageInterface $package, $linkType, $title = null)
     {
         $title = $title ?: $linkType;
         if ($links = $package->{'get'.ucfirst($linkType)}()) {

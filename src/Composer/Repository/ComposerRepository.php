@@ -127,7 +127,7 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
      */
     public function loadPackage(array $data)
     {
-        $package = $this->loader->load($data['raw']);
+        $package = $this->loader->load($data['raw'], 'Composer\Package\Package');
         $package->setRepository($this);
 
         return $package;
@@ -154,7 +154,7 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
         $repoData = $this->loadDataFromServer();
 
         foreach ($repoData as $package) {
-            $this->addPackage($this->loader->load($package));
+            $this->addPackage($this->loader->load($package, 'Composer\Package\Package'));
         }
     }
 
