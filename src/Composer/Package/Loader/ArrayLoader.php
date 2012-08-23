@@ -107,7 +107,12 @@ class ArrayLoader implements LoaderInterface
             if (isset($config[$type])) {
                 $method = 'set'.ucfirst($opts['method']);
                 $package->{$method}(
-                    $this->loadLinksFromConfig($package, $opts['description'], $config[$type])
+                    $this->versionParser->parseLinks(
+                        $package->getName(),
+                        $package->getPrettyVersion(),
+                        $opts['description'],
+                        $config[$type]
+                    )
                 );
             }
         }
@@ -208,20 +213,5 @@ class ArrayLoader implements LoaderInterface
 
             return $validatedTargetBranch;
         }
-    }
-
-    private function loadLinksFromConfig($package, $description, array $linksSpecs)
-    {
-        $links = array();
-        foreach ($linksSpecs as $packageName => $constraint) {
-            if ('self.version' === $constraint) {
-                $parsedConstraint = $this->versionParser->parseConstraints($package->getPrettyVersion());
-            } else {
-                $parsedConstraint = $this->versionParser->parseConstraints($constraint);
-            }
-            $links[] = new Package\Link($package->getName(), $packageName, $parsedConstraint, $description, $constraint);
-        }
-
-        return $links;
     }
 }

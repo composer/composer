@@ -339,17 +339,12 @@ class Pool
         if (is_array($candidate)) {
             $candidateName = $candidate['name'];
             $candidateVersion = $candidate['version'];
-            foreach (array('provides', 'replaces') as $linkType) {
-                ${$linkType} = isset($candidate[rtrim($linkType, 's')]) ? $candidate[rtrim($linkType, 's')] : array();
-                foreach (${$linkType} as $target => $constraintDef) {
-                    if ('self.version' === $constraintDef) {
-                        $parsedConstraint = $this->versionParser->parseConstraints($candidateVersion);
-                    } else {
-                        $parsedConstraint = $this->versionParser->parseConstraints($constraintDef);
-                    }
-                    ${$linkType}[$target] = new Link($candidateName, $target, $parsedConstraint, $linkType, $constraintDef);
-                }
-            }
+            $provides = isset($candidate['provide'])
+                ? $this->versionParser->parseLinks($candidateName, $candidateVersion, 'provides', $candidate['provide'])
+                : array();
+            $replaces = isset($candidate['replace'])
+                ? $this->versionParser->parseLinks($candidateName, $candidateVersion, 'replaces', $candidate['replace'])
+                : array();
         } else {
             // handle object packages
             $candidateName = $candidate->getName();
