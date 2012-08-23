@@ -51,69 +51,38 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $composer = $this->getComposer();
-        $references = $this->getReferences($input, $output, $composer);
-
-        if ($input->getOption('verbose')) {
-            $this->printReferences($input, $output, $references);
-        } else {
-            $this->printPackages($input, $output, $references);
-        }
-    }
-
-    /**
-     * finds a list of packages which depend on another package
-     *
-     * @param  InputInterface            $input
-     * @param  OutputInterface           $output
-     * @param  Composer                  $composer
-     * @return array
-     * @throws \InvalidArgumentException
-     */
-    private function getReferences(InputInterface $input, OutputInterface $output, Composer $composer)
-    {
-        $needle = $input->getArgument('package');
-
-        $references = array();
-        $verbose = (bool) $input->getOption('verbose');
-
         $repos = $composer->getRepositoryManager()->getRepositories();
-        $types = $input->getOption('link-type');
 
-        foreach ($repos as $repository) {
-            foreach ($repository->getPackages() as $package) {
+        $linkTypes = $this->linkTypes;
+
+        $needle = $input->getArgument('package');
+        $verbose = (bool) $input->getOption('verbose');
+        $types = array_map(function ($type) use ($linkTypes) {
+            $type = rtrim($type, 's');
+            if (!isset($linkTypes[$type])) {
+                throw new \InvalidArgumentException('Unexpected link type: '.$type.', valid types: '.implode(', ', array_keys($linkTypes)));
+            }
+
+            return $type;
+        }, $input->getOption('link-type'));
+
+        foreach ($repos as $repo) {
+            $repo->filterPackages(function ($package) use ($needle, $types, $output, $verbose) {
+                static $outputPackages = array();
+
                 foreach ($types as $type) {
-                    $type = rtrim($type, 's');
-                    if (!isset($this->linkTypes[$type])) {
-                        throw new \InvalidArgumentException('Unexpected link type: '.$type.', valid types: '.implode(', ', array_keys($this->linkTypes)));
-                    }
                     foreach ($package->{'get'.$this->linkTypes[$type]}() as $link) {
                         if ($link->getTarget() === $needle) {
                             if ($verbose) {
-                                $references[] = array($type, $package, $link);
-                            } else {
-                                $references[$package->getName()] = $package->getPrettyName();
+                                $output->writeln($package->getPrettyName() . ' ' . $package->getPrettyVersion() . ' <info>' . $type . '</info> ' . $link->getPrettyConstraint());
+                            } elseif (!isset($outputPackages[$package->getName()])) {
+                                $output->writeln($package->getPrettyName());
+                                $outputPackages[$package->getName()] = true;
                             }
                         }
                     }
                 }
-            }
-        }
-
-        return $references;
-    }
-
-    private function printReferences(InputInterface $input, OutputInterface $output, array $references)
-    {
-        foreach ($references as $ref) {
-            $output->writeln($ref[1]->getPrettyName() . ' ' . $ref[1]->getPrettyVersion() . ' <info>' . $ref[0] . '</info> ' . $ref[2]->getPrettyConstraint());
-        }
-    }
-
-    private function printPackages(InputInterface $input, OutputInterface $output, array $packages)
-    {
-        ksort($packages);
-        foreach ($packages as $package) {
-            $output->writeln($package);
+            });
         }
     }
 }
