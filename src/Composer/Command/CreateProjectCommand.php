@@ -87,7 +87,7 @@ EOT
         );
     }
 
-    public function installProject(IOInterface $io, $packageName, $directory = null, $version = null, $preferSource = false, $installDevPackages = false, $repositoryUrl = null, $disableCustomInstallers = false, $noScripts = false)
+    public function installProject(IOInterface $io, $packageName, $directory = null, $packageVersion = null, $preferSource = false, $installDevPackages = false, $repositoryUrl = null, $disableCustomInstallers = false, $noScripts = false)
     {
         $dm = $this->createDownloadManager($io);
         if ($preferSource) {
@@ -105,9 +105,30 @@ EOT
             throw new \InvalidArgumentException("Invalid repository url given. Has to be a .json file or an http url.");
         }
 
-        $candidates = $sourceRepo->findPackages($packageName, $version);
+        $candidates = array();
+        $name = strtolower($packageName);
+
+        if ($packageVersion === null) {
+            $sourceRepo->filterPackages(function ($package) use (&$candidates, $name) {
+                if ($package->getName() === $name) {
+                    $candidates[] = $package;
+                }
+            });
+        } else {
+            $parser = new VersionParser();
+            $version = $parser->normalize($packageVersion);
+            $sourceRepo->filterPackages(function ($package) use (&$candidates, $name, $version) {
+                if ($package->getName() === $name && $version === $package->getVersion()) {
+                    $candidates[] = $package;
+
+                    return false;
+                }
+                if ($package->getName() === $name) {var_dump((string) $package);}
+            });
+        }
+
         if (!$candidates) {
-            throw new \InvalidArgumentException("Could not find package $packageName" . ($version ? " with version $version." : ''));
+            throw new \InvalidArgumentException("Could not find package $packageName" . ($packageVersion ? " with version $packageVersion." : ''));
         }
 
         if (null === $directory) {

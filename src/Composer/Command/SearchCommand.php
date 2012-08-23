@@ -72,8 +72,6 @@ EOT
         foreach ($this->lowMatches as $details) {
             $output->writeln($details['name'] . '<comment>:</comment> '. $details['description']);
         }
-
-        var_dump((memory_get_peak_usage() / 1024 / 1024) . 'MB memory, '.round(microtime(true) - $time, 2) .'secs');
     }
 
     public function processPackage($package)
