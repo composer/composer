@@ -88,12 +88,16 @@ EOT
             unset($options['author']);
         }
 
-        $options['require'] = isset($options['require']) ?
-            $this->formatRequirements($options['require']) :
-            new \stdClass;
+        $options['require'] = isset($options['require']) ? $this->formatRequirements($options['require']) : new \stdClass;
+        if (array() === $options['require']) {
+            $options['require'] = new \stdClass;
+        }
 
         if (isset($options['require-dev'])) {
             $options['require-dev'] = $this->formatRequirements($options['require-dev']) ;
+            if (array() === $options['require-dev']) {
+                $options['require-dev'] = new \stdClass;
+            }
         }
 
         $file = new JsonFile('composer.json');
@@ -360,7 +364,7 @@ EOT
             $requires[$packageName] = $packageVersion;
         }
 
-        return empty($requires) ? new \stdClass : $requires;
+        return $requires;
     }
 
     protected function normalizeRequirement($requirement)
