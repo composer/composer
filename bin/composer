@@ -24,10 +24,9 @@ $memoryInBytes = function ($value) {
 };
 
 $memoryLimit = trim(ini_get('memory_limit'));
-// Increase memory_limit if it is lower than 256M
-if ($memoryLimit != -1 && $memoryInBytes($memoryLimit) < 256 * 1024 * 1024) {
-    @ini_set('memory_limit', '256M');
-    printf('Warning: memory_limit was increased from %s to %s' . PHP_EOL . PHP_EOL, $memoryLimit, '256M');
+// Increase memory_limit if it is lower than 512M
+if ($memoryLimit != -1 && $memoryInBytes($memoryLimit) < 512 * 1024 * 1024) {
+    @ini_set('memory_limit', '512M');
 }
 unset($memoryInBytes);
 
