@@ -339,6 +339,17 @@ class Pool
         if (is_array($candidate)) {
             $candidateName = $candidate['name'];
             $candidateVersion = $candidate['version'];
+        } else {
+            // handle object packages
+            $candidateName = $candidate->getName();
+            $candidateVersion = $candidate->getVersion();
+        }
+
+        if ($candidateName === $name) {
+            return $constraint->matches(new VersionConstraint('==', $candidateVersion)) ? self::MATCH : self::MATCH_NAME;
+        }
+
+        if (is_array($candidate)) {
             $provides = isset($candidate['provide'])
                 ? $this->versionParser->parseLinks($candidateName, $candidateVersion, 'provides', $candidate['provide'])
                 : array();
@@ -346,15 +357,8 @@ class Pool
                 ? $this->versionParser->parseLinks($candidateName, $candidateVersion, 'replaces', $candidate['replace'])
                 : array();
         } else {
-            // handle object packages
-            $candidateName = $candidate->getName();
-            $candidateVersion = $candidate->getVersion();
             $provides = $candidate->getProvides();
             $replaces = $candidate->getReplaces();
-        }
-
-        if ($candidateName === $name) {
-            return $constraint->matches(new VersionConstraint('==', $candidateVersion)) ? self::MATCH : self::MATCH_NAME;
         }
 
         foreach ($provides as $link) {
