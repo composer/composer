@@ -16,10 +16,10 @@ Get current value:
 
 Increase limit with `php.ini` for a `CLI SAPI` (ex. `/etc/php5/cli/php.ini` for Debian-like systems):
 
-    ; Use -1 for unlimited or define expicit value like 512M
+    ; Use -1 for unlimited or define explicit value like 512M
     memory_limit = -1
 
-Or with comand line arguments:
+Or with command line arguments:
 
     php -d memory_limit=-1 composer.phar <...>
 
