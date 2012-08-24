@@ -9,8 +9,6 @@ error_reporting(-1);
 @ini_set('display_errors', 1);
 
 $memoryInBytes = function ($value) {
-    //$memoryLimit = ini_get('memory_limit');
-
     $unit = strtolower(substr($value, -1, 1));
     $value = (int) $value;
     switch($unit) {
