@@ -9,7 +9,7 @@ If composer shows memory errors on some commands:
 
 The `memory_limit` ini value should be increased.
 
-> **Note:** Composer internaly increases the memory_limit to 256M.
+> **Note:** Composer internaly increases the memory_limit to 512M.
 > It is a good idea to create an issue for composer if you get memory errors.
 
 Get current value:
