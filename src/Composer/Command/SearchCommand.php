@@ -17,7 +17,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
-use Composer\Package\PackageInterface;
+use Composer\Package\CompletePackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Factory;
 
@@ -26,6 +26,11 @@ use Composer\Factory;
  */
 class SearchCommand extends Command
 {
+    protected $matches;
+    protected $lowMatches;
+    protected $tokens;
+    protected $output;
+
     protected function configure()
     {
         $this
@@ -58,70 +63,63 @@ EOT
             $repos = new CompositeRepository(array_merge(array($installedRepo), $defaultRepos));
         }
 
-        $tokens = $input->getArgument('tokens');
-        $packages = array();
+        $this->tokens = $input->getArgument('tokens');
+        $this->output = $output;
+        $repos->filterPackages(array($this, 'processPackage'), 'Composer\Package\CompletePackage');
 
-        $maxPackageLength = 0;
-        foreach ($repos->getPackages() as $package) {
-            if ($package instanceof AliasPackage || isset($packages[$package->getName()])) {
+        foreach ($this->lowMatches as $details) {
+            $output->writeln($details['name'] . '<comment>:</comment> '. $details['description']);
+        }
+    }
+
+    public function processPackage($package)
+    {
+        if ($package instanceof AliasPackage || isset($this->matches[$package->getName()])) {
+            return;
+        }
+
+        foreach ($this->tokens as $token) {
+            if (!$score = $this->matchPackage($package, $token)) {
                 continue;
             }
 
-            foreach ($tokens as $token) {
-                if (!$score = $this->matchPackage($package, $token)) {
-                    continue;
-                }
+            if (false !== ($pos = stripos($package->getName(), $token))) {
+                $name = substr($package->getPrettyName(), 0, $pos)
+                    . '<highlight>' . substr($package->getPrettyName(), $pos, strlen($token)) . '</highlight>'
+                    . substr($package->getPrettyName(), $pos + strlen($token));
+            } else {
+                $name = $package->getPrettyName();
+            }
 
-                if (false !== ($pos = stripos($package->getName(), $token))) {
-                    $name = substr($package->getPrettyName(), 0, $pos)
-                        . '<highlight>' . substr($package->getPrettyName(), $pos, strlen($token)) . '</highlight>'
-                        . substr($package->getPrettyName(), $pos + strlen($token));
-                } else {
-                    $name = $package->getPrettyName();
-                }
+            $description = strtok($package->getDescription(), "\r\n");
+            if (false !== ($pos = stripos($description, $token))) {
+                $description = substr($description, 0, $pos)
+                    . '<highlight>' . substr($description, $pos, strlen($token)) . '</highlight>'
+                    . substr($description, $pos + strlen($token));
+            }
 
-                $description = strtok($package->getDescription(), "\r\n");
-                if (false !== ($pos = stripos($description, $token))) {
-                    $description = substr($description, 0, $pos)
-                        . '<highlight>' . substr($description, $pos, strlen($token)) . '</highlight>'
-                        . substr($description, $pos + strlen($token));
-                }
-
-                $packages[$package->getName()] = array(
+            if ($score >= 3) {
+                $this->output->writeln($name . '<comment>:</comment> '. $description);
+                $this->matches[$package->getName()] = true;
+            } else {
+                $this->lowMatches[$package->getName()] = array(
                     'name' => $name,
                     'description' => $description,
-                    'length' => $length = strlen($package->getPrettyName()),
-                    'score' => $score,
                 );
-
-                $maxPackageLength = max($maxPackageLength, $length);
-
-                continue 2;
-            }
-        }
-
-        usort($packages, function ($a, $b) {
-            if ($a['score'] === $b['score']) {
-                return 0;
             }
 
-            return $a['score'] > $b['score'] ? -1 : 1;
-        });
-
-        foreach ($packages as $details) {
-            $extraSpaces = $maxPackageLength - $details['length'];
-            $output->writeln($details['name'] . str_repeat(' ', $extraSpaces) .' <comment>:</comment> '. $details['description']);
+            return;
         }
     }
 
     /**
      * tries to find a token within the name/keywords/description
      *
-     * @param  PackageInterface $package
+     * @param  CompletePackageInterface $package
      * @param  string           $token
      * @return boolean
      */
-    private function matchPackage(PackageInterface $package, $token)
+    private function matchPackage(CompletePackageInterface $package, $token)
     {
         $score = 0;
 

@@ -29,6 +29,7 @@ use Composer\Package\Link;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Package\Locker;
 use Composer\Package\PackageInterface;
+use Composer\Package\RootPackageInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\InstalledArrayRepository;
 use Composer\Repository\PlatformRepository;
@@ -55,7 +56,7 @@ class Installer
     protected $config;
 
     /**
-     * @var PackageInterface
+     * @var RootPackageInterface
      */
     protected $package;
 
@@ -112,7 +113,7 @@ class Installer
      *
      * @param IOInterface         $io
      * @param Config              $config
-     * @param PackageInterface    $package
+     * @param RootPackageInterface    $package
      * @param DownloadManager     $downloadManager
      * @param RepositoryManager   $repositoryManager
      * @param Locker              $locker
@@ -120,7 +121,7 @@ class Installer
      * @param EventDispatcher     $eventDispatcher
      * @param AutoloadGenerator   $autoloadGenerator
      */
-    public function __construct(IOInterface $io, Config $config, PackageInterface $package, DownloadManager $downloadManager, RepositoryManager $repositoryManager, Locker $locker, InstallationManager $installationManager, EventDispatcher $eventDispatcher, AutoloadGenerator $autoloadGenerator)
+    public function __construct(IOInterface $io, Config $config, RootPackageInterface $package, DownloadManager $downloadManager, RepositoryManager $repositoryManager, Locker $locker, InstallationManager $installationManager, EventDispatcher $eventDispatcher, AutoloadGenerator $autoloadGenerator)
     {
         $this->io = $io;
         $this->config = $config;
@@ -166,7 +167,8 @@ class Installer
             $installedRepo->addRepository($this->additionalInstalledRepository);
         }
 
-        $aliases = $this->aliasPackages($platformRepo);
+        $aliases = $this->getRootAliases();
+        $this->aliasPlatformPackages($platformRepo, $aliases);
 
         if ($this->runScripts) {
             // dispatch pre event
@@ -244,9 +246,10 @@ class Installer
 
         // creating repository pool
         $pool = new Pool($minimumStability, $stabilityFlags);
-        $pool->addRepository($installedRepo);
-        foreach ($this->repositoryManager->getRepositories() as $repository) {
-            $pool->addRepository($repository);
+        $pool->addRepository($installedRepo, $aliases);
+        $repositories = $this->repositoryManager->getRepositories();
+        foreach ($repositories as $repository) {
+            $pool->addRepository($repository, $aliases);
         }
 
         // creating requirements request
@@ -276,11 +279,8 @@ class Installer
 
             foreach ($lockedPackages as $package) {
                 $version = $package->getVersion();
-                foreach ($aliases as $alias) {
-                    if ($alias['package'] === $package->getName() && $alias['version'] === $package->getVersion()) {
-                        $version = $alias['alias_normalized'];
-                        break;
-                    }
+                if (isset($aliases[$package->getName()][$version])) {
+                    $version = $aliases[$package->getName()][$version]['alias_normalized'];
                 }
                 $constraint = new VersionConstraint('=', $version);
                 $request->install($package->getName(), $constraint);
@@ -361,6 +361,10 @@ class Installer
                 continue;
             }
 
+            if ($package instanceof AliasPackage) {
+                continue;
+            }
+
             // skip packages that will be updated/uninstalled
             foreach ($operations as $operation) {
                 if (('update' === $operation->getJobType() && $operation->getInitialPackage()->equals($package))
@@ -392,7 +396,18 @@ class Installer
                         continue;
                     }
 
-                    $newPackage = $this->repositoryManager->findPackage($package->getName(), $package->getVersion());
+                    $newPackage = null;
+                    $matches = $pool->whatProvides($package->getName(), new VersionConstraint('=', $package->getVersion()));
+                    foreach ($matches as $match) {
+                        // skip local packages
+                        if (!in_array($match->getRepository(), $repositories, true)) {
+                            continue;
+                        }
+
+                        $newPackage = $match;
+                        break;
+                    }
+
                     if ($newPackage && $newPackage->getSourceReference() !== $package->getSourceReference()) {
                         $operations[] = new UpdateOperation($package, $newPackage);
                     }
@@ -487,7 +502,7 @@ class Installer
         return true;
     }
 
-    private function aliasPackages(PlatformRepository $platformRepo)
+    private function getRootAliases()
     {
         if (!$this->update && $this->locker->isLocked()) {
             $aliases = $this->locker->getAliases();
@@ -495,20 +510,32 @@ class Installer
             $aliases = $this->package->getAliases();
         }
 
+        $normalizedAliases = array();
+
         foreach ($aliases as $alias) {
-            $packages = array_merge(
-                $platformRepo->findPackages($alias['package'], $alias['version']),
-                $this->repositoryManager->findPackages($alias['package'], $alias['version'])
+            $normalizedAliases[$alias['package']][$alias['version']] = array(
+                'alias' => $alias['alias'],
+                'alias_normalized' => $alias['alias_normalized']
             );
-            foreach ($packages as $package) {
-                $package->setAlias($alias['alias_normalized']);
-                $package->setPrettyAlias($alias['alias']);
-                $package->getRepository()->addPackage($aliasPackage = new AliasPackage($package, $alias['alias_normalized'], $alias['alias']));
-                $aliasPackage->setRootPackageAlias(true);
-            }
         }
 
-        return $aliases;
+        return $normalizedAliases;
+    }
+
+    private function aliasPlatformPackages(PlatformRepository $platformRepo, $aliases)
+    {
+        foreach ($aliases as $package => $versions) {
+            foreach ($versions as $version => $alias) {
+                $packages = $platformRepo->findPackages($package, $version);
+                foreach ($packages as $package) {
+                    $package->setAlias($alias['alias_normalized']);
+                    $package->setPrettyAlias($alias['alias']);
+                    $aliasPackage = new AliasPackage($package, $alias['alias_normalized'], $alias['alias']);
+                    $aliasPackage->setRootPackageAlias(true);
+                    $platformRepo->addPackage($aliasPackage);
+                }
+            }
+        }
     }
 
     private function isUpdateable(PackageInterface $package)

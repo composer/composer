@@ -94,7 +94,7 @@ class MetapackageInstallerTest extends \PHPUnit_Framework_TestCase
 
     private function createPackageMock()
     {
-        return $this->getMockBuilder('Composer\Package\MemoryPackage')
+        return $this->getMockBuilder('Composer\Package\Package')
             ->setConstructorArgs(array(md5(rand()), '1.0.0.0', '1.0.0'))
             ->getMock();
     }
