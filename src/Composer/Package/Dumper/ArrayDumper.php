@@ -21,25 +21,31 @@ use Composer\Package\PackageInterface;
  */
 class ArrayDumper
 {
+    /**
+     * @var array
+     */
+    protected static $keys = array(
+        'binaries' => 'bin',
+        'scripts',
+        'type',
+        'extra',
+        'installationSource' => 'installation-source',
+        'license',
+        'authors',
+        'description',
+        'homepage',
+        'keywords',
+        'autoload',
+        'repositories',
+        'includePaths' => 'include-path',
+        'support',
+    );
+
+    /**
+     * @return array
+     */
     public function dump(PackageInterface $package)
     {
-        $keys = array(
-            'binaries' => 'bin',
-            'scripts',
-            'type',
-            'extra',
-            'installationSource' => 'installation-source',
-            'license',
-            'authors',
-            'description',
-            'homepage',
-            'keywords',
-            'autoload',
-            'repositories',
-            'includePaths' => 'include-path',
-            'support',
-        );
-
         $data = array();
         $data['name'] = $package->getPrettyName();
         $data['version'] = $package->getPrettyVersion();
@@ -78,7 +84,7 @@ class ArrayDumper
             $data['suggest'] = $packages;
         }
 
-        foreach ($keys as $method => $key) {
+        foreach (self::$keys as $method => $key) {
             if (is_numeric($method)) {
                 $method = $key;
             }
