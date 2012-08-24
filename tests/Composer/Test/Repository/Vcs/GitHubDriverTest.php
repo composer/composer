@@ -156,7 +156,7 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
     {
         $repoUrl = 'http://github.com/composer/packagist';
         $repoApiUrl = 'https://api.github.com/repos/composer/packagist';
-        $identifier = 'tree/3.2/master';
+        $identifier = 'feature/3.2-foo';
         $sha = 'SOMESHA';
 
         $io = $this->getMock('Composer\IO\IOInterface');
@@ -175,12 +175,12 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
 
         $remoteFilesystem->expects($this->at(1))
             ->method('getContents')
-            ->with($this->equalTo('github.com'), $this->equalTo('https://raw.github.com/composer/packagist/tree/3.2/master/composer.json'), $this->equalTo(false))
+            ->with($this->equalTo('github.com'), $this->equalTo('https://raw.github.com/composer/packagist/feature%2F3.2-foo/composer.json'), $this->equalTo(false))
             ->will($this->returnValue('{"support": {"source": "'.$repoUrl.'" }}'));
 
         $remoteFilesystem->expects($this->at(2))
             ->method('getContents')
-            ->with($this->equalTo('github.com'), $this->equalTo('https://api.github.com/repos/composer/packagist/commits/tree%2F3.2%2Fmaster'), $this->equalTo(false))
+            ->with($this->equalTo('github.com'), $this->equalTo('https://api.github.com/repos/composer/packagist/commits/feature%2F3.2-foo'), $this->equalTo(false))
             ->will($this->returnValue('{"commit": {"committer":{ "date": "2012-09-10"}}}'));
 
         $gitHubDriver = new GitHubDriver($repoUrl, $io, $this->config, null, $remoteFilesystem);
@@ -191,7 +191,7 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
 
         $dist = $gitHubDriver->getDist($identifier);
         $this->assertEquals('zip', $dist['type']);
-        $this->assertEquals('https://github.com/composer/packagist/zipball/tree/3.2/master', $dist['url']);
+        $this->assertEquals('https://github.com/composer/packagist/zipball/feature/3.2-foo', $dist['url']);
         $this->assertEquals($identifier, $dist['reference']);
 
         $source = $gitHubDriver->getSource($identifier);
@@ -201,7 +201,7 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
 
         $dist = $gitHubDriver->getDist($sha);
         $this->assertEquals('zip', $dist['type']);
-        $this->assertEquals('https://github.com/composer/packagist/zipball/tree/3.2/master', $dist['url']);
+        $this->assertEquals('https://github.com/composer/packagist/zipball/feature/3.2-foo', $dist['url']);
         $this->assertEquals($identifier, $dist['reference']);
 
         $source = $gitHubDriver->getSource($sha);
