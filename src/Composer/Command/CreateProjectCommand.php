@@ -142,6 +142,7 @@ EOT
                 $package = $candidate;
             }
         }
+        unset($candidates);
 
         $io->write('<info>Installing ' . $package->getName() . ' (' . VersionParser::formatVersion($package, false) . ')</info>', true);
 
@@ -164,6 +165,10 @@ EOT
 
         putenv('COMPOSER_ROOT_VERSION='.$package->getPrettyVersion());
 
+        // clean up memory
+        unset($dm, $config, $projectInstaller, $sourceRepo, $package);
+
+        // install dependencies of the created project
         $composer = Factory::create($io);
         $installer = Installer::create($io, $composer);
 
