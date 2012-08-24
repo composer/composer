@@ -8,6 +8,31 @@ use Composer\Console\Application;
 error_reporting(-1);
 @ini_set('display_errors', 1);
 
+$memoryInBytes = function ($value) {
+    //$memoryLimit = ini_get('memory_limit');
+
+    $unit = strtolower(substr($value, -1, 1));
+    $value = (int) $value;
+    switch($unit) {
+        case 'g':
+            $value *= 1024;
+        case 'm':
+            $value *= 1024;
+        case 'k':
+            $value *= 1024;
+    }
+
+    return $value;
+};
+
+$memoryLimit = trim(ini_get('memory_limit'));
+// Increase memory_limit if it is lower than 256M
+if ($memoryLimit != -1 && $memoryInBytes($memoryLimit) < 256 * 1024 * 1024) {
+    @ini_set('memory_limit', '256M');
+    printf('Warning: memory_limit was increased from %s to %s' . PHP_EOL . PHP_EOL, $memoryLimit, '256M');
+}
+unset($memoryInBytes);
+
 // run the command application
 $application = new Application();
 $application->run();
