@@ -23,14 +23,14 @@ class ArrayDumperTest extends \PHPUnit_Framework_TestCase
      */
     private $dumper;
     /**
-     * @var \Composer\Package\PackageInterface|\PHPUnit_Framework_MockObject_MockObject
+     * @var \Composer\Package\CompletePackageInterface|\PHPUnit_Framework_MockObject_MockObject
      */
     private $package;
 
     public function setUp()
     {
         $this->dumper = new ArrayDumper();
-        $this->package = $this->getMock('Composer\Package\PackageInterface');
+        $this->package = $this->getMock('Composer\Package\CompletePackageInterface');
     }
 
     public function testRequiredInformation()

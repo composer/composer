@@ -12,7 +12,7 @@
 
 namespace Composer\Repository;
 
-use Composer\Package\MemoryPackage;
+use Composer\Package\CompletePackage;
 use Composer\Package\Version\VersionParser;
 
 /**
@@ -34,7 +34,7 @@ class PlatformRepository extends ArrayRepository
             $version = $versionParser->normalize($prettyVersion);
         }
 
-        $php = new MemoryPackage('php', $version, $prettyVersion);
+        $php = new CompletePackage('php', $version, $prettyVersion);
         $php->setDescription('The PHP interpreter');
         parent::addPackage($php);
 
@@ -55,7 +55,7 @@ class PlatformRepository extends ArrayRepository
                 $version = $versionParser->normalize($prettyVersion);
             }
 
-            $ext = new MemoryPackage('ext-'.$name, $version, $prettyVersion);
+            $ext = new CompletePackage('ext-'.$name, $version, $prettyVersion);
             $ext->setDescription('The '.$name.' PHP extension');
             parent::addPackage($ext);
         }
@@ -107,7 +107,7 @@ class PlatformRepository extends ArrayRepository
                 continue;
             }
 
-            $lib = new MemoryPackage('lib-'.$name, $version, $prettyVersion);
+            $lib = new CompletePackage('lib-'.$name, $version, $prettyVersion);
             $lib->setDescription('The '.$name.' PHP library');
             parent::addPackage($lib);
         }

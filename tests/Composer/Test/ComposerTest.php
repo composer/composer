@@ -18,7 +18,7 @@ class ComposerTest extends TestCase
     public function testSetGetPackage()
     {
         $composer = new Composer();
-        $package = $this->getMock('Composer\Package\PackageInterface');
+        $package = $this->getMock('Composer\Package\RootPackageInterface');
         $composer->setPackage($package);
 
         $this->assertSame($package, $composer->getPackage());

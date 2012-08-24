@@ -14,6 +14,7 @@ namespace Composer\Package\Version;
 
 use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
+use Composer\Package\Link;
 use Composer\Package\LinkConstraint\MultiConstraint;
 use Composer\Package\LinkConstraint\VersionConstraint;
 
@@ -162,6 +163,28 @@ class VersionParser
         }
 
         return 'dev-'.$name;
+    }
+
+    /**
+     * @param string $source source package name
+     * @param string $sourceVersion source package version (pretty version ideally)
+     * @param string $description link description (e.g. requires, replaces, ..)
+     * @param array $links array of package name => constraint mappings
+     * @return Link[]
+     */
+    public function parseLinks($source, $sourceVersion, $description, $links)
+    {
+        $res = array();
+        foreach ($links as $target => $constraint) {
+            if ('self.version' === $constraint) {
+                $parsedConstraint = $this->parseConstraints($sourceVersion);
+            } else {
+                $parsedConstraint = $this->parseConstraints($constraint);
+            }
+            $res[] = new Link($source, $target, $parsedConstraint, $description, $constraint);
+        }
+
+        return $res;
     }
 
     /**

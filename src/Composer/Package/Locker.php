@@ -177,10 +177,21 @@ class Locker
             'hash' => $this->hash,
             'packages' => null,
             'packages-dev' => null,
-            'aliases' => $aliases,
+            'aliases' => array(),
             'minimum-stability' => $minimumStability,
             'stability-flags' => $stabilityFlags,
         );
+
+        foreach ($aliases as $package => $versions) {
+            foreach ($versions as $version => $alias) {
+                $lock['aliases'][] = array(
+                    'alias' => $alias['alias'],
+                    'alias_normalized' => $alias['alias_normalized'],
+                    'version' => $version,
+                    'package' => $package,
+                );
+            }
+        }
 
         $lock['packages'] = $this->lockPackages($packages);
         if (null !== $devPackages) {
