@@ -391,7 +391,14 @@ class Installer
                         continue;
                     }
 
-                    $newPackage = $this->repositoryManager->findPackage($package->getName(), $package->getVersion());
+                    $newPackage = null;
+                    $matches = $pool->whatProvides($package->getName(), new VersionConstraint('=', $package->getVersion()));
+                    foreach ($matches as $match) {
+                        if (null === $newPackage || $newPackage->getReleaseDate() < $match->getReleaseDate()) {
+                            $newPackage = $match;
+                        }
+                    }
+
                     if ($newPackage && $newPackage->getSourceReference() !== $package->getSourceReference()) {
                         $operations[] = new UpdateOperation($package, $newPackage);
                     }

@@ -31,8 +31,9 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
     protected $io;
     protected $cache;
     protected $notifyUrl;
-    protected $minimalPackages;
     protected $loader;
+    private $rawData;
+    private $minimalPackages;
 
     public function __construct(array $repoConfig, IOInterface $io, Config $config)
     {
@@ -90,12 +91,14 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
             return $this->minimalPackages;
         }
 
-        $repoData = $this->loadDataFromServer();
+        if (null === $this->rawData) {
+            $this->rawData = $this->loadDataFromServer();
+        }
 
         $this->minimalPackages = array();
         $versionParser = new VersionParser;
 
-        foreach ($repoData as $package) {
+        foreach ($this->rawData as $package) {
             $version = !empty($package['version_normalized']) ? $package['version_normalized'] : $versionParser->normalize($package['version']);
             $data = array(
                 'name' => strtolower($package['name']),
@@ -127,9 +130,11 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
      */
     public function filterPackages($callback, $class = 'Composer\Package\Package')
     {
-        $repoData = $this->loadDataFromServer();
+        if (null === $this->rawData) {
+            $this->rawData = $this->loadDataFromServer();
+        }
 
-        foreach ($repoData as $package) {
+        foreach ($this->rawData as $package) {
             if (false === $callback($package = $this->loader->load($package, $class))) {
                 return false;
             }
