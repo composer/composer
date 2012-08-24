@@ -85,7 +85,7 @@ EOF;
         // add custom psr-0 autoloading if the root package has a target dir
         $targetDirLoader = null;
         $mainAutoload = $mainPackage->getAutoload();
-        if ($mainPackage->getTargetDir() && $mainAutoload['psr-0']) {
+        if ($mainPackage->getTargetDir() && !empty($mainAutoload['psr-0'])) {
             $levels = count(explode('/', trim(strtr($mainPackage->getTargetDir(), '\\', '/'), '/')));
             $prefixes = implode(', ', array_map(function ($prefix) {
                 return var_export($prefix, true);
