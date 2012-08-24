@@ -20,7 +20,7 @@ use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
 
 /**
- * Creates an configured instance of composer.
+ * Creates a configured instance of composer.
  *
  * @author Ryan Weaver <ryan@knplabs.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
