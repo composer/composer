@@ -247,7 +247,8 @@ class Installer
         // creating repository pool
         $pool = new Pool($minimumStability, $stabilityFlags);
         $pool->addRepository($installedRepo, $aliases);
-        foreach ($this->repositoryManager->getRepositories() as $repository) {
+        $repositories = $this->repositoryManager->getRepositories();
+        foreach ($repositories as $repository) {
             $pool->addRepository($repository, $aliases);
         }
 
@@ -360,6 +361,10 @@ class Installer
                 continue;
             }
 
+            if ($package instanceof AliasPackage) {
+                continue;
+            }
+
             // skip packages that will be updated/uninstalled
             foreach ($operations as $operation) {
                 if (('update' === $operation->getJobType() && $operation->getInitialPackage()->equals($package))
@@ -394,9 +399,13 @@ class Installer
                     $newPackage = null;
                     $matches = $pool->whatProvides($package->getName(), new VersionConstraint('=', $package->getVersion()));
                     foreach ($matches as $match) {
-                        if (null === $newPackage || $newPackage->getReleaseDate() < $match->getReleaseDate()) {
-                            $newPackage = $match;
+                        // skip local packages
+                        if (!in_array($match->getRepository(), $repositories, true)) {
+                            continue;
                         }
+
+                        $newPackage = $match;
+                        break;
                     }
 
                     if ($newPackage && $newPackage->getSourceReference() !== $package->getSourceReference()) {
