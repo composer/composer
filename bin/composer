@@ -6,8 +6,11 @@ require __DIR__.'/../src/bootstrap.php';
 use Composer\Console\Application;
 
 error_reporting(-1);
-@ini_set('display_errors', 1);
-@ini_set('memory_limit', '512M');
+
+if (function_exists('ini_set')) {
+    @ini_set('display_errors', 1);
+    @ini_set('memory_limit', '512M');
+}
 
 // run the command application
 $application = new Application();
