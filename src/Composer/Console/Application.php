@@ -49,6 +49,9 @@ class Application extends BaseApplication
     public function __construct()
     {
         ErrorHandler::register();
+        ini_set('xdebug.show_exception_trace', false);
+        ini_set('xdebug.scream', false);
+
         parent::__construct('Composer', Composer::VERSION);
     }
 
