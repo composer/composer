@@ -15,11 +15,11 @@ namespace Composer\Package;
 use Composer\Package\Version\VersionParser;
 
 /**
- * A package with setters for all members to create it dynamically in memory
+ * Core package definitions that are needed to resolve dependencies and install packages
  *
  * @author Nils Adermann <naderman@naderman.de>
  */
-class MemoryPackage extends BasePackage
+class Package extends BasePackage
 {
     protected $type;
     protected $targetDir;
@@ -33,24 +33,14 @@ class MemoryPackage extends BasePackage
     protected $distSha1Checksum;
     protected $version;
     protected $prettyVersion;
-    protected $repositories;
-    protected $license = array();
     protected $releaseDate;
-    protected $keywords;
-    protected $authors;
-    protected $description;
-    protected $homepage;
     protected $extra = array();
     protected $binaries = array();
-    protected $scripts = array();
     protected $aliases = array();
     protected $alias;
     protected $prettyAlias;
     protected $dev;
-
-    protected $minimumStability = 'stable';
-    protected $stabilityFlags = array();
-    protected $references = array();
+    protected $stability;
 
     protected $requires = array();
     protected $conflicts = array();
@@ -60,7 +50,6 @@ class MemoryPackage extends BasePackage
     protected $suggests = array();
     protected $autoload = array();
     protected $includePaths = array();
-    protected $support = array();
 
     /**
      * Creates a new in memory package.
@@ -158,22 +147,6 @@ class MemoryPackage extends BasePackage
     public function getBinaries()
     {
         return $this->binaries;
-    }
-
-    /**
-     * @param array $scripts
-     */
-    public function setScripts(array $scripts)
-    {
-        $this->scripts = $scripts;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getScripts()
-    {
-        return $this->scripts;
     }
 
     /**
@@ -353,24 +326,6 @@ class MemoryPackage extends BasePackage
     }
 
     /**
-     * Set the repositories
-     *
-     * @param string $repositories
-     */
-    public function setRepositories($repositories)
-    {
-        $this->repositories = $repositories;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getRepositories()
-    {
-        return $this->repositories;
-    }
-
-    /**
      * {@inheritDoc}
      */
     public function getVersion()
@@ -387,21 +342,21 @@ class MemoryPackage extends BasePackage
     }
 
     /**
-     * Set the license
+     * Set the releaseDate
      *
-     * @param array $license
+     * @param DateTime $releaseDate
      */
-    public function setLicense(array $license)
+    public function setReleaseDate(\DateTime $releaseDate)
     {
-        $this->license = $license;
+        $this->releaseDate = $releaseDate;
     }
 
     /**
      * {@inheritDoc}
      */
-    public function getLicense()
+    public function getReleaseDate()
     {
-        return $this->license;
+        return $this->releaseDate;
     }
 
     /**
@@ -513,150 +468,6 @@ class MemoryPackage extends BasePackage
     }
 
     /**
-     * Set the releaseDate
-     *
-     * @param DateTime $releaseDate
-     */
-    public function setReleaseDate(\DateTime $releaseDate)
-    {
-        $this->releaseDate = $releaseDate;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getReleaseDate()
-    {
-        return $this->releaseDate;
-    }
-
-    /**
-     * Set the keywords
-     *
-     * @param array $keywords
-     */
-    public function setKeywords(array $keywords)
-    {
-        $this->keywords = $keywords;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getKeywords()
-    {
-        return $this->keywords;
-    }
-
-    /**
-     * Set the authors
-     *
-     * @param array $authors
-     */
-    public function setAuthors(array $authors)
-    {
-        $this->authors = $authors;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getAuthors()
-    {
-        return $this->authors;
-    }
-
-    /**
-     * Set the description
-     *
-     * @param string $description
-     */
-    public function setDescription($description)
-    {
-        $this->description = $description;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getDescription()
-    {
-        return $this->description;
-    }
-
-    /**
-     * Set the homepage
-     *
-     * @param string $homepage
-     */
-    public function setHomepage($homepage)
-    {
-        $this->homepage = $homepage;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getHomepage()
-    {
-        return $this->homepage;
-    }
-
-    /**
-     * Set the minimumStability
-     *
-     * @param string $minimumStability
-     */
-    public function setMinimumStability($minimumStability)
-    {
-        $this->minimumStability = $minimumStability;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getMinimumStability()
-    {
-        return $this->minimumStability;
-    }
-
-    /**
-     * Set the stabilityFlags
-     *
-     * @param array $stabilityFlags
-     */
-    public function setStabilityFlags(array $stabilityFlags)
-    {
-        $this->stabilityFlags = $stabilityFlags;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getStabilityFlags()
-    {
-        return $this->stabilityFlags;
-    }
-
-    /**
-     * Set the references
-     *
-     * @param array $references
-     */
-    public function setReferences(array $references)
-    {
-        $this->references = $references;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getReferences()
-    {
-        return $this->references;
-    }
-
-    /**
      * Set the autoload mapping
      *
      * @param array $autoload Mapping of autoloading rules
@@ -690,23 +501,5 @@ class MemoryPackage extends BasePackage
     public function getIncludePaths()
     {
         return $this->includePaths;
-    }
-
-    /**
-     * Set the support information
-     *
-     * @param array $support
-     */
-    public function setSupport(array $support)
-    {
-        $this->support = $support;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getSupport()
-    {
-        return $this->support;
     }
 }

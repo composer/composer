@@ -12,7 +12,7 @@
 
 namespace Composer;
 
-use Composer\Package\PackageInterface;
+use Composer\Package\RootPackageInterface;
 use Composer\Package\Locker;
 use Composer\Repository\RepositoryManager;
 use Composer\Installer\InstallationManager;
@@ -27,7 +27,7 @@ class Composer
     const VERSION = '@package_version@';
 
     /**
-     * @var Package\PackageInterface
+     * @var Package\RootPackageInterface
      */
     private $package;
 
@@ -57,16 +57,16 @@ class Composer
     private $config;
 
     /**
-     * @param  Package\PackageInterface $package
+     * @param  Package\RootPackageInterface $package
      * @return void
      */
-    public function setPackage(PackageInterface $package)
+    public function setPackage(RootPackageInterface $package)
     {
         $this->package = $package;
     }
 
     /**
-     * @return Package\PackageInterface
+     * @return Package\RootPackageInterface
      */
     public function getPackage()
     {

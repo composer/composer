@@ -36,7 +36,7 @@ class ValidatingArrayLoader implements LoaderInterface
         $this->versionParser = $parser;
     }
 
-    public function load(array $config)
+    public function load(array $config, $class = 'Composer\Package\CompletePackage')
     {
         $this->config = $config;
 
@@ -168,7 +168,7 @@ class ValidatingArrayLoader implements LoaderInterface
             throw new \Exception(implode("\n", $this->errors));
         }
 
-        $package = $this->loader->load($this->config);
+        $package = $this->loader->load($this->config, $class);
         $this->errors = array();
         $this->config = null;
 

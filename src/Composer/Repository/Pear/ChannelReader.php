@@ -17,7 +17,7 @@ use Composer\Util\RemoteFilesystem;
 /**
  * PEAR Channel package reader.
  *
- * Reads channel packages info from and builds MemoryPackage's
+ * Reads channel packages info from and builds Package's
  *
  * @author Alexey Prilipko <palex@farpost.com>
  */

@@ -17,7 +17,7 @@ use Composer\Config;
 use Composer\Json\JsonFile;
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\RepositoryManager;
-use Composer\Package\PackageInterface;
+use Composer\Package\RootPackageInterface;
 use Composer\Package\Link;
 use Composer\Package\Locker;
 use Composer\Test\Mock\FactoryMock;
@@ -32,7 +32,7 @@ class InstallerTest extends TestCase
     /**
      * @dataProvider provideInstaller
      */
-    public function testInstaller(PackageInterface $rootPackage, $repositories, array $options)
+    public function testInstaller(RootPackageInterface $rootPackage, $repositories, array $options)
     {
         $io = $this->getMock('Composer\IO\IOInterface');
 
@@ -80,7 +80,7 @@ class InstallerTest extends TestCase
         // when A requires B and B requires A, and A is a non-published root package
         // the install of B should succeed
 
-        $a = $this->getPackage('A', '1.0.0');
+        $a = $this->getPackage('A', '1.0.0', 'Composer\Package\RootPackage');
         $a->setRequires(array(
             new Link('A', 'B', $this->getVersionConstraint('=', '1.0.0')),
         ));
@@ -100,7 +100,7 @@ class InstallerTest extends TestCase
         // #480: when A requires B and B requires A, and A is a published root package
         // only B should be installed, as A is the root
 
-        $a = $this->getPackage('A', '1.0.0');
+        $a = $this->getPackage('A', '1.0.0', 'Composer\Package\RootPackage');
         $a->setRequires(array(
             new Link('A', 'B', $this->getVersionConstraint('=', '1.0.0')),
         ));

@@ -18,7 +18,7 @@ use Composer\Package\Version\VersionParser;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class AliasPackage extends BasePackage
+class AliasPackage extends BasePackage implements CompletePackageInterface
 {
     protected $version;
     protected $prettyVersion;
