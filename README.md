@@ -115,4 +115,7 @@ Composer is licensed under the MIT License - see the LICENSE file for details
 Acknowledgments
 ---------------
 
-This project's Solver started out as a PHP port of openSUSE's [Libzypp satsolver](http://en.opensuse.org/openSUSE:Libzypp_satsolver).
+- This project's Solver started out as a PHP port of openSUSE's
+  [Libzypp satsolver](http://en.opensuse.org/openSUSE:Libzypp_satsolver).
+- This project uses hiddeninput.exe to prompt for passwords on windows, sources
+  and details can be found on the [github page of the project](https://github.com/Seldaek/hidden-input).
