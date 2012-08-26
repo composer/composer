@@ -1,10 +1,3 @@
-/.settings
-/.project
-/.buildpath
-/composer.phar
-/vendor
-/nbproject
+composer.phar
+vendor
 phpunit.xml
-.vagrant
-Vagrantfile
-.idea
