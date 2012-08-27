@@ -154,6 +154,8 @@ VCS stands for version control system. This includes versioning systems like
 git, svn or hg. Composer has a repository type for installing packages from
 these systems.
 
+#### Maintaining a third library fork
+
 There are a few use cases for this. The most common one is maintaining your
 own fork of a third party library. If you are using a certain library for your
 project and you decide to change something in the library, you will want your
@@ -180,6 +182,8 @@ Example assuming you patched monolog to fix a bug in the `bugfix` branch:
 
 When you run `php composer.phar update`, you should get your modified version
 of `monolog/monolog` instead of the one from packagist.
+
+#### Git alternatives
 
 Git is not the only version control system supported by the VCS repository.
 The following are supported:
