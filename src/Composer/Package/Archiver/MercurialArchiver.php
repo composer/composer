@@ -33,7 +33,13 @@ class MercurialArchiver extends VcsArchiver
             escapeshellarg($target)
         );
 
-        $this->process->execute($command, $output, $source);
+        $exitCode = $this->process->execute($command, $output, $source);
+
+        if (0 !== $exitCode) {
+            throw new \RuntimeException(
+                sprintf('The command `%s` returned %s', $command, $exitCode)
+            );
+        }
     }
 
     /**
