@@ -404,6 +404,11 @@ class Installer
                             continue;
                         }
 
+                        // skip providers/replacers
+                        if ($match->getName() !== $package->getName()) {
+                            continue;
+                        }
+
                         $newPackage = $match;
                         break;
                     }
