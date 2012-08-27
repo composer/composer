@@ -9,11 +9,11 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Test\Package\Dumper;
+namespace Composer\Test\Package\Archiver;
 
-use Composer\Package\Dumper\TarDumper;
+use Composer\Package\Archiver\ZipArchiver;
 
-class TarDumperTest extends DumperTest
+class ZipArchiverTest extends ArchiverTest
 {
     public function testThis()
     {
@@ -22,10 +22,10 @@ class TarDumperTest extends DumperTest
         $name = $this->getPackageFileName($package);
 
         $temp = sys_get_temp_dir();
-        $tar = new TarDumper($temp);
-        $tar->dump($package);
+        $zip = new ZipArchiver($temp);
+        $zip->dump($package);
 
-        $dist = sprintf('%s/%s.tar',
+        $dist = sprintf('%s/%s.zip',
             $temp, $name
         );
         $this->assertFileExists($dist);
@@ -38,6 +38,6 @@ class TarDumperTest extends DumperTest
      */
     public function testException()
     {
-        new TarDumper("/totally-random-" . time());
+        new ZipArchiver("/totally-random-" . time());
     }
 }
