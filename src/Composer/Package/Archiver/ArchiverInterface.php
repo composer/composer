@@ -8,18 +8,18 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace Composer\Package\Dumper;
+namespace Composer\Package\Archiver;
 
 use Composer\Package\PackageInterface;
 
 /**
  * @author Till Klampaeckel <till@php.net>
  */
-interface DumperInterface
+interface ArchiverInterface
 {
     /**
      * Return value depends on implementation - e.g. generating a tar or zip the
-     * method currently returns void, the ArrayDumper returns an array.
+     * method currently returns void, the ArrayArchiver returns an array.
      *
      * @param PackageInterface $package
      *

@@ -9,17 +9,17 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Package\Dumper;
+namespace Composer\Package\Archiver;
 
-use Composer\Package\Dumper\BaseDumper;
-use Composer\Package\Dumper\DumperInterface;
+use Composer\Package\Archiver\BaseArchiver;
+use Composer\Package\Archiver\ArchiverInterface;
 use Composer\Package\PackageInterface;
 use Composer\Util\ProcessExecutor;
 
 /**
  * @author Till Klampaeckel <till@php.net>
  */
-class ZipDumper extends BaseDumper
+class ZipArchiver extends BaseArchiver
 {
     protected $format = 'zip';
 

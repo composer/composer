@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Package\Dumper;
+namespace Composer\Package\Archiver;
 
 use Composer\Package\PackageInterface;
 use Composer\Util\ProcessExecutor;
@@ -22,7 +22,7 @@ use Composer\Factory;
 /**
  * @author Till Klampaeckel <till@php.net>
  */
-abstract class BaseDumper implements DumperInterface
+abstract class BaseArchiver implements ArchiverInterface
 {
     /**
      * Format: zip or tar.
