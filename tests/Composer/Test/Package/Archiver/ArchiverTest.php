@@ -9,13 +9,13 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Test\Package\Dumper;
+namespace Composer\Test\Package\Archiver;
 
 use Composer\Package\MemoryPackage;
 use Composer\Util\Filesystem;
 use Composer\Util\ProcessExecutor;
 
-abstract class DumperTest extends \PHPUnit_Framework_TestCase
+abstract class ArchiverTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @var \Composer\Util\Filesystem
@@ -36,7 +36,7 @@ abstract class DumperTest extends \PHPUnit_Framework_TestCase
     {
         $this->fs      = new Filesystem;
         $this->process = new ProcessExecutor;
-        $this->testdir = sys_get_temp_dir() . '/composer_dumpertest_git_repository' . mt_rand();
+        $this->testdir = sys_get_temp_dir() . '/composer_archivertest_git_repository' . mt_rand();
     }
 
     protected function getTestDir()
@@ -83,7 +83,7 @@ abstract class DumperTest extends \PHPUnit_Framework_TestCase
     protected function setupPackage()
     {
         $td = $this->getTestDir();
-        $package = new MemoryPackage('dumpertest/dumpertest', 'master', 'master');
+        $package = new MemoryPackage('archivertest/archivertest', 'master', 'master');
         $package->setSourceUrl("file://$td");
         $package->setSourceReference('master');
         $package->setSourceType('git');
