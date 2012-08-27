@@ -14,7 +14,7 @@ namespace Composer\Test\Package\Archiver;
 
 use Composer\Util\Filesystem;
 use Composer\Util\ProcessExecutor;
-use Composer\Package\MemoryPackage;
+use Composer\Package\Package;
 
 /**
  * @author Till Klampaeckel <till@php.net>
@@ -80,7 +80,7 @@ abstract class ArchiverTest extends \PHPUnit_Framework_TestCase
 
     protected function setupPackage()
     {
-        $package = new MemoryPackage('archivertest/archivertest', 'master', 'master');
+        $package = new Package('archivertest/archivertest', 'master', 'master');
         $package->setSourceUrl(realpath($this->testDir));
         $package->setSourceReference('master');
         $package->setSourceType('git');
