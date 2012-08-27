@@ -13,7 +13,7 @@
 namespace Composer\Test\Package\Archiver;
 
 use Composer\Package\Archiver\MercurialArchiver;
-use Composer\Package\MemoryPackage;
+use Composer\Package\Package;
 
 /**
  * @author Matthieu Moquet <matthieu@moquet.net>
@@ -93,7 +93,7 @@ class MercurialArchiverTest extends ArchiverTest
 
     protected function setupMercurialPackage()
     {
-        $package = new MemoryPackage('archivertest/archivertest', 'master', 'master');
+        $package = new Package('archivertest/archivertest', 'master', 'master');
         $package->setSourceUrl(realpath($this->testDir));
         $package->setSourceReference('default');
         $package->setSourceType('hg');
