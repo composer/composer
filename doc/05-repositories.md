@@ -154,7 +154,7 @@ VCS stands for version control system. This includes versioning systems like
 git, svn or hg. Composer has a repository type for installing packages from
 these systems.
 
-#### Maintaining a third library fork
+#### Maintaining a third party library fork
 
 There are a few use cases for this. The most common one is maintaining your
 own fork of a third party library. If you are using a certain library for your
