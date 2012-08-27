@@ -34,12 +34,13 @@ abstract class BaseArchiver implements ArchiverInterface
             $phar = new \PharData($target, null, null, $format);
             $phar->buildFromDirectory($sources);
         } catch (\UnexpectedValueException $e) {
-            throw new \RuntimeException(
-                sprintf("Could not create archive '%s' from '%s': %s",
-                    $target,
-                    $sources,
-                    $e->getMessage()
-                ));
+            $message = sprintf("Could not create archive '%s' from '%s': %s",
+                $target,
+                $sources,
+                $e->getMessage()
+            );
+
+            throw new \RuntimeException($message, $e->getCode(), $e);
         }
     }
 }
