@@ -29,7 +29,7 @@ class TarArchiverTest extends ArchiverTest
 
         // Test archive
         $archiver = new TarArchiver();
-        $archiver->archive($package->getSourceUrl(), $target);
+        $archiver->archive($package->getSourceUrl(), $target, 'tar');
         $this->assertFileExists($target);
 
         unlink($target);

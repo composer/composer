@@ -30,9 +30,7 @@ class MercurialArchiverTest extends ArchiverTest
 
         // Test archive
         $archiver = new MercurialArchiver();
-        $archiver->setFormat('zip');
-        $archiver->setSourceRef('default');
-        $archiver->archive($package->getSourceUrl(), $target);
+        $archiver->archive($package->getSourceUrl(), $target, 'zip', 'default');
         $this->assertFileExists($target);
 
         unlink($target);
@@ -48,9 +46,7 @@ class MercurialArchiverTest extends ArchiverTest
 
         // Test archive
         $archiver = new MercurialArchiver();
-        $archiver->setFormat('tar');
-        $archiver->setSourceRef('default');
-        $archiver->archive($package->getSourceUrl(), $target);
+        $archiver->archive($package->getSourceUrl(), $target, 'tar', 'default');
         $this->assertFileExists($target);
 
         unlink($target);
