@@ -19,14 +19,20 @@ use Composer\Package\PackageInterface;
  * @author Till Klampaeckel <till@php.net>
  * @author Matthieu Moquet <matthieu@moquet.net>
  */
-class ZipArchiver extends BaseArchiver
+class PharArchiver extends BaseArchiver
 {
+    static public $formats = array(
+        'zip' => \Phar::ZIP,
+        'tar' => \Phar::TAR,
+    );
+
     /**
      * {@inheritdoc}
      */
     public function archive($sources, $target, $format, $sourceRef = null)
     {
-        $this->createPharArchive($sources, $target, \Phar::ZIP);
+        // source reference is useless for this archiver
+        $this->createPharArchive($sources, $target, static::$formats[$format]);
     }
 
     /**
@@ -34,6 +40,6 @@ class ZipArchiver extends BaseArchiver
      */
     public function supports($format, $sourceType)
     {
-        return 'zip' === $format;
+        return in_array($format, array_keys(static::$formats));
     }
 }
