@@ -68,6 +68,20 @@ class ArchiveManager
             throw new \InvalidArgumentException('Format must be specified');
         }
 
+        $usableArchiver = null;
+        $sourceType = $package->getSourceType();
+
+        foreach ($this->archivers as $archiver) {
+            if ($archiver->supports($format, $package->getSourceType())) {
+                $usableArchiver = $archiver;
+            }
+        }
+
+        // Checks the format/source type are supported before downloading the package
+        if (null === $usableArchiver) {
+            throw new \RuntimeException(sprintf('No archiver found to support %s format', $format));
+        }
+
         $filesystem = new Filesystem();
         $packageName = str_replace('/', DIRECTORY_SEPARATOR, $package->getUniqueName());
 
@@ -82,16 +96,7 @@ class ArchiveManager
         // Download sources
         $this->downloadManager->download($package, $sources, true);
 
-        $sourceType = $package->getSourceType();
-        $sourceRef  = $package->getSourceReference();
-        foreach ($this->archivers as $archiver) {
-            if ($archiver->supports($format, $sourceType)) {
-                $archiver->archive($sources, $target, $format, $sourceRef);
-
-                return $target;
-            }
-        }
-
-        throw new \RuntimeException(sprintf('No archiver found to support %s format', $format));
+        $sourceRef = $package->getSourceReference();
+        $usableArchiver->archive($sources, $target, $format, $sourceRef);
     }
 }
