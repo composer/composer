@@ -12,15 +12,31 @@
 
 namespace Composer\Test\Package\Archiver;
 
-use Composer\Package\Archiver\ZipArchiver;
+use Composer\Package\Archiver\PharArchiver;
 
 /**
  * @author Till Klampaeckel <till@php.net>
  * @author Matthieu Moquet <matthieu@moquet.net>
  */
-class ZipArchiverTest extends ArchiverTest
+class PharArchiverTest extends ArchiverTest
 {
-    public function testArchive()
+    public function testTarArchive()
+    {
+        $this->setupGitRepo();
+
+        $package = $this->setupPackage();
+        $target  = sys_get_temp_dir().'/composer_archiver_test.tar';
+
+        // Test archive
+        $archiver = new PharArchiver();
+        $archiver->archive($package->getSourceUrl(), $target, 'tar');
+        $this->assertFileExists($target);
+
+        unlink($target);
+        $this->removeGitRepo();
+    }
+
+    public function testZipArchive()
     {
         $this->setupGitRepo();
 
@@ -28,7 +44,7 @@ class ZipArchiverTest extends ArchiverTest
         $target  = sys_get_temp_dir().'/composer_archiver_test.zip';
 
         // Test archive
-        $archiver = new ZipArchiver();
+        $archiver = new PharArchiver();
         $archiver->archive($package->getSourceUrl(), $target, 'zip');
         $this->assertFileExists($target);
 
