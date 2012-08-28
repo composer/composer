@@ -24,7 +24,7 @@ class ZipArchiver extends BaseArchiver
     /**
      * {@inheritdoc}
      */
-    public function archive($sources, $target)
+    public function archive($sources, $target, $format, $sourceRef = null)
     {
         $this->createPharArchive($sources, $target, \Phar::ZIP);
     }
@@ -32,7 +32,7 @@ class ZipArchiver extends BaseArchiver
     /**
      * {@inheritdoc}
      */
-    public function supports($format)
+    public function supports($format, $sourceType)
     {
         return 'zip' === $format;
     }

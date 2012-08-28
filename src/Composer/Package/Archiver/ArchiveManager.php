@@ -30,8 +30,6 @@ class ArchiveManager
 
     protected $archivers = array();
 
-    protected $vcsArchivers = array();
-
     /**
      * @param string          $buildDir        The directory used to build the archive
      * @param DownloadManager $downloadManager A manager used to download package sources
@@ -53,11 +51,7 @@ class ArchiveManager
      */
     public function addArchiver(ArchiverInterface $archiver)
     {
-        if ($archiver instanceof VcsArchiver) {
-            $this->vcsArchivers[$archiver->getSourceType()] = $archiver;
-        } else {
-            $this->archivers[] = $archiver;
-        }
+        $this->archivers[] = $archiver;
     }
 
     /**
@@ -88,21 +82,11 @@ class ArchiveManager
         // Download sources
         $this->downloadManager->download($package, $sources, true);
 
-        // Try VCS archivers first
         $sourceType = $package->getSourceType();
-        if (isset($this->archivers[$sourceType]) && $this->archivers[$sourceType]->supports($format)) {
-            $archiver = $this->archivers[$sourceType];
-            $archiver->setSourceRef($sourceRef);
-            $archiver->setFormat($format);
-            $archiver->archive($sources, $target);
-
-            return $target;
-        }
-
-        // Fallback on default archivers
+        $sourceRef  = $package->getSourceReference();
         foreach ($this->archivers as $archiver) {
-            if ($archiver->supports($format)) {
-                $archiver->archive($sources, $target);
+            if ($archiver->supports($format, $sourceType)) {
+                $archiver->archive($sources, $target, $format, $sourceRef);
 
                 return $target;
             }

@@ -12,19 +12,31 @@
 
 namespace Composer\Package\Archiver;
 
+use Composer\Util\ProcessExecutor;
+
 /**
  * @author Till Klampaeckel <till@php.net>
  * @author Matthieu Moquet <matthieu@moquet.net>
  */
-class GitArchiver extends VcsArchiver
+class GitArchiver implements ArchiverInterface
 {
+    protected $process;
+
+    public function __construct($process = null)
+    {
+        $this->process = $process ?: new ProcessExecutor();
+    }
+
     /**
      * {@inheritdoc}
      */
-    public function archive($source, $target)
+    public function archive($sources, $target, $format, $sourceRef = null)
     {
-        $format = $this->format ?: 'zip';
-        $sourceRef = $this->sourceRef ?: 'HEAD';
+        // Since git-archive no longer works with a commit ID in git 1.7.10,
+        // use by default the HEAD reference instead of the commit sha1
+        if (null === $sourceRef || preg_match('/^[0-9a-f]{40}$/i',$sourceRef)) {
+            $sourceRef = 'HEAD';
+        }
 
         $command = sprintf(
             'git archive --format %s --output %s %s',
@@ -33,7 +45,7 @@ class GitArchiver extends VcsArchiver
             $sourceRef
         );
 
-        $exitCode = $this->process->execute($command, $output, $source);
+        $exitCode = $this->process->execute($command, $output, $sources);
 
         if (0 !== $exitCode) {
             throw new \RuntimeException(
@@ -45,17 +57,9 @@ class GitArchiver extends VcsArchiver
     /**
      * {@inheritdoc}
      */
-    public function getSourceType()
+    public function supports($format, $sourceType)
     {
-        return 'git';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function supports($format)
-    {
-        return in_array($format, array(
+        return 'git' === $sourceType && in_array($format, array(
             'zip',
             'tar',
             'tgz',

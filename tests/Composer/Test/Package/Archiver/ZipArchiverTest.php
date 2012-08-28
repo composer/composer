@@ -29,7 +29,7 @@ class ZipArchiverTest extends ArchiverTest
 
         // Test archive
         $archiver = new ZipArchiver();
-        $archiver->archive($package->getSourceUrl(), $target);
+        $archiver->archive($package->getSourceUrl(), $target, 'zip');
         $this->assertFileExists($target);
 
         unlink($target);

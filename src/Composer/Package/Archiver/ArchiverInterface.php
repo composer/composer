@@ -23,17 +23,21 @@ interface ArchiverInterface
     /**
      * Create an archive from the sources.
      *
-     * @param string $source The sources directory
-     * @param string $target The target file
+     * @param string $source    The sources directory
+     * @param string $target    The target file
+     * @param string $format    The format used for archive
+     * @param string $sourceRef The reference of the source to archive or null
+     *                          for the current reference
      */
-    public function archive($sources, $target);
+    public function archive($sources, $target, $format, $sourceRef = null);
 
     /**
      * Format supported by the archiver.
      *
-     * @param string $format The format to support
+     * @param string $format     The archive format
+     * @param string $sourceType The source type (git, svn, hg, etc.)
      *
      * @return boolean true if the format is supported by the archiver
      */
-    public function supports($format);
+    public function supports($format, $sourceType);
 }
