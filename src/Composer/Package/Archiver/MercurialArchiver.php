@@ -12,19 +12,29 @@
 
 namespace Composer\Package\Archiver;
 
+use Composer\Util\ProcessExecutor;
+
 /**
  * @author Till Klampaeckel <till@php.net>
  * @author Matthieu Moquet <matthieu@moquet.net>
  */
-class MercurialArchiver extends VcsArchiver
+class MercurialArchiver implements ArchiverInterface
 {
+    protected $process;
+
+    public function __construct($process = null)
+    {
+        $this->process = $process ?: new ProcessExecutor();
+    }
+
     /**
      * {@inheritdoc}
      */
-    public function archive($source, $target)
+    public function archive($sources, $target, $format, $sourceRef = null)
     {
-        $format = $this->format ?: 'zip';
-        $sourceRef = $this->sourceRef ?: 'default';
+        if (null === $sourceRef) {
+            $sourceRef = 'default';
+        }
 
         $command = sprintf(
             'hg archive --rev %s --type %s %s',
@@ -33,7 +43,7 @@ class MercurialArchiver extends VcsArchiver
             escapeshellarg($target)
         );
 
-        $exitCode = $this->process->execute($command, $output, $source);
+        $exitCode = $this->process->execute($command, $output, $sources);
 
         if (0 !== $exitCode) {
             throw new \RuntimeException(
@@ -45,17 +55,9 @@ class MercurialArchiver extends VcsArchiver
     /**
      * {@inheritdoc}
      */
-    public function getSourceType()
+    public function supports($format, $sourceType)
     {
-        return 'hg';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function supports($format)
-    {
-        return in_array($format, array(
+        return 'hg' === $sourceType && in_array($format, array(
             'tar',
             'tbz2',
             'tgz',

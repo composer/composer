@@ -29,9 +29,7 @@ class GitArchiverTest extends ArchiverTest
 
         // Test archive
         $archiver = new GitArchiver();
-        $archiver->setFormat('zip');
-        $archiver->setSourceRef('master');
-        $archiver->archive($package->getSourceUrl(), $target);
+        $archiver->archive($package->getSourceUrl(), $target, 'zip', 'master');
         $this->assertFileExists($target);
 
         unlink($target);
@@ -47,9 +45,7 @@ class GitArchiverTest extends ArchiverTest
 
         // Test archive
         $archiver = new GitArchiver();
-        $archiver->setFormat('tar');
-        $archiver->setSourceRef('master');
-        $archiver->archive($package->getSourceUrl(), $target);
+        $archiver->archive($package->getSourceUrl(), $target, 'tar', 'master');
         $this->assertFileExists($target);
 
         unlink($target);
