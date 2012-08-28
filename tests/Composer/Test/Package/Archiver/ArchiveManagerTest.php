@@ -35,8 +35,7 @@ class ArchiveManagerTest extends ArchiverTest
         $this->manager = new ArchiveManager($this->workDir);
         $this->manager->addArchiver(new Archiver\GitArchiver);
         $this->manager->addArchiver(new Archiver\MercurialArchiver);
-        $this->manager->addArchiver(new Archiver\TarArchiver);
-        $this->manager->addArchiver(new Archiver\ZipArchiver);
+        $this->manager->addArchiver(new Archiver\PharArchiver);
     }
 
     public function testUnknownFormat()
