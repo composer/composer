@@ -12,6 +12,8 @@
 
 namespace Composer\Test\Package\Archiver;
 
+use Composer\Factory;
+use Composer\IO\NullIO;
 use Composer\Package\Archiver;
 use Composer\Package\Archiver\ArchiveManager;
 use Composer\Package\PackageInterface;
@@ -30,12 +32,10 @@ class ArchiveManagerTest extends ArchiverTest
     {
         parent::setUp();
 
-        $this->workDir = sys_get_temp_dir();
+        $factory = new Factory();
 
-        $this->manager = new ArchiveManager($this->workDir);
-        $this->manager->addArchiver(new Archiver\GitArchiver);
-        $this->manager->addArchiver(new Archiver\MercurialArchiver);
-        $this->manager->addArchiver(new Archiver\PharArchiver);
+        $this->workDir = sys_get_temp_dir();
+        $this->manager = $factory->createArchiveManager($this->workDir);
     }
 
     public function testUnknownFormat()
