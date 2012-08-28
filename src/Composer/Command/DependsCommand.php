@@ -67,11 +67,11 @@ EOT
         }, $input->getOption('link-type'));
 
         foreach ($repos as $repo) {
-            $repo->filterPackages(function ($package) use ($needle, $types, $output, $verbose) {
+            $repo->filterPackages(function ($package) use ($needle, $types, $linkTypes, $output, $verbose) {
                 static $outputPackages = array();
 
                 foreach ($types as $type) {
-                    foreach ($package->{'get'.$this->linkTypes[$type]}() as $link) {
+                    foreach ($package->{'get'.$linkTypes[$type]}() as $link) {
                         if ($link->getTarget() === $needle) {
                             if ($verbose) {
                                 $output->writeln($package->getPrettyName() . ' ' . $package->getPrettyVersion() . ' <info>' . $type . '</info> ' . $link->getPrettyConstraint());
