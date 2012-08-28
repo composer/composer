@@ -34,7 +34,7 @@ class GitArchiver implements ArchiverInterface
     {
         // Since git-archive no longer works with a commit ID in git 1.7.10,
         // use by default the HEAD reference instead of the commit sha1
-        if (null === $sourceRef || preg_match('/^[0-9a-f]{40}$/i',$sourceRef)) {
+        if (null === $sourceRef || preg_match('/^[0-9a-f]{40}$/i', $sourceRef)) {
             $sourceRef = 'HEAD';
         }
 
@@ -49,7 +49,7 @@ class GitArchiver implements ArchiverInterface
 
         if (0 !== $exitCode) {
             throw new \RuntimeException(
-                sprintf('The command `%s` returned %s', $command, $exitCode)
+                sprintf('Impossible to build the archive: `%s` returned %s', $command, $exitCode)
             );
         }
     }
@@ -59,10 +59,6 @@ class GitArchiver implements ArchiverInterface
      */
     public function supports($format, $sourceType)
     {
-        return 'git' === $sourceType && in_array($format, array(
-            'zip',
-            'tar',
-            'tgz',
-        ));
+        return 'git' === $sourceType && in_array($format, array('zip', 'tar', 'tgz'));
     }
 }

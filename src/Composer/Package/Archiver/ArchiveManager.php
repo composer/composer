@@ -69,11 +69,10 @@ class ArchiveManager
         }
 
         $usableArchiver = null;
-        $sourceType = $package->getSourceType();
-
         foreach ($this->archivers as $archiver) {
             if ($archiver->supports($format, $package->getSourceType())) {
                 $usableArchiver = $archiver;
+                break;
             }
         }
 
@@ -82,20 +81,20 @@ class ArchiveManager
             throw new \RuntimeException(sprintf('No archiver found to support %s format', $format));
         }
 
-        $filesystem = new Filesystem();
-        $packageName = str_replace('/', DIRECTORY_SEPARATOR, $package->getUniqueName());
-
         // Directory used to download the sources
-        $sources = sys_get_temp_dir().DIRECTORY_SEPARATOR.$packageName;
+        $filesystem = new Filesystem();
+        $packageName = $package->getUniqueName();
+        $sources = sys_get_temp_dir().'/'.$packageName;
         $filesystem->ensureDirectoryExists($sources);
 
         // Archive filename
-        $target = $this->buildDir.DIRECTORY_SEPARATOR.$packageName.'.'.$format;
+        $target = $this->buildDir.'/'.$packageName.'.'.$format;
         $filesystem->ensureDirectoryExists(dirname($this->buildDir.$target));
 
         // Download sources
         $this->downloadManager->download($package, $sources, true);
 
+        // Create the archive
         $sourceRef = $package->getSourceReference();
         $usableArchiver->archive($sources, $target, $format, $sourceRef);
     }
