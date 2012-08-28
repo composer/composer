@@ -19,9 +19,9 @@ use Composer\Package\PackageInterface;
  * @author Till Klampaeckel <till@php.net>
  * @author Matthieu Moquet <matthieu@moquet.net>
  */
-class PharArchiver extends BaseArchiver
+class PharArchiver implements ArchiverInterface
 {
-    static public $formats = array(
+    static protected $formats = array(
         'zip' => \Phar::ZIP,
         'tar' => \Phar::TAR,
     );
@@ -31,7 +31,6 @@ class PharArchiver extends BaseArchiver
      */
     public function archive($sources, $target, $format, $sourceRef = null)
     {
-        // source reference is useless for this archiver
         $this->createPharArchive($sources, $target, static::$formats[$format]);
     }
 
@@ -40,6 +39,29 @@ class PharArchiver extends BaseArchiver
      */
     public function supports($format, $sourceType)
     {
-        return in_array($format, array_keys(static::$formats));
+        return isset(static::$formats[$format]);
+    }
+
+    /**
+     * Create a PHAR archive.
+     *
+     * @param string $sources Path of the directory to archive
+     * @param string $target  Path of the file archive to create
+     * @param int    $format  Format of the archive
+     */
+    protected function createPharArchive($sources, $target, $format)
+    {
+        try {
+            $phar = new \PharData($target, null, null, $format);
+            $phar->buildFromDirectory($sources);
+        } catch (\UnexpectedValueException $e) {
+            $message = sprintf("Could not create archive '%s' from '%s': %s",
+                $target,
+                $sources,
+                $e->getMessage()
+            );
+
+            throw new \RuntimeException($message, $e->getCode(), $e);
+        }
     }
 }

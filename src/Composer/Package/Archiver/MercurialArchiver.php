@@ -47,7 +47,7 @@ class MercurialArchiver implements ArchiverInterface
 
         if (0 !== $exitCode) {
             throw new \RuntimeException(
-                sprintf('The command `%s` returned %s', $command, $exitCode)
+                sprintf('Impossible to build the archive: `%s` returned %s', $command, $exitCode)
             );
         }
     }
@@ -57,12 +57,6 @@ class MercurialArchiver implements ArchiverInterface
      */
     public function supports($format, $sourceType)
     {
-        return 'hg' === $sourceType && in_array($format, array(
-            'tar',
-            'tbz2',
-            'tgz',
-            'uzip',
-            'zip',
-        ));
+        return 'hg' === $sourceType && in_array($format, array('tar', 'tbz2', 'tgz', 'uzip', 'zip'));
     }
 }
