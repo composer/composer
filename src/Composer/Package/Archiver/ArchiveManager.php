@@ -34,16 +34,10 @@ class ArchiveManager
      * @param string          $buildDir        The directory used to build the archive
      * @param DownloadManager $downloadManager A manager used to download package sources
      */
-    public function __construct($buildDir, DownloadManager $downloadManager = null)
+    public function __construct($buildDir, DownloadManager $downloadManager)
     {
         $this->buildDir = $buildDir;
-
-        if (null !== $downloadManager) {
-            $this->downloadManager = $downloadManager;
-        } else {
-            $factory = new Factory();
-            $this->downloadManager = $factory->createDownloadManager(new NullIO());
-        }
+        $this->downloadManager = $downloadManager;
     }
 
     /**
