@@ -11,15 +11,15 @@
         },
         {
             "package": "symfony/console",
-            "version": "v2.1.0-RC1"
+            "version": "v2.1.0-RC2"
         },
         {
             "package": "symfony/finder",
-            "version": "v2.1.0-RC1"
+            "version": "v2.1.0-RC2"
         },
         {
             "package": "symfony/process",
-            "version": "v2.1.0-RC1"
+            "version": "v2.1.0-RC2"
         }
     ],
     "packages-dev": null,
