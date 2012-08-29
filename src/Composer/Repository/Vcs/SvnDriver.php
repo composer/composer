@@ -32,6 +32,10 @@ class SvnDriver extends VcsDriver
     protected $branches;
     protected $infoCache = array();
 
+    protected $trunkLocation    = 'trunk';
+    protected $branchesLocation = 'branches';
+    protected $tagsLocation     = 'tags';
+
     /**
      * @var \Composer\Util\Svn
      */
@@ -43,8 +47,18 @@ class SvnDriver extends VcsDriver
     public function initialize()
     {
         $this->url = $this->baseUrl = rtrim(self::normalizeUrl($this->url), '/');
+        
+        if ($this->config->has('trunkLocation')) {
+            $this->trunkLocation = $this->config->get('trunkLocation');
+        }
+        if ($this->config->has('branchesLocation')) {
+            $this->branchesLocation = $this->config->get('branchesLocation');
+        }
+        if ($this->config->has('tagsLocation')) {
+            $this->tagsLocation = $this->config->get('tagsLocation');
+        }
 
-        if (false !== ($pos = strrpos($this->url, '/trunk'))) {
+        if (false !== ($pos = strrpos($this->url, '/' . $this->trunkLocation))) {
             $this->baseUrl = substr($this->url, 0, $pos);
         }
 
@@ -59,7 +73,7 @@ class SvnDriver extends VcsDriver
      */
     public function getRootIdentifier()
     {
-        return 'trunk';
+        return $this->trunkLocation;
     }
 
     /**
@@ -145,13 +159,14 @@ class SvnDriver extends VcsDriver
         if (null === $this->tags) {
             $this->tags = array();
 
-            $output = $this->execute('svn ls --verbose', $this->baseUrl . '/tags');
+            $output = $this->execute('svn ls --verbose', $this->baseUrl . '/' . $this->tagsLocation);
             if ($output) {
                 foreach ($this->process->splitLines($output) as $line) {
                     $line = trim($line);
                     if ($line && preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match)) {
                         if (isset($match[1]) && isset($match[2]) && $match[2] !== './') {
-                            $this->tags[rtrim($match[2], '/')] = '/tags/'.$match[2].'@'.$match[1];
+                            $this->tags[rtrim($match[2], '/')] = '/' . $this->tagsLocation .
+                                '/' . $match[2] . '@' . $match[1];
                         }
                     }
                 }
@@ -174,8 +189,9 @@ class SvnDriver extends VcsDriver
                 foreach ($this->process->splitLines($output) as $line) {
                     $line = trim($line);
                     if ($line && preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match)) {
-                        if (isset($match[1]) && isset($match[2]) && $match[2] === 'trunk/') {
-                            $this->branches['trunk'] = '/trunk/@'.$match[1];
+                        if (isset($match[1]) && isset($match[2]) && $match[2] === $this->trunkLocation . '/') {
+                            $this->branches[$this->trunkLocation] = '/' . $this->trunkLocation .
+                                '/@'.$match[1];
                             break;
                         }
                     }
@@ -183,13 +199,14 @@ class SvnDriver extends VcsDriver
             }
             unset($output);
 
-            $output = $this->execute('svn ls --verbose', $this->baseUrl . '/branches');
+            $output = $this->execute('svn ls --verbose', $this->baseUrl . '/' . $this->branchesLocation);
             if ($output) {
                 foreach ($this->process->splitLines(trim($output)) as $line) {
                     $line = trim($line);
                     if ($line && preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match)) {
                         if (isset($match[1]) && isset($match[2]) && $match[2] !== './') {
-                            $this->branches[rtrim($match[2], '/')] = '/branches/'.$match[2].'@'.$match[1];
+                            $this->branches[rtrim($match[2], '/')] = '/' . $this->branchesLocation .
+                                '/' . $match[2] . '@' . $match[1];
                         }
                     }
                 }

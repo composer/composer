@@ -50,6 +50,9 @@ class VcsRepository extends ArrayRepository
         $this->type = isset($repoConfig['type']) ? $repoConfig['type'] : 'vcs';
         $this->verbose = $io->isVerbose();
         $this->config = $config;
+        if (isset($repoConfig['config']) && is_array($repoConfig['config'])) {
+            $this->config->merge(array('config' => $repoConfig['config']));
+        }
     }
 
     public function setLoader(LoaderInterface $loader)
