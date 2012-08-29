@@ -191,7 +191,9 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
         }
 
         try {
-            if ($parts = parse_url($this->url) and isset($parts['path']) and strpos($parts['path'], '/packages.json') !== false) {
+            $jsonUrlParts = parse_url($this->url);
+
+            if (isset($jsonUrlParts['path']) and strpos($jsonUrlParts['path'], '/packages.json') !== false) {
                 $jsonUrl = $this->url;
             } else {
                 $jsonUrl = $this->url . '/packages.json';
