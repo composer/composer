@@ -191,7 +191,15 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
         }
 
         try {
-            $json = new JsonFile($this->url.'/packages.json', new RemoteFilesystem($this->io));
+            $jsonUrlParts = parse_url($this->url);
+
+            if (isset($jsonUrlParts['path']) and strpos($jsonUrlParts['path'], '/packages.json') !== false) {
+                $jsonUrl = $this->url;
+            } else {
+                $jsonUrl = $this->url . '/packages.json';
+            }
+
+            $json = new JsonFile($jsonUrl, new RemoteFilesystem($this->io));
             $data = $json->read();
 
             if (!empty($data['notify'])) {
