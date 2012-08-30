@@ -33,6 +33,7 @@ class VcsRepository extends ArrayRepository
     protected $versionParser;
     protected $type;
     protected $loader;
+    protected $repoConfig;
 
     public function __construct(array $repoConfig, IOInterface $io, Config $config, array $drivers = null)
     {
@@ -50,9 +51,7 @@ class VcsRepository extends ArrayRepository
         $this->type = isset($repoConfig['type']) ? $repoConfig['type'] : 'vcs';
         $this->verbose = $io->isVerbose();
         $this->config = $config;
-        if (isset($repoConfig['config']) && is_array($repoConfig['config'])) {
-            $this->config->merge(array('config' => $repoConfig['config']));
-        }
+        $this->repoConfig = $repoConfig;
     }
 
     public function setLoader(LoaderInterface $loader)
@@ -64,7 +63,7 @@ class VcsRepository extends ArrayRepository
     {
         if (isset($this->drivers[$this->type])) {
             $class = $this->drivers[$this->type];
-            $driver = new $class($this->url, $this->io, $this->config);
+            $driver = new $class($this->repoConfig, $this->io, $this->config);
             $driver->initialize();
 
             return $driver;
@@ -72,7 +71,7 @@ class VcsRepository extends ArrayRepository
 
         foreach ($this->drivers as $driver) {
             if ($driver::supports($this->io, $this->url)) {
-                $driver = new $driver($this->url, $this->io, $this->config);
+                $driver = new $driver($this->repoConfig, $this->io, $this->config);
                 $driver->initialize();
 
                 return $driver;
@@ -81,7 +80,7 @@ class VcsRepository extends ArrayRepository
 
         foreach ($this->drivers as $driver) {
             if ($driver::supports($this->io, $this->url, true)) {
-                $driver = new $driver($this->url, $this->io, $this->config);
+                $driver = new $driver($this->repoConfig, $this->io, $this->config);
                 $driver->initialize();
 
                 return $driver;
