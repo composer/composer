@@ -16,13 +16,12 @@ use Composer\Package\Version\VersionParser;
 use Composer\Package\LinkConstraint\MultiConstraint;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Package\PackageInterface;
-use Composer\Test\Mock\PackageMock;
 
 class VersionParserTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @dataProvider formattedVersions
-     * 
+     *
      * @param \Composer\Package\PackageInterface $package
      * @param string $expected
      */
@@ -30,7 +29,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
     {
         $this->assertSame($expected, VersionParser::formatVersion($package, $truncate));
     }
-    
+
     public function formattedVersions()
     {
         $data = array(
@@ -39,20 +38,21 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             array('sourceReference' => 'v1.0.0', 'truncate' => false, 'expected' => 'PrettyVersion v1.0.0'),
             array('sourceReference' => 'bbf527a27356414bfa9bf520f018c5cb7af67c77', 'truncate' => false, 'expected' => 'PrettyVersion bbf527a27356414bfa9bf520f018c5cb7af67c77'),
         );
-        
-        $createPackage = function($arr) {
-            $package = new PackageMock();
-            $package->setIsDev(true);
-            $package->setSourceType('git');
-            $package->setPrettyVersion('PrettyVersion');
-            $package->setSourceReference($arr['sourceReference']);
-            
+
+        $self = $this;
+        $createPackage = function($arr) use ($self) {
+            $package = $self->getMock('\Composer\Package\PackageInterface');
+            $package->expects($self->once())->method('isDev')->will($self->returnValue(true));
+            $package->expects($self->once())->method('getSourceType')->will($self->returnValue('git'));
+            $package->expects($self->once())->method('getPrettyVersion')->will($self->returnValue('PrettyVersion'));
+            $package->expects($self->any())->method('getSourceReference')->will($self->returnValue($arr['sourceReference']));
+
             return array($package, $arr['truncate'], $arr['expected']);
         };
-        
+
         return array_map($createPackage, $data);
     }
-    
+
     /**
      * @dataProvider successfulNormalizedVersions
      */

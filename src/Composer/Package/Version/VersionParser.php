@@ -74,7 +74,7 @@ class VersionParser
         if (!$package->isDev() || !in_array($package->getSourceType(), array('hg', 'git'))) {
             return $package->getPrettyVersion();
         }
-        
+
         // if source reference is a sha1 hash -- truncate
         if ($truncate && self::isHash($package->getSourceReference())) {
             return $package->getPrettyVersion() . ' ' . substr($package->getSourceReference(), 0, 6);
@@ -85,7 +85,7 @@ class VersionParser
 
     /**
      * Indicates whether version is in form of hash.
-     * 
+     *
      * @param string $version
      * @return boolean
      */
@@ -93,7 +93,7 @@ class VersionParser
     {
         return strlen($version) == self::$sha1Length;
     }
-    
+
     /**
      * Normalizes a version string to be able to perform comparisons on it
      *
@@ -291,5 +291,5 @@ class VersionParser
         }
 
         throw new \UnexpectedValueException('Could not parse version constraint '.$constraint);
-    }    
+    }
 }
