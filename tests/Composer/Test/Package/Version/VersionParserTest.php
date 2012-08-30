@@ -15,9 +15,44 @@ namespace Composer\Test\Package\Version;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\LinkConstraint\MultiConstraint;
 use Composer\Package\LinkConstraint\VersionConstraint;
+use Composer\Package\PackageInterface;
+use Composer\Test\Mock\PackageMock;
 
 class VersionParserTest extends \PHPUnit_Framework_TestCase
 {
+    /**
+     * @dataProvider formattedVersions
+     * 
+     * @param \Composer\Package\PackageInterface $package
+     * @param string $expected
+     */
+    public function testFormatVersionForDevPackage(PackageInterface $package, $truncate, $expected)
+    {
+        $this->assertSame($expected, VersionParser::formatVersion($package, $truncate));
+    }
+    
+    public function formattedVersions()
+    {
+        $data = array(
+            array('sourceReference' => 'v2.1.0-RC2', 'truncate' => true, 'expected' => 'PrettyVersion v2.1.0-RC2'),
+            array('sourceReference' => 'bbf527a27356414bfa9bf520f018c5cb7af67c77', 'truncate' => true, 'expected' => 'PrettyVersion bbf527'),
+            array('sourceReference' => 'v1.0.0', 'truncate' => false, 'expected' => 'PrettyVersion v1.0.0'),
+            array('sourceReference' => 'bbf527a27356414bfa9bf520f018c5cb7af67c77', 'truncate' => false, 'expected' => 'PrettyVersion bbf527a27356414bfa9bf520f018c5cb7af67c77'),
+        );
+        
+        $createPackage = function($arr) {
+            $package = new PackageMock();
+            $package->setIsDev(true);
+            $package->setSourceType('git');
+            $package->setPrettyVersion('PrettyVersion');
+            $package->setSourceReference($arr['sourceReference']);
+            
+            return array($package, $arr['truncate'], $arr['expected']);
+        };
+        
+        return array_map($createPackage, $data);
+    }
+    
     /**
      * @dataProvider successfulNormalizedVersions
      */
