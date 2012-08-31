@@ -26,7 +26,6 @@ use Composer\Package\LinkConstraint\VersionConstraint;
 class VersionParser
 {
     private static $modifierRegex = '[._-]?(?:(beta|b|RC|alpha|a|patch|pl|p)(?:[.-]?(\d+))?)?([.-]?dev)?';
-    private static $sha1Length = 40;
 
     /**
      * Returns the stability of a version
@@ -76,22 +75,11 @@ class VersionParser
         }
 
         // if source reference is a sha1 hash -- truncate
-        if ($truncate && self::isHash($package->getSourceReference())) {
+        if ($truncate && strlen($package->getSourceReference()) === 40) {
             return $package->getPrettyVersion() . ' ' . substr($package->getSourceReference(), 0, 6);
         }
 
         return $package->getPrettyVersion() . ' ' . $package->getSourceReference();
-    }
-
-    /**
-     * Indicates whether version is in form of hash.
-     *
-     * @param string $version
-     * @return boolean
-     */
-    private static function isHash($version)
-    {
-        return strlen($version) == self::$sha1Length;
     }
 
     /**
