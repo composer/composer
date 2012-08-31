@@ -391,7 +391,7 @@ class Installer
                 $sourceReference = $package->getSourceReference() ?: $package->getDistReference();
                 if (isset($lockedReference) && $lockedReference !== $sourceReference) {
                     if (!$package->getSourceType() && $package->getDistType()) {
-                        throw new \RuntimeException(sprintf('Dist reference (%s) does not match locked reference (%s)', $sourceReference, $lockedReference));
+                        throw new \RuntimeException(sprintf('Cannot install "%s" - dist reference ("%s") does not match locked reference ("%s")', $package->getName(), $sourceReference, $lockedReference));
                     }
 
                     // changing the source ref to update to will be handled in the operations loop below
