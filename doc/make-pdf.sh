@@ -14,7 +14,7 @@ done
 cat >> book.tex <<EOF
 \documentclass{book}
 \title{Composer}
-\author{Igor and friends}
+\author{The Composer Community}
 
 \usepackage{hyperref}
 \usepackage{url}
