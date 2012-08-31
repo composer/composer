@@ -270,7 +270,7 @@ class GitHubDriver extends VcsDriver
                             // cannot ask for authentication credentials (because we
                             // are not interactive) then we fallback to GitDriver.
                             $this->gitDriver = new GitDriver(
-                                $this->generateSshUrl(),
+                                array('url' => $this->generateSshUrl()),
                                 $this->io,
                                 $this->config,
                                 $this->process,
