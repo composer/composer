@@ -12,10 +12,12 @@ done
 
 > book.tex
 cat >> book.tex <<EOF
-\documentclass{book}
+\documentclass[letterpaper]{book}
+
 \title{Composer}
 \author{The Composer Community}
 
+\usepackage[letterpaper,margin=1in]{geometry}
 \usepackage{hyperref}
 \usepackage{url}
 \usepackage{enumerate}
