@@ -34,6 +34,8 @@ cat >> book.tex <<EOF
     basicstyle=\ttfamily
 }
 
+\raggedbottom
+
 \begin{document}
 
 \setlength{\parindent}{0cm}
