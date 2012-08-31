@@ -17,7 +17,7 @@ cat >> book.tex <<EOF
 \title{Composer}
 \author{The Composer Community}
 
-\usepackage[letterpaper,margin=1in]{geometry}
+\usepackage[letterpaper,margin=1.5in]{geometry}
 \usepackage{hyperref}
 \usepackage{url}
 \usepackage{enumerate}
