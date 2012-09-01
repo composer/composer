@@ -54,7 +54,9 @@ class ZipDownloader extends ArchiveDownloader
             throw new \UnexpectedValueException($this->getErrorMessage($retval, $file));
         }
 
-        if (true !== $zipArchive->extractTo($path)) {
+        // '@' is used to mute PHP Warnings on Windows when extra long path can not
+        // be put on the file system ("...failed to open stream: Invalid argument...")
+        if (true !== @$zipArchive->extractTo($path)) {
             throw new \RuntimeException("There was an error extracting the ZIP file. Corrupt file?");
         }
 
