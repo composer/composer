@@ -170,12 +170,29 @@ EOF;
     {
         // build package => install path map
         $packageMap = array();
+        $packages[] = $mainPackage;
 
-        // add main package
-        $packageMap[] = array($mainPackage, '');
+        // sort packages by dependencies
+        usort($packages, function (PackageInterface $a, PackageInterface $b) {
+            foreach (array_merge($a->getRequires(), $a->getDevRequires()) as $link) {
+                if (in_array($link->getTarget(), $b->getNames())) {
+                    return 1;
+                }
+            }
+            foreach (array_merge($b->getRequires(), $b->getDevRequires()) as $link) {
+                if (in_array($link->getTarget(), $a->getNames())) {
+                    return -1;
+                }
+            }
+
+            return strcmp($a->getName(), $b->getName());
+        });
 
         foreach ($packages as $package) {
             if ($package instanceof AliasPackage) {
+                continue;
+            } elseif ($package === $mainPackage) {
+                $packageMap[] = array($mainPackage, '');
                 continue;
             }
             $packageMap[] = array(
@@ -217,9 +234,8 @@ EOF;
             }
         }
 
-        foreach ($autoloads as $type => $maps) {
-            krsort($autoloads[$type]);
-        }
+        krsort($autoloads['classmap']);
+        krsort($autoloads['psr-0']);
 
         return $autoloads;
     }

@@ -13,6 +13,7 @@
 namespace Composer\Test\Autoload;
 
 use Composer\Autoload\AutoloadGenerator;
+use Composer\Package\Link;
 use Composer\Util\Filesystem;
 use Composer\Package\AliasPackage;
 use Composer\Package\Package;
@@ -315,6 +316,52 @@ class AutoloadGeneratorTest extends TestCase
         $this->assertTrue(function_exists('testFilesAutoloadGeneration1'));
         $this->assertTrue(function_exists('testFilesAutoloadGeneration2'));
         $this->assertTrue(function_exists('testFilesAutoloadGenerationRoot'));
+    }
+
+    public function testFilesAutoloadOrderByDependencies()
+    {
+        $package = new Package('a', '1.0', '1.0');
+        $package->setAutoload(array('files' => array('root.php')));
+        $package->setRequires(array(new Link('a', 'a/foo')));
+
+        $packages = array();
+        $packages[] = $a = new Package('a/foo', '1.0', '1.0');
+        $packages[] = $b = new Package('b/bar', '1.0', '1.0');
+        $packages[] = $c = new Package('c/lorem', '1.0', '1.0');
+
+        $a->setAutoload(array('files' => array('testA.php')));
+        $a->setRequires(array(new Link('a/foo', 'c/lorem')));
+
+        $b->setAutoload(array('files' => array('testB.php')));
+        $b->setRequires(array(new Link('b/bar', 'c/lorem')));
+
+        $c->setAutoload(array('files' => array('testC.php')));
+
+        $this->repository->expects($this->once())
+            ->method('getPackages')
+            ->will($this->returnValue($packages));
+
+        $this->fs->ensureDirectoryExists($this->vendorDir . '/a/foo');
+        $this->fs->ensureDirectoryExists($this->vendorDir . '/b/bar');
+        $this->fs->ensureDirectoryExists($this->vendorDir . '/c/lorem');
+        file_put_contents($this->vendorDir . '/a/foo/testA.php', '<?php function testFilesAutoloadOrderByDependency1() {}');
+        file_put_contents($this->vendorDir . '/b/bar/testB.php', '<?php function testFilesAutoloadOrderByDependency2() {}');
+        file_put_contents($this->vendorDir . '/c/lorem/testC.php', '<?php function testFilesAutoloadOrderByDependency3() {}');
+        file_put_contents($this->workingDir . '/root.php', '<?php function testFilesAutoloadOrderByDependencyRoot() {}');
+
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, 'FilesAutoloadOrder');
+        $this->assertFileEquals(__DIR__ . '/Fixtures/autoload_functions_by_dependency.php', $this->vendorDir . '/autoload.php');
+        $this->assertFileEquals(__DIR__ . '/Fixtures/autoload_real_files_by_dependency.php', $this->vendorDir . '/composer/autoload_realFilesAutoloadOrder.php');
+
+        // suppress the class loader to avoid fatals if the class is redefined
+        file_put_contents($this->vendorDir . '/composer/ClassLoader.php', '');
+
+        include $this->vendorDir . '/autoload.php';
+
+        $this->assertTrue(function_exists('testFilesAutoloadOrderByDependency1'));
+        $this->assertTrue(function_exists('testFilesAutoloadOrderByDependency2'));
+        $this->assertTrue(function_exists('testFilesAutoloadOrderByDependency3'));
+        $this->assertTrue(function_exists('testFilesAutoloadOrderByDependencyRoot'));
     }
 
     public function testOverrideVendorsAutoloading()
