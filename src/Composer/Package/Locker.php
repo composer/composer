@@ -198,6 +198,14 @@ class Locker
             $lock['packages-dev'] = $this->lockPackages($devPackages);
         }
 
+        if (empty($lock['packages']) && empty($lock['packages-dev'])) {
+            if ($this->lockFile->exists()) {
+                unlink($this->lockFile->getPath());
+            }
+
+            return false;
+        }
+
         if (!$this->isLocked() || $lock !== $this->getLockData()) {
             $this->lockFile->write($lock);
             $this->lockDataCache = null;
