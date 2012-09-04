@@ -55,6 +55,10 @@ class PearInstaller extends LibraryInstaller
         $isWindows = defined('PHP_WINDOWS_VERSION_BUILD');
         $php_bin = $this->binDir . ($isWindows ? '/composer-php.bat' : '/composer-php');
 
+        if (!$isWindows) {
+            $php_bin = '/usr/bin/env ' . $php_bin;
+        }
+
         $installPath = $this->getInstallPath($package);
         $vars = array(
             'os' => $isWindows ? 'windows' : 'linux',
@@ -161,7 +165,7 @@ class PearInstaller extends LibraryInstaller
         return
             "#!/usr/bin/env sh\n".
             "SRC_DIR=`pwd`\n".
-            "BIN_DIR=`dirname $(readlink -f $0)`\n".
+            "BIN_DIR=`dirname $0`\n".
             "VENDOR_DIR=\$BIN_DIR/".escapeshellarg($binToVendor)."\n".
             "DIRS=\"\"\n".
             "for vendor in \$VENDOR_DIR/*; do\n".
