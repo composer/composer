@@ -41,7 +41,7 @@ class VersionParser
             return 'dev';
         }
 
-        preg_match('{'.self::$modifierRegex.'$}', $version, $match);
+        preg_match('{'.self::$modifierRegex.'$}i', strtolower($version), $match);
         if (!empty($match[3])) {
             return 'dev';
         }
@@ -53,7 +53,7 @@ class VersionParser
             if ('alpha' === $match[1] || 'a' === $match[1]) {
                 return 'alpha';
             }
-            if ('RC' === $match[1]) {
+            if ('rc' === $match[1]) {
                 return 'RC';
             }
         }
