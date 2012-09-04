@@ -76,7 +76,7 @@ class VersionParser
 
         // if source reference is a sha1 hash -- truncate
         if ($truncate && strlen($package->getSourceReference()) === 40) {
-            return $package->getPrettyVersion() . ' ' . substr($package->getSourceReference(), 0, 6);
+            return $package->getPrettyVersion() . ' ' . substr($package->getSourceReference(), 0, 7);
         }
 
         return $package->getPrettyVersion() . ' ' . $package->getSourceReference();

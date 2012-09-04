@@ -21,9 +21,6 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @dataProvider formattedVersions
-     *
-     * @param \Composer\Package\PackageInterface $package
-     * @param string $expected
      */
     public function testFormatVersionForDevPackage(PackageInterface $package, $truncate, $expected)
     {
@@ -33,10 +30,26 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
     public function formattedVersions()
     {
         $data = array(
-            array('sourceReference' => 'v2.1.0-RC2', 'truncate' => true, 'expected' => 'PrettyVersion v2.1.0-RC2'),
-            array('sourceReference' => 'bbf527a27356414bfa9bf520f018c5cb7af67c77', 'truncate' => true, 'expected' => 'PrettyVersion bbf527'),
-            array('sourceReference' => 'v1.0.0', 'truncate' => false, 'expected' => 'PrettyVersion v1.0.0'),
-            array('sourceReference' => 'bbf527a27356414bfa9bf520f018c5cb7af67c77', 'truncate' => false, 'expected' => 'PrettyVersion bbf527a27356414bfa9bf520f018c5cb7af67c77'),
+            array(
+                'sourceReference' => 'v2.1.0-RC2',
+                'truncate' => true,
+                'expected' => 'PrettyVersion v2.1.0-RC2'
+            ),
+            array(
+                'sourceReference' => 'bbf527a27356414bfa9bf520f018c5cb7af67c77',
+                'truncate' => true,
+                'expected' => 'PrettyVersion bbf527a'
+            ),
+            array(
+                'sourceReference' => 'v1.0.0',
+                'truncate' => false,
+                'expected' => 'PrettyVersion v1.0.0'
+            ),
+            array(
+                'sourceReference' => 'bbf527a27356414bfa9bf520f018c5cb7af67c77',
+                'truncate' => false,
+                'expected' => 'PrettyVersion bbf527a27356414bfa9bf520f018c5cb7af67c77'
+            ),
         );
 
         $self = $this;
