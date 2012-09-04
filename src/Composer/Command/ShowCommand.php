@@ -77,6 +77,7 @@ EOT
 
         // show single package or single version
         if ($input->getArgument('package') || !empty($package)) {
+            $versions = array();
             if (empty($package)) {
                 list($package, $versions) = $this->getPackage($installedRepo, $repos, $input->getArgument('package'), $input->getArgument('version'));
 
