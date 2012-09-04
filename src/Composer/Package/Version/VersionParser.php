@@ -74,7 +74,12 @@ class VersionParser
             return $package->getPrettyVersion();
         }
 
-        return $package->getPrettyVersion() . ' ' . ($truncate ? substr($package->getSourceReference(), 0, 6) : $package->getSourceReference());
+        // if source reference is a sha1 hash -- truncate
+        if ($truncate && strlen($package->getSourceReference()) === 40) {
+            return $package->getPrettyVersion() . ' ' . substr($package->getSourceReference(), 0, 6);
+        }
+
+        return $package->getPrettyVersion() . ' ' . $package->getSourceReference();
     }
 
     /**
