@@ -28,7 +28,7 @@ class InstallCommand extends Command
     {
         $this
             ->setName('install')
-            ->setDescription('Parses the composer.json file and downloads the needed dependencies.')
+            ->setDescription('Parses the composer.lock and if not exist then parse composer.json file and downloads the needed dependencies.')
             ->setDefinition(array(
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('dry-run', null, InputOption::VALUE_NONE, 'Outputs the operations but will not execute anything (implicitly enables --verbose).'),
