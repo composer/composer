@@ -1,0 +1,27 @@
+--TEST--
+Suggestions are displayed
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.0", "suggest": { "b/b": "an obscure reason" } }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.0.0"
+    }
+}
+--RUN--
+install
+--EXPECT-OUTPUT--
+<info>Loading composer repositories with package information</info>
+<info>Installing dependencies</info>
+a/a suggests installing b/b (an obscure reason)
+<info>Writing lock file</info>
+<info>Generating autoload files</info>
+
+--EXPECT--
+Installing a/a (1.0.0)
