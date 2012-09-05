@@ -1,5 +1,5 @@
 --TEST--
-Suggestions are displayed for installed packages
+Suggestions are displayed
 --COMPOSER--
 {
     "repositories": [

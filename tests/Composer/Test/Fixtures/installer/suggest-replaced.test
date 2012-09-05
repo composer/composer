@@ -1,5 +1,5 @@
 --TEST--
-Suggestions are not displayed for installed packages if they are replaced
+Suggestions are not displayed for packages if they are replaced
 --COMPOSER--
 {
     "repositories": [
