@@ -1,5 +1,5 @@
 {
-    "hash": "248fd228505368a590a4f563ab512007",
+    "hash": "1023850095295cc1307c2219a0382930",
     "packages": [
         {
             "package": "justinrainbow/json-schema",
@@ -11,23 +11,15 @@
         },
         {
             "package": "symfony/console",
-            "version": "v2.1.0-RC2"
+            "version": "v2.1.0"
         },
         {
             "package": "symfony/finder",
-            "version": "v2.1.0-RC2"
+            "version": "v2.1.0"
         },
         {
             "package": "symfony/process",
-            "version": "dev-master",
-            "alias-pretty-version": "2.1.x-dev",
-            "alias-version": "2.1.9999999.9999999-dev"
-        },
-        {
-            "package": "symfony/process",
-            "version": "dev-master",
-            "source-reference": "9d4ac6860929f84e68732d1793cd2edb0881d955",
-            "commit-date": "1346330945"
+            "version": "v2.1.0"
         }
     ],
     "packages-dev": null,
@@ -35,9 +27,7 @@
 
     ],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "symfony/console": 5,
-        "symfony/finder": 5,
-        "symfony/process": 20
-    }
+    "stability-flags": [
+
+    ]
 }
