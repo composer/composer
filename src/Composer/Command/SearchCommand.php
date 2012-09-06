@@ -67,8 +67,10 @@ EOT
         $this->output = $output;
         $repos->filterPackages(array($this, 'processPackage'), 'Composer\Package\CompletePackage');
 
-        foreach ($this->lowMatches as $details) {
-            $output->writeln($details['name'] . '<comment>:</comment> '. $details['description']);
+        if (!empty($this->lowMatches)) {
+            foreach ($this->lowMatches as $details) {
+                $output->writeln($details['name'] . '<comment>:</comment> '. $details['description']);
+            }
         }
     }
 
