@@ -82,10 +82,12 @@ class EventDispatcher
             $methodName = substr($callable, strpos($callable, '::') + 2);
 
             if (!class_exists($className)) {
-                throw new \UnexpectedValueException('Class '.$className.' is not autoloadable, can not call '.$event->getName().' script');
+                $this->io->write('<warning>Class '.$className.' is not autoloadable, can not call '.$event->getName().' script</warning>');
+                continue;
             }
             if (!is_callable($callable)) {
-                throw new \UnexpectedValueException('Method '.$callable.' is not callable, can not call '.$event->getName().' script');
+                $this->io->write('<warning>Method '.$callable.' is not callable, can not call '.$event->getName().' script</warning>');
+                continue;
             }
 
             try {
