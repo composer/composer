@@ -191,7 +191,8 @@ EOF;
         foreach ($packages as $package) {
             if ($package instanceof AliasPackage) {
                 continue;
-            } elseif ($package === $mainPackage) {
+            }
+            if ($package === $mainPackage) {
                 $packageMap[] = array($mainPackage, '');
                 continue;
             }
