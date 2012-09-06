@@ -27,7 +27,7 @@ use Composer\Factory;
 class SearchCommand extends Command
 {
     protected $matches;
-    protected $lowMatches;
+    protected $lowMatches = array();
     protected $tokens;
     protected $output;
 
@@ -67,10 +67,8 @@ EOT
         $this->output = $output;
         $repos->filterPackages(array($this, 'processPackage'), 'Composer\Package\CompletePackage');
 
-        if (!empty($this->lowMatches)) {
-            foreach ($this->lowMatches as $details) {
-                $output->writeln($details['name'] . '<comment>:</comment> '. $details['description']);
-            }
+        foreach ($this->lowMatches as $details) {
+            $output->writeln($details['name'] . '<comment>:</comment> '. $details['description']);
         }
     }
 
