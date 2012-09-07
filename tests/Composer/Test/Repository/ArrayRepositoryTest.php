@@ -17,6 +17,13 @@ use Composer\Test\TestCase;
 
 class ArrayRepositoryTest extends TestCase
 {
+    protected $callbackCount;
+
+    public function setUp()
+    {
+        $this->callbackCount = 0;
+    }
+
     public function testAddPackage()
     {
         $repo = new ArrayRepository;
@@ -65,5 +72,23 @@ class ArrayRepositoryTest extends TestCase
         $bar = $repo->findPackages('bar');
         $this->assertCount(2, $bar);
         $this->assertEquals('bar', $bar[0]->getName());
+    }
+
+    public function testFilterPackages()
+    {
+        $repo = new ArrayRepository();
+        $repo->addPackage($this->getPackage('foo', '1'));
+        $repo->addPackage($this->getPackage('bar', '2'));
+        $repo->addPackage($this->getPackage('bar', '3'));
+
+        $return = $repo->filterPackages(array($this, 'callback'));
+
+        $this->assertTrue($return);
+        $this->assertEquals(3, $this->callbackCount);
+    }
+
+    public function callback()
+    {
+        $this->callbackCount++;
     }
 }
