@@ -97,7 +97,7 @@ for users and [#composer-dev](irc://irc.freenode.org/composer-dev) for developme
 Requirements
 ------------
 
-PHP 5.3+
+PHP 5.3.2 or above (at least 5.3.4 recommended to avoid potential bugs)
 
 Authors
 -------
