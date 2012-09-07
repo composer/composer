@@ -23,10 +23,10 @@ class AllFunctionalTest extends \PHPUnit_Framework_TestCase
         $exitcode = $proc->run();
 
         if (isset($testData['EXPECT'])) {
-            $this->assertEquals($testData['EXPECT'], $this->cleanOutput($proc->getOutput()));
+            $this->assertEquals($testData['EXPECT'], $this->cleanOutput($proc->getOutput()), 'Error Output: '.$proc->getErrorOutput());
         }
         if (isset($testData['EXPECT-REGEX'])) {
-            $this->assertRegExp($testData['EXPECT-REGEX'], $this->cleanOutput($proc->getOutput()));
+            $this->assertRegExp($testData['EXPECT-REGEX'], $this->cleanOutput($proc->getOutput()), 'Error Output: '.$proc->getErrorOutput());
         }
         if (isset($testData['EXPECT-ERROR'])) {
             $this->assertEquals($testData['EXPECT-ERROR'], $this->cleanOutput($proc->getErrorOutput()));
