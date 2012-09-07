@@ -89,12 +89,13 @@ EOT
 
     public function installProject(IOInterface $io, $packageName, $directory = null, $packageVersion = null, $preferSource = false, $installDevPackages = false, $repositoryUrl = null, $disableCustomInstallers = false, $noScripts = false)
     {
-        $dm = $this->createDownloadManager($io);
+        $config = Factory::createConfig();
+
+        $dm = $this->createDownloadManager($io, $config);
         if ($preferSource) {
             $dm->setPreferSource(true);
         }
 
-        $config = Factory::createConfig();
         if (null === $repositoryUrl) {
             $sourceRepo = new CompositeRepository(Factory::createDefaultRepositories($io, $config));
         } elseif ("json" === pathinfo($repositoryUrl, PATHINFO_EXTENSION)) {
@@ -183,10 +184,10 @@ EOT
         $installer->run();
     }
 
-    protected function createDownloadManager(IOInterface $io)
+    protected function createDownloadManager(IOInterface $io, Config $config)
     {
         $factory = new Factory();
 
-        return $factory->createDownloadManager($io);
+        return $factory->createDownloadManager($io, $config);
     }
 }
