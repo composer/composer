@@ -63,16 +63,17 @@ class Filesystem
 
     public function rename($source, $target)
     {
-        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
-            rename($source, $target);
-
-            return;
-        }
-
         // We do not use PHP's "rename" function here since it does not support
         // the case where $source, and $target are located on different partitions.
-        if (0 !== $this->processExecutor->execute('mv '.escapeshellarg($source).' '.escapeshellarg($target))) {
+        if (defined('PHP_WINDOWS_VERSION_BUILD') || 0 !== $this->processExecutor->execute('mv '.escapeshellarg($source).' '.escapeshellarg($target))) {
             if (true === @rename($source, $target)) {
+                return;
+            }
+
+            // rename on Windows sometimes fails with "Access denied" error, let's try to copy the file
+            if (0 === $this->processExecutor->execute('cp -r '.escapeshellarg($source).' '.escapeshellarg($target))) {
+                $this->processExecutor->execute('rm -rf '.escapeshellarg($source));
+
                 return;
             }
 

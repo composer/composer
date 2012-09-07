@@ -52,9 +52,9 @@ abstract class ArchiveDownloader extends FileDownloader
                 } else {
                     // Rename the content directory to avoid error when moving up
                     // a child folder with the same name
-                    $temporaryName = md5(time().rand());
-                    $this->filesystem->rename($contentDir, $temporaryName);
-                    $contentDir = $temporaryName;
+                    $temporaryDir = sys_get_temp_dir().'/'.md5(time().rand());
+                    $this->filesystem->rename($contentDir, $temporaryDir);
+                    $contentDir = $temporaryDir;
 
                     foreach (array_merge(glob($contentDir . '/.*'), glob($contentDir . '/*')) as $file) {
                         if (trim(basename($file), '.')) {
@@ -62,7 +62,7 @@ abstract class ArchiveDownloader extends FileDownloader
                         }
                     }
 
-                    rmdir($contentDir);
+                    $this->filesystem->removeDirectory($contentDir);
                 }
             }
         } catch (\Exception $e) {
