@@ -12,6 +12,7 @@
 
 namespace Composer\Downloader;
 
+use Composer\Config;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Util\ProcessExecutor;
@@ -24,12 +25,14 @@ use Composer\Util\Filesystem;
 abstract class VcsDownloader implements DownloaderInterface
 {
     protected $io;
+    protected $config;
     protected $process;
     protected $filesystem;
 
-    public function __construct(IOInterface $io, ProcessExecutor $process = null, Filesystem $fs = null)
+    public function __construct(IOInterface $io, Config $config, ProcessExecutor $process = null, Filesystem $fs = null)
     {
         $this->io = $io;
+        $this->config = $config;
         $this->process = $process ?: new ProcessExecutor;
         $this->filesystem = $fs ?: new Filesystem;
     }

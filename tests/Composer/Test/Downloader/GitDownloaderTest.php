@@ -152,7 +152,7 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(0));
 
         $config = new Config();
-        $config->merge(array('config' => array('github-protocols' => 'http')));
+        $config->merge(array('config' => array('github-protocols' => array('http'))));
 
         $downloader = $this->getDownloaderMock(null, $config, $processExecutor);
         $downloader->download($packageMock, 'composerPath');
