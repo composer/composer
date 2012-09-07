@@ -115,6 +115,21 @@
                 "bin-dir": {
                     "type": "string",
                     "description": "The location where all binaries are linked, defaults to \"vendor/bin\"."
+                },
+                "process-timeout": {
+                    "type": "integer",
+                    "description": "The timeout in seconds for process executions, defaults to 300 (5mins)."
+                },
+                "notify-on-install": {
+                    "type": "boolean",
+                    "description": "Composer allows repositories to define a notification URL, so that they get notified whenever a package from that repository is installed. This option allows you to disable that behaviour, defaults to true."
+                },
+                "github-protocols": {
+                    "type": "array",
+                    "description": "A list of protocols to use for github.com clones, in priority order, defaults to [\"git\", \"https\", \"http\"].",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
