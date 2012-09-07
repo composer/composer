@@ -135,11 +135,11 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
         }
 
         foreach ($this->rawData as $package) {
-            if (false === $callback($package = $this->loader->load($package, $class))) {
+            if (false === call_user_func($callback, $package = $this->loader->load($package, $class))) {
                 return false;
             }
             if ($package->getAlias()) {
-                if (false === $callback($this->createAliasPackage($package))) {
+                if (false === call_user_func($callback, $this->createAliasPackage($package))) {
                     return false;
                 }
             }

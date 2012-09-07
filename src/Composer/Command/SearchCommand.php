@@ -27,7 +27,7 @@ use Composer\Factory;
 class SearchCommand extends Command
 {
     protected $matches;
-    protected $lowMatches;
+    protected $lowMatches = array();
     protected $tokens;
     protected $output;
 
