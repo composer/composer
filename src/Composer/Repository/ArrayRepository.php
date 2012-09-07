@@ -118,7 +118,7 @@ class ArrayRepository implements RepositoryInterface
     public function filterPackages($callback, $class = 'Composer\Package\Package')
     {
         foreach ($this->getPackages() as $package) {
-            if (false === $callback($package)) {
+            if (false === call_user_func($callback, $package)) {
                 return false;
             }
         }
