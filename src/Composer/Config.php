@@ -22,6 +22,7 @@ class Config
         'vendor-dir' => 'vendor',
         'bin-dir' => '{$vendor-dir}/bin',
         'notify-on-install' => true,
+        'github-protocols' => array('git', 'https', 'http'),
     );
 
     public static $defaultRepositories = array(
