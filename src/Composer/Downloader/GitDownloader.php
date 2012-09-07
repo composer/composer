@@ -51,8 +51,8 @@ class GitDownloader extends VcsDownloader
 
         // capture username/password from github URL if there is one
         $this->process->execute(sprintf('cd %s && git remote -v', escapeshellarg($path)), $output);
-        if (preg_match('{^composer\s+https://(.+):(.+)@github.com/}im', $output, $match)) {
-            $this->io->setAuthorization('github.com', $match[1], $match[2]);
+        if (preg_match('{^composer\s+https://(.+):(.+)@'.$this->getGitHubDomainsRegex().'/}im', $output, $match)) {
+            $this->io->setAuthorization($match[3], $match[1], $match[2]);
         }
 
         $commandCallable = function($url) use ($ref, $path, $command) {
@@ -150,7 +150,7 @@ class GitDownloader extends VcsDownloader
         $handler = array($this, 'outputHandler');
 
         // public github, autoswitch protocols
-        if (preg_match('{^(?:https?|git)(://github.com/.*)}', $url, $match)) {
+        if (preg_match('{^(?:https?|git)(://'.$this->getGitHubDomainsRegex().'/.*)}', $url, $match)) {
             $protocols = $this->config->get('github-protocols');
             if (!is_array($protocols)) {
                 throw new \RuntimeException('Config value "github-protocols" must be an array, got '.gettype($protocols));
@@ -173,7 +173,7 @@ class GitDownloader extends VcsDownloader
 
         $command = call_user_func($commandCallable, $url);
         if (0 !== $this->process->execute($command, $handler)) {
-            if (preg_match('{^git@github.com:(.+?)\.git$}i', $url, $match) && $this->io->isInteractive()) {
+            if (preg_match('{^git@'.$this->getGitHubDomainsRegex().':(.+?)\.git$}i', $url, $match) && $this->io->isInteractive()) {
                 // private github repository without git access, try https with auth
                 $retries = 3;
                 $retrying = false;
@@ -181,14 +181,14 @@ class GitDownloader extends VcsDownloader
                     if ($retrying) {
                         $this->io->write('Invalid credentials');
                     }
-                    if (!$this->io->hasAuthorization('github.com') || $retrying) {
+                    if (!$this->io->hasAuthorization($match[1]) || $retrying) {
                         $username = $this->io->ask('Username: ');
                         $password = $this->io->askAndHideAnswer('Password: ');
-                        $this->io->setAuthorization('github.com', $username, $password);
+                        $this->io->setAuthorization($match[1], $username, $password);
                     }
 
-                    $auth = $this->io->getAuthorization('github.com');
-                    $url = 'https://'.$auth['username'] . ':' . $auth['password'] . '@github.com/'.$match[1].'.git';
+                    $auth = $this->io->getAuthorization($match[1]);
+                    $url = 'https://'.$auth['username'] . ':' . $auth['password'] . '@'.$match[1].'/'.$match[2].'.git';
 
                     $command = call_user_func($commandCallable, $url);
                     if (0 === $this->process->execute($command, $handler)) {
@@ -218,6 +218,11 @@ class GitDownloader extends VcsDownloader
         }
     }
 
+    protected function getGitHubDomainsRegex()
+    {
+        return '('.implode('|', array_map('preg_quote', $this->config->get('github-domains'))).')';
+    }
+
     protected function throwException($message, $url)
     {
         if (0 !== $this->process->execute('git --version', $ignoredOutput)) {
@@ -230,8 +235,8 @@ class GitDownloader extends VcsDownloader
     protected function setPushUrl(PackageInterface $package, $path)
     {
         // set push url for github projects
-        if (preg_match('{^(?:https?|git)://github.com/([^/]+)/([^/]+?)(?:\.git)?$}', $package->getSourceUrl(), $match)) {
-            $pushUrl = 'git@github.com:'.$match[1].'/'.$match[2].'.git';
+        if (preg_match('{^(?:https?|git)://'.$this->getGitHubDomainsRegex().'/([^/]+)/([^/]+?)(?:\.git)?$}', $package->getSourceUrl(), $match)) {
+            $pushUrl = 'git@'.$match[1].':'.$match[2].'/'.$match[3].'.git';
             $cmd = sprintf('git remote set-url --push origin %s', escapeshellarg($pushUrl));
             $this->process->execute($cmd, $ignoredOutput, $path);
         }

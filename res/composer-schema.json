@@ -130,6 +130,13 @@
                     "items": {
                         "type": "string"
                     }
+                },
+                "github-domains": {
+                    "type": "array",
+                    "description": "A list of domains to use in github mode. This is used for GitHub Enterprise setups, defaults to [\"github.com\"].",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
