@@ -12,6 +12,7 @@
 
 namespace Composer\Command;
 
+use Composer\Config;
 use Composer\Factory;
 use Composer\Installer;
 use Composer\Installer\ProjectInstaller;
