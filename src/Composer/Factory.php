@@ -223,8 +223,8 @@ class Factory
     {
         $dm = new Downloader\DownloadManager();
         $dm->setDownloader('git', new Downloader\GitDownloader($io, $config));
-        $dm->setDownloader('svn', new Downloader\SvnDownloader($io));
-        $dm->setDownloader('hg', new Downloader\HgDownloader($io));
+        $dm->setDownloader('svn', new Downloader\SvnDownloader($io, $config));
+        $dm->setDownloader('hg', new Downloader\HgDownloader($io, $config));
         $dm->setDownloader('zip', new Downloader\ZipDownloader($io));
         $dm->setDownloader('tar', new Downloader\TarDownloader($io));
         $dm->setDownloader('phar', new Downloader\PharDownloader($io));

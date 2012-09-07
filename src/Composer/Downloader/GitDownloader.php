@@ -12,10 +12,6 @@
 
 namespace Composer\Downloader;
 
-use Composer\IO\IOInterface;
-use Composer\Config;
-use Composer\Util\Filesystem;
-use Composer\Util\ProcessExecutor;
 use Composer\Package\PackageInterface;
 
 /**
@@ -23,14 +19,6 @@ use Composer\Package\PackageInterface;
  */
 class GitDownloader extends VcsDownloader
 {
-    private $config;
-
-    public function __construct(IOInterface $io, Config $config, ProcessExecutor $process = null, Filesystem $fs = null)
-    {
-        parent::__construct($io, $process, $fs);
-        $this->config = $config;
-    }
-
     /**
      * {@inheritDoc}
      */
@@ -162,8 +150,11 @@ class GitDownloader extends VcsDownloader
         $handler = array($this, 'outputHandler');
 
         // public github, autoswitch protocols
-        if (preg_match('{^(?:https?|git)(://github.com/.*)}', $url, $match) && $this->config->has('github-protocols')) {
-            $protocols = (array) $this->config->get('github-protocols');
+        if (preg_match('{^(?:https?|git)(://github.com/.*)}', $url, $match)) {
+            $protocols = $this->config->get('github-protocols');
+            if (!is_array($protocols)) {
+                throw new \RuntimeException('Config value "github-protocols" must be an array, got '.gettype($protocols));
+            }
             $messages = array();
             foreach ($protocols as $protocol) {
                 $url = $protocol . $match[1];
