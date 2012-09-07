@@ -155,7 +155,7 @@ class Factory
         $package = $loader->load($localConfig);
 
         // initialize download manager
-        $dm = $this->createDownloadManager($io);
+        $dm = $this->createDownloadManager($io, $config);
 
         // initialize installation manager
         $im = $this->createInstallationManager($config);
@@ -219,10 +219,10 @@ class Factory
      * @param  IO\IOInterface             $io
      * @return Downloader\DownloadManager
      */
-    public function createDownloadManager(IOInterface $io)
+    public function createDownloadManager(IOInterface $io, Config $config)
     {
         $dm = new Downloader\DownloadManager();
-        $dm->setDownloader('git', new Downloader\GitDownloader($io));
+        $dm->setDownloader('git', new Downloader\GitDownloader($io, $config));
         $dm->setDownloader('svn', new Downloader\SvnDownloader($io));
         $dm->setDownloader('hg', new Downloader\HgDownloader($io));
         $dm->setDownloader('zip', new Downloader\ZipDownloader($io));
