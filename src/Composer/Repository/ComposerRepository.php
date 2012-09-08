@@ -135,7 +135,7 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
         }
 
         foreach ($this->rawData as $package) {
-            if (false === call_user_func($callback, $package = $this->loader->load($package, $class))) {
+            if (false === call_user_func($callback, $package = $this->createPackage($package, $class))) {
                 return false;
             }
             if ($package->getAlias()) {
@@ -153,7 +153,7 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
      */
     public function loadPackage(array $data)
     {
-        $package = $this->loader->load($data['raw'], 'Composer\Package\Package');
+        $package = $this->createPackage($data['raw'], 'Composer\Package\Package');
         $package->setRepository($this);
 
         return $package;
@@ -180,7 +180,7 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
         $repoData = $this->loadDataFromServer();
 
         foreach ($repoData as $package) {
-            $this->addPackage($this->loader->load($package, 'Composer\Package\CompletePackage'));
+            $this->addPackage($this->createPackage($package, 'Composer\Package\CompletePackage'));
         }
     }
 
@@ -261,5 +261,14 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
         }
 
         return $packages;
+    }
+
+    protected function createPackage(array $data, $class)
+    {
+        try {
+            return $this->loader->load($data, 'Composer\Package\CompletePackage');
+        } catch (\Exception $e) {
+            throw new \RuntimeException('Could not load package '.$data['name'].' in '.$this->url.': ['.get_class($e).'] '.$e->getMessage());
+        }
     }
 }
