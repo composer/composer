@@ -268,7 +268,7 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
         try {
             return $this->loader->load($data, 'Composer\Package\CompletePackage');
         } catch (\Exception $e) {
-            throw new \RuntimeException('Could not load package '.$data['name'].' in '.$this->url.': ['.get_class($e).'] '.$e->getMessage());
+            throw new \RuntimeException('Could not load package '.(isset($data['name']) ? $data['name'] : json_encode($data)).' in '.$this->url.': ['.get_class($e).'] '.$e->getMessage(), 0, $e);
         }
     }
 }
