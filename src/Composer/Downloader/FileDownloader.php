@@ -117,7 +117,7 @@ class FileDownloader implements DownloaderInterface
      */
     protected function getFileName(PackageInterface $package, $path)
     {
-        return $path.'/'.pathinfo($package->getDistUrl(), PATHINFO_BASENAME);
+        return $path.'/'.pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_BASENAME);
     }
 
     /**
