@@ -1,6 +1,7 @@
 <!--
     tagline: Modify the way certain types of packages are installed
 -->
+
 # Setting up and using custom installers
 
 ## Synopsis
@@ -48,15 +49,15 @@ An example composer.json of such a template package would be:
 ## Creating an Installer
 
 A Custom Installer is defined as a class that implements the
-[\Composer\Installer\InstallerInterface][3] and is contained in a Composer
+[`Composer\Installer\InstallerInterface`][3] and is contained in a Composer
 package that has the [type][1] `composer-installer`.
 
 A basic Installer would thus compose of two files:
 
 1. the package file: composer.json
-2. The Installer class, i.e.: \Composer\Installer\MyInstaller.php
+2. The Installer class, i.e.: `Composer\Installer\MyInstaller.php`
 
-> **NOTE**: _The namespace does not need to be \Composer\Installer, it must
+> **NOTE**: _The namespace does not need to be `Composer\Installer`, it must
 > only implement the right interface._
 
 ### composer.json
@@ -86,7 +87,7 @@ Example:
 ### The Custom Installer class
 
 The class that executes the custom installation should implement the
-[\Composer\Installer\InstallerInterface][3] (or extend another installer that
+[`Composer\Installer\InstallerInterface`][3] (or extend another installer that
 implements that interface).
 
 The class may be placed in any location and have any name, as long as it is
@@ -148,7 +149,7 @@ Example:
     }
 
 The example demonstrates that it is quite simple to extend the
-[\Composer\Installer\LibraryInstaller][4] class to strip a prefix
+[`Composer\Installer\LibraryInstaller`][4] class to strip a prefix
 (`phpdocumentor/template-`) and use the remaining part to assemble a completely
 different installation path.
 
