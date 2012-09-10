@@ -240,7 +240,7 @@ class Locker
             $spec = array('package' => $name, 'version' => $version);
 
             if ($package->isDev() && !$alias) {
-                $spec['source-reference'] = $package->getSourceReference();
+                $spec['source-reference'] = $package->getSourceReference() ?: $package->getDistReference();
                 if ('git' === $package->getSourceType() && $path = $this->installationManager->getInstallPath($package)) {
                     $process = new ProcessExecutor();
                     if (0 === $process->execute('git log -n1 --pretty=%ct '.escapeshellarg($package->getSourceReference()), $output, $path)) {

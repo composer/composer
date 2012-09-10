@@ -91,6 +91,7 @@ class Installer
     protected $autoloadGenerator;
 
     protected $preferSource = false;
+    protected $preferDist = false;
     protected $devMode = false;
     protected $dryRun = false;
     protected $verbose = false;
@@ -147,6 +148,9 @@ class Installer
 
         if ($this->preferSource) {
             $this->downloadManager->setPreferSource(true);
+        }
+        if ($this->preferDist) {
+            $this->downloadManager->setPreferDist(true);
         }
 
         // create installed repo, this contains all local packages + platform packages (php & extensions)
@@ -389,7 +393,12 @@ class Installer
                         break;
                     }
                 }
-                if (isset($lockedReference) && $lockedReference !== $package->getSourceReference()) {
+                $sourceReference = $package->getSourceReference() ?: $package->getDistReference();
+                if (isset($lockedReference) && $lockedReference !== $sourceReference) {
+                    if (!$package->getSourceType() && $package->getDistType()) {
+                        throw new \RuntimeException(sprintf('Cannot install "%s" - dist reference ("%s") does not match locked reference ("%s")', $package->getName(), $sourceReference, $lockedReference));
+                    }
+
                     // changing the source ref to update to will be handled in the operations loop below
                     $operations[] = new UpdateOperation($package, clone $package);
                 }
@@ -680,6 +689,19 @@ class Installer
     public function setPreferSource($preferSource = true)
     {
         $this->preferSource = (boolean) $preferSource;
+
+        return $this;
+    }
+
+    /**
+     * prefer dist installation
+     *
+     * @param  boolean   $preferDist
+     * @return Installer
+     */
+    public function setPreferDist($preferDist = true)
+    {
+        $this->preferDist = (boolean) $preferDist;
 
         return $this;
     }
