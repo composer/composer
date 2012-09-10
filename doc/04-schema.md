@@ -487,7 +487,8 @@ your project dependencies. Specific changes to the stability requirements of
 a given package can be done in `require` or `require-dev` (see
 [package links](#package-links)).
 
-Available options are `dev`, `alpha`, `beta`, `RC`, and `stable`.
+Available options (in order of stability) are `dev`, `alpha`, `beta`, `RC`,
+and `stable`.
 
 ### repositories <span>(root-only)</span>
 
