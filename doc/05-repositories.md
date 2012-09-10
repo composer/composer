@@ -240,7 +240,7 @@ repository list of packages:
 
  * BasePackage, requires nothing
  * IntermediatePackage, depends on BasePackage
- * TopLevelPackage1 and TopLevelPackage2 both dependth on IntermediatePackage.
+ * TopLevelPackage1 and TopLevelPackage2 both depend on IntermediatePackage.
 
 For composer it looks like:
 
