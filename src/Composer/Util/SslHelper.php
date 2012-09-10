@@ -73,12 +73,10 @@ class SslHelper
         openssl_x509_export($cert, $certString);
         $fingerprint = $this->getSha1Fingerprint($certString);
 
-        $key = 'https---' . $hostname . (($port === 443) ? '' : '-' . $port);
-
-        $this->io->write("\n<error> #############################################################</error>");
-        $this->io->write('<error> # WARNING: Composer is trying to connect to a secure server #</error>');
-        $this->io->write('<error> #   with an untrusted public key. Please review carefully.  #</error>');
-        $this->io->write("<error> #############################################################</error>\n");
+        $this->io->write("\n <error>#############################################################</error>");
+        $this->io->write(' <error># WARNING: Composer is trying to connect to a secure server #</error>');
+        $this->io->write(' <error>#   with an untrusted public key. Please review carefully.  #</error>');
+        $this->io->write(" <error>#############################################################</error>\n");
 
         if ($url) $this->io->write("<warning> Requested URL: {$url}</warning>");
         $this->io->write("<warning>      Hostname: {$hostname}</warning>");
