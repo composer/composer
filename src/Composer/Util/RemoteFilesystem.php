@@ -90,9 +90,15 @@ class RemoteFilesystem
         $this->result = null;
         $this->originUrl = $originUrl;
         $this->fileUrl = $fileUrl;
+        $this->fileUrlParts = parse_url($fileUrl);
         $this->fileName = $fileName;
         $this->progress = $progress;
         $this->lastProgress = null;
+        $this->ssl = ('https' === substr($fileUrl, 0, 5));
+
+        if (!extension_loaded('openssl') && $this->ssl) {
+            throw new \RuntimeException('You must enable the openssl extension in your php.ini to load information from '.$fileUrl);
+        }
 
         $options = $this->getOptionsForUrl($originUrl);
         $ctx = StreamContextFactory::getContext($options, array('notification' => array($this, 'callbackGet')));
@@ -104,11 +110,22 @@ class RemoteFilesystem
         $errorMessage = null;
         set_error_handler(function ($code, $msg) use (&$errorMessage) {
             $errorMessage = preg_replace('{^file_get_contents\(.+?\): }', '', $msg);
+            if ($this->ssl && strpos($errorMessage, 'SSL') !== false || strpos($errorMessage, 'enable crypto') !== false) {
+                throw new BadCryptoException($errorMessage, $code);
+            }
             if (!ini_get('allow_url_fopen')) {
                 $errorMessage = 'allow_url_fopen must be enabled in php.ini ('.$errorMessage.')';
             }
         });
-        $result = file_get_contents($fileUrl, false, $ctx);
+        try {
+            $result = file_get_contents($fileUrl, false, $ctx);
+        } catch (BadCryptoException $e) {
+            // SSL failed -- let's prompt the user about the certificate
+            $port = isset($this->fileUrlParts['port']) ? $this->fileUrlParts['port'] : 443;
+            $sslHelper = new SslHelper($this->io);
+            $sslHelper->verifySslCertificateFromServer($this->fileUrlParts['host'], $port, $fileUrl);
+            $result = file_get_contents($fileUrl, false, $ctx);
+        }
         restore_error_handler();
 
         // fix for 5.4.0 https://bugs.php.net/bug.php?id=61336
@@ -240,6 +257,18 @@ class RemoteFilesystem
             $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
             $options['http']['header'] .= "Authorization: Basic $authStr\r\n";
         }
+
+        if (!$this->ssl) return $options;
+
+        //if (getenv('COMPOSER_INSECURE_SSL_NOVERIFY') !== false) return $options;
+
+        $options['ssl'] = array(
+            'verify_peer'       => true,
+            'allow_self_signed' => false,
+            'cafile'            => SslHelper::initCaBundleFile(),
+            // PHP improperly handles CN_match, so it's handled manually in Composer\Util\SslHelper
+            //'CN_match'          => true,
+        );
 
         return $options;
     }
