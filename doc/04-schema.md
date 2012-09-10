@@ -53,7 +53,7 @@ Required for published packages (libraries).
 The version of the package.
 
 This must follow the format of `X.Y.Z` with an optional suffix of `-dev`,
-`alphaN`, `-betaN` or `-RCN`.
+`-alphaN`, `-betaN` or `-RCN`.
 
 Examples:
 
@@ -62,6 +62,7 @@ Examples:
     1.1.0
     0.2.5
     1.0.0-dev
+    1.0.0-alpha3
     1.0.0-beta2
     1.0.0-RC5
 
