@@ -14,6 +14,7 @@ namespace Composer\Command;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
@@ -30,6 +31,8 @@ class SearchCommand extends Command
     protected $lowMatches = array();
     protected $tokens;
     protected $output;
+    protected $onlyName;
+    protected $orderedPackages = array();
 
     protected function configure()
     {
@@ -37,6 +40,8 @@ class SearchCommand extends Command
             ->setName('search')
             ->setDescription('Search for packages')
             ->setDefinition(array(
+                new InputOption('only-name', 'N', InputOption::VALUE_NONE, 'Search only in name'),
+                new InputOption('limit', 'l', InputOption::VALUE_OPTIONAL, 'Limit result to amount. Default: 50', 50),
                 new InputArgument('tokens', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'tokens to search for'),
             ))
             ->setHelp(<<<EOT
@@ -63,12 +68,26 @@ EOT
             $repos = new CompositeRepository(array_merge(array($installedRepo), $defaultRepos));
         }
 
+        $this->onlyName = $input->getOption('only-name');
+        $limit = $input->getOption('limit');
         $this->tokens = $input->getArgument('tokens');
         $this->output = $output;
+        $this->orderedPackages = array();
         $repos->filterPackages(array($this, 'processPackage'), 'Composer\Package\CompletePackage');
 
-        foreach ($this->lowMatches as $details) {
-            $output->writeln($details['name'] . '<comment>:</comment> '. $details['description']);
+        usort($this->orderedPackages, function($a, $b) {
+            return $a[0] == $b[0] ? 0 : $a[0] > $b[0] ? -1 : 1;
+        });
+        foreach ($this->orderedPackages as $ordered){
+            $output->writeln($ordered[1]);
+            if ( --$limit == 0 ) break;
+        }
+
+        if ($limit != 0) {
+            foreach ($this->lowMatches as $details) {
+                $output->writeln($details['name'] . '<comment>:</comment> '. $details['description']);
+                if ( --$limit == 0 ) break;
+            }
         }
     }
 
@@ -77,7 +96,8 @@ EOT
         if ($package instanceof AliasPackage || isset($this->matches[$package->getName()])) {
             return;
         }
-
+        
+        $output = array();
         foreach ($this->tokens as $token) {
             if (!$score = $this->matchPackage($package, $token)) {
                 continue;
@@ -99,7 +119,8 @@ EOT
             }
 
             if ($score >= 3) {
-                $this->output->writeln($name . '<comment>:</comment> '. $description);
+                $this->orderedPackages []= array( $score, $name . '<comment>:</comment> '. $description );
+                //$this->output->writeln('['. $score. ']'. $name . '<comment>:</comment> '. $description);
                 $this->matches[$package->getName()] = true;
             } else {
                 $this->lowMatches[$package->getName()] = array(
@@ -122,16 +143,31 @@ EOT
     private function matchPackage(CompletePackageInterface $package, $token)
     {
         $score = 0;
+        $nameLc = strtolower($package->getName());
+        $tokenLc = strtolower($token);
 
-        if (false !== stripos($package->getName(), $token)) {
-            $score += 5;
+        if (false !== ($pos = strpos($nameLc, $tokenLc))) {
+            if ($pos==0) {
+                if ($nameLc == $tokenLc || $nameLc == "$tokenLc/$tokenLc") {
+                    $score += 50;
+                }
+                elseif (strpos($nameLc, $tokenLc. '/') === 0) {
+                    $score += 15;
+                }
+                else {
+                    $score += 10;
+                }
+            }
+            else {
+                $score += 5;
+            }
         }
 
-        if (false !== stripos(join(',', $package->getKeywords() ?: array()), $token)) {
+        if (!$this->onlyName && false !== stripos(join(',', $package->getKeywords() ?: array()), $token)) {
             $score += 3;
         }
 
-        if (false !== stripos($package->getDescription(), $token)) {
+        if (!$this->onlyName && false !== stripos($package->getDescription(), $token)) {
             $score += 1;
         }
 
