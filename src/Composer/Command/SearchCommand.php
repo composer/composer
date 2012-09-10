@@ -41,7 +41,7 @@ class SearchCommand extends Command
             ->setDescription('Search for packages')
             ->setDefinition(array(
                 new InputOption('only-name', 'N', InputOption::VALUE_NONE, 'Search only in name'),
-                new InputOption('limit', 'l', InputOption::VALUE_OPTIONAL, 'Limit result to amount. Default: 25', 50),
+                new InputOption('limit', 'l', InputOption::VALUE_OPTIONAL, 'Limit result to amount. Default: 50', 50),
                 new InputArgument('tokens', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'tokens to search for'),
             ))
             ->setHelp(<<<EOT
