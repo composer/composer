@@ -250,7 +250,7 @@ class LibraryInstaller implements InstallerInterface
     protected function generateWindowsProxyCode($bin, $link)
     {
         $binPath = $this->filesystem->findShortestPath($link, $bin);
-        if ('.bat' === substr($bin, -4)) {
+        if ('.bat' === substr($bin, -4) || '.exe' === substr($bin, -4)) {
             $caller = 'call';
         } else {
             $handle = fopen($bin, 'r');
