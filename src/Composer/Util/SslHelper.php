@@ -41,7 +41,7 @@ class SslHelper
         $expired = false;
         if ($certInfo['validTo_time_t'] < time()) {
             $expired = true;
-            if (!$this->io->askConfirmation("WARNING! The SSL certificate for {$hostname} has expired. Are you sure you wish to continue? [y/N] ", false)) {
+            if (!$this->io->askConfirmation("<comment>WARNING! The SSL certificate for {$hostname} has expired.</comment>\n\nAre you sure you wish to continue with the expired SSL certificate? [y/N] ", false)) {
                 throw new BadCryptoException('Encountered expired SSL certificate; exiting on user command.');
             }
         }
@@ -52,10 +52,10 @@ class SslHelper
         $validDomain = true;
         if ($hostname != $commonName && !in_array($hostname, $alternativeNames)) {
             $validDomain = false;
-            if (!$this->io->askConfirmation("WARNING! The SSL certificate at {$hostname} is NOT VALID for the requested hostname. " .
+            if (!$this->io->askConfirmation("<comment>WARNING! The SSL certificate at {$hostname} is NOT VALID for the requested hostname. " .
                 "This could be an indication of a man-in-the-middle attack " .
-                "or a misconfigured server. It is strongly recommended that you DO NOT continue.\n\n" .
-                "Do you want to continue connecting with an invalid certificate? [y/N] ", false)) {
+                "or a misconfigured server. It is strongly recommended that you DO NOT continue.</comment>\n\n" .
+                "Are you sure you want to continue with the invalid SSL certificate? [y/N] ", false)) {
                 throw new BadCryptoException('Encountered invalid SSL certificate; exiting on user command.');
             }
         }
@@ -78,20 +78,20 @@ class SslHelper
         $this->io->write(' <error>#   with an untrusted public key. Please review carefully.  #</error>');
         $this->io->write(" <error>#############################################################</error>\n");
 
-        if ($url) $this->io->write("<warning> Requested URL: {$url}</warning>");
-        $this->io->write("<warning>      Hostname: {$hostname}</warning>");
-        $this->io->write('<warning>   Common Name: ' . $commonName .
-            ((count($alternativeNames) > 0) ? ' (' . implode(', ', $alternativeNames) . ')' : '') . '</warning>'); // show alt names
-        $this->io->write("<warning>   Valid Until: {$expires}</warning>");
-        $this->io->write("<warning>   Fingerprint: {$fingerprint}</warning>");
-        $this->io->write("<warning>     Authority: {$caName}</warning>");
+        if ($url) $this->io->write("<comment> Requested URL: {$url}</comment>");
+        $this->io->write("<comment>      Hostname: {$hostname}</comment>");
+        $this->io->write('<comment>   Common Name: ' . $commonName .
+            ((count($alternativeNames) > 0) ? ' (' . implode(', ', $alternativeNames) . ')' : '') . '</comment>'); // show alt names
+        $this->io->write("<comment>   Valid Until: {$expires}</comment>");
+        $this->io->write("<comment>   Fingerprint: {$fingerprint}</comment>");
+        $this->io->write("<comment>     Authority: {$caName}</comment>");
 
-        $this->io->write("<warning>\nTo verify the certificate fingerprint, go to https://{$hostname}/ in your web browser and view the certificate details.</warning>");
+        $this->io->write("\nTo verify the certificate fingerprint, go to https://{$hostname}/ in your web browser and view the certificate details.");
 
         if ($this->io->askConfirmation("\nAre you sure you trust the Certificate Authority listed above and have verified the certificate fingerprint? [y/N] ", false)) {
             openssl_x509_export($caCert, $caCertString);
             file_put_contents(static::initCaBundleFile(), $caCertString, FILE_APPEND);
-            $this->io->write("<warning> Added {$caName} as a trustworthy Certificate Authority.</warning>");
+            $this->io->write("<info> Added {$caName} as a trustworthy Certificate Authority.</info>");
             return true;
         }
 
