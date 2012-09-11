@@ -23,10 +23,7 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
         $executor = $executor ?: $this->getMock('Composer\Util\ProcessExecutor');
         $filesystem = $filesystem ?: $this->getMock('Composer\Util\Filesystem');
         if (!$config) {
-            $config = $this->getMock('Composer\Config');
-            $config->expects($this->any())
-                ->method('has')
-                ->will($this->returnValue(false));
+            $config = new Config();
         }
 
         return new GitDownloader($io, $config, $executor, $filesystem);
