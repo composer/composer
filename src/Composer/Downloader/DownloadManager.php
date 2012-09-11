@@ -103,6 +103,8 @@ class DownloadManager
             $downloader = $this->getDownloader($package->getDistType());
         } elseif ('source' === $installationSource) {
             $downloader = $this->getDownloader($package->getSourceType());
+        } elseif ('link' === $installationSource) {
+            $downloader = $this->getDownloader($package->getSourceType());
         } else {
             throw new \InvalidArgumentException(
                 'Package '.$package.' seems not been installed properly'

@@ -97,6 +97,7 @@ class Installer
     protected $update = false;
     protected $runScripts = true;
     protected $updateWhitelist = null;
+    protected $preferLinks = array();
 
     /**
      * @var array
@@ -274,6 +275,23 @@ class Installer
             foreach ($links as $link) {
                 $request->install($link->getTarget(), $link->getConstraint());
             }
+
+            // request installation as links
+            $localLinksRepository = $this->repositoryManager->getLocalLinksRepository();
+
+            foreach ($this->preferLinks as $link => $void) {
+                list($packageName, $packageVersion) = explode(" ", $link, 2);
+                $linkedPackage = $localLinksRepository->findPackage($packageName, $packageVersion);
+                if (null === $linkedPackage) {
+                    $this->io->write('<error>Source for link ' . $link . ' not found.</error>');
+                    return false;
+                }
+
+                $constraint = new VersionConstraint('=', $linkedPackage->getVersion());
+                $request->install($linkedPackage->getName(), $constraint);
+            }
+            $this->preferLinks = array(); // todo: really?
+
         } elseif ($this->locker->isLocked($devMode)) {
             $installFromLock = true;
             $this->io->write('<info>Installing '.($devMode ? 'dev ': '').'dependencies from lock file</info>');
@@ -759,6 +777,17 @@ class Installer
     public function setUpdateWhitelist(array $packages)
     {
         $this->updateWhitelist = array_flip(array_map('strtolower', $packages));
+
+        return $this;
+    }
+
+    /**
+     * @param  array     $packages
+     * @return Installer
+     */
+    public function setPreferLinks(array $packages)
+    {
+        $this->preferLinks = array_flip(array_map('strtolower', $packages));
 
         return $this;
     }

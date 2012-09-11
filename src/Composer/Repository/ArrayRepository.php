@@ -168,6 +168,10 @@ class ArrayRepository implements RepositoryInterface
      */
     public function count()
     {
+        if (null === $this->packages) {
+            $this->initialize();
+        }
+
         return count($this->packages);
     }
 

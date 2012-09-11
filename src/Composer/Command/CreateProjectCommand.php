@@ -85,7 +85,7 @@ EOT
             $input->getOption('repository-url'),
             $input->getOption('no-custom-installers'),
             $input->getOption('no-scripts')
-        );
+        ) ? 0 : 1;
     }
 
     public function installProject(IOInterface $io, $packageName, $directory = null, $packageVersion = null, $preferSource = false, $installDevPackages = false, $repositoryUrl = null, $disableCustomInstallers = false, $noScripts = false)
@@ -182,7 +182,7 @@ EOT
             $installer->disableCustomInstallers();
         }
 
-        $installer->run();
+        return $installer->run();
     }
 
     protected function createDownloadManager(IOInterface $io, Config $config)
