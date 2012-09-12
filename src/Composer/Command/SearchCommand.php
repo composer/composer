@@ -14,6 +14,7 @@ namespace Composer\Command;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
@@ -30,6 +31,7 @@ class SearchCommand extends Command
     protected $lowMatches = array();
     protected $tokens;
     protected $output;
+    protected $onlyName;
 
     protected function configure()
     {
@@ -37,6 +39,7 @@ class SearchCommand extends Command
             ->setName('search')
             ->setDescription('Search for packages')
             ->setDefinition(array(
+                new InputOption('only-name', 'N', InputOption::VALUE_NONE, 'Search only in name'),
                 new InputArgument('tokens', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'tokens to search for'),
             ))
             ->setHelp(<<<EOT
@@ -63,6 +66,7 @@ EOT
             $repos = new CompositeRepository(array_merge(array($installedRepo), $defaultRepos));
         }
 
+        $this->onlyName = $input->getOption('only-name');
         $this->tokens = $input->getArgument('tokens');
         $this->output = $output;
         $repos->filterPackages(array($this, 'processPackage'), 'Composer\Package\CompletePackage');
@@ -127,11 +131,11 @@ EOT
             $score += 5;
         }
 
-        if (false !== stripos(join(',', $package->getKeywords() ?: array()), $token)) {
+        if (!$this->onlyName && false !== stripos(join(',', $package->getKeywords() ?: array()), $token)) {
             $score += 3;
         }
 
-        if (false !== stripos($package->getDescription(), $token)) {
+        if (!$this->onlyName && false !== stripos($package->getDescription(), $token)) {
             $score += 1;
         }
 
