@@ -258,7 +258,7 @@ class Installer
             $pool->addRepository($lockedRepository, $aliases);
         }
 
-        if (!$installFromLock || $this->locker->isLegacyFormat($devMode)) {
+        if (!$installFromLock || !$this->locker->isCompleteFormat($devMode)) {
             $repositories = $this->repositoryManager->getRepositories();
             foreach ($repositories as $repository) {
                 $pool->addRepository($repository, $aliases);

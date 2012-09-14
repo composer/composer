@@ -88,21 +88,21 @@ class Locker
     }
 
     /**
-     * Checks whether the lock file is in the legacy format
+     * Checks whether the lock file is in the new complete format or not
      *
      * @param  bool $dev true to check in dev mode
      * @return bool
      */
-    public function isLegacyFormat($dev)
+    public function isCompleteFormat($dev)
     {
         $lockData = $this->getLockData();
         $lockedPackages = $dev ? $lockData['packages-dev'] : $lockData['packages'];
 
         if (empty($lockedPackages) || isset($lockedPackages[0]['name'])) {
-            return false;
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     /**
