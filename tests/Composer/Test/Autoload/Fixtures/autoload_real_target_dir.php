@@ -6,9 +6,15 @@ require __DIR__ . '/ClassLoader.php';
 
 class ComposerAutoloaderInitTargetDir
 {
+    private static $loader;
+
     public static function getLoader()
     {
-        $loader = new \Composer\Autoload\ClassLoader();
+        if (null !== static::$loader) {
+            return static::$loader;
+        }
+
+        static::$loader = $loader = new \Composer\Autoload\ClassLoader();
         $vendorDir = dirname(__DIR__);
         $baseDir = dirname($vendorDir);
 

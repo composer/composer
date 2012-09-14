@@ -372,9 +372,15 @@ require __DIR__ . '/ClassLoader.php';
 
 class ComposerAutoloaderInit$suffix
 {
+    private static \$loader;
+
     public static function getLoader()
     {
-        \$loader = new \\Composer\\Autoload\\ClassLoader();
+        if (null !== static::\$loader) {
+            return static::\$loader;
+        }
+
+        static::\$loader = \$loader = new \\Composer\\Autoload\\ClassLoader();
         \$vendorDir = $vendorPathCode;
         \$baseDir = $appBaseDirCode;
 
