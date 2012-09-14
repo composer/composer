@@ -255,11 +255,14 @@ class Installer
         $pool = new Pool($minimumStability, $stabilityFlags);
         $pool->addRepository($installedRepo, $aliases);
         if ($installFromLock) {
-            $pool->addRepository($lockedRepository);
+            $pool->addRepository($lockedRepository, $aliases);
         }
-        $repositories = $this->repositoryManager->getRepositories();
-        foreach ($repositories as $repository) {
-            $pool->addRepository($repository, $aliases);
+
+        if (!$installFromLock || $this->locker->isLegacyFormat($devMode)) {
+            $repositories = $this->repositoryManager->getRepositories();
+            foreach ($repositories as $repository) {
+                $pool->addRepository($repository, $aliases);
+            }
         }
 
         // creating requirements request

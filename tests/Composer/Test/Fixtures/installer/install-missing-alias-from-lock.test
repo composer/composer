@@ -1,0 +1,41 @@
+--TEST--
+Installing an old alias that doesn't exist anymore from a lock is possible
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "a/a", "version": "dev-master",
+                    "extra": { "branch-alias": { "dev-master": "2.2.x-dev" } },
+                    "source": { "reference": "master", "type": "git", "url": "" }
+                }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "2.1.*"
+    },
+    "minimum-stability": "dev"
+}
+--LOCK--
+{
+    "packages": [
+        {
+            "name": "a/a", "version": "dev-master", "version_normalized": "9999999-dev",
+            "extra": { "branch-alias": { "dev-master": "2.1.x-dev" } },
+            "source": { "reference": "oldmaster", "type": "git", "url": "" },
+            "type": "library"
+        }
+    ],
+    "packages-dev": null,
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": []
+}
+--RUN--
+install
+--EXPECT--
+Installing a/a (dev-master oldmaster)
+Marking a/a (2.1.x-dev oldmaster) as installed, alias of a/a (dev-master oldmaster)
