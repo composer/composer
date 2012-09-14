@@ -17,6 +17,9 @@ use Composer\Installer\InstallationManager;
 use Composer\Repository\RepositoryManager;
 use Composer\Util\ProcessExecutor;
 use Composer\Package\AliasPackage;
+use Composer\Repository\ArrayRepository;
+use Composer\Package\Dumper\ArrayDumper;
+use Composer\Package\Loader\ArrayLoader;
 
 /**
  * Reads/writes project lockfile (composer.lock).
@@ -30,6 +33,8 @@ class Locker
     private $repositoryManager;
     private $installationManager;
     private $hash;
+    private $loader;
+    private $dumper;
     private $lockDataCache;
 
     /**
@@ -46,6 +51,8 @@ class Locker
         $this->repositoryManager = $repositoryManager;
         $this->installationManager = $installationManager;
         $this->hash = $hash;
+        $this->loader = new ArrayLoader();
+        $this->dumper = new ArrayDumper();
     }
 
     /**
@@ -84,16 +91,29 @@ class Locker
      * Searches and returns an array of locked packages, retrieved from registered repositories.
      *
      * @param  bool  $dev true to retrieve the locked dev packages
-     * @return array
+     * @return \Composer\Repository\RepositoryInterface
      */
-    public function getLockedPackages($dev = false)
+    public function getLockedRepository($dev = false)
     {
         $lockData = $this->getLockData();
-        $packages = array();
+        $packages = new ArrayRepository();
 
         $lockedPackages = $dev ? $lockData['packages-dev'] : $lockData['packages'];
-        $repo = $dev ? $this->repositoryManager->getLocalDevRepository() : $this->repositoryManager->getLocalRepository();
 
+        if (empty($lockedPackages)) {
+            return $packages;
+        }
+
+        if (isset($lockedPackages[0]['name'])) {
+            foreach ($lockedPackages as $info) {
+                $packages->addPackage($this->loader->load($info));
+            }
+
+            return $packages;
+        }
+
+        // legacy lock file support
+        $repo = $dev ? $this->repositoryManager->getLocalDevRepository() : $this->repositoryManager->getLocalRepository();
         foreach ($lockedPackages as $info) {
             $resolvedVersion = !empty($info['alias-version']) ? $info['alias-version'] : $info['version'];
 
@@ -122,7 +142,7 @@ class Locker
                 ));
             }
 
-            $packages[] = $package;
+            $packages->addPackage(clone $package);
         }
 
         return $packages;
@@ -221,11 +241,8 @@ class Locker
         $locked = array();
 
         foreach ($packages as $package) {
-            $alias = null;
-
             if ($package instanceof AliasPackage) {
-                $alias = $package;
-                $package = $package->getAliasOf();
+                continue;
             }
 
             $name    = $package->getPrettyName();
@@ -237,38 +254,30 @@ class Locker
                 ));
             }
 
-            $spec = array('package' => $name, 'version' => $version);
+            $spec = $this->dumper->dump($package);
+            unset($spec['version_normalized']);
 
-            if ($package->isDev() && !$alias) {
-                $spec['source-reference'] = $package->getSourceReference();
+            if ($package->isDev()) {
                 if ('git' === $package->getSourceType() && $path = $this->installationManager->getInstallPath($package)) {
                     $process = new ProcessExecutor();
                     if (0 === $process->execute('git log -n1 --pretty=%ct '.escapeshellarg($package->getSourceReference()), $output, $path)) {
-                        $spec['commit-date'] = trim($output);
+                        $spec['time'] = trim($output);
                     }
                 }
-            }
-
-            if ($alias) {
-                $spec['alias-pretty-version'] = $alias->getPrettyVersion();
-                $spec['alias-version'] = $alias->getVersion();
             }
 
             $locked[] = $spec;
         }
 
         usort($locked, function ($a, $b) {
-            $comparison = strcmp($a['package'], $b['package']);
+            $comparison = strcmp($a['name'], $b['name']);
 
             if (0 !== $comparison) {
                 return $comparison;
             }
 
             // If it is the same package, compare the versions to make the order deterministic
-            $aVersion = isset($a['alias-version']) ? $a['alias-version'] : $a['version'];
-            $bVersion = isset($b['alias-version']) ? $b['alias-version'] : $b['version'];
-
-            return strcmp($aVersion, $bVersion);
+            return strcmp($a['version'], $b['version']);
         });
 
         return $locked;
