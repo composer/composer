@@ -88,6 +88,24 @@ class Locker
     }
 
     /**
+     * Checks whether the lock file is in the legacy format
+     *
+     * @param  bool $dev true to check in dev mode
+     * @return bool
+     */
+    public function isLegacyFormat($dev)
+    {
+        $lockData = $this->getLockData();
+        $lockedPackages = $dev ? $lockData['packages-dev'] : $lockData['packages'];
+
+        if (empty($lockedPackages) || isset($lockedPackages[0]['name'])) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Searches and returns an array of locked packages, retrieved from registered repositories.
      *
      * @param  bool  $dev true to retrieve the locked dev packages
@@ -129,9 +147,8 @@ class Locker
             if (!$package && !empty($info['alias-version'])) {
                 $package = $this->repositoryManager->findPackage($info['package'], $info['version']);
                 if ($package) {
-                    $alias = new AliasPackage($package, $info['alias-version'], $info['alias-pretty-version']);
-                    $package->getRepository()->addPackage($alias);
-                    $package = $alias;
+                    $package->setAlias($info['alias-version']);
+                    $package->setPrettyAlias($info['alias-pretty-version']);
                 }
             }
 
@@ -142,7 +159,15 @@ class Locker
                 ));
             }
 
-            $packages->addPackage(clone $package);
+            $package = clone $package;
+            if (!empty($info['time'])) {
+                $package->setReleaseDate($info['time']);
+            }
+            if (!empty($info['source-reference'])) {
+                $package->setSourceReference($info['source-reference']);
+            }
+
+            $packages->addPackage($package);
         }
 
         return $packages;
