@@ -234,8 +234,10 @@ class Installer
         $stabilityFlags = $this->package->getStabilityFlags();
 
         // initialize locker to create aliased packages
+        $installFromLock = false;
         if (!$this->update && $this->locker->isLocked($devMode)) {
-            $lockedPackages = $this->locker->getLockedPackages($devMode);
+            $installFromLock = true;
+            $lockedRepository = $this->locker->getLockedRepository($devMode);
             $minimumStability = $this->locker->getMinimumStability();
             $stabilityFlags = $this->locker->getStabilityFlags();
         }
@@ -252,13 +254,15 @@ class Installer
         // creating repository pool
         $pool = new Pool($minimumStability, $stabilityFlags);
         $pool->addRepository($installedRepo, $aliases);
+        if ($installFromLock) {
+            $pool->addRepository($lockedRepository);
+        }
         $repositories = $this->repositoryManager->getRepositories();
         foreach ($repositories as $repository) {
             $pool->addRepository($repository, $aliases);
         }
 
         // creating requirements request
-        $installFromLock = false;
         $request = new Request($pool);
 
         $constraint = new VersionConstraint('=', $this->package->getVersion());
@@ -274,15 +278,14 @@ class Installer
             foreach ($links as $link) {
                 $request->install($link->getTarget(), $link->getConstraint());
             }
-        } elseif ($this->locker->isLocked($devMode)) {
-            $installFromLock = true;
+        } elseif ($installFromLock) {
             $this->io->write('<info>Installing '.($devMode ? 'dev ': '').'dependencies from lock file</info>');
 
             if (!$this->locker->isFresh() && !$devMode) {
                 $this->io->write('<warning>Your lock file is out of sync with your composer.json, run "composer.phar update" to update dependencies</warning>');
             }
 
-            foreach ($lockedPackages as $package) {
+            foreach ($lockedRepository->getPackages() as $package) {
                 $version = $package->getVersion();
                 if (isset($aliases[$package->getName()][$version])) {
                     $version = $aliases[$package->getName()][$version]['alias_normalized'];
@@ -316,7 +319,7 @@ class Installer
         // to the version specified in the lock, or their currently installed version
         if ($this->update && $this->updateWhitelist) {
             if ($this->locker->isLocked($devMode)) {
-                $currentPackages = $this->locker->getLockedPackages($devMode);
+                $currentPackages = $this->locker->getLockedRepository($devMode)->getPackages();
             } else {
                 $currentPackages = $installedRepo->getPackages();
             }
@@ -381,17 +384,19 @@ class Installer
 
             // force update to locked version if it does not match the installed version
             if ($installFromLock) {
-                $lockData = $this->locker->getLockData();
                 unset($lockedReference);
-                foreach ($lockData['packages'] as $lockedPackage) {
-                    if (!empty($lockedPackage['source-reference']) && strtolower($lockedPackage['package']) === $package->getName()) {
-                        $lockedReference = $lockedPackage['source-reference'];
+                foreach ($lockedRepository->findPackages($package->getName()) as $lockedPackage) {
+                    if (
+                        $lockedPackage->isDev()
+                        && $lockedPackage->getSourceReference()
+                        && $lockedPackage->getSourceReference() !== $package->getSourceReference()
+                    ) {
+                        $newPackage = clone $package;
+                        $newPackage->setSourceReference($lockedPackage->getSourceReference());
+                        $operations[] = new UpdateOperation($package, $newPackage);
+
                         break;
                     }
-                }
-                if (isset($lockedReference) && $lockedReference !== $package->getSourceReference()) {
-                    // changing the source ref to update to will be handled in the operations loop below
-                    $operations[] = new UpdateOperation($package, clone $package);
                 }
             } else {
                 // force update to latest on update
@@ -455,29 +460,8 @@ class Installer
                 $this->eventDispatcher->dispatchPackageEvent(constant($event), $operation);
             }
 
-            // if installing from lock, restore dev packages' references to their locked state
-            if ($installFromLock) {
-                $package = null;
-                if ('update' === $operation->getJobType()) {
-                    $package = $operation->getTargetPackage();
-                } elseif ('install' === $operation->getJobType()) {
-                    $package = $operation->getPackage();
-                }
-                if ($package && $package->isDev()) {
-                    $lockData = $this->locker->getLockData();
-                    foreach ($lockData['packages'] as $lockedPackage) {
-                        if (!empty($lockedPackage['source-reference']) && strtolower($lockedPackage['package']) === $package->getName()) {
-                            // update commit date to allow recovery in case the commit disappeared
-                            if (!empty($lockedPackage['commit-date'])) {
-                                $package->setReleaseDate(new \DateTime('@'.$lockedPackage['commit-date']));
-                            }
-                            $package->setSourceReference($lockedPackage['source-reference']);
-                            break;
-                        }
-                    }
-                }
-            } else {
-                // not installing from lock, force dev packages' references if they're in root package refs
+            // not installing from lock, force dev packages' references if they're in root package refs
+            if (!$installFromLock) {
                 $package = null;
                 if ('update' === $operation->getJobType()) {
                     $package = $operation->getTargetPackage();

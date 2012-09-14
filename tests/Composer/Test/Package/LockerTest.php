@@ -48,7 +48,7 @@ class LockerTest extends \PHPUnit_Framework_TestCase
 
         $this->setExpectedException('LogicException');
 
-        $locker->getLockedPackages();
+        $locker->getLockedRepository();
     }
 
     public function testGetLockedPackages()
@@ -82,7 +82,7 @@ class LockerTest extends \PHPUnit_Framework_TestCase
             ->with($this->logicalOr('pkg1', 'pkg2'), $this->logicalOr('1.0.0-beta', '0.1.10'))
             ->will($this->onConsecutiveCalls($package1, $package2));
 
-        $this->assertEquals(array($package1, $package2), $locker->getLockedPackages());
+        $this->assertEquals(array($package1, $package2), $locker->getLockedRepository()->getPackages());
     }
 
     public function testGetPackagesWithoutRepo()
@@ -118,7 +118,7 @@ class LockerTest extends \PHPUnit_Framework_TestCase
 
         $this->setExpectedException('LogicException');
 
-        $locker->getLockedPackages();
+        $locker->getLockedRepository();
     }
 
     public function testSetLockData()
@@ -133,22 +133,30 @@ class LockerTest extends \PHPUnit_Framework_TestCase
         $package2 = $this->createPackageMock();
 
         $package1
-            ->expects($this->once())
+            ->expects($this->atLeastOnce())
             ->method('getPrettyName')
             ->will($this->returnValue('pkg1'));
         $package1
-            ->expects($this->once())
+            ->expects($this->atLeastOnce())
             ->method('getPrettyVersion')
             ->will($this->returnValue('1.0.0-beta'));
+        $package1
+            ->expects($this->atLeastOnce())
+            ->method('getVersion')
+            ->will($this->returnValue('1.0.0.0-beta'));
 
         $package2
-            ->expects($this->once())
+            ->expects($this->atLeastOnce())
             ->method('getPrettyName')
             ->will($this->returnValue('pkg2'));
         $package2
-            ->expects($this->once())
+            ->expects($this->atLeastOnce())
             ->method('getPrettyVersion')
             ->will($this->returnValue('0.1.10'));
+        $package2
+            ->expects($this->atLeastOnce())
+            ->method('getVersion')
+            ->will($this->returnValue('0.1.10.0'));
 
         $json
             ->expects($this->once())
@@ -156,8 +164,8 @@ class LockerTest extends \PHPUnit_Framework_TestCase
             ->with(array(
                 'hash' => 'md5',
                 'packages' => array(
-                    array('package' => 'pkg1', 'version' => '1.0.0-beta'),
-                    array('package' => 'pkg2', 'version' => '0.1.10')
+                    array('name' => 'pkg1', 'version' => '1.0.0-beta'),
+                    array('name' => 'pkg2', 'version' => '0.1.10')
                 ),
                 'packages-dev' => array(),
                 'aliases' => array(),
