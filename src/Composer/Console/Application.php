@@ -93,13 +93,31 @@ class Application extends BaseApplication
             $startTime = microtime(true);
         }
 
+        $oldWorkingDir = getcwd();
+        $this->switchWorkingDir($input);
+
         $result = parent::doRun($input, $output);
+
+        chdir($oldWorkingDir);
 
         if (isset($startTime)) {
             $output->writeln('<info>Memory usage: '.round(memory_get_usage() / 1024 / 1024, 2).'MB (peak: '.round(memory_get_peak_usage() / 1024 / 1024, 2).'MB), time: '.round(microtime(true) - $startTime, 2).'s');
         }
 
         return $result;
+    }
+
+    /**
+     * @param InputInterface $input
+     * @throws \RuntimeException
+     */
+    private function switchWorkingDir(InputInterface $input)
+    {
+        $workingDir = $input->getParameterOption(array('--working-dir', '-d'), getcwd());
+        if (!is_dir($workingDir)) {
+            throw new \RuntimeException('Invalid working directoy specified.');
+        }
+        chdir($workingDir);
     }
 
     /**
