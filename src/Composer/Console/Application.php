@@ -163,6 +163,7 @@ class Application extends BaseApplication
     {
         $definition = parent::getDefaultInputDefinition();
         $definition->addOption(new InputOption('--profile', null, InputOption::VALUE_NONE, 'Display timing and memory usage information'));
+        $definition->addOption(new InputOption('--working-dir', '-d', InputOption::VALUE_REQUIRED, 'If specified, use the given directory as working directory.'));
 
         return $definition;
     }
