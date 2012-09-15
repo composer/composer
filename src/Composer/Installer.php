@@ -742,9 +742,27 @@ class Installer
      *
      * @param  array     $packages
      * @return Installer
+     * @throws \UnexpectedValueException If a package name is not known
      */
     public function setUpdateWhitelist(array $packages)
     {
+        if (count($packages) == 0) {
+            return $this;
+        }
+
+        if (count($packages) > 1 || $packages[0] !== 'nothing') {
+            $localPackages = array();
+            foreach ($this->repositoryManager->getLocalRepository()->getPackages() as $localPackage) {
+                $localPackages[] = strtolower($localPackage->getName());
+            }
+
+            foreach ($packages as $package) {
+                if (!in_array(strtolower($package), $localPackages)) {
+                    throw new \UnexpectedValueException('Package ' . $package . ' not known');
+                }
+            }
+        }
+
         $this->updateWhitelist = array_flip(array_map('strtolower', $packages));
 
         return $this;

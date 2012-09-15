@@ -59,15 +59,21 @@ EOT
         $io = $this->getIO();
         $install = Installer::create($io, $composer);
 
-        $install
-            ->setDryRun($input->getOption('dry-run'))
-            ->setVerbose($input->getOption('verbose'))
-            ->setPreferSource($input->getOption('prefer-source'))
-            ->setDevMode($input->getOption('dev'))
-            ->setRunScripts(!$input->getOption('no-scripts'))
-            ->setUpdate(true)
-            ->setUpdateWhitelist($input->getArgument('packages'))
-        ;
+        try {
+            $install
+                ->setDryRun($input->getOption('dry-run'))
+                ->setVerbose($input->getOption('verbose'))
+                ->setPreferSource($input->getOption('prefer-source'))
+                ->setDevMode($input->getOption('dev'))
+                ->setRunScripts(!$input->getOption('no-scripts'))
+                ->setUpdate(true)
+                ->setUpdateWhitelist($input->getArgument('packages'))
+            ;
+        } catch (\Exception $e) {
+            $io->write('<error>' . $e->getMessage() . '</error>');
+
+            return false;
+        }
 
         if ($input->getOption('no-custom-installers')) {
             $install->disableCustomInstallers();
