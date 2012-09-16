@@ -115,7 +115,7 @@ class Application extends BaseApplication
     {
         $workingDir = $input->getParameterOption(array('--working-dir', '-d'), getcwd());
         if (!is_dir($workingDir)) {
-            throw new \RuntimeException('Invalid working directoy specified.');
+            throw new \RuntimeException('Invalid working directory specified.');
         }
         chdir($workingDir);
     }
