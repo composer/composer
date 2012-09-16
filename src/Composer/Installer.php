@@ -751,13 +751,16 @@ class Installer
         }
 
         if (count($packages) > 1 || $packages[0] !== 'nothing') {
-            $localPackages = array();
+            $knownPackages = array();
             foreach ($this->repositoryManager->getLocalRepository()->getPackages() as $localPackage) {
-                $localPackages[] = strtolower($localPackage->getName());
+                $knownPackages[] = strtolower($localPackage->getName());
+            }
+            foreach ($this->package->getRequires() as $requiredPackage) {
+                $knownPackages[] = strtolower($requiredPackage->getTarget());
             }
 
             foreach ($packages as $package) {
-                if (!in_array(strtolower($package), $localPackages)) {
+                if (!in_array(strtolower($package), $knownPackages)) {
                     throw new \UnexpectedValueException('Package ' . $package . ' not known');
                 }
             }
