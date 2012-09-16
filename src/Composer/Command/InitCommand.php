@@ -293,7 +293,7 @@ EOT
                     $question = $dialog->getQuestion('Please provide a version constraint for the '.$requirement.' requirement');
                     if ($constraint = $dialog->ask($output, $question)) {
                         $requires[$key] .= ' ' . $constraint;
-                    } elseif (false !== ($package = $this->findPackageDialog($requires[$key], $dialog, $output))) {
+                    } elseif (null !== ($package = $this->findPackageDialog($requires[$key], $dialog, $output))) {
                         $requires[$key] = $package;
                     }
                 }
@@ -307,7 +307,7 @@ EOT
 
         while (null !== $package = $dialog->ask($output, $prompt)) {
             $package = $this->findPackageDialog($package, $dialog, $output);
-            if (false !== $package) {
+            if (null !== $package) {
                 $requires[] = $package;
             }
         }
@@ -315,45 +315,45 @@ EOT
         return $requires;
     }
 
-    protected function findPackageDialog($package, $dialog, $output)
+    protected function findPackageDialog($package, $dialog, OutputInterface $output)
     {
         $matches = $this->findPackages($package);
 
         if (0 === count($matches)) {
-            $package = false;
-        } else {
-            $output->writeln(array(
-                '',
-                sprintf('Found <info>%s</info> packages matching <info>%s</info>', count($matches), $package),
-                ''
-            ));
+            return null;
+        }
 
-            foreach ($matches as $position => $package) {
-                $output->writeln(sprintf(' <info>%5s</info> %s <comment>%s</comment>', "[$position]", $package->getPrettyName(), $package->getPrettyVersion()));
+        $output->writeln(array(
+            '',
+            sprintf('Found <info>%s</info> packages matching <info>%s</info>', count($matches), $package),
+            ''
+        ));
+
+        foreach ($matches as $position => $package) {
+            $output->writeln(sprintf(' <info>%5s</info> %s <comment>%s</comment>', "[$position]", $package->getPrettyName(), $package->getPrettyVersion()));
+        }
+
+        $output->writeln('');
+
+        $validator = function ($selection) use ($matches) {
+            if ('' === $selection) {
+                return null;
             }
 
-            $output->writeln('');
+            if (!is_numeric($selection) && preg_match('{^\s*(\S+) +(\S.*)\s*}', $selection, $matches)) {
+                return $matches[1].' '.$matches[2];
+            }
 
-            $validator = function ($selection) use ($matches) {
-                if ('' === $selection) {
-                    return false;
-                }
+            if (!isset($matches[(int) $selection])) {
+                throw new \Exception('Not a valid selection');
+            }
 
-                if (!is_numeric($selection) && preg_match('{^\s*(\S+) +(\S.*)\s*}', $selection, $matches)) {
-                    return $matches[1].' '.$matches[2];
-                }
+            $package = $matches[(int) $selection];
 
-                if (!isset($matches[(int) $selection])) {
-                    throw new \Exception('Not a valid selection');
-                }
+            return sprintf('%s %s', $package->getName(), $package->getPrettyVersion());
+        };
 
-                $package = $matches[(int) $selection];
-
-                return sprintf('%s %s', $package->getName(), $package->getPrettyVersion());
-            };
-
-            $package = $dialog->askAndValidate($output, $dialog->getQuestion('Enter package # to add, or a "[package] [version]" couple if it is not listed', false, ':'), $validator, 3);
-        }
+        $package = $dialog->askAndValidate($output, $dialog->getQuestion('Enter package # to add, or a "[package] [version]" couple if it is not listed', false, ':'), $validator, 3);
 
         return $package;
     }
