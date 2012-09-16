@@ -743,7 +743,7 @@ class Installer
      *
      * @param  array     $packages
      * @return Installer
-     * @throws \UnexpectedValueException If a package name is not known
+     * @throws UnknownPackageException If a package name is not known
      */
     public function setUpdateWhitelist(array $packages)
     {
