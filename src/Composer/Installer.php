@@ -758,6 +758,14 @@ class Installer
             foreach ($this->package->getRequires() as $requiredPackage) {
                 $knownPackages[] = strtolower($requiredPackage->getTarget());
             }
+            if ($this->devMode) {
+                foreach ($this->repositoryManager->getLocalDevRepository()->getPackages() as $localPackage) {
+                    $knownPackages[] = strtolower($localPackage->getName());
+                }
+                foreach ($this->package->getDevRequires() as $requiredPackage) {
+                    $knownPackages[] = strtolower($requiredPackage->getTarget());
+                }
+            }
 
             foreach ($packages as $package) {
                 if (!in_array(strtolower($package), $knownPackages)) {
