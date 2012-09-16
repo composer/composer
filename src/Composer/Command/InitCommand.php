@@ -293,6 +293,8 @@ EOT
                     $question = $dialog->getQuestion('Please provide a version constraint for the '.$requirement.' requirement');
                     if ($constraint = $dialog->ask($output, $question)) {
                         $requires[$key] .= ' ' . $constraint;
+                    } elseif (false !== ($package = $this->findPackageDialog($requires[$key], $dialog, $output))) {
+                        $requires[$key] = $package;
                     }
                 }
                 if (false === strpos($requires[$key], ' ')) {
@@ -304,48 +306,56 @@ EOT
         }
 
         while (null !== $package = $dialog->ask($output, $prompt)) {
-            $matches = $this->findPackages($package);
-
-            if (count($matches)) {
-                $output->writeln(array(
-                    '',
-                    sprintf('Found <info>%s</info> packages matching <info>%s</info>', count($matches), $package),
-                    ''
-                ));
-
-                foreach ($matches as $position => $package) {
-                    $output->writeln(sprintf(' <info>%5s</info> %s <comment>%s</comment>', "[$position]", $package->getPrettyName(), $package->getPrettyVersion()));
-                }
-
-                $output->writeln('');
-
-                $validator = function ($selection) use ($matches) {
-                    if ('' === $selection) {
-                        return false;
-                    }
-
-                    if (!is_numeric($selection) && preg_match('{^\s*(\S+) +(\S.*)\s*}', $selection, $matches)) {
-                        return $matches[1].' '.$matches[2];
-                    }
-
-                    if (!isset($matches[(int) $selection])) {
-                        throw new \Exception('Not a valid selection');
-                    }
-
-                    $package = $matches[(int) $selection];
-
-                    return sprintf('%s %s', $package->getName(), $package->getPrettyVersion());
-                };
-
-                $package = $dialog->askAndValidate($output, $dialog->getQuestion('Enter package # to add, or a "[package] [version]" couple if it is not listed', false, ':'), $validator, 3);
-
-                if (false !== $package) {
-                    $requires[] = $package;
-                }
+            $package = $this->findPackageDialog($package, $dialog, $output);
+            if (false !== $package) {
+                $requires[] = $package;
             }
         }
 
         return $requires;
+    }
+
+    protected function findPackageDialog($package, $dialog, $output)
+    {
+        $matches = $this->findPackages($package);
+
+        if (0 === count($matches)) {
+            $package = false;
+        } else {
+            $output->writeln(array(
+                '',
+                sprintf('Found <info>%s</info> packages matching <info>%s</info>', count($matches), $package),
+                ''
+            ));
+
+            foreach ($matches as $position => $package) {
+                $output->writeln(sprintf(' <info>%5s</info> %s <comment>%s</comment>', "[$position]", $package->getPrettyName(), $package->getPrettyVersion()));
+            }
+
+            $output->writeln('');
+
+            $validator = function ($selection) use ($matches) {
+                if ('' === $selection) {
+                    return false;
+                }
+
+                if (!is_numeric($selection) && preg_match('{^\s*(\S+) +(\S.*)\s*}', $selection, $matches)) {
+                    return $matches[1].' '.$matches[2];
+                }
+
+                if (!isset($matches[(int) $selection])) {
+                    throw new \Exception('Not a valid selection');
+                }
+
+                $package = $matches[(int) $selection];
+
+                return sprintf('%s %s', $package->getName(), $package->getPrettyVersion());
+            };
+
+            $package = $dialog->askAndValidate($output, $dialog->getQuestion('Enter package # to add, or a "[package] [version]" couple if it is not listed', false, ':'), $validator, 3);
+        }
+
+        return $package;
     }
 
     protected function formatAuthors($author)
