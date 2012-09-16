@@ -12,6 +12,7 @@
 
 namespace Composer\Command;
 
+use Composer\Exception\UnknownPackageException;
 use Composer\Installer;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -69,7 +70,7 @@ EOT
                 ->setUpdate(true)
                 ->setUpdateWhitelist($input->getArgument('packages'))
             ;
-        } catch (\Exception $e) {
+        } catch (UnknownPackageException $e) {
             $io->write('<error>' . $e->getMessage() . '</error>');
 
             return false;

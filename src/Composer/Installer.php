@@ -20,6 +20,7 @@ use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Solver;
 use Composer\DependencyResolver\SolverProblemsException;
 use Composer\Downloader\DownloadManager;
+use Composer\Exception\UnknownPackageException;
 use Composer\Installer\InstallationManager;
 use Composer\Config;
 use Composer\Installer\NoopInstaller;
@@ -769,7 +770,7 @@ class Installer
 
             foreach ($packages as $package) {
                 if (!in_array(strtolower($package), $knownPackages)) {
-                    throw new \UnexpectedValueException('Package ' . $package . ' not known');
+                    throw new UnknownPackageException('Package ' . $package . ' not known');
                 }
             }
         }
