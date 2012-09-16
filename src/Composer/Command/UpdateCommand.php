@@ -73,7 +73,7 @@ EOT
         } catch (UnknownPackageException $e) {
             $io->write('<error>' . $e->getMessage() . '</error>');
 
-            return false;
+            return 1;
         }
 
         if ($input->getOption('no-custom-installers')) {
