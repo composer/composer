@@ -753,17 +753,17 @@ class Installer
         if (count($packages) > 1 || $packages[0] !== 'nothing') {
             $knownPackages = array();
             foreach ($this->repositoryManager->getLocalRepository()->getPackages() as $localPackage) {
-                $knownPackages[] = strtolower($localPackage->getName());
+                $knownPackages[] = $localPackage->getName();
             }
             foreach ($this->package->getRequires() as $requiredPackage) {
-                $knownPackages[] = strtolower($requiredPackage->getTarget());
+                $knownPackages[] = $requiredPackage->getTarget();
             }
             if ($this->devMode) {
                 foreach ($this->repositoryManager->getLocalDevRepository()->getPackages() as $localPackage) {
-                    $knownPackages[] = strtolower($localPackage->getName());
+                    $knownPackages[] = $localPackage->getName();
                 }
                 foreach ($this->package->getDevRequires() as $requiredPackage) {
-                    $knownPackages[] = strtolower($requiredPackage->getTarget());
+                    $knownPackages[] = $requiredPackage->getTarget();
                 }
             }
 
