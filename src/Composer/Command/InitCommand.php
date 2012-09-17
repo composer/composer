@@ -336,7 +336,7 @@ EOT
         $output->writeln('');
 
         $validator = function ($selection) use ($matches) {
-            if ('' === $selection) {
+            if (null === $selection) {
                 return null;
             }
 
