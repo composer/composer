@@ -70,6 +70,10 @@ If you just want to update a few packages and not all, you can list them as such
 
     $ php composer.phar update vendor/package vendor/package2
 
+To rewrite the lock file without updating any packages:
+
+    $ php composer.phar update nothing
+
 ### Options
 
 * **--prefer-source:** Install packages from `source` when available.

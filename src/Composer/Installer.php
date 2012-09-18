@@ -20,6 +20,7 @@ use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Solver;
 use Composer\DependencyResolver\SolverProblemsException;
 use Composer\Downloader\DownloadManager;
+use Composer\Exception\UnknownPackageException;
 use Composer\Installer\InstallationManager;
 use Composer\Config;
 use Composer\Installer\NoopInstaller;
@@ -740,12 +741,43 @@ class Installer
      * restrict the update operation to a few packages, all other packages
      * that are already installed will be kept at their current version
      *
-     * @param  array     $packages
+     * @param  array $packages Array of package names
      * @return Installer
+     * @throws UnknownPackageException If a package name is not known
      */
     public function setUpdateWhitelist(array $packages)
     {
-        $this->updateWhitelist = array_flip(array_map('strtolower', $packages));
+        if (count($packages) === 0) {
+            return $this;
+        }
+
+        $lowercasePackages = array_map('strtolower', $packages);
+
+        if (count($packages) > 1 || $packages[0] !== 'nothing') {
+            $knownPackages = array();
+            foreach ($this->repositoryManager->getLocalRepository()->getPackages() as $localPackage) {
+                $knownPackages = array_merge($knownPackages, $localPackage->getNames());
+            }
+            foreach ($this->package->getRequires() as $requiredPackage) {
+                $knownPackages[] = $requiredPackage->getTarget();
+            }
+            if ($this->devMode) {
+                foreach ($this->repositoryManager->getLocalDevRepository()->getPackages() as $localPackage) {
+                    $knownPackages = array_merge($knownPackages, $localPackage->getNames());
+                }
+                foreach ($this->package->getDevRequires() as $requiredPackage) {
+                    $knownPackages[] = $requiredPackage->getTarget();
+                }
+            }
+
+            foreach ($lowercasePackages as $key => $package) {
+                if (!in_array($package, $knownPackages)) {
+                    throw new UnknownPackageException('Package ' . $packages[$key] . ' not known');
+                }
+            }
+        }
+
+        $this->updateWhitelist = array_flip($lowercasePackages);
 
         return $this;
     }
