@@ -87,6 +87,6 @@ class HgDownloader extends VcsDownloader
             $error = 'Did not find executable "hg" in $PATH';
             return false;
         }
-        return trim($output) == 'OK';
+        return 'OK' === trim($output);
     }
 }

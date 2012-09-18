@@ -90,7 +90,7 @@ class GitDownloader extends VcsDownloader
             $error = 'Did not find executable "git" in $PATH';
             return false;
         }
-        return trim($output) == 'OK';
+        return 'OK' === trim($output);
     }
 
     protected function updateToCommit($path, $reference, $branch, $date)
