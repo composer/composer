@@ -71,4 +71,19 @@ class CompletePackageTest extends TestCase
         $this->assertEquals(strtolower($name).'-'.$normVersion, (string) $package);
     }
 
+    public function testGetTargetDir()
+    {
+        $package = new Package('a', '1.0.0.0', '1.0');
+
+        $this->assertNull($package->getTargetDir());
+
+        $package->setTargetDir('./../foo/');
+        $this->assertEquals('foo/', $package->getTargetDir());
+
+        $package->setTargetDir('foo/../../../bar/');
+        $this->assertEquals('foo/bar/', $package->getTargetDir());
+
+        $package->setTargetDir('../..');
+        $this->assertEquals('', $package->getTargetDir());
+    }
 }
