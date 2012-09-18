@@ -751,6 +751,8 @@ class Installer
             return $this;
         }
 
+        $lowercasePackages = array_map('strtolower', $packages);
+
         if (count($packages) > 1 || $packages[0] !== 'nothing') {
             $knownPackages = array();
             foreach ($this->repositoryManager->getLocalRepository()->getPackages() as $localPackage) {
@@ -768,14 +770,14 @@ class Installer
                 }
             }
 
-            foreach ($packages as $package) {
-                if (!in_array(strtolower($package), $knownPackages)) {
-                    throw new UnknownPackageException('Package ' . $package . ' not known');
+            foreach ($lowercasePackages as $key => $package) {
+                if (!in_array($package, $knownPackages)) {
+                    throw new UnknownPackageException('Package ' . $packages[$key] . ' not known');
                 }
             }
         }
 
-        $this->updateWhitelist = array_flip(array_map('strtolower', $packages));
+        $this->updateWhitelist = array_flip($lowercasePackages);
 
         return $this;
     }
