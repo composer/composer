@@ -507,7 +507,7 @@ class Installer
             }
             
             // add to execute list
-            $executes []= [$localRepo, $operation];
+            $executes []= array($localRepo, $operation);
         }
         
         foreach ($executes as $execute) {
