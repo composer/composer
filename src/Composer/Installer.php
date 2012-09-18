@@ -486,7 +486,7 @@ class Installer
             }
 
 
-            // for install/update check whether downloader available
+            // for install/update check whether downloader is available
             if (in_array($operation->getJobType(), array('install', 'update'))) {
                 // assure installation source set
                 $package = 'install' === $operation->getJobType()
