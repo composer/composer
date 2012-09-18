@@ -123,8 +123,7 @@ class DownloadManager
      * Sets installation source type "dist" or "source" for given package.
      *
      * @param PackageInterface $package package instance
-     *
-     * @return void
+     * @param bool             $preferSource prefer installation from source
      *
      * @throws InvalidArgumentException if package has no installation source specified
      */

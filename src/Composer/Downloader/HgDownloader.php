@@ -81,7 +81,7 @@ class HgDownloader extends VcsDownloader
         if (defined('PHP_WINDOWS_VERSION_BUILD')) { // no check, yet
             return true;
         }
-        
+
         $command = 'test -x `which hg` && echo "OK"';
         if (0 !== $this->process->execute($command,$output)) {
             $error = 'Did not find executable "hg" in $PATH';
