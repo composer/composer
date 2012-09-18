@@ -120,15 +120,15 @@ class DownloadManager
     }
 
     /**
-     * Downloads package into target dir.
+     * Sets installation source type "dist" or "source" for given package.
      *
-     * @param PackageInterface $package      package instance
-     * @param string           $targetDir    target dir
-     * @param bool             $preferSource prefer installation from source
+     * @param PackageInterface $package package instance
      *
-     * @throws InvalidArgumentException if package have no urls to download from
+     * @return void
+     *
+     * @throws InvalidArgumentException if package has no installation source specified
      */
-    public function download(PackageInterface $package, $targetDir, $preferSource = null)
+    public function setInstallationSourceForPackage(PackageInterface $package, $preferSource = null)
     {
         $preferSource = null !== $preferSource ? $preferSource : $this->preferSource;
         $sourceType   = $package->getSourceType();
@@ -143,7 +143,20 @@ class DownloadManager
         } else {
             throw new \InvalidArgumentException('Package '.$package.' must have a source or dist specified');
         }
+    }
 
+    /**
+     * Downloads package into target dir.
+     *
+     * @param PackageInterface $package      package instance
+     * @param string           $targetDir    target dir
+     * @param bool             $preferSource prefer installation from source
+     *
+     * @throws InvalidArgumentException if package have no urls to download from
+     */
+    public function download(PackageInterface $package, $targetDir, $preferSource = null)
+    {
+        $this->setInstallationSourceForPackage($package, $preferSource);
         $this->filesystem->ensureDirectoryExists($targetDir);
 
         $downloader = $this->getDownloaderForInstalledPackage($package);

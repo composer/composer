@@ -125,6 +125,14 @@ abstract class VcsDownloader implements DownloaderInterface
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public function isAvailable(PackageInterface $package, &$error = null)
+    {
+        return true;
+    }
+
+    /**
      * Guarantee that no changes have been made to the local copy
      *
      * @throws \RuntimeException if the directory is not clean

@@ -109,6 +109,14 @@ class FileDownloader implements DownloaderInterface
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public function isAvailable(PackageInterface $package, &$error = null)
+    {
+        return true;
+    }
+
+    /**
      * Gets file name for specific package
      *
      * @param  PackageInterface $package package instance

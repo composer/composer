@@ -76,6 +76,23 @@ class GitDownloader extends VcsDownloader
         return trim($output) ?: null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public function isAvailable(PackageInterface $package, &$error = null)
+    {
+        if (defined('PHP_WINDOWS_VERSION_BUILD')) { // no check, yet
+            return true;
+        }
+        
+        $command = 'test -x `which git` && echo "OK"';
+        if (0 !== $this->process->execute($command,$output)) {
+            $error = 'Did not find executable "git" in $PATH';
+            return false;
+        }
+        return trim($output) == 'OK';
+    }
+
     protected function updateToCommit($path, $reference, $branch, $date)
     {
         $template = 'git checkout %s && git reset --hard %1$s';

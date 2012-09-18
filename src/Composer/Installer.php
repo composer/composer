@@ -367,6 +367,7 @@ class Installer
 
         // force dev packages to be updated if we update or install from a (potentially new) lock
         foreach ($localRepo->getPackages() as $package) {
+            
             // skip non-dev packages
             if (!$package->isDev()) {
                 continue;
@@ -445,7 +446,9 @@ class Installer
         if (!$operations) {
             $this->io->write('Nothing to install or update');
         }
-
+        
+        // check operations, build executs
+        $executes = array();
         foreach ($operations as $operation) {
             // collect suggestions
             if ('install' === $operation->getJobType()) {
@@ -483,7 +486,32 @@ class Installer
             if ($this->dryRun || ($this->verbose && false !== strpos($operation->getJobType(), 'Alias'))) {
                 $this->io->write('  - ' . $operation);
             }
-
+            
+            
+            // for install/update check whether downloader available
+            if (in_array($operation->getJobType(), array('install', 'update'))) {
+                
+                // assure installation source set
+                $package = $operation->getJobType() == 'install'
+                    ? $operation->getPackage() : $operation->getTargetPackage();
+                $this->downloadManager->setInstallationSourceForPackage($package);
+                $source = $package->getInstallationSource();
+                $downloadType = $source == 'dist' ? $package->getDistType() : $package->getSourceType();
+                
+                // check whether downloader can be used
+                $downloader = $this->downloadManager->getDownloader($downloadType);
+                if (!$downloader || !$downloader->isAvailable($package, $downloaderError)) {
+                    throw new \RuntimeException(sprintf("Cannot %s package %s: %s",
+                        $operation->getJobType(), $package->getPrettyName(), $downloaderError));
+                }
+            }
+            
+            // add to execute list
+            $executes []= [$localRepo, $operation];
+        }
+        
+        foreach ($executes as $execute) {
+            list($localRepo, $operation) = $execute;
             $this->installationManager->execute($localRepo, $operation);
 
             $event = 'Composer\Script\ScriptEvents::POST_PACKAGE_'.strtoupper($operation->getJobType());

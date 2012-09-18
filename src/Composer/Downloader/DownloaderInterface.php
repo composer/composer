@@ -53,4 +53,14 @@ interface DownloaderInterface
      * @param string           $path    download path
      */
     public function remove(PackageInterface $package, $path);
+
+    /**
+     * Checkes whether interface can be used (eg required binary executables)
+     *
+     * @param PackageInterface $package package instance
+     * @param string           $error   any error will be written into this var if passed by ref
+     *
+     * @return bool
+     */
+    public function isAvailable(PackageInterface $package, &$error = null);
 }
