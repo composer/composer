@@ -85,5 +85,14 @@ class CompletePackageTest extends TestCase
 
         $package->setTargetDir('../..');
         $this->assertEquals('', $package->getTargetDir());
+
+        $package->setTargetDir('..');
+        $this->assertEquals('', $package->getTargetDir());
+
+        $package->setTargetDir('/..');
+        $this->assertEquals('', $package->getTargetDir());
+
+        $package->setTargetDir('/foo/..');
+        $this->assertEquals('foo/', $package->getTargetDir());
     }
 }
