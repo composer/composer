@@ -114,7 +114,11 @@ class Package extends BasePackage
      */
     public function getTargetDir()
     {
-        return $this->targetDir;
+        if (null === $this->targetDir) {
+            return;
+        }
+
+        return ltrim(preg_replace('{ (?:^|[\\\\/]) \.\.? (?:[\\\\/]|$) (?:\.\.? (?:[\\\\/]|$) )*}x', '/', $this->targetDir), '/');
     }
 
     /**
