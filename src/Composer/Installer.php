@@ -489,11 +489,11 @@ class Installer
             // for install/update check whether downloader available
             if (in_array($operation->getJobType(), array('install', 'update'))) {
                 // assure installation source set
-                $package = $operation->getJobType() === 'install'
+                $package = 'install' === $operation->getJobType()
                     ? $operation->getPackage() : $operation->getTargetPackage();
                 $this->downloadManager->setInstallationSourceForPackage($package);
                 $source = $package->getInstallationSource();
-                $downloadType = $source === 'dist' ? $package->getDistType() : $package->getSourceType();
+                $downloadType = 'dist' === $source ? $package->getDistType() : $package->getSourceType();
 
                 // check whether downloader can be used
                 $downloader = $this->downloadManager->getDownloader($downloadType);

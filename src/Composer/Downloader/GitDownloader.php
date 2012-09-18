@@ -86,7 +86,7 @@ class GitDownloader extends VcsDownloader
         }
 
         $command = 'test -x `which git` && echo "OK"';
-        if (0 !== $this->process->execute($command,$output)) {
+        if (0 !== $this->process->execute($command, $output)) {
             $error = 'Did not find executable "git" in $PATH';
             return false;
         }
