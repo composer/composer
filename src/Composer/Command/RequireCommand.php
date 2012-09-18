@@ -100,7 +100,7 @@ EOT
             ->setPreferSource($input->getOption('prefer-source'))
             ->setDevMode($input->getOption('dev'))
             ->setUpdate(true)
-            ->setUpdateWhitelist($requirements);
+            ->setUpdateWhitelist(array_keys($requirements));
         ;
 
         return $install->run() ? 0 : 1;

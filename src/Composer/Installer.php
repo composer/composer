@@ -741,7 +741,7 @@ class Installer
      * restrict the update operation to a few packages, all other packages
      * that are already installed will be kept at their current version
      *
-     * @param  array     $packages
+     * @param  array $packages Array of package names
      * @return Installer
      * @throws UnknownPackageException If a package name is not known
      */
