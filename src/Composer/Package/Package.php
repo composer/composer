@@ -118,7 +118,7 @@ class Package extends BasePackage
             return;
         }
 
-        return ltrim(preg_replace('{ (?:^|[\\\\/]) \.\.? (?:[\\\\/]|$) (?:\.\.? (?:[\\\\/]|$) )*}x', '/', $this->targetDir), '/');
+        return ltrim(preg_replace('{ (?:^|[\\\\/]+) \.\.? (?:[\\\\/]+|$) (?:\.\.? (?:[\\\\/]+|$) )*}x', '/', $this->targetDir), '/');
     }
 
     /**
