@@ -15,6 +15,7 @@ namespace Composer\Package\Dumper;
 use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\CompletePackageInterface;
+use Composer\Package\RootPackageInterface;
 
 /**
  * @author Konstantin Kudryashiv <ever.zet@gmail.com>
@@ -86,6 +87,13 @@ class ArrayDumper
             );
 
             $data = $this->dumpValues($package, $keys, $data);
+        }
+
+        if ($package instanceof RootPackageInterface) {
+            $minimumStability = $package->getMinimumStability();
+            if ($minimumStability) {
+                $data['minimum-stability'] = $minimumStability;
+            }
         }
 
         return $data;
