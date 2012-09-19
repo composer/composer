@@ -51,6 +51,17 @@ class ArrayDumperTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    public function testRootPackage()
+    {
+        $this->package = $this->getMock('Composer\Package\RootPackageInterface');
+
+        $this
+            ->packageExpects('getMinimumStability', 'dev');
+
+        $config = $this->dumper->dump($this->package);
+        $this->assertSame('dev', $config['minimum-stability']);
+    }
+
     /**
      * @dataProvider getKeys
      */
