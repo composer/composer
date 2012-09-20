@@ -37,7 +37,7 @@ class HgDriver extends VcsDriver
         } else {
             $this->repoDir = $this->config->get('home') . '/cache.hg/' . preg_replace('{[^a-z0-9]}i', '-', $this->url) . '/';
 
-            // update the repo if it is a valid git repository
+            // update the repo if it is a valid hg repository
             if (is_dir($this->repoDir) && 0 === $this->process->execute('hg summary', $output, $this->repoDir)) {
                 if (0 !== $this->process->execute('hg pull -u', $output, $this->repoDir)) {
                     $this->io->write('<error>Failed to update '.$this->url.', package information from this repository may be outdated ('.$this->process->getErrorOutput().')</error>');
@@ -48,12 +48,10 @@ class HgDriver extends VcsDriver
                 $fs->removeDirectory($this->repoDir);
 
                 // ensure parent dir exists
-                $dir = dirname($this->repoDir);
-                if (!is_dir($dir)) {
-                    mkdir($dir, 0777, true);
-                }
+                $cacheDir = dirname($this->repoDir);
+                $fs->ensureDirectoryExists($cacheDir);
 
-                if (0 !== $this->process->execute(sprintf('hg clone %s %s', escapeshellarg($this->url), escapeshellarg($this->repoDir)), $output, $dir)) {
+                if (0 !== $this->process->execute(sprintf('hg clone %s %s', escapeshellarg($this->url), escapeshellarg($this->repoDir)), $output, $cacheDir)) {
                     $output = $this->process->getErrorOutput();
 
                     if (0 !== $this->process->execute('hg --version', $ignoredOutput)) {
@@ -194,7 +192,7 @@ class HgDriver extends VcsDriver
 
             $process = new ProcessExecutor();
             $url = str_replace('file://', '', $url);
-            // check whether there is a git repo in that path
+            // check whether there is a hg repo in that path
             if ($process->execute('hg summary', $output, $url) === 0) {
                 return true;
             }
