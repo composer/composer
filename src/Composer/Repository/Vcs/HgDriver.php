@@ -24,6 +24,7 @@ class HgDriver extends VcsDriver
     protected $tags;
     protected $branches;
     protected $rootIdentifier;
+    protected $repoDir;
     protected $infoCache = array();
 
     /**
@@ -31,16 +32,37 @@ class HgDriver extends VcsDriver
      */
     public function initialize()
     {
-        $this->tmpDir = $this->config->get('home') . '/cache.hg/' . preg_replace('{[^a-z0-9]}i', '-', $this->url) . '/';
-
-        if (is_dir($this->tmpDir)) {
-            $this->process->execute(sprintf('cd %s && hg pull -u', escapeshellarg($this->tmpDir)), $output);
+        if (static::isLocalUrl($this->url)) {
+            $this->repoDir = str_replace('file://', '', $this->url);
         } else {
-            $dir = dirname($this->tmpDir);
-            if (!is_dir($dir)) {
-                mkdir($dir, 0777, true);
+            $this->repoDir = $this->config->get('home') . '/cache.hg/' . preg_replace('{[^a-z0-9]}i', '-', $this->url) . '/';
+
+            // update the repo if it is a valid git repository
+            if (is_dir($this->repoDir) && 0 === $this->process->execute('hg summary', $output, $this->repoDir)) {
+                if (0 !== $this->process->execute('hg pull -u', $output, $this->repoDir)) {
+                    $this->io->write('<error>Failed to update '.$this->url.', package information from this repository may be outdated ('.$this->process->getErrorOutput().')</error>');
+                }
+            } else {
+                // clean up directory and do a fresh clone into it
+                $fs = new Filesystem();
+                $fs->removeDirectory($this->repoDir);
+
+                // ensure parent dir exists
+                $dir = dirname($this->repoDir);
+                if (!is_dir($dir)) {
+                    mkdir($dir, 0777, true);
+                }
+
+                if (0 !== $this->process->execute(sprintf('hg clone %s %s', escapeshellarg($this->url), escapeshellarg($this->repoDir)), $output, $dir)) {
+                    $output = $this->process->getErrorOutput();
+
+                    if (0 !== $this->process->execute('hg --version', $ignoredOutput)) {
+                        throw new \RuntimeException('Failed to clone '.$this->url.', hg was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput());
+                    }
+
+                    throw new \RuntimeException('Failed to clone '.$this->url.', could not read packages from it' . "\n\n" .$output);
+                }
             }
-            $this->process->execute(sprintf('cd %s && hg clone %s %s', escapeshellarg($dir), escapeshellarg($this->url), escapeshellarg($this->tmpDir)), $output);
         }
 
         $this->getTags();
@@ -52,9 +74,8 @@ class HgDriver extends VcsDriver
      */
     public function getRootIdentifier()
     {
-        $tmpDir = escapeshellarg($this->tmpDir);
         if (null === $this->rootIdentifier) {
-            $this->process->execute(sprintf('cd %s && hg tip --template "{node}"', $tmpDir), $output);
+            $this->process->execute(sprintf('hg tip --template "{node}"'), $output, $this->repoDir);
             $output = $this->process->splitLines($output);
             $this->rootIdentifier = $output[0];
         }
@@ -94,7 +115,7 @@ class HgDriver extends VcsDriver
     public function getComposerInformation($identifier)
     {
         if (!isset($this->infoCache[$identifier])) {
-            $this->process->execute(sprintf('cd %s && hg cat -r %s composer.json', escapeshellarg($this->tmpDir), escapeshellarg($identifier)), $composer);
+            $this->process->execute(sprintf('hg cat -r %s composer.json', escapeshellarg($identifier)), $composer, $this->repoDir);
 
             if (!trim($composer)) {
                 return;
@@ -103,7 +124,7 @@ class HgDriver extends VcsDriver
             $composer = JsonFile::parseJson($composer, $identifier);
 
             if (!isset($composer['time'])) {
-                $this->process->execute(sprintf('cd %s && hg log --template "{date|rfc822date}" -r %s', escapeshellarg($this->tmpDir), escapeshellarg($identifier)), $output);
+                $this->process->execute(sprintf('hg log --template "{date|rfc822date}" -r %s', escapeshellarg($identifier)), $output, $this->repoDir);
                 $date = new \DateTime(trim($output));
                 $composer['time'] = $date->format('Y-m-d H:i:s');
             }
@@ -121,7 +142,7 @@ class HgDriver extends VcsDriver
         if (null === $this->tags) {
             $tags = array();
 
-            $this->process->execute(sprintf('cd %s && hg tags', escapeshellarg($this->tmpDir)), $output);
+            $this->process->execute('hg tags', $output, $this->repoDir);
             foreach ($this->process->splitLines($output) as $tag) {
                 if ($tag && preg_match('(^([^\s]+)\s+\d+:(.*)$)', $tag, $match)) {
                     $tags[$match[1]] = $match[2];
@@ -143,7 +164,7 @@ class HgDriver extends VcsDriver
         if (null === $this->branches) {
             $branches = array();
 
-            $this->process->execute(sprintf('cd %s && hg branches', escapeshellarg($this->tmpDir)), $output);
+            $this->process->execute('hg branches', $output, $this->repoDir);
             foreach ($this->process->splitLines($output) as $branch) {
                 if ($branch && preg_match('(^([^\s]+)\s+\d+:(.*)$)', $branch, $match)) {
                     $branches[$match[1]] = $match[2];
@@ -165,12 +186,26 @@ class HgDriver extends VcsDriver
             return true;
         }
 
+        // local filesystem
+        if (static::isLocalUrl($url)) {
+            if (!is_dir($url)) {
+                throw new \RuntimeException('Directory does not exist: '.$url);
+            }
+
+            $process = new ProcessExecutor();
+            $url = str_replace('file://', '', $url);
+            // check whether there is a git repo in that path
+            if ($process->execute('hg summary', $output, $url) === 0) {
+                return true;
+            }
+        }
+
         if (!$deep) {
             return false;
         }
 
         $processExecutor = new ProcessExecutor();
-        $exit = $processExecutor->execute(sprintf('cd %s && hg identify %s', escapeshellarg(sys_get_temp_dir()), escapeshellarg($url)), $ignored);
+        $exit = $processExecutor->execute(sprintf('hg identify %s', escapeshellarg($url)), $ignored);
 
         return $exit === 0;
     }
