@@ -282,15 +282,6 @@ class Locker
             $spec = $this->dumper->dump($package);
             unset($spec['version_normalized']);
 
-            if ($package->isDev()) {
-                if ('git' === $package->getSourceType() && $path = $this->installationManager->getInstallPath($package)) {
-                    $process = new ProcessExecutor();
-                    if (0 === $process->execute('git log -n1 --pretty=%ct '.escapeshellarg($package->getSourceReference()), $output, $path)) {
-                        $spec['time'] = trim($output);
-                    }
-                }
-            }
-
             $locked[] = $spec;
         }
 
