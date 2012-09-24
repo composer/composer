@@ -8,6 +8,10 @@
             "description": "Package name, including 'vendor-name/' prefix.",
             "required": true
         },
+        "title": {
+            "type": "string",
+            "description": "Package title, a concise human-readable title for the package.",
+        },
         "type": {
             "description": "Package type, either 'library' for common packages, 'composer-installer' for custom installers, 'metapackage' for empty packages, or a custom type defined by whatever project this package applies to.",
             "type": "string"
