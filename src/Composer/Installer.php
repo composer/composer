@@ -394,9 +394,7 @@ class Installer
                         && $lockedPackage->getSourceReference()
                         && $lockedPackage->getSourceReference() !== $package->getSourceReference()
                     ) {
-                        $newPackage = clone $package;
-                        $newPackage->setSourceReference($lockedPackage->getSourceReference());
-                        $operations[] = new UpdateOperation($package, $newPackage);
+                        $operations[] = new UpdateOperation($package, $lockedPackage);
 
                         break;
                     }
