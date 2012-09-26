@@ -136,8 +136,7 @@ class ArrayLoader implements LoaderInterface
 
         if (!empty($config['time'])) {
             try {
-                $date = new \DateTime($config['time']);
-                $date->setTimezone(new \DateTimeZone('UTC'));
+                $date = new \DateTime($config['time'], new \DateTimeZone('UTC'));
                 $package->setReleaseDate($date);
             } catch (\Exception $e) {
             }
