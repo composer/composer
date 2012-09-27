@@ -38,7 +38,7 @@ class ArchiveDownloaderTest extends \PHPUnit_Framework_TestCase
         $method->setAccessible(true);
 
         $expected = 'https://github.com/composer/composer/zipball/master';
-        $url = $method->invoke($downloader, $expected);
+        $url = $method->invoke($downloader, $this->getMock('Composer\Package\PackageInterface'), $expected);
 
         if (extension_loaded('openssl')) {
             $this->assertEquals($expected, $url);
