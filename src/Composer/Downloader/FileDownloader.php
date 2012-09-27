@@ -67,7 +67,7 @@ class FileDownloader implements DownloaderInterface
 
         $this->io->write("  - Installing <info>" . $package->getName() . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
 
-        $processUrl = $this->processUrl($url);
+        $processUrl = $this->processUrl($package, $url);
 
         try {
             $this->rfs->copy($package->getSourceUrl(), $processUrl, $fileName);
@@ -123,12 +123,13 @@ class FileDownloader implements DownloaderInterface
     /**
      * Process the download url
      *
+     * @param  PackageInterface $package package the url is coming from
      * @param  string $url download url
      * @return string url
      *
      * @throws \RuntimeException If any problem with the url
      */
-    protected function processUrl($url)
+    protected function processUrl(PackageInterface $package, $url)
     {
         if (!extension_loaded('openssl') && 0 === strpos($url, 'https:')) {
             throw new \RuntimeException('You must enable the openssl extension to download files via https');

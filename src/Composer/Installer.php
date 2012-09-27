@@ -481,6 +481,7 @@ class Installer
                     $references = $this->package->getReferences();
                     if (isset($references[$package->getName()])) {
                         $package->setSourceReference($references[$package->getName()]);
+                        $package->setDistReference($references[$package->getName()]);
                     }
                 }
             }
