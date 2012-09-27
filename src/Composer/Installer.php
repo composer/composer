@@ -91,6 +91,7 @@ class Installer
     protected $autoloadGenerator;
 
     protected $preferSource = false;
+    protected $preferDist = false;
     protected $devMode = false;
     protected $dryRun = false;
     protected $verbose = false;
@@ -147,6 +148,9 @@ class Installer
 
         if ($this->preferSource) {
             $this->downloadManager->setPreferSource(true);
+        }
+        if ($this->preferDist) {
+            $this->downloadManager->setPreferDist(true);
         }
 
         // create installed repo, this contains all local packages + platform packages (php & extensions)
@@ -387,15 +391,17 @@ class Installer
 
             // force update to locked version if it does not match the installed version
             if ($installFromLock) {
-                unset($lockedReference);
                 foreach ($lockedRepository->findPackages($package->getName()) as $lockedPackage) {
                     if (
                         $lockedPackage->isDev()
-                        && $lockedPackage->getSourceReference()
-                        && $lockedPackage->getSourceReference() !== $package->getSourceReference()
+                        && (
+                            ($lockedPackage->getSourceReference() && $lockedPackage->getSourceReference() !== $package->getSourceReference())
+                            || ($lockedPackage->getDistReference() && $lockedPackage->getDistReference() !== $package->getDistReference())
+                        )
                     ) {
                         $newPackage = clone $package;
                         $newPackage->setSourceReference($lockedPackage->getSourceReference());
+                        $newPackage->setDistReference($lockedPackage->getDistReference());
                         $operations[] = new UpdateOperation($package, $newPackage);
 
                         break;
@@ -667,6 +673,19 @@ class Installer
     public function setPreferSource($preferSource = true)
     {
         $this->preferSource = (boolean) $preferSource;
+
+        return $this;
+    }
+
+    /**
+     * prefer dist installation
+     *
+     * @param  boolean   $preferDist
+     * @return Installer
+     */
+    public function setPreferDist($preferDist = true)
+    {
+        $this->preferDist = (boolean) $preferDist;
 
         return $this;
     }

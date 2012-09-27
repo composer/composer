@@ -23,6 +23,7 @@ use Composer\Util\Filesystem;
  */
 class DownloadManager
 {
+    private $preferDist = false;
     private $preferSource = false;
     private $filesystem;
     private $downloaders  = array();
@@ -47,6 +48,18 @@ class DownloadManager
     public function setPreferSource($preferSource)
     {
         $this->preferSource = $preferSource;
+
+        return $this;
+    }
+
+    /**
+     * Makes downloader prefer dist installation over the source.
+     *
+     * @param bool $preferDist prefer downloading from dist
+     */
+    public function setPreferDist($preferDist)
+    {
+        $this->preferDist = $preferDist;
 
         return $this;
     }
@@ -134,12 +147,12 @@ class DownloadManager
         $sourceType   = $package->getSourceType();
         $distType     = $package->getDistType();
 
-        if (!$package->isDev() && !($preferSource && $sourceType) && $distType) {
+        if ((!$package->isDev() || $this->preferDist) && !($preferSource && $sourceType) && $distType) {
             $package->setInstallationSource('dist');
         } elseif ($sourceType) {
             $package->setInstallationSource('source');
-        } elseif ($package->isDev()) {
-            throw new \InvalidArgumentException('Dev package '.$package.' must have a source specified');
+        } elseif ($package->isDev() && $distType) {
+            throw new \InvalidArgumentException('Dev package '.$package.' should have a source specified because for dev packages dist is used only with --prefer-dist option');
         } else {
             throw new \InvalidArgumentException('Package '.$package.' must have a source or dist specified');
         }
