@@ -35,6 +35,32 @@ class EventDispatcherTest extends TestCase
         $dispatcher->dispatchCommandEvent("post-install-cmd");
     }
 
+    public function testDispatcherCanExecuteCommandLineScripts()
+    {
+        $eventCliCommand = 'phpunit';
+
+        $process = $this->getMock('Composer\Util\ProcessExecutor');
+        $dispatcher = $this->getMockBuilder('Composer\Script\EventDispatcher')
+            ->setConstructorArgs(array(
+                $this->getMock('Composer\Composer'),
+                $this->getMock('Composer\IO\IOInterface'),
+                $process,
+            ))
+            ->setMethods(array('getListeners'))
+            ->getMock();
+
+        $listeners = array($eventCliCommand);
+        $dispatcher->expects($this->atLeastOnce())
+            ->method('getListeners')
+            ->will($this->returnValue($listeners));
+
+        $process->expects($this->once())
+            ->method('execute')
+            ->with($eventCliCommand);
+
+        $dispatcher->dispatchCommandEvent("post-install-cmd");
+    }
+
     private function getDispatcherStubForListenersTest($listeners, $io)
     {
         $dispatcher = $this->getMockBuilder('Composer\Script\EventDispatcher')
