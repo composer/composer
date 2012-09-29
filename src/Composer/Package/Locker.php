@@ -165,7 +165,9 @@ class Locker
             }
             if (!empty($info['source-reference'])) {
                 $package->setSourceReference($info['source-reference']);
-                $package->setDistReference($info['source-reference']);
+                if (is_callable($package, 'setDistReference')) {
+                    $package->setDistReference($info['source-reference']);
+                }
             }
 
             $packages->addPackage($package);
