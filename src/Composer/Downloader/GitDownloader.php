@@ -199,6 +199,36 @@ class GitDownloader extends VcsDownloader
                     }
                     $retrying = true;
                 } while (--$retries);
+            } elseif (
+                $this->io->isInteractive() &&
+                preg_match('{(https?://)([^/]+/)(.*)$}i', $url, $match) &&
+                strpos($this->process->getErrorOutput(), 'fatal: Authentication failed') === 0
+            ) {
+                if ($saved = $this->io->hasAuthorization($match[1].$match[2])) {
+                    $auth = $this->io->getAuthorization($match[1].$match[2]);
+                } else {
+                    $this->io->write($match[1].$match[2].' ('.$match[3].') requires Authentication');
+                    $auth = array(
+                        'username'  => $this->io->ask('Username: '),
+                        'password'  => $this->io->askAndHideAnswer('Password: '),
+                    );
+                }
+
+                $url = $match[1].urlencode($auth['username']).':'.
+                    urlencode($auth['password']).'@'.$match[2].$match[3];
+
+                $command = call_user_func($commandCallable, $url);
+                if (0 === $this->process->execute($command, $handler)) {
+                    if (!$saved) {
+                        $saved = $this->io->ask('Save user/pass for other requests to '.
+                            $match[1].$match[2].' ? [y]/n: ');
+                        if (in_array($saved, array('y', 'Y', null), true)) {
+                            $this->io->setAuthorization($match[1].$match[2], $auth['username'], $auth['password']);
+                            $this->io->write('saved...');
+                        }
+                    }
+                    return;
+                }
             }
 
             if (null !== $path) {
