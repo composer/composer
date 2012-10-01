@@ -202,7 +202,7 @@ class GitDownloader extends VcsDownloader
             } elseif (
                 $this->io->isInteractive() &&
                 preg_match('{(https?://)([^/]+/)(.*)$}i', $url, $match) &&
-                strpos($this->process->getErrorOutput(), 'fatal: Authentication failed') === 0
+                strpos($this->process->getErrorOutput(), 'fatal: Authentication failed') !== false
             ) {
                 if ($saved = $this->io->hasAuthorization($match[2])) {
                     $auth = $this->io->getAuthorization($match[2]);
