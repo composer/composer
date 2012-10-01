@@ -60,15 +60,15 @@ class ConfigValidator
         } catch (JsonValidationException $e) {
             foreach ($e->getErrors() as $message) {
                 if ($laxValid) {
-                    $publishErrors[] = '<error>Publish Error: ' . $message . '</error>';
+                    $publishErrors[] = $message;
                 } else {
-                    $errors[] = '<error>' . $message . '</error>';
+                    $errors[] = $message;
                 }
             }
         } catch (\Exception $e) {
-            $output->writeln('<error>' . $e->getMessage() . '</error>');
+            $errors[] = $e->getMessage();
 
-            return 1;
+            return;
         }
 
         // validate actual data
