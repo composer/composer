@@ -155,7 +155,7 @@ class Application extends BaseApplication
     {
         $commands = parent::getDefaultCommands();
         $commands[] = new Command\AboutCommand();
-        $commands[] = new Command\ConfigCommand();
+        $commands[] = new Command\ConfigRepositoriesAddCommand();
         $commands[] = new Command\DependsCommand();
         $commands[] = new Command\InitCommand();
         $commands[] = new Command\InstallCommand();
