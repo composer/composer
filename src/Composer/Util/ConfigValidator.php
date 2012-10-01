@@ -68,7 +68,7 @@ class ConfigValidator
         } catch (\Exception $e) {
             $errors[] = $e->getMessage();
 
-            return;
+            return array($errors, $publishErrors, $warnings);
         }
 
         // validate actual data
