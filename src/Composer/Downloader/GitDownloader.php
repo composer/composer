@@ -49,12 +49,14 @@ class GitDownloader extends VcsDownloader
         $this->io->write("    Checking out ".$ref);
         $command = 'cd %s && git remote set-url composer %s && git fetch composer && git fetch --tags composer';
 
-        // capture username/password from github URL if there is one
+        // capture username/password from URL if there is one
         $this->process->execute(sprintf('cd %s && git remote -v', escapeshellarg($path)), $output);
-        if (preg_match('{^composer\s+https://(.+):(.+)@github.com/}im', $output, $match)) {
-            $this->io->setAuthorization('github.com', $match[1], $match[2]);
+        if (preg_match('{^(?:composer|origin)\s+https?://(.+):(.+)@([^/]+)/}im', $output, $match)) {
+            $this->io->setAuthorization($match[3], urldecode($match[1]), urldecode($match[2]));
         }
 
+        // added in git 1.7.1, prevents prompting the user
+        putenv('GIT_ASKPASS=echo');
         $commandCallable = function($url) use ($ref, $path, $command) {
             return sprintf($command, escapeshellarg($path), escapeshellarg($url), escapeshellarg($ref));
         };
@@ -201,7 +203,7 @@ class GitDownloader extends VcsDownloader
                 } while (--$retries);
             } elseif (
                 $this->io->isInteractive() &&
-                preg_match('{(https?://)([^/]+/)(.*)$}i', $url, $match) &&
+                preg_match('{(https?://)([^/]+)(.*)$}i', $url, $match) &&
                 strpos($this->process->getErrorOutput(), 'fatal: Authentication failed') !== false
             ) {
                 if ($saved = $this->io->hasAuthorization($match[2])) {
