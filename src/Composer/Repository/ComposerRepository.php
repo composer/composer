@@ -20,6 +20,7 @@ use Composer\Cache;
 use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Util\RemoteFilesystem;
+use Composer\Downloader\TransportException;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -31,9 +32,13 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
     protected $io;
     protected $cache;
     protected $notifyUrl;
+    protected $providersUrl;
+    protected $providers = array();
+    protected $providersByUid = array();
     protected $loader;
     private $rawData;
     private $minimalPackages;
+    private $rootData;
 
     public function __construct(array $repoConfig, IOInterface $io, Config $config)
     {
@@ -170,6 +175,55 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
         return $aliasPackage;
     }
 
+    public function hasProviders()
+    {
+        $this->loadRootServerFile();
+
+        return null !== $this->providersUrl;
+    }
+
+    public function whatProvides($name)
+    {
+        if (isset($this->providers[$name])) {
+            return $this->providers[$name];
+        }
+
+        $url = str_replace('%package%', strtolower($name), $this->providersUrl);
+
+        try {
+            $json = new JsonFile($url, new RemoteFilesystem($this->io));
+            $packages = $json->read();
+        } catch (\RuntimeException $e) {
+            if (!$e->getPrevious() instanceof TransportException || $e->getPrevious()->getCode() !== 404) {
+                throw $e;
+            }
+        }
+
+        $this->providers[$name] = array();
+        foreach ($packages['packages'] as $name => $versions) {
+            foreach ($versions as $version) {
+                if (isset($this->providersByUid[$version['uid']])) {
+                    $this->providers[$name][] = $this->providersByUid[$version['uid']];
+                } else {
+                    $package = $this->createPackage($version, 'Composer\Package\Package');
+                    $package->setRepository($this);
+
+                    $this->providers[$name][] = $package;
+                    $this->providersByUid[$version['uid']] = $package;
+
+                    if ($package->getAlias()) {
+                        $alias = $this->createAliasPackage($package);
+
+                        $this->providers[$name][] = $alias;
+                        $this->providersByUid[$version['uid']] = $alias;
+                    }
+                }
+            }
+        }
+
+        return $this->providers[$name];
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -184,8 +238,12 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
         }
     }
 
-    protected function loadDataFromServer()
+    protected function loadRootServerFile()
     {
+        if (null !== $this->rootData) {
+            return $this->rootData;
+        }
+
         if (!extension_loaded('openssl') && 'https' === substr($this->url, 0, 5)) {
             throw new \RuntimeException('You must enable the openssl extension in your php.ini to load information from '.$this->url);
         }
@@ -210,6 +268,14 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
                 }
             }
 
+            if (!empty($data['providers'])) {
+                if ('/' === $data['providers'][0]) {
+                    $this->providersUrl = preg_replace('{(https?://[^/]+).*}i', '$1' . $data['providers'], $this->url);
+                } else {
+                    $this->providersUrl = $data['providers'];
+                }
+            }
+
             $this->cache->write('packages.json', json_encode($data));
         } catch (\Exception $e) {
             if ($contents = $this->cache->read('packages.json')) {
@@ -220,6 +286,13 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
                 throw $e;
             }
         }
+
+        return $this->rootData = $data;
+    }
+
+    protected function loadDataFromServer()
+    {
+        $data = $this->loadRootServerFile();
 
         return $this->loadIncludes($data);
     }
