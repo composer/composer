@@ -162,6 +162,7 @@ class HgDriver extends VcsDriver
     {
         if (null === $this->branches) {
             $branches = array();
+            $bookmarks = array();
 
             $this->process->execute('hg branches', $output, $this->repoDir);
             foreach ($this->process->splitLines($output) as $branch) {
@@ -170,7 +171,15 @@ class HgDriver extends VcsDriver
                 }
             }
 
-            $this->branches = $branches;
+            $this->process->execute('hg bookmarks', $output, $this->repoDir);
+            foreach ($this->process->splitLines($output) as $branch) {
+                if ($branch && preg_match('(^(?:[\s*]*)([^\s]+)\s+\d+:(.*)$)', $branch, $match)) {
+                    $bookmarks[$match[1]] = $match[2];
+                }
+            }
+
+            // Branches will have preference over bookmarks
+            $this->branches = array_merge($bookmarks, $branches);
         }
 
         return $this->branches;
