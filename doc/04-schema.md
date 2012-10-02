@@ -434,6 +434,20 @@ Example:
         }
     }
 
+Finally, if you want to require certain files explicitly with the less-efficient
+`require_once` on every request then you can use the 'files-once' autoloading 
+mechanism. This is useful if your package includes PHP functions that cannot 
+be autoloaded by PHP.
+
+Example:
+
+    {
+        "autoload": {
+            "files-once": ["src/MyOtherLibrary/functions.php"]
+        }
+    }
+
+
 ### include-path
 
 > **DEPRECATED**: This is only present to support legacy projects, and all new code

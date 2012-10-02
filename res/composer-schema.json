@@ -154,6 +154,10 @@
                 "files": {
                     "type": "array",
                     "description": "This is an array of files that are always required on every request."
+                },
+                "files-once": {
+                    "type": "array",
+                    "description": "This is an array of files that are always required using require_once on every request. Use is discouraged, but may be useful in edge cases."
                 }
             }
         },

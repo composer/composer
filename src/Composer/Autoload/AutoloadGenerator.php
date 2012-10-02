@@ -155,6 +155,10 @@ EOF;
         foreach ($autoloads['files'] as $functionFile) {
             $filesCode .= '        require '.$this->getPathCode($filesystem, $relVendorPath, $vendorPath, $functionFile).";\n";
         }
+        $autoloads['files-once'] = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($autoloads['files-once']));
+        foreach ($autoloads['files-once'] as $functionFile) {
+            $filesCode .= '        require_once '.$this->getPathCode($filesystem, $relVendorPath, $vendorPath, $functionFile).";\n";
+        }
 
         file_put_contents($targetDir.'/autoload_namespaces.php', $namespacesFile);
         file_put_contents($targetDir.'/autoload_classmap.php', $classmapFile);
@@ -213,7 +217,7 @@ EOF;
      */
     public function parseAutoloads(array $packageMap)
     {
-        $autoloads = array('classmap' => array(), 'psr-0' => array(), 'files' => array());
+        $autoloads = array('classmap' => array(), 'psr-0' => array(), 'files' => array(), 'files-once' => array());
         foreach ($packageMap as $item) {
             list($package, $installPath) = $item;
 
