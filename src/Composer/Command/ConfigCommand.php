@@ -23,11 +23,6 @@ use Composer\Json\JsonFile;
 class ConfigCommand extends Command
 {
     /**
-     * @var array
-     */
-    protected $repositories = array();
-
-    /**
      * @var Composer\Json\JsonFile
      */
     protected $configFile;
@@ -44,8 +39,10 @@ class ConfigCommand extends Command
                 new InputOption('global', 'g', InputOption::VALUE_NONE, 'Set this as a global config settings.'),
                 new InputOption('editor', 'e', InputOption::VALUE_NONE, 'Open editor'),
                 new InputOption('list', 'l', InputOption::VALUE_NONE, 'List configuration settings'),
-                // @todo insert argument here
+                new InputArgument('setting-key', null, 'Setting key'),
+                new InputArgument('setting-value', null, 'Setting value'),
             ))
+            // @todo Document
             ->setHelp(<<<EOT
 
 EOT
@@ -82,7 +79,7 @@ EOT
         // Open file in editor
         if ($input->getOption('editor')) {
             // @todo Find a way to use another editor
-            $editor = 'vim';
+            $editor = system("bash -cl 'echo \$EDITOR'");
             system($editor . ' ' . $this->configFile->getPath() . ' > `tty`');
             return 0;
         }
@@ -91,6 +88,28 @@ EOT
         if ($input->getOption('list')) {
             $this->displayFileContents($this->configFile->read(), $output);
             return 0;
+        }
+
+        // If the user enters in a config variable, parse it and save to file
+        if ($input->getArgument('setting-key')) {
+            if (null === $input->getArgument('setting-value')) {
+                throw new \RuntimeException('You must include a setting value.');
+            }
+            $setting = $this->parseSetting($input->getArgument('setting-key'), $input->getArgument('setting-value'));
+            $configSettings = $this->configFile->read();
+            $settings = array_merge($configSettings, $setting);
+
+            // Make confirmation
+            if ($input->isInteractive()) {
+                $dialog = $this->getHelperSet()->get('dialog');
+                $output->writeln(JsonFile::encode($settings));
+                if (!$dialog->askConfirmation($output, $dialog->getQuestion('Do you confirm?', 'yes', '?'), true)) {
+                    $output->writeln('<error>Command Aborted by User</error>');
+                    return 1;
+                }
+            }
+            
+            $this->configFile->write($settings);
         }
     }
 
@@ -112,7 +131,7 @@ EOT
     protected function displayFileContents(array $contents, OutputInterface $output, &$depth = 0, $k = null)
     {
         // @todo Look into a way to refactor this code, as it is right now, I
-        //       don't like it
+        //       don't like it, also the name of the function could be better
         foreach ($contents as $key => $value) {
             if (is_array($value)) {
                 $depth++;
@@ -127,6 +146,27 @@ EOT
             }
             $output->writeln('[<comment>' . $k . $key . '</comment>] <info>' . $value . '</info>');
         }
+    }
+
+    /**
+     * This function will take a setting key (a.b.c) and return an
+     * array that matches this
+     *
+     * @param string $key
+     * @param string $value
+     * @return array
+     */
+    protected function parseSetting($key, $value)
+    {
+        $parts = array_reverse(explode('.', $key));
+        $tmp = array();
+        for($i=0;$i<count($parts);$i++) {
+            $tmp[$parts[$i]] = (0 === $i) ? $value : $tmp;
+            if (0 < $i) {
+                unset($tmp[$parts[$i - 1]]);
+            }
+        }
+        return $tmp;
     }
 }
 
