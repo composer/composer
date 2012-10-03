@@ -449,6 +449,7 @@ class Installer
             $this->io->write('Nothing to install or update');
         }
 
+        $executes = array();
         foreach ($operations as $operation) {
             // collect suggestions
             if ('install' === $operation->getJobType()) {
@@ -488,6 +489,30 @@ class Installer
                 $this->io->write('  - ' . $operation);
             }
 
+
+            // for install/update check whether downloader is available
+            if (in_array($operation->getJobType(), array('install', 'update'))) {
+                // assure installation source set
+                $package = 'install' === $operation->getJobType()
+                    ? $operation->getPackage() : $operation->getTargetPackage();
+                $this->downloadManager->setInstallationSourceForPackage($package);
+                $source = $package->getInstallationSource();
+                $downloadType = 'dist' === $source ? $package->getDistType() : $package->getSourceType();
+
+                // check whether downloader can be used
+                $downloader = $this->downloadManager->getDownloader($downloadType);
+                if (!$downloader || !$downloader->isAvailable($package, $downloaderError)) {
+                    throw new \RuntimeException(sprintf("Cannot %s package %s: %s",
+                        $operation->getJobType(), $package->getPrettyName(), $downloaderError));
+                }
+            }
+
+            // add to execute list
+            $executes[] = array($localRepo, $operation);
+        }
+
+        foreach ($executes as $execute) {
+            list($localRepo, $operation) = $execute;
             $this->installationManager->execute($localRepo, $operation);
 
             $event = 'Composer\Script\ScriptEvents::POST_PACKAGE_'.strtoupper($operation->getJobType());

@@ -92,4 +92,21 @@ class SvnDownloader extends VcsDownloader
 
         return $output;
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function isAvailable(PackageInterface $package, &$error = null)
+    {
+        if (defined('PHP_WINDOWS_VERSION_BUILD')) { // no check, yet
+            return true;
+        }
+
+        $command = 'test -x `which svn` && echo "OK"';
+        if (0 !== $this->process->execute($command, $output)) {
+            $error = 'Did not find executable "svn" in $PATH';
+            return false;
+        }
+        return 'OK' === trim($output);
+    }
 }
