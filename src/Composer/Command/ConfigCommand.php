@@ -45,8 +45,40 @@ class ConfigCommand extends Command
                 new InputArgument('setting-key', null, 'Setting key'),
                 new InputArgument('setting-value', InputArgument::IS_ARRAY, 'Setting value'),
             ))
-            // @todo Document
             ->setHelp(<<<EOT
+This command allows you to edit some basic composer settings in either the
+local composer.json file or the global config.json file.
+
+<info>USAGE:</info>
+
+To edit the global config.json file:
+
+    <comment>php composer.phar --global</comment>
+
+To add a repository:
+
+    <comment>php composer.phar repositories.foo vcs http://bar.com</comment>
+
+You can add a repository to the global config.json file by passing in the
+<info>--global</comment> option.
+
+If you want to launch your editor with the composer.json file you must have
+\$EDITOR set.
+
+    <comment>php composer.phar --edit</comment>
+
+To get a list of configuration values in the file, pass the <info>--list</info> option.
+
+    <comment>php composer.phar --list</comment>
+
+You can always pass more than one option. As an example, if you want to edit the
+global config.json file.
+
+    <comment>php composer.phar --edit --global</comment>
+
+<info>LIMITATIONS</info>
+
+The command only supports repositories and process-timeout right now.
 
 EOT
             )
