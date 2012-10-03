@@ -148,6 +148,13 @@ hash changed.
 This field is optional. You probably don't need it for your own custom
 repository.
 
+#### stream options
+
+The `packages.json` file is loaded using a PHP stream. You can set extra options
+on that stream using the `options` parameter. You can set any valid PHP stream
+context option. See [Context options and parameters](http://nl3.php.net/manual/en/context.php)
+for more information.
+
 ### VCS
 
 VCS stands for version control system. This includes versioning systems like
