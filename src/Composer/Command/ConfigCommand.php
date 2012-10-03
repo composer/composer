@@ -41,6 +41,7 @@ class ConfigCommand extends Command
                 new InputOption('global', 'g', InputOption::VALUE_NONE, 'Set this as a global config settings.'),
                 new InputOption('editor', 'e', InputOption::VALUE_NONE, 'Open editor'),
                 new InputOption('list', 'l', InputOption::VALUE_NONE, 'List configuration settings'),
+                new InputOption('file', 'f', InputOption::VALUE_REQUIRED, 'If you want to choose a different composer.json or config.json'),
                 new InputArgument('setting-key', null, 'Setting key'),
                 new InputArgument('setting-value', InputArgument::IS_ARRAY, 'Setting value'),
             ))
@@ -57,10 +58,17 @@ EOT
      */
     protected function initialize(InputInterface $input, OutputInterface $output)
     {
-        // Get the local composer.json or the global config.json
+        if ($input->getOption('global') && $input->getOption('file')) {
+            throw new \RuntimeException('Cannot use both, you must pick to edit either the global config or path to composer.json');
+        }
+
+        // Get the local composer.json, global config.json, or if the user
+        // passed in a file to use
         $this->configFile = $input->getOption('global')
             ? (Factory::createConfig()->get('home') . '/config.json')
-            : 'composer.json';
+            : (null !== $input->getOption('file')
+                ? $input->getOption('file')
+                : 'composer.json');
 
         $this->configFile = new JsonFile($this->configFile);
         if (!$this->configFile->exists()) {
