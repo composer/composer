@@ -40,7 +40,7 @@ class ConfigCommand extends Command
                 new InputOption('editor', 'e', InputOption::VALUE_NONE, 'Open editor'),
                 new InputOption('list', 'l', InputOption::VALUE_NONE, 'List configuration settings'),
                 new InputArgument('setting-key', null, 'Setting key'),
-                new InputArgument('setting-value', null, 'Setting value'),
+                new InputArgument('setting-value', InputArgument::IS_ARRAY, 'Setting value'),
             ))
             // @todo Document
             ->setHelp(<<<EOT
