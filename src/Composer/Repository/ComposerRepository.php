@@ -37,7 +37,7 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
 
     public function __construct(array $repoConfig, IOInterface $io, Config $config)
     {
-        if (!preg_match('{^\w+://}', $repoConfig['url'])) {
+        if (!preg_match('{^[\w.]+://}', $repoConfig['url'])) {
             // assume http as the default protocol
             $repoConfig['url'] = 'http://'.$repoConfig['url'];
         }
