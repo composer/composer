@@ -243,7 +243,7 @@ class RemoteFilesystem
             $options['http']['header'] .= "Authorization: Basic $authStr\r\n";
         }
 
-        $options = array_merge_recursive($options, $this->options);
+        $options = array_replace_recursive($options, $this->options);
 
         return $options;
     }
