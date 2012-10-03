@@ -399,10 +399,7 @@ class Installer
                             || ($lockedPackage->getDistReference() && $lockedPackage->getDistReference() !== $package->getDistReference())
                         )
                     ) {
-                        $newPackage = clone $package;
-                        $newPackage->setSourceReference($lockedPackage->getSourceReference());
-                        $newPackage->setDistReference($lockedPackage->getDistReference());
-                        $operations[] = new UpdateOperation($package, $newPackage);
+                        $operations[] = new UpdateOperation($package, $lockedPackage);
 
                         break;
                     }
