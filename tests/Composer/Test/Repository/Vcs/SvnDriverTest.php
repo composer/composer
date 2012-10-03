@@ -32,12 +32,15 @@ class SvnDriverTest extends \PHPUnit_Framework_TestCase
         $output .= " rejected Basic challenge (http://corp.svn.local/)";
 
         $process = $this->getMock('Composer\Util\ProcessExecutor');
-        $process->expects($this->once())
+        $process->expects($this->at(1))
             ->method('execute')
             ->will($this->returnValue(1));
         $process->expects($this->once())
             ->method('getErrorOutput')
             ->will($this->returnValue($output));
+        $process->expects($this->at(2))
+            ->method('execute')
+            ->will($this->returnValue(0));
 
         $config = new Config();
         $config->merge(array(
