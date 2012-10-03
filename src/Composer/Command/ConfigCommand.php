@@ -16,9 +16,11 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use JsonSchema\Validator;
 use Composer\Config;
 use Composer\Factory;
 use Composer\Json\JsonFile;
+use Composer\Json\JsonValidationException;
 
 class ConfigCommand extends Command
 {
@@ -167,6 +169,41 @@ EOT
             }
         }
         return $tmp;
+    }
+
+    /**
+     * After the command sets a new config value, this will parse it writes
+     * it to disk to make sure that it is valid according the the composer.json
+     * schema.
+     *
+     * @param array $data
+     * @throws JsonValidationException
+     * @return boolean
+     */
+    protected function validateSchema(array $data)
+    {
+        // @todo Figure out what should be excluded from the validation check
+        // @todo validation should vary based on if it's global or local
+        $schemaFile = __DIR__ . '/../../../res/composer-schema.json';
+        $schemaData = json_decode(file_get_contents($schemaFile));
+        //die(var_dump($schemaData));
+        unset(
+            $schemaData->properties->name,
+            $schemaData->properties->description
+        );
+
+        $validator = new Validator();
+        $validator->check(json_decode(json_encode($data)), $schemaData);
+
+        if (!$validator->isValid()) {
+            $errors = array();
+            foreach ((array) $validator->getErrors() as $error) {
+                $errors[] = ($error['property'] ? $error['property'].' : ' : '').$error['message'];
+            }
+            throw new JsonValidationException('"'.$this->configFile->getPath().'" does not match the expected JSON schema'."\n". implode("\n",$errors));
+        }
+
+        return true;
     }
 }
 
