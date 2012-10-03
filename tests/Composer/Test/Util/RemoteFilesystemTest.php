@@ -25,7 +25,7 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(false))
         ;
 
-        $res = $this->callGetOptionsForUrl($io, array('http://example.org'));
+        $res = $this->callGetOptionsForUrl($io, array(), array('http://example.org'));
         $this->assertTrue(isset($res['http']['header']) && false !== strpos($res['http']['header'], 'User-Agent'), 'getOptions must return an array with a header containing a User-Agent');
     }
 
@@ -43,8 +43,25 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(array('username' => 'login', 'password' => 'password')))
         ;
 
-        $options = $this->callGetOptionsForUrl($io, array('http://example.org'));
+        $options = $this->callGetOptionsForUrl($io, array(), array('http://example.org'));
         $this->assertContains('Authorization: Basic', $options['http']['header']);
+    }
+
+    public function testGetOptionsForUrlWithStreamOptions()
+    {
+        $io = $this->getMock('Composer\IO\IOInterface');
+        $io
+            ->expects($this->once())
+            ->method('hasAuthorization')
+            ->will($this->returnValue(true))
+        ;
+
+        $streamOptions = array('ssl' => array(
+            'allow_self_signed' => true,
+        ));
+
+        $res = $this->callGetOptionsForUrl($io, $streamOptions, array('https://example.org'));
+        $this->assertTrue(isset($res['ssl']) && isset($res['ssl']['allow_self_signed']) && true === $res['ssl']['allow_self_signed'], 'getOptions must return an array with a allow_self_signed set to true');
     }
 
     public function testCallbackGetFileSize()
@@ -102,9 +119,9 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
         unlink($file);
     }
 
-    protected function callGetOptionsForUrl($io, array $args = array())
+    protected function callGetOptionsForUrl($io, array $options = array(), array $args = array())
     {
-        $fs = new RemoteFilesystem($io);
+        $fs = new RemoteFilesystem($io, $options);
         $ref = new \ReflectionMethod($fs, 'getOptionsForUrl');
         $ref->setAccessible(true);
 
