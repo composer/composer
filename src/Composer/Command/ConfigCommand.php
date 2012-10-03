@@ -97,9 +97,51 @@ EOT
             if (null === $input->getArgument('setting-value')) {
                 throw new \RuntimeException('You must include a setting value.');
             }
-            $setting = $this->parseSetting($input->getArgument('setting-key'), $input->getArgument('setting-value'));
-            $configSettings = $this->configFile->read();
-            $settings = array_merge($configSettings, $setting);
+            /**
+             * The user needs the ability to add a repository with one command.
+             * For example "config -g repository.foo 'vcs http://example.com'
+             */
+            $configSettings = $this->configFile->read(); // what is current in the config
+            $settings       = array(); // This will what will be merged into the above
+            $values         = $input->getArgument('setting-value'); // what the user is trying to add/change
+
+            // Checking for each known config value is going to make this method very large
+            // what is a better way to do this?
+
+            // repositories.foo
+            if (preg_match('/^repositories\.(.+)/', $input->getArgument('setting-key'), $matches)) {
+                if (2 !== count($values)) {
+                    throw new \RuntimeException('You must pass the type and a url. Example: php composer.phar config repositories.foo vcs http://bar.com');
+                }
+                $setting = $this->parseSetting($input->getArgument('setting-key'), array(
+                    'type' => $values[0],
+                    'url'  => $values[1],
+                ));
+                
+                // Could there be a better way to do this?
+                $settings = array_merge_recursive($configSettings, $setting);
+                $this->validateSchema($settings);
+            } 
+            // process-timeout
+            elseif (preg_match('/^process-timeout/', $input->getArgument('setting-key'))) {
+                if (1 !== count($values)) {
+                    throw new \RuntimeException('You can only pass one value. Example: php composer.phar config process-timeout 300');
+                }
+
+                if (!is_numeric($values[0])) {
+                    throw new \RuntimeException(sprintf('"%s" is not a number.', $values[0]));
+                }
+
+                $setting  = $this->parseSetting('config.'.$input->getArgument('setting-key'), (integer) $values[0]);
+                $settings = array_merge($configSettings, $setting);
+                $this->validateSchema($settings);
+            }
+
+            // Make sure we have something to write to disk
+            if (!count($settings)) {
+                $output->writeln('Trying to update a setting that is supported with this command.');
+                return 0;
+            }
 
             // Make confirmation
             if ($input->isInteractive()) {
