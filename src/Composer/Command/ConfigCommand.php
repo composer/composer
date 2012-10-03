@@ -60,10 +60,9 @@ To add a repository:
     <comment>php composer.phar repositories.foo vcs http://bar.com</comment>
 
 You can add a repository to the global config.json file by passing in the
-<info>--global</comment> option.
+<info>--global</info> option.
 
-If you want to launch your editor with the composer.json file you must have
-\$EDITOR set.
+If you want to launch your editor with the composer.json file you must have "EDITOR" set.
 
     <comment>php composer.phar --edit</comment>
 
