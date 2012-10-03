@@ -30,15 +30,17 @@ class RemoteFilesystem
     private $result;
     private $progress;
     private $lastProgress;
+    private $options;
 
     /**
      * Constructor.
      *
      * @param IOInterface $io The IO instance
      */
-    public function __construct(IOInterface $io)
+    public function __construct(IOInterface $io, $options = array())
     {
         $this->io = $io;
+        $this->options = $options;
     }
 
     /**
@@ -240,6 +242,8 @@ class RemoteFilesystem
             $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
             $options['http']['header'] .= "Authorization: Basic $authStr\r\n";
         }
+
+        $options = array_merge_recursive($options, $this->options);
 
         return $options;
     }

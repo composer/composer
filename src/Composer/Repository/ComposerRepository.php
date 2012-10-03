@@ -27,6 +27,7 @@ use Composer\Util\RemoteFilesystem;
 class ComposerRepository extends ArrayRepository implements NotifiableRepositoryInterface, StreamableRepositoryInterface
 {
     protected $config;
+    protected $options;
     protected $url;
     protected $io;
     protected $cache;
@@ -46,7 +47,12 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
             throw new \UnexpectedValueException('Invalid url given for Composer repository: '.$repoConfig['url']);
         }
 
+        if (!isset($repoConfig['options'])) {
+            $repoConfig['options'] = array();
+        }
+
         $this->config = $config;
+        $this->options = $repoConfig['options'];
         $this->url = $repoConfig['url'];
         $this->io = $io;
         $this->cache = new Cache($io, $config->get('home').'/cache/'.preg_replace('{[^a-z0-9.]}i', '-', $this->url));
@@ -199,7 +205,7 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
                 $jsonUrl = $this->url . '/packages.json';
             }
 
-            $json = new JsonFile($jsonUrl, new RemoteFilesystem($this->io));
+            $json = new JsonFile($jsonUrl, new RemoteFilesystem($this->io, $this->options));
             $data = $json->read();
 
             if (!empty($data['notify'])) {
