@@ -25,6 +25,19 @@ class Filesystem
         $this->processExecutor = $executor ?: new ProcessExecutor();
     }
 
+    public function remove($file)
+    {
+        if (is_dir($file)) {
+            return $this->removeDirectory($file);
+        }
+
+        if (file_exists($file)) {
+            return unlink($file);
+        }
+
+        return false;
+    }
+
     public function removeDirectory($directory)
     {
         if (!is_dir($directory)) {
@@ -63,21 +76,28 @@ class Filesystem
 
     public function rename($source, $target)
     {
-        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
-            rename($source, $target);
-
+        if (true === @rename($source, $target)) {
             return;
         }
 
-        // We do not use PHP's "rename" function here since it does not support
-        // the case where $source, and $target are located on different partitions.
-        if (0 !== $this->processExecutor->execute('mv '.escapeshellarg($source).' '.escapeshellarg($target))) {
-            if (true === @rename($source, $target)) {
+        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+            // Try to copy & delete - this is a workaround for random "Access denied" errors.
+            $command = sprintf('xcopy %s %s /E /I /Q', escapeshellarg($source), escapeshellarg($target));
+            if (0 === $this->processExecutor->execute($command)) {
+                $this->remove($source);
+
                 return;
             }
-
-            throw new \RuntimeException(sprintf('Could not rename "%s" to "%s".', $source, $target));
+        } else {
+            // We do not use PHP's "rename" function here since it does not support
+            // the case where $source, and $target are located on different partitions.
+            $command = sprintf('mv %s %s', escapeshellarg($source), escapeshellarg($target));
+            if (0 === $this->processExecutor->execute($command)) {
+                return;
+            }
         }
+
+        throw new \RuntimeException(sprintf('Could not rename "%s" to "%s".', $source, $target));
     }
 
     /**
