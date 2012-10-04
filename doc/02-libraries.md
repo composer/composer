@@ -117,7 +117,7 @@ Test it by inspecting the zip file generated manually:
 
     git archive branchName --format zip -o file.zip
 
-> **Note:** files would be still tracked by git just not included in the
+> **Note:** Files would be still tracked by git just not included in the
 > distribution. This will only work for GitHub packages installed from
 > dist (i.e. tagged releases) for now.
 
