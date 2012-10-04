@@ -22,13 +22,13 @@ class Config
         'vendor-dir' => 'vendor',
         'bin-dir' => '{$vendor-dir}/bin',
         'notify-on-install' => true,
-        'github-protocols' => array('git', 'https', 'http'),
+        'github-protocols' => array('https', 'git'),
     );
 
     public static $defaultRepositories = array(
         'packagist' => array(
             'type' => 'composer',
-            'url' => 'http://packagist.org',
+            'url' => 'https://packagist.org',
         )
     );
 

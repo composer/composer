@@ -39,7 +39,7 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
     {
         if (!preg_match('{^\w+://}', $repoConfig['url'])) {
             // assume http as the default protocol
-            $repoConfig['url'] = 'http://'.$repoConfig['url'];
+            $repoConfig['url'] = 'https://'.$repoConfig['url'];
         }
         $repoConfig['url'] = rtrim($repoConfig['url'], '/');
         if (function_exists('filter_var') && version_compare(PHP_VERSION, '5.3.3', '>=') && !filter_var($repoConfig['url'], FILTER_VALIDATE_URL)) {
