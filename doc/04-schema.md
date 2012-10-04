@@ -504,8 +504,10 @@ ignored.
 The following repository types are supported:
 
 * **composer:** A composer repository is simply a `packages.json` file served
-  via HTTP, that contains a list of `composer.json` objects with additional
-  `dist` and/or `source` information.
+  via the network (HTTP, FTP, SSH), that contains a list of `composer.json`
+  objects with additional `dist` and/or `source` information. The `packages.json`
+  file is loaded using a PHP stream. You can set extra options on that stream
+  using the `options` parameter.
 * **vcs:** The version control system repository can fetch packages from git,
   svn and hg repositories.
 * **pear:** With this you can import any pear repository into your composer
@@ -523,6 +525,15 @@ Example:
             {
                 "type": "composer",
                 "url": "http://packages.example.com"
+            },
+            {
+                "type": "composer",
+                "url": "https://packages.example.com",
+                "options": {
+                    "ssl": {
+                        "verify_peer": "true"
+                    }
+                }
             },
             {
                 "type": "vcs",

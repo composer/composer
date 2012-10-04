@@ -47,6 +47,23 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
         $this->assertContains('Authorization: Basic', $options['http']['header']);
     }
 
+    public function testGetOptionsForUrlWithStreamOptions()
+    {
+        $io = $this->getMock('Composer\IO\IOInterface');
+        $io
+            ->expects($this->once())
+            ->method('hasAuthorization')
+            ->will($this->returnValue(true))
+        ;
+
+        $streamOptions = array('ssl' => array(
+            'allow_self_signed' => true,
+        ));
+
+        $res = $this->callGetOptionsForUrl($io, array('https://example.org'), $streamOptions);
+        $this->assertTrue(isset($res['ssl']) && isset($res['ssl']['allow_self_signed']) && true === $res['ssl']['allow_self_signed'], 'getOptions must return an array with a allow_self_signed set to true');
+    }
+
     public function testCallbackGetFileSize()
     {
         $fs = new RemoteFilesystem($this->getMock('Composer\IO\IOInterface'));
@@ -102,9 +119,9 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
         unlink($file);
     }
 
-    protected function callGetOptionsForUrl($io, array $args = array())
+    protected function callGetOptionsForUrl($io, array $args = array(), array $options = array())
     {
-        $fs = new RemoteFilesystem($io);
+        $fs = new RemoteFilesystem($io, $options);
         $ref = new \ReflectionMethod($fs, 'getOptionsForUrl');
         $ref->setAccessible(true);
 
