@@ -84,8 +84,8 @@ class Filesystem
     }
 
     /**
-     * @param $dir
-     * @param null $excluding
+     * @param string $dir
+     * @param array $excluding
      * @return bool
      * @throws \RuntimeException
      */
@@ -102,11 +102,7 @@ class Filesystem
 
         $dirContent = array_diff(scandir($dir), $excludeList);
 
-        if (count($dirContent) >= 1) {
-            return false;
-        }
-
-        return true;
+        return empty($dirContent);
     }
 
     public function rename($source, $target)
