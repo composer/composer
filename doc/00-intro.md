@@ -1,37 +1,30 @@
-# Introduction
+# 说明
 
-Composer is a tool for dependency management in PHP. It allows you to declare
-the dependent libraries your project needs and it will install them in your
-project for you.
+Composer 是一个PHP的依赖处理工具。它允许你申明项目所依赖的代码库，然后为你安装他们。
 
-## Dependency management
+## 依赖处理
 
-Composer is not a package manager. Yes, it deals with "packages" or libraries, but
-it manages them on a per-project basis, installing them in a directory (e.g. `vendor`)
-inside your project. By default it will never install anything globally. Thus,
-it is a dependency manager.
+Composer 不是包管理程序.虽然它处理包或者库，但是它急于项目之上处理它们，将它们安装在你项目的路径（比如 'vendor'）下。
+默认的，它不会全局地安装。因此它是一个依赖处理程序。
 
-This idea is not new and Composer is strongly inspired by node's [npm](http://npmjs.org/)
-and ruby's [bundler](http://gembundler.com/). But there has not been such a tool
-for PHP.
+这种想法不是新奇的，Composer 受到 node's [npm](http://npmjs.org/) 和 ruby's [bundler](http://gembundler.com/) 的鼓舞。
+但是PHP却没有类似的工具。
 
-The problem that Composer solves is this:
+Composer 处理如下问题：
 
-a) You have a project that depends on a number of libraries.
+a) 你的项目基于多个代码库
 
-b) Some of those libraries depend on other libraries .
+b) 这些代码库又依赖于其他库文件
 
-c) You declare the things you depend on
+c) 你只须说明你依赖什么
 
-d) Composer finds out which versions of which packages need to be installed, and
-   installs them (meaning it downloads them into your project).
+d) Composer 会找出某个库的某个版本需要被安装，并且安装它们（或者说，将它们下载到你的项目中）
 
-## Declaring dependencies
+## 声明依赖关系
 
-Let's say you are creating a project, and you need a library that does logging.
-You decide to use [monolog](https://github.com/Seldaek/monolog). In order to
-add it to your project, all you need to do is create a `composer.json` file
-which describes the project's dependencies.
+让我们假设你正在创建一个项目，并且你需要一个库帮你处理打印log信息，然后你决定
+使用[monolog](https://github.com/Seldaek/monolog)。为了将它加入到你的项目中去，
+你要做的仅仅是创建一个`composer.json`文件，里面对说明了项目的依赖性。
 
     {
         "require": {
@@ -39,61 +32,53 @@ which describes the project's dependencies.
         }
     }
 
-We are simply stating that our project requires some `monolog/monolog` package,
-any version beginning with `1.0`.
+我们简单的称述了我们项目需要 版本大于 1.0 的`monolog/monolog` 包 ，
 
-## Installation
+## 安装
 
-### Downloading the Composer Executable
+### 下载Composer
 
-#### Locally
+#### 局部性安装
 
-To actually get Composer, we need to do two things. The first one is installing
-Composer (again, this mean downloading it into your project):
+为了获得Composer的帮助，我们需要完成两件事情。第一件是安装Composer (再次说一下，要做的仅仅是将它下载进你的项目中)
 
     $ curl -s https://getcomposer.org/installer | php
 
-This will just check a few PHP settings and then download `composer.phar` to
-your working directory. This file is the Composer binary. It is a PHAR (PHP
-archive), which is an archive format for PHP which can be run on the command
-line, amongst other things.
+这操作仅仅确认一些PHP的设置，然后下载 `composer.phar` 到你的工作目录。这个就是Composer库。
+这是个PHAR格式文件（PHP 文件），它可以帮助用户在命令行下完成一些操作。
 
-You can install Composer to a specific directory by using the `--install-dir`
-option and providing a target directory (it can be an absolute or relative path):
+你可以使用 `--install-dir` 选项附上目标路径（绝对路径或者相当路径均可）选择Composer的安装路径：
 
     $ curl -s https://getcomposer.org/installer | php -- --install-dir=bin
 
-#### Globally
+#### 全局性安装
 
-You can place this file anywhere you wish. If you put it in your `PATH`,
-you can access it globally. On unixy systems you can even make it
-executable and invoke it without `php`.
+你可以将上述文件置于你想要的任何位置。不过如果你选择将它放在系统 `PATH` 路径下，
+你就可以全局的调用它。在类Unix系统中，你甚至可以在使用时不加 `php` 前缀.
 
-You can run these commands to easily access `composer` from anywhere on your system:
+运行一下命令，你将轻松的使得 `composer` 可以全局调用：
 
     $ curl -s https://getcomposer.org/installer | php
     $ sudo mv composer.phar /usr/local/bin/composer
 
-Then, just run `composer` in order to run composer
+接下来，只须输入 `composer` 就可以运行 composer了
 
-### Using Composer
+### 使用 Composer
 
-Next, run the `install` command to resolve and download dependencies:
+然后，运行 `install` 命令解决库的依赖关系：
 
     $ php composer.phar install
 
-This will download monolog into the `vendor/monolog/monolog` directory.
+这将会下载 monolog 到 `vendor/monolog/monolog` 路径下。
 
-## Autoloading
+## 自动加载
 
-Besides downloading the library, Composer also prepares an autoload file that's
-capable of autoloading all of the classes in any of the libraries that it
-downloads. To use it, just add the following line to your code's bootstrap
-process:
+除了将库文件下载下来之外，Composer还为你准备了一个自动加载文件帮你加载代码库中的类。
+使用它只须在你的引导文件中加入如下代码：
 
     require 'vendor/autoload.php';
 
-Woh! Now start using monolog! To keep learning more about Composer, keep
-reading the "Basic Usage" chapter.
+哇唔! 现在就可以使用 monolog 了! 
+请继续学习Composer的更多内容，请继续阅读 "Basic Usage" 章节。
 
 [Basic Usage](01-basic-usage.md) &rarr;
