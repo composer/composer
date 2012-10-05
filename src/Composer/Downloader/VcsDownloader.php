@@ -55,7 +55,11 @@ abstract class VcsDownloader implements DownloaderInterface
         }
 
         $this->io->write("  - Installing <info>" . $package->getName() . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
-        $this->filesystem->removeDirectory($path);
+
+        if (!$this->filesystem->directoryIsEmpty($path, array('composer.json'))) {
+            $this->filesystem->removeDirectory($path);
+        }
+
         $this->doDownload($package, $path);
         $this->io->write('');
     }

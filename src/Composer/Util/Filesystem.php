@@ -83,20 +83,26 @@ class Filesystem
         return true;
     }
 
-    public function directoryIsEmpty($dir, $excluding= null)
+    /**
+     * @param $dir
+     * @param null $excluding
+     * @return bool
+     * @throws \RuntimeException
+     */
+    public function directoryIsEmpty($dir, $excluding = array())
     {
         if (!$this->directoryExists($dir)) {
             throw new \RuntimeException("Directory \"$dir\" does not exist");
         }
 
         $excludeList = array('.', '..');
-        if (null !== $excluding) {
-
+        if (!empty($excluding)) {
+           $excludeList = array_merge($excludeList, $excluding);
         }
 
         $dirContent = array_diff(scandir($dir), $excludeList);
 
-        if(count($dirContent) >= 1) {
+        if (count($dirContent) >= 1) {
             return false;
         }
 
