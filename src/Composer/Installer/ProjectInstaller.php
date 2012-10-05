@@ -62,14 +62,10 @@ class ProjectInstaller implements InstallerInterface
         $fs = new FileSystem();
 
         if ($fs->directoryExists($installPath)) {
-            if (!$fs->directoryIsEmpty($installPath)) {
+            if (!$fs->directoryIsEmpty($installPath, array('composer.json'))) {
                 throw new \InvalidArgumentException("Project directory \"$installPath\" must be empty.");
             }
         } else {
-//            if (!file_exists(dirname($installPath))) {
-//                throw new \InvalidArgumentException("Project root \"" . dirname($installPath) . "\" does not exist.");
-//            }
-
             mkdir($installPath, 0777, true);
         }
 
