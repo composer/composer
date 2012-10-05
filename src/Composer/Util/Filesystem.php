@@ -74,6 +74,41 @@ class Filesystem
         }
     }
 
+    public function directoryExists($dir)
+    {
+        if (!is_dir($dir)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @param $dir
+     * @param null $excluding
+     * @return bool
+     * @throws \RuntimeException
+     */
+    public function directoryIsEmpty($dir, $excluding = array())
+    {
+        if (!$this->directoryExists($dir)) {
+            throw new \RuntimeException("Directory \"$dir\" does not exist");
+        }
+
+        $excludeList = array('.', '..');
+        if (!empty($excluding)) {
+           $excludeList = array_merge($excludeList, $excluding);
+        }
+
+        $dirContent = array_diff(scandir($dir), $excludeList);
+
+        if (count($dirContent) >= 1) {
+            return false;
+        }
+
+        return true;
+    }
+
     public function rename($source, $target)
     {
         if (true === @rename($source, $target)) {

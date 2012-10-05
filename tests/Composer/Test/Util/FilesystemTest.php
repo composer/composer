@@ -86,11 +86,44 @@ class FilesystemTest extends TestCase
             array('/tmp/test', '/tmp', "./"),
             array('C:/Temp/test/sub', 'C:\Temp', "../"),
             array('/tmp/test/sub', '/tmp', "../"),
-            array('/tmp/test/sub', '/tmp', "../../", true),
-            array('c:/tmp/test/sub', 'c:/tmp', "../../", true),
+            array('/tmp/test/sub', '/tmp', "../../", TRUE),
+            array('c:/tmp/test/sub', 'c:/tmp', "../../", TRUE),
             array('/tmp', '/tmp/test', "test"),
             array('C:/Temp', 'C:\Temp\test', "test"),
             array('C:/Temp', 'c:\Temp\test', "test"),
         );
+    }
+
+    public function testDirectoryExists()
+    {
+        $fs = new Filesystem();
+        $directory1 = '/does/not/exist';
+        $directory2 = __DIR__;
+
+        $this->assertFalse($fs->directoryExists($directory1));
+        $this->assertTrue($fs->directoryExists($directory2));
+    }
+
+    /**
+     * @expectedException \RuntimeException
+     */
+    public function testDirectoryIsEmptyRuntimeException()
+    {
+        $fs = new Filesystem();
+        $dir = '/does/not/exist';
+
+        $fs->directoryIsEmpty($dir);
+    }
+
+    public function testDirectoryIsEmpty()
+    {
+        $fs = new Filesystem();
+        $dir = __DIR__;
+        $project = __DIR__.'/../Fixtures/projectTestDirectory';
+
+        $this->assertFalse($fs->directoryIsEmpty($dir));
+        $this->assertTrue($fs->directoryIsEmpty($project, array('composer.json')));
+        $this->assertFalse($fs->directoryIsEmpty($project));
+
     }
 }

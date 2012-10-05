@@ -15,6 +15,7 @@ namespace Composer\Installer;
 use Composer\Package\PackageInterface;
 use Composer\Downloader\DownloadManager;
 use Composer\Repository\InstalledRepositoryInterface;
+use Composer\Util\Filesystem;
 
 /**
  * Project Installer is used to install a single package into a directory as
@@ -58,13 +59,16 @@ class ProjectInstaller implements InstallerInterface
     public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
         $installPath = $this->installPath;
-        if (file_exists($installPath)) {
-            throw new \InvalidArgumentException("Project directory $installPath already exists.");
+        $fs = new FileSystem();
+
+        if ($fs->directoryExists($installPath)) {
+            if (!$fs->directoryIsEmpty($installPath, array('composer.json'))) {
+                throw new \InvalidArgumentException("Project directory \"$installPath\" must be empty.");
+            }
+        } else {
+            mkdir($installPath, 0777, true);
         }
-        if (!file_exists(dirname($installPath))) {
-            throw new \InvalidArgumentException("Project root " . dirname($installPath) . " does not exist.");
-        }
-        mkdir($installPath, 0777);
+
         $this->downloadManager->download($package, $installPath);
     }
 
