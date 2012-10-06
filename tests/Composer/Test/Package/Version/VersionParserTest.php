@@ -195,7 +195,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'not equal'         => array('<>1.0.0',     new VersionConstraint('<>', '1.0.0.0')),
             'not equal/2'       => array('!=1.0.0',     new VersionConstraint('!=', '1.0.0.0')),
             'greater than'      => array('>1.0.0',      new VersionConstraint('>', '1.0.0.0')),
-            'lesser than'       => array('<1.2.3.4',    new VersionConstraint('<', '1.2.3.4')),
+            'lesser than'       => array('<1.2.3.4',    new VersionConstraint('<', '1.2.3.4-dev')),
             'less/eq than'      => array('<=1.2.3',     new VersionConstraint('<=', '1.2.3.0')),
             'great/eq than'     => array('>=1.2.3',     new VersionConstraint('>=', '1.2.3.0')),
             'equals'            => array('=1.2.3',      new VersionConstraint('=', '1.2.3.0')),
@@ -209,6 +209,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'regression #550'   => array('dev-some-fix',    new VersionConstraint('=', 'dev-some-fix')),
             'regression #935'   => array('dev-CAPS',        new VersionConstraint('=', 'dev-CAPS')),
             'ignores aliases'   => array('dev-master as 1.0.0', new VersionConstraint('=', '9999999-dev')),
+            'lesser than override'       => array('<1.2.3.4-stable',    new VersionConstraint('<', '1.2.3.4')),
         );
     }
 
