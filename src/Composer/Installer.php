@@ -748,6 +748,7 @@ class Installer
     public function setUpdateWhitelist(array $packages)
     {
         if (count($packages) === 0) {
+            $this->updateWhitelist = array();
             return $this;
         }
 
