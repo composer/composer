@@ -35,10 +35,12 @@ class EventDispatcherTest extends TestCase
         $dispatcher->dispatchCommandEvent("post-install-cmd");
     }
 
-    public function testDispatcherCanExecuteCommandLineScripts()
+    /**
+     * @dataProvider getValidCommands
+     * @param string $command
+     */
+    public function testDispatcherCanExecuteSingleCommandLineScript($command)
     {
-        $eventCliCommand = 'phpunit';
-
         $process = $this->getMock('Composer\Util\ProcessExecutor');
         $dispatcher = $this->getMockBuilder('Composer\Script\EventDispatcher')
             ->setConstructorArgs(array(
@@ -49,14 +51,14 @@ class EventDispatcherTest extends TestCase
             ->setMethods(array('getListeners'))
             ->getMock();
 
-        $listeners = array($eventCliCommand);
+        $listener = array($command);
         $dispatcher->expects($this->atLeastOnce())
             ->method('getListeners')
-            ->will($this->returnValue($listeners));
+            ->will($this->returnValue($listener));
 
         $process->expects($this->once())
             ->method('execute')
-            ->with($eventCliCommand);
+            ->with($command);
 
         $dispatcher->dispatchCommandEvent("post-install-cmd");
     }
@@ -76,6 +78,15 @@ class EventDispatcherTest extends TestCase
             ->will($this->returnValue($listeners));
 
         return $dispatcher;
+    }
+
+    public function getValidCommands()
+    {
+        return array(
+            array('phpunit'),
+            array('echo foo'),
+            array('echo -n foo'),
+        );
     }
 
     public static function call()
