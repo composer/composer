@@ -99,13 +99,15 @@ EOT
             : $input->getOption('file');
 
         $this->configFile = new JsonFile($this->configFile);
-        if (!$this->configFile->exists()) {
+
+        // initialize the global file if it's not there
+        if ($input->getOption('global') && !$this->configFile->exists()) {
             touch($this->configFile->getPath());
-            // If you read an empty file, Composer throws an error
-            // Toss some of the defaults in there
-            $defaults = Config::$defaultConfig;
-            $defaults['repositories'] = Config::$defaultRepositories;
-            $this->configFile->write($defaults);
+            $this->configFile->write(array('config' => new \ArrayObject));
+        }
+
+        if (!$this->configFile->exists()) {
+            throw new \RuntimeException('No composer.json found in the current directory');
         }
     }
 
