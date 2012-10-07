@@ -22,6 +22,9 @@ use Composer\Factory;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonValidationException;
 
+/**
+ * @author Joshua Estes <Joshua.Estes@iostudio.com>
+ */
 class ConfigCommand extends Command
 {
     /**
@@ -38,18 +41,16 @@ class ConfigCommand extends Command
             ->setName('config')
             ->setDescription('Set config options')
             ->setDefinition(array(
-                new InputOption('global', 'g', InputOption::VALUE_NONE, 'Set this as a global config settings.'),
+                new InputOption('global', 'g', InputOption::VALUE_NONE, 'Apply command to the global config file'),
                 new InputOption('editor', 'e', InputOption::VALUE_NONE, 'Open editor'),
                 new InputOption('list', 'l', InputOption::VALUE_NONE, 'List configuration settings'),
-                new InputOption('file', 'f', InputOption::VALUE_REQUIRED, 'If you want to choose a different composer.json or config.json'),
+                new InputOption('file', 'f', InputOption::VALUE_REQUIRED, 'If you want to choose a different composer.json or config.json', 'composer.json'),
                 new InputArgument('setting-key', null, 'Setting key'),
                 new InputArgument('setting-value', InputArgument::IS_ARRAY, 'Setting value'),
             ))
             ->setHelp(<<<EOT
 This command allows you to edit some basic composer settings in either the
 local composer.json file or the global config.json file.
-
-<info>USAGE:</info>
 
 To edit the global config.json file:
 
@@ -62,11 +63,13 @@ To add a repository:
 You can add a repository to the global config.json file by passing in the
 <info>--global</info> option.
 
-If you want to launch your editor with the composer.json file you must have "EDITOR" set.
+To edit the file in an external editor:
 
     <comment>php composer.phar --edit</comment>
 
-To get a list of configuration values in the file, pass the <info>--list</info> option.
+To choose your editor you can set the "EDITOR" env variable.
+
+To get a list of configuration values in the file:
 
     <comment>php composer.phar --list</comment>
 
@@ -74,11 +77,6 @@ You can always pass more than one option. As an example, if you want to edit the
 global config.json file.
 
     <comment>php composer.phar --edit --global</comment>
-
-<info>LIMITATIONS</info>
-
-The command only supports repositories and process-timeout right now.
-
 EOT
             )
         ;
@@ -89,17 +87,15 @@ EOT
      */
     protected function initialize(InputInterface $input, OutputInterface $output)
     {
-        if ($input->getOption('global') && $input->getOption('file')) {
-            throw new \RuntimeException('Cannot use both, you must pick to edit either the global config or path to composer.json');
+        if ($input->getOption('global') && 'composer.json' !== $input->getOption('file')) {
+            throw new \RuntimeException('--file and --global can not be combined');
         }
 
         // Get the local composer.json, global config.json, or if the user
         // passed in a file to use
         $this->configFile = $input->getOption('global')
             ? (Factory::createConfig()->get('home') . '/config.json')
-            : (null !== $input->getOption('file')
-                ? $input->getOption('file')
-                : 'composer.json');
+            : $input->getOption('file');
 
         $this->configFile = new JsonFile($this->configFile);
         if (!$this->configFile->exists()) {
@@ -128,6 +124,7 @@ EOT
         // List the configuration of the file settings
         if ($input->getOption('list')) {
             $this->displayFileContents($this->configFile->read(), $output);
+
             return 0;
         }
 
@@ -136,6 +133,7 @@ EOT
             if (null === $input->getArgument('setting-value')) {
                 throw new \RuntimeException('You must include a setting value.');
             }
+
             /**
              * The user needs the ability to add a repository with one command.
              * For example "config -g repository.foo 'vcs http://example.com'
@@ -156,11 +154,11 @@ EOT
                     'type' => $values[0],
                     'url'  => $values[1],
                 ));
-                
+
                 // Could there be a better way to do this?
                 $settings = array_merge_recursive($configSettings, $setting);
                 $this->validateSchema($settings);
-            } 
+            }
             // process-timeout
             elseif (preg_match('/^process-timeout/', $input->getArgument('setting-key'))) {
                 if (1 !== count($values)) {
@@ -191,16 +189,9 @@ EOT
                     return 1;
                 }
             }
-            
+
             $this->configFile->write($settings);
         }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function interact(InputInterface $input, OutputInterface $output)
-    {
     }
 
     /**
@@ -208,25 +199,27 @@ EOT
      *
      * @param array           $contents
      * @param OutputInterface $output
-     * @param integer         $depth
      * @param string|null     $k
      */
-    protected function displayFileContents(array $contents, OutputInterface $output, &$depth = 0, $k = null)
+    protected function displayFileContents(array $contents, OutputInterface $output, $k = null)
     {
         // @todo Look into a way to refactor this code, as it is right now, I
         //       don't like it, also the name of the function could be better
         foreach ($contents as $key => $value) {
             if (is_array($value)) {
-                $depth++;
                 $k .= $key . '.';
-                $this->displayFileContents($value, $output, $depth, $k);
+                $this->displayFileContents($value, $output, $k);
+
                 if (substr_count($k,'.') > 1) {
                     $k = str_split($k,strrpos($k,'.',-2));
                     $k = $k[0] . '.';
-                } else { $k = null; }
-                $depth--;
+                } else {
+                    $k = null;
+                }
+
                 continue;
             }
+
             $output->writeln('[<comment>' . $k . $key . '</comment>] <info>' . $value . '</info>');
         }
     }
@@ -243,12 +236,13 @@ EOT
     {
         $parts = array_reverse(explode('.', $key));
         $tmp = array();
-        for($i=0;$i<count($parts);$i++) {
+        for ($i = 0; $i < count($parts); $i++) {
             $tmp[$parts[$i]] = (0 === $i) ? $value : $tmp;
             if (0 < $i) {
                 unset($tmp[$parts[$i - 1]]);
             }
         }
+
         return $tmp;
     }
 
@@ -263,11 +257,11 @@ EOT
      */
     protected function validateSchema(array $data)
     {
-        // @todo Figure out what should be excluded from the validation check
-        // @todo validation should vary based on if it's global or local
+        // TODO Figure out what should be excluded from the validation check
+        // TODO validation should vary based on if it's global or local
         $schemaFile = __DIR__ . '/../../../res/composer-schema.json';
         $schemaData = json_decode(file_get_contents($schemaFile));
-        //die(var_dump($schemaData));
+
         unset(
             $schemaData->properties->name,
             $schemaData->properties->description
@@ -287,5 +281,3 @@ EOT
         return true;
     }
 }
-
-
