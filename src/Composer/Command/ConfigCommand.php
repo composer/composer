@@ -134,83 +134,140 @@ EOT
             return 0;
         }
 
-        // If the user enters in a config variable, parse it and save to file
-        if ($input->getArgument('setting-key')) {
-            if (array() !== $input->getArgument('setting-value') && $input->getOption('unset')) {
-                throw new \RuntimeException('You can not combine a setting value with --unset');
-            }
-            if (array() === $input->getArgument('setting-value') && !$input->getOption('unset')) {
-                throw new \RuntimeException('You must include a setting value or pass --unset to clear the value');
-            }
-
-            /**
-             * The user needs the ability to add a repository with one command.
-             * For example "config -g repository.foo 'vcs http://example.com'
-             */
-            $configSettings = $this->configFile->read(); // what is current in the config
-            $values         = $input->getArgument('setting-value'); // what the user is trying to add/change
-
-            // Checking for each known config value is going to make this method very large
-            // what is a better way to do this?
-
-            // repositories.foo
-            if (preg_match('/^repos?(?:itories)?\.(.+)/', $input->getArgument('setting-key'), $matches)) {
-                if ($input->getOption('unset')) {
-                    unset($configSettings['repositories'][$matches[1]]);
-                } else {
-                    $settingKey = 'repositories.'.$matches[1];
-                    if (2 !== count($values)) {
-                        throw new \RuntimeException('You must pass the type and a url. Example: php composer.phar config repositories.foo vcs http://bar.com');
-                    }
-                    $setting = $this->parseSetting($settingKey, array(
-                        'type' => $values[0],
-                        'url'  => $values[1],
-                    ));
-
-                    // Could there be a better way to do this?
-                    $configSettings = array_merge_recursive($configSettings, $setting);
-                    $this->validateSchema($configSettings);
-                }
-            }
-            // process-timeout
-            elseif (preg_match('/^process-timeout/', $input->getArgument('setting-key'))) {
-                if ($input->getOption('unset')) {
-                    unset($configSettings['config']['process-timeout']);
-                } else {
-                    if (1 !== count($values)) {
-                        throw new \RuntimeException('You can only pass one value. Example: php composer.phar config process-timeout 300');
-                    }
-
-                    if (!is_numeric($values[0])) {
-                        throw new \RuntimeException(sprintf('"%s" is not a number.', $values[0]));
-                    }
-
-                    $setting  = $this->parseSetting('config.'.$input->getArgument('setting-key'), (integer) $values[0]);
-                    $configSettings = array_merge($configSettings, $setting);
-                    $this->validateSchema($configSettings);
-                }
-            }
-
-            // clean up empty sections
-            if (empty($configSettings['repositories'])) {
-                unset($configSettings['repositories']);
-            }
-            if (empty($configSettings['config'])) {
-                unset($configSettings['config']);
-            }
-
-            // Make confirmation
-            if ($input->isInteractive()) {
-                $dialog = $this->getHelperSet()->get('dialog');
-                $output->writeln(JsonFile::encode($configSettings));
-                if (!$dialog->askConfirmation($output, $dialog->getQuestion('Do you confirm?', 'yes', '?'), true)) {
-                    $output->writeln('<error>Command Aborted by User</error>');
-                    return 1;
-                }
-            }
-
-            $this->configFile->write($configSettings);
+        if (!$input->getArgument('setting-key')) {
+            return 0;
         }
+
+        // If the user enters in a config variable, parse it and save to file
+        if (array() !== $input->getArgument('setting-value') && $input->getOption('unset')) {
+            throw new \RuntimeException('You can not combine a setting value with --unset');
+        }
+        if (array() === $input->getArgument('setting-value') && !$input->getOption('unset')) {
+            throw new \RuntimeException('You must include a setting value or pass --unset to clear the value');
+        }
+
+        /**
+         * The user needs the ability to add a repository with one command.
+         * For example "config -g repository.foo 'vcs http://example.com'
+         */
+        $configSettings = $this->configFile->read(); // what is current in the config
+        $values         = $input->getArgument('setting-value'); // what the user is trying to add/change
+
+        // handle repositories
+        if (preg_match('/^repos?(?:itories)?\.(.+)/', $input->getArgument('setting-key'), $matches)) {
+            if ($input->getOption('unset')) {
+                unset($configSettings['repositories'][$matches[1]]);
+            } else {
+                $settingKey = 'repositories.'.$matches[1];
+                if (2 !== count($values)) {
+                    throw new \RuntimeException('You must pass the type and a url. Example: php composer.phar config repositories.foo vcs http://bar.com');
+                }
+                $setting = $this->parseSetting($settingKey, array(
+                    'type' => $values[0],
+                    'url'  => $values[1],
+                ));
+
+                // Could there be a better way to do this?
+                $configSettings = array_merge_recursive($configSettings, $setting);
+                $this->validateSchema($configSettings);
+            }
+        } else {
+            // handle config values
+            $uniqueConfigValues = array(
+                'process-timeout' => array('is_numeric', 'intval'),
+                'vendor-dir' => array('is_string', function ($val) { return $val; }),
+                'bin-dir' => array('is_string', function ($val) { return $val; }),
+                'notify-on-install' => array(
+                    function ($val) { return true; },
+                    function ($val) { return $val !== 'false' && (bool) $val; }
+                ),
+            );
+            $multiConfigValues = array(
+                'github-protocols' => array(
+                    function ($vals) {
+                        if (!is_array($vals)) {
+                            return 'array expected';
+                        }
+
+                        foreach ($vals as $val) {
+                            if (!in_array($val, array('git', 'https', 'http'))) {
+                                return 'valid protocols include: git, https, http';
+                            }
+                        }
+
+                        return true;
+                    },
+                    function ($vals) {
+                        return $vals;
+                    }
+                ),
+            );
+
+            $settingKey = $input->getArgument('setting-key');
+            foreach ($uniqueConfigValues as $name => $callbacks) {
+                 if ($settingKey === $name) {
+                    list($validator, $normalizer) = $callbacks;
+                    if ($input->getOption('unset')) {
+                        unset($configSettings['config'][$settingKey]);
+                    } else {
+                        if (1 !== count($values)) {
+                            throw new \RuntimeException('You can only pass one value. Example: php composer.phar config process-timeout 300');
+                        }
+
+                        if (true !== $validation = $validator($values[0])) {
+                            throw new \RuntimeException(sprintf(
+                                '"%s" is an invalid value'.($validation ? ' ('.$validation.')' : ''),
+                                $values[0]
+                            ));
+                        }
+
+                        $setting = $this->parseSetting('config.'.$settingKey, $normalizer($values[0]));
+                        $configSettings = array_merge($configSettings, $setting);
+                        $this->validateSchema($configSettings);
+                    }
+                }
+            }
+
+            foreach ($multiConfigValues as $name => $callbacks) {
+                if ($settingKey === $name) {
+                    list($validator, $normalizer) = $callbacks;
+                    if ($input->getOption('unset')) {
+                        unset($configSettings['config'][$settingKey]);
+                    } else {
+                        if (true !== $validation = $validator($values)) {
+                            throw new \RuntimeException(sprintf(
+                                '%s is an invalid value'.($validation ? ' ('.$validation.')' : ''),
+                                json_encode($values)
+                            ));
+                        }
+
+                        $setting = $this->parseSetting('config.'.$settingKey, $normalizer($values));
+                        $configSettings = array_merge($configSettings, $setting);
+                        $this->validateSchema($configSettings);
+                    }
+                }
+            }
+        }
+
+        // clean up empty sections
+        if (empty($configSettings['repositories'])) {
+            unset($configSettings['repositories']);
+        }
+        if (empty($configSettings['config'])) {
+            unset($configSettings['config']);
+        }
+
+        // Make confirmation
+        if ($input->isInteractive()) {
+            $dialog = $this->getHelperSet()->get('dialog');
+            $output->writeln(JsonFile::encode($configSettings));
+            if (!$dialog->askConfirmation($output, $dialog->getQuestion('Do you confirm?', 'yes', '?'), true)) {
+                $output->writeln('<error>Command Aborted by User</error>');
+                return 1;
+            }
+        }
+
+        $this->configFile->write($configSettings);
     }
 
     /**
