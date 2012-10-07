@@ -151,6 +151,6 @@ class EventDispatcher
      */
     protected function isPhpScript($callable)
     {
-        return false !== strpos($callable, '::');
+        return false === strpos($callable, ' ') && false !== strpos($callable, '::');
     }
 }
