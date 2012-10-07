@@ -24,6 +24,7 @@ use Composer\Json\JsonValidationException;
 
 /**
  * @author Joshua Estes <Joshua.Estes@iostudio.com>
+ * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 class ConfigCommand extends Command
 {
@@ -43,6 +44,7 @@ class ConfigCommand extends Command
             ->setDefinition(array(
                 new InputOption('global', 'g', InputOption::VALUE_NONE, 'Apply command to the global config file'),
                 new InputOption('editor', 'e', InputOption::VALUE_NONE, 'Open editor'),
+                new InputOption('unset', null, InputOption::VALUE_NONE, 'Unset the given setting-key'),
                 new InputOption('list', 'l', InputOption::VALUE_NONE, 'List configuration settings'),
                 new InputOption('file', 'f', InputOption::VALUE_REQUIRED, 'If you want to choose a different composer.json or config.json', 'composer.json'),
                 new InputArgument('setting-key', null, 'Setting key'),
@@ -134,8 +136,11 @@ EOT
 
         // If the user enters in a config variable, parse it and save to file
         if ($input->getArgument('setting-key')) {
-            if (null === $input->getArgument('setting-value')) {
-                throw new \RuntimeException('You must include a setting value.');
+            if (array() !== $input->getArgument('setting-value') && $input->getOption('unset')) {
+                throw new \RuntimeException('You can not combine a setting value with --unset');
+            }
+            if (array() === $input->getArgument('setting-value') && !$input->getOption('unset')) {
+                throw new \RuntimeException('You must include a setting value or pass --unset to clear the value');
             }
 
             /**
@@ -143,58 +148,68 @@ EOT
              * For example "config -g repository.foo 'vcs http://example.com'
              */
             $configSettings = $this->configFile->read(); // what is current in the config
-            $settings       = array(); // This will what will be merged into the above
             $values         = $input->getArgument('setting-value'); // what the user is trying to add/change
 
             // Checking for each known config value is going to make this method very large
             // what is a better way to do this?
 
             // repositories.foo
-            if (preg_match('/^repositories\.(.+)/', $input->getArgument('setting-key'), $matches)) {
-                if (2 !== count($values)) {
-                    throw new \RuntimeException('You must pass the type and a url. Example: php composer.phar config repositories.foo vcs http://bar.com');
-                }
-                $setting = $this->parseSetting($input->getArgument('setting-key'), array(
-                    'type' => $values[0],
-                    'url'  => $values[1],
-                ));
+            if (preg_match('/^repos?(?:itories)?\.(.+)/', $input->getArgument('setting-key'), $matches)) {
+                if ($input->getOption('unset')) {
+                    unset($configSettings['repositories'][$matches[1]]);
+                } else {
+                    $settingKey = 'repositories.'.$matches[1];
+                    if (2 !== count($values)) {
+                        throw new \RuntimeException('You must pass the type and a url. Example: php composer.phar config repositories.foo vcs http://bar.com');
+                    }
+                    $setting = $this->parseSetting($settingKey, array(
+                        'type' => $values[0],
+                        'url'  => $values[1],
+                    ));
 
-                // Could there be a better way to do this?
-                $settings = array_merge_recursive($configSettings, $setting);
-                $this->validateSchema($settings);
+                    // Could there be a better way to do this?
+                    $configSettings = array_merge_recursive($configSettings, $setting);
+                    $this->validateSchema($configSettings);
+                }
             }
             // process-timeout
             elseif (preg_match('/^process-timeout/', $input->getArgument('setting-key'))) {
-                if (1 !== count($values)) {
-                    throw new \RuntimeException('You can only pass one value. Example: php composer.phar config process-timeout 300');
-                }
+                if ($input->getOption('unset')) {
+                    unset($configSettings['config']['process-timeout']);
+                } else {
+                    if (1 !== count($values)) {
+                        throw new \RuntimeException('You can only pass one value. Example: php composer.phar config process-timeout 300');
+                    }
 
-                if (!is_numeric($values[0])) {
-                    throw new \RuntimeException(sprintf('"%s" is not a number.', $values[0]));
-                }
+                    if (!is_numeric($values[0])) {
+                        throw new \RuntimeException(sprintf('"%s" is not a number.', $values[0]));
+                    }
 
-                $setting  = $this->parseSetting('config.'.$input->getArgument('setting-key'), (integer) $values[0]);
-                $settings = array_merge($configSettings, $setting);
-                $this->validateSchema($settings);
+                    $setting  = $this->parseSetting('config.'.$input->getArgument('setting-key'), (integer) $values[0]);
+                    $configSettings = array_merge($configSettings, $setting);
+                    $this->validateSchema($configSettings);
+                }
             }
 
-            // Make sure we have something to write to disk
-            if (!count($settings)) {
-                $output->writeln('Trying to update a setting that is supported with this command.');
-                return 0;
+            // clean up empty sections
+            if (empty($configSettings['repositories'])) {
+                unset($configSettings['repositories']);
+            }
+            if (empty($configSettings['config'])) {
+                unset($configSettings['config']);
             }
 
             // Make confirmation
             if ($input->isInteractive()) {
                 $dialog = $this->getHelperSet()->get('dialog');
-                $output->writeln(JsonFile::encode($settings));
+                $output->writeln(JsonFile::encode($configSettings));
                 if (!$dialog->askConfirmation($output, $dialog->getQuestion('Do you confirm?', 'yes', '?'), true)) {
                     $output->writeln('<error>Command Aborted by User</error>');
                     return 1;
                 }
             }
 
-            $this->configFile->write($settings);
+            $this->configFile->write($configSettings);
         }
     }
 
