@@ -257,16 +257,6 @@ EOT
             unset($configSettings['config']);
         }
 
-        // Make confirmation
-        if ($input->isInteractive()) {
-            $dialog = $this->getHelperSet()->get('dialog');
-            $output->writeln(JsonFile::encode($configSettings));
-            if (!$dialog->askConfirmation($output, $dialog->getQuestion('Do you confirm?', 'yes', '?'), true)) {
-                $output->writeln('<error>Command Aborted by User</error>');
-                return 1;
-            }
-        }
-
         $this->configFile->write($configSettings);
     }
 
