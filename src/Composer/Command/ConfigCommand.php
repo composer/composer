@@ -129,7 +129,7 @@ EOT
 
         // List the configuration of the file settings
         if ($input->getOption('list')) {
-            $this->displayFileContents($this->configFile->read(), $output);
+            $this->listConfiguration($this->configFile->read(), $output);
 
             return 0;
         }
@@ -267,14 +267,16 @@ EOT
      * @param OutputInterface $output
      * @param string|null     $k
      */
-    protected function displayFileContents(array $contents, OutputInterface $output, $k = null)
+    protected function listConfiguration(array $contents, OutputInterface $output, $k = null)
     {
-        // @todo Look into a way to refactor this code, as it is right now, I
-        //       don't like it, also the name of the function could be better
         foreach ($contents as $key => $value) {
+            if ($k === null && !in_array($key, array('config', 'repositories'))) {
+                continue;
+            }
+
             if (is_array($value)) {
-                $k .= $key . '.';
-                $this->displayFileContents($value, $output, $k);
+                $k .= preg_replace('{^config\.}', '', $key . '.');
+                $this->listConfiguration($value, $output, $k);
 
                 if (substr_count($k,'.') > 1) {
                     $k = str_split($k,strrpos($k,'.',-2));
