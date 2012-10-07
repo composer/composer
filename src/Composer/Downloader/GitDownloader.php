@@ -19,6 +19,8 @@ use Composer\Package\PackageInterface;
  */
 class GitDownloader extends VcsDownloader
 {
+    private $hasStashedChanges = false;
+
     /**
      * {@inheritDoc}
      */
@@ -74,6 +76,86 @@ class GitDownloader extends VcsDownloader
         }
 
         return trim($output) ?: null;
+    }
+
+    /**
+     * {@inhertiDoc}
+     */
+    protected function cleanChanges($path, $update)
+    {
+        if (!$this->io->isInteractive()) {
+            return parent::cleanChanges($path, $update);
+        }
+
+        if (!$changes = $this->getLocalChanges($path)) {
+            return;
+        }
+
+        $changes = array_map(function ($elem) {
+            return '    '.$elem;
+        }, preg_split('{\s*\r?\n\s*}', $changes));
+        $this->io->write('    <error>The package has modified files:</error>');
+        $this->io->write(array_slice($changes, 0, 10));
+        if (count($changes) > 10) {
+            $this->io->write('    <info>'.count($changes) - 10 . ' more files modified, choose "v" to view the full list</info>');
+        }
+
+        while (true) {
+            switch ($this->io->ask('    <info>Discard changes [y,n,v,'.($update ? 's,' : '').'?]?</info> ', '?')) {
+                case 'y':
+                    if (0 !== $this->process->execute('git reset --hard', $output, $path)) {
+                        throw new \RuntimeException("Could not reset changes\n\n:".$this->process->getErrorOutput());
+                    }
+                    break 2;
+
+                case 's':
+                    if (!$update) {
+                        goto help;
+                    }
+
+                    if (0 !== $this->process->execute('git stash', $output, $path)) {
+                        throw new \RuntimeException("Could not stash changes\n\n:".$this->process->getErrorOutput());
+                    }
+
+                    $this->hasStashedChanges = true;
+                    break 2;
+
+                case 'n':
+                    throw new \RuntimeException('Update aborted');
+                    break;
+
+                case 'v':
+                    $this->io->write($changes);
+                    break;
+
+                case '?':
+                default:
+                    help:
+                    $this->io->write(array(
+                        '    y - discard changes and apply the '.($update ? 'update' : 'uninstall'),
+                        '    n - abort the '.($update ? 'update' : 'uninstall').' and let you manually clean things up',
+                        '    v - view modified files',
+                    ));
+                    if ($update) {
+                        $this->io->write('    s - stash changes and try to reapply them after the update');
+                    }
+                    $this->io->write('    ? - print help');
+                    break;
+            }
+        }
+    }
+
+    /**
+     * {@inhertiDoc}
+     */
+    protected function reapplyChanges($path)
+    {
+        if ($this->hasStashedChanges) {
+            $this->io->write('    <info>Re-applying stashed changes');
+            if (0 !== $this->process->execute('git stash pop', $output, $path)) {
+                throw new \RuntimeException("Failed to apply stashed changes:\n\n".$this->process->getErrorOutput());
+            }
+        }
     }
 
     protected function updateToCommit($path, $reference, $branch, $date)
