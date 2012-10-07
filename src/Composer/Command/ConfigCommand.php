@@ -115,9 +115,13 @@ EOT
     {
         // Open file in editor
         if ($input->getOption('editor')) {
-            // @todo Find a way to use another editor
-            $editor = system("bash -cl 'echo \$EDITOR'");
-            system($editor . ' ' . $this->configFile->getPath() . ' > `tty`');
+            $editor = getenv('EDITOR');
+            if (!$editor) {
+                $editor = defined('PHP_WINDOWS_VERSION_BUILD') ? 'notepad' : 'vi';
+            }
+
+            system($editor . ' ' . $this->configFile->getPath() . (defined('PHP_WINDOWS_VERSION_BUILD') ? '':  ' > `tty`'));
+
             return 0;
         }
 
