@@ -95,7 +95,7 @@ class EventDispatcher
                 }
 
                 try {
-                    $className::$methodName($event);
+                    $this->executeEventPhpScript($className, $methodName, $event);
                 } catch (\Exception $e) {
                     $message = "Script %s handling the %s event terminated with an exception";
                     $this->io->write('<error>'.sprintf($message, $callable, $event->getName()).'</error>');
@@ -114,6 +114,16 @@ class EventDispatcher
                 $this->process->execute($callable, $callback);
             }
         }
+    }
+
+    /**
+     * @param string $className
+     * @param string $methodName
+     * @param Event $event          Event invoking the PHP callable
+     */
+    protected function executeEventPhpScript($className, $methodName, Event $event)
+    {
+        $className::$methodName($event);
     }
 
     /**

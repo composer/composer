@@ -63,6 +63,44 @@ class EventDispatcherTest extends TestCase
         $dispatcher->dispatchCommandEvent("post-install-cmd");
     }
 
+    public function testDispatcherCanExecuteCliAndPhpInSameEventScriptStack()
+    {
+        $io = $this->getMock('Composer\IO\IOInterface');
+        $process = $this->getMock('Composer\Util\ProcessExecutor');
+        $dispatcher = $this->getMockBuilder('Composer\Script\EventDispatcher')
+            ->setConstructorArgs(array(
+                $this->getMock('Composer\Composer'),
+                $io,
+                $process,
+            ))
+            ->setMethods(array(
+                'getListeners',
+                'executeEventPhpScript',
+            ))
+            ->getMock();
+
+        $io->expects($this->never())
+            ->method('write');
+        $process->expects($this->exactly(2))
+            ->method('execute');
+
+        $listeners = array(
+            'echo -n foo',
+            'Composer\\Test\\Script\\EventDispatcherTest::someMethod',
+            'echo -n bar',
+        );
+        $dispatcher->expects($this->atLeastOnce())
+            ->method('getListeners')
+            ->will($this->returnValue($listeners));
+
+        $dispatcher->expects($this->once())
+            ->method('executeEventPhpScript')
+            ->with('Composer\Test\Script\EventDispatcherTest', 'someMethod')
+            ->will($this->returnValue(true));
+
+        $dispatcher->dispatchCommandEvent("post-install-cmd");
+    }
+
     private function getDispatcherStubForListenersTest($listeners, $io)
     {
         $dispatcher = $this->getMockBuilder('Composer\Script\EventDispatcher')
@@ -92,5 +130,10 @@ class EventDispatcherTest extends TestCase
     public static function call()
     {
         throw new \RuntimeException();
+    }
+
+    public static function someMethod()
+    {
+        return true;
     }
 }
