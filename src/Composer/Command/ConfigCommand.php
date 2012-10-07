@@ -16,11 +16,10 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use JsonSchema\Validator;
 use Composer\Config;
 use Composer\Factory;
 use Composer\Json\JsonFile;
-use Composer\Json\JsonValidationException;
+use Composer\Json\JsonManipulator;
 
 /**
  * @author Joshua Estes <Joshua.Estes@iostudio.com>
@@ -146,118 +145,133 @@ EOT
             throw new \RuntimeException('You must include a setting value or pass --unset to clear the value');
         }
 
-        /**
-         * The user needs the ability to add a repository with one command.
-         * For example "config -g repository.foo 'vcs http://example.com'
-         */
-        $configSettings = $this->configFile->read(); // what is current in the config
-        $values         = $input->getArgument('setting-value'); // what the user is trying to add/change
+        $values = $input->getArgument('setting-value'); // what the user is trying to add/change
 
         // handle repositories
         if (preg_match('/^repos?(?:itories)?\.(.+)/', $input->getArgument('setting-key'), $matches)) {
             if ($input->getOption('unset')) {
-                unset($configSettings['repositories'][$matches[1]]);
-            } else {
-                $settingKey = 'repositories.'.$matches[1];
-                if (2 !== count($values)) {
-                    throw new \RuntimeException('You must pass the type and a url. Example: php composer.phar config repositories.foo vcs http://bar.com');
-                }
-                $setting = $this->parseSetting($settingKey, array(
+                return $this->manipulateJson('removeRepository', $matches[1], function (&$config, $repo) {
+                    unset($config['repositories'][$repo]);
+                });
+            }
+
+            if (2 !== count($values)) {
+                throw new \RuntimeException('You must pass the type and a url. Example: php composer.phar config repositories.foo vcs http://bar.com');
+            }
+
+            return $this->manipulateJson(
+                'addRepository',
+                $matches[1],
+                array(
                     'type' => $values[0],
                     'url'  => $values[1],
-                ));
+                ), function (&$config, $repo, $repoConfig) {
+                    $config['repositories'][$repo] = $repoConfig;
+                }
+            );
+        }
 
-                // Could there be a better way to do this?
-                $configSettings = array_merge_recursive($configSettings, $setting);
-                $this->validateSchema($configSettings);
+        // handle config values
+        $uniqueConfigValues = array(
+            'process-timeout' => array('is_numeric', 'intval'),
+            'vendor-dir' => array('is_string', function ($val) { return $val; }),
+            'bin-dir' => array('is_string', function ($val) { return $val; }),
+            'notify-on-install' => array(
+                function ($val) { return true; },
+                function ($val) { return $val !== 'false' && (bool) $val; }
+            ),
+        );
+        $multiConfigValues = array(
+            'github-protocols' => array(
+                function ($vals) {
+                    if (!is_array($vals)) {
+                        return 'array expected';
+                    }
+
+                    foreach ($vals as $val) {
+                        if (!in_array($val, array('git', 'https', 'http'))) {
+                            return 'valid protocols include: git, https, http';
+                        }
+                    }
+
+                    return true;
+                },
+                function ($vals) {
+                    return $vals;
+                }
+            ),
+        );
+
+        $settingKey = $input->getArgument('setting-key');
+        foreach ($uniqueConfigValues as $name => $callbacks) {
+             if ($settingKey === $name) {
+                if ($input->getOption('unset')) {
+                    return $this->manipulateJson('removeConfigSetting', $settingKey, function (&$config, $key) {
+                        unset($config['config'][$key]);
+                    });
+                }
+
+                list($validator, $normalizer) = $callbacks;
+                if (1 !== count($values)) {
+                    throw new \RuntimeException('You can only pass one value. Example: php composer.phar config process-timeout 300');
+                }
+
+                if (true !== $validation = $validator($values[0])) {
+                    throw new \RuntimeException(sprintf(
+                        '"%s" is an invalid value'.($validation ? ' ('.$validation.')' : ''),
+                        $values[0]
+                    ));
+                }
+
+                return $this->manipulateJson('addConfigSetting', $settingKey, $normalizer($values[0]), function (&$config, $key, $val) {
+                    $config['config'][$key] = $val;
+                });
             }
+        }
+
+        foreach ($multiConfigValues as $name => $callbacks) {
+            if ($settingKey === $name) {
+                if ($input->getOption('unset')) {
+                    return $this->manipulateJson('removeConfigSetting', $settingKey, function (&$config, $key) {
+                        unset($config['config'][$key]);
+                    });
+                }
+
+                list($validator, $normalizer) = $callbacks;
+                if (true !== $validation = $validator($values)) {
+                    throw new \RuntimeException(sprintf(
+                        '%s is an invalid value'.($validation ? ' ('.$validation.')' : ''),
+                        json_encode($values)
+                    ));
+                }
+
+                return $this->manipulateJson('addConfigSetting', $settingKey, $normalizer($values), function (&$config, $key, $val) {
+                    $config['config'][$key] = $val;
+                });
+            }
+        }
+    }
+
+    protected function manipulateJson($method, $args, $fallback)
+    {
+        $args = func_get_args();
+        // remove method & fallback
+        array_shift($args);
+        $fallback = array_pop($args);
+
+        $contents = file_get_contents($this->configFile->getPath());
+        $manipulator = new JsonManipulator($contents);
+
+        // try to update cleanly
+        if (call_user_func_array(array($manipulator, $method), $args)) {
+            file_put_contents($this->configFile->getPath(), $manipulator->getContents());
         } else {
-            // handle config values
-            $uniqueConfigValues = array(
-                'process-timeout' => array('is_numeric', 'intval'),
-                'vendor-dir' => array('is_string', function ($val) { return $val; }),
-                'bin-dir' => array('is_string', function ($val) { return $val; }),
-                'notify-on-install' => array(
-                    function ($val) { return true; },
-                    function ($val) { return $val !== 'false' && (bool) $val; }
-                ),
-            );
-            $multiConfigValues = array(
-                'github-protocols' => array(
-                    function ($vals) {
-                        if (!is_array($vals)) {
-                            return 'array expected';
-                        }
-
-                        foreach ($vals as $val) {
-                            if (!in_array($val, array('git', 'https', 'http'))) {
-                                return 'valid protocols include: git, https, http';
-                            }
-                        }
-
-                        return true;
-                    },
-                    function ($vals) {
-                        return $vals;
-                    }
-                ),
-            );
-
-            $settingKey = $input->getArgument('setting-key');
-            foreach ($uniqueConfigValues as $name => $callbacks) {
-                 if ($settingKey === $name) {
-                    list($validator, $normalizer) = $callbacks;
-                    if ($input->getOption('unset')) {
-                        unset($configSettings['config'][$settingKey]);
-                    } else {
-                        if (1 !== count($values)) {
-                            throw new \RuntimeException('You can only pass one value. Example: php composer.phar config process-timeout 300');
-                        }
-
-                        if (true !== $validation = $validator($values[0])) {
-                            throw new \RuntimeException(sprintf(
-                                '"%s" is an invalid value'.($validation ? ' ('.$validation.')' : ''),
-                                $values[0]
-                            ));
-                        }
-
-                        $setting = $this->parseSetting('config.'.$settingKey, $normalizer($values[0]));
-                        $configSettings = array_merge($configSettings, $setting);
-                        $this->validateSchema($configSettings);
-                    }
-                }
-            }
-
-            foreach ($multiConfigValues as $name => $callbacks) {
-                if ($settingKey === $name) {
-                    list($validator, $normalizer) = $callbacks;
-                    if ($input->getOption('unset')) {
-                        unset($configSettings['config'][$settingKey]);
-                    } else {
-                        if (true !== $validation = $validator($values)) {
-                            throw new \RuntimeException(sprintf(
-                                '%s is an invalid value'.($validation ? ' ('.$validation.')' : ''),
-                                json_encode($values)
-                            ));
-                        }
-
-                        $setting = $this->parseSetting('config.'.$settingKey, $normalizer($values));
-                        $configSettings = array_merge($configSettings, $setting);
-                        $this->validateSchema($configSettings);
-                    }
-                }
-            }
+            // on failed clean update, call the fallback and rewrite the whole file
+            $config = $this->configFile->read();
+            array_unshift($args, $config);
+            call_user_func_array($fallback, $args);
+            $this->configFile->write($config);
         }
-
-        // clean up empty sections
-        if (empty($configSettings['repositories'])) {
-            unset($configSettings['repositories']);
-        }
-        if (empty($configSettings['config'])) {
-            unset($configSettings['config']);
-        }
-
-        $this->configFile->write($configSettings);
     }
 
     /**
@@ -290,62 +304,5 @@ EOT
 
             $output->writeln('[<comment>' . $k . $key . '</comment>] <info>' . $value . '</info>');
         }
-    }
-
-    /**
-     * This function will take a setting key (a.b.c) and return an
-     * array that matches this
-     *
-     * @param string $key
-     * @param string $value
-     * @return array
-     */
-    protected function parseSetting($key, $value)
-    {
-        $parts = array_reverse(explode('.', $key));
-        $tmp = array();
-        for ($i = 0; $i < count($parts); $i++) {
-            $tmp[$parts[$i]] = (0 === $i) ? $value : $tmp;
-            if (0 < $i) {
-                unset($tmp[$parts[$i - 1]]);
-            }
-        }
-
-        return $tmp;
-    }
-
-    /**
-     * After the command sets a new config value, this will parse it writes
-     * it to disk to make sure that it is valid according the the composer.json
-     * schema.
-     *
-     * @param array $data
-     * @throws JsonValidationException
-     * @return boolean
-     */
-    protected function validateSchema(array $data)
-    {
-        // TODO Figure out what should be excluded from the validation check
-        // TODO validation should vary based on if it's global or local
-        $schemaFile = __DIR__ . '/../../../res/composer-schema.json';
-        $schemaData = json_decode(file_get_contents($schemaFile));
-
-        unset(
-            $schemaData->properties->name,
-            $schemaData->properties->description
-        );
-
-        $validator = new Validator();
-        $validator->check(json_decode(json_encode($data)), $schemaData);
-
-        if (!$validator->isValid()) {
-            $errors = array();
-            foreach ((array) $validator->getErrors() as $error) {
-                $errors[] = ($error['property'] ? $error['property'].' : ' : '').$error['message'];
-            }
-            throw new JsonValidationException('"'.$this->configFile->getPath().'" does not match the expected JSON schema'."\n". implode("\n",$errors));
-        }
-
-        return true;
     }
 }
