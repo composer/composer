@@ -65,12 +65,11 @@ class EventDispatcherTest extends TestCase
 
     public function testDispatcherCanExecuteCliAndPhpInSameEventScriptStack()
     {
-        $io = $this->getMock('Composer\IO\IOInterface');
         $process = $this->getMock('Composer\Util\ProcessExecutor');
         $dispatcher = $this->getMockBuilder('Composer\Script\EventDispatcher')
             ->setConstructorArgs(array(
                 $this->getMock('Composer\Composer'),
-                $io,
+                $this->getMock('Composer\IO\IOInterface'),
                 $process,
             ))
             ->setMethods(array(
@@ -79,8 +78,6 @@ class EventDispatcherTest extends TestCase
             ))
             ->getMock();
 
-        $io->expects($this->never())
-            ->method('write');
         $process->expects($this->exactly(2))
             ->method('execute');
 
