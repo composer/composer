@@ -11,13 +11,9 @@ This is a list of common pitfalls on using Composer, and how to avoid them.
    latest version**. See [self-update](03-cli.md#self-update) for details.
 
 2. Ensure you're **installing vendors straight from your `composer.json`** via
-
-~~~~
-    rm -rf vendor && composer update -v
-~~~~
-
-   when troubleshooting, excluding any possible interferences with existing
-   vendor installations or `composer.lock` entries.
+   `rm -rf vendor && composer update -v` when troubleshooting, excluding any
+   possible interferences with existing vendor installations or `composer.lock`
+   entries.
 
 ## Package not found
 
