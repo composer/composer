@@ -120,7 +120,16 @@ EOT
         if ($input->getOption('editor')) {
             $editor = getenv('EDITOR');
             if (!$editor) {
-                $editor = defined('PHP_WINDOWS_VERSION_BUILD') ? 'notepad' : 'vi';
+                if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+                    $editor = 'notepad';
+                } else {
+                    foreach (array('vim', 'vi', 'nano', 'pico', 'ed') as $candidate) {
+                        if (exec('which '.$candidate)) {
+                            $editor = $candidate;
+                            break;
+                        }
+                    }
+                }
             }
 
             system($editor . ' ' . $this->configFile->getPath() . (defined('PHP_WINDOWS_VERSION_BUILD') ? '':  ' > `tty`'));
