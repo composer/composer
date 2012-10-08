@@ -164,16 +164,21 @@ class JsonManipulator
         }
 
         if (preg_match('{"'.preg_quote($name).'"\s*:}i', $children)) {
-            if (preg_match('{"'.preg_quote($name).'"\s*:\s*(?:[0-9.]+|null|true|false|"[^"]+"|\{'.self::$RECURSE_BLOCKS.'\})}', $children, $matches)) {
-                $children = preg_replace('{,\s*'.preg_quote($matches[0]).'}i', '', $children, -1, $count);
+            if (preg_match_all('{"'.preg_quote($name).'"\s*:\s*(?:[0-9.]+|null|true|false|"[^"]+"|\{'.self::$RECURSE_BLOCKS.'\})}', $children, $matches)) {
+                $bestMatch = '';
+                foreach ($matches[0] as $match) {
+                    if (strlen($bestMatch) < strlen($match)) {
+                        $bestMatch = $match;
+                    }
+                }
+                $children = preg_replace('{,\s*'.preg_quote($bestMatch).'}i', '', $children, -1, $count);
                 if (1 !== $count) {
-                    $children = preg_replace('{'.preg_quote($matches[0]).'\s*,?\s*}i', '', $children, -1, $count);
+                    $children = preg_replace('{'.preg_quote($bestMatch).'\s*,?\s*}i', '', $children, -1, $count);
                     if (1 !== $count) {
                         return false;
                     }
                 }
             }
-
         }
 
         if (!trim($children)) {
