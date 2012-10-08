@@ -111,7 +111,6 @@ class SvnDownloader extends VcsDownloader
 
                 case 'n':
                     throw new \RuntimeException('Update aborted');
-                    break;
 
                 case 'v':
                     $this->io->write($changes);
