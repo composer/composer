@@ -101,16 +101,23 @@ class Pool
                             }
                         }
 
-                        foreach (array_keys($names) as $name) {
-                            $this->packageByName[$name][] =& $this->packages[$id-2];
+                        foreach (array_keys($names) as $provided) {
+                            $this->packageByName[$provided][] =& $this->packages[$id-2];
                         }
 
                         // handle root package aliases
+                        unset($rootAliasData);
                         if (isset($rootAliases[$name][$version])) {
+                            $rootAliasData = $rootAliases[$name][$version];
+                        } elseif (isset($package['alias_normalized']) && isset($rootAliases[$name][$package['alias_normalized']])) {
+                            $rootAliasData = $rootAliases[$name][$package['alias_normalized']];
+                        }
+
+                        if (isset($rootAliasData)) {
                             $alias = $package;
                             unset($alias['raw']);
-                            $alias['version'] = $rootAliases[$name][$version]['alias_normalized'];
-                            $alias['alias'] = $rootAliases[$name][$version]['alias'];
+                            $alias['version'] = $rootAliasData['alias_normalized'];
+                            $alias['alias'] = $rootAliasData['alias'];
                             $alias['alias_of'] = $package['id'];
                             $alias['id'] = $id++;
                             $alias['root_alias'] = true;
