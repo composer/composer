@@ -79,7 +79,7 @@ class GitDownloader extends VcsDownloader
     }
 
     /**
-     * {@inhertiDoc}
+     * {@inheritDoc}
      */
     protected function cleanChanges($path, $update)
     {
@@ -145,7 +145,7 @@ class GitDownloader extends VcsDownloader
     }
 
     /**
-     * {@inhertiDoc}
+     * {@inheritDoc}
      */
     protected function reapplyChanges($path)
     {
