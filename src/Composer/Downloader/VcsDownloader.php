@@ -86,8 +86,16 @@ abstract class VcsDownloader implements DownloaderInterface
 
         $this->io->write("  - Updating <info>" . $name . "</info> (<comment>" . $from . "</comment> => <comment>" . $to . "</comment>)");
 
-        $this->enforceCleanDirectory($path);
-        $this->doUpdate($initial, $target, $path);
+        $this->cleanChanges($path, true);
+        try {
+            $this->doUpdate($initial, $target, $path);
+        } catch (\Exception $e) {
+            // in case of failed update, try to reapply the changes before aborting
+            $this->reapplyChanges($path);
+
+            throw $e;
+        }
+        $this->reapplyChanges($path);
 
         //print the commit logs if in verbose mode
         if ($this->io->isVerbose()) {
@@ -117,23 +125,37 @@ abstract class VcsDownloader implements DownloaderInterface
      */
     public function remove(PackageInterface $package, $path)
     {
-        $this->enforceCleanDirectory($path);
         $this->io->write("  - Removing <info>" . $package->getName() . "</info> (<comment>" . $package->getPrettyVersion() . "</comment>)");
+        $this->cleanChanges($path, false);
         if (!$this->filesystem->removeDirectory($path)) {
             throw new \RuntimeException('Could not completely delete '.$path.', aborting.');
         }
     }
 
     /**
-     * Guarantee that no changes have been made to the local copy
+     * Prompt the user to check if changes should be stashed/removed or the operation aborted
      *
-     * @throws \RuntimeException if the directory is not clean
+     * @param  string            $path
+     * @param  bool              $stash if true (update) the changes can be stashed and reapplied after an update,
+     *                                  if false (remove) the changes should be assumed to be lost if the operation is not aborted
+     * @throws \RuntimeException in case the operation must be aborted
      */
-    protected function enforceCleanDirectory($path)
+    protected function cleanChanges($path, $update)
     {
+        // the default implementation just fails if there are any changes, override in child classes to provide stash-ability
         if (null !== $this->getLocalChanges($path)) {
             throw new \RuntimeException('Source directory ' . $path . ' has uncommitted changes.');
         }
+    }
+
+    /**
+     * Guarantee that no changes have been made to the local copy
+     *
+     * @param  string            $path
+     * @throws \RuntimeException in case the operation must be aborted or the patch does not apply cleanly
+     */
+    protected function reapplyChanges($path)
+    {
     }
 
     /**
