@@ -51,12 +51,14 @@ class GitDownloader extends VcsDownloader
         $this->io->write("    Checking out ".$ref);
         $command = 'cd %s && git remote set-url composer %s && git fetch composer && git fetch --tags composer';
 
-        // capture username/password from github URL if there is one
+        // capture username/password from URL if there is one
         $this->process->execute(sprintf('cd %s && git remote -v', escapeshellarg($path)), $output);
-        if (preg_match('{^composer\s+https://(.+):(.+)@github.com/}im', $output, $match)) {
-            $this->io->setAuthorization('github.com', $match[1], $match[2]);
+        if (preg_match('{^(?:composer|origin)\s+https?://(.+):(.+)@([^/]+)/}im', $output, $match)) {
+            $this->io->setAuthorization($match[3], urldecode($match[1]), urldecode($match[2]));
         }
 
+        // added in git 1.7.1, prevents prompting the user
+        putenv('GIT_ASKPASS=echo');
         $commandCallable = function($url) use ($ref, $path, $command) {
             return sprintf($command, escapeshellarg($path), escapeshellarg($url), escapeshellarg($ref));
         };
@@ -280,6 +282,36 @@ class GitDownloader extends VcsDownloader
                     }
                     $retrying = true;
                 } while (--$retries);
+            } elseif (
+                $this->io->isInteractive() &&
+                preg_match('{(https?://)([^/]+)(.*)$}i', $url, $match) &&
+                strpos($this->process->getErrorOutput(), 'fatal: Authentication failed') !== false
+            ) {
+                if ($saved = $this->io->hasAuthorization($match[2])) {
+                    $auth = $this->io->getAuthorization($match[2]);
+                } else {
+                    $this->io->write($match[1].$match[2].$match[3].' requires Authentication');
+                    $auth = array(
+                        'username'  => $this->io->ask('Username: '),
+                        'password'  => $this->io->askAndHideAnswer('Password: '),
+                    );
+                }
+
+                $url = $match[1].urlencode($auth['username']).':'.
+                    urlencode($auth['password']).'@'.$match[2].$match[3];
+
+                $command = call_user_func($commandCallable, $url);
+                if (0 === $this->process->execute($command, $handler)) {
+                    if (!$saved) {
+                        $saved = $this->io->ask('Save user/pass for other requests to '.
+                            $match[2].' ? [y]/n: ');
+                        if (in_array($saved, array('y', 'Y', null), true)) {
+                            $this->io->setAuthorization($match[2], $auth['username'], $auth['password']);
+                            $this->io->write('saved...');
+                        }
+                    }
+                    return;
+                }
             }
 
             if (null !== $path) {
