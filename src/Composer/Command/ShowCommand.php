@@ -42,6 +42,7 @@ class ShowCommand extends Command
                 new InputOption('installed', 'i', InputOption::VALUE_NONE, 'List installed packages only'),
                 new InputOption('platform', 'p', InputOption::VALUE_NONE, 'List platform packages only'),
                 new InputOption('self', 's', InputOption::VALUE_NONE, 'Show the root package information'),
+                new InputOption('dev', null, InputOption::VALUE_NONE, 'Enables display of dev-require packages.'),
             ))
             ->setHelp(<<<EOT
 The show command displays detailed information about a package, or
@@ -56,16 +57,25 @@ EOT
     {
         // init repos
         $platformRepo = new PlatformRepository;
+        $getRepositories = function (Composer $composer, $dev) {
+            $manager = $composer->getRepositoryManager();
+            $repos = new CompositeRepository(array($manager->getLocalRepository()));
+            if ($dev) {
+                $repos->addRepository($manager->getLocalDevRepository());
+            }
+
+            return $repos;
+        };
+
         if ($input->getOption('self')) {
             $package = $this->getComposer(false)->getPackage();
             $repos = $installedRepo = new ArrayRepository(array($package));
         } elseif ($input->getOption('platform')) {
             $repos = $installedRepo = $platformRepo;
         } elseif ($input->getOption('installed')) {
-            $composer = $this->getComposer();
-            $repos = $installedRepo = $composer->getRepositoryManager()->getLocalRepository();
+            $repos = $installedRepo = $getRepositories($this->getComposer(), $input->getOption('dev'));
         } elseif ($composer = $this->getComposer(false)) {
-            $localRepo = $composer->getRepositoryManager()->getLocalRepository();
+            $localRepo = $getRepositories($composer, $input->getOption('dev'));
             $installedRepo = new CompositeRepository(array($localRepo, $platformRepo));
             $repos = new CompositeRepository(array_merge(array($installedRepo), $composer->getRepositoryManager()->getRepositories()));
         } else {
