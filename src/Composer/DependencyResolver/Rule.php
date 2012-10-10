@@ -191,7 +191,22 @@ class Rule
                     }
                     $text .= ' -> satisfiable by '.implode(', ', $requireText).'.';
                 } else {
-                    $text .= ' -> no matching package found.';
+                    $targetName = $this->reasonData->getTarget();
+
+                    // handle php extensions
+                    if (0 === strpos($targetName, 'ext-')) {
+                        $ext = substr($targetName, 4);
+                        $error = extension_loaded($ext) ? 'has the wrong version ('.phpversion($ext).') installed' : 'is missing from your system';
+
+                        $text .= ' -> the requested PHP extension '.$ext.' '.$error.'.';
+                    } elseif (0 === strpos($targetName, 'lib-')) {
+                        // handle linked libs
+                        $lib = substr($targetName, 4);
+
+                        $text .= ' -> the requested linked library '.$lib.' has the wrong version instaled or is missing from your system, make sure to have the extension providing it.';
+                    } else {
+                        $text .= ' -> no matching package found.';
+                    }
                 }
 
                 return $text;
