@@ -80,7 +80,7 @@ class SvnDownloader extends VcsDownloader
     }
 
     /**
-     * {@inhertiDoc}
+     * {@inheritDoc}
      */
     protected function cleanChanges($path, $update)
     {
