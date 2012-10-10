@@ -201,7 +201,7 @@ class GitDownloader extends VcsDownloader
             if (empty($newReference)) {
                 // no matching branch found, find the previous commit by date in all commits
                 if (0 !== $this->process->execute(sprintf($guessTemplate, $date, '--all'), $output, $path)) {
-                    throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+                    throw new \RuntimeException('Failed to execute ' . $this->sanitizeUrl($command) . "\n\n" . $this->process->getErrorOutput());
                 }
                 $newReference = trim($output);
             }
@@ -215,7 +215,7 @@ class GitDownloader extends VcsDownloader
             }
         }
 
-        throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+        throw new \RuntimeException('Failed to execute ' . $this->sanitizeUrl($command) . "\n\n" . $this->process->getErrorOutput());
     }
 
     /**
@@ -249,7 +249,7 @@ class GitDownloader extends VcsDownloader
             }
 
             // failed to checkout, first check git accessibility
-            $this->throwException('Failed to clone ' . $url .' via git, https and http protocols, aborting.' . "\n\n" . implode("\n", $messages), $url);
+            $this->throwException('Failed to clone ' . $this->sanitizeUrl($url) .' via git, https and http protocols, aborting.' . "\n\n" . implode("\n", $messages), $url);
         }
 
         $command = call_user_func($commandCallable, $url);
@@ -285,7 +285,7 @@ class GitDownloader extends VcsDownloader
             if (null !== $path) {
                 $this->filesystem->removeDirectory($path);
             }
-            $this->throwException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput(), $url);
+            $this->throwException('Failed to execute ' . $this->sanitizeUrl($command) . "\n\n" . $this->process->getErrorOutput(), $url);
         }
     }
 
@@ -302,10 +302,15 @@ class GitDownloader extends VcsDownloader
     protected function throwException($message, $url)
     {
         if (0 !== $this->process->execute('git --version', $ignoredOutput)) {
-            throw new \RuntimeException('Failed to clone '.$url.', git was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput());
+            throw new \RuntimeException('Failed to clone '.$this->sanitizeUrl($url).', git was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput());
         }
 
         throw new \RuntimeException($message);
+    }
+
+    protected function sanitizeUrl($message)
+    {
+        return preg_match('{://(.+?):.+?@}', '://$1:***@', $message);
     }
 
     protected function setPushUrl(PackageInterface $package, $path)
