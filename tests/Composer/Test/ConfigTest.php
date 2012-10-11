@@ -35,7 +35,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         $data = array();
         $data['local config inherits system defaults'] = array(
             array(
-                'packagist' => array('type' => 'composer', 'url' => 'http://packagist.org')
+                'packagist' => array('type' => 'composer', 'url' => 'https?://packagist.org')
             ),
             array(),
         );
@@ -51,7 +51,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             array(
                 1 => array('type' => 'vcs', 'url' => 'git://github.com/composer/composer.git'),
                 0 => array('type' => 'pear', 'url' => 'http://pear.composer.org'),
-                'packagist' => array('type' => 'composer', 'url' => 'http://packagist.org'),
+                'packagist' => array('type' => 'composer', 'url' => 'https?://packagist.org'),
             ),
             array(
                 array('type' => 'vcs', 'url' => 'git://github.com/composer/composer.git'),
@@ -62,7 +62,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         $data['system config adds above core defaults'] = array(
             array(
                 'example.com' => array('type' => 'composer', 'url' => 'http://example.com'),
-                'packagist' => array('type' => 'composer', 'url' => 'http://packagist.org')
+                'packagist' => array('type' => 'composer', 'url' => 'https?://packagist.org')
             ),
             array(),
             array(
