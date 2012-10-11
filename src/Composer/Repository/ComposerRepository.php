@@ -279,7 +279,7 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
         $retries = 3;
         while ($retries--) {
             try {
-                $json = new JsonFile($filename, new RemoteFilesystem($this->io));
+                $json = new JsonFile($filename, new RemoteFilesystem($this->io, $this->options));
                 $data = $json->read();
                 $this->cache->write($cacheKey, json_encode($data));
 
@@ -292,6 +292,8 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
                     }
                     $this->degradedMode = true;
                     $data = json_decode($contents, true);
+
+                    break;
                 } elseif (!$retries) {
                     throw $e;
                 }
