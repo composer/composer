@@ -8,7 +8,7 @@ This is a list of common pitfalls on using Composer, and how to avoid them.
 ## General
 
 1. When facing any kind of problems using Composer, be sure to **work with the
-   latest version**. See [self-update](03-cli.md#self-update) for details.
+   latest version**. See [self-update](../03-cli.md#self-update) for details.
 
 2. Ensure you're **installing vendors straight from your `composer.json`** via
    `rm -rf vendor && composer update -v` when troubleshooting, excluding any
@@ -21,7 +21,7 @@ This is a list of common pitfalls on using Composer, and how to avoid them.
    branches and tag names.
 
 2. Be sure to **set the right
-   [minimum-stability](04-schema.md#minimum-stability)**. To get started or be
+   [minimum-stability](../04-schema.md#minimum-stability)**. To get started or be
    sure this is no issue, set `minimum-stability` to "dev".
 
 3. Packages **not coming from [Packagist](http://packagist.org/)** should
