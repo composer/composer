@@ -38,11 +38,16 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
 
     public function __construct(array $repoConfig, IOInterface $io, Config $config)
     {
-        if (!preg_match('{^[\w.]+://}', $repoConfig['url'])) {
+        if (!preg_match('{^[\w.]+\??://}', $repoConfig['url'])) {
             // assume http as the default protocol
             $repoConfig['url'] = 'http://'.$repoConfig['url'];
         }
         $repoConfig['url'] = rtrim($repoConfig['url'], '/');
+
+        if ('https?' === substr($repoConfig['url'], 0, 6)) {
+            $repoConfig['url'] = (extension_loaded('openssl') ? 'https' : 'http') . substr($repoConfig['url'], 6);
+        }
+
         if (function_exists('filter_var') && version_compare(PHP_VERSION, '5.3.3', '>=') && !filter_var($repoConfig['url'], FILTER_VALIDATE_URL)) {
             throw new \UnexpectedValueException('Invalid url given for Composer repository: '.$repoConfig['url']);
         }
