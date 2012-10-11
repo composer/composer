@@ -28,7 +28,7 @@ class Config
     public static $defaultRepositories = array(
         'packagist' => array(
             'type' => 'composer',
-            'url' => 'http://packagist.org',
+            'url' => 'https?://packagist.org',
         )
     );
 
