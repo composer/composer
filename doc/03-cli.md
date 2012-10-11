@@ -142,6 +142,7 @@ specific version.
 
 * **--installed:** Will list the packages that are installed.
 * **--platform:** Will list only platform packages (php & extensions).
+* **--dev:** Will include dev-required packages when combined with **--installed** or **--platform**.
 
 ## depends
 
