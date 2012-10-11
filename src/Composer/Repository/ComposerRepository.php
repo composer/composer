@@ -35,6 +35,7 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
     protected $loader;
     private $rawData;
     private $minimalPackages;
+    private $degradedMode = false;
 
     public function __construct(array $repoConfig, IOInterface $io, Config $config)
     {
@@ -201,34 +202,21 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
             throw new \RuntimeException('You must enable the openssl extension in your php.ini to load information from '.$this->url);
         }
 
-        try {
-            $jsonUrlParts = parse_url($this->url);
+        $jsonUrlParts = parse_url($this->url);
 
-            if (isset($jsonUrlParts['path']) && false !== strpos($jsonUrlParts['path'], '/packages.json')) {
-                $jsonUrl = $this->url;
+        if (isset($jsonUrlParts['path']) && false !== strpos($jsonUrlParts['path'], '/packages.json')) {
+            $jsonUrl = $this->url;
+        } else {
+            $jsonUrl = $this->url . '/packages.json';
+        }
+
+        $data = $this->fetchFile($jsonUrl, 'packages.json');
+
+        if (!empty($data['notify'])) {
+            if ('/' === $data['notify'][0]) {
+                $this->notifyUrl = preg_replace('{(https?://[^/]+).*}i', '$1' . $data['notify'], $this->url);
             } else {
-                $jsonUrl = $this->url . '/packages.json';
-            }
-
-            $json = new JsonFile($jsonUrl, new RemoteFilesystem($this->io, $this->options));
-            $data = $json->read();
-
-            if (!empty($data['notify'])) {
-                if ('/' === $data['notify'][0]) {
-                    $this->notifyUrl = preg_replace('{(https?://[^/]+).*}i', '$1' . $data['notify'], $this->url);
-                } else {
-                    $this->notifyUrl = $data['notify'];
-                }
-            }
-
-            $this->cache->write('packages.json', json_encode($data));
-        } catch (\Exception $e) {
-            if ($contents = $this->cache->read('packages.json')) {
-                $this->io->write('<warning>'.$e->getMessage().'</warning>');
-                $this->io->write('<warning>'.$this->url.' could not be loaded, package information was loaded from the local cache and may be out of date</warning>');
-                $data = json_decode($contents, true);
-            } else {
-                throw $e;
+                $this->notifyUrl = $data['notify'];
             }
         }
 
@@ -263,9 +251,7 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
                 if ($this->cache->sha1($include) === $metadata['sha1']) {
                     $includedData = json_decode($this->cache->read($include), true);
                 } else {
-                    $json = new JsonFile($this->url.'/'.$include, new RemoteFilesystem($this->io));
-                    $includedData = $json->read();
-                    $this->cache->write($include, json_encode($includedData));
+                    $includedData = $this->fetchFile($include);
                 }
                 $packages = array_merge($packages, $this->loadIncludes($includedData));
             }
@@ -281,5 +267,39 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
         } catch (\Exception $e) {
             throw new \RuntimeException('Could not load package '.(isset($data['name']) ? $data['name'] : json_encode($data)).' in '.$this->url.': ['.get_class($e).'] '.$e->getMessage(), 0, $e);
         }
+    }
+
+    protected function fetchFile($filename, $cacheKey = null)
+    {
+        if (!$cacheKey) {
+            $cacheKey = $filename;
+            $filename = $this->url.'/'.$filename;
+        }
+
+        $retries = 3;
+        while ($retries--) {
+            try {
+                $json = new JsonFile($filename, new RemoteFilesystem($this->io));
+                $data = $json->read();
+                $this->cache->write($cacheKey, json_encode($data));
+
+                break;
+            } catch (\Exception $e) {
+                if ($contents = $this->cache->read($cacheKey)) {
+                    if (!$this->degradedMode) {
+                        $this->io->write('<warning>'.$e->getMessage().'</warning>');
+                        $this->io->write('<warning>'.$this->url.' could not be fully loaded, package information was loaded from the local cache and may be out of date</warning>');
+                    }
+                    $this->degradedMode = true;
+                    $data = json_decode($contents, true);
+                } elseif (!$retries) {
+                    throw $e;
+                }
+
+                usleep(100);
+            }
+        }
+
+        return $data;
     }
 }
