@@ -76,11 +76,7 @@ class Filesystem
 
     public function directoryExists($dir)
     {
-        if (!is_dir($dir)) {
-            return false;
-        }
-
-        return true;
+        return is_dir($dir);
     }
 
     /**
