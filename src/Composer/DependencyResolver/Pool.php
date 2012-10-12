@@ -207,16 +207,6 @@ class Pool
     }
 
     /**
-    * Retrieves the highest id assigned to a package in this pool
-    *
-    * @return int Highest package id
-    */
-    public function getMaxId()
-    {
-        return $this->id - 1;
-    }
-
-    /**
      * Searches all packages providing the given package name and match the constraint
      *
      * @param string                  $name       The package name to be searched for
