@@ -38,6 +38,13 @@ class HgDriver extends VcsDriver
         } else {
             $this->repoDir = $this->config->get('home') . '/cache.hg/' . preg_replace('{[^a-z0-9]}i', '-', $this->url) . '/';
 
+            $fs = new Filesystem();
+            $fs->ensureDirectoryExists(dirname($this->repoDir));
+
+            if (!is_writable(dirname($this->repoDir))) {
+                throw new \RuntimeException('Can not clone '.$this->url.' to access package information. The "'.dirname($this->repoDir).'" directory is not writable by the current user.');
+            }
+
             // update the repo if it is a valid hg repository
             if (is_dir($this->repoDir) && 0 === $this->process->execute('hg summary', $output, $this->repoDir)) {
                 if (0 !== $this->process->execute('hg pull -u', $output, $this->repoDir)) {
@@ -45,12 +52,7 @@ class HgDriver extends VcsDriver
                 }
             } else {
                 // clean up directory and do a fresh clone into it
-                $fs = new Filesystem();
                 $fs->removeDirectory($this->repoDir);
-
-                // ensure parent dir exists
-                $cacheDir = dirname($this->repoDir);
-                $fs->ensureDirectoryExists($cacheDir);
 
                 if (0 !== $this->process->execute(sprintf('hg clone %s %s', escapeshellarg($this->url), escapeshellarg($this->repoDir)), $output, $cacheDir)) {
                     $output = $this->process->getErrorOutput();
