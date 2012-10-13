@@ -223,7 +223,7 @@ class Pool
                 $candidates[] = $candidate;
                 if ($candidate->getId() < 1) {
                     $candidate->setId($this->id++);
-                    $this->packages[$candidate->getId()] = $candidate;
+                    $this->packages[$this->id - 2] = $candidate;
                 }
             }
         }
