@@ -14,7 +14,9 @@ namespace Composer\Repository;
 
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\PackageInterface;
+use Composer\Package\AliasPackage;
 use Composer\Package\Version\VersionParser;
+use Composer\DependencyResolver\Pool;
 use Composer\Json\JsonFile;
 use Composer\Cache;
 use Composer\Config;
@@ -194,7 +196,7 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
         return null !== $this->providersUrl;
     }
 
-    public function whatProvides($name)
+    public function whatProvides(Pool $pool, $name)
     {
         if ($name === 'php' || in_array(substr($name, 0, 4), array('ext-', 'lib-'), true) || $name === '__root__') {
             return array();
@@ -216,22 +218,38 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
         }
 
         $this->providers[$name] = array();
-        foreach ($packages['packages'] as $name => $versions) {
+        foreach ($packages['packages'] as $versions) {
             foreach ($versions as $version) {
+                // avoid loading the same objects twice
                 if (isset($this->providersByUid[$version['uid']])) {
-                    $this->providers[$name][] = $this->providersByUid[$version['uid']];
+                    // skip if already assigned
+                    if (!isset($this->providers[$name][$version['uid']])) {
+                        // expand alias in two packages
+                        if ($this->providersByUid[$version['uid']] instanceof AliasPackage) {
+                            $this->providers[$name][$version['uid']] = $this->providersByUid[$version['uid']]->getAliasOf();
+                            $this->providers[$name][$version['uid'].'-alias'] = $this->providersByUid[$version['uid']];
+                        } else {
+                            $this->providers[$name][$version['uid']] = $this->providersByUid[$version['uid']];
+                        }
+                    }
                 } else {
+                    if (!$pool->isPackageAcceptable($version['name'], VersionParser::parseStability($version['version']))) {
+                        continue;
+                    }
+
+                    // load acceptable packages in the providers
                     $package = $this->createPackage($version, 'Composer\Package\Package');
                     $package->setRepository($this);
 
-                    $this->providers[$name][] = $package;
+                    $this->providers[$name][$version['uid']] = $package;
                     $this->providersByUid[$version['uid']] = $package;
 
                     if ($package->getAlias()) {
                         $alias = $this->createAliasPackage($package);
                         $alias->setRepository($this);
 
-                        $this->providers[$name][] = $alias;
+                        $this->providers[$name][$version['uid'].'-alias'] = $alias;
+                        // override provider with its alias so it can be expanded in the if block above
                         $this->providersByUid[$version['uid']] = $alias;
                     }
                 }
