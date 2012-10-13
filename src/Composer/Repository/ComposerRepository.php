@@ -196,6 +196,10 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
 
     public function whatProvides($name)
     {
+        if ($name === 'php' || in_array(substr($name, 0, 4), array('ext-', 'lib-'), true) || $name === '__root__') {
+            return array();
+        }
+
         if (isset($this->providers[$name])) {
             return $this->providers[$name];
         }
