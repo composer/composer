@@ -219,7 +219,7 @@ class Pool
         $candidates = array();
 
         foreach ($this->composerRepos as $repo) {
-            foreach ($repo->whatProvides($name) as $candidate) {
+            foreach ($repo->whatProvides($this, $name) as $candidate) {
                 $candidates[] = $candidate;
                 if ($candidate->getId() < 1) {
                     $candidate->setId($this->id++);
@@ -307,7 +307,7 @@ class Pool
         return $prefix.' '.$package->getPrettyString();
     }
 
-    private function isPackageAcceptable($name, $stability)
+    public function isPackageAcceptable($name, $stability)
     {
         // allow if package matches the global stability requirement and has no exception
         if (!isset($this->stabilityFlags[$name]) && isset($this->acceptableStabilities[$stability])) {
