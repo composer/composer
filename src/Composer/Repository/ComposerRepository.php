@@ -229,6 +229,7 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
 
                     if ($package->getAlias()) {
                         $alias = $this->createAliasPackage($package);
+                        $alias->setRepository($this);
 
                         $this->providers[$name][] = $alias;
                         $this->providersByUid[$version['uid']] = $alias;
