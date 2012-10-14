@@ -156,10 +156,17 @@ class Factory
         // initialize repository manager
         $rm = $this->createRepositoryManager($io, $config);
 
+
+        // enable system repository
+        $systemRepository = $this->createSystemRepository($config);
+        if ($config->get('system-repository')) {
+            // added directly instead of repository class it guarantees the first place in stack
+            $rm->addRepository($systemRepository);
+        }
+
         // add package cache
         $storage = null;
         if ($config->get('package-cache')) {
-            $systemRepository = $this->addSystemRepository($rm, $config);
             $storage = new Storage\RepositoryStorage(
                 $systemRepository,
                 new Storage\ArchiveStorage($config->get('home') . '/repository', new Util\Archive\ZipArchiver())
@@ -235,18 +242,14 @@ class Factory
     }
 
     /**
-     * Add system repository to the repository manager
+     * Create system repository
      *
-     * @param  Repository\RepositoryManager $rm
      * @param  Config                       $config
      * @return Repository\WritableRepositoryInterface
      */
-    protected function addSystemRepository(RepositoryManager $rm, Config $config)
+    protected function createSystemRepository(Config $config)
     {
-        $repository = new Repository\FilesystemRepository(new JsonFile($config->get('home') . '/repository/packages.json'));
-        $rm->addRepository($repository);
-
-        return $repository;
+        return new Repository\FilesystemRepository(new JsonFile($config->get('home') . '/repository/packages.json'));
     }
 
     /**
