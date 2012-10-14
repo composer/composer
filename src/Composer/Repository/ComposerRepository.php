@@ -32,10 +32,12 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
     protected $config;
     protected $options;
     protected $url;
+    protected $baseUrl;
     protected $io;
     protected $cache;
     protected $notifyUrl;
-    protected $providersUrl;
+    protected $hasProviders = false;
+    protected $providerListing;
     protected $providers = array();
     protected $providersByUid = array();
     protected $loader;
@@ -67,6 +69,7 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
         $this->config = $config;
         $this->options = $repoConfig['options'];
         $this->url = $repoConfig['url'];
+        $this->baseUrl = rtrim(preg_replace('{^(.*)(?:/packages.json)?(?:[?#].*)?$}', '$1', $this->url), '/');
         $this->io = $io;
         $this->cache = new Cache($io, $config->get('home').'/cache/'.preg_replace('{[^a-z0-9.]}i', '-', $this->url));
         $this->loader = new ArrayLoader();
@@ -193,11 +196,12 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
     {
         $this->loadRootServerFile();
 
-        return null !== $this->providersUrl;
+        return $this->hasProviders;
     }
 
     public function whatProvides(Pool $pool, $name)
     {
+        // skip platform packages
         if ($name === 'php' || in_array(substr($name, 0, 4), array('ext-', 'lib-'), true) || $name === '__root__') {
             return array();
         }
@@ -206,15 +210,21 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
             return $this->providers[$name];
         }
 
-        $url = str_replace('%package%', strtolower($name), $this->providersUrl);
+        if (null === $this->providerListing) {
+            $this->loadProviderListings($this->loadRootServerFile());
+        }
 
-        try {
-            $json = new JsonFile($url, new RemoteFilesystem($this->io));
-            $packages = $json->read();
-        } catch (\RuntimeException $e) {
-            if (!$e->getPrevious() instanceof TransportException || $e->getPrevious()->getCode() !== 404) {
-                throw $e;
-            }
+        $url = 'p/'.$name.'.json';
+
+        // package does not exist in this repo
+        if (!isset($this->providerListing[$url])) {
+            return array();
+        }
+
+        if ($this->cache->sha256($url) === $this->providerListing[$url]['sha256']) {
+            $packages = json_decode($this->cache->read($url), true);
+        } else {
+            $packages = $this->fetchFile($url);
         }
 
         $this->providers[$name] = array();
@@ -301,12 +311,8 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
             }
         }
 
-        if (!empty($data['providers'])) {
-            if ('/' === $data['providers'][0]) {
-                $this->providersUrl = preg_replace('{(https?://[^/]+).*}i', '$1' . $data['providers'], $this->url);
-            } else {
-                $this->providersUrl = $data['providers'];
-            }
+        if (!empty($data['providers']) || !empty($data['providers-includes'])) {
+            $this->hasProviders = true;
         }
 
         return $this->rootData = $data;
@@ -317,6 +323,28 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
         $data = $this->loadRootServerFile();
 
         return $this->loadIncludes($data);
+    }
+
+    protected function loadProviderListings($data)
+    {
+        if (isset($data['providers'])) {
+            if (!is_array($this->providerListing)) {
+                $this->providerListing = array();
+            }
+            $this->providerListing = array_merge($this->providerListing, $data['providers']);
+        }
+
+        if (isset($data['providers-includes'])) {
+            foreach ($data['providers-includes'] as $include => $metadata) {
+                if ($this->cache->sha256($include) === $metadata['sha256']) {
+                    $includedData = json_decode($this->cache->read($include), true);
+                } else {
+                    $includedData = $this->fetchFile($include);
+                }
+
+                $this->loadProviderListings($includedData);
+            }
+        }
     }
 
     protected function loadIncludes($data)
@@ -369,7 +397,7 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
     {
         if (!$cacheKey) {
             $cacheKey = $filename;
-            $filename = $this->url.'/'.$filename;
+            $filename = $this->baseUrl.'/'.$filename;
         }
 
         $retries = 3;
