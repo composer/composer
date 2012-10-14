@@ -186,7 +186,7 @@ class VersionParser
             } else {
                 $parsedConstraint = $this->parseConstraints($constraint);
             }
-            $res[] = new Link($source, $target, $parsedConstraint, $description, $constraint);
+            $res[strtolower($target)] = new Link($source, $target, $parsedConstraint, $description, $constraint);
         }
 
         return $res;
