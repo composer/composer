@@ -46,6 +46,7 @@ class Pool
     protected $acceptableStabilities;
     protected $stabilityFlags;
     protected $versionParser;
+    protected $providerCache = array();
     protected $id = 1;
 
     public function __construct($minimumStability = 'stable', array $stabilityFlags = array())
@@ -215,6 +216,18 @@ class Pool
      * @return array A set of packages
      */
     public function whatProvides($name, LinkConstraintInterface $constraint = null)
+    {
+        if (isset($this->providerCache[$name][(string) $constraint])) {
+            return $this->providerCache[$name][(string) $constraint];
+        }
+
+        return $this->providerCache[$name][(string) $constraint] = $this->computeWhatProvides($name, $constraint);
+    }
+
+    /**
+     * @see whatProvides
+     */
+    private function computeWhatProvides($name, $constraint)
     {
         $candidates = array();
 
