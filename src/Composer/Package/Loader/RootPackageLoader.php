@@ -165,6 +165,7 @@ class RootPackageLoader extends ArrayLoader
             $isFeatureBranch = false;
             $version = null;
 
+            // find current branch and collect all branch names
             foreach ($this->process->splitLines($output) as $branch) {
                 if ($branch && preg_match('{^(?:\* ) *(?:[^/ ]+?/)?(\S+|\(no branch\)) *([a-f0-9]+) .*$}', $branch, $match)) {
                     if ($match[1] === '(no branch)') {
@@ -199,7 +200,7 @@ class RootPackageLoader extends ArrayLoader
                 $length = PHP_INT_MAX;
                 foreach ($branches as $candidate) {
                     // do not compare against other feature branches
-                    if ($candidate === $branch || !preg_match('{^(master|trunk|default|develop|\d+\..+)$}', $candidate)) {
+                    if ($candidate === $branch || !preg_match('{^(master|trunk|default|develop|\d+\..+)$}', $candidate, $match)) {
                         continue;
                     }
                     if (0 !== $this->process->execute('git rev-list '.$candidate.'..'.$branch, $output)) {
