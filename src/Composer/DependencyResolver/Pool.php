@@ -241,10 +241,6 @@ class Pool
             }
         }
 
-        if (!isset($this->packageByName[$name]) && !$candidates) {
-            return array();
-        }
-
         if (isset($this->packageByName[$name])) {
             $candidates = array_merge($candidates, $this->packageByName[$name]);
         }
@@ -390,16 +386,12 @@ class Pool
             $replaces = $candidate->getReplaces();
         }
 
-        foreach ($provides as $link) {
-            if ($link->getTarget() === $name && $constraint->matches($link->getConstraint())) {
-                return self::MATCH_PROVIDE;
-            }
+        if (isset($provides[$name]) && $constraint->matches($provides[$name]->getConstraint())) {
+            return self::MATCH_PROVIDE;
         }
 
-        foreach ($replaces as $link) {
-            if ($link->getTarget() === $name && $constraint->matches($link->getConstraint())) {
-                return self::MATCH_REPLACE;
-            }
+        if (isset($replaces[$name]) && $constraint->matches($replaces[$name]->getConstraint())) {
+            return self::MATCH_REPLACE;
         }
 
         return self::MATCH_NONE;
