@@ -94,6 +94,8 @@ EOT
                 if (!$package) {
                     throw new \InvalidArgumentException('Package '.$input->getArgument('package').' not found');
                 }
+            } else {
+                $versions = array($package->getPrettyVersion() => $package->getVersion());
             }
 
             $this->printMeta($input, $output, $package, $versions, $installedRepo, $repos);
