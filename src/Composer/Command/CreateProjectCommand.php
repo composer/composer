@@ -26,6 +26,8 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Finder;
 use Composer\Json\JsonFile;
 use Composer\Util\RemoteFilesystem;
 use Composer\Package\Version\VersionParser;
@@ -50,7 +52,8 @@ class CreateProjectCommand extends Command
                 new InputOption('repository-url', null, InputOption::VALUE_REQUIRED, 'Pick a different repository url to look for the package.'),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Whether to install dependencies for development.'),
                 new InputOption('no-custom-installers', null, InputOption::VALUE_NONE, 'Whether to disable custom installers.'),
-                new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Whether to prevent execution of all defined scripts in the root package.')
+                new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Whether to prevent execution of all defined scripts in the root package.'),
+                new InputOption('keep-vcs', null, InputOption::VALUE_NONE, 'Whether to prevent deletion vcs folder.'),
             ))
             ->setHelp(<<<EOT
 The <info>create-project</info> command creates a new project from a given
@@ -84,11 +87,12 @@ EOT
             $input->getOption('dev'),
             $input->getOption('repository-url'),
             $input->getOption('no-custom-installers'),
-            $input->getOption('no-scripts')
+            $input->getOption('no-scripts'),
+            $input->getOption('keep-vcs')
         );
     }
 
-    public function installProject(IOInterface $io, $packageName, $directory = null, $packageVersion = null, $preferSource = false, $installDevPackages = false, $repositoryUrl = null, $disableCustomInstallers = false, $noScripts = false)
+    public function installProject(IOInterface $io, $packageName, $directory = null, $packageVersion = null, $preferSource = false, $installDevPackages = false, $repositoryUrl = null, $disableCustomInstallers = false, $noScripts = false, $keepVcs = false)
     {
         $config = Factory::createConfig();
 
@@ -183,6 +187,25 @@ EOT
         }
 
         $installer->run();
+
+        if (!$keepVcs && (
+            !$io->isInteractive() ||
+            $io->askConfirmation('<info>Do you want remove all previous VCS history ?</info> [<comment>yes</comment>]: ', true)
+            )
+        ) {
+            $finder = new Finder();
+            $finder->in($directory)->ignoreVCS(false)->ignoreDotFiles(false);
+            foreach (array('.svn', '_svn', 'CVS', '_darcs', '.arch-params', '.monotone', '.bzr', '.git', '.hg') as $vcsName) {
+                $finder->name($vcsName);
+            }
+
+            $fs = new Filesystem();
+            try {
+                $fs->remove($finder);
+            } catch (IOException $e) {
+                $io->write("<error>An error occured while removing the .git directory</error>", true);
+            }
+        }
     }
 
     protected function createDownloadManager(IOInterface $io, Config $config)

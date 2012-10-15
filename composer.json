@@ -27,7 +27,8 @@
         "seld/jsonlint": "1.*",
         "symfony/console": "2.1.*",
         "symfony/finder": "2.1.*",
-        "symfony/process": "2.1.*"
+        "symfony/process": "2.1.*",
+        "symfony/filesystem": "2.1.*"
     },
     "suggest": {
         "ext-zip": "Enabling the zip extension allows you to unzip archives, and allows gzip compression of all internet traffic",
