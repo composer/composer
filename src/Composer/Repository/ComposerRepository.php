@@ -224,7 +224,7 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
         if ($this->cache->sha256($url) === $this->providerListing[$url]['sha256']) {
             $packages = json_decode($this->cache->read($url), true);
         } else {
-            $packages = $this->fetchFile($url);
+            $packages = $this->fetchFile($url, null, $this->providerListing[$url]['sha256']);
         }
 
         $this->providers[$name] = array();
@@ -339,7 +339,7 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
                 if ($this->cache->sha256($include) === $metadata['sha256']) {
                     $includedData = json_decode($this->cache->read($include), true);
                 } else {
-                    $includedData = $this->fetchFile($include);
+                    $includedData = $this->fetchFile($include, null, $metadata['sha256']);
                 }
 
                 $this->loadProviderListings($includedData);
@@ -393,7 +393,7 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
         }
     }
 
-    protected function fetchFile($filename, $cacheKey = null)
+    protected function fetchFile($filename, $cacheKey = null, $sha256 = null)
     {
         if (!$cacheKey) {
             $cacheKey = $filename;
@@ -405,7 +405,11 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
             try {
                 $json = new JsonFile($filename, new RemoteFilesystem($this->io, $this->options));
                 $data = $json->read();
-                $this->cache->write($cacheKey, json_encode($data));
+                $encoded = json_encode($data);
+                if ($sha256 && $sha256 !== hash('sha256', $encoded)) {
+                    throw new \UnexpectedValueException('The contents of '.$filename.' do not match its signature, this may be due to a temporary glitch or a man-in-the-middle attack, aborting for safety. Please try running Composer again.');
+                }
+                $this->cache->write($cacheKey, $encoded);
 
                 break;
             } catch (\Exception $e) {
