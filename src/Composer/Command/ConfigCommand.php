@@ -55,29 +55,29 @@ local composer.json file or the global config.json file.
 
 To edit the global config.json file:
 
-    <comment>php composer.phar --global</comment>
+    <comment>%command.full_name% --global</comment>
 
 To add a repository:
 
-    <comment>php composer.phar repositories.foo vcs http://bar.com</comment>
+    <comment>%command.full_name% repositories.foo vcs http://bar.com</comment>
 
 You can add a repository to the global config.json file by passing in the
 <info>--global</info> option.
 
 To edit the file in an external editor:
 
-    <comment>php composer.phar --edit</comment>
+    <comment>%command.full_name% --edit</comment>
 
 To choose your editor you can set the "EDITOR" env variable.
 
 To get a list of configuration values in the file:
 
-    <comment>php composer.phar --list</comment>
+    <comment>%command.full_name% --list</comment>
 
 You can always pass more than one option. As an example, if you want to edit the
 global config.json file.
 
-    <comment>php composer.phar --edit --global</comment>
+    <comment>%command.full_name% --edit --global</comment>
 EOT
             )
         ;
