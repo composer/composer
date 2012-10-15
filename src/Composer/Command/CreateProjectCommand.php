@@ -150,7 +150,7 @@ EOT
         }
         unset($candidates);
 
-        $io->write('<info>Installing ' . $package->getName() . ' (' . VersionParser::formatVersion($package, false) . ')</info>', true);
+        $io->write('<info>Installing ' . $package->getName() . ' (' . VersionParser::formatVersion($package, false) . ')</info>');
 
         if ($disableCustomInstallers) {
             $io->write('<info>Custom installers have been disabled.</info>');
@@ -166,7 +166,7 @@ EOT
             $package->getRepository()->notifyInstall($package);
         }
 
-        $io->write('<info>Created project in ' . $directory . '</info>', true);
+        $io->write('<info>Created project in ' . $directory . '</info>');
         chdir($directory);
 
         putenv('COMPOSER_ROOT_VERSION='.$package->getPrettyVersion());
@@ -203,7 +203,7 @@ EOT
             try {
                 $fs->remove($finder);
             } catch (IOException $e) {
-                $io->write("<error>An error occured while removing the .git directory</error>", true);
+                $io->write("<error>An error occured while removing the .git directory</error>");
             }
         }
     }
