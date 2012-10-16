@@ -367,13 +367,13 @@ class AutoloadGeneratorTest extends TestCase
     public function testOverrideVendorsAutoloading()
     {
         $package = new Package('z', '1.0', '1.0');
-        $package->setAutoload(array('psr-0' => array('A\\B' => $this->workingDir.'/lib')));
+        $package->setAutoload(array('psr-0' => array('A\\B' => $this->workingDir.'/lib'), 'classmap' => array($this->workingDir.'/src')));
         $package->setRequires(array(new Link('z', 'a/a')));
 
         $packages = array();
         $packages[] = $a = new Package('a/a', '1.0', '1.0');
         $packages[] = $b = new Package('b/b', '1.0', '1.0');
-        $a->setAutoload(array('psr-0' => array('A' => 'src/', 'A\\B' => 'lib/')));
+        $a->setAutoload(array('psr-0' => array('A' => 'src/', 'A\\B' => 'lib/'), 'classmap' => array('classmap')));
         $b->setAutoload(array('psr-0' => array('B\\Sub\\Name' => 'src/')));
 
         $this->repository->expects($this->once())
@@ -381,12 +381,16 @@ class AutoloadGeneratorTest extends TestCase
             ->will($this->returnValue($packages));
 
         $this->fs->ensureDirectoryExists($this->workingDir.'/lib/A/B');
+        $this->fs->ensureDirectoryExists($this->workingDir.'/src/');
         $this->fs->ensureDirectoryExists($this->vendorDir.'/composer');
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/a/a/classmap');
         $this->fs->ensureDirectoryExists($this->vendorDir.'/a/a/src');
         $this->fs->ensureDirectoryExists($this->vendorDir.'/a/a/lib/A/B');
         $this->fs->ensureDirectoryExists($this->vendorDir.'/b/b/src');
         file_put_contents($this->workingDir.'/lib/A/B/C.php', '<?php namespace A\\B; class C {}');
+        file_put_contents($this->workingDir.'/src/classes.php', '<?php namespace Foo; class Bar {}');
         file_put_contents($this->vendorDir.'/a/a/lib/A/B/C.php', '<?php namespace A\\B; class C {}');
+        file_put_contents($this->vendorDir.'/a/a/classmap/classes.php', '<?php namespace Foo; class Bar {}');
 
         $workDir = strtr($this->workingDir, '\\', '/');
         $expectedNamespace = <<<EOF
@@ -415,6 +419,7 @@ EOF;
 
 return array(
     'A\\\\B\\\\C' => \$baseDir . '/lib/A/B/C.php',
+    'Foo\\\\Bar' => \$baseDir . '/src/classes.php',
 );
 
 EOF;
