@@ -322,15 +322,15 @@ class AutoloadGeneratorTest extends TestCase
     {
         $package = new Package('a', '1.0', '1.0');
         $package->setAutoload(array('files' => array('root.php')));
-        $package->setRequires(array(new Link('a', 'a/foo')));
+        $package->setRequires(array(new Link('a', 'z/foo')));
 
         $packages = array();
-        $packages[] = $a = new Package('a/foo', '1.0', '1.0');
+        $packages[] = $z = new Package('z/foo', '1.0', '1.0');
         $packages[] = $b = new Package('b/bar', '1.0', '1.0');
         $packages[] = $c = new Package('c/lorem', '1.0', '1.0');
 
-        $a->setAutoload(array('files' => array('testA.php')));
-        $a->setRequires(array(new Link('a/foo', 'c/lorem')));
+        $z->setAutoload(array('files' => array('testA.php')));
+        $z->setRequires(array(new Link('z/foo', 'c/lorem')));
 
         $b->setAutoload(array('files' => array('testB.php')));
         $b->setRequires(array(new Link('b/bar', 'c/lorem')));
@@ -341,10 +341,10 @@ class AutoloadGeneratorTest extends TestCase
             ->method('getPackages')
             ->will($this->returnValue($packages));
 
-        $this->fs->ensureDirectoryExists($this->vendorDir . '/a/foo');
+        $this->fs->ensureDirectoryExists($this->vendorDir . '/z/foo');
         $this->fs->ensureDirectoryExists($this->vendorDir . '/b/bar');
         $this->fs->ensureDirectoryExists($this->vendorDir . '/c/lorem');
-        file_put_contents($this->vendorDir . '/a/foo/testA.php', '<?php function testFilesAutoloadOrderByDependency1() {}');
+        file_put_contents($this->vendorDir . '/z/foo/testA.php', '<?php function testFilesAutoloadOrderByDependency1() {}');
         file_put_contents($this->vendorDir . '/b/bar/testB.php', '<?php function testFilesAutoloadOrderByDependency2() {}');
         file_put_contents($this->vendorDir . '/c/lorem/testC.php', '<?php function testFilesAutoloadOrderByDependency3() {}');
         file_put_contents($this->workingDir . '/root.php', '<?php function testFilesAutoloadOrderByDependencyRoot() {}');
@@ -366,8 +366,9 @@ class AutoloadGeneratorTest extends TestCase
 
     public function testOverrideVendorsAutoloading()
     {
-        $package = new Package('a', '1.0', '1.0');
+        $package = new Package('z', '1.0', '1.0');
         $package->setAutoload(array('psr-0' => array('A\\B' => $this->workingDir.'/lib')));
+        $package->setRequires(array(new Link('z', 'a/a')));
 
         $packages = array();
         $packages[] = $a = new Package('a/a', '1.0', '1.0');
