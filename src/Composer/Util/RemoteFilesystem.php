@@ -207,6 +207,12 @@ class RemoteFilesystem
                 }
                 break;
 
+            case STREAM_NOTIFY_AUTH_RESULT:
+                if (403 === $messageCode) {
+                    throw new TransportException($message, 403);
+                }
+                break;
+
             case STREAM_NOTIFY_FILE_SIZE_IS:
                 if ($this->bytesMax < $bytesMax) {
                     $this->bytesMax = $bytesMax;
