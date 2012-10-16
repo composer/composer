@@ -1,6 +1,6 @@
 # Community
 
-There are a lot of people using composer already, quite a few are also already
+There are many people using composer already, and quite a few of them are
 contributing.
 
 ## Contributing
