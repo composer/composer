@@ -1,5 +1,5 @@
 {
-    "hash": "4053fc95a11ba891e11c81bf940f6fbc",
+    "hash": "feab59dd5d1400d9ec8d709c4d7ff6e2",
     "packages": [
         {
             "name": "justinrainbow/json-schema",
@@ -152,23 +152,23 @@
         },
         {
             "name": "symfony/process",
-            "version": "v2.1.2",
+            "version": "v2.1.1",
             "target-dir": "Symfony/Component/Process",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Process",
-                "reference": "v2.1.2"
+                "reference": "v2.1.1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://github.com/symfony/Process/zipball/v2.1.2",
-                "reference": "v2.1.2",
+                "url": "https://github.com/symfony/Process/zipball/v2.1.1",
+                "reference": "v2.1.1",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.3"
             },
-            "time": "2012-09-18 15:37:29",
+            "time": "2012-08-30 05:49:05",
             "type": "library",
             "extra": {
                 "branch-alias": {
