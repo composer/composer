@@ -292,6 +292,19 @@ class GitHubDriver extends VcsDriver
                         $this->io->setAuthorization($this->originUrl, $username, $password);
                         break;
 
+                    case 403:
+                        if (!$this->io->hasAuthorization($this->originUrl)) {
+                            if (!$this->io->isInteractive()) {
+                                $this->io->write('<error>API limit exhausted. Failed to clone the '.$this->generateSshUrl().' repository, try running in interactive mode so that you can enter your username and password to increase the API limit</error>');
+                                throw $e;
+                            }
+                            $this->io->write('API limit exhausted. Authentication required for larger API limit (<info>'.$this->url.'</info>):');
+                            $username = $this->io->ask('Username: ');
+                            $password = $this->io->askAndHideAnswer('Password: ');
+                            $this->io->setAuthorization($this->originUrl, $username, $password);
+                        }
+                        break;
+
                     default:
                         throw $e;
                         break;
