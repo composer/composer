@@ -1,5 +1,5 @@
 {
-    "hash": "1023850095295cc1307c2219a0382930",
+    "hash": "4053fc95a11ba891e11c81bf940f6fbc",
     "packages": [
         {
             "name": "justinrainbow/json-schema",
@@ -18,7 +18,7 @@
             "require": {
                 "php": ">=5.3.0"
             },
-            "time": "2012-01-02 22:33:17",
+            "time": "2012-01-02 21:33:17",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -44,7 +44,7 @@
             "require": {
                 "php": ">=5.3.0"
             },
-            "time": "2012-03-12 05:52:32",
+            "time": "2012-03-12 04:52:32",
             "bin": [
                 "bin/jsonlint"
             ],
@@ -58,30 +58,30 @@
         },
         {
             "name": "symfony/console",
-            "version": "v2.1.1",
+            "version": "2.1.x-dev",
             "target-dir": "Symfony/Component/Console",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Console",
-                "reference": "v2.1.1"
+                "reference": "7daac278f160073afccfcbf928ddb39282a8539d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://github.com/symfony/Console/zipball/v2.1.1",
-                "reference": "v2.1.1",
+                "url": "https://github.com/symfony/Console/zipball/79b6ad67caee9ff7bac1be620a58e9164d317c58",
+                "reference": "79b6ad67caee9ff7bac1be620a58e9164d317c58",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.3"
             },
-            "time": "2012-08-22 11:48:41",
+            "time": "1350313602",
             "type": "library",
             "extra": {
                 "branch-alias": {
                     "dev-master": "2.1-dev"
                 }
             },
-            "installation-source": "dist",
+            "installation-source": "source",
             "autoload": {
                 "psr-0": {
                     "Symfony\\Component\\Console": ""
@@ -105,30 +105,30 @@
         },
         {
             "name": "symfony/finder",
-            "version": "v2.1.1",
+            "version": "v2.1.2",
             "target-dir": "Symfony/Component/Finder",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Finder",
-                "reference": "v2.1.0-RC2"
+                "reference": "v2.1.2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://github.com/symfony/Finder/zipball/v2.1.0-RC2",
-                "reference": "v2.1.0-RC2",
+                "url": "https://github.com/symfony/Finder/zipball/v2.1.2",
+                "reference": "v2.1.2",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.3"
             },
-            "time": "2012-08-22 11:48:41",
+            "time": "2012-08-22 06:48:41",
             "type": "library",
             "extra": {
                 "branch-alias": {
                     "dev-master": "2.1-dev"
                 }
             },
-            "installation-source": "dist",
+            "installation-source": "source",
             "autoload": {
                 "psr-0": {
                     "Symfony\\Component\\Finder": ""
@@ -152,30 +152,30 @@
         },
         {
             "name": "symfony/process",
-            "version": "v2.1.1",
+            "version": "v2.1.2",
             "target-dir": "Symfony/Component/Process",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Process",
-                "reference": "v2.1.1"
+                "reference": "v2.1.2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://github.com/symfony/Process/zipball/v2.1.1",
-                "reference": "v2.1.1",
+                "url": "https://github.com/symfony/Process/zipball/v2.1.2",
+                "reference": "v2.1.2",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.3"
             },
-            "time": "2012-08-30 10:49:05",
+            "time": "2012-09-18 15:37:29",
             "type": "library",
             "extra": {
                 "branch-alias": {
                     "dev-master": "2.1-dev"
                 }
             },
-            "installation-source": "dist",
+            "installation-source": "source",
             "autoload": {
                 "psr-0": {
                     "Symfony\\Component\\Process": ""
@@ -203,7 +203,7 @@
 
     ],
     "minimum-stability": "stable",
-    "stability-flags": [
-
-    ]
+    "stability-flags": {
+        "symfony/console": 20
+    }
 }
