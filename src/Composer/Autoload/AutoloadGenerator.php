@@ -200,8 +200,10 @@ EOF;
     {
         $psr0 = $this->parseAutoloadsType($packageMap, 'psr-0');
         krsort($psr0);
-        $classmap = $this->parseAutoloadsType($packageMap, 'classmap');
-        $files = $this->parseAutoloadsType($this->sortPackageMap($packageMap), 'files');
+
+        $sortedPackageMap = $this->sortPackageMap($packageMap);
+        $classmap = $this->parseAutoloadsType($sortedPackageMap, 'classmap');
+        $files = $this->parseAutoloadsType($sortedPackageMap, 'files');
 
         return array('psr-0' => $psr0, 'classmap' => $classmap, 'files' => $files);
     }
