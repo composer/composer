@@ -34,6 +34,8 @@ class ComposerAutoloaderInitFilesAutoloadOrder
         require $vendorDir . '/z/foo/testA.php';
         require $baseDir . '/root.php';
         require $vendorDir . '/b/bar/testB.php';
+        require $vendorDir . '/d/d/testD.php';
+        require $vendorDir . '/e/e/testE.php';
 
         return $loader;
     }

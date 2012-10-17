@@ -328,6 +328,8 @@ class AutoloadGeneratorTest extends TestCase
         $packages[] = $z = new Package('z/foo', '1.0', '1.0');
         $packages[] = $b = new Package('b/bar', '1.0', '1.0');
         $packages[] = $c = new Package('c/lorem', '1.0', '1.0');
+        $packages[] = $d = new Package('d/d', '1.0', '1.0');
+        $packages[] = $e = new Package('e/e', '1.0', '1.0');
 
         $z->setAutoload(array('files' => array('testA.php')));
         $z->setRequires(array(new Link('z/foo', 'c/lorem')));
@@ -337,6 +339,11 @@ class AutoloadGeneratorTest extends TestCase
 
         $c->setAutoload(array('files' => array('testC.php')));
 
+        $d->setAutoload(array('files' => array('testD.php')));
+
+        $e->setAutoload(array('files' => array('testE.php')));
+        $e->setRequires(array(new Link('e/e', 'c/lorem')));
+
         $this->repository->expects($this->once())
             ->method('getPackages')
             ->will($this->returnValue($packages));
@@ -344,9 +351,13 @@ class AutoloadGeneratorTest extends TestCase
         $this->fs->ensureDirectoryExists($this->vendorDir . '/z/foo');
         $this->fs->ensureDirectoryExists($this->vendorDir . '/b/bar');
         $this->fs->ensureDirectoryExists($this->vendorDir . '/c/lorem');
+        $this->fs->ensureDirectoryExists($this->vendorDir . '/d/d');
+        $this->fs->ensureDirectoryExists($this->vendorDir . '/e/e');
         file_put_contents($this->vendorDir . '/z/foo/testA.php', '<?php function testFilesAutoloadOrderByDependency1() {}');
         file_put_contents($this->vendorDir . '/b/bar/testB.php', '<?php function testFilesAutoloadOrderByDependency2() {}');
         file_put_contents($this->vendorDir . '/c/lorem/testC.php', '<?php function testFilesAutoloadOrderByDependency3() {}');
+        file_put_contents($this->vendorDir . '/d/d/testD.php', '<?php function testFilesAutoloadOrderByDependency4() {}');
+        file_put_contents($this->vendorDir . '/e/e/testE.php', '<?php function testFilesAutoloadOrderByDependency5() {}');
         file_put_contents($this->workingDir . '/root.php', '<?php function testFilesAutoloadOrderByDependencyRoot() {}');
 
         $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, 'FilesAutoloadOrder');
@@ -361,6 +372,8 @@ class AutoloadGeneratorTest extends TestCase
         $this->assertTrue(function_exists('testFilesAutoloadOrderByDependency1'));
         $this->assertTrue(function_exists('testFilesAutoloadOrderByDependency2'));
         $this->assertTrue(function_exists('testFilesAutoloadOrderByDependency3'));
+        $this->assertTrue(function_exists('testFilesAutoloadOrderByDependency4'));
+        $this->assertTrue(function_exists('testFilesAutoloadOrderByDependency5'));
         $this->assertTrue(function_exists('testFilesAutoloadOrderByDependencyRoot'));
     }
 

@@ -459,6 +459,11 @@ FOOTER;
                 $packageKey = $names[$item[0]->getName()];
                 $target = $link->getTarget();
                 $targetKey = is_int($names[$target]) ? $names[$target] : $names[$names[$target]];
+
+                if ($targetKey <= $packageKey) {
+                    continue;
+                }
+
                 $groups[$targetKey] = array_merge($groups[$targetKey], $groups[$packageKey]);
 
                 foreach ($groups[$packageKey] as $originalItem) {
