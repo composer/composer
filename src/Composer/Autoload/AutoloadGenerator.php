@@ -145,6 +145,8 @@ EOF;
                 $classMap[$class] = '$baseDir . '.var_export($path, true).",\n";
             }
         }
+
+        ksort($classMap);
         foreach ($classMap as $class => $code) {
             $classmapFile .= '    '.var_export($class, true).' => '.$code;
         }
@@ -198,12 +200,13 @@ EOF;
      */
     public function parseAutoloads(array $packageMap)
     {
-        $psr0 = $this->parseAutoloadsType($packageMap, 'psr-0');
-        krsort($psr0);
-
         $sortedPackageMap = $this->sortPackageMap($packageMap);
+
+        $psr0 = $this->parseAutoloadsType($packageMap, 'psr-0');
         $classmap = $this->parseAutoloadsType($sortedPackageMap, 'classmap');
         $files = $this->parseAutoloadsType($sortedPackageMap, 'files');
+
+        krsort($psr0);
 
         return array('psr-0' => $psr0, 'classmap' => $classmap, 'files' => $files);
     }

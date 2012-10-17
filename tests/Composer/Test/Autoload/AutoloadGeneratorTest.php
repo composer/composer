@@ -238,9 +238,9 @@ class AutoloadGeneratorTest extends TestCase
         $this->assertTrue(file_exists($this->vendorDir.'/composer/autoload_classmap.php'), "ClassMap file needs to be generated.");
         $this->assertEquals(
             array(
-                'ClassMapFoo' => $this->workingDir.'/composer-test-autoload/a/a/src/a.php',
                 'ClassMapBar' => $this->workingDir.'/composer-test-autoload/b/b/src/b.php',
                 'ClassMapBaz' => $this->workingDir.'/composer-test-autoload/b/b/lib/c.php',
+                'ClassMapFoo' => $this->workingDir.'/composer-test-autoload/a/a/src/a.php',
             ),
             include ($this->vendorDir.'/composer/autoload_classmap.php')
         );
@@ -275,9 +275,9 @@ class AutoloadGeneratorTest extends TestCase
         $this->assertTrue(file_exists($this->vendorDir.'/composer/autoload_classmap.php'), "ClassMap file needs to be generated.");
         $this->assertEquals(
             array(
-                'ClassMapFoo' => $this->workingDir.'/composer-test-autoload/a/a/src/a.php',
                 'ClassMapBar' => $this->workingDir.'/composer-test-autoload/b/b/test.php',
                 'ClassMapBaz' => $this->workingDir.'/composer-test-autoload/c/c/foo/test.php',
+                'ClassMapFoo' => $this->workingDir.'/composer-test-autoload/a/a/src/a.php',
             ),
             include ($this->vendorDir.'/composer/autoload_classmap.php')
         );
