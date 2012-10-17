@@ -449,30 +449,36 @@ FOOTER;
             $groups[$key] = array($item);
             $mainName = $item[0]->getName();
             foreach ($item[0]->getNames() as $name) {
-                $names[$name] = $name == $mainName ? $key : $mainName;
+                if (!isset($names[$name])) {
+                    $names[$name] = $name == $mainName ? $key : $mainName;
+                }
             }
         }
 
         foreach ($packageMap as $item) {
             foreach (array_merge($item[0]->getRequires(), $item[0]->getDevRequires()) as $link) {
-                if (!isset($names[$link->getTarget()])) {
+                $target = $link->getTarget();
+                if (!isset($names[$target])) {
                     continue;
+                }
+
+                $targetKey = $names[$target];
+                if (is_string($targetKey)) {
+                    if (!isset($names[$targetKey])) {
+                        continue;
+                    }
+                    $targetKey = $names[$targetKey];
                 }
 
                 $packageKey = $names[$item[0]->getName()];
-                $target = $link->getTarget();
-                $targetKey = is_int($names[$target]) ? $names[$target] : $names[$names[$target]];
-
-                if ($targetKey <= $packageKey) {
+                if ($targetKey <= $packageKey || !isset($groups[$packageKey])) {
                     continue;
                 }
 
-                $groups[$targetKey] = array_merge($groups[$targetKey], $groups[$packageKey]);
-
                 foreach ($groups[$packageKey] as $originalItem) {
+                    $groups[$targetKey][] = $originalItem;
                     $names[$originalItem[0]->getName()] = $targetKey;
                 }
-
                 unset($groups[$packageKey]);
             }
         }
