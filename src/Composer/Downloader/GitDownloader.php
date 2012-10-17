@@ -174,14 +174,17 @@ class GitDownloader extends VcsDownloader
             }
         }
 
-        // checkout branch by name if the current reference matches the tip of the branch
-        if (preg_match('{^[a-f0-9]{40}$}', $reference)
-            && 0 === $this->process->execute('git log '.escapeshellarg($branch).' -1 --format=format:%H', $output, $path)
-            && $reference === trim($output)
-        ) {
-            $command = sprintf('git checkout -B %s %s && git reset --hard %2$s', escapeshellarg($branch), escapeshellarg('composer/'.$branch));
-            if (0 === $this->process->execute($command, $output, $path)) {
-                return;
+        // try to checkout branch by name and then reset it so it's on the proper branch name
+        if (preg_match('{^[a-f0-9]{40}$}', $reference)) {
+            $command = sprintf('git checkout %s', escapeshellarg($branch));
+            $fallbackCommand = sprintf('git checkout -B %s %s', escapeshellarg($branch), escapeshellarg('composer/'.$branch));
+            if (0 === $this->process->execute($command, $output, $path)
+                || 0 === $this->process->execute($fallbackCommand, $output, $path)
+            ) {
+                $command = sprintf('git reset --hard %s', escapeshellarg($reference));
+                if (0 === $this->process->execute($command, $output, $path)) {
+                    return;
+                }
             }
         }
 
