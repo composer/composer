@@ -6,7 +6,7 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
+    'ClassMapBar' => $baseDir . '/composer-test-autoload/b/b/src/b.php',
     'ClassMapBaz' => $baseDir . '/composer-test-autoload/b/b/lib/c.php',
     'ClassMapFoo' => $baseDir . '/composer-test-autoload/a/a/src/a.php',
-    'ClassMapBar' => $baseDir . '/composer-test-autoload/b/b/src/b.php',
 );

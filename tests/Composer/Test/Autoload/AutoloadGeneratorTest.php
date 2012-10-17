@@ -238,9 +238,9 @@ class AutoloadGeneratorTest extends TestCase
         $this->assertTrue(file_exists($this->vendorDir.'/composer/autoload_classmap.php'), "ClassMap file needs to be generated.");
         $this->assertEquals(
             array(
-                'ClassMapFoo' => $this->workingDir.'/composer-test-autoload/a/a/src/a.php',
                 'ClassMapBar' => $this->workingDir.'/composer-test-autoload/b/b/src/b.php',
                 'ClassMapBaz' => $this->workingDir.'/composer-test-autoload/b/b/lib/c.php',
+                'ClassMapFoo' => $this->workingDir.'/composer-test-autoload/a/a/src/a.php',
             ),
             include ($this->vendorDir.'/composer/autoload_classmap.php')
         );
@@ -275,9 +275,9 @@ class AutoloadGeneratorTest extends TestCase
         $this->assertTrue(file_exists($this->vendorDir.'/composer/autoload_classmap.php'), "ClassMap file needs to be generated.");
         $this->assertEquals(
             array(
-                'ClassMapFoo' => $this->workingDir.'/composer-test-autoload/a/a/src/a.php',
                 'ClassMapBar' => $this->workingDir.'/composer-test-autoload/b/b/test.php',
                 'ClassMapBaz' => $this->workingDir.'/composer-test-autoload/c/c/foo/test.php',
+                'ClassMapFoo' => $this->workingDir.'/composer-test-autoload/a/a/src/a.php',
             ),
             include ($this->vendorDir.'/composer/autoload_classmap.php')
         );
@@ -322,31 +322,42 @@ class AutoloadGeneratorTest extends TestCase
     {
         $package = new Package('a', '1.0', '1.0');
         $package->setAutoload(array('files' => array('root.php')));
-        $package->setRequires(array(new Link('a', 'a/foo')));
+        $package->setRequires(array(new Link('a', 'z/foo')));
 
         $packages = array();
-        $packages[] = $a = new Package('a/foo', '1.0', '1.0');
+        $packages[] = $z = new Package('z/foo', '1.0', '1.0');
         $packages[] = $b = new Package('b/bar', '1.0', '1.0');
         $packages[] = $c = new Package('c/lorem', '1.0', '1.0');
+        $packages[] = $d = new Package('d/d', '1.0', '1.0');
+        $packages[] = $e = new Package('e/e', '1.0', '1.0');
 
-        $a->setAutoload(array('files' => array('testA.php')));
-        $a->setRequires(array(new Link('a/foo', 'c/lorem')));
+        $z->setAutoload(array('files' => array('testA.php')));
+        $z->setRequires(array(new Link('z/foo', 'c/lorem')));
 
         $b->setAutoload(array('files' => array('testB.php')));
         $b->setRequires(array(new Link('b/bar', 'c/lorem')));
 
         $c->setAutoload(array('files' => array('testC.php')));
 
+        $d->setAutoload(array('files' => array('testD.php')));
+
+        $e->setAutoload(array('files' => array('testE.php')));
+        $e->setRequires(array(new Link('e/e', 'c/lorem')));
+
         $this->repository->expects($this->once())
             ->method('getPackages')
             ->will($this->returnValue($packages));
 
-        $this->fs->ensureDirectoryExists($this->vendorDir . '/a/foo');
+        $this->fs->ensureDirectoryExists($this->vendorDir . '/z/foo');
         $this->fs->ensureDirectoryExists($this->vendorDir . '/b/bar');
         $this->fs->ensureDirectoryExists($this->vendorDir . '/c/lorem');
-        file_put_contents($this->vendorDir . '/a/foo/testA.php', '<?php function testFilesAutoloadOrderByDependency1() {}');
+        $this->fs->ensureDirectoryExists($this->vendorDir . '/d/d');
+        $this->fs->ensureDirectoryExists($this->vendorDir . '/e/e');
+        file_put_contents($this->vendorDir . '/z/foo/testA.php', '<?php function testFilesAutoloadOrderByDependency1() {}');
         file_put_contents($this->vendorDir . '/b/bar/testB.php', '<?php function testFilesAutoloadOrderByDependency2() {}');
         file_put_contents($this->vendorDir . '/c/lorem/testC.php', '<?php function testFilesAutoloadOrderByDependency3() {}');
+        file_put_contents($this->vendorDir . '/d/d/testD.php', '<?php function testFilesAutoloadOrderByDependency4() {}');
+        file_put_contents($this->vendorDir . '/e/e/testE.php', '<?php function testFilesAutoloadOrderByDependency5() {}');
         file_put_contents($this->workingDir . '/root.php', '<?php function testFilesAutoloadOrderByDependencyRoot() {}');
 
         $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, 'FilesAutoloadOrder');
@@ -361,18 +372,21 @@ class AutoloadGeneratorTest extends TestCase
         $this->assertTrue(function_exists('testFilesAutoloadOrderByDependency1'));
         $this->assertTrue(function_exists('testFilesAutoloadOrderByDependency2'));
         $this->assertTrue(function_exists('testFilesAutoloadOrderByDependency3'));
+        $this->assertTrue(function_exists('testFilesAutoloadOrderByDependency4'));
+        $this->assertTrue(function_exists('testFilesAutoloadOrderByDependency5'));
         $this->assertTrue(function_exists('testFilesAutoloadOrderByDependencyRoot'));
     }
 
     public function testOverrideVendorsAutoloading()
     {
-        $package = new Package('a', '1.0', '1.0');
-        $package->setAutoload(array('psr-0' => array('A\\B' => $this->workingDir.'/lib')));
+        $package = new Package('z', '1.0', '1.0');
+        $package->setAutoload(array('psr-0' => array('A\\B' => $this->workingDir.'/lib'), 'classmap' => array($this->workingDir.'/src')));
+        $package->setRequires(array(new Link('z', 'a/a')));
 
         $packages = array();
         $packages[] = $a = new Package('a/a', '1.0', '1.0');
         $packages[] = $b = new Package('b/b', '1.0', '1.0');
-        $a->setAutoload(array('psr-0' => array('A' => 'src/', 'A\\B' => 'lib/')));
+        $a->setAutoload(array('psr-0' => array('A' => 'src/', 'A\\B' => 'lib/'), 'classmap' => array('classmap')));
         $b->setAutoload(array('psr-0' => array('B\\Sub\\Name' => 'src/')));
 
         $this->repository->expects($this->once())
@@ -380,12 +394,16 @@ class AutoloadGeneratorTest extends TestCase
             ->will($this->returnValue($packages));
 
         $this->fs->ensureDirectoryExists($this->workingDir.'/lib/A/B');
+        $this->fs->ensureDirectoryExists($this->workingDir.'/src/');
         $this->fs->ensureDirectoryExists($this->vendorDir.'/composer');
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/a/a/classmap');
         $this->fs->ensureDirectoryExists($this->vendorDir.'/a/a/src');
         $this->fs->ensureDirectoryExists($this->vendorDir.'/a/a/lib/A/B');
         $this->fs->ensureDirectoryExists($this->vendorDir.'/b/b/src');
         file_put_contents($this->workingDir.'/lib/A/B/C.php', '<?php namespace A\\B; class C {}');
+        file_put_contents($this->workingDir.'/src/classes.php', '<?php namespace Foo; class Bar {}');
         file_put_contents($this->vendorDir.'/a/a/lib/A/B/C.php', '<?php namespace A\\B; class C {}');
+        file_put_contents($this->vendorDir.'/a/a/classmap/classes.php', '<?php namespace Foo; class Bar {}');
 
         $workDir = strtr($this->workingDir, '\\', '/');
         $expectedNamespace = <<<EOF
@@ -414,6 +432,7 @@ EOF;
 
 return array(
     'A\\\\B\\\\C' => \$baseDir . '/lib/A/B/C.php',
+    'Foo\\\\Bar' => \$baseDir . '/src/classes.php',
 );
 
 EOF;

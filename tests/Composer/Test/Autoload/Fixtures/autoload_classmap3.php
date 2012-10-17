@@ -6,6 +6,6 @@ $vendorDir = dirname(__DIR__);
 $baseDir = $vendorDir;
 
 return array(
-    'Main\\Foo' => $baseDir . '/src/Main/Foo.php',
     'ClassMapFoo' => $baseDir . '/composersrc/foo.php',
+    'Main\\Foo' => $baseDir . '/src/Main/Foo.php',
 );

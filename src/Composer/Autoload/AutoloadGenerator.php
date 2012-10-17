@@ -117,8 +117,6 @@ EOF;
 
         // flatten array
         $classMap = array();
-        $autoloads['classmap'] = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($autoloads['classmap']));
-
         if ($scanPsr0Packages) {
             foreach ($autoloads['psr-0'] as $namespace => $paths) {
                 foreach ($paths as $dir) {
@@ -139,12 +137,16 @@ EOF;
                 }
             }
         }
+
+        $autoloads['classmap'] = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($autoloads['classmap']));
         foreach ($autoloads['classmap'] as $dir) {
             foreach (ClassMapGenerator::createMap($dir) as $class => $path) {
                 $path = '/'.$filesystem->findShortestPath(getcwd(), $path, true);
                 $classMap[$class] = '$baseDir . '.var_export($path, true).",\n";
             }
         }
+
+        ksort($classMap);
         foreach ($classMap as $class => $code) {
             $classmapFile .= '    '.var_export($class, true).' => '.$code;
         }
@@ -170,28 +172,13 @@ EOF;
     {
         // build package => install path map
         $packageMap = array();
-        $packages[] = $mainPackage;
-
-        // sort packages by dependencies
-        usort($packages, function (PackageInterface $a, PackageInterface $b) {
-            foreach (array_merge($a->getRequires(), $a->getDevRequires()) as $link) {
-                if (in_array($link->getTarget(), $b->getNames())) {
-                    return 1;
-                }
-            }
-            foreach (array_merge($b->getRequires(), $b->getDevRequires()) as $link) {
-                if (in_array($link->getTarget(), $a->getNames())) {
-                    return -1;
-                }
-            }
-
-            return strcmp($a->getName(), $b->getName());
-        });
+        array_unshift($packages, $mainPackage);
 
         foreach ($packages as $package) {
             if ($package instanceof AliasPackage) {
                 continue;
             }
+
             if ($package === $mainPackage) {
                 $packageMap[] = array($mainPackage, '');
                 continue;
@@ -213,32 +200,15 @@ EOF;
      */
     public function parseAutoloads(array $packageMap)
     {
-        $autoloads = array('classmap' => array(), 'psr-0' => array(), 'files' => array());
-        foreach ($packageMap as $item) {
-            list($package, $installPath) = $item;
+        $sortedPackageMap = $this->sortPackageMap($packageMap);
 
-            if (null !== $package->getTargetDir()) {
-                $installPath = substr($installPath, 0, -strlen('/'.$package->getTargetDir()));
-            }
+        $psr0 = $this->parseAutoloadsType($packageMap, 'psr-0');
+        $classmap = $this->parseAutoloadsType($sortedPackageMap, 'classmap');
+        $files = $this->parseAutoloadsType($sortedPackageMap, 'files');
 
-            foreach ($package->getAutoload() as $type => $mapping) {
-                // skip misconfigured packages
-                if (!is_array($mapping)) {
-                    continue;
-                }
+        krsort($psr0);
 
-                foreach ($mapping as $namespace => $paths) {
-                    foreach ((array) $paths as $path) {
-                        $autoloads[$type][$namespace][] = empty($installPath) ? $path : $installPath.'/'.$path;
-                    }
-                }
-            }
-        }
-
-        krsort($autoloads['classmap']);
-        krsort($autoloads['psr-0']);
-
-        return $autoloads;
+        return array('psr-0' => $psr0, 'classmap' => $classmap, 'files' => $files);
     }
 
     /**
@@ -445,4 +415,79 @@ FOOTER;
 
     }
 
+    protected function parseAutoloadsType(array $packageMap, $type)
+    {
+        $autoloads = array();
+        foreach ($packageMap as $item) {
+            list($package, $installPath) = $item;
+
+            $autoload = $package->getAutoload();
+            // skip misconfigured packages
+            if (!isset($autoload[$type]) || !is_array($autoload[$type])) {
+                continue;
+            }
+
+            if (null !== $package->getTargetDir()) {
+                $installPath = substr($installPath, 0, -strlen('/'.$package->getTargetDir()));
+            }
+
+            foreach ($autoload[$type] as $namespace => $paths) {
+                foreach ((array) $paths as $path) {
+                    $autoloads[$namespace][] = empty($installPath) ? $path : $installPath.'/'.$path;
+                }
+            }
+        }
+
+        return $autoloads;
+    }
+
+    protected function sortPackageMap(array $packageMap)
+    {
+        $groups = array();
+        $names = array();
+        foreach ($packageMap as $key => $item) {
+            $groups[$key] = array($item);
+            $mainName = $item[0]->getName();
+            foreach ($item[0]->getNames() as $name) {
+                if (!isset($names[$name])) {
+                    $names[$name] = $name == $mainName ? $key : $mainName;
+                }
+            }
+        }
+
+        foreach ($packageMap as $item) {
+            foreach (array_merge($item[0]->getRequires(), $item[0]->getDevRequires()) as $link) {
+                $target = $link->getTarget();
+                if (!isset($names[$target])) {
+                    continue;
+                }
+
+                $targetKey = $names[$target];
+                if (is_string($targetKey)) {
+                    if (!isset($names[$targetKey])) {
+                        continue;
+                    }
+                    $targetKey = $names[$targetKey];
+                }
+
+                $packageKey = $names[$item[0]->getName()];
+                if ($targetKey <= $packageKey || !isset($groups[$packageKey])) {
+                    continue;
+                }
+
+                foreach ($groups[$packageKey] as $originalItem) {
+                    $groups[$targetKey][] = $originalItem;
+                    $names[$originalItem[0]->getName()] = $targetKey;
+                }
+                unset($groups[$packageKey]);
+            }
+        }
+
+        $sortedPackageMap = array();
+        foreach ($groups as $group) {
+            $sortedPackageMap = array_merge($sortedPackageMap, $group);
+        }
+
+        return $sortedPackageMap;
+    }
 }
