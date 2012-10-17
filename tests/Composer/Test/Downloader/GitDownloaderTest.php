@@ -68,6 +68,11 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
 
         $processExecutor->expects($this->at(1))
             ->method('execute')
+            ->with($this->equalTo($this->getCmd("git log 'master' -1 --format=format:%H")), $this->equalTo(null), $this->equalTo('composerPath'))
+            ->will($this->returnValue(0));
+
+        $processExecutor->expects($this->at(2))
+            ->method('execute')
             ->with($this->equalTo($this->getCmd("git checkout '1234567890123456789012345678901234567890' && git reset --hard '1234567890123456789012345678901234567890'")), $this->equalTo(null), $this->equalTo('composerPath'))
             ->will($this->returnValue(0));
 
