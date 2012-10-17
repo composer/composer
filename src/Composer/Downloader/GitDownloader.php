@@ -160,6 +160,7 @@ class GitDownloader extends VcsDownloader
     protected function updateToCommit($path, $reference, $branch, $date)
     {
         $template = 'git checkout %s && git reset --hard %1$s';
+        $branch = preg_replace('{(?:^dev-|(?:\.x)?-dev$)}i', '', $branch);
 
         // check whether non-commitish are branches or tags, and fetch branches with the remote name
         $gitRef = $reference;
@@ -167,10 +168,11 @@ class GitDownloader extends VcsDownloader
             && 0 === $this->process->execute('git branch -r', $output, $path)
             && preg_match('{^\s+composer/'.preg_quote($reference).'$}m', $output)
         ) {
-            $gitRef = 'composer/'.$reference;
+            $command = sprintf('git checkout -B %s %s && git reset --hard %2$s', escapeshellarg($branch), escapeshellarg('composer/'.$reference));
+            if (0 === $this->process->execute($command, $output, $path)) {
+                return;
+            }
         }
-
-        $branch = preg_replace('{(?:^dev-|(?:\.x)?-dev$)}i', '', $branch);
 
         // checkout branch by name if the current reference matches the tip of the branch
         if (preg_match('{^[a-f0-9]{40}$}', $reference)

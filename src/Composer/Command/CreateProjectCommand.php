@@ -26,9 +26,9 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Composer\Json\JsonFile;
+use Composer\Util\Filesystem;
 use Composer\Util\RemoteFilesystem;
 use Composer\Package\Version\VersionParser;
 
@@ -190,20 +190,24 @@ EOT
 
         if (!$keepVcs && (
             !$io->isInteractive() ||
-            $io->askConfirmation('<info>Do you want remove all previous VCS history ?</info> [<comment>yes</comment>]: ', true)
+            $io->askConfirmation('<info>Do you want to remove the exisitng VCS (.git, .svn..) history?</info> [<comment>Y,n</comment>]? ', true)
             )
         ) {
             $finder = new Finder();
-            $finder->in($directory)->ignoreVCS(false)->ignoreDotFiles(false);
+            $finder->directories()->in(getcwd())->ignoreVCS(false)->ignoreDotFiles(false);
             foreach (array('.svn', '_svn', 'CVS', '_darcs', '.arch-params', '.monotone', '.bzr', '.git', '.hg') as $vcsName) {
                 $finder->name($vcsName);
             }
 
-            $fs = new Filesystem();
             try {
-                $fs->remove($finder);
-            } catch (IOException $e) {
-                $io->write("<error>An error occured while removing the .git directory</error>");
+                $fs = new Filesystem();
+                foreach (iterator_to_array($finder) as $dir) {
+                    if (!$fs->removeDirectory($dir)) {
+                        throw new \RuntimeException('Could not remove '.$dir);
+                    }
+                }
+            } catch (\Exception $e) {
+                $io->write('<error>An error occured while removing the VCS metadata: '.$e->getMessage().'</error>');
             }
         }
     }
