@@ -239,33 +239,40 @@ In this case the short name of the channel is `pear2`, so the
 > **Note:** The `pear` repository requires doing quite a few requests per
 > package, so this may considerably slow down the installation process.
 
-#### Custom channel alias
+#### Custom vendor alias
 
-It is possible to alias all pear channel packages with custom name.
+It is possible to alias PEAR channel packages with a custom vendor name.
 
 Example:
 
-You own private pear repository and going to use composer abilities to bring
-dependencies from vcs or transit to composer repository scheme. Your
-repository list of packages:
+Suppose you have a private PEAR repository and wish to use Composer to
+incorporate dependencies from a VCS. Your PEAR repository contains the
+following packages:
 
- * BasePackage, requires nothing
- * IntermediatePackage, depends on BasePackage
- * TopLevelPackage1 and TopLevelPackage2 both depend on IntermediatePackage.
+ * `BasePackage`
+ * `IntermediatePackage`, which depends on `BasePackage`
+ * `TopLevelPackage1` and `TopLevelPackage2` which both depend on `IntermediatePackage`
 
-For composer it looks like:
+Without a vendor alias, Composer will use the PEAR channel name as the
+vendor portion of the package name:
 
- * "pear-pear.foobar.repo/IntermediatePackage" depends on "pear-pear.foobar.repo/BasePackage",
- * "pear-pear.foobar.repo/TopLevelPackage1" depends on "pear-pear.foobar.repo/IntermediatePackage",
- * "pear-pear.foobar.repo/TopLevelPackage2" depends on "pear-pear.foobar.repo/IntermediatePackage"
+ * `pear-pear.foobar.repo/BasePackage`
+ * `pear-pear.foobar.repo/IntermediatePackage`
+ * `pear-pear.foobar.repo/TopLevelPackage1`
+ * `pear-pear.foobar.repo/TopLevelPackage2`
 
-When you update one of your packages to composer naming scheme or made it
-available through vcs, your older dependencies would not see new version,
-cause it would be named like "foobar/IntermediatePackage". Specifying 'vendor-
-alias' for pear repository, you will get all its packages aliased with
-composer-like names. Following example would take BasePackage,
-TopLevelPackage1 and TopLevelPackage2 packages from pear repository and
-IntermediatePackage from github repository:
+Suppose at a later time you wish to migrate your PEAR packages to a
+Composer repository and naming scheme, and adopt the vendor name of `foobar`.
+Projects using your PEAR packages would not see the updated packages, since
+they have a different vendor name (`foobar/IntermediatePackage` vs
+`pear-pear.foobar.repo/IntermediatePackage`).
+
+By specifying `vendor-alias` for the PEAR repository from the start, you can
+avoid this scenario and future-proof your package names.
+
+To illustrate, the following example would get the `BasePackage`,
+`TopLevelPackage1`, and `TopLevelPackage2` packages from your PEAR repository
+and `IntermediatePackage` from a Github repository:
 
     {
         "repositories": [
