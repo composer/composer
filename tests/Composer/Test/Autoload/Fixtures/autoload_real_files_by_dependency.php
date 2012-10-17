@@ -31,9 +31,11 @@ class ComposerAutoloaderInitFilesAutoloadOrder
         $loader->register();
 
         require $vendorDir . '/c/lorem/testC.php';
-        require $vendorDir . '/a/foo/testA.php';
+        require $vendorDir . '/z/foo/testA.php';
         require $baseDir . '/root.php';
         require $vendorDir . '/b/bar/testB.php';
+        require $vendorDir . '/d/d/testD.php';
+        require $vendorDir . '/e/e/testE.php';
 
         return $loader;
     }
