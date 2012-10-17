@@ -170,6 +170,19 @@ class GitDownloader extends VcsDownloader
             $gitRef = 'composer/'.$reference;
         }
 
+        $branch = preg_replace('{(?:^dev-|(?:\.x)?-dev$)}i', '', $branch);
+
+        // checkout branch by name if the current reference matches the tip of the branch
+        if (preg_match('{^[a-f0-9]{40}$}', $reference)
+            && 0 === $this->process->execute('git log '.escapeshellarg($branch).' -1 --format=format:%H', $output, $path)
+            && $reference === trim($output)
+        ) {
+            $command = sprintf('git checkout -B %s %s && git reset --hard %2$s', escapeshellarg($branch), escapeshellarg('composer/'.$branch));
+            if (0 === $this->process->execute($command, $output, $path)) {
+                return;
+            }
+        }
+
         $command = sprintf($template, escapeshellarg($gitRef));
         if (0 === $this->process->execute($command, $output, $path)) {
             return;
@@ -177,7 +190,6 @@ class GitDownloader extends VcsDownloader
 
         // reference was not found (prints "fatal: reference is not a tree: $ref")
         if ($date && false !== strpos($this->process->getErrorOutput(), $reference)) {
-            $branch = preg_replace('{(?:^dev-|(?:\.x)?-dev$)}i', '', $branch);
             $date = $date->format('U');
 
             // guess which remote branch to look at first
