@@ -51,10 +51,12 @@ class GitDownloader extends VcsDownloader
         $this->io->write("    Checking out ".$ref);
         $command = 'cd %s && git remote set-url composer %s && git fetch composer && git fetch --tags composer';
 
-        // capture username/password from github URL if there is one
-        $this->process->execute(sprintf('cd %s && git remote -v', escapeshellarg($path)), $output);
-        if (preg_match('{^composer\s+https://(.+):(.+)@github.com/}im', $output, $match)) {
-            $this->io->setAuthorization('github.com', $match[1], $match[2]);
+        if (!$this->io->hasAuthorization('github.com')) {
+            // capture username/password from github URL if there is one
+            $this->process->execute(sprintf('cd %s && git remote -v', escapeshellarg($path)), $output);
+            if (preg_match('{^composer\s+https://(.+):(.+)@github.com/}im', $output, $match)) {
+                $this->io->setAuthorization('github.com', $match[1], $match[2]);
+            }
         }
 
         $commandCallable = function($url) use ($ref, $path, $command) {
@@ -327,7 +329,7 @@ class GitDownloader extends VcsDownloader
 
     protected function sanitizeUrl($message)
     {
-        return preg_match('{://(.+?):.+?@}', '://$1:***@', $message);
+        return preg_replace('{://(.+?):.+?@}', '://$1:***@', $message);
     }
 
     protected function setPushUrl(PackageInterface $package, $path)
