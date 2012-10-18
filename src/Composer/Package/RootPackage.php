@@ -12,8 +12,6 @@
 
 namespace Composer\Package;
 
-use Composer\Package\Version\VersionParser;
-
 /**
  * The root package represents the project's composer.json and contains additional metadata
  *

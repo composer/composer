@@ -108,7 +108,7 @@ class Application extends BaseApplication
     }
 
     /**
-     * @param InputInterface $input
+     * @param  InputInterface    $input
      * @throws \RuntimeException
      */
     private function switchWorkingDir(InputInterface $input)

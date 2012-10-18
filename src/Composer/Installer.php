@@ -112,15 +112,15 @@ class Installer
     /**
      * Constructor
      *
-     * @param IOInterface         $io
-     * @param Config              $config
-     * @param RootPackageInterface    $package
-     * @param DownloadManager     $downloadManager
-     * @param RepositoryManager   $repositoryManager
-     * @param Locker              $locker
-     * @param InstallationManager $installationManager
-     * @param EventDispatcher     $eventDispatcher
-     * @param AutoloadGenerator   $autoloadGenerator
+     * @param IOInterface          $io
+     * @param Config               $config
+     * @param RootPackageInterface $package
+     * @param DownloadManager      $downloadManager
+     * @param RepositoryManager    $repositoryManager
+     * @param Locker               $locker
+     * @param InstallationManager  $installationManager
+     * @param EventDispatcher      $eventDispatcher
+     * @param AutoloadGenerator    $autoloadGenerator
      */
     public function __construct(IOInterface $io, Config $config, RootPackageInterface $package, DownloadManager $downloadManager, RepositoryManager $repositoryManager, Locker $locker, InstallationManager $installationManager, EventDispatcher $eventDispatcher, AutoloadGenerator $autoloadGenerator)
     {

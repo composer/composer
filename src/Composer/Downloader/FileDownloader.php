@@ -124,8 +124,8 @@ class FileDownloader implements DownloaderInterface
      * Process the download url
      *
      * @param  PackageInterface $package package the url is coming from
-     * @param  string $url download url
-     * @return string url
+     * @param  string           $url     download url
+     * @return string           url
      *
      * @throws \RuntimeException If any problem with the url
      */

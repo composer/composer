@@ -171,10 +171,10 @@ class VersionParser
     }
 
     /**
-     * @param string $source source package name
-     * @param string $sourceVersion source package version (pretty version ideally)
-     * @param string $description link description (e.g. requires, replaces, ..)
-     * @param array $links array of package name => constraint mappings
+     * @param  string $source        source package name
+     * @param  string $sourceVersion source package version (pretty version ideally)
+     * @param  string $description   link description (e.g. requires, replaces, ..)
+     * @param  array  $links         array of package name => constraint mappings
      * @return Link[]
      */
     public function parseLinks($source, $sourceVersion, $description, $links)

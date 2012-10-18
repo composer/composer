@@ -59,9 +59,9 @@ interface RepositoryInterface extends \Countable
      *
      * If the callback returns false, the process stops
      *
-     * @param callable $callback
-     * @param string   $class
-     * @return bool false if the process was interrupted, true otherwise
+     * @param  callable $callback
+     * @param  string   $class
+     * @return bool     false if the process was interrupted, true otherwise
      */
     public function filterPackages($callback, $class = 'Composer\Package\Package');
 
