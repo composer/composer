@@ -194,7 +194,7 @@ EOT
             )
         ) {
             $finder = new Finder();
-            $finder->directories()->in(getcwd())->ignoreVCS(false)->ignoreDotFiles(false);
+            $finder->depth(1)->directories()->in(getcwd())->ignoreVCS(false)->ignoreDotFiles(false);
             foreach (array('.svn', '_svn', 'CVS', '_darcs', '.arch-params', '.monotone', '.bzr', '.git', '.hg') as $vcsName) {
                 $finder->name($vcsName);
             }
