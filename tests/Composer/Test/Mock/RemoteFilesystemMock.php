@@ -28,7 +28,7 @@ class RemoteFilesystemMock extends RemoteFilesystem
         $this->contentMap = $contentMap;
     }
 
-    public function getContents($originUrl, $fileUrl, $progress = true)
+    public function getContents($originUrl, $fileUrl, $progress = true, $options = array())
     {
         if (!empty($this->contentMap[$fileUrl])) {
             return $this->contentMap[$fileUrl];
