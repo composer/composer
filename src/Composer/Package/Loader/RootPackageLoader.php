@@ -132,6 +132,7 @@ class RootPackageLoader extends ArrayLoader
             }
 
             // infer flags for requirements that have an explicit -dev or -beta version specified for example
+            $reqVersion = preg_replace('{^([^,\s@]+) as .+$}', '$1', $reqVersion);
             if (preg_match('{^[^,\s@]+$}', $reqVersion) && 'stable' !== ($stabilityName = VersionParser::parseStability($reqVersion))) {
                 $name = strtolower($reqName);
                 $stability = $stabilities[$stabilityName];
@@ -148,6 +149,7 @@ class RootPackageLoader extends ArrayLoader
     private function extractReferences(array $requires, array $references)
     {
         foreach ($requires as $reqName => $reqVersion) {
+            $reqVersion = preg_replace('{^([^,\s@]+) as .+$}', '$1', $reqVersion);
             if (preg_match('{^[^,\s@]+?#([a-f0-9]+)$}', $reqVersion, $match) && 'dev' === ($stabilityName = VersionParser::parseStability($reqVersion))) {
                 $name = strtolower($reqName);
                 $references[$name] = $match[1];
