@@ -355,11 +355,21 @@ class GitHubDriver extends VcsDriver
                 $password = $this->io->askAndHideAnswer('Password: ');
                 $this->io->setAuthorization($this->originUrl, $username, $password);
 
+                // build up OAuth app name
+                $appName = 'Composer';
+                if (0 === $this->process->execute('hostname', $output)) {
+                    $appName .= ' on ' . trim($output);
+                }
+
                 $contents = JsonFile::parseJson($this->remoteFilesystem->getContents($this->originUrl, 'https://api.github.com/authorizations', false, array(
                     'http' => array(
                         'method' => 'POST',
                         'header' => "Content-Type: application/json\r\n",
-                        'content' => '{"scopes":["repo"],"note":"Composer","note_url":"https://getcomposer.org/"}',
+                        'content' => json_encode(array(
+                            'scopes' => array('repo'),
+                            'note' => $appName,
+                            'note_url' => 'https://getcomposer.org/',
+                        )),
                     )
                 )));
             } catch (TransportException $e) {
