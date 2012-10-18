@@ -107,6 +107,7 @@ class RemoteFilesystem
         }
 
         $errorMessage = '';
+        $errorCode = 0;
         set_error_handler(function ($code, $msg) use (&$errorMessage) {
             if ($errorMessage) {
                 $errorMessage .= "\n";
@@ -129,8 +130,9 @@ class RemoteFilesystem
         }
 
         // fix for 5.4.0 https://bugs.php.net/bug.php?id=61336
-        if (!empty($http_response_header[0]) && preg_match('{^HTTP/\S+ 404}i', $http_response_header[0])) {
+        if (!empty($http_response_header[0]) && preg_match('{^HTTP/\S+ ([45]\d\d)}i', $http_response_header[0], $match)) {
             $result = false;
+            $errorCode = $match[1];
         }
 
         // decode gzip
@@ -181,7 +183,12 @@ class RemoteFilesystem
         }
 
         if (false === $this->result) {
-            throw new TransportException('The "'.$fileUrl.'" file could not be downloaded: '.$errorMessage);
+            $e = new TransportException('The "'.$fileUrl.'" file could not be downloaded: '.$errorMessage, $errorCode);
+            if (!empty($http_response_header[0])) {
+                $e->setHeaders($http_response_header);
+            }
+
+            throw $e;
         }
     }
 
