@@ -167,7 +167,7 @@ class ClassLoader
         }
 
         if (isset($this->classMap[$class])) {
-            return $this->classMap[$class];
+            return $this->classMap[$class] ?: null;
         }
 
         if (false !== $pos = strrpos($class, '\\')) {
