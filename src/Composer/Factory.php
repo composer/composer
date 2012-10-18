@@ -140,6 +140,13 @@ class Factory
         $config = static::createConfig();
         $config->merge($localConfig);
 
+        // reload oauth token from config if available
+        if ($tokens = $config->get('github-oauth')) {
+            foreach ($tokens as $domain => $token) {
+                $io->setAuthorization($domain, $token, 'x-oauth-basic');
+            }
+        }
+
         $vendorDir = $config->get('vendor-dir');
         $binDir = $config->get('bin-dir');
 
