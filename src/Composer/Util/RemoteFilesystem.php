@@ -50,12 +50,13 @@ class RemoteFilesystem
      * @param string  $fileUrl   The file URL
      * @param string  $fileName  the local filename
      * @param boolean $progress  Display the progression
+     * @param array   $options   Additional context options
      *
      * @return bool true
      */
-    public function copy($originUrl, $fileUrl, $fileName, $progress = true)
+    public function copy($originUrl, $fileUrl, $fileName, $progress = true, $options = array())
     {
-        $this->get($originUrl, $fileUrl, $fileName, $progress);
+        $this->get($originUrl, $fileUrl, $options, $fileName, $progress);
 
         return $this->result;
     }
@@ -66,12 +67,13 @@ class RemoteFilesystem
      * @param string  $originUrl The origin URL
      * @param string  $fileUrl   The file URL
      * @param boolean $progress  Display the progression
+     * @param array   $options   Additional context options
      *
      * @return string The content
      */
-    public function getContents($originUrl, $fileUrl, $progress = true)
+    public function getContents($originUrl, $fileUrl, $progress = true, $options = array())
     {
-        $this->get($originUrl, $fileUrl, null, $progress);
+        $this->get($originUrl, $fileUrl, $options, null, $progress);
 
         return $this->result;
     }
@@ -79,14 +81,15 @@ class RemoteFilesystem
     /**
      * Get file content or copy action.
      *
-     * @param string  $originUrl The origin URL
-     * @param string  $fileUrl   The file URL
-     * @param string  $fileName  the local filename
-     * @param boolean $progress  Display the progression
+     * @param string  $originUrl         The origin URL
+     * @param string  $fileUrl           The file URL
+     * @param array   $additionalOptions context options
+     * @param string  $fileName          the local filename
+     * @param boolean $progress          Display the progression
      *
      * @throws TransportException When the file could not be downloaded
      */
-    protected function get($originUrl, $fileUrl, $fileName = null, $progress = true)
+    protected function get($originUrl, $fileUrl, $additionalOptions = array(), $fileName = null, $progress = true)
     {
         $this->bytesMax = 0;
         $this->result = null;
@@ -96,7 +99,7 @@ class RemoteFilesystem
         $this->progress = $progress;
         $this->lastProgress = null;
 
-        $options = $this->getOptionsForUrl($originUrl);
+        $options = $this->getOptionsForUrl($originUrl, $additionalOptions);
         $ctx = StreamContextFactory::getContext($options, array('notification' => array($this, 'callbackGet')));
 
         if ($this->progress) {
@@ -104,21 +107,32 @@ class RemoteFilesystem
         }
 
         $errorMessage = '';
+        $errorCode = 0;
         set_error_handler(function ($code, $msg) use (&$errorMessage) {
             if ($errorMessage) {
                 $errorMessage .= "\n";
             }
             $errorMessage .= preg_replace('{^file_get_contents\(.*?\): }', '', $msg);
         });
-        $result = file_get_contents($fileUrl, false, $ctx);
+        try {
+            $result = file_get_contents($fileUrl, false, $ctx);
+        } catch (\Exception $e) {
+            if ($e instanceof TransportException && !empty($http_response_header[0])) {
+                $e->setHeaders($http_response_header);
+            }
+        }
         if ($errorMessage && !ini_get('allow_url_fopen')) {
             $errorMessage = 'allow_url_fopen must be enabled in php.ini ('.$errorMessage.')';
         }
         restore_error_handler();
+        if (isset($e)) {
+            throw $e;
+        }
 
         // fix for 5.4.0 https://bugs.php.net/bug.php?id=61336
-        if (!empty($http_response_header[0]) && preg_match('{^HTTP/\S+ 404}i', $http_response_header[0])) {
+        if (!empty($http_response_header[0]) && preg_match('{^HTTP/\S+ ([45]\d\d)}i', $http_response_header[0], $match)) {
             $result = false;
+            $errorCode = $match[1];
         }
 
         // decode gzip
@@ -169,7 +183,12 @@ class RemoteFilesystem
         }
 
         if (false === $this->result) {
-            throw new TransportException('The "'.$fileUrl.'" file could not be downloaded: '.$errorMessage);
+            $e = new TransportException('The "'.$fileUrl.'" file could not be downloaded: '.$errorMessage, $errorCode);
+            if (!empty($http_response_header[0])) {
+                $e->setHeaders($http_response_header);
+            }
+
+            throw $e;
         }
     }
 
@@ -207,6 +226,12 @@ class RemoteFilesystem
                 }
                 break;
 
+            case STREAM_NOTIFY_AUTH_RESULT:
+                if (403 === $messageCode) {
+                    throw new TransportException($message, 403);
+                }
+                break;
+
             case STREAM_NOTIFY_FILE_SIZE_IS:
                 if ($this->bytesMax < $bytesMax) {
                     $this->bytesMax = $bytesMax;
@@ -233,9 +258,9 @@ class RemoteFilesystem
         }
     }
 
-    protected function getOptionsForUrl($originUrl)
+    protected function getOptionsForUrl($originUrl, $additionalOptions)
     {
-        $options['http']['header'] = sprintf(
+        $header = sprintf(
             "User-Agent: Composer/%s (%s; %s; PHP %s.%s.%s)\r\n",
             Composer::VERSION,
             php_uname('s'),
@@ -245,16 +270,22 @@ class RemoteFilesystem
             PHP_RELEASE_VERSION
         );
         if (extension_loaded('zlib')) {
-            $options['http']['header'] .= 'Accept-Encoding: gzip'."\r\n";
+            $header .= 'Accept-Encoding: gzip'."\r\n";
         }
 
         if ($this->io->hasAuthorization($originUrl)) {
             $auth = $this->io->getAuthorization($originUrl);
             $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
-            $options['http']['header'] .= "Authorization: Basic $authStr\r\n";
+            $header .= "Authorization: Basic $authStr\r\n";
         }
 
-        $options = array_replace_recursive($options, $this->options);
+        $options = array_replace_recursive($this->options, $additionalOptions);
+
+        if (isset($options['http']['header'])) {
+            $options['http']['header'] = rtrim($options['http']['header'], "\r\n") . "\r\n" . $header;
+        } else {
+            $options['http']['header'] = $header;
+        }
 
         return $options;
     }

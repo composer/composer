@@ -10,22 +10,20 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Downloader;
+namespace Composer\Config;
+
+use Composer\Json\JsonManipulator;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class TransportException extends \Exception
+interface ConfigSourceInterface
 {
-    protected $headers;
+    public function addRepository($name, $config);
 
-    public function setHeaders($headers)
-    {
-        $this->headers = $headers;
-    }
+    public function removeRepository($name);
 
-    public function getHeaders()
-    {
-        return $this->headers;
-    }
+    public function addConfigSetting($name, $value);
+
+    public function removeConfigSetting($name);
 }
