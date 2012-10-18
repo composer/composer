@@ -12,6 +12,7 @@
 
 namespace Composer;
 
+use Composer\Config\JsonConfigSource;
 use Composer\Json\JsonFile;
 use Composer\IO\IOInterface;
 use Composer\Repository\ComposerRepository;
@@ -59,6 +60,7 @@ class Factory
         if ($file->exists()) {
             $config->merge($file->read());
         }
+        $config->setConfigSource(new JsonConfigSource($file));
 
         return $config;
     }
