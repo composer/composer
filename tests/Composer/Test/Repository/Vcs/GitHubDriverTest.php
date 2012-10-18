@@ -68,14 +68,22 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
             ->with($this->equalTo('Password: '))
             ->will($this->returnValue('somepassword'));
 
-        $io->expects($this->once())
+        $io->expects($this->any())
             ->method('setAuthorization')
-            ->with($this->equalTo('github.com'), 'someuser', 'somepassword');
+            ->with($this->equalTo('github.com'), $this->matchesRegularExpression('{someuser|abcdef}'), $this->matchesRegularExpression('{somepassword|x-oauth-basic}'));
 
         $remoteFilesystem->expects($this->at(1))
             ->method('getContents')
+            ->with($this->equalTo('github.com'), $this->equalTo('https://api.github.com/authorizations'), $this->equalTo(false))
+            ->will($this->returnValue('{"token": "abcdef"}'));
+
+        $remoteFilesystem->expects($this->at(2))
+            ->method('getContents')
             ->with($this->equalTo('github.com'), $this->equalTo($repoApiUrl), $this->equalTo(false))
-            ->will($this->returnValue('{"master_branch": "test_master"}'));
+            ->will($this->returnValue('{"master_branch": "test_master", "private": true}'));
+
+        $configSource = $this->getMock('Composer\Config\ConfigSourceInterface');
+        $this->config->setConfigSource($configSource);
 
         $gitHubDriver = new GitHubDriver($repoUrl, $io, $this->config, $process, $remoteFilesystem);
         $gitHubDriver->initialize();

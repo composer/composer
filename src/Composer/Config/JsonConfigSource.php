@@ -30,14 +30,14 @@ class JsonConfigSource implements ConfigSourceInterface
 
     public function addRepository($name, $config)
     {
-        return $this->manipulateJson('addRepository', $name, $config, function (&$config, $repo, $repoConfig) {
+        $this->manipulateJson('addRepository', $name, $config, function (&$config, $repo, $repoConfig) {
             $config['repositories'][$repo] = $repoConfig;
         });
     }
 
     public function removeRepository($name)
     {
-        return $this->manipulateJson('removeRepository', $name, function (&$config, $repo) {
+        $this->manipulateJson('removeRepository', $name, function (&$config, $repo) {
             unset($config['repositories'][$repo]);
         });
     }
@@ -51,7 +51,7 @@ class JsonConfigSource implements ConfigSourceInterface
 
     public function removeConfigSetting($name)
     {
-        return $this->manipulateJson('removeConfigSetting', $name, function (&$config, $key) {
+        $this->manipulateJson('removeConfigSetting', $name, function (&$config, $key) {
             unset($config['config'][$key]);
         });
     }
