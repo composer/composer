@@ -20,7 +20,6 @@ use Composer\Config;
 use Composer\Config\JsonConfigSource;
 use Composer\Factory;
 use Composer\Json\JsonFile;
-use Composer\Json\JsonManipulator;
 
 /**
  * @author Joshua Estes <Joshua.Estes@iostudio.com>

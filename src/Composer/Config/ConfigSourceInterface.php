@@ -12,8 +12,6 @@
 
 namespace Composer\Config;
 
-use Composer\Json\JsonManipulator;
-
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
