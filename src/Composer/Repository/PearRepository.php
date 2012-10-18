@@ -83,7 +83,7 @@ class PearRepository extends ArrayRepository
     /**
      * Builds CompletePackages from PEAR package definition data.
      *
-     * @param  ChannelInfo   $channelInfo
+     * @param  ChannelInfo     $channelInfo
      * @return CompletePackage
      */
     private function buildComposerPackages(ChannelInfo $channelInfo, VersionParser $versionParser)

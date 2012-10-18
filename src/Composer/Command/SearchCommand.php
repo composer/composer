@@ -120,7 +120,7 @@ EOT
      * tries to find a token within the name/keywords/description
      *
      * @param  CompletePackageInterface $package
-     * @param  string           $token
+     * @param  string                   $token
      * @return boolean
      */
     private function matchPackage(CompletePackageInterface $package, $token)

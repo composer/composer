@@ -12,8 +12,6 @@
 
 namespace Composer\Package;
 
-use Composer\Package\Version\VersionParser;
-
 /**
  * Package containing additional metadata that is not used by the solver
  *

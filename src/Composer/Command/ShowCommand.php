@@ -146,7 +146,7 @@ EOT
     /**
      * finds a package by name and version if provided
      *
-     * @return array array(CompletePackageInterface, array of versions)
+     * @return array                     array(CompletePackageInterface, array of versions)
      * @throws \InvalidArgumentException
      */
     protected function getPackage(RepositoryInterface $installedRepo, RepositoryInterface $repos, $name, $version = null)

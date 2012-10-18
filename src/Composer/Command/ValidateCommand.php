@@ -16,12 +16,6 @@ use Composer\Util\ConfigValidator;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
-use Composer\Json\JsonFile;
-use Composer\Json\JsonValidationException;
-use Composer\Package\Loader\ValidatingArrayLoader;
-use Composer\Package\Loader\ArrayLoader;
-use Composer\Util\RemoteFilesystem;
-use Composer\Util\SpdxLicenseIdentifier;
 
 /**
  * ValidateCommand
