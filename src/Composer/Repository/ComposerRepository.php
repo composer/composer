@@ -199,6 +199,13 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
         return $this->hasProviders;
     }
 
+    public function resetPackageIds()
+    {
+        foreach ($this->providersByUid as $package) {
+            $package->setId(-1);
+        }
+    }
+
     public function whatProvides(Pool $pool, $name)
     {
         // skip platform packages

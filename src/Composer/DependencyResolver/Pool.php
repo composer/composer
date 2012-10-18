@@ -83,6 +83,7 @@ class Pool
 
             if ($repo instanceof ComposerRepository && $repo->hasProviders()) {
                 $this->composerRepos[] = $repo;
+                $repo->resetPackageIds();
             } elseif ($repo instanceof StreamableRepositoryInterface) {
                 foreach ($repo->getMinimalPackages() as $package) {
                     $name = $package['name'];
