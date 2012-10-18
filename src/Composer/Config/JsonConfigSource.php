@@ -63,7 +63,11 @@ class JsonConfigSource implements ConfigSourceInterface
         array_shift($args);
         $fallback = array_pop($args);
 
-        $contents = file_get_contents($this->file->getPath());
+        if ($this->file->exists()) {
+            $contents = file_get_contents($this->file->getPath());
+        } else {
+            $contents = "{\n    \"config\": {\n    }\n}\n";
+        }
         $manipulator = new JsonManipulator($contents);
 
         // try to update cleanly
