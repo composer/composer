@@ -17,6 +17,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Config;
+use Composer\Config\JsonConfigSource;
 use Composer\Factory;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
@@ -31,6 +32,11 @@ class ConfigCommand extends Command
      * @var Composer\Json\JsonFile
      */
     protected $configFile;
+
+    /**
+     * @var Composer\Config\JsonConfigSource
+     */
+    protected $configSource;
 
     /**
      * {@inheritDoc}
@@ -94,11 +100,12 @@ EOT
 
         // Get the local composer.json, global config.json, or if the user
         // passed in a file to use
-        $this->configFile = $input->getOption('global')
+        $configFile = $input->getOption('global')
             ? (Factory::createConfig()->get('home') . '/config.json')
             : $input->getOption('file');
 
-        $this->configFile = new JsonFile($this->configFile);
+        $this->configFile = new JsonFile($configFile);
+        $this->configSource = new JsonConfigSource($this->configFile);
 
         // initialize the global file if it's not there
         if ($input->getOption('global') && !$this->configFile->exists()) {
@@ -161,25 +168,17 @@ EOT
         // handle repositories
         if (preg_match('/^repos?(?:itories)?\.(.+)/', $input->getArgument('setting-key'), $matches)) {
             if ($input->getOption('unset')) {
-                return $this->manipulateJson('removeRepository', $matches[1], function (&$config, $repo) {
-                    unset($config['repositories'][$repo]);
-                });
+                return $this->configSource->removeRepository($matches[1]);
             }
 
             if (2 !== count($values)) {
                 throw new \RuntimeException('You must pass the type and a url. Example: php composer.phar config repositories.foo vcs http://bar.com');
             }
 
-            return $this->manipulateJson(
-                'addRepository',
-                $matches[1],
-                array(
-                    'type' => $values[0],
-                    'url'  => $values[1],
-                ), function (&$config, $repo, $repoConfig) {
-                    $config['repositories'][$repo] = $repoConfig;
-                }
-            );
+            return $this->configSource->addRepository($matches[1], array(
+                'type' => $values[0],
+                'url'  => $values[1],
+            ));
         }
 
         // handle config values
@@ -217,9 +216,7 @@ EOT
         foreach ($uniqueConfigValues as $name => $callbacks) {
              if ($settingKey === $name) {
                 if ($input->getOption('unset')) {
-                    return $this->manipulateJson('removeConfigSetting', $settingKey, function (&$config, $key) {
-                        unset($config['config'][$key]);
-                    });
+                    return $this->configSource->removeConfigSetting($settingKey);
                 }
 
                 list($validator, $normalizer) = $callbacks;
@@ -234,18 +231,14 @@ EOT
                     ));
                 }
 
-                return $this->manipulateJson('addConfigSetting', $settingKey, $normalizer($values[0]), function (&$config, $key, $val) {
-                    $config['config'][$key] = $val;
-                });
+                return $this->configSource->addConfigSetting($settingKey, $normalizer($values[0]));
             }
         }
 
         foreach ($multiConfigValues as $name => $callbacks) {
             if ($settingKey === $name) {
                 if ($input->getOption('unset')) {
-                    return $this->manipulateJson('removeConfigSetting', $settingKey, function (&$config, $key) {
-                        unset($config['config'][$key]);
-                    });
+                    return $this->configSource->removeConfigSetting($settingKey);
                 }
 
                 list($validator, $normalizer) = $callbacks;
@@ -256,33 +249,11 @@ EOT
                     ));
                 }
 
-                return $this->manipulateJson('addConfigSetting', $settingKey, $normalizer($values), function (&$config, $key, $val) {
-                    $config['config'][$key] = $val;
-                });
+                return $this->configSource->addConfigSetting($settingKey, $normalizer($values));
             }
         }
-    }
 
-    protected function manipulateJson($method, $args, $fallback)
-    {
-        $args = func_get_args();
-        // remove method & fallback
-        array_shift($args);
-        $fallback = array_pop($args);
-
-        $contents = file_get_contents($this->configFile->getPath());
-        $manipulator = new JsonManipulator($contents);
-
-        // try to update cleanly
-        if (call_user_func_array(array($manipulator, $method), $args)) {
-            file_put_contents($this->configFile->getPath(), $manipulator->getContents());
-        } else {
-            // on failed clean update, call the fallback and rewrite the whole file
-            $config = $this->configFile->read();
-            array_unshift($args, $config);
-            call_user_func_array($fallback, $args);
-            $this->configFile->write($config);
-        }
+        throw new \InvalidArgumentException('Setting '.$settingKey.' does not exist or is not supported by this command');
     }
 
     /**
