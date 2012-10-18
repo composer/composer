@@ -202,6 +202,6 @@ class ClassLoader
             return $file;
         }
 
-        $this->classMap[$class] = false;
+        return $this->classMap[$class] = false;
     }
 }
