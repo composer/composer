@@ -373,6 +373,11 @@ class GitHubDriver extends VcsDriver
 
             $this->io->setAuthorization($this->originUrl, $contents['token'], 'x-oauth-basic');
 
+            // store value in user config
+            $githubTokens = $this->config->get('github-oauth') ?: array();
+            $githubTokens[$this->originUrl] = $contents['token'];
+            $this->config->getConfigSource()->addConfigSetting('github-oauth', $githubTokens);
+
             return;
         }
 
