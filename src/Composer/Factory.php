@@ -38,7 +38,7 @@ class Factory
             if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
                 $home = getenv('APPDATA') . '/Composer';
             } else {
-                $home = getenv('HOME') . '/.composer';
+                $home = rtrim(getenv('HOME'), '/') . '/.composer';
             }
         }
 
