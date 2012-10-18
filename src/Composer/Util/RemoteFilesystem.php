@@ -103,14 +103,17 @@ class RemoteFilesystem
             $this->io->write("    Downloading: <comment>connection...</comment>", false);
         }
 
-        $errorMessage = null;
+        $errorMessage = '';
         set_error_handler(function ($code, $msg) use (&$errorMessage) {
-            $errorMessage = preg_replace('{^file_get_contents\(.+?\): }', '', $msg);
-            if (!ini_get('allow_url_fopen')) {
-                $errorMessage = 'allow_url_fopen must be enabled in php.ini ('.$errorMessage.')';
+            if ($errorMessage) {
+                $errorMessage .= "\n";
             }
+            $errorMessage .= preg_replace('{^file_get_contents\(.*?\): }', '', $msg);
         });
         $result = file_get_contents($fileUrl, false, $ctx);
+        if ($errorMessage && !ini_get('allow_url_fopen')) {
+            $errorMessage = 'allow_url_fopen must be enabled in php.ini ('.$errorMessage.')';
+        }
         restore_error_handler();
 
         // fix for 5.4.0 https://bugs.php.net/bug.php?id=61336
@@ -146,9 +149,17 @@ class RemoteFilesystem
 
         // handle copy command if download was successful
         if (false !== $result && null !== $fileName) {
-            $result = (bool) @file_put_contents($fileName, $result);
+            $errorMessage = '';
+            set_error_handler(function ($code, $msg) use (&$errorMessage) {
+                if ($errorMessage) {
+                    $errorMessage .= "\n";
+                }
+                $errorMessage .= preg_replace('{^file_put_contents\(.*?\): }', '', $msg);
+            });
+            $result = (bool) file_put_contents($fileName, $result);
+            restore_error_handler();
             if (false === $result) {
-                throw new TransportException('The "'.$fileUrl.'" file could not be written to '.$fileName);
+                throw new TransportException('The "'.$fileUrl.'" file could not be written to '.$fileName.': '.$errorMessage);
             }
         }
 
