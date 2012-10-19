@@ -85,7 +85,11 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
         $configSource = $this->getMock('Composer\Config\ConfigSourceInterface');
         $this->config->setConfigSource($configSource);
 
-        $gitHubDriver = new GitHubDriver($repoUrl, $io, $this->config, $process, $remoteFilesystem);
+        $repoConfig = array(
+            'url' => $repoUrl,
+        );
+
+        $gitHubDriver = new GitHubDriver($repoConfig, $io, $this->config, $process, $remoteFilesystem);
         $gitHubDriver->initialize();
         $this->setAttribute($gitHubDriver, 'tags', array($identifier => $sha));
 
@@ -133,7 +137,11 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
             ->with($this->equalTo('github.com'), $this->equalTo($repoApiUrl), $this->equalTo(false))
             ->will($this->returnValue('{"master_branch": "test_master"}'));
 
-        $gitHubDriver = new GitHubDriver($repoUrl, $io, $this->config, null, $remoteFilesystem);
+        $repoConfig = array(
+            'url' => $repoUrl,
+        );
+
+        $gitHubDriver = new GitHubDriver($repoConfig, $io, $this->config, null, $remoteFilesystem);
         $gitHubDriver->initialize();
         $this->setAttribute($gitHubDriver, 'tags', array($identifier => $sha));
 
@@ -191,7 +199,11 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
             ->with($this->equalTo('github.com'), $this->equalTo('https://api.github.com/repos/composer/packagist/commits/feature%2F3.2-foo'), $this->equalTo(false))
             ->will($this->returnValue('{"commit": {"committer":{ "date": "2012-09-10"}}}'));
 
-        $gitHubDriver = new GitHubDriver($repoUrl, $io, $this->config, null, $remoteFilesystem);
+        $repoConfig = array(
+            'url' => $repoUrl,
+        );
+
+        $gitHubDriver = new GitHubDriver($repoConfig, $io, $this->config, null, $remoteFilesystem);
         $gitHubDriver->initialize();
         $this->setAttribute($gitHubDriver, 'tags', array($identifier => $sha));
 
@@ -279,7 +291,11 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
             ->method('splitLines')
             ->will($this->returnValue(array('* test_master')));
 
-        $gitHubDriver = new GitHubDriver($repoUrl, $io, $this->config, $process, $remoteFilesystem);
+        $repoConfig = array(
+            'url' => $repoUrl,
+        );
+
+        $gitHubDriver = new GitHubDriver($repoConfig, $io, $this->config, $process, $remoteFilesystem);
         $gitHubDriver->initialize();
 
         $this->assertEquals('test_master', $gitHubDriver->getRootIdentifier());

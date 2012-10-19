@@ -48,7 +48,11 @@ class SvnDriverTest extends \PHPUnit_Framework_TestCase
                 'home' => sys_get_temp_dir() . '/composer-test',
             ),
         ));
-        $svn = new SvnDriver('http://till:secret@corp.svn.local/repo', $console, $config, $process);
+        $repoConfig = array(
+            'url' => 'http://till:secret@corp.svn.local/repo',
+        );
+
+        $svn = new SvnDriver($repoConfig, $console, $config, $process);
         $svn->initialize();
     }
 
