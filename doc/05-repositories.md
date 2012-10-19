@@ -212,6 +212,26 @@ The VCS driver to be used is detected automatically based on the URL. However,
 should you need to specify one for whatever reason, you can use `git`, `svn` or
 `hg` as the repository type instead of `vcs`.
 
+#### Subversion Options
+
+Since Subversion has no native concept of branches and tags, Composer assumes
+by default that code is located in `$url/trunk`, `$url/branches` and
+`$url/tags`. If your repository has a different layout you can change those
+values. For example if you used capitalized names you could configure the
+repository like this:
+
+    {
+        "repositories": [
+            {
+                "type": "vcs",
+                "url": "http://svn.example.org/projectA/",
+                "trunk-path": "Trunk",
+                "branches-path": "Branches",
+                "tags-path": "Tags"
+            }
+        ]
+    }
+
 ### PEAR
 
 It is possible to install packages from any PEAR channel by using the `pear`
