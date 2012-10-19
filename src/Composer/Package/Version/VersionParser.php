@@ -248,6 +248,28 @@ class VersionParser
             return array();
         }
 
+        if (preg_match('{^~(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:\.(\d+))?$}', $constraint, $matches)) {
+            if (isset($matches[4])) {
+                $highVersion = $matches[1] . '.' . $matches[2] . '.' . ($matches[3] + 1) . '.0-dev';
+                $lowVersion = $matches[1] . '.' . $matches[2] . '.' . $matches[3]. '.' . $matches[4];
+            } elseif (isset($matches[3])) {
+                $highVersion = $matches[1] . '.' . ($matches[2] + 1) . '.0.0-dev';
+                $lowVersion = $matches[1] . '.' . $matches[2] . '.' . $matches[3]. '.0';
+            } else {
+                $highVersion = ($matches[1] + 1) . '.0.0.0-dev';
+                if (isset($matches[2])) {
+                    $lowVersion = $matches[1] . '.' . $matches[2] . '.0.0';
+                } else {
+                    $lowVersion = $matches[1] . '.0.0.0';
+                }
+            }
+
+            return array(
+                new VersionConstraint('>=', $lowVersion),
+                new VersionConstraint('<', $highVersion),
+            );
+        }
+
         // match wildcard constraints
         if (preg_match('{^(\d+)(?:\.(\d+))?(?:\.(\d+))?\.[x*]$}', $constraint, $matches)) {
             if (isset($matches[3])) {
