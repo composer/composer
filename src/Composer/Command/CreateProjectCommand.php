@@ -49,6 +49,7 @@ class CreateProjectCommand extends Command
                 new InputArgument('directory', InputArgument::OPTIONAL, 'Directory where the files should be created'),
                 new InputArgument('version', InputArgument::OPTIONAL, 'Version, will defaults to latest'),
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
+                new InputOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist even for dev versions.'),
                 new InputOption('repository-url', null, InputOption::VALUE_REQUIRED, 'Pick a different repository url to look for the package.'),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Whether to install dependencies for development.'),
                 new InputOption('no-custom-installers', null, InputOption::VALUE_NONE, 'Whether to disable custom installers.'),
@@ -84,6 +85,7 @@ EOT
             $input->getArgument('directory'),
             $input->getArgument('version'),
             $input->getOption('prefer-source'),
+            $input->getOption('prefer-dist'),
             $input->getOption('dev'),
             $input->getOption('repository-url'),
             $input->getOption('no-custom-installers'),
@@ -92,7 +94,7 @@ EOT
         );
     }
 
-    public function installProject(IOInterface $io, $packageName, $directory = null, $packageVersion = null, $preferSource = false, $installDevPackages = false, $repositoryUrl = null, $disableCustomInstallers = false, $noScripts = false, $keepVcs = false)
+    public function installProject(IOInterface $io, $packageName, $directory = null, $packageVersion = null, $preferSource = false, $preferDist = false, $installDevPackages = false, $repositoryUrl = null, $disableCustomInstallers = false, $noScripts = false, $keepVcs = false)
     {
         $config = Factory::createConfig();
 
@@ -160,11 +162,14 @@ EOT
             $package->setSourceReference(substr($package->getPrettyVersion(), 4));
         }
 
+        $dm->setPreferSource($preferSource)
+            ->setPreferDist($preferDist);
         $projectInstaller = new ProjectInstaller($directory, $dm);
         $projectInstaller->install(new InstalledFilesystemRepository(new JsonFile('php://memory')), $package);
         if ($package->getRepository() instanceof NotifiableRepositoryInterface) {
             $package->getRepository()->notifyInstall($package);
         }
+        $installedFromVcs = 'source' === $package->getInstallationSource();
 
         $io->write('<info>Created project in ' . $directory . '</info>');
         chdir($directory);
@@ -179,6 +184,7 @@ EOT
         $installer = Installer::create($io, $composer);
 
         $installer->setPreferSource($preferSource)
+            ->setPreferDist($preferDist)
             ->setDevMode($installDevPackages)
             ->setRunScripts( ! $noScripts);
 
@@ -192,6 +198,7 @@ EOT
             !$io->isInteractive() ||
             $io->askConfirmation('<info>Do you want to remove the exisitng VCS (.git, .svn..) history?</info> [<comment>Y,n</comment>]? ', true)
             )
+            && (!$preferDist || $installedFromVcs)
         ) {
             $finder = new Finder();
             $finder->depth(1)->directories()->in(getcwd())->ignoreVCS(false)->ignoreDotFiles(false);
