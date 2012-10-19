@@ -130,27 +130,27 @@ class RemoteFilesystem
         });
         try {
             // 20 is the default number of allowed redirects for file_get_contents
-			for($i = 0; $i < 20; $i++) {
+            for($i = 0; $i < 20; $i++) {
                 $result = file_get_contents($fileUrl, false, $ctx);
 
-				// 301 or 302 means we got a redirect
-				if (!isset($http_response_header[0]) || (strpos($http_response_header[0], '301') === false && strpos($http_response_header[0], '302') === false)) {
+                // 301 or 302 means we got a redirect
+                if (!isset($http_response_header[0]) || (strpos($http_response_header[0], '301') === false && strpos($http_response_header[0], '302') === false)) {
                     break;
-				}
-				// Otherwise must be a redirext, look for location header
-				$newUrl = false;
-				foreach($http_response_header as $header) {
-					if (stripos($header, 'Location:') === 0) {
-						$newUrl = ltrim(substr($header, 9));
-					}
-				}
-				if (!$newUrl) {
-					// Couldn't find a location header, so we can't do anything else
-					break;
-				} else {
-					// Found location header, loop trying to find some content
-					$fileUrl = $newUrl;
-				}
+                }
+                // Otherwise must be a redirext, look for location header
+                $newUrl = false;
+                foreach($http_response_header as $header) {
+                    if (stripos($header, 'Location:') === 0) {
+                        $newUrl = ltrim(substr($header, 9));
+                    }
+                }
+                if (!$newUrl) {
+                    // Couldn't find a location header, so we can't do anything else
+                    break;
+                } else {
+                    // Found location header, loop trying to find some content
+                    $fileUrl = $newUrl;
+                }
             }
         } catch (\Exception $e) {
             if ($e instanceof TransportException && !empty($http_response_header[0])) {
