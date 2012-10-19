@@ -25,7 +25,7 @@ use Composer\Package\LinkConstraint\VersionConstraint;
  */
 class VersionParser
 {
-    private static $modifierRegex = '[._-]?(?:(beta|b|RC|alpha|a|patch|pl|p)(?:[.-]?(\d+))?)?([.-]?dev)?';
+    private static $modifierRegex = '[._-]?(?:(stable|beta|b|RC|alpha|a|patch|pl|p)(?:[.-]?(\d+))?)?([.-]?dev)?';
 
     /**
      * Returns the stability of a version
@@ -121,6 +121,9 @@ class VersionParser
         // add version modifiers if a version was matched
         if (isset($index)) {
             if (!empty($matches[$index])) {
+                if ('stable' === $matches[$index]) {
+                    return $version;
+                }
                 $mod = array('{^pl?$}i', '{^rc$}i');
                 $modNormalized = array('patch', 'RC');
                 $version .= '-'.preg_replace($mod, $modNormalized, strtolower($matches[$index]))
@@ -283,6 +286,10 @@ class VersionParser
 
                 if (!empty($stabilityModifier) && $this->parseStability($version) === 'stable') {
                     $version .= '-' . $stabilityModifier;
+                } elseif ('<' === $matches[1]) {
+                    if (!preg_match('/-stable$/', strtolower($matches[2]))) {
+                        $version .= '-dev';
+                    }
                 }
 
                 return array(new VersionConstraint($matches[1] ?: '=', $version));
