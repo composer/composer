@@ -260,31 +260,35 @@ class RemoteFilesystem
 
     protected function getOptionsForUrl($originUrl, $additionalOptions)
     {
-        $header = sprintf(
-            "User-Agent: Composer/%s (%s; %s; PHP %s.%s.%s)\r\n",
-            Composer::VERSION === '@package_version@' ? 'source' : Composer::VERSION,
-            php_uname('s'),
-            php_uname('r'),
-            PHP_MAJOR_VERSION,
-            PHP_MINOR_VERSION,
-            PHP_RELEASE_VERSION
+        $headers = array(
+            sprintf(
+                'User-Agent: Composer/%s (%s; %s; PHP %s.%s.%s)',
+                Composer::VERSION === '@package_version@' ? 'source' : Composer::VERSION,
+                php_uname('s'),
+                php_uname('r'),
+                PHP_MAJOR_VERSION,
+                PHP_MINOR_VERSION,
+                PHP_RELEASE_VERSION
+            )
         );
+
         if (extension_loaded('zlib')) {
-            $header .= 'Accept-Encoding: gzip'."\r\n";
+            $headers[] = 'Accept-Encoding: gzip';
         }
 
         if ($this->io->hasAuthorization($originUrl)) {
             $auth = $this->io->getAuthorization($originUrl);
             $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
-            $header .= "Authorization: Basic $authStr\r\n";
+            $headers[] = 'Authorization: Basic '.$authStr;
         }
 
         $options = array_replace_recursive($this->options, $additionalOptions);
 
-        if (isset($options['http']['header'])) {
-            $options['http']['header'] = rtrim($options['http']['header'], "\r\n") . "\r\n" . $header;
-        } else {
-            $options['http']['header'] = $header;
+        if (isset($options['http']['header']) && !is_array($options['http']['header'])) {
+            $options['http']['header'] = explode("\r\n", trim($options['http']['header'], "\r\n"));
+        }
+        foreach ($headers as $header) {
+            $options['http']['header'][] = $header;
         }
 
         return $options;
