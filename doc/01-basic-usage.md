@@ -64,7 +64,7 @@ development branch. It would match `1.0.0`, `1.0.2` or `1.0.20`.
 Version constraints can be specified in a few different ways.
 
 * **Exact version:** You can specify the exact version of a package, for
-  example `1.0.2`. This is not used very often, but can be useful.
+  example `1.0.2`.
 
 * **Range:** By using comparison operators you can specify ranges of valid
   versions. Valid operators are `>`, `>=`, `<`, `<=`, `!=`. An example range
@@ -72,7 +72,14 @@ Version constraints can be specified in a few different ways.
   `>=1.0,<2.0`.
 
 * **Wildcard:** You can specify a pattern with a `*` wildcard. `1.0.*` is the
-  equivalent of `>=1.0,<1.1-dev`.
+  equivalent of `>=1.0,<1.1`.
+
+* **Next Significant Release (Tilde Operator):** The `~` operator is best
+  explained by example: `~1.2` is equivalent to `>=1.2,<2.0`, while `~1.2.3` is
+  equivalent to `>=1.2.3,<1.3`. As you can see it is mostly useful for projects
+  respecting semantic versioning. A common usage would be to mark the minimum
+  minor version you depend on, like `~1.2`, since in theory there should be no
+  backwards compatibility breaks until 2.0, that works well.
 
 ## Installing Dependencies
 
