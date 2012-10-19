@@ -241,6 +241,31 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @dataProvider tildeConstraints
+     */
+    public function testParseTildeWildcard($input, $min, $max)
+    {
+        $parser = new VersionParser;
+        if ($min) {
+            $expected = new MultiConstraint(array($min, $max));
+        } else {
+            $expected = $max;
+        }
+
+        $this->assertSame((string) $expected, (string) $parser->parseConstraints($input));
+    }
+
+    public function tildeConstraints()
+    {
+        return array(
+            array('~1',       new VersionConstraint('>=', '1.0.0.0'), new VersionConstraint('<', '2.0.0.0-dev')),
+            array('~1.2',     new VersionConstraint('>=', '1.2.0.0'), new VersionConstraint('<', '2.0.0.0-dev')),
+            array('~1.2.3',   new VersionConstraint('>=', '1.2.3.0'), new VersionConstraint('<', '1.3.0.0-dev')),
+            array('~1.2.3.4', new VersionConstraint('>=', '1.2.3.4'), new VersionConstraint('<', '1.2.4.0-dev')),
+        );
+    }
+
     public function testParseConstraintsMulti()
     {
         $parser = new VersionParser;
