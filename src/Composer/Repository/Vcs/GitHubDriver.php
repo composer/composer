@@ -238,7 +238,7 @@ class GitHubDriver extends VcsDriver
     /**
      * {@inheritDoc}
      */
-    protected function getContents($url, $tryClone = false)
+    protected function getContents($url, $fetchingRepoData = false)
     {
         try {
             return parent::getContents($url);
@@ -246,7 +246,12 @@ class GitHubDriver extends VcsDriver
             switch ($e->getCode()) {
                 case 401:
                 case 404:
-                    if (!$this->io->isInteractive() && $tryClone) {
+                    // try to authorize only if we are fetching the main /repos/foo/bar data, otherwise it must be a real 404
+                    if (!$fetchingRepoData) {
+                        throw $e;
+                    }
+
+                    if (!$this->io->isInteractive()) {
                         return $this->attemptCloneFallback($e);
                     }
 
@@ -256,7 +261,7 @@ class GitHubDriver extends VcsDriver
                     return parent::getContents($url);
 
                 case 403:
-                    if (!$this->io->isInteractive() && $tryClone) {
+                    if (!$this->io->isInteractive() && $fetchingRepoData) {
                         return $this->attemptCloneFallback($e);
                     }
 
