@@ -262,7 +262,7 @@ class RemoteFilesystem
     {
         $header = sprintf(
             "User-Agent: Composer/%s (%s; %s; PHP %s.%s.%s)\r\n",
-            Composer::VERSION,
+            Composer::VERSION === '@package_version@' ? 'source' : Composer::VERSION,
             php_uname('s'),
             php_uname('r'),
             PHP_MAJOR_VERSION,
