@@ -164,10 +164,15 @@ class GitDownloader extends VcsDownloader
         $template = 'git checkout %s && git reset --hard %1$s';
         $branch = preg_replace('{(?:^dev-|(?:\.x)?-dev$)}i', '', $branch);
 
+        $branches = null;
+        if (0 === $this->process->execute('git branch -r', $output, $path)) {
+            $branches = $output;
+        }
+
         // check whether non-commitish are branches or tags, and fetch branches with the remote name
         $gitRef = $reference;
         if (!preg_match('{^[a-f0-9]{40}$}', $reference)
-            && 0 === $this->process->execute('git branch -r', $output, $path)
+            && $branches
             && preg_match('{^\s+composer/'.preg_quote($reference).'$}m', $output)
         ) {
             $command = sprintf('git checkout -B %s %s && git reset --hard %2$s', escapeshellarg($branch), escapeshellarg('composer/'.$reference));
@@ -178,6 +183,11 @@ class GitDownloader extends VcsDownloader
 
         // try to checkout branch by name and then reset it so it's on the proper branch name
         if (preg_match('{^[a-f0-9]{40}$}', $reference)) {
+            // add 'v' in front of the branch if it was stripped when generating the pretty name
+            if (!preg_match('{^\s+composer/'.preg_quote($branch).'$}m', $branches) && preg_match('{^\s+composer/v'.preg_quote($branch).'$}m', $branches)) {
+                $branch = 'v' . $branch;
+            }
+
             $command = sprintf('git checkout %s', escapeshellarg($branch));
             $fallbackCommand = sprintf('git checkout -B %s %s', escapeshellarg($branch), escapeshellarg('composer/'.$branch));
             if (0 === $this->process->execute($command, $output, $path)
