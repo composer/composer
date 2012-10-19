@@ -169,6 +169,7 @@ EOT
         if ($package->getRepository() instanceof NotifiableRepositoryInterface) {
             $package->getRepository()->notifyInstall($package);
         }
+        $installedFromVcs = 'source' === $package->getInstallationSource();
 
         $io->write('<info>Created project in ' . $directory . '</info>');
         chdir($directory);
@@ -197,6 +198,7 @@ EOT
             !$io->isInteractive() ||
             $io->askConfirmation('<info>Do you want to remove the exisitng VCS (.git, .svn..) history?</info> [<comment>Y,n</comment>]? ', true)
             )
+            && (!$preferDist || $installedFromVcs)
         ) {
             $finder = new Finder();
             $finder->depth(1)->directories()->in(getcwd())->ignoreVCS(false)->ignoreDotFiles(false);
