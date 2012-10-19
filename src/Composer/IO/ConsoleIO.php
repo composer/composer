@@ -173,7 +173,7 @@ class ConsoleIO implements IOInterface
             }
             if (isset($shell)) {
                 $this->write($question, false);
-                $readCmd = ($shell === 'csh') ? 'set mypassword = $<' : 'read mypassword';
+                $readCmd = ($shell === 'csh') ? 'set mypassword = $<' : 'read -r mypassword';
                 $command = sprintf("/usr/bin/env %s -c 'stty -echo; %s; stty echo; echo \$mypassword'", $shell, $readCmd);
                 $value = rtrim(shell_exec($command));
                 $this->write('');
