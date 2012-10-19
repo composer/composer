@@ -194,11 +194,11 @@ EOT
 
         $installer->run();
 
-        if (!$keepVcs && (
-            !$io->isInteractive() ||
-            $io->askConfirmation('<info>Do you want to remove the exisitng VCS (.git, .svn..) history?</info> [<comment>Y,n</comment>]? ', true)
+        if (!$keepVcs && $installedFromVcs
+            && (
+                !$io->isInteractive()
+                || $io->askConfirmation('<info>Do you want to remove the exisitng VCS (.git, .svn..) history?</info> [<comment>Y,n</comment>]? ', true)
             )
-            && (!$preferDist || $installedFromVcs)
         ) {
             $finder = new Finder();
             $finder->depth(1)->directories()->in(getcwd())->ignoreVCS(false)->ignoreDotFiles(false);
