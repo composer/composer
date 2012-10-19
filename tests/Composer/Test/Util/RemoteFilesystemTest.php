@@ -26,7 +26,15 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
         ;
 
         $res = $this->callGetOptionsForUrl($io, array('http://example.org', array()));
-        $this->assertTrue(isset($res['http']['header']) && false !== strpos($res['http']['header'], 'User-Agent'), 'getOptions must return an array with a header containing a User-Agent');
+        $this->assertTrue(isset($res['http']['header']) && is_array($res['http']['header']), 'getOptions must return an array with headers');
+        $found = false;
+        foreach ($res['http']['header'] as $header) {
+            if (0 === strpos($header, 'User-Agent:')) {
+                $found = true;
+            }
+        }
+
+        $this->assertTrue($found, 'getOptions must have a User-Agent header');
     }
 
     public function testGetOptionsForUrlWithAuthorization()
@@ -44,7 +52,14 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
         ;
 
         $options = $this->callGetOptionsForUrl($io, array('http://example.org', array()));
-        $this->assertContains('Authorization: Basic', $options['http']['header']);
+
+        $found = false;
+        foreach ($options['http']['header'] as $header) {
+            if (0 === strpos($header, 'Authorization: Basic')) {
+                $found = true;
+            }
+        }
+        $this->assertTrue($found, 'getOptions must have an Authorization header');
     }
 
     public function testGetOptionsForUrlWithStreamOptions()
@@ -79,7 +94,16 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
 
         $res = $this->callGetOptionsForUrl($io, array('https://example.org', $streamOptions));
         $this->assertTrue(isset($res['http']['header']), 'getOptions must return an array with a http.header key');
-        $this->assertGreaterThan(strlen('Foo: bar'), strlen($res['http']['header']));
+
+        $found = false;
+        foreach ($res['http']['header'] as $header) {
+            if ($header === 'Foo: bar') {
+                $found = true;
+            }
+        }
+
+        $this->assertTrue($found, 'getOptions must have a Foo: bar header');
+        $this->assertGreaterThan(1, count($res['http']['header']));
     }
 
     public function testCallbackGetFileSize()
