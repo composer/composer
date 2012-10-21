@@ -72,7 +72,7 @@ final class StreamContextFactory
                 if (isset($defaultOptions['http']['header'])) {
                     $defaultOptions['http']['header'][] = "Proxy-Authorization: Basic {$auth}";
                 } else {
-                    $options['http']['header'] = "Proxy-Authorization: Basic {$auth}\r\n";
+                    $options['http']['header'] = array("Proxy-Authorization: Basic {$auth}");
                 }
             }
         }
