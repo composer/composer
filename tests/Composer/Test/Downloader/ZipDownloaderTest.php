@@ -32,7 +32,8 @@ class ZipDownloaderTest extends \PHPUnit_Framework_TestCase
         ;
 
         $io = $this->getMock('Composer\IO\IOInterface');
-        $downloader = new ZipDownloader($io);
+        $config = $this->getMock('Composer\Config');
+        $downloader = new ZipDownloader($io, $config);
 
         try {
             $downloader->download($packageMock, sys_get_temp_dir().'/composer-zip-test');

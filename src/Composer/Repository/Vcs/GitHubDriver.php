@@ -17,6 +17,7 @@ use Composer\Json\JsonFile;
 use Composer\Cache;
 use Composer\IO\IOInterface;
 use Composer\Util\RemoteFilesystem;
+use Composer\Util\GitHub;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -255,8 +256,7 @@ class GitHubDriver extends VcsDriver
                         return $this->attemptCloneFallback($e);
                     }
 
-                    $this->io->write('Your GitHub credentials are required to fetch private repository metadata (<info>'.$this->url.'</info>):');
-                    $this->authorizeOauth();
+                    $this->authorizeOAuth('Your GitHub credentials are required to fetch private repository metadata (<info>'.$this->url.'</info>)');
 
                     return parent::getContents($url);
 
@@ -278,8 +278,7 @@ class GitHubDriver extends VcsDriver
                             throw $e;
                         }
 
-                        $this->io->write('API limit exhausted. Enter your GitHub credentials to get a larger API limit (<info>'.$this->url.'</info>):');
-                        $this->authorizeOauth();
+                        $this->authorizeOAuth('API limit exhausted. Enter your GitHub credentials to get a larger API limit (<info>'.$this->url.'</info>)');
 
                         return parent::getContents($url);
                     }
@@ -348,61 +347,9 @@ class GitHubDriver extends VcsDriver
         }
     }
 
-    protected function authorizeOAuth()
+    protected function authorizeOAuth($message)
     {
-        // If available use token from git config
-        if (0 === $this->process->execute('git config github.accesstoken', $output)) {
-            $this->io->write('Using Github OAuth token stored in git config (github.accesstoken)');
-            $this->io->setAuthorization($this->originUrl, $output[0], 'x-oauth-basic');
-            return;
-        }
-
-        $attemptCounter = 0;
-
-        $this->io->write('The credentials will be swapped for an OAuth token stored in '.$this->config->get('home').'/config.json, your password will not be stored');
-        $this->io->write('To revoke access to this token you can visit https://github.com/settings/applications');
-        while ($attemptCounter++ < 5) {
-            try {
-                $username = $this->io->ask('Username: ');
-                $password = $this->io->askAndHideAnswer('Password: ');
-                $this->io->setAuthorization($this->originUrl, $username, $password);
-
-                // build up OAuth app name
-                $appName = 'Composer';
-                if (0 === $this->process->execute('hostname', $output)) {
-                    $appName .= ' on ' . trim($output);
-                }
-
-                $contents = JsonFile::parseJson($this->remoteFilesystem->getContents($this->originUrl, 'https://api.github.com/authorizations', false, array(
-                    'http' => array(
-                        'method' => 'POST',
-                        'header' => "Content-Type: application/json\r\n",
-                        'content' => json_encode(array(
-                            'scopes' => array('repo'),
-                            'note' => $appName,
-                            'note_url' => 'https://getcomposer.org/',
-                        )),
-                    )
-                )));
-            } catch (TransportException $e) {
-                if (401 === $e->getCode()) {
-                    $this->io->write('Invalid credentials.');
-                    continue;
-                }
-
-                throw $e;
-            }
-
-            $this->io->setAuthorization($this->originUrl, $contents['token'], 'x-oauth-basic');
-
-            // store value in user config
-            $githubTokens = $this->config->get('github-oauth') ?: array();
-            $githubTokens[$this->originUrl] = $contents['token'];
-            $this->config->getConfigSource()->addConfigSetting('github-oauth', $githubTokens);
-
-            return;
-        }
-
-        throw new \RuntimeException("Invalid GitHub credentials 5 times in a row, aborting.");
+        $gitHubUtil = new GitHub($this->io, $this->config, $this->process, $this->remoteFilesystem);
+        $gitHubUtil->authorizeOAuth($this->originUrl, $message);
     }
 }
