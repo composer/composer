@@ -57,7 +57,7 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
             foreach ($links as $index => $link) {
                 // link is self.version, but must be replacing also the replaced version
                 if ('self.version' === $link->getPrettyConstraint()) {
-                    $links[$index] = new Link($link->getSource(), $link->getTarget(), new VersionConstraint('=', $this->version), $type, $this->version);
+                    $links[$index] = new Link($link->getSource(), $link->getTarget(), new VersionConstraint('=', $this->version), $type, $prettyVersion);
                 }
             }
             $this->$type = $links;
@@ -70,7 +70,7 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
             foreach ($links as $link) {
                 // link is self.version, but must be replacing also the replaced version
                 if ('self.version' === $link->getPrettyConstraint()) {
-                    $newLinks[] = new Link($link->getSource(), $link->getTarget(), new VersionConstraint('=', $this->version), $type, $this->version);
+                    $newLinks[] = new Link($link->getSource(), $link->getTarget(), new VersionConstraint('=', $this->version), $type, $prettyVersion);
                 }
             }
             $this->$type = array_merge($links, $newLinks);
