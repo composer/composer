@@ -29,12 +29,7 @@ class Decisions implements \Iterator, \Countable
     public function __construct($pool)
     {
         $this->pool = $pool;
-
-        if (version_compare(PHP_VERSION, '5.3.4', '>=')) {
-            $this->decisionMap = new \SplFixedArray($this->pool->getMaxId() + 1);
-        } else {
-            $this->decisionMap = array_fill(0, $this->pool->getMaxId() + 1, 0);
-        }
+        $this->decisionMap = array();
     }
 
     public function decide($literal, $level, $why)
@@ -51,8 +46,8 @@ class Decisions implements \Iterator, \Countable
         $packageId = abs($literal);
 
         return (
-            $literal > 0 && $this->decisionMap[$packageId] > 0 ||
-            $literal < 0 && $this->decisionMap[$packageId] < 0
+            $literal > 0 && isset($this->decisionMap[$packageId]) && $this->decisionMap[$packageId] > 0 ||
+            $literal < 0 && isset($this->decisionMap[$packageId]) && $this->decisionMap[$packageId] < 0
         );
     }
 
@@ -61,29 +56,36 @@ class Decisions implements \Iterator, \Countable
         $packageId = abs($literal);
 
         return (
-            ($this->decisionMap[$packageId] > 0 && $literal < 0) ||
-            ($this->decisionMap[$packageId] < 0 && $literal > 0)
+            (isset($this->decisionMap[$packageId]) && $this->decisionMap[$packageId] > 0 && $literal < 0) ||
+            (isset($this->decisionMap[$packageId]) && $this->decisionMap[$packageId] < 0 && $literal > 0)
         );
     }
 
     public function decided($literalOrPackageId)
     {
-        return $this->decisionMap[abs($literalOrPackageId)] != 0;
+        return !empty($this->decisionMap[abs($literalOrPackageId)]);
     }
 
     public function undecided($literalOrPackageId)
     {
-        return $this->decisionMap[abs($literalOrPackageId)] == 0;
+        return empty($this->decisionMap[abs($literalOrPackageId)]);
     }
 
     public function decidedInstall($literalOrPackageId)
     {
-        return $this->decisionMap[abs($literalOrPackageId)] > 0;
+        $packageId = abs($literalOrPackageId);
+
+        return isset($this->decisionMap[$packageId]) && $this->decisionMap[$packageId] > 0;
     }
 
     public function decisionLevel($literalOrPackageId)
     {
-        return abs($this->decisionMap[abs($literalOrPackageId)]);
+        $packageId = abs($literalOrPackageId);
+        if (isset($this->decisionMap[$packageId])) {
+            return abs($this->decisionMap[$packageId]);
+        }
+
+        return 0;
     }
 
     public function decisionRule($literalOrPackageId)
@@ -179,7 +181,7 @@ class Decisions implements \Iterator, \Countable
     {
         $packageId = abs($literal);
 
-        $previousDecision = $this->decisionMap[$packageId];
+        $previousDecision = isset($this->decisionMap[$packageId]) ? $this->decisionMap[$packageId] : null;
         if ($previousDecision != 0) {
             $literalString = $this->pool->literalToString($literal);
             $package = $this->pool->literalToPackage($literal);

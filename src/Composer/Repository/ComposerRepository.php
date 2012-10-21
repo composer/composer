@@ -14,12 +14,15 @@ namespace Composer\Repository;
 
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\PackageInterface;
+use Composer\Package\AliasPackage;
 use Composer\Package\Version\VersionParser;
+use Composer\DependencyResolver\Pool;
 use Composer\Json\JsonFile;
 use Composer\Cache;
 use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Util\RemoteFilesystem;
+use Composer\Downloader\TransportException;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -29,13 +32,19 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
     protected $config;
     protected $options;
     protected $url;
+    protected $baseUrl;
     protected $io;
     protected $cache;
     protected $notifyUrl;
+    protected $hasProviders = false;
+    protected $providerListing;
+    protected $providers = array();
+    protected $providersByUid = array();
     protected $loader;
     private $rawData;
     private $minimalPackages;
     private $degradedMode = false;
+    private $rootData;
 
     public function __construct(array $repoConfig, IOInterface $io, Config $config)
     {
@@ -60,6 +69,7 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
         $this->config = $config;
         $this->options = $repoConfig['options'];
         $this->url = $repoConfig['url'];
+        $this->baseUrl = rtrim(preg_replace('{^(.*)(?:/packages.json)?(?:[?#].*)?$}', '$1', $this->url), '/');
         $this->io = $io;
         $this->cache = new Cache($io, $config->get('home').'/cache/'.preg_replace('{[^a-z0-9.]}i', '-', $this->url));
         $this->loader = new ArrayLoader();
@@ -182,6 +192,90 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
         return $aliasPackage;
     }
 
+    public function hasProviders()
+    {
+        $this->loadRootServerFile();
+
+        return $this->hasProviders;
+    }
+
+    public function resetPackageIds()
+    {
+        foreach ($this->providersByUid as $package) {
+            $package->setId(-1);
+        }
+    }
+
+    public function whatProvides(Pool $pool, $name)
+    {
+        // skip platform packages
+        if ($name === 'php' || in_array(substr($name, 0, 4), array('ext-', 'lib-'), true) || $name === '__root__') {
+            return array();
+        }
+
+        if (isset($this->providers[$name])) {
+            return $this->providers[$name];
+        }
+
+        if (null === $this->providerListing) {
+            $this->loadProviderListings($this->loadRootServerFile());
+        }
+
+        $url = 'p/'.$name.'.json';
+
+        // package does not exist in this repo
+        if (!isset($this->providerListing[$url])) {
+            return array();
+        }
+
+        if ($this->cache->sha256($url) === $this->providerListing[$url]['sha256']) {
+            $packages = json_decode($this->cache->read($url), true);
+        } else {
+            $packages = $this->fetchFile($url, null, $this->providerListing[$url]['sha256']);
+        }
+
+        $this->providers[$name] = array();
+        foreach ($packages['packages'] as $versions) {
+            foreach ($versions as $version) {
+                // avoid loading the same objects twice
+                if (isset($this->providersByUid[$version['uid']])) {
+                    // skip if already assigned
+                    if (!isset($this->providers[$name][$version['uid']])) {
+                        // expand alias in two packages
+                        if ($this->providersByUid[$version['uid']] instanceof AliasPackage) {
+                            $this->providers[$name][$version['uid']] = $this->providersByUid[$version['uid']]->getAliasOf();
+                            $this->providers[$name][$version['uid'].'-alias'] = $this->providersByUid[$version['uid']];
+                        } else {
+                            $this->providers[$name][$version['uid']] = $this->providersByUid[$version['uid']];
+                        }
+                    }
+                } else {
+                    if (!$pool->isPackageAcceptable($version['name'], VersionParser::parseStability($version['version']))) {
+                        continue;
+                    }
+
+                    // load acceptable packages in the providers
+                    $package = $this->createPackage($version, 'Composer\Package\Package');
+                    $package->setRepository($this);
+
+                    $this->providers[$name][$version['uid']] = $package;
+                    $this->providersByUid[$version['uid']] = $package;
+
+                    if ($package->getAlias()) {
+                        $alias = $this->createAliasPackage($package);
+                        $alias->setRepository($this);
+
+                        $this->providers[$name][$version['uid'].'-alias'] = $alias;
+                        // override provider with its alias so it can be expanded in the if block above
+                        $this->providersByUid[$version['uid']] = $alias;
+                    }
+                }
+            }
+        }
+
+        return $this->providers[$name];
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -196,8 +290,12 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
         }
     }
 
-    protected function loadDataFromServer()
+    protected function loadRootServerFile()
     {
+        if (null !== $this->rootData) {
+            return $this->rootData;
+        }
+
         if (!extension_loaded('openssl') && 'https' === substr($this->url, 0, 5)) {
             throw new \RuntimeException('You must enable the openssl extension in your php.ini to load information from '.$this->url);
         }
@@ -220,7 +318,40 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
             }
         }
 
+        if (!empty($data['providers']) || !empty($data['providers-includes'])) {
+            $this->hasProviders = true;
+        }
+
+        return $this->rootData = $data;
+    }
+
+    protected function loadDataFromServer()
+    {
+        $data = $this->loadRootServerFile();
+
         return $this->loadIncludes($data);
+    }
+
+    protected function loadProviderListings($data)
+    {
+        if (isset($data['providers'])) {
+            if (!is_array($this->providerListing)) {
+                $this->providerListing = array();
+            }
+            $this->providerListing = array_merge($this->providerListing, $data['providers']);
+        }
+
+        if (isset($data['providers-includes'])) {
+            foreach ($data['providers-includes'] as $include => $metadata) {
+                if ($this->cache->sha256($include) === $metadata['sha256']) {
+                    $includedData = json_decode($this->cache->read($include), true);
+                } else {
+                    $includedData = $this->fetchFile($include, null, $metadata['sha256']);
+                }
+
+                $this->loadProviderListings($includedData);
+            }
+        }
     }
 
     protected function loadIncludes($data)
@@ -269,11 +400,11 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
         }
     }
 
-    protected function fetchFile($filename, $cacheKey = null)
+    protected function fetchFile($filename, $cacheKey = null, $sha256 = null)
     {
         if (!$cacheKey) {
             $cacheKey = $filename;
-            $filename = $this->url.'/'.$filename;
+            $filename = $this->baseUrl.'/'.$filename;
         }
 
         $retries = 3;
@@ -281,7 +412,11 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
             try {
                 $json = new JsonFile($filename, new RemoteFilesystem($this->io, $this->options));
                 $data = $json->read();
-                $this->cache->write($cacheKey, json_encode($data));
+                $encoded = json_encode($data);
+                if ($sha256 && $sha256 !== hash('sha256', $encoded)) {
+                    throw new \UnexpectedValueException('The contents of '.$filename.' do not match its signature, this may be due to a temporary glitch or a man-in-the-middle attack, aborting for safety. Please try running Composer again.');
+                }
+                $this->cache->write($cacheKey, $encoded);
 
                 break;
             } catch (\Exception $e) {

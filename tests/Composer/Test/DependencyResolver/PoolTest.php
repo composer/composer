@@ -129,20 +129,4 @@ class PoolTest extends TestCase
 
         $this->assertEquals(array(), $pool->whatProvides('foo'));
     }
-
-    public function testGetMaxId()
-    {
-        $pool = new Pool;
-        $repository = new ArrayRepository;
-        $firstPackage = $this->getPackage('foo', '1');
-        $secondPackage = $this->getPackage('foo1', '1');
-
-        $this->assertEquals(0, $pool->getMaxId());
-
-        $repository->addPackage($firstPackage);
-        $repository->addPackage($secondPackage);
-        $pool->addRepository($repository);
-
-        $this->assertEquals(2, $pool->getMaxId());
-    }
 }

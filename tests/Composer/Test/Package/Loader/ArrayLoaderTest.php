@@ -34,7 +34,7 @@ class ArrayLoaderTest extends \PHPUnit_Framework_TestCase
 
         $package = $this->loader->load($config);
         $replaces = $package->getReplaces();
-        $this->assertEquals('== 1.2.3.4', (string) $replaces[0]->getConstraint());
+        $this->assertEquals('== 1.2.3.4', (string) $replaces['foo']->getConstraint());
     }
 
     public function testTypeDefault()
