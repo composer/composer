@@ -23,7 +23,7 @@ interface ArchiverInterface
     /**
      * Create an archive from the sources.
      *
-     * @param string $source    The sources directory
+     * @param string $sources   The sources directory
      * @param string $target    The target file
      * @param string $format    The format used for archive
      * @param string $sourceRef The reference of the source to archive or null
