@@ -25,9 +25,9 @@
         "php": ">=5.3.2",
         "justinrainbow/json-schema": "1.1.*",
         "seld/jsonlint": "1.*",
-        "symfony/console": "2.1.*@dev",
-        "symfony/finder": "2.1.*",
-        "symfony/process": "2.1.*@dev"
+        "symfony/console": "~2.1@dev",
+        "symfony/finder": "~2.1",
+        "symfony/process": "~2.1@dev"
     },
     "suggest": {
         "ext-zip": "Enabling the zip extension allows you to unzip archives, and allows gzip compression of all internet traffic",
