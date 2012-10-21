@@ -319,22 +319,18 @@ class Factory
     }
 
     /**
-     * @param string                     $workDir Directory used to download sources
      * @param Downloader\DownloadManager $dm      Manager use to download sources
+     * @param Config                     $config  The configuration
      *
      * @return Archiver\ArchiveManager
      */
-    public function createArchiveManager($workDir = null, DownloadManager $dm = null)
+    public function createArchiveManager(DownloadManager $dm = null, Config $config)
     {
         if (null === $dm) {
-            $dm = $this->createDownloadManager(new IO\NullIO());
+            $dm = $this->createDownloadManager(new IO\NullIO(), $config);
         }
 
-        if (null === $workDir) {
-            $workDir = sys_get_temp_dir();
-        }
-
-        $am = new Archiver\ArchiveManager($workDir, $dm);
+        $am = new Archiver\ArchiveManager($dm);
         $am->addArchiver(new Archiver\GitArchiver);
         $am->addArchiver(new Archiver\MercurialArchiver);
         $am->addArchiver(new Archiver\PharArchiver);

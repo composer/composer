@@ -25,17 +25,15 @@ use Composer\Package\PackageInterface;
 class ArchiveManagerTest extends ArchiverTest
 {
     protected $manager;
-
-    protected $workDir;
+    protected $targetDir;
 
     public function setUp()
     {
         parent::setUp();
 
         $factory = new Factory();
-
-        $this->workDir = sys_get_temp_dir();
-        $this->manager = $factory->createArchiveManager($this->workDir);
+        $this->manager = $factory->createArchiveManager(null, $factory->createConfig());
+        $this->targetDir = sys_get_temp_dir().'/composer_archiver_tests';
     }
 
     public function testUnknownFormat()
@@ -44,7 +42,7 @@ class ArchiveManagerTest extends ArchiverTest
 
         $package = $this->setupPackage();
 
-        $this->manager->archive($package, '__unknown_format__');
+        $this->manager->archive($package, '__unknown_format__', $this->targetDir);
     }
 
     public function testArchiveTarWithVcs()
@@ -55,7 +53,7 @@ class ArchiveManagerTest extends ArchiverTest
 
         // The package is source from git,
         // so it should `git archive --format tar`
-        $this->manager->archive($package, 'tar');
+        $this->manager->archive($package, 'tar', $this->targetDir);
 
         $target = $this->getTargetName($package, 'tar');
         $this->assertFileExists($target);
@@ -71,7 +69,7 @@ class ArchiveManagerTest extends ArchiverTest
         $package = $this->setupPackage();
 
         // This should use the TarArchiver
-        $this->manager->archive($package, 'tar');
+        $this->manager->archive($package, 'tar', $this->targetDir);
 
         $package->setSourceType('__unknown_type__'); // disable VCS recognition
         $target = $this->getTargetName($package, 'tar');
@@ -83,8 +81,8 @@ class ArchiveManagerTest extends ArchiverTest
 
     protected function getTargetName(PackageInterface $package, $format)
     {
-        $packageName = str_replace('/', DIRECTORY_SEPARATOR, $package->getUniqueName());
-        $target = $this->workDir.DIRECTORY_SEPARATOR.$packageName.'.'.$format;
+        $packageName = $package->getUniqueName();
+        $target = $this->targetDir.'/'.$packageName.'.'.$format;
 
         return $target;
     }
