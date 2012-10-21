@@ -70,6 +70,8 @@ class JsonConfigSource implements ConfigSourceInterface
         }
         $manipulator = new JsonManipulator($contents);
 
+        $newFile = !$this->file->exists();
+
         // try to update cleanly
         if (call_user_func_array(array($manipulator, $method), $args)) {
             file_put_contents($this->file->getPath(), $manipulator->getContents());
@@ -79,6 +81,10 @@ class JsonConfigSource implements ConfigSourceInterface
             array_unshift($args, $config);
             call_user_func_array($fallback, $args);
             $this->file->write($config);
+        }
+
+        if ($newFile) {
+            chmod($this->file->getPath(), 0600);
         }
     }
 }

@@ -110,6 +110,7 @@ EOT
         if ($input->getOption('global') && !$this->configFile->exists()) {
             touch($this->configFile->getPath());
             $this->configFile->write(array('config' => new \ArrayObject));
+            chmod($this->configFile->getPath(), 0600);
         }
 
         if (!$this->configFile->exists()) {
