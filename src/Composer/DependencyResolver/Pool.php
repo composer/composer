@@ -387,6 +387,23 @@ class Pool
             $replaces = $candidate->getReplaces();
         }
 
+        // aliases create multiple replaces/provides for one target so they can not use the shortcut
+        if (isset($replaces[0]) || isset($provides[0])) {
+            foreach ($provides as $link) {
+                if ($link->getTarget() === $name && $constraint->matches($link->getConstraint())) {
+                    return self::MATCH_PROVIDE;
+                }
+            }
+
+            foreach ($replaces as $link) {
+                if ($link->getTarget() === $name && $constraint->matches($link->getConstraint())) {
+                    return self::MATCH_REPLACE;
+                }
+            }
+
+            return self::MATCH_NONE;
+        }
+
         if (isset($provides[$name]) && $constraint->matches($provides[$name]->getConstraint())) {
             return self::MATCH_PROVIDE;
         }
