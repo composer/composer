@@ -192,7 +192,9 @@ EOT
             $installer->disableCustomInstallers();
         }
 
-        $installer->run();
+        if (!$installer->run()) {
+            return 1;
+        }
 
         if (!$keepVcs && $installedFromVcs
             && (
@@ -217,6 +219,8 @@ EOT
                 $io->write('<error>An error occured while removing the VCS metadata: '.$e->getMessage().'</error>');
             }
         }
+
+        return 0;
     }
 
     protected function createDownloadManager(IOInterface $io, Config $config)
