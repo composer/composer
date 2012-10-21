@@ -42,7 +42,7 @@ class GitArchiver implements ArchiverInterface
             'git archive --format %s --output %s %s',
             $format,
             escapeshellarg($target),
-            $sourceRef
+            escapeshellarg($sourceRef)
         );
 
         $exitCode = $this->process->execute($command, $output, $sources);

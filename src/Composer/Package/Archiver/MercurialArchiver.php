@@ -38,7 +38,7 @@ class MercurialArchiver implements ArchiverInterface
 
         $command = sprintf(
             'hg archive --rev %s --type %s %s',
-            $sourceRef,
+            escapeshellarg($sourceRef),
             $format,
             escapeshellarg($target)
         );

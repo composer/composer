@@ -76,18 +76,18 @@ class ArchiveManager
         // Directory used to download the sources
         $filesystem = new Filesystem();
         $packageName = $package->getUniqueName();
-        $sources = sys_get_temp_dir().'/composer_archiver/'.$packageName;
-        $filesystem->ensureDirectoryExists($sources);
+        $sourcePath = sys_get_temp_dir().'/composer_archiver/'.$packageName;
+        $filesystem->ensureDirectoryExists($sourcePath);
 
         // Archive filename
         $target = $targetDir.'/'.$packageName.'.'.$format;
         $filesystem->ensureDirectoryExists(dirname($target));
 
         // Download sources
-        $this->downloadManager->download($package, $sources, true);
+        $this->downloadManager->download($package, $sourcePath, true);
 
         // Create the archive
         $sourceRef = $package->getSourceReference();
-        $usableArchiver->archive($sources, $target, $format, $sourceRef);
+        $usableArchiver->archive($sourcePath, $target, $format, $sourceRef);
     }
 }
