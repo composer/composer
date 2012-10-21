@@ -36,13 +36,14 @@ class HgDriver extends VcsDriver
         if (static::isLocalUrl($this->url)) {
             $this->repoDir = str_replace('file://', '', $this->url);
         } else {
-            $this->repoDir = $this->config->get('home') . '/cache.hg/' . preg_replace('{[^a-z0-9]}i', '-', $this->url) . '/';
+            $cacheDir = $this->config->get('home') . '/cache.hg';
+            $this->repoDir = $cacheDir . '/' . preg_replace('{[^a-z0-9]}i', '-', $this->url) . '/';
 
             $fs = new Filesystem();
-            $fs->ensureDirectoryExists(dirname($this->repoDir));
+            $fs->ensureDirectoryExists($cacheDir);
 
             if (!is_writable(dirname($this->repoDir))) {
-                throw new \RuntimeException('Can not clone '.$this->url.' to access package information. The "'.dirname($this->repoDir).'" directory is not writable by the current user.');
+                throw new \RuntimeException('Can not clone '.$this->url.' to access package information. The "'.$cacheDir.'" directory is not writable by the current user.');
             }
 
             // update the repo if it is a valid hg repository
