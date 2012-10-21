@@ -80,6 +80,7 @@ class GitHub
                 $contents = JsonFile::parseJson($this->remoteFilesystem->getContents($originUrl, 'https://api.github.com/authorizations', false, array(
                     'http' => array(
                         'method' => 'POST',
+                        'follow_location' => false,
                         'header' => "Content-Type: application/json\r\n",
                         'content' => json_encode(array(
                             'scopes' => array('repo'),
