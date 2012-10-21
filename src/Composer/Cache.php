@@ -65,4 +65,12 @@ class Cache
             return sha1_file($this->root . $file);
         }
     }
+
+    public function sha256($file)
+    {
+        $file = preg_replace('{[^a-z0-9.]}i', '-', $file);
+        if ($this->enabled && file_exists($this->root . $file)) {
+            return hash_file('sha256', $this->root . $file);
+        }
+    }
 }
