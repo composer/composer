@@ -1,0 +1,69 @@
+<?php
+
+/*
+ * This file is part of Composer.
+ *
+ * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+namespace Composer\Test\Package\Archiver;
+
+use Composer\Package\Archiver\PharArchiver;
+
+/**
+ * @author Till Klampaeckel <till@php.net>
+ * @author Matthieu Moquet <matthieu@moquet.net>
+ */
+class PharArchiverTest extends ArchiverTest
+{
+    public function testTarArchive()
+    {
+        // Set up repository
+        $this->setupDummyRepo();
+        $package = $this->setupPackage();
+        $target  = sys_get_temp_dir().'/composer_archiver_test.tar';
+
+        // Test archive
+        $archiver = new PharArchiver();
+        $archiver->archive($package->getSourceUrl(), $target, 'tar');
+        $this->assertFileExists($target);
+
+        unlink($target);
+    }
+
+    public function testZipArchive()
+    {
+        // Set up repository
+        $this->setupDummyRepo();
+        $package = $this->setupPackage();
+        $target  = sys_get_temp_dir().'/composer_archiver_test.zip';
+
+        // Test archive
+        $archiver = new PharArchiver();
+        $archiver->archive($package->getSourceUrl(), $target, 'zip');
+        $this->assertFileExists($target);
+
+        unlink($target);
+    }
+
+    /**
+     * Create a local dummy repository to run tests against!
+     */
+    protected function setupDummyRepo()
+    {
+        $currentWorkDir = getcwd();
+        chdir($this->testDir);
+
+        $result = file_put_contents('b', 'a');
+        if (false === $result) {
+            chdir($currentWorkDir);
+            throw new \RuntimeException('Could not save file.');
+        }
+
+        chdir($currentWorkDir);
+    }
+}

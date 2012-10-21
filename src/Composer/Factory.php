@@ -15,6 +15,7 @@ namespace Composer;
 use Composer\Config\JsonConfigSource;
 use Composer\Json\JsonFile;
 use Composer\IO\IOInterface;
+use Composer\Package\Archiver;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\RepositoryManager;
 use Composer\Util\ProcessExecutor;
@@ -240,6 +241,26 @@ class Factory
         $dm->setDownloader('file', new Downloader\FileDownloader($io, $config));
 
         return $dm;
+    }
+
+    /**
+     * @param Downloader\DownloadManager $dm      Manager use to download sources
+     * @param Config                     $config  The configuration
+     *
+     * @return Archiver\ArchiveManager
+     */
+    public function createArchiveManager(DownloadManager $dm = null, Config $config)
+    {
+        if (null === $dm) {
+            $dm = $this->createDownloadManager(new IO\NullIO(), $config);
+        }
+
+        $am = new Archiver\ArchiveManager($dm);
+        $am->addArchiver(new Archiver\GitArchiver);
+        $am->addArchiver(new Archiver\MercurialArchiver);
+        $am->addArchiver(new Archiver\PharArchiver);
+
+        return $am;
     }
 
     /**
