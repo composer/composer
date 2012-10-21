@@ -20,10 +20,12 @@ use Composer\Package\Archiver\GitArchiver;
  */
 class GitArchiverTest extends ArchiverTest
 {
+    protected $targetFile;
+
     public function testZipArchive()
     {
+        // Set up repository
         $this->setupGitRepo();
-
         $package = $this->setupPackage();
         $target  = sys_get_temp_dir().'/composer_archiver_test.zip';
 
@@ -33,13 +35,12 @@ class GitArchiverTest extends ArchiverTest
         $this->assertFileExists($target);
 
         unlink($target);
-        $this->removeGitRepo();
     }
 
     public function testTarArchive()
     {
+        // Set up repository
         $this->setupGitRepo();
-
         $package = $this->setupPackage();
         $target  = sys_get_temp_dir().'/composer_archiver_test.tar';
 
@@ -49,6 +50,34 @@ class GitArchiverTest extends ArchiverTest
         $this->assertFileExists($target);
 
         unlink($target);
-        $this->removeGitRepo();
+    }
+
+    /**
+     * Create local git repository to run tests against!
+     */
+    protected function setupGitRepo()
+    {
+        $currentWorkDir = getcwd();
+        chdir($this->testDir);
+
+        $result = $this->process->execute('git init -q');
+        if ($result > 0) {
+            chdir($currentWorkDir);
+            throw new \RuntimeException('Could not init: '.$this->process->getErrorOutput());
+        }
+
+        $result = file_put_contents('b', 'a');
+        if (false === $result) {
+            chdir($currentWorkDir);
+            throw new \RuntimeException('Could not save file.');
+        }
+
+        $result = $this->process->execute('git add b && git commit -m "commit b" -q');
+        if ($result > 0) {
+            chdir($currentWorkDir);
+            throw new \RuntimeException('Could not commit: '.$this->process->getErrorOutput());
+        }
+
+        chdir($currentWorkDir);
     }
 }

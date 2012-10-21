@@ -41,46 +41,20 @@ abstract class ArchiverTest extends \PHPUnit_Framework_TestCase
     {
         $this->filesystem = new Filesystem();
         $this->process    = new ProcessExecutor();
-        $this->testDir    = sys_get_temp_dir().'/composer_archivertest_git_repository'.mt_rand();
+        $this->testDir    = sys_get_temp_dir().'/composer_archiver_test_'.mt_rand();
+        $this->filesystem->ensureDirectoryExists($this->testDir);
+    }
+
+    public function tearDown()
+    {
+        $this->filesystem->removeDirectory($this->testDir);
     }
 
     /**
-     * Create local git repository to run tests against!
+     * Util method to quickly setup a package using the source path built.
+     *
+     * @return \Composer\Package\Package
      */
-    protected function setupGitRepo()
-    {
-        $this->filesystem->removeDirectory($this->testDir);
-        $this->filesystem->ensureDirectoryExists($this->testDir);
-
-        $currentWorkDir = getcwd();
-        chdir($this->testDir);
-
-        $result = $this->process->execute('git init -q');
-        if ($result > 0) {
-            chdir($currentWorkDir);
-            throw new \RuntimeException('Could not init: '.$this->process->getErrorOutput());
-        }
-
-        $result = file_put_contents('b', 'a');
-        if (false === $result) {
-            chdir($currentWorkDir);
-            throw new \RuntimeException('Could not save file.');
-        }
-
-        $result = $this->process->execute('git add b && git commit -m "commit b" -q');
-        if ($result > 0) {
-            chdir($currentWorkDir);
-            throw new \RuntimeException('Could not commit: '.$this->process->getErrorOutput());
-        }
-
-        chdir($currentWorkDir);
-    }
-
-    protected function removeGitRepo()
-    {
-        $this->filesystem->removeDirectory($this->testDir);
-    }
-
     protected function setupPackage()
     {
         $package = new Package('archivertest/archivertest', 'master', 'master');
