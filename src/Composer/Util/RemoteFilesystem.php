@@ -40,7 +40,21 @@ class RemoteFilesystem
     public function __construct(IOInterface $io, $options = array())
     {
         $this->io = $io;
+
+        if (!isset($options['http']) || !is_array($options['http'])) {
+            $options['http'] = array();
+        }
+
+        // Disable redirects unless overriden
+        if (empty($options['http']['max_redirects'])) {
+            $options['http']['max_redirects'] = 1;
+        }
+        if (empty($options['http']['follow_location'])) {
+            $options['http']['follow_location'] = 0;
+        }
+
         $this->options = $options;
+
     }
 
     /**
@@ -115,7 +129,29 @@ class RemoteFilesystem
             $errorMessage .= preg_replace('{^file_get_contents\(.*?\): }', '', $msg);
         });
         try {
-            $result = file_get_contents($fileUrl, false, $ctx);
+            // 20 is the default number of allowed redirects for file_get_contents
+            for($i = 0; $i < 20; $i++) {
+                $result = file_get_contents($fileUrl, false, $ctx);
+
+                // 301 or 302 means we got a redirect
+                if (!isset($http_response_header[0]) || (strpos($http_response_header[0], '301') === false && strpos($http_response_header[0], '302') === false)) {
+                    break;
+                }
+                // Otherwise must be a redirext, look for location header
+                $newUrl = false;
+                foreach($http_response_header as $header) {
+                    if (stripos($header, 'Location:') === 0) {
+                        $newUrl = ltrim(substr($header, 9));
+                    }
+                }
+                if (!$newUrl) {
+                    // Couldn't find a location header, so we can't do anything else
+                    break;
+                } else {
+                    // Found location header, loop trying to find some content
+                    $fileUrl = $newUrl;
+                }
+            }
         } catch (\Exception $e) {
             if ($e instanceof TransportException && !empty($http_response_header[0])) {
                 $e->setHeaders($http_response_header);
