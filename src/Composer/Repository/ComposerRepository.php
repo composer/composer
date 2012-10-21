@@ -414,7 +414,14 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
                 $data = $json->read();
                 $encoded = json_encode($data);
                 if ($sha256 && $sha256 !== hash('sha256', $encoded)) {
-                    throw new \UnexpectedValueException('The contents of '.$filename.' do not match its signature, this may be due to a temporary glitch or a man-in-the-middle attack, aborting for safety. Please try running Composer again.');
+                    if ($retries) {
+                        usleep(100);
+
+                        continue;
+                    }
+
+                    // TODO throw SecurityException and abort once we are sure this can not happen accidentally
+                    $this->io->write('<warning>The contents of '.$filename.' do not match its signature, this may be due to a temporary glitch or a man-in-the-middle attack. Please report this.</warning>');
                 }
                 $this->cache->write($cacheKey, $encoded);
 
