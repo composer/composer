@@ -70,7 +70,7 @@ final class StreamContextFactory
 
                 // Preserve headers if already set in default options
                 if (isset($defaultOptions['http']['header'])) {
-                    $defaultOptions['http']['header'] .= "Proxy-Authorization: Basic {$auth}\r\n";
+                    $defaultOptions['http']['header'][] = "Proxy-Authorization: Basic {$auth}";
                 } else {
                     $options['http']['header'] = "Proxy-Authorization: Basic {$auth}\r\n";
                 }
