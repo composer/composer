@@ -53,7 +53,6 @@ class GitHub
     {
         // if available use token from git config
         if (0 === $this->process->execute('git config github.accesstoken', $output)) {
-            $this->io->write('Using Github OAuth token stored in git config (github.accesstoken)');
             $this->io->setAuthorization($originUrl, trim($output), 'x-oauth-basic');
 
             return;
