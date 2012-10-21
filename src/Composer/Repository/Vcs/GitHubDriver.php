@@ -351,9 +351,7 @@ class GitHubDriver extends VcsDriver
     protected function authorizeOAuth()
     {
         // If available use token from git config
-        exec('git config github.accesstoken', $output, $returnCode);
-        if ($returnCode === 0 && !empty($output[0]))
-        {
+        if (0 === $this->process->execute('git config github.accesstoken', $output)) {
             $this->io->write('Using Github OAuth token stored in git config (github.accesstoken)');
             $this->io->setAuthorization($this->originUrl, $output[0], 'x-oauth-basic');
             return;
