@@ -12,10 +12,12 @@
 
 namespace Composer\Downloader;
 
+use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Util\Filesystem;
+use Composer\Util\GitHub;
 use Composer\Util\RemoteFilesystem;
 
 /**
@@ -28,6 +30,7 @@ use Composer\Util\RemoteFilesystem;
 class FileDownloader implements DownloaderInterface
 {
     protected $io;
+    protected $config;
     protected $rfs;
     protected $filesystem;
 
@@ -36,9 +39,10 @@ class FileDownloader implements DownloaderInterface
      *
      * @param IOInterface $io The IO instance
      */
-    public function __construct(IOInterface $io, RemoteFilesystem $rfs = null, Filesystem $filesystem = null)
+    public function __construct(IOInterface $io, Config $config, RemoteFilesystem $rfs = null, Filesystem $filesystem = null)
     {
         $this->io = $io;
+        $this->config = $config;
         $this->rfs = $rfs ?: new RemoteFilesystem($io);
         $this->filesystem = $filesystem ?: new Filesystem();
     }
@@ -70,7 +74,18 @@ class FileDownloader implements DownloaderInterface
         $processUrl = $this->processUrl($package, $url);
 
         try {
-            $this->rfs->copy(parse_url($processUrl, PHP_URL_HOST), $processUrl, $fileName);
+            try {
+                $this->rfs->copy(parse_url($processUrl, PHP_URL_HOST), $processUrl, $fileName);
+            } catch (TransportException $e) {
+                if (404 === $e->getCode() && 'github.com' === parse_url($processUrl, PHP_URL_HOST)) {
+                    $message = "\n".'Could not fetch '.$processUrl.', enter your GitHub credentials to access private repos';
+                    $gitHubUtil = new GitHub($this->io, $this->config, null, $this->rfs);
+                    $gitHubUtil->authorizeOAuth('github.com', $message);
+                    $this->rfs->copy(parse_url($processUrl, PHP_URL_HOST), $processUrl, $fileName);
+                } else {
+                    throw $e;
+                }
+            }
 
             if (!file_exists($fileName)) {
                 throw new \UnexpectedValueException($url.' could not be saved to '.$fileName.', make sure the'

@@ -36,13 +36,13 @@ abstract class VcsDriver implements VcsDriverInterface
     /**
      * Constructor.
      *
-     * @param array           $repoConfig       The repository configuration
-     * @param IOInterface     $io               The IO instance
-     * @param Config          $config           The composer configuration
-     * @param ProcessExecutor $process          Process instance, injectable for mocking
-     * @param callable        $remoteFilesystem Remote Filesystem, injectable for mocking
+     * @param array            $repoConfig       The repository configuration
+     * @param IOInterface      $io               The IO instance
+     * @param Config           $config           The composer configuration
+     * @param ProcessExecutor  $process          Process instance, injectable for mocking
+     * @param RemoteFilesystem $remoteFilesystem Remote Filesystem, injectable for mocking
      */
-    final public function __construct(array $repoConfig, IOInterface $io, Config $config, ProcessExecutor $process = null, $remoteFilesystem = null)
+    final public function __construct(array $repoConfig, IOInterface $io, Config $config, ProcessExecutor $process = null, RemoteFilesystem $remoteFilesystem = null)
     {
         $this->url = $repoConfig['url'];
         $this->originUrl = $repoConfig['url'];

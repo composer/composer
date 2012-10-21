@@ -13,6 +13,7 @@
 namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
+use Composer\Util\GitHub;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -283,32 +284,21 @@ class GitDownloader extends VcsDownloader
 
         $command = call_user_func($commandCallable, $url);
         if (0 !== $this->process->execute($command, $handler)) {
-            if (preg_match('{^git@github.com:(.+?)\.git$}i', $url, $match) && $this->io->isInteractive()) {
-                // private github repository without git access, try https with auth
-                $retries = 3;
-                $retrying = false;
-                do {
-                    if ($retrying) {
-                        $this->io->write('Invalid credentials');
-                    }
-                    if (!$this->io->hasAuthorization('github.com') || $retrying) {
-                        $username = $this->io->ask('Username: ');
-                        $password = $this->io->askAndHideAnswer('Password: ');
-                        $this->io->setAuthorization('github.com', $username, $password);
-                    }
+            // private github repository without git access, try https with auth
+            if (preg_match('{^git@(github.com):(.+?)\.git$}i', $url, $match) && $this->io->isInteractive()) {
+                if (!$this->io->hasAuthorization($match[1])) {
+                    $message = 'Cloning failed using an ssh key for authentication, enter your GitHub credentials to access private repos';
+                    $gitHubUtil = new GitHub($this->io, $this->config, $this->process);
+                    $gitHubUtil->authorizeOAuth($match[1], $message);
+                }
 
-                    $auth = $this->io->getAuthorization('github.com');
-                    $url = 'https://'.$auth['username'] . ':' . $auth['password'] . '@github.com/'.$match[1].'.git';
+                $auth = $this->io->getAuthorization($match[1]);
+                $url = 'https://'.$auth['username'] . ':' . $auth['password'] . '@'.$match[1].'/'.$match[2].'.git';
 
-                    $command = call_user_func($commandCallable, $url);
-                    if (0 === $this->process->execute($command, $handler)) {
-                        return;
-                    }
-                    if (null !== $path) {
-                        $this->filesystem->removeDirectory($path);
-                    }
-                    $retrying = true;
-                } while (--$retries);
+                $command = call_user_func($commandCallable, $url);
+                if (0 === $this->process->execute($command, $handler)) {
+                    return;
+                }
             }
 
             if (null !== $path) {
