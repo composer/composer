@@ -20,7 +20,7 @@ Composer does not execute those additional scripts.**
 
 Composer fires the following named events during its execution process:
 
-- **pre-install-cmd*: occurs before the `install` command is executed.
+- **pre-install-cmd**: occurs before the `install` command is executed.
 - **post-install-cmd**: occurs after the `install` command is executed.
 - **pre-update-cmd**: occurs before the `update` command is executed.
 - **post-update-cmd**: occurs after the `update` command is executed.
