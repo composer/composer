@@ -57,16 +57,19 @@ abstract class ArchiverTest extends \PHPUnit_Framework_TestCase
 
         $result = $this->process->execute('git init -q');
         if ($result > 0) {
+            chdir($currentWorkDir);
             throw new \RuntimeException('Could not init: '.$this->process->getErrorOutput());
         }
 
         $result = file_put_contents('b', 'a');
         if (false === $result) {
+            chdir($currentWorkDir);
             throw new \RuntimeException('Could not save file.');
         }
 
         $result = $this->process->execute('git add b && git commit -m "commit b" -q');
         if ($result > 0) {
+            chdir($currentWorkDir);
             throw new \RuntimeException('Could not commit: '.$this->process->getErrorOutput());
         }
 

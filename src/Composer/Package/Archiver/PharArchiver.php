@@ -31,28 +31,8 @@ class PharArchiver implements ArchiverInterface
      */
     public function archive($sources, $target, $format, $sourceRef = null)
     {
-        $this->createPharArchive($sources, $target, static::$formats[$format]);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function supports($format, $sourceType)
-    {
-        return isset(static::$formats[$format]);
-    }
-
-    /**
-     * Create a PHAR archive.
-     *
-     * @param string $sources Path of the directory to archive
-     * @param string $target  Path of the file archive to create
-     * @param int    $format  Format of the archive
-     */
-    protected function createPharArchive($sources, $target, $format)
-    {
         try {
-            $phar = new \PharData($target, null, null, $format);
+            $phar = new \PharData($target, null, null, static::$formats[$format]);
             $phar->buildFromDirectory($sources);
         } catch (\UnexpectedValueException $e) {
             $message = sprintf("Could not create archive '%s' from '%s': %s",
@@ -63,5 +43,13 @@ class PharArchiver implements ArchiverInterface
 
             throw new \RuntimeException($message, $e->getCode(), $e);
         }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function supports($format, $sourceType)
+    {
+        return isset(static::$formats[$format]);
     }
 }
