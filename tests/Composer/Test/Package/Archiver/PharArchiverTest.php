@@ -22,8 +22,8 @@ class PharArchiverTest extends ArchiverTest
 {
     public function testTarArchive()
     {
-        $this->setupGitRepo();
-
+        // Set up repository
+        $this->setupDummyRepo();
         $package = $this->setupPackage();
         $target  = sys_get_temp_dir().'/composer_archiver_test.tar';
 
@@ -33,13 +33,12 @@ class PharArchiverTest extends ArchiverTest
         $this->assertFileExists($target);
 
         unlink($target);
-        $this->removeGitRepo();
     }
 
     public function testZipArchive()
     {
-        $this->setupGitRepo();
-
+        // Set up repository
+        $this->setupDummyRepo();
         $package = $this->setupPackage();
         $target  = sys_get_temp_dir().'/composer_archiver_test.zip';
 
@@ -49,6 +48,22 @@ class PharArchiverTest extends ArchiverTest
         $this->assertFileExists($target);
 
         unlink($target);
-        $this->removeGitRepo();
+    }
+
+    /**
+     * Create a local dummy repository to run tests against!
+     */
+    protected function setupDummyRepo()
+    {
+        $currentWorkDir = getcwd();
+        chdir($this->testDir);
+
+        $result = file_put_contents('b', 'a');
+        if (false === $result) {
+            chdir($currentWorkDir);
+            throw new \RuntimeException('Could not save file.');
+        }
+
+        chdir($currentWorkDir);
     }
 }

@@ -23,9 +23,9 @@ class MercurialArchiverTest extends ArchiverTest
 {
     public function testZipArchive()
     {
+        // Set up repository
         $this->setupMercurialRepo();
-
-        $package = $this->setupMercurialPackage();
+        $package = $this->setupPackage();
         $target  = sys_get_temp_dir().'/composer_archiver_test.zip';
 
         // Test archive
@@ -34,14 +34,13 @@ class MercurialArchiverTest extends ArchiverTest
         $this->assertFileExists($target);
 
         unlink($target);
-        $this->removeMercurialRepo();
     }
 
     public function testTarArchive()
     {
+        // Set up repository
         $this->setupMercurialRepo();
-
-        $package = $this->setupMercurialPackage();
+        $package = $this->setupPackage();
         $target  = sys_get_temp_dir().'/composer_archiver_test.tar';
 
         // Test archive
@@ -50,47 +49,40 @@ class MercurialArchiverTest extends ArchiverTest
         $this->assertFileExists($target);
 
         unlink($target);
-        $this->removeMercurialRepo();
     }
 
     /**
-     * Create local git repository to run tests against!
+     * Create local mercurial repository to run tests against!
      */
     protected function setupMercurialRepo()
     {
-        $this->filesystem->removeDirectory($this->testDir);
-        $this->filesystem->ensureDirectoryExists($this->testDir);
-
         $currentWorkDir = getcwd();
         chdir($this->testDir);
 
         $result = $this->process->execute('hg init -q');
         if ($result > 0) {
+            chdir($currentWorkDir);
             throw new \RuntimeException('Could not init: '.$this->process->getErrorOutput());
         }
 
         $result = file_put_contents('b', 'a');
         if (false === $result) {
+            chdir($currentWorkDir);
             throw new \RuntimeException('Could not save file.');
         }
 
         $result = $this->process->execute('hg add b && hg commit -m "commit b" --config ui.username=test -q');
         if ($result > 0) {
+            chdir($currentWorkDir);
             throw new \RuntimeException('Could not commit: '.$this->process->getErrorOutput());
         }
 
         chdir($currentWorkDir);
     }
 
-    protected function removeMercurialRepo()
+    protected function setupPackage()
     {
-        $this->filesystem->removeDirectory($this->testDir);
-    }
-
-    protected function setupMercurialPackage()
-    {
-        $package = new Package('archivertest/archivertest', 'master', 'master');
-        $package->setSourceUrl(realpath($this->testDir));
+        $package = parent::setupPackage();
         $package->setSourceReference('default');
         $package->setSourceType('hg');
 

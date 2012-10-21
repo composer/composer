@@ -33,7 +33,7 @@ class ArchiveManagerTest extends ArchiverTest
 
         $factory = new Factory();
         $this->manager = $factory->createArchiveManager(null, $factory->createConfig());
-        $this->targetDir = sys_get_temp_dir().'/composer_archiver_tests';
+        $this->targetDir = $this->testDir.'/composer_archiver_tests';
     }
 
     public function testUnknownFormat()
@@ -45,7 +45,7 @@ class ArchiveManagerTest extends ArchiverTest
         $this->manager->archive($package, '__unknown_format__', $this->targetDir);
     }
 
-    public function testArchiveTarWithVcs()
+    public function testArchiveTar()
     {
         $this->setupGitRepo();
 
@@ -59,24 +59,6 @@ class ArchiveManagerTest extends ArchiverTest
         $this->assertFileExists($target);
 
         unlink($target);
-        $this->removeGitRepo();
-    }
-
-    public function testArchiveTarWithoutVcs()
-    {
-        $this->setupGitRepo();
-
-        $package = $this->setupPackage();
-
-        // This should use the TarArchiver
-        $this->manager->archive($package, 'tar', $this->targetDir);
-
-        $package->setSourceType('__unknown_type__'); // disable VCS recognition
-        $target = $this->getTargetName($package, 'tar');
-        $this->assertFileExists($target);
-
-        unlink($target);
-        $this->removeGitRepo();
     }
 
     protected function getTargetName(PackageInterface $package, $format)
@@ -85,5 +67,34 @@ class ArchiveManagerTest extends ArchiverTest
         $target = $this->targetDir.'/'.$packageName.'.'.$format;
 
         return $target;
+    }
+
+    /**
+     * Create local git repository to run tests against!
+     */
+    protected function setupGitRepo()
+    {
+        $currentWorkDir = getcwd();
+        chdir($this->testDir);
+
+        $result = $this->process->execute('git init -q');
+        if ($result > 0) {
+            chdir($currentWorkDir);
+            throw new \RuntimeException('Could not init: '.$this->process->getErrorOutput());
+        }
+
+        $result = file_put_contents('b', 'a');
+        if (false === $result) {
+            chdir($currentWorkDir);
+            throw new \RuntimeException('Could not save file.');
+        }
+
+        $result = $this->process->execute('git add b && git commit -m "commit b" -q');
+        if ($result > 0) {
+            chdir($currentWorkDir);
+            throw new \RuntimeException('Could not commit: '.$this->process->getErrorOutput());
+        }
+
+        chdir($currentWorkDir);
     }
 }
