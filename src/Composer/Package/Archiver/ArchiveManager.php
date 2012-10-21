@@ -24,19 +24,15 @@ use Composer\Util\Filesystem;
  */
 class ArchiveManager
 {
-    protected $buildDir;
-
     protected $downloadManager;
 
     protected $archivers = array();
 
     /**
-     * @param string          $buildDir        The directory used to build the archive
      * @param DownloadManager $downloadManager A manager used to download package sources
      */
-    public function __construct($buildDir, DownloadManager $downloadManager)
+    public function __construct(DownloadManager $downloadManager)
     {
-        $this->buildDir = $buildDir;
         $this->downloadManager = $downloadManager;
     }
 
@@ -51,17 +47,19 @@ class ArchiveManager
     /**
      * Create an archive of the specified package.
      *
-     * @param PackageInterface $package The package to archive
-     * @param string           $format  The format of the archive (zip, tar, ...)
+     * @param PackageInterface $package   The package to archive
+     * @param string           $format    The format of the archive (zip, tar, ...)
+     * @param string           $targetDir The diretory where to build the archive
      *
      * @return string The path of the created archive
      */
-    public function archive(PackageInterface $package, $format)
+    public function archive(PackageInterface $package, $format, $targetDir)
     {
         if (empty($format)) {
             throw new \InvalidArgumentException('Format must be specified');
         }
 
+        // Search for the most appropriate archiver
         $usableArchiver = null;
         foreach ($this->archivers as $archiver) {
             if ($archiver->supports($format, $package->getSourceType())) {
@@ -78,12 +76,12 @@ class ArchiveManager
         // Directory used to download the sources
         $filesystem = new Filesystem();
         $packageName = $package->getUniqueName();
-        $sources = sys_get_temp_dir().'/'.$packageName;
+        $sources = sys_get_temp_dir().'/composer_archiver/'.$packageName;
         $filesystem->ensureDirectoryExists($sources);
 
         // Archive filename
-        $target = $this->buildDir.'/'.$packageName.'.'.$format;
-        $filesystem->ensureDirectoryExists(dirname($this->buildDir.$target));
+        $target = $targetDir.'/'.$packageName.'.'.$format;
+        $filesystem->ensureDirectoryExists(dirname($target));
 
         // Download sources
         $this->downloadManager->download($package, $sources, true);
