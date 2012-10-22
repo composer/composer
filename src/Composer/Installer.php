@@ -374,6 +374,19 @@ class Installer
             return false;
         }
 
+        if ($devMode) {
+            // remove bogus operations that the solver creates for stuff that was force-updated in the non-dev pass
+            // TODO this should not be necessary ideally, but it seems to work around the problem quite well
+            foreach ($operations as $index => $op) {
+                if ('update' === $op->getJobType() && $op->getInitialPackage()->getUniqueName() === $op->getTargetPackage()->getUniqueName()
+                    && $op->getInitialPackage()->getSourceReference() === $op->getTargetPackage()->getSourceReference()
+                    && $op->getInitialPackage()->getDistReference() === $op->getTargetPackage()->getDistReference()
+                ) {
+                    unset($operations[$index]);
+                }
+            }
+        }
+
         // force dev packages to be updated if we update or install from a (potentially new) lock
         foreach ($localRepo->getPackages() as $package) {
             // skip non-dev packages
