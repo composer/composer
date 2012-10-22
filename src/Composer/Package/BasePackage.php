@@ -178,5 +178,6 @@ abstract class BasePackage implements PackageInterface
     public function __clone()
     {
         $this->repository = null;
+        $this->id = -1;
     }
 }
