@@ -59,6 +59,7 @@ class NoopInstaller implements InstallerInterface
             throw new \InvalidArgumentException('Package is not installed: '.$initial);
         }
 
+        $repo->removePackage($initial);
         if (!$repo->hasPackage($target)) {
             $repo->addPackage(clone $target);
         }
