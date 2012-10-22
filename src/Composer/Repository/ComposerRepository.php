@@ -430,16 +430,18 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
 
                 break;
             } catch (\Exception $e) {
-                if ($contents = $this->cache->read($cacheKey)) {
-                    if (!$this->degradedMode) {
-                        $this->io->write('<warning>'.$e->getMessage().'</warning>');
-                        $this->io->write('<warning>'.$this->url.' could not be fully loaded, package information was loaded from the local cache and may be out of date</warning>');
-                    }
-                    $this->degradedMode = true;
-                    $data = json_decode($contents, true);
+                if (!$retries) {
+                    if ($contents = $this->cache->read($cacheKey)) {
+                        if (!$this->degradedMode) {
+                            $this->io->write('<warning>'.$e->getMessage().'</warning>');
+                            $this->io->write('<warning>'.$this->url.' could not be fully loaded, package information was loaded from the local cache and may be out of date</warning>');
+                        }
+                        $this->degradedMode = true;
+                        $data = JsonFile::parseJson($contents, $this->cache->getRoot().$cacheKey);
 
-                    break;
-                } elseif (!$retries) {
+                        break;
+                    }
+
                     throw $e;
                 }
 
