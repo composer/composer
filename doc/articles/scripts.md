@@ -34,10 +34,10 @@ Composer fires the following named events during its execution process:
 
 ## Defining scripts
 
-The root JSON object in `composer.json` should have a member called `"scripts"`,
-which contains pairs of named events and each event's corresponding
-scripts. An event's scripts can be defined as either as a string (only for
-a single script) or an array (for single or multiple scripts.)
+The root JSON object in `composer.json` should have a property called
+`"scripts"`, which contains pairs of named events and each event's
+corresponding scripts. An event's scripts can be defined as either as a string
+(only for a single script) or an array (for single or multiple scripts.)
 
 For any given event:
 
