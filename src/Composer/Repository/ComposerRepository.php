@@ -202,6 +202,9 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
     public function resetPackageIds()
     {
         foreach ($this->providersByUid as $package) {
+            if ($package instanceof AliasPackage) {
+                $package->getAliasOf()->setId(-1);
+            }
             $package->setId(-1);
         }
     }
