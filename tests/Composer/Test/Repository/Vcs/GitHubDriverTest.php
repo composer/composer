@@ -264,30 +264,35 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
 
         $process->expects($this->at(0))
             ->method('execute')
-            ->with($this->stringContains($repoSshUrl))
-            ->will($this->returnValue(0));
+            ->with($this->equalTo('git config github.accesstoken'))
+            ->will($this->returnValue(1));
 
         $process->expects($this->at(1))
             ->method('execute')
-            ->with($this->stringContains('git tag'));
+            ->with($this->stringContains($repoSshUrl))
+            ->will($this->returnValue(0));
 
         $process->expects($this->at(2))
+            ->method('execute')
+            ->with($this->stringContains('git tag'));
+
+        $process->expects($this->at(3))
             ->method('splitLines')
             ->will($this->returnValue(array($identifier)));
 
-        $process->expects($this->at(3))
+        $process->expects($this->at(4))
             ->method('execute')
             ->with($this->stringContains('git branch --no-color --no-abbrev -v'));
 
-        $process->expects($this->at(4))
+        $process->expects($this->at(5))
             ->method('splitLines')
             ->will($this->returnValue(array('  test_master     edf93f1fccaebd8764383dc12016d0a1a9672d89 Fix test & behavior')));
 
-        $process->expects($this->at(5))
+        $process->expects($this->at(6))
             ->method('execute')
             ->with($this->stringContains('git branch --no-color'));
 
-        $process->expects($this->at(6))
+        $process->expects($this->at(7))
             ->method('splitLines')
             ->will($this->returnValue(array('* test_master')));
 

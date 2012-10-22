@@ -44,20 +44,36 @@ class GitHub
     }
 
     /**
-     * Authorizes a GitHub domain via OAuth
+     * Attempts to authorize a GitHub domain via OAuth
      *
      * @param string $originUrl The host this GitHub instance is located at
-     * @param string $message   The reason this authorization is required
+     * @return bool  true on success
      */
-    public function authorizeOAuth($originUrl, $message = null)
+    public function authorizeOAuth($originUrl)
     {
+        if ('github.com' !== $originUrl) {
+            return false;
+        }
+
         // if available use token from git config
         if (0 === $this->process->execute('git config github.accesstoken', $output)) {
             $this->io->setAuthorization($originUrl, trim($output), 'x-oauth-basic');
 
-            return;
+            return true;
         }
 
+        return false;
+    }
+
+    /**
+     * Authorizes a GitHub domain interactively via OAuth
+     *
+     * @param string $originUrl The host this GitHub instance is located at
+     * @param string $message   The reason this authorization is required
+     * @return bool  true on success
+     */
+    public function authorizeOAuthInteractively($originUrl, $message = null)
+    {
         $attemptCounter = 0;
 
         if ($message) {
@@ -105,7 +121,7 @@ class GitHub
             $githubTokens[$originUrl] = $contents['token'];
             $this->config->getConfigSource()->addConfigSetting('github-oauth', $githubTokens);
 
-            return;
+            return true;
         }
 
         throw new \RuntimeException("Invalid GitHub credentials 5 times in a row, aborting.");
