@@ -33,7 +33,10 @@ class CompositeRepository implements RepositoryInterface
      */
     public function __construct(array $repositories)
     {
-        $this->repositories = $repositories;
+        $this->repositories = array();
+        foreach ($repositories as $repo) {
+            $this->addRepository($repo);
+        }
     }
 
     /**
@@ -150,6 +153,12 @@ class CompositeRepository implements RepositoryInterface
      */
     public function addRepository(RepositoryInterface $repository)
     {
-        $this->repositories[] = $repository;
+        if ($repository instanceof self) {
+            foreach ($repository->getRepositories() as $repo) {
+                $this->addRepository($repo);
+            }
+        } else {
+            $this->repositories[] = $repository;
+        }
     }
 }
