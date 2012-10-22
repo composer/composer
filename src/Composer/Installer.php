@@ -32,6 +32,7 @@ use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\InstalledArrayRepository;
+use Composer\Repository\InstalledFilesystemRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositoryManager;
@@ -144,6 +145,7 @@ class Installer
             $this->verbose = true;
             $this->runScripts = false;
             $this->installationManager->addInstaller(new NoopInstaller);
+            $this->mockLocalRepositories($this->repositoryManager);
         }
 
         if ($this->preferSource) {
@@ -616,6 +618,40 @@ class Installer
                 }
             }
         }
+    }
+
+    /**
+     * Replace local repositories with InstalledArrayRepository instances
+     *
+     * This is to prevent any accidental modification of the existing repos on disk
+     *
+     * @param RepositoryManager $rm
+     */
+    private function mockLocalRepositories(RepositoryManager $rm)
+    {
+        $packages = array_map(function ($p) {
+            return clone $p;
+        }, $rm->getLocalRepository()->getPackages());
+        foreach ($packages as $key => $package) {
+            if ($package instanceof AliasPackage) {
+                unset($packages[$key]);
+            }
+        }
+        $rm->setLocalRepository(
+            new InstalledArrayRepository($packages)
+        );
+
+        $packages = array_map(function ($p) {
+            return clone $p;
+        }, $rm->getLocalDevRepository()->getPackages());
+        foreach ($packages as $key => $package) {
+            if ($package instanceof AliasPackage) {
+                unset($packages[$key]);
+            }
+        }
+        $rm->setLocalDevRepository(
+            new InstalledArrayRepository($packages)
+        );
     }
 
     /**
