@@ -51,13 +51,6 @@ class GitHub
      */
     public function authorizeOAuth($originUrl, $message = null)
     {
-        // if available use token from git config
-        if (0 === $this->process->execute('git config github.accesstoken', $output)) {
-            $this->io->setAuthorization($originUrl, trim($output), 'x-oauth-basic');
-
-            return;
-        }
-
         $attemptCounter = 0;
 
         if ($message) {
