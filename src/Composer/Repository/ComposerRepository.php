@@ -22,7 +22,6 @@ use Composer\Cache;
 use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Util\RemoteFilesystem;
-use Composer\Downloader\TransportException;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
