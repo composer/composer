@@ -252,7 +252,7 @@ class GitHubDriver extends VcsDriver
                         throw $e;
                     }
 
-                    if (!$this->io->isInteractive()) {
+                    if (!$this->setOAuthTokenFromGitConfig() && !$this->io->isInteractive()) {
                         return $this->attemptCloneFallback($e);
                     }
 
@@ -347,8 +347,27 @@ class GitHubDriver extends VcsDriver
         }
     }
 
+    /**
+     * If a GitHub OAuth2 token is available in git-config under the key
+     * github.accesstoken, then use that for authentication.
+     * @return bool true if successful, otherwise false
+     */
+    protected function setOAuthTokenFromGitConfig()
+    {
+        if (0 === $this->process->execute('git config github.accesstoken', $output)) {
+            $this->io->setAuthorization($originUrl, trim($output), 'x-oauth-basic');
+
+            return true;
+        }
+        return false;
+    }
+
     protected function authorizeOAuth($message)
     {
+        if ($this->setOAuthTokenFromGitConfig()) {
+            return;
+        }
+
         $gitHubUtil = new GitHub($this->io, $this->config, $this->process, $this->remoteFilesystem);
         $gitHubUtil->authorizeOAuth($this->originUrl, $message);
     }
