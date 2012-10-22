@@ -80,7 +80,11 @@ class FileDownloader implements DownloaderInterface
                 if (404 === $e->getCode() && 'github.com' === parse_url($processUrl, PHP_URL_HOST)) {
                     $message = "\n".'Could not fetch '.$processUrl.', enter your GitHub credentials to access private repos';
                     $gitHubUtil = new GitHub($this->io, $this->config, null, $this->rfs);
-                    $gitHubUtil->authorizeOAuth('github.com', $message);
+                    if (!$gitHubUtil->authorizeOAuth('github.com')
+                        && (!$this->io->isInteractive() || !$gitHubUtil->authorizeOAuthInteractively('github.com', $message))
+                    ) {
+                        throw $e;
+                    }
                     $this->rfs->copy(parse_url($processUrl, PHP_URL_HOST), $processUrl, $fileName);
                 } else {
                     throw $e;

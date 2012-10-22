@@ -244,6 +244,8 @@ class GitHubDriver extends VcsDriver
         try {
             return parent::getContents($url);
         } catch (TransportException $e) {
+            $gitHubUtil = new GitHub($this->io, $this->config, $this->process, $this->remoteFilesystem);
+
             switch ($e->getCode()) {
                 case 401:
                 case 404:
@@ -252,17 +254,25 @@ class GitHubDriver extends VcsDriver
                         throw $e;
                     }
 
-                    if (!$this->io->isInteractive()) {
-                        return $this->attemptCloneFallback($e);
+                    if ($gitHubUtil->authorizeOAuth($this->originUrl)) {
+                        return parent::getContents($url);
                     }
 
-                    $this->authorizeOAuth('Your GitHub credentials are required to fetch private repository metadata (<info>'.$this->url.'</info>)');
+                    if (!$this->io->isInteractive()) {
+                        return $this->attemptCloneFallback();
+                    }
+
+                    $gitHubUtil->authorizeOAuthInteractively($this->originUrl, 'Your GitHub credentials are required to fetch private repository metadata (<info>'.$this->url.'</info>)');
 
                     return parent::getContents($url);
 
                 case 403:
+                    if (!$this->io->hasAuthorization($this->originUrl) && $gitHubUtil->authorizeOAuth($this->originUrl)) {
+                        return parent::getContents($url);
+                    }
+
                     if (!$this->io->isInteractive() && $fetchingRepoData) {
-                        return $this->attemptCloneFallback($e);
+                        return $this->attemptCloneFallback();
                     }
 
                     $rateLimited = false;
@@ -278,7 +288,7 @@ class GitHubDriver extends VcsDriver
                             throw $e;
                         }
 
-                        $this->authorizeOAuth('API limit exhausted. Enter your GitHub credentials to get a larger API limit (<info>'.$this->url.'</info>)');
+                        $gitHubUtil->authorizeOAuthInteractively($this->originUrl, 'API limit exhausted. Enter your GitHub credentials to get a larger API limit (<info>'.$this->url.'</info>)');
 
                         return parent::getContents($url);
                     }
@@ -345,11 +355,5 @@ class GitHubDriver extends VcsDriver
             $this->io->write('<error>Failed to clone the '.$this->generateSshUrl().' repository, try running in interactive mode so that you can enter your GitHub credentials</error>');
             throw $e;
         }
-    }
-
-    protected function authorizeOAuth($message)
-    {
-        $gitHubUtil = new GitHub($this->io, $this->config, $this->process, $this->remoteFilesystem);
-        $gitHubUtil->authorizeOAuth($this->originUrl, $message);
     }
 }
