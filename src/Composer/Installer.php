@@ -273,6 +273,7 @@ class Installer
         $request = new Request($pool);
 
         $constraint = new VersionConstraint('=', $this->package->getVersion());
+        $constraint->setPrettyString($this->package->getPrettyVersion());
         $request->install($this->package->getName(), $constraint);
 
         if ($this->update) {
@@ -298,6 +299,7 @@ class Installer
                     $version = $aliases[$package->getName()][$version]['alias_normalized'];
                 }
                 $constraint = new VersionConstraint('=', $version);
+                $constraint->setPrettyString($package->getPrettyVersion());
                 $request->install($package->getName(), $constraint);
             }
         } else {
@@ -319,6 +321,7 @@ class Installer
             }
 
             $constraint = new VersionConstraint('=', $package->getVersion());
+            $constraint->setPrettyString($package->getPrettyVersion());
             $request->install($package->getName(), $constraint);
         }
 
