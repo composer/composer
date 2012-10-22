@@ -119,7 +119,7 @@ class EventDispatcher
     /**
      * @param string $className
      * @param string $methodName
-     * @param Event $event          Event invoking the PHP callable
+     * @param Event  $event      Event invoking the PHP callable
      */
     protected function executeEventPhpScript($className, $methodName, Event $event)
     {
@@ -156,7 +156,7 @@ class EventDispatcher
     /**
      * Checks if string given references a class path and method
      *
-     * @param string $callable
+     * @param  string  $callable
      * @return boolean
      */
     protected function isPhpScript($callable)

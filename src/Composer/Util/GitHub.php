@@ -46,8 +46,8 @@ class GitHub
     /**
      * Attempts to authorize a GitHub domain via OAuth
      *
-     * @param string $originUrl The host this GitHub instance is located at
-     * @return bool  true on success
+     * @param  string $originUrl The host this GitHub instance is located at
+     * @return bool   true on success
      */
     public function authorizeOAuth($originUrl)
     {
@@ -68,9 +68,9 @@ class GitHub
     /**
      * Authorizes a GitHub domain interactively via OAuth
      *
-     * @param string $originUrl The host this GitHub instance is located at
-     * @param string $message   The reason this authorization is required
-     * @return bool  true on success
+     * @param  string $originUrl The host this GitHub instance is located at
+     * @param  string $message   The reason this authorization is required
+     * @return bool   true on success
      */
     public function authorizeOAuthInteractively($originUrl, $message = null)
     {
