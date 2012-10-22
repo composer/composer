@@ -368,7 +368,7 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
                 }
             }
 
-            return;
+            return $packages;
         }
 
         if (isset($data['packages'])) {
