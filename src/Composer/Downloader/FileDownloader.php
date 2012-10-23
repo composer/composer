@@ -86,7 +86,7 @@ class FileDownloader implements DownloaderInterface
                     ) {
                         throw $e;
                     }
-                    $this->rfs->copy(parse_url($processUrl, PHP_URL_HOST), $processUrl, $fileName);
+                    $this->rfs->copy($processHost, $processUrl, $fileName);
                 } else {
                     throw $e;
                 }
