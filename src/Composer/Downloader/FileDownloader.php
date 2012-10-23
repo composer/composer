@@ -72,7 +72,7 @@ class FileDownloader implements DownloaderInterface
         $this->io->write("  - Installing <info>" . $package->getName() . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
 
         $processUrl = $this->processUrl($package, $url);
-		$processHost = parse_url($processUrl, PHP_URL_HOST);
+        $processHost = parse_url($processUrl, PHP_URL_HOST);
 
         try {
             try {
