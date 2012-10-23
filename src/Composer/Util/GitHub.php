@@ -51,7 +51,7 @@ class GitHub
      */
     public function authorizeOAuth($originUrl)
     {
-        if (!in_array(array('github.com', 'api.github.com'))) {
+        if (!in_array($originUrl, array('github.com', 'api.github.com'))) {
             return false;
         }
 
