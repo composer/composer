@@ -37,7 +37,7 @@ class InstallCommand extends Command
                 new InputOption('no-custom-installers', null, InputOption::VALUE_NONE, 'Disables all custom installers.'),
                 new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Skips the execution of all scripts defined in composer.json file.'),
                 new InputOption('verbose', 'v', InputOption::VALUE_NONE, 'Shows more details including new commits pulled in when updating packages.'),
-                new InputOption('optimize-autoloaders', 'o', InputOption::VALUE_NONE, 'Optimize autoloaders during autoloader dump')
+                new InputOption('optimize-autoloader', 'o', InputOption::VALUE_NONE, 'Optimize autoloader during autoloader dump')
             ))
             ->setHelp(<<<EOT
 The <info>install</info> command reads the composer.lock file from
@@ -65,7 +65,7 @@ EOT
             ->setPreferDist($input->getOption('prefer-dist'))
             ->setDevMode($input->getOption('dev'))
             ->setRunScripts(!$input->getOption('no-scripts'))
-            ->setOptimizeAutoloaders($input->getOption('optimize-autoloaders'))
+            ->setOptimizeAutoloader($input->getOption('optimize-autoloader'))
         ;
 
         if ($input->getOption('no-custom-installers')) {
