@@ -199,7 +199,7 @@ EOT
         if (!$keepVcs && $installedFromVcs
             && (
                 !$io->isInteractive()
-                || $io->askConfirmation('<info>Do you want to remove the exisitng VCS (.git, .svn..) history?</info> [<comment>Y,n</comment>]? ', true)
+                || $io->askConfirmation('<info>Do you want to remove the existing VCS (.git, .svn..) history?</info> [<comment>Y,n</comment>]? ', true)
             )
         ) {
             $finder = new Finder();
@@ -216,7 +216,7 @@ EOT
                     }
                 }
             } catch (\Exception $e) {
-                $io->write('<error>An error occured while removing the VCS metadata: '.$e->getMessage().'</error>');
+                $io->write('<error>An error occurred while removing the VCS metadata: '.$e->getMessage().'</error>');
             }
         }
 

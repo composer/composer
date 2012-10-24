@@ -250,7 +250,7 @@ class PackageDependencyParser
     /**
      * Parses version constraint
      *
-     * @param  array  $data array containing serveral 'min', 'max', 'has', 'exclude' and other keys.
+     * @param  array  $data array containing several 'min', 'max', 'has', 'exclude' and other keys.
      * @return string
      */
     private function parse20VersionConstraint(array $data)
