@@ -146,6 +146,10 @@ EOT
     /**
      * finds a package by name and version if provided
      *
+     * @param RepositoryInterface $installedRepo
+     * @param RepositoryInterface $repos
+     * @param string              $name
+     * @param string              $version
      * @return array                     array(CompletePackageInterface, array of versions)
      * @throws \InvalidArgumentException
      */
@@ -267,7 +271,11 @@ EOT
     /**
      * print link objects
      *
-     * @param string $linkType
+     * @param InputInterface           $input
+     * @param OutputInterface          $output
+     * @param CompletePackageInterface $package
+     * @param string                   $linkType
+     * @param string                   $title
      */
     protected function printLinks(InputInterface $input, OutputInterface $output, CompletePackageInterface $package, $linkType, $title = null)
     {
