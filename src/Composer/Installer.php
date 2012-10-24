@@ -429,25 +429,31 @@ class Installer
                         continue;
                     }
 
-                    $newPackage = null;
+                    // find similar packages (name/version) in all repositories
                     $matches = $pool->whatProvides($package->getName(), new VersionConstraint('=', $package->getVersion()));
-                    foreach ($matches as $match) {
+                    foreach ($matches as $index => $match) {
                         // skip local packages
                         if (!in_array($match->getRepository(), $repositories, true)) {
+                            unset($matches[$index]);
                             continue;
                         }
 
                         // skip providers/replacers
                         if ($match->getName() !== $package->getName()) {
+                            unset($matches[$index]);
                             continue;
                         }
 
-                        $newPackage = $match;
-                        break;
+                        $matches[$index] = $match->getId();
                     }
 
-                    if ($newPackage && $newPackage->getSourceReference() !== $package->getSourceReference()) {
-                        $operations[] = new UpdateOperation($package, $newPackage);
+                    // select prefered package according to policy rules
+                    if ($matches = $policy->selectPreferedPackages($pool, array(), $matches)) {
+                        $newPackage = $pool->literalToPackage($matches[0]);
+
+                        if ($newPackage && $newPackage->getSourceReference() !== $package->getSourceReference()) {
+                            $operations[] = new UpdateOperation($package, $newPackage);
+                        }
                     }
                 }
 
