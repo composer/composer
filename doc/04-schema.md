@@ -354,10 +354,12 @@ Example:
 
 Autoload mapping for a PHP autoloader.
 
-Currently [PSR-0](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-0.md)
-autoloading, classmap generation and files are supported. PSR-0 is the recommended way though
+Currently [`PSR-0`](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-0.md)
+autoloading, `classmap` generation and `files` are supported. PSR-0 is the recommended way though
 since it offers greater flexibility (no need to regenerate the autoloader when you add
 classes).
+
+#### PSR-0
 
 Under the `psr-0` key you define a mapping from namespaces to paths, relative to the
 package root. Note that this also supports the PEAR-style non-namespaced convention.
@@ -406,6 +408,8 @@ use an empty prefix like:
         }
     }
 
+#### Classmap
+
 The `classmap` references are all combined, during install/update, into a single
 key => value array which may be found in the generated file
 `vendor/composer/autoload_classmap.php`.
@@ -421,6 +425,8 @@ Example:
             "classmap": ["src/", "lib/", "Something.php"]
         }
     }
+
+#### Files
 
 If you want to require certain files explicitly on every request then you can use
 the 'files' autoloading mechanism. This is useful if your package includes PHP functions
