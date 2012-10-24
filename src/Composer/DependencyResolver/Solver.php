@@ -551,7 +551,7 @@ class Solver
     /*-------------------------------------------------------------------
     * enable/disable learnt rules
     *
-    * we have enabled or disabled some of our rules. We now reenable all
+    * we have enabled or disabled some of our rules. We now re-enable all
     * of our learnt rules except the ones that were learnt from rules that
     * are now disabled.
     */

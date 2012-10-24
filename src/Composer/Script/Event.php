@@ -41,7 +41,7 @@ class Event
      * Constructor.
      *
      * @param string      $name     The event name
-     * @param Composer    $composer The composer objet
+     * @param Composer    $composer The composer object
      * @param IOInterface $io       The IOInterface object
      */
     public function __construct($name, Composer $composer, IOInterface $io)
