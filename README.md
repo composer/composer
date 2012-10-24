@@ -90,9 +90,14 @@ If you would like to help take a look at the [list of issues](http://github.com/
 Community
 ---------
 
-The developer mailing list is on [google groups](http://groups.google.com/group/composer-dev)
-IRC channels are available for discussion as well, on irc.freenode.org [#composer](irc://irc.freenode.org/composer)
+Mailing lists for [user support](http://groups.google.com/group/composer-users) and
+[development](http://groups.google.com/group/composer-dev).
+
+IRC channels are on irc.freenode.org: [#composer](irc://irc.freenode.org/composer)
 for users and [#composer-dev](irc://irc.freenode.org/composer-dev) for development.
+
+Stack Overflow has a growing collection of
+[Composer related questions](http://stackoverflow.com/questions/tagged/composer-php).
 
 Requirements
 ------------
