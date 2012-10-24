@@ -37,7 +37,10 @@ class FileDownloader implements DownloaderInterface
     /**
      * Constructor.
      *
-     * @param IOInterface $io The IO instance
+     * @param IOInterface      $io         The IO instance
+     * @param Config           $config     The config
+     * @param RemoteFilesystem $rfs        The remote filesystem
+     * @param Filesystem       $filesystem The filesystem
      */
     public function __construct(IOInterface $io, Config $config, RemoteFilesystem $rfs = null, Filesystem $filesystem = null)
     {

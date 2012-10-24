@@ -26,14 +26,16 @@ class Link
     protected $target;
     protected $constraint;
     protected $description;
+    protected $prettyConstraint;
 
     /**
      * Creates a new package link.
      *
      * @param string                  $source
      * @param string                  $target
-     * @param LinkConstraintInterface $constraint  Constraint applying to the target of this link
-     * @param string                  $description Used to create a descriptive string representation
+     * @param LinkConstraintInterface $constraint       Constraint applying to the target of this link
+     * @param string                  $description      Used to create a descriptive string representation
+     * @param string                  $prettyConstraint
      */
     public function __construct($source, $target, LinkConstraintInterface $constraint = null, $description = 'relates to', $prettyConstraint = null)
     {

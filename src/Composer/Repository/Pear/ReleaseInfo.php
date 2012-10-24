@@ -24,7 +24,7 @@ class ReleaseInfo
 
     /**
      * @param string         $stability
-     * @param DependencyInfo $dependencies
+     * @param DependencyInfo $dependencyInfo
      */
     public function __construct($stability, $dependencyInfo)
     {

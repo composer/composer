@@ -29,8 +29,11 @@ class InstallerInstaller extends LibraryInstaller
     private static $classCounter = 0;
 
     /**
+     * Initializes Installer installer.
+     *
      * @param IOInterface $io
      * @param Composer    $composer
+     * @param string      $type
      */
     public function __construct(IOInterface $io, Composer $composer, $type = 'library')
     {
