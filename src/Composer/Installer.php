@@ -92,6 +92,7 @@ class Installer
 
     protected $preferSource = false;
     protected $preferDist = false;
+    protected $optimizeAutoloaders = false;
     protected $devMode = false;
     protected $dryRun = false;
     protected $verbose = false;
@@ -221,7 +222,7 @@ class Installer
             // write autoloader
             $this->io->write('<info>Generating autoload files</info>');
             $localRepos = new CompositeRepository($this->repositoryManager->getLocalRepositories());
-            $this->autoloadGenerator->dump($this->config, $localRepos, $this->package, $this->installationManager, 'composer');
+            $this->autoloadGenerator->dump($this->config, $localRepos, $this->package, $this->installationManager, 'composer', $this->optimizeAutoloaders);
 
             if ($this->runScripts) {
                 // dispatch post event
@@ -741,6 +742,19 @@ class Installer
     public function setPreferDist($preferDist = true)
     {
         $this->preferDist = (boolean) $preferDist;
+
+        return $this;
+    }
+
+    /**
+     * Wether or not generated autoloaders are optimized
+     *
+     * @param bool $optimizeAutoloaders
+     * @return Installer
+     */
+    public function setOptimizeAutoloaders($optimizeAutoloaders = false)
+    {
+        $this->optimizeAutoloaders = (boolean) $optimizeAutoloaders;
 
         return $this;
     }
