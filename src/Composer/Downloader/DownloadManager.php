@@ -85,7 +85,7 @@ class DownloadManager
      *
      * @return DownloaderInterface
      *
-     * @throws UnexpectedValueException if downloader for provided type is not registeterd
+     * @throws UnexpectedValueException if downloader for provided type is not registered
      */
     public function getDownloader($type)
     {

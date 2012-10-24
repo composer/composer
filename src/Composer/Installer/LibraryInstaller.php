@@ -40,6 +40,7 @@ class LibraryInstaller implements InstallerInterface
      *
      * @param IOInterface $io
      * @param Composer    $composer
+     * @param string      $type
      */
     public function __construct(IOInterface $io, Composer $composer, $type = 'library')
     {

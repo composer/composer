@@ -150,7 +150,7 @@ class VersionParser
     /**
      * Normalizes a branch name to be able to perform comparisons on it
      *
-     * @param  string $version
+     * @param  string $name
      * @return array
      */
     public function normalizeBranch($name)

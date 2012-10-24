@@ -40,8 +40,9 @@ class EventDispatcher
     /**
      * Constructor.
      *
-     * @param Composer    $composer The composer instance
-     * @param IOInterface $io       The IOInterface instance
+     * @param Composer        $composer The composer instance
+     * @param IOInterface     $io       The IOInterface instance
+     * @param ProcessExecutor $process
      */
     public function __construct(Composer $composer, IOInterface $io, ProcessExecutor $process = null)
     {
