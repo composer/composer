@@ -74,7 +74,7 @@ You can run these commands to easily access `composer` from anywhere on your sys
     $ curl -s https://getcomposer.org/installer | php
     $ sudo mv composer.phar /usr/local/bin/composer
 
-Then, just run `composer` in order to run composer
+Then, just run `composer` in order to run Composer instead of `php composer.phar`.
 
 ### Using Composer
 
@@ -86,7 +86,15 @@ This will download monolog into the `vendor/monolog/monolog` directory.
 
 ## Installation - Windows
 
-### Downloading the Composer Executable
+### Using the Installer
+
+This is the easiest way to get Composer set up on your machine.
+
+Download and run [Composer-Setup.exe](http://getcomposer.org/Composer-Setup.exe),
+it will install the latest Composer version and set up your PATH so that you can
+just call `composer` from any directory in your command line.
+
+### Manual Installation
 
 Change to a directory on your `PATH`
 
@@ -96,18 +104,18 @@ Change to a directory on your `PATH`
 Create a new `.BAT` file alongside composer
 
     C:\bin>notepad composer.bat
-    
+
 Paste the following:
 
     @ECHO OFF
     SET composerScript=composer.phar
     php %~dp0%composerScript% %*
-    
+
 Save the file. Close your current terminal. Test usage with a new terminal:
 
     C:\Users\username>composer -V
     Composer version 27d8904
-    
+
     C:\Users\username>
 
 ## Autoloading
