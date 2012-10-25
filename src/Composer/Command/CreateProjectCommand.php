@@ -203,14 +203,16 @@ EOT
             )
         ) {
             $finder = new Finder();
-            $finder->depth(1)->directories()->in(getcwd())->ignoreVCS(false)->ignoreDotFiles(false);
+            $finder->depth(0)->directories()->in(getcwd())->ignoreVCS(false)->ignoreDotFiles(false);
             foreach (array('.svn', '_svn', 'CVS', '_darcs', '.arch-params', '.monotone', '.bzr', '.git', '.hg') as $vcsName) {
                 $finder->name($vcsName);
             }
 
             try {
                 $fs = new Filesystem();
-                foreach (iterator_to_array($finder) as $dir) {
+                $dirs = iterator_to_array($finder);
+                unset($finder);
+                foreach ($dirs as $dir) {
                     if (!$fs->removeDirectory($dir)) {
                         throw new \RuntimeException('Could not remove '.$dir);
                     }
