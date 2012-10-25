@@ -137,7 +137,7 @@ class InstallationManager
      * Executes update operation.
      *
      * @param RepositoryInterface $repo      repository in which to check
-     * @param InstallOperation    $operation operation instance
+     * @param UpdateOperation     $operation operation instance
      */
     public function update(RepositoryInterface $repo, UpdateOperation $operation)
     {

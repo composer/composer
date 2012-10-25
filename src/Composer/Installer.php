@@ -708,7 +708,7 @@ class Installer
     }
 
     /**
-     * wether to run in drymode or not
+     * Whether to run in drymode or not
      *
      * @param  boolean   $dryRun
      * @return Installer
@@ -747,7 +747,7 @@ class Installer
     }
 
     /**
-     * Wether or not generated autoloader are optimized
+     * Whether or not generated autoloader are optimized
      *
      * @param bool $optimizeAutoloader
      * @return Installer
