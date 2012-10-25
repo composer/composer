@@ -88,20 +88,21 @@ just call `composer` from any directory in your command line.
 
 ### Manual Installation
 
-Change to a directory on your `PATH`
+Change to a directory on your `PATH` and run the install snippet to download
+composer.phar:
 
     C:\Users\username>cd C:\bin
     C:\bin>php -r "eval('?>'.file_get_contents('https://getcomposer.org/installer'));"
 
-Create a new `.BAT` file alongside composer
+Create a new `.bat` file alongside composer:
 
     C:\bin>notepad composer.bat
 
-Paste the following:
+Paste the following in, it simply proxies all arguments to composer:
 
     @ECHO OFF
     SET composerScript=composer.phar
-    php %~dp0%composerScript% %*
+    php "%~dp0%composerScript%" %*
 
 Save the file. Close your current terminal. Test usage with a new terminal:
 
