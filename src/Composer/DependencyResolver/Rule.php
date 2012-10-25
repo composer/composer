@@ -203,7 +203,7 @@ class Rule
                         // handle linked libs
                         $lib = substr($targetName, 4);
 
-                        $text .= ' -> the requested linked library '.$lib.' has the wrong version instaled or is missing from your system, make sure to have the extension providing it.';
+                        $text .= ' -> the requested linked library '.$lib.' has the wrong version installed or is missing from your system, make sure to have the extension providing it.';
                     } else {
                         $text .= ' -> no matching package found.';
                     }

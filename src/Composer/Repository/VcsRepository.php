@@ -145,7 +145,7 @@ class VcsRepository extends ArrayRepository
                 if (isset($data['version'])) {
                     $data['version_normalized'] = $this->versionParser->normalize($data['version']);
                 } else {
-                    // auto-versionned package, read value from tag
+                    // auto-versioned package, read value from tag
                     $data['version'] = $tag;
                     $data['version_normalized'] = $parsedTag;
                 }
@@ -200,7 +200,7 @@ class VcsRepository extends ArrayRepository
                     continue;
                 }
 
-                // branches are always auto-versionned, read value from branch name
+                // branches are always auto-versioned, read value from branch name
                 $data['version'] = $branch;
                 $data['version_normalized'] = $parsedBranch;
 

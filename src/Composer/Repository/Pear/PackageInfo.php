@@ -69,7 +69,7 @@ class PackageInfo
     }
 
     /**
-     * @return string the package short escription
+     * @return string the package short description
      */
     public function getShortDescription()
     {

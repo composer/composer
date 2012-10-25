@@ -204,6 +204,7 @@ class Solver
      * Evaluates each term affected by the decision (linked through watches)
      * If we find unit rules we make new decisions based on them
      *
+     * @param integer $level
      * @return Rule|null A rule on conflict, otherwise null.
      */
     protected function propagate($level)
@@ -551,7 +552,7 @@ class Solver
     /*-------------------------------------------------------------------
     * enable/disable learnt rules
     *
-    * we have enabled or disabled some of our rules. We now reenable all
+    * we have enabled or disabled some of our rules. We now re-enable all
     * of our learnt rules except the ones that were learnt from rules that
     * are now disabled.
     */
