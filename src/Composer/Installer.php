@@ -449,7 +449,7 @@ class Installer
                     }
 
                     // select prefered package according to policy rules
-                    if ($matches = $policy->selectPreferedPackages($pool, array(), $matches)) {
+                    if ($matches && $matches = $policy->selectPreferedPackages($pool, array(), $matches)) {
                         $newPackage = $pool->literalToPackage($matches[0]);
 
                         if ($newPackage && $newPackage->getSourceReference() !== $package->getSourceReference()) {
