@@ -30,6 +30,7 @@ class SvnDriver extends VcsDriver
     protected $baseUrl;
     protected $tags;
     protected $branches;
+    protected $rootIdentifier;
     protected $infoCache = array();
 
     protected $trunkPath    = 'trunk';
@@ -73,7 +74,7 @@ class SvnDriver extends VcsDriver
      */
     public function getRootIdentifier()
     {
-        return $this->trunkPath;
+        return $this->rootIdentifier ?: $this->trunkPath;
     }
 
     /**
@@ -117,7 +118,7 @@ class SvnDriver extends VcsDriver
                 $path = $match[1];
                 $rev = $match[2];
             } else {
-                $path = '';
+                $path = $identifier;
                 $rev = '';
             }
 
@@ -190,8 +191,8 @@ class SvnDriver extends VcsDriver
                     $line = trim($line);
                     if ($line && preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match)) {
                         if (isset($match[1]) && isset($match[2]) && $match[2] === $this->trunkPath . '/') {
-                            $this->branches[$this->trunkPath] = '/' . $this->trunkPath .
-                                '/@'.$match[1];
+                            $this->branches[$this->trunkPath] = '/' . $this->trunkPath . '/@'.$match[1];
+                            $this->rootIdentifier = $this->branches[$this->trunkPath];
                             break;
                         }
                     }
