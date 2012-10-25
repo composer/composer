@@ -76,14 +76,6 @@ You can run these commands to easily access `composer` from anywhere on your sys
 
 Then, just run `composer` in order to run Composer instead of `php composer.phar`.
 
-### Using Composer
-
-Next, run the `install` command to resolve and download dependencies:
-
-    $ php composer.phar install
-
-This will download monolog into the `vendor/monolog/monolog` directory.
-
 ## Installation - Windows
 
 ### Using the Installer
@@ -117,6 +109,19 @@ Save the file. Close your current terminal. Test usage with a new terminal:
     Composer version 27d8904
 
     C:\Users\username>
+
+## Using Composer
+
+Next, run the `install` command to resolve and download dependencies:
+
+    $ php composer.phar install
+
+If you did a global install and do not have the phar in that directory
+run this instead:
+
+    $ composer install
+
+This will download monolog into the `vendor/monolog/monolog` directory.
 
 ## Autoloading
 
