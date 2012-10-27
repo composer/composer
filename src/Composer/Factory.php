@@ -160,7 +160,7 @@ class Factory
         // enable system repository
         $systemRepository = $this->createSystemRepository($config);
         if ($config->get('system-repository')) {
-            // added directly instead of repository class it guarantees the first place in stack
+            // added directly instead of repository class that guarantees the first place in stack
             $rm->addRepository($systemRepository);
         }
 
@@ -169,7 +169,7 @@ class Factory
         if ($config->get('package-cache')) {
             $storage = new Storage\RepositoryStorage(
                 $systemRepository,
-                new Storage\ArchiveStorage($config->get('home') . '/repository', new Util\Archive\ZipArchiver())
+                new Storage\ArchiveStorage($config->get('home') . '/repository', $this->createStorageCompressor())
             );
         }
 
@@ -250,6 +250,21 @@ class Factory
     protected function createSystemRepository(Config $config)
     {
         return new Repository\FilesystemRepository(new JsonFile($config->get('home') . '/repository/packages.json'));
+    }
+
+    /**
+     * Create compressor for the storage
+     *
+     * @return Util\Archive\CompressorInterface
+     */
+    protected function createStorageCompressor()
+    {
+        // For now just use zip or tar. Use a config parameter in the future.
+        if (class_exists('ZipArchiver')) {
+            return new Util\Archive\ZipArchiver();
+        }
+
+        return new Util\Archive\TarArchiver();
     }
 
     /**
