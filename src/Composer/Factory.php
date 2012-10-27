@@ -258,7 +258,7 @@ class Factory
      * @param  Storage\StorageInterface|null $storage Storage if package cache is enabled, null otherwise
      * @return Downloader\DownloadManager
      */
-    public function createDownloadManager(IOInterface $io, Config $config, $storage = null)
+    public function createDownloadManager(IOInterface $io, Config $config, Storage\StorageInterface $storage = null)
     {
         if ($storage) {
             $dm = new Downloader\CachedDownloadManager($storage);
