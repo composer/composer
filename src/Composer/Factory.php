@@ -239,6 +239,7 @@ class Factory
         $dm->setDownloader('tar', new Downloader\TarDownloader($io, $config));
         $dm->setDownloader('phar', new Downloader\PharDownloader($io, $config));
         $dm->setDownloader('file', new Downloader\FileDownloader($io, $config));
+        $dm->setDownloader('local-directory', new Downloader\LocalDirectoryDownloader($io, $config));
 
         return $dm;
     }

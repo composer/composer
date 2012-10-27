@@ -58,6 +58,26 @@ class Filesystem
         return $result && !is_dir($directory);
     }
 
+    public function copyDirectory($sourceDirectory, $destinationDirectory)
+    {
+
+        $sourceDirectory.= '/.';
+        $destinationDirectory.= '';
+        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+            $cmd = sprintf('xcopy %s %s /s /e /i /h', escapeshellarg($sourceDirectory), escapeshellarg($destinationDirectory));
+        } else {
+            $cmd = sprintf('cp -r -f %s %s ', escapeshellarg($sourceDirectory), escapeshellarg($destinationDirectory));
+        }
+
+        $result = $this->getProcess()->execute($cmd) === 0;
+
+        // clear stat cache because external processes aren't tracked by the php stat cache
+        clearstatcache();
+
+        return $result && is_dir($destinationDirectory);
+
+    }
+
     public function ensureDirectoryExists($directory)
     {
         if (!is_dir($directory)) {
