@@ -264,13 +264,9 @@ class LibraryInstaller implements InstallerInterface
             }
         }
 
-        return "@echo off\r\n".
-            "pushd .\r\n".
-            "cd %~dp0\r\n".
-            "cd ".escapeshellarg(dirname($binPath))."\r\n".
-            "set BIN_TARGET=%CD%\\".basename($binPath)."\r\n".
-            "popd\r\n".
-            $caller." \"%BIN_TARGET%\" %*\r\n";
+        return "@ECHO OFF\r\n".
+            "SET BIN_TARGET=%~dp0\\".escapeshellarg(dirname($binPath)).'\\'.basename($binPath)."\r\n".
+            "{$caller} \"%BIN_TARGET%\" %*\r\n";
     }
 
     protected function generateUnixyProxyCode($bin, $link)
