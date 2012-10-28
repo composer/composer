@@ -131,8 +131,8 @@ class Pool
                             $alias['root_alias'] = true;
                             $this->packages[] = $alias;
 
-                            foreach (array_keys($names) as $name) {
-                                $this->packageByName[$name][] =& $this->packages[$this->id - 2];
+                            foreach (array_keys($names) as $provided) {
+                                $this->packageByName[$provided][] =& $this->packages[$this->id - 2];
                             }
                         }
 
@@ -146,8 +146,8 @@ class Pool
                             $alias['id'] = $this->id++;
                             $this->packages[] = $alias;
 
-                            foreach (array_keys($names) as $name) {
-                                $this->packageByName[$name][] =& $this->packages[$this->id - 2];
+                            foreach (array_keys($names) as $provided) {
+                                $this->packageByName[$provided][] =& $this->packages[$this->id - 2];
                             }
                         }
                     }
@@ -160,8 +160,8 @@ class Pool
                         $package->setId($this->id++);
                         $this->packages[] = $package;
 
-                        foreach ($package->getNames() as $name) {
-                            $this->packageByName[$name][] = $package;
+                        foreach ($package->getNames() as $provided) {
+                            $this->packageByName[$provided][] = $package;
                         }
 
                         // handle root package aliases
