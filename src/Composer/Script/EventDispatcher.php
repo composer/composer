@@ -103,16 +103,9 @@ class EventDispatcher
                     throw $e;
                 }
             } else {
-                $callback = function ($type, $buffer) use ($event, $callable) {
-                    $io = $event->getIO();
-                    if ('err' === $type) {
-                        $message = 'Script %s handling the %s event returned an error: %s';
-                        $io->write(sprintf('<error>'.$message.'</error>', $callable, $event->getName(), $buffer));
-                    } else {
-                        $io->write($buffer, false);
-                    }
-                };
-                $this->process->execute($callable, $callback);
+                if (0 !== $this->process->execute($callable, $callback)) {
+                    $event->getIO()->write(sprintf('<error>Script %s handling the %s event returned with an error: %s</script>', $callable, $event->getName(), $this->process->getErrorOutput()));
+                }
             }
         }
     }
