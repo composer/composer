@@ -450,7 +450,7 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
                     }
 
                     // TODO throw SecurityException and abort once we are sure this can not happen accidentally
-                    $this->io->write('<warning>The contents of '.$filename.' do not match its signature, this is most likely due to a temporary glitch but could indicate a man-in-the-middle attack. Try running composer again and please report it if it still persists.</warning>');
+                    $this->io->write('<warning>The contents of '.$filename.' does not match its signature, this is most likely due to a temporary glitch but could indicate a man-in-the-middle attack. Try running composer again and please report it if it still persists.</warning>');
                 }
                 $this->cache->write($cacheKey, $encoded);
 
