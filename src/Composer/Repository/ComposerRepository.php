@@ -262,7 +262,7 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
                         }
                     }
                 } else {
-                    if (!$pool->isPackageAcceptable($version['name'], VersionParser::parseStability($version['version']))) {
+                    if (!$pool->isPackageAcceptable(strtolower($version['name']), VersionParser::parseStability($version['version']))) {
                         continue;
                     }
 
