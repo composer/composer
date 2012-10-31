@@ -83,7 +83,7 @@ class Solver
 
             if ($conflict && RuleSet::TYPE_PACKAGE === $conflict->getType()) {
 
-                $problem = new Problem;
+                $problem = new Problem($this->pool);
 
                 $problem->addRule($rule);
                 $problem->addRule($conflict);
@@ -93,7 +93,7 @@ class Solver
             }
 
             // conflict with another job
-            $problem = new Problem;
+            $problem = new Problem($this->pool);
             $problem->addRule($rule);
             $problem->addRule($conflict);
 
@@ -146,7 +146,7 @@ class Solver
 
                 case 'install':
                     if (!$job['packages']) {
-                        $problem = new Problem();
+                        $problem = new Problem($this->pool);
                         $problem->addRule(new Rule($this->pool, array(), null, null, $job));
                         $this->problems[] = $problem;
                     }
@@ -465,7 +465,7 @@ class Solver
 
     private function analyzeUnsolvable($conflictRule, $disableRules)
     {
-        $problem = new Problem;
+        $problem = new Problem($this->pool);
         $problem->addRule($conflictRule);
 
         $this->analyzeUnsolvableRule($problem, $conflictRule);
