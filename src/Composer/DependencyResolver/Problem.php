@@ -96,7 +96,7 @@ class Problem
                 }
 
                 if (!$this->pool->whatProvides($job['packageName'])) {
-                    return "\n    - The requested package ".$job['packageName'].' could not be found in any version, you most likely did a typo in the package name.';
+                    return "\n    - The requested package ".$job['packageName'].' could not be found in any version, there may be a typo in the package name.';
                 }
 
                 return "\n    - The requested package ".$job['packageName'].$this->constraintToText($job['constraint']).' could not be found.';
