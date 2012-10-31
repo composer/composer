@@ -33,6 +33,13 @@ class Problem
 
     protected $section = 0;
 
+    protected $pool;
+
+    public function __construct(Pool $pool)
+    {
+        $this->pool = $pool;
+    }
+
     /**
      * Add a rule as a reason
      *
@@ -86,6 +93,10 @@ class Problem
                     $lib = substr($job['packageName'], 4);
 
                     return "\n    - The requested linked library ".$job['packageName'].$this->constraintToText($job['constraint']).' has the wrong version installed or is missing from your system, make sure to have the extension providing it.';
+                }
+
+                if (!$this->pool->whatProvides($job['packageName'])) {
+                    return "\n    - The requested package ".$job['packageName'].' could not be found in any version, you most likely did a typo in the package name.';
                 }
 
                 return "\n    - The requested package ".$job['packageName'].$this->constraintToText($job['constraint']).' could not be found.';
