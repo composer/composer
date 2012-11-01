@@ -13,6 +13,7 @@
 namespace Composer;
 
 use Composer\IO\IOInterface;
+use Composer\Util\Filesystem;
 
 /**
  * Reads/writes to a filesystem cache
@@ -24,11 +25,15 @@ class Cache
     private $io;
     private $root;
     private $enabled = true;
+    private $whitelist;
+    private $filesystem;
 
-    public function __construct(IOInterface $io, $cacheDir)
+    public function __construct(IOInterface $io, $cacheDir, $whitelist = 'a-z0-9.', Filesystem $filesystem = null)
     {
         $this->io = $io;
         $this->root = rtrim($cacheDir, '/\\') . '/';
+        $this->whitelist = $whitelist;
+        $this->filesystem = $filesystem ?: new Filesystem();
 
         if (!is_dir($this->root)) {
             if (!@mkdir($this->root, 0777, true)) {
@@ -44,7 +49,7 @@ class Cache
 
     public function read($file)
     {
-        $file = preg_replace('{[^a-z0-9.]}i', '-', $file);
+        $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
         if ($this->enabled && file_exists($this->root . $file)) {
             return file_get_contents($this->root . $file);
         }
@@ -53,14 +58,37 @@ class Cache
     public function write($file, $contents)
     {
         if ($this->enabled) {
-            $file = preg_replace('{[^a-z0-9.]}i', '-', $file);
+            $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
             file_put_contents($this->root . $file, $contents);
         }
     }
 
+    public function copyFrom($file, $source)
+    {
+        if ($this->enabled) {
+            $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
+            $this->filesystem->ensureDirectoryExists(dirname($this->root . $file));
+            copy($source, $this->root . $file);
+        }
+    }
+
+    public function copyTo($file, $target)
+    {
+        $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
+        if ($this->enabled && file_exists($this->root . $file)) {
+            touch($this->root . $file);
+            return copy($this->root . $file, $target);
+        }
+    }
+
+    public function gc($expire)
+    {
+        // TODO
+    }
+
     public function sha1($file)
     {
-        $file = preg_replace('{[^a-z0-9.]}i', '-', $file);
+        $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
         if ($this->enabled && file_exists($this->root . $file)) {
             return sha1_file($this->root . $file);
         }
@@ -68,7 +96,7 @@ class Cache
 
     public function sha256($file)
     {
-        $file = preg_replace('{[^a-z0-9.]}i', '-', $file);
+        $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
         if ($this->enabled && file_exists($this->root . $file)) {
             return hash_file('sha256', $this->root . $file);
         }
