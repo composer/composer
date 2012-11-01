@@ -547,6 +547,16 @@ class Installer
         return $normalizedAliases;
     }
 
+    /**
+     * The instance of IOInterface currently used by Composer.
+     *
+     * @return IOInterface
+     */
+    public function getIO()
+    {
+        return $this->io;
+    }
+
     private function aliasPlatformPackages(PlatformRepository $platformRepo, $aliases)
     {
         foreach ($aliases as $package => $versions) {
