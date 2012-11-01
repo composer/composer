@@ -156,6 +156,23 @@ class Factory
         // initialize repository manager
         $rm = $this->createRepositoryManager($io, $config);
 
+
+        // enable system repository
+        $systemRepository = $this->createSystemRepository($config);
+        if ($config->get('system-repository')) {
+            // added directly instead of repository class that guarantees the first place in stack
+            $rm->addRepository($systemRepository);
+        }
+
+        // add package cache
+        $storage = null;
+        if ($config->get('package-cache')) {
+            $storage = new Storage\RepositoryStorage(
+                $systemRepository,
+                new Storage\ArchiveStorage($config->get('home') . '/repository', $this->createStorageCompressor())
+            );
+        }
+
         // load local repository
         $this->addLocalRepository($rm, $vendorDir);
 
@@ -164,7 +181,7 @@ class Factory
         $package = $loader->load($localConfig);
 
         // initialize download manager
-        $dm = $this->createDownloadManager($io, $config);
+        $dm = $this->createDownloadManager($io, $config, $storage);
 
         // initialize installation manager
         $im = $this->createInstallationManager($config);
@@ -225,13 +242,45 @@ class Factory
     }
 
     /**
-     * @param IO\IOInterface $io
-     * @param Config         $config
+     * Create system repository
+     *
+     * @param  Config                       $config
+     * @return Repository\WritableRepositoryInterface
+     */
+    protected function createSystemRepository(Config $config)
+    {
+        return new Repository\FilesystemRepository(new JsonFile($config->get('home') . '/repository/packages.json'));
+    }
+
+    /**
+     * Create compressor for the storage
+     *
+     * @return Util\Archive\CompressorInterface
+     */
+    protected function createStorageCompressor()
+    {
+        // For now just use zip or tar. Use a config parameter in the future.
+        if (class_exists('ZipArchiver')) {
+            return new Util\Archive\ZipArchiver();
+        }
+
+        return new Util\Archive\TarArchiver();
+    }
+
+    /**
+     * @param  IO\IOInterface                $io
+     * @param  Config                        $config
+     * @param  Storage\StorageInterface|null $storage Storage if package cache is enabled, null otherwise
      * @return Downloader\DownloadManager
      */
-    public function createDownloadManager(IOInterface $io, Config $config)
+    public function createDownloadManager(IOInterface $io, Config $config, Storage\StorageInterface $storage = null)
     {
-        $dm = new Downloader\DownloadManager();
+        if ($storage) {
+            $dm = new Downloader\CachedDownloadManager($storage);
+        } else {
+            $dm = new Downloader\DownloadManager();
+        }
+
         $dm->setDownloader('git', new Downloader\GitDownloader($io, $config));
         $dm->setDownloader('svn', new Downloader\SvnDownloader($io, $config));
         $dm->setDownloader('hg', new Downloader\HgDownloader($io, $config));
