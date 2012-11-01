@@ -274,11 +274,11 @@ class LibraryInstaller implements InstallerInterface
         $binPath = $this->filesystem->findShortestPath($link, $bin);
 
         return "#!/usr/bin/env sh\n".
-            'SRC_DIR=`pwd`'."\n".
-            'cd `dirname "$0"`'."\n".
+            'SRC_DIR="`pwd`"'."\n".
+            'cd "`dirname "$0"`"'."\n".
             'cd '.escapeshellarg(dirname($binPath))."\n".
-            'BIN_TARGET=`pwd`/'.basename($binPath)."\n".
-            'cd $SRC_DIR'."\n".
-            '$BIN_TARGET "$@"'."\n";
+            'BIN_TARGET="`pwd`/'.basename($binPath)."\"\n".
+            'cd "$SRC_DIR"'."\n".
+            '"$BIN_TARGET" "$@"'."\n";
     }
 }
