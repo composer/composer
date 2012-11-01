@@ -40,7 +40,7 @@ class Pool
     const MATCH_REPLACE = 3;
 
     protected $repositories = array();
-    protected $composerRepos = array();
+    protected $providerRepos = array();
     protected $packages = array();
     protected $packageByName = array();
     protected $acceptableStabilities;
@@ -82,7 +82,7 @@ class Pool
             $exempt = $repo instanceof PlatformRepository || $repo instanceof InstalledRepositoryInterface;
 
             if ($repo instanceof ComposerRepository && $repo->hasProviders()) {
-                $this->composerRepos[] = $repo;
+                $this->providerRepos[] = $repo;
                 $repo->setRootAliases($rootAliases);
                 $repo->resetPackageIds();
             } elseif ($repo instanceof StreamableRepositoryInterface) {
@@ -233,7 +233,7 @@ class Pool
     {
         $candidates = array();
 
-        foreach ($this->composerRepos as $repo) {
+        foreach ($this->providerRepos as $repo) {
             foreach ($repo->whatProvides($this, $name) as $candidate) {
                 $candidates[] = $candidate;
                 if ($candidate->getId() < 1) {
