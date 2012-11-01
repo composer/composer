@@ -13,6 +13,7 @@
 namespace Composer\Downloader;
 
 use Composer\Config;
+use Composer\Cache;
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
@@ -33,6 +34,7 @@ class FileDownloader implements DownloaderInterface
     protected $config;
     protected $rfs;
     protected $filesystem;
+    protected $cache;
 
     /**
      * Constructor.
@@ -48,6 +50,11 @@ class FileDownloader implements DownloaderInterface
         $this->config = $config;
         $this->rfs = $rfs ?: new RemoteFilesystem($io);
         $this->filesystem = $filesystem ?: new Filesystem();
+        $this->cache = new Cache($this->io, $config->get('home').'/cache.files/', 'a-z0-9_./');
+
+        if (!rand(0, 50)) {
+            $this->cache->gc($config->get('cache-ttl') ?: 86400 * 30);
+        }
     }
 
     /**
@@ -78,7 +85,10 @@ class FileDownloader implements DownloaderInterface
 
         try {
             try {
-                $this->rfs->copy(parse_url($processUrl, PHP_URL_HOST), $processUrl, $fileName);
+                if (!$this->cache->copyTo($package->getName().'/'.$package->getVersion().'-'.$package->getDistReference().'.'.$package->getDistType(), $fileName)) {
+                    $this->rfs->copy(parse_url($processUrl, PHP_URL_HOST), $processUrl, $fileName);
+                    $this->cache->copyFrom($package->getName().'/'.$package->getVersion().'-'.$package->getDistReference().'.'.$package->getDistType(), $fileName);
+                }
             } catch (TransportException $e) {
                 if (404 === $e->getCode() && 'github.com' === parse_url($processUrl, PHP_URL_HOST)) {
                     $message = "\n".'Could not fetch '.$processUrl.', enter your GitHub credentials to access private repos';
