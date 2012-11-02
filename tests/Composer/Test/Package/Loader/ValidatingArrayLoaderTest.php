@@ -14,6 +14,7 @@ namespace Composer\Test\Package\Loader;
 
 use Composer\Package;
 use Composer\Package\Loader\ValidatingArrayLoader;
+use Composer\Package\Loader\InvalidPackageException;
 
 class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
 {
@@ -156,8 +157,8 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
         try {
             $loader->load($config);
             $this->fail('Expected exception to be thrown');
-        } catch (\Exception $e) {
-            $errors = explode("\n", $e->getMessage());
+        } catch (InvalidPackageException $e) {
+            $errors = $e->getErrors();
             sort($expectedErrors);
             sort($errors);
             $this->assertEquals($expectedErrors, $errors);
