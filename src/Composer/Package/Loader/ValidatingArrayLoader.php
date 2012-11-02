@@ -13,6 +13,7 @@
 namespace Composer\Package\Loader;
 
 use Composer\Package;
+use Composer\Package\BasePackage;
 use Composer\Package\Version\VersionParser;
 
 /**
@@ -42,12 +43,12 @@ class ValidatingArrayLoader implements LoaderInterface
 
         $this->validateRegex('name', '[A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*', true);
 
-        if (!empty($config['version'])) {
+        if (!empty($this->config['version'])) {
             try {
-                $this->versionParser->normalize($config['version']);
+                $this->versionParser->normalize($this->config['version']);
             } catch (\Exception $e) {
                 unset($this->config['version']);
-                $this->errors[] = 'version : invalid value ('.$config['version'].'): '.$e->getMessage();
+                $this->errors[] = 'version : invalid value ('.$this->config['version'].'): '.$e->getMessage();
             }
         }
 
@@ -60,8 +61,8 @@ class ValidatingArrayLoader implements LoaderInterface
         $this->validateUrl('homepage');
         $this->validateFlatArray('keywords', '[A-Za-z0-9 -]+');
 
-        if (isset($config['license'])) {
-            if (is_string($config['license'])) {
+        if (isset($this->config['license'])) {
+            if (is_string($this->config['license'])) {
                 $this->validateRegex('license', '[A-Za-z0-9+. ()-]+');
             } else {
                 $this->validateFlatArray('license', '[A-Za-z0-9+. ()-]+');
@@ -71,7 +72,7 @@ class ValidatingArrayLoader implements LoaderInterface
         $this->validateString('time');
         if (!empty($this->config['time'])) {
             try {
-                $date = new \DateTime($config['time']);
+                $date = new \DateTime($this->config['time']);
             } catch (\Exception $e) {
                 $this->errors[] = 'time : invalid value ('.$this->config['time'].'): '.$e->getMessage();
                 unset($this->config['time']);
@@ -136,15 +137,49 @@ class ValidatingArrayLoader implements LoaderInterface
             }
         }
 
-        // TODO validate require/require-dev/replace/provide
-        // TODO validate suggest
+        foreach (array_keys(BasePackage::$supportedLinkTypes) as $linkType) {
+            if (isset($this->config[$linkType])) {
+                foreach ($this->config[$linkType] as $package => $constraint) {
+                    if (!is_string($constraint)) {
+                        $this->errors[] = $linkType.'.'.$package.' : invalid value, must be a string containing a version constraint';
+                        unset($this->config[$linkType][$package]);
+                    } elseif ('self.version' !== $constraint) {
+                        try {
+                            $this->versionParser->parseConstraints($constraint);
+                        } catch (\Exception $e) {
+                            $this->errors[] = $linkType.'.'.$package.' : invalid version constraint ('.$e->getMessage().')';
+                            unset($this->config[$linkType][$package]);
+                        }
+                    }
+                }
+            }
+        }
+
+        $this->validateArray('suggest');
+        if (!empty($this->config['suggest'])) {
+            foreach ($this->config['suggest'] as $package => $description) {
+                if (!is_string($description)) {
+                    $this->errors[] = 'suggest.'.$package.' : invalid value, must be a string describing why the package is suggested';
+                    unset($this->config['suggest'][$package]);
+                }
+            }
+        }
+
+        $this->validateString('minimum-stability');
+        if (!empty($this->config['minimum-stability'])) {
+            if (!isset(BasePackage::$stabilities[$this->config['minimum-stability']])) {
+                $this->errors[] = 'minimum-stability : invalid value, must be one of '.implode(', ', array_keys(BasePackage::$stabilities));
+                unset($this->config['minimum-stability']);
+            }
+        }
+
         // TODO validate autoload
-        // TODO validate minimum-stability
 
         // TODO validate dist
         // TODO validate source
 
         // TODO validate repositories
+        // TODO validate package repositories' packages using this recursively
 
         $this->validateFlatArray('include-path');
 
@@ -173,7 +208,7 @@ class ValidatingArrayLoader implements LoaderInterface
         }
 
         if ($this->errors && !$this->ignoreErrors) {
-            throw new \Exception(implode("\n", $this->errors));
+            throw new InvalidPackageException($this->errors, $config);
         }
 
         $package = $this->loader->load($this->config, $class);
