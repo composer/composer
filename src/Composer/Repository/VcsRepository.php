@@ -175,7 +175,9 @@ class VcsRepository extends ArrayRepository
             }
         }
 
-        $this->io->overwrite('', false);
+        if (!$verbose) {
+            $this->io->overwrite('', false);
+        }
 
         foreach ($driver->getBranches() as $branch => $identifier) {
             $msg = 'Reading composer.json of <info>' . ($this->packageName ?: $this->url) . '</info> (<comment>' . $branch . '</comment>)';
@@ -227,7 +229,9 @@ class VcsRepository extends ArrayRepository
             }
         }
 
-        $this->io->overwrite('', false);
+        if (!$verbose) {
+            $this->io->overwrite('', false);
+        }
 
         if (!$this->getPackages()) {
             throw new \RuntimeException('No valid composer.json was found in any branch or tag of '.$this->url.', could not load a package from it.');
