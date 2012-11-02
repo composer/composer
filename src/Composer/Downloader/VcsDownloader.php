@@ -75,8 +75,8 @@ abstract class VcsDownloader implements DownloaderInterface
                 $from = $initial->getSourceReference();
                 $to = $target->getSourceReference();
             } else {
-                $from = substr($initial->getSourceReference(), 0, 6);
-                $to = substr($target->getSourceReference(), 0, 6);
+                $from = substr($initial->getSourceReference(), 0, 7);
+                $to = substr($target->getSourceReference(), 0, 7);
             }
             $name .= ' '.$initial->getPrettyVersion();
         } else {
