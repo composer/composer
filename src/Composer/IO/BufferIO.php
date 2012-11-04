@@ -17,11 +17,9 @@ use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Helper\HelperSet;
 
 /**
- * The Input/Output helper.
- *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class ArrayIO extends ConsoleIO
+class BufferIO extends ConsoleIO
 {
     /**
      * @param string $input
@@ -41,6 +39,7 @@ class ArrayIO extends ConsoleIO
     public function getOutput()
     {
         fseek($this->output->getStream(), 0);
+
         return stream_get_contents($this->output->getStream());
     }
 }
