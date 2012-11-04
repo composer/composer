@@ -24,21 +24,19 @@ class ValidatingArrayLoader implements LoaderInterface
     private $loader;
     private $versionParser;
     private $ignoreErrors;
-    private $errors = array();
+    private $errors;
     private $config;
 
     public function __construct(LoaderInterface $loader, $ignoreErrors = true, VersionParser $parser = null)
     {
         $this->loader = $loader;
         $this->ignoreErrors = $ignoreErrors;
-        if (!$parser) {
-            $parser = new VersionParser();
-        }
-        $this->versionParser = $parser;
+        $this->versionParser = $parser ?: new VersionParser();
     }
 
     public function load(array $config, $class = 'Composer\Package\CompletePackage')
     {
+        $this->errors = array();
         $this->config = $config;
 
         $this->validateRegex('name', '[A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*', true);
