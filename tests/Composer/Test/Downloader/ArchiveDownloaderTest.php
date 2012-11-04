@@ -43,7 +43,23 @@ class ArchiveDownloaderTest extends \PHPUnit_Framework_TestCase
         if (extension_loaded('openssl')) {
             $this->assertEquals($expected, $url);
         } else {
-            $this->assertEquals('http://nodeload.github.com/composer/composer/legacy.zip/master', $url);
+            $this->assertEquals('http://nodeload.github.com/composer/composer/zip/master', $url);
+        }
+    }
+
+    public function testProcessUrl2()
+    {
+        $downloader = $this->getMockForAbstractClass('Composer\Downloader\ArchiveDownloader', array($this->getMock('Composer\IO\IOInterface'), $this->getMock('Composer\Config')));
+        $method = new \ReflectionMethod($downloader, 'processUrl');
+        $method->setAccessible(true);
+
+        $expected = 'https://github.com/composer/composer/archive/master.tar.gz';
+        $url = $method->invoke($downloader, $this->getMock('Composer\Package\PackageInterface'), $expected);
+
+        if (extension_loaded('openssl')) {
+            $this->assertEquals($expected, $url);
+        } else {
+            $this->assertEquals('http://nodeload.github.com/composer/composer/tar.gz/master', $url);
         }
     }
 }
