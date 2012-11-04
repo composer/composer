@@ -87,14 +87,21 @@ abstract class ArchiveDownloader extends FileDownloader
      */
     protected function processUrl(PackageInterface $package, $url)
     {
+        // support for legacy github archives
         if ($package->getDistReference() && preg_match('{^https?://(?:www\.)?github\.com/([^/]+)/([^/]+)/(zip|tar)ball/(.+)$}i', $url, $match)) {
             $url = 'https://github.com/' . $match[1] . '/'. $match[2] . '/' . $match[3] . 'ball/' . $package->getDistReference();
+        }
+
+        if ($package->getDistReference() && preg_match('{^https?://(?:www\.)?github\.com/([^/]+)/([^/]+)/archive/.+\.(zip|tar\.gz)$}i', $url, $match)) {
+            $url = 'https://github.com/' . $match[1] . '/'. $match[2] . '/archive/' . $package->getDistReference() . '.' . $match[3];
         }
 
         if (!extension_loaded('openssl') && (0 === strpos($url, 'https:') || 0 === strpos($url, 'http://github.com'))) {
             // bypass https for github if openssl is disabled
             if (preg_match('{^https?://github.com/([^/]+/[^/]+)/(zip|tar)ball/([^/]+)$}i', $url, $match)) {
-                $url = 'http://nodeload.github.com/'.$match[1].'/legacy.'.$match[2].'/'.$match[3];
+                $url = 'http://nodeload.github.com/'.$match[1].'/'.$match[2].'/'.$match[3];
+            } elseif (preg_match('{^https?://github.com/([^/]+/[^/]+)/archive/([^/]+)\.(zip|tar\.gz)$}i', $url, $match)) {
+                $url = 'http://nodeload.github.com/'.$match[1].'/'.$match[3].'/'.$match[2];
             } else {
                 throw new \RuntimeException('You must enable the openssl extension to download files via https');
             }

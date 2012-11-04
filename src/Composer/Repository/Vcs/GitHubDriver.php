@@ -108,7 +108,7 @@ class GitHubDriver extends VcsDriver
             return $this->gitDriver->getDist($identifier);
         }
         $label = array_search($identifier, $this->getTags()) ?: $identifier;
-        $url = 'https://github.com/'.$this->owner.'/'.$this->repository.'/zipball/'.$label;
+        $url = 'https://github.com/'.$this->owner.'/'.$this->repository.'/archive/'.$label.'.zip';
 
         return array('type' => 'zip', 'url' => $url, 'reference' => $label, 'shasum' => '');
     }

@@ -97,7 +97,7 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
 
         $dist = $gitHubDriver->getDist($identifier);
         $this->assertEquals('zip', $dist['type']);
-        $this->assertEquals('https://github.com/composer/packagist/zipball/v0.0.0', $dist['url']);
+        $this->assertEquals('https://github.com/composer/packagist/archive/v0.0.0.zip', $dist['url']);
         $this->assertEquals('v0.0.0', $dist['reference']);
 
         $source = $gitHubDriver->getSource($identifier);
@@ -107,7 +107,7 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
 
         $dist = $gitHubDriver->getDist($sha);
         $this->assertEquals('zip', $dist['type']);
-        $this->assertEquals('https://github.com/composer/packagist/zipball/v0.0.0', $dist['url']);
+        $this->assertEquals('https://github.com/composer/packagist/archive/v0.0.0.zip', $dist['url']);
         $this->assertEquals('v0.0.0', $dist['reference']);
 
         $source = $gitHubDriver->getSource($sha);
@@ -149,7 +149,7 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
 
         $dist = $gitHubDriver->getDist($identifier);
         $this->assertEquals('zip', $dist['type']);
-        $this->assertEquals('https://github.com/composer/packagist/zipball/v0.0.0', $dist['url']);
+        $this->assertEquals('https://github.com/composer/packagist/archive/v0.0.0.zip', $dist['url']);
         $this->assertEquals($identifier, $dist['reference']);
 
         $source = $gitHubDriver->getSource($identifier);
@@ -159,7 +159,7 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
 
         $dist = $gitHubDriver->getDist($sha);
         $this->assertEquals('zip', $dist['type']);
-        $this->assertEquals('https://github.com/composer/packagist/zipball/v0.0.0', $dist['url']);
+        $this->assertEquals('https://github.com/composer/packagist/archive/v0.0.0.zip', $dist['url']);
         $this->assertEquals($identifier, $dist['reference']);
 
         $source = $gitHubDriver->getSource($sha);
@@ -211,7 +211,7 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
 
         $dist = $gitHubDriver->getDist($identifier);
         $this->assertEquals('zip', $dist['type']);
-        $this->assertEquals('https://github.com/composer/packagist/zipball/feature/3.2-foo', $dist['url']);
+        $this->assertEquals('https://github.com/composer/packagist/archive/feature/3.2-foo.zip', $dist['url']);
         $this->assertEquals($identifier, $dist['reference']);
 
         $source = $gitHubDriver->getSource($identifier);
@@ -221,7 +221,7 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
 
         $dist = $gitHubDriver->getDist($sha);
         $this->assertEquals('zip', $dist['type']);
-        $this->assertEquals('https://github.com/composer/packagist/zipball/feature/3.2-foo', $dist['url']);
+        $this->assertEquals('https://github.com/composer/packagist/archive/feature/3.2-foo.zip', $dist['url']);
         $this->assertEquals($identifier, $dist['reference']);
 
         $source = $gitHubDriver->getSource($sha);
