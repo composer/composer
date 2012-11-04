@@ -43,7 +43,7 @@ class ArchiveDownloaderTest extends \PHPUnit_Framework_TestCase
         if (extension_loaded('openssl')) {
             $this->assertEquals($expected, $url);
         } else {
-            $this->assertEquals('http://nodeload.github.com/composer/composer/zipball/master', $url);
+            $this->assertEquals('http://nodeload.github.com/composer/composer/legacy.zip/master', $url);
         }
     }
 }
