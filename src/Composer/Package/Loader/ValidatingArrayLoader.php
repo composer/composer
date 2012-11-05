@@ -91,7 +91,7 @@ class ValidatingArrayLoader implements LoaderInterface
                     }
                 }
                 if (isset($author['homepage']) && !$this->filterUrl($author['homepage'])) {
-                    $this->warnings[] = 'authors.'.$key.'.homepage : invalid value, must be a valid http/https URL';
+                    $this->warnings[] = 'authors.'.$key.'.homepage : invalid value, must be an http/https URL';
                     unset($this->config['authors'][$key]['homepage']);
                 }
                 if (isset($author['email']) && !filter_var($author['email'], FILTER_VALIDATE_EMAIL)) {
@@ -120,16 +120,14 @@ class ValidatingArrayLoader implements LoaderInterface
                 unset($this->config['support']['email']);
             }
 
-            if (isset($this->config['support']['irc'])
-                && (!filter_var($this->config['support']['irc'], FILTER_VALIDATE_URL) || !preg_match('{^irc://}iu', $this->config['support']['irc']))
-            ) {
-                $this->warnings[] = 'support.irc : invalid value, must be ';
+            if (isset($this->config['support']['irc']) && !$this->filterUrl($this->config['support']['irc'], array('irc'))) {
+                $this->warnings[] = 'support.irc : invalid value, must be a irc://<server>/<channel> URL';
                 unset($this->config['support']['irc']);
             }
 
             foreach (array('issues', 'forum', 'wiki', 'source') as $key) {
                 if (isset($this->config['support'][$key]) && !$this->filterUrl($this->config['support'][$key])) {
-                    $this->warnings[] = 'support.'.$key.' : invalid value, must be a valid http/https URL';
+                    $this->warnings[] = 'support.'.$key.' : invalid value, must be an http/https URL';
                     unset($this->config['support'][$key]);
                 }
             }
@@ -318,7 +316,7 @@ class ValidatingArrayLoader implements LoaderInterface
         }
 
         if (!$this->filterUrl($this->config[$property])) {
-            $this->warnings[] = $property.' : invalid value, must be a valid http/https URL';
+            $this->warnings[] = $property.' : invalid value, must be an http/https URL';
             unset($this->config[$property]);
 
             return false;
@@ -327,8 +325,21 @@ class ValidatingArrayLoader implements LoaderInterface
         return true;
     }
 
-    private function filterUrl($value)
+    private function filterUrl($value, array $schemes = array('http', 'https'))
     {
-        return filter_var($value, FILTER_VALIDATE_URL) && preg_match('{^https?://}iu', $value);
+        if ($value === '') {
+            return true;
+        }
+
+        $bits = parse_url($value);
+        if (empty($bits['scheme']) || empty($bits['host'])) {
+            return false;
+        }
+
+        if (!in_array($bits['scheme'], $schemes, true)) {
+            return false;
+        }
+
+        return true;
     }
 }
