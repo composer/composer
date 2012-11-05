@@ -19,6 +19,7 @@ use Composer\Repository\ComposerRepository;
 use Composer\Repository\RepositoryManager;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
+use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 
 /**
  * Creates a configured instance of composer.
@@ -68,6 +69,14 @@ class Factory
     public function getComposerFile()
     {
         return getenv('COMPOSER') ?: 'composer.json';
+    }
+
+    public static function createAdditionalStyles()
+    {
+        return array(
+            'highlight' => new OutputFormatterStyle('red'),
+            'warning' => new OutputFormatterStyle('black', 'yellow'),
+        );
     }
 
     public static function createDefaultRepositories(IOInterface $io = null, Config $config = null, RepositoryManager $rm = null)
