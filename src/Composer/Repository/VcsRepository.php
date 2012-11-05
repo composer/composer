@@ -231,7 +231,11 @@ class VcsRepository extends ArrayRepository
                 }
                 continue;
             } catch (\Exception $e) {
+                if (!$verbose) {
+                    $this->io->write('');
+                }
                 $this->io->write('Skipped branch '.$branch.', '.$e->getMessage());
+                $this->io->write('');
                 continue;
             }
         }
