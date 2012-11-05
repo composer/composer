@@ -60,7 +60,7 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                         ),
                         array(
                             'name' => 'Bob',
-                            'homepage' => 'http://example.com',
+                            'homepage' => '',
                         ),
                     ),
                     'support' => array(
@@ -243,7 +243,7 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                     'homepage' => 'foo:bar',
                 ),
                 array(
-                    'homepage : invalid value, must be a valid http/https URL'
+                    'homepage : invalid value, must be an http/https URL'
                 )
             ),
             array(
@@ -257,10 +257,10 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                     ),
                 ),
                 array(
-                    'support.source : invalid value, must be a valid http/https URL',
-                    'support.forum : invalid value, must be a valid http/https URL',
-                    'support.issues : invalid value, must be a valid http/https URL',
-                    'support.wiki : invalid value, must be a valid http/https URL',
+                    'support.source : invalid value, must be an http/https URL',
+                    'support.forum : invalid value, must be an http/https URL',
+                    'support.issues : invalid value, must be an http/https URL',
+                    'support.wiki : invalid value, must be an http/https URL',
                 )
             ),
         );

@@ -25,7 +25,7 @@ class ComposerRepositoryTest extends TestCase
     public function testLoadData(array $expected, array $repoPackages)
     {
         $repoConfig = array(
-            'url' => 'file://',
+            'url' => 'http://example.org',
         );
 
         $repository = $this->getMock(
