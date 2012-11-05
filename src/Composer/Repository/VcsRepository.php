@@ -16,6 +16,8 @@ use Composer\Downloader\TransportException;
 use Composer\Repository\Vcs\VcsDriverInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\Loader\ValidatingArrayLoader;
+use Composer\Package\Loader\InvalidPackageException;
 use Composer\Package\Loader\LoaderInterface;
 use Composer\IO\IOInterface;
 use Composer\Config;
@@ -217,7 +219,12 @@ class VcsRepository extends ArrayRepository
                     $this->io->write('Importing branch '.$branch.' ('.$data['version'].')');
                 }
 
-                $this->addPackage($this->loader->load($this->preProcess($driver, $data, $identifier)));
+                $packageData = $this->preProcess($driver, $data, $identifier);
+                $package = $this->loader->load($packageData);
+                if ($this->loader instanceof ValidatingArrayLoader && $this->loader->getWarnings()) {
+                    throw new InvalidPackageException($this->loader->getErrors(), $this->loader->getWarnings(), $packageData);
+                }
+                $this->addPackage($package);
             } catch (TransportException $e) {
                 if ($verbose) {
                     $this->io->write('Skipped branch '.$branch.', no composer file was found');

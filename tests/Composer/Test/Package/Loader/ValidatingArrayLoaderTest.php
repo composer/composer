@@ -29,7 +29,7 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
             ->method('load')
             ->with($config);
 
-        $loader = new ValidatingArrayLoader($internalLoader, false);
+        $loader = new ValidatingArrayLoader($internalLoader);
         $loader->load($config);
     }
 
@@ -148,12 +148,12 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @dataProvider failureProvider
+     * @dataProvider errorProvider
      */
     public function testLoadFailureThrowsException($config, $expectedErrors)
     {
         $internalLoader = $this->getMock('Composer\Package\Loader\LoaderInterface');
-        $loader = new ValidatingArrayLoader($internalLoader, false);
+        $loader = new ValidatingArrayLoader($internalLoader);
         try {
             $loader->load($config);
             $this->fail('Expected exception to be thrown');
@@ -166,9 +166,24 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @dataProvider failureProvider
+     * @dataProvider warningProvider
      */
-    public function testLoadSkipsInvalidDataWhenIgnoringErrors($config)
+    public function testLoadWarnings($config, $expectedWarnings)
+    {
+        $internalLoader = $this->getMock('Composer\Package\Loader\LoaderInterface');
+        $loader = new ValidatingArrayLoader($internalLoader);
+
+        $loader->load($config);
+        $warnings = $loader->getWarnings();
+        sort($expectedWarnings);
+        sort($warnings);
+        $this->assertEquals($expectedWarnings, $warnings);
+    }
+
+    /**
+     * @dataProvider warningProvider
+     */
+    public function testLoadSkipsWarningDataWhenIgnoringErrors($config)
     {
         $internalLoader = $this->getMock('Composer\Package\Loader\LoaderInterface');
         $internalLoader
@@ -176,12 +191,12 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
             ->method('load')
             ->with(array('name' => 'a/b'));
 
-        $loader = new ValidatingArrayLoader($internalLoader, true);
+        $loader = new ValidatingArrayLoader($internalLoader);
         $config['name'] = 'a/b';
         $loader->load($config);
     }
 
-    public function failureProvider()
+    public function errorProvider()
     {
         return array(
             array(
@@ -192,6 +207,32 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                     'name : invalid value, must match [A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*'
                 )
             ),
+            array(
+                array(
+                    'name' => 'foo/bar',
+                    'homepage' => 43,
+                ),
+                array(
+                    'homepage : should be a string, integer given',
+                )
+            ),
+            array(
+                array(
+                    'name' => 'foo/bar',
+                    'support' => array(
+                        'source' => array(),
+                    ),
+                ),
+                array(
+                    'support.source : invalid value, must be a string',
+                )
+            ),
+        );
+    }
+
+    public function warningProvider()
+    {
+        return array(
             array(
                 array(
                     'name' => 'foo/bar',

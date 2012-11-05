@@ -97,7 +97,7 @@ class ConfigValidator
         }
 
         try {
-            $loader = new ValidatingArrayLoader(new ArrayLoader(), false);
+            $loader = new ValidatingArrayLoader(new ArrayLoader());
             if (!isset($manifest['version'])) {
                 $manifest['version'] = '1.0.0';
             }
@@ -107,6 +107,7 @@ class ConfigValidator
             $loader->load($manifest);
         } catch (InvalidPackageException $e) {
             $errors = array_merge($errors, $e->getErrors());
+            $warnings = array_merge($warnings, $e->getWarnings());
         }
 
         return array($errors, $publishErrors, $warnings);
