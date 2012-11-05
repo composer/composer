@@ -50,14 +50,14 @@ class ValidatingArrayLoader implements LoaderInterface
             }
         }
 
-        $this->validateRegex('type', '[a-z0-9-]+');
+        $this->validateRegex('type', '[A-Za-z0-9-]+');
         $this->validateString('target-dir');
         $this->validateArray('extra');
         $this->validateFlatArray('bin');
         $this->validateArray('scripts'); // TODO validate event names & listener syntax
         $this->validateString('description');
         $this->validateUrl('homepage');
-        $this->validateFlatArray('keywords', '[A-Za-z0-9 -]+');
+        $this->validateFlatArray('keywords', '[A-Za-z0-9 ._-]+');
 
         if (isset($this->config['license'])) {
             if (is_string($this->config['license'])) {
@@ -302,7 +302,7 @@ class ValidatingArrayLoader implements LoaderInterface
             }
 
             if ($regex && !preg_match('{^'.$regex.'$}u', $value)) {
-                $this->errors[] = $property.'.'.$key.' : invalid value, must match '.$regex;
+                $this->warnings[] = $property.'.'.$key.' : invalid value, must match '.$regex;
                 unset($this->config[$property][$key]);
                 $pass = false;
             }

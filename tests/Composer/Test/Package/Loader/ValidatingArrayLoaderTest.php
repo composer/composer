@@ -47,7 +47,7 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                     'description' => 'Foo bar',
                     'version' => '1.0.0',
                     'type' => 'library',
-                    'keywords' => array('a', 'b'),
+                    'keywords' => array('a', 'b_c', 'D E'),
                     'homepage' => 'https://foo.com',
                     'time' => '2010-10-10T10:10:10+00:00',
                     'license' => 'MIT',
@@ -131,6 +131,10 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                     ),
                     'extra' => array(
                         'random' => array('stuff' => array('deeply' => 'nested')),
+                        'branch-alias' => array(
+                            'dev-master' => '2.0-dev',
+                            'dev-old' => '1.0.x-dev',
+                        ),
                     ),
                     'bin' => array(
                         'bin/foo',
