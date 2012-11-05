@@ -23,20 +23,20 @@ class ValidatingArrayLoader implements LoaderInterface
 {
     private $loader;
     private $versionParser;
-    private $ignoreErrors;
     private $errors;
+    private $warnings;
     private $config;
 
-    public function __construct(LoaderInterface $loader, $ignoreErrors = true, VersionParser $parser = null)
+    public function __construct(LoaderInterface $loader, VersionParser $parser = null)
     {
         $this->loader = $loader;
-        $this->ignoreErrors = $ignoreErrors;
         $this->versionParser = $parser ?: new VersionParser();
     }
 
     public function load(array $config, $class = 'Composer\Package\CompletePackage')
     {
         $this->errors = array();
+        $this->warnings = array();
         $this->config = $config;
 
         $this->validateRegex('name', '[A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*', true);
@@ -77,29 +77,26 @@ class ValidatingArrayLoader implements LoaderInterface
             }
         }
 
-        $this->validateArray('authors');
-        if (!empty($this->config['authors'])) {
+        if ($this->validateArray('authors') && !empty($this->config['authors'])) {
             foreach ($this->config['authors'] as $key => $author) {
                 if (!is_array($author)) {
                     $this->errors[] = 'authors.'.$key.' : should be an array, '.gettype($author).' given';
                     unset($this->config['authors'][$key]);
                     continue;
                 }
+                foreach (array('homepage', 'email', 'name', 'role') as $authorData) {
+                    if (isset($author[$authorData]) && !is_string($author[$authorData])) {
+                        $this->errors[] = 'authors.'.$key.'.'.$authorData.' : invalid value, must be a string';
+                        unset($this->config['authors'][$key][$authorData]);
+                    }
+                }
                 if (isset($author['homepage']) && !$this->filterUrl($author['homepage'])) {
-                    $this->errors[] = 'authors.'.$key.'.homepage : invalid value, must be a valid http/https URL';
+                    $this->warnings[] = 'authors.'.$key.'.homepage : invalid value, must be a valid http/https URL';
                     unset($this->config['authors'][$key]['homepage']);
                 }
                 if (isset($author['email']) && !filter_var($author['email'], FILTER_VALIDATE_EMAIL)) {
-                    $this->errors[] = 'authors.'.$key.'.email : invalid value, must be a valid email address';
+                    $this->warnings[] = 'authors.'.$key.'.email : invalid value, must be a valid email address';
                     unset($this->config['authors'][$key]['email']);
-                }
-                if (isset($author['name']) && !is_string($author['name'])) {
-                    $this->errors[] = 'authors.'.$key.'.name : invalid value, must be a string';
-                    unset($this->config['authors'][$key]['name']);
-                }
-                if (isset($author['role']) && !is_string($author['role'])) {
-                    $this->errors[] = 'authors.'.$key.'.role : invalid value, must be a string';
-                    unset($this->config['authors'][$key]['role']);
                 }
                 if (empty($this->config['authors'][$key])) {
                     unset($this->config['authors'][$key]);
@@ -110,23 +107,29 @@ class ValidatingArrayLoader implements LoaderInterface
             }
         }
 
-        $this->validateArray('support');
-        if (!empty($this->config['support'])) {
+        if ($this->validateArray('support') && !empty($this->config['support'])) {
+            foreach (array('issues', 'forum', 'wiki', 'source', 'email', 'irc') as $key) {
+                if (isset($this->config['support'][$key]) && !is_string($this->config['support'][$key])) {
+                    $this->errors[] = 'support.'.$key.' : invalid value, must be a string';
+                    unset($this->config['support'][$key]);
+                }
+            }
+
             if (isset($this->config['support']['email']) && !filter_var($this->config['support']['email'], FILTER_VALIDATE_EMAIL)) {
-                $this->errors[] = 'support.email : invalid value, must be a valid email address';
+                $this->warnings[] = 'support.email : invalid value, must be a valid email address';
                 unset($this->config['support']['email']);
             }
 
             if (isset($this->config['support']['irc'])
                 && (!filter_var($this->config['support']['irc'], FILTER_VALIDATE_URL) || !preg_match('{^irc://}iu', $this->config['support']['irc']))
             ) {
-                $this->errors[] = 'support.irc : invalid value, must be ';
+                $this->warnings[] = 'support.irc : invalid value, must be ';
                 unset($this->config['support']['irc']);
             }
 
             foreach (array('issues', 'forum', 'wiki', 'source') as $key) {
                 if (isset($this->config['support'][$key]) && !$this->filterUrl($this->config['support'][$key])) {
-                    $this->errors[] = 'support.'.$key.' : invalid value, must be a valid http/https URL';
+                    $this->warnings[] = 'support.'.$key.' : invalid value, must be a valid http/https URL';
                     unset($this->config['support'][$key]);
                 }
             }
@@ -136,7 +139,7 @@ class ValidatingArrayLoader implements LoaderInterface
         }
 
         foreach (array_keys(BasePackage::$supportedLinkTypes) as $linkType) {
-            if (isset($this->config[$linkType])) {
+            if ($this->validateArray($linkType) && isset($this->config[$linkType])) {
                 foreach ($this->config[$linkType] as $package => $constraint) {
                     if (!is_string($constraint)) {
                         $this->errors[] = $linkType.'.'.$package.' : invalid value, must be a string containing a version constraint';
@@ -153,8 +156,7 @@ class ValidatingArrayLoader implements LoaderInterface
             }
         }
 
-        $this->validateArray('suggest');
-        if (!empty($this->config['suggest'])) {
+        if ($this->validateArray('suggest') && !empty($this->config['suggest'])) {
             foreach ($this->config['suggest'] as $package => $description) {
                 if (!is_string($description)) {
                     $this->errors[] = 'suggest.'.$package.' : invalid value, must be a string describing why the package is suggested';
@@ -205,15 +207,24 @@ class ValidatingArrayLoader implements LoaderInterface
             }
         }
 
-        if ($this->errors && !$this->ignoreErrors) {
-            throw new InvalidPackageException($this->errors, $config);
+        if ($this->errors) {
+            throw new InvalidPackageException($this->errors, $this->warnings, $config);
         }
 
         $package = $this->loader->load($this->config, $class);
-        $this->errors = array();
         $this->config = null;
 
         return $package;
+    }
+
+    public function getWarnings()
+    {
+        return $this->warnings;
+    }
+
+    public function getErrors()
+    {
+        return $this->errors;
     }
 
     private function validateRegex($property, $regex, $mandatory = false)
@@ -307,11 +318,13 @@ class ValidatingArrayLoader implements LoaderInterface
         }
 
         if (!$this->filterUrl($this->config[$property])) {
-            $this->errors[] = $property.' : invalid value, must be a valid http/https URL';
+            $this->warnings[] = $property.' : invalid value, must be a valid http/https URL';
             unset($this->config[$property]);
 
             return false;
         }
+
+        return true;
     }
 
     private function filterUrl($value)
