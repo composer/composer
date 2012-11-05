@@ -119,7 +119,7 @@ class VcsRepository extends ArrayRepository
             }
         } catch (\Exception $e) {
             if ($verbose) {
-                $this->io->write('Skipped parsing '.$driver->getRootIdentifier().', '.$e->getMessage());
+                $this->io->write('<error>Skipped parsing '.$driver->getRootIdentifier().', '.$e->getMessage().'</error>');
             }
         }
 
@@ -136,7 +136,7 @@ class VcsRepository extends ArrayRepository
 
             if (!$parsedTag = $this->validateTag($tag)) {
                 if ($verbose) {
-                    $this->io->write('Skipped tag '.$tag.', invalid tag name');
+                    $this->io->write('<warning>Skipped tag '.$tag.', invalid tag name</warning>');
                 }
                 continue;
             }
@@ -144,7 +144,7 @@ class VcsRepository extends ArrayRepository
             try {
                 if (!$data = $driver->getComposerInformation($identifier)) {
                     if ($verbose) {
-                        $this->io->write('Skipped tag '.$tag.', no composer file');
+                        $this->io->write('<warning>Skipped tag '.$tag.', no composer file</warning>');
                     }
                     continue;
                 }
@@ -165,7 +165,7 @@ class VcsRepository extends ArrayRepository
                 // broken package, version doesn't match tag
                 if ($data['version_normalized'] !== $parsedTag) {
                     if ($verbose) {
-                        $this->io->write('Skipped tag '.$tag.', tag ('.$parsedTag.') does not match version ('.$data['version_normalized'].') in composer.json');
+                        $this->io->write('<warning>Skipped tag '.$tag.', tag ('.$parsedTag.') does not match version ('.$data['version_normalized'].') in composer.json</warning>');
                     }
                     continue;
                 }
@@ -177,7 +177,7 @@ class VcsRepository extends ArrayRepository
                 $this->addPackage($this->loader->load($this->preProcess($driver, $data, $identifier)));
             } catch (\Exception $e) {
                 if ($verbose) {
-                    $this->io->write('Skipped tag '.$tag.', '.($e instanceof TransportException ? 'no composer file was found' : $e->getMessage()));
+                    $this->io->write('<warning>Skipped tag '.$tag.', '.($e instanceof TransportException ? 'no composer file was found' : $e->getMessage()).'</warning>');
                 }
                 continue;
             }
@@ -197,7 +197,7 @@ class VcsRepository extends ArrayRepository
 
             if (!$parsedBranch = $this->validateBranch($branch)) {
                 if ($verbose) {
-                    $this->io->write('Skipped branch '.$branch.', invalid name');
+                    $this->io->write('<warning>Skipped branch '.$branch.', invalid name</warning>');
                 }
                 continue;
             }
@@ -205,7 +205,7 @@ class VcsRepository extends ArrayRepository
             try {
                 if (!$data = $driver->getComposerInformation($identifier)) {
                     if ($verbose) {
-                        $this->io->write('Skipped branch '.$branch.', no composer file');
+                        $this->io->write('<warning>Skipped branch '.$branch.', no composer file</warning>');
                     }
                     continue;
                 }
@@ -233,7 +233,7 @@ class VcsRepository extends ArrayRepository
                 $this->addPackage($package);
             } catch (TransportException $e) {
                 if ($verbose) {
-                    $this->io->write('Skipped branch '.$branch.', no composer file was found');
+                    $this->io->write('<warning>Skipped branch '.$branch.', no composer file was found</warning>');
                 }
                 continue;
             } catch (\Exception $e) {
@@ -241,7 +241,7 @@ class VcsRepository extends ArrayRepository
                     $this->io->write('');
                 }
                 $this->branchErrorOccurred = true;
-                $this->io->write('Skipped branch '.$branch.', '.$e->getMessage());
+                $this->io->write('<error>Skipped branch '.$branch.', '.$e->getMessage().'</error>');
                 $this->io->write('');
                 continue;
             }
