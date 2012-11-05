@@ -18,7 +18,6 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Formatter\OutputFormatter;
-use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Composer\Command;
 use Composer\Command\Helper\DialogHelper;
 use Composer\Composer;
@@ -63,8 +62,7 @@ class Application extends BaseApplication
     public function run(InputInterface $input = null, OutputInterface $output = null)
     {
         if (null === $output) {
-            $styles['highlight'] = new OutputFormatterStyle('red');
-            $styles['warning'] = new OutputFormatterStyle('black', 'yellow');
+            $styles = Factory::createAdditionalStyles();
             $formatter = new OutputFormatter(null, $styles);
             $output = new ConsoleOutput(ConsoleOutput::VERBOSITY_NORMAL, null, $formatter);
         }
