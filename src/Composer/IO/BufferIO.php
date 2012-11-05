@@ -13,6 +13,7 @@
 namespace Composer\IO;
 
 use Symfony\Component\Console\Output\StreamOutput;
+use Symfony\Component\Console\Formatter\OutputFormatterInterface;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Helper\HelperSet;
 
@@ -25,13 +26,12 @@ class BufferIO extends ConsoleIO
      * @param string $input
      * @param int    $verbosity
      */
-    public function __construct($input = '', $verbosity = null)
+    public function __construct($input = '', $verbosity = null, OutputFormatterInterface $formatter = null)
     {
         $input = new StringInput($input);
         $input->setInteractive(false);
 
-        // TODO pass a custom output formatter for html tags
-        $output = new StreamOutput(fopen('php://memory', 'rw'), $verbosity === null ? StreamOutput::VERBOSITY_NORMAL : $verbosity, false);
+        $output = new StreamOutput(fopen('php://memory', 'rw'), $verbosity === null ? StreamOutput::VERBOSITY_NORMAL : $verbosity, !empty($formatter), $formatter);
 
         parent::__construct($input, $output, new HelperSet(array()));
     }
