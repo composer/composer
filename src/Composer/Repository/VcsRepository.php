@@ -36,6 +36,7 @@ class VcsRepository extends ArrayRepository
     protected $type;
     protected $loader;
     protected $repoConfig;
+    protected $branchErrorOccurred = false;
 
     public function __construct(array $repoConfig, IOInterface $io, Config $config, array $drivers = null)
     {
@@ -88,6 +89,11 @@ class VcsRepository extends ArrayRepository
                 return $driver;
             }
         }
+    }
+
+    public function hadInvalidBranches()
+    {
+        return $this->branchErrorOccurred;
     }
 
     protected function initialize()
@@ -234,6 +240,7 @@ class VcsRepository extends ArrayRepository
                 if (!$verbose) {
                     $this->io->write('');
                 }
+                $this->branchErrorOccurred = true;
                 $this->io->write('Skipped branch '.$branch.', '.$e->getMessage());
                 $this->io->write('');
                 continue;
