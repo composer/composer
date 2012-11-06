@@ -41,8 +41,12 @@ must be a comparable dev version. The `branch-alias` must be present on the
 branch that it references. For `dev-master`, you need to commit it on the
 `master` branch.
 
-As a result, you can now require `1.0.*` and it will happily install
-`dev-master` for you.
+As a result, anyone can now require `1.0.*` and it will happily install
+`dev-master`.
+
+In order to use branch aliasing, you must own the repository of the package
+being aliased. If you want to alias a third party package without maintaining
+a fork of it, use inline aliases as described below.
 
 ## Require inline alias
 
