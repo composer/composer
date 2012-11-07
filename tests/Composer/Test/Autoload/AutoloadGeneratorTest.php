@@ -162,6 +162,7 @@ class AutoloadGeneratorTest extends TestCase
 
         $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, 'TargetDir');
         $this->assertFileEquals(__DIR__.'/Fixtures/autoload_target_dir.php', $this->vendorDir.'/autoload.php');
+        $this->assertFileEquals(__DIR__.'/Fixtures/autoload_check_target_dir.php', $this->vendorDir.'/composer/autoload_checkTargetDir.php');
         $this->assertFileEquals(__DIR__.'/Fixtures/autoload_real_target_dir.php', $this->vendorDir.'/composer/autoload_realTargetDir.php');
     }
 
@@ -307,6 +308,7 @@ class AutoloadGeneratorTest extends TestCase
 
         $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, 'FilesAutoload');
         $this->assertFileEquals(__DIR__.'/Fixtures/autoload_functions.php', $this->vendorDir.'/autoload.php');
+        $this->assertFileEquals(__DIR__.'/Fixtures/autoload_check_functions.php', $this->vendorDir.'/composer/autoload_checkFilesAutoload.php');
         $this->assertFileEquals(__DIR__.'/Fixtures/autoload_real_functions.php', $this->vendorDir.'/composer/autoload_realFilesAutoload.php');
 
         // suppress the class loader to avoid fatals if the class is redefined
@@ -362,6 +364,7 @@ class AutoloadGeneratorTest extends TestCase
 
         $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, 'FilesAutoloadOrder');
         $this->assertFileEquals(__DIR__ . '/Fixtures/autoload_functions_by_dependency.php', $this->vendorDir . '/autoload.php');
+        $this->assertFileEquals(__DIR__ . '/Fixtures/autoload_check_files_by_dependency.php', $this->vendorDir . '/composer/autoload_checkFilesAutoloadOrder.php');
         $this->assertFileEquals(__DIR__ . '/Fixtures/autoload_real_files_by_dependency.php', $this->vendorDir . '/composer/autoload_realFilesAutoloadOrder.php');
 
         // suppress the class loader to avoid fatals if the class is redefined
