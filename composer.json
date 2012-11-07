@@ -1,6 +1,6 @@
 {
     "name": "composer/composer",
-    "description": "Package Manager",
+    "description": "Dependency Manager",
     "keywords": ["package", "dependency", "autoload"],
     "homepage": "http://getcomposer.org/",
     "type": "library",
