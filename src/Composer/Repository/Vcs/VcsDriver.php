@@ -19,7 +19,7 @@ use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
 
 /**
- * A driver implementation for driver with authorization interaction.
+ * A driver implementation for driver with authentication interaction.
  *
  * @author François Pluchino <francois.pluchino@opendisplay.com>
  */

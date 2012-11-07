@@ -57,7 +57,7 @@ class GitHub
 
         // if available use token from git config
         if (0 === $this->process->execute('git config github.accesstoken', $output)) {
-            $this->io->setAuthorization($originUrl, trim($output), 'x-oauth-basic');
+            $this->io->setAuthentication($originUrl, trim($output), 'x-oauth-basic');
 
             return true;
         }
@@ -85,7 +85,7 @@ class GitHub
             try {
                 $username = $this->io->ask('Username: ');
                 $password = $this->io->askAndHideAnswer('Password: ');
-                $this->io->setAuthorization($originUrl, $username, $password);
+                $this->io->setAuthentication($originUrl, $username, $password);
 
                 // build up OAuth app name
                 $appName = 'Composer';
@@ -114,7 +114,7 @@ class GitHub
                 throw $e;
             }
 
-            $this->io->setAuthorization($originUrl, $contents['token'], 'x-oauth-basic');
+            $this->io->setAuthentication($originUrl, $contents['token'], 'x-oauth-basic');
 
             // store value in user config
             $githubTokens = $this->config->get('github-oauth') ?: array();
