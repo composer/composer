@@ -109,20 +109,20 @@ interface IOInterface
     public function askAndHideAnswer($question);
 
     /**
-     * Get all authorization informations entered.
+     * Get all authentication information entered.
      *
-     * @return array The map of authorization
+     * @return array The map of authentication data
      */
-    public function getAuthorizations();
+    public function getAuthentications();
 
     /**
-     * Verify if the repository has a authorization informations.
+     * Verify if the repository has a authentication information.
      *
      * @param string $repositoryName The unique name of repository
      *
      * @return boolean
      */
-    public function hasAuthorization($repositoryName);
+    public function hasAuthentication($repositoryName);
 
     /**
      * Get the username and password of repository.
@@ -131,14 +131,14 @@ interface IOInterface
      *
      * @return array The 'username' and 'password'
      */
-    public function getAuthorization($repositoryName);
+    public function getAuthentication($repositoryName);
 
     /**
-     * Set the authorization informations for the repository.
+     * Set the authentication information for the repository.
      *
      * @param string $repositoryName The unique name of repository
      * @param string $username       The username
      * @param string $password       The password
      */
-    public function setAuthorization($repositoryName, $username, $password = null);
+    public function setAuthentication($repositoryName, $username, $password = null);
 }

@@ -24,11 +24,11 @@ class NullIOTest extends TestCase
         $this->assertFalse($io->isInteractive());
     }
 
-    public function testHasAuthorization()
+    public function testhasAuthentication()
     {
         $io = new NullIO();
 
-        $this->assertFalse($io->hasAuthorization('foo'));
+        $this->assertFalse($io->hasAuthentication('foo'));
     }
 
     public function testAskAndHideAnswer()
@@ -38,13 +38,13 @@ class NullIOTest extends TestCase
         $this->assertNull($io->askAndHideAnswer('foo'));
     }
 
-    public function testGetAuthorizations()
+    public function testgetAuthentications()
     {
         $io = new NullIO();
 
-        $this->assertInternalType('array', $io->getAuthorizations());
-        $this->assertEmpty($io->getAuthorizations());
-        $this->assertEquals(array('username' => null, 'password' => null), $io->getAuthorization('foo'));
+        $this->assertInternalType('array', $io->getAuthentications());
+        $this->assertEmpty($io->getAuthentications());
+        $this->assertEquals(array('username' => null, 'password' => null), $io->getAuthentication('foo'));
     }
 
     public function testAsk()

@@ -92,7 +92,7 @@ class NullIO implements IOInterface
     /**
      * {@inheritDoc}
      */
-    public function getAuthorizations()
+    public function getAuthentications()
     {
         return array();
     }
@@ -100,7 +100,7 @@ class NullIO implements IOInterface
     /**
      * {@inheritDoc}
      */
-    public function hasAuthorization($repositoryName)
+    public function hasAuthentication($repositoryName)
     {
         return false;
     }
@@ -108,7 +108,7 @@ class NullIO implements IOInterface
     /**
      * {@inheritDoc}
      */
-    public function getAuthorization($repositoryName)
+    public function getAuthentication($repositoryName)
     {
         return array('username' => null, 'password' => null);
     }
@@ -116,7 +116,7 @@ class NullIO implements IOInterface
     /**
      * {@inheritDoc}
      */
-    public function setAuthorization($repositoryName, $username, $password = null)
+    public function setAuthentication($repositoryName, $username, $password = null)
     {
     }
 }

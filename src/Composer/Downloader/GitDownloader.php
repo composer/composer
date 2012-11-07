@@ -52,11 +52,11 @@ class GitDownloader extends VcsDownloader
         $this->io->write("    Checking out ".$ref);
         $command = 'cd %s && git remote set-url composer %s && git fetch composer && git fetch --tags composer';
 
-        if (!$this->io->hasAuthorization('github.com')) {
+        if (!$this->io->hasAuthentication('github.com')) {
             // capture username/password from github URL if there is one
             $this->process->execute(sprintf('cd %s && git remote -v', escapeshellarg($path)), $output);
             if (preg_match('{^composer\s+https://(.+):(.+)@github.com/}im', $output, $match)) {
-                $this->io->setAuthorization('github.com', $match[1], $match[2]);
+                $this->io->setAuthentication('github.com', $match[1], $match[2]);
             }
         }
 
@@ -287,7 +287,7 @@ class GitDownloader extends VcsDownloader
         if (0 !== $this->process->execute($command, $handler)) {
             // private github repository without git access, try https with auth
             if (preg_match('{^git@(github.com):(.+?)\.git$}i', $url, $match)) {
-                if (!$this->io->hasAuthorization($match[1])) {
+                if (!$this->io->hasAuthentication($match[1])) {
                     $gitHubUtil = new GitHub($this->io, $this->config, $this->process);
                     $message = 'Cloning failed using an ssh key for authentication, enter your GitHub credentials to access private repos';
 
@@ -296,8 +296,8 @@ class GitDownloader extends VcsDownloader
                     }
                 }
 
-                if ($this->io->hasAuthorization($match[1])) {
-                    $auth = $this->io->getAuthorization($match[1]);
+                if ($this->io->hasAuthentication($match[1])) {
+                    $auth = $this->io->getAuthentication($match[1]);
                     $url = 'https://'.$auth['username'] . ':' . $auth['password'] . '@'.$match[1].'/'.$match[2].'.git';
 
                     $command = call_user_func($commandCallable, $url);
