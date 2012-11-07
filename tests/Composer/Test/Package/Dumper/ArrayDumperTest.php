@@ -97,7 +97,7 @@ class ArrayDumperTest extends \PHPUnit_Framework_TestCase
             ),
             array(
                 'description',
-                'Package Manager'
+                'Dependency Manager'
             ),
             array(
                 'keywords',
