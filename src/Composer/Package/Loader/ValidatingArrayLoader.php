@@ -26,11 +26,13 @@ class ValidatingArrayLoader implements LoaderInterface
     private $errors;
     private $warnings;
     private $config;
+    private $strictName;
 
-    public function __construct(LoaderInterface $loader, VersionParser $parser = null)
+    public function __construct(LoaderInterface $loader, $strictName = true, VersionParser $parser = null)
     {
         $this->loader = $loader;
         $this->versionParser = $parser ?: new VersionParser();
+        $this->strictName = $strictName;
     }
 
     public function load(array $config, $class = 'Composer\Package\CompletePackage')
@@ -39,7 +41,11 @@ class ValidatingArrayLoader implements LoaderInterface
         $this->warnings = array();
         $this->config = $config;
 
-        $this->validateRegex('name', '[A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*', true);
+        if ($this->strictName) {
+            $this->validateRegex('name', '[A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*', true);
+        } else {
+            $this->validateString('name', true);
+        }
 
         if (!empty($this->config['version'])) {
             try {

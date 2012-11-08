@@ -252,7 +252,7 @@ class VcsRepository extends ArrayRepository
         }
 
         if (!$this->getPackages()) {
-            throw new \RuntimeException('No valid composer.json was found in any branch or tag of '.$this->url.', could not load a package from it.');
+            throw new InvalidRepositoryException('No valid composer.json was found in any branch or tag of '.$this->url.', could not load a package from it.');
         }
     }
 
