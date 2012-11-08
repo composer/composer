@@ -3,23 +3,23 @@ Composer - Dependency Management for PHP
 
 Composer is a dependency manager tracking local dependencies of your projects and libraries.
 
-See [http://getcomposer.org/](http://getcomposer.org/) for more information and documentation.
+See [https://getcomposer.org/](https://getcomposer.org/) for more information and documentation.
 
 [![Build Status](https://secure.travis-ci.org/composer/composer.png?branch=master)](http://travis-ci.org/composer/composer)
 
 Installation / Usage
 --------------------
 
-1. Download the [`composer.phar`](http://getcomposer.org/composer.phar) executable or use the installer.
+1. Download the [`composer.phar`](https://getcomposer.org/composer.phar) executable or use the installer.
 
     ``` sh
-    $ curl -s http://getcomposer.org/installer | php
+    $ curl -s https://getcomposer.org/installer | php
     ```
 
 
 2. Create a composer.json defining your dependencies. Note that this example is
 a short version for applications that are not meant to be published as packages
-themselves. To create libraries/packages please read the [guidelines](http://packagist.org/about).
+themselves. To create libraries/packages please read the [guidelines](https://packagist.org/about).
 
     ``` json
     {
@@ -30,7 +30,7 @@ themselves. To create libraries/packages please read the [guidelines](http://pac
     ```
 
 3. Run Composer: `php composer.phar install`
-4. Browse for more packages on [Packagist](http://packagist.org).
+4. Browse for more packages on [Packagist](https://packagist.org).
 
 Installation from Source
 ------------------------
@@ -39,7 +39,7 @@ To run tests, or develop Composer itself, you must use the sources and not the p
 file as described above.
 
 1. Run `git clone https://github.com/composer/composer.git`
-2. Download the [`composer.phar`](http://getcomposer.org/composer.phar) executable
+2. Download the [`composer.phar`](https://getcomposer.org/composer.phar) executable
 3. Run Composer to get the dependencies: `cd composer && php ../composer.phar install`
 
 You can now run Composer by executing the `bin/composer` script: `php /path/to/composer/bin/composer`
@@ -51,7 +51,7 @@ Since Composer works with the current working directory it is possible to instal
 in a system wide way.
 
 1. Change into a directory in your path like `cd /usr/local/bin`
-2. Get Composer `curl -s http://getcomposer.org/installer | php`
+2. Get Composer `curl -s https://getcomposer.org/installer | php`
 3. Make the phar executable `chmod a+x composer.phar`
 4. Change into a project directory `cd /path/to/my/project`
 5. Use Composer as you normally would `composer.phar install`
