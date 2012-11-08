@@ -190,6 +190,10 @@ Example assuming you patched monolog to fix a bug in the `bugfix` branch:
 When you run `php composer.phar update`, you should get your modified version
 of `monolog/monolog` instead of the one from packagist.
 
+It is possible to inline-alias a package constraint so that it matches a
+constraint that it otherwise would not. For more information [see the
+aliases article](articles/aliases.md).
+
 #### Git alternatives
 
 Git is not the only version control system supported by the VCS repository.
