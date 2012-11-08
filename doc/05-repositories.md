@@ -194,6 +194,23 @@ It is possible to inline-alias a package constraint so that it matches a
 constraint that it otherwise would not. For more information [see the
 aliases article](articles/aliases.md).
 
+Exactly the same solution allows you to work with your private repositories at
+GitHub and BitBucket:
+
+    {
+        "require": {
+            "vendor/my-private-repo": "dev-master"
+        },
+        "repositories": [
+            {
+                "type": "vcs",
+                "url":  "git@bitbucket.org:vendor/my-private-repo.git"
+            }
+        ]
+    }
+
+The only requirement is the installation of SSH keys for a git client.
+
 #### Git alternatives
 
 Git is not the only version control system supported by the VCS repository.
