@@ -69,7 +69,7 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue('somepassword'));
 
         $io->expects($this->any())
-            ->method('setAuthorization')
+            ->method('setAuthentication')
             ->with($this->equalTo('github.com'), $this->matchesRegularExpression('{someuser|abcdef}'), $this->matchesRegularExpression('{somepassword|x-oauth-basic}'));
 
         $remoteFilesystem->expects($this->at(1))
