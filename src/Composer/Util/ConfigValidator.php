@@ -107,8 +107,9 @@ class ConfigValidator
             $loader->load($manifest);
         } catch (InvalidPackageException $e) {
             $errors = array_merge($errors, $e->getErrors());
-            $warnings = array_merge($warnings, $e->getWarnings());
         }
+
+        $warnings = array_merge($warnings, $loader->getWarnings());
 
         return array($errors, $publishErrors, $warnings);
     }
