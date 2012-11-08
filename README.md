@@ -1,5 +1,5 @@
-Composer - Package Management for PHP
-=====================================
+Composer - Dependency Management for PHP
+========================================
 
 Composer is a dependency manager tracking local dependencies of your projects and libraries.
 
