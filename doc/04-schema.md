@@ -281,6 +281,10 @@ Example:
         }
     }
 
+It is possible to inline-alias a package constraint so that it matches a
+constraint that it otherwise would not. For more information [see the
+aliases article](articles/aliases.md).
+
 #### require
 
 Lists packages required by this package. The package will not be installed
