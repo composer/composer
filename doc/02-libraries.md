@@ -117,7 +117,7 @@ the `.gitignore`.
 
 ## Light-weight distribution packages
 
-Including the tests and other useless information like .travis.yml in
+Including the tests and other useless information like `.travis.yml` in
 distributed packages is not a good idea.
 
 The `.gitattributes` file is a git specific file like `.gitignore` also living
