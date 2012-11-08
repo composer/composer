@@ -152,7 +152,7 @@ repository.
 
 The `packages.json` file is loaded using a PHP stream. You can set extra options
 on that stream using the `options` parameter. You can set any valid PHP stream
-context option. See [Context options and parameters](http://nl3.php.net/manual/en/context.php)
+context option. See [Context options and parameters](http://php.net/manual/en/context.php)
 for more information.
 
 ### VCS
