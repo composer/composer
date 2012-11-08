@@ -161,7 +161,7 @@ VCS stands for version control system. This includes versioning systems like
 git, svn or hg. Composer has a repository type for installing packages from
 these systems.
 
-#### Maintaining a third party library fork
+#### Loading a package from a VCS repository
 
 There are a few use cases for this. The most common one is maintaining your
 own fork of a third party library. If you are using a certain library for your
@@ -193,6 +193,8 @@ of `monolog/monolog` instead of the one from packagist.
 It is possible to inline-alias a package constraint so that it matches a
 constraint that it otherwise would not. For more information [see the
 aliases article](articles/aliases.md).
+
+#### Using private repositories
 
 Exactly the same solution allows you to work with your private repositories at
 GitHub and BitBucket:
