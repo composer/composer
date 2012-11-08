@@ -37,9 +37,9 @@ specifying a `branch-alias` field under `extra` in `composer.json`:
     }
 
 The branch version must begin with `dev-` (non-comparable version), the alias
-must be a comparable dev version. The `branch-alias` must be present on the
-branch that it references. For `dev-master`, you need to commit it on the
-`master` branch.
+must be a comparable dev version (i.e. start with numbers, and end with
+`.x-dev`). The `branch-alias` must be present on the branch that it references.
+For `dev-master`, you need to commit it on the `master` branch.
 
 As a result, anyone can now require `1.0.*` and it will happily install
 `dev-master`.
