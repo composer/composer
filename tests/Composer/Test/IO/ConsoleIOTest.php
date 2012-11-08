@@ -149,22 +149,22 @@ class ConsoleIOTest extends TestCase
         $consoleIO->askAndValidate('Why?', 'validator', 10, 'default');
     }
 
-    public function testSetAndGetAuthorization()
+    public function testSetAndgetAuthentication()
     {
         $inputMock = $this->getMock('Symfony\Component\Console\Input\InputInterface');
         $outputMock = $this->getMock('Symfony\Component\Console\Output\OutputInterface');
         $helperMock = $this->getMock('Symfony\Component\Console\Helper\HelperSet');
 
         $consoleIO = new ConsoleIO($inputMock, $outputMock, $helperMock);
-        $consoleIO->setAuthorization('repoName', 'l3l0', 'passwd');
+        $consoleIO->setAuthentication('repoName', 'l3l0', 'passwd');
 
         $this->assertEquals(
             array('username' => 'l3l0', 'password' => 'passwd'),
-            $consoleIO->getAuthorization('repoName')
+            $consoleIO->getAuthentication('repoName')
         );
     }
 
-    public function testGetAuthorizationWhenDidNotSet()
+    public function testgetAuthenticationWhenDidNotSet()
     {
         $inputMock = $this->getMock('Symfony\Component\Console\Input\InputInterface');
         $outputMock = $this->getMock('Symfony\Component\Console\Output\OutputInterface');
@@ -174,20 +174,20 @@ class ConsoleIOTest extends TestCase
 
         $this->assertEquals(
             array('username' => null, 'password' => null),
-            $consoleIO->getAuthorization('repoName')
+            $consoleIO->getAuthentication('repoName')
         );
     }
 
-    public function testHasAuthorization()
+    public function testhasAuthentication()
     {
         $inputMock = $this->getMock('Symfony\Component\Console\Input\InputInterface');
         $outputMock = $this->getMock('Symfony\Component\Console\Output\OutputInterface');
         $helperMock = $this->getMock('Symfony\Component\Console\Helper\HelperSet');
 
         $consoleIO = new ConsoleIO($inputMock, $outputMock, $helperMock);
-        $consoleIO->setAuthorization('repoName', 'l3l0', 'passwd');
+        $consoleIO->setAuthentication('repoName', 'l3l0', 'passwd');
 
-        $this->assertTrue($consoleIO->hasAuthorization('repoName'));
-        $this->assertFalse($consoleIO->hasAuthorization('repoName2'));
+        $this->assertTrue($consoleIO->hasAuthentication('repoName'));
+        $this->assertFalse($consoleIO->hasAuthentication('repoName2'));
     }
 }

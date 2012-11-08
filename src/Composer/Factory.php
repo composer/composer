@@ -152,7 +152,7 @@ class Factory
         // reload oauth token from config if available
         if ($tokens = $config->get('github-oauth')) {
             foreach ($tokens as $domain => $token) {
-                $io->setAuthorization($domain, $token, 'x-oauth-basic');
+                $io->setAuthentication($domain, $token, 'x-oauth-basic');
             }
         }
 
