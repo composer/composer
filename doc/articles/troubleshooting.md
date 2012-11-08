@@ -27,7 +27,7 @@ This is a list of common pitfalls on using Composer, and how to avoid them.
    [minimum-stability](../04-schema.md#minimum-stability)**. To get started or be
    sure this is no issue, set `minimum-stability` to "dev".
 
-3. Packages **not coming from [Packagist](http://packagist.org/)** should
+3. Packages **not coming from [Packagist](https://packagist.org/)** should
    always be **defined in the root package** (the package depending on all
    vendors).
 

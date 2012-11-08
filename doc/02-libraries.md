@@ -201,10 +201,10 @@ every time is cumbersome. You don't want to force all your users to do that.
 The other thing that you may have noticed is that we did not specify a package
 repository for `monolog/monolog`. How did that work? The answer is packagist.
 
-[Packagist](http://packagist.org/) is the main package repository for
+[Packagist](https://packagist.org/) is the main package repository for
 composer, and it is enabled by default. Anything that is published on
 packagist is available automatically through composer. Since monolog
-[is on packagist](http://packagist.org/packages/monolog/monolog), we can depend
+[is on packagist](https://packagist.org/packages/monolog/monolog), we can depend
 on it without having to specify any additional repositories.
 
 If we wanted to share `hello-world` with the world, we would publish it on

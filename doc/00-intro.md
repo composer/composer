@@ -82,7 +82,7 @@ Then, just run `composer` in order to run Composer instead of `php composer.phar
 
 This is the easiest way to get Composer set up on your machine.
 
-Download and run [Composer-Setup.exe](http://getcomposer.org/Composer-Setup.exe),
+Download and run [Composer-Setup.exe](https://getcomposer.org/Composer-Setup.exe),
 it will install the latest Composer version and set up your PATH so that you can
 just call `composer` from any directory in your command line.
 
