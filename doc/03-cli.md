@@ -185,7 +185,10 @@ you have to run the command with `root` privileges
 
 ## create-project
 
-You can use Composer to create new projects from an existing package.
+You can use Composer to create new projects from an existing package. This is
+the equivalent of doing a git clone/svn checkout followed by a composer install
+of the vendors.
+
 There are several applications for this:
 
 1. You can deploy application packages.
