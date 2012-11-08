@@ -20,7 +20,7 @@ If you really feel like you must do this, you have two options:
 
 - Limit yourself to installing tagged releases (no dev versions), so that you
   only get zipped installs, and avoid problems with the git "submodules".
-- Remove the .git directory of every dependency after the installation, then
+- Remove the `.git` directory of every dependency after the installation, then
   you can add them to your git repo. You can do that with `rm -rf vendor/**/.git`
   but this means you will have to delete those dependencies from disk before
   running composer update.
