@@ -26,6 +26,27 @@ vendor name. Supplying a vendor name is mandatory.
 username is usually a good bet. While package names are case insensitive, the
 convention is all lowercase and dashes for word separation.
 
+## Platform packages
+
+Composer has platform packages, which are virtual packages for things that are
+installed on the system but are not actually installable by composer. This
+includes PHP itself, PHP extensions and some system libraries.
+
+* `php` represents the PHP version of the user, allowing you to apply
+   constraints, e.g. `>=5.4.0`.
+
+* `ext-<name>` allows you to require PHP extensions (includes core
+  extensions). Versioning can be quite inconsistent here, so it's often
+  a good idea to just set the constraint to `*`.  An example of an extension
+  package name is `ext-gd`.
+
+* `lib-<name>` allows constraints to be made on versions of libraries used by
+  PHP. The following are available: `curl`, `iconv`, `libxml`, `openssl`,
+  `pcre`, `uuid`, `xsl`.
+
+You can use `composer show --platform` to get a list of your locally available
+platform packages.
+
 ## Specifying the version
 
 You need to specify the package's version some way. When you publish your
