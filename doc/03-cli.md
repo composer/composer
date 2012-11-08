@@ -77,7 +77,7 @@ resolution.
   `require-dev`.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--no-custom-installers:** Disables custom installers.
-* **--optimize (-o):** Convert PSR-0 autoloading to classmap to get a faster
+* **--optimize-autoloader (-o):** Convert PSR-0 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
   a bit of time to run so it is currently not done by default.
 
@@ -103,7 +103,7 @@ If you just want to update a few packages and not all, you can list them as such
 * **--dev:** Install packages listed in `require-dev`.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--no-custom-installers:** Disables custom installers.
-* **--optimize (-o):** Convert PSR-0 autoloading to classmap to get a faster
+* **--optimize-autoloader (-o):** Convert PSR-0 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
   a bit of time to run so it is currently not done by default.
 
