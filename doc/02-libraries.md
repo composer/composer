@@ -129,7 +129,7 @@ Use `.gitattributes` to prevent unwanted files from bloating the zip
 distribution packages.
 
     // .gitattributes
-    Tests/ export-ignore
+    /Tests export-ignore
     phpunit.xml.dist export-ignore
     Resources/doc/ export-ignore
     .travis.yml export-ignore
