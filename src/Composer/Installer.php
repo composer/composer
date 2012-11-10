@@ -292,7 +292,7 @@ class Installer
             $this->io->write('<info>Installing '.($devMode ? 'dev ': '').'dependencies from lock file</info>');
 
             if (!$this->locker->isFresh() && !$devMode) {
-                $this->io->write('<warning>Your lock file is out of sync with your composer.json, run "composer.phar update" to update dependencies</warning>');
+                $this->io->write('<warning>Warning: The lock file is not up to date with the latest changes in composer.json, you may be getting outdated dependencies, run update to update them.</warning>');
             }
 
             foreach ($lockedRepository->getPackages() as $package) {
