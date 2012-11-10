@@ -92,59 +92,36 @@ class ClassMapGenerator
      */
     private static function findClasses($path)
     {
-        $contents = file_get_contents($path);
+        $contents = php_strip_whitespace($path);
+
         try {
             if (!preg_match('{\b(?:class|interface|trait)\b}i', $contents)) {
                 return array();
             }
-            $tokens   = token_get_all($contents);
+
+            // strip heredocs/nowdocs
+            $contents = preg_replace('{<<<\'?(\w+)\'?(?:\r\n|\n|\r)(?:.*?)(?:\r\n|\n|\r)\\1(?=\r\n|\n|\r|;)}s', 'null', $contents);
+            // strip strings
+            $contents = preg_replace('{"[^"\\\\]*(\\\\.[^"\\\\]*)*"|\'[^\'\\\\]*(\\\\.[^\'\\\\]*)*\'}', 'null', $contents);
+
+            preg_match_all('{(?:\b(?<![\$:>])(?<type>class|interface|trait)\s+(?<name>\S+)|\b(?<![\$:>])(?<ns>namespace)\s+(?<nsname>[^\s;{}\\\\]+(?:\s*\\\\\s*[^\s;{}\\\\]+)*))}i', $contents, $matches);
+            $classes = array();
+
+            $namespace = '';
+
+            for ($i = 0, $len = count($matches['type']); $i < $len; $i++) {
+                $name = $matches['name'][$i];
+
+                if (!empty($matches['ns'][$i])) {
+                    $namespace = str_replace(array(' ', "\t", "\r", "\n"), '', $matches['nsname'][$i]) . '\\';
+                } else {
+                    $classes[] = ltrim($namespace . $matches['name'][$i], '\\');
+                }
+            }
+
+            return $classes;
         } catch (\Exception $e) {
             throw new \RuntimeException('Could not scan for classes inside '.$path.": \n".$e->getMessage(), 0, $e);
         }
-        $T_TRAIT  = version_compare(PHP_VERSION, '5.4', '<') ? -1 : T_TRAIT;
-
-        $classes = array();
-
-        $namespace = '';
-        for ($i = 0, $max = count($tokens); $i < $max; $i++) {
-            $token = $tokens[$i];
-
-            if (is_string($token)) {
-                continue;
-            }
-
-            $class = '';
-
-            switch ($token[0]) {
-                case T_NAMESPACE:
-                    $namespace = '';
-                    // If there is a namespace, extract it
-                    while (($t = $tokens[++$i]) && is_array($t)) {
-                        if (in_array($t[0], array(T_STRING, T_NS_SEPARATOR))) {
-                            $namespace .= $t[1];
-                        }
-                    }
-                    $namespace .= '\\';
-                    break;
-                case T_CLASS:
-                case T_INTERFACE:
-                case $T_TRAIT:
-                    // Find the classname
-                    while (($t = $tokens[++$i]) && is_array($t)) {
-                        if (T_STRING === $t[0]) {
-                            $class .= $t[1];
-                        } elseif ($class !== '' && T_WHITESPACE == $t[0]) {
-                            break;
-                        }
-                    }
-
-                    $classes[] = ltrim($namespace . $class, '\\');
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        return $classes;
     }
 }
