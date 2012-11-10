@@ -10,10 +10,12 @@
  * file that was distributed with this source code.
  */
 
-function includeIfExists($file)
-{
-    if (file_exists($file)) {
-        return include $file;
+if (!function_exists('includeIfExists')) {
+    function includeIfExists($file)
+    {
+        if (file_exists($file)) {
+            return include $file;
+        }
     }
 }
 
