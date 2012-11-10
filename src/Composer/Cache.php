@@ -53,14 +53,19 @@ class Cache
         if ($this->enabled && file_exists($this->root . $file)) {
             return file_get_contents($this->root . $file);
         }
+
+        return false;
     }
 
     public function write($file, $contents)
     {
         if ($this->enabled) {
             $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
-            file_put_contents($this->root . $file, $contents);
+
+            return file_put_contents($this->root . $file, $contents);
         }
+
+        return false;
     }
 
     public function copyFrom($file, $source)
@@ -68,8 +73,11 @@ class Cache
         if ($this->enabled) {
             $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
             $this->filesystem->ensureDirectoryExists(dirname($this->root . $file));
-            copy($source, $this->root . $file);
+
+            return copy($source, $this->root . $file);
         }
+
+        return false;
     }
 
     public function copyTo($file, $target)
@@ -77,8 +85,11 @@ class Cache
         $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
         if ($this->enabled && file_exists($this->root . $file)) {
             touch($this->root . $file);
+
             return copy($this->root . $file, $target);
         }
+
+        return false;
     }
 
     public function gc($expire)
@@ -92,6 +103,8 @@ class Cache
         if ($this->enabled && file_exists($this->root . $file)) {
             return sha1_file($this->root . $file);
         }
+
+        return false;
     }
 
     public function sha256($file)
@@ -100,5 +113,7 @@ class Cache
         if ($this->enabled && file_exists($this->root . $file)) {
             return hash_file('sha256', $this->root . $file);
         }
+
+        return false;
     }
 }
