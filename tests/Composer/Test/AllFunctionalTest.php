@@ -11,6 +11,18 @@ use Symfony\Component\Finder\Finder;
  */
 class AllFunctionalTest extends \PHPUnit_Framework_TestCase
 {
+    protected $oldcwd;
+    public function setUp()
+    {
+        $this->oldcwd = getcwd();
+        chdir(__DIR__.'/Fixtures/functional');
+    }
+
+    public function tearDown()
+    {
+        chdir($this->oldcwd);
+    }
+
     /**
      * @dataProvider getTestFiles
      */
