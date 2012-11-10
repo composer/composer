@@ -83,7 +83,7 @@ class Application extends BaseApplication
 
         if (defined('COMPOSER_DEV_WARNING_TIME') && $this->getCommandName($input) !== 'self-update') {
             if (time() > COMPOSER_DEV_WARNING_TIME) {
-                $output->writeln(sprintf('<warning>This dev build of composer is outdated, please run "%s self-update" to get the latest version.</warning>', $_SERVER['PHP_SELF']));
+                $output->writeln(sprintf('<warning>Warning: This development build of composer is over 30 days old. It is recommended to update it by running "%s self-update" to get the latest version.</warning>', $_SERVER['PHP_SELF']));
             }
         }
 
