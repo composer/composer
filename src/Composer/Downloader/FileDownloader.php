@@ -13,6 +13,7 @@
 namespace Composer\Downloader;
 
 use Composer\Config;
+use Composer\Cache;
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
@@ -29,25 +30,34 @@ use Composer\Util\RemoteFilesystem;
  */
 class FileDownloader implements DownloaderInterface
 {
+    private static $cacheCollected = false;
     protected $io;
     protected $config;
     protected $rfs;
     protected $filesystem;
+    protected $cache;
 
     /**
      * Constructor.
      *
      * @param IOInterface      $io         The IO instance
      * @param Config           $config     The config
+     * @param Cache            $cache      Optional cache instance
      * @param RemoteFilesystem $rfs        The remote filesystem
      * @param Filesystem       $filesystem The filesystem
      */
-    public function __construct(IOInterface $io, Config $config, RemoteFilesystem $rfs = null, Filesystem $filesystem = null)
+    public function __construct(IOInterface $io, Config $config, Cache $cache = null, RemoteFilesystem $rfs = null, Filesystem $filesystem = null)
     {
         $this->io = $io;
         $this->config = $config;
         $this->rfs = $rfs ?: new RemoteFilesystem($io);
         $this->filesystem = $filesystem ?: new Filesystem();
+        $this->cache = $cache;
+
+        if ($this->cache && !self::$cacheCollected && !rand(0, 50)) {
+            $this->cache->gc($config->get('cache-ttl'));
+        }
+        self::$cacheCollected = true;
     }
 
     /**
@@ -78,7 +88,12 @@ class FileDownloader implements DownloaderInterface
 
         try {
             try {
-                $this->rfs->copy(parse_url($processUrl, PHP_URL_HOST), $processUrl, $fileName);
+                if (!$this->cache || !$this->cache->copyTo($this->getCacheKey($package), $fileName)) {
+                    $this->rfs->copy(parse_url($processUrl, PHP_URL_HOST), $processUrl, $fileName);
+                    if ($this->cache) {
+                        $this->cache->copyFrom($this->getCacheKey($package), $fileName);
+                    }
+                }
             } catch (TransportException $e) {
                 if (404 === $e->getCode() && 'github.com' === parse_url($processUrl, PHP_URL_HOST)) {
                     $message = "\n".'Could not fetch '.$processUrl.', enter your GitHub credentials to access private repos';
@@ -158,5 +173,14 @@ class FileDownloader implements DownloaderInterface
         }
 
         return $url;
+    }
+
+    private function getCacheKey(PackageInterface $package)
+    {
+        if (preg_match('{^[a-f0-9]{40}$}', $package->getDistReference())) {
+            return $package->getName().'/'.$package->getDistReference().'.'.$package->getDistType();
+        }
+
+        return $package->getName().'/'.$package->getVersion().'-'.$package->getDistReference().'.'.$package->getDistType();
     }
 }

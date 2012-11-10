@@ -21,6 +21,7 @@ class Config
 {
     public static $defaultConfig = array(
         'process-timeout' => 300,
+        'cache-ttl' => 15552000, // 6 months
         'vendor-dir' => 'vendor',
         'bin-dir' => '{$vendor-dir}/bin',
         'notify-on-install' => true,
