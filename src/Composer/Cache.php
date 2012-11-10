@@ -14,6 +14,7 @@ namespace Composer;
 
 use Composer\IO\IOInterface;
 use Composer\Util\Filesystem;
+use Symfony\Component\Finder\Finder;
 
 /**
  * Reads/writes to a filesystem cache
@@ -28,6 +29,12 @@ class Cache
     private $whitelist;
     private $filesystem;
 
+    /**
+     * @param IOInterface $io
+     * @param string      $cacheDir location of the cache
+     * @param string      $whitelist List of characters that are allowed in path names (used in a regex character class)
+     * @param Filesystem  $filesystem optional filesystem instance
+     */
     public function __construct(IOInterface $io, $cacheDir, $whitelist = 'a-z0-9.', Filesystem $filesystem = null)
     {
         $this->io = $io;
@@ -92,9 +99,17 @@ class Cache
         return false;
     }
 
-    public function gc($expire)
+    public function gc($ttl)
     {
-        // TODO
+        $expire = new \DateTime();
+        $expire->modify('-'.$ttl.' seconds');
+
+        $finder = Finder::create()->files()->in($this->root)->date('until '.$expire->format('Y-m-d H:i:s'));
+        foreach ($finder as $file) {
+            unlink($file->getRealPath());
+        }
+
+        return true;
     }
 
     public function sha1($file)
