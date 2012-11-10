@@ -1,4 +1,4 @@
 --RUN--
-create-project seld/jsonlint %testDir% dev-master
+create-project --repository-url=packages.json -v seld/jsonlint %testDir% dev-master
 --EXPECT-REGEX--
 {^Installing seld/jsonlint \(dev-master [a-f0-9]{40}\)}
