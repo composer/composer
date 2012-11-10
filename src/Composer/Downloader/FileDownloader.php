@@ -30,6 +30,7 @@ use Composer\Util\RemoteFilesystem;
  */
 class FileDownloader implements DownloaderInterface
 {
+    private static $cacheCollected = false;
     protected $io;
     protected $config;
     protected $rfs;
@@ -41,20 +42,22 @@ class FileDownloader implements DownloaderInterface
      *
      * @param IOInterface      $io         The IO instance
      * @param Config           $config     The config
+     * @param Cache            $cache      Optional cache instance
      * @param RemoteFilesystem $rfs        The remote filesystem
      * @param Filesystem       $filesystem The filesystem
      */
-    public function __construct(IOInterface $io, Config $config, RemoteFilesystem $rfs = null, Filesystem $filesystem = null)
+    public function __construct(IOInterface $io, Config $config, Cache $cache = null, RemoteFilesystem $rfs = null, Filesystem $filesystem = null)
     {
         $this->io = $io;
         $this->config = $config;
         $this->rfs = $rfs ?: new RemoteFilesystem($io);
         $this->filesystem = $filesystem ?: new Filesystem();
-        $this->cache = new Cache($this->io, $config->get('home').'/cache.files/', 'a-z0-9_./');
+        $this->cache = $cache;
 
-        if (!rand(0, 50)) {
-            $this->cache->gc($config->get('cache-ttl') ?: 86400 * 30);
+        if ($this->cache && !self::$cacheCollected && !rand(0, 50)) {
+            $this->cache->gc($config->get('cache-ttl'));
         }
+        self::$cacheCollected = true;
     }
 
     /**
@@ -85,9 +88,11 @@ class FileDownloader implements DownloaderInterface
 
         try {
             try {
-                if (!$this->cache->copyTo($package->getName().'/'.$package->getVersion().'-'.$package->getDistReference().'.'.$package->getDistType(), $fileName)) {
+                if (!$this->cache || !$this->cache->copyTo($this->getCacheKey($package), $fileName)) {
                     $this->rfs->copy(parse_url($processUrl, PHP_URL_HOST), $processUrl, $fileName);
-                    $this->cache->copyFrom($package->getName().'/'.$package->getVersion().'-'.$package->getDistReference().'.'.$package->getDistType(), $fileName);
+                    if ($this->cache) {
+                        $this->cache->copyFrom($this->getCacheKey($package), $fileName);
+                    }
                 }
             } catch (TransportException $e) {
                 if (404 === $e->getCode() && 'github.com' === parse_url($processUrl, PHP_URL_HOST)) {
@@ -168,5 +173,14 @@ class FileDownloader implements DownloaderInterface
         }
 
         return $url;
+    }
+
+    private function getCacheKey(PackageInterface $package)
+    {
+        if (preg_match('{^[a-f0-9]{40}$}', $package->getDistReference())) {
+            return $package->getName().'/'.$package->getDistReference().'.'.$package->getDistType();
+        }
+
+        return $package->getName().'/'.$package->getVersion().'-'.$package->getDistReference().'.'.$package->getDistType();
     }
 }
