@@ -93,9 +93,10 @@ class ClassMapGenerator
     private static function findClasses($path)
     {
         $contents = php_strip_whitespace($path);
+        $traits = version_compare(PHP_VERSION, '5.4', '<') ? '' : '|trait';
 
         try {
-            if (!preg_match('{\b(?:class|interface|trait)\b}i', $contents)) {
+            if (!preg_match('{\b(?:class|interface'.$traits.')\b}i', $contents)) {
                 return array();
             }
 
@@ -104,7 +105,7 @@ class ClassMapGenerator
             // strip strings
             $contents = preg_replace('{"[^"\\\\]*(\\\\.[^"\\\\]*)*"|\'[^\'\\\\]*(\\\\.[^\'\\\\]*)*\'}', 'null', $contents);
 
-            preg_match_all('{(?:\b(?<![\$:>])(?<type>class|interface|trait)\s+(?<name>\S+)|\b(?<![\$:>])(?<ns>namespace)\s+(?<nsname>[^\s;{}\\\\]+(?:\s*\\\\\s*[^\s;{}\\\\]+)*))}i', $contents, $matches);
+            preg_match_all('{(?:\b(?<![\$:>])(?<type>class|interface'.$traits.')\s+(?<name>\S+)|\b(?<![\$:>])(?<ns>namespace)(?<nsname>\s+[^\s;{}\\\\]+(?:\s*\\\\\s*[^\s;{}\\\\]+)*|\s*\{))}i', $contents, $matches);
             $classes = array();
 
             $namespace = '';
