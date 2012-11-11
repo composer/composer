@@ -12,6 +12,7 @@ use Symfony\Component\Finder\Finder;
 class AllFunctionalTest extends \PHPUnit_Framework_TestCase
 {
     protected $oldcwd;
+    protected $oldenv;
     protected $testDir;
 
     public function setUp()
@@ -23,11 +24,17 @@ class AllFunctionalTest extends \PHPUnit_Framework_TestCase
     public function tearDown()
     {
         chdir($this->oldcwd);
+        $fs = new Filesystem;
         if ($this->testDir) {
-            $fs = new Filesystem;
             $fs->removeDirectory($this->testDir);
             $this->testDir = null;
         }
+        if ($this->oldenv) {
+            $fs->removeDirectory(getenv('COMPOSER_HOME'));
+            putenv('COMPOSER_HOME='.$this->oldenv);
+            $this->oldenv = null;
+        }
+
     }
 
     /**
@@ -36,6 +43,9 @@ class AllFunctionalTest extends \PHPUnit_Framework_TestCase
     public function testIntegration(\SplFileInfo $testFile)
     {
         $testData = $this->parseTestFile($testFile);
+
+        $this->oldenv = getenv('COMPOSER_HOME');
+        putenv('COMPOSER_HOME='.$this->testDir.'home');
 
         $cmd = 'php '.__DIR__.'/../../../bin/composer --no-ansi '.$testData['RUN'];
         $proc = new Process($cmd);
@@ -55,12 +65,6 @@ class AllFunctionalTest extends \PHPUnit_Framework_TestCase
         }
         if (isset($testData['EXPECT-EXIT-CODE'])) {
             $this->assertSame($testData['EXPECT-EXIT-CODE'], $exitcode);
-        }
-
-        // Clean up.
-        $fs = new Filesystem();
-        if (isset($testData['test_dir']) && is_dir($testData['test_dir'])) {
-            $fs->removeDirectory($testData['test_dir']);
         }
     }
 
