@@ -40,6 +40,7 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
     protected $providers = array();
     protected $providersByUid = array();
     protected $loader;
+    protected $rootAliases;
     private $rawData;
     private $minimalPackages;
     private $degradedMode = false;
@@ -57,7 +58,8 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
             $repoConfig['url'] = (extension_loaded('openssl') ? 'https' : 'http') . substr($repoConfig['url'], 6);
         }
 
-        if (function_exists('filter_var') && version_compare(PHP_VERSION, '5.3.3', '>=') && !filter_var($repoConfig['url'], FILTER_VALIDATE_URL)) {
+        $urlBits = parse_url($repoConfig['url']);
+        if (empty($urlBits['scheme']) || empty($urlBits['host'])) {
             throw new \UnexpectedValueException('Invalid url given for Composer repository: '.$repoConfig['url']);
         }
 
@@ -101,6 +103,11 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
 
         $context = stream_context_create($opts);
         @file_get_contents($url, false, $context);
+    }
+
+    public function setRootAliases(array $rootAliases)
+    {
+        $this->rootAliases = $rootAliases;
     }
 
     /**
@@ -250,9 +257,13 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
                         } else {
                             $this->providers[$name][$version['uid']] = $this->providersByUid[$version['uid']];
                         }
+                        // check for root aliases
+                        if (isset($this->providersByUid[$version['uid'].'-root'])) {
+                            $this->providers[$name][$version['uid'].'-root'] = $this->providersByUid[$version['uid'].'-root'];
+                        }
                     }
                 } else {
-                    if (!$pool->isPackageAcceptable($version['name'], VersionParser::parseStability($version['version']))) {
+                    if (!$pool->isPackageAcceptable(strtolower($version['name']), VersionParser::parseStability($version['version']))) {
                         continue;
                     }
 
@@ -270,6 +281,23 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
                         $this->providers[$name][$version['uid'].'-alias'] = $alias;
                         // override provider with its alias so it can be expanded in the if block above
                         $this->providersByUid[$version['uid']] = $alias;
+                    }
+
+                    // handle root package aliases
+                    unset($rootAliasData);
+
+                    if (isset($this->rootAliases[$name][$package->getVersion()])) {
+                        $rootAliasData = $this->rootAliases[$name][$package->getVersion()];
+                    } elseif (($aliasNormalized = $package->getAlias()) && isset($this->rootAliases[$name][$aliasNormalized])) {
+                        $rootAliasData = $this->rootAliases[$name][$aliasNormalized];
+                    }
+
+                    if (isset($rootAliasData)) {
+                        $alias = $this->createAliasPackage($package, $rootAliasData['alias_normalized'], $rootAliasData['alias']);
+                        $alias->setRepository($this);
+
+                        $this->providers[$name][$version['uid'].'-root'] = $alias;
+                        $this->providersByUid[$version['uid'].'-root'] = $alias;
                     }
                 }
             }
@@ -423,7 +451,7 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
                     }
 
                     // TODO throw SecurityException and abort once we are sure this can not happen accidentally
-                    $this->io->write('<warning>The contents of '.$filename.' do not match its signature, this is most likely due to a temporary glitch but could indicate a man-in-the-middle attack. Try running composer again and if please report it if it persists.</warning>');
+                    $this->io->write('<warning>The contents of '.$filename.' do not match its signature, this is most likely due to a temporary glitch but could indicate a man-in-the-middle attack. Try running composer again and please report it if it still persists.</warning>');
                 }
                 $this->cache->write($cacheKey, $encoded);
 

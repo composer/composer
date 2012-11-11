@@ -49,7 +49,8 @@ class PearRepository extends ArrayRepository
             $repoConfig['url'] = 'http://'.$repoConfig['url'];
         }
 
-        if (function_exists('filter_var') && version_compare(PHP_VERSION, '5.3.3', '>=') && !filter_var($repoConfig['url'], FILTER_VALIDATE_URL)) {
+        $urlBits = parse_url($repoConfig['url']);
+        if (empty($urlBits['scheme']) || empty($urlBits['host'])) {
             throw new \UnexpectedValueException('Invalid url given for PEAR repository: '.$repoConfig['url']);
         }
 
@@ -83,7 +84,8 @@ class PearRepository extends ArrayRepository
     /**
      * Builds CompletePackages from PEAR package definition data.
      *
-     * @param  ChannelInfo     $channelInfo
+     * @param ChannelInfo   $channelInfo
+     * @param VersionParser $versionParser
      * @return CompletePackage
      */
     private function buildComposerPackages(ChannelInfo $channelInfo, VersionParser $versionParser)

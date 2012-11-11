@@ -35,7 +35,8 @@ class RemoteFilesystem
     /**
      * Constructor.
      *
-     * @param IOInterface $io The IO instance
+     * @param IOInterface $io      The IO instance
+     * @param array       $options The options
      */
     public function __construct(IOInterface $io, $options = array())
     {
@@ -220,7 +221,7 @@ class RemoteFilesystem
                     $this->io->overwrite('    Authentication required (<info>'.parse_url($this->fileUrl, PHP_URL_HOST).'</info>):');
                     $username = $this->io->ask('      Username: ');
                     $password = $this->io->askAndHideAnswer('      Password: ');
-                    $this->io->setAuthorization($this->originUrl, $username, $password);
+                    $this->io->setAuthentication($this->originUrl, $username, $password);
 
                     $this->get($this->originUrl, $this->fileUrl, $this->fileName, $this->progress);
                 }
@@ -276,8 +277,8 @@ class RemoteFilesystem
             $headers[] = 'Accept-Encoding: gzip';
         }
 
-        if ($this->io->hasAuthorization($originUrl)) {
-            $auth = $this->io->getAuthorization($originUrl);
+        if ($this->io->hasAuthentication($originUrl)) {
+            $auth = $this->io->getAuthentication($originUrl);
             $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
             $headers[] = 'Authorization: Basic '.$authStr;
         }

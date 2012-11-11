@@ -43,7 +43,7 @@ class FilesystemRepositoryTest extends TestCase
     }
 
     /**
-     * @expectedException \UnexpectedValueException
+     * @expectedException Composer\Repository\InvalidRepositoryException
      */
     public function testCorruptedRepositoryFile()
     {

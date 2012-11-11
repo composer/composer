@@ -213,9 +213,11 @@ class Locker
     /**
      * Locks provided data into lockfile.
      *
-     * @param array $packages array of packages
-     * @param mixed $packages array of dev packages or null if installed without --dev
-     * @param array $aliases  array of aliases
+     * @param array  $packages         array of packages
+     * @param mixed  $devPackages      array of dev packages or null if installed without --dev
+     * @param array  $aliases          array of aliases
+     * @param string $minimumStability
+     * @param array  $stabilityFlags
      *
      * @return bool
      */

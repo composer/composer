@@ -152,7 +152,7 @@ repository.
 
 The `packages.json` file is loaded using a PHP stream. You can set extra options
 on that stream using the `options` parameter. You can set any valid PHP stream
-context option. See [Context options and parameters](http://nl3.php.net/manual/en/context.php)
+context option. See [Context options and parameters](http://php.net/manual/en/context.php)
 for more information.
 
 ### VCS
@@ -161,7 +161,7 @@ VCS stands for version control system. This includes versioning systems like
 git, svn or hg. Composer has a repository type for installing packages from
 these systems.
 
-#### Maintaining a third party library fork
+#### Loading a package from a VCS repository
 
 There are a few use cases for this. The most common one is maintaining your
 own fork of a third party library. If you are using a certain library for your
@@ -189,6 +189,29 @@ Example assuming you patched monolog to fix a bug in the `bugfix` branch:
 
 When you run `php composer.phar update`, you should get your modified version
 of `monolog/monolog` instead of the one from packagist.
+
+It is possible to inline-alias a package constraint so that it matches a
+constraint that it otherwise would not. For more information [see the
+aliases article](articles/aliases.md).
+
+#### Using private repositories
+
+Exactly the same solution allows you to work with your private repositories at
+GitHub and BitBucket:
+
+    {
+        "require": {
+            "vendor/my-private-repo": "dev-master"
+        },
+        "repositories": [
+            {
+                "type": "vcs",
+                "url":  "git@bitbucket.org:vendor/my-private-repo.git"
+            }
+        ]
+    }
+
+The only requirement is the installation of SSH keys for a git client.
 
 #### Git alternatives
 

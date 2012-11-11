@@ -40,7 +40,7 @@ class Pool
     const MATCH_REPLACE = 3;
 
     protected $repositories = array();
-    protected $composerRepos = array();
+    protected $providerRepos = array();
     protected $packages = array();
     protected $packageByName = array();
     protected $acceptableStabilities;
@@ -82,7 +82,8 @@ class Pool
             $exempt = $repo instanceof PlatformRepository || $repo instanceof InstalledRepositoryInterface;
 
             if ($repo instanceof ComposerRepository && $repo->hasProviders()) {
-                $this->composerRepos[] = $repo;
+                $this->providerRepos[] = $repo;
+                $repo->setRootAliases($rootAliases);
                 $repo->resetPackageIds();
             } elseif ($repo instanceof StreamableRepositoryInterface) {
                 foreach ($repo->getMinimalPackages() as $package) {
@@ -130,8 +131,8 @@ class Pool
                             $alias['root_alias'] = true;
                             $this->packages[] = $alias;
 
-                            foreach (array_keys($names) as $name) {
-                                $this->packageByName[$name][] =& $this->packages[$this->id - 2];
+                            foreach (array_keys($names) as $provided) {
+                                $this->packageByName[$provided][] =& $this->packages[$this->id - 2];
                             }
                         }
 
@@ -145,8 +146,8 @@ class Pool
                             $alias['id'] = $this->id++;
                             $this->packages[] = $alias;
 
-                            foreach (array_keys($names) as $name) {
-                                $this->packageByName[$name][] =& $this->packages[$this->id - 2];
+                            foreach (array_keys($names) as $provided) {
+                                $this->packageByName[$provided][] =& $this->packages[$this->id - 2];
                             }
                         }
                     }
@@ -159,8 +160,8 @@ class Pool
                         $package->setId($this->id++);
                         $this->packages[] = $package;
 
-                        foreach ($package->getNames() as $name) {
-                            $this->packageByName[$name][] = $package;
+                        foreach ($package->getNames() as $provided) {
+                            $this->packageByName[$provided][] = $package;
                         }
 
                         // handle root package aliases
@@ -232,7 +233,7 @@ class Pool
     {
         $candidates = array();
 
-        foreach ($this->composerRepos as $repo) {
+        foreach ($this->providerRepos as $repo) {
             foreach ($repo->whatProvides($this, $name) as $candidate) {
                 $candidates[] = $candidate;
                 if ($candidate->getId() < 1) {

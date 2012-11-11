@@ -33,6 +33,13 @@ class Problem
 
     protected $section = 0;
 
+    protected $pool;
+
+    public function __construct(Pool $pool)
+    {
+        $this->pool = $pool;
+    }
+
     /**
      * Add a rule as a reason
      *
@@ -85,7 +92,11 @@ class Problem
                 if (0 === stripos($job['packageName'], 'lib-')) {
                     $lib = substr($job['packageName'], 4);
 
-                    return "\n    - The requested linked library ".$job['packageName'].$this->constraintToText($job['constraint']).' has the wrong version instaled or is missing from your system, make sure to have the extension providing it.';
+                    return "\n    - The requested linked library ".$job['packageName'].$this->constraintToText($job['constraint']).' has the wrong version installed or is missing from your system, make sure to have the extension providing it.';
+                }
+
+                if (!$this->pool->whatProvides($job['packageName'])) {
+                    return "\n    - The requested package ".$job['packageName'].' could not be found in any version, there may be a typo in the package name.';
                 }
 
                 return "\n    - The requested package ".$job['packageName'].$this->constraintToText($job['constraint']).' could not be found.';

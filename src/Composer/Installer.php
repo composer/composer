@@ -92,6 +92,7 @@ class Installer
 
     protected $preferSource = false;
     protected $preferDist = false;
+    protected $optimizeAutoloader = false;
     protected $devMode = false;
     protected $dryRun = false;
     protected $verbose = false;
@@ -221,7 +222,7 @@ class Installer
             // write autoloader
             $this->io->write('<info>Generating autoload files</info>');
             $localRepos = new CompositeRepository($this->repositoryManager->getLocalRepositories());
-            $this->autoloadGenerator->dump($this->config, $localRepos, $this->package, $this->installationManager, 'composer');
+            $this->autoloadGenerator->dump($this->config, $localRepos, $this->package, $this->installationManager, 'composer', $this->optimizeAutoloader);
 
             if ($this->runScripts) {
                 // dispatch post event
@@ -291,7 +292,7 @@ class Installer
             $this->io->write('<info>Installing '.($devMode ? 'dev ': '').'dependencies from lock file</info>');
 
             if (!$this->locker->isFresh() && !$devMode) {
-                $this->io->write('<warning>Your lock file is out of sync with your composer.json, run "composer.phar update" to update dependencies</warning>');
+                $this->io->write('<warning>Warning: The lock file is not up to date with the latest changes in composer.json, you may be getting outdated dependencies, run update to update them.</warning>');
             }
 
             foreach ($lockedRepository->getPackages() as $package) {
@@ -429,25 +430,31 @@ class Installer
                         continue;
                     }
 
-                    $newPackage = null;
+                    // find similar packages (name/version) in all repositories
                     $matches = $pool->whatProvides($package->getName(), new VersionConstraint('=', $package->getVersion()));
-                    foreach ($matches as $match) {
+                    foreach ($matches as $index => $match) {
                         // skip local packages
                         if (!in_array($match->getRepository(), $repositories, true)) {
+                            unset($matches[$index]);
                             continue;
                         }
 
                         // skip providers/replacers
                         if ($match->getName() !== $package->getName()) {
+                            unset($matches[$index]);
                             continue;
                         }
 
-                        $newPackage = $match;
-                        break;
+                        $matches[$index] = $match->getId();
                     }
 
-                    if ($newPackage && $newPackage->getSourceReference() !== $package->getSourceReference()) {
-                        $operations[] = new UpdateOperation($package, $newPackage);
+                    // select prefered package according to policy rules
+                    if ($matches && $matches = $policy->selectPreferedPackages($pool, array(), $matches)) {
+                        $newPackage = $pool->literalToPackage($matches[0]);
+
+                        if ($newPackage && $newPackage->getSourceReference() !== $package->getSourceReference()) {
+                            $operations[] = new UpdateOperation($package, $newPackage);
+                        }
                     }
                 }
 
@@ -701,7 +708,7 @@ class Installer
     }
 
     /**
-     * wether to run in drymode or not
+     * Whether to run in drymode or not
      *
      * @param  boolean   $dryRun
      * @return Installer
@@ -735,6 +742,19 @@ class Installer
     public function setPreferDist($preferDist = true)
     {
         $this->preferDist = (boolean) $preferDist;
+
+        return $this;
+    }
+
+    /**
+     * Whether or not generated autoloader are optimized
+     *
+     * @param bool $optimizeAutoloader
+     * @return Installer
+     */
+    public function setOptimizeAutoloader($optimizeAutoloader = false)
+    {
+        $this->optimizeAutoloader = (boolean) $optimizeAutoloader;
 
         return $this;
     }
@@ -824,9 +844,13 @@ class Installer
      * Call this if you want to ensure that third-party code never gets
      * executed. The default is to automatically install, and execute
      * custom third-party installers.
+     *
+     * @return Installer
      */
     public function disableCustomInstallers()
     {
         $this->installationManager->disableCustomInstallers();
+
+        return $this;
     }
 }

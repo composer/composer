@@ -4,7 +4,7 @@
 
 To install Composer, you just need to download the `composer.phar` executable.
 
-    $ curl -s http://getcomposer.org/installer | php
+    $ curl -s https://getcomposer.org/installer | php
 
 For the details, see the [Introduction](00-intro.md) chapter.
 
@@ -17,7 +17,7 @@ This should give you a list of available commands.
 > **Note:** You can also perform the checks only without downloading Composer
 > by using the `--check` option. For more information, just use `--help`.
 >
->     $ curl -s http://getcomposer.org/installer | php -- --help
+>     $ curl -s https://getcomposer.org/installer | php -- --help
 
 ## `composer.json`: Project Setup
 
@@ -128,13 +128,13 @@ the lock file with the new version.
 
 ## Packagist
 
-[Packagist](http://packagist.org/) is the main Composer repository. A Composer
+[Packagist](https://packagist.org/) is the main Composer repository. A Composer
 repository is basically a package source: a place where you can get packages
 from. Packagist aims to be the central repository that everybody uses. This
 means that you can automatically `require` any package that is available
 there.
 
-If you go to the [packagist website](http://packagist.org/) (packagist.org),
+If you go to the [packagist website](https://packagist.org/) (packagist.org),
 you can browse and search for packages.
 
 Any open source project using Composer should publish their packages on

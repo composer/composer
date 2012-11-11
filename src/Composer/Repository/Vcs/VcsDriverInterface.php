@@ -84,9 +84,9 @@ interface VcsDriverInterface
     /**
      * Checks if this driver can handle a given url
      *
-     * @param  IOInterface $io      IO instance
+     * @param  IOInterface $io   IO instance
      * @param  string      $url
-     * @param  bool        $shallow unless true, only shallow checks (url matching typically) should be done
+     * @param  bool        $deep unless true, only shallow checks (url matching typically) should be done
      * @return bool
      */
     public static function supports(IOInterface $io, $url, $deep = false);

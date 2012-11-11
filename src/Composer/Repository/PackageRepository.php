@@ -13,6 +13,7 @@
 namespace Composer\Repository;
 
 use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\Loader\ValidatingArrayLoader;
 
 /**
  * Package repository.
@@ -45,9 +46,14 @@ class PackageRepository extends ArrayRepository
     {
         parent::initialize();
 
-        $loader = new ArrayLoader();
+        $loader = new ValidatingArrayLoader(new ArrayLoader, false);
         foreach ($this->config as $package) {
-            $package = $loader->load($package);
+            try {
+                $package = $loader->load($package);
+            } catch (\Exception $e) {
+                throw new InvalidRepositoryException('A repository of type "package" contains an invalid package definition: '.$e->getMessage()."\n\nInvalid package definition:\n".json_encode($package));
+            }
+
             $this->addPackage($package);
         }
     }

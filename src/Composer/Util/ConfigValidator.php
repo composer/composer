@@ -14,6 +14,7 @@ namespace Composer\Util;
 
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Loader\ValidatingArrayLoader;
+use Composer\Package\Loader\InvalidPackageException;
 use Composer\Json\JsonValidationException;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
@@ -95,9 +96,8 @@ class ConfigValidator
             );
         }
 
-        // TODO validate package repositories' packages using the same technique as below
         try {
-            $loader = new ValidatingArrayLoader(new ArrayLoader(), false);
+            $loader = new ValidatingArrayLoader(new ArrayLoader());
             if (!isset($manifest['version'])) {
                 $manifest['version'] = '1.0.0';
             }
@@ -105,9 +105,11 @@ class ConfigValidator
                 $manifest['name'] = 'dummy/dummy';
             }
             $loader->load($manifest);
-        } catch (\Exception $e) {
-            $errors = array_merge($errors, explode("\n", $e->getMessage()));
+        } catch (InvalidPackageException $e) {
+            $errors = array_merge($errors, $e->getErrors());
         }
+
+        $warnings = array_merge($warnings, $loader->getWarnings());
 
         return array($errors, $publishErrors, $warnings);
     }

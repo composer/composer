@@ -38,7 +38,7 @@ final class StreamContextFactory
         }
 
         if (!empty($proxy)) {
-            $proxyURL = (isset($proxy['scheme']) ? $proxy['scheme'] : '') . '://';
+            $proxyURL = isset($proxy['scheme']) ? $proxy['scheme'] . '://' : '';
             $proxyURL .= isset($proxy['host']) ? $proxy['host'] : '';
 
             if (isset($proxy['port'])) {

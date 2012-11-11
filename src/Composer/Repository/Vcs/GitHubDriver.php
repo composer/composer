@@ -108,7 +108,7 @@ class GitHubDriver extends VcsDriver
             return $this->gitDriver->getDist($identifier);
         }
         $label = array_search($identifier, $this->getTags()) ?: $identifier;
-        $url = 'https://github.com/'.$this->owner.'/'.$this->repository.'/zipball/'.$label;
+        $url = 'https://github.com/'.$this->owner.'/'.$this->repository.'/archive/'.$label.'.zip';
 
         return array('type' => 'zip', 'url' => $url, 'reference' => $label, 'shasum' => '');
     }
@@ -267,7 +267,7 @@ class GitHubDriver extends VcsDriver
                     return parent::getContents($url);
 
                 case 403:
-                    if (!$this->io->hasAuthorization($this->originUrl) && $gitHubUtil->authorizeOAuth($this->originUrl)) {
+                    if (!$this->io->hasAuthentication($this->originUrl) && $gitHubUtil->authorizeOAuth($this->originUrl)) {
                         return parent::getContents($url);
                     }
 
@@ -282,7 +282,7 @@ class GitHubDriver extends VcsDriver
                         }
                     }
 
-                    if (!$this->io->hasAuthorization($this->originUrl)) {
+                    if (!$this->io->hasAuthentication($this->originUrl)) {
                         if (!$this->io->isInteractive()) {
                             $this->io->write('<error>GitHub API limit exhausted. Failed to get metadata for the '.$this->url.' repository, try running in interactive mode so that you can enter your GitHub credentials to increase the API limit</error>');
                             throw $e;

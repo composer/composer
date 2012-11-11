@@ -40,6 +40,7 @@ class LibraryInstaller implements InstallerInterface
      *
      * @param IOInterface $io
      * @param Composer    $composer
+     * @param string      $type
      */
     public function __construct(IOInterface $io, Composer $composer, $type = 'library')
     {
@@ -263,13 +264,9 @@ class LibraryInstaller implements InstallerInterface
             }
         }
 
-        return "@echo off\r\n".
-            "pushd .\r\n".
-            "cd %~dp0\r\n".
-            "cd ".escapeshellarg(dirname($binPath))."\r\n".
-            "set BIN_TARGET=%CD%\\".basename($binPath)."\r\n".
-            "popd\r\n".
-            $caller." \"%BIN_TARGET%\" %*\r\n";
+        return "@ECHO OFF\r\n".
+            "SET BIN_TARGET=%~dp0\\".escapeshellarg(dirname($binPath)).'\\'.basename($binPath)."\r\n".
+            "{$caller} \"%BIN_TARGET%\" %*\r\n";
     }
 
     protected function generateUnixyProxyCode($bin, $link)
@@ -277,11 +274,11 @@ class LibraryInstaller implements InstallerInterface
         $binPath = $this->filesystem->findShortestPath($link, $bin);
 
         return "#!/usr/bin/env sh\n".
-            'SRC_DIR=`pwd`'."\n".
-            'cd `dirname "$0"`'."\n".
+            'SRC_DIR="`pwd`"'."\n".
+            'cd "`dirname "$0"`"'."\n".
             'cd '.escapeshellarg(dirname($binPath))."\n".
-            'BIN_TARGET=`pwd`/'.basename($binPath)."\n".
-            'cd $SRC_DIR'."\n".
-            '$BIN_TARGET "$@"'."\n";
+            'BIN_TARGET="`pwd`/'.basename($binPath)."\"\n".
+            'cd "$SRC_DIR"'."\n".
+            '"$BIN_TARGET" "$@"'."\n";
     }
 }

@@ -21,6 +21,7 @@ class Config
 {
     public static $defaultConfig = array(
         'process-timeout' => 300,
+        'cache-ttl' => 15552000, // 6 months
         'vendor-dir' => 'vendor',
         'bin-dir' => '{$vendor-dir}/bin',
         'notify-on-install' => true,
@@ -118,6 +119,16 @@ class Config
                 $env = 'COMPOSER_' . strtoupper(strtr($key, '-', '_'));
 
                 return rtrim($this->process(getenv($env) ?: $this->config[$key]), '/\\');
+
+            case 'cache-ttl':
+                return (int) $this->config[$key];
+
+            case 'cache-files-ttl':
+                if (isset($this->config[$key])) {
+                    return (int) $this->config[$key];
+                }
+
+                return (int) $this->config['cache-ttl'];
 
             case 'home':
                 return rtrim($this->process($this->config[$key]), '/\\');

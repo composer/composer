@@ -19,6 +19,7 @@ use Composer\Repository\ComposerRepository;
 use Composer\Repository\RepositoryManager;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
+use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 
 /**
  * Creates a configured instance of composer.
@@ -68,6 +69,14 @@ class Factory
     public function getComposerFile()
     {
         return getenv('COMPOSER') ?: 'composer.json';
+    }
+
+    public static function createAdditionalStyles()
+    {
+        return array(
+            'highlight' => new OutputFormatterStyle('red'),
+            'warning' => new OutputFormatterStyle('black', 'yellow'),
+        );
     }
 
     public static function createDefaultRepositories(IOInterface $io = null, Config $config = null, RepositoryManager $rm = null)
@@ -143,7 +152,7 @@ class Factory
         // reload oauth token from config if available
         if ($tokens = $config->get('github-oauth')) {
             foreach ($tokens as $domain => $token) {
-                $io->setAuthorization($domain, $token, 'x-oauth-basic');
+                $io->setAuthentication($domain, $token, 'x-oauth-basic');
             }
         }
 
@@ -225,19 +234,25 @@ class Factory
     }
 
     /**
-     * @param  IO\IOInterface             $io
+     * @param IO\IOInterface $io
+     * @param Config         $config
      * @return Downloader\DownloadManager
      */
     public function createDownloadManager(IOInterface $io, Config $config)
     {
+        $cache = null;
+        if ($config->get('cache-files-ttl') > 0) {
+            $cache = new Cache($io, $config->get('home').'/cache.files/', 'a-z0-9_./');
+        }
+
         $dm = new Downloader\DownloadManager();
         $dm->setDownloader('git', new Downloader\GitDownloader($io, $config));
         $dm->setDownloader('svn', new Downloader\SvnDownloader($io, $config));
         $dm->setDownloader('hg', new Downloader\HgDownloader($io, $config));
-        $dm->setDownloader('zip', new Downloader\ZipDownloader($io, $config));
-        $dm->setDownloader('tar', new Downloader\TarDownloader($io, $config));
-        $dm->setDownloader('phar', new Downloader\PharDownloader($io, $config));
-        $dm->setDownloader('file', new Downloader\FileDownloader($io, $config));
+        $dm->setDownloader('zip', new Downloader\ZipDownloader($io, $config, $cache));
+        $dm->setDownloader('tar', new Downloader\TarDownloader($io, $config, $cache));
+        $dm->setDownloader('phar', new Downloader\PharDownloader($io, $config, $cache));
+        $dm->setDownloader('file', new Downloader\FileDownloader($io, $config, $cache));
 
         return $dm;
     }

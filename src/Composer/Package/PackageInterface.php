@@ -97,7 +97,7 @@ interface PackageInterface
     /**
      * Returns source from which this package was installed (source/dist).
      *
-     * @param string $type source/dist
+     * @return string source/dist
      */
     public function getInstallationSource();
 

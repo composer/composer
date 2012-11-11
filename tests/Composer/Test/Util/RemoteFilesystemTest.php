@@ -21,7 +21,7 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
         $io = $this->getMock('Composer\IO\IOInterface');
         $io
             ->expects($this->once())
-            ->method('hasAuthorization')
+            ->method('hasAuthentication')
             ->will($this->returnValue(false))
         ;
 
@@ -42,12 +42,12 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
         $io = $this->getMock('Composer\IO\IOInterface');
         $io
             ->expects($this->once())
-            ->method('hasAuthorization')
+            ->method('hasAuthentication')
             ->will($this->returnValue(true))
         ;
         $io
             ->expects($this->once())
-            ->method('getAuthorization')
+            ->method('getAuthentication')
             ->will($this->returnValue(array('username' => 'login', 'password' => 'password')))
         ;
 
@@ -67,7 +67,7 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
         $io = $this->getMock('Composer\IO\IOInterface');
         $io
             ->expects($this->once())
-            ->method('hasAuthorization')
+            ->method('hasAuthentication')
             ->will($this->returnValue(true))
         ;
 
@@ -84,7 +84,7 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
         $io = $this->getMock('Composer\IO\IOInterface');
         $io
             ->expects($this->once())
-            ->method('hasAuthorization')
+            ->method('hasAuthentication')
             ->will($this->returnValue(true))
         ;
 

@@ -281,6 +281,10 @@ Example:
         }
     }
 
+It is possible to inline-alias a package constraint so that it matches a
+constraint that it otherwise would not. For more information [see the
+aliases article](articles/aliases.md).
+
 #### require
 
 Lists packages required by this package. The package will not be installed
@@ -354,10 +358,12 @@ Example:
 
 Autoload mapping for a PHP autoloader.
 
-Currently [PSR-0](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-0.md)
-autoloading, classmap generation and files are supported. PSR-0 is the recommended way though
+Currently [`PSR-0`](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-0.md)
+autoloading, `classmap` generation and `files` are supported. PSR-0 is the recommended way though
 since it offers greater flexibility (no need to regenerate the autoloader when you add
 classes).
+
+#### PSR-0
 
 Under the `psr-0` key you define a mapping from namespaces to paths, relative to the
 package root. Note that this also supports the PEAR-style non-namespaced convention.
@@ -406,6 +412,8 @@ use an empty prefix like:
         }
     }
 
+#### Classmap
+
 The `classmap` references are all combined, during install/update, into a single
 key => value array which may be found in the generated file
 `vendor/composer/autoload_classmap.php`.
@@ -421,6 +429,8 @@ Example:
             "classmap": ["src/", "lib/", "Something.php"]
         }
     }
+
+#### Files
 
 If you want to require certain files explicitly on every request then you can use
 the 'files' autoloading mechanism. This is useful if your package includes PHP functions
@@ -586,6 +596,10 @@ The following options are supported:
 * **notify-on-install:** Defaults to `true`. Composer allows repositories to
   define a notification URL, so that they get notified whenever a package from
   that repository is installed. This option allows you to disable that behaviour.
+* **cache-files-ttl:** Defaults to `15552000` (6 months). Composer caches all
+  dist (zip, tar, ..) packages that it downloads. Those are purged after six
+  months of being unused by default. This option allows you to tweak this
+  duration (in seconds) or disable it completely by setting it to 0.
 
 Example:
 
