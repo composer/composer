@@ -84,6 +84,19 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
         ), ClassMapGenerator::createMap($finder));
     }
 
+    /**
+     * @expectedException \RuntimeException
+     * @expectedExceptionMessage Could not scan for classes inside
+     */
+    public function testThrowsWhenFileDoesNotExist()
+    {
+        $r = new \ReflectionClass('Composer\\Autoload\\ClassMapGenerator');
+        $find = $r->getMethod('findClasses');
+        $find->setAccessible(true);
+
+        $find->invoke(null, __DIR__.'/no-file');
+    }
+
     protected function assertEqualsNormalized($expected, $actual, $message = null)
     {
         foreach ($expected as $ns => $path) {

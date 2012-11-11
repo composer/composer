@@ -96,38 +96,38 @@ class ClassMapGenerator
 
         try {
             $contents = php_strip_whitespace($path);
-            if (!preg_match('{\b(?:class|interface'.$traits.')\b}i', $contents)) {
-                return array();
-            }
-
-            // strip heredocs/nowdocs
-            $contents = preg_replace('{<<<\'?(\w+)\'?(?:\r\n|\n|\r)(?:.*?)(?:\r\n|\n|\r)\\1(?=\r\n|\n|\r|;)}s', 'null', $contents);
-            // strip strings
-            $contents = preg_replace('{"[^"\\\\]*(\\\\.[^"\\\\]*)*"|\'[^\'\\\\]*(\\\\.[^\'\\\\]*)*\'}', 'null', $contents);
-
-            preg_match_all('{
-                (?:
-                     \b(?<![\$:>])(?<type>class|interface'.$traits.') \s+ (?<name>\S+)
-                   | \b(?<![\$:>])(?<ns>namespace) (?<nsname>\s+[^\s;{}\\\\]+(?:\s*\\\\\s*[^\s;{}\\\\]+)*)? \s*[\{;]
-                )
-            }ix', $contents, $matches);
-            $classes = array();
-
-            $namespace = '';
-
-            for ($i = 0, $len = count($matches['type']); $i < $len; $i++) {
-                $name = $matches['name'][$i];
-
-                if (!empty($matches['ns'][$i])) {
-                    $namespace = str_replace(array(' ', "\t", "\r", "\n"), '', $matches['nsname'][$i]) . '\\';
-                } else {
-                    $classes[] = ltrim($namespace . $matches['name'][$i], '\\');
-                }
-            }
-
-            return $classes;
         } catch (\Exception $e) {
             throw new \RuntimeException('Could not scan for classes inside '.$path.": \n".$e->getMessage(), 0, $e);
         }
+
+        if (!preg_match('{\b(?:class|interface'.$traits.')\b}i', $contents)) {
+            return array();
+        }
+
+        // strip heredocs/nowdocs
+        $contents = preg_replace('{<<<\'?(\w+)\'?(?:\r\n|\n|\r)(?:.*?)(?:\r\n|\n|\r)\\1(?=\r\n|\n|\r|;)}s', 'null', $contents);
+        // strip strings
+        $contents = preg_replace('{"[^"\\\\]*(\\\\.[^"\\\\]*)*"|\'[^\'\\\\]*(\\\\.[^\'\\\\]*)*\'}', 'null', $contents);
+
+        preg_match_all('{
+            (?:
+                 \b(?<![\$:>])(?<type>class|interface'.$traits.') \s+ (?<name>\S+)
+               | \b(?<![\$:>])(?<ns>namespace) (?<nsname>\s+[^\s;{}\\\\]+(?:\s*\\\\\s*[^\s;{}\\\\]+)*)? \s*[\{;]
+            )
+        }ix', $contents, $matches);
+        $classes = array();
+
+        $namespace = '';
+
+        for ($i = 0, $len = count($matches['type']); $i < $len; $i++) {
+            if (!empty($matches['ns'][$i])) {
+                $namespace = str_replace(array(' ', "\t", "\r", "\n"), '', $matches['nsname'][$i]) . '\\';
+            } else {
+                $classes[] = ltrim($namespace . $matches['name'][$i], '\\');
+            }
+        }
+
+        return $classes;
+
     }
 }
