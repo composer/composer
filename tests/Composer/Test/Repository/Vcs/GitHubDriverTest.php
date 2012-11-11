@@ -31,6 +31,12 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
         ));
     }
 
+    public function tearDown()
+    {
+        $fs = new Filesystem;
+        $fs->removeDirectory(sys_get_temp_dir() . '/composer-test');
+    }
+
     public function testPrivateRepository()
     {
         $repoUrl = 'http://github.com/composer/packagist';

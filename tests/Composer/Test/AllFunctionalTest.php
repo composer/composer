@@ -12,6 +12,8 @@ use Symfony\Component\Finder\Finder;
 class AllFunctionalTest extends \PHPUnit_Framework_TestCase
 {
     protected $oldcwd;
+    protected $testDir;
+
     public function setUp()
     {
         $this->oldcwd = getcwd();
@@ -21,6 +23,11 @@ class AllFunctionalTest extends \PHPUnit_Framework_TestCase
     public function tearDown()
     {
         chdir($this->oldcwd);
+        if ($this->testDir) {
+            $fs = new Filesystem;
+            $fs->removeDirectory($this->testDir);
+            $this->testDir = null;
+        }
     }
 
     /**
@@ -74,6 +81,7 @@ class AllFunctionalTest extends \PHPUnit_Framework_TestCase
         $section = null;
 
         $testDir = sys_get_temp_dir().'/composer_functional_test'.uniqid(mt_rand(), true);
+        $this->testDir = $testDir;
         $varRegex = '#%([a-zA-Z_-]+)%#';
         $variableReplacer = function($match) use (&$data, $testDir) {
             list(, $var) = $match;
