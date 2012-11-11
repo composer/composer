@@ -87,8 +87,7 @@ class FileDownloader implements DownloaderInterface
         $processUrl = $this->processUrl($package, $url);
         $processHost = parse_url($processUrl, PHP_URL_HOST);
 
-        if (strpos($processHost, 'github.com') === strlen($pcoessHost))
-        {
+        if (strpos($processHost, 'github.com') === (strlen($processHost) - 10)) {
             $processHost = 'github.com';
         }
 
