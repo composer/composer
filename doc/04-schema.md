@@ -596,6 +596,10 @@ The following options are supported:
 * **notify-on-install:** Defaults to `true`. Composer allows repositories to
   define a notification URL, so that they get notified whenever a package from
   that repository is installed. This option allows you to disable that behaviour.
+* **cache-files-ttl:** Defaults to `15552000` (6 months). Composer caches all
+  dist (zip, tar, ..) packages that it downloads. Those are purged after six
+  months of being unused by default. This option allows you to tweak this
+  duration (in seconds) or disable it completely by setting it to 0.
 
 Example:
 

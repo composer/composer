@@ -240,7 +240,10 @@ class Factory
      */
     public function createDownloadManager(IOInterface $io, Config $config)
     {
-        $cache = new Cache($io, $config->get('home').'/cache.files/', 'a-z0-9_./');
+        $cache = null;
+        if ($config->get('cache-files-ttl') > 0) {
+            $cache = new Cache($io, $config->get('home').'/cache.files/', 'a-z0-9_./');
+        }
 
         $dm = new Downloader\DownloadManager();
         $dm->setDownloader('git', new Downloader\GitDownloader($io, $config));
