@@ -14,6 +14,7 @@ class AllFunctionalTest extends \PHPUnit_Framework_TestCase
     protected $oldcwd;
     protected $oldenv;
     protected $testDir;
+    private static $pharPath;
 
     public function setUp()
     {
@@ -34,11 +35,36 @@ class AllFunctionalTest extends \PHPUnit_Framework_TestCase
             putenv('COMPOSER_HOME='.$this->oldenv);
             $this->oldenv = null;
         }
+    }
 
+    public static function setUpBeforeClass()
+    {
+        self::$pharPath = sys_get_temp_dir().'/composer-phar-test/composer.phar';
+    }
+
+    public static function tearDownAfterClass()
+    {
+        $fs = new Filesystem;
+        $fs->removeDirectory(dirname(self::$pharPath));
+    }
+
+    public function testBuildPhar()
+    {
+        $fs = new Filesystem;
+        $fs->removeDirectory(dirname(self::$pharPath));
+        $fs->ensureDirectoryExists(dirname(self::$pharPath));
+        chdir(dirname(self::$pharPath));
+
+        $proc = new Process('php '.escapeshellarg(__DIR__.'/../../../bin/compile'));
+        $exitcode = $proc->run();
+
+        $this->assertSame(0, $exitcode);
+        $this->assertTrue(file_exists(self::$pharPath));
     }
 
     /**
      * @dataProvider getTestFiles
+     * @depends testBuildPhar
      */
     public function testIntegration(\SplFileInfo $testFile)
     {
@@ -47,7 +73,7 @@ class AllFunctionalTest extends \PHPUnit_Framework_TestCase
         $this->oldenv = getenv('COMPOSER_HOME');
         putenv('COMPOSER_HOME='.$this->testDir.'home');
 
-        $cmd = 'php '.__DIR__.'/../../../bin/composer --no-ansi '.$testData['RUN'];
+        $cmd = 'php '.escapeshellarg(self::$pharPath).' --no-ansi '.$testData['RUN'];
         $proc = new Process($cmd);
         $exitcode = $proc->run();
 
