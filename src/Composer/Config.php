@@ -120,6 +120,16 @@ class Config
 
                 return rtrim($this->process(getenv($env) ?: $this->config[$key]), '/\\');
 
+            case 'cache-ttl':
+                return (int) $this->config[$key];
+
+            case 'cache-files-ttl':
+                if (isset($this->config[$key])) {
+                    return (int) $this->config[$key];
+                }
+
+                return (int) $this->config['cache-ttl'];
+
             case 'home':
                 return rtrim($this->process($this->config[$key]), '/\\');
 

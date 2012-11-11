@@ -184,6 +184,8 @@ EOT
         // handle config values
         $uniqueConfigValues = array(
             'process-timeout' => array('is_numeric', 'intval'),
+            'cache-ttl' => array('is_numeric', 'intval'),
+            'cache-files-ttl' => array('is_numeric', 'intval'),
             'vendor-dir' => array('is_string', function ($val) { return $val; }),
             'bin-dir' => array('is_string', function ($val) { return $val; }),
             'notify-on-install' => array(
