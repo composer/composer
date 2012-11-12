@@ -116,19 +116,19 @@ class ClassMapGenerator
         $contents = preg_replace('{<<<\'?(\w+)\'?(?:\r\n|\n|\r)(?:.*?)(?:\r\n|\n|\r)\\1(?=\r\n|\n|\r|;)}s', 'null', $contents);
         // strip strings
         $contents = preg_replace('{"[^"\\\\]*(\\\\.[^"\\\\]*)*"|\'[^\'\\\\]*(\\\\.[^\'\\\\]*)*\'}', 'null', $contents);
-        // keep only php code
-        $phpContents = preg_match_all('{<\?(?:php)?(.*)\?>}s', $contents, $m) ? join($m[1], ' ') : '';
-        $contents = preg_replace('{<\?(php)?.*\?>}s', '', $contents);
-        if (preg_match('{<\?(?:php)?(.*)}s', $contents, $m)) {
-            $phpContents .= ' ' . $m[1];
+        // strip leading non-php code if needed
+        if (substr($contents, 0, 2) !== '<?') {
+            $contents = preg_replace('{^.+?<\?}s', '<?', $contents);
         }
+        // strip non-php blocks in the file
+        $contents = preg_replace('{\?>.*<\?}s', '', $contents);
 
         preg_match_all('{
             (?:
                  \b(?<![\$:>])(?<type>class|interface'.$traits.') \s+ (?<name>\S+)
                | \b(?<![\$:>])(?<ns>namespace) (?<nsname>\s+[^\s;{}\\\\]+(?:\s*\\\\\s*[^\s;{}\\\\]+)*)? \s*[\{;]
             )
-        }ix', $phpContents, $matches);
+        }ix', $contents, $matches);
 
         $classes = array();
         $namespace = '';
