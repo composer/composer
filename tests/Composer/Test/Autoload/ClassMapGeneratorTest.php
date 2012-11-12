@@ -53,6 +53,7 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
                 'ClassMap\\SomeParent'    => realpath(__DIR__).'/Fixtures/classmap/SomeParent.php',
                 'ClassMap\\SomeClass'     => realpath(__DIR__).'/Fixtures/classmap/SomeClass.php',
             )),
+            array(__DIR__.'/Fixtures/template', array()),
         );
 
         if (version_compare(PHP_VERSION, '5.4', '>=')) {
