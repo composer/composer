@@ -107,6 +107,11 @@ class ClassMapGenerator
             throw new \RuntimeException('Could not scan for classes inside '.$path.": \n".$e->getMessage(), 0, $e);
         }
 
+        // return early if there is no chance of matching anything in this file
+        if (!preg_match('{\b(?:class|interface'.$traits.')\b}i', $contents)) {
+            return array();
+        }
+
         // strip heredocs/nowdocs
         $contents = preg_replace('{<<<\'?(\w+)\'?(?:\r\n|\n|\r)(?:.*?)(?:\r\n|\n|\r)\\1(?=\r\n|\n|\r|;)}s', 'null', $contents);
         // strip strings
@@ -118,18 +123,14 @@ class ClassMapGenerator
             $phpContents .= ' ' . $m[1];
         }
 
-        if (!preg_match('{\b(?:class|interface'.$traits.')\b}i', $phpContents)) {
-            return array();
-        }
-
         preg_match_all('{
             (?:
                  \b(?<![\$:>])(?<type>class|interface'.$traits.') \s+ (?<name>\S+)
                | \b(?<![\$:>])(?<ns>namespace) (?<nsname>\s+[^\s;{}\\\\]+(?:\s*\\\\\s*[^\s;{}\\\\]+)*)? \s*[\{;]
             )
         }ix', $phpContents, $matches);
-        $classes = array();
 
+        $classes = array();
         $namespace = '';
 
         for ($i = 0, $len = count($matches['type']); $i < $len; $i++) {
@@ -141,6 +142,5 @@ class ClassMapGenerator
         }
 
         return $classes;
-
     }
 }
