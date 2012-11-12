@@ -53,6 +53,7 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
                 'ClassMap\\SomeParent'    => realpath(__DIR__).'/Fixtures/classmap/SomeParent.php',
                 'ClassMap\\SomeClass'     => realpath(__DIR__).'/Fixtures/classmap/SomeClass.php',
             )),
+            array(__DIR__.'/Fixtures/template', array()),
         );
 
         if (version_compare(PHP_VERSION, '5.4', '>=')) {
@@ -82,6 +83,28 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
             'NamespaceCollision\\A\\B\\Bar' => realpath(__DIR__).'/Fixtures/beta/NamespaceCollision/A/B/Bar.php',
             'NamespaceCollision\\A\\B\\Foo' => realpath(__DIR__).'/Fixtures/beta/NamespaceCollision/A/B/Foo.php',
         ), ClassMapGenerator::createMap($finder));
+    }
+
+    /**
+     * @expectedException \RuntimeException
+     * @expectedExceptionMessage Could not scan for classes inside
+     */
+    public function testFindClassesThrowsWhenFileDoesNotExist()
+    {
+        $r = new \ReflectionClass('Composer\\Autoload\\ClassMapGenerator');
+        $find = $r->getMethod('findClasses');
+        $find->setAccessible(true);
+
+        $find->invoke(null, __DIR__.'/no-file');
+    }
+
+    /**
+     * @expectedException \RuntimeException
+     * @expectedExceptionMessage Could not scan for classes inside
+     */
+    public function testCreateMapThrowsWhenDirectoryDoesNotExist()
+    {
+        ClassMapGenerator::createMap(__DIR__.'/no-file.no-foler');
     }
 
     protected function assertEqualsNormalized($expected, $actual, $message = null)
