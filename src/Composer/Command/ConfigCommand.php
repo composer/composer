@@ -151,7 +151,8 @@ EOT
             return 0;
         }
 
-        if (!$input->getArgument('setting-key')) {
+        $settingKey = $input->getArgument('setting-key');
+        if (!$settingKey) {
             return 0;
         }
 
@@ -159,14 +160,56 @@ EOT
         if (array() !== $input->getArgument('setting-value') && $input->getOption('unset')) {
             throw new \RuntimeException('You can not combine a setting value with --unset');
         }
+
+        // list value
         if (array() === $input->getArgument('setting-value') && !$input->getOption('unset')) {
-            throw new \RuntimeException('You must include a setting value or pass --unset to clear the value');
+            $data = $this->configFile->read();
+            if (preg_match('/^repos?(?:itories)?(?:\.(.+))?/', $settingKey, $matches)) {
+                if (empty($matches[1])) {
+                    $value = isset($data['repositories']) ? $data['repositories'] : array();
+                } else {
+                    if (!isset($data['repositories'][$matches[1]])) {
+                        throw new \InvalidArgumentException('There is no '.$matches[1].' repository defined');
+                    }
+
+                    $value = $data['repositories'][$matches[1]];
+                }
+            } elseif (strpos($settingKey, '.')) {
+                $bits = explode('.', $settingKey);
+                $data = $data['config'];
+                foreach ($bits as $bit) {
+                    if (isset($data[$bit])) {
+                        $data = $data[$bit];
+                    } elseif (isset($data[implode('.', $bits)])) {
+                        // last bit can contain domain names and such so try to join whatever is left if it exists
+                        $data = $data[implode('.', $bits)];
+                        break;
+                    } else {
+                        throw new \RuntimeException($settingKey.' is not defined');
+                    }
+                    array_shift($bits);
+                }
+
+                $value = $data;
+            } elseif (isset($data['config'][$settingKey])) {
+                $value = $data['config'][$settingKey];
+            } else {
+                throw new \RuntimeException($settingKey.' is not defined');
+            }
+
+            if (is_array($value)) {
+                $value = json_encode($value);
+            }
+
+            $output->writeln($value);
+
+            return 0;
         }
 
         $values = $input->getArgument('setting-value'); // what the user is trying to add/change
 
         // handle repositories
-        if (preg_match('/^repos?(?:itories)?\.(.+)/', $input->getArgument('setting-key'), $matches)) {
+        if (preg_match('/^repos?(?:itories)?\.(.+)/', $settingKey, $matches)) {
             if ($input->getOption('unset')) {
                 return $this->configSource->removeRepository($matches[1]);
             }
@@ -214,7 +257,6 @@ EOT
             ),
         );
 
-        $settingKey = $input->getArgument('setting-key');
         foreach ($uniqueConfigValues as $name => $callbacks) {
              if ($settingKey === $name) {
                 if ($input->getOption('unset')) {
