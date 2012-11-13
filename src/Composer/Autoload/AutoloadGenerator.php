@@ -53,7 +53,7 @@ return array(
 EOF;
 
         $packageMap = $this->buildPackageMap($installationManager, $mainPackage, $localRepo->getPackages());
-        $autoloads = $this->parseAutoloads($packageMap);
+        $autoloads = $this->parseAutoloads($packageMap, $mainPackage);
 
         foreach ($autoloads['psr-0'] as $namespace => $paths) {
             $exportedPaths = array();
@@ -199,16 +199,17 @@ EOF;
     /**
      * Compiles an ordered list of namespace => path mappings
      *
-     * @param  array $packageMap array of array(package, installDir-relative-to-composer.json)
-     * @return array array('psr-0' => array('Ns\\Foo' => array('installDir')))
+     * @param  array            $packageMap  array of array(package, installDir-relative-to-composer.json)
+     * @param  PackageInterface $mainPackage root package instance
+     * @return array            array('psr-0' => array('Ns\\Foo' => array('installDir')))
      */
-    public function parseAutoloads(array $packageMap)
+    public function parseAutoloads(array $packageMap, PackageInterface $mainPackage)
     {
         $sortedPackageMap = $this->sortPackageMap($packageMap);
 
-        $psr0 = $this->parseAutoloadsType($packageMap, 'psr-0');
-        $classmap = $this->parseAutoloadsType($sortedPackageMap, 'classmap');
-        $files = $this->parseAutoloadsType($sortedPackageMap, 'files');
+        $psr0 = $this->parseAutoloadsType($packageMap, 'psr-0', $mainPackage);
+        $classmap = $this->parseAutoloadsType($sortedPackageMap, 'classmap', $mainPackage);
+        $files = $this->parseAutoloadsType($sortedPackageMap, 'files', $mainPackage);
 
         krsort($psr0);
 
@@ -427,24 +428,30 @@ FOOTER;
 
     }
 
-    protected function parseAutoloadsType(array $packageMap, $type)
+    protected function parseAutoloadsType(array $packageMap, $type, PackageInterface $mainPackage)
     {
         $autoloads = array();
         foreach ($packageMap as $item) {
             list($package, $installPath) = $item;
 
             $autoload = $package->getAutoload();
+
             // skip misconfigured packages
             if (!isset($autoload[$type]) || !is_array($autoload[$type])) {
                 continue;
             }
-
-            if (null !== $package->getTargetDir()) {
+            if (null !== $package->getTargetDir() && $package !== $mainPackage) {
                 $installPath = substr($installPath, 0, -strlen('/'.$package->getTargetDir()));
             }
 
             foreach ($autoload[$type] as $namespace => $paths) {
                 foreach ((array) $paths as $path) {
+                    // remove target-dir from classmap entries of the root package
+                    if ($type === 'classmap' && $package === $mainPackage && $package->getTargetDir()) {
+                        $targetDir = str_replace('\\<dirsep\\>', '[\\\\/]', preg_quote(str_replace(array('/', '\\'), '<dirsep>', $package->getTargetDir())));
+                        $path = ltrim(preg_replace('{^'.$targetDir.'}', '', ltrim($path, '\\/')), '\\/');
+                    }
+
                     $autoloads[$namespace][] = empty($installPath) ? $path : $installPath.'/'.$path;
                 }
             }

@@ -165,11 +165,11 @@ class AutoloadGeneratorTest extends TestCase
         $this->assertFileEquals(__DIR__.'/Fixtures/autoload_real_target_dir.php', $this->vendorDir.'/composer/autoload_real.php');
     }
 
-    public function testMainPackageAutoloadingWithTargetDirAndNoPsr()
+    public function testMainPackageAutoloadingWithTargetDirAndClassmap()
     {
         $package = new Package('a', '1.0', '1.0');
         $package->setAutoload(array(
-            'classmap' => array('composersrc/'),
+            'classmap' => array('Main/Foo/composersrc/'),
         ));
         $package->setTargetDir('Main/Foo/');
 
