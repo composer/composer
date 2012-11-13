@@ -446,4 +446,39 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
 }
 ', $manipulator->getContents());
     }
+
+    public function testAddConfigSettingCanOverwriteArrays()
+    {
+        $manipulator = new JsonManipulator('{
+    "config": {
+        "github-oauth": {
+            "github.com": "foo"
+        },
+        "github-protocols": ["https"]
+    }
+}');
+
+        $this->assertTrue($manipulator->addConfigSetting('github-protocols', array('https', 'http')));
+        $this->assertEquals('{
+    "config": {
+        "github-oauth": {
+            "github.com": "foo"
+        },
+        "github-protocols": ["https", "http"]
+    }
+}
+', $manipulator->getContents());
+
+        $this->assertTrue($manipulator->addConfigSetting('github-oauth', array('github.com' => 'bar', 'alt.example.org' => 'baz')));
+        $this->assertEquals('{
+    "config": {
+        "github-oauth": {
+            "github.com": "bar",
+            "alt.example.org": "baz"
+        },
+        "github-protocols": ["https", "http"]
+    }
+}
+', $manipulator->getContents());
+    }
 }
