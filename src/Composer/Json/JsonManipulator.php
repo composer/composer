@@ -119,8 +119,8 @@ class JsonManipulator
         }
 
         // child exists
-        if (preg_match('{("'.preg_quote($name).'"\s*:\s*)([0-9.]+|null|true|false|"[^"]+"|\{'.self::$RECURSE_BLOCKS.'\})(,?)}', $children, $matches)) {
-            $children = preg_replace('{("'.preg_quote($name).'"\s*:\s*)([0-9.]+|null|true|false|"[^"]+"|\{'.self::$RECURSE_BLOCKS.'\})(,?)}', '${1}'.$this->format($value, 1).'$3', $children);
+        if (preg_match('{("'.preg_quote($name).'"\s*:\s*)([0-9.]+|null|true|false|"[^"]+"|\[[^\]]*\]|\{'.self::$RECURSE_BLOCKS.'\})(,?)}', $children, $matches)) {
+            $children = preg_replace('{("'.preg_quote($name).'"\s*:\s*)([0-9.]+|null|true|false|"[^"]+"|\[[^\]]*\]|\{'.self::$RECURSE_BLOCKS.'\})(,?)}', '${1}'.$this->format($value, 1).'$3', $children);
         } elseif (preg_match('#[^\s](\s*)$#', $children, $match)) {
             // child missing but non empty children
             $children = preg_replace(
@@ -164,7 +164,7 @@ class JsonManipulator
         }
 
         if (preg_match('{"'.preg_quote($name).'"\s*:}i', $children)) {
-            if (preg_match_all('{"'.preg_quote($name).'"\s*:\s*(?:[0-9.]+|null|true|false|"[^"]+"|\{'.self::$RECURSE_BLOCKS.'\})}', $children, $matches)) {
+            if (preg_match_all('{"'.preg_quote($name).'"\s*:\s*(?:[0-9.]+|null|true|false|"[^"]+"|\[[^\]]*\]|\{'.self::$RECURSE_BLOCKS.'\})}', $children, $matches)) {
                 $bestMatch = '';
                 foreach ($matches[0] as $match) {
                     if (strlen($bestMatch) < strlen($match)) {
@@ -215,6 +215,10 @@ class JsonManipulator
             reset($data);
 
             if (is_numeric(key($data))) {
+                foreach ($data as $key => $val) {
+                    $data[$key] = $this->format($val, $depth + 1);
+                }
+
                 return '['.implode(', ', $data).']';
             }
 
