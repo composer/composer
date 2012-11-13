@@ -267,23 +267,28 @@ EOT
      */
     protected function listConfiguration(array $contents, OutputInterface $output, $k = null)
     {
+        $origK = $k;
         foreach ($contents as $key => $value) {
             if ($k === null && !in_array($key, array('config', 'repositories'))) {
                 continue;
             }
 
-            if (is_array($value)) {
+            if (is_array($value) && !is_numeric(key($value))) {
                 $k .= preg_replace('{^config\.}', '', $key . '.');
                 $this->listConfiguration($value, $output, $k);
 
-                if (substr_count($k,'.') > 1) {
-                    $k = str_split($k,strrpos($k,'.',-2));
+                if (substr_count($k, '.') > 1) {
+                    $k = str_split($k, strrpos($k, '.', -2));
                     $k = $k[0] . '.';
                 } else {
-                    $k = null;
+                    $k = $origK;
                 }
 
                 continue;
+            }
+
+            if (is_array($value)) {
+                $value = '['.implode(', ', $value).']';
             }
 
             $output->writeln('[<comment>' . $k . $key . '</comment>] <info>' . $value . '</info>');
