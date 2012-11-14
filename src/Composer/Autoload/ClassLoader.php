@@ -85,7 +85,11 @@ class ClassLoader
     {
         if (!$prefix) {
             foreach ((array) $paths as $path) {
-                $this->fallbackDirs[] = $path;
+                if ($prepend) {
+                    array_unshift($this->fallbackDirs, $path);
+                } else {
+                    $this->fallbackDirs[] = $path;
+                }
             }
 
             return;
@@ -100,8 +104,7 @@ class ClassLoader
                 (array) $paths,
                 $this->prefixes[$prefix]
             );
-        }
-        else {
+        } else {
             $this->prefixes[$prefix] = array_merge(
                 $this->prefixes[$prefix],
                 (array) $paths
