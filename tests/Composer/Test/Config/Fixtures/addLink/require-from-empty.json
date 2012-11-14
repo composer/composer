@@ -1,0 +1,7 @@
+{
+    "name": "my-vend/my-app",
+    "license": "MIT",
+    "require": {
+        "my-vend/my-lib": "1.*"
+    }
+}
