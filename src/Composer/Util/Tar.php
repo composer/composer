@@ -1,11 +1,5 @@
 <?php
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-
 /**
- * File::CSV
- *
- * PHP versions 4 and 5
- *
  * Copyright (c) 1997-2008,
  * Vincent Blavet <vincent@phpconcept.net>
  * All rights reserved.
@@ -39,7 +33,7 @@
  * @link      http://pear.php.net/package/Archive_Tar
  */
 
-require_once 'PEAR.php';
+namespace Composer\Util;
 
 define('ARCHIVE_TAR_ATT_SEPARATOR', 90001);
 define('ARCHIVE_TAR_END_BLOCK', pack("a512", ''));
@@ -52,7 +46,7 @@ define('ARCHIVE_TAR_END_BLOCK', pack("a512", ''));
 * @license http://www.opensource.org/licenses/bsd-license.php New BSD License
 * @version $Revision$
 */
-class Archive_Tar extends PEAR
+class Tar
 {
     /**
     * @var string Name of the Tar
@@ -110,9 +104,8 @@ class Archive_Tar extends PEAR
     *
     * @access public
     */
-    function Archive_Tar($p_tarname, $p_compress = null)
+    function __construct($p_tarname, $p_compress = null)
     {
-        $this->PEAR();
         $this->_compress = false;
         $this->_compress_type = 'none';
         if (($p_compress === null) || ($p_compress == '')) {
@@ -176,13 +169,12 @@ class Archive_Tar extends PEAR
     // }}}
 
     // {{{ destructor
-    function _Archive_Tar()
+    function __destruct()
     {
         $this->_close();
         // ----- Look for a local copy to delete
         if ($this->_temp_tarname != '')
             @unlink($this->_temp_tarname);
-        $this->_PEAR();
     }
     // }}}
 
