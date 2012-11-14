@@ -90,21 +90,22 @@ class ClassLoader
 
             return;
         }
-        if (isset($this->prefixes[$prefix])) {
-            if ($prepend) {
-                $this->prefixes[$prefix] = array_merge(
-                    (array) $paths,
-                    $this->prefixes[$prefix]
-                );
-            }
-            else {
-                $this->prefixes[$prefix] = array_merge(
-                    $this->prefixes[$prefix],
-                    (array) $paths
-                );
-            }
-        } else {
+        if (!isset($this->prefixes[$prefix])) {
             $this->prefixes[$prefix] = (array) $paths;
+
+            return;
+        }
+        if ($prepend) {
+            $this->prefixes[$prefix] = array_merge(
+                (array) $paths,
+                $this->prefixes[$prefix]
+            );
+        }
+        else {
+            $this->prefixes[$prefix] = array_merge(
+                $this->prefixes[$prefix],
+                (array) $paths
+            );
         }
     }
 
