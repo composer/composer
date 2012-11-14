@@ -1,0 +1,29 @@
+{
+    "name": "my-vend/my-app",
+    "license": "MIT",
+    "require": {
+        "my-vend/my-other-lib": "1.*",
+        "my-vend/my-yet-another-lib": "1.*"
+    },
+    "require-dev": {
+        "my-vend/my-other-lib-tests": "1.*",
+        "my-vend/my-yet-another-lib-tests": "1.*"
+    },
+    "provide": {
+        "my-vend/my-other-interface": "1.*",
+        "my-vend/my-yet-another-interface": "1.*",
+        "my-vend/my-lib-interface": "1.*"
+    },
+    "suggest": {
+        "my-vend/my-other-optional-extension": "1.*",
+        "my-vend/my-yet-another-optional-extension": "1.*"
+    },
+    "replace": {
+        "other-vend/other-app": "1.*",
+        "other-vend/yet-another-app": "1.*"
+    },
+    "conflict": {
+        "my-vend/my-other-old-app": "1.*",
+        "my-vend/my-yet-another-old-app": "1.*"
+    }
+}
