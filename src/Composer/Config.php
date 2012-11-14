@@ -26,6 +26,10 @@ class Config
         'bin-dir' => '{$vendor-dir}/bin',
         'notify-on-install' => true,
         'github-protocols' => array('git', 'https', 'http'),
+        'cache-dir' => '{$home}/cache',
+        'cache-files-dir' => '{$cache-dir}/files',
+        'cache-repo-dir' => '{$cache-dir}/repo',
+        'cache-vcs-dir' => '{$cache-dir}/vcs',
     );
 
     public static $defaultRepositories = array(
@@ -115,6 +119,10 @@ class Config
             case 'vendor-dir':
             case 'bin-dir':
             case 'process-timeout':
+            case 'cache-dir':
+            case 'cache-files-dir':
+            case 'cache-repo-dir':
+            case 'cache-vcs-dir':
                 // convert foo-bar to COMPOSER_FOO_BAR and check if it exists since it overrides the local config
                 $env = 'COMPOSER_' . strtoupper(strtr($key, '-', '_'));
 
