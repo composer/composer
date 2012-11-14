@@ -30,7 +30,7 @@ class PlatformRepository extends ArrayRepository
             $prettyVersion = PHP_VERSION;
             $version = $versionParser->normalize($prettyVersion);
         } catch (\UnexpectedValueException $e) {
-            $prettyVersion = preg_replace('#^(.+?)(-.+)?$#', '$1', PHP_VERSION);
+            $prettyVersion = preg_replace('#^([^~+-]+).*$#', '$1', PHP_VERSION);
             $version = $versionParser->normalize($prettyVersion);
         }
 
