@@ -50,7 +50,7 @@ class GitHubDriver extends VcsDriver
         $this->owner = $match[1];
         $this->repository = $match[2];
         $this->originUrl = 'github.com';
-        $this->cache = new Cache($this->io, $this->config->get('home').'/cache.github/'.$this->owner.'/'.$this->repository);
+        $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.$this->originUrl.'/'.$this->owner.'/'.$this->repository);
 
         $this->fetchRootIdentifier();
     }
