@@ -1,0 +1,23 @@
+{
+    "name": "my-vend/my-app",
+    "license": "MIT",
+    "require": {
+        "my-vend/my-other-lib": "1.*"
+    },
+    "require-dev": {
+        "my-vend/my-other-lib-tests": "1.*",
+        "my-vend/my-lib-tests": "1.*"
+    },
+    "provide": {
+        "my-vend/my-other-interface": "1.*"
+    },
+    "suggest": {
+        "my-vend/my-other-optional-extension": "1.*"
+    },
+    "replace": {
+        "other-vend/other-app": "1.*"
+    },
+    "conflict": {
+        "my-vend/my-other-old-app": "1.*"
+    }
+}
