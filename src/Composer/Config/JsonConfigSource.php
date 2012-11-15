@@ -12,22 +12,33 @@
 
 namespace Composer\Config;
 
-use Composer\Json\JsonManipulator;
 use Composer\Json\JsonFile;
+use Composer\Json\JsonManipulator;
 
 /**
+ * JSON Configuration Source
+ *
  * @author Jordi Boggiano <j.boggiano@seld.be>
+ * @author Beau Simensen <beau@dflydev.com>
  */
 class JsonConfigSource implements ConfigSourceInterface
 {
     private $file;
     private $manipulator;
 
+    /**
+     * Constructor
+     *
+     * @param JsonFile $file
+     */
     public function __construct(JsonFile $file)
     {
         $this->file = $file;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function addRepository($name, $config)
     {
         $this->manipulateJson('addRepository', $name, $config, function (&$config, $repo, $repoConfig) {
@@ -35,6 +46,9 @@ class JsonConfigSource implements ConfigSourceInterface
         });
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function removeRepository($name)
     {
         $this->manipulateJson('removeRepository', $name, function (&$config, $repo) {
@@ -42,6 +56,9 @@ class JsonConfigSource implements ConfigSourceInterface
         });
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function addConfigSetting($name, $value)
     {
         $this->manipulateJson('addConfigSetting', $name, $value, function (&$config, $key, $val) {
@@ -49,10 +66,33 @@ class JsonConfigSource implements ConfigSourceInterface
         });
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function removeConfigSetting($name)
     {
         $this->manipulateJson('removeConfigSetting', $name, function (&$config, $key) {
             unset($config['config'][$key]);
+        });
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function addLink($type, $name, $value)
+    {
+        $this->manipulateJson('addLink', $type, $name, $value, function (&$config, $key) {
+            $config[$type][$name] = $value;
+        });
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function removeLink($type, $name)
+    {
+        $this->manipulateJson('removeSubNode', $type, $name, function (&$config, $key) {
+            unset($config[$type][$name]);
         });
     }
 

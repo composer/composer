@@ -1,0 +1,7 @@
+{
+    "name": "my-vend/my-app",
+    "license": "MIT",
+    "conflict": {
+        "my-vend/my-old-app": "1.*"
+    }
+}

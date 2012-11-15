@@ -1,0 +1,7 @@
+{
+    "name": "my-vend/my-app",
+    "license": "MIT",
+    "provide": {
+        "my-vend/my-lib-interface": "1.*"
+    }
+}
