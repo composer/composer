@@ -194,7 +194,7 @@ class ValidatingArrayLoader implements LoaderInterface
                 foreach ($this->config['extra']['branch-alias'] as $sourceBranch => $targetBranch) {
                     // ensure it is an alias to a -dev package
                     if ('-dev' !== substr($targetBranch, -4)) {
-                        $this->errors[] = 'extra.branch-alias.'.$sourceBranch.' : the target branch ('.$targetBranch.') must end in -dev';
+                        $this->warnings[] = 'extra.branch-alias.'.$sourceBranch.' : the target branch ('.$targetBranch.') must end in -dev';
                         unset($this->config['extra']['branch-alias'][$sourceBranch]);
 
                         continue;
@@ -203,7 +203,7 @@ class ValidatingArrayLoader implements LoaderInterface
                     // normalize without -dev and ensure it's a numeric branch that is parseable
                     $validatedTargetBranch = $this->versionParser->normalizeBranch(substr($targetBranch, 0, -4));
                     if ('-dev' !== substr($validatedTargetBranch, -4)) {
-                        $this->errors[] = 'extra.branch-alias.'.$sourceBranch.' : the target branch ('.$targetBranch.') must be a parseable number like 2.0-dev';
+                        $this->warnings[] = 'extra.branch-alias.'.$sourceBranch.' : the target branch ('.$targetBranch.') must be a parseable number like 2.0-dev';
                         unset($this->config['extra']['branch-alias'][$sourceBranch]);
                     }
                 }
