@@ -55,21 +55,23 @@ class EventDispatcher
      * Dispatch a package event.
      *
      * @param string             $eventName The constant in ScriptEvents
+     * @param boolean            $devMode   Whether or not we are in dev mode
      * @param OperationInterface $operation The package being installed/updated/removed
      */
-    public function dispatchPackageEvent($eventName, OperationInterface $operation)
+    public function dispatchPackageEvent($eventName, $devMode, OperationInterface $operation)
     {
-        $this->doDispatch(new PackageEvent($eventName, $this->composer, $this->io, $operation));
+        $this->doDispatch(new PackageEvent($eventName, $this->composer, $this->io, $devMode, $operation));
     }
 
     /**
      * Dispatch a command event.
      *
-     * @param string $eventName The constant in ScriptEvents
+     * @param string  $eventName The constant in ScriptEvents
+     * @param boolean $devMode   Whether or not we are in dev mode
      */
-    public function dispatchCommandEvent($eventName)
+    public function dispatchCommandEvent($eventName, $devMode)
     {
-        $this->doDispatch(new CommandEvent($eventName, $this->composer, $this->io));
+        $this->doDispatch(new CommandEvent($eventName, $this->composer, $this->io, $devMode));
     }
 
     /**
