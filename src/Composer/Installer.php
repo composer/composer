@@ -179,7 +179,7 @@ class Installer
         if ($this->runScripts) {
             // dispatch pre event
             $eventName = $this->update ? ScriptEvents::PRE_UPDATE_CMD : ScriptEvents::PRE_INSTALL_CMD;
-            $this->eventDispatcher->dispatchCommandEvent($eventName);
+            $this->eventDispatcher->dispatchCommandEvent($eventName, $this->devMode);
         }
 
         $this->suggestedPackages = array();
@@ -227,7 +227,7 @@ class Installer
             if ($this->runScripts) {
                 // dispatch post event
                 $eventName = $this->update ? ScriptEvents::POST_UPDATE_CMD : ScriptEvents::POST_INSTALL_CMD;
-                $this->eventDispatcher->dispatchCommandEvent($eventName);
+                $this->eventDispatcher->dispatchCommandEvent($eventName, $this->devMode);
             }
         }
 
@@ -487,7 +487,7 @@ class Installer
 
             $event = 'Composer\Script\ScriptEvents::PRE_PACKAGE_'.strtoupper($operation->getJobType());
             if (defined($event) && $this->runScripts) {
-                $this->eventDispatcher->dispatchPackageEvent(constant($event), $operation);
+                $this->eventDispatcher->dispatchPackageEvent(constant($event), $this->devMode, $operation);
             }
 
             // not installing from lock, force dev packages' references if they're in root package refs
@@ -516,7 +516,7 @@ class Installer
 
             $event = 'Composer\Script\ScriptEvents::POST_PACKAGE_'.strtoupper($operation->getJobType());
             if (defined($event) && $this->runScripts) {
-                $this->eventDispatcher->dispatchPackageEvent(constant($event), $operation);
+                $this->eventDispatcher->dispatchPackageEvent(constant($event), $this->devMode, $operation);
             }
 
             if (!$this->dryRun) {

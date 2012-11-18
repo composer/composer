@@ -32,7 +32,7 @@ class EventDispatcherTest extends TestCase
             ->method('write')
             ->with('<error>Script Composer\Test\Script\EventDispatcherTest::call handling the post-install-cmd event terminated with an exception</error>');
 
-        $dispatcher->dispatchCommandEvent("post-install-cmd");
+        $dispatcher->dispatchCommandEvent("post-install-cmd", false);
     }
 
     /**
@@ -60,7 +60,7 @@ class EventDispatcherTest extends TestCase
             ->method('execute')
             ->with($command);
 
-        $dispatcher->dispatchCommandEvent("post-install-cmd");
+        $dispatcher->dispatchCommandEvent("post-install-cmd", false);
     }
 
     public function testDispatcherCanExecuteCliAndPhpInSameEventScriptStack()
@@ -95,7 +95,7 @@ class EventDispatcherTest extends TestCase
             ->with('Composer\Test\Script\EventDispatcherTest', 'someMethod')
             ->will($this->returnValue(true));
 
-        $dispatcher->dispatchCommandEvent("post-install-cmd");
+        $dispatcher->dispatchCommandEvent("post-install-cmd", false);
     }
 
     private function getDispatcherStubForListenersTest($listeners, $io)
