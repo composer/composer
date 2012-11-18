@@ -13,6 +13,7 @@
 namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
+use Composer\Repository\Vcs\GitDriver;
 use Composer\Util\GitHub;
 
 /**
@@ -37,7 +38,7 @@ class GitDownloader extends VcsDownloader
             return sprintf($command, escapeshellarg($url), escapeshellarg($path), escapeshellarg($ref));
         };
 
-        $this->runCommand($commandCallable, $package->getSourceUrl(), $path);
+        $this->runCommand($commandCallable, $this->getLocalRepository($package->getSourceUrl()), $path);
         $this->setPushUrl($package, $path);
 
         $this->updateToCommit($path, $ref, $package->getPrettyVersion(), $package->getReleaseDate());
@@ -64,7 +65,7 @@ class GitDownloader extends VcsDownloader
             return sprintf($command, escapeshellarg($path), escapeshellarg($url), escapeshellarg($ref));
         };
 
-        $this->runCommand($commandCallable, $target->getSourceUrl());
+        $this->runCommand($commandCallable, $this->getLocalRepository($target->getSourceUrl()));
         $this->updateToCommit($path, $ref, $target->getPrettyVersion(), $target->getReleaseDate());
     }
 
@@ -360,5 +361,25 @@ class GitDownloader extends VcsDownloader
         }
 
         return $output;
+    }
+
+    /**
+     * Get local mirrored repository.
+     *
+     * @param string $url
+     *
+     * @return string
+     */
+    protected function getLocalRepository($url)
+    {
+        $driver = new GitDriver(
+            array('url' => $url),
+            $this->io,
+            $this->config,
+            $this->process
+        );
+        $driver->initialize();
+
+        return $driver->getRepoDir();
     }
 }

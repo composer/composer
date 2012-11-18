@@ -124,6 +124,18 @@ class GitDriver extends VcsDriver
     }
 
     /**
+     * Get repository directory
+     * Available after init
+     *
+     * @return string Repository path
+     * @see initialize()
+     */
+    public function getRepoDir()
+    {
+        return $this->repoDir;
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function getComposerInformation($identifier)
