@@ -86,14 +86,10 @@ class Filesystem
      */
     public function removeDirectoryPhp($directory)
     {
-        $it = new RecursiveDirectoryIterator($directory);
+        $it = new RecursiveDirectoryIterator($directory, RecursiveDirectoryIterator::SKIP_DOTS);
         $ri = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::CHILD_FIRST);
 
         foreach ($ri as $file) {
-            if ($file->getFilename() == "." || $file->getFilename() == "..") {
-                continue;
-            }
-
             if ($file->isDir()) {
                 rmdir($file->getPathname());
             } else {
@@ -120,6 +116,36 @@ class Filesystem
         }
     }
 
+    /**
+     * Copy then delete is a non-atomic version of {@link rename}.
+     *
+     * Some systems can't rename and also dont have proc_open,
+     * which requires this solution.
+     *
+     * @param string $source
+     * @param string $target
+     */
+    public function copyThenRemove($source, $target)
+    {
+        $it = new RecursiveDirectoryIterator($source, RecursiveDirectoryIterator::SKIP_DOTS);
+        $ri = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::SELF_FIRST);
+
+        if ( !file_exists($target)) {
+            mkdir($target, 0777, true);
+        }
+
+        foreach ($ri as $file) {
+            $targetPath = $target . DIRECTORY_SEPARATOR . $ri->getSubPathName();
+            if ($file->isDir()) {
+                mkdir($targetPath);
+            } else {
+                copy($file->getPathname(), $targetPath);
+            }
+        }
+
+        $this->removeDirectoryPhp($source);
+    }
+
     public function rename($source, $target)
     {
         if (true === @rename($source, $target)) {
@@ -127,6 +153,10 @@ class Filesystem
         }
 
         if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+            if (!function_exists('proc_open')) {
+                return $this->copyThenRemove($source, $target);
+            }
+
             // Try to copy & delete - this is a workaround for random "Access denied" errors.
             $command = sprintf('xcopy %s %s /E /I /Q', escapeshellarg($source), escapeshellarg($target));
             if (0 === $this->processExecutor->execute($command)) {
