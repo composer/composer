@@ -288,7 +288,7 @@ class Locker
             unset($spec['version_normalized']);
 
             if ($package->isDev()) {
-                if ('git' === $package->getSourceType() && $path = $this->installationManager->getInstallPath($package)) {
+                if ('git' === $package->getSourceType() && $path = $this->installationManager->getInstallPath($package) && function_exists('proc_open')) {
                     $sourceRef = $package->getSourceReference() ?: $package->getDistReference();
                     $process = new ProcessExecutor();
                     if (0 === $process->execute('git log -n1 --pretty=%ct '.escapeshellarg($sourceRef), $output, $path)) {
