@@ -12,6 +12,9 @@
 
 namespace Composer\Util;
 
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Johannes M. Schmitt <schmittjoh@gmail.com>
@@ -38,10 +41,23 @@ class Filesystem
         return false;
     }
 
+    /**
+     * Recursively remove a directory
+     *
+     * Uses the process component if proc_open is enabled on the PHP
+     * installation.
+     *
+     * @param string $directory
+     * @return bool
+     */
     public function removeDirectory($directory)
     {
         if (!is_dir($directory)) {
             return true;
+        }
+
+        if (!function_exists('proc_open')) {
+            return $this->removeDirectoryPhp($directory);
         }
 
         if (defined('PHP_WINDOWS_VERSION_BUILD')) {
@@ -56,6 +72,36 @@ class Filesystem
         clearstatcache();
 
         return $result && !is_dir($directory);
+    }
+
+    /**
+     * Recursively delete directory using PHP iterators.
+     *
+     * Uses a CHILD_FIRST RecursiveIteratorIterator to sort files
+     * before directories, creating a single non-recursive loop
+     * to delete files/directories in the correct order.
+     *
+     * @param string $directory
+     * @return bool
+     */
+    public function removeDirectoryPhp($directory)
+    {
+        $it = new RecursiveDirectoryIterator($directory);
+        $ri = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::CHILD_FIRST);
+
+        foreach ($ri as $file) {
+            if ($file->getFilename() == "." || $file->getFilename() == "..") {
+                continue;
+            }
+
+            if ($file->isDir()) {
+                rmdir($file->getPathname());
+            } else {
+                unlink($file->getPathname());
+            }
+        }
+
+        return rmdir($directory);
     }
 
     public function ensureDirectoryExists($directory)

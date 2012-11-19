@@ -93,4 +93,19 @@ class FilesystemTest extends TestCase
             array('C:/Temp', 'c:\Temp\test', "test"),
         );
     }
+
+    /**
+     * @group GH-1339
+     */
+    public function testRemoveDirectoryPhp()
+    {
+        $tmp = sys_get_temp_dir();
+        @mkdir($tmp . "/composer_testdir/level1/level2", 0777, true);
+        file_put_contents($tmp . "/composer_testdir/level1/level2/hello.txt", "hello world");
+
+        $fs = new Filesystem;
+        $this->assertTrue($fs->removeDirectoryPhp($tmp . "/composer_testdir"));
+        $this->assertFalse(file_exists($tmp . "/composer_testdir/level1/level2/hello.txt"));
+    }
 }
+
