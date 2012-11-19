@@ -152,11 +152,11 @@ class Filesystem
             return;
         }
 
-        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
-            if (!function_exists('proc_open')) {
-                return $this->copyThenRemove($source, $target);
-            }
+        if (!function_exists('proc_open')) {
+            return $this->copyThenRemove($source, $target);
+        }
 
+        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
             // Try to copy & delete - this is a workaround for random "Access denied" errors.
             $command = sprintf('xcopy %s %s /E /I /Q', escapeshellarg($source), escapeshellarg($target));
             if (0 === $this->processExecutor->execute($command)) {
