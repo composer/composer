@@ -73,6 +73,10 @@ class GitDownloader extends VcsDownloader
      */
     public function getLocalChanges($path)
     {
+        if (!is_dir($path.'/.git')) {
+            return;
+        }
+
         $command = sprintf('cd %s && git status --porcelain --untracked-files=no', escapeshellarg($path));
         if (0 !== $this->process->execute($command, $output)) {
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());

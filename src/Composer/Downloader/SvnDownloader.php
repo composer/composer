@@ -50,6 +50,10 @@ class SvnDownloader extends VcsDownloader
      */
     public function getLocalChanges($path)
     {
+        if (!is_dir($path.'/.svn')) {
+            return;
+        }
+
         $this->process->execute('svn status --ignore-externals', $output, $path);
 
         return preg_match('{^ *[^X ] +}m', $output) ? $output : null;
