@@ -179,9 +179,9 @@ EOT
                     return $name;
                 }
 
-                if (!preg_match('{^[a-z0-9_.-]+/[a-z0-9_.-]+$}i', $value)) {
+                if (!preg_match('{^[a-z0-9_.-]+/[a-z0-9_.-]+$}', $value)) {
                     throw new \InvalidArgumentException(
-                        'The package name '.$value.' is invalid, it should have a vendor name, a forward slash, and a package name, matching: [a-z0-9_.-]+/[a-z0-9_.-]+'
+                        'The package name '.$value.' is invalid, it should be lowercase and have a vendor name, a forward slash, and a package name, matching: [a-z0-9_.-]+/[a-z0-9_.-]+'
                     );
                 }
 
