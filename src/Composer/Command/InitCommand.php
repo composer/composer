@@ -159,6 +159,8 @@ EOT
 
         if (!$name = $input->getOption('name')) {
             $name = basename($cwd);
+            $name = preg_replace('{(?:([a-z])([A-Z])|([A-Z])([A-Z][a-z]))}', '\\1\\3-\\2\\4', $name);
+            $name = strtolower($name);
             if (isset($git['github.user'])) {
                 $name = $git['github.user'] . '/' . $name;
             } elseif (!empty($_SERVER['USERNAME'])) {
