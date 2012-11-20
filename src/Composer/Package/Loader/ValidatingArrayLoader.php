@@ -76,7 +76,7 @@ class ValidatingArrayLoader implements LoaderInterface
         $this->validateString('time');
         if (!empty($this->config['time'])) {
             try {
-                $date = new \DateTime($this->config['time']);
+                $date = new \DateTime($this->config['time'], new \DateTimeZone('UTC'));
             } catch (\Exception $e) {
                 $this->errors[] = 'time : invalid value ('.$this->config['time'].'): '.$e->getMessage();
                 unset($this->config['time']);

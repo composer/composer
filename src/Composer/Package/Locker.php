@@ -292,7 +292,8 @@ class Locker
                     $sourceRef = $package->getSourceReference() ?: $package->getDistReference();
                     $process = new ProcessExecutor();
                     if (0 === $process->execute('git log -n1 --pretty=%ct '.escapeshellarg($sourceRef), $output, $path)) {
-                        $spec['time'] = trim($output);
+                        $datetime = new \DateTime('@'.$output, new \DateTimeZone('UTC'));
+                        $spec['time'] = $datetime->format('Y-m-d H:i:s');
                     }
                 }
             }

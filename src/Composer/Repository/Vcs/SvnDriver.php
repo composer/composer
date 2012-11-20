@@ -138,7 +138,7 @@ class SvnDriver extends VcsDriver
                 $output = $this->execute('svn info', $this->baseUrl . $path . $rev);
                 foreach ($this->process->splitLines($output) as $line) {
                     if ($line && preg_match('{^Last Changed Date: ([^(]+)}', $line, $match)) {
-                        $date = new \DateTime($match[1]);
+                        $date = new \DateTime($match[1], new \DateTimeZone('UTC'));
                         $composer['time'] = $date->format('Y-m-d H:i:s');
                         break;
                     }
