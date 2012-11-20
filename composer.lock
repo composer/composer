@@ -81,18 +81,18 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Console",
-                "reference": "7907e712997a6cb40cce3227a754636461d7e502"
+                "reference": "003a487a674175a1d2e62f205ecd91ffe85554b1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://github.com/symfony/Console/archive/7907e712997a6cb40cce3227a754636461d7e502.zip",
-                "reference": "7907e712997a6cb40cce3227a754636461d7e502",
+                "url": "https://github.com/symfony/Console/archive/003a487a674175a1d2e62f205ecd91ffe85554b1.zip",
+                "reference": "003a487a674175a1d2e62f205ecd91ffe85554b1",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.3"
             },
-            "time": "1352466606",
+            "time": "2012-11-19 12:58:52",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -175,18 +175,18 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Process",
-                "reference": "1b0498afba3d3e198de91bf7b3a7907193c3270d"
+                "reference": "a11b312f99a5a8bf88c0ea5e7660c13af79f964f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://github.com/symfony/Process/archive/1b0498afba3d3e198de91bf7b3a7907193c3270d.zip",
-                "reference": "1b0498afba3d3e198de91bf7b3a7907193c3270d",
+                "url": "https://github.com/symfony/Process/archive/a11b312f99a5a8bf88c0ea5e7660c13af79f964f.zip",
+                "reference": "a11b312f99a5a8bf88c0ea5e7660c13af79f964f",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.3"
             },
-            "time": "1352466606",
+            "time": "2012-11-13 14:08:04",
             "type": "library",
             "extra": {
                 "branch-alias": {
