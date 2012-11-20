@@ -22,6 +22,7 @@ class Config
     public static $defaultConfig = array(
         'process-timeout' => 300,
         'cache-ttl' => 15552000, // 6 months
+        'git-shared' => false, // use --shared for git clone in the downloader
         'vendor-dir' => 'vendor',
         'bin-dir' => '{$vendor-dir}/bin',
         'notify-on-install' => true,
@@ -124,11 +125,15 @@ class Config
                 return (int) $this->config[$key];
 
             case 'cache-files-ttl':
+            case 'cache-vcs-ttl':
                 if (isset($this->config[$key])) {
                     return (int) $this->config[$key];
                 }
 
                 return (int) $this->config['cache-ttl'];
+
+            case 'git-shared':
+                return (bool) $this->config['git-shared'];
 
             case 'home':
                 return rtrim($this->process($this->config[$key]), '/\\');
