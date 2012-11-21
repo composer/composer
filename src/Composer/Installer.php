@@ -291,6 +291,10 @@ class Installer
         } elseif ($installFromLock) {
             $this->io->write('<info>Installing '.($devMode ? 'dev ': '').'dependencies from lock file</info>');
 
+            if (!$this->locker->isCompleteFormat($devMode)) {
+                $this->io->write('<warning>Warning: Your lock file is in a deprecated format. It will most likely take a *long* time for composer to install dependencies, and may cause dependency solving issues.</warning>');
+            }
+
             if (!$this->locker->isFresh() && !$devMode) {
                 $this->io->write('<warning>Warning: The lock file is not up to date with the latest changes in composer.json, you may be getting outdated dependencies, run update to update them.</warning>');
             }
