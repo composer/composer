@@ -35,33 +35,78 @@ class Factory
      */
     public static function createConfig()
     {
-        // load main Composer configuration
-        if (!$home = getenv('COMPOSER_HOME')) {
+        // determine home and cache dirs
+        $home = getenv('COMPOSER_HOME');
+        $cacheDir = getenv('COMPOSER_CACHE_DIR');
+        if (!$home) {
             if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
                 $home = getenv('APPDATA') . '/Composer';
             } else {
                 $home = rtrim(getenv('HOME'), '/') . '/.composer';
             }
         }
-
-        // Protect directory against web access
-        if (!file_exists($home . '/.htaccess')) {
-            if (!is_dir($home)) {
-                @mkdir($home, 0777, true);
+        if (!$cacheDir) {
+            if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
+                if ($cacheDir = getenv('LOCALAPPDATA')) {
+                    $cacheDir .= '/Composer';
+                } else {
+                    $cacheDir = getenv('APPDATA') . '/Composer/cache';
+                }
+            } else {
+                $cacheDir = $home.'/cache';
             }
-            @file_put_contents($home . '/.htaccess', 'Deny from all');
+        }
+
+        // Protect directory against web access. Since HOME could be
+        // the www-data's user home and be web-accessible it is a
+        // potential security risk
+        foreach (array($home, $cacheDir) as $dir) {
+            if (!file_exists($dir . '/.htaccess')) {
+                if (!is_dir($dir)) {
+                    @mkdir($dir, 0777, true);
+                }
+                @file_put_contents($dir . '/.htaccess', 'Deny from all');
+            }
         }
 
         $config = new Config();
 
-        // add home dir to the config
-        $config->merge(array('config' => array('home' => $home)));
+        // add dirs to the config
+        $config->merge(array('config' => array('home' => $home, 'cache-dir' => $cacheDir)));
 
         $file = new JsonFile($home.'/config.json');
         if ($file->exists()) {
             $config->merge($file->read());
         }
         $config->setConfigSource(new JsonConfigSource($file));
+
+        // move old cache dirs to the new locations
+        $legacyPaths = array(
+            'cache-repo-dir' => array('/cache' => '/http*', '/cache.svn' => '/*', '/cache.github' => '/*'),
+            'cache-vcs-dir' => array('/cache.git' => '/*', '/cache.hg' => '/*'),
+            'cache-files-dir' => array('/cache.files' => '/*'),
+        );
+        foreach ($legacyPaths as $key => $oldPaths) {
+            foreach ($oldPaths as $oldPath => $match) {
+                $dir = $config->get($key);
+                if ('/cache.github' === $oldPath) {
+                    $dir .= '/github.com';
+                }
+                $oldPath = $config->get('home').$oldPath;
+                $oldPathMatch = $oldPath . $match;
+                if (is_dir($oldPath) && $dir !== $oldPath) {
+                    if (!is_dir($dir)) {
+                        if (!@mkdir($dir, 0777, true)) {
+                            continue;
+                        }
+                    }
+                    foreach (glob($oldPathMatch) as $child) {
+                        @rename($child, $dir.'/'.basename($child));
+                    }
+                    @unlink($oldPath);
+                }
+            }
+        }
 
         return $config;
     }
@@ -242,7 +287,7 @@ class Factory
     {
         $cache = null;
         if ($config->get('cache-files-ttl') > 0) {
-            $cache = new Cache($io, $config->get('home').'/cache.files/', 'a-z0-9_./');
+            $cache = new Cache($io, $config->get('cache-files-dir'), 'a-z0-9_./');
         }
 
         $dm = new Downloader\DownloadManager();

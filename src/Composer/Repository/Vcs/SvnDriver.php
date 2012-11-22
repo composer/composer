@@ -63,7 +63,7 @@ class SvnDriver extends VcsDriver
             $this->baseUrl = substr($this->url, 0, $pos);
         }
 
-        $this->cache = new Cache($this->io, $this->config->get('home').'/cache.svn/'.preg_replace('{[^a-z0-9.]}i', '-', $this->baseUrl));
+        $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $this->baseUrl));
 
         $this->getBranches();
         $this->getTags();
