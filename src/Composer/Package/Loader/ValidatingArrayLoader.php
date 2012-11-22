@@ -145,6 +145,9 @@ class ValidatingArrayLoader implements LoaderInterface
         foreach (array_keys(BasePackage::$supportedLinkTypes) as $linkType) {
             if ($this->validateArray($linkType) && isset($this->config[$linkType])) {
                 foreach ($this->config[$linkType] as $package => $constraint) {
+                    if (!preg_match('{^[A-Za-z0-9_./-]+$}', $package)) {
+                        $this->warnings[] = $linkType.'.'.$package.' : invalid key, package names must be strings containing only [A-Za-z0-9_./-]';
+                    }
                     if (!is_string($constraint)) {
                         $this->errors[] = $linkType.'.'.$package.' : invalid value, must be a string containing a version constraint';
                         unset($this->config[$linkType][$package]);
