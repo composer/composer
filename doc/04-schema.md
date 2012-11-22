@@ -593,13 +593,22 @@ The following options are supported:
 * **github-protocols:** Defaults to `["git", "https", "http"]`. A list of
   protocols to use for github.com clones, in priority order. Use this if you are
   behind a proxy or have somehow bad performances with the git protocol.
-* **notify-on-install:** Defaults to `true`. Composer allows repositories to
-  define a notification URL, so that they get notified whenever a package from
-  that repository is installed. This option allows you to disable that behaviour.
+* **cache-dir:** Defaults to `$home/cache` on unix systems and
+  `C:\Users\<user>\AppData\Local\Composer` on Windows. Stores all the caches
+  used by composer. See also [COMPOSER_HOME](03-cli.md#composer-home).
+* **cache-files-dir:** Defaults to `$cache-dir/files`. Stores the zip archives
+  of packages.
+* **cache-repo-dir:** Defaults to `$cache-dir/repo`. Stores repository metadata
+  for the `composer` type and the VCS repos of type `svn`, `github` and `*bitbucket`.
+* **cache-vcs-dir:** Defaults to `$cache-dir/vcs`. Stores VCS clones for
+  loading VCS repository metadata for the `git`/`hg` types and to speed up installs.
 * **cache-files-ttl:** Defaults to `15552000` (6 months). Composer caches all
   dist (zip, tar, ..) packages that it downloads. Those are purged after six
   months of being unused by default. This option allows you to tweak this
   duration (in seconds) or disable it completely by setting it to 0.
+* **notify-on-install:** Defaults to `true`. Composer allows repositories to
+  define a notification URL, so that they get notified whenever a package from
+  that repository is installed. This option allows you to disable that behaviour.
 
 Example:
 

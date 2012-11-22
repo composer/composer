@@ -49,6 +49,11 @@ class Cache
         }
     }
 
+    public function isEnabled()
+    {
+        return $this->enabled;
+    }
+
     public function getRoot()
     {
         return $this->root;
