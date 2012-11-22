@@ -209,7 +209,6 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
     public function testUpdate()
     {
         $expectedGitUpdateCommand = $this->getCmd("cd 'composerPath' && git remote set-url composer 'git://github.com/composer/composer' && git fetch composer && git fetch --tags composer");
-        $expectedGitResetCommand = $this->getCmd("cd 'composerPath' && git status --porcelain --untracked-files=no");
 
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $packageMock->expects($this->any())
@@ -224,21 +223,17 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
         $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
         $processExecutor->expects($this->at(0))
             ->method('execute')
-            ->with($this->equalTo($expectedGitResetCommand))
+            ->with($this->equalTo($this->getCmd("cd 'composerPath' && git remote -v")))
             ->will($this->returnValue(0));
         $processExecutor->expects($this->at(1))
             ->method('execute')
-            ->with($this->equalTo($this->getCmd("cd 'composerPath' && git remote -v")))
+            ->with($this->equalTo($expectedGitUpdateCommand))
             ->will($this->returnValue(0));
         $processExecutor->expects($this->at(2))
             ->method('execute')
-            ->with($this->equalTo($expectedGitUpdateCommand))
-            ->will($this->returnValue(0));
-        $processExecutor->expects($this->at(3))
-            ->method('execute')
             ->with($this->equalTo('git branch -r'))
             ->will($this->returnValue(0));
-        $processExecutor->expects($this->at(4))
+        $processExecutor->expects($this->at(3))
             ->method('execute')
             ->with($this->equalTo($this->getCmd("git checkout 'ref' && git reset --hard 'ref'")), $this->equalTo(null), $this->equalTo('composerPath'))
             ->will($this->returnValue(0));
@@ -253,7 +248,6 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
     public function testUpdateThrowsRuntimeExceptionIfGitCommandFails()
     {
         $expectedGitUpdateCommand = $this->getCmd("cd 'composerPath' && git remote set-url composer 'git://github.com/composer/composer' && git fetch composer && git fetch --tags composer");
-        $expectedGitResetCommand = $this->getCmd("cd 'composerPath' && git status --porcelain --untracked-files=no");
 
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $packageMock->expects($this->any())
@@ -265,13 +259,9 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
         $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
         $processExecutor->expects($this->at(0))
             ->method('execute')
-            ->with($this->equalTo($expectedGitResetCommand))
-            ->will($this->returnValue(0));
-        $processExecutor->expects($this->at(1))
-            ->method('execute')
             ->with($this->equalTo($this->getCmd("cd 'composerPath' && git remote -v")))
             ->will($this->returnValue(0));
-        $processExecutor->expects($this->at(2))
+        $processExecutor->expects($this->at(1))
             ->method('execute')
             ->with($this->equalTo($expectedGitUpdateCommand))
             ->will($this->returnValue(1));

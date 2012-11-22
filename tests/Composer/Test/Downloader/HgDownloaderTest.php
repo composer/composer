@@ -78,7 +78,6 @@ class HgDownloaderTest extends \PHPUnit_Framework_TestCase
     public function testUpdate()
     {
         $expectedUpdateCommand = $this->getCmd("cd 'composerPath' && hg pull 'https://github.com/l3l0/composer' && hg up 'ref'");
-        $expectedResetCommand = $this->getCmd("cd 'composerPath' && hg st");
 
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $packageMock->expects($this->any())
@@ -89,9 +88,6 @@ class HgDownloaderTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue('https://github.com/l3l0/composer'));
         $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
         $processExecutor->expects($this->at(0))
-            ->method('execute')
-            ->with($this->equalTo($expectedResetCommand));
-        $processExecutor->expects($this->at(1))
             ->method('execute')
             ->with($this->equalTo($expectedUpdateCommand))
             ->will($this->returnValue(0));
