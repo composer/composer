@@ -1,0 +1,41 @@
+--TEST--
+Updating a dev package to its latest ref should pick up new dependencies
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "a/devpackage", "version": "dev-master",
+                    "source": { "reference": "newref", "url": "", "type": "git" },
+                    "require": {
+                        "a/dependency": "*"
+                    }
+                },
+                {
+                    "name": "a/dependency", "version": "dev-master",
+                    "source": { "reference": "ref", "url": "", "type": "git" },
+                    "require": {}
+                }
+            ]
+        }
+    ],
+    "require": {
+        "a/devpackage": "dev-master"
+    },
+    "minimum-stability": "dev"
+}
+--INSTALLED--
+[
+    {
+        "name": "a/devpackage", "version": "dev-master",
+        "source": { "reference": "oldref", "url": "", "type": "git" },
+        "require": {}
+    }
+]
+--RUN--
+update
+--EXPECT--
+Installing a/dependency (dev-master ref)
+Updating a/devpackage (dev-master oldref) to a/devpackage (dev-master newref)
