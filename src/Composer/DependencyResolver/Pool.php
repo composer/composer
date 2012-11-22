@@ -16,6 +16,7 @@ use Composer\Package\BasePackage;
 use Composer\Package\AliasPackage;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\Link;
+use Composer\Package\PackageInterface;
 use Composer\Package\LinkConstraint\LinkConstraintInterface;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Repository\RepositoryInterface;
@@ -224,6 +225,18 @@ class Pool
         }
 
         return $this->providerCache[$name][(string) $constraint] = $this->computeWhatProvides($name, $constraint);
+    }
+
+    public function clearCache(PackageInterface $package)
+    {
+        foreach ($this->providerCache as $name => $constraints) {
+            foreach ($constraints as $constraint => $packages) {
+                if (in_array($package, $packages, true)) {
+                    var_dump('Unsetting cache');
+                    unset($this->providerCache[$name][$constraint]);
+                }
+            }
+        }
     }
 
     /**

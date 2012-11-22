@@ -30,6 +30,7 @@ use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Package\Locker;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
+use Composer\Package\Version\VersionParser;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\InstalledArrayRepository;
 use Composer\Repository\PlatformRepository;
@@ -99,6 +100,7 @@ class Installer
     protected $update = false;
     protected $runScripts = true;
     protected $updateWhitelist = null;
+    protected $versionParser;
 
     /**
      * @var array
@@ -134,6 +136,7 @@ class Installer
         $this->installationManager = $installationManager;
         $this->eventDispatcher = $eventDispatcher;
         $this->autoloadGenerator = $autoloadGenerator;
+        $this->versionParser = new VersionParser();
     }
 
     /**
@@ -370,7 +373,7 @@ class Installer
         }
 
         // force dev packages to have the latest links if we update or install from a (potentially new) lock
-        $this->processDevPackages($localRepo, $pool, $policy, $repositories, $lockedRepository, $installFromLock, 'force-links');
+        $this->processDevPackages($localRepo, $pool, $policy, $repositories, $aliases, $lockedRepository, $installFromLock, 'force-links');
 
         // solve dependencies
         $solver = new Solver($policy, $pool, $installedRepo);
@@ -397,7 +400,7 @@ class Installer
         }
 
         // force dev packages to be updated if we update or install from a (potentially new) lock
-        $operations = $this->processDevPackages($localRepo, $pool, $policy, $repositories, $lockedRepository, $installFromLock, 'force-updates', $operations);
+        $operations = $this->processDevPackages($localRepo, $pool, $policy, $repositories, $aliases, $lockedRepository, $installFromLock, 'force-updates', $operations);
 
         // execute operations
         if (!$operations) {
@@ -458,7 +461,7 @@ class Installer
         return true;
     }
 
-    private function processDevPackages($localRepo, $pool, $policy, $repositories, $lockedRepository, $installFromLock, $task, array $operations = null)
+    private function processDevPackages($localRepo, $pool, $policy, $repositories, $aliases, $lockedRepository, $installFromLock, $task, array $operations = null)
     {
         if ($task === 'force-updates' && null === $operations) {
             throw new \InvalidArgumentException('Missing operations argument');
@@ -541,6 +544,28 @@ class Installer
                             $package->setConflicts($newPackage->getConflicts());
                             $package->setProvides($newPackage->getProvides());
                             $package->setReplaces($newPackage->getReplaces());
+
+                            $curExtra = $package->getExtra();
+                            $newExtra = $newPackage->getExtra();
+                            if ($curExtra !== $newExtra) {
+                                foreach ($localRepo->getPackages() as $pkg) {
+                                    if ($pkg instanceof AliasPackage && $pkg->getAliasOf() === $package
+                                        && (!isset($aliases[$package->getName()][$package->getVersion()]['alias_normalized']) || $pkg->getVersion() !== $aliases[$package->getName()][$package->getVersion()]['alias_normalized'])
+                                    ) {
+                                        if (isset($newExtra['branch-alias'][$newPackage->getPrettyVersion()])) {
+                                            $prettyAlias = $newExtra['branch-alias'][$newPackage->getPrettyVersion()];
+                                            $normAlias = $this->versionParser->normalizeBranch(substr($prettyAlias, 0, -4));
+                                            var_Dump('Updating '.$pkg->getName().' to '.$normAlias);
+                                            $pkg->updateVersion($normAlias, $prettyAlias);
+                                        } else {
+                                            $pkg->updateVersion('dev-__DELETED__', 'dev-__DELETED__');
+                                            $pkg->getRepository()->removePackage($pkg);
+                                            var_Dump('Removing '.$pkg->getName().' ('.$pkg->getVersion().')');
+                                        }
+                                        $pool->clearCache($pkg);
+                                    }
+                                }
+                            }
                         }
 
                         if ($task === 'force-updates' && $newPackage && (
