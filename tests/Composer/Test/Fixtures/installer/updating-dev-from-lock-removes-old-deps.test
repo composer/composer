@@ -1,0 +1,43 @@
+--TEST--
+Installing locked dev packages should remove old dependencies
+--COMPOSER--
+{
+    "require": {
+        "a/devpackage": "dev-master"
+    },
+    "minimum-stability": "dev"
+}
+--LOCK--
+{
+    "packages": [
+        {
+            "name": "a/devpackage", "version": "dev-master",
+            "source": { "reference": "newref", "url": "", "type": "git" },
+            "require": {}
+        }
+    ],
+    "packages-dev": null,
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": []
+}
+--INSTALLED--
+[
+    {
+        "name": "a/devpackage", "version": "dev-master",
+        "source": { "reference": "oldref", "url": "", "type": "git" },
+        "require": {
+            "a/dependency": "*"
+        }
+    },
+    {
+        "name": "a/dependency", "version": "dev-master",
+        "source": { "reference": "ref", "url": "", "type": "git" },
+        "require": {}
+    }
+]
+--RUN--
+install
+--EXPECT--
+Uninstalling a/dependency (dev-master ref)
+Updating a/devpackage (dev-master oldref) to a/devpackage (dev-master newref)
