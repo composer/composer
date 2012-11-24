@@ -106,7 +106,9 @@ class PearRepository extends ArrayRepository
 
                 // distribution url must be read from /r/{packageName}/{version}.xml::/r/g:text()
                 // but this location is 'de-facto' standard
-                $distUrl = "http://{$packageDefinition->getChannelName()}/get/{$packageDefinition->getPackageName()}-{$version}.tgz";
+                $urlBits = parse_url($this->url);
+                $scheme = (isset($urlBits['scheme']) && 'https' === $urlBits['scheme'] && extension_loaded('openssl')) ? 'https' : 'http';
+                $distUrl = "{$scheme}://{$packageDefinition->getChannelName()}/get/{$packageDefinition->getPackageName()}-{$version}.tgz";
 
                 $requires = array();
                 $suggests = array();
