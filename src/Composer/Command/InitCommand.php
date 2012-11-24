@@ -17,6 +17,7 @@ use Composer\Factory;
 use Composer\Package\BasePackage;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
+use Composer\Package\Version\VersionParser;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -295,20 +296,24 @@ EOT
         $prompt = $dialog->getQuestion('Search for a package', false, ':');
 
         if ($requires) {
+            $requires = $this->normalizeRequirements($requires);
+            $result = array();
+
             foreach ($requires as $key => $requirement) {
-                $requires[$key] = $this->normalizeRequirement($requirement);
-                if (false === strpos($requires[$key], ' ') && $input->isInteractive()) {
-                    $question = $dialog->getQuestion('Please provide a version constraint for the '.$requirement.' requirement');
+                if (!isset($requirement['version']) && $input->isInteractive()) {
+                    $question = $dialog->getQuestion('Please provide a version constraint for the '.$requirement['name'].' requirement');
                     if ($constraint = $dialog->ask($output, $question)) {
-                        $requires[$key] .= ' ' . $constraint;
+                        $requirement['version'] = $constraint;
                     }
                 }
-                if (false === strpos($requires[$key], ' ')) {
-                    throw new \InvalidArgumentException('The requirement '.$requirement.' must contain a version constraint');
+                if (!isset($requirement['version'])) {
+                    throw new \InvalidArgumentException('The requirement '.$requirement['name'].' must contain a version constraint');
                 }
+
+                $result[] = $requirement['name'] . ' ' . $requirement['version'];
             }
 
-            return $requires;
+            return $result;
         }
 
         while (null !== $package = $dialog->ask($output, $prompt)) {
@@ -364,19 +369,12 @@ EOT
     protected function formatRequirements(array $requirements)
     {
         $requires = array();
+        $requirements = $this->normalizeRequirements($requirements);
         foreach ($requirements as $requirement) {
-            $requirement = $this->normalizeRequirement($requirement);
-            list($packageName, $packageVersion) = explode(" ", $requirement, 2);
-
-            $requires[$packageName] = $packageVersion;
+            $requires[$requirement['name']] = $requirement['version'];
         }
 
         return $requires;
-    }
-
-    protected function normalizeRequirement($requirement)
-    {
-        return preg_replace('{^([^=: ]+)[=: ](.*)$}', '$1 $2', $requirement);
     }
 
     protected function getGitConfig()
@@ -439,6 +437,13 @@ EOT
         }
 
         return false;
+    }
+
+    protected function normalizeRequirements(array $requirements)
+    {
+        $parser = new VersionParser();
+
+        return $parser->parseNameVersionPairs($requirements);
     }
 
     protected function addVendorIgnore($ignoreFile, $vendor = 'vendor')

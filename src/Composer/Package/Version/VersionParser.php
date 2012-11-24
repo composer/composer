@@ -320,4 +320,33 @@ class VersionParser
 
         throw new \UnexpectedValueException('Could not parse version constraint '.$constraint);
     }
+
+    /**
+     * Parses a name/version pairs and returns an array of pairs + the
+     *
+     * @param array $pairs a set of package/version pairs separated by ":", "=" or " "
+     * @return array[] array of arrays containing a name and (if provided) a version
+     */
+    public function parseNameVersionPairs(array $pairs)
+    {
+        $pairs = array_values($pairs);
+        $result = array();
+
+        for ($i = 0; $i < count($pairs); $i++) {
+            $pair = preg_replace('{^([^=: ]+)[=: ](.*)$}', '$1 $2', trim($pairs[$i]));
+            if (false === strpos($pair, ' ') && isset($pairs[$i+1]) && false === strpos($pairs[$i+1], '/')) {
+                $pair .= ' '.$pairs[$i+1];
+                $i++;
+            }
+
+            if (strpos($pair, ' ')) {
+                list($name, $version) = explode(" ", $pair, 2);
+                $result[] = array('name' => $name, 'version' => $version);
+            } else {
+                $result[] = array('name' => $pair);
+            }
+        }
+
+        return $result;
+    }
 }
