@@ -100,7 +100,11 @@ class Factory
                             continue;
                         }
                     }
-                    foreach (glob($oldPathMatch) as $child) {
+                    $oldPathMatches = glob($oldPathMatch);
+                    if (false === $oldPathMatches) {
+                        throw new Exception('Could not read legacy paths. Perhaps open_basedir restriction is in effect.');
+                    }
+                    foreach ($oldPathMatches as $child) {
                         @rename($child, $dir.'/'.basename($child));
                     }
                     @unlink($oldPath);
