@@ -100,8 +100,10 @@ class Factory
                             continue;
                         }
                     }
-                    foreach (glob($oldPathMatch) as $child) {
-                        @rename($child, $dir.'/'.basename($child));
+                    if (is_array($children = glob($oldPathMatch))) {
+                        foreach ($children as $child) {
+                            @rename($child, $dir.'/'.basename($child));
+                        }
                     }
                     @unlink($oldPath);
                 }
