@@ -30,8 +30,7 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
                 'Namespaced\\Bar' => realpath(__DIR__).'/Fixtures/Namespaced/Bar.php',
                 'Namespaced\\Foo' => realpath(__DIR__).'/Fixtures/Namespaced/Foo.php',
                 'Namespaced\\Baz' => realpath(__DIR__).'/Fixtures/Namespaced/Baz.php',
-                )
-            ),
+            )),
             array(__DIR__.'/Fixtures/beta/NamespaceCollision', array(
                 'NamespaceCollision\\A\\B\\Bar' => realpath(__DIR__).'/Fixtures/beta/NamespaceCollision/A/B/Bar.php',
                 'NamespaceCollision\\A\\B\\Foo' => realpath(__DIR__).'/Fixtures/beta/NamespaceCollision/A/B/Foo.php',
@@ -53,7 +52,9 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
                 'ClassMap\\SomeParent'    => realpath(__DIR__).'/Fixtures/classmap/SomeParent.php',
                 'ClassMap\\SomeClass'     => realpath(__DIR__).'/Fixtures/classmap/SomeClass.php',
                 'Foo\\LargeClass'         => realpath(__DIR__).'/Fixtures/classmap/LargeClass.php',
-                'Foo\\LargeGap'         => realpath(__DIR__).'/Fixtures/classmap/LargeGap.php',
+                'Foo\\LargeGap'           => realpath(__DIR__).'/Fixtures/classmap/LargeGap.php',
+                'Foo\\MissingSpace'       => realpath(__DIR__).'/Fixtures/classmap/MissingSpace.php',
+                'Foo\\☃'                 => realpath(__DIR__).'/Fixtures/classmap/Snowman.php',
             )),
             array(__DIR__.'/Fixtures/template', array()),
         );
