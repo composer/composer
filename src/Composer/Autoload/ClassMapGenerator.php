@@ -125,10 +125,10 @@ class ClassMapGenerator
 
         preg_match_all('{
             (?:
-                 \b(?<![\$:>])(?<type>class|interface'.$traits.') \s+ (?<name>[^\s\{]+)
-               | \b(?<![\$:>])(?<ns>namespace) (?<nsname>\s+[^\s;{}\\\\]+(?:\s*\\\\\s*[^\s;{}\\\\]+)*)? \s*[\{;]
+                 \b(?<![\$:>])(?<type>class|interface'.$traits.') \s+ (?<name>[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)
+               | \b(?<![\$:>])(?<ns>namespace) (?<nsname>\s+[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\s*\\\\\s*[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)? \s*[\{;]
             )
-        }iux', $contents, $matches);
+        }ix', $contents, $matches);
 
         $classes = array();
         $namespace = '';
