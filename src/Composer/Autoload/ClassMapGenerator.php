@@ -125,7 +125,7 @@ class ClassMapGenerator
 
         preg_match_all('{
             (?:
-                 \b(?<![\$:>])(?<type>class|interface'.$traits.') \s+ (?<name>\S+)
+                 \b(?<![\$:>])(?<type>class|interface'.$traits.') \s+ (?<name>\w+)
                | \b(?<![\$:>])(?<ns>namespace) (?<nsname>\s+[^\s;{}\\\\]+(?:\s*\\\\\s*[^\s;{}\\\\]+)*)? \s*[\{;]
             )
         }ix', $contents, $matches);
