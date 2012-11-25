@@ -1,0 +1,7 @@
+<?php
+
+namespace Foo;
+
+class ☃
+{
+}
