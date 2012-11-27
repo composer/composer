@@ -126,6 +126,9 @@ EOF;
                         preg_quote(rtrim($dir, '/')),
                         strpos($namespace, '_') === false ? preg_quote(strtr($namespace, '\\', '/')) : ''
                     );
+                    if (!is_dir($dir)) {
+                        continue;
+                    }
                     foreach (ClassMapGenerator::createMap($dir, $whitelist) as $class => $path) {
                         if ('' === $namespace || 0 === strpos($class, $namespace)) {
                             $path = '/'.$filesystem->findShortestPath(getcwd(), $path, true);

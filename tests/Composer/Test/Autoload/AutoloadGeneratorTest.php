@@ -212,6 +212,24 @@ class AutoloadGeneratorTest extends TestCase
         $this->assertTrue(file_exists($this->vendorDir.'/composer/autoload_classmap.php'), "ClassMap file needs to be generated, even if empty.");
     }
 
+    public function testPSR0ToClassMapIgnoresNonExistingDir()
+    {
+        $package = new Package('a', '1.0', '1.0');
+
+        $package->setAutoload(array('psr-0' => array('foo/bar/non/existing/')));
+
+        $this->repository->expects($this->once())
+            ->method('getPackages')
+            ->will($this->returnValue(array()));
+
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', true, '_8');
+        $this->assertTrue(file_exists($this->vendorDir.'/composer/autoload_classmap.php'), "ClassMap file needs to be generated.");
+        $this->assertEquals(
+            array(),
+            include $this->vendorDir.'/composer/autoload_classmap.php'
+        );
+    }
+
     public function testVendorsClassMapAutoloading()
     {
         $package = new Package('a', '1.0', '1.0');
