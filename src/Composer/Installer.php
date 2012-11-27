@@ -333,7 +333,14 @@ class Installer
 
             $constraint = new VersionConstraint('=', $package->getVersion());
             $constraint->setPrettyString($package->getPrettyVersion());
-            $request->install($package->getName(), $constraint);
+
+            if (!($package->getRepository() instanceof PlatformRepository)
+                || !($provided = $this->package->getProvides())
+                || !isset($provided[$package->getName()])
+                || !$provided[$package->getName()]->getConstraint()->matches($constraint)
+            ) {
+                $request->install($package->getName(), $constraint);
+            }
         }
 
         // if the updateWhitelist is enabled, packages not in it are also fixed
