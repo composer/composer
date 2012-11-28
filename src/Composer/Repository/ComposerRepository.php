@@ -22,6 +22,7 @@ use Composer\Cache;
 use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Util\RemoteFilesystem;
+use Composer\Util\StreamContextFactory;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -79,30 +80,56 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
     /**
      * {@inheritDoc}
      */
-    public function notifyInstall(PackageInterface $package)
+    public function notifyInstalls(array $packages)
     {
         if (!$this->notifyUrl || !$this->config->get('notify-on-install')) {
             return;
         }
 
-        // TODO use an optional curl_multi pool for all the notifications
-        $url = str_replace('%package%', $package->getPrettyName(), $this->notifyUrl);
+        // non-batch API, deprecated
+        if (strpos($this->notifyUrl, '%package%')) {
+            foreach ($packages as $package) {
+                $url = str_replace('%package%', $package->getPrettyName(), $this->notifyUrl);
 
-        $params = array(
-            'version' => $package->getPrettyVersion(),
-            'version_normalized' => $package->getVersion(),
-        );
+                $params = array(
+                    'version' => $package->getPrettyVersion(),
+                    'version_normalized' => $package->getVersion(),
+                );
+                $opts = array('http' =>
+                    array(
+                        'method'  => 'POST',
+                        'header'  => 'Content-type: application/x-www-form-urlencoded',
+                        'content' => http_build_query($params, '', '&'),
+                        'timeout' => 3,
+                    )
+                );
+
+                $context = StreamContextFactory::getContext($opts);
+                @file_get_contents($url, false, $context);
+            }
+
+            return;
+        }
+
+        $postData = array('downloads' => array());
+        foreach ($packages as $package) {
+            $postData['downloads'][] = array(
+                'name' => $package->getPrettyName(),
+                'version' => $package->getVersion(),
+            );
+        }
+
         $opts = array('http' =>
             array(
                 'method'  => 'POST',
-                'header'  => 'Content-type: application/x-www-form-urlencoded',
-                'content' => http_build_query($params, '', '&'),
-                'timeout' => 3,
+                'header'  => 'Content-Type: application/json',
+                'content' => json_encode($postData),
+                'timeout' => 6,
             )
         );
 
-        $context = stream_context_create($opts);
-        @file_get_contents($url, false, $context);
+        $context = StreamContextFactory::getContext($opts);
+        @file_get_contents($this->notifyUrl, false, $context);
     }
 
     public function setRootAliases(array $rootAliases)
@@ -340,7 +367,15 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
 
         $data = $this->fetchFile($jsonUrl, 'packages.json');
 
-        if (!empty($data['notify'])) {
+        if (!empty($data['notify_batch'])) {
+            if ('/' === $data['notify_batch'][0]) {
+                $this->notifyUrl = preg_replace('{(https?://[^/]+).*}i', '$1' . $data['notify_batch'], $this->url);
+            } else {
+                $this->notifyUrl = $data['notify_batch'];
+            }
+        }
+
+        if (!$this->notifyUrl && !empty($data['notify'])) {
             if ('/' === $data['notify'][0]) {
                 $this->notifyUrl = preg_replace('{(https?://[^/]+).*}i', '$1' . $data['notify'], $this->url);
             } else {
