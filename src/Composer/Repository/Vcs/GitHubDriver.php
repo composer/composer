@@ -108,7 +108,14 @@ class GitHubDriver extends VcsDriver
             return $this->gitDriver->getDist($identifier);
         }
         $label = array_search($identifier, $this->getTags()) ?: $identifier;
-        $url = 'https://github.com/'.$this->owner.'/'.$this->repository.'/archive/'.$label.'.zip';
+
+        if ($this->isPrivate) {
+            // Private GitHub repository zipballs are accessed through the API.
+            // http://developer.github.com/v3/repos/contents/#get-archive-link
+            $url = 'https://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/zipball/'.$label;
+        } else {
+            $url = 'https://github.com/'.$this->owner.'/'.$this->repository.'/archive/'.$label.'.zip';
+        }
 
         return array('type' => 'zip', 'url' => $url, 'reference' => $label, 'shasum' => '');
     }
