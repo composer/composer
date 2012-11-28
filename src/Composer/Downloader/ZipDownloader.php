@@ -34,7 +34,9 @@ class ZipDownloader extends ArchiveDownloader
     protected function extract($file, $path)
     {
         if (!class_exists('ZipArchive')) {
-            $error = 'You need the zip extension enabled to use the ZipDownloader';
+            $iniPath = php_ini_loaded_file();
+            $error = 'You need the zip extension enabled to use the ZipDownloader\n'.
+                    "Check if the line 'extension=php_zip.dll' is inserted in $iniPath.";
 
             // try to use unzip on *nix
             if (!defined('PHP_WINDOWS_VERSION_BUILD')) {
