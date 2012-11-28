@@ -184,7 +184,7 @@ EOT
         $projectInstaller = new ProjectInstaller($directory, $dm);
         $projectInstaller->install(new InstalledFilesystemRepository(new JsonFile('php://memory')), $package);
         if ($package->getRepository() instanceof NotifiableRepositoryInterface) {
-            $package->getRepository()->notifyInstall($package);
+            $package->getRepository()->markForNotification($package);
         }
         $installedFromVcs = 'source' === $package->getInstallationSource();
 
