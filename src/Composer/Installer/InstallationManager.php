@@ -34,6 +34,12 @@ class InstallationManager
 {
     private $installers = array();
     private $cache = array();
+    private $notifiablePackages = array();
+
+    public function reset()
+    {
+        $this->notifiablePackages = array();
+    }
 
     /**
      * Adds installer
@@ -130,7 +136,7 @@ class InstallationManager
         $package = $operation->getPackage();
         $installer = $this->getInstaller($package->getType());
         $installer->install($repo, $package);
-        $this->notifyInstall($package);
+        $this->markForNotification($package);
     }
 
     /**
@@ -150,7 +156,7 @@ class InstallationManager
         if ($initialType === $targetType) {
             $installer = $this->getInstaller($initialType);
             $installer->update($repo, $initial, $target);
-            $this->notifyInstall($target);
+            $this->markForNotification($target);
         } else {
             $this->getInstaller($initialType)->uninstall($repo, $initial);
             $this->getInstaller($targetType)->install($repo, $target);
@@ -211,10 +217,18 @@ class InstallationManager
         return $installer->getInstallPath($package);
     }
 
-    private function notifyInstall(PackageInterface $package)
+    public function notifyInstalls()
+    {
+        foreach ($this->notifiablePackages as $packages) {
+            $repo = reset($packages)->getRepository();
+            $repo->notifyInstalls($packages);
+        }
+    }
+
+    private function markForNotification(PackageInterface $package)
     {
         if ($package->getRepository() instanceof NotifiableRepositoryInterface) {
-            $package->getRepository()->notifyInstall($package);
+            $this->notifiablePackages[spl_object_hash($package->getRepository())][$package->getName()] = $package;
         }
     }
 }
