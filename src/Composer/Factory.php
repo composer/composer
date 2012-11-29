@@ -223,7 +223,7 @@ class Factory
         $dm = $this->createDownloadManager($io, $config);
 
         // initialize installation manager
-        $im = $this->createInstallationManager($config);
+        $im = $this->createInstallationManager();
 
         // initialize composer
         $composer = new Composer();
@@ -305,12 +305,11 @@ class Factory
     }
 
     /**
-     * @param  Config                        $config
      * @return Installer\InstallationManager
      */
-    protected function createInstallationManager(Config $config)
+    protected function createInstallationManager()
     {
-        return new Installer\InstallationManager($config->get('vendor-dir'));
+        return new Installer\InstallationManager();
     }
 
     /**

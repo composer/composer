@@ -16,14 +16,15 @@ use Composer\Config;
 use Composer\Factory;
 use Composer\Installer;
 use Composer\Installer\ProjectInstaller;
+use Composer\Installer\InstallationManager;
 use Composer\IO\IOInterface;
 use Composer\Package\BasePackage;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\DependencyResolver\Pool;
+use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\FilesystemRepository;
-use Composer\Repository\NotifiableRepositoryInterface;
 use Composer\Repository\InstalledFilesystemRepository;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -117,11 +118,6 @@ EOT
             throw new \InvalidArgumentException('Invalid stability provided ('.$stability.'), must be one of: '.implode(', ', array_keys(BasePackage::$stabilities)));
         }
 
-        $dm = $this->createDownloadManager($io, $config);
-        if ($preferSource) {
-            $dm->setPreferSource(true);
-        }
-
         if (null === $repositoryUrl) {
             $sourceRepo = new CompositeRepository(Factory::createDefaultRepositories($io, $config));
         } elseif ("json" === pathinfo($repositoryUrl, PATHINFO_EXTENSION)) {
@@ -179,13 +175,16 @@ EOT
             $package->setSourceReference(substr($package->getPrettyVersion(), 4));
         }
 
+        $dm = $this->createDownloadManager($io, $config);
         $dm->setPreferSource($preferSource)
             ->setPreferDist($preferDist);
+
         $projectInstaller = new ProjectInstaller($directory, $dm);
-        $projectInstaller->install(new InstalledFilesystemRepository(new JsonFile('php://memory')), $package);
-        if ($package->getRepository() instanceof NotifiableRepositoryInterface) {
-            $package->getRepository()->notifyInstall($package);
-        }
+        $im = $this->createInstallationManager();
+        $im->addInstaller($projectInstaller);
+        $im->install(new InstalledFilesystemRepository(new JsonFile('php://memory')), new InstallOperation($package));
+        $im->notifyInstalls();
+
         $installedFromVcs = 'source' === $package->getInstallationSource();
 
         $io->write('<info>Created project in ' . $directory . '</info>');
@@ -194,7 +193,7 @@ EOT
         putenv('COMPOSER_ROOT_VERSION='.$package->getPrettyVersion());
 
         // clean up memory
-        unset($dm, $config, $projectInstaller, $sourceRepo, $package);
+        unset($dm, $im, $config, $projectInstaller, $sourceRepo, $package);
 
         // install dependencies of the created project
         $composer = Factory::create($io);
@@ -247,5 +246,10 @@ EOT
         $factory = new Factory();
 
         return $factory->createDownloadManager($io, $config);
+    }
+
+    protected function createInstallationManager()
+    {
+        return new InstallationManager();
     }
 }

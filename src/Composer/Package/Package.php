@@ -41,6 +41,7 @@ class Package extends BasePackage
     protected $prettyAlias;
     protected $dev;
     protected $stability;
+    protected $notificationUrl;
 
     protected $requires = array();
     protected $conflicts = array();
@@ -505,5 +506,23 @@ class Package extends BasePackage
     public function getIncludePaths()
     {
         return $this->includePaths;
+    }
+
+    /**
+     * Sets the notification URL
+     *
+     * @param string $notificationUrl
+     */
+    public function setNotificationUrl($notificationUrl)
+    {
+        $this->notificationUrl = $notificationUrl;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getNotificationUrl()
+    {
+        return $this->notificationUrl;
     }
 }

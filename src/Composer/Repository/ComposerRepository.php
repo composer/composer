@@ -22,12 +22,11 @@ use Composer\Cache;
 use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Util\RemoteFilesystem;
-use Composer\Util\StreamContextFactory;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class ComposerRepository extends ArrayRepository implements NotifiableRepositoryInterface, StreamableRepositoryInterface
+class ComposerRepository extends ArrayRepository implements StreamableRepositoryInterface
 {
     protected $config;
     protected $options;
@@ -75,61 +74,6 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
         $this->io = $io;
         $this->cache = new Cache($io, $config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $this->url));
         $this->loader = new ArrayLoader();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function notifyInstalls(array $packages)
-    {
-        if (!$this->notifyUrl || !$this->config->get('notify-on-install')) {
-            return;
-        }
-
-        // non-batch API, deprecated
-        if (strpos($this->notifyUrl, '%package%')) {
-            foreach ($packages as $package) {
-                $url = str_replace('%package%', $package->getPrettyName(), $this->notifyUrl);
-
-                $params = array(
-                    'version' => $package->getPrettyVersion(),
-                    'version_normalized' => $package->getVersion(),
-                );
-                $opts = array('http' =>
-                    array(
-                        'method'  => 'POST',
-                        'header'  => 'Content-type: application/x-www-form-urlencoded',
-                        'content' => http_build_query($params, '', '&'),
-                        'timeout' => 3,
-                    )
-                );
-
-                $context = StreamContextFactory::getContext($opts);
-                @file_get_contents($url, false, $context);
-            }
-
-            return;
-        }
-
-        $postData = array('downloads' => array());
-        foreach ($packages as $package) {
-            $postData['downloads'][] = array(
-                'name' => $package->getPrettyName(),
-                'version' => $package->getVersion(),
-            );
-        }
-
-        $opts = array('http' =>
-            array(
-                'method'  => 'POST',
-                'header'  => 'Content-Type: application/json',
-                'content' => json_encode($postData),
-                'timeout' => 6,
-            )
-        );
-
-        $context = StreamContextFactory::getContext($opts);
-        @file_get_contents($this->notifyUrl, false, $context);
     }
 
     public function setRootAliases(array $rootAliases)
@@ -459,6 +403,8 @@ class ComposerRepository extends ArrayRepository implements NotifiableRepository
     protected function createPackage(array $data, $class)
     {
         try {
+            $data['notification-url'] = $this->notifyUrl;
+
             return $this->loader->load($data, 'Composer\Package\CompletePackage');
         } catch (\Exception $e) {
             throw new \RuntimeException('Could not load package '.(isset($data['name']) ? $data['name'] : json_encode($data)).' in '.$this->url.': ['.get_class($e).'] '.$e->getMessage(), 0, $e);
