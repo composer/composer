@@ -86,11 +86,15 @@ class VersionParser
      * Normalizes a version string to be able to perform comparisons on it
      *
      * @param  string $version
+     * @param  string $fullVersion optional complete version string to give more context
      * @return array
      */
-    public function normalize($version)
+    public function normalize($version, $fullVersion = null)
     {
         $version = trim($version);
+        if (null === $fullVersion) {
+            $fullVersion = $version;
+        }
 
         // ignore aliases and just assume the alias is required instead of the source
         if (preg_match('{^([^,\s]+) +as +([^,\s]+)$}', $version, $match)) {
@@ -144,7 +148,14 @@ class VersionParser
             } catch (\Exception $e) {}
         }
 
-        throw new \UnexpectedValueException('Invalid version string "'.$version.'"');
+        $extraMessage = '';
+        if (preg_match('{ +as +'.preg_quote($version).'$}', $fullVersion)) {
+            $extraMessage = ' in "'.$fullVersion.'", the alias must be an exact version';
+        } elseif (preg_match('{^'.preg_quote($version).' +as +}', $fullVersion)) {
+            $extraMessage = ' in "'.$fullVersion.'", the alias source must be an exact version, if it is a branch name you should prefix it with dev-';
+        }
+
+        throw new \UnexpectedValueException('Invalid version string "'.$version.'"'.$extraMessage);
     }
 
     /**
@@ -315,10 +326,15 @@ class VersionParser
                 }
 
                 return array(new VersionConstraint($matches[1] ?: '=', $version));
-            } catch (\Exception $e) {}
+            } catch (\Exception $e) { }
         }
 
-        throw new \UnexpectedValueException('Could not parse version constraint '.$constraint);
+        $message = 'Could not parse version constraint '.$constraint;
+        if (isset($e)) {
+            $message .= ': '.$e->getMessage();
+        }
+
+        throw new \UnexpectedValueException($message);
     }
 
     /**
