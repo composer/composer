@@ -255,7 +255,7 @@ class InstallationManager
                     @file_get_contents($url, false, $context);
                 }
 
-                return;
+                continue;
             }
 
             $postData = array('downloads' => array());
