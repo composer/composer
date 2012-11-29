@@ -142,6 +142,10 @@ class ArrayLoader implements LoaderInterface
             }
         }
 
+        if (!empty($config['notification-url'])) {
+            $package->setNotificationUrl($config['notification-url']);
+        }
+
         if ($package instanceof Package\CompletePackageInterface) {
             if (isset($config['scripts']) && is_array($config['scripts'])) {
                 foreach ($config['scripts'] as $event => $listeners) {

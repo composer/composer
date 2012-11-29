@@ -289,6 +289,13 @@ interface PackageInterface
     public function getUniqueName();
 
     /**
+     * Returns the package notification url
+     *
+     * @return string
+     */
+    public function getNotificationUrl();
+
+    /**
      * Converts the package into a readable and unique string
      *
      * @return string
