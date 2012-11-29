@@ -104,9 +104,9 @@ class RootPackageLoader extends ArrayLoader
             if (preg_match('{^([^,\s]+) +as +([^,\s]+)$}', $reqVersion, $match)) {
                 $aliases[] = array(
                     'package' => strtolower($reqName),
-                    'version' => $this->versionParser->normalize($match[1]),
+                    'version' => $this->versionParser->normalize($match[1], $reqVersion),
                     'alias' => $match[2],
-                    'alias_normalized' => $this->versionParser->normalize($match[2]),
+                    'alias_normalized' => $this->versionParser->normalize($match[2], $reqVersion),
                 );
             }
         }
