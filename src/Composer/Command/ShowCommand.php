@@ -258,12 +258,18 @@ EOT
         }
 
         uasort($versions, 'version_compare');
-        $versions = implode(', ', array_keys(array_reverse($versions)));
+        $versions = array_keys(array_reverse($versions));
 
         // highlight installed version
         if ($installedRepo->hasPackage($package)) {
-            $versions = str_replace($package->getPrettyVersion(), '<info>* ' . $package->getPrettyVersion() . '</info>', $versions);
+            $installedVersion = $package->getPrettyVersion();
+            $key = array_search($installedVersion, $versions);
+            if (FALSE !== $key) {
+                $versions[$key] = '<info>* ' . $installedVersion . '</info>';
+            }
         }
+
+        $versions = implode(', ', $versions);
 
         $output->writeln('<info>versions</info> : ' . $versions);
     }
