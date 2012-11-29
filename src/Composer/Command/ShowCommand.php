@@ -264,7 +264,7 @@ EOT
         if ($installedRepo->hasPackage($package)) {
             $installedVersion = $package->getPrettyVersion();
             $key = array_search($installedVersion, $versions);
-            if (FALSE !== $key) {
+            if (false !== $key) {
                 $versions[$key] = '<info>* ' . $installedVersion . '</info>';
             }
         }
