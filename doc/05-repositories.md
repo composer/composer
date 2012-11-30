@@ -99,10 +99,9 @@ It may include any of the other fields specified in the [schema](04-schema.md).
 
 #### notify_batch
 
-The `notify_batch` field allows you to specify an URL template for a URL that
-will be called every time a user installs a package. The URL can be either an
-absolute path (that will use the same domain as the repository) or a fully
-qualified URL.
+The `notify_batch` field allows you to specify an URL that will be called
+every time a user installs a package. The URL can be either an absolute path
+(that will use the same domain as the repository) or a fully qualified URL.
 
 An example value:
 
