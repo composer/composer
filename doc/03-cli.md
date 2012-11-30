@@ -140,6 +140,10 @@ terms you want to search for.
 
 You can also search for more than one term by passing multiple arguments.
 
+### Options
+
+* **--only-name (-N):** Search only in name.
+
 ## show
 
 To list all of the available packages, you can use the `show` command.
