@@ -123,9 +123,6 @@ JSON request body:
 The version field will contain the normalized representation of the version
 number.
 
-> **Note:** There is a non-batch notification API, but it is deprecated
-> for performance reasons.
-
 This field is optional.
 
 #### includes
