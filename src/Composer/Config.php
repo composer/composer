@@ -150,6 +150,18 @@ class Config
         }
     }
 
+    public function all()
+    {
+        $all = array(
+            'repositories' => $this->getRepositories(),
+        );
+        foreach (array_keys($this->config) as $key) {
+            $all['config'][$key] = $this->get($key);
+        }
+
+        return $all;
+    }
+
     /**
      * Checks whether a setting exists
      *
