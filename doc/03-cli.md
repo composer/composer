@@ -41,7 +41,7 @@ while using some smart defaults.
 * **--require:** Package to require with a version constraint. Should be
   in format `foo/bar:1.0.0`.
 * **--require-dev:** Development requirements, see **--require**.
-* **--stability:** Value for the `minimum-stability` field.
+* **--stability (-s):** Value for the `minimum-stability` field.
 
 ## install
 
@@ -245,7 +245,7 @@ By default the command checks for the packages on packagist.org.
 * **--repository-url:** Provide a custom repository to search for the package,
   which will be used instead of packagist. Can be either an HTTP URL pointing
   to a `composer` repository, or a path to a local `packages.json` file.
-* **--stability:** Minimum stability of package. Defaults to `stable`.
+* **--stability (-s):** Minimum stability of package. Defaults to `stable`.
 * **--prefer-source:** Install packages from `source` when available.
 * **--prefer-dist:** Install packages from `dist` when available.
 * **--dev:** Install packages listed in `require-dev`.
