@@ -209,6 +209,22 @@ You should always run the `validate` command before you commit your
 
     $ php composer.phar validate
 
+## status
+
+If you often need to modify the code of your dependencies and they are
+installed from source, the `status` command allows you to check if you have
+local changes in any of them.
+
+    $ php composer.phar status
+
+With the `--verbose` option you get some more information about what was
+changed:
+
+    $ php composer.phar status -v
+    You have changes in the following dependencies:
+    vendor/seld/jsonlint:
+        M README.mdown
+
 ## self-update
 
 To update composer itself to the latest version, just run the `self-update`
