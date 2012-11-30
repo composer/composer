@@ -41,6 +41,7 @@ while using some smart defaults.
 * **--require:** Package to require with a version constraint. Should be
   in format `foo/bar:1.0.0`.
 * **--require-dev:** Development requirements, see **--require**.
+* **--stability:** Value for the `minimum-stability` field.
 
 ## install
 
