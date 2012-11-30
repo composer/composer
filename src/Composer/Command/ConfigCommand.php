@@ -28,6 +28,11 @@ use Composer\Json\JsonFile;
 class ConfigCommand extends Command
 {
     /**
+     * @var Config
+     */
+    protected $config;
+
+    /**
      * @var Composer\Json\JsonFile
      */
     protected $configFile;
@@ -97,10 +102,12 @@ EOT
             throw new \RuntimeException('--file and --global can not be combined');
         }
 
+        $this->config = Factory::createConfig();
+
         // Get the local composer.json, global config.json, or if the user
         // passed in a file to use
         $configFile = $input->getOption('global')
-            ? (Factory::createConfig()->get('home') . '/config.json')
+            ? ($this->config->get('home') . '/config.json')
             : $input->getOption('file');
 
         $this->configFile = new JsonFile($configFile);
@@ -144,9 +151,13 @@ EOT
             return 0;
         }
 
+        if (!$input->getOption('global')) {
+            $this->config->merge($this->configFile->read());
+        }
+
         // List the configuration of the file settings
         if ($input->getOption('list')) {
-            $this->listConfiguration($this->configFile->read(), $output);
+            $this->listConfiguration($this->config->all(), $output);
 
             return 0;
         }
@@ -161,9 +172,9 @@ EOT
             throw new \RuntimeException('You can not combine a setting value with --unset');
         }
 
-        // list value
+        // show the value if no value is provided
         if (array() === $input->getArgument('setting-value') && !$input->getOption('unset')) {
-            $data = $this->configFile->read();
+            $data = $this->config->all();
             if (preg_match('/^repos?(?:itories)?(?:\.(.+))?/', $settingKey, $matches)) {
                 if (empty($matches[1])) {
                     $value = isset($data['repositories']) ? $data['repositories'] : array();
@@ -315,7 +326,7 @@ EOT
                 continue;
             }
 
-            if (is_array($value) && !is_numeric(key($value))) {
+            if (is_array($value) && (!is_numeric(key($value)) || ($key === 'repositories' && null === $k))) {
                 $k .= preg_replace('{^config\.}', '', $key . '.');
                 $this->listConfiguration($value, $output, $k);
 
@@ -330,7 +341,15 @@ EOT
             }
 
             if (is_array($value)) {
+                $value = array_map(function ($val) {
+                    return is_array($val) ? json_encode($val) : $val;
+                }, $value);
+
                 $value = '['.implode(', ', $value).']';
+            }
+
+            if (is_bool($value)) {
+                $value = var_export($value, true);
             }
 
             $output->writeln('[<comment>' . $k . $key . '</comment>] <info>' . $value . '</info>');
