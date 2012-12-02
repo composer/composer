@@ -216,6 +216,45 @@ you have to run the command with `root` privileges
 
     $ sudo composer self-update
 
+## Config
+
+The `config` command allows you to edit some basic composer settings in either
+the local composer.json file or the global config.json file.
+
+    $ php composer.phar config --list
+
+### Usage
+
+`config [options] [setting-key] [setting-value1] ... [setting-valueN]`
+
+`setting-key` is a configuration option name and `setting-value1` is a
+configuration value.  For settings that can take an array of values (like
+`github-protocols`), more than one setting-value arguments are allowed.
+
+See the [config schema section](04-schema.md#config) for valid configuration
+options.
+
+### Options
+
+* **-g|--global:** Operate on the global config file located at
+`$COMPOSER_HOME/config.json by` default.  Without this option, this command
+affects the local composer.json file or a file specified by `--file`.
+* **-e|--editor:** Open the local composer.json file using in a text editor as
+defined by the `EDITOR env variable.  With the `--global` option, this opens
+the global config file.
+* **--unset:** Remove the configuration element named by `setting-key`.
+* **-l|--list:** Show the list of current config variables.  With the `--global`
+ option this lists the global configuration only.
+* **-f|--file="...":** Operate on a specific file instead of composer.json. Note
+ that this cannot be used in conjunction with the `--global` option.
+
+### Modifying Repositories
+
+In addition to modifying the config section, the `config` command also supports making
+changes to the repositories section by using it the following way:
+
+    $ php composer.phar config repositories.foo vcs http://github.com/foo/bar
+
 ## create-project
 
 You can use Composer to create new projects from an existing package. This is
