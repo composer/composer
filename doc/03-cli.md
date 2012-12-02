@@ -41,6 +41,7 @@ while using some smart defaults.
 * **--require:** Package to require with a version constraint. Should be
   in format `foo/bar:1.0.0`.
 * **--require-dev:** Development requirements, see **--require**.
+* **--stability (-s):** Value for the `minimum-stability` field.
 
 ## install
 
@@ -139,6 +140,10 @@ terms you want to search for.
 
 You can also search for more than one term by passing multiple arguments.
 
+### Options
+
+* **--only-name (-N):** Search only in name.
+
 ## show
 
 To list all of the available packages, you can use the `show` command.
@@ -203,6 +208,22 @@ You should always run the `validate` command before you commit your
 `composer.json` is valid.
 
     $ php composer.phar validate
+
+## status
+
+If you often need to modify the code of your dependencies and they are
+installed from source, the `status` command allows you to check if you have
+local changes in any of them.
+
+    $ php composer.phar status
+
+With the `--verbose` option you get some more information about what was
+changed:
+
+    $ php composer.phar status -v
+    You have changes in the following dependencies:
+    vendor/seld/jsonlint:
+        M README.mdown
 
 ## self-update
 
@@ -283,6 +304,7 @@ By default the command checks for the packages on packagist.org.
 * **--repository-url:** Provide a custom repository to search for the package,
   which will be used instead of packagist. Can be either an HTTP URL pointing
   to a `composer` repository, or a path to a local `packages.json` file.
+* **--stability (-s):** Minimum stability of package. Defaults to `stable`.
 * **--prefer-source:** Install packages from `source` when available.
 * **--prefer-dist:** Install packages from `dist` when available.
 * **--dev:** Install packages listed in `require-dev`.
