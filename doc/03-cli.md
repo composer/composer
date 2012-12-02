@@ -237,7 +237,7 @@ options.
 ### Options
 
 * **-g|--global:** Operate on the global config file located at
-`$COMPOSER_HOME/config.json by` default.  Without this option, this command
+`$COMPOSER_HOME/config.json` by default.  Without this option, this command
 affects the local composer.json file or a file specified by `--file`.
 * **-e|--editor:** Open the local composer.json file using in a text editor as
 defined by the `EDITOR` env variable.  With the `--global` option, this opens
