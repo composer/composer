@@ -63,7 +63,7 @@ class InitCommand extends Command
                 new InputOption('homepage', null, InputOption::VALUE_REQUIRED, 'Homepage of package'),
                 new InputOption('require', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Package to require with a version constraint, e.g. foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"'),
                 new InputOption('require-dev', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Package to require for development with a version constraint, e.g. foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"'),
-                new InputOption('minimum-stability', null, InputOption::VALUE_REQUIRED, 'Minimum stability (empty or one of: '.implode(', ', array_keys(BasePackage::$stabilities)).')'),
+                new InputOption('stability', 's', InputOption::VALUE_REQUIRED, 'Minimum stability (empty or one of: '.implode(', ', array_keys(BasePackage::$stabilities)).')'),
             ))
             ->setHelp(<<<EOT
 The <info>init</info> command creates a basic composer.json file
@@ -80,7 +80,7 @@ EOT
     {
         $dialog = $this->getHelperSet()->get('dialog');
 
-        $whitelist = array('name', 'description', 'author', 'homepage', 'require', 'require-dev', 'minimum-stability');
+        $whitelist = array('name', 'description', 'author', 'homepage', 'require', 'require-dev', 'stability');
 
         $options = array_filter(array_intersect_key($input->getOptions(), array_flip($whitelist)));
 
@@ -228,7 +228,7 @@ EOT
         );
         $input->setOption('author', $author);
 
-        $minimumStability = $input->getOption('minimum-stability') ?: '';
+        $minimumStability = $input->getOption('stability') ?: '';
         $minimumStability = $dialog->askAndValidate(
             $output,
             $dialog->getQuestion('Minimum Stability', $minimumStability),
@@ -247,7 +247,7 @@ EOT
                 return $value;
             }
         );
-        $input->setOption('minimum-stability', $minimumStability);
+        $input->setOption('stability', $minimumStability);
 
         $output->writeln(array(
             '',
