@@ -97,26 +97,30 @@ Here is a minimal package definition:
 
 It may include any of the other fields specified in the [schema](04-schema.md).
 
-#### notify
+#### notify_batch
 
-The `notify` field allows you to specify an URL template for a URL that will
-be called every time a user installs a package. The URL can be either an
-absolute path (that will use the same domain as the repository) or a fully
-qualified URL.
+The `notify_batch` field allows you to specify an URL that will be called
+every time a user installs a package. The URL can be either an absolute path
+(that will use the same domain as the repository) or a fully qualified URL.
 
 An example value:
 
     {
-        "notify": "/downloads/%package%"
+        "notify_batch": "/downloads/"
     }
 
 For `example.org/packages.json` containing a `monolog/monolog` package, this
-would send a `POST` request to `example.org/downloads/monolog/monolog` with
-following parameters:
+would send a `POST` request to `example.org/downloads/` with following
+JSON request body:
 
-* **version:** The version of the package.
-* **version_normalized:** The normalized internal representation of the
-  version.
+    {
+        "downloads": [
+            {"name": "monolog/monolog", "version": "1.2.1.0"},
+        ]
+    }
+
+The version field will contain the normalized representation of the version
+number.
 
 This field is optional.
 
