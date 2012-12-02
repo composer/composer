@@ -240,7 +240,7 @@ options.
 `$COMPOSER_HOME/config.json by` default.  Without this option, this command
 affects the local composer.json file or a file specified by `--file`.
 * **-e|--editor:** Open the local composer.json file using in a text editor as
-defined by the `EDITOR env variable.  With the `--global` option, this opens
+defined by the `EDITOR` env variable.  With the `--global` option, this opens
 the global config file.
 * **--unset:** Remove the configuration element named by `setting-key`.
 * **-l|--list:** Show the list of current config variables.  With the `--global`
