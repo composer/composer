@@ -113,7 +113,7 @@ class Factory
         return $config;
     }
 
-    public function getComposerFile()
+    public static function getComposerFile()
     {
         return getenv('COMPOSER') ?: 'composer.json';
     }
@@ -171,7 +171,7 @@ class Factory
     {
         // load Composer configuration
         if (null === $localConfig) {
-            $localConfig = $this->getComposerFile();
+            $localConfig = static::getComposerFile();
         }
 
         if (is_string($localConfig)) {
