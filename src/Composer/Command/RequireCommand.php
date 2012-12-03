@@ -51,8 +51,7 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $factory = new Factory;
-        $file = $factory->getComposerFile();
+        $file = Factory::getComposerFile();
 
         if (!file_exists($file)) {
             $output->writeln('<error>'.$file.' not found.</error>');
