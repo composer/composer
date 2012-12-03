@@ -169,7 +169,7 @@ class HgDriver extends VcsDriver
 
             $this->process->execute('hg branches', $output, $this->repoDir);
             foreach ($this->process->splitLines($output) as $branch) {
-                if ($branch && preg_match('(^([^\s]+)\s+\d+:(.*)$)', $branch, $match)) {
+                if ($branch && preg_match('(^([^\s]+)\s+\d+:([a-f0-9]+))', $branch, $match)) {
                     $branches[$match[1]] = $match[2];
                 }
             }
