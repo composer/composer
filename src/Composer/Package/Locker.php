@@ -291,7 +291,7 @@ class Locker
                 if (function_exists('proc_open') && 'git' === $package->getSourceType() && ($path = $this->installationManager->getInstallPath($package))) {
                     $sourceRef = $package->getSourceReference() ?: $package->getDistReference();
                     $process = new ProcessExecutor();
-                    if (0 === $process->execute('git log -n1 --pretty=%ct '.escapeshellarg($sourceRef), $output, $path)) {
+                    if (0 === $process->execute('git log -n1 --pretty=%ct '.escapeshellarg($sourceRef), $output, $path) && !empty($output)) {
                         $datetime = new \DateTime('@'.$output, new \DateTimeZone('UTC'));
                         $spec['time'] = $datetime->format('Y-m-d H:i:s');
                     }
