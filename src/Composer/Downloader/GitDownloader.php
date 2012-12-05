@@ -265,6 +265,10 @@ class GitDownloader extends VcsDownloader
     {
         $handler = array($this, 'outputHandler');
 
+        if (preg_match('{^ssh://[^@]+@[^:]+:[^0-9]+}', $url)) {
+            throw new \InvalidArgumentException('The source URL '.$url.' is invalid, ssh URLs should have a port number after ":".'."\n".'Use ssh://git@example.com:22/path or just git@example.com:path if you do not want to provide a password or custom port.');
+        }
+
         // public github, autoswitch protocols
         if (preg_match('{^(?:https?|git)(://github.com/.*)}', $url, $match)) {
             $protocols = $this->config->get('github-protocols');
