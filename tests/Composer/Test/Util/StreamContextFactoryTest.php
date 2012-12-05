@@ -126,6 +126,20 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
         }
     }
 
+    public function testHttpProxyWithContentTypeHeader() {
+         $_SERVER['http_proxy'] = 'http://username:password@proxyserver.net';
+
+        $context = StreamContextFactory::getContext(array('http' => array('method' => 'GET', 'header' => 'Content-Type: application/json')));
+        $options = stream_context_get_options($context);
+
+        $this->assertEquals(array('http' => array(
+            'proxy' => 'tcp://proxyserver.net:80',
+            'request_fulluri' => true,
+            'method' => 'GET',
+            'header' => array("Content-Type: application/json", "Proxy-Authorization: Basic " . base64_encode('username:password'))
+        )), $options);
+    }
+
     public function dataSSLProxy()
     {
         return array(
