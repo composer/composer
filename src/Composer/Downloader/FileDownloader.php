@@ -87,14 +87,14 @@ class FileDownloader implements DownloaderInterface
         $processedUrl = $this->processUrl($package, $url);
         $hostname = parse_url($processedUrl, PHP_URL_HOST);
 
-        if (strpos($hostname, 'github.com') === (strlen($hostname) - 10)) {
+        if (strpos($hostname, '.github.com') === (strlen($hostname) - 11)) {
             $hostname = 'github.com';
         }
 
         try {
             try {
                 if (!$this->cache || !$this->cache->copyTo($this->getCacheKey($package), $fileName)) {
-                    $this->rfs->copy(parse_url($processedUrl, PHP_URL_HOST), $processedUrl, $fileName);
+                    $this->rfs->copy($hostname, $processedUrl, $fileName);
                     if ($this->cache) {
                         $this->cache->copyFrom($this->getCacheKey($package), $fileName);
                     }
