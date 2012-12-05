@@ -14,13 +14,13 @@ interface GraphBuilderInterface
   /**
    * Function to build (or return a cached version of) a directed graph.
    * Should return an array specifying each vertex for all directions desired,
-   * as well as the type of dependency (e.g. dev-require, require)
+   * as well as the type of dependency (e.g. requires)
    *
    * Example output:
    *
    * [
-   *  ['source' => 'ea/guzzle-bundle', 'destination' => 'symfony/symfony', 'type' => 'require'],
-   *  ['source' => 'symfony/symfony', 'destination' => 'twig/twig', 'type' => 'require']
+   *  ['source' => 'ea/guzzle-bundle', 'destination' => 'symfony/symfony', 'type' => 'requires'],
+   *  ['source' => 'symfony/symfony', 'destination' => 'twig/twig', 'type' => 'requires']
    * ]
    *
    * This would specify a graph of 3 edges (ea/guzzle-bundle, symfony/symfony, 
