@@ -121,7 +121,16 @@ class FileDownloader implements DownloaderInterface
         } catch (\Exception $e) {
             // clean up
             $this->filesystem->removeDirectory($path);
+            $this->clearCache($package, $path);
             throw $e;
+        }
+    }
+
+    protected function clearCache(PackageInterface $package, $path)
+    {
+        if ($this->cache) {
+            $fileName = $this->getFileName($package, $path);
+            $this->cache->remove($this->getCacheKey($package));
         }
     }
 
