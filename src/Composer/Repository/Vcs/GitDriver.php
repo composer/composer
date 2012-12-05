@@ -45,6 +45,10 @@ class GitDriver extends VcsDriver
                 throw new \RuntimeException('Can not clone '.$this->url.' to access package information. The "'.dirname($this->repoDir).'" directory is not writable by the current user.');
             }
 
+            if (preg_match('{^ssh://[^@]+@[^:]+:[^0-9]+}', $this->url)) {
+                throw new \InvalidArgumentException('The source URL '.$this->url.' is invalid, ssh URLs should have a port number after ":".'."\n".'Use ssh://git@example.com:22/path or just git@example.com:path if you do not want to provide a password or custom port.');
+            }
+
             // update the repo if it is a valid git repository
             if (is_dir($this->repoDir) && 0 === $this->process->execute('git remote', $output, $this->repoDir)) {
                 if (0 !== $this->process->execute('git remote update --prune origin', $output, $this->repoDir)) {
