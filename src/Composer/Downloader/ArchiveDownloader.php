@@ -93,20 +93,26 @@ abstract class ArchiveDownloader extends FileDownloader
      */
     protected function processUrl(PackageInterface $package, $url)
     {
-        // support for legacy github archives
-        if ($package->getDistReference() && preg_match('{^https?://(?:www\.)?github\.com/([^/]+)/([^/]+)/(zip|tar)ball/(.+)$}i', $url, $match)) {
-            $url = 'https://github.com/' . $match[1] . '/'. $match[2] . '/' . $match[3] . 'ball/' . $package->getDistReference();
-        }
-
-        if ($package->getDistReference() && preg_match('{^https?://(?:www\.)?github\.com/([^/]+)/([^/]+)/archive/.+\.(zip|tar\.gz)$}i', $url, $match)) {
-            $url = 'https://github.com/' . $match[1] . '/'. $match[2] . '/archive/' . $package->getDistReference() . '.' . $match[3];
+        if ($package->getDistReference() && strpos($url, 'github.com')) {
+            if (preg_match('{^https?://(?:www\.)?github\.com/([^/]+)/([^/]+)/(zip|tar)ball/(.+)$}i', $url, $match)) {
+                // update legacy github archives to API calls with the proper reference
+                $url = 'https://api.github.com/repos/' . $match[1] . '/'. $match[2] . '/' . $match[3] . 'ball/' . $package->getDistReference();
+            } elseif ($package->getDistReference() && preg_match('{^https?://(?:www\.)?github\.com/([^/]+)/([^/]+)/archive/.+\.(zip|tar)(?:\.gz)?$}i', $url, $match)) {
+                // update current github web archives to API calls with the proper reference
+                $url = 'https://api.github.com/repos/' . $match[1] . '/'. $match[2] . '/' . $match[3] . 'ball/' . $package->getDistReference();
+            } elseif ($package->getDistReference() && preg_match('{^https?://api\.github\.com/repos/([^/]+)/([^/]+)/(zip|tar)ball(?:/.+)?$}i', $url, $match)) {
+                // update api archives to the proper reference
+                $url = 'https://api.github.com/repos/' . $match[1] . '/'. $match[2] . '/' . $match[3] . 'ball/' . $package->getDistReference();
+            }
         }
 
         if (!extension_loaded('openssl') && (0 === strpos($url, 'https:') || 0 === strpos($url, 'http://github.com'))) {
             // bypass https for github if openssl is disabled
-            if (preg_match('{^https?://github.com/([^/]+/[^/]+)/(zip|tar)ball/([^/]+)$}i', $url, $match)) {
+            if (preg_match('{^https://api\.github\.com/repos/([^/]+/[^/]+)/(zip|tar)ball/([^/]+)$}i', $url, $match)) {
                 $url = 'http://nodeload.github.com/'.$match[1].'/'.$match[2].'/'.$match[3];
-            } elseif (preg_match('{^https?://github.com/([^/]+/[^/]+)/archive/([^/]+)\.(zip|tar\.gz)$}i', $url, $match)) {
+            } elseif (preg_match('{^https://github\.com/([^/]+/[^/]+)/(zip|tar)ball/([^/]+)$}i', $url, $match)) {
+                $url = 'http://nodeload.github.com/'.$match[1].'/'.$match[2].'/'.$match[3];
+            } elseif (preg_match('{^https://github\.com/([^/]+/[^/]+)/archive/([^/]+)\.(zip|tar\.gz)$}i', $url, $match)) {
                 $url = 'http://nodeload.github.com/'.$match[1].'/'.$match[3].'/'.$match[2];
             } else {
                 throw new \RuntimeException('You must enable the openssl extension to download files via https');
