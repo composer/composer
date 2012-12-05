@@ -51,6 +51,19 @@ class GitHub
      */
     public function authorizeOAuth($originUrl)
     {
+        if ('api.github.com' === $originUrl) {
+            // GitHub API should use the same token as github.com.
+            if ($this->io->hasAuthentication('github.com')) {
+                $auth = $this->io->getAuthentication('github.com');
+
+                $this->io->setAuthentication($originUrl, $auth['username'], $auth['password']);
+
+                return true;
+            } else {
+                return $this->authorizeOAuth('github.com');
+            }
+        }
+
         if ('github.com' !== $originUrl) {
             return false;
         }
