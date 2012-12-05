@@ -84,31 +84,31 @@ class FileDownloader implements DownloaderInterface
 
         $this->io->write("  - Installing <info>" . $package->getName() . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
 
-        $processUrl = $this->processUrl($package, $url);
-        $processHost = parse_url($processUrl, PHP_URL_HOST);
+        $processedUrl = $this->processUrl($package, $url);
+        $hostname = parse_url($processedUrl, PHP_URL_HOST);
 
-        if (strpos($processHost, 'github.com') === (strlen($processHost) - 10)) {
-            $processHost = 'github.com';
+        if (strpos($hostname, 'github.com') === (strlen($hostname) - 10)) {
+            $hostname = 'github.com';
         }
 
         try {
             try {
                 if (!$this->cache || !$this->cache->copyTo($this->getCacheKey($package), $fileName)) {
-                    $this->rfs->copy(parse_url($processUrl, PHP_URL_HOST), $processUrl, $fileName);
+                    $this->rfs->copy(parse_url($processedUrl, PHP_URL_HOST), $processedUrl, $fileName);
                     if ($this->cache) {
                         $this->cache->copyFrom($this->getCacheKey($package), $fileName);
                     }
                 }
             } catch (TransportException $e) {
-                if (404 === $e->getCode() && 'github.com' === $processHost) {
-                    $message = "\n".'Could not fetch '.$processUrl.', enter your GitHub credentials to access private repos';
+                if (404 === $e->getCode() && 'github.com' === $hostname) {
+                    $message = "\n".'Could not fetch '.$processedUrl.', enter your GitHub credentials to access private repos';
                     $gitHubUtil = new GitHub($this->io, $this->config, null, $this->rfs);
-                    if (!$gitHubUtil->authorizeOAuth($processHost)
-                        && (!$this->io->isInteractive() || !$gitHubUtil->authorizeOAuthInteractively($processHost, $message))
+                    if (!$gitHubUtil->authorizeOAuth($hostname)
+                        && (!$this->io->isInteractive() || !$gitHubUtil->authorizeOAuthInteractively($hostname, $message))
                     ) {
                         throw $e;
                     }
-                    $this->rfs->copy($processHost, $processUrl, $fileName);
+                    $this->rfs->copy($hostname, $processedUrl, $fileName);
                 } else {
                     throw $e;
                 }
