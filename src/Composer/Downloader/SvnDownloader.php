@@ -138,7 +138,11 @@ class SvnDownloader extends VcsDownloader
      */
     protected function getCommitLogs($fromReference, $toReference, $path)
     {
-        $command = sprintf('cd %s && svn log -r%s:%s --incremental', escapeshellarg($path), $fromReference, $toReference);
+        // strip paths from references and only keep the actual revision
+        $fromRevision = preg_replace('{.*@(\d+)$}', '$1', $fromReference);
+        $toRevision = preg_replace('{.*@(\d+)$}', '$1', $toReference);
+
+        $command = sprintf('cd %s && svn log -r%s:%s --incremental', escapeshellarg($path), $fromRevision, $toRevision);
 
         if (0 !== $this->process->execute($command, $output)) {
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
