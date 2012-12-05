@@ -67,19 +67,12 @@ final class StreamContextFactory
                     $auth .= ':' . $proxy['pass'];
                 }
                 $auth = base64_encode($auth);
-                $authHeader = "Proxy-Authorization: Basic {$auth}";
 
                 // Preserve headers if already set in default options
                 if (isset($defaultOptions['http']['header'])) {
-                     if (is_array($defaultOptions['http']['header']))
-                        $defaultOptions['http']['header'][] = $authHeader;
-                    else
-                        $defaultOptions['http']['header'] = array(
-                            $defaultOptions['http']['header'],
-                            $authHeader
-                        );
+                    $defaultOptions['http']['header'][] = "Proxy-Authorization: Basic {$auth}";
                 } else {
-                    $options['http']['header'] = array($authHeader);
+                    $options['http']['header'] = array("Proxy-Authorization: Basic {$auth}");
                 }
             }
         }

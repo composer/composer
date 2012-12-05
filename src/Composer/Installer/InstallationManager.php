@@ -245,7 +245,7 @@ class InstallationManager
                     $opts = array('http' =>
                         array(
                             'method'  => 'POST',
-                            'header'  => 'Content-type: application/x-www-form-urlencoded',
+                            'header'  => array('Content-type: application/x-www-form-urlencoded'),
                             'content' => http_build_query($params, '', '&'),
                             'timeout' => 3,
                         )
@@ -269,7 +269,7 @@ class InstallationManager
             $opts = array('http' =>
                 array(
                     'method'  => 'POST',
-                    'header'  => 'Content-Type: application/json',
+                    'header'  => array('Content-Type: application/json'),
                     'content' => json_encode($postData),
                     'timeout' => 6,
                 )
