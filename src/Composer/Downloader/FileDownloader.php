@@ -85,6 +85,11 @@ class FileDownloader implements DownloaderInterface
         $this->io->write("  - Installing <info>" . $package->getName() . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
 
         $processUrl = $this->processUrl($package, $url);
+        $processHost = parse_url($processUrl, PHP_URL_HOST);
+
+        if (strpos($processHost, 'github.com') === (strlen($processHost) - 10)) {
+            $processHost = 'github.com';
+        }
 
         try {
             try {
@@ -95,15 +100,15 @@ class FileDownloader implements DownloaderInterface
                     }
                 }
             } catch (TransportException $e) {
-                if (404 === $e->getCode() && 'github.com' === parse_url($processUrl, PHP_URL_HOST)) {
+                if (404 === $e->getCode() && 'github.com' === $processHost) {
                     $message = "\n".'Could not fetch '.$processUrl.', enter your GitHub credentials to access private repos';
                     $gitHubUtil = new GitHub($this->io, $this->config, null, $this->rfs);
-                    if (!$gitHubUtil->authorizeOAuth('github.com')
-                        && (!$this->io->isInteractive() || !$gitHubUtil->authorizeOAuthInteractively('github.com', $message))
+                    if (!$gitHubUtil->authorizeOAuth($processHost)
+                        && (!$this->io->isInteractive() || !$gitHubUtil->authorizeOAuthInteractively($processHost, $message))
                     ) {
                         throw $e;
                     }
-                    $this->rfs->copy(parse_url($processUrl, PHP_URL_HOST), $processUrl, $fileName);
+                    $this->rfs->copy($processHost, $processUrl, $fileName);
                 } else {
                     throw $e;
                 }
