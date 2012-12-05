@@ -104,6 +104,16 @@ class Cache
         return false;
     }
 
+    public function remove($file)
+    {
+        $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
+        if ($this->enabled && file_exists($this->root . $file)) {
+            return unlink($this->root . $file);
+        }
+
+        return false;
+    }
+
     public function gc($ttl)
     {
         $expire = new \DateTime();

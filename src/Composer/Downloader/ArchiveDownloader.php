@@ -35,7 +35,13 @@ abstract class ArchiveDownloader extends FileDownloader
             $this->io->write('    Unpacking archive');
         }
         try {
-            $this->extract($fileName, $path);
+            try {
+                $this->extract($fileName, $path);
+            } catch (\Exception $e) {
+                // remove cache if the file was corrupted
+                parent::clearCache($package, $path);
+                throw $e;
+            }
 
             if ($this->io->isVerbose()) {
                 $this->io->write('    Cleaning up');
