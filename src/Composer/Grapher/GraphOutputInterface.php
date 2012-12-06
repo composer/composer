@@ -16,13 +16,12 @@ interface GraphOutputInterface
    * given in the form of:
    *
    * [
-   *  ['source' => 'ea/guzzle-bundle', 'destination' => 'symfony/symfony', 'type' => 'require'],
-   *  ['source' => 'symfony/symfony', 'destination' => 'twig/twig', 'type' => 'require']
+   *  ['source' => 'ea/guzzle-bundle', 'target' => 'symfony/symfony', 'type' => 'require'],
+   *  ['source' => 'symfony/symfony', 'target' => 'twig/twig', 'type' => 'require']
    * ]
    *
    * @param array  $graph A graph in the form specified above
-   * @param string $path  A string representing the location of output. Might not be 
-   *                      necessary for some modules. 
+   * @return string The graphing module's output
    */
-  public function draw(array $graph, $path);
+  public function draw(array $graph);
 }

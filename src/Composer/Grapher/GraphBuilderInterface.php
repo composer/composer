@@ -19,8 +19,8 @@ interface GraphBuilderInterface
    * Example output:
    *
    * [
-   *  ['source' => 'ea/guzzle-bundle', 'destination' => 'symfony/symfony', 'type' => 'requires'],
-   *  ['source' => 'symfony/symfony', 'destination' => 'twig/twig', 'type' => 'requires']
+   *  ['source' => 'ea/guzzle-bundle', 'target' => 'symfony/symfony', 'type' => 'requires'],
+   *  ['source' => 'symfony/symfony', 'target' => 'twig/twig', 'type' => 'requires']
    * ]
    *
    * This would specify a graph of 3 edges (ea/guzzle-bundle, symfony/symfony, 

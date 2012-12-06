@@ -39,11 +39,10 @@ class Grapher
   /**
    * Draws the graph using the builder and output modules passed into the constructor.
    *
-   * @param string $path  A string representing the location of output. Might not be 
-   *                      necessary for some output modules. 
+   * @return string The graphing module's output
    */
-  public function graph($path)
+  public function graph()
   {
-    $this->output->draw($this->builder->build(), $path);
+    return $this->output->draw($this->builder->build());
   }
 }

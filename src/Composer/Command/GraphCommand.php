@@ -43,17 +43,19 @@ HERE
       ;
   }
 
-  protected function execute(InputInterface $input, OutputInterface $output)
+  protected function execute(InputInterface $consoleInput, OutputInterface $consoleOutput)
   {
     $composer = $this->getComposer();
     $locker = $composer->getLocker();
 
     $builder = new RepositoryGraphBuilder($locker->getLockedRepository());
-    $output = new D3GraphOutput();
-    $grapher = new Grapher($builder, $output);
+    $graphOutput = new D3GraphOutput();
+    $grapher = new Grapher($builder, $graphOutput);
     
-    $path = $input->getArgument('path');
+    $path = $consoleInput->getArgument('path');
 
-    $grapher->graph($path);
+    file_put_contents($path, $grapher->graph());
+
+    $consoleOutput->writeln('<info>Graphed dependencies to '.$path.'</info>');
   }  
 }
