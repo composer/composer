@@ -33,7 +33,7 @@ class RepositoryGraphBuilder implements GraphBuilderInterface
    */
   public function build()
   {
-    $graph = [];
+    $graph = array();
     $packages = $this->repository->getPackages();
 
     /*
