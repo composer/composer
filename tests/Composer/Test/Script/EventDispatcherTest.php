@@ -157,7 +157,7 @@ class EventDispatcherTest extends TestCase
             ->setMethods(array('getListeners'))
             ->getMock();
 
-        $code = sprintf('echo bar>&2 %s exit 1', defined('PHP_WINDOWS_VERSION_BUILD') ? '&' : ';');
+        $code = 'exit 1';
         $listener = array($code);
         $dispatcher->expects($this->atLeastOnce())
             ->method('getListeners')
@@ -165,11 +165,9 @@ class EventDispatcherTest extends TestCase
 
         $io->expects($this->once())
             ->method('write')
-            ->with($this->equalTo('<error>Script '.$code.' handling the post-install-cmd event returned with an error: bar '.PHP_EOL.'</error>'));
+            ->with($this->equalTo('<error>Script '.$code.' handling the post-install-cmd event returned with an error: </error>'));
 
-        ob_start();
         $dispatcher->dispatchCommandEvent("post-install-cmd", false);
-        $this->assertEquals('bar', trim(ob_get_clean()));
     }
 
     public static function call()
