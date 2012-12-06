@@ -53,7 +53,7 @@ class RepositoryGraphBuilder implements GraphBuilderInterface
         $vertex = array();
         
         $vertex['source'] = $requirement->getSource();
-        $vertex['destination'] = $requirement->getTarget();
+        $vertex['target'] = $requirement->getTarget();
         $vertex['type'] = 'requires';
 
         $graph[] = $vertex;

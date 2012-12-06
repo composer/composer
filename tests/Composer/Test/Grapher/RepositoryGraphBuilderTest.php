@@ -14,7 +14,7 @@ class RepositoryGraphBuilderTest extends TestCase
 
   public function setUp()
   {
-    $this->repo = new ArrayRepository();
+    $this->repo = new ArrayRepository;
     $this->graph = null;
   }
 

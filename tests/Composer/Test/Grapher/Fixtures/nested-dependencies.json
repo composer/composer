@@ -1,5 +1,5 @@
 [
-  {"source": "a", "destination": "b", "type": "requires"},
-  {"source": "b", "destination": "c", "type": "requires"},
-  {"source": "c", "destination": "d", "type": "requires"}
+  {"source": "a", "target": "b", "type": "requires"},
+  {"source": "b", "target": "c", "type": "requires"},
+  {"source": "c", "target": "d", "type": "requires"}
 ]
