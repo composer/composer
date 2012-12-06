@@ -15,6 +15,7 @@ namespace Composer\Test\Script;
 use Composer\Test\TestCase;
 use Composer\Script\Event;
 use Composer\Script\EventDispatcher;
+use Composer\Util\ProcessExecutor;
 
 class EventDispatcherTest extends TestCase
 {
@@ -122,6 +123,53 @@ class EventDispatcherTest extends TestCase
             array('echo foo'),
             array('echo -n foo'),
         );
+    }
+
+    public function testDispatcherOutputsCommands()
+    {
+        $dispatcher = $this->getMockBuilder('Composer\Script\EventDispatcher')
+            ->setConstructorArgs(array(
+                $this->getMock('Composer\Composer'),
+                $this->getMock('Composer\IO\IOInterface'),
+                new ProcessExecutor,
+            ))
+            ->setMethods(array('getListeners'))
+            ->getMock();
+
+        $listener = array('echo foo');
+        $dispatcher->expects($this->atLeastOnce())
+            ->method('getListeners')
+            ->will($this->returnValue($listener));
+
+        ob_start();
+        $dispatcher->dispatchCommandEvent("post-install-cmd", false);
+        $this->assertEquals('foo', trim(ob_get_clean()));
+    }
+
+    public function testDispatcherOutputsErrorOnFailedCommand()
+    {
+        $dispatcher = $this->getMockBuilder('Composer\Script\EventDispatcher')
+            ->setConstructorArgs(array(
+                $this->getMock('Composer\Composer'),
+                $io = $this->getMock('Composer\IO\IOInterface'),
+                new ProcessExecutor,
+            ))
+            ->setMethods(array('getListeners'))
+            ->getMock();
+
+        $code = sprintf('echo bar>&2 %s exit 1', defined('PHP_WINDOWS_VERSION_BUILD') ? '&' : ';');
+        $listener = array($code);
+        $dispatcher->expects($this->atLeastOnce())
+            ->method('getListeners')
+            ->will($this->returnValue($listener));
+
+        $io->expects($this->once())
+            ->method('write')
+            ->with($this->equalTo('<error>Script '.$code.' handling the post-install-cmd event returned with an error: bar '.PHP_EOL.'</error>'));
+
+        ob_start();
+        $dispatcher->dispatchCommandEvent("post-install-cmd", false);
+        $this->assertEquals('bar', trim(ob_get_clean()));
     }
 
     public static function call()
