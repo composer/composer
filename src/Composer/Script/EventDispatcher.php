@@ -106,7 +106,7 @@ class EventDispatcher
                 }
             } else {
                 if (0 !== $this->process->execute($callable, $callback)) {
-                    $event->getIO()->write(sprintf('<error>Script %s handling the %s event returned with an error: %s</script>', $callable, $event->getName(), $this->process->getErrorOutput()));
+                    $event->getIO()->write(sprintf('<error>Script %s handling the %s event returned with an error: %s</error>', $callable, $event->getName(), $this->process->getErrorOutput()));
                 }
             }
         }
