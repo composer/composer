@@ -6,46 +6,10 @@
     <script type="text/javascript" src="http://mbostock.github.com/d3/d3.js?1.29.1"></script>
     <style type="text/css">
 
-path.link {
-  fill: none;
-  stroke: #666;
-  stroke-width: 1.5px;
-}
-
-marker#requires-dev {
-  fill: green;
-}
-
-path.link.requires-dev {
-  stroke: green;
-  stroke-dasharray: 0,2 1;
-}
-
-circle {
-  fill: #5D77B7;
-  stroke: #333;
-  stroke-width: 1.5px;
-
-  -webkit-transition: all 1s ease;
-  -moz-transition: all 1s ease;
-  -ms-transition: all 1s ease;
-  -o-transition: all 1s ease;
-  transition: all 1s ease;
-}
-
-circle:hover {
-  fill: #2F3E7F;
-
-  -webkit-transition: all 1s ease;
-  -moz-transition: all 1s ease;
-  -ms-transition: all 1s ease;
-  -o-transition: all 1s ease;
-  transition: all 1s ease;
-}
-
 text {
   font: 12px sans-serif;
   pointer-events: none;
+  fill: #525252;
 }
 
 text.shadow {
@@ -54,16 +18,42 @@ text.shadow {
   stroke-opacity: .8;
 }
 
+line
+{
+  stroke: #fff;
+  stroke-width: 2.0;
+  shape-rendering:crispEdges;
+}
+
 html, body, div, svg
 {
   padding: 0;
   margin: 0;
 }
 
-svg
+html
 {
-  width: 100%;
-  height: 100%;
+  overflow: scroll;
+}
+
+
+rect.background
+{
+  fill: #F5F5F5;
+}
+
+rect.cell, rect.cell:hover
+{
+  -webkit-transition: fill 1s;
+  -moz-transition: fill 1s;
+  -ms-transition: fill 1s;
+  -o-transition: fill 1s;
+  transition: fill 1s;
+}
+
+rect.cell:hover
+{
+  fill: #fff;
 }
 
     </style>
@@ -71,115 +61,111 @@ svg
   <body>
     <script type="text/javascript">
 
-// See http://bl.ocks.org/1153292
+// margin so there is room for text labels
+var margin = { top: 175, left: 175, right: 40, bottom: 40 };
+var width  = window.innerWidth;
+var height = window.innerHeight;
 
-var nodes = {};
+var cellSize = 20;
 
-var d3doc; // see setupD3Document
-var svg; // see setupSVGCanvas
 
-// see setupSVGCanvas
-var svg_path;
-var svg_circle;
-var svg_text;
+var matrix = []; // 2 dimensional adjacency matrix; (int, int) indexed
+var matrixMapping = []; // map the vertices into the adjacency matrix; (string) indexed
+var reverseMapping = []; // map index of matrix into names
+var edgeCount = 0; // number of unique names in the graph
 
-function loadGraph()
+// give every unique name a matrix index
+graph.forEach(function(v, i) {
+  if(matrixMapping[v.source] === undefined)
+  {
+    var idx = edgeCount++;
+    matrixMapping[v.source] = idx;
+    reverseMapping[idx] = v.source;
+    matrix[idx] = [];
+  }
+  if(matrixMapping[v.target] === undefined)
+  {
+    var idx = edgeCount++;
+    matrixMapping[v.target] = idx;
+    reverseMapping[idx] = v.target;
+    matrix[idx] = [];
+  }
+});
+
+// build the matrix making use of the indexes
+graph.forEach(function(v, i) {
+  matrix[matrixMapping[v.source]][matrixMapping[v.target]] = matrixMapping[v.target];
+});
+
+var svg = d3.select("body").append("svg")
+            .attr("width", reverseMapping.length * cellSize + margin.left + margin.right)
+            .attr("height", reverseMapping.length * cellSize + margin.top + margin.bottom)
+              .append("g")
+              .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+svg.append("rect")
+   .attr("class", "background")
+   .attr("width", reverseMapping.length * cellSize)
+   .attr("height", reverseMapping.length * cellSize);
+
+var row = svg.selectAll(".row")
+             .data(matrix)
+             .enter()
+              .append("g")
+              .attr("class", "row")
+              .attr("transform", function(d, i) { return "translate(0," + (i+1)*cellSize + ")"; })
+              .each(row);
+
+row.append("line")
+   .attr("x1", reverseMapping.length*cellSize);
+
+row.append("text")
+   .attr("x", -6)
+   .attr("dy", -6)
+   .attr("text-anchor", "end")
+   .text(function(d, i) { return reverseMapping[i]; });
+
+var column = svg.selectAll("column")
+                 .data(matrix)
+                 .enter()
+                  .append("g")
+                  .attr("class", "column")
+                  .attr("transform", function(d, i) { return "translate(" + (i+1)*cellSize + ")rotate(-90)"; });
+
+column.append("line")
+      .attr("x2", -(reverseMapping.length)*cellSize);
+
+column.append("text")
+      .attr("x", 6)
+      .attr("dy", -6)
+      .attr("text-anchor", "start")
+      .text(function(d, i) { return reverseMapping[i]; });
+
+function colorCell(cell)
 {
+  var r = 0,
+      g = 200 - Math.floor(cell * (200 / reverseMapping.length)),
+      b = Math.floor(cell * (200 / reverseMapping.length)),
+      a = 255;
 
-  // Compute distinct nodes
-  graph.forEach(function(edge) {
-    edge.source = nodes[edge.source] || (nodes[edge.source] = {name: edge.source});
-    edge.target = nodes[edge.target] || (nodes[edge.target] = {name: edge.target});
-  });
+  return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
 }
 
-function d3tick()
+function row(row)
 {
-  svg_path.attr("d", function(d) {
-    var dx = d.target.x - d.source.x,
-        dy = d.target.y - d.source.y,
-        dr = Math.sqrt(dx * dx + dy * dy);
-    return "M" + d.source.x + "," + d.source.y + "A" + dr + "," + dr + " 0 0,1 " + d.target.x + "," + d.target.y;
-  });
-
-  svg_circle.attr("transform", function(d) {
-    return "translate(" + d.x + "," + d.y + ")";
-  });
-
-  svg_text.attr("transform", function(d) {
-    return "translate(" + d.x + "," + d.y + ")";
-  });
+  var cell = d3.select(this).selectAll(".cell")
+               .data(row.filter(function(d) { return d !== undefined; }))
+               .enter()
+                .append("rect")
+                .attr("class", "cell")
+                .attr("fill", function(d) { return colorCell(d); })
+                .attr("x", function(d) { return d*cellSize; })
+                .attr("y", -cellSize)
+                .attr("width", cellSize)
+                .attr("height", cellSize);
 }
 
-function updateDocumentSize()
-{
-  d3doc.size([window.innerWidth, window.innerHeight]);
-  d3doc.resume();
-}
 
-function setupD3Document()
-{
-  d3doc = d3.layout.force()
-            .nodes(d3.values(nodes))
-            .links(graph)
-            .size([window.innerWidth, window.innerHeight])
-            .linkDistance(150)
-            .charge(-150)
-            .on("tick", d3tick)
-            .start();
-
-  window.onresize = updateDocumentSize;
-}
-
-function setupSVGCanvas()
-{
-  svg = d3.select("body").append("svg:svg");
-
-  svg.append("svg:defs").selectAll("marker")
-    .data(["requires", "requires-dev"])
-    .enter().append("svg:marker")
-    .attr("id", String)
-    .attr("viewBox", "0 -5 10 10")
-    .attr("refX", 25)
-    .attr("refY", -3)
-    .attr("markerWidth", 6)
-    .attr("markerHeight", 6)
-    .attr("orient", "auto")
-    .append("svg:path")
-    .attr("d", "M0,-5L10,0L0,5");
-
-  svg_path = svg.append("svg:g").selectAll("path")
-    .data(d3doc.links())
-    .enter().append("svg:path")
-    .attr("class", function(d) { return "link " + d.type; })
-    .attr("marker-end", function(d) { return "url(#" + d.type + ")"; });
-
-  svg_circle = svg.append("svg:g").selectAll("circle")
-    .data(d3doc.nodes())
-    .enter().append("svg:circle")
-    .attr("r", 12)
-    .call(d3doc.drag);
-
-  svg_text = svg.append("svg:g").selectAll("g")
-    .data(d3doc.nodes())
-    .enter().append("svg:g");
-
-  // A copy of the text with a thick white stroke for legibility.
-  svg_text.append("svg:text")
-    .attr("x", 8)
-    .attr("y", ".31em")
-    .attr("class", "shadow")
-    .text(function(d) { return d.name; });
-
-  svg_text.append("svg:text")
-    .attr("x", 8)
-    .attr("y", ".31em")
-    .text(function(d) { return d.name; });
-}
-
-loadGraph();
-setupD3Document();
-setupSVGCanvas();
 
     </script>
   </body>
