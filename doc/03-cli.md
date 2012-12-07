@@ -237,7 +237,7 @@ you have to run the command with `root` privileges
 
     $ sudo composer self-update
 
-## Config
+## config
 
 The `config` command allows you to edit some basic composer settings in either
 the local composer.json file or the global config.json file.
