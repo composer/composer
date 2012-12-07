@@ -151,7 +151,7 @@ function colorCell(cell)
   return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
 }
 
-function row(row)
+function row(row, rowIndex)
 {
   var cell = d3.select(this).selectAll(".cell")
                .data(row.filter(function(d) { return d !== undefined; }))
@@ -162,7 +162,11 @@ function row(row)
                 .attr("x", function(d) { return d*cellSize; })
                 .attr("y", -cellSize)
                 .attr("width", cellSize)
-                .attr("height", cellSize);
+                .attr("height", cellSize)
+                  .append("title")
+                  .text(function(colIndex) { 
+                    return reverseMapping[rowIndex] + " depends on " + reverseMapping[colIndex]; 
+                  });
 }
 
 
