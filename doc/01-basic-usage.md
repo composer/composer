@@ -81,6 +81,12 @@ Version constraints can be specified in a few different ways.
   minor version you depend on, like `~1.2`, since in theory there should be no
   backwards compatibility breaks until 2.0, that works well.
 
+By default only stable releases are taken into consideration. If you would like
+to also get RC, beta, alpha or dev versions of your dependencies you can do
+so using [stability flags](04-schema.md#package-links). To change that for all
+packages instead of doing per dependency you can also use the
+[minimum-stability](04-schema.md#minimum-stability) setting.
+
 ## Installing Dependencies
 
 To fetch the defined dependencies into your local project, just run the
