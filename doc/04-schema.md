@@ -416,7 +416,8 @@ use an empty prefix like:
 
 The `classmap` references are all combined, during install/update, into a single
 key => value array which may be found in the generated file
-`vendor/composer/autoload_classmap.php`.
+`vendor/composer/autoload_classmap.php`. This map is built by scanning for
+classes in all `.php` and `.inc` files in the given directories/files.
 
 You can use the classmap generation support to define autoloading for all libraries
 that do not follow PSR-0. To configure this you specify all directories or files
