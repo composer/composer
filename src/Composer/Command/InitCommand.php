@@ -120,7 +120,7 @@ EOT
 
         $file->write($options);
 
-        if ($input->isInteractive()) {
+        if ($input->isInteractive() && is_dir('.git')) {
             $ignoreFile = realpath('.gitignore');
 
             if (false === $ignoreFile) {
