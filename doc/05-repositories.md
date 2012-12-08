@@ -259,6 +259,9 @@ repository like this:
         ]
     }
 
+If you have no branches or tags directory you can disable them entirely by
+setting the `branches-path` or `tags-path` to `false`.
+
 ### PEAR
 
 It is possible to install packages from any PEAR channel by using the `pear`

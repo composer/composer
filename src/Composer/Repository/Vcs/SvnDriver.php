@@ -160,14 +160,16 @@ class SvnDriver extends VcsDriver
         if (null === $this->tags) {
             $this->tags = array();
 
-            $output = $this->execute('svn ls --verbose', $this->baseUrl . '/' . $this->tagsPath);
-            if ($output) {
-                foreach ($this->process->splitLines($output) as $line) {
-                    $line = trim($line);
-                    if ($line && preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match)) {
-                        if (isset($match[1]) && isset($match[2]) && $match[2] !== './') {
-                            $this->tags[rtrim($match[2], '/')] = '/' . $this->tagsPath .
-                                '/' . $match[2] . '@' . $match[1];
+            if ($this->tagsPath !== false) {
+                $output = $this->execute('svn ls --verbose', $this->baseUrl . '/' . $this->tagsPath);
+                if ($output) {
+                    foreach ($this->process->splitLines($output) as $line) {
+                        $line = trim($line);
+                        if ($line && preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match)) {
+                            if (isset($match[1]) && isset($match[2]) && $match[2] !== './') {
+                                $this->tags[rtrim($match[2], '/')] = '/' . $this->tagsPath .
+                                    '/' . $match[2] . '@' . $match[1];
+                            }
                         }
                     }
                 }
@@ -200,14 +202,16 @@ class SvnDriver extends VcsDriver
             }
             unset($output);
 
-            $output = $this->execute('svn ls --verbose', $this->baseUrl . '/' . $this->branchesPath);
-            if ($output) {
-                foreach ($this->process->splitLines(trim($output)) as $line) {
-                    $line = trim($line);
-                    if ($line && preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match)) {
-                        if (isset($match[1]) && isset($match[2]) && $match[2] !== './') {
-                            $this->branches[rtrim($match[2], '/')] = '/' . $this->branchesPath .
-                                '/' . $match[2] . '@' . $match[1];
+            if ($this->branchesPath !== false) {
+                $output = $this->execute('svn ls --verbose', $this->baseUrl . '/' . $this->branchesPath);
+                if ($output) {
+                    foreach ($this->process->splitLines(trim($output)) as $line) {
+                        $line = trim($line);
+                        if ($line && preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match)) {
+                            if (isset($match[1]) && isset($match[2]) && $match[2] !== './') {
+                                $this->branches[rtrim($match[2], '/')] = '/' . $this->branchesPath .
+                                    '/' . $match[2] . '@' . $match[1];
+                            }
                         }
                     }
                 }
