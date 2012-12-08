@@ -115,6 +115,6 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         $config->merge(array('config' => array('github-protocols' => array('https', 'http'))));
         $config->merge(array('config' => array('github-protocols' => array('http'))));
 
-        $this->assertEquals(array('http'), $config->get('github-oauth'));
+        $this->assertEquals(array('http'), $config->get('github-protocols'));
     }
 }
