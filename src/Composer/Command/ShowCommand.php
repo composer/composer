@@ -31,6 +31,8 @@ use Composer\Repository\RepositoryInterface;
  */
 class ShowCommand extends Command
 {
+    protected $versionParser;
+
     protected function configure()
     {
         $this
@@ -55,6 +57,8 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $this->versionParser = new VersionParser;
+
         // init repos
         $platformRepo = new PlatformRepository;
         $getRepositories = function (Composer $composer, $dev) {
@@ -136,7 +140,7 @@ EOT
                 $output->writeln($type);
                 ksort($packages[$type]);
                 foreach ($packages[$type] as $package) {
-                    $output->writeln('  '.$package->getPrettyName() .' '.($showVersion ? '['.$package->getPrettyVersion().']' : '').' <comment>:</comment> '. strtok($package->getDescription(), "\r\n"));
+                    $output->writeln('  '.$package->getPrettyName() .' '.($showVersion ? '['.$this->versionParser->formatVersion($package).']' : '').' <comment>:</comment> '. strtok($package->getDescription(), "\r\n"));
                 }
                 $output->writeln('');
             }
@@ -157,8 +161,7 @@ EOT
     {
         $name = strtolower($name);
         if ($version) {
-            $parser = new VersionParser();
-            $version = $parser->normalize($version);
+            $version = $this->versionParser->normalize($version);
         }
 
         $match = null;
