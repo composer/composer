@@ -69,7 +69,13 @@ class Config
     {
         // override defaults with given config
         if (!empty($config['config']) && is_array($config['config'])) {
-            $this->config = array_replace_recursive($this->config, $config['config']);
+            foreach ($config['config'] as $key => $val) {
+                if (in_array($key, array('github-oauth')) && isset($this->config[$key])) {
+                    $this->config[$key] = array_merge($this->config[$key], $val);
+                } else {
+                    $this->config[$key] = $val;
+                }
+            }
         }
 
         if (!empty($config['repositories']) && is_array($config['repositories'])) {

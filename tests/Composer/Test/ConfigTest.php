@@ -99,4 +99,22 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
         return $data;
     }
+
+    public function testMergeGithubOauth()
+    {
+        $config = new Config();
+        $config->merge(array('config' => array('github-oauth' => array('foo' => 'bar'))));
+        $config->merge(array('config' => array('github-oauth' => array('bar' => 'baz'))));
+
+        $this->assertEquals(array('foo' => 'bar', 'bar' => 'baz'), $config->get('github-oauth'));
+    }
+
+    public function testOverrideGithubProtocols()
+    {
+        $config = new Config();
+        $config->merge(array('config' => array('github-protocols' => array('https', 'http'))));
+        $config->merge(array('config' => array('github-protocols' => array('http'))));
+
+        $this->assertEquals(array('http'), $config->get('github-oauth'));
+    }
 }
