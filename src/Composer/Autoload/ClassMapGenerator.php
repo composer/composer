@@ -52,33 +52,29 @@ class ClassMapGenerator
     {
         if (is_string($path)) {
             if (is_file($path)) {
-                $path = array(new \SplFileInfo($path));
-            } elseif (is_dir($path)) {
-                $path = Finder::create()->files()->followLinks()->name('/\.(php|inc)$/')->in($path);
+                $files = Finder::create()->in(dirname($path))->name($path);
+            } else if (is_dir($path)) {
+                $files = Finder::create()->in($path);
             } else {
                 throw new \RuntimeException(
                     'Could not scan for classes inside "'.$path.
                     '" which does not appear to be a file nor a folder'
                 );
             }
+        } else {
+            $files = Finder::create()->append($path);
         }
 
         $map = array();
 
-        foreach ($path as $file) {
+        foreach ($files->files()->name('*.php')->name('*.inc') as $file) {
             $filePath = $file->getRealPath();
-
-            if (!in_array(pathinfo($filePath, PATHINFO_EXTENSION), array('php', 'inc'))) {
-                continue;
-            }
 
             if ($whitelist && !preg_match($whitelist, strtr($filePath, '\\', '/'))) {
                 continue;
             }
 
-            $classes = self::findClasses($filePath);
-
-            foreach ($classes as $class) {
+            foreach (self::findClasses($filePath) as $class) {
                 $map[$class] = $filePath;
             }
         }
@@ -90,8 +86,10 @@ class ClassMapGenerator
      * Extract the classes in the given file
      *
      * @param  string            $path The file to check
-     * @throws \RuntimeException
+     *
      * @return array             The found classes
+     *
+     * @throws \RuntimeException when the file could not be scanned
      */
     private static function findClasses($path)
     {
