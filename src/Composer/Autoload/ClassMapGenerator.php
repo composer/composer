@@ -12,6 +12,7 @@
  */
 
 namespace Composer\Autoload;
+
 use Symfony\Component\Finder\Finder;
 
 /**
