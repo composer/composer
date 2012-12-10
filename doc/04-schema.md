@@ -377,8 +377,8 @@ Example:
         "autoload": {
             "psr-0": {
                 "Monolog": "src/",
-                "Vendor\\Namespace": "src/",
-                "Pear_Style": "src/"
+                "Vendor\\Namespace\\": "src/",
+                "Vendor_Namespace_": "src/"
             }
         }
     }
