@@ -50,10 +50,11 @@ class Factory
                 }
                 $home = strtr(getenv('APPDATA'), '\\', '/') . '/Composer';
             } else {
-                if (!getenv('HOME')) {
-                    throw new \RuntimeException('The HOME or COMPOSER_HOME environment variable must be set for composer to run correctly');
+                $xdgConfig = getenv('XDG_CONFIG_HOME');
+                if (!$xdgConfig) {
+                    $xdgConfig = rtrim(getenv('HOME'), '/') . '/.config';
                 }
-                $home = rtrim(getenv('HOME'), '/') . '/.composer';
+                $home = $xdgConfig . '/composer';
             }
         }
 
@@ -77,7 +78,11 @@ class Factory
                 }
                 $cacheDir = strtr($cacheDir, '\\', '/');
             } else {
-                $cacheDir = $home.'/cache';
+                $xdgCache = getenv('XDG_CACHE_HOME');
+                if (!$xdgCache) {
+                    $xdgCache = rtrim(getenv('HOME'), '/') . '/.cache';
+                }
+                $cacheDir = $xdgCache . '/composer';
             }
         }
 
