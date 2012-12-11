@@ -60,6 +60,7 @@ class CreateProjectCommand extends Command
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Whether to install dependencies for development.'),
                 new InputOption('no-custom-installers', null, InputOption::VALUE_NONE, 'Whether to disable custom installers.'),
                 new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Whether to prevent execution of all defined scripts in the root package.'),
+                new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
                 new InputOption('keep-vcs', null, InputOption::VALUE_NONE, 'Whether to prevent deletion vcs folder.'),
             ))
             ->setHelp(<<<EOT
@@ -102,11 +103,12 @@ EOT
             $input->getOption('repository-url'),
             $input->getOption('no-custom-installers'),
             $input->getOption('no-scripts'),
+            $input->getOption('no-progress'),
             $input->getOption('keep-vcs')
         );
     }
 
-    public function installProject(IOInterface $io, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositoryUrl = null, $disableCustomInstallers = false, $noScripts = false, $keepVcs = false)
+    public function installProject(IOInterface $io, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositoryUrl = null, $disableCustomInstallers = false, $noScripts = false, $noProgress = false, $keepVcs = false)
     {
         $config = Factory::createConfig();
 
@@ -177,7 +179,8 @@ EOT
 
         $dm = $this->createDownloadManager($io, $config);
         $dm->setPreferSource($preferSource)
-            ->setPreferDist($preferDist);
+            ->setPreferDist($preferDist)
+            ->setOutputProgress(!$noProgress);
 
         $projectInstaller = new ProjectInstaller($directory, $dm);
         $im = $this->createInstallationManager();
