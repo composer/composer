@@ -42,7 +42,11 @@ class Factory
             if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
                 $home = getenv('APPDATA') . '/Composer';
             } else {
-                $home = rtrim(getenv('HOME'), '/') . '/.composer';
+                $xdgConfig = getenv('XDG_CONFIG_HOME');
+                if (!$xdgConfig) {
+                    $xdgConfig = rtrim(getenv('HOME'), '/') . '/.config';
+                }
+                $home = $xdgConfig . '/composer';
             }
         }
         if (!$cacheDir) {
@@ -53,7 +57,11 @@ class Factory
                     $cacheDir = getenv('APPDATA') . '/Composer/cache';
                 }
             } else {
-                $cacheDir = $home.'/cache';
+                $xdgCache = getenv('XDG_CACHE_HOME');
+                if (!$xdgCache) {
+                    $xdgCache = rtrim(getenv('HOME'), '/') . '/.cache';
+                }
+                $cacheDir = $xdgCache . '/composer';
             }
         }
 
