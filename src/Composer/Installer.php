@@ -624,7 +624,13 @@ class Installer
             throw new \LogicException('isUpdateable should only be called when a whitelist is present');
         }
 
-        return isset($this->updateWhitelist[$package->getName()]);
+        foreach($this->updateWhitelist as $whiteListedPattern => $void) {
+            if(preg_match("#^".$whiteListedPattern."$#i", $package->getName())) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
