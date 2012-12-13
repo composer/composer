@@ -96,9 +96,9 @@ If you just want to update a few packages and not all, you can list them as such
 
     $ php composer.phar update vendor/package vendor/package2
 
-You can also use a Regular expression pattern to update a bunch of packages at once:
+You can also use wildcards to update a bunch of packages at once:
 
-    $ php composer.phar update vendor.*
+    $ php composer.phar update vendor/*
 
 ### Options
 

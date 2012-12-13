@@ -625,7 +625,9 @@ class Installer
         }
 
         foreach($this->updateWhitelist as $whiteListedPattern => $void) {
-            if(preg_match("#^".$whiteListedPattern."$#i", $package->getName())) {
+            $cleanedWhiteListedPattern = str_replace('\*', '.*', preg_quote($whiteListedPattern));
+
+            if(preg_match("#^".$cleanedWhiteListedPattern."$#i", $package->getName())) {
                 return true;
             }
         }

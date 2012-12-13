@@ -12,7 +12,8 @@ Update with a package whitelist only updates those corresponding to the pattern
                 { "name": "notexact/TestPackage", "version": "2.0" },
                 { "name": "all/Package1", "version": "2.0" },
                 { "name": "all/Package2", "version": "2.0" },
-                { "name": "another/another", "version": "2.0" }
+                { "name": "another/another", "version": "2.0" },
+                { "name": "no/regexp", "version": "2.0" }
             ]
         }
     ],
@@ -23,7 +24,8 @@ Update with a package whitelist only updates those corresponding to the pattern
         "notexact/TestPackage": "*.*",
         "all/Package1": "*.*",
         "all/Package2": "*.*",
-        "another/another": "*.*"
+        "another/another": "*.*",
+        "no/regexp": "*.*"
     }
 }
 --INSTALLED--
@@ -34,10 +36,11 @@ Update with a package whitelist only updates those corresponding to the pattern
     { "name": "notexact/TestPackage", "version": "1.0" },
     { "name": "all/Package1", "version": "1.0" },
     { "name": "all/Package2", "version": "1.0" },
-    { "name": "another/another", "version": "1.0" }
+    { "name": "another/another", "version": "1.0" },
+    { "name": "no/regexp", "version": "1.0" }
 ]
 --RUN--
-update vendor/Test.* exact/Test-Package notexact/Test all.*
+update vendor/Test* exact/Test-Package notexact/Test all/* no/reg?xp
 --EXPECT--
 Updating vendor/Test-Package (1.0) to vendor/Test-Package (2.0)
 Updating exact/Test-Package (1.0) to exact/Test-Package (2.0)
