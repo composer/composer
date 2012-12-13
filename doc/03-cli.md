@@ -78,6 +78,8 @@ resolution.
   `require-dev`.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--no-custom-installers:** Disables custom installers.
+* **--no-progress:** Removes the progress display that can mess with some
+  terminals or scripts which don't handle backspace characters.
 * **--optimize-autoloader (-o):** Convert PSR-0 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
   a bit of time to run so it is currently not done by default.
@@ -108,6 +110,8 @@ You can also use wildcards to update a bunch of packages at once:
 * **--dev:** Install packages listed in `require-dev`.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--no-custom-installers:** Disables custom installers.
+* **--no-progress:** Removes the progress display that can mess with some
+  terminals or scripts which don't handle backspace characters.
 * **--optimize-autoloader (-o):** Convert PSR-0 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
   a bit of time to run so it is currently not done by default.
@@ -133,6 +137,8 @@ to the command.
 * **--prefer-dist:** Install packages from `dist` when available.
 * **--dev:** Add packages to `require-dev`.
 * **--no-update:** Disables the automatic update of the dependencies.
+* **--no-progress:** Removes the progress display that can mess with some
+  terminals or scripts which don't handle backspace characters.
 
 ## search
 
@@ -315,6 +321,8 @@ By default the command checks for the packages on packagist.org.
 * **--no-custom-installers:** Disables custom installers.
 * **--no-scripts:** Disables the execution of the scripts defined in the root
   package.
+* **--no-progress:** Removes the progress display that can mess with some
+  terminals or scripts which don't handle backspace characters.
 * **--keep-vcs:** Skip the deletion of the VCS metadata for the created
   project. This is mostly useful if you run the command in non-interactive
   mode.
