@@ -1,0 +1,48 @@
+--TEST--
+Update with a package whitelist only updates those corresponding to the pattern
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "vendor/Test-Package", "version": "2.0" },
+                { "name": "vendor/NotMe", "version": "2.0" },
+                { "name": "exact/Test-Package", "version": "2.0" },
+                { "name": "notexact/TestPackage", "version": "2.0" },
+                { "name": "all/Package1", "version": "2.0" },
+                { "name": "all/Package2", "version": "2.0" },
+                { "name": "another/another", "version": "2.0" },
+                { "name": "no/regexp", "version": "2.0" }
+            ]
+        }
+    ],
+    "require": {
+        "vendor/Test-Package": "*.*",
+        "vendor/NotMe": "*.*",
+        "exact/Test-Package": "*.*",
+        "notexact/TestPackage": "*.*",
+        "all/Package1": "*.*",
+        "all/Package2": "*.*",
+        "another/another": "*.*",
+        "no/regexp": "*.*"
+    }
+}
+--INSTALLED--
+[
+    { "name": "vendor/Test-Package", "version": "1.0" },
+    { "name": "vendor/NotMe", "version": "1.0" },
+    { "name": "exact/Test-Package", "version": "1.0" },
+    { "name": "notexact/TestPackage", "version": "1.0" },
+    { "name": "all/Package1", "version": "1.0" },
+    { "name": "all/Package2", "version": "1.0" },
+    { "name": "another/another", "version": "1.0" },
+    { "name": "no/regexp", "version": "1.0" }
+]
+--RUN--
+update vendor/Test* exact/Test-Package notexact/Test all/* no/reg?xp
+--EXPECT--
+Updating vendor/Test-Package (1.0) to vendor/Test-Package (2.0)
+Updating exact/Test-Package (1.0) to exact/Test-Package (2.0)
+Updating all/Package1 (1.0) to all/Package1 (2.0)
+Updating all/Package2 (1.0) to all/Package2 (2.0)
