@@ -96,9 +96,14 @@ class FileDownloader implements DownloaderInterface
             try {
                 if (!$this->cache || !$this->cache->copyTo($this->getCacheKey($package), $fileName)) {
                     $this->rfs->copy($hostname, $processedUrl, $fileName, $this->outputProgress);
+                    if (!$this->outputProgress) {
+                        $this->io->write('    Downloading');
+                    }
                     if ($this->cache) {
                         $this->cache->copyFrom($this->getCacheKey($package), $fileName);
                     }
+                } else {
+                    $this->io->write('    Loading from cache');
                 }
             } catch (TransportException $e) {
                 if (404 === $e->getCode() && 'github.com' === $hostname) {
