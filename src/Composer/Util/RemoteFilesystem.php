@@ -229,6 +229,8 @@ class RemoteFilesystem
 
             case STREAM_NOTIFY_AUTH_RESULT:
                 if (403 === $messageCode) {
+                    $message = "The '" . $this->fileUrl . "' URL could not be accessed: " . $message;
+
                     throw new TransportException($message, 403);
                 }
                 break;
