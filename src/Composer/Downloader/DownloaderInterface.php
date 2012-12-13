@@ -53,4 +53,12 @@ interface DownloaderInterface
      * @param string           $path    download path
      */
     public function remove(PackageInterface $package, $path);
+
+    /**
+     * Sets whether to output download progress information or not
+     *
+     * @param  bool                $outputProgress
+     * @return DownloaderInterface
+     */
+    public function setOutputProgress($outputProgress);
 }
