@@ -179,17 +179,12 @@ EOF;
     {
         // build package => install path map
         $packageMap = array();
-        array_unshift($packages, $mainPackage);
 
         foreach ($packages as $package) {
             if ($package instanceof AliasPackage) {
                 continue;
             }
 
-            if ($package === $mainPackage) {
-                $packageMap[] = array($mainPackage, '');
-                continue;
-            }
             $packageMap[] = array(
                 $package,
                 $installationManager->getInstallPath($package)
@@ -209,6 +204,8 @@ EOF;
     public function parseAutoloads(array $packageMap, PackageInterface $mainPackage)
     {
         $sortedPackageMap = $this->sortPackageMap($packageMap);
+        $sortedPackageMap[] = array($mainPackage, '');
+        array_unshift($packageMap, array($mainPackage, ''));
 
         $psr0 = $this->parseAutoloadsType($packageMap, 'psr-0', $mainPackage);
         $classmap = $this->parseAutoloadsType($sortedPackageMap, 'classmap', $mainPackage);
@@ -434,6 +431,7 @@ FOOTER;
     protected function parseAutoloadsType(array $packageMap, $type, PackageInterface $mainPackage)
     {
         $autoloads = array();
+
         foreach ($packageMap as $item) {
             list($package, $installPath) = $item;
 
@@ -465,49 +463,45 @@ FOOTER;
 
     protected function sortPackageMap(array $packageMap)
     {
-        $groups = array();
+        $positions = array();
         $names = array();
-        foreach ($packageMap as $key => $item) {
-            $groups[$key] = array($item);
+        $indexes = array();
+
+        foreach ($packageMap as $position => $item) {
             $mainName = $item[0]->getName();
-            foreach ($item[0]->getNames() as $name) {
-                if (!isset($names[$name])) {
-                    $names[$name] = $name == $mainName ? $key : $mainName;
-                }
-            }
+            $names = array_merge(array_fill_keys($item[0]->getNames(), $mainName), $names);
+            $names[$mainName] = $mainName;
+            $indexes[$mainName] = $positions[$mainName] = $position;
         }
 
         foreach ($packageMap as $item) {
+            $position = $positions[$item[0]->getName()];
             foreach (array_merge($item[0]->getRequires(), $item[0]->getDevRequires()) as $link) {
                 $target = $link->getTarget();
                 if (!isset($names[$target])) {
                     continue;
                 }
 
-                $targetKey = $names[$target];
-                if (is_string($targetKey)) {
-                    if (!isset($names[$targetKey])) {
-                        continue;
-                    }
-                    $targetKey = $names[$targetKey];
-                }
-
-                $packageKey = $names[$item[0]->getName()];
-                if ($targetKey <= $packageKey || !isset($groups[$packageKey])) {
+                $target = $names[$target];
+                if ($positions[$target] <= $position) {
                     continue;
                 }
 
-                foreach ($groups[$packageKey] as $originalItem) {
-                    $groups[$targetKey][] = $originalItem;
-                    $names[$originalItem[0]->getName()] = $targetKey;
+                foreach ($positions as $key => $value) {
+                    if ($value >= $position) {
+                        break;
+                    }
+                    $positions[$key]--;
                 }
-                unset($groups[$packageKey]);
+
+                $positions[$target] = $position - 1;
             }
+            asort($positions);
         }
 
         $sortedPackageMap = array();
-        foreach ($groups as $group) {
-            $sortedPackageMap = array_merge($sortedPackageMap, $group);
+        foreach (array_keys($positions) as $packageName) {
+            $sortedPackageMap[] = $packageMap[$indexes[$packageName]];
         }
 
         return $sortedPackageMap;
