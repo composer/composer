@@ -338,23 +338,26 @@ class AutoloadGeneratorTest extends TestCase
         $package = new Package('a', '1.0', '1.0');
         $package->setAutoload(array('files' => array('root.php')));
         $package->setRequires(array(new Link('a', 'z/foo')));
+        $package->setRequires(array(new Link('a', 'd/d')));
+        $package->setRequires(array(new Link('a', 'e/e')));
 
         $packages = array();
         $packages[] = $z = new Package('z/foo', '1.0', '1.0');
         $packages[] = $b = new Package('b/bar', '1.0', '1.0');
-        $packages[] = $c = new Package('c/lorem', '1.0', '1.0');
         $packages[] = $d = new Package('d/d', '1.0', '1.0');
+        $packages[] = $c = new Package('c/lorem', '1.0', '1.0');
         $packages[] = $e = new Package('e/e', '1.0', '1.0');
 
         $z->setAutoload(array('files' => array('testA.php')));
         $z->setRequires(array(new Link('z/foo', 'c/lorem')));
 
         $b->setAutoload(array('files' => array('testB.php')));
-        $b->setRequires(array(new Link('b/bar', 'c/lorem')));
+        $b->setRequires(array(new Link('b/bar', 'c/lorem'), new Link('b/bar', 'd/d')));
 
         $c->setAutoload(array('files' => array('testC.php')));
 
         $d->setAutoload(array('files' => array('testD.php')));
+        $d->setRequires(array(new Link('d/d', 'c/lorem')));
 
         $e->setAutoload(array('files' => array('testE.php')));
         $e->setRequires(array(new Link('e/e', 'c/lorem')));
