@@ -21,6 +21,7 @@ use Composer\Package\Loader\InvalidPackageException;
 use Composer\Package\Loader\LoaderInterface;
 use Composer\IO\IOInterface;
 use Composer\Config;
+use Composer\Util\UrlRewriter;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -49,7 +50,8 @@ class VcsRepository extends ArrayRepository
             'hg'            => 'Composer\Repository\Vcs\HgDriver',
         );
 
-        $this->url = $repoConfig['url'];
+        $urlRewriter = new UrlRewriter($config->get('url-rewrite-rules'));
+        $this->url = $urlRewriter->rewrite($repoConfig['url']);
         $this->io = $io;
         $this->type = isset($repoConfig['type']) ? $repoConfig['type'] : 'vcs';
         $this->verbose = $io->isVerbose();

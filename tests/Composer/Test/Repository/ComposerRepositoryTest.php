@@ -93,4 +93,21 @@ class ComposerRepositoryTest extends TestCase
             ),
         );
     }
+
+    public function testRewriteUrlOfRepository()
+    {
+        $config = $this->getMock('Composer\Config');
+        $config->expects($this->any())->method('get')
+            ->will($this->onConsecutiveCalls(array('^http://example.com/(.+)$' => 'http://proxy:4545/\\1'), ''));
+
+        $repository = new ComposerRepository(array('url' => 'http://example.com/foo'), new NullIO, $config);
+
+        $ref = new \ReflectionProperty($repository, 'url');
+        $ref->setAccessible(true);
+        $this->assertSame('http://proxy:4545/foo', $ref->getValue($repository));
+
+        $ref = new \ReflectionProperty($repository, 'baseUrl');
+        $ref->setAccessible(true);
+        $this->assertSame('http://proxy:4545/foo', $ref->getValue($repository));
+    }
 }

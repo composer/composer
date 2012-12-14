@@ -24,7 +24,7 @@ class HgDownloader extends VcsDownloader
      */
     public function doDownload(PackageInterface $package, $path)
     {
-        $url = escapeshellarg($package->getSourceUrl());
+        $url = escapeshellarg($this->urlRewriter->rewrite($package->getSourceUrl()));
         $ref = escapeshellarg($package->getSourceReference());
         $path = escapeshellarg($path);
         $this->io->write("    Cloning ".$package->getSourceReference());
@@ -39,7 +39,7 @@ class HgDownloader extends VcsDownloader
      */
     public function doUpdate(PackageInterface $initial, PackageInterface $target, $path)
     {
-        $url = escapeshellarg($target->getSourceUrl());
+        $url = escapeshellarg($this->urlRewriter->rewrite($target->getSourceUrl()));
         $ref = escapeshellarg($target->getSourceReference());
         $path = escapeshellarg($path);
         $this->io->write("    Updating to ".$target->getSourceReference());

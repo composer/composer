@@ -18,6 +18,7 @@ use Composer\Package\Version\VersionParser;
 use Composer\Util\ProcessExecutor;
 use Composer\IO\IOInterface;
 use Composer\Util\Filesystem;
+use Composer\Util\UrlRewriter;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -28,6 +29,7 @@ abstract class VcsDownloader implements DownloaderInterface
     protected $config;
     protected $process;
     protected $filesystem;
+    protected $urlRewriter;
 
     public function __construct(IOInterface $io, Config $config, ProcessExecutor $process = null, Filesystem $fs = null)
     {
@@ -35,6 +37,7 @@ abstract class VcsDownloader implements DownloaderInterface
         $this->config = $config;
         $this->process = $process ?: new ProcessExecutor;
         $this->filesystem = $fs ?: new Filesystem;
+        $this->urlRewriter = new UrlRewriter($config->get('url-rewrite-rules'));
     }
 
     /**

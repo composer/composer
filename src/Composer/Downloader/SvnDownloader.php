@@ -26,7 +26,7 @@ class SvnDownloader extends VcsDownloader
      */
     public function doDownload(PackageInterface $package, $path)
     {
-        $url =  $package->getSourceUrl();
+        $url =  $this->urlRewriter->rewrite($package->getSourceUrl());
         $ref =  $package->getSourceReference();
 
         $this->io->write("    Checking out ".$package->getSourceReference());
@@ -38,7 +38,7 @@ class SvnDownloader extends VcsDownloader
      */
     public function doUpdate(PackageInterface $initial, PackageInterface $target, $path)
     {
-        $url = $target->getSourceUrl();
+        $url = $this->urlRewriter->rewrite($target->getSourceUrl());
         $ref = $target->getSourceReference();
 
         $this->io->write("    Checking out " . $ref);
@@ -73,7 +73,7 @@ class SvnDownloader extends VcsDownloader
      */
     protected function execute($baseUrl, $command, $url, $cwd = null, $path = null)
     {
-        $util = new SvnUtil($baseUrl, $this->io);
+        $util = new SvnUtil($baseUrl, $this->io, $this->process);
         try {
             return $util->execute($command, $url, $cwd, $path, $this->io->isVerbose());
         } catch (\RuntimeException $e) {

@@ -145,4 +145,17 @@ class VcsRepositoryTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEmpty($expected, 'Missing versions: '.implode(', ', array_keys($expected)));
     }
+
+    public function testRewriteUrlOfRepository()
+    {
+        $config = $this->getMock('Composer\Config');
+        $config->expects($this->any())->method('get')->with('url-rewrite-rules')
+            ->will($this->returnValue(array('^http://example.com/(.+)$' => 'http://proxy:4545/\\1'), ''));
+
+        $repository = new VcsRepository(array('url' => 'http://example.com/foo', 'type' => 'vcs'), new NullIO, $config);
+
+        $ref = new \ReflectionProperty($repository, 'url');
+        $ref->setAccessible(true);
+        $this->assertSame('http://proxy:4545/foo', $ref->getValue($repository));
+    }
 }

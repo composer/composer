@@ -18,6 +18,7 @@ use Composer\Downloader\DownloadManager;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
 use Composer\Util\Filesystem;
+use Composer\Util\UrlRewriter;
 
 /**
  * Package installation manager.
@@ -34,6 +35,7 @@ class LibraryInstaller implements InstallerInterface
     protected $io;
     protected $type;
     protected $filesystem;
+    protected $urlRewriter;
 
     /**
      * Initializes library installer.
@@ -52,6 +54,7 @@ class LibraryInstaller implements InstallerInterface
         $this->filesystem = new Filesystem();
         $this->vendorDir = rtrim($composer->getConfig()->get('vendor-dir'), '/');
         $this->binDir = rtrim($composer->getConfig()->get('bin-dir'), '/');
+        $this->urlRewriter = new UrlRewriter($composer->getConfig()->get('url-rewrite-rules'));
     }
 
     /**

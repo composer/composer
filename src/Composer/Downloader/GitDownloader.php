@@ -37,7 +37,7 @@ class GitDownloader extends VcsDownloader
             return sprintf($command, escapeshellarg($url), escapeshellarg($path), escapeshellarg($ref));
         };
 
-        $this->runCommand($commandCallable, $package->getSourceUrl(), $path);
+        $this->runCommand($commandCallable, $this->urlRewriter->rewrite($package->getSourceUrl()), $path);
         $this->setPushUrl($package, $path);
 
         $this->updateToCommit($path, $ref, $package->getPrettyVersion(), $package->getReleaseDate());
@@ -64,7 +64,7 @@ class GitDownloader extends VcsDownloader
             return sprintf($command, escapeshellarg($path), escapeshellarg($url), escapeshellarg($ref));
         };
 
-        $this->runCommand($commandCallable, $target->getSourceUrl());
+        $this->runCommand($commandCallable, $this->urlRewriter->rewrite($target->getSourceUrl()));
         $this->updateToCommit($path, $ref, $target->getPrettyVersion(), $target->getReleaseDate());
     }
 
@@ -349,7 +349,7 @@ class GitDownloader extends VcsDownloader
     protected function setPushUrl(PackageInterface $package, $path)
     {
         // set push url for github projects
-        if (preg_match('{^(?:https?|git)://github.com/([^/]+)/([^/]+?)(?:\.git)?$}', $package->getSourceUrl(), $match)) {
+        if (preg_match('{^(?:https?|git)://github.com/([^/]+)/([^/]+?)(?:\.git)?$}', $this->urlRewriter->rewrite($package->getSourceUrl()), $match)) {
             $pushUrl = 'git@github.com:'.$match[1].'/'.$match[2].'.git';
             $cmd = sprintf('git remote set-url --push origin %s', escapeshellarg($pushUrl));
             $this->process->execute($cmd, $ignoredOutput, $path);

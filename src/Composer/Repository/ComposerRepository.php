@@ -22,6 +22,7 @@ use Composer\Cache;
 use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Util\RemoteFilesystem;
+use Composer\Util\UrlRewriter;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -57,6 +58,9 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
         if ('https?' === substr($repoConfig['url'], 0, 6)) {
             $repoConfig['url'] = (extension_loaded('openssl') ? 'https' : 'http') . substr($repoConfig['url'], 6);
         }
+
+        $urlRewriter = new UrlRewriter($config->get('url-rewrite-rules'));
+        $repoConfig['url'] = $urlRewriter->rewrite($repoConfig['url']);
 
         $urlBits = parse_url($repoConfig['url']);
         if (empty($urlBits['scheme']) || empty($urlBits['host'])) {

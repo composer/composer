@@ -70,7 +70,7 @@ class PearInstaller extends LibraryInstaller
             'version' => $package->getPrettyVersion(),
         );
 
-        $packageArchive = $this->getInstallPath($package).'/'.pathinfo($package->getDistUrl(), PATHINFO_BASENAME);
+        $packageArchive = $this->getInstallPath($package).'/'.pathinfo($this->urlRewriter->rewrite($package->getDistUrl()), PATHINFO_BASENAME);
         $pearExtractor = new PearPackageExtractor($packageArchive);
         $pearExtractor->extractTo($this->getInstallPath($package), array('php' => '/', 'script' => '/bin', 'data' => '/data'), $vars);
 

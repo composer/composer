@@ -226,7 +226,7 @@ class Factory
         $dm = $this->createDownloadManager($io, $config);
 
         // initialize installation manager
-        $im = $this->createInstallationManager();
+        $im = $this->createInstallationManager($config);
 
         // initialize composer
         $composer = new Composer();
@@ -310,9 +310,9 @@ class Factory
     /**
      * @return Installer\InstallationManager
      */
-    protected function createInstallationManager()
+    protected function createInstallationManager(Config $config)
     {
-        return new Installer\InstallationManager();
+        return new Installer\InstallationManager($config);
     }
 
     /**
