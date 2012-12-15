@@ -89,6 +89,11 @@ EOT
             unset($options['author']);
         }
 
+        if (isset($options['stability'])) {
+            $options['minimum-stability'] = $options['stability'];
+            unset($options['stability']);
+        }
+
         $options['require'] = isset($options['require']) ? $this->formatRequirements($options['require']) : new \stdClass;
         if (array() === $options['require']) {
             $options['require'] = new \stdClass;
