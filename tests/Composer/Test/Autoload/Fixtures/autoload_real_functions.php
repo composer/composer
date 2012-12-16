@@ -38,9 +38,9 @@ class ComposerAutoloaderInitFilesAutoload
 
         $loader->register();
 
-        require $baseDir . '/root.php';
         require $vendorDir . '/a/a/test.php';
         require $vendorDir . '/b/b/test2.php';
+        require $baseDir . '/root.php';
 
         return $loader;
     }
