@@ -269,6 +269,38 @@ class Filesystem
         return substr($path, 0, 1) === '/' || substr($path, 1, 1) === ':';
     }
 
+    /**
+     * Returns size of a file or directory specified by path. If a directory is
+     * given, it's size will be computed recursively.
+     *
+     * @param  string $path Path to the file or directory
+     * @return int
+     */
+    public function size($path)
+    {
+        if (!file_exists($path)) {
+            throw new \RuntimeException("$path does not exist.");
+        }
+        if (is_dir($path)) {
+            return $this->directorySize($path);
+        }
+        return filesize($path);
+    }
+
+    protected function directorySize($directory)
+    {
+        $it = new RecursiveDirectoryIterator($directory, RecursiveDirectoryIterator::SKIP_DOTS);
+        $ri = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::CHILD_FIRST);
+
+        $size = 0;
+        foreach ($ri as $file) {
+            if ($file->isFile()) {
+                $size += $file->getSize();
+            }
+        }
+        return $size;
+    }
+
     protected function getProcess()
     {
         return new ProcessExecutor;
