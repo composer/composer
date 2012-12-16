@@ -56,7 +56,7 @@ class FileDownloader implements DownloaderInterface
         $this->cache = $cache;
 
         if ($this->cache && !self::$cacheCollected && !rand(0, 50)) {
-            $this->cache->gc($config->get('cache-ttl'));
+            $this->cache->gc($config->get('cache-ttl'), $config->get('cache-files-maxsize'));
         }
         self::$cacheCollected = true;
     }

@@ -22,6 +22,7 @@ class Config
     public static $defaultConfig = array(
         'process-timeout' => 300,
         'cache-ttl' => 15552000, // 6 months
+        'cache-files-maxsize' => '300MiB',
         'vendor-dir' => 'vendor',
         'bin-dir' => '{$vendor-dir}/bin',
         'notify-on-install' => true,
@@ -136,6 +137,25 @@ class Config
 
             case 'cache-ttl':
                 return (int) $this->config[$key];
+
+            case 'cache-files-maxsize':
+                if (!preg_match('/^\s*(\d+)\s*([kmg]ib)?\s*$/i', $this->config[$key], $matches)) {
+                    throw new \RuntimeException(
+                        "composer.json contains invalid 'cache-files-maxsize' value: {$this->config[$key]}"
+                    );
+                }
+                $size = $matches[1];
+                if (isset($matches[2])) {
+                    switch (strtolower($matches[2])) {
+                        case 'gib':
+                            $size *= 1024;
+                        case 'mib':
+                            $size *= 1024;
+                        case 'kib':
+                            $size *= 1024;
+                    }
+                }
+                return $size;
 
             case 'cache-files-ttl':
                 if (isset($this->config[$key])) {
