@@ -524,6 +524,34 @@ EOF;
         set_include_path($oldIncludePath);
     }
 
+    public function testIncludePathsInMainPackage()
+    {
+        $package = new Package('a', '1.0', '1.0');
+        $package->setIncludePaths(array('/lib', '/src'));
+
+        $packages = array($a = new Package("a/a", "1.0", "1.0"));
+        $a->setIncludePaths(array("lib/"));
+
+        $this->repository->expects($this->once())
+            ->method("getPackages")
+            ->will($this->returnValue($packages));
+
+        mkdir($this->vendorDir."/composer", 0777, true);
+
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, "composer", false, '_12');
+
+        $oldIncludePath = get_include_path();
+
+        require $this->vendorDir."/autoload.php";
+
+        $this->assertEquals(
+            $this->workingDir."/lib".PATH_SEPARATOR.$this->workingDir."/src".PATH_SEPARATOR.$this->vendorDir."/a/a/lib".PATH_SEPARATOR.$oldIncludePath,
+            get_include_path()
+        );
+
+        set_include_path($oldIncludePath);
+    }
+
     public function testIncludePathFileWithoutPathsIsSkipped()
     {
         $package = new Package('a', '1.0', '1.0');
