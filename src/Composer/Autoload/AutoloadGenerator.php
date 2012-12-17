@@ -178,7 +178,7 @@ EOF;
     public function buildPackageMap(InstallationManager $installationManager, PackageInterface $mainPackage, array $packages)
     {
         // build package => install path map
-        $packageMap = array();
+        $packageMap = array(array($mainPackage, ''));
 
         foreach ($packages as $package) {
             if ($package instanceof AliasPackage) {
@@ -203,9 +203,10 @@ EOF;
      */
     public function parseAutoloads(array $packageMap, PackageInterface $mainPackage)
     {
+        $mainPackageMap = array_shift($packageMap);
         $sortedPackageMap = $this->sortPackageMap($packageMap);
-        $sortedPackageMap[] = array($mainPackage, '');
-        array_unshift($packageMap, array($mainPackage, ''));
+        $sortedPackageMap[] = $mainPackageMap;
+        array_unshift($packageMap, $mainPackageMap);
 
         $psr0 = $this->parseAutoloadsType($packageMap, 'psr-0', $mainPackage);
         $classmap = $this->parseAutoloadsType($sortedPackageMap, 'classmap', $mainPackage);
