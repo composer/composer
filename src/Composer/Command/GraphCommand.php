@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * This file is part of Composer.
+ *
+ * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Composer\Command;
 
 use Symfony\Component\Console\Input\InputInterface;
@@ -27,7 +37,6 @@ class GraphCommand extends Command
       ->setDescription('Graphs installed project dependencies from an existing composer.lock.')
       ->setDefinition(array(
           new InputArgument('path', InputArgument::REQUIRED, 'Path to output rendered pages'),
-          new InputOption('dev', null, InputOption::VALUE_NONE, 'Enables the graphing of dev-require packages.')
         ))
       ->setHelp(<<<HERE
 The <info>graph</info> command reads the requirements of
