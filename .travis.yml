@@ -4,6 +4,7 @@ php:
   - 5.3.3
   - 5.3
   - 5.4
+  - 5.5
 
 before_script: composer install
 
