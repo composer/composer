@@ -45,6 +45,14 @@ class Application extends BaseApplication
      */
     protected $io;
 
+    private static $logo = '   ______                                          
+  / ____/___  ____ ___  ____  ____  ________  _____
+ / /   / __ \/ __ `__ \/ __ \/ __ \/ ___/ _ \/ ___/
+/ /___/ /_/ / / / / / / /_/ / /_/ (__  )  __/ /    
+\____/\____/_/ /_/ /_/ .___/\____/____/\___/_/     
+                    /_/                            
+Composer';
+
     public function __construct()
     {
         if (function_exists('ini_set')) {
@@ -57,7 +65,7 @@ class Application extends BaseApplication
         }
 
         ErrorHandler::register();
-        parent::__construct('Composer', Composer::VERSION);
+        parent::__construct(self::$logo, Composer::VERSION);
     }
 
     /**
