@@ -598,8 +598,9 @@ The following options are supported:
   `{"github.com": "oauthtoken"}` as the value of this option will use `oauthtoken`
   to access private repositories on github and to circumvent the low IP-based
   rate limiting of their API.
-* **cache-dir:** Defaults to `$home/cache` on unix systems and
-  `C:\Users\<user>\AppData\Local\Composer` on Windows. Stores all the caches
+* **cache-dir:** Defaults to `C:\Users\<user>\AppData\Local\Composer` on Windows,
+  `$XDG_CACHE_HOME/composer` on unix systems that follow the XDG Base Directory
+  Specifications, and `$home/cache` on other unix systems. Stores all the caches
   used by composer. See also [COMPOSER_HOME](03-cli.md#composer-home).
 * **cache-files-dir:** Defaults to `$cache-dir/files`. Stores the zip archives
   of packages.

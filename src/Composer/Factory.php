@@ -38,15 +38,21 @@ class Factory
         // determine home and cache dirs
         $home = getenv('COMPOSER_HOME');
         $cacheDir = getenv('COMPOSER_CACHE_DIR');
+        $userDir = rtrim(getenv('HOME'), '/');
+        $followXDG = false;
         if (!$home) {
             if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
                 $home = getenv('APPDATA') . '/Composer';
-            } else {
+            } elseif (getenv('XDG_CONFIG_DIRS')) {
+                // XDG Base Directory Specifications
+                $followXDG = true;
                 $xdgConfig = getenv('XDG_CONFIG_HOME');
                 if (!$xdgConfig) {
-                    $xdgConfig = rtrim(getenv('HOME'), '/') . '/.config';
+                    $xdgConfig = $userDir . '/.config';
                 }
                 $home = $xdgConfig . '/composer';
+            } else {
+                $home = $userDir . '/.composer';
             }
         }
         if (!$cacheDir) {
@@ -56,15 +62,20 @@ class Factory
                 } else {
                     $cacheDir = getenv('APPDATA') . '/Composer/cache';
                 }
-            } else {
+            } elseif (getenv('XDG_CONFIG_DIRS')) {
+                $followXDG = true;
                 $xdgCache = getenv('XDG_CACHE_HOME');
                 if (!$xdgCache) {
-                    $xdgCache = rtrim(getenv('HOME'), '/') . '/.cache';
+                    $xdgCache = $userDir . '/.cache';
                 }
                 $cacheDir = $xdgCache . '/composer';
+
+
+            } else {
+                $cacheDir = $home . '/.cache';
             }
         }
-
+        
         // Protect directory against web access. Since HOME could be
         // the www-data's user home and be web-accessible it is a
         // potential security risk
@@ -75,6 +86,19 @@ class Factory
                 }
                 @file_put_contents($dir . '/.htaccess', 'Deny from all');
             }
+        }
+
+        // Move content of old composer dir to XDG
+        if ($followXDG && file_exists($userDir . '/.composer')) {
+            // migrate to XDG
+            @rename($userDir . '/.composer/config.json', $home . '/config.json');
+            @unlink($userDir . '/.composer/.htaccess');
+            @unlink($userDir . '/.composer/cache/.htaccess');
+            foreach (glob($userDir . '/.composer/cache/*') as $oldCacheDir) {
+                @rename($oldCacheDir, $cacheDir . '/' . basename($oldCacheDir));
+            }
+            @rmdir($userDir . '/.composer/cache');
+            @rmdir($userDir . '/.composer');
         }
 
         $config = new Config();
