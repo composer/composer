@@ -21,25 +21,25 @@ use Composer\Grapher\GraphOutputInterface;
  */
 class D3GraphOutput implements GraphOutputInterface
 {
-  /**
-   * {@inheritDoc}
-   */
-  public function draw(array $graph)
-  {
-    // encode the graph as JSON and output it before the template page
-    $json = json_encode($graph, JSON_UNESCAPED_SLASHES);
-    
-    $head =<<<HERE
+    /**
+     * {@inheritDoc}
+     */
+    public function draw(array $graph)
+    {
+        // encode the graph as JSON and output it before the template page
+        $json = json_encode($graph, JSON_UNESCAPED_SLASHES);
+
+        $head =<<<HERE
 <script type="text/javascript">
 var graph = $json;
 </script>
 
 HERE
-    ;
+        ;
 
-    $templateFile = __DIR__ . '/res/index.html';
-    $renderedTemplate = $head . file_get_contents($templateFile);
+        $templateFile = __DIR__ . '/res/index.html';
+        $renderedTemplate = $head . file_get_contents($templateFile);
 
-    return $renderedTemplate;
-  }
+        return $renderedTemplate;
+    }
 }

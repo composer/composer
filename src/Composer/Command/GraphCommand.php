@@ -13,7 +13,6 @@
 namespace Composer\Command;
 
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -30,15 +29,15 @@ use Composer\Grapher\D3GraphOutput;
 class GraphCommand extends Command
 {
 
-  protected function configure()
-  {
-    $this
-      ->setName('graph')
-      ->setDescription('Graphs installed project dependencies from an existing composer.lock.')
-      ->setDefinition(array(
-          new InputArgument('path', InputArgument::REQUIRED, 'Path to output rendered pages'),
-        ))
-      ->setHelp(<<<HERE
+    protected function configure()
+    {
+        $this
+            ->setName('graph')
+            ->setDescription('Graphs installed project dependencies from an existing composer.lock.')
+            ->setDefinition(array(
+                    new InputArgument('path', InputArgument::REQUIRED, 'Path to output rendered pages'),
+                ))
+            ->setHelp(<<<HERE
 The <info>graph</info> command reads the requirements of
 each project dependency as specified in an existing composer.lock.
 The composer.lock must have already been created by Composer
@@ -48,23 +47,23 @@ of dependencies.
 <info>php composer.phar graph</info>
 
 HERE
-        )
-      ;
-  }
+                )
+            ;
+    }
 
-  protected function execute(InputInterface $consoleInput, OutputInterface $consoleOutput)
-  {
-    $composer = $this->getComposer();
-    $locker = $composer->getLocker();
+    protected function execute(InputInterface $consoleInput, OutputInterface $consoleOutput)
+    {
+        $composer = $this->getComposer();
+        $locker = $composer->getLocker();
 
-    $builder = new RepositoryGraphBuilder($locker->getLockedRepository());
-    $graphOutput = new D3GraphOutput();
-    $grapher = new Grapher($builder, $graphOutput);
-    
-    $path = $consoleInput->getArgument('path');
+        $builder = new RepositoryGraphBuilder($locker->getLockedRepository());
+        $graphOutput = new D3GraphOutput();
+        $grapher = new Grapher($builder, $graphOutput);
 
-    file_put_contents($path, $grapher->graph());
+        $path = $consoleInput->getArgument('path');
 
-    $consoleOutput->writeln('<info>Graphed dependencies to '.$path.'</info>');
-  }  
+        file_put_contents($path, $grapher->graph());
+
+        $consoleOutput->writeln('<info>Graphed dependencies to '.$path.'</info>');
+    }
 }

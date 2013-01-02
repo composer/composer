@@ -21,17 +21,17 @@ namespace Composer\Grapher;
  */
 interface GraphOutputInterface
 {
-  /**
-   * Draws the specified directed dependency graph,
-   * given in the form of:
-   *
-   * [
-   *  ['source' => 'ea/guzzle-bundle', 'target' => 'symfony/symfony', 'type' => 'require'],
-   *  ['source' => 'symfony/symfony', 'target' => 'twig/twig', 'type' => 'require']
-   * ]
-   *
-   * @param array  $graph A graph in the form specified above
-   * @return string The graphing module's output
-   */
-  public function draw(array $graph);
+    /**
+     * Draws the specified directed dependency graph,
+     * given in the form of:
+     *
+     * [
+     *  ['source' => 'ea/guzzle-bundle', 'target' => 'symfony/symfony', 'type' => 'require'],
+     *  ['source' => 'symfony/symfony', 'target' => 'twig/twig', 'type' => 'require']
+     * ]
+     *
+     * @param array  $graph A graph in the form specified above
+     * @return string The graphing module's output
+     */
+    public function draw(array $graph);
 }

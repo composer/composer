@@ -24,35 +24,35 @@ use Composer\Grapher\GraphOutputInterface;
  */
 class Grapher
 {
-  /**
-   * @var GraphBuilderInterface
-   **/
-  private $builder;
+    /**
+     * @var GraphBuilderInterface
+     **/
+    private $builder;
 
-  /**
-   * @var GraphOutputInterface
-   **/
-  private $output;
+    /**
+     * @var GraphOutputInterface
+     **/
+    private $output;
 
-  /**
-   * Constructor
-   *
-   * @param GraphBuilderInterface $builder
-   * @param GraphOutputInterface  $output
-   */
-  public function __construct(GraphBuilderInterface $builder, GraphOutputInterface $output)
-  {
-    $this->builder = $builder;
-    $this->output = $output;
-  }
+    /**
+     * Constructor
+     *
+     * @param GraphBuilderInterface $builder
+     * @param GraphOutputInterface  $output
+     */
+    public function __construct(GraphBuilderInterface $builder, GraphOutputInterface $output)
+    {
+        $this->builder = $builder;
+        $this->output = $output;
+    }
 
-  /**
-   * Draws the graph using the builder and output modules passed into the constructor.
-   *
-   * @return string The graphing module's output
-   */
-  public function graph()
-  {
-    return $this->output->draw($this->builder->build());
-  }
+    /**
+     * Draws the graph using the builder and output modules passed into the constructor.
+     *
+     * @return string The graphing module's output
+     */
+    public function graph()
+    {
+        return $this->output->draw($this->builder->build());
+    }
 }
