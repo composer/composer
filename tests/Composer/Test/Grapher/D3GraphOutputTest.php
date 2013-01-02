@@ -30,7 +30,7 @@ class D3GraphOutputTest extends TestCase
         $graph = json_decode($fixture, true);
 
         $result = $this->output->draw($graph);
-        echo $result;
+        
         $this->assertTrue(strpos($result, json_encode($graph)) !== FALSE,
             "contains the JSON representation of the graph");
         $this->assertTrue(strpos($result, "<!DOCTYPE html>") !== FALSE,
