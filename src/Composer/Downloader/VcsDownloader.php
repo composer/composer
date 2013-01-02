@@ -133,6 +133,15 @@ abstract class VcsDownloader implements DownloaderInterface
     }
 
     /**
+     * Download progress information is not available for all VCS downloaders.
+     * {@inheritDoc}
+     */
+    public function setOutputProgress($outputProgress)
+    {
+        return $this;
+    }
+
+    /**
      * Prompt the user to check if changes should be stashed/removed or the operation aborted
      *
      * @param string $path

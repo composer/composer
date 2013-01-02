@@ -15,12 +15,12 @@ class ComposerAutoloaderInitFilesAutoloadOrder
 
     public static function getLoader()
     {
-        if (null !== static::$loader) {
-            return static::$loader;
+        if (null !== self::$loader) {
+            return self::$loader;
         }
 
         spl_autoload_register(array('ComposerAutoloaderInitFilesAutoloadOrder', 'loadClassLoader'));
-        static::$loader = $loader = new \Composer\Autoload\ClassLoader();
+        self::$loader = $loader = new \Composer\Autoload\ClassLoader();
         spl_autoload_unregister(array('ComposerAutoloaderInitFilesAutoloadOrder', 'loadClassLoader'));
 
         $vendorDir = dirname(__DIR__);
@@ -40,10 +40,10 @@ class ComposerAutoloaderInitFilesAutoloadOrder
 
         require $vendorDir . '/c/lorem/testC.php';
         require $vendorDir . '/z/foo/testA.php';
-        require $baseDir . '/root.php';
-        require $vendorDir . '/b/bar/testB.php';
         require $vendorDir . '/d/d/testD.php';
+        require $vendorDir . '/b/bar/testB.php';
         require $vendorDir . '/e/e/testE.php';
+        require $baseDir . '/root.php';
 
         return $loader;
     }

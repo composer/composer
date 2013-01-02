@@ -36,6 +36,7 @@ class FileDownloader implements DownloaderInterface
     protected $rfs;
     protected $filesystem;
     protected $cache;
+    protected $outputProgress = true;
 
     /**
      * Constructor.
@@ -94,10 +95,15 @@ class FileDownloader implements DownloaderInterface
         try {
             try {
                 if (!$this->cache || !$this->cache->copyTo($this->getCacheKey($package), $fileName)) {
-                    $this->rfs->copy($hostname, $processedUrl, $fileName);
+                    $this->rfs->copy($hostname, $processedUrl, $fileName, $this->outputProgress);
+                    if (!$this->outputProgress) {
+                        $this->io->write('    Downloading');
+                    }
                     if ($this->cache) {
                         $this->cache->copyFrom($this->getCacheKey($package), $fileName);
                     }
+                } else {
+                    $this->io->write('    Loading from cache');
                 }
             } catch (TransportException $e) {
                 if (404 === $e->getCode() && 'github.com' === $hostname) {
@@ -108,7 +114,7 @@ class FileDownloader implements DownloaderInterface
                     ) {
                         throw $e;
                     }
-                    $this->rfs->copy($hostname, $processedUrl, $fileName);
+                    $this->rfs->copy($hostname, $processedUrl, $fileName, $this->outputProgress);
                 } else {
                     throw $e;
                 }
@@ -129,6 +135,16 @@ class FileDownloader implements DownloaderInterface
             $this->clearCache($package, $path);
             throw $e;
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setOutputProgress($outputProgress)
+    {
+        $this->outputProgress = $outputProgress;
+
+        return $this;
     }
 
     protected function clearCache(PackageInterface $package, $path)
