@@ -43,14 +43,13 @@ class RepositoryGraphBuilder implements GraphBuilderInterface
     public function build()
     {
         $graph = array();
-        $packages = $this->repository->getPackages();
 
         /*
          Go through every package once and enumerate its dependencies.
          Required packages all have their own entries, so recursion has
          already been handled in the lockfile.
          */
-        foreach ($packages as $package) {
+        $this->repository->filterPackages(function ($package) use (&$graph) {
             $requirements = $package->getRequires();
 
             /*
@@ -65,7 +64,7 @@ class RepositoryGraphBuilder implements GraphBuilderInterface
 
                 $graph[] = $vertex;
             }
-        }
+        });
 
         return $graph;
     }
