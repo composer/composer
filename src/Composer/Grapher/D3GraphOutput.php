@@ -37,8 +37,11 @@ var graph = $json;
 HERE
         ;
 
+        $target = '{{ data }}';
+
         $templateFile = __DIR__ . '/res/index.html';
-        $renderedTemplate = $head . file_get_contents($templateFile);
+        $originalTemplate = file_get_contents($templateFile);
+        $renderedTemplate = str_replace($target, $head, $originalTemplate);
 
         return $renderedTemplate;
     }
