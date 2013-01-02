@@ -27,7 +27,7 @@ class D3GraphOutput implements GraphOutputInterface
     public function draw(array $graph)
     {
         // encode the graph as JSON and output it before the template page
-        $json = json_encode($graph, JSON_UNESCAPED_SLASHES);
+        $json = json_encode($graph);
 
         $head =<<<HERE
 <script type="text/javascript">
