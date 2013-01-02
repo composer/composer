@@ -598,9 +598,11 @@ The `COMPOSER_HOME` var allows you to change the composer home directory. This
 is a hidden, global (per-user on the machine) directory that is shared between
 all projects.
 
-By default it points to `/home/<user>/.composer` on \*nix,
-`/Users/<user>/.composer` on OSX and
-`C:\Users\<user>\AppData\Roaming\Composer` on Windows.
+By default it points to `C:\Users\<user>\AppData\Roaming\Composer` on Windows
+and `/Users/<user>/.composer` on OSX. On *nix systems that follow the [XDG Base
+Directory Specifications](http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html),
+it points to `$XDG_CONFIG_HOME/composer`. On other *nix systems, it points to
+`/home/<user>/.composer`.
 
 #### COMPOSER_HOME/config.json
 
