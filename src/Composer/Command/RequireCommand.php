@@ -36,6 +36,8 @@ class RequireCommand extends InitCommand
                 new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Required package with a version constraint, e.g. foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"'),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Add requirement to require-dev.'),
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
+                new InputOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist even for dev versions.'),
+                new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
                 new InputOption('no-update', null, InputOption::VALUE_NONE, 'Disables the automatic update of the dependencies.'),
             ))
             ->setHelp(<<<EOT
@@ -50,8 +52,7 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $factory = new Factory;
-        $file = $factory->getComposerFile();
+        $file = Factory::getComposerFile();
 
         if (!file_exists($file)) {
             $output->writeln('<error>'.$file.' not found.</error>');
@@ -92,12 +93,14 @@ EOT
 
         // Update packages
         $composer = $this->getComposer();
+        $composer->getDownloadManager()->setOutputProgress(!$input->getOption('no-progress'));
         $io = $this->getIO();
         $install = Installer::create($io, $composer);
 
         $install
             ->setVerbose($input->getOption('verbose'))
             ->setPreferSource($input->getOption('prefer-source'))
+            ->setPreferDist($input->getOption('prefer-dist'))
             ->setDevMode($input->getOption('dev'))
             ->setUpdate(true)
             ->setUpdateWhitelist($requirements);

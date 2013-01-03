@@ -1,5 +1,5 @@
 --TEST--
-Update aliased package to non-aliased version
+Update aliased package does not mess up the lock file
 --COMPOSER--
 {
     "repositories": [
@@ -12,12 +12,22 @@ Update aliased package to non-aliased version
                     "source": { "reference": "master", "type": "git", "url": "" }
                 }
             ]
+        },
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "a/a", "version": "dev-master",
+                    "extra": { "branch-alias": { "dev-master": "1.0.x-dev" } },
+                    "source": { "reference": "lowpriomaster", "type": "git", "url": "" }
+                }
+            ]
         }
     ],
     "require": {
         "a/a": "1.*"
     },
-    "minimum-stability": "stable"
+    "minimum-stability": "dev"
 }
 --LOCK--
 {
@@ -27,7 +37,7 @@ Update aliased package to non-aliased version
     ],
     "packages-dev": null,
     "aliases": [],
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "stability-flags": []
 }
 --INSTALLED--
@@ -43,12 +53,16 @@ update
 --EXPECT-LOCK--
 {
     "packages": [
-        { "package": "a/a", "version": "dev-master", "alias-pretty-version": "1.0.x-dev", "alias-version": "1.0.9999999.9999999-dev" },
-        { "package": "a/a", "version": "dev-master", "source-reference": "master" }
+        {
+            "name": "a/a", "version": "dev-master",
+            "extra": { "branch-alias": { "dev-master": "1.0.x-dev" } },
+            "source": { "reference": "master", "type": "git", "url": "" },
+            "type": "library"
+        }
     ],
     "packages-dev": null,
     "aliases": [],
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "stability-flags": []
 }
 --EXPECT--

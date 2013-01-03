@@ -12,15 +12,10 @@
 
 namespace Composer\Command;
 
+use Composer\Util\ConfigValidator;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
-use Composer\Json\JsonFile;
-use Composer\Json\JsonValidationException;
-use Composer\Package\Loader\ValidatingArrayLoader;
-use Composer\Package\Loader\ArrayLoader;
-use Composer\Util\RemoteFilesystem;
-use Composer\Util\SpdxLicenseIdentifier;
 
 /**
  * ValidateCommand
@@ -69,72 +64,8 @@ EOT
             return 1;
         }
 
-        $errors = array();
-        $publishErrors = array();
-        $warnings = array();
-
-        // validate json schema
-        $laxValid = false;
-        $valid = false;
-        try {
-            $json = new JsonFile($file, new RemoteFilesystem($this->getIO()));
-            $manifest = $json->read();
-
-            $json->validateSchema(JsonFile::LAX_SCHEMA);
-            $laxValid = true;
-            $json->validateSchema();
-            $valid = true;
-        } catch (JsonValidationException $e) {
-            foreach ($e->getErrors() as $message) {
-                if ($laxValid) {
-                    $publishErrors[] = '<error>Publish Error: ' . $message . '</error>';
-                } else {
-                    $errors[] = '<error>' . $message . '</error>';
-                }
-            }
-        } catch (\Exception $e) {
-            $output->writeln('<error>' . $e->getMessage() . '</error>');
-
-            return 1;
-        }
-
-        // validate actual data
-        if (!empty($manifest['license'])) {
-            $licenseValidator = new SpdxLicenseIdentifier();
-            if (!$licenseValidator->validate($manifest['license'])) {
-                $warnings[] = sprintf(
-                    'License %s is not a valid SPDX license identifier, see http://www.spdx.org/licenses/ if you use an open license',
-                    json_encode($manifest['license'])
-                );
-            }
-        } else {
-            $warnings[] = 'No license specified, it is recommended to do so';
-        }
-
-        if (!empty($manifest['name']) && preg_match('{[A-Z]}', $manifest['name'])) {
-            $suggestName = preg_replace('{(?:([a-z])([A-Z])|([A-Z])([A-Z][a-z]))}', '\\1\\3-\\2\\4', $manifest['name']);
-            $suggestName = strtolower($suggestName);
-
-            $warnings[] = sprintf(
-                'Name "%s" does not match the best practice (e.g. lower-cased/with-dashes). We suggest using "%s" instead. As such you will not be able to submit it to Packagist.',
-                $manifest['name'],
-                $suggestName
-            );
-        }
-
-        // TODO validate package repositories' packages using the same technique as below
-        try {
-            $loader = new ValidatingArrayLoader(new ArrayLoader(), false);
-            if (!isset($manifest['version'])) {
-                $manifest['version'] = '1.0.0';
-            }
-            if (!isset($manifest['name'])) {
-                $manifest['name'] = 'dummy/dummy';
-            }
-            $loader->load($manifest);
-        } catch (\Exception $e) {
-            $errors = array_merge($errors, explode("\n", $e->getMessage()));
-        }
+        $validator = new ConfigValidator($this->getIO());
+        list($errors, $publishErrors, $warnings) = $validator->validate($file);
 
         // output errors/warnings
         if (!$errors && !$publishErrors && !$warnings) {

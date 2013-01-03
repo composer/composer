@@ -14,10 +14,10 @@ namespace Composer\Console;
 
 use Symfony\Component\Console\Application as BaseApplication;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Formatter\OutputFormatter;
-use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Composer\Command;
 use Composer\Command\Helper\DialogHelper;
 use Composer\Composer;
@@ -47,6 +47,15 @@ class Application extends BaseApplication
 
     public function __construct()
     {
+        if (function_exists('ini_set')) {
+            ini_set('xdebug.show_exception_trace', false);
+            ini_set('xdebug.scream', false);
+
+        }
+        if (function_exists('date_default_timezone_set') && function_exists('date_default_timezone_get')) {
+            date_default_timezone_set(@date_default_timezone_get());
+        }
+
         ErrorHandler::register();
         parent::__construct('Composer', Composer::VERSION);
     }
@@ -57,8 +66,7 @@ class Application extends BaseApplication
     public function run(InputInterface $input = null, OutputInterface $output = null)
     {
         if (null === $output) {
-            $styles['highlight'] = new OutputFormatterStyle('red');
-            $styles['warning'] = new OutputFormatterStyle('black', 'yellow');
+            $styles = Factory::createAdditionalStyles();
             $formatter = new OutputFormatter(null, $styles);
             $output = new ConsoleOutput(ConsoleOutput::VERBOSITY_NORMAL, null, $formatter);
         }
@@ -79,11 +87,39 @@ class Application extends BaseApplication
 
         if (defined('COMPOSER_DEV_WARNING_TIME') && $this->getCommandName($input) !== 'self-update') {
             if (time() > COMPOSER_DEV_WARNING_TIME) {
-                $output->writeln(sprintf('<warning>This dev build of composer is outdated, please run "%s self-update" to get the latest version.</warning>', $_SERVER['PHP_SELF']));
+                $output->writeln(sprintf('<warning>Warning: This development build of composer is over 30 days old. It is recommended to update it by running "%s self-update" to get the latest version.</warning>', $_SERVER['PHP_SELF']));
             }
         }
 
-        return parent::doRun($input, $output);
+        if ($input->hasParameterOption('--profile')) {
+            $startTime = microtime(true);
+        }
+
+        $oldWorkingDir = getcwd();
+        $this->switchWorkingDir($input);
+
+        $result = parent::doRun($input, $output);
+
+        chdir($oldWorkingDir);
+
+        if (isset($startTime)) {
+            $output->writeln('<info>Memory usage: '.round(memory_get_usage() / 1024 / 1024, 2).'MB (peak: '.round(memory_get_peak_usage() / 1024 / 1024, 2).'MB), time: '.round(microtime(true) - $startTime, 2).'s');
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param  InputInterface    $input
+     * @throws \RuntimeException
+     */
+    private function switchWorkingDir(InputInterface $input)
+    {
+        $workingDir = $input->getParameterOption(array('--working-dir', '-d'), getcwd());
+        if (!is_dir($workingDir)) {
+            throw new \RuntimeException('Invalid working directory specified.');
+        }
+        chdir($workingDir);
     }
 
     /**
@@ -121,6 +157,7 @@ class Application extends BaseApplication
     {
         $commands = parent::getDefaultCommands();
         $commands[] = new Command\AboutCommand();
+        $commands[] = new Command\ConfigCommand();
         $commands[] = new Command\DependsCommand();
         $commands[] = new Command\InitCommand();
         $commands[] = new Command\InstallCommand();
@@ -138,6 +175,18 @@ class Application extends BaseApplication
         }
 
         return $commands;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function getDefaultInputDefinition()
+    {
+        $definition = parent::getDefaultInputDefinition();
+        $definition->addOption(new InputOption('--profile', null, InputOption::VALUE_NONE, 'Display timing and memory usage information'));
+        $definition->addOption(new InputOption('--working-dir', '-d', InputOption::VALUE_REQUIRED, 'If specified, use the given directory as working directory.'));
+
+        return $definition;
     }
 
     /**

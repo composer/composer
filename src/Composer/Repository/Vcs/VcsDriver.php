@@ -19,7 +19,7 @@ use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
 
 /**
- * A driver implementation for driver with authorization interaction.
+ * A driver implementation for driver with authentication interaction.
  *
  * @author François Pluchino <francois.pluchino@opendisplay.com>
  */
@@ -27,6 +27,7 @@ abstract class VcsDriver implements VcsDriverInterface
 {
     protected $url;
     protected $originUrl;
+    protected $repoConfig;
     protected $io;
     protected $config;
     protected $process;
@@ -35,16 +36,17 @@ abstract class VcsDriver implements VcsDriverInterface
     /**
      * Constructor.
      *
-     * @param string          $url              The URL
-     * @param IOInterface     $io               The IO instance
-     * @param Config          $config           The composer configuration
-     * @param ProcessExecutor $process          Process instance, injectable for mocking
-     * @param callable        $remoteFilesystem Remote Filesystem, injectable for mocking
+     * @param array            $repoConfig       The repository configuration
+     * @param IOInterface      $io               The IO instance
+     * @param Config           $config           The composer configuration
+     * @param ProcessExecutor  $process          Process instance, injectable for mocking
+     * @param RemoteFilesystem $remoteFilesystem Remote Filesystem, injectable for mocking
      */
-    final public function __construct($url, IOInterface $io, Config $config, ProcessExecutor $process = null, $remoteFilesystem = null)
+    final public function __construct(array $repoConfig, IOInterface $io, Config $config, ProcessExecutor $process = null, RemoteFilesystem $remoteFilesystem = null)
     {
-        $this->url = $url;
-        $this->originUrl = $url;
+        $this->url = $repoConfig['url'];
+        $this->originUrl = $repoConfig['url'];
+        $this->repoConfig = $repoConfig;
         $this->io = $io;
         $this->config = $config;
         $this->process = $process ?: new ProcessExecutor;

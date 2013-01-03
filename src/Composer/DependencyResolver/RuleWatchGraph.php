@@ -34,7 +34,7 @@ class RuleWatchGraph
      *
      * Assertions are skipped because they only depend on a single package and
      * have no alternative literal that could be true, so there is no need to
-     * watch chnages in any literals.
+     * watch changes in any literals.
      *
      * @param RuleWatchNode $node The rule node to be inserted into the graph
      */
@@ -59,7 +59,7 @@ class RuleWatchGraph
      * If a decision, e.g. +A has been made, then all rules containing -A, e.g.
      * (-A|+B|+C) now need to satisfy at least one of the other literals, so
      * that the rule as a whole becomes true, since with +A applied the rule
-     * is now (false|+B|+C) so essentialy (+B|+C).
+     * is now (false|+B|+C) so essentially (+B|+C).
      *
      * This means that all rules watching the literal -A need to be updated to
      * watch 2 other literals which can still be satisfied instead. So literals

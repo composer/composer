@@ -27,11 +27,10 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
     {
         $data = array(
             array(__DIR__.'/Fixtures/Namespaced', array(
-                'Namespaced\\Bar' => realpath(__DIR__).'/Fixtures/Namespaced/Bar.php',
+                'Namespaced\\Bar' => realpath(__DIR__).'/Fixtures/Namespaced/Bar.inc',
                 'Namespaced\\Foo' => realpath(__DIR__).'/Fixtures/Namespaced/Foo.php',
                 'Namespaced\\Baz' => realpath(__DIR__).'/Fixtures/Namespaced/Baz.php',
-                )
-            ),
+            )),
             array(__DIR__.'/Fixtures/beta/NamespaceCollision', array(
                 'NamespaceCollision\\A\\B\\Bar' => realpath(__DIR__).'/Fixtures/beta/NamespaceCollision/A/B/Bar.php',
                 'NamespaceCollision\\A\\B\\Foo' => realpath(__DIR__).'/Fixtures/beta/NamespaceCollision/A/B/Foo.php',
@@ -44,15 +43,21 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
             array(__DIR__.'/Fixtures/classmap', array(
                 'Foo\\Bar\\A'             => realpath(__DIR__).'/Fixtures/classmap/sameNsMultipleClasses.php',
                 'Foo\\Bar\\B'             => realpath(__DIR__).'/Fixtures/classmap/sameNsMultipleClasses.php',
-                'A'                       => realpath(__DIR__).'/Fixtures/classmap/multipleNs.php',
                 'Alpha\\A'                => realpath(__DIR__).'/Fixtures/classmap/multipleNs.php',
                 'Alpha\\B'                => realpath(__DIR__).'/Fixtures/classmap/multipleNs.php',
-                'Beta\\A'                 => realpath(__DIR__).'/Fixtures/classmap/multipleNs.php',
-                'Beta\\B'                 => realpath(__DIR__).'/Fixtures/classmap/multipleNs.php',
+                'A'                       => realpath(__DIR__).'/Fixtures/classmap/multipleNs.php',
+                'Be\\ta\\A'               => realpath(__DIR__).'/Fixtures/classmap/multipleNs.php',
+                'Be\\ta\\B'               => realpath(__DIR__).'/Fixtures/classmap/multipleNs.php',
                 'ClassMap\\SomeInterface' => realpath(__DIR__).'/Fixtures/classmap/SomeInterface.php',
                 'ClassMap\\SomeParent'    => realpath(__DIR__).'/Fixtures/classmap/SomeParent.php',
                 'ClassMap\\SomeClass'     => realpath(__DIR__).'/Fixtures/classmap/SomeClass.php',
+                'Foo\\LargeClass'         => realpath(__DIR__).'/Fixtures/classmap/LargeClass.php',
+                'Foo\\LargeGap'           => realpath(__DIR__).'/Fixtures/classmap/LargeGap.php',
+                'Foo\\MissingSpace'       => realpath(__DIR__).'/Fixtures/classmap/MissingSpace.php',
+                'Foo\\StripNoise'         => realpath(__DIR__).'/Fixtures/classmap/StripNoise.php',
+                'Unicode\\↑\\↑'              => realpath(__DIR__).'/Fixtures/classmap/Unicode.php',
             )),
+            array(__DIR__.'/Fixtures/template', array()),
         );
 
         if (version_compare(PHP_VERSION, '5.4', '>=')) {
@@ -82,6 +87,28 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
             'NamespaceCollision\\A\\B\\Bar' => realpath(__DIR__).'/Fixtures/beta/NamespaceCollision/A/B/Bar.php',
             'NamespaceCollision\\A\\B\\Foo' => realpath(__DIR__).'/Fixtures/beta/NamespaceCollision/A/B/Foo.php',
         ), ClassMapGenerator::createMap($finder));
+    }
+
+    /**
+     * @expectedException \RuntimeException
+     * @expectedExceptionMessage Could not scan for classes inside
+     */
+    public function testFindClassesThrowsWhenFileDoesNotExist()
+    {
+        $r = new \ReflectionClass('Composer\\Autoload\\ClassMapGenerator');
+        $find = $r->getMethod('findClasses');
+        $find->setAccessible(true);
+
+        $find->invoke(null, __DIR__.'/no-file');
+    }
+
+    /**
+     * @expectedException \RuntimeException
+     * @expectedExceptionMessage Could not scan for classes inside
+     */
+    public function testCreateMapThrowsWhenDirectoryDoesNotExist()
+    {
+        ClassMapGenerator::createMap(__DIR__.'/no-file.no-foler');
     }
 
     protected function assertEqualsNormalized($expected, $actual, $message = null)

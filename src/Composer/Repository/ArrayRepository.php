@@ -112,6 +112,20 @@ class ArrayRepository implements RepositoryInterface
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public function filterPackages($callback, $class = 'Composer\Package\Package')
+    {
+        foreach ($this->getPackages() as $package) {
+            if (false === call_user_func($callback, $package)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     protected function createAliasPackage(PackageInterface $package, $alias = null, $prettyAlias = null)
     {
         return new AliasPackage($package, $alias ?: $package->getAlias(), $prettyAlias ?: $package->getPrettyAlias());

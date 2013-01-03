@@ -9,7 +9,7 @@
             "required": true
         },
         "type": {
-            "description": "Package type, either 'library' for common packages, 'composer-installer' for custom installers, 'metapackage' for empty packages, or a custom type defined by whatever project this package applies to.",
+            "description": "Package type, either 'library' for common packages, 'composer-installer' for custom installers, 'metapackage' for empty packages, or a custom type ([a-z0-9-]+) defined by whatever project this package applies to.",
             "type": "string"
         },
         "target-dir": {
@@ -115,6 +115,21 @@
                 "bin-dir": {
                     "type": "string",
                     "description": "The location where all binaries are linked, defaults to \"vendor/bin\"."
+                },
+                "process-timeout": {
+                    "type": "integer",
+                    "description": "The timeout in seconds for process executions, defaults to 300 (5mins)."
+                },
+                "notify-on-install": {
+                    "type": "boolean",
+                    "description": "Composer allows repositories to define a notification URL, so that they get notified whenever a package from that repository is installed. This option allows you to disable that behaviour, defaults to true."
+                },
+                "github-protocols": {
+                    "type": "array",
+                    "description": "A list of protocols to use for github.com clones, in priority order, defaults to [\"git\", \"https\", \"http\"].",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },

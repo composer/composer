@@ -23,6 +23,7 @@ use Composer\Util\Filesystem;
  */
 class DownloadManager
 {
+    private $preferDist = false;
     private $preferSource = false;
     private $filesystem;
     private $downloaders  = array();
@@ -52,6 +53,34 @@ class DownloadManager
     }
 
     /**
+     * Makes downloader prefer dist installation over the source.
+     *
+     * @param bool $preferDist prefer downloading from dist
+     */
+    public function setPreferDist($preferDist)
+    {
+        $this->preferDist = $preferDist;
+
+        return $this;
+    }
+
+    /**
+     * Sets whether to output download progress information for all registered
+     * downloaders
+     *
+     * @param  bool            $outputProgress
+     * @return DownloadManager
+     */
+    public function setOutputProgress($outputProgress)
+    {
+        foreach ($this->downloaders as $downloader) {
+            $downloader->setOutputProgress($outputProgress);
+        }
+
+        return $this;
+    }
+
+    /**
      * Sets installer downloader for a specific installation type.
      *
      * @param string              $type       installation type
@@ -72,7 +101,7 @@ class DownloadManager
      *
      * @return DownloaderInterface
      *
-     * @throws UnexpectedValueException if downloader for provided type is not registeterd
+     * @throws UnexpectedValueException if downloader for provided type is not registered
      */
     public function getDownloader($type)
     {
@@ -134,12 +163,10 @@ class DownloadManager
         $sourceType   = $package->getSourceType();
         $distType     = $package->getDistType();
 
-        if (!$package->isDev() && !($preferSource && $sourceType) && $distType) {
+        if ((!$package->isDev() || $this->preferDist || !$sourceType) && !($preferSource && $sourceType) && $distType) {
             $package->setInstallationSource('dist');
         } elseif ($sourceType) {
             $package->setInstallationSource('source');
-        } elseif ($package->isDev()) {
-            throw new \InvalidArgumentException('Dev package '.$package.' must have a source specified');
         } else {
             throw new \InvalidArgumentException('Package '.$package.' must have a source or dist specified');
         }

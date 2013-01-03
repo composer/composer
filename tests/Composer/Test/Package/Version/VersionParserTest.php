@@ -15,9 +15,57 @@ namespace Composer\Test\Package\Version;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\LinkConstraint\MultiConstraint;
 use Composer\Package\LinkConstraint\VersionConstraint;
+use Composer\Package\PackageInterface;
 
 class VersionParserTest extends \PHPUnit_Framework_TestCase
 {
+    /**
+     * @dataProvider formattedVersions
+     */
+    public function testFormatVersionForDevPackage(PackageInterface $package, $truncate, $expected)
+    {
+        $this->assertSame($expected, VersionParser::formatVersion($package, $truncate));
+    }
+
+    public function formattedVersions()
+    {
+        $data = array(
+            array(
+                'sourceReference' => 'v2.1.0-RC2',
+                'truncate' => true,
+                'expected' => 'PrettyVersion v2.1.0-RC2'
+            ),
+            array(
+                'sourceReference' => 'bbf527a27356414bfa9bf520f018c5cb7af67c77',
+                'truncate' => true,
+                'expected' => 'PrettyVersion bbf527a'
+            ),
+            array(
+                'sourceReference' => 'v1.0.0',
+                'truncate' => false,
+                'expected' => 'PrettyVersion v1.0.0'
+            ),
+            array(
+                'sourceReference' => 'bbf527a27356414bfa9bf520f018c5cb7af67c77',
+                'truncate' => false,
+                'expected' => 'PrettyVersion bbf527a27356414bfa9bf520f018c5cb7af67c77'
+            ),
+        );
+
+        $self = $this;
+        $createPackage = function($arr) use ($self) {
+            $package = $self->getMock('\Composer\Package\PackageInterface');
+            $package->expects($self->once())->method('isDev')->will($self->returnValue(true));
+            $package->expects($self->once())->method('getSourceType')->will($self->returnValue('git'));
+            $package->expects($self->once())->method('getPrettyVersion')->will($self->returnValue('PrettyVersion'));
+            $package->expects($self->any())->method('getSourceReference')->will($self->returnValue($arr['sourceReference']));
+
+            return array($package, $arr['truncate'], $arr['expected']);
+        };
+
+        return array_map($createPackage, $data);
+    }
+
     /**
      * @dataProvider successfulNormalizedVersions
      */
@@ -147,7 +195,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'not equal'         => array('<>1.0.0',     new VersionConstraint('<>', '1.0.0.0')),
             'not equal/2'       => array('!=1.0.0',     new VersionConstraint('!=', '1.0.0.0')),
             'greater than'      => array('>1.0.0',      new VersionConstraint('>', '1.0.0.0')),
-            'lesser than'       => array('<1.2.3.4',    new VersionConstraint('<', '1.2.3.4')),
+            'lesser than'       => array('<1.2.3.4',    new VersionConstraint('<', '1.2.3.4-dev')),
             'less/eq than'      => array('<=1.2.3',     new VersionConstraint('<=', '1.2.3.0')),
             'great/eq than'     => array('>=1.2.3',     new VersionConstraint('>=', '1.2.3.0')),
             'equals'            => array('=1.2.3',      new VersionConstraint('=', '1.2.3.0')),
@@ -161,6 +209,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'regression #550'   => array('dev-some-fix',    new VersionConstraint('=', 'dev-some-fix')),
             'regression #935'   => array('dev-CAPS',        new VersionConstraint('=', 'dev-CAPS')),
             'ignores aliases'   => array('dev-master as 1.0.0', new VersionConstraint('=', '9999999-dev')),
+            'lesser than override'       => array('<1.2.3.4-stable',    new VersionConstraint('<', '1.2.3.4')),
         );
     }
 
@@ -192,6 +241,31 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @dataProvider tildeConstraints
+     */
+    public function testParseTildeWildcard($input, $min, $max)
+    {
+        $parser = new VersionParser;
+        if ($min) {
+            $expected = new MultiConstraint(array($min, $max));
+        } else {
+            $expected = $max;
+        }
+
+        $this->assertSame((string) $expected, (string) $parser->parseConstraints($input));
+    }
+
+    public function tildeConstraints()
+    {
+        return array(
+            array('~1',       new VersionConstraint('>=', '1.0.0.0'), new VersionConstraint('<', '2.0.0.0-dev')),
+            array('~1.2',     new VersionConstraint('>=', '1.2.0.0'), new VersionConstraint('<', '2.0.0.0-dev')),
+            array('~1.2.3',   new VersionConstraint('>=', '1.2.3.0'), new VersionConstraint('<', '1.3.0.0-dev')),
+            array('~1.2.3.4', new VersionConstraint('>=', '1.2.3.4'), new VersionConstraint('<', '1.2.4.0-dev')),
+        );
+    }
+
     public function testParseConstraintsMulti()
     {
         $parser = new VersionParser;
@@ -199,6 +273,15 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
         $second = new VersionConstraint('<=', '3.0.0.0');
         $multi = new MultiConstraint(array($first, $second));
         $this->assertSame((string) $multi, (string) $parser->parseConstraints('>2.0,<=3.0'));
+    }
+
+    public function testParseConstraintsMultiWithStabilities()
+    {
+        $parser = new VersionParser;
+        $first = new VersionConstraint('>', '2.0.0.0');
+        $second = new VersionConstraint('<=', '3.0.0.0-dev');
+        $multi = new MultiConstraint(array($first, $second));
+        $this->assertSame((string) $multi, (string) $parser->parseConstraints('>2.0@stable,<=3.0@dev'));
     }
 
     /**
@@ -240,9 +323,10 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             array('stable', '3.1.2-patch'),
             array('alpha',  '3.1.2-alpha5'),
             array('beta',   '3.1.2-beta'),
-            array('beta',   '2.0b1'),
+            array('beta',   '2.0B1'),
             array('alpha',  '1.2.0a1'),
             array('alpha',  '1.2_a1'),
+            array('RC',     '2.0.0rc1')
         );
     }
 }

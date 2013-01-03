@@ -12,11 +12,12 @@
 
 namespace Composer\Package;
 
-use Composer\Package\LinkConstraint\LinkConstraintInterface;
 use Composer\Repository\RepositoryInterface;
 
 /**
- * @author Nils Adermann <naderman@naderman.de>
+ * Defines the essential information a package has that is used during solving/installation
+ *
+ * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 interface PackageInterface
 {
@@ -59,16 +60,6 @@ interface PackageInterface
     public function getId();
 
     /**
-     * Checks if the package matches the given constraint directly or through
-     * provided or replaced packages
-     *
-     * @param  string                  $name       Name of the package to be matched
-     * @param  LinkConstraintInterface $constraint The constraint to verify
-     * @return bool                    Whether this package matches the name and constraint
-     */
-    public function matches($name, LinkConstraintInterface $constraint);
-
-    /**
      * Returns whether the package is a development virtual package or a concrete one
      *
      * @return bool
@@ -106,7 +97,7 @@ interface PackageInterface
     /**
      * Returns source from which this package was installed (source/dist).
      *
-     * @param string $type source/dist
+     * @return string source/dist
      */
     public function getInstallationSource();
 
@@ -160,13 +151,6 @@ interface PackageInterface
     public function getDistSha1Checksum();
 
     /**
-     * Returns the scripts of this package
-     *
-     * @return array array('script name' => array('listeners'))
-     */
-    public function getScripts();
-
-    /**
      * Returns the version of this package
      *
      * @return string version
@@ -181,18 +165,18 @@ interface PackageInterface
     public function getPrettyVersion();
 
     /**
+     * Returns the release date of the package
+     *
+     * @return \DateTime
+     */
+    public function getReleaseDate();
+
+    /**
      * Returns the stability of this package: one of (dev, alpha, beta, RC, stable)
      *
      * @return string
      */
     public function getStability();
-
-    /**
-     * Returns the package license, e.g. MIT, BSD, GPL
-     *
-     * @return array The package licenses
-     */
-    public function getLicense();
 
     /**
      * Returns a set of links to packages which need to be installed before
@@ -263,15 +247,6 @@ interface PackageInterface
     public function getIncludePaths();
 
     /**
-     * Returns an array of repositories
-     *
-     * {"<type>": {<config key/values>}}
-     *
-     * @return array Repositories
-     */
-    public function getRepositories();
-
-    /**
      * Stores a reference to the repository that owns the package
      *
      * @param RepositoryInterface $repository
@@ -286,48 +261,11 @@ interface PackageInterface
     public function getRepository();
 
     /**
-     * Returns the release date of the package
-     *
-     * @return \DateTime
-     */
-    public function getReleaseDate();
-
-    /**
-     * Returns an array of keywords relating to the package
-     *
-     * @return array
-     */
-    public function getKeywords();
-
-    /**
-     * Returns the package description
-     *
-     * @return string
-     */
-    public function getDescription();
-
-    /**
      * Returns the package binaries
      *
      * @return array
      */
     public function getBinaries();
-
-    /**
-     * Returns the package homepage
-     *
-     * @return string
-     */
-    public function getHomepage();
-
-    /**
-     * Returns an array of authors of the package
-     *
-     * Each item can contain name/homepage/email keys
-     *
-     * @return array
-     */
-    public function getAuthors();
 
     /**
      * Returns a version this package should be aliased to
@@ -351,6 +289,13 @@ interface PackageInterface
     public function getUniqueName();
 
     /**
+     * Returns the package notification url
+     *
+     * @return string
+     */
+    public function getNotificationUrl();
+
+    /**
      * Converts the package into a readable and unique string
      *
      * @return string
@@ -363,11 +308,4 @@ interface PackageInterface
      * @return string
      */
     public function getPrettyString();
-
-    /**
-     * Returns the support information
-     *
-     * @return array
-     */
-    public function getSupport();
 }

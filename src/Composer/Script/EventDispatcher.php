@@ -16,6 +16,7 @@ use Composer\Autoload\AutoloadGenerator;
 use Composer\IO\IOInterface;
 use Composer\Composer;
 use Composer\DependencyResolver\Operation\OperationInterface;
+use Composer\Util\ProcessExecutor;
 
 /**
  * The Event Dispatcher.
@@ -34,38 +35,43 @@ class EventDispatcher
     protected $composer;
     protected $io;
     protected $loader;
+    protected $process;
 
     /**
      * Constructor.
      *
-     * @param Composer    $composer The composer instance
-     * @param IOInterface $io       The IOInterface instance
+     * @param Composer        $composer The composer instance
+     * @param IOInterface     $io       The IOInterface instance
+     * @param ProcessExecutor $process
      */
-    public function __construct(Composer $composer, IOInterface $io)
+    public function __construct(Composer $composer, IOInterface $io, ProcessExecutor $process = null)
     {
         $this->composer = $composer;
         $this->io = $io;
+        $this->process = $process ?: new ProcessExecutor();
     }
 
     /**
      * Dispatch a package event.
      *
      * @param string             $eventName The constant in ScriptEvents
+     * @param boolean            $devMode   Whether or not we are in dev mode
      * @param OperationInterface $operation The package being installed/updated/removed
      */
-    public function dispatchPackageEvent($eventName, OperationInterface $operation)
+    public function dispatchPackageEvent($eventName, $devMode, OperationInterface $operation)
     {
-        $this->doDispatch(new PackageEvent($eventName, $this->composer, $this->io, $operation));
+        $this->doDispatch(new PackageEvent($eventName, $this->composer, $this->io, $devMode, $operation));
     }
 
     /**
      * Dispatch a command event.
      *
-     * @param string $eventName The constant in ScriptEvents
+     * @param string  $eventName The constant in ScriptEvents
+     * @param boolean $devMode   Whether or not we are in dev mode
      */
-    public function dispatchCommandEvent($eventName)
+    public function dispatchCommandEvent($eventName, $devMode)
     {
-        $this->doDispatch(new CommandEvent($eventName, $this->composer, $this->io));
+        $this->doDispatch(new CommandEvent($eventName, $this->composer, $this->io, $devMode));
     }
 
     /**
@@ -78,24 +84,42 @@ class EventDispatcher
         $listeners = $this->getListeners($event);
 
         foreach ($listeners as $callable) {
-            $className = substr($callable, 0, strpos($callable, '::'));
-            $methodName = substr($callable, strpos($callable, '::') + 2);
+            if ($this->isPhpScript($callable)) {
+                $className = substr($callable, 0, strpos($callable, '::'));
+                $methodName = substr($callable, strpos($callable, '::') + 2);
 
-            if (!class_exists($className)) {
-                throw new \UnexpectedValueException('Class '.$className.' is not autoloadable, can not call '.$event->getName().' script');
-            }
-            if (!is_callable($callable)) {
-                throw new \UnexpectedValueException('Method '.$callable.' is not callable, can not call '.$event->getName().' script');
-            }
+                if (!class_exists($className)) {
+                    $this->io->write('<warning>Class '.$className.' is not autoloadable, can not call '.$event->getName().' script</warning>');
+                    continue;
+                }
+                if (!is_callable($callable)) {
+                    $this->io->write('<warning>Method '.$callable.' is not callable, can not call '.$event->getName().' script</warning>');
+                    continue;
+                }
 
-            try {
-                $className::$methodName($event);
-            } catch (\Exception $e) {
-                $message = "Script %s handling the %s event terminated with an exception";
-                $this->io->write('<error>'.sprintf($message, $callable, $event->getName()).'</error>');
-                throw $e;
+                try {
+                    $this->executeEventPhpScript($className, $methodName, $event);
+                } catch (\Exception $e) {
+                    $message = "Script %s handling the %s event terminated with an exception";
+                    $this->io->write('<error>'.sprintf($message, $callable, $event->getName()).'</error>');
+                    throw $e;
+                }
+            } else {
+                if (0 !== $this->process->execute($callable)) {
+                    $event->getIO()->write(sprintf('<error>Script %s handling the %s event returned with an error: %s</error>', $callable, $event->getName(), $this->process->getErrorOutput()));
+                }
             }
         }
+    }
+
+    /**
+     * @param string $className
+     * @param string $methodName
+     * @param Event  $event      Event invoking the PHP callable
+     */
+    protected function executeEventPhpScript($className, $methodName, Event $event)
+    {
+        $className::$methodName($event);
     }
 
     /**
@@ -116,12 +140,26 @@ class EventDispatcher
         }
 
         $generator = new AutoloadGenerator;
-        $packages = $this->composer->getRepositoryManager()->getLocalRepository()->getPackages();
+        $packages = array_merge(
+            $this->composer->getRepositoryManager()->getLocalRepository()->getPackages(),
+            $this->composer->getRepositoryManager()->getLocalDevRepository()->getPackages()
+        );
         $packageMap = $generator->buildPackageMap($this->composer->getInstallationManager(), $package, $packages);
-        $map = $generator->parseAutoloads($packageMap);
+        $map = $generator->parseAutoloads($packageMap, $package);
         $this->loader = $generator->createLoader($map);
         $this->loader->register();
 
         return $scripts[$event->getName()];
+    }
+
+    /**
+     * Checks if string given references a class path and method
+     *
+     * @param  string  $callable
+     * @return boolean
+     */
+    protected function isPhpScript($callable)
+    {
+        return false === strpos($callable, ' ') && false !== strpos($callable, '::');
     }
 }

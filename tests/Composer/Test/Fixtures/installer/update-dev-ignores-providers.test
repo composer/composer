@@ -1,0 +1,38 @@
+--TEST--
+Updating a dev package selects its newest version but no providers
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "a/replacer", "version": "dev-master",
+                    "source": { "reference": "wrong", "url": "", "type": "git" },
+                    "replace": {
+                        "a/installed": "dev-master"
+                    }
+                },
+                {
+                    "name": "a/installed", "version": "dev-master",
+                    "source": { "reference": "newref", "url": "", "type": "git" }
+                }
+            ]
+        }
+    ],
+    "require": {
+        "a/installed": "dev-master"
+    },
+    "minimum-stability": "dev"
+}
+--INSTALLED--
+[
+    {
+        "name": "a/installed", "version": "dev-master",
+        "source": { "reference": "oldref", "url": "", "type": "git" }
+    }
+]
+--RUN--
+update
+--EXPECT--
+Updating a/installed (dev-master oldref) to a/installed (dev-master newref)

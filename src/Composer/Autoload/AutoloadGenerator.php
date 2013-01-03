@@ -53,7 +53,7 @@ return array(
 EOF;
 
         $packageMap = $this->buildPackageMap($installationManager, $mainPackage, $localRepo->getPackages());
-        $autoloads = $this->parseAutoloads($packageMap);
+        $autoloads = $this->parseAutoloads($packageMap, $mainPackage);
 
         foreach ($autoloads['psr-0'] as $namespace => $paths) {
             $exportedPaths = array();
@@ -85,7 +85,7 @@ EOF;
         // add custom psr-0 autoloading if the root package has a target dir
         $targetDirLoader = null;
         $mainAutoload = $mainPackage->getAutoload();
-        if ($mainPackage->getTargetDir() && $mainAutoload['psr-0']) {
+        if ($mainPackage->getTargetDir() && !empty($mainAutoload['psr-0'])) {
             $levels = count(explode('/', trim(strtr($mainPackage->getTargetDir(), '\\', '/'), '/')));
             $prefixes = implode(', ', array_map(function ($prefix) {
                 return var_export($prefix, true);
@@ -117,8 +117,6 @@ EOF;
 
         // flatten array
         $classMap = array();
-        $autoloads['classmap'] = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($autoloads['classmap']));
-
         if ($scanPsr0Packages) {
             foreach ($autoloads['psr-0'] as $namespace => $paths) {
                 foreach ($paths as $dir) {
@@ -128,6 +126,9 @@ EOF;
                         preg_quote(rtrim($dir, '/')),
                         strpos($namespace, '_') === false ? preg_quote(strtr($namespace, '\\', '/')) : ''
                     );
+                    if (!is_dir($dir)) {
+                        continue;
+                    }
                     foreach (ClassMapGenerator::createMap($dir, $whitelist) as $class => $path) {
                         if ('' === $namespace || 0 === strpos($class, $namespace)) {
                             $path = '/'.$filesystem->findShortestPath(getcwd(), $path, true);
@@ -139,12 +140,16 @@ EOF;
                 }
             }
         }
+
+        $autoloads['classmap'] = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($autoloads['classmap']));
         foreach ($autoloads['classmap'] as $dir) {
             foreach (ClassMapGenerator::createMap($dir) as $class => $path) {
                 $path = '/'.$filesystem->findShortestPath(getcwd(), $path, true);
                 $classMap[$class] = '$baseDir . '.var_export($path, true).",\n";
             }
         }
+
+        ksort($classMap);
         foreach ($classMap as $class => $code) {
             $classmapFile .= '    '.var_export($class, true).' => '.$code;
         }
@@ -156,28 +161,30 @@ EOF;
             $filesCode .= '        require '.$this->getPathCode($filesystem, $relVendorPath, $vendorPath, $functionFile).";\n";
         }
 
+        if (!$suffix) {
+            $suffix = md5(uniqid('', true));
+        }
+
         file_put_contents($targetDir.'/autoload_namespaces.php', $namespacesFile);
         file_put_contents($targetDir.'/autoload_classmap.php', $classmapFile);
         if ($includePathFile = $this->getIncludePathsFile($packageMap, $filesystem, $relVendorPath, $vendorPath, $vendorPathCode, $appBaseDirCode)) {
             file_put_contents($targetDir.'/include_paths.php', $includePathFile);
         }
         file_put_contents($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, $suffix));
-        file_put_contents($targetDir.'/autoload_real'.$suffix.'.php', $this->getAutoloadRealFile(true, true, (bool) $includePathFile, $targetDirLoader, $filesCode, $vendorPathCode, $appBaseDirCode, $suffix));
+        file_put_contents($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, true, (bool) $includePathFile, $targetDirLoader, $filesCode, $vendorPathCode, $appBaseDirCode, $suffix));
         copy(__DIR__.'/ClassLoader.php', $targetDir.'/ClassLoader.php');
     }
 
     public function buildPackageMap(InstallationManager $installationManager, PackageInterface $mainPackage, array $packages)
     {
         // build package => install path map
-        $packageMap = array();
-
-        // add main package
-        $packageMap[] = array($mainPackage, '');
+        $packageMap = array(array($mainPackage, ''));
 
         foreach ($packages as $package) {
             if ($package instanceof AliasPackage) {
                 continue;
             }
+
             $packageMap[] = array(
                 $package,
                 $installationManager->getInstallPath($package)
@@ -190,38 +197,24 @@ EOF;
     /**
      * Compiles an ordered list of namespace => path mappings
      *
-     * @param  array $packageMap array of array(package, installDir-relative-to-composer.json)
-     * @return array array('psr-0' => array('Ns\\Foo' => array('installDir')))
+     * @param  array            $packageMap  array of array(package, installDir-relative-to-composer.json)
+     * @param  PackageInterface $mainPackage root package instance
+     * @return array            array('psr-0' => array('Ns\\Foo' => array('installDir')))
      */
-    public function parseAutoloads(array $packageMap)
+    public function parseAutoloads(array $packageMap, PackageInterface $mainPackage)
     {
-        $autoloads = array('classmap' => array(), 'psr-0' => array(), 'files' => array());
-        foreach ($packageMap as $item) {
-            list($package, $installPath) = $item;
+        $mainPackageMap = array_shift($packageMap);
+        $sortedPackageMap = $this->sortPackageMap($packageMap);
+        $sortedPackageMap[] = $mainPackageMap;
+        array_unshift($packageMap, $mainPackageMap);
 
-            if (null !== $package->getTargetDir()) {
-                $installPath = substr($installPath, 0, -strlen('/'.$package->getTargetDir()));
-            }
+        $psr0 = $this->parseAutoloadsType($packageMap, 'psr-0', $mainPackage);
+        $classmap = $this->parseAutoloadsType($sortedPackageMap, 'classmap', $mainPackage);
+        $files = $this->parseAutoloadsType($sortedPackageMap, 'files', $mainPackage);
 
-            foreach ($package->getAutoload() as $type => $mapping) {
-                // skip misconfigured packages
-                if (!is_array($mapping)) {
-                    continue;
-                }
+        krsort($psr0);
 
-                foreach ($mapping as $namespace => $paths) {
-                    foreach ((array) $paths as $path) {
-                        $autoloads[$type][$namespace][] = empty($installPath) ? $path : $installPath.'/'.$path;
-                    }
-                }
-            }
-        }
-
-        foreach ($autoloads as $type => $maps) {
-            krsort($autoloads[$type]);
-        }
-
-        return $autoloads;
+        return array('psr-0' => $psr0, 'classmap' => $classmap, 'files' => $files);
     }
 
     /**
@@ -326,7 +319,7 @@ EOF;
 
 // autoload.php generated by Composer
 
-require_once $vendorPathToTargetDirCode . '/autoload_real$suffix.php';
+require_once $vendorPathToTargetDirCode . '/autoload_real.php';
 
 return ComposerAutoloaderInit$suffix::getLoader();
 
@@ -349,15 +342,29 @@ AUTOLOAD;
         $file = <<<HEADER
 <?php
 
-// autoload_real$suffix.php generated by Composer
-
-require __DIR__ . '/ClassLoader.php';
+// autoload_real.php generated by Composer
 
 class ComposerAutoloaderInit$suffix
 {
+    private static \$loader;
+
+    public static function loadClassLoader(\$class)
+    {
+        if ('Composer\\Autoload\\ClassLoader' === \$class) {
+            require __DIR__ . '/ClassLoader.php';
+        }
+    }
+
     public static function getLoader()
     {
-        \$loader = new \\Composer\\Autoload\\ClassLoader();
+        if (null !== self::\$loader) {
+            return self::\$loader;
+        }
+
+        spl_autoload_register(array('ComposerAutoloaderInit$suffix', 'loadClassLoader'));
+        self::\$loader = \$loader = new \\Composer\\Autoload\\ClassLoader();
+        spl_autoload_unregister(array('ComposerAutoloaderInit$suffix', 'loadClassLoader'));
+
         \$vendorDir = $vendorPathCode;
         \$baseDir = $appBaseDirCode;
 
@@ -422,4 +429,82 @@ FOOTER;
 
     }
 
+    protected function parseAutoloadsType(array $packageMap, $type, PackageInterface $mainPackage)
+    {
+        $autoloads = array();
+
+        foreach ($packageMap as $item) {
+            list($package, $installPath) = $item;
+
+            $autoload = $package->getAutoload();
+
+            // skip misconfigured packages
+            if (!isset($autoload[$type]) || !is_array($autoload[$type])) {
+                continue;
+            }
+            if (null !== $package->getTargetDir() && $package !== $mainPackage) {
+                $installPath = substr($installPath, 0, -strlen('/'.$package->getTargetDir()));
+            }
+
+            foreach ($autoload[$type] as $namespace => $paths) {
+                foreach ((array) $paths as $path) {
+                    // remove target-dir from classmap entries of the root package
+                    if ($type === 'classmap' && $package === $mainPackage && $package->getTargetDir()) {
+                        $targetDir = str_replace('\\<dirsep\\>', '[\\\\/]', preg_quote(str_replace(array('/', '\\'), '<dirsep>', $package->getTargetDir())));
+                        $path = ltrim(preg_replace('{^'.$targetDir.'}', '', ltrim($path, '\\/')), '\\/');
+                    }
+
+                    $autoloads[$namespace][] = empty($installPath) ? $path : $installPath.'/'.$path;
+                }
+            }
+        }
+
+        return $autoloads;
+    }
+
+    protected function sortPackageMap(array $packageMap)
+    {
+        $positions = array();
+        $names = array();
+        $indexes = array();
+
+        foreach ($packageMap as $position => $item) {
+            $mainName = $item[0]->getName();
+            $names = array_merge(array_fill_keys($item[0]->getNames(), $mainName), $names);
+            $names[$mainName] = $mainName;
+            $indexes[$mainName] = $positions[$mainName] = $position;
+        }
+
+        foreach ($packageMap as $item) {
+            $position = $positions[$item[0]->getName()];
+            foreach (array_merge($item[0]->getRequires(), $item[0]->getDevRequires()) as $link) {
+                $target = $link->getTarget();
+                if (!isset($names[$target])) {
+                    continue;
+                }
+
+                $target = $names[$target];
+                if ($positions[$target] <= $position) {
+                    continue;
+                }
+
+                foreach ($positions as $key => $value) {
+                    if ($value >= $position) {
+                        break;
+                    }
+                    $positions[$key]--;
+                }
+
+                $positions[$target] = $position - 1;
+            }
+            asort($positions);
+        }
+
+        $sortedPackageMap = array();
+        foreach (array_keys($positions) as $packageName) {
+            $sortedPackageMap[] = $packageMap[$indexes[$packageName]];
+        }
+
+        return $sortedPackageMap;
+    }
 }

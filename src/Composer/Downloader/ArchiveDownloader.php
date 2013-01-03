@@ -35,7 +35,13 @@ abstract class ArchiveDownloader extends FileDownloader
             $this->io->write('    Unpacking archive');
         }
         try {
-            $this->extract($fileName, $path);
+            try {
+                $this->extract($fileName, $path);
+            } catch (\Exception $e) {
+                // remove cache if the file was corrupted
+                parent::clearCache($package, $path);
+                throw $e;
+            }
 
             if ($this->io->isVerbose()) {
                 $this->io->write('    Cleaning up');
@@ -52,9 +58,9 @@ abstract class ArchiveDownloader extends FileDownloader
                 } else {
                     // Rename the content directory to avoid error when moving up
                     // a child folder with the same name
-                    $temporaryName = md5(time().rand());
-                    $this->filesystem->rename($contentDir, $temporaryName);
-                    $contentDir = $temporaryName;
+                    $temporaryDir = sys_get_temp_dir().'/'.md5(time().rand());
+                    $this->filesystem->rename($contentDir, $temporaryDir);
+                    $contentDir = $temporaryDir;
 
                     foreach (array_merge(glob($contentDir . '/.*'), glob($contentDir . '/*')) as $file) {
                         if (trim(basename($file), '.')) {
@@ -62,7 +68,7 @@ abstract class ArchiveDownloader extends FileDownloader
                         }
                     }
 
-                    rmdir($contentDir);
+                    $this->filesystem->removeDirectory($contentDir);
                 }
             }
         } catch (\Exception $e) {
@@ -85,18 +91,35 @@ abstract class ArchiveDownloader extends FileDownloader
     /**
      * {@inheritdoc}
      */
-    protected function processUrl($url)
+    protected function processUrl(PackageInterface $package, $url)
     {
+        if ($package->getDistReference() && strpos($url, 'github.com')) {
+            if (preg_match('{^https?://(?:www\.)?github\.com/([^/]+)/([^/]+)/(zip|tar)ball/(.+)$}i', $url, $match)) {
+                // update legacy github archives to API calls with the proper reference
+                $url = 'https://api.github.com/repos/' . $match[1] . '/'. $match[2] . '/' . $match[3] . 'ball/' . $package->getDistReference();
+            } elseif ($package->getDistReference() && preg_match('{^https?://(?:www\.)?github\.com/([^/]+)/([^/]+)/archive/.+\.(zip|tar)(?:\.gz)?$}i', $url, $match)) {
+                // update current github web archives to API calls with the proper reference
+                $url = 'https://api.github.com/repos/' . $match[1] . '/'. $match[2] . '/' . $match[3] . 'ball/' . $package->getDistReference();
+            } elseif ($package->getDistReference() && preg_match('{^https?://api\.github\.com/repos/([^/]+)/([^/]+)/(zip|tar)ball(?:/.+)?$}i', $url, $match)) {
+                // update api archives to the proper reference
+                $url = 'https://api.github.com/repos/' . $match[1] . '/'. $match[2] . '/' . $match[3] . 'ball/' . $package->getDistReference();
+            }
+        }
+
         if (!extension_loaded('openssl') && (0 === strpos($url, 'https:') || 0 === strpos($url, 'http://github.com'))) {
             // bypass https for github if openssl is disabled
-            if (preg_match('{^https?://(github.com/[^/]+/[^/]+/(zip|tar)ball/[^/]+)$}i', $url, $match)) {
-                $url = 'http://nodeload.'.$match[1];
+            if (preg_match('{^https://api\.github\.com/repos/([^/]+/[^/]+)/(zip|tar)ball/([^/]+)$}i', $url, $match)) {
+                $url = 'http://nodeload.github.com/'.$match[1].'/'.$match[2].'/'.$match[3];
+            } elseif (preg_match('{^https://github\.com/([^/]+/[^/]+)/(zip|tar)ball/([^/]+)$}i', $url, $match)) {
+                $url = 'http://nodeload.github.com/'.$match[1].'/'.$match[2].'/'.$match[3];
+            } elseif (preg_match('{^https://github\.com/([^/]+/[^/]+)/archive/([^/]+)\.(zip|tar\.gz)$}i', $url, $match)) {
+                $url = 'http://nodeload.github.com/'.$match[1].'/'.$match[3].'/'.$match[2];
             } else {
                 throw new \RuntimeException('You must enable the openssl extension to download files via https');
             }
         }
 
-        return $url;
+        return parent::processUrl($package, $url);
     }
 
     /**

@@ -1,6 +1,7 @@
 <!--
     tagline: Alias branch names to versions
 -->
+
 # Aliases
 
 ## Why aliases?
@@ -36,12 +37,16 @@ specifying a `branch-alias` field under `extra` in `composer.json`:
     }
 
 The branch version must begin with `dev-` (non-comparable version), the alias
-must be a comparable dev version. The `branch-alias` must be present on the
-branch that it references. For `dev-master`, you need to commit it on the
-`master` branch.
+must be a comparable dev version (i.e. start with numbers, and end with
+`.x-dev`). The `branch-alias` must be present on the branch that it references.
+For `dev-master`, you need to commit it on the `master` branch.
 
-As a result, you can now require `1.0.*` and it will happily install
-`dev-master` for you.
+As a result, anyone can now require `1.0.*` and it will happily install
+`dev-master`.
+
+In order to use branch aliasing, you must own the repository of the package
+being aliased. If you want to alias a third party package without maintaining
+a fork of it, use inline aliases as described below.
 
 ## Require inline alias
 

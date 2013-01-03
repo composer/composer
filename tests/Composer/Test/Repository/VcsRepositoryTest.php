@@ -64,7 +64,7 @@ class VcsRepositoryTest extends \PHPUnit_Framework_TestCase
         $process->execute('git tag 0.6.0', $null);
 
         // add feature-a branch
-        $process->execute('git checkout -b feature-a', $null);
+        $process->execute('git checkout -b feature/a-1.0-B', $null);
         file_put_contents('foo', 'bar feature');
         $process->execute('git add foo', $null);
         $process->execute('git commit -m change-a', $null);
@@ -127,7 +127,7 @@ class VcsRepositoryTest extends \PHPUnit_Framework_TestCase
             '1.0.x-dev' => true,
             '1.1.x-dev' => true,
             'dev-feature-b' => true,
-            'dev-feature-a' => true,
+            'dev-feature/a-1.0-B' => true,
             'dev-master' => true,
         );
 

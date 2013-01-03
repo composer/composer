@@ -16,6 +16,8 @@ use Composer\Downloader\TransportException;
 use Composer\Repository\Vcs\VcsDriverInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\Loader\ValidatingArrayLoader;
+use Composer\Package\Loader\InvalidPackageException;
 use Composer\Package\Loader\LoaderInterface;
 use Composer\IO\IOInterface;
 use Composer\Config;
@@ -33,6 +35,8 @@ class VcsRepository extends ArrayRepository
     protected $versionParser;
     protected $type;
     protected $loader;
+    protected $repoConfig;
+    protected $branchErrorOccurred = false;
 
     public function __construct(array $repoConfig, IOInterface $io, Config $config, array $drivers = null)
     {
@@ -50,6 +54,7 @@ class VcsRepository extends ArrayRepository
         $this->type = isset($repoConfig['type']) ? $repoConfig['type'] : 'vcs';
         $this->verbose = $io->isVerbose();
         $this->config = $config;
+        $this->repoConfig = $repoConfig;
     }
 
     public function setLoader(LoaderInterface $loader)
@@ -61,7 +66,7 @@ class VcsRepository extends ArrayRepository
     {
         if (isset($this->drivers[$this->type])) {
             $class = $this->drivers[$this->type];
-            $driver = new $class($this->url, $this->io, $this->config);
+            $driver = new $class($this->repoConfig, $this->io, $this->config);
             $driver->initialize();
 
             return $driver;
@@ -69,7 +74,7 @@ class VcsRepository extends ArrayRepository
 
         foreach ($this->drivers as $driver) {
             if ($driver::supports($this->io, $this->url)) {
-                $driver = new $driver($this->url, $this->io, $this->config);
+                $driver = new $driver($this->repoConfig, $this->io, $this->config);
                 $driver->initialize();
 
                 return $driver;
@@ -78,12 +83,17 @@ class VcsRepository extends ArrayRepository
 
         foreach ($this->drivers as $driver) {
             if ($driver::supports($this->io, $this->url, true)) {
-                $driver = new $driver($this->url, $this->io, $this->config);
+                $driver = new $driver($this->repoConfig, $this->io, $this->config);
                 $driver->initialize();
 
                 return $driver;
             }
         }
+    }
+
+    public function hadInvalidBranches()
+    {
+        return $this->branchErrorOccurred;
     }
 
     protected function initialize()
@@ -109,7 +119,7 @@ class VcsRepository extends ArrayRepository
             }
         } catch (\Exception $e) {
             if ($verbose) {
-                $this->io->write('Skipped parsing '.$driver->getRootIdentifier().', '.$e->getMessage());
+                $this->io->write('<error>Skipped parsing '.$driver->getRootIdentifier().', '.$e->getMessage().'</error>');
             }
         }
 
@@ -126,7 +136,7 @@ class VcsRepository extends ArrayRepository
 
             if (!$parsedTag = $this->validateTag($tag)) {
                 if ($verbose) {
-                    $this->io->write('Skipped tag '.$tag.', invalid tag name');
+                    $this->io->write('<warning>Skipped tag '.$tag.', invalid tag name</warning>');
                 }
                 continue;
             }
@@ -134,7 +144,7 @@ class VcsRepository extends ArrayRepository
             try {
                 if (!$data = $driver->getComposerInformation($identifier)) {
                     if ($verbose) {
-                        $this->io->write('Skipped tag '.$tag.', no composer file');
+                        $this->io->write('<warning>Skipped tag '.$tag.', no composer file</warning>');
                     }
                     continue;
                 }
@@ -143,7 +153,7 @@ class VcsRepository extends ArrayRepository
                 if (isset($data['version'])) {
                     $data['version_normalized'] = $this->versionParser->normalize($data['version']);
                 } else {
-                    // auto-versionned package, read value from tag
+                    // auto-versioned package, read value from tag
                     $data['version'] = $tag;
                     $data['version_normalized'] = $parsedTag;
                 }
@@ -155,7 +165,7 @@ class VcsRepository extends ArrayRepository
                 // broken package, version doesn't match tag
                 if ($data['version_normalized'] !== $parsedTag) {
                     if ($verbose) {
-                        $this->io->write('Skipped tag '.$tag.', tag ('.$parsedTag.') does not match version ('.$data['version_normalized'].') in composer.json');
+                        $this->io->write('<warning>Skipped tag '.$tag.', tag ('.$parsedTag.') does not match version ('.$data['version_normalized'].') in composer.json</warning>');
                     }
                     continue;
                 }
@@ -167,13 +177,15 @@ class VcsRepository extends ArrayRepository
                 $this->addPackage($this->loader->load($this->preProcess($driver, $data, $identifier)));
             } catch (\Exception $e) {
                 if ($verbose) {
-                    $this->io->write('Skipped tag '.$tag.', '.($e instanceof TransportException ? 'no composer file was found' : $e->getMessage()));
+                    $this->io->write('<warning>Skipped tag '.$tag.', '.($e instanceof TransportException ? 'no composer file was found' : $e->getMessage()).'</warning>');
                 }
                 continue;
             }
         }
 
-        $this->io->overwrite('', false);
+        if (!$verbose) {
+            $this->io->overwrite('', false);
+        }
 
         foreach ($driver->getBranches() as $branch => $identifier) {
             $msg = 'Reading composer.json of <info>' . ($this->packageName ?: $this->url) . '</info> (<comment>' . $branch . '</comment>)';
@@ -185,7 +197,7 @@ class VcsRepository extends ArrayRepository
 
             if (!$parsedBranch = $this->validateBranch($branch)) {
                 if ($verbose) {
-                    $this->io->write('Skipped branch '.$branch.', invalid name');
+                    $this->io->write('<warning>Skipped branch '.$branch.', invalid name</warning>');
                 }
                 continue;
             }
@@ -193,12 +205,12 @@ class VcsRepository extends ArrayRepository
             try {
                 if (!$data = $driver->getComposerInformation($identifier)) {
                     if ($verbose) {
-                        $this->io->write('Skipped branch '.$branch.', no composer file');
+                        $this->io->write('<warning>Skipped branch '.$branch.', no composer file</warning>');
                     }
                     continue;
                 }
 
-                // branches are always auto-versionned, read value from branch name
+                // branches are always auto-versioned, read value from branch name
                 $data['version'] = $branch;
                 $data['version_normalized'] = $parsedBranch;
 
@@ -213,22 +225,34 @@ class VcsRepository extends ArrayRepository
                     $this->io->write('Importing branch '.$branch.' ('.$data['version'].')');
                 }
 
-                $this->addPackage($this->loader->load($this->preProcess($driver, $data, $identifier)));
+                $packageData = $this->preProcess($driver, $data, $identifier);
+                $package = $this->loader->load($packageData);
+                if ($this->loader instanceof ValidatingArrayLoader && $this->loader->getWarnings()) {
+                    throw new InvalidPackageException($this->loader->getErrors(), $this->loader->getWarnings(), $packageData);
+                }
+                $this->addPackage($package);
             } catch (TransportException $e) {
                 if ($verbose) {
-                    $this->io->write('Skipped branch '.$branch.', no composer file was found');
+                    $this->io->write('<warning>Skipped branch '.$branch.', no composer file was found</warning>');
                 }
                 continue;
             } catch (\Exception $e) {
-                $this->io->write('Skipped branch '.$branch.', '.$e->getMessage());
+                if (!$verbose) {
+                    $this->io->write('');
+                }
+                $this->branchErrorOccurred = true;
+                $this->io->write('<error>Skipped branch '.$branch.', '.$e->getMessage().'</error>');
+                $this->io->write('');
                 continue;
             }
         }
 
-        $this->io->overwrite('', false);
+        if (!$verbose) {
+            $this->io->overwrite('', false);
+        }
 
         if (!$this->getPackages()) {
-            throw new \RuntimeException('No composer.json was found in any branch or tag of '.$this->url.', could not load a package from it.');
+            throw new InvalidRepositoryException('No valid composer.json was found in any branch or tag of '.$this->url.', could not load a package from it.');
         }
     }
 

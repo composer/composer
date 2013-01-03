@@ -12,17 +12,11 @@
 
 namespace Composer\Repository;
 
-use Composer\Package\PackageInterface;
-
 /**
+ * Exception thrown when a package repository is utterly broken
+ *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-interface NotifiableRepositoryInterface extends RepositoryInterface
+class InvalidRepositoryException extends \Exception
 {
-    /**
-     * Notify this repository about the installation of a package
-     *
-     * @param PackageInterface $package Package that is installed
-     */
-    public function notifyInstall(PackageInterface $package);
 }

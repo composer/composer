@@ -11,22 +11,77 @@ use Symfony\Component\Finder\Finder;
  */
 class AllFunctionalTest extends \PHPUnit_Framework_TestCase
 {
+    protected $oldcwd;
+    protected $oldenv;
+    protected $testDir;
+    private static $pharPath;
+
+    public function setUp()
+    {
+        $this->oldcwd = getcwd();
+        chdir(__DIR__.'/Fixtures/functional');
+    }
+
+    public function tearDown()
+    {
+        chdir($this->oldcwd);
+        $fs = new Filesystem;
+        if ($this->testDir) {
+            $fs->removeDirectory($this->testDir);
+            $this->testDir = null;
+        }
+        if ($this->oldenv) {
+            $fs->removeDirectory(getenv('COMPOSER_HOME'));
+            putenv('COMPOSER_HOME='.$this->oldenv);
+            $this->oldenv = null;
+        }
+    }
+
+    public static function setUpBeforeClass()
+    {
+        self::$pharPath = sys_get_temp_dir().'/composer-phar-test/composer.phar';
+    }
+
+    public static function tearDownAfterClass()
+    {
+        $fs = new Filesystem;
+        $fs->removeDirectory(dirname(self::$pharPath));
+    }
+
+    public function testBuildPhar()
+    {
+        $fs = new Filesystem;
+        $fs->removeDirectory(dirname(self::$pharPath));
+        $fs->ensureDirectoryExists(dirname(self::$pharPath));
+        chdir(dirname(self::$pharPath));
+
+        $proc = new Process('php '.escapeshellarg(__DIR__.'/../../../bin/compile'));
+        $exitcode = $proc->run();
+
+        $this->assertSame(0, $exitcode);
+        $this->assertTrue(file_exists(self::$pharPath));
+    }
+
     /**
      * @dataProvider getTestFiles
+     * @depends testBuildPhar
      */
     public function testIntegration(\SplFileInfo $testFile)
     {
         $testData = $this->parseTestFile($testFile);
 
-        $cmd = 'php '.__DIR__.'/../../../bin/composer --no-ansi '.$testData['RUN'];
+        $this->oldenv = getenv('COMPOSER_HOME');
+        putenv('COMPOSER_HOME='.$this->testDir.'home');
+
+        $cmd = 'php '.escapeshellarg(self::$pharPath).' --no-ansi '.$testData['RUN'];
         $proc = new Process($cmd);
         $exitcode = $proc->run();
 
         if (isset($testData['EXPECT'])) {
-            $this->assertEquals($testData['EXPECT'], $this->cleanOutput($proc->getOutput()));
+            $this->assertEquals($testData['EXPECT'], $this->cleanOutput($proc->getOutput()), 'Error Output: '.$proc->getErrorOutput());
         }
         if (isset($testData['EXPECT-REGEX'])) {
-            $this->assertRegExp($testData['EXPECT-REGEX'], $this->cleanOutput($proc->getOutput()));
+            $this->assertRegExp($testData['EXPECT-REGEX'], $this->cleanOutput($proc->getOutput()), 'Error Output: '.$proc->getErrorOutput());
         }
         if (isset($testData['EXPECT-ERROR'])) {
             $this->assertEquals($testData['EXPECT-ERROR'], $this->cleanOutput($proc->getErrorOutput()));
@@ -36,12 +91,6 @@ class AllFunctionalTest extends \PHPUnit_Framework_TestCase
         }
         if (isset($testData['EXPECT-EXIT-CODE'])) {
             $this->assertSame($testData['EXPECT-EXIT-CODE'], $exitcode);
-        }
-
-        // Clean up.
-        $fs = new Filesystem();
-        if (isset($testData['test_dir']) && is_dir($testData['test_dir'])) {
-            $fs->removeDirectory($testData['test_dir']);
         }
     }
 
@@ -62,6 +111,7 @@ class AllFunctionalTest extends \PHPUnit_Framework_TestCase
         $section = null;
 
         $testDir = sys_get_temp_dir().'/composer_functional_test'.uniqid(mt_rand(), true);
+        $this->testDir = $testDir;
         $varRegex = '#%([a-zA-Z_-]+)%#';
         $variableReplacer = function($match) use (&$data, $testDir) {
             list(, $var) = $match;

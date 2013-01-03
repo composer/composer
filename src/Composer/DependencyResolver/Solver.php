@@ -53,7 +53,8 @@ class Solver
     {
         $decisionStart = count($this->decisions) - 1;
 
-        for ($ruleIndex = 0; $ruleIndex < count($this->rules); $ruleIndex++) {
+        $rulesCount = count($this->rules);
+        for ($ruleIndex = 0; $ruleIndex < $rulesCount; $ruleIndex++) {
             $rule = $this->rules->ruleById($ruleIndex);
 
             if (!$rule->isAssertion() || $rule->isDisabled()) {
@@ -82,7 +83,7 @@ class Solver
 
             if ($conflict && RuleSet::TYPE_PACKAGE === $conflict->getType()) {
 
-                $problem = new Problem;
+                $problem = new Problem($this->pool);
 
                 $problem->addRule($rule);
                 $problem->addRule($conflict);
@@ -92,7 +93,7 @@ class Solver
             }
 
             // conflict with another job
-            $problem = new Problem;
+            $problem = new Problem($this->pool);
             $problem->addRule($rule);
             $problem->addRule($conflict);
 
@@ -115,7 +116,7 @@ class Solver
             }
             $this->problems[] = $problem;
 
-            $this->resetToOffset($decisionStart);
+            $this->decisions->resetToOffset($decisionStart);
             $ruleIndex = -1;
         }
     }
@@ -145,7 +146,7 @@ class Solver
 
                 case 'install':
                     if (!$job['packages']) {
-                        $problem = new Problem();
+                        $problem = new Problem($this->pool);
                         $problem->addRule(new Rule($this->pool, array(), null, null, $job));
                         $this->problems[] = $problem;
                     }
@@ -203,6 +204,7 @@ class Solver
      * Evaluates each term affected by the decision (linked through watches)
      * If we find unit rules we make new decisions based on them
      *
+     * @param integer $level
      * @return Rule|null A rule on conflict, otherwise null.
      */
     protected function propagate($level)
@@ -463,7 +465,7 @@ class Solver
 
     private function analyzeUnsolvable($conflictRule, $disableRules)
     {
-        $problem = new Problem;
+        $problem = new Problem($this->pool);
         $problem->addRule($conflictRule);
 
         $this->analyzeUnsolvableRule($problem, $conflictRule);
@@ -550,7 +552,7 @@ class Solver
     /*-------------------------------------------------------------------
     * enable/disable learnt rules
     *
-    * we have enabled or disabled some of our rules. We now reenable all
+    * we have enabled or disabled some of our rules. We now re-enable all
     * of our learnt rules except the ones that were learnt from rules that
     * are now disabled.
     */

@@ -12,6 +12,8 @@
 
 namespace Composer\Downloader;
 
+use Composer\Config;
+use Composer\Cache;
 use Composer\Util\ProcessExecutor;
 use Composer\IO\IOInterface;
 use ZipArchive;
@@ -23,16 +25,26 @@ class ZipDownloader extends ArchiveDownloader
 {
     protected $process;
 
-    public function __construct(IOInterface $io, ProcessExecutor $process = null)
+    public function __construct(IOInterface $io, Config $config, Cache $cache = null, ProcessExecutor $process = null)
     {
         $this->process = $process ?: new ProcessExecutor;
-        parent::__construct($io);
+        parent::__construct($io, $config, $cache);
     }
 
     protected function extract($file, $path)
     {
         if (!class_exists('ZipArchive')) {
-            $error = 'You need the zip extension enabled to use the ZipDownloader';
+            // php.ini path is added to the error message to help users find the correct file
+            $iniPath = php_ini_loaded_file();
+
+            if ($iniPath) {
+                $iniMessage = 'The php.ini used by your command-line PHP is: ' . $iniPath;
+            } else {
+                $iniMessage = 'A php.ini file does not exist. You will have to create one.';
+            }
+
+            $error = "You need the zip extension enabled to use the ZipDownloader.\n".
+                $iniMessage;
 
             // try to use unzip on *nix
             if (!defined('PHP_WINDOWS_VERSION_BUILD')) {
@@ -42,6 +54,7 @@ class ZipDownloader extends ArchiveDownloader
                 }
 
                 $error = "Could not decompress the archive, enable the PHP zip extension or install unzip.\n".
+                    $iniMessage . "\n" .
                     'Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput();
             }
 

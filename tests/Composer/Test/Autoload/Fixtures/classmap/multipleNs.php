@@ -1,14 +1,14 @@
 <?php
-namespace {
-    class A {}
-}
-
 namespace Alpha {
     class A {}
     class B {}
 }
 
-namespace Beta {
+namespace {
+    class A {}
+}
+
+namespace Be \ ta {
     class A {}
     class B {}
 }

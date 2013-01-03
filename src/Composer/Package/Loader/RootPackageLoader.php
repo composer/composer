@@ -40,7 +40,7 @@ class RootPackageLoader extends ArrayLoader
         parent::__construct($parser);
     }
 
-    public function load(array $config)
+    public function load(array $config, $class = 'Composer\Package\RootPackage')
     {
         if (!isset($config['name'])) {
             $config['name'] = '__root__';
@@ -62,7 +62,7 @@ class RootPackageLoader extends ArrayLoader
             $version = $config['version'];
         }
 
-        $package = parent::load($config);
+        $package = parent::load($config, $class);
 
         $aliases = array();
         $stabilityFlags = array();
@@ -104,9 +104,9 @@ class RootPackageLoader extends ArrayLoader
             if (preg_match('{^([^,\s]+) +as +([^,\s]+)$}', $reqVersion, $match)) {
                 $aliases[] = array(
                     'package' => strtolower($reqName),
-                    'version' => $this->versionParser->normalize($match[1]),
+                    'version' => $this->versionParser->normalize($match[1], $reqVersion),
                     'alias' => $match[2],
-                    'alias_normalized' => $this->versionParser->normalize($match[2]),
+                    'alias_normalized' => $this->versionParser->normalize($match[2], $reqVersion),
                 );
             }
         }
@@ -132,6 +132,7 @@ class RootPackageLoader extends ArrayLoader
             }
 
             // infer flags for requirements that have an explicit -dev or -beta version specified for example
+            $reqVersion = preg_replace('{^([^,\s@]+) as .+$}', '$1', $reqVersion);
             if (preg_match('{^[^,\s@]+$}', $reqVersion) && 'stable' !== ($stabilityName = VersionParser::parseStability($reqVersion))) {
                 $name = strtolower($reqName);
                 $stability = $stabilities[$stabilityName];
@@ -148,6 +149,7 @@ class RootPackageLoader extends ArrayLoader
     private function extractReferences(array $requires, array $references)
     {
         foreach ($requires as $reqName => $reqVersion) {
+            $reqVersion = preg_replace('{^([^,\s@]+) as .+$}', '$1', $reqVersion);
             if (preg_match('{^[^,\s@]+?#([a-f0-9]+)$}', $reqVersion, $match) && 'dev' === ($stabilityName = VersionParser::parseStability($reqVersion))) {
                 $name = strtolower($reqName);
                 $references[$name] = $match[1];
@@ -165,6 +167,7 @@ class RootPackageLoader extends ArrayLoader
             $isFeatureBranch = false;
             $version = null;
 
+            // find current branch and collect all branch names
             foreach ($this->process->splitLines($output) as $branch) {
                 if ($branch && preg_match('{^(?:\* ) *(?:[^/ ]+?/)?(\S+|\(no branch\)) *([a-f0-9]+) .*$}', $branch, $match)) {
                     if ($match[1] === '(no branch)') {
@@ -199,7 +202,7 @@ class RootPackageLoader extends ArrayLoader
                 $length = PHP_INT_MAX;
                 foreach ($branches as $candidate) {
                     // do not compare against other feature branches
-                    if ($candidate === $branch || !preg_match('{^(master|trunk|default|develop|\d+\..+)$}', $candidate)) {
+                    if ($candidate === $branch || !preg_match('{^(master|trunk|default|develop|\d+\..+)$}', $candidate, $match)) {
                         continue;
                     }
                     if (0 !== $this->process->execute('git rev-list '.$candidate.'..'.$branch, $output)) {

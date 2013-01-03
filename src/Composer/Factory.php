@@ -12,15 +12,17 @@
 
 namespace Composer;
 
+use Composer\Config\JsonConfigSource;
 use Composer\Json\JsonFile;
 use Composer\IO\IOInterface;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\RepositoryManager;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
+use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 
 /**
- * Creates an configured instance of composer.
+ * Creates a configured instance of composer.
  *
  * @author Ryan Weaver <ryan@knplabs.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -33,39 +35,95 @@ class Factory
      */
     public static function createConfig()
     {
-        // load main Composer configuration
-        if (!$home = getenv('COMPOSER_HOME')) {
+        // determine home and cache dirs
+        $home = getenv('COMPOSER_HOME');
+        $cacheDir = getenv('COMPOSER_CACHE_DIR');
+        if (!$home) {
             if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
                 $home = getenv('APPDATA') . '/Composer';
             } else {
-                $home = getenv('HOME') . '/.composer';
+                $home = rtrim(getenv('HOME'), '/') . '/.composer';
+            }
+        }
+        if (!$cacheDir) {
+            if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
+                if ($cacheDir = getenv('LOCALAPPDATA')) {
+                    $cacheDir .= '/Composer';
+                } else {
+                    $cacheDir = getenv('APPDATA') . '/Composer/cache';
+                }
+            } else {
+                $cacheDir = $home.'/cache';
             }
         }
 
-        // Protect directory against web access
-        if (!file_exists($home . '/.htaccess')) {
-            if (!is_dir($home)) {
-                @mkdir($home, 0777, true);
+        // Protect directory against web access. Since HOME could be
+        // the www-data's user home and be web-accessible it is a
+        // potential security risk
+        foreach (array($home, $cacheDir) as $dir) {
+            if (!file_exists($dir . '/.htaccess')) {
+                if (!is_dir($dir)) {
+                    @mkdir($dir, 0777, true);
+                }
+                @file_put_contents($dir . '/.htaccess', 'Deny from all');
             }
-            @file_put_contents($home . '/.htaccess', 'Deny from all');
         }
 
         $config = new Config();
 
-        // add home dir to the config
-        $config->merge(array('config' => array('home' => $home)));
+        // add dirs to the config
+        $config->merge(array('config' => array('home' => $home, 'cache-dir' => $cacheDir)));
 
         $file = new JsonFile($home.'/config.json');
         if ($file->exists()) {
             $config->merge($file->read());
         }
+        $config->setConfigSource(new JsonConfigSource($file));
+
+        // move old cache dirs to the new locations
+        $legacyPaths = array(
+            'cache-repo-dir' => array('/cache' => '/http*', '/cache.svn' => '/*', '/cache.github' => '/*'),
+            'cache-vcs-dir' => array('/cache.git' => '/*', '/cache.hg' => '/*'),
+            'cache-files-dir' => array('/cache.files' => '/*'),
+        );
+        foreach ($legacyPaths as $key => $oldPaths) {
+            foreach ($oldPaths as $oldPath => $match) {
+                $dir = $config->get($key);
+                if ('/cache.github' === $oldPath) {
+                    $dir .= '/github.com';
+                }
+                $oldPath = $config->get('home').$oldPath;
+                $oldPathMatch = $oldPath . $match;
+                if (is_dir($oldPath) && $dir !== $oldPath) {
+                    if (!is_dir($dir)) {
+                        if (!@mkdir($dir, 0777, true)) {
+                            continue;
+                        }
+                    }
+                    if (is_array($children = glob($oldPathMatch))) {
+                        foreach ($children as $child) {
+                            @rename($child, $dir.'/'.basename($child));
+                        }
+                    }
+                    @unlink($oldPath);
+                }
+            }
+        }
 
         return $config;
     }
 
-    public function getComposerFile()
+    public static function getComposerFile()
     {
         return getenv('COMPOSER') ?: 'composer.json';
+    }
+
+    public static function createAdditionalStyles()
+    {
+        return array(
+            'highlight' => new OutputFormatterStyle('red'),
+            'warning' => new OutputFormatterStyle('black', 'yellow'),
+        );
     }
 
     public static function createDefaultRepositories(IOInterface $io = null, Config $config = null, RepositoryManager $rm = null)
@@ -113,7 +171,7 @@ class Factory
     {
         // load Composer configuration
         if (null === $localConfig) {
-            $localConfig = $this->getComposerFile();
+            $localConfig = static::getComposerFile();
         }
 
         if (is_string($localConfig)) {
@@ -138,6 +196,16 @@ class Factory
         $config = static::createConfig();
         $config->merge($localConfig);
 
+        // reload oauth token from config if available
+        if ($tokens = $config->get('github-oauth')) {
+            foreach ($tokens as $domain => $token) {
+                if (!preg_match('{^[a-z0-9]+$}', $token)) {
+                    throw new \UnexpectedValueException('Your github oauth token for '.$domain.' contains invalid characters: "'.$token.'"');
+                }
+                $io->setAuthentication($domain, $token, 'x-oauth-basic');
+            }
+        }
+
         $vendorDir = $config->get('vendor-dir');
         $binDir = $config->get('bin-dir');
 
@@ -155,10 +223,10 @@ class Factory
         $package = $loader->load($localConfig);
 
         // initialize download manager
-        $dm = $this->createDownloadManager($io);
+        $dm = $this->createDownloadManager($io, $config);
 
         // initialize installation manager
-        $im = $this->createInstallationManager($config);
+        $im = $this->createInstallationManager();
 
         // initialize composer
         $composer = new Composer();
@@ -216,30 +284,35 @@ class Factory
     }
 
     /**
-     * @param  IO\IOInterface             $io
+     * @param IO\IOInterface $io
+     * @param Config         $config
      * @return Downloader\DownloadManager
      */
-    public function createDownloadManager(IOInterface $io)
+    public function createDownloadManager(IOInterface $io, Config $config)
     {
+        $cache = null;
+        if ($config->get('cache-files-ttl') > 0) {
+            $cache = new Cache($io, $config->get('cache-files-dir'), 'a-z0-9_./');
+        }
+
         $dm = new Downloader\DownloadManager();
-        $dm->setDownloader('git', new Downloader\GitDownloader($io));
-        $dm->setDownloader('svn', new Downloader\SvnDownloader($io));
-        $dm->setDownloader('hg', new Downloader\HgDownloader($io));
-        $dm->setDownloader('zip', new Downloader\ZipDownloader($io));
-        $dm->setDownloader('tar', new Downloader\TarDownloader($io));
-        $dm->setDownloader('phar', new Downloader\PharDownloader($io));
-        $dm->setDownloader('file', new Downloader\FileDownloader($io));
+        $dm->setDownloader('git', new Downloader\GitDownloader($io, $config));
+        $dm->setDownloader('svn', new Downloader\SvnDownloader($io, $config));
+        $dm->setDownloader('hg', new Downloader\HgDownloader($io, $config));
+        $dm->setDownloader('zip', new Downloader\ZipDownloader($io, $config, $cache));
+        $dm->setDownloader('tar', new Downloader\TarDownloader($io, $config, $cache));
+        $dm->setDownloader('phar', new Downloader\PharDownloader($io, $config, $cache));
+        $dm->setDownloader('file', new Downloader\FileDownloader($io, $config, $cache));
 
         return $dm;
     }
 
     /**
-     * @param  Config                        $config
      * @return Installer\InstallationManager
      */
-    protected function createInstallationManager(Config $config)
+    protected function createInstallationManager()
     {
-        return new Installer\InstallationManager($config->get('vendor-dir'));
+        return new Installer\InstallationManager();
     }
 
     /**

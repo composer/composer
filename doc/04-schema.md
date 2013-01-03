@@ -53,7 +53,7 @@ Required for published packages (libraries).
 The version of the package.
 
 This must follow the format of `X.Y.Z` with an optional suffix of `-dev`,
-`alphaN`, `-betaN` or `-RCN`.
+`-alphaN`, `-betaN` or `-RCN`.
 
 Examples:
 
@@ -62,6 +62,7 @@ Examples:
     1.1.0
     0.2.5
     1.0.0-dev
+    1.0.0-alpha3
     1.0.0-beta2
     1.0.0-RC5
 
@@ -280,6 +281,10 @@ Example:
         }
     }
 
+It is possible to inline-alias a package constraint so that it matches a
+constraint that it otherwise would not. For more information [see the
+aliases article](articles/aliases.md).
+
 #### require
 
 Lists packages required by this package. The package will not be installed
@@ -353,10 +358,12 @@ Example:
 
 Autoload mapping for a PHP autoloader.
 
-Currently [PSR-0](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-0.md)
-autoloading, classmap generation and files are supported. PSR-0 is the recommended way though
+Currently [`PSR-0`](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-0.md)
+autoloading, `classmap` generation and `files` are supported. PSR-0 is the recommended way though
 since it offers greater flexibility (no need to regenerate the autoloader when you add
 classes).
+
+#### PSR-0
 
 Under the `psr-0` key you define a mapping from namespaces to paths, relative to the
 package root. Note that this also supports the PEAR-style non-namespaced convention.
@@ -370,8 +377,8 @@ Example:
         "autoload": {
             "psr-0": {
                 "Monolog": "src/",
-                "Vendor\\Namespace": "src/",
-                "Pear_Style": "src/"
+                "Vendor\\Namespace\\": "src/",
+                "Vendor_Namespace_": "src/"
             }
         }
     }
@@ -405,9 +412,12 @@ use an empty prefix like:
         }
     }
 
+#### Classmap
+
 The `classmap` references are all combined, during install/update, into a single
 key => value array which may be found in the generated file
-`vendor/composer/autoload_classmap.php`.
+`vendor/composer/autoload_classmap.php`. This map is built by scanning for
+classes in all `.php` and `.inc` files in the given directories/files.
 
 You can use the classmap generation support to define autoloading for all libraries
 that do not follow PSR-0. To configure this you specify all directories or files
@@ -420,6 +430,8 @@ Example:
             "classmap": ["src/", "lib/", "Something.php"]
         }
     }
+
+#### Files
 
 If you want to require certain files explicitly on every request then you can use
 the 'files' autoloading mechanism. This is useful if your package includes PHP functions
@@ -486,7 +498,8 @@ your project dependencies. Specific changes to the stability requirements of
 a given package can be done in `require` or `require-dev` (see
 [package links](#package-links)).
 
-Available options are `dev`, `alpha`, `beta`, `RC`, and `stable`.
+Available options (in order of stability) are `dev`, `alpha`, `beta`, `RC`,
+and `stable`.
 
 ### repositories <span>(root-only)</span>
 
@@ -502,8 +515,10 @@ ignored.
 The following repository types are supported:
 
 * **composer:** A composer repository is simply a `packages.json` file served
-  via HTTP, that contains a list of `composer.json` objects with additional
-  `dist` and/or `source` information.
+  via the network (HTTP, FTP, SSH), that contains a list of `composer.json`
+  objects with additional `dist` and/or `source` information. The `packages.json`
+  file is loaded using a PHP stream. You can set extra options on that stream
+  using the `options` parameter.
 * **vcs:** The version control system repository can fetch packages from git,
   svn and hg repositories.
 * **pear:** With this you can import any pear repository into your composer
@@ -521,6 +536,15 @@ Example:
             {
                 "type": "composer",
                 "url": "http://packages.example.com"
+            },
+            {
+                "type": "composer",
+                "url": "https://packages.example.com",
+                "options": {
+                    "ssl": {
+                        "verify_peer": "true"
+                    }
+                }
             },
             {
                 "type": "vcs",
@@ -567,6 +591,26 @@ The following options are supported:
 * **process-timeout:** Defaults to `300`. The duration processes like git clones
   can run before Composer assumes they died out. You may need to make this
   higher if you have a slow connection or huge vendors.
+* **github-protocols:** Defaults to `["git", "https", "http"]`. A list of
+  protocols to use for github.com clones, in priority order. Use this if you are
+  behind a proxy or have somehow bad performances with the git protocol.
+* **github-oauth:** A list of domain names and oauth keys. For example using
+  `{"github.com": "oauthtoken"}` as the value of this option will use `oauthtoken`
+  to access private repositories on github and to circumvent the low IP-based
+  rate limiting of their API.
+* **cache-dir:** Defaults to `$home/cache` on unix systems and
+  `C:\Users\<user>\AppData\Local\Composer` on Windows. Stores all the caches
+  used by composer. See also [COMPOSER_HOME](03-cli.md#composer-home).
+* **cache-files-dir:** Defaults to `$cache-dir/files`. Stores the zip archives
+  of packages.
+* **cache-repo-dir:** Defaults to `$cache-dir/repo`. Stores repository metadata
+  for the `composer` type and the VCS repos of type `svn`, `github` and `*bitbucket`.
+* **cache-vcs-dir:** Defaults to `$cache-dir/vcs`. Stores VCS clones for
+  loading VCS repository metadata for the `git`/`hg` types and to speed up installs.
+* **cache-files-ttl:** Defaults to `15552000` (6 months). Composer caches all
+  dist (zip, tar, ..) packages that it downloads. Those are purged after six
+  months of being unused by default. This option allows you to tweak this
+  duration (in seconds) or disable it completely by setting it to 0.
 * **notify-on-install:** Defaults to `true`. Composer allows repositories to
   define a notification URL, so that they get notified whenever a package from
   that repository is installed. This option allows you to disable that behaviour.

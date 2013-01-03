@@ -224,8 +224,6 @@ class Svn
     /**
      * Detect Svn Auth.
      *
-     * @param string $url
-     *
      * @return bool
      */
     protected function hasAuth()

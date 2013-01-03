@@ -1,6 +1,6 @@
 # Community
 
-There are a lot of people using composer already, quite a few are also already
+There are many people using composer already, and quite a few of them are
 contributing.
 
 ## Contributing
@@ -22,9 +22,13 @@ The most important guidelines are described as follows:
 
 ## IRC / mailing list
 
-The developer mailing list is on [google groups](http://groups.google.com/group/composer-dev/)
-IRC channels are available for discussion as well, on
-irc.freenode.org [#composer](irc://irc.freenode.org/composer) for users and
-[#composer-dev](irc://irc.freenode.org/composer-dev) for development.
+Mailing lists for [user support](http://groups.google.com/group/composer-users) and
+[development](http://groups.google.com/group/composer-dev).
+
+IRC channels are on irc.freenode.org: [#composer](irc://irc.freenode.org/composer)
+for users and [#composer-dev](irc://irc.freenode.org/composer-dev) for development.
+
+Stack Overflow has a growing collection of
+[Composer related questions](http://stackoverflow.com/questions/tagged/composer-php).
 
 &larr; [Repositories](05-repositories.md)

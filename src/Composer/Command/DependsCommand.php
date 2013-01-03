@@ -12,7 +12,7 @@
 
 namespace Composer\Command;
 
-use Composer\Composer;
+use Composer\DependencyResolver\Pool;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -36,7 +36,7 @@ class DependsCommand extends Command
             ->setDescription('Shows which packages depend on the given package')
             ->setDefinition(array(
                 new InputArgument('package', InputArgument::REQUIRED, 'Package to inspect'),
-                new InputOption('link-type', '', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Link types to show (require, require-dev)', array_keys($this->linkTypes))
+                new InputOption('link-type', '', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Link types to show (require, require-dev)', array_keys($this->linkTypes)),
             ))
             ->setHelp(<<<EOT
 Displays detailed information about where a package is referenced.
@@ -50,70 +50,54 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $composer = $this->getComposer();
-        $references = $this->getReferences($input, $output, $composer);
-
-        if ($input->getOption('verbose')) {
-            $this->printReferences($input, $output, $references);
-        } else {
-            $this->printPackages($input, $output, $references);
-        }
-    }
-
-    /**
-     * finds a list of packages which depend on another package
-     *
-     * @param  InputInterface            $input
-     * @param  OutputInterface           $output
-     * @param  Composer                  $composer
-     * @return array
-     * @throws \InvalidArgumentException
-     */
-    private function getReferences(InputInterface $input, OutputInterface $output, Composer $composer)
-    {
+        $repos = $this->getComposer()->getRepositoryManager()->getLocalRepositories();
         $needle = $input->getArgument('package');
 
-        $references = array();
+        $pool = new Pool();
+        foreach ($repos as $repo) {
+            $pool->addRepository($repo);
+        }
+
+        $packages = $pool->whatProvides($needle);
+        if (empty($packages)) {
+            throw new \InvalidArgumentException('Could not find package "'.$needle.'" in your project.');
+        }
+
+        $linkTypes = $this->linkTypes;
+
         $verbose = (bool) $input->getOption('verbose');
+        $types = array_map(function ($type) use ($linkTypes) {
+            $type = rtrim($type, 's');
+            if (!isset($linkTypes[$type])) {
+                throw new \InvalidArgumentException('Unexpected link type: '.$type.', valid types: '.implode(', ', array_keys($linkTypes)));
+            }
 
-        $repos = $composer->getRepositoryManager()->getRepositories();
-        $types = $input->getOption('link-type');
+            return $type;
+        }, $input->getOption('link-type'));
 
-        foreach ($repos as $repository) {
-            foreach ($repository->getPackages() as $package) {
+        $dependsOnPackages = false;
+        foreach ($repos as $repo) {
+            $repo->filterPackages(function ($package) use ($needle, $types, $linkTypes, $output, $verbose, &$dependsOnPackages) {
+                static $outputPackages = array();
+
                 foreach ($types as $type) {
-                    $type = rtrim($type, 's');
-                    if (!isset($this->linkTypes[$type])) {
-                        throw new \InvalidArgumentException('Unexpected link type: '.$type.', valid types: '.implode(', ', array_keys($this->linkTypes)));
-                    }
-                    foreach ($package->{'get'.$this->linkTypes[$type]}() as $link) {
+                    foreach ($package->{'get'.$linkTypes[$type]}() as $link) {
                         if ($link->getTarget() === $needle) {
+                            $dependsOnPackages = true;
                             if ($verbose) {
-                                $references[] = array($type, $package, $link);
-                            } else {
-                                $references[$package->getName()] = $package->getPrettyName();
+                                $output->writeln($package->getPrettyName() . ' ' . $package->getPrettyVersion() . ' <info>' . $type . '</info> ' . $link->getPrettyConstraint());
+                            } elseif (!isset($outputPackages[$package->getName()])) {
+                                $output->writeln($package->getPrettyName());
+                                $outputPackages[$package->getName()] = true;
                             }
                         }
                     }
                 }
-            }
+            });
         }
 
-        return $references;
-    }
-
-    private function printReferences(InputInterface $input, OutputInterface $output, array $references)
-    {
-        foreach ($references as $ref) {
-            $output->writeln($ref[1]->getPrettyName() . ' ' . $ref[1]->getPrettyVersion() . ' <info>' . $ref[0] . '</info> ' . $ref[2]->getPrettyConstraint());
-        }
-    }
-
-    private function printPackages(InputInterface $input, OutputInterface $output, array $packages)
-    {
-        ksort($packages);
-        foreach ($packages as $package) {
-            $output->writeln($package);
+        if (!$dependsOnPackages) {
+            $output->writeln('<info>There is no installed package depending on "'.$needle.'".</info>');
         }
     }
 }

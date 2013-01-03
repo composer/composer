@@ -38,17 +38,24 @@ class Event
     private $io;
 
     /**
+     * @var boolean Dev mode flag
+     */
+    private $devMode;
+
+    /**
      * Constructor.
      *
      * @param string      $name     The event name
-     * @param Composer    $composer The composer objet
+     * @param Composer    $composer The composer object
      * @param IOInterface $io       The IOInterface object
+     * @param boolean     $devMode  Whether or not we are in dev mode
      */
-    public function __construct($name, Composer $composer, IOInterface $io)
+    public function __construct($name, Composer $composer, IOInterface $io, $devMode)
     {
         $this->name = $name;
         $this->composer = $composer;
         $this->io = $io;
+        $this->devMode = $devMode;
     }
 
     /**
@@ -79,5 +86,15 @@ class Event
     public function getIO()
     {
         return $this->io;
+    }
+
+    /**
+     * Return the dev mode flag
+     *
+     * @return boolean
+     */
+    public function isDevMode()
+    {
+        return $this->devMode;
     }
 }

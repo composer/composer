@@ -106,7 +106,7 @@ class RuleSetGenerator
      * and B the provider.
      *
      * @param PackageInterface $issuer   The package declaring the conflict
-     * @param Package          $provider The package causing the conflict
+     * @param PackageInterface $provider The package causing the conflict
      * @param int              $reason   A RULE_* constant describing the
      *                                     reason for generating this rule
      * @param mixed $reasonData Any data, e.g. the package name, that
@@ -226,7 +226,6 @@ class RuleSetGenerator
      *
      * @param PackageInterface $package Rules for this package's updates are to
      *                                   be added
-     * @param bool $allowAll Whether downgrades are allowed
      */
     private function addRulesForUpdatePackages(PackageInterface $package)
     {

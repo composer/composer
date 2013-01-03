@@ -48,10 +48,14 @@ class FilesystemRepository extends ArrayRepository implements WritableRepository
             return;
         }
 
-        $packages = $this->file->read();
+        try {
+            $packages = $this->file->read();
 
-        if (!is_array($packages)) {
-            throw new \UnexpectedValueException('Could not parse package list from the '.$this->file->getPath().' repository');
+            if (!is_array($packages)) {
+                throw new \UnexpectedValueException('Could not parse package list from the repository');
+            }
+        } catch (\Exception $e) {
+            throw new InvalidRepositoryException('Invalid repository data in '.$this->file->getPath().', packages could not be loaded: ['.get_class($e).'] '.$e->getMessage());
         }
 
         $loader = new ArrayLoader();

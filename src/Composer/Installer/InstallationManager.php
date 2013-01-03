@@ -15,7 +15,6 @@ namespace Composer\Installer;
 use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Repository\RepositoryInterface;
-use Composer\Repository\NotifiableRepositoryInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\DependencyResolver\Operation\InstallOperation;
@@ -23,6 +22,7 @@ use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\MarkAliasInstalledOperation;
 use Composer\DependencyResolver\Operation\MarkAliasUninstalledOperation;
+use Composer\Util\StreamContextFactory;
 
 /**
  * Package operation manager.
@@ -34,6 +34,12 @@ class InstallationManager
 {
     private $installers = array();
     private $cache = array();
+    private $notifiablePackages = array();
+
+    public function reset()
+    {
+        $this->notifiablePackages = array();
+    }
 
     /**
      * Adds installer
@@ -44,6 +50,19 @@ class InstallationManager
     {
         array_unshift($this->installers, $installer);
         $this->cache = array();
+    }
+
+    /**
+     * Removes installer
+     *
+     * @param InstallerInterface $installer installer instance
+     */
+    public function removeInstaller(InstallerInterface $installer)
+    {
+        if (false !== ($key = array_search($installer, $this->installers, true))) {
+            array_splice($this->installers, $key, 1);
+            $this->cache = array();
+        }
     }
 
     /**
@@ -130,14 +149,14 @@ class InstallationManager
         $package = $operation->getPackage();
         $installer = $this->getInstaller($package->getType());
         $installer->install($repo, $package);
-        $this->notifyInstall($package);
+        $this->markForNotification($package);
     }
 
     /**
      * Executes update operation.
      *
      * @param RepositoryInterface $repo      repository in which to check
-     * @param InstallOperation    $operation operation instance
+     * @param UpdateOperation     $operation operation instance
      */
     public function update(RepositoryInterface $repo, UpdateOperation $operation)
     {
@@ -150,7 +169,7 @@ class InstallationManager
         if ($initialType === $targetType) {
             $installer = $this->getInstaller($initialType);
             $installer->update($repo, $initial, $target);
-            $this->notifyInstall($target);
+            $this->markForNotification($target);
         } else {
             $this->getInstaller($initialType)->uninstall($repo, $initial);
             $this->getInstaller($targetType)->install($repo, $target);
@@ -211,10 +230,62 @@ class InstallationManager
         return $installer->getInstallPath($package);
     }
 
-    private function notifyInstall(PackageInterface $package)
+    public function notifyInstalls()
     {
-        if ($package->getRepository() instanceof NotifiableRepositoryInterface) {
-            $package->getRepository()->notifyInstall($package);
+        foreach ($this->notifiablePackages as $repoUrl => $packages) {
+            // non-batch API, deprecated
+            if (strpos($repoUrl, '%package%')) {
+                foreach ($packages as $package) {
+                    $url = str_replace('%package%', $package->getPrettyName(), $repoUrl);
+
+                    $params = array(
+                        'version' => $package->getPrettyVersion(),
+                        'version_normalized' => $package->getVersion(),
+                    );
+                    $opts = array('http' =>
+                        array(
+                            'method'  => 'POST',
+                            'header'  => array('Content-type: application/x-www-form-urlencoded'),
+                            'content' => http_build_query($params, '', '&'),
+                            'timeout' => 3,
+                        )
+                    );
+
+                    $context = StreamContextFactory::getContext($opts);
+                    @file_get_contents($url, false, $context);
+                }
+
+                continue;
+            }
+
+            $postData = array('downloads' => array());
+            foreach ($packages as $package) {
+                $postData['downloads'][] = array(
+                    'name' => $package->getPrettyName(),
+                    'version' => $package->getVersion(),
+                );
+            }
+
+            $opts = array('http' =>
+                array(
+                    'method'  => 'POST',
+                    'header'  => array('Content-Type: application/json'),
+                    'content' => json_encode($postData),
+                    'timeout' => 6,
+                )
+            );
+
+            $context = StreamContextFactory::getContext($opts);
+            @file_get_contents($repoUrl, false, $context);
+        }
+
+        $this->reset();
+    }
+
+    private function markForNotification(PackageInterface $package)
+    {
+        if ($package->getNotificationUrl()) {
+            $this->notifiablePackages[$package->getNotificationUrl()][$package->getName()] = $package;
         }
     }
 }

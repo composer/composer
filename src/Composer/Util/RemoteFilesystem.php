@@ -30,15 +30,18 @@ class RemoteFilesystem
     private $result;
     private $progress;
     private $lastProgress;
+    private $options;
 
     /**
      * Constructor.
      *
-     * @param IOInterface $io The IO instance
+     * @param IOInterface $io      The IO instance
+     * @param array       $options The options
      */
-    public function __construct(IOInterface $io)
+    public function __construct(IOInterface $io, $options = array())
     {
         $this->io = $io;
+        $this->options = $options;
     }
 
     /**
@@ -48,12 +51,13 @@ class RemoteFilesystem
      * @param string  $fileUrl   The file URL
      * @param string  $fileName  the local filename
      * @param boolean $progress  Display the progression
+     * @param array   $options   Additional context options
      *
      * @return bool true
      */
-    public function copy($originUrl, $fileUrl, $fileName, $progress = true)
+    public function copy($originUrl, $fileUrl, $fileName, $progress = true, $options = array())
     {
-        $this->get($originUrl, $fileUrl, $fileName, $progress);
+        $this->get($originUrl, $fileUrl, $options, $fileName, $progress);
 
         return $this->result;
     }
@@ -64,12 +68,13 @@ class RemoteFilesystem
      * @param string  $originUrl The origin URL
      * @param string  $fileUrl   The file URL
      * @param boolean $progress  Display the progression
+     * @param array   $options   Additional context options
      *
      * @return string The content
      */
-    public function getContents($originUrl, $fileUrl, $progress = true)
+    public function getContents($originUrl, $fileUrl, $progress = true, $options = array())
     {
-        $this->get($originUrl, $fileUrl, null, $progress);
+        $this->get($originUrl, $fileUrl, $options, null, $progress);
 
         return $this->result;
     }
@@ -77,14 +82,15 @@ class RemoteFilesystem
     /**
      * Get file content or copy action.
      *
-     * @param string  $originUrl The origin URL
-     * @param string  $fileUrl   The file URL
-     * @param string  $fileName  the local filename
-     * @param boolean $progress  Display the progression
+     * @param string  $originUrl         The origin URL
+     * @param string  $fileUrl           The file URL
+     * @param array   $additionalOptions context options
+     * @param string  $fileName          the local filename
+     * @param boolean $progress          Display the progression
      *
      * @throws TransportException When the file could not be downloaded
      */
-    protected function get($originUrl, $fileUrl, $fileName = null, $progress = true)
+    protected function get($originUrl, $fileUrl, $additionalOptions = array(), $fileName = null, $progress = true)
     {
         $this->bytesMax = 0;
         $this->result = null;
@@ -94,26 +100,40 @@ class RemoteFilesystem
         $this->progress = $progress;
         $this->lastProgress = null;
 
-        $options = $this->getOptionsForUrl($originUrl);
+        $options = $this->getOptionsForUrl($originUrl, $additionalOptions);
         $ctx = StreamContextFactory::getContext($options, array('notification' => array($this, 'callbackGet')));
 
         if ($this->progress) {
             $this->io->write("    Downloading: <comment>connection...</comment>", false);
         }
 
-        $errorMessage = null;
+        $errorMessage = '';
+        $errorCode = 0;
         set_error_handler(function ($code, $msg) use (&$errorMessage) {
-            $errorMessage = preg_replace('{^file_get_contents\(.+?\): }', '', $msg);
-            if (!ini_get('allow_url_fopen')) {
-                $errorMessage = 'allow_url_fopen must be enabled in php.ini ('.$errorMessage.')';
+            if ($errorMessage) {
+                $errorMessage .= "\n";
             }
+            $errorMessage .= preg_replace('{^file_get_contents\(.*?\): }', '', $msg);
         });
-        $result = file_get_contents($fileUrl, false, $ctx);
+        try {
+            $result = file_get_contents($fileUrl, false, $ctx);
+        } catch (\Exception $e) {
+            if ($e instanceof TransportException && !empty($http_response_header[0])) {
+                $e->setHeaders($http_response_header);
+            }
+        }
+        if ($errorMessage && !ini_get('allow_url_fopen')) {
+            $errorMessage = 'allow_url_fopen must be enabled in php.ini ('.$errorMessage.')';
+        }
         restore_error_handler();
+        if (isset($e)) {
+            throw $e;
+        }
 
         // fix for 5.4.0 https://bugs.php.net/bug.php?id=61336
-        if (!empty($http_response_header[0]) && preg_match('{^HTTP/\S+ 404}i', $http_response_header[0])) {
+        if (!empty($http_response_header[0]) && preg_match('{^HTTP/\S+ ([45]\d\d)}i', $http_response_header[0], $match)) {
             $result = false;
+            $errorCode = $match[1];
         }
 
         // decode gzip
@@ -144,9 +164,17 @@ class RemoteFilesystem
 
         // handle copy command if download was successful
         if (false !== $result && null !== $fileName) {
-            $result = (bool) @file_put_contents($fileName, $result);
+            $errorMessage = '';
+            set_error_handler(function ($code, $msg) use (&$errorMessage) {
+                if ($errorMessage) {
+                    $errorMessage .= "\n";
+                }
+                $errorMessage .= preg_replace('{^file_put_contents\(.*?\): }', '', $msg);
+            });
+            $result = (bool) file_put_contents($fileName, $result);
+            restore_error_handler();
             if (false === $result) {
-                throw new TransportException('The "'.$fileUrl.'" file could not be written to '.$fileName);
+                throw new TransportException('The "'.$fileUrl.'" file could not be written to '.$fileName.': '.$errorMessage);
             }
         }
 
@@ -156,7 +184,12 @@ class RemoteFilesystem
         }
 
         if (false === $this->result) {
-            throw new TransportException('The "'.$fileUrl.'" file could not be downloaded: '.$errorMessage);
+            $e = new TransportException('The "'.$fileUrl.'" file could not be downloaded: '.$errorMessage, $errorCode);
+            if (!empty($http_response_header[0])) {
+                $e->setHeaders($http_response_header);
+            }
+
+            throw $e;
         }
     }
 
@@ -188,9 +221,17 @@ class RemoteFilesystem
                     $this->io->overwrite('    Authentication required (<info>'.parse_url($this->fileUrl, PHP_URL_HOST).'</info>):');
                     $username = $this->io->ask('      Username: ');
                     $password = $this->io->askAndHideAnswer('      Password: ');
-                    $this->io->setAuthorization($this->originUrl, $username, $password);
+                    $this->io->setAuthentication($this->originUrl, $username, $password);
 
                     $this->get($this->originUrl, $this->fileUrl, $this->fileName, $this->progress);
+                }
+                break;
+
+            case STREAM_NOTIFY_AUTH_RESULT:
+                if (403 === $messageCode) {
+                    $message = "The '" . $this->fileUrl . "' URL could not be accessed: " . $message;
+
+                    throw new TransportException($message, 403);
                 }
                 break;
 
@@ -220,25 +261,37 @@ class RemoteFilesystem
         }
     }
 
-    protected function getOptionsForUrl($originUrl)
+    protected function getOptionsForUrl($originUrl, $additionalOptions)
     {
-        $options['http']['header'] = sprintf(
-            "User-Agent: Composer/%s (%s; %s; PHP %s.%s.%s)\r\n",
-            Composer::VERSION,
-            php_uname('s'),
-            php_uname('r'),
-            PHP_MAJOR_VERSION,
-            PHP_MINOR_VERSION,
-            PHP_RELEASE_VERSION
+        $headers = array(
+            sprintf(
+                'User-Agent: Composer/%s (%s; %s; PHP %s.%s.%s)',
+                Composer::VERSION === '@package_version@' ? 'source' : Composer::VERSION,
+                php_uname('s'),
+                php_uname('r'),
+                PHP_MAJOR_VERSION,
+                PHP_MINOR_VERSION,
+                PHP_RELEASE_VERSION
+            )
         );
+
         if (extension_loaded('zlib')) {
-            $options['http']['header'] .= 'Accept-Encoding: gzip'."\r\n";
+            $headers[] = 'Accept-Encoding: gzip';
         }
 
-        if ($this->io->hasAuthorization($originUrl)) {
-            $auth = $this->io->getAuthorization($originUrl);
+        if ($this->io->hasAuthentication($originUrl)) {
+            $auth = $this->io->getAuthentication($originUrl);
             $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
-            $options['http']['header'] .= "Authorization: Basic $authStr\r\n";
+            $headers[] = 'Authorization: Basic '.$authStr;
+        }
+
+        $options = array_replace_recursive($this->options, $additionalOptions);
+
+        if (isset($options['http']['header']) && !is_array($options['http']['header'])) {
+            $options['http']['header'] = explode("\r\n", trim($options['http']['header'], "\r\n"));
+        }
+        foreach ($headers as $header) {
+            $options['http']['header'][] = $header;
         }
 
         return $options;

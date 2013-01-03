@@ -12,6 +12,8 @@
 
 namespace Composer;
 
+use Composer\Config\ConfigSourceInterface;
+
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
@@ -19,26 +21,43 @@ class Config
 {
     public static $defaultConfig = array(
         'process-timeout' => 300,
+        'cache-ttl' => 15552000, // 6 months
         'vendor-dir' => 'vendor',
         'bin-dir' => '{$vendor-dir}/bin',
         'notify-on-install' => true,
+        'github-protocols' => array('git', 'https', 'http'),
+        'cache-dir' => '{$home}/cache',
+        'cache-files-dir' => '{$cache-dir}/files',
+        'cache-repo-dir' => '{$cache-dir}/repo',
+        'cache-vcs-dir' => '{$cache-dir}/vcs',
     );
 
     public static $defaultRepositories = array(
         'packagist' => array(
             'type' => 'composer',
-            'url' => 'http://packagist.org',
+            'url' => 'https?://packagist.org',
         )
     );
 
     private $config;
     private $repositories;
+    private $configSource;
 
     public function __construct()
     {
         // load defaults
         $this->config = static::$defaultConfig;
         $this->repositories = static::$defaultRepositories;
+    }
+
+    public function setConfigSource(ConfigSourceInterface $source)
+    {
+        $this->configSource = $source;
+    }
+
+    public function getConfigSource()
+    {
+        return $this->configSource;
     }
 
     /**
@@ -50,7 +69,13 @@ class Config
     {
         // override defaults with given config
         if (!empty($config['config']) && is_array($config['config'])) {
-            $this->config = array_replace_recursive($this->config, $config['config']);
+            foreach ($config['config'] as $key => $val) {
+                if (in_array($key, array('github-oauth')) && isset($this->config[$key])) {
+                    $this->config[$key] = array_merge($this->config[$key], $val);
+                } else {
+                    $this->config[$key] = $val;
+                }
+            }
         }
 
         if (!empty($config['repositories']) && is_array($config['repositories'])) {
@@ -100,17 +125,47 @@ class Config
             case 'vendor-dir':
             case 'bin-dir':
             case 'process-timeout':
+            case 'cache-dir':
+            case 'cache-files-dir':
+            case 'cache-repo-dir':
+            case 'cache-vcs-dir':
                 // convert foo-bar to COMPOSER_FOO_BAR and check if it exists since it overrides the local config
                 $env = 'COMPOSER_' . strtoupper(strtr($key, '-', '_'));
 
                 return rtrim($this->process(getenv($env) ?: $this->config[$key]), '/\\');
 
+            case 'cache-ttl':
+                return (int) $this->config[$key];
+
+            case 'cache-files-ttl':
+                if (isset($this->config[$key])) {
+                    return (int) $this->config[$key];
+                }
+
+                return (int) $this->config['cache-ttl'];
+
             case 'home':
                 return rtrim($this->process($this->config[$key]), '/\\');
 
             default:
+                if (!isset($this->config[$key])) {
+                    return null;
+                }
+
                 return $this->process($this->config[$key]);
         }
+    }
+
+    public function all()
+    {
+        $all = array(
+            'repositories' => $this->getRepositories(),
+        );
+        foreach (array_keys($this->config) as $key) {
+            $all['config'][$key] = $this->get($key);
+        }
+
+        return $all;
     }
 
     /**
@@ -133,6 +188,10 @@ class Config
     private function process($value)
     {
         $config = $this;
+
+        if (!is_string($value)) {
+            return $value;
+        }
 
         return preg_replace_callback('#\{\$(.+)\}#', function ($match) use ($config) {
             return $config->get($match[1]);

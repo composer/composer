@@ -14,6 +14,7 @@ namespace Composer\Test\Package\Loader;
 
 use Composer\Package;
 use Composer\Package\Loader\ValidatingArrayLoader;
+use Composer\Package\Loader\InvalidPackageException;
 
 class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
 {
@@ -28,7 +29,7 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
             ->method('load')
             ->with($config);
 
-        $loader = new ValidatingArrayLoader($internalLoader, false);
+        $loader = new ValidatingArrayLoader($internalLoader);
         $loader->load($config);
     }
 
@@ -46,7 +47,7 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                     'description' => 'Foo bar',
                     'version' => '1.0.0',
                     'type' => 'library',
-                    'keywords' => array('a', 'b'),
+                    'keywords' => array('a', 'b_c', 'D E'),
                     'homepage' => 'https://foo.com',
                     'time' => '2010-10-10T10:10:10+00:00',
                     'license' => 'MIT',
@@ -59,7 +60,7 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                         ),
                         array(
                             'name' => 'Bob',
-                            'homepage' => 'http://example.com',
+                            'homepage' => '',
                         ),
                     ),
                     'support' => array(
@@ -130,6 +131,10 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                     ),
                     'extra' => array(
                         'random' => array('stuff' => array('deeply' => 'nested')),
+                        'branch-alias' => array(
+                            'dev-master' => '2.0-dev',
+                            'dev-old' => '1.0.x-dev',
+                        ),
                     ),
                     'bin' => array(
                         'bin/foo',
@@ -147,17 +152,17 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @dataProvider failureProvider
+     * @dataProvider errorProvider
      */
     public function testLoadFailureThrowsException($config, $expectedErrors)
     {
         $internalLoader = $this->getMock('Composer\Package\Loader\LoaderInterface');
-        $loader = new ValidatingArrayLoader($internalLoader, false);
+        $loader = new ValidatingArrayLoader($internalLoader);
         try {
             $loader->load($config);
             $this->fail('Expected exception to be thrown');
-        } catch (\Exception $e) {
-            $errors = explode("\n", $e->getMessage());
+        } catch (InvalidPackageException $e) {
+            $errors = $e->getErrors();
             sort($expectedErrors);
             sort($errors);
             $this->assertEquals($expectedErrors, $errors);
@@ -165,9 +170,24 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @dataProvider failureProvider
+     * @dataProvider warningProvider
      */
-    public function testLoadSkipsInvalidDataWhenIgnoringErrors($config)
+    public function testLoadWarnings($config, $expectedWarnings)
+    {
+        $internalLoader = $this->getMock('Composer\Package\Loader\LoaderInterface');
+        $loader = new ValidatingArrayLoader($internalLoader);
+
+        $loader->load($config);
+        $warnings = $loader->getWarnings();
+        sort($expectedWarnings);
+        sort($warnings);
+        $this->assertEquals($expectedWarnings, $warnings);
+    }
+
+    /**
+     * @dataProvider warningProvider
+     */
+    public function testLoadSkipsWarningDataWhenIgnoringErrors($config)
     {
         $internalLoader = $this->getMock('Composer\Package\Loader\LoaderInterface');
         $internalLoader
@@ -175,12 +195,12 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
             ->method('load')
             ->with(array('name' => 'a/b'));
 
-        $loader = new ValidatingArrayLoader($internalLoader, true);
+        $loader = new ValidatingArrayLoader($internalLoader);
         $config['name'] = 'a/b';
         $loader->load($config);
     }
 
-    public function failureProvider()
+    public function errorProvider()
     {
         return array(
             array(
@@ -188,16 +208,42 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                     'name' => 'foo',
                 ),
                 array(
-                    'name : invalid value, must match [A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*'
+                    'name : invalid value (foo), must match [A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*'
                 )
             ),
+            array(
+                array(
+                    'name' => 'foo/bar',
+                    'homepage' => 43,
+                ),
+                array(
+                    'homepage : should be a string, integer given',
+                )
+            ),
+            array(
+                array(
+                    'name' => 'foo/bar',
+                    'support' => array(
+                        'source' => array(),
+                    ),
+                ),
+                array(
+                    'support.source : invalid value, must be a string',
+                )
+            ),
+        );
+    }
+
+    public function warningProvider()
+    {
+        return array(
             array(
                 array(
                     'name' => 'foo/bar',
                     'homepage' => 'foo:bar',
                 ),
                 array(
-                    'homepage : invalid value, must be a valid http/https URL'
+                    'homepage : invalid value (foo:bar), must be an http/https URL'
                 )
             ),
             array(
@@ -211,10 +257,10 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                     ),
                 ),
                 array(
-                    'support.source : invalid value, must be a valid http/https URL',
-                    'support.forum : invalid value, must be a valid http/https URL',
-                    'support.issues : invalid value, must be a valid http/https URL',
-                    'support.wiki : invalid value, must be a valid http/https URL',
+                    'support.source : invalid value (foo:bar), must be an http/https URL',
+                    'support.forum : invalid value (foo:bar), must be an http/https URL',
+                    'support.issues : invalid value (foo:bar), must be an http/https URL',
+                    'support.wiki : invalid value (foo:bar), must be an http/https URL',
                 )
             ),
         );

@@ -12,8 +12,6 @@
 
 namespace Composer\Package;
 
-use Composer\Package\LinkConstraint\LinkConstraintInterface;
-use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\PlatformRepository;
 
@@ -37,12 +35,6 @@ abstract class BasePackage implements PackageInterface
     const STABILITY_BETA    = 10;
     const STABILITY_ALPHA   = 15;
     const STABILITY_DEV     = 20;
-
-    const MATCH_NAME = -1;
-    const MATCH_NONE = 0;
-    const MATCH = 1;
-    const MATCH_PROVIDE = 2;
-    const MATCH_REPLACE = 3;
 
     public static $stabilities = array(
         'stable' => self::STABILITY_STABLE,
@@ -122,35 +114,6 @@ abstract class BasePackage implements PackageInterface
         return $this->id;
     }
 
-    /**
-     * Checks if the package matches the given constraint directly or through
-     * provided or replaced packages
-     *
-     * @param  string                  $name       Name of the package to be matched
-     * @param  LinkConstraintInterface $constraint The constraint to verify
-     * @return int                     One of the MATCH* constants of this class or 0 if there is no match
-     */
-    public function matches($name, LinkConstraintInterface $constraint)
-    {
-        if ($this->name === $name) {
-            return $constraint->matches(new VersionConstraint('==', $this->getVersion())) ? self::MATCH : self::MATCH_NAME;
-        }
-
-        foreach ($this->getProvides() as $link) {
-            if ($link->getTarget() === $name && $constraint->matches($link->getConstraint())) {
-                return self::MATCH_PROVIDE;
-            }
-        }
-
-        foreach ($this->getReplaces() as $link) {
-            if ($link->getTarget() === $name && $constraint->matches($link->getConstraint())) {
-                return self::MATCH_REPLACE;
-            }
-        }
-
-        return self::MATCH_NONE;
-    }
-
     public function getRepository()
     {
         return $this->repository;
@@ -215,5 +178,6 @@ abstract class BasePackage implements PackageInterface
     public function __clone()
     {
         $this->repository = null;
+        $this->id = -1;
     }
 }

@@ -68,7 +68,7 @@ The only required field is `packages`. The JSON structure is as follows:
 
     {
         "packages": {
-            "vendor/packageName": {
+            "vendor/package-name": {
                 "dev-master": { @composer.json },
                 "1.0.x-dev": { @composer.json },
                 "0.0.1": { @composer.json },
@@ -97,26 +97,30 @@ Here is a minimal package definition:
 
 It may include any of the other fields specified in the [schema](04-schema.md).
 
-#### notify
+#### notify_batch
 
-The `notify` field allows you to specify an URL template for a URL that will
-be called every time a user installs a package. The URL can be either an
-absolute path (that will use the same domain as the repository) or a fully
-qualified URL.
+The `notify_batch` field allows you to specify an URL that will be called
+every time a user installs a package. The URL can be either an absolute path
+(that will use the same domain as the repository) or a fully qualified URL.
 
 An example value:
 
     {
-        "notify": "/downloads/%package%"
+        "notify_batch": "/downloads/"
     }
 
 For `example.org/packages.json` containing a `monolog/monolog` package, this
-would send a `POST` request to `example.org/downloads/monolog/monolog` with
-following parameters:
+would send a `POST` request to `example.org/downloads/` with following
+JSON request body:
 
-* **version:** The version of the package.
-* **version_normalized:** The normalized internal representation of the
-  version.
+    {
+        "downloads": [
+            {"name": "monolog/monolog", "version": "1.2.1.0"},
+        ]
+    }
+
+The version field will contain the normalized representation of the version
+number.
 
 This field is optional.
 
@@ -148,11 +152,20 @@ hash changed.
 This field is optional. You probably don't need it for your own custom
 repository.
 
+#### stream options
+
+The `packages.json` file is loaded using a PHP stream. You can set extra options
+on that stream using the `options` parameter. You can set any valid PHP stream
+context option. See [Context options and parameters](http://php.net/manual/en/context.php)
+for more information.
+
 ### VCS
 
 VCS stands for version control system. This includes versioning systems like
 git, svn or hg. Composer has a repository type for installing packages from
 these systems.
+
+#### Loading a package from a VCS repository
 
 There are a few use cases for this. The most common one is maintaining your
 own fork of a third party library. If you are using a certain library for your
@@ -161,7 +174,7 @@ project to use the patched version. If the library is on GitHub (this is the
 case most of the time), you can simply fork it there and push your changes to
 your fork. After that you update the project's `composer.json`. All you have
 to do is add your fork as a repository and update the version constraint to
-point to your custom branch. For version constraint naming conventions see 
+point to your custom branch. For version constraint naming conventions see
 [Libraries](02-libraries.md) for more information.
 
 Example assuming you patched monolog to fix a bug in the `bugfix` branch:
@@ -180,6 +193,31 @@ Example assuming you patched monolog to fix a bug in the `bugfix` branch:
 
 When you run `php composer.phar update`, you should get your modified version
 of `monolog/monolog` instead of the one from packagist.
+
+It is possible to inline-alias a package constraint so that it matches a
+constraint that it otherwise would not. For more information [see the
+aliases article](articles/aliases.md).
+
+#### Using private repositories
+
+Exactly the same solution allows you to work with your private repositories at
+GitHub and BitBucket:
+
+    {
+        "require": {
+            "vendor/my-private-repo": "dev-master"
+        },
+        "repositories": [
+            {
+                "type": "vcs",
+                "url":  "git@bitbucket.org:vendor/my-private-repo.git"
+            }
+        ]
+    }
+
+The only requirement is the installation of SSH keys for a git client.
+
+#### Git alternatives
 
 Git is not the only version control system supported by the VCS repository.
 The following are supported:
@@ -200,6 +238,29 @@ VCS repository provides `dist`s for them that fetch the packages as zips.
 The VCS driver to be used is detected automatically based on the URL. However,
 should you need to specify one for whatever reason, you can use `git`, `svn` or
 `hg` as the repository type instead of `vcs`.
+
+#### Subversion Options
+
+Since Subversion has no native concept of branches and tags, Composer assumes
+by default that code is located in `$url/trunk`, `$url/branches` and
+`$url/tags`. If your repository has a different layout you can change those
+values. For example if you used capitalized names you could configure the
+repository like this:
+
+    {
+        "repositories": [
+            {
+                "type": "vcs",
+                "url": "http://svn.example.org/projectA/",
+                "trunk-path": "Trunk",
+                "branches-path": "Branches",
+                "tags-path": "Tags"
+            }
+        ]
+    }
+
+If you have no branches or tags directory you can disable them entirely by
+setting the `branches-path` or `tags-path` to `false`.
 
 ### PEAR
 
@@ -228,22 +289,40 @@ In this case the short name of the channel is `pear2`, so the
 > **Note:** The `pear` repository requires doing quite a few requests per
 > package, so this may considerably slow down the installation process.
 
-#### Custom channel alias
-It is possible to alias all pear channel packages with custom name.
+#### Custom vendor alias
+
+It is possible to alias PEAR channel packages with a custom vendor name.
 
 Example:
-You own private pear repository and going to use composer abilities to bring dependencies from vcs or transit to composer repository scheme.
-Your repository list of packages:
- * BasePackage, requires nothing
- * IntermediatePackage, depends on BasePackage
- * TopLevelPackage1 and TopLevelPackage2 both dependth on IntermediatePackage.
 
-For composer it looks like:
- * "pear-pear.foobar.repo/IntermediatePackage" depends on "pear-pear.foobar.repo/BasePackage",
- * "pear-pear.foobar.repo/TopLevelPackage1" depends on "pear-pear.foobar.repo/IntermediatePackage",
- * "pear-pear.foobar.repo/TopLevelPackage2" depends on "pear-pear.foobar.repo/IntermediatePackage"
+Suppose you have a private PEAR repository and wish to use Composer to
+incorporate dependencies from a VCS. Your PEAR repository contains the
+following packages:
 
-When you update one of your packages to composer naming scheme or made it available through vcs, your older dependencies would not see new version, cause it would be named like "foobar/IntermediatePackage". Specifying 'vendor-alias' for pear repository, you will get all its packages aliased with composer-like names. Following example would take BasePackage, TopLevelPackage1 and TopLevelPackage2 packages from pear repository and IntermediatePackage from github repository:
+ * `BasePackage`
+ * `IntermediatePackage`, which depends on `BasePackage`
+ * `TopLevelPackage1` and `TopLevelPackage2` which both depend on `IntermediatePackage`
+
+Without a vendor alias, Composer will use the PEAR channel name as the
+vendor portion of the package name:
+
+ * `pear-pear.foobar.repo/BasePackage`
+ * `pear-pear.foobar.repo/IntermediatePackage`
+ * `pear-pear.foobar.repo/TopLevelPackage1`
+ * `pear-pear.foobar.repo/TopLevelPackage2`
+
+Suppose at a later time you wish to migrate your PEAR packages to a
+Composer repository and naming scheme, and adopt the vendor name of `foobar`.
+Projects using your PEAR packages would not see the updated packages, since
+they have a different vendor name (`foobar/IntermediatePackage` vs
+`pear-pear.foobar.repo/IntermediatePackage`).
+
+By specifying `vendor-alias` for the PEAR repository from the start, you can
+avoid this scenario and future-proof your package names.
+
+To illustrate, the following example would get the `BasePackage`,
+`TopLevelPackage1`, and `TopLevelPackage2` packages from your PEAR repository
+and `IntermediatePackage` from a Github repository:
 
     {
         "repositories": [

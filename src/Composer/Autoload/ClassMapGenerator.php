@@ -40,42 +40,49 @@ class ClassMapGenerator
     /**
      * Iterate over all files in the given directory searching for classes
      *
-     * @param Iterator|string $dir       The directory to search in or an iterator
+     * @param Iterator|string $path      The path to search in or an iterator
      * @param string          $whitelist Regex that matches against the file path
      *
      * @return array A class map array
+     *
+     * @throws \RuntimeException When the path is neither an existing file nor directory
      */
-    public static function createMap($dir, $whitelist = null)
+    public static function createMap($path, $whitelist = null)
     {
-        if (is_string($dir)) {
-            if (is_file($dir)) {
-                $dir = array(new \SplFileInfo($dir));
+        if (is_string($path)) {
+            if (is_file($path)) {
+                $path = array(new \SplFileInfo($path));
+            } else if (is_dir($path)) {
+                $path = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path));
             } else {
-                $dir = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir));
+                throw new \RuntimeException(
+                    'Could not scan for classes inside "'.$path.
+                    '" which does not appear to be a file nor a folder'
+                );
             }
         }
 
         $map = array();
 
-        foreach ($dir as $file) {
+        foreach ($path as $file) {
             if (!$file->isFile()) {
                 continue;
             }
 
-            $path = $file->getRealPath();
+            $filePath = $file->getRealPath();
 
-            if (pathinfo($path, PATHINFO_EXTENSION) !== 'php') {
+            if (!in_array(pathinfo($filePath, PATHINFO_EXTENSION), array('php', 'inc'))) {
                 continue;
             }
 
-            if ($whitelist && !preg_match($whitelist, strtr($path, '\\', '/'))) {
+            if ($whitelist && !preg_match($whitelist, strtr($filePath, '\\', '/'))) {
                 continue;
             }
 
-            $classes = self::findClasses($path);
+            $classes = self::findClasses($filePath);
 
             foreach ($classes as $class) {
-                $map[$class] = $path;
+                $map[$class] = $filePath;
             }
 
         }
@@ -92,56 +99,50 @@ class ClassMapGenerator
      */
     private static function findClasses($path)
     {
-        $contents = file_get_contents($path);
+        $traits = version_compare(PHP_VERSION, '5.4', '<') ? '' : '|trait';
+
         try {
-            if (!preg_match('{\b(?:class|interface|trait)\b}i', $contents)) {
-                return array();
-            }
-            $tokens   = token_get_all($contents);
+            $contents = php_strip_whitespace($path);
         } catch (\Exception $e) {
             throw new \RuntimeException('Could not scan for classes inside '.$path.": \n".$e->getMessage(), 0, $e);
         }
-        $T_TRAIT  = version_compare(PHP_VERSION, '5.4', '<') ? -1 : T_TRAIT;
+
+        // return early if there is no chance of matching anything in this file
+        if (!preg_match('{\b(?:class|interface'.$traits.')\b}i', $contents)) {
+            return array();
+        }
+
+        // strip heredocs/nowdocs
+        $contents = preg_replace('{<<<\'?(\w+)\'?(?:\r\n|\n|\r)(?:.*?)(?:\r\n|\n|\r)\\1(?=\r\n|\n|\r|;)}s', 'null', $contents);
+        // strip strings
+        $contents = preg_replace('{"[^"\\\\]*(\\\\.[^"\\\\]*)*"|\'[^\'\\\\]*(\\\\.[^\'\\\\]*)*\'}', 'null', $contents);
+        // strip leading non-php code if needed
+        if (substr($contents, 0, 2) !== '<?') {
+            $contents = preg_replace('{^.+?<\?}s', '<?', $contents);
+        }
+        // strip non-php blocks in the file
+        $contents = preg_replace('{\?>.+<\?}s', '?><?', $contents);
+        // strip trailing non-php code if needed
+        $pos = strrpos($contents, '?>');
+        if (false !== $pos && false === strpos(substr($contents, $pos), '<?')) {
+            $contents = substr($contents, 0, $pos);
+        }
+
+        preg_match_all('{
+            (?:
+                 \b(?<![\$:>])(?P<type>class|interface'.$traits.') \s+ (?P<name>[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)
+               | \b(?<![\$:>])(?P<ns>namespace) (?P<nsname>\s+[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\s*\\\\\s*[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)? \s*[\{;]
+            )
+        }ix', $contents, $matches);
 
         $classes = array();
-
         $namespace = '';
-        for ($i = 0, $max = count($tokens); $i < $max; $i++) {
-            $token = $tokens[$i];
 
-            if (is_string($token)) {
-                continue;
-            }
-
-            $class = '';
-
-            switch ($token[0]) {
-                case T_NAMESPACE:
-                    $namespace = '';
-                    // If there is a namespace, extract it
-                    while (($t = $tokens[++$i]) && is_array($t)) {
-                        if (in_array($t[0], array(T_STRING, T_NS_SEPARATOR))) {
-                            $namespace .= $t[1];
-                        }
-                    }
-                    $namespace .= '\\';
-                    break;
-                case T_CLASS:
-                case T_INTERFACE:
-                case $T_TRAIT:
-                    // Find the classname
-                    while (($t = $tokens[++$i]) && is_array($t)) {
-                        if (T_STRING === $t[0]) {
-                            $class .= $t[1];
-                        } elseif ($class !== '' && T_WHITESPACE == $t[0]) {
-                            break;
-                        }
-                    }
-
-                    $classes[] = ltrim($namespace . $class, '\\');
-                    break;
-                default:
-                    break;
+        for ($i = 0, $len = count($matches['type']); $i < $len; $i++) {
+            if (!empty($matches['ns'][$i])) {
+                $namespace = str_replace(array(' ', "\t", "\r", "\n"), '', $matches['nsname'][$i]) . '\\';
+            } else {
+                $classes[] = ltrim($namespace . $matches['name'][$i], '\\');
             }
         }
 

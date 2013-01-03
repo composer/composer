@@ -13,6 +13,7 @@
 namespace Composer\Installer;
 
 use Composer\Composer;
+use Composer\Package\Package;
 use Composer\IO\IOInterface;
 use Composer\Autoload\AutoloadGenerator;
 use Composer\Repository\InstalledRepositoryInterface;
@@ -29,8 +30,11 @@ class InstallerInstaller extends LibraryInstaller
     private static $classCounter = 0;
 
     /**
+     * Initializes Installer installer.
+     *
      * @param IOInterface $io
      * @param Composer    $composer
+     * @param string      $type
      */
     public function __construct(IOInterface $io, Composer $composer, $type = 'library')
     {
@@ -82,7 +86,7 @@ class InstallerInstaller extends LibraryInstaller
         $classes = is_array($extra['class']) ? $extra['class'] : array($extra['class']);
 
         $generator = new AutoloadGenerator;
-        $map = $generator->parseAutoloads(array(array($package, $downloadPath)));
+        $map = $generator->parseAutoloads(array(array($package, $downloadPath)), new Package('dummy', '1.0.0.0', '1.0.0'));
         $classLoader = $generator->createLoader($map);
         $classLoader->register();
 

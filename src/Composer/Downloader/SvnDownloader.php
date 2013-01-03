@@ -50,6 +50,10 @@ class SvnDownloader extends VcsDownloader
      */
     public function getLocalChanges($path)
     {
+        if (!is_dir($path.'/.svn')) {
+            return;
+        }
+
         $this->process->execute('svn status --ignore-externals', $output, $path);
 
         return preg_match('{^ *[^X ] +}m', $output) ? $output : null;
@@ -82,9 +86,63 @@ class SvnDownloader extends VcsDownloader
     /**
      * {@inheritDoc}
      */
+    protected function cleanChanges($path, $update)
+    {
+        if (!$this->io->isInteractive()) {
+            return parent::cleanChanges($path, $update);
+        }
+
+        if (!$changes = $this->getLocalChanges($path)) {
+            return;
+        }
+
+        $changes = array_map(function ($elem) {
+            return '    '.$elem;
+        }, preg_split('{\s*\r?\n\s*}', $changes));
+        $this->io->write('    <error>The package has modified files:</error>');
+        $this->io->write(array_slice($changes, 0, 10));
+        if (count($changes) > 10) {
+            $this->io->write('    <info>'.count($changes) - 10 . ' more files modified, choose "v" to view the full list</info>');
+        }
+
+        while (true) {
+            switch ($this->io->ask('    <info>Discard changes [y,n,v,?]?</info> ', '?')) {
+                case 'y':
+                    if (0 !== $this->process->execute('svn revert -R .', $output, $path)) {
+                        throw new \RuntimeException("Could not reset changes\n\n:".$this->process->getErrorOutput());
+                    }
+                    break 2;
+
+                case 'n':
+                    throw new \RuntimeException('Update aborted');
+
+                case 'v':
+                    $this->io->write($changes);
+                    break;
+
+                case '?':
+                default:
+                    $this->io->write(array(
+                        '    y - discard changes and apply the '.($update ? 'update' : 'uninstall'),
+                        '    n - abort the '.($update ? 'update' : 'uninstall').' and let you manually clean things up',
+                        '    v - view modified files',
+                        '    ? - print help',
+                    ));
+                    break;
+            }
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     protected function getCommitLogs($fromReference, $toReference, $path)
     {
-        $command = sprintf('cd %s && svn log -r%s:%s --incremental', escapeshellarg($path), $fromReference, $toReference);
+        // strip paths from references and only keep the actual revision
+        $fromRevision = preg_replace('{.*@(\d+)$}', '$1', $fromReference);
+        $toRevision = preg_replace('{.*@(\d+)$}', '$1', $toReference);
+
+        $command = sprintf('cd %s && svn log -r%s:%s --incremental', escapeshellarg($path), $fromRevision, $toRevision);
 
         if (0 !== $this->process->execute($command, $output)) {
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());

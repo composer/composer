@@ -33,7 +33,10 @@ class CompositeRepository implements RepositoryInterface
      */
     public function __construct(array $repositories)
     {
-        $this->repositories = $repositories;
+        $this->repositories = array();
+        foreach ($repositories as $repo) {
+            $this->addRepository($repo);
+        }
     }
 
     /**
@@ -92,6 +95,20 @@ class CompositeRepository implements RepositoryInterface
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public function filterPackages($callback, $class = 'Composer\Package\Package')
+    {
+        foreach ($this->repositories as $repository) {
+            if (false === $repository->filterPackages($callback, $class)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function getPackages()
@@ -136,6 +153,12 @@ class CompositeRepository implements RepositoryInterface
      */
     public function addRepository(RepositoryInterface $repository)
     {
-        $this->repositories[] = $repository;
+        if ($repository instanceof self) {
+            foreach ($repository->getRepositories() as $repo) {
+                $this->addRepository($repo);
+            }
+        } else {
+            $this->repositories[] = $repository;
+        }
     }
 }

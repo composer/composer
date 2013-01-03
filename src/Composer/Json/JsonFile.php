@@ -85,7 +85,7 @@ class JsonFile
                 $json = file_get_contents($this->path);
             }
         } catch (TransportException $e) {
-            throw new \RuntimeException($e->getMessage());
+            throw new \RuntimeException($e->getMessage(), 0, $e);
         } catch (\Exception $e) {
             throw new \RuntimeException('Could not read '.$this->path."\n\n".$e->getMessage());
         }

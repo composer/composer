@@ -1,0 +1,44 @@
+[
+    {
+        "name": "seld/jsonlint",
+        "description": "JSON Linter",
+        "keywords": [
+            "json",
+            "parser",
+            "linter",
+            "validator"
+        ],
+        "homepage": "",
+        "version": "dev-master",
+        "version_normalized": "9999999-dev",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Jordi Boggiano",
+                "email": "j.boggiano@seld.be",
+                "homepage": "http://seld.be",
+                "role": "Developer"
+            }
+        ],
+        "source": {
+            "type": "git",
+            "url": "http://github.com/Seldaek/jsonlint",
+            "reference": "4451f2066efdc53f3fa954c44a47ead73f6838d2"
+        },
+        "type": "library",
+        "time": "2012-08-13T07:00:11+00:00",
+        "autoload": {
+            "psr-0": {
+                "Seld\\JsonLint": "src/"
+            }
+        },
+        "bin": [
+            "bin/jsonlint"
+        ],
+        "require": {
+            "php": ">=5.3.0"
+        }
+    }
+]

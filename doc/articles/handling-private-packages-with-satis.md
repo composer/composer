@@ -1,6 +1,7 @@
 <!--
     tagline: Host your own composer repository
 -->
+
 # Handling private packages with Satis
 
 Satis can be used to host the metadata of your company's private packages, or
@@ -83,4 +84,44 @@ itself.
             "company/package2": "1.5.2",
             "company/package3": "dev-master"
         }
+    }
+
+### Security
+
+To secure your private repository you can host it over SSH or SSL using a client
+certificate. In your project you can use the `options` parameter to specify the
+connection options for the server.
+
+Example using a custom repository using SSH (requires the SSH2 PECL extension):
+
+    {
+        "repositories": [
+            {
+                "type": "composer",
+                "url": "ssh2.sftp://example.org",
+                "options": {
+                    "ssh2": {
+                        "username": "composer",
+                        "pubkey_file": "/home/composer/.ssh/id_rsa.pub",
+                        "privkey_file": "/home/composer/.ssh/id_rsa"
+                    }
+                }
+            }
+        ]
+    }
+
+Example using HTTP over SSL using a client certificate:
+
+    {
+        "repositories": [
+            {
+                "type": "composer",
+                "url": "https://example.org",
+                "options": {
+                    "ssl": {
+                        "cert_file": "/home/composer/.ssl/composer.pem",
+                    }
+                }
+            }
+        ]
     }

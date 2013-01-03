@@ -12,10 +12,13 @@
 
 namespace Composer\Downloader;
 
+use Composer\Config;
+use Composer\Cache;
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Util\Filesystem;
+use Composer\Util\GitHub;
 use Composer\Util\RemoteFilesystem;
 
 /**
@@ -27,20 +30,35 @@ use Composer\Util\RemoteFilesystem;
  */
 class FileDownloader implements DownloaderInterface
 {
+    private static $cacheCollected = false;
     protected $io;
+    protected $config;
     protected $rfs;
     protected $filesystem;
+    protected $cache;
+    protected $outputProgress = true;
 
     /**
      * Constructor.
      *
-     * @param IOInterface $io The IO instance
+     * @param IOInterface      $io         The IO instance
+     * @param Config           $config     The config
+     * @param Cache            $cache      Optional cache instance
+     * @param RemoteFilesystem $rfs        The remote filesystem
+     * @param Filesystem       $filesystem The filesystem
      */
-    public function __construct(IOInterface $io, RemoteFilesystem $rfs = null, Filesystem $filesystem = null)
+    public function __construct(IOInterface $io, Config $config, Cache $cache = null, RemoteFilesystem $rfs = null, Filesystem $filesystem = null)
     {
         $this->io = $io;
+        $this->config = $config;
         $this->rfs = $rfs ?: new RemoteFilesystem($io);
         $this->filesystem = $filesystem ?: new Filesystem();
+        $this->cache = $cache;
+
+        if ($this->cache && !self::$cacheCollected && !rand(0, 50)) {
+            $this->cache->gc($config->get('cache-ttl'));
+        }
+        self::$cacheCollected = true;
     }
 
     /**
@@ -67,10 +85,40 @@ class FileDownloader implements DownloaderInterface
 
         $this->io->write("  - Installing <info>" . $package->getName() . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
 
-        $processUrl = $this->processUrl($url);
+        $processedUrl = $this->processUrl($package, $url);
+        $hostname = parse_url($processedUrl, PHP_URL_HOST);
+
+        if (strpos($hostname, '.github.com') === (strlen($hostname) - 11)) {
+            $hostname = 'github.com';
+        }
 
         try {
-            $this->rfs->copy($package->getSourceUrl(), $processUrl, $fileName);
+            try {
+                if (!$this->cache || !$this->cache->copyTo($this->getCacheKey($package), $fileName)) {
+                    $this->rfs->copy($hostname, $processedUrl, $fileName, $this->outputProgress);
+                    if (!$this->outputProgress) {
+                        $this->io->write('    Downloading');
+                    }
+                    if ($this->cache) {
+                        $this->cache->copyFrom($this->getCacheKey($package), $fileName);
+                    }
+                } else {
+                    $this->io->write('    Loading from cache');
+                }
+            } catch (TransportException $e) {
+                if (404 === $e->getCode() && 'github.com' === $hostname) {
+                    $message = "\n".'Could not fetch '.$processedUrl.', enter your GitHub credentials to access private repos';
+                    $gitHubUtil = new GitHub($this->io, $this->config, null, $this->rfs);
+                    if (!$gitHubUtil->authorizeOAuth($hostname)
+                        && (!$this->io->isInteractive() || !$gitHubUtil->authorizeOAuthInteractively($hostname, $message))
+                    ) {
+                        throw $e;
+                    }
+                    $this->rfs->copy($hostname, $processedUrl, $fileName, $this->outputProgress);
+                } else {
+                    throw $e;
+                }
+            }
 
             if (!file_exists($fileName)) {
                 throw new \UnexpectedValueException($url.' could not be saved to '.$fileName.', make sure the'
@@ -84,7 +132,26 @@ class FileDownloader implements DownloaderInterface
         } catch (\Exception $e) {
             // clean up
             $this->filesystem->removeDirectory($path);
+            $this->clearCache($package, $path);
             throw $e;
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setOutputProgress($outputProgress)
+    {
+        $this->outputProgress = $outputProgress;
+
+        return $this;
+    }
+
+    protected function clearCache(PackageInterface $package, $path)
+    {
+        if ($this->cache) {
+            $fileName = $this->getFileName($package, $path);
+            $this->cache->remove($this->getCacheKey($package));
         }
     }
 
@@ -117,23 +184,33 @@ class FileDownloader implements DownloaderInterface
      */
     protected function getFileName(PackageInterface $package, $path)
     {
-        return $path.'/'.pathinfo($package->getDistUrl(), PATHINFO_BASENAME);
+        return $path.'/'.pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_BASENAME);
     }
 
     /**
      * Process the download url
      *
-     * @param  string $url download url
-     * @return string url
+     * @param  PackageInterface $package package the url is coming from
+     * @param  string           $url     download url
+     * @return string           url
      *
      * @throws \RuntimeException If any problem with the url
      */
-    protected function processUrl($url)
+    protected function processUrl(PackageInterface $package, $url)
     {
         if (!extension_loaded('openssl') && 0 === strpos($url, 'https:')) {
             throw new \RuntimeException('You must enable the openssl extension to download files via https');
         }
 
         return $url;
+    }
+
+    private function getCacheKey(PackageInterface $package)
+    {
+        if (preg_match('{^[a-f0-9]{40}$}', $package->getDistReference())) {
+            return $package->getName().'/'.$package->getDistReference().'.'.$package->getDistType();
+        }
+
+        return $package->getName().'/'.$package->getVersion().'-'.$package->getDistReference().'.'.$package->getDistType();
     }
 }

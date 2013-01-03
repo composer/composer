@@ -14,6 +14,7 @@ namespace Composer\Package\Version;
 
 use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
+use Composer\Package\Link;
 use Composer\Package\LinkConstraint\MultiConstraint;
 use Composer\Package\LinkConstraint\VersionConstraint;
 
@@ -24,7 +25,7 @@ use Composer\Package\LinkConstraint\VersionConstraint;
  */
 class VersionParser
 {
-    private static $modifierRegex = '[._-]?(?:(beta|b|RC|alpha|a|patch|pl|p)(?:[.-]?(\d+))?)?([.-]?dev)?';
+    private static $modifierRegex = '[._-]?(?:(stable|beta|b|RC|alpha|a|patch|pl|p)(?:[.-]?(\d+))?)?([.-]?dev)?';
 
     /**
      * Returns the stability of a version
@@ -40,7 +41,7 @@ class VersionParser
             return 'dev';
         }
 
-        preg_match('{'.self::$modifierRegex.'$}', $version, $match);
+        preg_match('{'.self::$modifierRegex.'$}i', strtolower($version), $match);
         if (!empty($match[3])) {
             return 'dev';
         }
@@ -52,7 +53,7 @@ class VersionParser
             if ('alpha' === $match[1] || 'a' === $match[1]) {
                 return 'alpha';
             }
-            if ('RC' === $match[1]) {
+            if ('rc' === $match[1]) {
                 return 'RC';
             }
         }
@@ -73,18 +74,27 @@ class VersionParser
             return $package->getPrettyVersion();
         }
 
-        return $package->getPrettyVersion() . ' ' . ($truncate ? substr($package->getSourceReference(), 0, 6) : $package->getSourceReference());
+        // if source reference is a sha1 hash -- truncate
+        if ($truncate && strlen($package->getSourceReference()) === 40) {
+            return $package->getPrettyVersion() . ' ' . substr($package->getSourceReference(), 0, 7);
+        }
+
+        return $package->getPrettyVersion() . ' ' . $package->getSourceReference();
     }
 
     /**
      * Normalizes a version string to be able to perform comparisons on it
      *
      * @param  string $version
+     * @param  string $fullVersion optional complete version string to give more context
      * @return array
      */
-    public function normalize($version)
+    public function normalize($version, $fullVersion = null)
     {
         $version = trim($version);
+        if (null === $fullVersion) {
+            $fullVersion = $version;
+        }
 
         // ignore aliases and just assume the alias is required instead of the source
         if (preg_match('{^([^,\s]+) +as +([^,\s]+)$}', $version, $match)) {
@@ -115,6 +125,9 @@ class VersionParser
         // add version modifiers if a version was matched
         if (isset($index)) {
             if (!empty($matches[$index])) {
+                if ('stable' === $matches[$index]) {
+                    return $version;
+                }
                 $mod = array('{^pl?$}i', '{^rc$}i');
                 $modNormalized = array('patch', 'RC');
                 $version .= '-'.preg_replace($mod, $modNormalized, strtolower($matches[$index]))
@@ -135,13 +148,20 @@ class VersionParser
             } catch (\Exception $e) {}
         }
 
-        throw new \UnexpectedValueException('Invalid version string "'.$version.'"');
+        $extraMessage = '';
+        if (preg_match('{ +as +'.preg_quote($version).'$}', $fullVersion)) {
+            $extraMessage = ' in "'.$fullVersion.'", the alias must be an exact version';
+        } elseif (preg_match('{^'.preg_quote($version).' +as +}', $fullVersion)) {
+            $extraMessage = ' in "'.$fullVersion.'", the alias source must be an exact version, if it is a branch name you should prefix it with dev-';
+        }
+
+        throw new \UnexpectedValueException('Invalid version string "'.$version.'"'.$extraMessage);
     }
 
     /**
      * Normalizes a branch name to be able to perform comparisons on it
      *
-     * @param  string $version
+     * @param  string $name
      * @return array
      */
     public function normalizeBranch($name)
@@ -162,6 +182,28 @@ class VersionParser
         }
 
         return 'dev-'.$name;
+    }
+
+    /**
+     * @param  string $source        source package name
+     * @param  string $sourceVersion source package version (pretty version ideally)
+     * @param  string $description   link description (e.g. requires, replaces, ..)
+     * @param  array  $links         array of package name => constraint mappings
+     * @return Link[]
+     */
+    public function parseLinks($source, $sourceVersion, $description, $links)
+    {
+        $res = array();
+        foreach ($links as $target => $constraint) {
+            if ('self.version' === $constraint) {
+                $parsedConstraint = $this->parseConstraints($sourceVersion);
+            } else {
+                $parsedConstraint = $this->parseConstraints($constraint);
+            }
+            $res[strtolower($target)] = new Link($source, $target, $parsedConstraint, $description, $constraint);
+        }
+
+        return $res;
     }
 
     /**
@@ -206,8 +248,37 @@ class VersionParser
 
     private function parseConstraint($constraint)
     {
+        if (preg_match('{^([^,\s]+?)@('.implode('|', array_keys(BasePackage::$stabilities)).')$}i', $constraint, $match)) {
+            $constraint = $match[1];
+            if ($match[2] !== 'stable') {
+                $stabilityModifier = $match[2];
+            }
+        }
+
         if (preg_match('{^[x*](\.[x*])*$}i', $constraint)) {
             return array();
+        }
+
+        if (preg_match('{^~(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:\.(\d+))?$}', $constraint, $matches)) {
+            if (isset($matches[4])) {
+                $highVersion = $matches[1] . '.' . $matches[2] . '.' . ($matches[3] + 1) . '.0-dev';
+                $lowVersion = $matches[1] . '.' . $matches[2] . '.' . $matches[3]. '.' . $matches[4];
+            } elseif (isset($matches[3])) {
+                $highVersion = $matches[1] . '.' . ($matches[2] + 1) . '.0.0-dev';
+                $lowVersion = $matches[1] . '.' . $matches[2] . '.' . $matches[3]. '.0';
+            } else {
+                $highVersion = ($matches[1] + 1) . '.0.0.0-dev';
+                if (isset($matches[2])) {
+                    $lowVersion = $matches[1] . '.' . $matches[2] . '.0.0';
+                } else {
+                    $lowVersion = $matches[1] . '.0.0.0';
+                }
+            }
+
+            return array(
+                new VersionConstraint('>=', $lowVersion),
+                new VersionConstraint('<', $highVersion),
+            );
         }
 
         // match wildcard constraints
@@ -246,10 +317,52 @@ class VersionParser
             try {
                 $version = $this->normalize($matches[2]);
 
+                if (!empty($stabilityModifier) && $this->parseStability($version) === 'stable') {
+                    $version .= '-' . $stabilityModifier;
+                } elseif ('<' === $matches[1]) {
+                    if (!preg_match('/-stable$/', strtolower($matches[2]))) {
+                        $version .= '-dev';
+                    }
+                }
+
                 return array(new VersionConstraint($matches[1] ?: '=', $version));
-            } catch (\Exception $e) {}
+            } catch (\Exception $e) { }
         }
 
-        throw new \UnexpectedValueException('Could not parse version constraint '.$constraint);
+        $message = 'Could not parse version constraint '.$constraint;
+        if (isset($e)) {
+            $message .= ': '.$e->getMessage();
+        }
+
+        throw new \UnexpectedValueException($message);
+    }
+
+    /**
+     * Parses a name/version pairs and returns an array of pairs + the
+     *
+     * @param array $pairs a set of package/version pairs separated by ":", "=" or " "
+     * @return array[] array of arrays containing a name and (if provided) a version
+     */
+    public function parseNameVersionPairs(array $pairs)
+    {
+        $pairs = array_values($pairs);
+        $result = array();
+
+        for ($i = 0; $i < count($pairs); $i++) {
+            $pair = preg_replace('{^([^=: ]+)[=: ](.*)$}', '$1 $2', trim($pairs[$i]));
+            if (false === strpos($pair, ' ') && isset($pairs[$i+1]) && false === strpos($pairs[$i+1], '/')) {
+                $pair .= ' '.$pairs[$i+1];
+                $i++;
+            }
+
+            if (strpos($pair, ' ')) {
+                list($name, $version) = explode(" ", $pair, 2);
+                $result[] = array('name' => $name, 'version' => $version);
+            } else {
+                $result[] = array('name' => $pair);
+            }
+        }
+
+        return $result;
     }
 }

@@ -17,6 +17,7 @@ use Composer\Json\JsonFile;
 use Composer\Cache;
 use Composer\IO\IOInterface;
 use Composer\Util\RemoteFilesystem;
+use Composer\Util\GitHub;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -49,7 +50,7 @@ class GitHubDriver extends VcsDriver
         $this->owner = $match[1];
         $this->repository = $match[2];
         $this->originUrl = 'github.com';
-        $this->cache = new Cache($this->io, $this->config->get('home').'/cache.github/'.$this->owner.'/'.$this->repository);
+        $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.$this->originUrl.'/'.$this->owner.'/'.$this->repository);
 
         $this->fetchRootIdentifier();
     }
@@ -107,7 +108,7 @@ class GitHubDriver extends VcsDriver
             return $this->gitDriver->getDist($identifier);
         }
         $label = array_search($identifier, $this->getTags()) ?: $identifier;
-        $url = 'https://github.com/'.$this->owner.'/'.$this->repository.'/zipball/'.$label;
+        $url = 'https://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/zipball/'.$label;
 
         return array('type' => 'zip', 'url' => $url, 'reference' => $label, 'shasum' => '');
     }
@@ -127,7 +128,7 @@ class GitHubDriver extends VcsDriver
 
         if (!isset($this->infoCache[$identifier])) {
             try {
-                $resource = 'https://raw.github.com/'.$this->owner.'/'.$this->repository.'/'.$identifier.'/composer.json';
+                $resource = 'https://raw.github.com/'.$this->owner.'/'.$this->repository.'/'.urlencode($identifier).'/composer.json';
                 $composer = $this->getContents($resource);
             } catch (TransportException $e) {
                 if (404 !== $e->getCode()) {
@@ -236,6 +237,75 @@ class GitHubDriver extends VcsDriver
     }
 
     /**
+     * {@inheritDoc}
+     */
+    protected function getContents($url, $fetchingRepoData = false)
+    {
+        try {
+            return parent::getContents($url);
+        } catch (TransportException $e) {
+            $gitHubUtil = new GitHub($this->io, $this->config, $this->process, $this->remoteFilesystem);
+
+            switch ($e->getCode()) {
+                case 401:
+                case 404:
+                    // try to authorize only if we are fetching the main /repos/foo/bar data, otherwise it must be a real 404
+                    if (!$fetchingRepoData) {
+                        throw $e;
+                    }
+
+                    if ($gitHubUtil->authorizeOAuth($this->originUrl)) {
+                        return parent::getContents($url);
+                    }
+
+                    if (!$this->io->isInteractive()) {
+                        return $this->attemptCloneFallback();
+                    }
+
+                    $gitHubUtil->authorizeOAuthInteractively($this->originUrl, 'Your GitHub credentials are required to fetch private repository metadata (<info>'.$this->url.'</info>)');
+
+                    return parent::getContents($url);
+
+                case 403:
+                    if (!$this->io->hasAuthentication($this->originUrl) && $gitHubUtil->authorizeOAuth($this->originUrl)) {
+                        return parent::getContents($url);
+                    }
+
+                    if (!$this->io->isInteractive() && $fetchingRepoData) {
+                        return $this->attemptCloneFallback();
+                    }
+
+                    $rateLimited = false;
+                    foreach ($e->getHeaders() as $header) {
+                        if (preg_match('{^X-RateLimit-Remaining: *0$}i', trim($header))) {
+                            $rateLimited = true;
+                        }
+                    }
+
+                    if (!$this->io->hasAuthentication($this->originUrl)) {
+                        if (!$this->io->isInteractive()) {
+                            $this->io->write('<error>GitHub API limit exhausted. Failed to get metadata for the '.$this->url.' repository, try running in interactive mode so that you can enter your GitHub credentials to increase the API limit</error>');
+                            throw $e;
+                        }
+
+                        $gitHubUtil->authorizeOAuthInteractively($this->originUrl, 'API limit exhausted. Enter your GitHub credentials to get a larger API limit (<info>'.$this->url.'</info>)');
+
+                        return parent::getContents($url);
+                    }
+
+                    if ($rateLimited) {
+                        $this->io->write('<error>GitHub API limit exhausted. You are already authorized so you will have to wait a while before doing more requests</error>');
+                    }
+
+                    throw $e;
+
+                default:
+                    throw $e;
+            }
+        }
+    }
+
+    /**
      * Fetch root identifier from GitHub
      *
      * @throws TransportException
@@ -243,60 +313,47 @@ class GitHubDriver extends VcsDriver
     protected function fetchRootIdentifier()
     {
         $repoDataUrl = 'https://api.github.com/repos/'.$this->owner.'/'.$this->repository;
-        $attemptCounter = 0;
-        while (null === $this->rootIdentifier) {
-            if (5 == $attemptCounter++) {
-                throw new \RuntimeException("Either you have entered invalid credentials or this GitHub repository does not exists (404)");
-            }
-            try {
-                $repoData = JsonFile::parseJson($this->getContents($repoDataUrl), $repoDataUrl);
-                if (isset($repoData['default_branch'])) {
-                    $this->rootIdentifier = $repoData['default_branch'];
-                } elseif (isset($repoData['master_branch'])) {
-                    $this->rootIdentifier = $repoData['master_branch'];
-                } else {
-                    $this->rootIdentifier = 'master';
-                }
-                $this->hasIssues = !empty($repoData['has_issues']);
-            } catch (TransportException $e) {
-                switch ($e->getCode()) {
-                    case 401:
-                    case 404:
-                        $this->isPrivate = true;
 
-                        try {
-                            // If this repository may be private (hard to say for sure,
-                            // GitHub returns 404 for private repositories) and we
-                            // cannot ask for authentication credentials (because we
-                            // are not interactive) then we fallback to GitDriver.
-                            $this->gitDriver = new GitDriver(
-                                $this->generateSshUrl(),
-                                $this->io,
-                                $this->config,
-                                $this->process,
-                                $this->remoteFilesystem
-                            );
-                            $this->gitDriver->initialize();
+        $repoData = JsonFile::parseJson($this->getContents($repoDataUrl, true), $repoDataUrl);
+        if (null === $repoData && null !== $this->gitDriver) {
+            return;
+        }
 
-                            return;
-                        } catch (\RuntimeException $e) {
-                            $this->gitDriver = null;
-                            if (!$this->io->isInteractive()) {
-                                $this->io->write('<error>Failed to clone the '.$this->generateSshUrl().' repository, try running in interactive mode so that you can enter your username and password</error>');
-                                throw $e;
-                            }
-                        }
-                        $this->io->write('Authentication required (<info>'.$this->url.'</info>):');
-                        $username = $this->io->ask('Username: ');
-                        $password = $this->io->askAndHideAnswer('Password: ');
-                        $this->io->setAuthorization($this->originUrl, $username, $password);
-                        break;
+        $this->isPrivate = !empty($repoData['private']);
+        if (isset($repoData['default_branch'])) {
+            $this->rootIdentifier = $repoData['default_branch'];
+        } elseif (isset($repoData['master_branch'])) {
+            $this->rootIdentifier = $repoData['master_branch'];
+        } else {
+            $this->rootIdentifier = 'master';
+        }
+        $this->hasIssues = !empty($repoData['has_issues']);
+    }
 
-                    default:
-                        throw $e;
-                        break;
-                }
-            }
+    protected function attemptCloneFallback()
+    {
+        $this->isPrivate = true;
+
+        try {
+            // If this repository may be private (hard to say for sure,
+            // GitHub returns 404 for private repositories) and we
+            // cannot ask for authentication credentials (because we
+            // are not interactive) then we fallback to GitDriver.
+            $this->gitDriver = new GitDriver(
+                array('url' => $this->generateSshUrl()),
+                $this->io,
+                $this->config,
+                $this->process,
+                $this->remoteFilesystem
+            );
+            $this->gitDriver->initialize();
+
+            return;
+        } catch (\RuntimeException $e) {
+            $this->gitDriver = null;
+
+            $this->io->write('<error>Failed to clone the '.$this->generateSshUrl().' repository, try running in interactive mode so that you can enter your GitHub credentials</error>');
+            throw $e;
         }
     }
 }

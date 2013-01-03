@@ -27,7 +27,7 @@ class ConsoleIO implements IOInterface
     protected $input;
     protected $output;
     protected $helperSet;
-    protected $authorizations = array();
+    protected $authentications = array();
     protected $lastMessage;
 
     /**
@@ -65,7 +65,7 @@ class ConsoleIO implements IOInterface
      */
     public function isVerbose()
     {
-        return (bool) $this->input->getOption('verbose');
+        return $this->output->getVerbosity() === OutputInterface::VERBOSITY_VERBOSE;
     }
 
     /**
@@ -173,7 +173,7 @@ class ConsoleIO implements IOInterface
             }
             if (isset($shell)) {
                 $this->write($question, false);
-                $readCmd = ($shell === 'csh') ? 'set mypassword = $<' : 'read mypassword';
+                $readCmd = ($shell === 'csh') ? 'set mypassword = $<' : 'read -r mypassword';
                 $command = sprintf("/usr/bin/env %s -c 'stty -echo; %s; stty echo; echo \$mypassword'", $shell, $readCmd);
                 $value = rtrim(shell_exec($command));
                 $this->write('');
@@ -189,17 +189,17 @@ class ConsoleIO implements IOInterface
     /**
      * {@inheritDoc}
      */
-    public function getAuthorizations()
+    public function getAuthentications()
     {
-        return $this->authorizations;
+        return $this->authentications;
     }
 
     /**
      * {@inheritDoc}
      */
-    public function hasAuthorization($repositoryName)
+    public function hasAuthentication($repositoryName)
     {
-        $auths = $this->getAuthorizations();
+        $auths = $this->getAuthentications();
 
         return isset($auths[$repositoryName]);
     }
@@ -207,9 +207,9 @@ class ConsoleIO implements IOInterface
     /**
      * {@inheritDoc}
      */
-    public function getAuthorization($repositoryName)
+    public function getAuthentication($repositoryName)
     {
-        $auths = $this->getAuthorizations();
+        $auths = $this->getAuthentications();
 
         return isset($auths[$repositoryName]) ? $auths[$repositoryName] : array('username' => null, 'password' => null);
     }
@@ -217,8 +217,8 @@ class ConsoleIO implements IOInterface
     /**
      * {@inheritDoc}
      */
-    public function setAuthorization($repositoryName, $username, $password = null)
+    public function setAuthentication($repositoryName, $username, $password = null)
     {
-        $this->authorizations[$repositoryName] = array('username' => $username, 'password' => $password);
+        $this->authentications[$repositoryName] = array('username' => $username, 'password' => $password);
     }
 }

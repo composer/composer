@@ -14,6 +14,8 @@ namespace Composer\Package\Dumper;
 
 use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
+use Composer\Package\CompletePackageInterface;
+use Composer\Package\RootPackageInterface;
 
 /**
  * @author Konstantin Kudryashiv <ever.zet@gmail.com>
@@ -25,19 +27,12 @@ class ArrayDumper
     {
         $keys = array(
             'binaries' => 'bin',
-            'scripts',
             'type',
             'extra',
             'installationSource' => 'installation-source',
-            'license',
-            'authors',
-            'description',
-            'homepage',
-            'keywords',
             'autoload',
-            'repositories',
+            'notificationUrl' => 'notification-url',
             'includePaths' => 'include-path',
-            'support',
         );
 
         $data = array();
@@ -47,10 +42,6 @@ class ArrayDumper
 
         if ($package->getTargetDir()) {
             $data['target-dir'] = $package->getTargetDir();
-        }
-
-        if ($package->getReleaseDate()) {
-            $data['time'] = $package->getReleaseDate()->format('Y-m-d H:i:s');
         }
 
         if ($package->getSourceType()) {
@@ -78,6 +69,39 @@ class ArrayDumper
             $data['suggest'] = $packages;
         }
 
+        if ($package->getReleaseDate()) {
+            $data['time'] = $package->getReleaseDate()->format('Y-m-d H:i:s');
+        }
+
+        $data = $this->dumpValues($package, $keys, $data);
+
+        if ($package instanceof CompletePackageInterface) {
+            $keys = array(
+                'scripts',
+                'license',
+                'authors',
+                'description',
+                'homepage',
+                'keywords',
+                'repositories',
+                'support',
+            );
+
+            $data = $this->dumpValues($package, $keys, $data);
+        }
+
+        if ($package instanceof RootPackageInterface) {
+            $minimumStability = $package->getMinimumStability();
+            if ($minimumStability) {
+                $data['minimum-stability'] = $minimumStability;
+            }
+        }
+
+        return $data;
+    }
+
+    private function dumpValues(PackageInterface $package, array $keys, array $data)
+    {
         foreach ($keys as $method => $key) {
             if (is_numeric($method)) {
                 $method = $key;

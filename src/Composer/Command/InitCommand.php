@@ -17,6 +17,7 @@ use Composer\Factory;
 use Composer\Package\BasePackage;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
+use Composer\Package\Version\VersionParser;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -62,7 +63,7 @@ class InitCommand extends Command
                 new InputOption('homepage', null, InputOption::VALUE_REQUIRED, 'Homepage of package'),
                 new InputOption('require', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Package to require with a version constraint, e.g. foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"'),
                 new InputOption('require-dev', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Package to require for development with a version constraint, e.g. foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"'),
-                new InputOption('minimum-stability', null, InputOption::VALUE_REQUIRED, 'Minimum stability (empty or one of: '.implode(', ', array_keys(BasePackage::$stabilities)).')'),
+                new InputOption('stability', 's', InputOption::VALUE_REQUIRED, 'Minimum stability (empty or one of: '.implode(', ', array_keys(BasePackage::$stabilities)).')'),
             ))
             ->setHelp(<<<EOT
 The <info>init</info> command creates a basic composer.json file
@@ -79,7 +80,7 @@ EOT
     {
         $dialog = $this->getHelperSet()->get('dialog');
 
-        $whitelist = array('name', 'description', 'author', 'homepage', 'require', 'require-dev', 'minimum-stability');
+        $whitelist = array('name', 'description', 'author', 'homepage', 'require', 'require-dev', 'stability');
 
         $options = array_filter(array_intersect_key($input->getOptions(), array_flip($whitelist)));
 
@@ -88,12 +89,21 @@ EOT
             unset($options['author']);
         }
 
-        $options['require'] = isset($options['require']) ?
-            $this->formatRequirements($options['require']) :
-            new \stdClass;
+        if (isset($options['stability'])) {
+            $options['minimum-stability'] = $options['stability'];
+            unset($options['stability']);
+        }
+
+        $options['require'] = isset($options['require']) ? $this->formatRequirements($options['require']) : new \stdClass;
+        if (array() === $options['require']) {
+            $options['require'] = new \stdClass;
+        }
 
         if (isset($options['require-dev'])) {
             $options['require-dev'] = $this->formatRequirements($options['require-dev']) ;
+            if (array() === $options['require-dev']) {
+                $options['require-dev'] = new \stdClass;
+            }
         }
 
         $file = new JsonFile('composer.json');
@@ -115,7 +125,7 @@ EOT
 
         $file->write($options);
 
-        if ($input->isInteractive()) {
+        if ($input->isInteractive() && is_dir('.git')) {
             $ignoreFile = realpath('.gitignore');
 
             if (false === $ignoreFile) {
@@ -155,6 +165,8 @@ EOT
 
         if (!$name = $input->getOption('name')) {
             $name = basename($cwd);
+            $name = preg_replace('{(?:([a-z])([A-Z])|([A-Z])([A-Z][a-z]))}', '\\1\\3-\\2\\4', $name);
+            $name = strtolower($name);
             if (isset($git['github.user'])) {
                 $name = $git['github.user'] . '/' . $name;
             } elseif (!empty($_SERVER['USERNAME'])) {
@@ -164,6 +176,12 @@ EOT
             } else {
                 // package names must be in the format foo/bar
                 $name = $name . '/' . $name;
+            }
+        } else {
+            if (!preg_match('{^[a-z0-9_.-]+/[a-z0-9_.-]+$}', $name)) {
+                throw new \InvalidArgumentException(
+                    'The package name '.$name.' is invalid, it should be lowercase and have a vendor name, a forward slash, and a package name, matching: [a-z0-9_.-]+/[a-z0-9_.-]+'
+                );
             }
         }
 
@@ -175,9 +193,9 @@ EOT
                     return $name;
                 }
 
-                if (!preg_match('{^[a-z0-9_.-]+/[a-z0-9_.-]+$}i', $value)) {
+                if (!preg_match('{^[a-z0-9_.-]+/[a-z0-9_.-]+$}', $value)) {
                     throw new \InvalidArgumentException(
-                        'The package name '.$value.' is invalid, it should have a vendor name, a forward slash, and a package name, matching: [a-z0-9_.-]+/[a-z0-9_.-]+'
+                        'The package name '.$value.' is invalid, it should be lowercase and have a vendor name, a forward slash, and a package name, matching: [a-z0-9_.-]+/[a-z0-9_.-]+'
                     );
                 }
 
@@ -215,7 +233,7 @@ EOT
         );
         $input->setOption('author', $author);
 
-        $minimumStability = $input->getOption('minimum-stability') ?: '';
+        $minimumStability = $input->getOption('stability') ?: '';
         $minimumStability = $dialog->askAndValidate(
             $output,
             $dialog->getQuestion('Minimum Stability', $minimumStability),
@@ -234,7 +252,7 @@ EOT
                 return $value;
             }
         );
-        $input->setOption('minimum-stability', $minimumStability);
+        $input->setOption('stability', $minimumStability);
 
         $output->writeln(array(
             '',
@@ -267,13 +285,12 @@ EOT
         }
 
         $token = strtolower($name);
-        foreach ($this->repos->getPackages() as $package) {
-            if (false === ($pos = strpos($package->getName(), $token))) {
-                continue;
-            }
 
-            $packages[] = $package;
-        }
+        $this->repos->filterPackages(function ($package) use ($token, &$packages) {
+            if (false !== strpos($package->getName(), $token)) {
+                $packages[] = $package;
+            }
+        });
 
         return $packages;
     }
@@ -284,20 +301,24 @@ EOT
         $prompt = $dialog->getQuestion('Search for a package', false, ':');
 
         if ($requires) {
+            $requires = $this->normalizeRequirements($requires);
+            $result = array();
+
             foreach ($requires as $key => $requirement) {
-                $requires[$key] = $this->normalizeRequirement($requirement);
-                if (false === strpos($requires[$key], ' ') && $input->isInteractive()) {
-                    $question = $dialog->getQuestion('Please provide a version constraint for the '.$requirement.' requirement');
+                if (!isset($requirement['version']) && $input->isInteractive()) {
+                    $question = $dialog->getQuestion('Please provide a version constraint for the '.$requirement['name'].' requirement');
                     if ($constraint = $dialog->ask($output, $question)) {
-                        $requires[$key] .= ' ' . $constraint;
+                        $requirement['version'] = $constraint;
                     }
                 }
-                if (false === strpos($requires[$key], ' ')) {
-                    throw new \InvalidArgumentException('The requirement '.$requirement.' must contain a version constraint');
+                if (!isset($requirement['version'])) {
+                    throw new \InvalidArgumentException('The requirement '.$requirement['name'].' must contain a version constraint');
                 }
+
+                $result[] = $requirement['name'] . ' ' . $requirement['version'];
             }
 
-            return $requires;
+            return $result;
         }
 
         while (null !== $package = $dialog->ask($output, $prompt)) {
@@ -353,19 +374,12 @@ EOT
     protected function formatRequirements(array $requirements)
     {
         $requires = array();
+        $requirements = $this->normalizeRequirements($requirements);
         foreach ($requirements as $requirement) {
-            $requirement = $this->normalizeRequirement($requirement);
-            list($packageName, $packageVersion) = explode(" ", $requirement, 2);
-
-            $requires[$packageName] = $packageVersion;
+            $requires[$requirement['name']] = $requirement['version'];
         }
 
-        return empty($requires) ? new \stdClass : $requires;
-    }
-
-    protected function normalizeRequirement($requirement)
-    {
-        return preg_replace('{^([^=: ]+)[=: ](.*)$}', '$1 $2', $requirement);
+        return $requires;
     }
 
     protected function getGitConfig()
@@ -428,6 +442,13 @@ EOT
         }
 
         return false;
+    }
+
+    protected function normalizeRequirements(array $requirements)
+    {
+        $parser = new VersionParser();
+
+        return $parser->parseNameVersionPairs($requirements);
     }
 
     protected function addVendorIgnore($ignoreFile, $vendor = 'vendor')

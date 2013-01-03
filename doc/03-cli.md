@@ -3,6 +3,24 @@
 You've already learned how to use the command-line interface to do some
 things. This chapter documents all the available commands.
 
+To get help from the command-line, simply call `composer` or `composer list`
+to see the complete list of commands, then `--help` combined with any of those
+can give you more information.
+
+## Global Options
+
+The following options are available with every command:
+
+* **--verbose (-v):** Increase verbosity of messages.
+* **--help (-h):** Display help information.
+* **--quiet (-q):** Do not output any message.
+* **--no-interaction (-n):** Do not ask any interactive question.
+* **--working-dir (-d):** If specified, use the given directory as working directory.
+* **--profile:** Display timing and memory usage information
+* **--ansi:** Force ANSI output.
+* **--no-ansi:** Disable ANSI output.
+* **--version (-V):** Display this application version.
+
 ## init
 
 In the [Libraries](02-libraries.md) chapter we looked at how to create a
@@ -16,8 +34,6 @@ while using some smart defaults.
 
 ### Options
 
-* **--no-interaction:** (**-n**) Run the command in non-interactive mode.
-  The rest of these options only make sense when you are in this mode.
 * **--name:** Name of the package.
 * **--description:** Description of the package.
 * **--author:** Author name of the package.
@@ -25,6 +41,7 @@ while using some smart defaults.
 * **--require:** Package to require with a version constraint. Should be
   in format `foo/bar:1.0.0`.
 * **--require-dev:** Development requirements, see **--require**.
+* **--stability (-s):** Value for the `minimum-stability` field.
 
 ## install
 
@@ -48,6 +65,11 @@ resolution.
   enabled, composer will install from `source` if there is one. This is
   useful if you want to make a bugfix to a project and get a local git
   clone of the dependency directly.
+* **--prefer-dist:** Reverse of `--prefer-source`, composer will install
+  from `dist` if possible. This can speed up installs substantially on build
+  servers and other use cases where you typically do not run updates of the
+  vendors. It is also a way to circumvent problems with git if you do not
+  have a proper setup.
 * **--dry-run:** If you want to run through an installation without actually
   installing a package, you can use `--dry-run`. This will simulate the
   installation and show you what would happen.
@@ -55,6 +77,12 @@ resolution.
   passing this option you can also make it install packages referenced by
   `require-dev`.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
+* **--no-custom-installers:** Disables custom installers.
+* **--no-progress:** Removes the progress display that can mess with some
+  terminals or scripts which don't handle backspace characters.
+* **--optimize-autoloader (-o):** Convert PSR-0 autoloading to classmap to get a faster
+  autoloader. This is recommended especially for production, but can take
+  a bit of time to run so it is currently not done by default.
 
 ## update
 
@@ -70,12 +98,23 @@ If you just want to update a few packages and not all, you can list them as such
 
     $ php composer.phar update vendor/package vendor/package2
 
+You can also use wildcards to update a bunch of packages at once:
+
+    $ php composer.phar update vendor/*
+
 ### Options
 
 * **--prefer-source:** Install packages from `source` when available.
+* **--prefer-dist:** Install packages from `dist` when available.
 * **--dry-run:** Simulate the command without actually doing anything.
 * **--dev:** Install packages listed in `require-dev`.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
+* **--no-custom-installers:** Disables custom installers.
+* **--no-progress:** Removes the progress display that can mess with some
+  terminals or scripts which don't handle backspace characters.
+* **--optimize-autoloader (-o):** Convert PSR-0 autoloading to classmap to get a faster
+  autoloader. This is recommended especially for production, but can take
+  a bit of time to run so it is currently not done by default.
 
 ## require
 
@@ -95,7 +134,11 @@ to the command.
 ### Options
 
 * **--prefer-source:** Install packages from `source` when available.
+* **--prefer-dist:** Install packages from `dist` when available.
 * **--dev:** Add packages to `require-dev`.
+* **--no-update:** Disables the automatic update of the dependencies.
+* **--no-progress:** Removes the progress display that can mess with some
+  terminals or scripts which don't handle backspace characters.
 
 ## search
 
@@ -106,6 +149,10 @@ terms you want to search for.
     $ php composer.phar search monolog
 
 You can also search for more than one term by passing multiple arguments.
+
+### Options
+
+* **--only-name (-N):** Search only in name.
 
 ## show
 
@@ -140,8 +187,10 @@ specific version.
 
 ### Options
 
-* **--installed:** Will list the packages that are installed.
-* **--platform:** Will list only platform packages (php & extensions).
+* **--installed (-i):** List the packages that are installed.
+* **--platform (-p):** List only platform packages (php & extensions).
+* **--self (-s):** List the root package info.
+* **--dev:** Include dev-required packages when combined with **--installed** or **--platform**.
 
 ## depends
 
@@ -170,6 +219,22 @@ You should always run the `validate` command before you commit your
 
     $ php composer.phar validate
 
+## status
+
+If you often need to modify the code of your dependencies and they are
+installed from source, the `status` command allows you to check if you have
+local changes in any of them.
+
+    $ php composer.phar status
+
+With the `--verbose` option you get some more information about what was
+changed:
+
+    $ php composer.phar status -v
+    You have changes in the following dependencies:
+    vendor/seld/jsonlint:
+        M README.mdown
+
 ## self-update
 
 To update composer itself to the latest version, just run the `self-update`
@@ -182,9 +247,51 @@ you have to run the command with `root` privileges
 
     $ sudo composer self-update
 
+## config
+
+The `config` command allows you to edit some basic composer settings in either
+the local composer.json file or the global config.json file.
+
+    $ php composer.phar config --list
+
+### Usage
+
+`config [options] [setting-key] [setting-value1] ... [setting-valueN]`
+
+`setting-key` is a configuration option name and `setting-value1` is a
+configuration value.  For settings that can take an array of values (like
+`github-protocols`), more than one setting-value arguments are allowed.
+
+See the [config schema section](04-schema.md#config-root-only) for valid configuration
+options.
+
+### Options
+
+* **--global (-g):** Operate on the global config file located at
+`$COMPOSER_HOME/config.json` by default.  Without this option, this command
+affects the local composer.json file or a file specified by `--file`.
+* **--editor (-e):** Open the local composer.json file using in a text editor as
+defined by the `EDITOR` env variable.  With the `--global` option, this opens
+the global config file.
+* **--unset:** Remove the configuration element named by `setting-key`.
+* **--list (-l):** Show the list of current config variables.  With the `--global`
+ option this lists the global configuration only.
+* **--file="..." (-f):** Operate on a specific file instead of composer.json. Note
+ that this cannot be used in conjunction with the `--global` option.
+
+### Modifying Repositories
+
+In addition to modifying the config section, the `config` command also supports making
+changes to the repositories section by using it the following way:
+
+    $ php composer.phar config repositories.foo vcs http://github.com/foo/bar
+
 ## create-project
 
-You can use Composer to create new projects from an existing package.
+You can use Composer to create new projects from an existing package. This is
+the equivalent of doing a git clone/svn checkout followed by a composer install
+of the vendors.
+
 There are several applications for this:
 
 1. You can deploy application packages.
@@ -207,9 +314,18 @@ By default the command checks for the packages on packagist.org.
 * **--repository-url:** Provide a custom repository to search for the package,
   which will be used instead of packagist. Can be either an HTTP URL pointing
   to a `composer` repository, or a path to a local `packages.json` file.
-* **--prefer-source:** Get a development version of the code checked out
-  from version control.
+* **--stability (-s):** Minimum stability of package. Defaults to `stable`.
+* **--prefer-source:** Install packages from `source` when available.
+* **--prefer-dist:** Install packages from `dist` when available.
 * **--dev:** Install packages listed in `require-dev`.
+* **--no-custom-installers:** Disables custom installers.
+* **--no-scripts:** Disables the execution of the scripts defined in the root
+  package.
+* **--no-progress:** Removes the progress display that can mess with some
+  terminals or scripts which don't handle backspace characters.
+* **--keep-vcs:** Skip the deletion of the VCS metadata for the created
+  project. This is mostly useful if you run the command in non-interactive
+  mode.
 
 ## dump-autoload
 
@@ -226,7 +342,7 @@ performance.
 
 ### Options
 
-* **--optimize:** Convert PSR-0 autoloading to classmap to get a faster
+* **--optimize (-o):** Convert PSR-0 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
   a bit of time to run so it is currently not done by default.
 

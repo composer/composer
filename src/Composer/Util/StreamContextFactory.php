@@ -38,7 +38,7 @@ final class StreamContextFactory
         }
 
         if (!empty($proxy)) {
-            $proxyURL = (isset($proxy['scheme']) ? $proxy['scheme'] : '') . '://';
+            $proxyURL = isset($proxy['scheme']) ? $proxy['scheme'] . '://' : '';
             $proxyURL .= isset($proxy['host']) ? $proxy['host'] : '';
 
             if (isset($proxy['port'])) {
@@ -70,9 +70,12 @@ final class StreamContextFactory
 
                 // Preserve headers if already set in default options
                 if (isset($defaultOptions['http']['header'])) {
-                    $defaultOptions['http']['header'] .= "Proxy-Authorization: Basic {$auth}\r\n";
+                    if (is_string($defaultOptions['http']['header'])) {
+                        $defaultOptions['http']['header'] = array($defaultOptions['http']['header']);
+                    }
+                    $defaultOptions['http']['header'][] = "Proxy-Authorization: Basic {$auth}";
                 } else {
-                    $options['http']['header'] = "Proxy-Authorization: Basic {$auth}\r\n";
+                    $options['http']['header'] = array("Proxy-Authorization: Basic {$auth}");
                 }
             }
         }
