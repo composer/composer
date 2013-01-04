@@ -265,7 +265,7 @@ Example:
     }
 
 `require` and `require-dev` additionally support explicit references (i.e.
-commit) for dev versions to make sure they are blocked to a given state, even
+commit) for dev versions to make sure they are locked to a given state, even
 when you run update. These only work if you explicitly require a dev version
 and append the reference with `#<ref>`. Note that while this is convenient at
 times, it should not really be how you use packages in the long term. You
