@@ -451,7 +451,7 @@ EOT
         return $parser->parseNameVersionPairs($requirements);
     }
 
-    protected function addVendorIgnore($ignoreFile, $vendor = 'vendor')
+    protected function addVendorIgnore($ignoreFile, $vendor = '/vendor/')
     {
         $contents = "";
         if (file_exists($ignoreFile)) {
