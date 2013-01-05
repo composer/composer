@@ -111,7 +111,9 @@ Save the file. Close your current terminal. Test usage with a new terminal:
 
     C:\Users\username>
 
-## Using Composer
+## Using Composer 
+
+This is assuming you have a `composer.json` file in the directory. If not, please read the "[Basic Usage](01-basic-usage.md)" chapter. 
 
 Next, run the `install` command to resolve and download dependencies:
 
