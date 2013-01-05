@@ -429,10 +429,7 @@ EOT
             return false;
         }
 
-        $pattern = sprintf(
-            '~^/?%s(/|/\*)?$~',
-            preg_quote($vendor, '~')
-        );
+        $pattern = sprintf('{^/?%s(/\*?)?$}', preg_quote($vendor));
 
         $lines = file($ignoreFile, FILE_IGNORE_NEW_LINES);
         foreach ($lines as $line) {
