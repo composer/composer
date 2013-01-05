@@ -45,13 +45,13 @@ class Application extends BaseApplication
      */
     protected $io;
 
-    private static $logo = '   ______                                          
+    private static $logo = '   ______
   / ____/___  ____ ___  ____  ____  ________  _____
  / /   / __ \/ __ `__ \/ __ \/ __ \/ ___/ _ \/ ___/
-/ /___/ /_/ / / / / / / /_/ / /_/ (__  )  __/ /    
-\____/\____/_/ /_/ /_/ .___/\____/____/\___/_/     
-                    /_/                            
-Composer';
+/ /___/ /_/ / / / / / / /_/ / /_/ (__  )  __/ /
+\____/\____/_/ /_/ /_/ .___/\____/____/\___/_/
+                    /_/
+';
 
     public function __construct()
     {
@@ -65,7 +65,7 @@ Composer';
         }
 
         ErrorHandler::register();
-        parent::__construct(self::$logo, Composer::VERSION);
+        parent::__construct('Composer', Composer::VERSION);
     }
 
     /**
@@ -156,6 +156,11 @@ Composer';
     public function getIO()
     {
         return $this->io;
+    }
+
+    public function getHelp()
+    {
+        return self::$logo . parent::getHelp();
     }
 
     /**
