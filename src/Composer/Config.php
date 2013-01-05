@@ -139,7 +139,7 @@ class Config
                 return (int) $this->config[$key];
 
             case 'cache-files-maxsize':
-                if (!preg_match('/^\s*(\d+)\s*([kmg]ib)?\s*$/i', $this->config[$key], $matches)) {
+                if (!preg_match('/^\s*([0-9.]+)\s*(?:([kmg])(?:i?b)?)?\s*$/i', $this->config[$key], $matches)) {
                     throw new \RuntimeException(
                         "Could not parse the value of 'cache-files-maxsize' from your config: {$this->config[$key]}"
                     );
@@ -147,12 +147,15 @@ class Config
                 $size = $matches[1];
                 if (isset($matches[2])) {
                     switch (strtolower($matches[2])) {
-                        case 'gib':
+                        case 'g':
                             $size *= 1024;
-                        case 'mib':
+                            // intentional fallthrough
+                        case 'm':
                             $size *= 1024;
-                        case 'kib':
+                            // intentional fallthrough
+                        case 'k':
                             $size *= 1024;
+                            break;
                     }
                 }
 
