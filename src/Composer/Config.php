@@ -141,7 +141,7 @@ class Config
             case 'cache-files-maxsize':
                 if (!preg_match('/^\s*(\d+)\s*([kmg]ib)?\s*$/i', $this->config[$key], $matches)) {
                     throw new \RuntimeException(
-                        "composer.json contains invalid 'cache-files-maxsize' value: {$this->config[$key]}"
+                        "Could not parse the value of 'cache-files-maxsize' from your config: {$this->config[$key]}"
                     );
                 }
                 $size = $matches[1];
@@ -155,6 +155,7 @@ class Config
                             $size *= 1024;
                     }
                 }
+
                 return $size;
 
             case 'cache-files-ttl':

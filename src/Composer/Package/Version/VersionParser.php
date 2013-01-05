@@ -340,7 +340,7 @@ class VersionParser
     /**
      * Parses a name/version pairs and returns an array of pairs + the
      *
-     * @param array $pairs a set of package/version pairs separated by ":", "=" or " "
+     * @param  array   $pairs a set of package/version pairs separated by ":", "=" or " "
      * @return array[] array of arrays containing a name and (if provided) a version
      */
     public function parseNameVersionPairs(array $pairs)

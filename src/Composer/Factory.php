@@ -284,8 +284,8 @@ class Factory
     }
 
     /**
-     * @param IO\IOInterface $io
-     * @param Config         $config
+     * @param  IO\IOInterface             $io
+     * @param  Config                     $config
      * @return Downloader\DownloadManager
      */
     public function createDownloadManager(IOInterface $io, Config $config)

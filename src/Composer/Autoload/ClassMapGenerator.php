@@ -52,7 +52,7 @@ class ClassMapGenerator
         if (is_string($path)) {
             if (is_file($path)) {
                 $path = array(new \SplFileInfo($path));
-            } else if (is_dir($path)) {
+            } elseif (is_dir($path)) {
                 $path = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path));
             } else {
                 throw new \RuntimeException(
