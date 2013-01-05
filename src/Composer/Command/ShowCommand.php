@@ -150,10 +150,10 @@ EOT
     /**
      * finds a package by name and version if provided
      *
-     * @param RepositoryInterface $installedRepo
-     * @param RepositoryInterface $repos
-     * @param string              $name
-     * @param string              $version
+     * @param  RepositoryInterface       $installedRepo
+     * @param  RepositoryInterface       $repos
+     * @param  string                    $name
+     * @param  string                    $version
      * @return array                     array(CompletePackageInterface, array of versions)
      * @throws \InvalidArgumentException
      */

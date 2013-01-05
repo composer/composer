@@ -47,7 +47,7 @@ class Filesystem
      * Uses the process component if proc_open is enabled on the PHP
      * installation.
      *
-     * @param string $directory
+     * @param  string $directory
      * @return bool
      */
     public function removeDirectory($directory)
@@ -81,7 +81,7 @@ class Filesystem
      * before directories, creating a single non-recursive loop
      * to delete files/directories in the correct order.
      *
-     * @param string $directory
+     * @param  string $directory
      * @return bool
      */
     public function removeDirectoryPhp($directory)
@@ -284,6 +284,7 @@ class Filesystem
         if (is_dir($path)) {
             return $this->directorySize($path);
         }
+
         return filesize($path);
     }
 
@@ -298,6 +299,7 @@ class Filesystem
                 $size += $file->getSize();
             }
         }
+
         return $size;
     }
 

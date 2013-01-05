@@ -812,7 +812,7 @@ class Installer
     /**
      * Whether or not generated autoloader are optimized
      *
-     * @param bool $optimizeAutoloader
+     * @param  bool      $optimizeAutoloader
      * @return Installer
      */
     public function setOptimizeAutoloader($optimizeAutoloader = false)

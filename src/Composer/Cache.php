@@ -31,8 +31,8 @@ class Cache
 
     /**
      * @param IOInterface $io
-     * @param string      $cacheDir location of the cache
-     * @param string      $whitelist List of characters that are allowed in path names (used in a regex character class)
+     * @param string      $cacheDir   location of the cache
+     * @param string      $whitelist  List of characters that are allowed in path names (used in a regex character class)
      * @param Filesystem  $filesystem optional filesystem instance
      */
     public function __construct(IOInterface $io, $cacheDir, $whitelist = 'a-z0-9.', Filesystem $filesystem = null)
@@ -114,7 +114,7 @@ class Cache
         return false;
     }
 
-    public function gc($ttl, $cacheMaxSize)
+    public function gc($ttl, $maxSize)
     {
         $expire = new \DateTime();
         $expire->modify('-'.$ttl.' seconds');
@@ -124,12 +124,12 @@ class Cache
             unlink($file->getRealPath());
         }
 
-        $totalCacheSize = $this->filesystem->size($this->root);
-        if ($totalCacheSize > $cacheMaxSize) {
+        $totalSize = $this->filesystem->size($this->root);
+        if ($totalSize > $maxSize) {
             $iterator = $this->getFinder()->sortByAccessedTime()->getIterator();
-            while ($totalCacheSize > $cacheMaxSize && $iterator->valid()) {
+            while ($totalSize > $maxSize && $iterator->valid()) {
                 $filepath = $iterator->current()->getRealPath();
-                $totalCacheSize -= $this->filesystem->size($filepath);
+                $totalSize -= $this->filesystem->size($filepath);
                 unlink($filepath);
                 $iterator->next();
             }

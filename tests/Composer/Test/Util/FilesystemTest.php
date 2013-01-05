@@ -128,4 +128,3 @@ class FilesystemTest extends TestCase
         $this->assertGreaterThanOrEqual(10, $fs->size("$tmp/composer_testdir"));
     }
 }
-
