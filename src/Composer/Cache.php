@@ -114,14 +114,25 @@ class Cache
         return false;
     }
 
-    public function gc($ttl)
+    public function gc($ttl, $cacheMaxSize)
     {
         $expire = new \DateTime();
         $expire->modify('-'.$ttl.' seconds');
 
-        $finder = Finder::create()->files()->in($this->root)->date('until '.$expire->format('Y-m-d H:i:s'));
+        $finder = $this->getFinder()->date('until '.$expire->format('Y-m-d H:i:s'));
         foreach ($finder as $file) {
             unlink($file->getRealPath());
+        }
+
+        $totalCacheSize = $this->filesystem->size($this->root);
+        if ($totalCacheSize > $cacheMaxSize) {
+            $iterator = $this->getFinder()->sortByAccessedTime()->getIterator();
+            while ($totalCacheSize > $cacheMaxSize && $iterator->valid()) {
+                $filepath = $iterator->current()->getRealPath();
+                $totalCacheSize -= $this->filesystem->size($filepath);
+                unlink($filepath);
+                $iterator->next();
+            }
         }
 
         return true;
@@ -145,5 +156,10 @@ class Cache
         }
 
         return false;
+    }
+
+    protected function getFinder()
+    {
+        return Finder::create()->in($this->root)->files();
     }
 }

@@ -107,5 +107,25 @@ class FilesystemTest extends TestCase
         $this->assertTrue($fs->removeDirectoryPhp($tmp . "/composer_testdir"));
         $this->assertFalse(file_exists($tmp . "/composer_testdir/level1/level2/hello.txt"));
     }
+
+    public function testFileSize()
+    {
+        $tmp = sys_get_temp_dir();
+        file_put_contents("$tmp/composer_test_file", 'Hello');
+
+        $fs = new Filesystem;
+        $this->assertGreaterThanOrEqual(5, $fs->size("$tmp/composer_test_file"));
+    }
+
+    public function testDirectorySize()
+    {
+        $tmp = sys_get_temp_dir();
+        @mkdir("$tmp/composer_testdir", 0777, true);
+        file_put_contents("$tmp/composer_testdir/file1.txt", 'Hello');
+        file_put_contents("$tmp/composer_testdir/file2.txt", 'World');
+
+        $fs = new Filesystem;
+        $this->assertGreaterThanOrEqual(10, $fs->size("$tmp/composer_testdir"));
+    }
 }
 
