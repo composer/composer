@@ -111,11 +111,13 @@ Save the file. Close your current terminal. Test usage with a new terminal:
 
     C:\Users\username>
 
-## Using Composer 
+## Using Composer
 
-This is assuming you have a `composer.json` file in the directory. If not, please read the "[Basic Usage](01-basic-usage.md)" chapter. 
+We will now use Composer to install the dependencies of the project. If you
+don't have a `composer.json` file in the current directory please skip to the
+[Basic Usage](01-basic-usage.md) chapter.
 
-Next, run the `install` command to resolve and download dependencies:
+To resolve and download dependencies, run the `install` command:
 
     $ php composer.phar install
 
@@ -124,7 +126,8 @@ run this instead:
 
     $ composer install
 
-This will download monolog into the `vendor/monolog/monolog` directory.
+Following the [example above](#declaring-dependencies), this will download
+monolog into the `vendor/monolog/monolog` directory.
 
 ## Autoloading
 
@@ -135,7 +138,7 @@ process:
 
     require 'vendor/autoload.php';
 
-Woh! Now start using monolog! To keep learning more about Composer, keep
+Woah! Now start using monolog! To keep learning more about Composer, keep
 reading the "Basic Usage" chapter.
 
 [Basic Usage](01-basic-usage.md) &rarr;
