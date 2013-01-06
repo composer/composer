@@ -20,6 +20,8 @@ use Composer\Repository\RepositoryManager;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
+use Composer\Script\EventDispatcher;
+use Composer\Autoload\AutoloadGenerator;
 
 /**
  * Creates a configured instance of composer.
@@ -235,6 +237,14 @@ class Factory
         $composer->setRepositoryManager($rm);
         $composer->setDownloadManager($dm);
         $composer->setInstallationManager($im);
+
+        // initialize event dispatcher
+        $dispatcher = new EventDispatcher($composer, $io);
+        $composer->setEventDispatcher($dispatcher);
+
+        // initialize autoload generator
+        $generator = new AutoloadGenerator($dispatcher);
+        $composer->setAutoloadGenerator($generator);
 
         // add installers to the manager
         $this->createDefaultInstallers($im, $composer, $io);

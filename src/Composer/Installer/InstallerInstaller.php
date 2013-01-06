@@ -85,7 +85,7 @@ class InstallerInstaller extends LibraryInstaller
         $extra = $package->getExtra();
         $classes = is_array($extra['class']) ? $extra['class'] : array($extra['class']);
 
-        $generator = new AutoloadGenerator;
+        $generator = $this->composer->getAutoloadGenerator();
         $map = $generator->parseAutoloads(array(array($package, $downloadPath)), new Package('dummy', '1.0.0.0', '1.0.0'));
         $classLoader = $generator->createLoader($map);
         $classLoader->register();

@@ -52,6 +52,17 @@ class EventDispatcher
     }
 
     /**
+     * Dispatch a script event.
+     *
+     * @param string  $eventName The constant in ScriptEvents
+     * @param boolean $devMode   Whether or not we are in dev mode
+     */
+    public function dispatch($eventName, $devMode)
+    {
+        $this->doDispatch(new Event($eventName, $this->composer, $this->io, $devMode));
+    }
+
+    /**
      * Dispatch a package event.
      *
      * @param string             $eventName The constant in ScriptEvents
@@ -139,7 +150,7 @@ class EventDispatcher
             $this->loader->unregister();
         }
 
-        $generator = new AutoloadGenerator;
+        $generator = $this->composer->getAutoloadGenerator();
         $packages = array_merge(
             $this->composer->getRepositoryManager()->getLocalRepository()->getPackages(),
             $this->composer->getRepositoryManager()->getLocalDevRepository()->getPackages()

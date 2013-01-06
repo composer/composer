@@ -17,6 +17,8 @@ use Composer\Package\Locker;
 use Composer\Repository\RepositoryManager;
 use Composer\Installer\InstallationManager;
 use Composer\Downloader\DownloadManager;
+use Composer\Script\EventDispatcher;
+use Composer\Autoload\AutoloadGenerator;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -55,6 +57,16 @@ class Composer
      * @var Config
      */
     private $config;
+
+    /**
+     * @var Script\EventDispatcher
+     */
+    private $eventDispatcher;
+
+    /**
+     * @var Autoload\AutoloadGenerator
+     */
+    private $autoloadGenerator;
 
     /**
      * @param  Package\RootPackageInterface $package
@@ -151,5 +163,37 @@ class Composer
     public function getInstallationManager()
     {
         return $this->installationManager;
+    }
+
+    /**
+     * @param Script\EventDispatcher $eventDispatcher
+     */
+    public function setEventDispatcher(EventDispatcher $eventDispatcher)
+    {
+        $this->eventDispatcher = $eventDispatcher;
+    }
+
+    /**
+     * @return Script\EventDispatcher
+     */
+    public function getEventDispatcher()
+    {
+        return $this->eventDispatcher;
+    }
+
+    /**
+     * @param Autoload\AutoloadGenerator $autoloadGenerator
+     */
+    public function setAutoloadGenerator(AutoloadGenerator $autoloadGenerator)
+    {
+        $this->autoloadGenerator = $autoloadGenerator;
+    }
+
+    /**
+     * @return Autoload\AutoloadGenerator
+     */
+    public function getAutoloadGenerator()
+    {
+        return $this->autoloadGenerator;
     }
 }

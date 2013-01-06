@@ -49,7 +49,6 @@ EOT
         $package = $composer->getPackage();
         $config = $composer->getConfig();
 
-        $generator = new AutoloadGenerator();
-        $generator->dump($config, $localRepos, $package, $installationManager, 'composer', $input->getOption('optimize'));
+        $composer->getAutoloadGenerator()->dump($config, $localRepos, $package, $installationManager, 'composer', $input->getOption('optimize'));
     }
 }
