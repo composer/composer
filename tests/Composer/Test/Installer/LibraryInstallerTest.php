@@ -197,8 +197,7 @@ class LibraryInstallerTest extends TestCase
 
         $library->uninstall($this->repository, $package);
 
-        // TODO re-enable once #125 is fixed and we throw exceptions again
-//        $this->setExpectedException('InvalidArgumentException');
+        $this->setExpectedException('InvalidArgumentException');
 
         $library->uninstall($this->repository, $package);
     }
