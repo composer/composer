@@ -158,12 +158,18 @@ class ClassLoader
      *
      * @param string $class The name of the class
      *
-     * @return string|null The path, if found
+     * @return string|false The path, if found. False otherwise.
      */
     public function findFile($class)
     {
+        if (!strlen($class)) {
+            return false;
+        }
         if ('\\' == $class[0]) {
             $class = substr($class, 1);
+            if (!strlen($class)) {
+                return false;
+            }
         }
 
         if (isset($this->classMap[$class])) {
