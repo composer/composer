@@ -117,8 +117,8 @@ the `.gitignore`.
 
 ## Light-weight distribution packages
 
-Including the tests and other useless information like `.travis.yml` in
-distributed packages is not a good idea.
+Some useless information like `.travis.yml`, or large examples should typically
+not be included in distributed packages.
 
 The `.gitattributes` file is a git specific file like `.gitignore` also living
 at the root directory of your library. It overrides local and global
@@ -129,9 +129,9 @@ Use `.gitattributes` to prevent unwanted files from bloating the zip
 distribution packages.
 
     // .gitattributes
-    /Tests export-ignore
+    /demo export-ignore
     phpunit.xml.dist export-ignore
-    Resources/doc/ export-ignore
+    /Resources/doc/ export-ignore
     .travis.yml export-ignore
 
 Test it by inspecting the zip file generated manually:
@@ -139,7 +139,7 @@ Test it by inspecting the zip file generated manually:
     git archive branchName --format zip -o file.zip
 
 > **Note:** Files would be still tracked by git just not included in the
-> distribution. This will only work for GitHub packages installed from
+> zip distribution. This will only work for GitHub packages installed from
 > dist (i.e. tagged releases) for now.
 
 ## Publishing to a VCS
