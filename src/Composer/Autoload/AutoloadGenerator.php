@@ -405,7 +405,7 @@ CLASSMAP;
 
         if ($targetDirLoader) {
             $file .= <<<REGISTER_AUTOLOAD
-        spl_autoload_register(array('ComposerAutoloaderInit$suffix', 'autoload'));
+        spl_autoload_register(array('ComposerAutoloaderInit$suffix', 'autoload'), true, true);
 
 
 REGISTER_AUTOLOAD;
@@ -413,7 +413,7 @@ REGISTER_AUTOLOAD;
         }
 
         $file .= <<<METHOD_FOOTER
-        \$loader->register();{$filesCode}
+        \$loader->register(true);{$filesCode}
 
         return \$loader;
     }
