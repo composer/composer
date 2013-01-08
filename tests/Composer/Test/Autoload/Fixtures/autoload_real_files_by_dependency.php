@@ -36,7 +36,7 @@ class ComposerAutoloaderInitFilesAutoloadOrder
             $loader->addClassMap($classMap);
         }
 
-        $loader->register();
+        $loader->register(true);
 
         require $vendorDir . '/c/lorem/testC.php';
         require $vendorDir . '/z/foo/testA.php';

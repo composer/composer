@@ -36,9 +36,9 @@ class ComposerAutoloaderInitTargetDir
             $loader->addClassMap($classMap);
         }
 
-        spl_autoload_register(array('ComposerAutoloaderInitTargetDir', 'autoload'));
+        spl_autoload_register(array('ComposerAutoloaderInitTargetDir', 'autoload'), true, true);
 
-        $loader->register();
+        $loader->register(true);
 
         return $loader;
     }
