@@ -298,6 +298,8 @@ class Locker
                 }
             }
 
+            unset($spec['installation-source']);
+
             $locked[] = $spec;
         }
 
