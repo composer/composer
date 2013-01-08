@@ -25,8 +25,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 class DependsCommand extends Command
 {
     protected $linkTypes = array(
-        'require' => 'requires',
-        'require-dev' => 'devRequires',
+        'require' => array('requires', 'requires'),
+        'require-dev' => array('devRequires', 'requires (dev)'),
     );
 
     protected function configure()
@@ -65,7 +65,6 @@ EOT
 
         $linkTypes = $this->linkTypes;
 
-        $verbose = (bool) $input->getOption('verbose');
         $types = array_map(function ($type) use ($linkTypes) {
             $type = rtrim($type, 's');
             if (!isset($linkTypes[$type])) {
@@ -75,19 +74,16 @@ EOT
             return $type;
         }, $input->getOption('link-type'));
 
-        $dependsOnPackages = false;
+        $messages = array();
         foreach ($repos as $repo) {
-            $repo->filterPackages(function ($package) use ($needle, $types, $linkTypes, $output, $verbose, &$dependsOnPackages) {
+            $repo->filterPackages(function ($package) use ($needle, $types, $linkTypes, &$messages) {
                 static $outputPackages = array();
 
                 foreach ($types as $type) {
-                    foreach ($package->{'get'.$linkTypes[$type]}() as $link) {
+                    foreach ($package->{'get'.$linkTypes[$type][0]}() as $link) {
                         if ($link->getTarget() === $needle) {
-                            $dependsOnPackages = true;
-                            if ($verbose) {
-                                $output->writeln($package->getPrettyName() . ' ' . $package->getPrettyVersion() . ' <info>' . $type . '</info> ' . $link->getPrettyConstraint());
-                            } elseif (!isset($outputPackages[$package->getName()])) {
-                                $output->writeln($package->getPrettyName());
+                            if (!isset($outputPackages[$package->getName()])) {
+                                $messages[] = '<info>'.$package->getPrettyName() . '</info> ' . $linkTypes[$type][1] . ' ' . $needle .' (<info>' . $link->getPrettyConstraint() . '</info>)';
                                 $outputPackages[$package->getName()] = true;
                             }
                         }
@@ -96,7 +92,10 @@ EOT
             });
         }
 
-        if (!$dependsOnPackages) {
+        if ($messages) {
+            sort($messages);
+            $output->writeln($messages);
+        } else {
             $output->writeln('<info>There is no installed package depending on "'.$needle.'".</info>');
         }
     }
