@@ -16,8 +16,10 @@ if (function_exists('ini_set')) {
         switch($unit) {
             case 'g':
                 $value *= 1024;
+                //no break (cumulative multiplier)
             case 'm':
                 $value *= 1024;
+                //no break (cumulative multiplier)
             case 'k':
                 $value *= 1024;
         }
