@@ -186,7 +186,7 @@ EOF;
         file_put_contents($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, true, (bool) $includePathFile, $targetDirLoader, $filesCode, $vendorPathCode, $appBaseDirCode, $suffix));
         copy(__DIR__.'/ClassLoader.php', $targetDir.'/ClassLoader.php');
 
-        $this->eventDispatcher->dispatch(ScriptEvents::POST_AUTOLOAD_DUMP, false);
+        $this->eventDispatcher->dispatch(ScriptEvents::POST_AUTOLOAD_DUMP);
     }
 
     public function buildPackageMap(InstallationManager $installationManager, PackageInterface $mainPackage, array $packages)
