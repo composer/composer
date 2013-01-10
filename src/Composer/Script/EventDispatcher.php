@@ -55,11 +55,15 @@ class EventDispatcher
      * Dispatch a script event.
      *
      * @param string  $eventName The constant in ScriptEvents
-     * @param boolean $devMode   Whether or not we are in dev mode
+     * @param Event $event
      */
-    public function dispatch($eventName, $devMode)
+    public function dispatch($eventName, Event $event = null)
     {
-        $this->doDispatch(new Event($eventName, $this->composer, $this->io, $devMode));
+        if (null == $event) {
+            $event = new Event($eventName, $this->composer, $this->io);
+        }
+
+        $this->doDispatch($event);
     }
 
     /**
