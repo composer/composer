@@ -20,7 +20,6 @@
             },
             "time": "2012-01-02 21:33:17",
             "type": "library",
-            "installation-source": "dist",
             "autoload": {
                 "psr-0": {
                     "JsonSchema": "src/"
@@ -29,32 +28,32 @@
         },
         {
             "name": "seld/jsonlint",
-            "version": "1.0.1",
+            "version": "1.1.0",
             "source": {
                 "type": "git",
                 "url": "http://github.com/Seldaek/jsonlint",
-                "reference": "1.0.1"
+                "reference": "1.1.0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://github.com/Seldaek/jsonlint/zipball/1.0.1",
-                "reference": "1.0.1",
+                "url": "https://github.com/Seldaek/jsonlint/archive/1.1.0.zip",
+                "reference": "1.1.0",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.0"
             },
-            "time": "2012-08-13 07:00:11",
+            "time": "2012-12-13 18:26:19",
             "bin": [
                 "bin/jsonlint"
             ],
             "type": "library",
-            "installation-source": "dist",
             "autoload": {
                 "psr-0": {
                     "Seld\\JsonLint": "src/"
                 }
             },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -81,30 +80,30 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Console",
-                "reference": "003a487a674175a1d2e62f205ecd91ffe85554b1"
+                "reference": "v2.2.0-BETA1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://github.com/symfony/Console/archive/003a487a674175a1d2e62f205ecd91ffe85554b1.zip",
-                "reference": "003a487a674175a1d2e62f205ecd91ffe85554b1",
+                "url": "https://github.com/symfony/Console/archive/v2.2.0-BETA1.zip",
+                "reference": "v2.2.0-BETA1",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.3"
             },
-            "time": "2012-11-19 12:58:52",
+            "time": "2013-01-08 18:17:41",
             "type": "library",
             "extra": {
                 "branch-alias": {
                     "dev-master": "2.2-dev"
                 }
             },
-            "installation-source": "source",
             "autoload": {
                 "psr-0": {
                     "Symfony\\Component\\Console\\": ""
                 }
             },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -123,35 +122,30 @@
         },
         {
             "name": "symfony/finder",
-            "version": "v2.1.3",
+            "version": "v2.1.6",
             "target-dir": "Symfony/Component/Finder",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Finder",
-                "reference": "v2.1.3"
+                "reference": "v2.1.6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://github.com/symfony/Finder/zipball/v2.1.3",
-                "reference": "v2.1.3",
+                "url": "https://github.com/symfony/Finder/archive/v2.1.6.zip",
+                "reference": "v2.1.6",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.3"
             },
-            "time": "2012-10-20 00:10:30",
+            "time": "2012-12-10 12:46:54",
             "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "2.1-dev"
-                }
-            },
-            "installation-source": "dist",
             "autoload": {
                 "psr-0": {
                     "Symfony\\Component\\Finder": ""
                 }
             },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -175,30 +169,30 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Process",
-                "reference": "a11b312f99a5a8bf88c0ea5e7660c13af79f964f"
+                "reference": "v2.2.0-BETA1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://github.com/symfony/Process/archive/a11b312f99a5a8bf88c0ea5e7660c13af79f964f.zip",
-                "reference": "a11b312f99a5a8bf88c0ea5e7660c13af79f964f",
+                "url": "https://github.com/symfony/Process/archive/v2.2.0-BETA1.zip",
+                "reference": "v2.2.0-BETA1",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.3"
             },
-            "time": "2012-11-13 14:08:04",
+            "time": "2013-01-05 18:24:35",
             "type": "library",
             "extra": {
                 "branch-alias": {
                     "dev-master": "2.2-dev"
                 }
             },
-            "installation-source": "source",
             "autoload": {
                 "psr-0": {
                     "Symfony\\Component\\Process\\": ""
                 }
             },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -243,7 +237,6 @@
             },
             "time": "2012-12-02 14:54:55",
             "type": "library",
-            "installation-source": "dist",
             "autoload": {
                 "classmap": [
                     "PHP/"
@@ -290,7 +283,6 @@
             },
             "time": "2012-10-11 04:44:38",
             "type": "library",
-            "installation-source": "dist",
             "autoload": {
                 "classmap": [
                     "File/"
@@ -336,7 +328,6 @@
             },
             "time": "2012-10-31 11:15:28",
             "type": "library",
-            "installation-source": "dist",
             "autoload": {
                 "classmap": [
                     "Text/"
@@ -381,7 +372,6 @@
             },
             "time": "2012-10-11 04:45:58",
             "type": "library",
-            "installation-source": "dist",
             "autoload": {
                 "classmap": [
                     "PHP/"
@@ -427,7 +417,6 @@
             },
             "time": "2012-10-11 04:47:14",
             "type": "library",
-            "installation-source": "dist",
             "autoload": {
                 "classmap": [
                     "PHP/"
@@ -496,7 +485,6 @@
                     "dev-master": "3.7.x-dev"
                 }
             },
-            "installation-source": "dist",
             "autoload": {
                 "classmap": [
                     "PHPUnit/"
@@ -548,7 +536,6 @@
             },
             "time": "2012-11-05 10:39:13",
             "type": "library",
-            "installation-source": "dist",
             "autoload": {
                 "classmap": [
                     "PHPUnit/"
@@ -595,7 +582,6 @@
             },
             "time": "2012-12-06 10:00:55",
             "type": "library",
-            "installation-source": "dist",
             "autoload": {
                 "psr-0": {
                     "Symfony\\Component\\Yaml": ""
