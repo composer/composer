@@ -42,6 +42,18 @@ which describes the project's dependencies.
 We are simply stating that our project requires some `monolog/monolog` package,
 any version beginning with `1.2`.
 
+## System Requirements
+
+Composer requires PHP 5.3.2+ to run. A few sensitive php settings and compile
+flags are also required, but the installer will warn you about any
+incompatibilities.
+
+To install packages from sources instead of simple zip archives, you will need
+git, svn or hg depending on how the package is version-controlled.
+
+Composer is multi-platform and we strive to make it run equally well on Windows,
+Linux and OSX.
+
 ## Installation - *nix
 
 ### Downloading the Composer Executable
