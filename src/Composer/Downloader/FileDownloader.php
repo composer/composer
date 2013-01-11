@@ -106,8 +106,8 @@ class FileDownloader implements DownloaderInterface
                     $this->io->write('    Loading from cache');
                 }
             } catch (TransportException $e) {
-                if (404 === $e->getCode() && 'github.com' === $hostname) {
-                    $message = "\n".'Could not fetch '.$processedUrl.', enter your GitHub credentials to access private repos';
+                if (in_array($e->getCode(), array(404, 403)) && 'github.com' === $hostname && !$this->io->hasAuthentication($hostname)) {
+                    $message = "\n".'Could not fetch '.$processedUrl.', enter your GitHub credentials '.($e->getCode === 404 ? 'to access private repos' : 'to go over the API rate limit');
                     $gitHubUtil = new GitHub($this->io, $this->config, null, $this->rfs);
                     if (!$gitHubUtil->authorizeOAuth($hostname)
                         && (!$this->io->isInteractive() || !$gitHubUtil->authorizeOAuthInteractively($hostname, $message))
