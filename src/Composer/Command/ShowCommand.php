@@ -139,8 +139,33 @@ EOT
             if (isset($packages[$type])) {
                 $output->writeln($type);
                 ksort($packages[$type]);
+
+                $nameLength = $versionLength = 0;
                 foreach ($packages[$type] as $package) {
-                    $output->writeln('  '.$package->getPrettyName() .' '.($showVersion ? '['.$this->versionParser->formatVersion($package).']' : '').' <comment>:</comment> '. strtok($package->getDescription(), "\r\n"));
+                    $nameLength = max($nameLength, strlen($package->getPrettyName()));
+                    $versionLength = max($versionLength, strlen($this->versionParser->formatVersion($package)));
+                }
+                list($width) = $this->getApplication()->getTerminalDimensions();
+
+                $writeVersion = $showVersion && ($nameLength + $versionLength + 3 <= $width);
+                $writeDescription = $nameLength + ($showVersion ? $versionLength : 0) + 24 <= $width;
+                foreach ($packages[$type] as $package) {
+                    $output->write('  ' . str_pad($package->getPrettyName(), $nameLength, ' '), false);
+
+                    if ($writeVersion) {
+                        $output->write(' ' . str_pad($this->versionParser->formatVersion($package), $versionLength, ' '), false);
+                    }
+
+                    if ($writeDescription) {
+                        $description = strtok($package->getDescription(), "\r\n");
+                        $remaining = $width - $nameLength - $versionLength - 4;
+                        if (strlen($description) > $remaining) {
+                            $description = substr($description, 0, $remaining - 3) . '...';
+                        }
+                        $output->write(' ' . $description);
+
+                    }
+                    $output->writeln('');
                 }
                 $output->writeln('');
             }
