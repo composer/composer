@@ -183,7 +183,7 @@ Example assuming you patched monolog to fix a bug in the `bugfix` branch:
         "repositories": [
             {
                 "type": "vcs",
-                "url": "http://github.com/igorw/monolog"
+                "url": "https://github.com/igorw/monolog"
             }
         ],
         "require": {
