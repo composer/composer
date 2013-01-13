@@ -30,7 +30,7 @@ class JsonManipulator
             throw new \InvalidArgumentException('The json file must be an object ({})');
         }
         $this->newline = false !== strpos("\r\n", $contents) ? "\r\n": "\n";
-        $this->contents = $contents;
+        $this->contents = $contents === '{}' ? '{' . $this->newline . '}' : $contents;
         $this->detectIndenting();
     }
 
