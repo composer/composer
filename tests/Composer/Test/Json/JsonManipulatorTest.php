@@ -30,8 +30,7 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
     {
         return array(
             array(
-                '{
-}',
+                '{}',
                 'require',
                 'vendor/baz',
                 'qux',
