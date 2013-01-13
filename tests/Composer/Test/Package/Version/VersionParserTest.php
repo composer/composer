@@ -263,6 +263,9 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             array('~1.2',     new VersionConstraint('>=', '1.2.0.0'), new VersionConstraint('<', '2.0.0.0-dev')),
             array('~1.2.3',   new VersionConstraint('>=', '1.2.3.0'), new VersionConstraint('<', '1.3.0.0-dev')),
             array('~1.2.3.4', new VersionConstraint('>=', '1.2.3.4'), new VersionConstraint('<', '1.2.4.0-dev')),
+            array('~1.2-beta',new VersionConstraint('>=', '1.2.0.0-beta'), new VersionConstraint('<', '2.0.0.0-dev')),
+            array('~1.2-b2',  new VersionConstraint('>=', '1.2.0.0-beta2'), new VersionConstraint('<', '2.0.0.0-dev')),
+            array('~1.2.2-dev', new VersionConstraint('>=', '1.2.2.0-dev'), new VersionConstraint('<', '1.3.0.0-dev')),
         );
     }
 
