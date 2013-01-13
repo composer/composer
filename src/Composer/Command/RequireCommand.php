@@ -54,8 +54,8 @@ EOT
     {
         $file = Factory::getComposerFile();
 
-        if (!file_exists($file)) {
-            $output->writeln('<error>'.$file.' not found.</error>');
+        if (!file_exists($file) && !file_put_contents($file, "{\n}\n")) {
+            $output->writeln('<error>'.$file.' could not be created.</error>');
 
             return 1;
         }
