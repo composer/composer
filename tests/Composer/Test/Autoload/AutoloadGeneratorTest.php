@@ -40,12 +40,25 @@ class AutoloadGeneratorTest extends TestCase
         $this->ensureDirectoryExistsAndClear($this->vendorDir);
 
         $this->config = $this->getMock('Composer\Config');
-        $this->config->expects($this->any())
+
+        $this->config->expects($this->at(0))
             ->method('get')
             ->with($this->equalTo('vendor-dir'))
             ->will($this->returnCallback(function () use ($that) {
                 return $that->vendorDir;
             }));
+
+        $this->config->expects($this->at(1))
+            ->method('get')
+            ->with($this->equalTo('vendor-dir'))
+            ->will($this->returnCallback(function () use ($that) {
+                return $that->vendorDir;
+            }));
+
+        $this->config->expects($this->at(2))
+            ->method('get')
+            ->with($this->equalTo('use-include-path'))
+            ->will($this->returnValue(false));
 
         $this->dir = getcwd();
         chdir($this->workingDir);
