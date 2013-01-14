@@ -380,7 +380,7 @@ directory other than `vendor`.
 
 ### COMPOSER_BIN_DIR
 
-By setting this option you can change the `bin` ([Vendor Binaries](articles/vendor-bins.md))
+By setting this option you can change the `bin` ([Vendor Binaries](articles/vendor-binaries.md))
 directory to something other than `vendor/bin`.
 
 ### http_proxy or HTTP_PROXY
