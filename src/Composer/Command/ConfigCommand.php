@@ -247,7 +247,7 @@ EOT
                 function ($val) { return $val !== 'false' && (bool) $val; }
             ),
             'use-include-path' => array(
-                function ($val) { return true; },
+                function ($val) { return false; },
                 function ($val) { return $val !== 'false' && (bool) $val; }
             ),
         );
