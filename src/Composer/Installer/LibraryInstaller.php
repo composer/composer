@@ -209,6 +209,7 @@ class LibraryInstaller implements InstallerInterface
                 }
                 if (!file_exists($link)) {
                     file_put_contents($link, $this->generateWindowsProxyCode($binPath, $link));
+                    chmod($link, 0777 & ~umask());
                 }
             } else {
                 $cwd = getcwd();
@@ -218,12 +219,12 @@ class LibraryInstaller implements InstallerInterface
                     $relativeBin = $this->filesystem->findShortestPath($link, $binPath);
                     chdir(dirname($link));
                     symlink($relativeBin, $link);
+                    chmod($link, 0777 & ~umask());
                 } catch (\ErrorException $e) {
                     file_put_contents($link, $this->generateUnixyProxyCode($binPath, $link));
                 }
                 chdir($cwd);
             }
-            chmod($link, 0777 & ~umask());
         }
     }
 
