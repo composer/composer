@@ -246,6 +246,10 @@ EOT
                 function ($val) { return true; },
                 function ($val) { return $val !== 'false' && (bool) $val; }
             ),
+            'use-include-path' => array(
+                function ($val) { return true; },
+                function ($val) { return $val !== 'false' && (bool) $val; }
+            ),
         );
         $multiConfigValues = array(
             'github-protocols' => array(
