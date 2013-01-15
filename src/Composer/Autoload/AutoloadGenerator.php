@@ -294,6 +294,10 @@ EOF;
             $baseDir = '$vendorDir . ';
         }
 
+        if(preg_match('/\.phar$/', $path)){
+            $baseDir = '"phar://" . ' . $baseDir;
+        }
+
         return $baseDir.var_export($path, true);
     }
 
