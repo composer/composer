@@ -105,6 +105,11 @@ class JsonManipulator
             return true;
         }
 
+        $subName = null;
+        if (false !== strpos($name, '.')) {
+            list($name, $subName) = explode('.', $name, 2);
+        }
+
         // main node content not match-able
         $nodeRegex = '#("'.$mainNode.'":\s*\{)('.self::$RECURSE_BLOCKS.')(\})#s';
         if (!preg_match($nodeRegex, $this->contents, $match)) {
@@ -118,10 +123,24 @@ class JsonManipulator
             return false;
         }
 
+        $that = $this;
+
         // child exists
         if (preg_match('{("'.preg_quote($name).'"\s*:\s*)([0-9.]+|null|true|false|"[^"]+"|\[[^\]]*\]|\{'.self::$RECURSE_BLOCKS.'\})(,?)}', $children, $matches)) {
-            $children = preg_replace('{("'.preg_quote($name).'"\s*:\s*)([0-9.]+|null|true|false|"[^"]+"|\[[^\]]*\]|\{'.self::$RECURSE_BLOCKS.'\})(,?)}', '${1}'.$this->format($value, 1).'$3', $children);
+            $children = preg_replace_callback('{("'.preg_quote($name).'"\s*:\s*)([0-9.]+|null|true|false|"[^"]+"|\[[^\]]*\]|\{'.self::$RECURSE_BLOCKS.'\})(,?)}', function ($matches) use ($name, $subName, $value, $that) {
+                if ($subName !== null) {
+                    $curVal = json_decode($matches[2], true);
+                    $curVal[$subName] = $value;
+                    $value = $curVal;
+                }
+
+                return $matches[1] . $that->format($value, 1) . $matches[3];
+            }, $children);
         } elseif (preg_match('#[^\s](\s*)$#', $children, $match)) {
+            if ($subName !== null) {
+                $value = array($subName => $value);
+            }
+
             // child missing but non empty children
             $children = preg_replace(
                 '#'.$match[1].'$#',
@@ -129,6 +148,10 @@ class JsonManipulator
                 $children
             );
         } else {
+            if ($subName !== null) {
+                $value = array($subName => $value);
+            }
+
             // children present but empty
             $children = $this->newline . $this->indent . $this->indent . JsonFile::encode($name).': '.$this->format($value, 1) . $children;
         }
@@ -163,7 +186,14 @@ class JsonManipulator
             return false;
         }
 
+        $subName = null;
+        if (false !== strpos($name, '.')) {
+            list($name, $subName) = explode('.', $name, 2);
+        }
+
+        // try and find a match for the subkey
         if (preg_match('{"'.preg_quote($name).'"\s*:}i', $children)) {
+            // find best match for the value of "name"
             if (preg_match_all('{"'.preg_quote($name).'"\s*:\s*(?:[0-9.]+|null|true|false|"[^"]+"|\[[^\]]*\]|\{'.self::$RECURSE_BLOCKS.'\})}', $children, $matches)) {
                 $bestMatch = '';
                 foreach ($matches[0] as $match) {
@@ -171,9 +201,9 @@ class JsonManipulator
                         $bestMatch = $match;
                     }
                 }
-                $children = preg_replace('{,\s*'.preg_quote($bestMatch).'}i', '', $children, -1, $count);
+                $childrenClean = preg_replace('{,\s*'.preg_quote($bestMatch).'}i', '', $children, -1, $count);
                 if (1 !== $count) {
-                    $children = preg_replace('{'.preg_quote($bestMatch).'\s*,?\s*}i', '', $children, -1, $count);
+                    $childrenClean = preg_replace('{'.preg_quote($bestMatch).'\s*,?\s*}i', '', $childrenClean, -1, $count);
                     if (1 !== $count) {
                         return false;
                     }
@@ -181,13 +211,34 @@ class JsonManipulator
             }
         }
 
-        if (!trim($children)) {
+        // no child data left, $name was the only key in
+        if (!trim($childrenClean)) {
             $this->contents = preg_replace($nodeRegex, '$1'.$this->newline.$this->indent.'}', $this->contents);
+
+            // we have a subname, so we restore the rest of $name
+            if ($subName !== null) {
+                $curVal = json_decode('{'.$children.'}', true);
+                unset($curVal[$name][$subName]);
+                $this->addSubNode($mainNode, $name, $curVal[$name]);
+            }
 
             return true;
         }
 
-        $this->contents = preg_replace($nodeRegex, '${1}'.$children.'$3', $this->contents);
+        if ($subName !== null) {
+
+        }
+
+        $that = $this;
+        $this->contents = preg_replace_callback($nodeRegex, function ($matches) use ($that, $name, $subName, $childrenClean) {
+            if ($subName !== null) {
+                $curVal = json_decode('{'.$matches[2].'}', true);
+                unset($curVal[$name][$subName]);
+                $childrenClean = substr($that->format($curVal, 0), 1, -1);
+            }
+
+            return $matches[1] . $childrenClean . $matches[3];
+        }, $this->contents);
 
         return true;
     }
@@ -209,7 +260,7 @@ class JsonManipulator
         }
     }
 
-    protected function format($data, $depth = 0)
+    public function format($data, $depth = 0)
     {
         if (is_array($data)) {
             reset($data);

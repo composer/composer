@@ -480,4 +480,119 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
 }
 ', $manipulator->getContents());
     }
+
+    public function testAddConfigSettingCanAddSubKeyInEmptyConfig()
+    {
+        $manipulator = new JsonManipulator('{
+    "config": {
+    }
+}');
+
+        $this->assertTrue($manipulator->addConfigSetting('github-oauth.bar', 'baz'));
+        $this->assertEquals('{
+    "config": {
+        "github-oauth": {
+            "bar": "baz"
+        }
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testAddConfigSettingCanAddSubKeyInEmptyVal()
+    {
+        $manipulator = new JsonManipulator('{
+    "config": {
+        "github-oauth": {},
+        "github-oauth2": {
+        }
+    }
+}');
+
+        $this->assertTrue($manipulator->addConfigSetting('github-oauth.bar', 'baz'));
+        $this->assertTrue($manipulator->addConfigSetting('github-oauth2.a.bar', 'baz2'));
+        $this->assertTrue($manipulator->addConfigSetting('github-oauth3.b', 'c'));
+        $this->assertEquals('{
+    "config": {
+        "github-oauth": {
+            "bar": "baz"
+        },
+        "github-oauth2": {
+            "a.bar": "baz2"
+        },
+        "github-oauth3": {
+            "b": "c"
+        }
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testAddConfigSettingCanAddSubKeyInHash()
+    {
+        $manipulator = new JsonManipulator('{
+    "config": {
+        "github-oauth": {
+            "github.com": "foo"
+        }
+    }
+}');
+
+        $this->assertTrue($manipulator->addConfigSetting('github-oauth.bar', 'baz'));
+        $this->assertEquals('{
+    "config": {
+        "github-oauth": {
+            "github.com": "foo",
+            "bar": "baz"
+        }
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testRemoveConfigSettingCanRemoveSubKeyInHash()
+    {
+        $manipulator = new JsonManipulator('{
+    "config": {
+        "github-oauth": {
+            "github.com": "foo",
+            "bar": "baz"
+        }
+    }
+}');
+
+        $this->assertTrue($manipulator->removeConfigSetting('github-oauth.bar'));
+        $this->assertEquals('{
+    "config": {
+        "github-oauth": {
+            "github.com": "foo"
+        }
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testRemoveConfigSettingCanRemoveSubKeyInHashWithSiblings()
+    {
+        $manipulator = new JsonManipulator('{
+    "config": {
+        "foo": "bar",
+        "github-oauth": {
+            "github.com": "foo",
+            "bar": "baz"
+        }
+    }
+}');
+
+        $this->assertTrue($manipulator->removeConfigSetting('github-oauth.bar'));
+        $this->assertEquals('{
+    "config": {
+        "foo": "bar",
+        "github-oauth": {
+            "github.com": "foo"
+        }
+    }
+}
+', $manipulator->getContents());
+    }
 }

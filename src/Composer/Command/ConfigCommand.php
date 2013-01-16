@@ -235,6 +235,19 @@ EOT
             ));
         }
 
+        // handle github-oauth
+        if (preg_match('/^github-oauth\.(.+)/', $settingKey, $matches)) {
+            if ($input->getOption('unset')) {
+                return $this->configSource->removeConfigSetting('github-oauth.'.$matches[1]);
+            }
+
+            if (1 !== count($values)) {
+                throw new \RuntimeException('Too many arguments, expected only one token');
+            }
+
+            return $this->configSource->addConfigSetting('github-oauth.'.$matches[1], $values[0]);
+        }
+
         // handle config values
         $uniqueConfigValues = array(
             'process-timeout' => array('is_numeric', 'intval'),
