@@ -84,12 +84,17 @@ class ClassLoader
     public function add($prefix, $paths, $prepend = false)
     {
         if (!$prefix) {
-            foreach ((array) $paths as $path) {
-                if ($prepend) {
-                    array_unshift($this->fallbackDirs, $path);
-                } else {
-                    $this->fallbackDirs[] = $path;
-                }
+            if ($prepend) {
+                $this->fallbackDirs = array_merge(
+                    (array) $paths,
+                    $this->fallbackDirs
+                );
+            }
+            else {
+                $this->fallbackDirs = array_merge(
+                    $this->fallbackDirs,
+                    (array) $paths
+                );
             }
 
             return;
@@ -121,7 +126,7 @@ class ClassLoader
     public function set($prefix, $paths)
     {
         if (!$prefix) {
-            $this->fallbackDirs = (array) $path;
+            $this->fallbackDirs = (array) $paths;
 
             return;
         }
