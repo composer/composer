@@ -89,8 +89,7 @@ class ClassLoader
                     (array) $paths,
                     $this->fallbackDirs
                 );
-            }
-            else {
+            } else {
                 $this->fallbackDirs = array_merge(
                     $this->fallbackDirs,
                     (array) $paths
