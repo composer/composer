@@ -20,6 +20,7 @@ use Composer\Package\Version\VersionParser;
  */
 class PlatformRepository extends ArrayRepository
 {
+
     protected function initialize()
     {
         parent::initialize();
@@ -36,6 +37,11 @@ class PlatformRepository extends ArrayRepository
 
         $php = new CompletePackage('php', $version, $prettyVersion);
         $php->setDescription('The PHP interpreter');
+        parent::addPackage($php);
+
+        $operatingSystemBits = (int) PHP_INT_SIZE / 8;
+        $operatingSystem = new CompletePackage('OS', $operatingSystemBits, $operatingSystemBits . ' bits');
+        $operatingSystem->setDescription('The Openrating System');
         parent::addPackage($php);
 
         $loadedExtensions = get_loaded_extensions();
@@ -55,8 +61,8 @@ class PlatformRepository extends ArrayRepository
                 $version = $versionParser->normalize($prettyVersion);
             }
 
-            $ext = new CompletePackage('ext-'.$name, $version, $prettyVersion);
-            $ext->setDescription('The '.$name.' PHP extension');
+            $ext = new CompletePackage('ext-' . $name, $version, $prettyVersion);
+            $ext->setDescription('The ' . $name . ' PHP extension');
             parent::addPackage($ext);
         }
 
@@ -80,8 +86,8 @@ class PlatformRepository extends ArrayRepository
 
                 case 'openssl':
                     $prettyVersion = preg_replace_callback('{^(?:OpenSSL\s*)?([0-9.]+)([a-z]?).*}', function ($match) {
-                        return $match[1] . (empty($match[2]) ? '' : '.'.(ord($match[2]) - 96));
-                    }, OPENSSL_VERSION_TEXT);
+                                return $match[1] . (empty($match[2]) ? '' : '.' . (ord($match[2]) - 96));
+                            }, OPENSSL_VERSION_TEXT);
                     break;
 
                 case 'pcre':
@@ -107,9 +113,10 @@ class PlatformRepository extends ArrayRepository
                 continue;
             }
 
-            $lib = new CompletePackage('lib-'.$name, $version, $prettyVersion);
-            $lib->setDescription('The '.$name.' PHP library');
+            $lib = new CompletePackage('lib-' . $name, $version, $prettyVersion);
+            $lib->setDescription('The ' . $name . ' PHP library');
             parent::addPackage($lib);
         }
     }
+
 }
