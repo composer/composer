@@ -30,8 +30,7 @@ class PlatformRepository extends ArrayRepository
         try {
             $prettyVersion = PHP_VERSION;
             $version = $versionParser->normalize($prettyVersion);
-        }
-        catch (\UnexpectedValueException $e) {
+        } catch (\UnexpectedValueException $e) {
             $prettyVersion = preg_replace('#^([^~+-]+).*$#', '$1', PHP_VERSION);
             $version = $versionParser->normalize($prettyVersion);
         }
@@ -57,8 +56,7 @@ class PlatformRepository extends ArrayRepository
             try {
                 $prettyVersion = $reflExt->getVersion();
                 $version = $versionParser->normalize($prettyVersion);
-            }
-            catch (\UnexpectedValueException $e) {
+            } catch (\UnexpectedValueException $e) {
                 $prettyVersion = '0';
                 $version = $versionParser->normalize($prettyVersion);
             }
@@ -111,8 +109,7 @@ class PlatformRepository extends ArrayRepository
 
             try {
                 $version = $versionParser->normalize($prettyVersion);
-            }
-            catch (\UnexpectedValueException $e) {
+            } catch (\UnexpectedValueException $e) {
                 continue;
             }
 
