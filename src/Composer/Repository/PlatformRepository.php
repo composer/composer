@@ -38,6 +38,12 @@ class PlatformRepository extends ArrayRepository
         $php->setDescription('The PHP interpreter');
         parent::addPackage($php);
 
+        if (PHP_INT_SIZE === 8) {
+            $php64 = new CompletePackage('php-64bit', $version, $prettyVersion);
+            $php64->setDescription('The PHP interpreter (64bit)');
+            parent::addPackage($php64);
+        }
+
         $loadedExtensions = get_loaded_extensions();
 
         // Extensions scanning
