@@ -33,7 +33,8 @@ installed on the system but are not actually installable by composer. This
 includes PHP itself, PHP extensions and some system libraries.
 
 * `php` represents the PHP version of the user, allowing you to apply
-   constraints, e.g. `>=5.4.0`.
+   constraints, e.g. `>=5.4.0`. To require a 64bit version of php, you can
+   require the `php-64bit` package.
 
 * `ext-<name>` allows you to require PHP extensions (includes core
   extensions). Versioning can be quite inconsistent here, so it's often
