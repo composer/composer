@@ -74,7 +74,7 @@ class JsonFile
     /**
      * Reads json file.
      *
-     * @return array
+     * @return mixed
      */
     public function read()
     {
