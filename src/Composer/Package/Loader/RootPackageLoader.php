@@ -161,8 +161,20 @@ class RootPackageLoader extends ArrayLoader
 
     private function guessVersion(array $config)
     {
+        if (function_exists('proc_open')) {
+            $version = $this->guessGitVersion($config);
+            if (null !== $version) {
+                return $version;
+            }
+
+            return $this->guessHgVersion($config);
+        }
+    }
+
+    private function guessGitVersion(array $config)
+    {
         // try to fetch current version from git branch
-        if (function_exists('proc_open') && 0 === $this->process->execute('git branch --no-color --no-abbrev -v', $output)) {
+        if (0 === $this->process->execute('git branch --no-color --no-abbrev -v', $output)) {
             $branches = array();
             $isFeatureBranch = false;
             $version = null;
@@ -215,6 +227,47 @@ class RootPackageLoader extends ArrayLoader
                             $version = 'dev-'.$match[1];
                         }
                     }
+                }
+            }
+
+            return $version;
+        }
+    }
+
+    private function guessHgVersion(array $config)
+    {
+        // try to fetch current version from hg branch
+        if (0 === $this->process->execute('hg branch', $output)) {
+            $branch = trim($output);
+            $version = $this->versionParser->normalizeBranch($branch);
+            $isFeatureBranch = 0 === strpos($version, 'dev-');
+
+            if ('9999999-dev' === $version) {
+                $version = 'dev-'.$branch;
+            }
+
+            if (!$isFeatureBranch) {
+                return $version;
+            }
+
+            // re-use the HgDriver to fetch branches (this properly includes bookmarks)
+            $config = array('url' => getcwd());
+            $driver = new HgDriver($config, new NullIO(), $this->config, $this->process);
+            $branches = array_keys($driver->getBranches());
+
+            // ignore feature branches if they have no branch-alias or self.version is used
+            // and find the branch they came from to use as a version instead
+            if ((isset($config['extra']['branch-alias']) && !isset($config['extra']['branch-alias'][$version]))
+                || strpos(json_encode($config), '"self.version"')
+            ) {
+                $branch = preg_replace('{^dev-}', '', $version);
+                $length = PHP_INT_MAX;
+                foreach ($branches as $candidate) {
+                    // do not compare against other feature branches
+                    if ($candidate === $branch || !preg_match('{^(master|trunk|default|develop|\d+\..+)$}', $candidate, $match)) {
+                        continue;
+                    }
+                    // TODO
                 }
             }
 
