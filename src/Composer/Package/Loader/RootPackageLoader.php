@@ -161,8 +161,20 @@ class RootPackageLoader extends ArrayLoader
 
     private function guessVersion(array $config)
     {
+        if (function_exists('proc_open')) {
+            $version = $this->guessGitVersion($config);
+            if (null !== $version) {
+                return $version;
+            }
+
+            return $this->guessHgVersion($config);
+        }
+    }
+
+    private function guessGitVersion(array $config)
+    {
         // try to fetch current version from git branch
-        if (function_exists('proc_open') && 0 === $this->process->execute('git branch --no-color --no-abbrev -v', $output)) {
+        if (0 === $this->process->execute('git branch --no-color --no-abbrev -v', $output)) {
             $branches = array();
             $isFeatureBranch = false;
             $version = null;
@@ -193,32 +205,71 @@ class RootPackageLoader extends ArrayLoader
                 return $version;
             }
 
-            // ignore feature branches if they have no branch-alias or self.version is used
-            // and find the branch they came from to use as a version instead
-            if ((isset($config['extra']['branch-alias']) && !isset($config['extra']['branch-alias'][$version]))
-                || strpos(json_encode($config), '"self.version"')
-            ) {
-                $branch = preg_replace('{^dev-}', '', $version);
-                $length = PHP_INT_MAX;
-                foreach ($branches as $candidate) {
-                    // do not compare against other feature branches
-                    if ($candidate === $branch || !preg_match('{^(master|trunk|default|develop|\d+\..+)$}', $candidate, $match)) {
-                        continue;
-                    }
-                    if (0 !== $this->process->execute('git rev-list '.$candidate.'..'.$branch, $output)) {
-                        continue;
-                    }
-                    if (strlen($output) < $length) {
-                        $length = strlen($output);
-                        $version = $this->versionParser->normalizeBranch($candidate);
-                        if ('9999999-dev' === $version) {
-                            $version = 'dev-'.$match[1];
-                        }
-                    }
-                }
-            }
+            // try to find the best (nearest) version branch to assume this feature's version
+            $version = $this->guessFeatureVersion($config, $version, $branches, 'git rev-list %candidate%..%branch%');
 
             return $version;
         }
+    }
+
+    private function guessHgVersion(array $config)
+    {
+        // try to fetch current version from hg branch
+        if (0 === $this->process->execute('hg branch', $output)) {
+            $branch = trim($output);
+            $version = $this->versionParser->normalizeBranch($branch);
+            $isFeatureBranch = 0 === strpos($version, 'dev-');
+
+            if ('9999999-dev' === $version) {
+                $version = 'dev-'.$branch;
+            }
+
+            if (!$isFeatureBranch) {
+                return $version;
+            }
+
+            // re-use the HgDriver to fetch branches (this properly includes bookmarks)
+            $config = array('url' => getcwd());
+            $driver = new HgDriver($config, new NullIO(), $this->config, $this->process);
+            $branches = array_keys($driver->getBranches());
+
+            // try to find the best (nearest) version branch to assume this feature's version
+            $version = $this->guessFeatureVersion($config, $version, $branches, 'hg log -r "not ancestors(\'%candidate%\') and ancestors(\'%branch%\')" --template "{node}\\n"');
+
+            return $version;
+        }
+    }
+
+    private function guessFeatureVersion(array $config, $version, array $branches, $scmCmdline)
+    {
+        // ignore feature branches if they have no branch-alias or self.version is used
+        // and find the branch they came from to use as a version instead
+        if ((isset($config['extra']['branch-alias']) && !isset($config['extra']['branch-alias'][$version]))
+            || strpos(json_encode($config), '"self.version"')
+        ) {
+            $branch = preg_replace('{^dev-}', '', $version);
+            $length = PHP_INT_MAX;
+            foreach ($branches as $candidate) {
+                // do not compare against other feature branches
+                if ($candidate === $branch || !preg_match('{^(master|trunk|default|develop|\d+\..+)$}', $candidate, $match)) {
+                    continue;
+                }
+
+                $cmdLine = str_replace(array('%candidate%', '%branch%'), array($candidate, $branch), $scmCmdline);
+                if (0 !== $this->process->execute($cmdLine, $output)) {
+                    continue;
+                }
+
+                if (strlen($output) < $length) {
+                    $length = strlen($output);
+                    $version = $this->versionParser->normalizeBranch($candidate);
+                    if ('9999999-dev' === $version) {
+                        $version = 'dev-'.$match[1];
+                    }
+                }
+            }
+        }
+
+        return $version;
     }
 }
