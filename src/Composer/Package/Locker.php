@@ -288,13 +288,9 @@ class Locker
             unset($spec['version_normalized']);
 
             if ($package->isDev()) {
-                if (function_exists('proc_open') && 'git' === $package->getSourceType() && ($path = $this->installationManager->getInstallPath($package))) {
-                    $sourceRef = $package->getSourceReference() ?: $package->getDistReference();
-                    $process = new ProcessExecutor();
-                    if (0 === $process->execute('git log -n1 --pretty=%ct '.escapeshellarg($sourceRef), $output, $path) && preg_match('{^\s*\d+\s*$}', $output)) {
-                        $datetime = new \DateTime('@'.trim($output), new \DateTimeZone('UTC'));
-                        $spec['time'] = $datetime->format('Y-m-d H:i:s');
-                    }
+                $time = $this->getPackageTime($package);
+                if (null !== $time) {
+                    $spec['time'] = $time;
                 }
             }
 
@@ -315,5 +311,43 @@ class Locker
         });
 
         return $locked;
+    }
+
+    /**
+     * Returns the packages's datetime for its source reference.
+     *
+     * @param  PackageInterface $package The package to scan.
+     * @return string|null               The formatted datetime or null if none was found.
+     */
+    private function getPackageTime(PackageInterface $package)
+    {
+        if (!function_exists('proc_open')) {
+            return null;
+        }
+
+        $path = $this->installationManager->getInstallPath($package);
+        $sourceType = $package->getSourceType();
+        $datetime = null;
+
+        if ($path && in_array($sourceType, array('git', 'hg'))) {
+            $sourceRef = $package->getSourceReference() ?: $package->getDistReference();
+            $process = new ProcessExecutor();
+
+            switch ($sourceType) {
+                case 'git':
+                    if (0 === $process->execute('git log -n1 --pretty=%ct '.escapeshellarg($sourceRef), $output, $path) && preg_match('{^\s*\d+\s*$}', $output)) {
+                        $datetime = new \DateTime('@'.trim($output), new \DateTimeZone('UTC'));
+                    }
+                    break;
+
+                case 'hg':
+                    if (0 === $process->execute('hg log --template "{date|hgdate}" -r '.escapeshellarg($sourceRef), $output, $path) && preg_match('{^\s*(\d+)\s*}', $output, $match)) {
+                        $datetime = new \DateTime('@'.$match[1], new \DateTimeZone('UTC'));
+                    }
+                    break;
+            }
+        }
+
+        return $datetime ? $datetime->format('Y-m-d H:i:s') : null;
     }
 }
