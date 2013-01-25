@@ -18,6 +18,7 @@ use Composer\Factory;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\Vcs\HgDriver;
+use Composer\IO\NullIO;
 use Composer\Util\ProcessExecutor;
 
 /**
