@@ -114,17 +114,23 @@ abstract class BasePackage implements PackageInterface
         return $this->id;
     }
 
-    public function getRepository()
-    {
-        return $this->repository;
-    }
-
+    /**
+     * {@inheritDoc}
+     */
     public function setRepository(RepositoryInterface $repository)
     {
         if ($this->repository) {
             throw new \LogicException('A package can only be added to one repository');
         }
         $this->repository = $repository;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getRepository()
+    {
+        return $this->repository;
     }
 
     /**
