@@ -54,7 +54,7 @@ Script definition example:
             "post-update-cmd": "MyVendor\\MyClass::postUpdate",
             "post-package-install": [
                 "MyVendor\\MyClass::postPackageInstall"
-            ]
+            ],
             "post-install-cmd": [
                 "MyVendor\\MyClass::warmCache",
                 "phpunit -c app/"
