@@ -77,7 +77,7 @@ Packages managed entirely by Composer do not *need* to contain any
 `.bat` files for Windows compatibility. Composer handles installation
 of binaries in a special way when run in a Windows environment:
 
- * A `.bat` files is generated automatically to reference the binary
+ * A `.bat` file is generated automatically to reference the binary
  * A Unix-style proxy file with the same name as the binary is generated
    automatically (useful for Cygwin or Git Bash)
 
