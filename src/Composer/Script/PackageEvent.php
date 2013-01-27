@@ -32,7 +32,7 @@ class PackageEvent extends Event
      * Constructor.
      *
      * @param string             $name      The event name
-     * @param Composer           $composer  The composer objet
+     * @param Composer           $composer  The composer object
      * @param IOInterface        $io        The IOInterface object
      * @param boolean            $devMode   Whether or not we are in dev mode
      * @param OperationInterface $operation The operation object
