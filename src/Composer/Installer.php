@@ -308,7 +308,7 @@ class Installer
             }
 
             if (!$this->locker->isFresh() && !$devMode) {
-                $this->io->write('<warning>Warning: The lock file is not up to date with the latest changes in composer.json, you may be getting outdated dependencies, run update to update them.</warning>');
+                $this->io->write('<warning>Warning: The lock file is not up to date with the latest changes in composer.json. You may be getting outdated dependencies. Run update to update them.</warning>');
             }
 
             foreach ($lockedRepository->getPackages() as $package) {
