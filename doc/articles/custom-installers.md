@@ -1,5 +1,5 @@
 <!--
-    tagline: Modify the way certain types of packages are installed
+		tagline: Modify the way certain types of packages are installed
 -->
 
 # Setting up and using custom installers
@@ -34,13 +34,13 @@ An example use-case would be:
 
 An example composer.json of such a template package would be:
 
-    {
-        "name": "phpdocumentor/template-responsive",
-        "type": "phpdocumentor-template",
-        "require": {
-            "phpdocumentor/template-installer": "*"
-        }
-    }
+		{
+				"name": "phpdocumentor/template-responsive",
+				"type": "phpdocumentor-template",
+				"require": {
+						"phpdocumentor/template-installer": "*"
+				}
+		}
 
 > **IMPORTANT**: to make sure that the template installer is present at the
 > time the template package is installed, template packages should require
@@ -67,22 +67,22 @@ requirements:
 
 1. the [type][1] attribute must be `composer-installer`.
 2. the [extra][2] attribute must contain an element `class` defining the
-   class name of the installer (including namespace). If a package contains
-   multiple installers this can be array of class names.
+	 class name of the installer (including namespace). If a package contains
+	 multiple installers this can be array of class names.
 
 Example:
 
-    {
-        "name": "phpdocumentor/template-installer",
-        "type": "composer-installer",
-        "license": "MIT",
-        "autoload": {
-            "psr-0": {"phpDocumentor\\Composer": "src/"}
-        },
-        "extra": {
-            "class": "phpDocumentor\\Composer\\TemplateInstaller"
-        }
-    }
+		{
+				"name": "phpdocumentor/template-installer",
+				"type": "composer-installer",
+				"license": "MIT",
+				"autoload": {
+						"psr-0": {"phpDocumentor\\Composer": "src/"}
+				},
+				"extra": {
+						"class": "phpDocumentor\\Composer\\TemplateInstaller"
+				}
+		}
 
 ### The Custom Installer class
 
@@ -102,51 +102,51 @@ The InstallerInterface class defines the following methods (please see the
 source for the exact signature):
 
 * **supports()**, here you test whether the passed [type][1] matches the name
-  that you declared for this installer (see the example).
+	that you declared for this installer (see the example).
 * **isInstalled()**, determines whether a supported package is installed or not.
 * **install()**, here you can determine the actions that need to be executed
-  upon installation.
+	upon installation.
 * **update()**, here you define the behavior that is required when Composer is
-  invoked with the update argument.
+	invoked with the update argument.
 * **uninstall()**, here you can determine the actions that need to be executed
-  when the package needs to be removed.
+	when the package needs to be removed.
 * **getInstallPath()**, this method should return the location where the
-  package is to be installed, _relative from the location of composer.json._
+	package is to be installed, _relative from the location of composer.json._
 
 Example:
 
-    namespace phpDocumentor\Composer;
+		namespace phpDocumentor\Composer;
 
-    use Composer\Package\PackageInterface;
-    use Composer\Installer\LibraryInstaller;
+		use Composer\Package\PackageInterface;
+		use Composer\Installer\LibraryInstaller;
 
-    class TemplateInstaller extends LibraryInstaller
-    {
-        /**
-         * {@inheritDoc}
-         */
-        public function getInstallPath(PackageInterface $package)
-        {
-            $prefix = substr($package->getPrettyName(), 0, 23);
-            if ('phpdocumentor/template-' !== $prefix) {
-                throw new \InvalidArgumentException(
-                    'Unable to install template, phpdocumentor templates '
-                    .'should always start their package name with '
-                    .'"phpdocumentor/template-"'
-                );
-            }
+		class TemplateInstaller extends LibraryInstaller
+		{
+				/**
+				 * {@inheritDoc}
+				 */
+				public function getInstallPath(PackageInterface $package)
+				{
+						$prefix = substr($package->getPrettyName(), 0, 23);
+						if ('phpdocumentor/template-' !== $prefix) {
+								throw new \InvalidArgumentException(
+										'Unable to install template, phpdocumentor templates '
+										.'should always start their package name with '
+										.'"phpdocumentor/template-"'
+								);
+						}
 
-            return 'data/templates/'.substr($package->getPrettyName(), 23);
-        }
+						return 'data/templates/'.substr($package->getPrettyName(), 23);
+				}
 
-        /**
-         * {@inheritDoc}
-         */
-        public function supports($packageType)
-        {
-            return 'phpdocumentor-template' === $packageType;
-        }
-    }
+				/**
+				 * {@inheritDoc}
+				 */
+				public function supports($packageType)
+				{
+						return 'phpdocumentor-template' === $packageType;
+				}
+		}
 
 The example demonstrates that it is quite simple to extend the
 [`Composer\Installer\LibraryInstaller`][4] class to strip a prefix

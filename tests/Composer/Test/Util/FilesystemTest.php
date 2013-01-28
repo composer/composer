@@ -4,7 +4,7 @@
  * This file is part of Composer.
  *
  * (c) Nils Adermann <naderman@naderman.de>
- *     Jordi Boggiano <j.boggiano@seld.be>
+ *		 Jordi Boggiano <j.boggiano@seld.be>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -17,114 +17,114 @@ use Composer\Test\TestCase;
 
 class FilesystemTest extends TestCase
 {
-    /**
-     * @dataProvider providePathCouplesAsCode
-     */
-    public function testFindShortestPathCode($a, $b, $directory, $expected)
-    {
-        $fs = new Filesystem;
-        $this->assertEquals($expected, $fs->findShortestPathCode($a, $b, $directory));
-    }
+		/**
+		 * @dataProvider providePathCouplesAsCode
+		 */
+		public function testFindShortestPathCode($a, $b, $directory, $expected)
+		{
+				$fs = new Filesystem;
+				$this->assertEquals($expected, $fs->findShortestPathCode($a, $b, $directory));
+		}
 
-    public function providePathCouplesAsCode()
-    {
-        return array(
-            array('/foo/bar', '/foo/bar', false, "__FILE__"),
-            array('/foo/bar', '/foo/baz', false, "__DIR__.'/baz'"),
-            array('/foo/bin/run', '/foo/vendor/acme/bin/run', false, "dirname(__DIR__).'/vendor/acme/bin/run'"),
-            array('/foo/bin/run', '/bar/bin/run', false, "'/bar/bin/run'"),
-            array('c:/bin/run', 'c:/vendor/acme/bin/run', false, "dirname(__DIR__).'/vendor/acme/bin/run'"),
-            array('c:\\bin\\run', 'c:/vendor/acme/bin/run', false, "dirname(__DIR__).'/vendor/acme/bin/run'"),
-            array('c:/bin/run', 'd:/vendor/acme/bin/run', false, "'d:/vendor/acme/bin/run'"),
-            array('c:\\bin\\run', 'd:/vendor/acme/bin/run', false, "'d:/vendor/acme/bin/run'"),
-            array('/foo/bar', '/foo/bar', true, "__DIR__"),
-            array('/foo/bar', '/foo/baz', true, "dirname(__DIR__).'/baz'"),
-            array('/foo/bin/run', '/foo/vendor/acme/bin/run', true, "dirname(dirname(__DIR__)).'/vendor/acme/bin/run'"),
-            array('/foo/bin/run', '/bar/bin/run', true, "'/bar/bin/run'"),
-            array('/bin/run', '/bin/run', true, "__DIR__"),
-            array('c:/bin/run', 'c:\\bin/run', true, "__DIR__"),
-            array('c:/bin/run', 'c:/vendor/acme/bin/run', true, "dirname(dirname(__DIR__)).'/vendor/acme/bin/run'"),
-            array('c:\\bin\\run', 'c:/vendor/acme/bin/run', true, "dirname(dirname(__DIR__)).'/vendor/acme/bin/run'"),
-            array('c:/bin/run', 'd:/vendor/acme/bin/run', true, "'d:/vendor/acme/bin/run'"),
-            array('c:\\bin\\run', 'd:/vendor/acme/bin/run', true, "'d:/vendor/acme/bin/run'"),
-            array('C:/Temp/test', 'C:\Temp', true, "dirname(__DIR__)"),
-            array('C:/Temp', 'C:\Temp\test', true, "__DIR__ . '/test'"),
-            array('/tmp/test', '/tmp', true, "dirname(__DIR__)"),
-            array('/tmp', '/tmp/test', true, "__DIR__ . '/test'"),
-            array('C:/Temp', 'c:\Temp\test', true, "__DIR__ . '/test'"),
-        );
-    }
+		public function providePathCouplesAsCode()
+		{
+				return array(
+						array('/foo/bar', '/foo/bar', false, "__FILE__"),
+						array('/foo/bar', '/foo/baz', false, "__DIR__.'/baz'"),
+						array('/foo/bin/run', '/foo/vendor/acme/bin/run', false, "dirname(__DIR__).'/vendor/acme/bin/run'"),
+						array('/foo/bin/run', '/bar/bin/run', false, "'/bar/bin/run'"),
+						array('c:/bin/run', 'c:/vendor/acme/bin/run', false, "dirname(__DIR__).'/vendor/acme/bin/run'"),
+						array('c:\\bin\\run', 'c:/vendor/acme/bin/run', false, "dirname(__DIR__).'/vendor/acme/bin/run'"),
+						array('c:/bin/run', 'd:/vendor/acme/bin/run', false, "'d:/vendor/acme/bin/run'"),
+						array('c:\\bin\\run', 'd:/vendor/acme/bin/run', false, "'d:/vendor/acme/bin/run'"),
+						array('/foo/bar', '/foo/bar', true, "__DIR__"),
+						array('/foo/bar', '/foo/baz', true, "dirname(__DIR__).'/baz'"),
+						array('/foo/bin/run', '/foo/vendor/acme/bin/run', true, "dirname(dirname(__DIR__)).'/vendor/acme/bin/run'"),
+						array('/foo/bin/run', '/bar/bin/run', true, "'/bar/bin/run'"),
+						array('/bin/run', '/bin/run', true, "__DIR__"),
+						array('c:/bin/run', 'c:\\bin/run', true, "__DIR__"),
+						array('c:/bin/run', 'c:/vendor/acme/bin/run', true, "dirname(dirname(__DIR__)).'/vendor/acme/bin/run'"),
+						array('c:\\bin\\run', 'c:/vendor/acme/bin/run', true, "dirname(dirname(__DIR__)).'/vendor/acme/bin/run'"),
+						array('c:/bin/run', 'd:/vendor/acme/bin/run', true, "'d:/vendor/acme/bin/run'"),
+						array('c:\\bin\\run', 'd:/vendor/acme/bin/run', true, "'d:/vendor/acme/bin/run'"),
+						array('C:/Temp/test', 'C:\Temp', true, "dirname(__DIR__)"),
+						array('C:/Temp', 'C:\Temp\test', true, "__DIR__ . '/test'"),
+						array('/tmp/test', '/tmp', true, "dirname(__DIR__)"),
+						array('/tmp', '/tmp/test', true, "__DIR__ . '/test'"),
+						array('C:/Temp', 'c:\Temp\test', true, "__DIR__ . '/test'"),
+				);
+		}
 
-    /**
-     * @dataProvider providePathCouples
-     */
-    public function testFindShortestPath($a, $b, $expected, $directory = false)
-    {
-        $fs = new Filesystem;
-        $this->assertEquals($expected, $fs->findShortestPath($a, $b, $directory));
-    }
+		/**
+		 * @dataProvider providePathCouples
+		 */
+		public function testFindShortestPath($a, $b, $expected, $directory = false)
+		{
+				$fs = new Filesystem;
+				$this->assertEquals($expected, $fs->findShortestPath($a, $b, $directory));
+		}
 
-    public function providePathCouples()
-    {
-        return array(
-            array('/foo/bar', '/foo/bar', "./bar"),
-            array('/foo/bar', '/foo/baz', "./baz"),
-            array('/foo/bar/', '/foo/baz', "./baz"),
-            array('/foo/bar', '/foo/bar', "./", true),
-            array('/foo/bar', '/foo/baz', "../baz", true),
-            array('/foo/bar/', '/foo/baz', "../baz", true),
-            array('C:/foo/bar/', 'c:/foo/baz', "../baz", true),
-            array('/foo/bin/run', '/foo/vendor/acme/bin/run', "../vendor/acme/bin/run"),
-            array('/foo/bin/run', '/bar/bin/run', "/bar/bin/run"),
-            array('/foo/bin/run', '/bar/bin/run', "/bar/bin/run", true),
-            array('c:/foo/bin/run', 'd:/bar/bin/run', "d:/bar/bin/run", true),
-            array('c:/bin/run', 'c:/vendor/acme/bin/run', "../vendor/acme/bin/run"),
-            array('c:\\bin\\run', 'c:/vendor/acme/bin/run', "../vendor/acme/bin/run"),
-            array('c:/bin/run', 'd:/vendor/acme/bin/run', "d:/vendor/acme/bin/run"),
-            array('c:\\bin\\run', 'd:/vendor/acme/bin/run', "d:/vendor/acme/bin/run"),
-            array('C:/Temp/test', 'C:\Temp', "./"),
-            array('/tmp/test', '/tmp', "./"),
-            array('C:/Temp/test/sub', 'C:\Temp', "../"),
-            array('/tmp/test/sub', '/tmp', "../"),
-            array('/tmp/test/sub', '/tmp', "../../", true),
-            array('c:/tmp/test/sub', 'c:/tmp', "../../", true),
-            array('/tmp', '/tmp/test', "test"),
-            array('C:/Temp', 'C:\Temp\test', "test"),
-            array('C:/Temp', 'c:\Temp\test', "test"),
-        );
-    }
+		public function providePathCouples()
+		{
+				return array(
+						array('/foo/bar', '/foo/bar', "./bar"),
+						array('/foo/bar', '/foo/baz', "./baz"),
+						array('/foo/bar/', '/foo/baz', "./baz"),
+						array('/foo/bar', '/foo/bar', "./", true),
+						array('/foo/bar', '/foo/baz', "../baz", true),
+						array('/foo/bar/', '/foo/baz', "../baz", true),
+						array('C:/foo/bar/', 'c:/foo/baz', "../baz", true),
+						array('/foo/bin/run', '/foo/vendor/acme/bin/run', "../vendor/acme/bin/run"),
+						array('/foo/bin/run', '/bar/bin/run', "/bar/bin/run"),
+						array('/foo/bin/run', '/bar/bin/run', "/bar/bin/run", true),
+						array('c:/foo/bin/run', 'd:/bar/bin/run', "d:/bar/bin/run", true),
+						array('c:/bin/run', 'c:/vendor/acme/bin/run', "../vendor/acme/bin/run"),
+						array('c:\\bin\\run', 'c:/vendor/acme/bin/run', "../vendor/acme/bin/run"),
+						array('c:/bin/run', 'd:/vendor/acme/bin/run', "d:/vendor/acme/bin/run"),
+						array('c:\\bin\\run', 'd:/vendor/acme/bin/run', "d:/vendor/acme/bin/run"),
+						array('C:/Temp/test', 'C:\Temp', "./"),
+						array('/tmp/test', '/tmp', "./"),
+						array('C:/Temp/test/sub', 'C:\Temp', "../"),
+						array('/tmp/test/sub', '/tmp', "../"),
+						array('/tmp/test/sub', '/tmp', "../../", true),
+						array('c:/tmp/test/sub', 'c:/tmp', "../../", true),
+						array('/tmp', '/tmp/test', "test"),
+						array('C:/Temp', 'C:\Temp\test', "test"),
+						array('C:/Temp', 'c:\Temp\test', "test"),
+				);
+		}
 
-    /**
-     * @group GH-1339
-     */
-    public function testRemoveDirectoryPhp()
-    {
-        $tmp = sys_get_temp_dir();
-        @mkdir($tmp . "/composer_testdir/level1/level2", 0777, true);
-        file_put_contents($tmp . "/composer_testdir/level1/level2/hello.txt", "hello world");
+		/**
+		 * @group GH-1339
+		 */
+		public function testRemoveDirectoryPhp()
+		{
+				$tmp = sys_get_temp_dir();
+				@mkdir($tmp . "/composer_testdir/level1/level2", 0777, true);
+				file_put_contents($tmp . "/composer_testdir/level1/level2/hello.txt", "hello world");
 
-        $fs = new Filesystem;
-        $this->assertTrue($fs->removeDirectoryPhp($tmp . "/composer_testdir"));
-        $this->assertFalse(file_exists($tmp . "/composer_testdir/level1/level2/hello.txt"));
-    }
+				$fs = new Filesystem;
+				$this->assertTrue($fs->removeDirectoryPhp($tmp . "/composer_testdir"));
+				$this->assertFalse(file_exists($tmp . "/composer_testdir/level1/level2/hello.txt"));
+		}
 
-    public function testFileSize()
-    {
-        $tmp = sys_get_temp_dir();
-        file_put_contents("$tmp/composer_test_file", 'Hello');
+		public function testFileSize()
+		{
+				$tmp = sys_get_temp_dir();
+				file_put_contents("$tmp/composer_test_file", 'Hello');
 
-        $fs = new Filesystem;
-        $this->assertGreaterThanOrEqual(5, $fs->size("$tmp/composer_test_file"));
-    }
+				$fs = new Filesystem;
+				$this->assertGreaterThanOrEqual(5, $fs->size("$tmp/composer_test_file"));
+		}
 
-    public function testDirectorySize()
-    {
-        $tmp = sys_get_temp_dir();
-        @mkdir("$tmp/composer_testdir", 0777, true);
-        file_put_contents("$tmp/composer_testdir/file1.txt", 'Hello');
-        file_put_contents("$tmp/composer_testdir/file2.txt", 'World');
+		public function testDirectorySize()
+		{
+				$tmp = sys_get_temp_dir();
+				@mkdir("$tmp/composer_testdir", 0777, true);
+				file_put_contents("$tmp/composer_testdir/file1.txt", 'Hello');
+				file_put_contents("$tmp/composer_testdir/file2.txt", 'World');
 
-        $fs = new Filesystem;
-        $this->assertGreaterThanOrEqual(10, $fs->size("$tmp/composer_testdir"));
-    }
+				$fs = new Filesystem;
+				$this->assertGreaterThanOrEqual(10, $fs->size("$tmp/composer_testdir"));
+		}
 }

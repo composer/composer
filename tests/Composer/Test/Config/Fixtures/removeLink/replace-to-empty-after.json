@@ -1,6 +1,6 @@
 {
-    "name": "my-vend/my-app",
-    "license": "MIT",
-    "replace": {
-    }
+		"name": "my-vend/my-app",
+		"license": "MIT",
+		"replace": {
+		}
 }

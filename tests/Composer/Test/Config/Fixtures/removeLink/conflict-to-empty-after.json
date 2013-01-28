@@ -1,6 +1,6 @@
 {
-    "name": "my-vend/my-app",
-    "license": "MIT",
-    "conflict": {
-    }
+		"name": "my-vend/my-app",
+		"license": "MIT",
+		"conflict": {
+		}
 }

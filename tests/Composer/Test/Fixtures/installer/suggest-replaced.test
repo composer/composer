@@ -2,19 +2,19 @@
 Suggestions are not displayed for packages if they are replaced
 --COMPOSER--
 {
-    "repositories": [
-        {
-            "type": "package",
-            "package": [
-                { "name": "a/a", "version": "1.0.0", "suggest": { "b/b": "an obscure reason" } },
-                { "name": "c/c", "version": "1.0.0", "replace": { "b/b": "1.0.0" } }
-            ]
-        }
-    ],
-    "require": {
-        "a/a": "1.0.0",
-        "b/b": "1.0.0"
-    }
+		"repositories": [
+				{
+						"type": "package",
+						"package": [
+								{ "name": "a/a", "version": "1.0.0", "suggest": { "b/b": "an obscure reason" } },
+								{ "name": "c/c", "version": "1.0.0", "replace": { "b/b": "1.0.0" } }
+						]
+				}
+		],
+		"require": {
+				"a/a": "1.0.0",
+				"b/b": "1.0.0"
+		}
 }
 --RUN--
 install

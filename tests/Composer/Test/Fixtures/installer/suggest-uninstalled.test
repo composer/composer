@@ -2,17 +2,17 @@
 Suggestions are displayed
 --COMPOSER--
 {
-    "repositories": [
-        {
-            "type": "package",
-            "package": [
-                { "name": "a/a", "version": "1.0.0", "suggest": { "b/b": "an obscure reason" } }
-            ]
-        }
-    ],
-    "require": {
-        "a/a": "1.0.0"
-    }
+		"repositories": [
+				{
+						"type": "package",
+						"package": [
+								{ "name": "a/a", "version": "1.0.0", "suggest": { "b/b": "an obscure reason" } }
+						]
+				}
+		],
+		"require": {
+				"a/a": "1.0.0"
+		}
 }
 --RUN--
 install

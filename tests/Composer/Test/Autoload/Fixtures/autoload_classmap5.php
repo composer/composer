@@ -6,7 +6,7 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
-    'ClassMapBar' => $baseDir . '/%vendorDir%/b/b/test.php',
-    'ClassMapBaz' => $baseDir . '/%vendorDir%/c/c/foo/test.php',
-    'ClassMapFoo' => $baseDir . '/%vendorDir%/a/a/src/a.php',
+		'ClassMapBar' => $baseDir . '/%vendorDir%/b/b/test.php',
+		'ClassMapBaz' => $baseDir . '/%vendorDir%/c/c/foo/test.php',
+		'ClassMapFoo' => $baseDir . '/%vendorDir%/a/a/src/a.php',
 );

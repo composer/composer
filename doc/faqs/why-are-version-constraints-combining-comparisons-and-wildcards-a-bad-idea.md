@@ -9,7 +9,7 @@ have two parts:
 
 - `>=2` which says the package should be in version 2.0.0 or above.
 - `2.*` which says the package should be between version 2.0.0 (inclusive)
-  and 3.0.0 (exclusive).
+	and 3.0.0 (exclusive).
 
 As you see, both rules agree on the fact that the package must be >=2.0.0,
 but it is not possible to determine if when you wrote that you were thinking

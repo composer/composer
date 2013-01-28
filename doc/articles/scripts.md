@@ -1,5 +1,5 @@
 <!--
-    tagline: Script are callbacks that are called before/after installing packages
+		tagline: Script are callbacks that are called before/after installing packages
 -->
 
 # Scripts
@@ -49,47 +49,47 @@ autoload functionality.
 
 Script definition example:
 
-    {
-        "scripts": {
-            "post-update-cmd": "MyVendor\\MyClass::postUpdate",
-            "post-package-install": [
-                "MyVendor\\MyClass::postPackageInstall"
-            ],
-            "post-install-cmd": [
-                "MyVendor\\MyClass::warmCache",
-                "phpunit -c app/"
-            ]
-        }
-    }
+		{
+				"scripts": {
+						"post-update-cmd": "MyVendor\\MyClass::postUpdate",
+						"post-package-install": [
+								"MyVendor\\MyClass::postPackageInstall"
+						],
+						"post-install-cmd": [
+								"MyVendor\\MyClass::warmCache",
+								"phpunit -c app/"
+						]
+				}
+		}
 
 Using the previous definition example, here's the class `MyVendor\MyClass`
 that might be used to execute the PHP callbacks:
 
-    <?php
+		<?php
 
-    namespace MyVendor;
+		namespace MyVendor;
 
-    use Composer\Script\Event;
+		use Composer\Script\Event;
 
-    class MyClass
-    {
-        public static function postUpdate(Event $event)
-        {
-            $composer = $event->getComposer();
-            // do stuff
-        }
+		class MyClass
+		{
+				public static function postUpdate(Event $event)
+				{
+						$composer = $event->getComposer();
+						// do stuff
+				}
 
-        public static function postPackageInstall(Event $event)
-        {
-            $installedPackage = $event->getOperation()->getPackage();
-            // do stuff
-        }
+				public static function postPackageInstall(Event $event)
+				{
+						$installedPackage = $event->getOperation()->getPackage();
+						// do stuff
+				}
 
-        public static function warmCache(Event $event)
-        {
-            // make cache toasty
-        }
-    }
+				public static function warmCache(Event $event)
+				{
+						// make cache toasty
+				}
+		}
 
 When an event is fired, Composer's internal event handler receives a
 `Composer\Script\Event` object, which is passed as the first argument to your

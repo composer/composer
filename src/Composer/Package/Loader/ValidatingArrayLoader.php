@@ -4,7 +4,7 @@
  * This file is part of Composer.
  *
  * (c) Nils Adermann <naderman@naderman.de>
- *     Jordi Boggiano <j.boggiano@seld.be>
+ *		 Jordi Boggiano <j.boggiano@seld.be>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -21,338 +21,338 @@ use Composer\Package\Version\VersionParser;
  */
 class ValidatingArrayLoader implements LoaderInterface
 {
-    private $loader;
-    private $versionParser;
-    private $errors;
-    private $warnings;
-    private $config;
-    private $strictName;
+		private $loader;
+		private $versionParser;
+		private $errors;
+		private $warnings;
+		private $config;
+		private $strictName;
 
-    public function __construct(LoaderInterface $loader, $strictName = true, VersionParser $parser = null)
-    {
-        $this->loader = $loader;
-        $this->versionParser = $parser ?: new VersionParser();
-        $this->strictName = $strictName;
-    }
+		public function __construct(LoaderInterface $loader, $strictName = true, VersionParser $parser = null)
+		{
+				$this->loader = $loader;
+				$this->versionParser = $parser ?: new VersionParser();
+				$this->strictName = $strictName;
+		}
 
-    public function load(array $config, $class = 'Composer\Package\CompletePackage')
-    {
-        $this->errors = array();
-        $this->warnings = array();
-        $this->config = $config;
+		public function load(array $config, $class = 'Composer\Package\CompletePackage')
+		{
+				$this->errors = array();
+				$this->warnings = array();
+				$this->config = $config;
 
-        if ($this->strictName) {
-            $this->validateRegex('name', '[A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*', true);
-        } else {
-            $this->validateString('name', true);
-        }
+				if ($this->strictName) {
+						$this->validateRegex('name', '[A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*', true);
+				} else {
+						$this->validateString('name', true);
+				}
 
-        if (!empty($this->config['version'])) {
-            try {
-                $this->versionParser->normalize($this->config['version']);
-            } catch (\Exception $e) {
-                unset($this->config['version']);
-                $this->errors[] = 'version : invalid value ('.$this->config['version'].'): '.$e->getMessage();
-            }
-        }
+				if (!empty($this->config['version'])) {
+						try {
+								$this->versionParser->normalize($this->config['version']);
+						} catch (\Exception $e) {
+								unset($this->config['version']);
+								$this->errors[] = 'version : invalid value ('.$this->config['version'].'): '.$e->getMessage();
+						}
+				}
 
-        $this->validateRegex('type', '[A-Za-z0-9-]+');
-        $this->validateString('target-dir');
-        $this->validateArray('extra');
-        $this->validateFlatArray('bin');
-        $this->validateArray('scripts'); // TODO validate event names & listener syntax
-        $this->validateString('description');
-        $this->validateUrl('homepage');
-        $this->validateFlatArray('keywords', '[A-Za-z0-9 ._-]+');
+				$this->validateRegex('type', '[A-Za-z0-9-]+');
+				$this->validateString('target-dir');
+				$this->validateArray('extra');
+				$this->validateFlatArray('bin');
+				$this->validateArray('scripts'); // TODO validate event names & listener syntax
+				$this->validateString('description');
+				$this->validateUrl('homepage');
+				$this->validateFlatArray('keywords', '[A-Za-z0-9 ._-]+');
 
-        if (isset($this->config['license'])) {
-            if (is_string($this->config['license'])) {
-                $this->validateRegex('license', '[A-Za-z0-9+. ()-]+');
-            } else {
-                $this->validateFlatArray('license', '[A-Za-z0-9+. ()-]+');
-            }
-        }
+				if (isset($this->config['license'])) {
+						if (is_string($this->config['license'])) {
+								$this->validateRegex('license', '[A-Za-z0-9+. ()-]+');
+						} else {
+								$this->validateFlatArray('license', '[A-Za-z0-9+. ()-]+');
+						}
+				}
 
-        $this->validateString('time');
-        if (!empty($this->config['time'])) {
-            try {
-                $date = new \DateTime($this->config['time'], new \DateTimeZone('UTC'));
-            } catch (\Exception $e) {
-                $this->errors[] = 'time : invalid value ('.$this->config['time'].'): '.$e->getMessage();
-                unset($this->config['time']);
-            }
-        }
+				$this->validateString('time');
+				if (!empty($this->config['time'])) {
+						try {
+								$date = new \DateTime($this->config['time'], new \DateTimeZone('UTC'));
+						} catch (\Exception $e) {
+								$this->errors[] = 'time : invalid value ('.$this->config['time'].'): '.$e->getMessage();
+								unset($this->config['time']);
+						}
+				}
 
-        if ($this->validateArray('authors') && !empty($this->config['authors'])) {
-            foreach ($this->config['authors'] as $key => $author) {
-                if (!is_array($author)) {
-                    $this->errors[] = 'authors.'.$key.' : should be an array, '.gettype($author).' given';
-                    unset($this->config['authors'][$key]);
-                    continue;
-                }
-                foreach (array('homepage', 'email', 'name', 'role') as $authorData) {
-                    if (isset($author[$authorData]) && !is_string($author[$authorData])) {
-                        $this->errors[] = 'authors.'.$key.'.'.$authorData.' : invalid value, must be a string';
-                        unset($this->config['authors'][$key][$authorData]);
-                    }
-                }
-                if (isset($author['homepage']) && !$this->filterUrl($author['homepage'])) {
-                    $this->warnings[] = 'authors.'.$key.'.homepage : invalid value ('.$author['homepage'].'), must be an http/https URL';
-                    unset($this->config['authors'][$key]['homepage']);
-                }
-                if (isset($author['email']) && !filter_var($author['email'], FILTER_VALIDATE_EMAIL)) {
-                    $this->warnings[] = 'authors.'.$key.'.email : invalid value ('.$author['email'].'), must be a valid email address';
-                    unset($this->config['authors'][$key]['email']);
-                }
-                if (empty($this->config['authors'][$key])) {
-                    unset($this->config['authors'][$key]);
-                }
-            }
-            if (empty($this->config['authors'])) {
-                unset($this->config['authors']);
-            }
-        }
+				if ($this->validateArray('authors') && !empty($this->config['authors'])) {
+						foreach ($this->config['authors'] as $key => $author) {
+								if (!is_array($author)) {
+										$this->errors[] = 'authors.'.$key.' : should be an array, '.gettype($author).' given';
+										unset($this->config['authors'][$key]);
+										continue;
+								}
+								foreach (array('homepage', 'email', 'name', 'role') as $authorData) {
+										if (isset($author[$authorData]) && !is_string($author[$authorData])) {
+												$this->errors[] = 'authors.'.$key.'.'.$authorData.' : invalid value, must be a string';
+												unset($this->config['authors'][$key][$authorData]);
+										}
+								}
+								if (isset($author['homepage']) && !$this->filterUrl($author['homepage'])) {
+										$this->warnings[] = 'authors.'.$key.'.homepage : invalid value ('.$author['homepage'].'), must be an http/https URL';
+										unset($this->config['authors'][$key]['homepage']);
+								}
+								if (isset($author['email']) && !filter_var($author['email'], FILTER_VALIDATE_EMAIL)) {
+										$this->warnings[] = 'authors.'.$key.'.email : invalid value ('.$author['email'].'), must be a valid email address';
+										unset($this->config['authors'][$key]['email']);
+								}
+								if (empty($this->config['authors'][$key])) {
+										unset($this->config['authors'][$key]);
+								}
+						}
+						if (empty($this->config['authors'])) {
+								unset($this->config['authors']);
+						}
+				}
 
-        if ($this->validateArray('support') && !empty($this->config['support'])) {
-            foreach (array('issues', 'forum', 'wiki', 'source', 'email', 'irc') as $key) {
-                if (isset($this->config['support'][$key]) && !is_string($this->config['support'][$key])) {
-                    $this->errors[] = 'support.'.$key.' : invalid value, must be a string';
-                    unset($this->config['support'][$key]);
-                }
-            }
+				if ($this->validateArray('support') && !empty($this->config['support'])) {
+						foreach (array('issues', 'forum', 'wiki', 'source', 'email', 'irc') as $key) {
+								if (isset($this->config['support'][$key]) && !is_string($this->config['support'][$key])) {
+										$this->errors[] = 'support.'.$key.' : invalid value, must be a string';
+										unset($this->config['support'][$key]);
+								}
+						}
 
-            if (isset($this->config['support']['email']) && !filter_var($this->config['support']['email'], FILTER_VALIDATE_EMAIL)) {
-                $this->warnings[] = 'support.email : invalid value ('.$this->config['support']['email'].'), must be a valid email address';
-                unset($this->config['support']['email']);
-            }
+						if (isset($this->config['support']['email']) && !filter_var($this->config['support']['email'], FILTER_VALIDATE_EMAIL)) {
+								$this->warnings[] = 'support.email : invalid value ('.$this->config['support']['email'].'), must be a valid email address';
+								unset($this->config['support']['email']);
+						}
 
-            if (isset($this->config['support']['irc']) && !$this->filterUrl($this->config['support']['irc'], array('irc'))) {
-                $this->warnings[] = 'support.irc : invalid value ('.$this->config['support']['irc'].'), must be a irc://<server>/<channel> URL';
-                unset($this->config['support']['irc']);
-            }
+						if (isset($this->config['support']['irc']) && !$this->filterUrl($this->config['support']['irc'], array('irc'))) {
+								$this->warnings[] = 'support.irc : invalid value ('.$this->config['support']['irc'].'), must be a irc://<server>/<channel> URL';
+								unset($this->config['support']['irc']);
+						}
 
-            foreach (array('issues', 'forum', 'wiki', 'source') as $key) {
-                if (isset($this->config['support'][$key]) && !$this->filterUrl($this->config['support'][$key])) {
-                    $this->warnings[] = 'support.'.$key.' : invalid value ('.$this->config['support'][$key].'), must be an http/https URL';
-                    unset($this->config['support'][$key]);
-                }
-            }
-            if (empty($this->config['support'])) {
-                unset($this->config['support']);
-            }
-        }
+						foreach (array('issues', 'forum', 'wiki', 'source') as $key) {
+								if (isset($this->config['support'][$key]) && !$this->filterUrl($this->config['support'][$key])) {
+										$this->warnings[] = 'support.'.$key.' : invalid value ('.$this->config['support'][$key].'), must be an http/https URL';
+										unset($this->config['support'][$key]);
+								}
+						}
+						if (empty($this->config['support'])) {
+								unset($this->config['support']);
+						}
+				}
 
-        foreach (array_keys(BasePackage::$supportedLinkTypes) as $linkType) {
-            if ($this->validateArray($linkType) && isset($this->config[$linkType])) {
-                foreach ($this->config[$linkType] as $package => $constraint) {
-                    if (!preg_match('{^[A-Za-z0-9_./-]+$}', $package)) {
-                        $this->warnings[] = $linkType.'.'.$package.' : invalid key, package names must be strings containing only [A-Za-z0-9_./-]';
-                    }
-                    if (!is_string($constraint)) {
-                        $this->errors[] = $linkType.'.'.$package.' : invalid value, must be a string containing a version constraint';
-                        unset($this->config[$linkType][$package]);
-                    } elseif ('self.version' !== $constraint) {
-                        try {
-                            $this->versionParser->parseConstraints($constraint);
-                        } catch (\Exception $e) {
-                            $this->errors[] = $linkType.'.'.$package.' : invalid version constraint ('.$e->getMessage().')';
-                            unset($this->config[$linkType][$package]);
-                        }
-                    }
-                }
-            }
-        }
+				foreach (array_keys(BasePackage::$supportedLinkTypes) as $linkType) {
+						if ($this->validateArray($linkType) && isset($this->config[$linkType])) {
+								foreach ($this->config[$linkType] as $package => $constraint) {
+										if (!preg_match('{^[A-Za-z0-9_./-]+$}', $package)) {
+												$this->warnings[] = $linkType.'.'.$package.' : invalid key, package names must be strings containing only [A-Za-z0-9_./-]';
+										}
+										if (!is_string($constraint)) {
+												$this->errors[] = $linkType.'.'.$package.' : invalid value, must be a string containing a version constraint';
+												unset($this->config[$linkType][$package]);
+										} elseif ('self.version' !== $constraint) {
+												try {
+														$this->versionParser->parseConstraints($constraint);
+												} catch (\Exception $e) {
+														$this->errors[] = $linkType.'.'.$package.' : invalid version constraint ('.$e->getMessage().')';
+														unset($this->config[$linkType][$package]);
+												}
+										}
+								}
+						}
+				}
 
-        if ($this->validateArray('suggest') && !empty($this->config['suggest'])) {
-            foreach ($this->config['suggest'] as $package => $description) {
-                if (!is_string($description)) {
-                    $this->errors[] = 'suggest.'.$package.' : invalid value, must be a string describing why the package is suggested';
-                    unset($this->config['suggest'][$package]);
-                }
-            }
-        }
+				if ($this->validateArray('suggest') && !empty($this->config['suggest'])) {
+						foreach ($this->config['suggest'] as $package => $description) {
+								if (!is_string($description)) {
+										$this->errors[] = 'suggest.'.$package.' : invalid value, must be a string describing why the package is suggested';
+										unset($this->config['suggest'][$package]);
+								}
+						}
+				}
 
-        if ($this->validateString('minimum-stability') && !empty($this->config['minimum-stability'])) {
-            if (!isset(BasePackage::$stabilities[$this->config['minimum-stability']])) {
-                $this->errors[] = 'minimum-stability : invalid value ('.$this->config['minimum-stability'].'), must be one of '.implode(', ', array_keys(BasePackage::$stabilities));
-                unset($this->config['minimum-stability']);
-            }
-        }
+				if ($this->validateString('minimum-stability') && !empty($this->config['minimum-stability'])) {
+						if (!isset(BasePackage::$stabilities[$this->config['minimum-stability']])) {
+								$this->errors[] = 'minimum-stability : invalid value ('.$this->config['minimum-stability'].'), must be one of '.implode(', ', array_keys(BasePackage::$stabilities));
+								unset($this->config['minimum-stability']);
+						}
+				}
 
-        // TODO validate autoload
+				// TODO validate autoload
 
-        // TODO validate dist
-        // TODO validate source
+				// TODO validate dist
+				// TODO validate source
 
-        // TODO validate repositories
-        // TODO validate package repositories' packages using this recursively
+				// TODO validate repositories
+				// TODO validate package repositories' packages using this recursively
 
-        $this->validateFlatArray('include-path');
+				$this->validateFlatArray('include-path');
 
-        // branch alias validation
-        if (isset($this->config['extra']['branch-alias'])) {
-            if (!is_array($this->config['extra']['branch-alias'])) {
-                $this->errors[] = 'extra.branch-alias : must be an array of versions => aliases';
-            } else {
-                foreach ($this->config['extra']['branch-alias'] as $sourceBranch => $targetBranch) {
-                    // ensure it is an alias to a -dev package
-                    if ('-dev' !== substr($targetBranch, -4)) {
-                        $this->warnings[] = 'extra.branch-alias.'.$sourceBranch.' : the target branch ('.$targetBranch.') must end in -dev';
-                        unset($this->config['extra']['branch-alias'][$sourceBranch]);
+				// branch alias validation
+				if (isset($this->config['extra']['branch-alias'])) {
+						if (!is_array($this->config['extra']['branch-alias'])) {
+								$this->errors[] = 'extra.branch-alias : must be an array of versions => aliases';
+						} else {
+								foreach ($this->config['extra']['branch-alias'] as $sourceBranch => $targetBranch) {
+										// ensure it is an alias to a -dev package
+										if ('-dev' !== substr($targetBranch, -4)) {
+												$this->warnings[] = 'extra.branch-alias.'.$sourceBranch.' : the target branch ('.$targetBranch.') must end in -dev';
+												unset($this->config['extra']['branch-alias'][$sourceBranch]);
 
-                        continue;
-                    }
+												continue;
+										}
 
-                    // normalize without -dev and ensure it's a numeric branch that is parseable
-                    $validatedTargetBranch = $this->versionParser->normalizeBranch(substr($targetBranch, 0, -4));
-                    if ('-dev' !== substr($validatedTargetBranch, -4)) {
-                        $this->warnings[] = 'extra.branch-alias.'.$sourceBranch.' : the target branch ('.$targetBranch.') must be a parseable number like 2.0-dev';
-                        unset($this->config['extra']['branch-alias'][$sourceBranch]);
-                    }
-                }
-            }
-        }
+										// normalize without -dev and ensure it's a numeric branch that is parseable
+										$validatedTargetBranch = $this->versionParser->normalizeBranch(substr($targetBranch, 0, -4));
+										if ('-dev' !== substr($validatedTargetBranch, -4)) {
+												$this->warnings[] = 'extra.branch-alias.'.$sourceBranch.' : the target branch ('.$targetBranch.') must be a parseable number like 2.0-dev';
+												unset($this->config['extra']['branch-alias'][$sourceBranch]);
+										}
+								}
+						}
+				}
 
-        if ($this->errors) {
-            throw new InvalidPackageException($this->errors, $this->warnings, $config);
-        }
+				if ($this->errors) {
+						throw new InvalidPackageException($this->errors, $this->warnings, $config);
+				}
 
-        $package = $this->loader->load($this->config, $class);
-        $this->config = null;
+				$package = $this->loader->load($this->config, $class);
+				$this->config = null;
 
-        return $package;
-    }
+				return $package;
+		}
 
-    public function getWarnings()
-    {
-        return $this->warnings;
-    }
+		public function getWarnings()
+		{
+				return $this->warnings;
+		}
 
-    public function getErrors()
-    {
-        return $this->errors;
-    }
+		public function getErrors()
+		{
+				return $this->errors;
+		}
 
-    private function validateRegex($property, $regex, $mandatory = false)
-    {
-        if (!$this->validateString($property, $mandatory)) {
-            return false;
-        }
+		private function validateRegex($property, $regex, $mandatory = false)
+		{
+				if (!$this->validateString($property, $mandatory)) {
+						return false;
+				}
 
-        if (!preg_match('{^'.$regex.'$}u', $this->config[$property])) {
-            $message = $property.' : invalid value ('.$this->config[$property].'), must match '.$regex;
-            if ($mandatory) {
-                $this->errors[] = $message;
-            } else {
-                $this->warnings[] = $message;
-            }
-            unset($this->config[$property]);
+				if (!preg_match('{^'.$regex.'$}u', $this->config[$property])) {
+						$message = $property.' : invalid value ('.$this->config[$property].'), must match '.$regex;
+						if ($mandatory) {
+								$this->errors[] = $message;
+						} else {
+								$this->warnings[] = $message;
+						}
+						unset($this->config[$property]);
 
-            return false;
-        }
+						return false;
+				}
 
-        return true;
-    }
+				return true;
+		}
 
-    private function validateString($property, $mandatory = false)
-    {
-        if (isset($this->config[$property]) && !is_string($this->config[$property])) {
-            $this->errors[] = $property.' : should be a string, '.gettype($this->config[$property]).' given';
-            unset($this->config[$property]);
+		private function validateString($property, $mandatory = false)
+		{
+				if (isset($this->config[$property]) && !is_string($this->config[$property])) {
+						$this->errors[] = $property.' : should be a string, '.gettype($this->config[$property]).' given';
+						unset($this->config[$property]);
 
-            return false;
-        }
+						return false;
+				}
 
-        if (!isset($this->config[$property]) || trim($this->config[$property]) === '') {
-            if ($mandatory) {
-                $this->errors[] = $property.' : must be present';
-            }
-            unset($this->config[$property]);
+				if (!isset($this->config[$property]) || trim($this->config[$property]) === '') {
+						if ($mandatory) {
+								$this->errors[] = $property.' : must be present';
+						}
+						unset($this->config[$property]);
 
-            return false;
-        }
+						return false;
+				}
 
-        return true;
-    }
+				return true;
+		}
 
-    private function validateArray($property, $mandatory = false)
-    {
-        if (isset($this->config[$property]) && !is_array($this->config[$property])) {
-            $this->errors[] = $property.' : should be an array, '.gettype($this->config[$property]).' given';
-            unset($this->config[$property]);
+		private function validateArray($property, $mandatory = false)
+		{
+				if (isset($this->config[$property]) && !is_array($this->config[$property])) {
+						$this->errors[] = $property.' : should be an array, '.gettype($this->config[$property]).' given';
+						unset($this->config[$property]);
 
-            return false;
-        }
+						return false;
+				}
 
-        if (!isset($this->config[$property]) || !count($this->config[$property])) {
-            if ($mandatory) {
-                $this->errors[] = $property.' : must be present and contain at least one element';
-            }
-            unset($this->config[$property]);
+				if (!isset($this->config[$property]) || !count($this->config[$property])) {
+						if ($mandatory) {
+								$this->errors[] = $property.' : must be present and contain at least one element';
+						}
+						unset($this->config[$property]);
 
-            return false;
-        }
+						return false;
+				}
 
-        return true;
-    }
+				return true;
+		}
 
-    private function validateFlatArray($property, $regex = null, $mandatory = false)
-    {
-        if (!$this->validateArray($property, $mandatory)) {
-            return false;
-        }
+		private function validateFlatArray($property, $regex = null, $mandatory = false)
+		{
+				if (!$this->validateArray($property, $mandatory)) {
+						return false;
+				}
 
-        $pass = true;
-        foreach ($this->config[$property] as $key => $value) {
-            if (!is_string($value) && !is_numeric($value)) {
-                $this->errors[] = $property.'.'.$key.' : must be a string or int, '.gettype($value).' given';
-                unset($this->config[$property][$key]);
-                $pass = false;
+				$pass = true;
+				foreach ($this->config[$property] as $key => $value) {
+						if (!is_string($value) && !is_numeric($value)) {
+								$this->errors[] = $property.'.'.$key.' : must be a string or int, '.gettype($value).' given';
+								unset($this->config[$property][$key]);
+								$pass = false;
 
-                continue;
-            }
+								continue;
+						}
 
-            if ($regex && !preg_match('{^'.$regex.'$}u', $value)) {
-                $this->warnings[] = $property.'.'.$key.' : invalid value ('.$value.'), must match '.$regex;
-                unset($this->config[$property][$key]);
-                $pass = false;
-            }
-        }
+						if ($regex && !preg_match('{^'.$regex.'$}u', $value)) {
+								$this->warnings[] = $property.'.'.$key.' : invalid value ('.$value.'), must match '.$regex;
+								unset($this->config[$property][$key]);
+								$pass = false;
+						}
+				}
 
-        return $pass;
-    }
+				return $pass;
+		}
 
-    private function validateUrl($property, $mandatory = false)
-    {
-        if (!$this->validateString($property, $mandatory)) {
-            return false;
-        }
+		private function validateUrl($property, $mandatory = false)
+		{
+				if (!$this->validateString($property, $mandatory)) {
+						return false;
+				}
 
-        if (!$this->filterUrl($this->config[$property])) {
-            $this->warnings[] = $property.' : invalid value ('.$this->config[$property].'), must be an http/https URL';
-            unset($this->config[$property]);
+				if (!$this->filterUrl($this->config[$property])) {
+						$this->warnings[] = $property.' : invalid value ('.$this->config[$property].'), must be an http/https URL';
+						unset($this->config[$property]);
 
-            return false;
-        }
+						return false;
+				}
 
-        return true;
-    }
+				return true;
+		}
 
-    private function filterUrl($value, array $schemes = array('http', 'https'))
-    {
-        if ($value === '') {
-            return true;
-        }
+		private function filterUrl($value, array $schemes = array('http', 'https'))
+		{
+				if ($value === '') {
+						return true;
+				}
 
-        $bits = parse_url($value);
-        if (empty($bits['scheme']) || empty($bits['host'])) {
-            return false;
-        }
+				$bits = parse_url($value);
+				if (empty($bits['scheme']) || empty($bits['host'])) {
+						return false;
+				}
 
-        if (!in_array($bits['scheme'], $schemes, true)) {
-            return false;
-        }
+				if (!in_array($bits['scheme'], $schemes, true)) {
+						return false;
+				}
 
-        return true;
-    }
+				return true;
+		}
 }

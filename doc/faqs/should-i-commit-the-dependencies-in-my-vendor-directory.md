@@ -13,14 +13,14 @@ problems:
 - Large VCS repository size and diffs when you update code.
 - Duplication of the history of all your dependencies in your own VCS.
 - Adding dependencies installed via git to a git repo will show them as
-  submodules. This is problematic because they are not real submodules, and you
-  will run into issues.
+	submodules. This is problematic because they are not real submodules, and you
+	will run into issues.
 
 If you really feel like you must do this, you have two options:
 
 - Limit yourself to installing tagged releases (no dev versions), so that you
-  only get zipped installs, and avoid problems with the git "submodules".
+	only get zipped installs, and avoid problems with the git "submodules".
 - Remove the `.git` directory of every dependency after the installation, then
-  you can add them to your git repo. You can do that with `rm -rf vendor/**/.git`
-  but this means you will have to delete those dependencies from disk before
-  running composer update.
+	you can add them to your git repo. You can do that with `rm -rf vendor/**/.git`
+	but this means you will have to delete those dependencies from disk before
+	running composer update.

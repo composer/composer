@@ -4,7 +4,7 @@
  * This file is part of Composer.
  *
  * (c) Nils Adermann <naderman@naderman.de>
- *     Jordi Boggiano <j.boggiano@seld.be>
+ *		 Jordi Boggiano <j.boggiano@seld.be>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -19,206 +19,206 @@ use Composer\Config\ConfigSourceInterface;
  */
 class Config
 {
-    public static $defaultConfig = array(
-        'process-timeout' => 300,
-        'cache-ttl' => 15552000, // 6 months
-        'cache-files-maxsize' => '300MiB',
-        'vendor-dir' => 'vendor',
-        'bin-dir' => '{$vendor-dir}/bin',
-        'notify-on-install' => true,
-        'github-protocols' => array('git', 'https', 'http'),
-        'cache-dir' => '{$home}/cache',
-        'cache-files-dir' => '{$cache-dir}/files',
-        'cache-repo-dir' => '{$cache-dir}/repo',
-        'cache-vcs-dir' => '{$cache-dir}/vcs',
-    );
+		public static $defaultConfig = array(
+				'process-timeout' => 300,
+				'cache-ttl' => 15552000, // 6 months
+				'cache-files-maxsize' => '300MiB',
+				'vendor-dir' => 'vendor',
+				'bin-dir' => '{$vendor-dir}/bin',
+				'notify-on-install' => true,
+				'github-protocols' => array('git', 'https', 'http'),
+				'cache-dir' => '{$home}/cache',
+				'cache-files-dir' => '{$cache-dir}/files',
+				'cache-repo-dir' => '{$cache-dir}/repo',
+				'cache-vcs-dir' => '{$cache-dir}/vcs',
+		);
 
-    public static $defaultRepositories = array(
-        'packagist' => array(
-            'type' => 'composer',
-            'url' => 'https?://packagist.org',
-        )
-    );
+		public static $defaultRepositories = array(
+				'packagist' => array(
+						'type' => 'composer',
+						'url' => 'https?://packagist.org',
+				)
+		);
 
-    private $config;
-    private $repositories;
-    private $configSource;
+		private $config;
+		private $repositories;
+		private $configSource;
 
-    public function __construct()
-    {
-        // load defaults
-        $this->config = static::$defaultConfig;
-        $this->repositories = static::$defaultRepositories;
-    }
+		public function __construct()
+		{
+				// load defaults
+				$this->config = static::$defaultConfig;
+				$this->repositories = static::$defaultRepositories;
+		}
 
-    public function setConfigSource(ConfigSourceInterface $source)
-    {
-        $this->configSource = $source;
-    }
+		public function setConfigSource(ConfigSourceInterface $source)
+		{
+				$this->configSource = $source;
+		}
 
-    public function getConfigSource()
-    {
-        return $this->configSource;
-    }
+		public function getConfigSource()
+		{
+				return $this->configSource;
+		}
 
-    /**
-     * Merges new config values with the existing ones (overriding)
-     *
-     * @param array $config
-     */
-    public function merge(array $config)
-    {
-        // override defaults with given config
-        if (!empty($config['config']) && is_array($config['config'])) {
-            foreach ($config['config'] as $key => $val) {
-                if (in_array($key, array('github-oauth')) && isset($this->config[$key])) {
-                    $this->config[$key] = array_merge($this->config[$key], $val);
-                } else {
-                    $this->config[$key] = $val;
-                }
-            }
-        }
+		/**
+		 * Merges new config values with the existing ones (overriding)
+		 *
+		 * @param array $config
+		 */
+		public function merge(array $config)
+		{
+				// override defaults with given config
+				if (!empty($config['config']) && is_array($config['config'])) {
+						foreach ($config['config'] as $key => $val) {
+								if (in_array($key, array('github-oauth')) && isset($this->config[$key])) {
+										$this->config[$key] = array_merge($this->config[$key], $val);
+								} else {
+										$this->config[$key] = $val;
+								}
+						}
+				}
 
-        if (!empty($config['repositories']) && is_array($config['repositories'])) {
-            $this->repositories = array_reverse($this->repositories, true);
-            $newRepos = array_reverse($config['repositories'], true);
-            foreach ($newRepos as $name => $repository) {
-                // disable a repository by name
-                if (false === $repository) {
-                    unset($this->repositories[$name]);
-                    continue;
-                }
+				if (!empty($config['repositories']) && is_array($config['repositories'])) {
+						$this->repositories = array_reverse($this->repositories, true);
+						$newRepos = array_reverse($config['repositories'], true);
+						foreach ($newRepos as $name => $repository) {
+								// disable a repository by name
+								if (false === $repository) {
+										unset($this->repositories[$name]);
+										continue;
+								}
 
-                // disable a repository with an anonymous {"name": false} repo
-                if (1 === count($repository) && false === current($repository)) {
-                    unset($this->repositories[key($repository)]);
-                    continue;
-                }
+								// disable a repository with an anonymous {"name": false} repo
+								if (1 === count($repository) && false === current($repository)) {
+										unset($this->repositories[key($repository)]);
+										continue;
+								}
 
-                // store repo
-                if (is_int($name)) {
-                    $this->repositories[] = $repository;
-                } else {
-                    $this->repositories[$name] = $repository;
-                }
-            }
-            $this->repositories = array_reverse($this->repositories, true);
-        }
-    }
+								// store repo
+								if (is_int($name)) {
+										$this->repositories[] = $repository;
+								} else {
+										$this->repositories[$name] = $repository;
+								}
+						}
+						$this->repositories = array_reverse($this->repositories, true);
+				}
+		}
 
-    /**
-     * @return array
-     */
-    public function getRepositories()
-    {
-        return $this->repositories;
-    }
+		/**
+		 * @return array
+		 */
+		public function getRepositories()
+		{
+				return $this->repositories;
+		}
 
-    /**
-     * Returns a setting
-     *
-     * @param  string $key
-     * @return mixed
-     */
-    public function get($key)
-    {
-        switch ($key) {
-            case 'vendor-dir':
-            case 'bin-dir':
-            case 'process-timeout':
-            case 'cache-dir':
-            case 'cache-files-dir':
-            case 'cache-repo-dir':
-            case 'cache-vcs-dir':
-                // convert foo-bar to COMPOSER_FOO_BAR and check if it exists since it overrides the local config
-                $env = 'COMPOSER_' . strtoupper(strtr($key, '-', '_'));
+		/**
+		 * Returns a setting
+		 *
+		 * @param	string $key
+		 * @return mixed
+		 */
+		public function get($key)
+		{
+				switch ($key) {
+						case 'vendor-dir':
+						case 'bin-dir':
+						case 'process-timeout':
+						case 'cache-dir':
+						case 'cache-files-dir':
+						case 'cache-repo-dir':
+						case 'cache-vcs-dir':
+								// convert foo-bar to COMPOSER_FOO_BAR and check if it exists since it overrides the local config
+								$env = 'COMPOSER_' . strtoupper(strtr($key, '-', '_'));
 
-                return rtrim($this->process(getenv($env) ?: $this->config[$key]), '/\\');
+								return rtrim($this->process(getenv($env) ?: $this->config[$key]), '/\\');
 
-            case 'cache-ttl':
-                return (int) $this->config[$key];
+						case 'cache-ttl':
+								return (int) $this->config[$key];
 
-            case 'cache-files-maxsize':
-                if (!preg_match('/^\s*([0-9.]+)\s*(?:([kmg])(?:i?b)?)?\s*$/i', $this->config[$key], $matches)) {
-                    throw new \RuntimeException(
-                        "Could not parse the value of 'cache-files-maxsize' from your config: {$this->config[$key]}"
-                    );
-                }
-                $size = $matches[1];
-                if (isset($matches[2])) {
-                    switch (strtolower($matches[2])) {
-                        case 'g':
-                            $size *= 1024;
-                            // intentional fallthrough
-                        case 'm':
-                            $size *= 1024;
-                            // intentional fallthrough
-                        case 'k':
-                            $size *= 1024;
-                            break;
-                    }
-                }
+						case 'cache-files-maxsize':
+								if (!preg_match('/^\s*([0-9.]+)\s*(?:([kmg])(?:i?b)?)?\s*$/i', $this->config[$key], $matches)) {
+										throw new \RuntimeException(
+												"Could not parse the value of 'cache-files-maxsize' from your config: {$this->config[$key]}"
+										);
+								}
+								$size = $matches[1];
+								if (isset($matches[2])) {
+										switch (strtolower($matches[2])) {
+												case 'g':
+														$size *= 1024;
+														// intentional fallthrough
+												case 'm':
+														$size *= 1024;
+														// intentional fallthrough
+												case 'k':
+														$size *= 1024;
+														break;
+										}
+								}
 
-                return $size;
+								return $size;
 
-            case 'cache-files-ttl':
-                if (isset($this->config[$key])) {
-                    return (int) $this->config[$key];
-                }
+						case 'cache-files-ttl':
+								if (isset($this->config[$key])) {
+										return (int) $this->config[$key];
+								}
 
-                return (int) $this->config['cache-ttl'];
+								return (int) $this->config['cache-ttl'];
 
-            case 'home':
-                return rtrim($this->process($this->config[$key]), '/\\');
+						case 'home':
+								return rtrim($this->process($this->config[$key]), '/\\');
 
-            default:
-                if (!isset($this->config[$key])) {
-                    return null;
-                }
+						default:
+								if (!isset($this->config[$key])) {
+										return null;
+								}
 
-                return $this->process($this->config[$key]);
-        }
-    }
+								return $this->process($this->config[$key]);
+				}
+		}
 
-    public function all()
-    {
-        $all = array(
-            'repositories' => $this->getRepositories(),
-        );
-        foreach (array_keys($this->config) as $key) {
-            $all['config'][$key] = $this->get($key);
-        }
+		public function all()
+		{
+				$all = array(
+						'repositories' => $this->getRepositories(),
+				);
+				foreach (array_keys($this->config) as $key) {
+						$all['config'][$key] = $this->get($key);
+				}
 
-        return $all;
-    }
+				return $all;
+		}
 
-    /**
-     * Checks whether a setting exists
-     *
-     * @param  string $key
-     * @return bool
-     */
-    public function has($key)
-    {
-        return array_key_exists($key, $this->config);
-    }
+		/**
+		 * Checks whether a setting exists
+		 *
+		 * @param	string $key
+		 * @return bool
+		 */
+		public function has($key)
+		{
+				return array_key_exists($key, $this->config);
+		}
 
-    /**
-     * Replaces {$refs} inside a config string
-     *
-     * @param string a config string that can contain {$refs-to-other-config}
-     * @return string
-     */
-    private function process($value)
-    {
-        $config = $this;
+		/**
+		 * Replaces {$refs} inside a config string
+		 *
+		 * @param string a config string that can contain {$refs-to-other-config}
+		 * @return string
+		 */
+		private function process($value)
+		{
+				$config = $this;
 
-        if (!is_string($value)) {
-            return $value;
-        }
+				if (!is_string($value)) {
+						return $value;
+				}
 
-        return preg_replace_callback('#\{\$(.+)\}#', function ($match) use ($config) {
-            return $config->get($match[1]);
-        }, $value);
-    }
+				return preg_replace_callback('#\{\$(.+)\}#', function ($match) use ($config) {
+						return $config->get($match[1]);
+				}, $value);
+		}
 }

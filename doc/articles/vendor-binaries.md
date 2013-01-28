@@ -1,5 +1,5 @@
 <!--
-    tagline: Expose command-line scripts from packages
+		tagline: Expose command-line scripts from packages
 -->
 
 # Vendor binaries and the `vendor/bin` directory
@@ -20,9 +20,9 @@ It is defined by adding the `bin` key to a project's `composer.json`.
 It is specified as an array of files so multiple binaries can be added
 for any given project.
 
-    {
-        "bin": ["bin/my-script", "bin/my-other-script"]
-    }
+		{
+				"bin": ["bin/my-script", "bin/my-other-script"]
+		}
 
 
 ## What does defining a vendor binary in composer.json do?
@@ -46,22 +46,22 @@ symlink is created from each dependency's binaries to `vendor/bin`.
 
 Say package `my-vendor/project-a` has binaries setup like this:
 
-    {
-        "name": "my-vendor/project-a",
-        "bin": ["bin/project-a-bin"]
-    }
+		{
+				"name": "my-vendor/project-a",
+				"bin": ["bin/project-a-bin"]
+		}
 
 Running `composer install` for this `composer.json` will not do
 anything with `bin/project-a-bin`.
 
 Say project `my-vendor/project-b` has requirements setup like this:
 
-    {
-        "name": "my-vendor/project-b",
-        "requires": {
-            "my-vendor/project-a": "*"
-        }
-    }
+		{
+				"name": "my-vendor/project-b",
+				"requires": {
+						"my-vendor/project-a": "*"
+				}
+		}
 
 Running `composer install` for this `composer.json` will look at
 all of project-b's dependencies and install them to `vendor/bin`.
@@ -79,7 +79,7 @@ of binaries in a special way when run in a Windows environment:
 
  * A `.bat` file is generated automatically to reference the binary
  * A Unix-style proxy file with the same name as the binary is generated
-   automatically (useful for Cygwin or Git Bash)
+	 automatically (useful for Cygwin or Git Bash)
 
 Packages that need to support workflows that may not include Composer
 are welcome to maintain custom `.bat` files. In this case, the package
@@ -95,11 +95,11 @@ Yes, there are two ways an alternate vendor binary location can be specified:
 
 An example of the former looks like this:
 
-    {
-        "config": {
-            "bin-dir": "scripts"
-        }
-    }
+		{
+				"config": {
+						"bin-dir": "scripts"
+				}
+		}
 
 Running `composer install` for this `composer.json` will result in
 all of the vendor binaries being installed in `scripts/` instead of

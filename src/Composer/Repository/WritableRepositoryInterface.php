@@ -4,7 +4,7 @@
  * This file is part of Composer.
  *
  * (c) Nils Adermann <naderman@naderman.de>
- *     Jordi Boggiano <j.boggiano@seld.be>
+ *		 Jordi Boggiano <j.boggiano@seld.be>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -21,27 +21,27 @@ use Composer\Package\PackageInterface;
  */
 interface WritableRepositoryInterface extends RepositoryInterface
 {
-    /**
-     * Writes repository (f.e. to the disc).
-     */
-    public function write();
+		/**
+		 * Writes repository (f.e. to the disc).
+		 */
+		public function write();
 
-    /**
-     * Adds package to the repository.
-     *
-     * @param PackageInterface $package package instance
-     */
-    public function addPackage(PackageInterface $package);
+		/**
+		 * Adds package to the repository.
+		 *
+		 * @param PackageInterface $package package instance
+		 */
+		public function addPackage(PackageInterface $package);
 
-    /**
-     * Removes package from the repository.
-     *
-     * @param PackageInterface $package package instance
-     */
-    public function removePackage(PackageInterface $package);
+		/**
+		 * Removes package from the repository.
+		 *
+		 * @param PackageInterface $package package instance
+		 */
+		public function removePackage(PackageInterface $package);
 
-    /**
-     * Forces a reload of all packages
-     */
-    public function reload();
+		/**
+		 * Forces a reload of all packages
+		 */
+		public function reload();
 }

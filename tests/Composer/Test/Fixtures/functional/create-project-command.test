@@ -2,8 +2,8 @@
 create-project seld/jsonlint %testDir% 1.0.0 --prefer-source -n
 --EXPECT--
 Installing seld/jsonlint (1.0.0)
-  - Installing seld/jsonlint (1.0.0)
-    Cloning 1.0.0
+	- Installing seld/jsonlint (1.0.0)
+		Cloning 1.0.0
 
 Created project in %testDir%
 Loading composer repositories with package information

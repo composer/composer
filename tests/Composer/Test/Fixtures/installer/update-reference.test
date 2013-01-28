@@ -2,27 +2,27 @@
 Updates a dev package forcing it's reference
 --COMPOSER--
 {
-    "repositories": [
-        {
-            "type": "package",
-            "package": [
-                {
-                    "name": "a/a", "version": "dev-master",
-                    "source": { "reference": "abc123", "url": "", "type": "git" }
-                }
-            ]
-        }
-    ],
-    "require": {
-        "a/a": "dev-master#def000"
-    }
+		"repositories": [
+				{
+						"type": "package",
+						"package": [
+								{
+										"name": "a/a", "version": "dev-master",
+										"source": { "reference": "abc123", "url": "", "type": "git" }
+								}
+						]
+				}
+		],
+		"require": {
+				"a/a": "dev-master#def000"
+		}
 }
 --INSTALLED--
 [
-    {
-        "name": "a/a", "version": "dev-master",
-        "source": { "reference": "abc123", "url": "", "type": "git" }
-    }
+		{
+				"name": "a/a", "version": "dev-master",
+				"source": { "reference": "abc123", "url": "", "type": "git" }
+		}
 ]
 --RUN--
 install

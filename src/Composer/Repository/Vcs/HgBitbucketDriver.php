@@ -4,7 +4,7 @@
  * This file is part of Composer.
  *
  * (c) Nils Adermann <naderman@naderman.de>
- *     Jordi Boggiano <j.boggiano@seld.be>
+ *		 Jordi Boggiano <j.boggiano@seld.be>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -20,143 +20,143 @@ use Composer\IO\IOInterface;
  */
 class HgBitbucketDriver extends VcsDriver
 {
-    protected $owner;
-    protected $repository;
-    protected $tags;
-    protected $branches;
-    protected $rootIdentifier;
-    protected $infoCache = array();
+		protected $owner;
+		protected $repository;
+		protected $tags;
+		protected $branches;
+		protected $rootIdentifier;
+		protected $infoCache = array();
 
-    /**
-     * {@inheritDoc}
-     */
-    public function initialize()
-    {
-        preg_match('#^https://bitbucket\.org/([^/]+)/([^/]+)/?$#', $this->url, $match);
-        $this->owner = $match[1];
-        $this->repository = $match[2];
-        $this->originUrl = 'bitbucket.org';
-    }
+		/**
+		 * {@inheritDoc}
+		 */
+		public function initialize()
+		{
+				preg_match('#^https://bitbucket\.org/([^/]+)/([^/]+)/?$#', $this->url, $match);
+				$this->owner = $match[1];
+				$this->repository = $match[2];
+				$this->originUrl = 'bitbucket.org';
+		}
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getRootIdentifier()
-    {
-        if (null === $this->rootIdentifier) {
-            $resource = $this->getScheme() . '://api.bitbucket.org/1.0/repositories/'.$this->owner.'/'.$this->repository.'/tags';
-            $repoData = JsonFile::parseJson($this->getContents($resource), $resource);
-            $this->rootIdentifier = $repoData['tip']['raw_node'];
-        }
+		/**
+		 * {@inheritDoc}
+		 */
+		public function getRootIdentifier()
+		{
+				if (null === $this->rootIdentifier) {
+						$resource = $this->getScheme() . '://api.bitbucket.org/1.0/repositories/'.$this->owner.'/'.$this->repository.'/tags';
+						$repoData = JsonFile::parseJson($this->getContents($resource), $resource);
+						$this->rootIdentifier = $repoData['tip']['raw_node'];
+				}
 
-        return $this->rootIdentifier;
-    }
+				return $this->rootIdentifier;
+		}
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getUrl()
-    {
-        return $this->url;
-    }
+		/**
+		 * {@inheritDoc}
+		 */
+		public function getUrl()
+		{
+				return $this->url;
+		}
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getSource($identifier)
-    {
-        $label = array_search($identifier, $this->getTags()) ?: $identifier;
+		/**
+		 * {@inheritDoc}
+		 */
+		public function getSource($identifier)
+		{
+				$label = array_search($identifier, $this->getTags()) ?: $identifier;
 
-        return array('type' => 'hg', 'url' => $this->getUrl(), 'reference' => $label);
-    }
+				return array('type' => 'hg', 'url' => $this->getUrl(), 'reference' => $label);
+		}
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getDist($identifier)
-    {
-        $label = array_search($identifier, $this->getTags()) ?: $identifier;
-        $url = $this->getScheme() . '://bitbucket.org/'.$this->owner.'/'.$this->repository.'/get/'.$label.'.zip';
+		/**
+		 * {@inheritDoc}
+		 */
+		public function getDist($identifier)
+		{
+				$label = array_search($identifier, $this->getTags()) ?: $identifier;
+				$url = $this->getScheme() . '://bitbucket.org/'.$this->owner.'/'.$this->repository.'/get/'.$label.'.zip';
 
-        return array('type' => 'zip', 'url' => $url, 'reference' => $label, 'shasum' => '');
-    }
+				return array('type' => 'zip', 'url' => $url, 'reference' => $label, 'shasum' => '');
+		}
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getComposerInformation($identifier)
-    {
-        if (!isset($this->infoCache[$identifier])) {
-            $resource = $this->getScheme() . '://bitbucket.org/'.$this->owner.'/'.$this->repository.'/raw/'.$identifier.'/composer.json';
-            $composer = $this->getContents($resource);
-            if (!$composer) {
-                return;
-            }
+		/**
+		 * {@inheritDoc}
+		 */
+		public function getComposerInformation($identifier)
+		{
+				if (!isset($this->infoCache[$identifier])) {
+						$resource = $this->getScheme() . '://bitbucket.org/'.$this->owner.'/'.$this->repository.'/raw/'.$identifier.'/composer.json';
+						$composer = $this->getContents($resource);
+						if (!$composer) {
+								return;
+						}
 
-            $composer = JsonFile::parseJson($composer, $resource);
+						$composer = JsonFile::parseJson($composer, $resource);
 
-            if (!isset($composer['time'])) {
-                $resource = $this->getScheme() . '://api.bitbucket.org/1.0/repositories/'.$this->owner.'/'.$this->repository.'/changesets/'.$identifier;
-                $changeset = JsonFile::parseJson($this->getContents($resource), $resource);
-                $composer['time'] = $changeset['timestamp'];
-            }
-            $this->infoCache[$identifier] = $composer;
-        }
+						if (!isset($composer['time'])) {
+								$resource = $this->getScheme() . '://api.bitbucket.org/1.0/repositories/'.$this->owner.'/'.$this->repository.'/changesets/'.$identifier;
+								$changeset = JsonFile::parseJson($this->getContents($resource), $resource);
+								$composer['time'] = $changeset['timestamp'];
+						}
+						$this->infoCache[$identifier] = $composer;
+				}
 
-        return $this->infoCache[$identifier];
-    }
+				return $this->infoCache[$identifier];
+		}
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getTags()
-    {
-        if (null === $this->tags) {
-            $resource = $this->getScheme() . '://api.bitbucket.org/1.0/repositories/'.$this->owner.'/'.$this->repository.'/tags';
-            $tagsData = JsonFile::parseJson($this->getContents($resource), $resource);
-            $this->tags = array();
-            foreach ($tagsData as $tag => $data) {
-                $this->tags[$tag] = $data['raw_node'];
-            }
-        }
+		/**
+		 * {@inheritDoc}
+		 */
+		public function getTags()
+		{
+				if (null === $this->tags) {
+						$resource = $this->getScheme() . '://api.bitbucket.org/1.0/repositories/'.$this->owner.'/'.$this->repository.'/tags';
+						$tagsData = JsonFile::parseJson($this->getContents($resource), $resource);
+						$this->tags = array();
+						foreach ($tagsData as $tag => $data) {
+								$this->tags[$tag] = $data['raw_node'];
+						}
+				}
 
-        return $this->tags;
-    }
+				return $this->tags;
+		}
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getBranches()
-    {
-        if (null === $this->branches) {
-            $resource = $this->getScheme() . '://api.bitbucket.org/1.0/repositories/'.$this->owner.'/'.$this->repository.'/branches';
-            $branchData = JsonFile::parseJson($this->getContents($resource), $resource);
-            $this->branches = array();
-            foreach ($branchData as $branch => $data) {
-                $this->branches[$branch] = $data['raw_node'];
-            }
-        }
+		/**
+		 * {@inheritDoc}
+		 */
+		public function getBranches()
+		{
+				if (null === $this->branches) {
+						$resource = $this->getScheme() . '://api.bitbucket.org/1.0/repositories/'.$this->owner.'/'.$this->repository.'/branches';
+						$branchData = JsonFile::parseJson($this->getContents($resource), $resource);
+						$this->branches = array();
+						foreach ($branchData as $branch => $data) {
+								$this->branches[$branch] = $data['raw_node'];
+						}
+				}
 
-        return $this->branches;
-    }
+				return $this->branches;
+		}
 
-    /**
-     * {@inheritDoc}
-     */
-    public static function supports(IOInterface $io, $url, $deep = false)
-    {
-        if (!preg_match('#^https://bitbucket\.org/([^/]+)/([^/]+)/?$#', $url)) {
-            return false;
-        }
+		/**
+		 * {@inheritDoc}
+		 */
+		public static function supports(IOInterface $io, $url, $deep = false)
+		{
+				if (!preg_match('#^https://bitbucket\.org/([^/]+)/([^/]+)/?$#', $url)) {
+						return false;
+				}
 
-        if (!extension_loaded('openssl')) {
-            if ($io->isVerbose()) {
-                $io->write('Skipping Bitbucket hg driver for '.$url.' because the OpenSSL PHP extension is missing.');
-            }
+				if (!extension_loaded('openssl')) {
+						if ($io->isVerbose()) {
+								$io->write('Skipping Bitbucket hg driver for '.$url.' because the OpenSSL PHP extension is missing.');
+						}
 
-            return false;
-        }
+						return false;
+				}
 
-        return true;
-    }
+				return true;
+		}
 }

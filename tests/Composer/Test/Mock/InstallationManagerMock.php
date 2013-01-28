@@ -3,7 +3,7 @@
  * This file is part of Composer.
  *
  * (c) Nils Adermann <naderman@naderman.de>
- *     Jordi Boggiano <j.boggiano@seld.be>
+ *		 Jordi Boggiano <j.boggiano@seld.be>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -22,74 +22,74 @@ use Composer\DependencyResolver\Operation\MarkAliasUninstalledOperation;
 
 class InstallationManagerMock extends InstallationManager
 {
-    private $installed = array();
-    private $updated = array();
-    private $uninstalled = array();
-    private $trace = array();
+		private $installed = array();
+		private $updated = array();
+		private $uninstalled = array();
+		private $trace = array();
 
-    public function getInstallPath(PackageInterface $package)
-    {
-        return '';
-    }
+		public function getInstallPath(PackageInterface $package)
+		{
+				return '';
+		}
 
-    public function install(RepositoryInterface $repo, InstallOperation $operation)
-    {
-        $this->installed[] = $operation->getPackage();
-        $this->trace[] = (string) $operation;
-        $repo->addPackage(clone $operation->getPackage());
-    }
+		public function install(RepositoryInterface $repo, InstallOperation $operation)
+		{
+				$this->installed[] = $operation->getPackage();
+				$this->trace[] = (string) $operation;
+				$repo->addPackage(clone $operation->getPackage());
+		}
 
-    public function update(RepositoryInterface $repo, UpdateOperation $operation)
-    {
-        $this->updated[] = array($operation->getInitialPackage(), $operation->getTargetPackage());
-        $this->trace[] = (string) $operation;
-        $repo->removePackage($operation->getInitialPackage());
-        $repo->addPackage(clone $operation->getTargetPackage());
-    }
+		public function update(RepositoryInterface $repo, UpdateOperation $operation)
+		{
+				$this->updated[] = array($operation->getInitialPackage(), $operation->getTargetPackage());
+				$this->trace[] = (string) $operation;
+				$repo->removePackage($operation->getInitialPackage());
+				$repo->addPackage(clone $operation->getTargetPackage());
+		}
 
-    public function uninstall(RepositoryInterface $repo, UninstallOperation $operation)
-    {
-        $this->uninstalled[] = $operation->getPackage();
-        $this->trace[] = (string) $operation;
-        $repo->removePackage($operation->getPackage());
-    }
+		public function uninstall(RepositoryInterface $repo, UninstallOperation $operation)
+		{
+				$this->uninstalled[] = $operation->getPackage();
+				$this->trace[] = (string) $operation;
+				$repo->removePackage($operation->getPackage());
+		}
 
-    public function markAliasInstalled(RepositoryInterface $repo, MarkAliasInstalledOperation $operation)
-    {
-        $package = $operation->getPackage();
+		public function markAliasInstalled(RepositoryInterface $repo, MarkAliasInstalledOperation $operation)
+		{
+				$package = $operation->getPackage();
 
-        $this->installed[] = $package;
-        $this->trace[] = (string) $operation;
+				$this->installed[] = $package;
+				$this->trace[] = (string) $operation;
 
-        if (!$repo->hasPackage($package)) {
-            $repo->addPackage($package);
-        }
-    }
+				if (!$repo->hasPackage($package)) {
+						$repo->addPackage($package);
+				}
+		}
 
-    public function markAliasUninstalled(RepositoryInterface $repo, MarkAliasUninstalledOperation $operation)
-    {
-        $this->uninstalled[] = $operation->getPackage();
-        $this->trace[] = (string) $operation;
-        $repo->removePackage($operation->getPackage());
-    }
+		public function markAliasUninstalled(RepositoryInterface $repo, MarkAliasUninstalledOperation $operation)
+		{
+				$this->uninstalled[] = $operation->getPackage();
+				$this->trace[] = (string) $operation;
+				$repo->removePackage($operation->getPackage());
+		}
 
-    public function getTrace()
-    {
-        return $this->trace;
-    }
+		public function getTrace()
+		{
+				return $this->trace;
+		}
 
-    public function getInstalledPackages()
-    {
-        return $this->installed;
-    }
+		public function getInstalledPackages()
+		{
+				return $this->installed;
+		}
 
-    public function getUpdatedPackages()
-    {
-        return $this->updated;
-    }
+		public function getUpdatedPackages()
+		{
+				return $this->updated;
+		}
 
-    public function getUninstalledPackages()
-    {
-        return $this->uninstalled;
-    }
+		public function getUninstalledPackages()
+		{
+				return $this->uninstalled;
+		}
 }

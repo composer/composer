@@ -1,4 +1,3 @@
-
 class leading { }
 
 <?php echo $queryClass ?>
