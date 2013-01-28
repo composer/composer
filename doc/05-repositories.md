@@ -66,16 +66,16 @@ repository URL would be `example.org`.
 
 The only required field is `packages`. The JSON structure is as follows:
 
-    {
-        "packages": {
-            "vendor/package-name": {
-                "dev-master": { @composer.json },
-                "1.0.x-dev": { @composer.json },
-                "0.0.1": { @composer.json },
-                "1.0.0": { @composer.json }
-            }
-        }
-    }
+		{
+				"packages": {
+						"vendor/package-name": {
+								"dev-master": { @composer.json },
+								"1.0.x-dev": { @composer.json },
+								"0.0.1": { @composer.json },
+								"1.0.0": { @composer.json }
+						}
+				}
+		}
 
 The `@composer.json` marker would be the contents of the `composer.json` from
 that package version including as a minimum:
@@ -86,14 +86,14 @@ that package version including as a minimum:
 
 Here is a minimal package definition:
 
-    {
-        "name": "smarty/smarty",
-        "version": "3.1.7",
-        "dist": {
-            "url": "http://www.smarty.net/files/Smarty-3.1.7.zip",
-            "type": "zip"
-        }
-    }
+		{
+				"name": "smarty/smarty",
+				"version": "3.1.7",
+				"dist": {
+						"url": "http://www.smarty.net/files/Smarty-3.1.7.zip",
+						"type": "zip"
+				}
+		}
 
 It may include any of the other fields specified in the [schema](04-schema.md).
 
@@ -105,19 +105,19 @@ every time a user installs a package. The URL can be either an absolute path
 
 An example value:
 
-    {
-        "notify_batch": "/downloads/"
-    }
+		{
+				"notify_batch": "/downloads/"
+		}
 
 For `example.org/packages.json` containing a `monolog/monolog` package, this
 would send a `POST` request to `example.org/downloads/` with following
 JSON request body:
 
-    {
-        "downloads": [
-            {"name": "monolog/monolog", "version": "1.2.1.0"},
-        ]
-    }
+		{
+				"downloads": [
+						{"name": "monolog/monolog", "version": "1.2.1.0"},
+				]
+		}
 
 The version field will contain the normalized representation of the version
 number.
@@ -132,19 +132,19 @@ files.
 
 An example:
 
-    {
-        "includes": {
-            "packages-2011.json": {
-                "sha1": "525a85fb37edd1ad71040d429928c2c0edec9d17"
-            },
-            "packages-2012-01.json": {
-                "sha1": "897cde726f8a3918faf27c803b336da223d400dd"
-            },
-            "packages-2012-02.json": {
-                "sha1": "26f911ad717da26bbcac3f8f435280d13917efa5"
-            }
-        }
-    }
+		{
+				"includes": {
+						"packages-2011.json": {
+								"sha1": "525a85fb37edd1ad71040d429928c2c0edec9d17"
+						},
+						"packages-2012-01.json": {
+								"sha1": "897cde726f8a3918faf27c803b336da223d400dd"
+						},
+						"packages-2012-02.json": {
+								"sha1": "26f911ad717da26bbcac3f8f435280d13917efa5"
+						}
+				}
+		}
 
 The SHA-1 sum of the file allows it to be cached and only re-requested if the
 hash changed.
@@ -179,17 +179,17 @@ point to your custom branch. For version constraint naming conventions see
 
 Example assuming you patched monolog to fix a bug in the `bugfix` branch:
 
-    {
-        "repositories": [
-            {
-                "type": "vcs",
-                "url": "https://github.com/igorw/monolog"
-            }
-        ],
-        "require": {
-            "monolog/monolog": "dev-bugfix"
-        }
-    }
+		{
+				"repositories": [
+						{
+								"type": "vcs",
+								"url": "https://github.com/igorw/monolog"
+						}
+				],
+				"require": {
+						"monolog/monolog": "dev-bugfix"
+				}
+		}
 
 When you run `php composer.phar update`, you should get your modified version
 of `monolog/monolog` instead of the one from packagist.
@@ -203,17 +203,17 @@ aliases article](articles/aliases.md).
 Exactly the same solution allows you to work with your private repositories at
 GitHub and BitBucket:
 
-    {
-        "require": {
-            "vendor/my-private-repo": "dev-master"
-        },
-        "repositories": [
-            {
-                "type": "vcs",
-                "url":  "git@bitbucket.org:vendor/my-private-repo.git"
-            }
-        ]
-    }
+		{
+				"require": {
+						"vendor/my-private-repo": "dev-master"
+				},
+				"repositories": [
+						{
+								"type": "vcs",
+								"url":	"git@bitbucket.org:vendor/my-private-repo.git"
+						}
+				]
+		}
 
 The only requirement is the installation of SSH keys for a git client.
 
@@ -247,17 +247,17 @@ by default that code is located in `$url/trunk`, `$url/branches` and
 values. For example if you used capitalized names you could configure the
 repository like this:
 
-    {
-        "repositories": [
-            {
-                "type": "vcs",
-                "url": "http://svn.example.org/projectA/",
-                "trunk-path": "Trunk",
-                "branches-path": "Branches",
-                "tags-path": "Tags"
-            }
-        ]
-    }
+		{
+				"repositories": [
+						{
+								"type": "vcs",
+								"url": "http://svn.example.org/projectA/",
+								"trunk-path": "Trunk",
+								"branches-path": "Branches",
+								"tags-path": "Tags"
+						}
+				]
+		}
 
 If you have no branches or tags directory you can disable them entirely by
 setting the `branches-path` or `tags-path` to `false`.
@@ -270,18 +270,18 @@ avoid conflicts. All packages are also aliased with prefix `pear-{channelAlias}/
 
 Example using `pear2.php.net`:
 
-    {
-        "repositories": [
-            {
-                "type": "pear",
-                "url": "http://pear2.php.net"
-            }
-        ],
-        "require": {
-            "pear-pear2.php.net/PEAR2_Text_Markdown": "*",
-            "pear-pear2/PEAR2_HTTP_Request": "*"
-        }
-    }
+		{
+				"repositories": [
+						{
+								"type": "pear",
+								"url": "http://pear2.php.net"
+						}
+				],
+				"require": {
+						"pear-pear2.php.net/PEAR2_Text_Markdown": "*",
+						"pear-pear2/PEAR2_HTTP_Request": "*"
+				}
+		}
 
 In this case the short name of the channel is `pear2`, so the
 `PEAR2_HTTP_Request` package name becomes `pear-pear2/PEAR2_HTTP_Request`.
@@ -324,23 +324,23 @@ To illustrate, the following example would get the `BasePackage`,
 `TopLevelPackage1`, and `TopLevelPackage2` packages from your PEAR repository
 and `IntermediatePackage` from a Github repository:
 
-    {
-        "repositories": [
-            {
-                "type": "git",
-                "url": "https://github.com/foobar/intermediate.git"
-            },
-            {
-                "type": "pear",
-                "url": "http://pear.foobar.repo",
-                "vendor-alias": "foobar"
-            }
-        ],
-        "require": {
-            "foobar/TopLevelPackage1": "*",
-            "foobar/TopLevelPackage2": "*"
-        }
-    }
+		{
+				"repositories": [
+						{
+								"type": "git",
+								"url": "https://github.com/foobar/intermediate.git"
+						},
+						{
+								"type": "pear",
+								"url": "http://pear.foobar.repo",
+								"vendor-alias": "foobar"
+						}
+				],
+				"require": {
+						"foobar/TopLevelPackage1": "*",
+						"foobar/TopLevelPackage2": "*"
+				}
+		}
 
 ### Package
 
@@ -355,32 +355,32 @@ minimum required fields are `name`, `version`, and either of `dist` or
 
 Here is an example for the smarty template engine:
 
-    {
-        "repositories": [
-            {
-                "type": "package",
-                "package": {
-                    "name": "smarty/smarty",
-                    "version": "3.1.7",
-                    "dist": {
-                        "url": "http://www.smarty.net/files/Smarty-3.1.7.zip",
-                        "type": "zip"
-                    },
-                    "source": {
-                        "url": "http://smarty-php.googlecode.com/svn/",
-                        "type": "svn",
-                        "reference": "tags/Smarty_3_1_7/distribution/"
-                    },
-                    "autoload": {
-                        "classmap": ["libs/"]
-                    }
-                }
-            }
-        ],
-        "require": {
-            "smarty/smarty": "3.1.*"
-        }
-    }
+		{
+				"repositories": [
+						{
+								"type": "package",
+								"package": {
+										"name": "smarty/smarty",
+										"version": "3.1.7",
+										"dist": {
+												"url": "http://www.smarty.net/files/Smarty-3.1.7.zip",
+												"type": "zip"
+										},
+										"source": {
+												"url": "http://smarty-php.googlecode.com/svn/",
+												"type": "svn",
+												"reference": "tags/Smarty_3_1_7/distribution/"
+										},
+										"autoload": {
+												"classmap": ["libs/"]
+										}
+								}
+						}
+				],
+				"require": {
+						"smarty/smarty": "3.1.*"
+				}
+		}
 
 Typically you would leave the source part off, as you don't really need it.
 
@@ -390,12 +390,12 @@ While you will probably want to put your packages on packagist most of the time,
 there are some use cases for hosting your own repository.
 
 * **Private company packages:** If you are part of a company that uses composer
-  for their packages internally, you might want to keep those packages private.
+	for their packages internally, you might want to keep those packages private.
 
 * **Separate ecosystem:** If you have a project which has its own ecosystem,
-  and the packages aren't really reusable by the greater PHP community, you
-  might want to keep them separate to packagist. An example of this would be
-  wordpress plugins.
+	and the packages aren't really reusable by the greater PHP community, you
+	might want to keep them separate to packagist. An example of this would be
+	wordpress plugins.
 
 When hosting your own package repository it is recommended to use a `composer`
 one. This is type that is native to composer and yields the best performance.
@@ -437,13 +437,13 @@ information.
 You can disable the default Packagist repository by adding this to your
 `composer.json`:
 
-    {
-        "repositories": [
-            {
-                "packagist": false
-            }
-        ]
-    }
+		{
+				"repositories": [
+						{
+								"packagist": false
+						}
+				]
+		}
 
 
-&larr; [Schema](04-schema.md)  |  [Community](06-community.md) &rarr;
+&larr; [Schema](04-schema.md)	|	[Community](06-community.md) &rarr;

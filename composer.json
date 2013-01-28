@@ -1,48 +1,48 @@
 {
-    "name": "composer/composer",
-    "description": "Dependency Manager",
-    "keywords": ["package", "dependency", "autoload"],
-    "homepage": "http://getcomposer.org/",
-    "type": "library",
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "Nils Adermann",
-            "email": "naderman@naderman.de",
-            "homepage": "http://www.naderman.de"
-        },
-        {
-            "name": "Jordi Boggiano",
-            "email": "j.boggiano@seld.be",
-            "homepage": "http://seld.be"
-        }
-    ],
-    "support": {
-        "irc": "irc://irc.freenode.org/composer",
-        "issues": "https://github.com/composer/composer/issues"
-    },
-    "require": {
-        "php": ">=5.3.2",
-        "justinrainbow/json-schema": "1.1.*",
-        "seld/jsonlint": "1.*",
-        "symfony/console": "~2.1@dev",
-        "symfony/finder": "~2.1",
-        "symfony/process": "~2.1@dev"
-    },
-    "require-dev": {
-        "phpunit/phpunit": "~3.7.10"
-    },
-    "suggest": {
-        "ext-zip": "Enabling the zip extension allows you to unzip archives, and allows gzip compression of all internet traffic",
-        "ext-openssl": "Enabling the openssl extension allows you to access https URLs for repositories and packages"
-    },
-    "autoload": {
-        "psr-0": { "Composer": "src/" }
-    },
-    "bin": ["bin/composer"],
-    "extra": {
-        "branch-alias": {
-            "dev-master": "1.0-dev"
-        }
-    }
+		"name": "composer/composer",
+		"description": "Dependency Manager",
+		"keywords": ["package", "dependency", "autoload"],
+		"homepage": "http://getcomposer.org/",
+		"type": "library",
+		"license": "MIT",
+		"authors": [
+				{
+						"name": "Nils Adermann",
+						"email": "naderman@naderman.de",
+						"homepage": "http://www.naderman.de"
+				},
+				{
+						"name": "Jordi Boggiano",
+						"email": "j.boggiano@seld.be",
+						"homepage": "http://seld.be"
+				}
+		],
+		"support": {
+				"irc": "irc://irc.freenode.org/composer",
+				"issues": "https://github.com/composer/composer/issues"
+		},
+		"require": {
+				"php": ">=5.3.2",
+				"justinrainbow/json-schema": "1.1.*",
+				"seld/jsonlint": "1.*",
+				"symfony/console": "~2.1@dev",
+				"symfony/finder": "~2.1",
+				"symfony/process": "~2.1@dev"
+		},
+		"require-dev": {
+				"phpunit/phpunit": "~3.7.10"
+		},
+		"suggest": {
+				"ext-zip": "Enabling the zip extension allows you to unzip archives, and allows gzip compression of all internet traffic",
+				"ext-openssl": "Enabling the openssl extension allows you to access https URLs for repositories and packages"
+		},
+		"autoload": {
+				"psr-0": { "Composer": "src/" }
+		},
+		"bin": ["bin/composer"],
+		"extra": {
+				"branch-alias": {
+						"dev-master": "1.0-dev"
+				}
+		}
 }

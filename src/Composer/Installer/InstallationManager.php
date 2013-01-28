@@ -4,7 +4,7 @@
  * This file is part of Composer.
  *
  * (c) Nils Adermann <naderman@naderman.de>
- *     Jordi Boggiano <j.boggiano@seld.be>
+ *		 Jordi Boggiano <j.boggiano@seld.be>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -32,260 +32,260 @@ use Composer\Util\StreamContextFactory;
  */
 class InstallationManager
 {
-    private $installers = array();
-    private $cache = array();
-    private $notifiablePackages = array();
+		private $installers = array();
+		private $cache = array();
+		private $notifiablePackages = array();
 
-    public function reset()
-    {
-        $this->notifiablePackages = array();
-    }
+		public function reset()
+		{
+				$this->notifiablePackages = array();
+		}
 
-    /**
-     * Adds installer
-     *
-     * @param InstallerInterface $installer installer instance
-     */
-    public function addInstaller(InstallerInterface $installer)
-    {
-        array_unshift($this->installers, $installer);
-        $this->cache = array();
-    }
+		/**
+		 * Adds installer
+		 *
+		 * @param InstallerInterface $installer installer instance
+		 */
+		public function addInstaller(InstallerInterface $installer)
+		{
+				array_unshift($this->installers, $installer);
+				$this->cache = array();
+		}
 
-    /**
-     * Removes installer
-     *
-     * @param InstallerInterface $installer installer instance
-     */
-    public function removeInstaller(InstallerInterface $installer)
-    {
-        if (false !== ($key = array_search($installer, $this->installers, true))) {
-            array_splice($this->installers, $key, 1);
-            $this->cache = array();
-        }
-    }
+		/**
+		 * Removes installer
+		 *
+		 * @param InstallerInterface $installer installer instance
+		 */
+		public function removeInstaller(InstallerInterface $installer)
+		{
+				if (false !== ($key = array_search($installer, $this->installers, true))) {
+						array_splice($this->installers, $key, 1);
+						$this->cache = array();
+				}
+		}
 
-    /**
-     * Disables custom installers.
-     *
-     * We prevent any custom installers from being instantiated by simply
-     * deactivating the installer for them. This ensure that no third-party
-     * code is ever executed.
-     */
-    public function disableCustomInstallers()
-    {
-        foreach ($this->installers as $i => $installer) {
-            if (!$installer instanceof InstallerInstaller) {
-                continue;
-            }
+		/**
+		 * Disables custom installers.
+		 *
+		 * We prevent any custom installers from being instantiated by simply
+		 * deactivating the installer for them. This ensure that no third-party
+		 * code is ever executed.
+		 */
+		public function disableCustomInstallers()
+		{
+				foreach ($this->installers as $i => $installer) {
+						if (!$installer instanceof InstallerInstaller) {
+								continue;
+						}
 
-            unset($this->installers[$i]);
-        }
-    }
+						unset($this->installers[$i]);
+				}
+		}
 
-    /**
-     * Returns installer for a specific package type.
-     *
-     * @param string $type package type
-     *
-     * @return InstallerInterface
-     *
-     * @throws InvalidArgumentException if installer for provided type is not registered
-     */
-    public function getInstaller($type)
-    {
-        $type = strtolower($type);
+		/**
+		 * Returns installer for a specific package type.
+		 *
+		 * @param string $type package type
+		 *
+		 * @return InstallerInterface
+		 *
+		 * @throws InvalidArgumentException if installer for provided type is not registered
+		 */
+		public function getInstaller($type)
+		{
+				$type = strtolower($type);
 
-        if (isset($this->cache[$type])) {
-            return $this->cache[$type];
-        }
+				if (isset($this->cache[$type])) {
+						return $this->cache[$type];
+				}
 
-        foreach ($this->installers as $installer) {
-            if ($installer->supports($type)) {
-                return $this->cache[$type] = $installer;
-            }
-        }
+				foreach ($this->installers as $installer) {
+						if ($installer->supports($type)) {
+								return $this->cache[$type] = $installer;
+						}
+				}
 
-        throw new \InvalidArgumentException('Unknown installer type: '.$type);
-    }
+				throw new \InvalidArgumentException('Unknown installer type: '.$type);
+		}
 
-    /**
-     * Checks whether provided package is installed in one of the registered installers.
-     *
-     * @param InstalledRepositoryInterface $repo    repository in which to check
-     * @param PackageInterface             $package package instance
-     *
-     * @return bool
-     */
-    public function isPackageInstalled(InstalledRepositoryInterface $repo, PackageInterface $package)
-    {
-        if ($package instanceof AliasPackage) {
-            return $repo->hasPackage($package) && $this->isPackageInstalled($repo, $package->getAliasOf());
-        }
+		/**
+		 * Checks whether provided package is installed in one of the registered installers.
+		 *
+		 * @param InstalledRepositoryInterface $repo		repository in which to check
+		 * @param PackageInterface						 $package package instance
+		 *
+		 * @return bool
+		 */
+		public function isPackageInstalled(InstalledRepositoryInterface $repo, PackageInterface $package)
+		{
+				if ($package instanceof AliasPackage) {
+						return $repo->hasPackage($package) && $this->isPackageInstalled($repo, $package->getAliasOf());
+				}
 
-        return $this->getInstaller($package->getType())->isInstalled($repo, $package);
-    }
+				return $this->getInstaller($package->getType())->isInstalled($repo, $package);
+		}
 
-    /**
-     * Executes solver operation.
-     *
-     * @param RepositoryInterface $repo      repository in which to check
-     * @param OperationInterface  $operation operation instance
-     */
-    public function execute(RepositoryInterface $repo, OperationInterface $operation)
-    {
-        $method = $operation->getJobType();
-        $this->$method($repo, $operation);
-    }
+		/**
+		 * Executes solver operation.
+		 *
+		 * @param RepositoryInterface $repo			repository in which to check
+		 * @param OperationInterface	$operation operation instance
+		 */
+		public function execute(RepositoryInterface $repo, OperationInterface $operation)
+		{
+				$method = $operation->getJobType();
+				$this->$method($repo, $operation);
+		}
 
-    /**
-     * Executes install operation.
-     *
-     * @param RepositoryInterface $repo      repository in which to check
-     * @param InstallOperation    $operation operation instance
-     */
-    public function install(RepositoryInterface $repo, InstallOperation $operation)
-    {
-        $package = $operation->getPackage();
-        $installer = $this->getInstaller($package->getType());
-        $installer->install($repo, $package);
-        $this->markForNotification($package);
-    }
+		/**
+		 * Executes install operation.
+		 *
+		 * @param RepositoryInterface $repo			repository in which to check
+		 * @param InstallOperation		$operation operation instance
+		 */
+		public function install(RepositoryInterface $repo, InstallOperation $operation)
+		{
+				$package = $operation->getPackage();
+				$installer = $this->getInstaller($package->getType());
+				$installer->install($repo, $package);
+				$this->markForNotification($package);
+		}
 
-    /**
-     * Executes update operation.
-     *
-     * @param RepositoryInterface $repo      repository in which to check
-     * @param UpdateOperation     $operation operation instance
-     */
-    public function update(RepositoryInterface $repo, UpdateOperation $operation)
-    {
-        $initial = $operation->getInitialPackage();
-        $target = $operation->getTargetPackage();
+		/**
+		 * Executes update operation.
+		 *
+		 * @param RepositoryInterface $repo			repository in which to check
+		 * @param UpdateOperation		 $operation operation instance
+		 */
+		public function update(RepositoryInterface $repo, UpdateOperation $operation)
+		{
+				$initial = $operation->getInitialPackage();
+				$target = $operation->getTargetPackage();
 
-        $initialType = $initial->getType();
-        $targetType  = $target->getType();
+				$initialType = $initial->getType();
+				$targetType	= $target->getType();
 
-        if ($initialType === $targetType) {
-            $installer = $this->getInstaller($initialType);
-            $installer->update($repo, $initial, $target);
-            $this->markForNotification($target);
-        } else {
-            $this->getInstaller($initialType)->uninstall($repo, $initial);
-            $this->getInstaller($targetType)->install($repo, $target);
-        }
-    }
+				if ($initialType === $targetType) {
+						$installer = $this->getInstaller($initialType);
+						$installer->update($repo, $initial, $target);
+						$this->markForNotification($target);
+				} else {
+						$this->getInstaller($initialType)->uninstall($repo, $initial);
+						$this->getInstaller($targetType)->install($repo, $target);
+				}
+		}
 
-    /**
-     * Uninstalls package.
-     *
-     * @param RepositoryInterface $repo      repository in which to check
-     * @param UninstallOperation  $operation operation instance
-     */
-    public function uninstall(RepositoryInterface $repo, UninstallOperation $operation)
-    {
-        $package = $operation->getPackage();
-        $installer = $this->getInstaller($package->getType());
-        $installer->uninstall($repo, $package);
-    }
+		/**
+		 * Uninstalls package.
+		 *
+		 * @param RepositoryInterface $repo			repository in which to check
+		 * @param UninstallOperation	$operation operation instance
+		 */
+		public function uninstall(RepositoryInterface $repo, UninstallOperation $operation)
+		{
+				$package = $operation->getPackage();
+				$installer = $this->getInstaller($package->getType());
+				$installer->uninstall($repo, $package);
+		}
 
-    /**
-     * Executes markAliasInstalled operation.
-     *
-     * @param RepositoryInterface         $repo      repository in which to check
-     * @param MarkAliasInstalledOperation $operation operation instance
-     */
-    public function markAliasInstalled(RepositoryInterface $repo, MarkAliasInstalledOperation $operation)
-    {
-        $package = $operation->getPackage();
+		/**
+		 * Executes markAliasInstalled operation.
+		 *
+		 * @param RepositoryInterface				 $repo			repository in which to check
+		 * @param MarkAliasInstalledOperation $operation operation instance
+		 */
+		public function markAliasInstalled(RepositoryInterface $repo, MarkAliasInstalledOperation $operation)
+		{
+				$package = $operation->getPackage();
 
-        if (!$repo->hasPackage($package)) {
-            $repo->addPackage(clone $package);
-        }
-    }
+				if (!$repo->hasPackage($package)) {
+						$repo->addPackage(clone $package);
+				}
+		}
 
-    /**
-     * Executes markAlias operation.
-     *
-     * @param RepositoryInterface           $repo      repository in which to check
-     * @param MarkAliasUninstalledOperation $operation operation instance
-     */
-    public function markAliasUninstalled(RepositoryInterface $repo, MarkAliasUninstalledOperation $operation)
-    {
-        $package = $operation->getPackage();
+		/**
+		 * Executes markAlias operation.
+		 *
+		 * @param RepositoryInterface					 $repo			repository in which to check
+		 * @param MarkAliasUninstalledOperation $operation operation instance
+		 */
+		public function markAliasUninstalled(RepositoryInterface $repo, MarkAliasUninstalledOperation $operation)
+		{
+				$package = $operation->getPackage();
 
-        $repo->removePackage($package);
-    }
+				$repo->removePackage($package);
+		}
 
-    /**
-     * Returns the installation path of a package
-     *
-     * @param  PackageInterface $package
-     * @return string           path
-     */
-    public function getInstallPath(PackageInterface $package)
-    {
-        $installer = $this->getInstaller($package->getType());
+		/**
+		 * Returns the installation path of a package
+		 *
+		 * @param	PackageInterface $package
+		 * @return string					 path
+		 */
+		public function getInstallPath(PackageInterface $package)
+		{
+				$installer = $this->getInstaller($package->getType());
 
-        return $installer->getInstallPath($package);
-    }
+				return $installer->getInstallPath($package);
+		}
 
-    public function notifyInstalls()
-    {
-        foreach ($this->notifiablePackages as $repoUrl => $packages) {
-            // non-batch API, deprecated
-            if (strpos($repoUrl, '%package%')) {
-                foreach ($packages as $package) {
-                    $url = str_replace('%package%', $package->getPrettyName(), $repoUrl);
+		public function notifyInstalls()
+		{
+				foreach ($this->notifiablePackages as $repoUrl => $packages) {
+						// non-batch API, deprecated
+						if (strpos($repoUrl, '%package%')) {
+								foreach ($packages as $package) {
+										$url = str_replace('%package%', $package->getPrettyName(), $repoUrl);
 
-                    $params = array(
-                        'version' => $package->getPrettyVersion(),
-                        'version_normalized' => $package->getVersion(),
-                    );
-                    $opts = array('http' =>
-                        array(
-                            'method'  => 'POST',
-                            'header'  => array('Content-type: application/x-www-form-urlencoded'),
-                            'content' => http_build_query($params, '', '&'),
-                            'timeout' => 3,
-                        )
-                    );
+										$params = array(
+												'version' => $package->getPrettyVersion(),
+												'version_normalized' => $package->getVersion(),
+										);
+										$opts = array('http' =>
+												array(
+														'method'	=> 'POST',
+														'header'	=> array('Content-type: application/x-www-form-urlencoded'),
+														'content' => http_build_query($params, '', '&'),
+														'timeout' => 3,
+												)
+										);
 
-                    $context = StreamContextFactory::getContext($opts);
-                    @file_get_contents($url, false, $context);
-                }
+										$context = StreamContextFactory::getContext($opts);
+										@file_get_contents($url, false, $context);
+								}
 
-                continue;
-            }
+								continue;
+						}
 
-            $postData = array('downloads' => array());
-            foreach ($packages as $package) {
-                $postData['downloads'][] = array(
-                    'name' => $package->getPrettyName(),
-                    'version' => $package->getVersion(),
-                );
-            }
+						$postData = array('downloads' => array());
+						foreach ($packages as $package) {
+								$postData['downloads'][] = array(
+										'name' => $package->getPrettyName(),
+										'version' => $package->getVersion(),
+								);
+						}
 
-            $opts = array('http' =>
-                array(
-                    'method'  => 'POST',
-                    'header'  => array('Content-Type: application/json'),
-                    'content' => json_encode($postData),
-                    'timeout' => 6,
-                )
-            );
+						$opts = array('http' =>
+								array(
+										'method'	=> 'POST',
+										'header'	=> array('Content-Type: application/json'),
+										'content' => json_encode($postData),
+										'timeout' => 6,
+								)
+						);
 
-            $context = StreamContextFactory::getContext($opts);
-            @file_get_contents($repoUrl, false, $context);
-        }
+						$context = StreamContextFactory::getContext($opts);
+						@file_get_contents($repoUrl, false, $context);
+				}
 
-        $this->reset();
-    }
+				$this->reset();
+		}
 
-    private function markForNotification(PackageInterface $package)
-    {
-        if ($package->getNotificationUrl()) {
-            $this->notifiablePackages[$package->getNotificationUrl()][$package->getName()] = $package;
-        }
-    }
+		private function markForNotification(PackageInterface $package)
+		{
+				if ($package->getNotificationUrl()) {
+						$this->notifiablePackages[$package->getNotificationUrl()][$package->getName()] = $package;
+				}
+		}
 }

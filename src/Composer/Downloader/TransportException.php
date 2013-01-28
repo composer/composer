@@ -4,7 +4,7 @@
  * This file is part of Composer.
  *
  * (c) Nils Adermann <naderman@naderman.de>
- *     Jordi Boggiano <j.boggiano@seld.be>
+ *		 Jordi Boggiano <j.boggiano@seld.be>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -17,15 +17,15 @@ namespace Composer\Downloader;
  */
 class TransportException extends \Exception
 {
-    protected $headers;
+		protected $headers;
 
-    public function setHeaders($headers)
-    {
-        $this->headers = $headers;
-    }
+		public function setHeaders($headers)
+		{
+				$this->headers = $headers;
+		}
 
-    public function getHeaders()
-    {
-        return $this->headers;
-    }
+		public function getHeaders()
+		{
+				return $this->headers;
+		}
 }

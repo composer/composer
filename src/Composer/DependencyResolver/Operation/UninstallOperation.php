@@ -4,7 +4,7 @@
  * This file is part of Composer.
  *
  * (c) Nils Adermann <naderman@naderman.de>
- *     Jordi Boggiano <j.boggiano@seld.be>
+ *		 Jordi Boggiano <j.boggiano@seld.be>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -21,46 +21,46 @@ use Composer\Package\PackageInterface;
  */
 class UninstallOperation extends SolverOperation
 {
-    protected $package;
+		protected $package;
 
-    /**
-     * Initializes operation.
-     *
-     * @param PackageInterface $package package instance
-     * @param string           $reason  operation reason
-     */
-    public function __construct(PackageInterface $package, $reason = null)
-    {
-        parent::__construct($reason);
+		/**
+		 * Initializes operation.
+		 *
+		 * @param PackageInterface $package package instance
+		 * @param string					 $reason	operation reason
+		 */
+		public function __construct(PackageInterface $package, $reason = null)
+		{
+				parent::__construct($reason);
 
-        $this->package = $package;
-    }
+				$this->package = $package;
+		}
 
-    /**
-     * Returns package instance.
-     *
-     * @return PackageInterface
-     */
-    public function getPackage()
-    {
-        return $this->package;
-    }
+		/**
+		 * Returns package instance.
+		 *
+		 * @return PackageInterface
+		 */
+		public function getPackage()
+		{
+				return $this->package;
+		}
 
-    /**
-     * Returns job type.
-     *
-     * @return string
-     */
-    public function getJobType()
-    {
-        return 'uninstall';
-    }
+		/**
+		 * Returns job type.
+		 *
+		 * @return string
+		 */
+		public function getJobType()
+		{
+				return 'uninstall';
+		}
 
-    /**
-     * {@inheritDoc}
-     */
-    public function __toString()
-    {
-        return 'Uninstalling '.$this->package->getPrettyName().' ('.$this->formatVersion($this->package).')';
-    }
+		/**
+		 * {@inheritDoc}
+		 */
+		public function __toString()
+		{
+				return 'Uninstalling '.$this->package->getPrettyName().' ('.$this->formatVersion($this->package).')';
+		}
 }

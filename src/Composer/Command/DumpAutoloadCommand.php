@@ -4,7 +4,7 @@
  * This file is part of Composer.
  *
  * (c) Nils Adermann <naderman@naderman.de>
- *     Jordi Boggiano <j.boggiano@seld.be>
+ *		 Jordi Boggiano <j.boggiano@seld.be>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -23,33 +23,33 @@ use Composer\Autoload\AutoloadGenerator;
  */
 class DumpAutoloadCommand extends Command
 {
-    protected function configure()
-    {
-        $this
-            ->setName('dump-autoload')
-            ->setAliases(array('dumpautoload'))
-            ->setDescription('Dumps the autoloader')
-            ->setDefinition(array(
-                new InputOption('optimize', 'o', InputOption::VALUE_NONE, 'Optimizes PSR0 packages to be loaded with classmaps too, good for production.'),
-            ))
-            ->setHelp(<<<EOT
+		protected function configure()
+		{
+				$this
+						->setName('dump-autoload')
+						->setAliases(array('dumpautoload'))
+						->setDescription('Dumps the autoloader')
+						->setDefinition(array(
+								new InputOption('optimize', 'o', InputOption::VALUE_NONE, 'Optimizes PSR0 packages to be loaded with classmaps too, good for production.'),
+						))
+						->setHelp(<<<EOT
 <info>php composer.phar dump-autoload</info>
 EOT
-            )
-        ;
-    }
+						)
+				;
+		}
 
-    protected function execute(InputInterface $input, OutputInterface $output)
-    {
-        $output->writeln('<info>Generating autoload files</info>');
+		protected function execute(InputInterface $input, OutputInterface $output)
+		{
+				$output->writeln('<info>Generating autoload files</info>');
 
-        $composer = $this->getComposer();
-        $installationManager = $composer->getInstallationManager();
-        $localRepos = new CompositeRepository($composer->getRepositoryManager()->getLocalRepositories());
-        $package = $composer->getPackage();
-        $config = $composer->getConfig();
+				$composer = $this->getComposer();
+				$installationManager = $composer->getInstallationManager();
+				$localRepos = new CompositeRepository($composer->getRepositoryManager()->getLocalRepositories());
+				$package = $composer->getPackage();
+				$config = $composer->getConfig();
 
-        $generator = new AutoloadGenerator();
-        $generator->dump($config, $localRepos, $package, $installationManager, 'composer', $input->getOption('optimize'));
-    }
+				$generator = new AutoloadGenerator();
+				$generator->dump($config, $localRepos, $package, $installationManager, 'composer', $input->getOption('optimize'));
+		}
 }

@@ -57,14 +57,14 @@ This must follow the format of `X.Y.Z` with an optional suffix of `-dev`,
 
 Examples:
 
-    1.0.0
-    1.0.2
-    1.1.0
-    0.2.5
-    1.0.0-dev
-    1.0.0-alpha3
-    1.0.0-beta2
-    1.0.0-RC5
+		1.0.0
+		1.0.2
+		1.1.0
+		0.2.5
+		1.0.0-dev
+		1.0.0-alpha3
+		1.0.0-beta2
+		1.0.0-RC5
 
 Optional if the package repository can infer the version from somewhere, such
 as the VCS tag name in the VCS repository. In that case it is also recommended
@@ -88,12 +88,12 @@ Out of the box, composer supports three types:
 
 - **library:** This is the default. It will simply copy the files to `vendor`.
 - **metapackage:** An empty package that contains requirements and will trigger
-  their installation, but contains no files and will not write anything to the
-  filesystem. As such, it does not require a dist or source key to be
-  installable.
+	their installation, but contains no files and will not write anything to the
+	filesystem. As such, it does not require a dist or source key to be
+	installable.
 - **composer-installer:** A package of type `composer-installer` provides an
-  installer for other packages that have a custom type. Read more in the
-  [dedicated article](articles/custom-installers.md).
+	installer for other packages that have a custom type. Read more in the
+	[dedicated article](articles/custom-installers.md).
 
 Only use a custom type if you need custom logic during installation. It is
 recommended to omit this field and have it just default to `library`.
@@ -105,11 +105,11 @@ searching and filtering.
 
 Examples:
 
-    logging
-    events
-    database
-    redis
-    templating
+		logging
+		events
+		database
+		redis
+		templating
 
 Optional.
 
@@ -133,28 +133,28 @@ The license of the package. This can be either a string or an array of strings.
 
 The recommended notation for the most common licenses is (alphabetical):
 
-    Apache-2.0
-    BSD-2-Clause
-    BSD-3-Clause
-    BSD-4-Clause
-    GPL-2.0
-    GPL-2.0+
-    GPL-3.0
-    GPL-3.0+
-    LGPL-2.1
-    LGPL-2.1+
-    LGPL-3.0
-    LGPL-3.0+
-    MIT
+		Apache-2.0
+		BSD-2-Clause
+		BSD-3-Clause
+		BSD-4-Clause
+		GPL-2.0
+		GPL-2.0+
+		GPL-3.0
+		GPL-3.0+
+		LGPL-2.1
+		LGPL-2.1+
+		LGPL-3.0
+		LGPL-3.0+
+		MIT
 
 Optional, but it is highly recommended to supply this. More identifiers are
 listed at the [SPDX Open Source License Registry](http://www.spdx.org/licenses/).
 
 An Example:
 
-    {
-        "license": "MIT"
-    }
+		{
+				"license": "MIT"
+		}
 
 
 For a package, when there is a choice between licenses ("disjunctive license"),
@@ -162,18 +162,18 @@ multiple can be specified as array.
 
 An Example for disjunctive licenses:
 
-    {
-        "license": [
-           "LGPL-2.1",
-           "GPL-3.0+"
-        ]
-    }
+		{
+				"license": [
+					 "LGPL-2.1",
+					 "GPL-3.0+"
+				]
+		}
 
 Alternatively they can be separated with "or" and enclosed in parenthesis;
 
-    {
-        "license": "(LGPL-2.1 or GPL-3.0+)"
-    }
+		{
+				"license": "(LGPL-2.1 or GPL-3.0+)"
+		}
 
 Similarly when multiple licenses need to be applied ("conjunctive license"),
 they should be separated with "and" and enclosed in parenthesis.
@@ -191,22 +191,22 @@ Each author object can have following properties:
 
 An example:
 
-    {
-        "authors": [
-            {
-                "name": "Nils Adermann",
-                "email": "naderman@naderman.de",
-                "homepage": "http://www.naderman.de",
-                "role": "Developer"
-            },
-            {
-                "name": "Jordi Boggiano",
-                "email": "j.boggiano@seld.be",
-                "homepage": "http://seld.be",
-                "role": "Developer"
-            }
-        ]
-    }
+		{
+				"authors": [
+						{
+								"name": "Nils Adermann",
+								"email": "naderman@naderman.de",
+								"homepage": "http://www.naderman.de",
+								"role": "Developer"
+						},
+						{
+								"name": "Jordi Boggiano",
+								"email": "j.boggiano@seld.be",
+								"homepage": "http://seld.be",
+								"role": "Developer"
+						}
+				]
+		}
 
 Optional, but highly recommended.
 
@@ -225,12 +225,12 @@ Support information includes the following:
 
 An example:
 
-    {
-        "support": {
-            "email": "support@example.org",
-            "irc": "irc://irc.freenode.org/composer"
-        }
-    }
+		{
+				"support": {
+						"email": "support@example.org",
+						"irc": "irc://irc.freenode.org/composer"
+				}
+		}
 
 Optional.
 
@@ -241,11 +241,11 @@ All of the following take an object which maps package names to
 
 Example:
 
-    {
-        "require": {
-            "monolog/monolog": "1.0.*"
-        }
-    }
+		{
+				"require": {
+						"monolog/monolog": "1.0.*"
+				}
+		}
 
 All links are optional fields.
 
@@ -257,12 +257,12 @@ allow unstable packages of a dependency's dependency for example.
 
 Example:
 
-    {
-        "require": {
-            "monolog/monolog": "1.0.*@beta",
-            "acme/foo": "@dev"
-        }
-    }
+		{
+				"require": {
+						"monolog/monolog": "1.0.*@beta",
+						"acme/foo": "@dev"
+				}
+		}
 
 `require` and `require-dev` additionally support explicit references (i.e.
 commit) for dev versions to make sure they are locked to a given state, even
@@ -274,12 +274,12 @@ if the project you work on will not be touched for a while.
 
 Example:
 
-    {
-        "require": {
-            "monolog/monolog": "dev-master#2eb0c0978d290a1c45346a1955188929cb4e5db7",
-            "acme/foo": "1.0.x-dev#abc123"
-        }
-    }
+		{
+				"require": {
+						"monolog/monolog": "dev-master#2eb0c0978d290a1c45346a1955188929cb4e5db7",
+						"acme/foo": "1.0.x-dev#abc123"
+				}
+		}
 
 It is possible to inline-alias a package constraint so that it matches a
 constraint that it otherwise would not. For more information [see the
@@ -348,11 +348,11 @@ and not version constraints.
 
 Example:
 
-    {
-        "suggest": {
-            "monolog/monolog": "Allows more advanced logging of the application flow"
-        }
-    }
+		{
+				"suggest": {
+						"monolog/monolog": "Allows more advanced logging of the application flow"
+				}
+		}
 
 ### autoload
 
@@ -373,44 +373,44 @@ array which may be found in the generated file `vendor/composer/autoload_namespa
 
 Example:
 
-    {
-        "autoload": {
-            "psr-0": {
-                "Monolog": "src/",
-                "Vendor\\Namespace\\": "src/",
-                "Vendor_Namespace_": "src/"
-            }
-        }
-    }
+		{
+				"autoload": {
+						"psr-0": {
+								"Monolog": "src/",
+								"Vendor\\Namespace\\": "src/",
+								"Vendor_Namespace_": "src/"
+						}
+				}
+		}
 
 If you need to search for a same prefix in multiple directories,
 you can specify them as an array as such:
 
-    {
-        "autoload": {
-            "psr-0": { "Monolog": ["src/", "lib/"] }
-        }
-    }
+		{
+				"autoload": {
+						"psr-0": { "Monolog": ["src/", "lib/"] }
+				}
+		}
 
 The PSR-0 style is not limited to namespace declarations only but may be
 specified right down to the class level. This can be useful for libraries with
 only one class in the global namespace. If the php source file is also located
 in the root of the package, for example, it may be declared like this:
 
-    {
-        "autoload": {
-            "psr-0": { "UniqueGlobalClass": "" }
-        }
-    }
+		{
+				"autoload": {
+						"psr-0": { "UniqueGlobalClass": "" }
+				}
+		}
 
 If you want to have a fallback directory where any namespace can be, you can
 use an empty prefix like:
 
-    {
-        "autoload": {
-            "psr-0": { "": "src/" }
-        }
-    }
+		{
+				"autoload": {
+						"psr-0": { "": "src/" }
+				}
+		}
 
 #### Classmap
 
@@ -425,11 +425,11 @@ to search for classes.
 
 Example:
 
-    {
-        "autoload": {
-            "classmap": ["src/", "lib/", "Something.php"]
-        }
-    }
+		{
+				"autoload": {
+						"classmap": ["src/", "lib/", "Something.php"]
+				}
+		}
 
 #### Files
 
@@ -439,11 +439,11 @@ that cannot be autoloaded by PHP.
 
 Example:
 
-    {
-        "autoload": {
-            "files": ["src/MyLibrary/functions.php"]
-        }
-    }
+		{
+				"autoload": {
+						"files": ["src/MyLibrary/functions.php"]
+				}
+		}
 
 ### include-path
 
@@ -455,9 +455,9 @@ A list of paths which should get appended to PHP's `include_path`.
 
 Example:
 
-    {
-        "include-path": ["lib/"]
-    }
+		{
+				"include-path": ["lib/"]
+		}
 
 Optional.
 
@@ -477,12 +477,12 @@ it from `vendor/symfony/yaml`.
 
 To do that, `autoload` and `target-dir` are defined as follows:
 
-    {
-        "autoload": {
-            "psr-0": { "Symfony\\Component\\Yaml": "" }
-        },
-        "target-dir": "Symfony/Component/Yaml"
-    }
+		{
+				"autoload": {
+						"psr-0": { "Symfony\\Component\\Yaml": "" }
+				},
+				"target-dir": "Symfony/Component/Yaml"
+		}
 
 Optional.
 
@@ -515,63 +515,63 @@ ignored.
 The following repository types are supported:
 
 * **composer:** A composer repository is simply a `packages.json` file served
-  via the network (HTTP, FTP, SSH), that contains a list of `composer.json`
-  objects with additional `dist` and/or `source` information. The `packages.json`
-  file is loaded using a PHP stream. You can set extra options on that stream
-  using the `options` parameter.
+	via the network (HTTP, FTP, SSH), that contains a list of `composer.json`
+	objects with additional `dist` and/or `source` information. The `packages.json`
+	file is loaded using a PHP stream. You can set extra options on that stream
+	using the `options` parameter.
 * **vcs:** The version control system repository can fetch packages from git,
-  svn and hg repositories.
+	svn and hg repositories.
 * **pear:** With this you can import any pear repository into your composer
-  project.
+	project.
 * **package:** If you depend on a project that does not have any support for
-  composer whatsoever you can define the package inline using a `package`
-  repository. You basically just inline the `composer.json` object.
+	composer whatsoever you can define the package inline using a `package`
+	repository. You basically just inline the `composer.json` object.
 
 For more information on any of these, see [Repositories](05-repositories.md).
 
 Example:
 
-    {
-        "repositories": [
-            {
-                "type": "composer",
-                "url": "http://packages.example.com"
-            },
-            {
-                "type": "composer",
-                "url": "https://packages.example.com",
-                "options": {
-                    "ssl": {
-                        "verify_peer": "true"
-                    }
-                }
-            },
-            {
-                "type": "vcs",
-                "url": "https://github.com/Seldaek/monolog"
-            },
-            {
-                "type": "pear",
-                "url": "http://pear2.php.net"
-            },
-            {
-                "type": "package",
-                "package": {
-                    "name": "smarty/smarty",
-                    "version": "3.1.7",
-                    "dist": {
-                        "url": "http://www.smarty.net/files/Smarty-3.1.7.zip",
-                        "type": "zip"
-                    },
-                    "source": {
-                        "url": "http://smarty-php.googlecode.com/svn/",
-                        "type": "svn",
-                        "reference": "tags/Smarty_3_1_7/distribution/"
-                    }
-                }
-            }
-        ]
-    }
+		{
+				"repositories": [
+						{
+								"type": "composer",
+								"url": "http://packages.example.com"
+						},
+						{
+								"type": "composer",
+								"url": "https://packages.example.com",
+								"options": {
+										"ssl": {
+												"verify_peer": "true"
+										}
+								}
+						},
+						{
+								"type": "vcs",
+								"url": "https://github.com/Seldaek/monolog"
+						},
+						{
+								"type": "pear",
+								"url": "http://pear2.php.net"
+						},
+						{
+								"type": "package",
+								"package": {
+										"name": "smarty/smarty",
+										"version": "3.1.7",
+										"dist": {
+												"url": "http://www.smarty.net/files/Smarty-3.1.7.zip",
+												"type": "zip"
+										},
+										"source": {
+												"url": "http://smarty-php.googlecode.com/svn/",
+												"type": "svn",
+												"reference": "tags/Smarty_3_1_7/distribution/"
+										}
+								}
+						}
+				]
+		}
 
 > **Note:** Order is significant here. When looking for a package, Composer
 will look from the first to the last repository, and pick the first match.
@@ -585,43 +585,43 @@ A set of configuration options. It is only used for projects.
 The following options are supported:
 
 * **vendor-dir:** Defaults to `vendor`. You can install dependencies into a
-  different directory if you want to.
+	different directory if you want to.
 * **bin-dir:** Defaults to `vendor/bin`. If a project includes binaries, they
-  will be symlinked into this directory.
+	will be symlinked into this directory.
 * **process-timeout:** Defaults to `300`. The duration processes like git clones
-  can run before Composer assumes they died out. You may need to make this
-  higher if you have a slow connection or huge vendors.
+	can run before Composer assumes they died out. You may need to make this
+	higher if you have a slow connection or huge vendors.
 * **github-protocols:** Defaults to `["git", "https", "http"]`. A list of
-  protocols to use for github.com clones, in priority order. Use this if you are
-  behind a proxy or have somehow bad performances with the git protocol.
+	protocols to use for github.com clones, in priority order. Use this if you are
+	behind a proxy or have somehow bad performances with the git protocol.
 * **github-oauth:** A list of domain names and oauth keys. For example using
-  `{"github.com": "oauthtoken"}` as the value of this option will use `oauthtoken`
-  to access private repositories on github and to circumvent the low IP-based
-  rate limiting of their API.
+	`{"github.com": "oauthtoken"}` as the value of this option will use `oauthtoken`
+	to access private repositories on github and to circumvent the low IP-based
+	rate limiting of their API.
 * **cache-dir:** Defaults to `$home/cache` on unix systems and
-  `C:\Users\<user>\AppData\Local\Composer` on Windows. Stores all the caches
-  used by composer. See also [COMPOSER_HOME](03-cli.md#composer-home).
+	`C:\Users\<user>\AppData\Local\Composer` on Windows. Stores all the caches
+	used by composer. See also [COMPOSER_HOME](03-cli.md#composer-home).
 * **cache-files-dir:** Defaults to `$cache-dir/files`. Stores the zip archives
-  of packages.
+	of packages.
 * **cache-repo-dir:** Defaults to `$cache-dir/repo`. Stores repository metadata
-  for the `composer` type and the VCS repos of type `svn`, `github` and `*bitbucket`.
+	for the `composer` type and the VCS repos of type `svn`, `github` and `*bitbucket`.
 * **cache-vcs-dir:** Defaults to `$cache-dir/vcs`. Stores VCS clones for
-  loading VCS repository metadata for the `git`/`hg` types and to speed up installs.
+	loading VCS repository metadata for the `git`/`hg` types and to speed up installs.
 * **cache-files-ttl:** Defaults to `15552000` (6 months). Composer caches all
-  dist (zip, tar, ..) packages that it downloads. Those are purged after six
-  months of being unused by default. This option allows you to tweak this
-  duration (in seconds) or disable it completely by setting it to 0.
+	dist (zip, tar, ..) packages that it downloads. Those are purged after six
+	months of being unused by default. This option allows you to tweak this
+	duration (in seconds) or disable it completely by setting it to 0.
 * **notify-on-install:** Defaults to `true`. Composer allows repositories to
-  define a notification URL, so that they get notified whenever a package from
-  that repository is installed. This option allows you to disable that behaviour.
+	define a notification URL, so that they get notified whenever a package from
+	that repository is installed. This option allows you to disable that behaviour.
 
 Example:
 
-    {
-        "config": {
-            "bin-dir": "bin"
-        }
-    }
+		{
+				"config": {
+						"bin-dir": "bin"
+				}
+		}
 
 ### scripts <span>(root-only)</span>
 
@@ -637,7 +637,7 @@ Arbitrary extra data for consumption by `scripts`.
 This can be virtually anything. To access it from within a script event
 handler, you can do:
 
-    $extra = $event->getComposer()->getPackage()->getExtra();
+		$extra = $event->getComposer()->getPackage()->getExtra();
 
 Optional.
 
@@ -650,4 +650,4 @@ See [Vendor Binaries](articles/vendor-binaries.md) for more details.
 
 Optional.
 
-&larr; [Command-line interface](03-cli.md)  |  [Repositories](05-repositories.md) &rarr;
+&larr; [Command-line interface](03-cli.md)	|	[Repositories](05-repositories.md) &rarr;

@@ -2,68 +2,68 @@
 Update aliased package does not mess up the lock file
 --COMPOSER--
 {
-    "repositories": [
-        {
-            "type": "package",
-            "package": [
-                {
-                    "name": "a/a", "version": "dev-master",
-                    "extra": { "branch-alias": { "dev-master": "1.0.x-dev" } },
-                    "source": { "reference": "master", "type": "git", "url": "" }
-                }
-            ]
-        },
-        {
-            "type": "package",
-            "package": [
-                {
-                    "name": "a/a", "version": "dev-master",
-                    "extra": { "branch-alias": { "dev-master": "1.0.x-dev" } },
-                    "source": { "reference": "lowpriomaster", "type": "git", "url": "" }
-                }
-            ]
-        }
-    ],
-    "require": {
-        "a/a": "1.*"
-    },
-    "minimum-stability": "dev"
+		"repositories": [
+				{
+						"type": "package",
+						"package": [
+								{
+										"name": "a/a", "version": "dev-master",
+										"extra": { "branch-alias": { "dev-master": "1.0.x-dev" } },
+										"source": { "reference": "master", "type": "git", "url": "" }
+								}
+						]
+				},
+				{
+						"type": "package",
+						"package": [
+								{
+										"name": "a/a", "version": "dev-master",
+										"extra": { "branch-alias": { "dev-master": "1.0.x-dev" } },
+										"source": { "reference": "lowpriomaster", "type": "git", "url": "" }
+								}
+						]
+				}
+		],
+		"require": {
+				"a/a": "1.*"
+		},
+		"minimum-stability": "dev"
 }
 --LOCK--
 {
-    "packages": [
-        { "package": "a/a", "version": "dev-master", "source-reference": "1234" },
-        { "package": "a/a", "version": "dev-master", "alias-pretty-version": "1.0.x-dev", "alias-version": "1.0.9999999.9999999-dev" }
-    ],
-    "packages-dev": null,
-    "aliases": [],
-    "minimum-stability": "dev",
-    "stability-flags": []
+		"packages": [
+				{ "package": "a/a", "version": "dev-master", "source-reference": "1234" },
+				{ "package": "a/a", "version": "dev-master", "alias-pretty-version": "1.0.x-dev", "alias-version": "1.0.9999999.9999999-dev" }
+		],
+		"packages-dev": null,
+		"aliases": [],
+		"minimum-stability": "dev",
+		"stability-flags": []
 }
 --INSTALLED--
 [
-    {
-        "name": "a/a", "version": "dev-master",
-        "extra": { "branch-alias": { "dev-master": "1.0.x-dev" } },
-        "source": { "reference": "1234", "type": "git", "url": "" }
-    }
+		{
+				"name": "a/a", "version": "dev-master",
+				"extra": { "branch-alias": { "dev-master": "1.0.x-dev" } },
+				"source": { "reference": "1234", "type": "git", "url": "" }
+		}
 ]
 --RUN--
 update
 --EXPECT-LOCK--
 {
-    "packages": [
-        {
-            "name": "a/a", "version": "dev-master",
-            "extra": { "branch-alias": { "dev-master": "1.0.x-dev" } },
-            "source": { "reference": "master", "type": "git", "url": "" },
-            "type": "library"
-        }
-    ],
-    "packages-dev": null,
-    "aliases": [],
-    "minimum-stability": "dev",
-    "stability-flags": []
+		"packages": [
+				{
+						"name": "a/a", "version": "dev-master",
+						"extra": { "branch-alias": { "dev-master": "1.0.x-dev" } },
+						"source": { "reference": "master", "type": "git", "url": "" },
+						"type": "library"
+				}
+		],
+		"packages-dev": null,
+		"aliases": [],
+		"minimum-stability": "dev",
+		"stability-flags": []
 }
 --EXPECT--
 Updating a/a (dev-master 1234) to a/a (dev-master master)

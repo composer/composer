@@ -4,7 +4,7 @@
  * This file is part of Composer.
  *
  * (c) Nils Adermann <naderman@naderman.de>
- *     Jordi Boggiano <j.boggiano@seld.be>
+ *		 Jordi Boggiano <j.boggiano@seld.be>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -20,238 +20,238 @@ use Composer\IO\IOInterface;
  */
 class Svn
 {
-    /**
-     * @var array
-     */
-    protected $credentials;
+		/**
+		 * @var array
+		 */
+		protected $credentials;
 
-    /**
-     * @var bool
-     */
-    protected $hasAuth;
+		/**
+		 * @var bool
+		 */
+		protected $hasAuth;
 
-    /**
-     * @var \Composer\IO\IOInterface
-     */
-    protected $io;
+		/**
+		 * @var \Composer\IO\IOInterface
+		 */
+		protected $io;
 
-    /**
-     * @var string
-     */
-    protected $url;
+		/**
+		 * @var string
+		 */
+		protected $url;
 
-    /**
-     * @var bool
-     */
-    protected $cacheCredentials = true;
+		/**
+		 * @var bool
+		 */
+		protected $cacheCredentials = true;
 
-    /**
-     * @var ProcessExecutor
-     */
-    protected $process;
+		/**
+		 * @var ProcessExecutor
+		 */
+		protected $process;
 
-    /**
-     * @param string                   $url
-     * @param \Composer\IO\IOInterface $io
-     * @param ProcessExecutor          $process
-     */
-    public function __construct($url, IOInterface $io, ProcessExecutor $process = null)
-    {
-        $this->url = $url;
-        $this->io  = $io;
-        $this->process = $process ?: new ProcessExecutor;
-    }
+		/**
+		 * @param string									 $url
+		 * @param \Composer\IO\IOInterface $io
+		 * @param ProcessExecutor					$process
+		 */
+		public function __construct($url, IOInterface $io, ProcessExecutor $process = null)
+		{
+				$this->url = $url;
+				$this->io	= $io;
+				$this->process = $process ?: new ProcessExecutor;
+		}
 
-    /**
-     * Execute an SVN command and try to fix up the process with credentials
-     * if necessary.
-     *
-     * @param string $command SVN command to run
-     * @param string $url     SVN url
-     * @param string $cwd     Working directory
-     * @param string $path    Target for a checkout
-     * @param bool   $verbose Output all output to the user
-     *
-     * @return string
-     *
-     * @throws \RuntimeException
-     */
-    public function execute($command, $url, $cwd = null, $path = null, $verbose = false)
-    {
-        $svnCommand = $this->getCommand($command, $url, $path);
-        $output = null;
-        $io = $this->io;
-        $handler = function ($type, $buffer) use (&$output, $io, $verbose) {
-            if ($type !== 'out') {
-                return;
-            }
-            $output .= $buffer;
-            if ($verbose) {
-                $io->write($buffer, false);
-            }
-        };
-        $status = $this->process->execute($svnCommand, $handler, $cwd);
-        if (0 === $status) {
-            return $output;
-        }
+		/**
+		 * Execute an SVN command and try to fix up the process with credentials
+		 * if necessary.
+		 *
+		 * @param string $command SVN command to run
+		 * @param string $url		 SVN url
+		 * @param string $cwd		 Working directory
+		 * @param string $path		Target for a checkout
+		 * @param bool	 $verbose Output all output to the user
+		 *
+		 * @return string
+		 *
+		 * @throws \RuntimeException
+		 */
+		public function execute($command, $url, $cwd = null, $path = null, $verbose = false)
+		{
+				$svnCommand = $this->getCommand($command, $url, $path);
+				$output = null;
+				$io = $this->io;
+				$handler = function ($type, $buffer) use (&$output, $io, $verbose) {
+						if ($type !== 'out') {
+								return;
+						}
+						$output .= $buffer;
+						if ($verbose) {
+								$io->write($buffer, false);
+						}
+				};
+				$status = $this->process->execute($svnCommand, $handler, $cwd);
+				if (0 === $status) {
+						return $output;
+				}
 
-        if (empty($output)) {
-            $output = $this->process->getErrorOutput();
-        }
+				if (empty($output)) {
+						$output = $this->process->getErrorOutput();
+				}
 
-        // the error is not auth-related
-        if (false === stripos($output, 'Could not authenticate to server:')) {
-            throw new \RuntimeException($output);
-        }
+				// the error is not auth-related
+				if (false === stripos($output, 'Could not authenticate to server:')) {
+						throw new \RuntimeException($output);
+				}
 
-        // no auth supported for non interactive calls
-        if (!$this->io->isInteractive()) {
-            throw new \RuntimeException(
-                'can not ask for authentication in non interactive mode ('.$output.')'
-            );
-        }
+				// no auth supported for non interactive calls
+				if (!$this->io->isInteractive()) {
+						throw new \RuntimeException(
+								'can not ask for authentication in non interactive mode ('.$output.')'
+						);
+				}
 
-        // TODO keep a count of user auth attempts and ask 5 times before
-        // failing hard (currently it fails hard directly if the URL has credentials)
+				// TODO keep a count of user auth attempts and ask 5 times before
+				// failing hard (currently it fails hard directly if the URL has credentials)
 
-        // try to authenticate
-        if (!$this->hasAuth()) {
-            $this->doAuthDance();
+				// try to authenticate
+				if (!$this->hasAuth()) {
+						$this->doAuthDance();
 
-            // restart the process
-            return $this->execute($command, $url, $cwd, $path, $verbose);
-        }
+						// restart the process
+						return $this->execute($command, $url, $cwd, $path, $verbose);
+				}
 
-        throw new \RuntimeException(
-            'wrong credentials provided ('.$output.')'
-        );
-    }
+				throw new \RuntimeException(
+						'wrong credentials provided ('.$output.')'
+				);
+		}
 
-    /**
-     * Repositories requests credentials, let's put them in.
-     *
-     * @return \Composer\Util\Svn
-     */
-    protected function doAuthDance()
-    {
-        $this->io->write("The Subversion server ({$this->url}) requested credentials:");
+		/**
+		 * Repositories requests credentials, let's put them in.
+		 *
+		 * @return \Composer\Util\Svn
+		 */
+		protected function doAuthDance()
+		{
+				$this->io->write("The Subversion server ({$this->url}) requested credentials:");
 
-        $this->hasAuth = true;
-        $this->credentials['username'] = $this->io->ask("Username: ");
-        $this->credentials['password'] = $this->io->askAndHideAnswer("Password: ");
+				$this->hasAuth = true;
+				$this->credentials['username'] = $this->io->ask("Username: ");
+				$this->credentials['password'] = $this->io->askAndHideAnswer("Password: ");
 
-        $this->cacheCredentials = $this->io->askConfirmation("Should Subversion cache these credentials? (yes/no) ", true);
+				$this->cacheCredentials = $this->io->askConfirmation("Should Subversion cache these credentials? (yes/no) ", true);
 
-        return $this;
-    }
+				return $this;
+		}
 
-    /**
-     * A method to create the svn commands run.
-     *
-     * @param string $cmd  Usually 'svn ls' or something like that.
-     * @param string $url  Repo URL.
-     * @param string $path Target for a checkout
-     *
-     * @return string
-     */
-    protected function getCommand($cmd, $url, $path = null)
-    {
-        $cmd = sprintf('%s %s%s %s',
-            $cmd,
-            '--non-interactive ',
-            $this->getCredentialString(),
-            escapeshellarg($url)
-        );
+		/**
+		 * A method to create the svn commands run.
+		 *
+		 * @param string $cmd	Usually 'svn ls' or something like that.
+		 * @param string $url	Repo URL.
+		 * @param string $path Target for a checkout
+		 *
+		 * @return string
+		 */
+		protected function getCommand($cmd, $url, $path = null)
+		{
+				$cmd = sprintf('%s %s%s %s',
+						$cmd,
+						'--non-interactive ',
+						$this->getCredentialString(),
+						escapeshellarg($url)
+				);
 
-        if ($path) {
-            $cmd .= ' ' . escapeshellarg($path);
-        }
+				if ($path) {
+						$cmd .= ' ' . escapeshellarg($path);
+				}
 
-        return $cmd;
-    }
+				return $cmd;
+		}
 
-    /**
-     * Return the credential string for the svn command.
-     *
-     * Adds --no-auth-cache when credentials are present.
-     *
-     * @return string
-     */
-    protected function getCredentialString()
-    {
-        if (!$this->hasAuth()) {
-            return '';
-        }
+		/**
+		 * Return the credential string for the svn command.
+		 *
+		 * Adds --no-auth-cache when credentials are present.
+		 *
+		 * @return string
+		 */
+		protected function getCredentialString()
+		{
+				if (!$this->hasAuth()) {
+						return '';
+				}
 
-        return sprintf(
-            ' %s--username %s --password %s ',
-            $this->getAuthCache(),
-            escapeshellarg($this->getUsername()),
-            escapeshellarg($this->getPassword())
-        );
-    }
+				return sprintf(
+						' %s--username %s --password %s ',
+						$this->getAuthCache(),
+						escapeshellarg($this->getUsername()),
+						escapeshellarg($this->getPassword())
+				);
+		}
 
-    /**
-     * Get the password for the svn command. Can be empty.
-     *
-     * @return string
-     * @throws \LogicException
-     */
-    protected function getPassword()
-    {
-        if ($this->credentials === null) {
-            throw new \LogicException("No svn auth detected.");
-        }
+		/**
+		 * Get the password for the svn command. Can be empty.
+		 *
+		 * @return string
+		 * @throws \LogicException
+		 */
+		protected function getPassword()
+		{
+				if ($this->credentials === null) {
+						throw new \LogicException("No svn auth detected.");
+				}
 
-        return isset($this->credentials['password']) ? $this->credentials['password'] : '';
-    }
+				return isset($this->credentials['password']) ? $this->credentials['password'] : '';
+		}
 
-    /**
-     * Get the username for the svn command.
-     *
-     * @return string
-     * @throws \LogicException
-     */
-    protected function getUsername()
-    {
-        if ($this->credentials === null) {
-            throw new \LogicException("No svn auth detected.");
-        }
+		/**
+		 * Get the username for the svn command.
+		 *
+		 * @return string
+		 * @throws \LogicException
+		 */
+		protected function getUsername()
+		{
+				if ($this->credentials === null) {
+						throw new \LogicException("No svn auth detected.");
+				}
 
-        return $this->credentials['username'];
-    }
+				return $this->credentials['username'];
+		}
 
-    /**
-     * Detect Svn Auth.
-     *
-     * @return bool
-     */
-    protected function hasAuth()
-    {
-        if (null !== $this->hasAuth) {
-            return $this->hasAuth;
-        }
+		/**
+		 * Detect Svn Auth.
+		 *
+		 * @return bool
+		 */
+		protected function hasAuth()
+		{
+				if (null !== $this->hasAuth) {
+						return $this->hasAuth;
+				}
 
-        $uri = parse_url($this->url);
-        if (empty($uri['user'])) {
-            return $this->hasAuth = false;
-        }
+				$uri = parse_url($this->url);
+				if (empty($uri['user'])) {
+						return $this->hasAuth = false;
+				}
 
-        $this->credentials['username'] = $uri['user'];
-        if (!empty($uri['pass'])) {
-            $this->credentials['password'] = $uri['pass'];
-        }
+				$this->credentials['username'] = $uri['user'];
+				if (!empty($uri['pass'])) {
+						$this->credentials['password'] = $uri['pass'];
+				}
 
-        return $this->hasAuth = true;
-    }
+				return $this->hasAuth = true;
+		}
 
-    /**
-     * Return the no-auth-cache switch.
-     *
-     * @return string
-     */
-    protected function getAuthCache()
-    {
-        return $this->cacheCredentials ? '' : '--no-auth-cache ';
-    }
+		/**
+		 * Return the no-auth-cache switch.
+		 *
+		 * @return string
+		 */
+		protected function getAuthCache()
+		{
+				return $this->cacheCredentials ? '' : '--no-auth-cache ';
+		}
 }

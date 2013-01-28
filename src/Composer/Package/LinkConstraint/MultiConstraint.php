@@ -4,7 +4,7 @@
  * This file is part of Composer.
  *
  * (c) Nils Adermann <naderman@naderman.de>
- *     Jordi Boggiano <j.boggiano@seld.be>
+ *		 Jordi Boggiano <j.boggiano@seld.be>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -19,51 +19,51 @@ namespace Composer\Package\LinkConstraint;
  */
 class MultiConstraint implements LinkConstraintInterface
 {
-    protected $constraints;
-    protected $prettyString;
+		protected $constraints;
+		protected $prettyString;
 
-    /**
-     * Sets operator and version to compare a package with
-     *
-     * @param array $constraints A conjunctive set of constraints
-     */
-    public function __construct(array $constraints)
-    {
-        $this->constraints = $constraints;
-    }
+		/**
+		 * Sets operator and version to compare a package with
+		 *
+		 * @param array $constraints A conjunctive set of constraints
+		 */
+		public function __construct(array $constraints)
+		{
+				$this->constraints = $constraints;
+		}
 
-    public function matches(LinkConstraintInterface $provider)
-    {
-        foreach ($this->constraints as $constraint) {
-            if (!$constraint->matches($provider)) {
-                return false;
-            }
-        }
+		public function matches(LinkConstraintInterface $provider)
+		{
+				foreach ($this->constraints as $constraint) {
+						if (!$constraint->matches($provider)) {
+								return false;
+						}
+				}
 
-        return true;
-    }
+				return true;
+		}
 
-    public function setPrettyString($prettyString)
-    {
-        $this->prettyString = $prettyString;
-    }
+		public function setPrettyString($prettyString)
+		{
+				$this->prettyString = $prettyString;
+		}
 
-    public function getPrettyString()
-    {
-        if ($this->prettyString) {
-            return $this->prettyString;
-        }
+		public function getPrettyString()
+		{
+				if ($this->prettyString) {
+						return $this->prettyString;
+				}
 
-        return $this->__toString();
-    }
+				return $this->__toString();
+		}
 
-    public function __toString()
-    {
-        $constraints = array();
-        foreach ($this->constraints as $constraint) {
-            $constraints[] = $constraint->__toString();
-        }
+		public function __toString()
+		{
+				$constraints = array();
+				foreach ($this->constraints as $constraint) {
+						$constraints[] = $constraint->__toString();
+				}
 
-        return '['.implode(', ', $constraints).']';
-    }
+				return '['.implode(', ', $constraints).']';
+		}
 }

@@ -4,7 +4,7 @@
  * This file is part of Composer.
  *
  * (c) Nils Adermann <naderman@naderman.de>
- *     Jordi Boggiano <j.boggiano@seld.be>
+ *		 Jordi Boggiano <j.boggiano@seld.be>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -24,132 +24,132 @@ use Composer\Downloader\DownloadManager;
  */
 class Composer
 {
-    const VERSION = '@package_version@';
+		const VERSION = '@package_version@';
 
-    /**
-     * @var Package\RootPackageInterface
-     */
-    private $package;
+		/**
+		 * @var Package\RootPackageInterface
+		 */
+		private $package;
 
-    /**
-     * @var Locker
-     */
-    private $locker;
+		/**
+		 * @var Locker
+		 */
+		private $locker;
 
-    /**
-     * @var Repository\RepositoryManager
-     */
-    private $repositoryManager;
+		/**
+		 * @var Repository\RepositoryManager
+		 */
+		private $repositoryManager;
 
-    /**
-     * @var Downloader\DownloadManager
-     */
-    private $downloadManager;
+		/**
+		 * @var Downloader\DownloadManager
+		 */
+		private $downloadManager;
 
-    /**
-     * @var Installer\InstallationManager
-     */
-    private $installationManager;
+		/**
+		 * @var Installer\InstallationManager
+		 */
+		private $installationManager;
 
-    /**
-     * @var Config
-     */
-    private $config;
+		/**
+		 * @var Config
+		 */
+		private $config;
 
-    /**
-     * @param  Package\RootPackageInterface $package
-     * @return void
-     */
-    public function setPackage(RootPackageInterface $package)
-    {
-        $this->package = $package;
-    }
+		/**
+		 * @param	Package\RootPackageInterface $package
+		 * @return void
+		 */
+		public function setPackage(RootPackageInterface $package)
+		{
+				$this->package = $package;
+		}
 
-    /**
-     * @return Package\RootPackageInterface
-     */
-    public function getPackage()
-    {
-        return $this->package;
-    }
+		/**
+		 * @return Package\RootPackageInterface
+		 */
+		public function getPackage()
+		{
+				return $this->package;
+		}
 
-    /**
-     * @param Config $config
-     */
-    public function setConfig(Config $config)
-    {
-        $this->config = $config;
-    }
+		/**
+		 * @param Config $config
+		 */
+		public function setConfig(Config $config)
+		{
+				$this->config = $config;
+		}
 
-    /**
-     * @return Config
-     */
-    public function getConfig()
-    {
-        return $this->config;
-    }
+		/**
+		 * @return Config
+		 */
+		public function getConfig()
+		{
+				return $this->config;
+		}
 
-    /**
-     * @param Package\Locker $locker
-     */
-    public function setLocker(Locker $locker)
-    {
-        $this->locker = $locker;
-    }
+		/**
+		 * @param Package\Locker $locker
+		 */
+		public function setLocker(Locker $locker)
+		{
+				$this->locker = $locker;
+		}
 
-    /**
-     * @return Package\Locker
-     */
-    public function getLocker()
-    {
-        return $this->locker;
-    }
+		/**
+		 * @return Package\Locker
+		 */
+		public function getLocker()
+		{
+				return $this->locker;
+		}
 
-    /**
-     * @param Repository\RepositoryManager $manager
-     */
-    public function setRepositoryManager(RepositoryManager $manager)
-    {
-        $this->repositoryManager = $manager;
-    }
+		/**
+		 * @param Repository\RepositoryManager $manager
+		 */
+		public function setRepositoryManager(RepositoryManager $manager)
+		{
+				$this->repositoryManager = $manager;
+		}
 
-    /**
-     * @return Repository\RepositoryManager
-     */
-    public function getRepositoryManager()
-    {
-        return $this->repositoryManager;
-    }
+		/**
+		 * @return Repository\RepositoryManager
+		 */
+		public function getRepositoryManager()
+		{
+				return $this->repositoryManager;
+		}
 
-    /**
-     * @param Downloader\DownloadManager $manager
-     */
-    public function setDownloadManager(DownloadManager $manager)
-    {
-        $this->downloadManager = $manager;
-    }
+		/**
+		 * @param Downloader\DownloadManager $manager
+		 */
+		public function setDownloadManager(DownloadManager $manager)
+		{
+				$this->downloadManager = $manager;
+		}
 
-    /**
-     * @return Downloader\DownloadManager
-     */
-    public function getDownloadManager()
-    {
-        return $this->downloadManager;
-    }
+		/**
+		 * @return Downloader\DownloadManager
+		 */
+		public function getDownloadManager()
+		{
+				return $this->downloadManager;
+		}
 
-    /**
-     * @param Installer\InstallationManager $manager
-     */
-    public function setInstallationManager(InstallationManager $manager)
-    {
-        $this->installationManager = $manager;
-    }
+		/**
+		 * @param Installer\InstallationManager $manager
+		 */
+		public function setInstallationManager(InstallationManager $manager)
+		{
+				$this->installationManager = $manager;
+		}
 
-    /**
-     * @return Installer\InstallationManager
-     */
-    public function getInstallationManager()
-    {
-        return $this->installationManager;
-    }
+		/**
+		 * @return Installer\InstallationManager
+		 */
+		public function getInstallationManager()
+		{
+				return $this->installationManager;
+		}
 }

@@ -4,7 +4,7 @@
  * This file is part of Composer.
  *
  * (c) Nils Adermann <naderman@naderman.de>
- *     Jordi Boggiano <j.boggiano@seld.be>
+ *		 Jordi Boggiano <j.boggiano@seld.be>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -17,54 +17,54 @@ use Composer\Test\TestCase;
 
 class NullIOTest extends TestCase
 {
-    public function testIsInteractive()
-    {
-        $io = new NullIO();
+		public function testIsInteractive()
+		{
+				$io = new NullIO();
 
-        $this->assertFalse($io->isInteractive());
-    }
+				$this->assertFalse($io->isInteractive());
+		}
 
-    public function testhasAuthentication()
-    {
-        $io = new NullIO();
+		public function testhasAuthentication()
+		{
+				$io = new NullIO();
 
-        $this->assertFalse($io->hasAuthentication('foo'));
-    }
+				$this->assertFalse($io->hasAuthentication('foo'));
+		}
 
-    public function testAskAndHideAnswer()
-    {
-        $io = new NullIO();
+		public function testAskAndHideAnswer()
+		{
+				$io = new NullIO();
 
-        $this->assertNull($io->askAndHideAnswer('foo'));
-    }
+				$this->assertNull($io->askAndHideAnswer('foo'));
+		}
 
-    public function testgetAuthentications()
-    {
-        $io = new NullIO();
+		public function testgetAuthentications()
+		{
+				$io = new NullIO();
 
-        $this->assertInternalType('array', $io->getAuthentications());
-        $this->assertEmpty($io->getAuthentications());
-        $this->assertEquals(array('username' => null, 'password' => null), $io->getAuthentication('foo'));
-    }
+				$this->assertInternalType('array', $io->getAuthentications());
+				$this->assertEmpty($io->getAuthentications());
+				$this->assertEquals(array('username' => null, 'password' => null), $io->getAuthentication('foo'));
+		}
 
-    public function testAsk()
-    {
-        $io = new NullIO();
+		public function testAsk()
+		{
+				$io = new NullIO();
 
-        $this->assertEquals('foo', $io->ask('bar', 'foo'));
-    }
+				$this->assertEquals('foo', $io->ask('bar', 'foo'));
+		}
 
-    public function testAskConfirmation()
-    {
-        $io = new NullIO();
+		public function testAskConfirmation()
+		{
+				$io = new NullIO();
 
-        $this->assertEquals('foo', $io->askConfirmation('bar', 'foo'));
-    }
+				$this->assertEquals('foo', $io->askConfirmation('bar', 'foo'));
+		}
 
-    public function testAskAndValidate()
-    {
-        $io = new NullIO();
+		public function testAskAndValidate()
+		{
+				$io = new NullIO();
 
-        $this->assertEquals('foo', $io->askAndValidate('question', 'validator', false, 'foo'));
-    }
+				$this->assertEquals('foo', $io->askAndValidate('question', 'validator', false, 'foo'));
+		}
 }

@@ -12,22 +12,22 @@ Installation / Usage
 
 1. Download the [`composer.phar`](https://getcomposer.org/composer.phar) executable or use the installer.
 
-    ``` sh
-    $ curl -s https://getcomposer.org/installer | php
-    ```
+		``` sh
+		$ curl -s https://getcomposer.org/installer | php
+		```
 
 
 2. Create a composer.json defining your dependencies. Note that this example is
 a short version for applications that are not meant to be published as packages
 themselves. To create libraries/packages please read the [guidelines](https://packagist.org/about).
 
-    ``` json
-    {
-        "require": {
-            "monolog/monolog": ">=1.0.0"
-        }
-    }
-    ```
+		``` json
+		{
+				"require": {
+						"monolog/monolog": ">=1.0.0"
+				}
+		}
+		```
 
 3. Run Composer: `php composer.phar install`
 4. Browse for more packages on [Packagist](https://packagist.org).
@@ -121,6 +121,6 @@ Acknowledgments
 ---------------
 
 - This project's Solver started out as a PHP port of openSUSE's
-  [Libzypp satsolver](http://en.opensuse.org/openSUSE:Libzypp_satsolver).
+	[Libzypp satsolver](http://en.opensuse.org/openSUSE:Libzypp_satsolver).
 - This project uses hiddeninput.exe to prompt for passwords on windows, sources
-  and details can be found on the [github page of the project](https://github.com/Seldaek/hidden-input).
+	and details can be found on the [github page of the project](https://github.com/Seldaek/hidden-input).

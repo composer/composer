@@ -4,47 +4,47 @@
 
 class ComposerAutoloaderInitFilesAutoloadOrder
 {
-    private static $loader;
+		private static $loader;
 
-    public static function loadClassLoader($class)
-    {
-        if ('Composer\Autoload\ClassLoader' === $class) {
-            require __DIR__ . '/ClassLoader.php';
-        }
-    }
+		public static function loadClassLoader($class)
+		{
+				if ('Composer\Autoload\ClassLoader' === $class) {
+						require __DIR__ . '/ClassLoader.php';
+				}
+		}
 
-    public static function getLoader()
-    {
-        if (null !== self::$loader) {
-            return self::$loader;
-        }
+		public static function getLoader()
+		{
+				if (null !== self::$loader) {
+						return self::$loader;
+				}
 
-        spl_autoload_register(array('ComposerAutoloaderInitFilesAutoloadOrder', 'loadClassLoader'));
-        self::$loader = $loader = new \Composer\Autoload\ClassLoader();
-        spl_autoload_unregister(array('ComposerAutoloaderInitFilesAutoloadOrder', 'loadClassLoader'));
+				spl_autoload_register(array('ComposerAutoloaderInitFilesAutoloadOrder', 'loadClassLoader'));
+				self::$loader = $loader = new \Composer\Autoload\ClassLoader();
+				spl_autoload_unregister(array('ComposerAutoloaderInitFilesAutoloadOrder', 'loadClassLoader'));
 
-        $vendorDir = dirname(__DIR__);
-        $baseDir = dirname($vendorDir);
+				$vendorDir = dirname(__DIR__);
+				$baseDir = dirname($vendorDir);
 
-        $map = require __DIR__ . '/autoload_namespaces.php';
-        foreach ($map as $namespace => $path) {
-            $loader->add($namespace, $path);
-        }
+				$map = require __DIR__ . '/autoload_namespaces.php';
+				foreach ($map as $namespace => $path) {
+						$loader->add($namespace, $path);
+				}
 
-        $classMap = require __DIR__ . '/autoload_classmap.php';
-        if ($classMap) {
-            $loader->addClassMap($classMap);
-        }
+				$classMap = require __DIR__ . '/autoload_classmap.php';
+				if ($classMap) {
+						$loader->addClassMap($classMap);
+				}
 
-        $loader->register(true);
+				$loader->register(true);
 
-        require $vendorDir . '/c/lorem/testC.php';
-        require $vendorDir . '/z/foo/testA.php';
-        require $vendorDir . '/d/d/testD.php';
-        require $vendorDir . '/b/bar/testB.php';
-        require $vendorDir . '/e/e/testE.php';
-        require $baseDir . '/root.php';
+				require $vendorDir . '/c/lorem/testC.php';
+				require $vendorDir . '/z/foo/testA.php';
+				require $vendorDir . '/d/d/testD.php';
+				require $vendorDir . '/b/bar/testB.php';
+				require $vendorDir . '/e/e/testE.php';
+				require $baseDir . '/root.php';
 
-        return $loader;
-    }
+				return $loader;
+		}
 }

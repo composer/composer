@@ -1,265 +1,265 @@
 {
-    "name": "Package",
-    "type": "object",
-    "additionalProperties": false,
-    "properties": {
-        "name": {
-            "type": "string",
-            "description": "Package name, including 'vendor-name/' prefix.",
-            "required": true
-        },
-        "type": {
-            "description": "Package type, either 'library' for common packages, 'composer-installer' for custom installers, 'metapackage' for empty packages, or a custom type ([a-z0-9-]+) defined by whatever project this package applies to.",
-            "type": "string"
-        },
-        "target-dir": {
-            "description": "Forces the package to be installed into the given subdirectory path. This is used for autoloading PSR-0 packages that do not contain their full path. Use forward slashes for cross-platform compatibility.",
-            "type": "string"
-        },
-        "description": {
-            "type": "string",
-            "description": "Short package description.",
-            "required": true
-        },
-        "keywords": {
-            "type": "array",
-            "items": {
-                "type": "string",
-                "description": "A tag/keyword that this package relates to."
-            }
-        },
-        "homepage": {
-            "type": "string",
-            "description": "Homepage URL for the project.",
-            "format": "uri"
-        },
-        "version": {
-            "type": "string",
-            "description": "Package version, see http://getcomposer.org/doc/04-schema.md#version for more info on valid schemes."
-        },
-        "time": {
-            "type": "string",
-            "description": "Package release date, in 'YYYY-MM-DD' or 'YYYY-MM-DD HH:MM:SS' format."
-        },
-        "license": {
-            "type": ["string", "array"],
-            "description": "License name. Or an array of license names."
-        },
-        "authors": {
-            "type": "array",
-            "description": "List of authors that contributed to the package. This is typically the main maintainers, not the full list.",
-            "items": {
-                "type": "object",
-                "additionalProperties": false,
-                "properties": {
-                    "name": {
-                        "type": "string",
-                        "description": "Full name of the author.",
-                        "required": true
-                    },
-                    "email": {
-                        "type": "string",
-                        "description": "Email address of the author.",
-                        "format": "email"
-                    },
-                    "homepage": {
-                        "type": "string",
-                        "description": "Homepage URL for the author.",
-                        "format": "uri"
-                    },
-                    "role": {
-                        "type": "string",
-                        "description": "Author's role in the project."
-                    }
-                }
-            }
-        },
-        "require": {
-            "type": "object",
-            "description": "This is a hash of package name (keys) and version constraints (values) that are required to run this package.",
-            "additionalProperties": true
-        },
-        "replace": {
-            "type": "object",
-            "description": "This is a hash of package name (keys) and version constraints (values) that can be replaced by this package.",
-            "additionalProperties": true
-        },
-        "conflict": {
-            "type": "object",
-            "description": "This is a hash of package name (keys) and version constraints (values) that conflict with this package.",
-            "additionalProperties": true
-        },
-        "provide": {
-            "type": "object",
-            "description": "This is a hash of package name (keys) and version constraints (values) that this package provides in addition to this package's name.",
-            "additionalProperties": true
-        },
-        "require-dev": {
-            "type": "object",
-            "description": "This is a hash of package name (keys) and version constraints (values) that this package requires for developing it (testing tools and such).",
-            "additionalProperties": true
-        },
-        "suggest": {
-            "type": "object",
-            "description": "This is a hash of package name (keys) and descriptions (values) that this package suggests work well with it (this will be suggested to the user during installation).",
-            "additionalProperties": true
-        },
-        "config": {
-            "type": ["object"],
-            "description": "Composer options.",
-            "properties": {
-                "vendor-dir": {
-                    "type": "string",
-                    "description": "The location where all packages are installed, defaults to \"vendor\"."
-                },
-                "bin-dir": {
-                    "type": "string",
-                    "description": "The location where all binaries are linked, defaults to \"vendor/bin\"."
-                },
-                "process-timeout": {
-                    "type": "integer",
-                    "description": "The timeout in seconds for process executions, defaults to 300 (5mins)."
-                },
-                "notify-on-install": {
-                    "type": "boolean",
-                    "description": "Composer allows repositories to define a notification URL, so that they get notified whenever a package from that repository is installed. This option allows you to disable that behaviour, defaults to true."
-                },
-                "github-protocols": {
-                    "type": "array",
-                    "description": "A list of protocols to use for github.com clones, in priority order, defaults to [\"git\", \"https\", \"http\"].",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
-        "extra": {
-            "type": ["object", "array"],
-            "description": "Arbitrary extra data that can be used by custom installers, for example, package of type composer-installer must have a 'class' key defining the installer class name.",
-            "additionalProperties": true
-        },
-        "autoload": {
-            "type": "object",
-            "description": "Description of how the package can be autoloaded.",
-            "properties": {
-                "psr-0": {
-                    "type": "object",
-                    "description": "This is a hash of namespaces (keys) and the directories they can be found into (values, can be arrays of paths) by the autoloader.",
-                    "additionalProperties": true
-                },
-                "classmap": {
-                    "type": "array",
-                    "description": "This is an array of directories that contain classes to be included in the class-map generation process."
-                },
-                "files": {
-                    "type": "array",
-                    "description": "This is an array of files that are always required on every request."
-                }
-            }
-        },
-        "repositories": {
-            "type": ["object", "array"],
-            "description": "A set of additional repositories where packages can be found.",
-            "additionalProperties": true
-        },
-        "minimum-stability": {
-            "type": ["string"],
-            "description": "The minimum stability the packages must have to be install-able. Possible values are: dev, alpha, beta, RC, stable."
-        },
-        "bin": {
-            "type": ["array"],
-            "description": "A set of files that should be treated as binaries and symlinked into bin-dir (from config).",
-            "items": {
-                "type": "string"
-            }
-        },
-        "include-path": {
-            "type": ["array"],
-            "description": "DEPRECATED: A list of directories which should get added to PHP's include path. This is only present to support legacy projects, and all new code should preferably use autoloading.",
-            "items": {
-                "type": "string"
-            }
-        },
-        "scripts": {
-            "type": ["object"],
-            "description": "Scripts listeners that will be executed before/after some events.",
-            "properties": {
-                "pre-install-cmd": {
-                    "type": ["array", "string"],
-                    "description": "Occurs before the install command is executed, contains one or more Class::method callables."
-                },
-                "post-install-cmd": {
-                    "type": ["array", "string"],
-                    "description": "Occurs after the install command is executed, contains one or more Class::method callables."
-                },
-                "pre-update-cmd": {
-                    "type": ["array", "string"],
-                    "description": "Occurs before the update command is executed, contains one or more Class::method callables."
-                },
-                "post-update-cmd": {
-                    "type": ["array", "string"],
-                    "description": "Occurs after the update command is executed, contains one or more Class::method callables."
-                },
-                "pre-package-install": {
-                    "type": ["array", "string"],
-                    "description": "Occurs before a package is installed, contains one or more Class::method callables."
-                },
-                "post-package-install": {
-                    "type": ["array", "string"],
-                    "description": "Occurs after a package is installed, contains one or more Class::method callables."
-                },
-                "pre-package-update": {
-                    "type": ["array", "string"],
-                    "description": "Occurs before a package is updated, contains one or more Class::method callables."
-                },
-                "post-package-update": {
-                    "type": ["array", "string"],
-                    "description": "Occurs after a package is updated, contains one or more Class::method callables."
-                },
-                "pre-package-uninstall": {
-                    "type": ["array", "string"],
-                    "description": "Occurs before a package has been uninstalled, contains one or more Class::method callables."
-                },
-                "post-package-uninstall": {
-                    "type": ["array", "string"],
-                    "description": "Occurs after a package has been uninstalled, contains one or more Class::method callables."
-                }
-            }
-        },
-        "support": {
-            "type": "object",
-            "properties": {
-                "email": {
-                    "type": "string",
-                    "description": "Email address for support.",
-                    "format": "email"
-                },
-                "issues": {
-                    "type": "string",
-                    "description": "URL to the Issue Tracker.",
-                    "format": "uri"
-                },
-                "forum": {
-                    "type": "string",
-                    "description": "URL to the Forum.",
-                    "format": "uri"
-                },
-                "wiki": {
-                    "type": "string",
-                    "description": "URL to the Wiki.",
-                    "format": "uri"
-                },
-                "irc": {
-                    "type": "string",
-                    "description": "IRC channel for support, as irc://server/channel.",
-                    "format": "uri"
-                },
-                "source": {
-                    "type": "string",
-                    "description": "URL to browse or download the sources.",
-                    "format": "uri"
-                }
-            }
-        }
-    }
+		"name": "Package",
+		"type": "object",
+		"additionalProperties": false,
+		"properties": {
+				"name": {
+						"type": "string",
+						"description": "Package name, including 'vendor-name/' prefix.",
+						"required": true
+				},
+				"type": {
+						"description": "Package type, either 'library' for common packages, 'composer-installer' for custom installers, 'metapackage' for empty packages, or a custom type ([a-z0-9-]+) defined by whatever project this package applies to.",
+						"type": "string"
+				},
+				"target-dir": {
+						"description": "Forces the package to be installed into the given subdirectory path. This is used for autoloading PSR-0 packages that do not contain their full path. Use forward slashes for cross-platform compatibility.",
+						"type": "string"
+				},
+				"description": {
+						"type": "string",
+						"description": "Short package description.",
+						"required": true
+				},
+				"keywords": {
+						"type": "array",
+						"items": {
+								"type": "string",
+								"description": "A tag/keyword that this package relates to."
+						}
+				},
+				"homepage": {
+						"type": "string",
+						"description": "Homepage URL for the project.",
+						"format": "uri"
+				},
+				"version": {
+						"type": "string",
+						"description": "Package version, see http://getcomposer.org/doc/04-schema.md#version for more info on valid schemes."
+				},
+				"time": {
+						"type": "string",
+						"description": "Package release date, in 'YYYY-MM-DD' or 'YYYY-MM-DD HH:MM:SS' format."
+				},
+				"license": {
+						"type": ["string", "array"],
+						"description": "License name. Or an array of license names."
+				},
+				"authors": {
+						"type": "array",
+						"description": "List of authors that contributed to the package. This is typically the main maintainers, not the full list.",
+						"items": {
+								"type": "object",
+								"additionalProperties": false,
+								"properties": {
+										"name": {
+												"type": "string",
+												"description": "Full name of the author.",
+												"required": true
+										},
+										"email": {
+												"type": "string",
+												"description": "Email address of the author.",
+												"format": "email"
+										},
+										"homepage": {
+												"type": "string",
+												"description": "Homepage URL for the author.",
+												"format": "uri"
+										},
+										"role": {
+												"type": "string",
+												"description": "Author's role in the project."
+										}
+								}
+						}
+				},
+				"require": {
+						"type": "object",
+						"description": "This is a hash of package name (keys) and version constraints (values) that are required to run this package.",
+						"additionalProperties": true
+				},
+				"replace": {
+						"type": "object",
+						"description": "This is a hash of package name (keys) and version constraints (values) that can be replaced by this package.",
+						"additionalProperties": true
+				},
+				"conflict": {
+						"type": "object",
+						"description": "This is a hash of package name (keys) and version constraints (values) that conflict with this package.",
+						"additionalProperties": true
+				},
+				"provide": {
+						"type": "object",
+						"description": "This is a hash of package name (keys) and version constraints (values) that this package provides in addition to this package's name.",
+						"additionalProperties": true
+				},
+				"require-dev": {
+						"type": "object",
+						"description": "This is a hash of package name (keys) and version constraints (values) that this package requires for developing it (testing tools and such).",
+						"additionalProperties": true
+				},
+				"suggest": {
+						"type": "object",
+						"description": "This is a hash of package name (keys) and descriptions (values) that this package suggests work well with it (this will be suggested to the user during installation).",
+						"additionalProperties": true
+				},
+				"config": {
+						"type": ["object"],
+						"description": "Composer options.",
+						"properties": {
+								"vendor-dir": {
+										"type": "string",
+										"description": "The location where all packages are installed, defaults to \"vendor\"."
+								},
+								"bin-dir": {
+										"type": "string",
+										"description": "The location where all binaries are linked, defaults to \"vendor/bin\"."
+								},
+								"process-timeout": {
+										"type": "integer",
+										"description": "The timeout in seconds for process executions, defaults to 300 (5mins)."
+								},
+								"notify-on-install": {
+										"type": "boolean",
+										"description": "Composer allows repositories to define a notification URL, so that they get notified whenever a package from that repository is installed. This option allows you to disable that behaviour, defaults to true."
+								},
+								"github-protocols": {
+										"type": "array",
+										"description": "A list of protocols to use for github.com clones, in priority order, defaults to [\"git\", \"https\", \"http\"].",
+										"items": {
+												"type": "string"
+										}
+								}
+						}
+				},
+				"extra": {
+						"type": ["object", "array"],
+						"description": "Arbitrary extra data that can be used by custom installers, for example, package of type composer-installer must have a 'class' key defining the installer class name.",
+						"additionalProperties": true
+				},
+				"autoload": {
+						"type": "object",
+						"description": "Description of how the package can be autoloaded.",
+						"properties": {
+								"psr-0": {
+										"type": "object",
+										"description": "This is a hash of namespaces (keys) and the directories they can be found into (values, can be arrays of paths) by the autoloader.",
+										"additionalProperties": true
+								},
+								"classmap": {
+										"type": "array",
+										"description": "This is an array of directories that contain classes to be included in the class-map generation process."
+								},
+								"files": {
+										"type": "array",
+										"description": "This is an array of files that are always required on every request."
+								}
+						}
+				},
+				"repositories": {
+						"type": ["object", "array"],
+						"description": "A set of additional repositories where packages can be found.",
+						"additionalProperties": true
+				},
+				"minimum-stability": {
+						"type": ["string"],
+						"description": "The minimum stability the packages must have to be install-able. Possible values are: dev, alpha, beta, RC, stable."
+				},
+				"bin": {
+						"type": ["array"],
+						"description": "A set of files that should be treated as binaries and symlinked into bin-dir (from config).",
+						"items": {
+								"type": "string"
+						}
+				},
+				"include-path": {
+						"type": ["array"],
+						"description": "DEPRECATED: A list of directories which should get added to PHP's include path. This is only present to support legacy projects, and all new code should preferably use autoloading.",
+						"items": {
+								"type": "string"
+						}
+				},
+				"scripts": {
+						"type": ["object"],
+						"description": "Scripts listeners that will be executed before/after some events.",
+						"properties": {
+								"pre-install-cmd": {
+										"type": ["array", "string"],
+										"description": "Occurs before the install command is executed, contains one or more Class::method callables."
+								},
+								"post-install-cmd": {
+										"type": ["array", "string"],
+										"description": "Occurs after the install command is executed, contains one or more Class::method callables."
+								},
+								"pre-update-cmd": {
+										"type": ["array", "string"],
+										"description": "Occurs before the update command is executed, contains one or more Class::method callables."
+								},
+								"post-update-cmd": {
+										"type": ["array", "string"],
+										"description": "Occurs after the update command is executed, contains one or more Class::method callables."
+								},
+								"pre-package-install": {
+										"type": ["array", "string"],
+										"description": "Occurs before a package is installed, contains one or more Class::method callables."
+								},
+								"post-package-install": {
+										"type": ["array", "string"],
+										"description": "Occurs after a package is installed, contains one or more Class::method callables."
+								},
+								"pre-package-update": {
+										"type": ["array", "string"],
+										"description": "Occurs before a package is updated, contains one or more Class::method callables."
+								},
+								"post-package-update": {
+										"type": ["array", "string"],
+										"description": "Occurs after a package is updated, contains one or more Class::method callables."
+								},
+								"pre-package-uninstall": {
+										"type": ["array", "string"],
+										"description": "Occurs before a package has been uninstalled, contains one or more Class::method callables."
+								},
+								"post-package-uninstall": {
+										"type": ["array", "string"],
+										"description": "Occurs after a package has been uninstalled, contains one or more Class::method callables."
+								}
+						}
+				},
+				"support": {
+						"type": "object",
+						"properties": {
+								"email": {
+										"type": "string",
+										"description": "Email address for support.",
+										"format": "email"
+								},
+								"issues": {
+										"type": "string",
+										"description": "URL to the Issue Tracker.",
+										"format": "uri"
+								},
+								"forum": {
+										"type": "string",
+										"description": "URL to the Forum.",
+										"format": "uri"
+								},
+								"wiki": {
+										"type": "string",
+										"description": "URL to the Wiki.",
+										"format": "uri"
+								},
+								"irc": {
+										"type": "string",
+										"description": "IRC channel for support, as irc://server/channel.",
+										"format": "uri"
+								},
+								"source": {
+										"type": "string",
+										"description": "URL to browse or download the sources.",
+										"format": "uri"
+								}
+						}
+				}
+		}
 }

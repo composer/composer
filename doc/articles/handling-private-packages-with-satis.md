@@ -1,5 +1,5 @@
 <!--
-    tagline: Host your own composer repository
+		tagline: Host your own composer repository
 -->
 
 # Handling private packages with Satis
@@ -23,34 +23,34 @@ but those could be any types of [repositories](../05-repositories.md). Then it
 uses `"require-all": true` which selects all versions of all packages in the
 repositories you defined.
 
-    {
-        "name": "My Repository",
-        "homepage": "http://packages.example.org",
-        "repositories": [
-            { "type": "vcs", "url": "http://github.com/mycompany/privaterepo" },
-            { "type": "vcs", "url": "http://svn.example.org/private/repo" },
-            { "type": "vcs", "url": "http://github.com/mycompany/privaterepo2" }
-        ],
-        "require-all": true
-    }
+		{
+				"name": "My Repository",
+				"homepage": "http://packages.example.org",
+				"repositories": [
+						{ "type": "vcs", "url": "http://github.com/mycompany/privaterepo" },
+						{ "type": "vcs", "url": "http://svn.example.org/private/repo" },
+						{ "type": "vcs", "url": "http://github.com/mycompany/privaterepo2" }
+				],
+				"require-all": true
+		}
 
 If you want to cherry pick which packages you want, you can list all the packages
 you want to have in your satis repository inside the classic composer `require` key,
 using a `"*"` constraint to make sure all versions are selected, or another
 constraint if you want really specific versions.
 
-    {
-        "repositories": [
-            { "type": "vcs", "url": "http://github.com/mycompany/privaterepo" },
-            { "type": "vcs", "url": "http://svn.example.org/private/repo" },
-            { "type": "vcs", "url": "http://github.com/mycompany/privaterepo2" }
-        ],
-        "require": {
-            "company/package": "*",
-            "company/package2": "*",
-            "company/package3": "2.0.0"
-        }
-    }
+		{
+				"repositories": [
+						{ "type": "vcs", "url": "http://github.com/mycompany/privaterepo" },
+						{ "type": "vcs", "url": "http://svn.example.org/private/repo" },
+						{ "type": "vcs", "url": "http://github.com/mycompany/privaterepo2" }
+				],
+				"require": {
+						"company/package": "*",
+						"company/package2": "*",
+						"company/package3": "2.0.0"
+				}
+		}
 
 Once you did this, you just run `php bin/satis build <configuration file> <build dir>`.
 For example `php bin/satis build config.json web/` would read the `config.json`
@@ -77,14 +77,14 @@ everything should work smoothly. You don't need to copy all your repositories
 in every project anymore. Only that one unique repository that will update
 itself.
 
-    {
-        "repositories": [ { "type": "composer", "url": "http://packages.example.org/" } ],
-        "require": {
-            "company/package": "1.2.0",
-            "company/package2": "1.5.2",
-            "company/package3": "dev-master"
-        }
-    }
+		{
+				"repositories": [ { "type": "composer", "url": "http://packages.example.org/" } ],
+				"require": {
+						"company/package": "1.2.0",
+						"company/package2": "1.5.2",
+						"company/package3": "dev-master"
+				}
+		}
 
 ### Security
 
@@ -94,34 +94,34 @@ connection options for the server.
 
 Example using a custom repository using SSH (requires the SSH2 PECL extension):
 
-    {
-        "repositories": [
-            {
-                "type": "composer",
-                "url": "ssh2.sftp://example.org",
-                "options": {
-                    "ssh2": {
-                        "username": "composer",
-                        "pubkey_file": "/home/composer/.ssh/id_rsa.pub",
-                        "privkey_file": "/home/composer/.ssh/id_rsa"
-                    }
-                }
-            }
-        ]
-    }
+		{
+				"repositories": [
+						{
+								"type": "composer",
+								"url": "ssh2.sftp://example.org",
+								"options": {
+										"ssh2": {
+												"username": "composer",
+												"pubkey_file": "/home/composer/.ssh/id_rsa.pub",
+												"privkey_file": "/home/composer/.ssh/id_rsa"
+										}
+								}
+						}
+				]
+		}
 
 Example using HTTP over SSL using a client certificate:
 
-    {
-        "repositories": [
-            {
-                "type": "composer",
-                "url": "https://example.org",
-                "options": {
-                    "ssl": {
-                        "cert_file": "/home/composer/.ssl/composer.pem",
-                    }
-                }
-            }
-        ]
-    }
+		{
+				"repositories": [
+						{
+								"type": "composer",
+								"url": "https://example.org",
+								"options": {
+										"ssl": {
+												"cert_file": "/home/composer/.ssl/composer.pem",
+										}
+								}
+						}
+				]
+	}

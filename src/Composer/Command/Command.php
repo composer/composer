@@ -4,7 +4,7 @@
  * This file is part of Composer.
  *
  * (c) Nils Adermann <naderman@naderman.de>
- *     Jordi Boggiano <j.boggiano@seld.be>
+ *		 Jordi Boggiano <j.boggiano@seld.be>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -26,69 +26,69 @@ use Symfony\Component\Console\Command\Command as BaseCommand;
  */
 abstract class Command extends BaseCommand
 {
-    /**
-     * @var Composer
-     */
-    private $composer;
+		/**
+		 * @var Composer
+		 */
+		private $composer;
 
-    /**
-     * @var IOInterface
-     */
-    private $io;
+		/**
+		 * @var IOInterface
+		 */
+		private $io;
 
-    /**
-     * @param  bool     $required
-     * @return Composer
-     */
-    public function getComposer($required = true)
-    {
-        if (null === $this->composer) {
-            $application = $this->getApplication();
-            if ($application instanceof Application) {
-                /* @var $application    Application */
-                $this->composer = $application->getComposer($required);
-            } elseif ($required) {
-                throw new \RuntimeException(
-                    'Could not create a Composer\Composer instance, you must inject '.
-                    'one if this command is not used with a Composer\Console\Application instance'
-                );
-            }
-        }
+		/**
+		 * @param	bool		 $required
+		 * @return Composer
+		 */
+		public function getComposer($required = true)
+		{
+				if (null === $this->composer) {
+						$application = $this->getApplication();
+						if ($application instanceof Application) {
+								/* @var $application		Application */
+								$this->composer = $application->getComposer($required);
+						} elseif ($required) {
+								throw new \RuntimeException(
+										'Could not create a Composer\Composer instance, you must inject '.
+										'one if this command is not used with a Composer\Console\Application instance'
+								);
+						}
+				}
 
-        return $this->composer;
-    }
+				return $this->composer;
+		}
 
-    /**
-     * @param Composer $composer
-     */
-    public function setComposer(Composer $composer)
-    {
-        $this->composer = $composer;
-    }
+		/**
+		 * @param Composer $composer
+		 */
+		public function setComposer(Composer $composer)
+		{
+				$this->composer = $composer;
+		}
 
-    /**
-     * @return IOInterface
-     */
-    public function getIO()
-    {
-        if (null === $this->io) {
-            $application = $this->getApplication();
-            if ($application instanceof Application) {
-                /* @var $application    Application */
-                $this->io = $application->getIO();
-            } else {
-                $this->io = new NullIO();
-            }
-        }
+		/**
+		 * @return IOInterface
+		 */
+		public function getIO()
+		{
+				if (null === $this->io) {
+						$application = $this->getApplication();
+						if ($application instanceof Application) {
+								/* @var $application		Application */
+								$this->io = $application->getIO();
+						} else {
+								$this->io = new NullIO();
+						}
+				}
 
-        return $this->io;
-    }
+				return $this->io;
+		}
 
-    /**
-     * @param IOInterface $io
-     */
-    public function setIO(IOInterface $io)
-    {
-        $this->io = $io;
-    }
+		/**
+		 * @param IOInterface $io
+		 */
+		public function setIO(IOInterface $io)
+		{
+				$this->io = $io;
+		}
 }
