@@ -108,15 +108,9 @@ composer.phar:
 
 Create a new `.bat` file alongside composer:
 
-    C:\bin>notepad composer.bat
+    C:\bin>echo @php "%~dp0composer.phar" %*>composer.bat
 
-Paste the following in, it simply proxies all arguments to composer:
-
-    @ECHO OFF
-    SET composerScript=composer.phar
-    php "%~dp0%composerScript%" %*
-
-Save the file. Close your current terminal. Test usage with a new terminal:
+Close your current terminal. Test usage with a new terminal:
 
     C:\Users\username>composer -V
     Composer version 27d8904
