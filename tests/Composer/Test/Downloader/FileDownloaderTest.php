@@ -91,7 +91,7 @@ class FileDownloaderTest extends \PHPUnit_Framework_TestCase
         ;
 
         do {
-            $path = sys_get_temp_dir().'/'.md5(time().rand());
+            $path = sys_get_temp_dir().'/'.md5(time().mt_rand());
         } while (file_exists($path));
 
         $ioMock = $this->getMock('Composer\IO\IOInterface');
@@ -136,7 +136,7 @@ class FileDownloaderTest extends \PHPUnit_Framework_TestCase
         ;
 
         do {
-            $path = sys_get_temp_dir().'/'.md5(time().rand());
+            $path = sys_get_temp_dir().'/'.md5(time().mt_rand());
         } while (file_exists($path));
 
         $downloader = $this->getDownloader();

@@ -31,7 +31,7 @@ class VcsRepositoryTest extends \PHPUnit_Framework_TestCase
     protected function initialize()
     {
         $oldCwd = getcwd();
-        self::$gitRepo = sys_get_temp_dir() . '/composer-git-'.rand().'/';
+        self::$gitRepo = sys_get_temp_dir() . '/composer-git-'.mt_rand().'/';
 
         $locator = new ExecutableFinder();
         if (!$locator->find('git')) {
