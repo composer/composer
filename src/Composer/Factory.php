@@ -17,7 +17,6 @@ use Composer\Json\JsonFile;
 use Composer\IO\IOInterface;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\RepositoryManager;
-use Composer\Util\Filesystem;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
@@ -87,7 +86,6 @@ class Factory
             'cache-vcs-dir' => array('/cache.git' => '/*', '/cache.hg' => '/*'),
             'cache-files-dir' => array('/cache.files' => '/*'),
         );
-        $filesystem = new Filesystem();
         foreach ($legacyPaths as $key => $oldPaths) {
             foreach ($oldPaths as $oldPath => $match) {
                 $dir = $config->get($key);
@@ -107,7 +105,7 @@ class Factory
                             @rename($child, $dir.'/'.basename($child));
                         }
                     }
-                    $filesystem->removeDirectory($oldPath);
+                    @rmdir($oldPath);
                 }
             }
         }
