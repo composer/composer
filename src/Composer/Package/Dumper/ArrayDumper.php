@@ -60,18 +60,10 @@ class ArrayDumper
 
         foreach (BasePackage::$supportedLinkTypes as $type => $opts) {
             if ($links = $package->{'get'.ucfirst($opts['method'])}()) {
-                usort($links, function (Link $a, Link $b) {
-                    $comparison = strcmp($a->getTarget(), $b->getTarget());
-
-                    if (0 !== $comparison) {
-                        return $comparison;
-                    }
-
-                    return strcmp($a->getPrettyConstraint(), $b->getPrettyConstraint());
-                });
                 foreach ($links as $link) {
                     $data[$type][$link->getTarget()] = $link->getPrettyConstraint();
                 }
+                ksort($data[$type]);
             }
         }
 
