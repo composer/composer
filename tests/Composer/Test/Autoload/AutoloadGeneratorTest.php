@@ -56,7 +56,8 @@ class AutoloadGeneratorTest extends TestCase
         $this->im->expects($this->any())
             ->method('getInstallPath')
             ->will($this->returnCallback(function ($package) use ($that) {
-                return $that->vendorDir.'/'.$package->getName();
+                $targetDir = $package->getTargetDir();
+                return $that->vendorDir.'/'.$package->getName() . ($targetDir ? '/'.$targetDir : '');
             }));
         $this->repository = $this->getMock('Composer\Repository\RepositoryInterface');
 
@@ -310,8 +311,11 @@ class AutoloadGeneratorTest extends TestCase
         $packages = array();
         $packages[] = $a = new Package('a/a', '1.0', '1.0');
         $packages[] = $b = new Package('b/b', '1.0', '1.0');
+        $packages[] = $c = new Package('c/c', '1.0', '1.0');
         $a->setAutoload(array('files' => array('test.php')));
         $b->setAutoload(array('files' => array('test2.php')));
+        $c->setAutoload(array('files' => array('test3.php', 'foo/bar/test4.php')));
+        $c->setTargetDir('foo/bar');
 
         $this->repository->expects($this->once())
             ->method('getPackages')
@@ -319,8 +323,11 @@ class AutoloadGeneratorTest extends TestCase
 
         $this->fs->ensureDirectoryExists($this->vendorDir.'/a/a');
         $this->fs->ensureDirectoryExists($this->vendorDir.'/b/b');
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/c/c/foo/bar');
         file_put_contents($this->vendorDir.'/a/a/test.php', '<?php function testFilesAutoloadGeneration1() {}');
         file_put_contents($this->vendorDir.'/b/b/test2.php', '<?php function testFilesAutoloadGeneration2() {}');
+        file_put_contents($this->vendorDir.'/c/c/foo/bar/test3.php', '<?php function testFilesAutoloadGeneration3() {}');
+        file_put_contents($this->vendorDir.'/c/c/foo/bar/test4.php', '<?php function testFilesAutoloadGeneration4() {}');
         file_put_contents($this->workingDir.'/root.php', '<?php function testFilesAutoloadGenerationRoot() {}');
 
         $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, 'FilesAutoload');
@@ -330,6 +337,8 @@ class AutoloadGeneratorTest extends TestCase
         include $this->vendorDir . '/autoload.php';
         $this->assertTrue(function_exists('testFilesAutoloadGeneration1'));
         $this->assertTrue(function_exists('testFilesAutoloadGeneration2'));
+        $this->assertTrue(function_exists('testFilesAutoloadGeneration3'));
+        $this->assertTrue(function_exists('testFilesAutoloadGeneration4'));
         $this->assertTrue(function_exists('testFilesAutoloadGenerationRoot'));
     }
 
