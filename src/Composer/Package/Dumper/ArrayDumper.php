@@ -16,6 +16,7 @@ use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\RootPackageInterface;
+use Composer\Package\Link;
 
 /**
  * @author Konstantin Kudryashiv <ever.zet@gmail.com>
@@ -59,6 +60,15 @@ class ArrayDumper
 
         foreach (BasePackage::$supportedLinkTypes as $type => $opts) {
             if ($links = $package->{'get'.ucfirst($opts['method'])}()) {
+                usort($links, function (Link $a, Link $b) {
+                    $comparison = strcmp($a->getTarget(), $b->getTarget());
+
+                    if (0 !== $comparison) {
+                        return $comparison;
+                    }
+
+                    return strcmp($a->getPrettyConstraint(), $b->getPrettyConstraint());
+                });
                 foreach ($links as $link) {
                     $data[$type][$link->getTarget()] = $link->getPrettyConstraint();
                 }
@@ -66,6 +76,7 @@ class ArrayDumper
         }
 
         if ($packages = $package->getSuggests()) {
+            ksort($packages);
             $data['suggest'] = $packages;
         }
 
@@ -88,6 +99,10 @@ class ArrayDumper
             );
 
             $data = $this->dumpValues($package, $keys, $data);
+
+            if (isset($data['keywords']) && is_array($data['keywords'])) {
+                sort($data['keywords']);
+            }
         }
 
         if ($package instanceof RootPackageInterface) {
