@@ -119,7 +119,7 @@ class Filesystem
     /**
      * Copy then delete is a non-atomic version of {@link rename}.
      *
-     * Some systems can't rename and also dont have proc_open,
+     * Some systems can't rename and also don't have proc_open,
      * which requires this solution.
      *
      * @param string $source
@@ -159,7 +159,7 @@ class Filesystem
         if (defined('PHP_WINDOWS_VERSION_BUILD')) {
             // Try to copy & delete - this is a workaround for random "Access denied" errors.
             $command = sprintf('xcopy %s %s /E /I /Q', escapeshellarg($source), escapeshellarg($target));
-            if (0 === $this->processExecutor->execute($command)) {
+            if (0 === $this->processExecutor->execute($command, $output)) {
                 $this->remove($source);
 
                 return;

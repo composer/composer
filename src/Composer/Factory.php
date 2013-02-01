@@ -105,7 +105,7 @@ class Factory
                             @rename($child, $dir.'/'.basename($child));
                         }
                     }
-                    @unlink($oldPath);
+                    @rmdir($oldPath);
                 }
             }
         }

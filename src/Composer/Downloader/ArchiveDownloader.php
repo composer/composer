@@ -58,7 +58,7 @@ abstract class ArchiveDownloader extends FileDownloader
                 } else {
                     // Rename the content directory to avoid error when moving up
                     // a child folder with the same name
-                    $temporaryDir = sys_get_temp_dir().'/'.md5(time().rand());
+                    $temporaryDir = sys_get_temp_dir().'/'.md5(time().mt_rand());
                     $this->filesystem->rename($contentDir, $temporaryDir);
                     $contentDir = $temporaryDir;
 

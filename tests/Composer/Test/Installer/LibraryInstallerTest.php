@@ -236,7 +236,7 @@ class LibraryInstallerTest extends TestCase
     protected function createPackageMock()
     {
         return $this->getMockBuilder('Composer\Package\Package')
-            ->setConstructorArgs(array(md5(rand()), '1.0.0.0', '1.0.0'))
+            ->setConstructorArgs(array(md5(mt_rand()), '1.0.0.0', '1.0.0'))
             ->getMock();
     }
 }
