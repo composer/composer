@@ -69,6 +69,7 @@ EOT
 
         $json = new JsonFile($file);
         $composer = $json->read();
+        $composerBackup = file_get_contents($json->getPath());
 
         $requirements = $this->determineRequirements($input, $output, $input->getArgument('packages'));
 
@@ -106,7 +107,12 @@ EOT
             ->setUpdateWhitelist($requirements);
         ;
 
-        return $install->run() ? 0 : 1;
+        if (!$install->run()) {
+            $output->writeln("\n".'<error>Installation failed, reverting '.$file.' to its original content.</error>');
+            file_put_contents($json->getPath(), $composerBackup);
+
+            return 1;
+        }
     }
 
     private function updateFileCleanly($json, array $base, array $new, $requireKey)
