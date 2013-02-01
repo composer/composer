@@ -79,6 +79,20 @@ class ArchiveDownloaderTest extends \PHPUnit_Framework_TestCase
         }
     }
 
+    public function testProcessUrlRewrite()
+    {
+        $config = $this->getMock('Composer\Config');
+        $config->expects($this->any())->method('get')->with('url-rewrite-rules')->will($this->returnValue(array('^http://example.org/([^/]+)$' => 'http://localhost/\\1')));
+
+        $downloader = $this->getMockForAbstractClass('Composer\Downloader\ArchiveDownloader', array($this->getMock('Composer\IO\IOInterface'), $config));
+        $method = new \ReflectionMethod($downloader, 'processUrl');
+        $method->setAccessible(true);
+
+        $packageMock = $this->getMock('Composer\Package\PackageInterface');
+        $this->assertEquals('http://localhost/foo', $method->invoke($downloader, $packageMock, 'http://example.org/foo'));
+        $this->assertEquals('http://example.org/foo/bar', $method->invoke($downloader, $packageMock, 'http://example.org/foo/bar'));
+    }
+
     /**
      * @dataProvider provideUrls
      */

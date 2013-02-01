@@ -37,9 +37,9 @@ class FactoryMock extends Factory
     {
     }
 
-    protected function createInstallationManager()
+    protected function createInstallationManager(Config $config)
     {
-        return new InstallationManagerMock;
+        return new InstallationManagerMock($config);
     }
 
     protected function createDefaultInstallers(Installer\InstallationManager $im, Composer $composer, IOInterface $io)

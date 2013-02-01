@@ -20,6 +20,7 @@ use Composer\Repository\Pear\ChannelInfo;
 use Composer\Package\Link;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Util\RemoteFilesystem;
+use Composer\Util\UrlRewriter;
 use Composer\Config;
 
 /**
@@ -48,6 +49,9 @@ class PearRepository extends ArrayRepository
         if (!preg_match('{^https?://}', $repoConfig['url'])) {
             $repoConfig['url'] = 'http://'.$repoConfig['url'];
         }
+
+        $urlRewriter = new UrlRewriter($config->get('url-rewrite-rules'));
+        $repoConfig['url'] = $urlRewriter->rewrite($repoConfig['url']);
 
         $urlBits = parse_url($repoConfig['url']);
         if (empty($urlBits['scheme']) || empty($urlBits['host'])) {

@@ -17,6 +17,7 @@ use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
+use Composer\Util\UrlRewriter;
 
 /**
  * A driver implementation for driver with authentication interaction.
@@ -44,7 +45,8 @@ abstract class VcsDriver implements VcsDriverInterface
      */
     final public function __construct(array $repoConfig, IOInterface $io, Config $config, ProcessExecutor $process = null, RemoteFilesystem $remoteFilesystem = null)
     {
-        $this->url = $repoConfig['url'];
+        $urlRewriter = new UrlRewriter($config->get('url-rewrite-rules'));
+        $this->url = $urlRewriter->rewrite($repoConfig['url']);
         $this->originUrl = $repoConfig['url'];
         $this->repoConfig = $repoConfig;
         $this->io = $io;

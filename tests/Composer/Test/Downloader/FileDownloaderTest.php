@@ -160,4 +160,18 @@ class FileDownloaderTest extends \PHPUnit_Framework_TestCase
             $this->assertContains('checksum verification', $e->getMessage());
         }
     }
+
+    public function testRewriteUrls()
+    {
+        $config = $this->getMock('Composer\Config');
+        $config->expects($this->any())->method('get')->with('url-rewrite-rules')->will($this->returnValue(array('^http://example.org/([^/]+)$' => 'http://localhost/\\1')));
+
+        $downloader = $this->getDownloader(null, $config);
+        $method = new \ReflectionMethod($downloader, 'processUrl');
+        $method->setAccessible(true);
+
+        $packageMock = $this->getMock('Composer\Package\PackageInterface');
+        $this->assertEquals('http://localhost/foo', $method->invoke($downloader, $packageMock, 'http://example.org/foo'));
+        $this->assertEquals('http://example.org/foo/bar', $method->invoke($downloader, $packageMock, 'http://example.org/foo/bar'));
+    }
 }

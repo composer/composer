@@ -614,6 +614,9 @@ The following options are supported:
 * **notify-on-install:** Defaults to `true`. Composer allows repositories to
   define a notification URL, so that they get notified whenever a package from
   that repository is installed. This option allows you to disable that behaviour.
+* **url-rewrite-rules:** Defaults to `{}`. A hash of regular expression (keys)
+  and replacement string (values) that manipulates URLs.
+  Use this if you are behind a proxy.
 
 Example:
 

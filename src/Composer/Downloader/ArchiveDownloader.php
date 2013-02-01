@@ -85,7 +85,7 @@ abstract class ArchiveDownloader extends FileDownloader
      */
     protected function getFileName(PackageInterface $package, $path)
     {
-        return rtrim($path.'/'.md5($path.spl_object_hash($package)).'.'.pathinfo($package->getDistUrl(), PATHINFO_EXTENSION), '.');
+        return rtrim($path.'/'.md5($path.spl_object_hash($package)).'.'.pathinfo($this->urlRewriter->rewrite($package->getDistUrl()), PATHINFO_EXTENSION), '.');
     }
 
     /**

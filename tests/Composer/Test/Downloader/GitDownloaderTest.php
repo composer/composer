@@ -297,6 +297,46 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('source', $downloader->getInstallationSource());
     }
 
+    public function testRewriteUrlForDownload()
+    {
+        $packageMock = $this->getMock('Composer\Package\PackageInterface');
+        $packageMock->expects($this->any())->method('getSourceReference')->will($this->returnValue('ref'));
+        $packageMock->expects($this->any())->method('getSourceUrl')->will($this->returnValue('git://example.com/foo'));
+
+        $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
+        $expectedGitCommand = $this->getCmd("git clone 'http://proxy:4545/foo' 'composerPath' && cd 'composerPath' && git remote add composer 'http://proxy:4545/foo' && git fetch composer");
+        $processExecutor->expects($this->at(0))->method('execute')->with($this->equalTo($expectedGitCommand))->will($this->returnValue(0));
+        $processExecutor->expects($this->any())->method('execute')->will($this->returnValue(0));
+
+        $config = $this->getMock('Composer\Config');
+        $config->expects($this->any())
+            ->method('get')->with('url-rewrite-rules')
+            ->will($this->returnValue(array('^git://example.com/(.+)$' => 'http://proxy:4545/\\1')));
+
+        $downloader = $this->getDownloaderMock(null, $config, $processExecutor);
+        $downloader->download($packageMock, 'composerPath');
+    }
+
+    public function testRewriteUrlForUpdate()
+    {
+        $packageMock = $this->getMock('Composer\Package\PackageInterface');
+        $packageMock->expects($this->any())->method('getSourceReference')->will($this->returnValue('ref'));
+        $packageMock->expects($this->any())->method('getSourceUrl')->will($this->returnValue('git://example.com/foo'));
+
+        $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
+        $expectedGitCommand = $this->getCmd("cd 'composerPath' && git remote set-url composer 'http://proxy:4545/foo' && git fetch composer && git fetch --tags composer");
+        $processExecutor->expects($this->at(1))->method('execute')->with($this->equalTo($expectedGitCommand))->will($this->returnValue(0));
+        $processExecutor->expects($this->any())->method('execute')->will($this->returnValue(0));
+
+        $config = $this->getMock('Composer\Config');
+        $config->expects($this->any())
+            ->method('get')->with('url-rewrite-rules')
+            ->will($this->returnValue(array('^git://example.com/(.+)$' => 'http://proxy:4545/\\1')));
+
+        $downloader = $this->getDownloaderMock(null, $config, $processExecutor);
+        $downloader->update($packageMock, $packageMock, 'composerPath');
+    }
+
     private function getCmd($cmd)
     {
         if (defined('PHP_WINDOWS_VERSION_BUILD')) {

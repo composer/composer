@@ -31,6 +31,7 @@ class Config
         'cache-files-dir' => '{$cache-dir}/files',
         'cache-repo-dir' => '{$cache-dir}/repo',
         'cache-vcs-dir' => '{$cache-dir}/vcs',
+        'url-rewrite-rules' => array(),
     );
 
     public static $defaultRepositories = array(

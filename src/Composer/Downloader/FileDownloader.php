@@ -20,6 +20,7 @@ use Composer\Package\Version\VersionParser;
 use Composer\Util\Filesystem;
 use Composer\Util\GitHub;
 use Composer\Util\RemoteFilesystem;
+use Composer\Util\UrlRewriter;
 
 /**
  * Base downloader for files
@@ -37,6 +38,7 @@ class FileDownloader implements DownloaderInterface
     protected $filesystem;
     protected $cache;
     protected $outputProgress = true;
+    protected $urlRewriter;
 
     /**
      * Constructor.
@@ -54,6 +56,7 @@ class FileDownloader implements DownloaderInterface
         $this->rfs = $rfs ?: new RemoteFilesystem($io);
         $this->filesystem = $filesystem ?: new Filesystem();
         $this->cache = $cache;
+        $this->urlRewriter = new UrlRewriter($config->get('url-rewrite-rules'));
 
         if ($this->cache && !self::$cacheCollected && !mt_rand(0, 50)) {
             $this->cache->gc($config->get('cache-ttl'), $config->get('cache-files-maxsize'));
@@ -184,7 +187,7 @@ class FileDownloader implements DownloaderInterface
      */
     protected function getFileName(PackageInterface $package, $path)
     {
-        return $path.'/'.pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_BASENAME);
+        return $path.'/'.pathinfo(parse_url($this->urlRewriter->rewrite($package->getDistUrl()), PHP_URL_PATH), PATHINFO_BASENAME);
     }
 
     /**
@@ -202,7 +205,7 @@ class FileDownloader implements DownloaderInterface
             throw new \RuntimeException('You must enable the openssl extension to download files via https');
         }
 
-        return $url;
+        return $this->urlRewriter->rewrite($url);
     }
 
     private function getCacheKey(PackageInterface $package)

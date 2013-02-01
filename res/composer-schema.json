@@ -130,6 +130,13 @@
                     "items": {
                         "type": "string"
                     }
+                },
+                "url-rewrite-rules": {
+                    "type": "array",
+                    "description": "A hash of regular expression (keys) and replacement string (values) that manipulates URLs, defaults to {}.",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },

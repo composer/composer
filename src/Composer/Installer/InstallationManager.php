@@ -23,6 +23,8 @@ use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\MarkAliasInstalledOperation;
 use Composer\DependencyResolver\Operation\MarkAliasUninstalledOperation;
 use Composer\Util\StreamContextFactory;
+use Composer\Util\UrlRewriter;
+use Composer\Config;
 
 /**
  * Package operation manager.
@@ -35,6 +37,12 @@ class InstallationManager
     private $installers = array();
     private $cache = array();
     private $notifiablePackages = array();
+    private $urlRewriter;
+
+    public function __construct(Config $config = null)
+    {
+        $this->urlRewriter = new UrlRewriter(null === $config ? array() : $config->get('url_rewrite_rules'));
+    }
 
     public function reset()
     {
@@ -285,7 +293,7 @@ class InstallationManager
     private function markForNotification(PackageInterface $package)
     {
         if ($package->getNotificationUrl()) {
-            $this->notifiablePackages[$package->getNotificationUrl()][$package->getName()] = $package;
+            $this->notifiablePackages[$this->urlRewriter->rewrite($package->getNotificationUrl())][$package->getName()] = $package;
         }
     }
 }

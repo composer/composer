@@ -51,7 +51,7 @@ class InstallerTest extends TestCase
         }
 
         $locker = $this->getMockBuilder('Composer\Package\Locker')->disableOriginalConstructor()->getMock();
-        $installationManager = new InstallationManagerMock();
+        $installationManager = new InstallationManagerMock($config);
         $eventDispatcher = $this->getMockBuilder('Composer\Script\EventDispatcher')->disableOriginalConstructor()->getMock();
         $autoloadGenerator = $this->getMock('Composer\Autoload\AutoloadGenerator');
 

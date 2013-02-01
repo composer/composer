@@ -13,6 +13,7 @@
 namespace Composer\Repository;
 
 use Composer\Test\TestCase;
+use Composer\Repository\PearRepository;
 
 /**
  * @group slow
@@ -122,6 +123,19 @@ class PearRepositoryTest extends TestCase
                 )
             ),
         );
+    }
+
+    public function testRewriteUrlOfRepository()
+    {
+        $config = $this->getMock('Composer\Config');
+        $config->expects($this->any())->method('get')->with('url-rewrite-rules')
+            ->will($this->returnValue(array('^http://example.com/(.+)$' => 'http://proxy:4545/\\1')));
+
+        $repository = new PearRepository(array('url' => 'http://example.com/foo'), $this->getMock('Composer\IO\IOInterface'), $config);
+
+        $ref = new \ReflectionProperty($repository, 'url');
+        $ref->setAccessible(true);
+        $this->assertSame('http://proxy:4545/foo', $ref->getValue($repository));
     }
 
     private function createRepository($repoConfig)
