@@ -64,6 +64,11 @@ EOT
 
             return 1;
         }
+        if (!is_writable($file)) {
+            $output->writeln('<error>'.$file.' is not writable.</error>');
+
+            return 1;
+        }
 
         $dialog = $this->getHelperSet()->get('dialog');
 
