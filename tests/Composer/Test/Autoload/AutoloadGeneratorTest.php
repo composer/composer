@@ -55,11 +55,6 @@ class AutoloadGeneratorTest extends TestCase
                 return $that->vendorDir;
             }));
 
-        $this->config->expects($this->at(2))
-            ->method('get')
-            ->with($this->equalTo('use-include-path'))
-            ->will($this->returnValue(false));
-
         $this->dir = getcwd();
         chdir($this->workingDir);
 
@@ -582,6 +577,30 @@ EOF;
         $this->generator->dump($this->config, $this->repository, $package, $this->im, "composer", false, '_12');
 
         $this->assertFalse(file_exists($this->vendorDir."/composer/include_paths.php"));
+    }
+	
+	
+	public function testUseGlobalIncludePath()
+    {
+        $package = new Package('a', '1.0', '1.0');
+        $package->setAutoload(array(
+            'psr-0' => array('Main\\Foo' => '', 'Main\\Bar' => ''),
+        ));
+        $package->setTargetDir('Main/Foo/');
+
+        $this->repository->expects($this->once())
+            ->method('getPackages')
+            ->will($this->returnValue(array()));
+			
+		$this->config->expects($this->at(2))
+            ->method('get')
+            ->with($this->equalTo('use-include-path'))
+            ->will($this->returnValue(true));
+
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/a');
+
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, 'IncludePath');
+        $this->assertFileEquals(__DIR__.'/Fixtures/autoload_real_include_path.php', $this->vendorDir.'/composer/autoload_real.php');
     }
 
     private function createClassFile($basedir)
