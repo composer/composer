@@ -331,8 +331,6 @@ class Factory
         }
 
         $am = new Archiver\ArchiveManager($dm);
-        $am->addArchiver(new Archiver\GitArchiver);
-        $am->addArchiver(new Archiver\MercurialArchiver);
         $am->addArchiver(new Archiver\PharArchiver);
 
         return $am;
