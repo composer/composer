@@ -36,7 +36,7 @@ class ArchiveCommand extends Command
             ->setName('archive')
             ->setDescription('Create an archive of this composer package')
             ->setDefinition(array(
-                new InputArgument('package', InputArgument::REQUIRED, 'The package to archive'),
+                new InputArgument('package', InputArgument::OPTIONAL, 'The package to archive instead of the current project'),
                 new InputArgument('version', InputArgument::OPTIONAL, 'The package version to archive'),
                 new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the resulting archive: tar or zip', 'tar'),
                 new InputOption('dir', false, InputOption::VALUE_REQUIRED, 'Write the archive to this directory', '.'),
@@ -44,9 +44,9 @@ class ArchiveCommand extends Command
             ->setHelp(<<<EOT
 The <info>archive</info> command creates an archive of the specified format
 containing the files and directories of the Composer project or the specified
-package and writes it to the specified directory.
+package in the specified version and writes it to the specified directory.
 
-<info>php composer.phar archive [--format=zip] [--dir=/foo] package version</info>
+<info>php composer.phar archive [--format=zip] [--dir=/foo] [package] [version]</info>
 
 EOT
             )
@@ -64,16 +64,20 @@ EOT
         );
     }
 
-    public function archive(IOInterface $io, $packageName, $version = false, $format = 'tar', $dest = '.')
+    public function archive(IOInterface $io, $packageName = false, $version = false, $format = 'tar', $dest = '.')
     {
         $config = Factory::createConfig();
         $factory = new Factory;
         $archiveManager = $factory->createArchiveManager($config);
 
-        $package = $this->selectPackage($io, $packageName, $version);
+        if ($packageName) {
+            $package = $this->selectPackage($io, $packageName, $version);
 
-        if (!$package) {
-            return 1;
+            if (!$package) {
+                return 1;
+            }
+        } else {
+            $package = $this->getComposer()->getPackage();
         }
 
         $io->write('<info>Creating the archive.</info>');

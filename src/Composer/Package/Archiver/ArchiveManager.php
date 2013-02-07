@@ -16,6 +16,7 @@ use Composer\Downloader\DownloadManager;
 use Composer\Factory;
 use Composer\IO\NullIO;
 use Composer\Package\PackageInterface;
+use Composer\Package\RootPackage;
 use Composer\Util\Filesystem;
 
 /**
@@ -73,19 +74,24 @@ class ArchiveManager
             throw new \RuntimeException(sprintf('No archiver found to support %s format', $format));
         }
 
-        // Directory used to download the sources
         $filesystem = new Filesystem();
         $packageName = preg_replace('#[^a-z0-9-_.]#i', '-', $package->getPrettyString());
-        $sourcePath = sys_get_temp_dir().'/composer_archiver/'.$packageName;
-        $filesystem->ensureDirectoryExists($sourcePath);
 
         // Archive filename
         $filesystem->ensureDirectoryExists($targetDir);
         $target = realpath($targetDir).'/'.$packageName.'.'.$format;
         $filesystem->ensureDirectoryExists(dirname($target));
 
-        // Download sources
-        $this->downloadManager->download($package, $sourcePath, true);
+        if ($package instanceof RootPackage) {
+            $sourcePath = realpath('.');
+        } else {
+            // Directory used to download the sources
+            $sourcePath = sys_get_temp_dir().'/composer_archiver/'.$packageName;
+            $filesystem->ensureDirectoryExists($sourcePath);
+
+            // Download sources
+            $this->downloadManager->download($package, $sourcePath, true);
+        }
 
         // Create the archive
         $sourceRef = $package->getSourceReference();
