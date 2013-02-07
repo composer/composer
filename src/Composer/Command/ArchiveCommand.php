@@ -46,7 +46,7 @@ The <info>archive</info> command creates an archive of the specified format
 containing the files and directories of the Composer project or the specified
 package in the specified version and writes it to the specified directory.
 
-<info>php composer.phar archive [--format=zip] [--dir=/foo] [package] [version]</info>
+<info>php composer.phar archive [--format=zip] [--dir=/foo] [package [version]]</info>
 
 EOT
             )
