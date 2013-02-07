@@ -324,7 +324,7 @@ class Factory
      *
      * @return Archiver\ArchiveManager
      */
-    public function createArchiveManager(Config $config, DownloadManager $dm = null)
+    public function createArchiveManager(Config $config, Downloader\DownloadManager $dm = null)
     {
         if (null === $dm) {
             $dm = $this->createDownloadManager(new IO\NullIO(), $config);
