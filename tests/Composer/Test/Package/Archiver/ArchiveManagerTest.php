@@ -32,7 +32,7 @@ class ArchiveManagerTest extends ArchiverTest
         parent::setUp();
 
         $factory = new Factory();
-        $this->manager = $factory->createArchiveManager(null, $factory->createConfig());
+        $this->manager = $factory->createArchiveManager($factory->createConfig());
         $this->targetDir = $this->testDir.'/composer_archiver_tests';
     }
 

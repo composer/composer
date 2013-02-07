@@ -319,12 +319,12 @@ class Factory
     }
 
     /**
-     * @param Downloader\DownloadManager $dm      Manager use to download sources
      * @param Config                     $config  The configuration
+     * @param Downloader\DownloadManager $dm      Manager use to download sources
      *
      * @return Archiver\ArchiveManager
      */
-    public function createArchiveManager(DownloadManager $dm = null, Config $config)
+    public function createArchiveManager(Config $config, DownloadManager $dm = null)
     {
         if (null === $dm) {
             $dm = $this->createDownloadManager(new IO\NullIO(), $config);
