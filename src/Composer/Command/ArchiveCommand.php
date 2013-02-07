@@ -78,6 +78,11 @@ EOT
             }
         } else {
             $package = $this->getComposer()->getPackage();
+
+            // also ignore the vendor dir
+            $excludes = $package->getArchiveExcludes();
+            $excludes[] = '/'.$this->getComposer()->getConfig()->get('vendor-dir');
+            $package->setArchiveExcludes($excludes);
         }
 
         $io->write('<info>Creating the archive.</info>');
