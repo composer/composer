@@ -202,6 +202,20 @@
                 }
             }
         },
+        "archive": {
+            "type": ["object"],
+            "description": "Options for creating package archives for distribution.",
+            "properties": {
+                "exclude": {
+                    "type": "array",
+                    "description": "A list of paths to exclude."
+                },
+                "include": {
+                    "type": "array",
+                    "description": "A list of paths to include even though an exclude rule exists for them."
+                }
+            }
+        },
         "repositories": {
             "type": ["object", "array"],
             "description": "A set of additional repositories where packages can be found.",

@@ -89,6 +89,6 @@ class ArchiveManager
 
         // Create the archive
         $sourceRef = $package->getSourceReference();
-        $usableArchiver->archive($sourcePath, $target, $format, $sourceRef);
+        $usableArchiver->archive($sourcePath, $target, $format, $sourceRef, $package->getArchiveExcludes());
     }
 }

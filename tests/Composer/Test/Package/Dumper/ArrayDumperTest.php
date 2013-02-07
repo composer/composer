@@ -131,6 +131,14 @@ class ArrayDumperTest extends \PHPUnit_Framework_TestCase
                 array('class' => 'MyVendor\\Installer')
             ),
             array(
+                'archive',
+                array('/foo/bar', 'baz', '!/foo/bar/baz'),
+                'archiveExcludes',
+                array(
+                    'exclude' => array('/foo/bar', 'baz', '!/foo/bar/baz'),
+                ),
+            ),
+            array(
                 'require',
                 array(new Link('foo', 'foo/bar', new VersionConstraint('=', '1.0.0.0'), 'requires', '1.0.0')),
                 'requires',

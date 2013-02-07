@@ -123,6 +123,9 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                         'vendor-dir' => 'vendor',
                         'process-timeout' => 10000,
                     ),
+                    'archive' => array(
+                        'exclude' => array('/foo/bar', 'baz', '!/foo/bar/baz'),
+                    ),
                     'scripts' => array(
                         'post-update-cmd' => 'Foo\\Bar\\Baz::doSomething',
                         'post-install-cmd' => array(

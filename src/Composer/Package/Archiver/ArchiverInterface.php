@@ -28,8 +28,9 @@ interface ArchiverInterface
      * @param string $format    The format used for archive
      * @param string $sourceRef The reference of the source to archive or null
      *                          for the current reference
+     * @param array  $excludes  A list of patterns for files to exclude
      */
-    public function archive($sources, $target, $format, $sourceRef = null);
+    public function archive($sources, $target, $format, $sourceRef = null, $excludes = array());
 
     /**
      * Format supported by the archiver.
