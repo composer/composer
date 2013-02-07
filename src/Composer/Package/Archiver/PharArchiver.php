@@ -15,8 +15,11 @@ namespace Composer\Package\Archiver;
 use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
 
+use Symfony\Component\Finder;
+
 /**
  * @author Till Klampaeckel <till@php.net>
+ * @author Nils Adermann <naderman@naderman.de>
  * @author Matthieu Moquet <matthieu@moquet.net>
  */
 class PharArchiver implements ArchiverInterface
@@ -29,11 +32,34 @@ class PharArchiver implements ArchiverInterface
     /**
      * {@inheritdoc}
      */
-    public function archive($sources, $target, $format, $sourceRef = null)
+    public function archive($sources, $target, $format, $sourceRef = null, $excludes = array())
     {
+        $sources = realpath($sources);
+
+        $excludePatterns = $this->generatePatterns($excludes);
+
         try {
+            if (file_exists($target)) {
+                unlink($target);
+            }
             $phar = new \PharData($target, null, null, static::$formats[$format]);
-            $phar->buildFromDirectory($sources);
+            $finder = new Finder\Finder();
+            $finder
+                ->in($sources)
+                ->filter(function (\SplFileInfo $file) use ($sources, $excludePatterns) {
+                    $relativePath = preg_replace('#^'.preg_quote($sources, '#').'#', '', $file->getRealPath());
+
+                    $include = true;
+                    foreach ($excludePatterns as $patternData) {
+                        list($pattern, $negate) = $patternData;
+                        if (preg_match($pattern, $relativePath)) {
+                            $include = $negate;
+                        }
+                    }
+                    return $include;
+                })
+                ->ignoreVCS(true);
+            $phar->buildFromIterator($finder->getIterator(), $sources);
         } catch (\UnexpectedValueException $e) {
             $message = sprintf("Could not create archive '%s' from '%s': %s",
                 $target,
@@ -43,6 +69,35 @@ class PharArchiver implements ArchiverInterface
 
             throw new \RuntimeException($message, $e->getCode(), $e);
         }
+    }
+
+    /**
+     * Generates a set of PCRE patterns from a set of exclude rules.
+     *
+     * @param array $rules A list of exclude rules similar to gitignore syntax
+     */
+    protected function generatePatterns($rules)
+    {
+        $patterns = array();
+        foreach ($rules as $rule) {
+            $negate = false;
+            $pattern = '#';
+
+            if (strlen($rule) && $rule[0] === '!') {
+                $negate = true;
+                $rule = substr($rule, 1);
+            }
+
+            if (strlen($rule) && $rule[0] === '/') {
+                $pattern .= '^/';
+                $rule = substr($rule, 1);
+            }
+
+            $pattern .= substr(Finder\Glob::toRegex($rule), 2, -2);
+            $patterns[] = array($pattern . '#', $negate);
+        }
+
+        return $patterns;
     }
 
     /**

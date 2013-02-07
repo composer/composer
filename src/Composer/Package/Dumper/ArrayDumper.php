@@ -58,6 +58,10 @@ class ArrayDumper
             $data['dist']['shasum'] = $package->getDistSha1Checksum();
         }
 
+        if ($package->getArchiveExcludes()) {
+            $data['archive']['exclude'] = $package->getArchiveExcludes();
+        }
+
         foreach (BasePackage::$supportedLinkTypes as $type => $opts) {
             if ($links = $package->{'get'.ucfirst($opts['method'])}()) {
                 foreach ($links as $link) {

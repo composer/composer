@@ -114,6 +114,9 @@ class ArrayLoaderTest extends \PHPUnit_Framework_TestCase
             'target-dir' => 'some/prefix',
             'extra' => array('random' => array('things' => 'of', 'any' => 'shape')),
             'bin' => array('bin1', 'bin/foo'),
+            'archive' => array(
+                'exclude' => array('/foo/bar', 'baz', '!/foo/bar/baz'),
+            ),
         );
 
         $package = $this->loader->load($config);

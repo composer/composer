@@ -51,6 +51,7 @@ class Package extends BasePackage
     protected $suggests = array();
     protected $autoload = array();
     protected $includePaths = array();
+    protected $archiveExcludes = array();
 
     /**
      * Creates a new in memory package.
@@ -524,5 +525,23 @@ class Package extends BasePackage
     public function getNotificationUrl()
     {
         return $this->notificationUrl;
+    }
+
+    /**
+     * Sets a list of patterns to be excluded from archives
+     *
+     * @param array $excludes
+     */
+    public function setArchiveExcludes($excludes)
+    {
+        $this->archiveExcludes = $excludes;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getArchiveExcludes()
+    {
+        return $this->archiveExcludes;
     }
 }

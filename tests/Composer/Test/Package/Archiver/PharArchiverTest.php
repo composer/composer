@@ -29,7 +29,7 @@ class PharArchiverTest extends ArchiverTest
 
         // Test archive
         $archiver = new PharArchiver();
-        $archiver->archive($package->getSourceUrl(), $target, 'tar');
+        $archiver->archive($package->getSourceUrl(), $target, 'tar', null, array('foo/bar', 'baz', '!/foo/bar/baz'));
         $this->assertFileExists($target);
 
         unlink($target);
@@ -58,12 +58,25 @@ class PharArchiverTest extends ArchiverTest
         $currentWorkDir = getcwd();
         chdir($this->testDir);
 
-        $result = file_put_contents('b', 'a');
+        $this->writeFile('file.txt', 'content', $currentWorkDir);
+        $this->writeFile('foo/bar/baz', 'content', $currentWorkDir);
+        $this->writeFile('foo/bar/ignoreme', 'content', $currentWorkDir);
+        $this->writeFile('x/baz', 'content', $currentWorkDir);
+        $this->writeFile('x/includeme', 'content', $currentWorkDir);
+
+        chdir($currentWorkDir);
+    }
+
+    protected function writeFile($path, $content, $currentWorkDir)
+    {
+        if (!file_exists(dirname($path))) {
+            mkdir(dirname($path), 0777, true);
+        }
+
+        $result = file_put_contents($path, 'a');
         if (false === $result) {
             chdir($currentWorkDir);
             throw new \RuntimeException('Could not save file.');
         }
-
-        chdir($currentWorkDir);
     }
 }
