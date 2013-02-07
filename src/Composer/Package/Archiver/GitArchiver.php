@@ -32,9 +32,7 @@ class GitArchiver implements ArchiverInterface
      */
     public function archive($sources, $target, $format, $sourceRef = null)
     {
-        // Since git-archive no longer works with a commit ID in git 1.7.10,
-        // use by default the HEAD reference instead of the commit sha1
-        if (null === $sourceRef || preg_match('/^[0-9a-f]{40}$/i', $sourceRef)) {
+        if (null === $sourceRef) {
             $sourceRef = 'HEAD';
         }
 
