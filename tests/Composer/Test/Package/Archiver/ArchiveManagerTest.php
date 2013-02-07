@@ -63,7 +63,7 @@ class ArchiveManagerTest extends ArchiverTest
 
     protected function getTargetName(PackageInterface $package, $format)
     {
-        $packageName = $package->getUniqueName();
+        $packageName = preg_replace('#[^a-z0-9-_.]#i', '-', $package->getPrettyString());
         $target = $this->targetDir.'/'.$packageName.'.'.$format;
 
         return $target;
