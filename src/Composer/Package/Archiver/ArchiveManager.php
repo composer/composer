@@ -75,12 +75,13 @@ class ArchiveManager
 
         // Directory used to download the sources
         $filesystem = new Filesystem();
-        $packageName = $package->getUniqueName();
+        $packageName = preg_replace('#[^a-z0-9-_.]#i', '-', $package->getPrettyString());
         $sourcePath = sys_get_temp_dir().'/composer_archiver/'.$packageName;
         $filesystem->ensureDirectoryExists($sourcePath);
 
         // Archive filename
-        $target = $targetDir.'/'.$packageName.'.'.$format;
+        $filesystem->ensureDirectoryExists($targetDir);
+        $target = realpath($targetDir).'/'.$packageName.'.'.$format;
         $filesystem->ensureDirectoryExists(dirname($target));
 
         // Download sources
