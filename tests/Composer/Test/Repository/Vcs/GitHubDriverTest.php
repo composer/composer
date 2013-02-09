@@ -197,7 +197,7 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
 
         $remoteFilesystem->expects($this->at(1))
             ->method('getContents')
-            ->with($this->equalTo('github.com'), $this->equalTo('https://raw.github.com/composer/packagist/feature%2F3.2-foo/composer.json'), $this->equalTo(false))
+            ->with($this->equalTo('github.com'), $this->equalTo('https://raw.github.com/composer/packagist/feature/3.2-foo/composer.json'), $this->equalTo(false))
             ->will($this->returnValue('{"support": {"source": "'.$repoUrl.'" }}'));
 
         $remoteFilesystem->expects($this->at(2))

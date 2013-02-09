@@ -128,7 +128,7 @@ class GitHubDriver extends VcsDriver
 
         if (!isset($this->infoCache[$identifier])) {
             try {
-                $resource = 'https://raw.github.com/'.$this->owner.'/'.$this->repository.'/'.urlencode($identifier).'/composer.json';
+                $resource = 'https://raw.github.com/'.$this->owner.'/'.$this->repository.'/'.$identifier.'/composer.json';
                 $composer = $this->getContents($resource);
             } catch (TransportException $e) {
                 if (404 !== $e->getCode()) {
