@@ -43,6 +43,7 @@ class ShowCommand extends Command
                 new InputArgument('version', InputArgument::OPTIONAL, 'Version to inspect'),
                 new InputOption('installed', 'i', InputOption::VALUE_NONE, 'List installed packages only'),
                 new InputOption('platform', 'p', InputOption::VALUE_NONE, 'List platform packages only'),
+                new InputOption('available', 'a', InputOption::VALUE_NONE, 'List available packages only'),
                 new InputOption('self', 's', InputOption::VALUE_NONE, 'Show the root package information'),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Enables display of dev-require packages.'),
             ))
@@ -78,6 +79,9 @@ EOT
             $repos = $installedRepo = $platformRepo;
         } elseif ($input->getOption('installed')) {
             $repos = $installedRepo = $getRepositories($this->getComposer(), $input->getOption('dev'));
+        } elseif ($input->getOption('available')) {
+            $installedRepo = $platformRepo;
+            $repos = new CompositeRepository(Factory::createDefaultRepositories($this->getIO()));
         } elseif ($composer = $this->getComposer(false)) {
             $localRepo = $getRepositories($composer, $input->getOption('dev'));
             $installedRepo = new CompositeRepository(array($localRepo, $platformRepo));
@@ -137,12 +141,17 @@ EOT
 
         foreach (array('<info>platform</info>:' => true, '<comment>available</comment>:' => false, '<info>installed</info>:' => true) as $type => $showVersion) {
             if (isset($packages[$type])) {
-                $output->writeln($type);
+                $tree = !$input->getOption('platform') && !$input->getOption('installed') && !$input->getOption('available');
+                if ($tree) {
+                    $output->writeln($type);
+                }
                 ksort($packages[$type]);
                 foreach ($packages[$type] as $package) {
-                    $output->writeln('  '.$package->getPrettyName() .' '.($showVersion ? '['.$this->versionParser->formatVersion($package).']' : '').' <comment>:</comment> '. strtok($package->getDescription(), "\r\n"));
+                    $output->writeln(($tree ? '  ' : '').$package->getPrettyName().' '.($showVersion ? '['.$this->versionParser->formatVersion($package).']' : '').' <comment>:</comment> '. strtok($package->getDescription(), "\r\n"));
                 }
-                $output->writeln('');
+                if ($tree) {
+                    $output->writeln('');
+                }
             }
         }
     }
