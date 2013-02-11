@@ -37,7 +37,6 @@ class ZipDownloader extends ArchiveDownloader
 
         // try to use unzip on *nix
         if (!defined('PHP_WINDOWS_VERSION_BUILD')) {
-
             $command = 'unzip '.escapeshellarg($file).' -d '.escapeshellarg($path);
             if (0 === $this->process->execute($command, $ignoredOutput)) {
                 return;
@@ -56,12 +55,11 @@ class ZipDownloader extends ArchiveDownloader
                 $iniMessage = 'A php.ini file does not exist. You will have to create one.';
             }
 
-            $error = "Could not decompress the archive, enable the PHP zip extension or install unzip.\n".
-                $iniMessage . "\n" . $processError;
+            $error = "Could not decompress the archive, enable the PHP zip extension or install unzip.\n"
+                . $iniMessage . "\n" . $processError;
 
             if (!defined('PHP_WINDOWS_VERSION_BUILD')) {
-                $error = "You need the zip extension enabled to use the ZipDownloader.\n".
-                    $iniMessage;
+                $error = "Could not decompress the archive, enable the PHP zip extension.\n" . $iniMessage;
             }
 
             throw new \RuntimeException($error);
