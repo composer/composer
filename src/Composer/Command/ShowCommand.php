@@ -46,6 +46,7 @@ class ShowCommand extends Command
                 new InputOption('available', 'a', InputOption::VALUE_NONE, 'List available packages only'),
                 new InputOption('self', 's', InputOption::VALUE_NONE, 'Show the root package information'),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Enables display of dev-require packages.'),
+                new InputOption('name-only', 'N', InputOption::VALUE_NONE, 'List package names only'),
             ))
             ->setHelp(<<<EOT
 The show command displays detailed information about a package, or
@@ -147,7 +148,11 @@ EOT
                 }
                 ksort($packages[$type]);
                 foreach ($packages[$type] as $package) {
-                    $output->writeln(($tree ? '  ' : '').$package->getPrettyName().' '.($showVersion ? '['.$this->versionParser->formatVersion($package).']' : '').' <comment>:</comment> '. strtok($package->getDescription(), "\r\n"));
+                    if ($input->getOption('name-only')) {
+                        $output->writeln(($tree ? '  ' : '').$package->getPrettyName());
+                    } else {
+                        $output->writeln(($tree ? '  ' : '').$package->getPrettyName().' '.($showVersion ? '['.$this->versionParser->formatVersion($package).']' : '').' <comment>:</comment> '. strtok($package->getDescription(), "\r\n"));
+                    }
                 }
                 if ($tree) {
                     $output->writeln('');
