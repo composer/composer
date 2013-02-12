@@ -130,6 +130,10 @@
                     "items": {
                         "type": "string"
                     }
+                },
+                "use-include-path": {
+                    "type" : "boolean",
+                    "description" : "When this option is set to true, Composer will use the PHP include path in the autoloader when loading files. Defaults to false"
                 }
             }
         },

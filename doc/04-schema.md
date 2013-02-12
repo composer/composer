@@ -614,6 +614,8 @@ The following options are supported:
 * **notify-on-install:** Defaults to `true`. Composer allows repositories to
   define a notification URL, so that they get notified whenever a package from
   that repository is installed. This option allows you to disable that behaviour.
+* **use-include-path:** Defaults to `false`. When this option is set to true,
+  Composer will use the PHP include path in the autoloader when loading files
 
 Example:
 
