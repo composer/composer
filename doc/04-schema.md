@@ -584,13 +584,11 @@ A set of configuration options. It is only used for projects.
 
 The following options are supported:
 
-* **vendor-dir:** Defaults to `vendor`. You can install dependencies into a
-  different directory if you want to.
-* **bin-dir:** Defaults to `vendor/bin`. If a project includes binaries, they
-  will be symlinked into this directory.
 * **process-timeout:** Defaults to `300`. The duration processes like git clones
   can run before Composer assumes they died out. You may need to make this
   higher if you have a slow connection or huge vendors.
+* **use-include-path:** Defaults to `false`. If true, the Composer autoloader
+  will also look for classes in the PHP include path.
 * **github-protocols:** Defaults to `["git", "https", "http"]`. A list of
   protocols to use for github.com clones, in priority order. Use this if you are
   behind a proxy or have somehow bad performances with the git protocol.
@@ -598,6 +596,10 @@ The following options are supported:
   `{"github.com": "oauthtoken"}` as the value of this option will use `oauthtoken`
   to access private repositories on github and to circumvent the low IP-based
   rate limiting of their API.
+* **vendor-dir:** Defaults to `vendor`. You can install dependencies into a
+  different directory if you want to.
+* **bin-dir:** Defaults to `vendor/bin`. If a project includes binaries, they
+  will be symlinked into this directory.
 * **cache-dir:** Defaults to `$home/cache` on unix systems and
   `C:\Users\<user>\AppData\Local\Composer` on Windows. Stores all the caches
   used by composer. See also [COMPOSER_HOME](03-cli.md#composer-home).
@@ -611,6 +613,10 @@ The following options are supported:
   dist (zip, tar, ..) packages that it downloads. Those are purged after six
   months of being unused by default. This option allows you to tweak this
   duration (in seconds) or disable it completely by setting it to 0.
+* **cache-files-maxsize:** Defaults to `300MiB`. Composer caches all
+  dist (zip, tar, ..) packages that it downloads. When the garbage collection
+  is periodically ran, this is the maximum size the cache will be able to use.
+  Older (less used) files will be removed first until the cache fits.
 * **notify-on-install:** Defaults to `true`. Composer allows repositories to
   define a notification URL, so that they get notified whenever a package from
   that repository is installed. This option allows you to disable that behaviour.

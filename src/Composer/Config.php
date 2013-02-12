@@ -21,17 +21,18 @@ class Config
 {
     public static $defaultConfig = array(
         'process-timeout' => 300,
-        'cache-ttl' => 15552000, // 6 months
-        'cache-files-maxsize' => '300MiB',
-        'vendor-dir' => 'vendor',
-        'bin-dir' => '{$vendor-dir}/bin',
+        'use-include-path' => false,
         'notify-on-install' => true,
         'github-protocols' => array('git', 'https', 'http'),
+        'vendor-dir' => 'vendor',
+        'bin-dir' => '{$vendor-dir}/bin',
         'cache-dir' => '{$home}/cache',
         'cache-files-dir' => '{$cache-dir}/files',
         'cache-repo-dir' => '{$cache-dir}/repo',
         'cache-vcs-dir' => '{$cache-dir}/vcs',
-        'use-include-path' => false,
+        'cache-ttl' => 15552000, // 6 months
+        'cache-files-ttl' => null, // fallback to cache-ttl
+        'cache-files-maxsize' => '300MiB',
     );
 
     public static $defaultRepositories = array(
@@ -191,6 +192,14 @@ class Config
         }
 
         return $all;
+    }
+
+    public function raw()
+    {
+        return array(
+            'repositories' => $this->getRepositories(),
+            'config' => $this->config,
+        );
     }
 
     /**

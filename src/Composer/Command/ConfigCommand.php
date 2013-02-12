@@ -157,7 +157,7 @@ EOT
 
         // List the configuration of the file settings
         if ($input->getOption('list')) {
-            $this->listConfiguration($this->config->all(), $output);
+            $this->listConfiguration($this->config->all(), $this->config->raw(), $output);
 
             return 0;
         }
@@ -251,17 +251,25 @@ EOT
         // handle config values
         $uniqueConfigValues = array(
             'process-timeout' => array('is_numeric', 'intval'),
-            'cache-ttl' => array('is_numeric', 'intval'),
-            'cache-files-ttl' => array('is_numeric', 'intval'),
-            'vendor-dir' => array('is_string', function ($val) { return $val; }),
-            'bin-dir' => array('is_string', function ($val) { return $val; }),
+            'use-include-path' => array(
+                function ($val) { return true; },
+                function ($val) { return $val !== 'false' && (bool) $val; }
+            ),
             'notify-on-install' => array(
                 function ($val) { return true; },
                 function ($val) { return $val !== 'false' && (bool) $val; }
             ),
-            'use-include-path' => array(
-                function ($val) { return false; },
-                function ($val) { return $val !== 'false' && (bool) $val; }
+            'vendor-dir' => array('is_string', function ($val) { return $val; }),
+            'bin-dir' => array('is_string', function ($val) { return $val; }),
+            'cache-dir' => array('is_string', function ($val) { return $val; }),
+            'cache-files-dir' => array('is_string', function ($val) { return $val; }),
+            'cache-repo-dir' => array('is_string', function ($val) { return $val; }),
+            'cache-vcs-dir' => array('is_string', function ($val) { return $val; }),
+            'cache-ttl' => array('is_numeric', 'intval'),
+            'cache-files-ttl' => array('is_numeric', 'intval'),
+            'cache-files-maxsize' => array(
+                function ($val) { return preg_match('/^\s*([0-9.]+)\s*(?:([kmg])(?:i?b)?)?\s*$/i', $val) > 0; },
+                function ($val) { return $val; }
             ),
         );
         $multiConfigValues = array(
@@ -332,10 +340,11 @@ EOT
      * Display the contents of the file in a pretty formatted way
      *
      * @param array           $contents
+     * @param array           $rawContents
      * @param OutputInterface $output
      * @param string|null     $k
      */
-    protected function listConfiguration(array $contents, OutputInterface $output, $k = null)
+    protected function listConfiguration(array $contents, array $rawContents, OutputInterface $output, $k = null)
     {
         $origK = $k;
         foreach ($contents as $key => $value) {
@@ -343,9 +352,11 @@ EOT
                 continue;
             }
 
+            $rawVal = isset($rawContents[$key]) ? $rawContents[$key] : null;
+
             if (is_array($value) && (!is_numeric(key($value)) || ($key === 'repositories' && null === $k))) {
                 $k .= preg_replace('{^config\.}', '', $key . '.');
-                $this->listConfiguration($value, $output, $k);
+                $this->listConfiguration($value, $rawVal, $output, $k);
 
                 if (substr_count($k, '.') > 1) {
                     $k = str_split($k, strrpos($k, '.', -2));
@@ -369,7 +380,11 @@ EOT
                 $value = var_export($value, true);
             }
 
-            $output->writeln('[<comment>' . $k . $key . '</comment>] <info>' . $value . '</info>');
+            if (is_string($rawVal) && $rawVal != $value) {
+                $output->writeln('[<comment>' . $k . $key . '</comment>] <info>' . $rawVal . ' (' . $value . ')</info>');
+            } else {
+                $output->writeln('[<comment>' . $k . $key . '</comment>] <info>' . $value . '</info>');
+            }
         }
     }
 }
