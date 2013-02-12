@@ -29,7 +29,7 @@ class SvnDownloader extends VcsDownloader
         $url =  $package->getSourceUrl();
         $ref =  $package->getSourceReference();
 
-        if (is_numeric($ref) && 'source' == $package->getInstallationSource()) {
+        if (is_numeric($ref)) {
             //source reference is an explicit commit
             $version = $package->getPrettyVersion();
             $vcsPath = str_replace(array('dev-','.x-dev'), '', $version);
@@ -54,7 +54,7 @@ class SvnDownloader extends VcsDownloader
         $url = $target->getSourceUrl();
         $ref = $target->getSourceReference();
 
-        if (is_numeric($ref) && 'source' == $target->getInstallationSource()) {
+        if (is_numeric($ref)) {
             //source reference is an explicit commit
             $version = $target->getPrettyVersion();
             $vcsPath = str_replace(array('dev-','.x-dev'), '', $version);
