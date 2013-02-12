@@ -118,6 +118,8 @@ EOT
 
             return 1;
         }
+
+        return 0;
     }
 
     private function updateFileCleanly($json, array $base, array $new, $requireKey)
