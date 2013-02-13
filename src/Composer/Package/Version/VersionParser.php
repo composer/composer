@@ -35,7 +35,7 @@ class VersionParser
      */
     public static function parseStability($version)
     {
-        $version = preg_replace('{#[a-f0-9]+$}i', '', $version);
+        $version = preg_replace('{#.+$}i', '', $version);
 
         if ('dev-' === substr($version, 0, 4) || '-dev' === substr($version, -4)) {
             return 'dev';
@@ -217,7 +217,7 @@ class VersionParser
             $constraints = empty($match[1]) ? '*' : $match[1];
         }
 
-        if (preg_match('{^(dev-[^,\s@]+?|[^,\s@]+?\.x-dev)#[a-f0-9]+$}i', $constraints, $match)) {
+        if (preg_match('{^(dev-[^,\s@]+?|[^,\s@]+?\.x-dev)#.+$}i', $constraints, $match)) {
             $constraints = $match[1];
         }
 
