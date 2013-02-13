@@ -219,7 +219,7 @@ class Installer
             if ($this->update || !$this->locker->isLocked()) {
                 $updatedLock = $this->locker->setLockData(
                     $this->repositoryManager->getLocalRepository()->getPackages(),
-                    $this->devMode ? $this->repositoryManager->getLocalDevRepository()->getPackages() : null,
+                    ($this->devMode || $this->rehash) ? $this->repositoryManager->getLocalDevRepository()->getPackages() : null,
                     $aliases,
                     $this->package->getMinimumStability(),
                     $this->package->getStabilityFlags()
@@ -239,7 +239,7 @@ class Installer
             if ($this->runScripts) {
                 // dispatch post event
                 $eventName = $this->update ? ScriptEvents::POST_UPDATE_CMD : ScriptEvents::POST_INSTALL_CMD;
-                $this->eventDispatcher->dispatchCommandEvent($eventName, $this->devMode);
+                $this->eventDispatcher->dispatchCommandEvent($eventName, $this->devMode || $this->rehash);
             }
         }
 
