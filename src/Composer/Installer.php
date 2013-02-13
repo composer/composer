@@ -95,6 +95,7 @@ class Installer
     protected $optimizeAutoloader = false;
     protected $devMode = false;
     protected $dryRun = false;
+    protected $rehash = false;
     protected $verbose = false;
     protected $update = false;
     protected $runScripts = true;
@@ -141,7 +142,7 @@ class Installer
      */
     public function run()
     {
-        if ($this->dryRun) {
+        if ($this->dryRun || $this->rehash) {
             $this->verbose = true;
             $this->runScripts = false;
             $this->installationManager->addInstaller(new NoopInstaller);
@@ -182,36 +183,38 @@ class Installer
             $this->eventDispatcher->dispatchCommandEvent($eventName, $this->devMode);
         }
 
-        try {
-            $this->suggestedPackages = array();
-            if (!$this->doInstall($this->repositoryManager->getLocalRepository(), $installedRepo, $aliases)) {
-                return false;
-            }
-            if ($this->devMode) {
-                if (!$this->doInstall($this->repositoryManager->getLocalDevRepository(), $installedRepo, $aliases, true)) {
+        if(!$this->rehash) {
+            try {
+                $this->suggestedPackages = array();
+                if (!$this->doInstall($this->repositoryManager->getLocalRepository(), $installedRepo, $aliases)) {
                     return false;
                 }
+                if ($this->devMode) {
+                    if (!$this->doInstall($this->repositoryManager->getLocalDevRepository(), $installedRepo, $aliases, true)) {
+                        return false;
+                    }
+                }
+            } catch (\Exception $e) {
+                $this->installationManager->notifyInstalls();
+
+                throw $e;
             }
-        } catch (\Exception $e) {
             $this->installationManager->notifyInstalls();
 
-            throw $e;
-        }
-        $this->installationManager->notifyInstalls();
-
-        // output suggestions
-        foreach ($this->suggestedPackages as $suggestion) {
-            $target = $suggestion['target'];
-            if ($installedRepo->filterPackages(function (PackageInterface $package) use ($target) {
-                if (in_array($target, $package->getNames())) {
-                    return false;
+            // output suggestions
+            foreach ($this->suggestedPackages as $suggestion) {
+                $target = $suggestion['target'];
+                if ($installedRepo->filterPackages(function (PackageInterface $package) use ($target) {
+                    if (in_array($target, $package->getNames())) {
+                        return false;
+                    }
+                })) {
+                    $this->io->write($suggestion['source'].' suggests installing '.$suggestion['target'].' ('.$suggestion['reason'].')');
                 }
-            })) {
-                $this->io->write($suggestion['source'].' suggests installing '.$suggestion['target'].' ('.$suggestion['reason'].')');
             }
         }
 
-        if (!$this->dryRun) {
+        if (!$this->dryRun || (!$this->dryRun && $this->rehash)) {
             // write lock
             if ($this->update || !$this->locker->isLocked()) {
                 $updatedLock = $this->locker->setLockData(
@@ -226,10 +229,12 @@ class Installer
                 }
             }
 
-            // write autoloader
-            $this->io->write('<info>Generating autoload files</info>');
-            $localRepos = new CompositeRepository($this->repositoryManager->getLocalRepositories());
-            $this->autoloadGenerator->dump($this->config, $localRepos, $this->package, $this->installationManager, 'composer', $this->optimizeAutoloader);
+            if (!$this->rehash) {
+                // write autoloader
+                $this->io->write('<info>Generating autoload files</info>');
+                $localRepos = new CompositeRepository($this->repositoryManager->getLocalRepositories());
+                $this->autoloadGenerator->dump($this->config, $localRepos, $this->package, $this->installationManager, 'composer', $this->optimizeAutoloader);
+            }
 
             if ($this->runScripts) {
                 // dispatch post event
@@ -779,6 +784,19 @@ class Installer
     public function setDryRun($dryRun = true)
     {
         $this->dryRun = (boolean) $dryRun;
+
+        return $this;
+    }
+
+    /**
+     * Whether to only rehash lock or not
+     *
+     * @param  boolean   $rehash
+     * @return Installer
+     */
+    public function setRehash($rehash = false)
+    {
+        $this->rehash = (boolean) $rehash;
 
         return $this;
     }
