@@ -165,6 +165,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
     {
         $parser = new VersionParser;
         $this->assertSame((string) new VersionConstraint('=', '1.0.9999999.9999999-dev'), (string) $parser->parseConstraints('1.0.x-dev#abcd123'));
+        $this->assertSame((string) new VersionConstraint('=', '1.0.9999999.9999999-dev'), (string) $parser->parseConstraints('1.0.x-dev#trunk/@123'));
     }
 
     /**
@@ -174,6 +175,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
     {
         $parser = new VersionParser;
         $this->assertSame((string) new VersionConstraint('=', '1.0.0.0'), (string) $parser->parseConstraints('1.0#abcd123'));
+        $this->assertSame((string) new VersionConstraint('=', '1.0.0.0'), (string) $parser->parseConstraints('1.0#trunk/@123'));
     }
 
     /**
@@ -320,6 +322,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             array('stable', '1.0'),
             array('dev',    'v2.0.x-dev'),
             array('dev',    'v2.0.x-dev#abc123'),
+            array('dev',    'v2.0.x-dev#trunk/@123'),
             array('RC',     '3.0-RC2'),
             array('dev',    'dev-master'),
             array('dev',    '3.1.2-dev'),
