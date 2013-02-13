@@ -29,8 +29,21 @@ class SvnDownloader extends VcsDownloader
         $url =  $package->getSourceUrl();
         $ref =  $package->getSourceReference();
 
-        $this->io->write("    Checking out ".$package->getSourceReference());
-        $this->execute($url, "svn co", sprintf("%s/%s", $url, $ref), null, $path);
+        if (is_numeric($ref)) {
+            //source reference is an explicit commit
+            $version = $package->getPrettyVersion();
+            $vcsPath = str_replace(array('dev-','.x-dev'), '', $version);
+
+            if ('trunk' != $vcsPath) {
+                $vcsPath = 'branches/'.$vcsPath;
+            }
+
+            $this->io->write("    Checking out ".$vcsPath.'@'.$package->getSourceReference());
+            $this->execute($url, "svn co", sprintf("%s/%s@%s", $url, $vcsPath, $ref), null, $path);
+        } else {
+            $this->io->write("    Checking out ".$package->getSourceReference());
+            $this->execute($url, "svn co", sprintf("%s/%s", $url, $ref), null, $path);
+        }
     }
 
     /**
@@ -41,8 +54,21 @@ class SvnDownloader extends VcsDownloader
         $url = $target->getSourceUrl();
         $ref = $target->getSourceReference();
 
-        $this->io->write("    Checking out " . $ref);
-        $this->execute($url, "svn switch", sprintf("%s/%s", $url, $ref), $path);
+        if (is_numeric($ref)) {
+            //source reference is an explicit commit
+            $version = $target->getPrettyVersion();
+            $vcsPath = str_replace(array('dev-','.x-dev'), '', $version);
+
+            if ('trunk' != $vcsPath) {
+                $vcsPath = 'branches/'.$vcsPath;
+            }
+
+            $this->io->write("    Checking out ".$vcsPath.'@'.$target->getSourceReference());
+            $this->execute($url, "svn switch", sprintf("%s/%s@%s", $url, $vcsPath, $ref), null, $path);
+        } else {
+            $this->io->write("    Checking out ".$target->getSourceReference());
+            $this->execute($url, "svn switch", sprintf("%s/%s", $url, $ref), null, $path);
+        }
     }
 
     /**
