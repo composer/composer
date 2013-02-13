@@ -146,6 +146,7 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
         $repoConfig = array(
             'url' => $repoUrl,
         );
+        $repoUrl = 'https://github.com/composer/packagist.git';
 
         $gitHubDriver = new GitHubDriver($repoConfig, $io, $this->config, null, $remoteFilesystem);
         $gitHubDriver->initialize();
@@ -208,6 +209,7 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
         $repoConfig = array(
             'url' => $repoUrl,
         );
+        $repoUrl = 'https://github.com/composer/packagist.git';
 
         $gitHubDriver = new GitHubDriver($repoConfig, $io, $this->config, null, $remoteFilesystem);
         $gitHubDriver->initialize();
