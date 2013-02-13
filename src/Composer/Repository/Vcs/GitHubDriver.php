@@ -76,7 +76,7 @@ class GitHubDriver extends VcsDriver
             return $this->gitDriver->getUrl();
         }
 
-        return $this->url;
+        return 'https://github.com/'.$this->owner.'/'.$this->repository.'.git';
     }
 
     /**
