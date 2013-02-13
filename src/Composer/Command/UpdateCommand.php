@@ -38,7 +38,8 @@ class UpdateCommand extends Command
                 new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Skips the execution of all scripts defined in composer.json file.'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
                 new InputOption('verbose', 'v', InputOption::VALUE_NONE, 'Shows more details including new commits pulled in when updating packages.'),
-                new InputOption('optimize-autoloader', 'o', InputOption::VALUE_NONE, 'Optimize autoloader during autoloader dump')
+                new InputOption('optimize-autoloader', 'o', InputOption::VALUE_NONE, 'Optimize autoloader during autoloader dump'),
+                new InputOption('rehash', 'r', InputOption::VALUE_NONE, 'Only rehashes lock file without updating any dependency.')
             ))
             ->setHelp(<<<EOT
 The <info>update</info> command reads the composer.json file from the
@@ -72,6 +73,7 @@ EOT
             ->setRunScripts(!$input->getOption('no-scripts'))
             ->setOptimizeAutoloader($input->getOption('optimize-autoloader'))
             ->setUpdate(true)
+            ->setRehash($input->getOption('rehash'))
             ->setUpdateWhitelist($input->getArgument('packages'))
         ;
 
