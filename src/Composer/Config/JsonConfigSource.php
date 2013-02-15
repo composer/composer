@@ -61,10 +61,6 @@ class JsonConfigSource implements ConfigSourceInterface
      */
     public function addConfigSetting($name, $value)
     {
-        if (is_string($value)) {
-            $json = '{"'.$name.'": "'.$value.'"}';
-            JsonFile::parseJson($json, $name);
-        }
         $this->manipulateJson('addConfigSetting', $name, $value, function (&$config, $key, $val) {
             $config['config'][$key] = $val;
         });
