@@ -40,7 +40,7 @@ class Factory
         $cacheDir = getenv('COMPOSER_CACHE_DIR');
         if (!$home) {
             if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
-                $home = str_replace('\\', '/', getenv('APPDATA')) . '/Composer';
+                $home = strtr(getenv('APPDATA'), '\\', '/') . '/Composer';
             } else {
                 $home = rtrim(getenv('HOME'), '/') . '/.composer';
             }
@@ -52,7 +52,7 @@ class Factory
                 } else {
                     $cacheDir = getenv('APPDATA') . '/Composer/cache';
                 }
-                $cacheDir = str_replace('\\', '/', $cacheDir);
+                $cacheDir = strtr($cacheDir, '\\', '/');
             } else {
                 $cacheDir = $home.'/cache';
             }
