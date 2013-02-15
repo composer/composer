@@ -146,6 +146,9 @@ EOT
                     $versionLength = max($versionLength, strlen($this->versionParser->formatVersion($package)));
                 }
                 list($width) = $this->getApplication()->getTerminalDimensions();
+                if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+                    $width--;
+                }
 
                 $writeVersion = $showVersion && ($nameLength + $versionLength + 3 <= $width);
                 $writeDescription = $nameLength + ($showVersion ? $versionLength : 0) + 24 <= $width;
