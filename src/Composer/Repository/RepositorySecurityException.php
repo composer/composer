@@ -16,7 +16,7 @@ namespace Composer\Repository;
  *
  * @author Eric Daspet <edaspet@survol.fr>
  */
-class Repository\RepositorySecurityException extends \Exception
+class RepositorySecurityException extends \Exception
 {
 	// nothing more, standard Exception
 }
