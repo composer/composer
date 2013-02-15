@@ -18,6 +18,7 @@ use Composer\Util\Filesystem;
 use Composer\Package\AliasPackage;
 use Composer\Package\Package;
 use Composer\Test\TestCase;
+use Composer\Script\ScriptEvents;
 
 class AutoloadGeneratorTest extends TestCase
 {
@@ -28,6 +29,7 @@ class AutoloadGeneratorTest extends TestCase
     private $repository;
     private $generator;
     private $fs;
+    private $eventDispatcher;
 
     protected function setUp()
     {
@@ -68,7 +70,11 @@ class AutoloadGeneratorTest extends TestCase
             }));
         $this->repository = $this->getMock('Composer\Repository\RepositoryInterface');
 
-        $this->generator = new AutoloadGenerator();
+        $this->eventDispatcher = $this->getMockBuilder('Composer\Script\EventDispatcher')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->generator = new AutoloadGenerator($this->eventDispatcher);
     }
 
     protected function tearDown()
@@ -601,6 +607,23 @@ EOF;
 
         $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, 'IncludePath');
         $this->assertFileEquals(__DIR__.'/Fixtures/autoload_real_include_path.php', $this->vendorDir.'/composer/autoload_real.php');
+    }
+
+    public function testEventIsDispatchedAfterAutoloadDump()
+    {
+        $this->eventDispatcher
+            ->expects($this->once())
+            ->method('dispatch')
+            ->with(ScriptEvents::POST_AUTOLOAD_DUMP, false);
+
+        $package = new Package('a', '1.0', '1.0');
+        $package->setAutoload(array('psr-0' => array('foo/bar/non/existing/')));
+
+        $this->repository->expects($this->once())
+            ->method('getPackages')
+            ->will($this->returnValue(array()));
+
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', true, '_8');
     }
 
     private function createClassFile($basedir)

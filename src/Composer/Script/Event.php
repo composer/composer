@@ -50,7 +50,7 @@ class Event
      * @param IOInterface $io       The IOInterface object
      * @param boolean     $devMode  Whether or not we are in dev mode
      */
-    public function __construct($name, Composer $composer, IOInterface $io, $devMode)
+    public function __construct($name, Composer $composer, IOInterface $io, $devMode = false)
     {
         $this->name = $name;
         $this->composer = $composer;

@@ -18,6 +18,8 @@ use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
 use Composer\Repository\RepositoryInterface;
 use Composer\Util\Filesystem;
+use Composer\Script\EventDispatcher;
+use Composer\Script\ScriptEvents;
 
 /**
  * @author Igor Wiedler <igor@wiedler.ch>
@@ -25,6 +27,16 @@ use Composer\Util\Filesystem;
  */
 class AutoloadGenerator
 {
+    /**
+     * @var EventDispatcher
+     */
+    private $eventDispatcher;
+
+    public function __construct(EventDispatcher $eventDispatcher)
+    {
+        $this->eventDispatcher = $eventDispatcher;
+    }
+
     public function dump(Config $config, RepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir, $scanPsr0Packages = false, $suffix = '')
     {
         $filesystem = new Filesystem();
@@ -174,6 +186,8 @@ EOF;
         file_put_contents($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, $suffix));
         file_put_contents($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, true, (bool) $includePathFile, $targetDirLoader, $filesCode, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath));
         copy(__DIR__.'/ClassLoader.php', $targetDir.'/ClassLoader.php');
+
+        $this->eventDispatcher->dispatch(ScriptEvents::POST_AUTOLOAD_DUMP);
     }
 
     public function buildPackageMap(InstallationManager $installationManager, PackageInterface $mainPackage, array $packages)
