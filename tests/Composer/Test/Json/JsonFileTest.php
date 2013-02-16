@@ -205,6 +205,7 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
     private function assertJsonFormat($json, $data, $options = null)
     {
         $file = new JsonFile('composer.json');
+        $json = str_replace("\r\n", "\n", $json);
 
         if (null === $options) {
             $this->assertEquals($json, $file->encode($data));
