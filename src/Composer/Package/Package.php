@@ -532,7 +532,7 @@ class Package extends BasePackage
      *
      * @param array $excludes
      */
-    public function setArchiveExcludes($excludes)
+    public function setArchiveExcludes(array $excludes)
     {
         $this->archiveExcludes = $excludes;
     }
