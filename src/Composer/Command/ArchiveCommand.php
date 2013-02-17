@@ -24,7 +24,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Install a package as new project into new directory.
+ * Creates an archive of a package for distribution.
  *
  * @author Nils Adermann <naderman@naderman.de>
  */
