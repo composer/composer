@@ -45,15 +45,25 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     {
         parent::__construct($aliasOf->getName());
 
+        $this->aliasOf = $aliasOf;
+        $this->updateVersion($version, $prettyVersion);
+    }
+
+    /**
+     * Allows updating the Alias's version
+     *
+     * Use with extreme caution!
+     */
+    public function updateVersion($version, $prettyVersion)
+    {
         $this->version = $version;
         $this->prettyVersion = $prettyVersion;
-        $this->aliasOf = $aliasOf;
         $this->stability = VersionParser::parseStability($version);
         $this->dev = $this->stability === 'dev';
 
         // replace self.version dependencies
         foreach (array('requires', 'devRequires') as $type) {
-            $links = $aliasOf->{'get'.ucfirst($type)}();
+            $links = $this->aliasOf->{'get'.ucfirst($type)}();
             foreach ($links as $index => $link) {
                 // link is self.version, but must be replacing also the replaced version
                 if ('self.version' === $link->getPrettyConstraint()) {
@@ -65,7 +75,7 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
 
         // duplicate self.version provides
         foreach (array('conflicts', 'provides', 'replaces') as $type) {
-            $links = $aliasOf->{'get'.ucfirst($type)}();
+            $links = $this->aliasOf->{'get'.ucfirst($type)}();
             $newLinks = array();
             foreach ($links as $link) {
                 // link is self.version, but must be replacing also the replaced version

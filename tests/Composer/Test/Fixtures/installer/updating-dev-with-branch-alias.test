@@ -1,0 +1,85 @@
+--TEST--
+Updating dev packages that changed branch alias should work fine
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "a/devpackage", "version": "dev-master",
+                    "source": { "reference": "newref", "url": "", "type": "git" },
+                    "extra": {
+                        "branch-alias": {
+                            "dev-master": "2.2.x-dev"
+                        }
+                    }
+                },
+                {
+                    "name": "a/devpackage", "version": "2.1.x-dev",
+                    "source": { "reference": "newref2", "url": "", "type": "git" }
+                },
+                {
+                    "name": "a/anotherdev", "version": "dev-master",
+                    "source": { "reference": "newref", "url": "", "type": "git" },
+                    "extra": {
+                        "branch-alias": {
+                            "dev-master": "2.2.x-dev"
+                        }
+                    }
+                },
+                {
+                    "name": "a/anotherdev", "version": "2.1.x-dev",
+                    "source": { "reference": "newref2", "url": "", "type": "git" }
+                },
+                {
+                    "name": "b/pkg", "version": "1.0.0",
+                    "source": { "reference": "ref", "url": "", "type": "git" },
+                    "require": {
+                        "a/devpackage": "2.1.*",
+                        "a/anotherdev": "2.1.*"
+                    }
+                }
+            ]
+        }
+    ],
+    "require": {
+        "a/devpackage": "2.1.*",
+        "a/anotherdev": "dev-master as 2.1.x-dev",
+        "b/pkg": "1.0.0"
+    },
+    "minimum-stability": "dev"
+}
+--INSTALLED--
+[
+    {
+        "name": "a/devpackage", "version": "dev-master",
+        "source": { "reference": "oldref", "url": "", "type": "git" },
+        "extra": {
+            "branch-alias": {
+                "dev-master": "2.1.x-dev"
+            }
+        }
+    },
+    {
+        "name": "a/anotherdev", "version": "dev-master",
+        "source": { "reference": "oldref", "url": "", "type": "git" },
+        "extra": {
+            "branch-alias": {
+                "dev-master": "2.1.x-dev"
+            }
+        }
+    },
+    {
+        "name": "b/pkg", "version": "1.0.0",
+        "source": { "reference": "ref", "url": "", "type": "git" },
+        "require": {
+            "a/devpackage": "2.1.*"
+        }
+    }
+]
+--RUN--
+update
+--EXPECT--
+Updating a/devpackage (dev-master oldref) to a/devpackage (2.1.x-dev newref2)
+Updating a/anotherdev (dev-master oldref) to a/anotherdev (dev-master newref)
