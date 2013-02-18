@@ -55,6 +55,8 @@ class VcsRepositoryTest extends \PHPUnit_Framework_TestCase
         };
 
         $exec('git init');
+        $exec('git config user.email composertest@example.org');
+        $exec('git config user.name ComposerTest');
         touch('foo');
         $exec('git add foo');
         $exec('git commit -m init');
