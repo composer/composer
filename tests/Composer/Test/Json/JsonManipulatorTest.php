@@ -400,9 +400,11 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
 }');
 
         $this->assertTrue($manipulator->addConfigSetting('test', 'a\b'));
+        $this->assertTrue($manipulator->addConfigSetting('test2', "a\nb\fa"));
         $this->assertEquals('{
     "config": {
-        "test": "a\\\\b"
+        "test": "a\\\\b",
+        "test2": "a\nb\fa"
     }
 }
 ', $manipulator->getContents());
