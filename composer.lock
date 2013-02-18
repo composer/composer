@@ -168,19 +168,19 @@
             "target-dir": "Symfony/Component/Process",
             "source": {
                 "type": "git",
-                "url": "https://github.com/symfony/Process",
-                "reference": "c99475d555934461f079521d024d88a0d4e861eb"
+                "url": "https://github.com/symfony/Process.git",
+                "reference": "6ebe4ba544cfc0dd25bfe49402da4d5267ee1b43"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Process/zipball/c99475d555934461f079521d024d88a0d4e861eb",
-                "reference": "c99475d555934461f079521d024d88a0d4e861eb",
+                "url": "https://api.github.com/repos/symfony/Process/zipball/6ebe4ba544cfc0dd25bfe49402da4d5267ee1b43",
+                "reference": "6ebe4ba544cfc0dd25bfe49402da4d5267ee1b43",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.3"
             },
-            "time": "2013-01-31 21:39:01",
+            "time": "2013-02-18 21:28:20",
             "type": "library",
             "extra": {
                 "branch-alias": {
