@@ -15,7 +15,7 @@ WordPress theme:
         "name": "you/themename",
         "type": "wordpress-theme",
         "require": {
-            "composer/installers": "*"
+            "composer/installers": "~1.0"
         }
     }
 
