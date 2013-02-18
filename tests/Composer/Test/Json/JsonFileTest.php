@@ -179,10 +179,16 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
 
     public function testEscapedSlashes()
     {
-
         $data = "\\/foo";
 
         $this->assertJsonFormat('"\\\\\\/foo"', $data, 0);
+    }
+
+    public function testEscapedBackslashes()
+    {
+        $data = "a\\b";
+
+        $this->assertJsonFormat('"a\\\\b"', $data, 0);
     }
 
     public function testEscapedUnicode()
