@@ -450,23 +450,32 @@ FOOTER;
             if (!isset($autoload[$type]) || !is_array($autoload[$type])) {
                 continue;
             }
-            if ($type !== 'files' && null !== $package->getTargetDir() && $package !== $mainPackage) {
+            if (null !== $package->getTargetDir() && $package !== $mainPackage) {
                 $installPath = substr($installPath, 0, -strlen('/'.$package->getTargetDir()));
             }
 
             foreach ($autoload[$type] as $namespace => $paths) {
                 foreach ((array) $paths as $path) {
-
-                    // remove target-dir from file paths
-                    if ($type === 'files' && !is_readable($installPath.$path)) {
-	                    $targetDir = str_replace('\\<dirsep\\>', '[\\\\/]', preg_quote(str_replace(array('/', '\\'), '<dirsep>', $package->getTargetDir())));
+                    // remove target-dir from file paths of the root package
+                    if ($type === 'files' && $package === $mainPackage && $package->getTargetDir() && !is_readable($installPath.'/'.$path)) {
+                        $targetDir = str_replace('\\<dirsep\\>', '[\\\\/]', preg_quote(str_replace(array('/', '\\'), '<dirsep>', $package->getTargetDir())));
                         $path = ltrim(preg_replace('{^'.$targetDir.'}', '', ltrim($path, '\\/')), '\\/');
                     }
 
+                    // add target-dir from file paths that don't have it
+                    if ($type === 'files' && $package !== $mainPackage && $package->getTargetDir() && !is_readable($installPath.'/'.$path)) {
+                        $path = $package->getTargetDir() . '/' . $path;
+                    }
+
                     // remove target-dir from classmap entries of the root package
-                    if ($type === 'classmap' && $package === $mainPackage && $package->getTargetDir()) {
+                    if ($type === 'classmap' && $package === $mainPackage && $package->getTargetDir() && !is_readable($installPath.'/'.$path)) {
                         $targetDir = str_replace('\\<dirsep\\>', '[\\\\/]', preg_quote(str_replace(array('/', '\\'), '<dirsep>', $package->getTargetDir())));
                         $path = ltrim(preg_replace('{^'.$targetDir.'}', '', ltrim($path, '\\/')), '\\/');
+                    }
+
+                    // add target-dir to classmap entries that don't have it
+                    if ($type === 'classmap' && $package !== $mainPackage && $package->getTargetDir() && !is_readable($installPath.'/'.$path)) {
+                        $path = $package->getTargetDir() . '/' . $path;
                     }
 
                     $autoloads[$namespace][] = empty($installPath) ? $path : $installPath.'/'.$path;
