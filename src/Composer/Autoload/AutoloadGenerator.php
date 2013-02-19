@@ -450,12 +450,19 @@ FOOTER;
             if (!isset($autoload[$type]) || !is_array($autoload[$type])) {
                 continue;
             }
-            if (null !== $package->getTargetDir() && $package !== $mainPackage) {
+            if ($type !== 'files' && null !== $package->getTargetDir() && $package !== $mainPackage) {
                 $installPath = substr($installPath, 0, -strlen('/'.$package->getTargetDir()));
             }
 
             foreach ($autoload[$type] as $namespace => $paths) {
                 foreach ((array) $paths as $path) {
+
+                    // remove target-dir from file paths
+                    if ($type === 'files' && !is_readable($installPath.$path)) {
+	                    $targetDir = str_replace('\\<dirsep\\>', '[\\\\/]', preg_quote(str_replace(array('/', '\\'), '<dirsep>', $package->getTargetDir())));
+                        $path = ltrim(preg_replace('{^'.$targetDir.'}', '', ltrim($path, '\\/')), '\\/');
+                    }
+
                     // remove target-dir from classmap entries of the root package
                     if ($type === 'classmap' && $package === $mainPackage && $package->getTargetDir()) {
                         $targetDir = str_replace('\\<dirsep\\>', '[\\\\/]', preg_quote(str_replace(array('/', '\\'), '<dirsep>', $package->getTargetDir())));
