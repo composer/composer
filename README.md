@@ -13,7 +13,7 @@ Installation / Usage
 1. Download the [`composer.phar`](https://getcomposer.org/composer.phar) executable or use the installer.
 
     ``` sh
-    $ curl -s https://getcomposer.org/installer | php
+    $ curl -sS https://getcomposer.org/installer | php
     ```
 
 
@@ -51,7 +51,7 @@ Since Composer works with the current working directory it is possible to instal
 in a system wide way.
 
 1. Change into a directory in your path like `cd /usr/local/bin`
-2. Get Composer `curl -s https://getcomposer.org/installer | php`
+2. Get Composer `curl -sS https://getcomposer.org/installer | php`
 3. Make the phar executable `chmod a+x composer.phar`
 4. Change into a project directory `cd /path/to/my/project`
 5. Use Composer as you normally would `composer.phar install`

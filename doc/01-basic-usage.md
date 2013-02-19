@@ -4,7 +4,7 @@
 
 To install Composer, you just need to download the `composer.phar` executable.
 
-    $ curl -s https://getcomposer.org/installer | php
+    $ curl -sS https://getcomposer.org/installer | php
 
 For the details, see the [Introduction](00-intro.md) chapter.
 
@@ -17,7 +17,7 @@ This should give you a list of available commands.
 > **Note:** You can also perform the checks only without downloading Composer
 > by using the `--check` option. For more information, just use `--help`.
 >
->     $ curl -s https://getcomposer.org/installer | php -- --help
+>     $ curl -sS https://getcomposer.org/installer | php -- --help
 
 ## `composer.json`: Project Setup
 
