@@ -100,7 +100,8 @@ class AutoloadGeneratorTest extends TestCase
         $this->fs->ensureDirectoryExists($this->workingDir.'/src');
         $this->fs->ensureDirectoryExists($this->workingDir.'/lib');
 
-        $this->createClassFile($this->workingDir);
+        $this->fs->ensureDirectoryExists($this->workingDir.'/composersrc');
+        file_put_contents($this->workingDir.'/composersrc/foo.php', '<?php class ClassMapFoo {}');
 
         $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, '_1');
         $this->assertAutoloadFiles('main', $this->vendorDir.'/composer');
@@ -125,7 +126,8 @@ class AutoloadGeneratorTest extends TestCase
         $this->fs->ensureDirectoryExists($this->vendorDir.'/src/Main');
         file_put_contents($this->vendorDir.'/src/Main/Foo.php', '<?php namespace Main; class Foo {}');
 
-        $this->createClassFile($this->vendorDir);
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/composersrc');
+        file_put_contents($this->vendorDir.'/composersrc/foo.php', '<?php class ClassMapFoo {}');
 
         $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', true, '_2');
         $this->assertAutoloadFiles('main3', $this->vendorDir.'/composer');
@@ -149,7 +151,8 @@ class AutoloadGeneratorTest extends TestCase
         $this->fs->ensureDirectoryExists($this->vendorDir.'/composer');
         $this->fs->ensureDirectoryExists($this->workingDir.'/src');
 
-        $this->createClassFile($this->workingDir);
+        $this->fs->ensureDirectoryExists($this->workingDir.'/composersrc');
+        file_put_contents($this->workingDir.'/composersrc/foo.php', '<?php class ClassMapFoo {}');
         $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, '_3');
         $this->assertAutoloadFiles('main2', $this->vendorDir.'/composer');
         $this->assertAutoloadFiles('classmap2', $this->vendorDir.'/composer', 'classmap');
@@ -160,6 +163,8 @@ class AutoloadGeneratorTest extends TestCase
         $package = new Package('a', '1.0', '1.0');
         $package->setAutoload(array(
             'psr-0' => array('Main\\Foo' => '', 'Main\\Bar' => ''),
+            'classmap' => array('Main/Foo/src', 'lib'),
+            'files' => array('foo.php', 'Main/Foo/bar.php'),
         ));
         $package->setTargetDir('Main/Foo/');
 
@@ -168,32 +173,18 @@ class AutoloadGeneratorTest extends TestCase
             ->will($this->returnValue(array()));
 
         $this->fs->ensureDirectoryExists($this->vendorDir.'/a');
+        $this->fs->ensureDirectoryExists($this->workingDir.'/src');
+        $this->fs->ensureDirectoryExists($this->workingDir.'/lib');
+
+        file_put_contents($this->workingDir.'/src/rootfoo.php', '<?php class ClassMapFoo {}');
+        file_put_contents($this->workingDir.'/lib/rootbar.php', '<?php class ClassMapBar {}');
+        file_put_contents($this->workingDir.'/foo.php', '<?php class FilesFoo {}');
+        file_put_contents($this->workingDir.'/bar.php', '<?php class FilesBar {}');
 
         $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, 'TargetDir');
         $this->assertFileEquals(__DIR__.'/Fixtures/autoload_target_dir.php', $this->vendorDir.'/autoload.php');
         $this->assertFileEquals(__DIR__.'/Fixtures/autoload_real_target_dir.php', $this->vendorDir.'/composer/autoload_real.php');
-    }
-
-    public function testMainPackageAutoloadingWithTargetDirAndClassmap()
-    {
-        $package = new Package('a', '1.0', '1.0');
-        $package->setAutoload(array(
-            'classmap' => array('Main/Foo/composersrc/'),
-        ));
-        $package->setTargetDir('Main/Foo/');
-
-        $this->repository->expects($this->once())
-            ->method('getPackages')
-            ->will($this->returnValue(array()));
-
-        $this->vendorDir .= '/subdir';
-
-        $this->fs->ensureDirectoryExists($this->vendorDir.'/composer');
-        $this->fs->ensureDirectoryExists($this->workingDir.'/src');
-
-        $this->createClassFile($this->workingDir);
-        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, 'TargetDirNoPsr');
-        $this->assertAutoloadFiles('classmap2', $this->vendorDir.'/composer', 'classmap');
+        $this->assertAutoloadFiles('classmap6', $this->vendorDir.'/composer', 'classmap');
     }
 
     public function testVendorsAutoloading()
@@ -272,6 +263,41 @@ class AutoloadGeneratorTest extends TestCase
             $this->normalizePaths(include $this->vendorDir.'/composer/autoload_classmap.php')
         );
         $this->assertAutoloadFiles('classmap4', $this->vendorDir.'/composer', 'classmap');
+    }
+
+    public function testVendorsClassMapAutoloadingWithTargetDir()
+    {
+        $package = new Package('a', '1.0', '1.0');
+
+        $packages = array();
+        $packages[] = $a = new Package('a/a', '1.0', '1.0');
+        $packages[] = $b = new Package('b/b', '1.0', '1.0');
+        $a->setAutoload(array('classmap' => array('target/src/', 'lib/')));
+        $a->setTargetDir('target');
+        $b->setAutoload(array('classmap' => array('src/')));
+
+        $this->repository->expects($this->once())
+            ->method('getPackages')
+            ->will($this->returnValue($packages));
+
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/composer');
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/a/a/target/src');
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/a/a/target/lib');
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/b/b/src');
+        file_put_contents($this->vendorDir.'/a/a/target/src/a.php', '<?php class ClassMapFoo {}');
+        file_put_contents($this->vendorDir.'/a/a/target/lib/b.php', '<?php class ClassMapBar {}');
+        file_put_contents($this->vendorDir.'/b/b/src/c.php', '<?php class ClassMapBaz {}');
+
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, '_6');
+        $this->assertTrue(file_exists($this->vendorDir.'/composer/autoload_classmap.php'), "ClassMap file needs to be generated.");
+        $this->assertEquals(
+            $this->normalizePaths(array(
+                'ClassMapBar' => $this->vendorDir.'/a/a/target/lib/b.php',
+                'ClassMapBaz' => $this->vendorDir.'/b/b/src/c.php',
+                'ClassMapFoo' => $this->vendorDir.'/a/a/target/src/a.php',
+            )),
+            $this->normalizePaths(include $this->vendorDir.'/composer/autoload_classmap.php')
+        );
     }
 
     public function testClassMapAutoloadingEmptyDirAndExactFile()
@@ -587,9 +613,9 @@ EOF;
 
         $this->assertFalse(file_exists($this->vendorDir."/composer/include_paths.php"));
     }
-	
-	
-	public function testUseGlobalIncludePath()
+
+
+    public function testUseGlobalIncludePath()
     {
         $package = new Package('a', '1.0', '1.0');
         $package->setAutoload(array(
@@ -600,8 +626,8 @@ EOF;
         $this->repository->expects($this->once())
             ->method('getPackages')
             ->will($this->returnValue(array()));
-			
-		$this->config->expects($this->at(2))
+
+        $this->config->expects($this->at(2))
             ->method('get')
             ->with($this->equalTo('use-include-path'))
             ->will($this->returnValue(true));
@@ -610,15 +636,6 @@ EOF;
 
         $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, 'IncludePath');
         $this->assertFileEquals(__DIR__.'/Fixtures/autoload_real_include_path.php', $this->vendorDir.'/composer/autoload_real.php');
-    }
-
-    private function createClassFile($basedir)
-    {
-        if (!is_dir($basedir.'/composersrc')) {
-            mkdir($basedir.'/composersrc', 0777, true);
-        }
-
-        file_put_contents($basedir.'/composersrc/foo.php', '<?php class ClassMapFoo {}');
     }
 
     private function assertAutoloadFiles($name, $dir, $type = 'namespaces')
