@@ -43,8 +43,10 @@ class ShowCommand extends Command
                 new InputArgument('version', InputArgument::OPTIONAL, 'Version to inspect'),
                 new InputOption('installed', 'i', InputOption::VALUE_NONE, 'List installed packages only'),
                 new InputOption('platform', 'p', InputOption::VALUE_NONE, 'List platform packages only'),
+                new InputOption('available', 'a', InputOption::VALUE_NONE, 'List available packages only'),
                 new InputOption('self', 's', InputOption::VALUE_NONE, 'Show the root package information'),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Enables display of dev-require packages.'),
+                new InputOption('name-only', 'N', InputOption::VALUE_NONE, 'List package names only'),
             ))
             ->setHelp(<<<EOT
 The show command displays detailed information about a package, or
@@ -78,6 +80,9 @@ EOT
             $repos = $installedRepo = $platformRepo;
         } elseif ($input->getOption('installed')) {
             $repos = $installedRepo = $getRepositories($this->getComposer(), $input->getOption('dev'));
+        } elseif ($input->getOption('available')) {
+            $installedRepo = $platformRepo;
+            $repos = new CompositeRepository(Factory::createDefaultRepositories($this->getIO()));
         } elseif ($composer = $this->getComposer(false)) {
             $localRepo = $getRepositories($composer, $input->getOption('dev'));
             $installedRepo = new CompositeRepository(array($localRepo, $platformRepo));
@@ -135,9 +140,13 @@ EOT
             }
         }, 'Composer\Package\CompletePackage');
 
+        $tree = !$input->getOption('platform') && !$input->getOption('installed') && !$input->getOption('available');
+        $indent = $tree ? '  ' : '';
         foreach (array('<info>platform</info>:' => true, '<comment>available</comment>:' => false, '<info>installed</info>:' => true) as $type => $showVersion) {
             if (isset($packages[$type])) {
-                $output->writeln($type);
+                if ($tree) {
+                    $output->writeln($type);
+                }
                 ksort($packages[$type]);
 
                 $nameLength = $versionLength = 0;
@@ -150,10 +159,10 @@ EOT
                     $width--;
                 }
 
-                $writeVersion = $showVersion && ($nameLength + $versionLength + 3 <= $width);
-                $writeDescription = $nameLength + ($showVersion ? $versionLength : 0) + 24 <= $width;
+                $writeVersion = !$input->getOption('name-only') && $showVersion && ($nameLength + $versionLength + 3 <= $width);
+                $writeDescription = !$input->getOption('name-only') && ($nameLength + ($showVersion ? $versionLength : 0) + 24 <= $width);
                 foreach ($packages[$type] as $package) {
-                    $output->write('  ' . str_pad($package->getPrettyName(), $nameLength, ' '), false);
+                    $output->write($indent . str_pad($package->getPrettyName(), $nameLength, ' '), false);
 
                     if ($writeVersion) {
                         $output->write(' ' . str_pad($this->versionParser->formatVersion($package), $versionLength, ' '), false);
@@ -166,11 +175,12 @@ EOT
                             $description = substr($description, 0, $remaining - 3) . '...';
                         }
                         $output->write(' ' . $description);
-
                     }
                     $output->writeln('');
                 }
-                $output->writeln('');
+                if ($tree) {
+                    $output->writeln('');
+                }
             }
         }
     }
