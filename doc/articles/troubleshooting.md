@@ -35,16 +35,20 @@ This is a list of common pitfalls on using Composer, and how to avoid them.
    your repository, especially when maintaining a third party fork and using
    `replace`.
 
-## Package not found in travis-ci
-1. Check the trouble shooting for "Package not Found" above
-2. The problem might be that composer is not able to detect the version of the 
-   package properly. If it's a git clone it's alright and it will see the current 
-   branch, but on travis it does shallow clones so that probably fails. The best 
-   solution for travis is to define the version you're on via an environment var 
-   called COMPOSER_ROOT_VERSION. You set it to "dev-master" for example to define 
-   the root package's version as "dev-master".
+## Package not found on travis-ci.org
+
+1. Check the ["Package not found"](#package-not-found) item above.
+
+2. If the package tested is a dependency of one of its dependencies (cyclic
+   dependency), the problem might be that composer is not able to detect the version
+   of the package properly. If it is a git clone it is generally alright and Composer
+   will detect the version of the current branch, but travis does shallow clones so
+   that process can fail when testing pull requests and feature branches in general.
+   The best solution is to define the version you are on via an environment variable
+   called COMPOSER_ROOT_VERSION. You set it to `dev-master` for example to define
+   the root package's version as `dev-master`.
    Use: `before_script: COMPOSER_ROOT_VERSION=dev-master composer install` to export
-   the variable for the call to composer
+   the variable for the call to composer.
 
 ## Memory limit errors
 
