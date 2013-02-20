@@ -39,7 +39,7 @@ class VcsRepositoryTest extends \PHPUnit_Framework_TestCase
 
             return;
         }
-        if (!mkdir(self::$gitRepo) || !chdir(self::$gitRepo)) {
+        if (!@mkdir(self::$gitRepo) || !@chdir(self::$gitRepo)) {
             $this->skipped = 'Could not create and move into the temp git repo '.self::$gitRepo;
 
             return;

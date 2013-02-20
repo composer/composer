@@ -108,7 +108,7 @@ class JsonFile
                     $dir.' exists and is not a directory.'
                 );
             }
-            if (!mkdir($dir, 0777, true)) {
+            if (!@mkdir($dir, 0777, true)) {
                 throw new \UnexpectedValueException(
                     $dir.' does not exist and could not be created.'
                 );
