@@ -17,7 +17,7 @@ use Composer\DependencyResolver\RuleSet;
 use Composer\DependencyResolver\RuleSetIterator;
 use Composer\DependencyResolver\Pool;
 
-class ResultSetIteratorTest extends \PHPUnit_Framework_TestCase
+class RuleSetIteratorTest extends \PHPUnit_Framework_TestCase
 {
     protected $rules;
 
