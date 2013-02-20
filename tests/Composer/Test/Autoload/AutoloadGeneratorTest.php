@@ -34,9 +34,9 @@ class AutoloadGeneratorTest extends TestCase
         $this->fs = new Filesystem;
         $that = $this;
 
-        $this->workingDir = realpath(sys_get_temp_dir()).DIRECTORY_SEPARATOR.'cmptest';
+        $this->workingDir = realpath(sys_get_temp_dir()).DIRECTORY_SEPARATOR.'cmptest-'.md5(uniqid('', true));
         $this->fs->ensureDirectoryExists($this->workingDir);
-        $this->vendorDir = $this->workingDir.DIRECTORY_SEPARATOR.'composer-test-autoload-'.md5(uniqid('', true));
+        $this->vendorDir = $this->workingDir.DIRECTORY_SEPARATOR.'composer-test-autoload';
         $this->ensureDirectoryExistsAndClear($this->vendorDir);
 
         $this->config = $this->getMock('Composer\Config');
@@ -55,7 +55,7 @@ class AutoloadGeneratorTest extends TestCase
                 return $that->vendorDir;
             }));
 
-        $this->dir = getcwd();
+        $this->origDir = getcwd();
         chdir($this->workingDir);
 
         $this->im = $this->getMockBuilder('Composer\Installer\InstallationManager')
@@ -74,7 +74,7 @@ class AutoloadGeneratorTest extends TestCase
 
     protected function tearDown()
     {
-        chdir($this->dir);
+        chdir($this->origDir);
 
         if (is_dir($this->workingDir)) {
             $this->fs->removeDirectory($this->workingDir);
