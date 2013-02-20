@@ -28,7 +28,7 @@ class GitDownloader extends VcsDownloader
     public function doDownload(PackageInterface $package, $path)
     {
         $ref = $package->getSourceReference();
-        $command = 'git clone %s %s && cd %2$s && git remote add composer %1$s && git fetch composer';
+        $command = 'git clone %s %s && cd %2$s && git remote add composer %1$s && git fetch composer && git submodule init && git submodule update';
         $this->io->write("    Cloning ".$ref);
 
         // added in git 1.7.1, prevents prompting the user
@@ -50,7 +50,7 @@ class GitDownloader extends VcsDownloader
     {
         $ref = $target->getSourceReference();
         $this->io->write("    Checking out ".$ref);
-        $command = 'cd %s && git remote set-url composer %s && git fetch composer && git fetch --tags composer';
+        $command = 'cd %s && git remote set-url composer %s && git fetch composer && git fetch --tags composer && git submodule update';
 
         if (!$this->io->hasAuthentication('github.com')) {
             // capture username/password from github URL if there is one
