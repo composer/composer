@@ -392,11 +392,20 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
 
         if ($this->providersUrl && isset($data['provider-includes'])) {
             $includes = $data['provider-includes'];
+            foreach ($includes as $include => $metadata) {
+                $url = $this->baseUrl . '/' . str_replace('%hash%', $metadata['sha256'], $include);
+                $cacheKey = str_replace(array('%hash%','$'), '', $include);
+                if ($this->cache->sha256($cacheKey) === $metadata['sha256']) {
+                    $includedData = json_decode($this->cache->read($cacheKey), true);
+                } else {
+                    $includedData = $this->fetchFile($url, $cacheKey, $metadata['sha256']);
+                }
+
+                $this->loadProviderListings($includedData);
+            }
         } elseif (isset($data['providers-includes'])) {
             // BC layer for old-style providers-includes
             $includes = $data['providers-includes'];
-        }
-        if (!empty($includes)) {
             foreach ($includes as $include => $metadata) {
                 if ($this->cache->sha256($include) === $metadata['sha256']) {
                     $includedData = json_decode($this->cache->read($include), true);
