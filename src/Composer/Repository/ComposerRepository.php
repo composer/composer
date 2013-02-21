@@ -43,6 +43,7 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
     protected $providersByUid = array();
     protected $loader;
     protected $rootAliases;
+    protected $allowSslDowngrade = false;
     private $rawData;
     private $minimalPackages;
     private $degradedMode = false;
@@ -67,6 +68,9 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
 
         if (!isset($repoConfig['options'])) {
             $repoConfig['options'] = array();
+        }
+        if (isset($repoConfig['allow_ssl_downgrade']) && true === $repoConfig['allow_ssl_downgrade']) {
+            $this->allowSslDowngrade = true;
         }
 
         $this->config = $config;
@@ -327,6 +331,9 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
         }
 
         $data = $this->fetchFile($jsonUrl, 'packages.json');
+        if ($this->allowSslDowngrade) {
+            $this->url = str_replace('https://', 'http://', $this->url);
+        }
 
         // TODO remove this BC notify_batch support
         if (!empty($data['notify_batch'])) {
