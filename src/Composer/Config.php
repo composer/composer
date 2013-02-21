@@ -39,6 +39,7 @@ class Config
         'packagist' => array(
             'type' => 'composer',
             'url' => 'https?://packagist.org',
+            'allow_ssl_downgrade' => true,
         )
     );
 
