@@ -483,6 +483,10 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
 
                 break;
             } catch (\Exception $e) {
+                if ($e instanceof RepositorySecurityException) {
+                    throw $e;
+                }
+
                 if (!$retries) {
                     if ($contents = $this->cache->read($cacheKey)) {
                         if (!$this->degradedMode) {
