@@ -468,8 +468,8 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
                         continue;
                     }
 
-                    $this->io->write('<warning>The contents of '.$filename.' do not match its signature, this is most likely due to a temporary glitch but could indicate a man-in-the-middle attack. Try running composer again and please report it if it still persists.</warning>');
-                    throw new RepositorySecurityException('The contents of '.$filename.' do not match its signature');
+                    // TODO use scarier wording once we know for sure it doesn't do false positives anymore
+                    throw new RepositorySecurityException('The contents of '.$filename.' do not match its signature. This should indicate a man-in-the-middle attack. Try running composer again and report this if you think it is a mistake.');
                 }
                 $data = JsonFile::parseJson($json, $filename);
                 $this->cache->write($cacheKey, $json);
