@@ -483,26 +483,27 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
 
                 break;
             } catch (\Exception $e) {
+                if ($retries) {
+                    usleep(100);
+                    continue;
+                }
+
                 if ($e instanceof RepositorySecurityException) {
                     throw $e;
                 }
 
-                if (!$retries) {
-                    if ($contents = $this->cache->read($cacheKey)) {
-                        if (!$this->degradedMode) {
-                            $this->io->write('<warning>'.$e->getMessage().'</warning>');
-                            $this->io->write('<warning>'.$this->url.' could not be fully loaded, package information was loaded from the local cache and may be out of date</warning>');
-                        }
-                        $this->degradedMode = true;
-                        $data = JsonFile::parseJson($contents, $this->cache->getRoot().$cacheKey);
-
-                        break;
+                if ($contents = $this->cache->read($cacheKey)) {
+                    if (!$this->degradedMode) {
+                        $this->io->write('<warning>'.$e->getMessage().'</warning>');
+                        $this->io->write('<warning>'.$this->url.' could not be fully loaded, package information was loaded from the local cache and may be out of date</warning>');
                     }
+                    $this->degradedMode = true;
+                    $data = JsonFile::parseJson($contents, $this->cache->getRoot().$cacheKey);
 
-                    throw $e;
+                    break;
                 }
 
-                usleep(100);
+                throw $e;
             }
         }
 
