@@ -33,9 +33,11 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
     protected $url;
     protected $baseUrl;
     protected $io;
+    protected $rfs;
     protected $cache;
     protected $notifyUrl;
     protected $hasProviders = false;
+    protected $providersUrl;
     protected $providerListing;
     protected $providers = array();
     protected $providersByUid = array();
@@ -72,8 +74,9 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
         $this->url = $repoConfig['url'];
         $this->baseUrl = rtrim(preg_replace('{^(.*)(?:/packages.json)?(?:[?#].*)?$}', '$1', $this->url), '/');
         $this->io = $io;
-        $this->cache = new Cache($io, $config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $this->url));
+        $this->cache = new Cache($io, $config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $this->url), 'a-z0-9.$');
         $this->loader = new ArrayLoader();
+        $this->rfs = new RemoteFilesystem($this->io, $this->options);
     }
 
     public function setRootAliases(array $rootAliases)
@@ -201,17 +204,31 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
             $this->loadProviderListings($this->loadRootServerFile());
         }
 
-        $url = 'p/'.$name.'.json';
+        if ($this->providersUrl) {
+            // package does not exist in this repo
+            if (!isset($this->providerListing[$name])) {
+                return array();
+            }
 
-        // package does not exist in this repo
-        if (!isset($this->providerListing[$url])) {
-            return array();
+            $hash = $this->providerListing[$name]['sha256'];
+            $url = str_replace(array('%package%', '%hash%'), array($name, $hash), $this->providersUrl);
+            $cacheKey = 'provider-'.strtr($name, '/', '$').'.json';
+        } else {
+            // BC handling for old providers-includes
+            $url = 'p/'.$name.'.json';
+
+            // package does not exist in this repo
+            if (!isset($this->providerListing[$url])) {
+                return array();
+            }
+            $hash = $this->providerListing[$url]['sha256'];
+            $cacheKey = null;
         }
 
-        if ($this->cache->sha256($url) === $this->providerListing[$url]['sha256']) {
-            $packages = json_decode($this->cache->read($url), true);
+        if ($this->cache->sha256($cacheKey) === $hash) {
+            $packages = json_decode($this->cache->read($cacheKey), true);
         } else {
-            $packages = $this->fetchFile($url, null, $this->providerListing[$url]['sha256']);
+            $packages = $this->fetchFile($url, $cacheKey, $hash);
         }
 
         $this->providers[$name] = array();
@@ -311,11 +328,18 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
 
         $data = $this->fetchFile($jsonUrl, 'packages.json');
 
+        // TODO remove this BC notify_batch support
         if (!empty($data['notify_batch'])) {
-            if ('/' === $data['notify_batch'][0]) {
-                $this->notifyUrl = preg_replace('{(https?://[^/]+).*}i', '$1' . $data['notify_batch'], $this->url);
+            $notifyBatchUrl = $data['notify_batch'];
+        }
+        if (!empty($data['notify-batch'])) {
+            $notifyBatchUrl = $data['notify-batch'];
+        }
+        if (!empty($notifyBatchUrl)) {
+            if ('/' === $notifyBatchUrl[0]) {
+                $this->notifyUrl = preg_replace('{(https?://[^/]+).*}i', '$1' . $notifyBatchUrl, $this->url);
             } else {
-                $this->notifyUrl = $data['notify_batch'];
+                $this->notifyUrl = $notifyBatchUrl;
             }
         }
 
@@ -325,6 +349,15 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
             } else {
                 $this->notifyUrl = $data['notify'];
             }
+        }
+
+        if (!empty($data['providers-url'])) {
+            if ('/' === $data['providers-url'][0]) {
+                $this->providersUrl = preg_replace('{(https?://[^/]+).*}i', '$1' . $data['providers-url'], $this->url);
+            } else {
+                $this->providersUrl = $data['providers-url'];
+            }
+            $this->hasProviders = true;
         }
 
         if (!empty($data['providers']) || !empty($data['providers-includes'])) {
@@ -350,8 +383,14 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
             $this->providerListing = array_merge($this->providerListing, $data['providers']);
         }
 
-        if (isset($data['providers-includes'])) {
-            foreach ($data['providers-includes'] as $include => $metadata) {
+        if ($this->providersUrl && isset($data['provider-includes'])) {
+            $includes = $data['provider-includes'];
+        } elseif (isset($data['providers-includes'])) {
+            // BC layer for old-style providers-includes
+            $includes = $data['providers-includes'];
+        }
+        if (!empty($includes)) {
+            foreach ($includes as $include => $metadata) {
                 if ($this->cache->sha256($include) === $metadata['sha256']) {
                     $includedData = json_decode($this->cache->read($include), true);
                 } else {
@@ -421,10 +460,8 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
         $retries = 3;
         while ($retries--) {
             try {
-                $json = new JsonFile($filename, new RemoteFilesystem($this->io, $this->options));
-                $data = $json->read();
-                $encoded = json_encode($data);
-                if ($sha256 && $sha256 !== hash('sha256', $encoded)) {
+                $json = $this->rfs->getContents($filename, $filename, false);
+                if ($sha256 && $sha256 !== hash('sha256', $json)) {
                     if ($retries) {
                         usleep(100);
 
@@ -434,7 +471,8 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
                     // TODO throw SecurityException and abort once we are sure this can not happen accidentally
                     $this->io->write('<warning>The contents of '.$filename.' do not match its signature, this is most likely due to a temporary glitch but could indicate a man-in-the-middle attack. Try running composer again and please report it if it still persists.</warning>');
                 }
-                $this->cache->write($cacheKey, $encoded);
+                $data = JsonFile::parseJson($json, $filename);
+                $this->cache->write($cacheKey, $json);
 
                 break;
             } catch (\Exception $e) {
