@@ -67,7 +67,7 @@ class JsonPrinter
         $line = &$lines[0];
         $last = count($array) - 1;
         foreach ($array as $item => $code) {
-            $code = sprintf('"%s"%s', $code, $item === $last ? '' : ', ');
+            $code = sprintf('"%s"%s', trim($code), $item === $last ? '' : ', ');
             $length = strlen($line) + strlen($code) - 1;
             if ($length > 76) {
                 $line = rtrim($line);
