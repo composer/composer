@@ -13,7 +13,7 @@ your own. It basically acts as a micro-packagist. You can get it from
 
 For example let's assume you have a few packages you want to reuse across your
 company but don't really want to open-source. You would first define a Satis
-configuration file, which is basically a stripped-down version of a
+configuration, a json file with an arbitrary name that is basically a stripped-down version of a
 `composer.json` file. It contains a few repositories, and then you use the require
 key to say which packages it should dump in the static repository it creates, or
 use require-all to select all of them.
