@@ -741,15 +741,10 @@ class Installer
      *
      * @param  IOInterface       $io
      * @param  Composer          $composer
-     * @param  EventDispatcher   $eventDispatcher
-     * @param  AutoloadGenerator $autoloadGenerator
      * @return Installer
      */
-    public static function create(IOInterface $io, Composer $composer, EventDispatcher $eventDispatcher = null, AutoloadGenerator $autoloadGenerator = null)
+    public static function create(IOInterface $io, Composer $composer)
     {
-        $eventDispatcher = $eventDispatcher ?: new EventDispatcher($composer, $io);
-        $autoloadGenerator = $autoloadGenerator ?: new AutoloadGenerator;
-
         return new static(
             $io,
             $composer->getConfig(),
@@ -758,8 +753,8 @@ class Installer
             $composer->getRepositoryManager(),
             $composer->getLocker(),
             $composer->getInstallationManager(),
-            $eventDispatcher,
-            $autoloadGenerator
+            $composer->getEventDispatcher(),
+            $composer->getAutoloadGenerator()
         );
     }
 
