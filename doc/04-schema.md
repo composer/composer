@@ -150,6 +150,8 @@ The recommended notation for the most common licenses is (alphabetical):
 Optional, but it is highly recommended to supply this. More identifiers are
 listed at the [SPDX Open Source License Registry](http://www.spdx.org/licenses/).
 
+For closed-source software, you may use `"proprietary"` as the license identifier.
+
 An Example:
 
     {
