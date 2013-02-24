@@ -74,15 +74,25 @@ class ConfigValidator
 
         // validate actual data
         if (!empty($manifest['license'])) {
+            // strip proprietary since it's not a valid SPDX identifier, but is accepted by composer
+            if (is_array($manifest['license'])) {
+                foreach ($manifest['license'] as $key => $license) {
+                    if ('proprietary' === $license) {
+                        unset($manifest['license'][$key]);
+                    }
+                }
+            }
+
             $licenseValidator = new SpdxLicenseIdentifier();
-            if (!$licenseValidator->validate($manifest['license'])) {
+            if ('proprietary' !== $manifest['license'] && array() !== $manifest['license'] && !$licenseValidator->validate($manifest['license'])) {
                 $warnings[] = sprintf(
-                    'License %s is not a valid SPDX license identifier, see http://www.spdx.org/licenses/ if you use an open license',
+                    'License %s is not a valid SPDX license identifier, see http://www.spdx.org/licenses/ if you use an open license.'
+                    ."\nIf the software is closed-source, you may use \"proprietary\" as license.",
                     json_encode($manifest['license'])
                 );
             }
         } else {
-            $warnings[] = 'No license specified, it is recommended to do so';
+            $warnings[] = 'No license specified, it is recommended to do so. For closed-source software you may use "proprietary" as license.';
         }
 
         if (!empty($manifest['name']) && preg_match('{[A-Z]}', $manifest['name'])) {
