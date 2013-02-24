@@ -186,13 +186,13 @@ class InstallerTest extends TestCase
         $composer->setLocker($locker);
 
         $eventDispatcher = $this->getMockBuilder('Composer\Script\EventDispatcher')->disableOriginalConstructor()->getMock();
-        $autoloadGenerator = $this->getMockBuilder('Composer\Autoload\AutoloadGenerator')->disableOriginalConstructor()->getMock();
+        $autoloadGenerator = $this->getMock('Composer\Autoload\AutoloadGenerator', array(), array($eventDispatcher));
+        $composer->setAutoloadGenerator($autoloadGenerator);
+        $composer->setEventDispatcher($eventDispatcher);
 
         $installer = Installer::create(
             $io,
-            $composer,
-            null,
-            $autoloadGenerator
+            $composer
         );
 
         $application = new Application;
