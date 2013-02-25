@@ -319,7 +319,10 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
     public function stabilityProvider()
     {
         return array(
+            array('stable', '1'),
             array('stable', '1.0'),
+            array('stable', '3.2.1'),
+            array('stable', 'v3.2.1'),
             array('dev',    'v2.0.x-dev'),
             array('dev',    'v2.0.x-dev#abc123'),
             array('dev',    'v2.0.x-dev#trunk/@123'),
