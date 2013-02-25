@@ -60,6 +60,7 @@ class PharArchiver implements ArchiverInterface
                 })
                 ->ignoreVCS(true);
             $phar->buildFromIterator($finder->getIterator(), $sources);
+            return $target;
         } catch (\UnexpectedValueException $e) {
             $message = sprintf("Could not create archive '%s' from '%s': %s",
                 $target,
