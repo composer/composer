@@ -24,6 +24,7 @@ use Composer\Composer;
 use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\IO\ConsoleIO;
+use Composer\Json\JsonValidationException;
 use Composer\Util\ErrorHandler;
 
 /**
