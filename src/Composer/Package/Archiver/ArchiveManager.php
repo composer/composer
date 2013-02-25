@@ -46,6 +46,29 @@ class ArchiveManager
     }
 
     /**
+     * Generate a distinct filename for a particular version of a package.
+     *
+     * @param PackageInterface $package The package to get a name for
+     *
+     * @return string A filename without an extension
+     */
+    protected function getPackageFilename(PackageInterface $package)
+    {
+        $nameParts = array(preg_replace('#[^a-z0-9-_.]#i', '-', $package->getName()));
+
+        if (preg_match('{^[a-f0-9]{40}$}', $package->getDistReference())) {
+            $nameParts = array_merge($nameParts, array($package->getDistReference(), $package->getDistType()));
+        } else {
+            $nameParts = array_merge($nameParts, array($package->getPrettyVersion(), $package->getDistReference(), $package->getDistType()));
+        }
+
+        return implode('-', array_filter($nameParts, function ($p) {
+            return !empty($p);
+        }));
+
+    }
+
+    /**
      * Create an archive of the specified package.
      *
      * @param PackageInterface $package   The package to archive
@@ -75,7 +98,7 @@ class ArchiveManager
         }
 
         $filesystem = new Filesystem();
-        $packageName = preg_replace('#[^a-z0-9-_.]#i', '-', $package->getPrettyString());
+        $packageName = $this->getPackageFilename($package);
 
         // Archive filename
         $filesystem->ensureDirectoryExists($targetDir);
