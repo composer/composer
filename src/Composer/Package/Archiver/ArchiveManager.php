@@ -59,7 +59,7 @@ class ArchiveManager
         if (preg_match('{^[a-f0-9]{40}$}', $package->getDistReference())) {
             $nameParts = array_merge($nameParts, array($package->getDistReference(), $package->getDistType()));
         } else {
-            $nameParts = array_merge($nameParts, array($package->getPrettyVersion(), $package->getDistReference(), $package->getDistType()));
+            $nameParts = array_merge($nameParts, array($package->getPrettyVersion(), $package->getDistReference()));
         }
 
         return implode('-', array_filter($nameParts, function ($p) {
