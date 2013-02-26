@@ -39,9 +39,6 @@ class PharArchiver implements ArchiverInterface
         $excludePatterns = $this->generatePatterns($excludes);
 
         try {
-            if (file_exists($target)) {
-                unlink($target);
-            }
             $phar = new \PharData($target, null, null, static::$formats[$format]);
             $finder = new Finder\Finder();
             $finder
