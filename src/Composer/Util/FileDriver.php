@@ -31,11 +31,11 @@ class FileDriver
     private $lastProgress;
     private $options;
 
-	public function __construct(IOInterface $io, $options = array())
-	{
-		$this->io = $io;
-		$this->options = $options;
-	}
+    public function __construct(IOInterface $io, $options = array())
+    {
+        $this->io = $io;
+        $this->options = $options;
+    }
 
     /**
      * Get file content.

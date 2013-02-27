@@ -81,8 +81,8 @@ class CurlDriver
             if ($this->bytesMax < $match[1]) {
                 $this->bytesMax = $match[1];
             }
-		}
-    	return strlen($header);
+        }
+        return strlen($header);
     }
 
     protected function passwdCallback()
@@ -118,7 +118,7 @@ class CurlDriver
 
     protected function readCallback($curl, $content)
     {
-    	return strlen($content);
+        return strlen($content);
     }
 
     protected function getOptionsForUrl($originUrl, $additionalOptions)
