@@ -331,9 +331,6 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
         }
 
         $data = $this->fetchFile($jsonUrl, 'packages.json');
-        if ($this->allowSslDowngrade) {
-            $this->url = str_replace('https://', 'http://', $this->url);
-        }
 
         // TODO remove this BC notify_batch support
         if (!empty($data['notify_batch'])) {
@@ -356,6 +353,10 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
             } else {
                 $this->notifyUrl = $data['notify'];
             }
+        }
+
+        if ($this->allowSslDowngrade) {
+            $this->url = str_replace('https://', 'http://', $this->url);
         }
 
         if (!empty($data['providers-url'])) {
