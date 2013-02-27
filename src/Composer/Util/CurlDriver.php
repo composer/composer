@@ -57,9 +57,18 @@ class CurlDriver
             return $fd->get($originUrl, $fileUrl, $additionalOptions, $progress);
         }
         $options = $this->getOptionsForUrl($originUrl, $additionalOptions);
+        if (isset($options['github-token'])) {
+            $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'access_token='.$options['github-token'];
+            unset($options['github-token']);
+        }
         $options[CURLOPT_URL] = $fileUrl;
+        echo "{$fileUrl}\n";
         curl_setopt_array($this->curl, $options);
-        return curl_exec($this->curl);
+        $result = curl_exec($this->curl);
+        if ($result === false) {
+        	throw new TransportException(curl_error($this->curl), curl_errno($this->curl));
+        }
+        return $result;
     }
 
     protected function headerCallback()
@@ -85,14 +94,16 @@ class CurlDriver
 
     protected function getOptionsForUrl($originUrl, $additionalOptions)
     {
-        $opt = array(
+        $options = array(
             CURLOPT_AUTOREFERER => true,
             CURLOPT_FAILONERROR => true,
+            CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_CONNECTTIMEOUT => 10,
-            CURLOPT_TIMEOUT => 5,
+            CURLOPT_TIMEOUT => 120,
             CURLOPT_SSL_VERIFYPEER => false,
             CURLOPT_BUFFERSIZE => 64000,
+            CURLOPT_ENCODING => '',
             CURLOPT_USERAGENT => sprintf(
                 'User-Agent: Composer/%s (%s; %s; PHP %s.%s.%s)',
                 Composer::VERSION === '@package_version@' ? 'source' : Composer::VERSION,
@@ -107,9 +118,13 @@ class CurlDriver
         );
         if ($this->io->hasAuthentication($originUrl)) {
             $auth = $this->io->getAuthentication($originUrl);
-            $opt[CURLOPT_HTTPAUTH] = CURLAUTH_BASIC;
-            $opt[CURLOPT_USERPWD] = $auth['username'] . ':' . $auth['password'];
+            if ('github.com' === $originUrl && 'x-oauth-basic' === $auth['password']) {
+            	echo "github!\n";
+                $options['github-token'] = $auth['username'];
+            }
+            $options[CURLOPT_HTTPAUTH] = CURLAUTH_BASIC;
+            $options[CURLOPT_USERPWD] = $auth['username'] . ':' . $auth['password'];
         }
-        curl_setopt_array($this->curl, $opt);
+        return $options;
     }
 }
