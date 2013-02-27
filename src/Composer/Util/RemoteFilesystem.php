@@ -21,6 +21,12 @@ use Composer\Downloader\TransportException;
  */
 class RemoteFilesystem
 {
+    const FAILURE = 1;
+    const AUTH_REQUIRED = 2;
+    const AUTH_RESULT = 3;
+    const FILE_SIZE_IS = 4;
+    const PROGRESS = 5;
+
     private $io;
     private $firstCall;
     private $bytesMax;
@@ -31,6 +37,7 @@ class RemoteFilesystem
     private $progress;
     private $lastProgress;
     private $options;
+    private $driver;
 
     /**
      * Constructor.
@@ -38,10 +45,19 @@ class RemoteFilesystem
      * @param IOInterface $io      The IO instance
      * @param array       $options The options
      */
-    public function __construct(IOInterface $io, $options = array())
+    public function __construct(IOInterface $io, $options = array(), $driver = 'curl')
     {
         $this->io = $io;
         $this->options = $options;
+           switch ($driver) {
+               case 'curl':
+                   if (extension_loaded('curl')) {
+                       $this->driver = new CurlDriver($io, array($this, 'callbackGet'), $options);
+                       break;
+                   }
+               default:
+                   $this->driver = new FileDriver($io, array($this, 'callbackGet'), $options);
+           }
     }
 
     /**
@@ -111,56 +127,13 @@ class RemoteFilesystem
             $this->io->write("    Downloading: <comment>connection...</comment>", false);
         }
 
-        $errorMessage = '';
-        $errorCode = 0;
-        set_error_handler(function ($code, $msg) use (&$errorMessage) {
-            if ($errorMessage) {
-                $errorMessage .= "\n";
-            }
-            $errorMessage .= preg_replace('{^file_get_contents\(.*?\): }', '', $msg);
-        });
-        try {
-            $result = file_get_contents($fileUrl, false, $ctx);
-        } catch (\Exception $e) {
-            if ($e instanceof TransportException && !empty($http_response_header[0])) {
-                $e->setHeaders($http_response_header);
-            }
-        }
-        if ($errorMessage && !ini_get('allow_url_fopen')) {
-            $errorMessage = 'allow_url_fopen must be enabled in php.ini ('.$errorMessage.')';
-        }
-        restore_error_handler();
-        if (isset($e)) {
-            throw $e;
-        }
-
-        // fix for 5.4.0 https://bugs.php.net/bug.php?id=61336
-        if (!empty($http_response_header[0]) && preg_match('{^HTTP/\S+ ([45]\d\d)}i', $http_response_header[0], $match)) {
-            $result = false;
-            $errorCode = $match[1];
-        }
-
-        // decode gzip
-        if (false !== $result && extension_loaded('zlib') && substr($fileUrl, 0, 4) === 'http') {
-            $decode = false;
-            foreach ($http_response_header as $header) {
-                if (preg_match('{^content-encoding: *gzip *$}i', $header)) {
-                    $decode = true;
-                    continue;
-                } elseif (preg_match('{^HTTP/}i', $header)) {
-                    $decode = false;
-                }
-            }
-
-            if ($decode) {
-                if (version_compare(PHP_VERSION, '5.4.0', '>=')) {
-                    $result = zlib_decode($result);
-                } else {
-                    // work around issue with gzuncompress & co that do not work with all gzip checksums
-                    $result = file_get_contents('compress.zlib://data:application/octet-stream;base64,'.base64_encode($result));
-                }
-            }
-        }
+		//fallback when using curl driver to user file driver for local files
+		if ((is_file($fileUrl)) && ($this->driver instanceof CurlDriver)) {
+			$filedriver = new FileDriver($this->io, array($this, 'callbackGet'), $this->options);
+			$result = $filedriver->get($fileUrl, $originUrl, $additionalOptions);
+		} else {
+			$result = $this->driver->get($fileUrl, $originUrl, $additionalOptions);
+		}
 
         if ($this->progress) {
             $this->io->overwrite("    Downloading: <comment>100%</comment>");
@@ -189,9 +162,7 @@ class RemoteFilesystem
 
         if (false === $this->result) {
             $e = new TransportException('The "'.$fileUrl.'" file could not be downloaded: '.$errorMessage, $errorCode);
-            if (!empty($http_response_header[0])) {
-                $e->setHeaders($http_response_header);
-            }
+            $e->setHeaders($this->driver->response_headers());
 
             throw $e;
         }
@@ -201,20 +172,19 @@ class RemoteFilesystem
      * Get notification action.
      *
      * @param integer $notificationCode The notification code
-     * @param integer $severity         The severity level
      * @param string  $message          The message
      * @param integer $messageCode      The message code
      * @param integer $bytesTransferred The loaded size
      * @param integer $bytesMax         The total size
      */
-    protected function callbackGet($notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax)
+    protected function callbackGet($notificationCode, $message, $messageCode, $bytesTransferred, $bytesMax)
     {
         switch ($notificationCode) {
-            case STREAM_NOTIFY_FAILURE:
+            case self::FAILURE:
                 throw new TransportException('The "'.$this->fileUrl.'" file could not be downloaded ('.trim($message).')', $messageCode);
                 break;
 
-            case STREAM_NOTIFY_AUTH_REQUIRED:
+            case self::AUTH_REQUIRED:
                 if (401 === $messageCode) {
                     if (!$this->io->isInteractive()) {
                         $message = "The '" . $this->fileUrl . "' URL required authentication.\nYou must be using the interactive console";
@@ -231,7 +201,7 @@ class RemoteFilesystem
                 }
                 break;
 
-            case STREAM_NOTIFY_AUTH_RESULT:
+            case self::AUTH_RESULT:
                 if (403 === $messageCode) {
                     $message = "The '" . $this->fileUrl . "' URL could not be accessed: " . $message;
 
@@ -239,13 +209,13 @@ class RemoteFilesystem
                 }
                 break;
 
-            case STREAM_NOTIFY_FILE_SIZE_IS:
+            case self::FILE_SIZE_IS:
                 if ($this->bytesMax < $bytesMax) {
                     $this->bytesMax = $bytesMax;
                 }
                 break;
 
-            case STREAM_NOTIFY_PROGRESS:
+            case self::PROGRESS:
                 if ($this->bytesMax > 0 && $this->progress) {
                     $progression = 0;
 

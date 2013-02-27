@@ -1,0 +1,102 @@
+<?php
+
+/*
+ * This file is part of Composer.
+ *
+ * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+namespace Composer\Util;
+
+use Composer\Composer;
+use Composer\IO\IOInterface;
+use Composer\Downloader\TransportException;
+
+/**
+ * @author Flávio Heleno <flaviohbatista@gmail.com>
+ */
+class CurlDriver
+{
+    private $curl;
+    private $callback;
+    private $response_headers;
+
+	public function __construct(IOInterface $io, $callback, $options = array())
+	{
+		$this->io = $io;
+		$this->callback = $callback;
+		$this->options = $options;
+        $this->curl = curl_init();
+        if ($this->curl === false)
+            throw new TransportException('Error initializing cURL object');
+    }
+
+    public function response_headers()
+    {
+        return $this->response_headers;
+    }
+
+    public function get($fileUrl, $originUrl, $additionalOptions)
+    {
+        $options = $this->getOptionsForUrl($originUrl, $additionalOptions);
+        $options[CURLOPT_URL] = $fileUrl;
+        curl_setopt_array($this->curl, $options);
+        $result = curl_exec($this->curl);
+        return $result;
+    }
+
+    protected function headerCallback()
+    {
+    }
+
+    protected function passwdCallback()
+    {
+    }
+
+    protected function progressCallback($dtotal, $dsize, $utotal, $usize)
+    {
+        call_user_func($this->callback, RemoteFilesystem::PROGRESS, '', 0, $dsize, $dtotal);
+    }
+
+    protected function readCallback()
+    {
+    }
+
+    protected function writeCallback()
+    {
+    }
+
+    protected function getOptionsForUrl($originUrl, $additionalOptions)
+    {
+        $opt = array(
+            CURLOPT_AUTOREFERER => true,
+            CURLOPT_FAILONERROR => true,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_CONNECTTIMEOUT => 10,
+            CURLOPT_TIMEOUT => 5,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_BUFFERSIZE => 64000,
+            CURLOPT_USERAGENT => sprintf(
+                'User-Agent: Composer/%s (%s; %s; PHP %s.%s.%s)',
+                Composer::VERSION === '@package_version@' ? 'source' : Composer::VERSION,
+                php_uname('s'),
+                php_uname('r'),
+                PHP_MAJOR_VERSION,
+                PHP_MINOR_VERSION,
+                PHP_RELEASE_VERSION
+            ),
+            CURLOPT_NOPROGRESS => false,
+            CURLOPT_PROGRESSFUNCTION => array($this, 'progressCallback')
+        );
+        if ($this->io->hasAuthentication($originUrl)) {
+            $auth = $this->io->getAuthentication($originUrl);
+            $opt[CURLOPT_HTTPAUTH] = CURLAUTH_BASIC;
+            $opt[CURLOPT_USERPWD] = $auth['username'] . ':' . $auth['password'];
+        }
+        curl_setopt_array($this->curl, $opt);
+    }
+}
