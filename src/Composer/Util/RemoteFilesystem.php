@@ -283,6 +283,8 @@ class RemoteFilesystem
             $headers[] = 'Accept-Encoding: gzip';
         }
 
+        $options = array_replace_recursive($this->options, $additionalOptions);
+
         if ($this->io->hasAuthentication($originUrl)) {
             $auth = $this->io->getAuthentication($originUrl);
             if ('github.com' === $originUrl && 'x-oauth-basic' === $auth['password']) {
@@ -292,8 +294,6 @@ class RemoteFilesystem
                 $headers[] = 'Authorization: Basic '.$authStr;
             }
         }
-
-        $options = array_replace_recursive($this->options, $additionalOptions);
 
         if (isset($options['http']['header']) && !is_array($options['http']['header'])) {
             $options['http']['header'] = explode("\r\n", trim($options['http']['header'], "\r\n"));
