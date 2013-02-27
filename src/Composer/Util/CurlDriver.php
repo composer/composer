@@ -21,32 +21,45 @@ use Composer\Downloader\TransportException;
  */
 class CurlDriver
 {
-    private $curl;
-    private $callback;
-    private $response_headers;
+	private $curl;
+    private $io;
+    private $firstCall;
+    private $bytesMax;
+    private $originUrl;
+    private $fileUrl;
+    private $progress;
+    private $lastProgress;
+    private $options;
 
-	public function __construct(IOInterface $io, $callback, $options = array())
+	public function __construct(IOInterface $io, $options = array())
 	{
 		$this->io = $io;
-		$this->callback = $callback;
 		$this->options = $options;
         $this->curl = curl_init();
         if ($this->curl === false)
             throw new TransportException('Error initializing cURL object');
     }
 
-    public function response_headers()
+    /**
+     * Get file content.
+     *
+     * @param string  $originUrl         The origin URL
+     * @param string  $fileUrl           The file URL
+     * @param array   $additionalOptions context options
+     * @param boolean $progress          Display the progression
+     *
+     * @throws TransportException When the file could not be downloaded
+     */
+    public function get($originUrl, $fileUrl, $additionalOptions = array(), $progress = true)
     {
-        return $this->response_headers;
-    }
-
-    public function get($fileUrl, $originUrl, $additionalOptions)
-    {
+        if (is_file($fileUrl)) {
+            $fd = new FileDriver($this->io, $this->options);
+            return $fd->get($originUrl, $fileUrl, $additionalOptions, $progress);
+        }
         $options = $this->getOptionsForUrl($originUrl, $additionalOptions);
         $options[CURLOPT_URL] = $fileUrl;
         curl_setopt_array($this->curl, $options);
-        $result = curl_exec($this->curl);
-        return $result;
+        return curl_exec($this->curl);
     }
 
     protected function headerCallback()
@@ -59,7 +72,7 @@ class CurlDriver
 
     protected function progressCallback($dtotal, $dsize, $utotal, $usize)
     {
-        call_user_func($this->callback, RemoteFilesystem::PROGRESS, '', 0, $dsize, $dtotal);
+
     }
 
     protected function readCallback()

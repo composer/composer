@@ -17,31 +17,54 @@ use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
 
 /**
+ * @author François Pluchino <francois.pluchino@opendisplay.com>
  * @author Flávio Heleno <flaviohbatista@gmail.com>
  */
 class FileDriver
 {
     private $io;
-	private $callback;
+    private $firstCall;
+    private $bytesMax;
+    private $originUrl;
+    private $fileUrl;
+    private $progress;
+    private $lastProgress;
     private $options;
-	private $response_headers;
 
-	public function __construct(IOInterface $io, $callback, $options = array())
+	public function __construct(IOInterface $io, $options = array())
 	{
 		$this->io = $io;
-		$this->callback = $callback;
 		$this->options = $options;
 	}
 
-    public function response_headers()
+    /**
+     * Get file content.
+     *
+     * @param string  $originUrl         The origin URL
+     * @param string  $fileUrl           The file URL
+     * @param array   $additionalOptions context options
+     * @param boolean $progress          Display the progression
+     *
+     * @throws TransportException When the file could not be downloaded
+     */
+    public function get($originUrl, $fileUrl, $additionalOptions = array(), $progress = true)
     {
-    	return $this->response_headers;
-    }
+        $this->bytesMax = 0;
+        $this->originUrl = $originUrl;
+        $this->fileUrl = $fileUrl;
+        $this->progress = $progress;
+        $this->lastProgress = null;
 
-    public function get($fileUrl, $originUrl, $additionalOptions)
-    {
         $options = $this->getOptionsForUrl($originUrl, $additionalOptions);
-        $ctx = StreamContextFactory::getContext($options, array('notification' => array($this, 'callback')));
+        if (isset($options['github-token'])) {
+            $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'access_token='.$options['github-token'];
+            unset($options['github-token']);
+        }
+        $ctx = StreamContextFactory::getContext($options, array('notification' => array($this, 'callbackGet')));
+
+        if ($this->progress) {
+            $this->io->write("    Downloading: <comment>connection...</comment>", false);
+        }
 
         $errorMessage = '';
         $errorCode = 0;
@@ -72,10 +95,6 @@ class FileDriver
             $errorCode = $match[1];
         }
 
-        if (!empty($http_response_header[0])) {
-            $this->response_headers = $http_response_header;
-        }
-
         // decode gzip
         if (false !== $result && extension_loaded('zlib') && substr($fileUrl, 0, 4) === 'http') {
             $decode = false;
@@ -97,11 +116,24 @@ class FileDriver
                 }
             }
         }
+
+        if ($this->progress) {
+            $this->io->overwrite("    Downloading: <comment>100%</comment>");
+        }
+
+        if (false === $result) {
+            $e = new TransportException('The "'.$fileUrl.'" file could not be downloaded: '.$errorMessage, $errorCode);
+            if (!empty($http_response_header[0])) {
+                $e->setHeaders($http_response_header);
+            }
+
+            throw $e;
+        }
         return $result;
     }
 
     /**
-     * Notification action.
+     * Get notification action.
      *
      * @param integer $notificationCode The notification code
      * @param integer $severity         The severity level
@@ -110,27 +142,57 @@ class FileDriver
      * @param integer $bytesTransferred The loaded size
      * @param integer $bytesMax         The total size
      */
-    protected function callback($notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax)
+    protected function callbackGet($notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax)
     {
         switch ($notificationCode) {
             case STREAM_NOTIFY_FAILURE:
-            	call_user_func($this->callback, RemoteFilesystem::FAILURE, $message, $messageCode, $bytesTransferred, $bytesMax);
+                throw new TransportException('The "'.$this->fileUrl.'" file could not be downloaded ('.trim($message).')', $messageCode);
                 break;
 
             case STREAM_NOTIFY_AUTH_REQUIRED:
-            	call_user_func($this->callback, RemoteFilesystem::AUTH_REQUIRED, $message, $messageCode, $bytesTransferred, $bytesMax);
+                if (401 === $messageCode) {
+                    if (!$this->io->isInteractive()) {
+                        $message = "The '" . $this->fileUrl . "' URL required authentication.\nYou must be using the interactive console";
+
+                        throw new TransportException($message, 401);
+                    }
+
+                    $this->io->overwrite('    Authentication required (<info>'.parse_url($this->fileUrl, PHP_URL_HOST).'</info>):');
+                    $username = $this->io->ask('      Username: ');
+                    $password = $this->io->askAndHideAnswer('      Password: ');
+                    $this->io->setAuthentication($this->originUrl, $username, $password);
+
+                    $this->get($this->originUrl, $this->fileUrl, $this->progress);
+                }
                 break;
 
             case STREAM_NOTIFY_AUTH_RESULT:
-            	call_user_func($this->callback, RemoteFilesystem::AUTH_RESULT, $message, $messageCode, $bytesTransferred, $bytesMax);
+                if (403 === $messageCode) {
+                    $message = "The '" . $this->fileUrl . "' URL could not be accessed: " . $message;
+
+                    throw new TransportException($message, 403);
+                }
                 break;
 
             case STREAM_NOTIFY_FILE_SIZE_IS:
-            	call_user_func($this->callback, RemoteFilesystem::FILE_SIZE_IS, $message, $messageCode, $bytesTransferred, $bytesMax);
+                if ($this->bytesMax < $bytesMax) {
+                    $this->bytesMax = $bytesMax;
+                }
                 break;
 
             case STREAM_NOTIFY_PROGRESS:
-            	call_user_func($this->callback, RemoteFilesystem::PROGRESS, $message, $messageCode, $bytesTransferred, $bytesMax);
+                if ($this->bytesMax > 0 && $this->progress) {
+                    $progression = 0;
+
+                    if ($this->bytesMax > 0) {
+                        $progression = round($bytesTransferred / $this->bytesMax * 100);
+                    }
+
+                    if ((0 === $progression % 5) && $progression !== $this->lastProgress) {
+                        $this->lastProgress = $progression;
+                        $this->io->overwrite("    Downloading: <comment>$progression%</comment>", false);
+                    }
+                }
                 break;
 
             default:
@@ -156,13 +218,17 @@ class FileDriver
             $headers[] = 'Accept-Encoding: gzip';
         }
 
+        $options = array_replace_recursive($this->options, $additionalOptions);
+
         if ($this->io->hasAuthentication($originUrl)) {
             $auth = $this->io->getAuthentication($originUrl);
-            $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
-            $headers[] = 'Authorization: Basic '.$authStr;
+            if ('github.com' === $originUrl && 'x-oauth-basic' === $auth['password']) {
+                $options['github-token'] = $auth['username'];
+            } else {
+                $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
+                $headers[] = 'Authorization: Basic '.$authStr;
+            }
         }
-
-        $options = array_replace_recursive($this->options, $additionalOptions);
 
         if (isset($options['http']['header']) && !is_array($options['http']['header'])) {
             $options['http']['header'] = explode("\r\n", trim($options['http']['header'], "\r\n"));
@@ -173,5 +239,4 @@ class FileDriver
 
         return $options;
     }
-
 }
