@@ -16,6 +16,7 @@ namespace Composer\Util;
  * Allows the creation of a basic context supporting http proxy
  *
  * @author Jordan Alliot <jordan.alliot@gmail.com>
+ * @author Markus Tacker <m@coderbyheart.de>
  */
 final class StreamContextFactory
 {
@@ -98,14 +99,16 @@ final class StreamContextFactory
      * @link https://bugs.php.net/bug.php?id=61548
      * @param $header
      * @return array
-     * @author Markus Tacker <m@coderbyheart.de>
      */
-    public static function fixHttpHeaderField($header)
+    private static function fixHttpHeaderField($header)
     {
-        if (!is_array($header)) $header = explode("\r\n", $header);
+        if (!is_array($header)) {
+            $header = explode("\r\n", $header);
+        }
         uasort($header, function ($el) {
-            return preg_match('/^content-type/i', $el) ? 1 : -1;
+            return preg_match('{^content-type}i', $el) ? 1 : -1;
         });
+
         return $header;
     }
 }
