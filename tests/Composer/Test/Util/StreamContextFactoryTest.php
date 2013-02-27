@@ -133,4 +133,28 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
             array('ssl://proxyserver:8443', 'https://proxyserver:8443'),
         );
     }
+
+    /**
+     * @author Markus Tacker <m@coderbyheart.de>
+     */
+    public function testEnsureThatfixHttpHeaderFieldMovesContentTypeToEndOfOptions()
+    {
+        $options = array(
+            'http' => array(
+                'header' => "X-Foo: bar\r\nContent-Type: application/json\r\nAuthorization: Basic aW52YWxpZA=="
+            )
+        );
+        $expectedOptions = array(
+            'http' => array(
+                'header' => array(
+                    "X-Foo: bar",
+                    "Authorization: Basic aW52YWxpZA==",
+                    "Content-Type: application/json"
+                )
+            )
+        );
+        $context = StreamContextFactory::getContext($options);
+        $ctxoptions = stream_context_get_options($context);
+        $this->assertEquals(join("\n", $ctxoptions['http']['header']), join("\n", $expectedOptions['http']['header']));
+    }
 }
