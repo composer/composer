@@ -21,7 +21,7 @@ use Composer\Downloader\TransportException;
  */
 class CurlDriver
 {
-	private $curl;
+    private $curl;
     private $io;
     private $firstCall;
     private $bytesMax;
@@ -31,10 +31,10 @@ class CurlDriver
     private $lastProgress;
     private $options;
 
-	public function __construct(IOInterface $io, $options = array())
-	{
-		$this->io = $io;
-		$this->options = $options;
+    public function __construct(IOInterface $io, $options = array())
+    {
+        $this->io = $io;
+        $this->options = $options;
         $this->curl = curl_init();
         if ($this->curl === false)
             throw new TransportException('Error initializing cURL object');
@@ -52,6 +52,11 @@ class CurlDriver
      */
     public function get($originUrl, $fileUrl, $additionalOptions = array(), $progress = true)
     {
+        $this->originUrl = $originUrl;
+        $this->fileUrl = $fileUrl;
+        $this->progress = $progress;
+        $this->lastProgress = null;
+
         if (is_file($fileUrl)) {
             $fd = new FileDriver($this->io, $this->options);
             return $fd->get($originUrl, $fileUrl, $additionalOptions, $progress);
@@ -62,34 +67,58 @@ class CurlDriver
             unset($options['github-token']);
         }
         $options[CURLOPT_URL] = $fileUrl;
-        echo "{$fileUrl}\n";
         curl_setopt_array($this->curl, $options);
         $result = curl_exec($this->curl);
         if ($result === false) {
-        	throw new TransportException(curl_error($this->curl), curl_errno($this->curl));
+            throw new TransportException('The "'.$this->fileUrl.'" file could not be downloaded ('.trim(curl_error($this->curl)).')', curl_errno($this->curl));
         }
         return $result;
     }
 
-    protected function headerCallback()
+    protected function headerCallback($curl, $header)
     {
+        if (preg_match('/Content-Length: ([0-9]+)/', $header, $match)) {
+            if ($this->bytesMax < $match[1]) {
+                $this->bytesMax = $match[1];
+            }
+		}
+    	return strlen($header);
     }
 
     protected function passwdCallback()
     {
+        if (!$this->io->isInteractive()) {
+            $message = "The '" . $this->fileUrl . "' URL required authentication.\nYou must be using the interactive console";
+
+            throw new TransportException($message, 401);
+        }
+
+        $this->io->overwrite('    Authentication required (<info>'.parse_url($this->fileUrl, PHP_URL_HOST).'</info>):');
+        $username = $this->io->ask('      Username: ');
+        $password = $this->io->askAndHideAnswer('      Password: ');
+        $this->io->setAuthentication($this->originUrl, $username, $password);
+        return $password;
     }
 
-    protected function progressCallback($dtotal, $dsize, $utotal, $usize)
+    protected function progressCallback($downloadTotal, $bytesTransferred, $uploadTotal, $bytesUploaded)
     {
+        if ($this->bytesMax > 0 && $this->progress) {
+            $progression = 0;
 
+            if ($this->bytesMax > 0) {
+                $progression = round($bytesTransferred / $this->bytesMax * 100);
+            }
+
+            if ((0 === $progression % 5) && $progression !== $this->lastProgress) {
+                $this->lastProgress = $progression;
+                $this->io->overwrite("    Downloading: <comment>$progression%</comment>", false);
+            }
+        }
     }
 
-    protected function readCallback()
+    protected function readCallback($curl, $content)
     {
-    }
-
-    protected function writeCallback()
-    {
+    	return strlen($content);
     }
 
     protected function getOptionsForUrl($originUrl, $additionalOptions)
@@ -114,12 +143,14 @@ class CurlDriver
                 PHP_RELEASE_VERSION
             ),
             CURLOPT_NOPROGRESS => false,
+            CURLOPT_HEADERFUNCTION => array($this, 'headerCallback'),
+            //CURLOPT_PASSWDFUNCTION => array($this, 'passwdCallback'), //not implemented in php-curl?
+            //CURLOPT_READFUNCTION => array($this, 'readCallback'), //not really using this
             CURLOPT_PROGRESSFUNCTION => array($this, 'progressCallback')
         );
         if ($this->io->hasAuthentication($originUrl)) {
             $auth = $this->io->getAuthentication($originUrl);
             if ('github.com' === $originUrl && 'x-oauth-basic' === $auth['password']) {
-            	echo "github!\n";
                 $options['github-token'] = $auth['username'];
             }
             $options[CURLOPT_HTTPAUTH] = CURLAUTH_BASIC;
