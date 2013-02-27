@@ -184,13 +184,8 @@ class Installer
 
         try {
             $this->suggestedPackages = array();
-            if (!$this->doInstall($this->repositoryManager->getLocalRepository(), $installedRepo, $aliases)) {
+            if (!$this->doInstall($this->repositoryManager->getLocalDevRepository(), $installedRepo, $aliases, $this->devMode)) {
                 return false;
-            }
-            if ($this->devMode) {
-                if (!$this->doInstall($this->repositoryManager->getLocalDevRepository(), $installedRepo, $aliases, true)) {
-                    return false;
-                }
             }
         } catch (\Exception $e) {
             $this->installationManager->notifyInstalls();
