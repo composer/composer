@@ -57,7 +57,7 @@ abstract class ArchiveDownloader extends FileDownloader
                 $contentDir = $contentDir[0];
             }
 
-            if (is_file($contentDir)) {
+            if (is_string($contentDir) && is_file($contentDir)) {
                 $this->filesystem->rename($contentDir, $path . '/' . basename($contentDir));
             } else {
                 foreach (array_merge(glob($contentDir . '/.*'), glob($contentDir . '/*')) as $file) {
