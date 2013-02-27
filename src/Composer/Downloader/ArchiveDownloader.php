@@ -32,7 +32,7 @@ abstract class ArchiveDownloader extends FileDownloader
 
         $fileName = $this->getFileName($package, $path);
         if ($this->io->isVerbose()) {
-            $this->io->write('    Unpacking archive');
+            $this->io->write('    Extracting archive');
         }
 
         $temporaryDir = sys_get_temp_dir().'/cmp'.substr(md5(time().mt_rand()), 0, 5);
@@ -46,25 +46,19 @@ abstract class ArchiveDownloader extends FileDownloader
                 throw $e;
             }
 
-            if ($this->io->isVerbose()) {
-                $this->io->write('    Cleaning up');
-            }
             unlink($fileName);
 
-            // If we have only a one dir inside it suppose to be a package itself
-            $contentDir = glob($temporaryDir . '/*');
-            if (1 === count($contentDir)) {
-                $contentDir = $contentDir[0];
+            // get file list
+            $contentDir = $this->listFiles($temporaryDir);
+
+            // only one dir in the archive, extract its contents out of it
+            if (1 === count($contentDir) && !is_file($contentDir[0])) {
+                $contentDir = $this->listFiles($contentDir[0]);
             }
 
-            if (is_string($contentDir) && is_file($contentDir)) {
-                $this->filesystem->rename($contentDir, $path . '/' . basename($contentDir));
-            } else {
-                foreach (array_merge(glob($contentDir . '/.*'), glob($contentDir . '/*')) as $file) {
-                    if ('' !== trim(basename($file), '.')) {
-                        $this->filesystem->rename($file, $path . '/' . basename($file));
-                    }
-                }
+            // move files back out of the temp dir
+            foreach ($contentDir as $file) {
+                $this->filesystem->rename($file, $path . '/' . basename($file));
             }
 
             $this->filesystem->removeDirectory($temporaryDir);
@@ -129,4 +123,16 @@ abstract class ArchiveDownloader extends FileDownloader
      * @throws \UnexpectedValueException If can not extract downloaded file to path
      */
     abstract protected function extract($file, $path);
+
+    /**
+     * Returns the list of files in a directory including dotfiles
+     */
+    private function listFiles($dir)
+    {
+        $files = array_merge(glob($dir . '/.*'), glob($dir . '/*'));
+
+        return array_values(array_filter($files, function ($el) {
+            return basename($el) !== '.' && basename($el) !== '..';
+        }));
+    }
 }
