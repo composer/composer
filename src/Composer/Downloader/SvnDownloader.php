@@ -88,6 +88,10 @@ class SvnDownloader extends VcsDownloader
      */
     protected function cleanChanges($path, $update)
     {
+        if (!$changes = $this->getLocalChanges($path)) {
+            return;
+        }
+
         $discardChanges = $this->config->get('discard-changes');
         if (!$this->io->isInteractive()) {
             switch ($discardChanges) {
@@ -99,10 +103,6 @@ class SvnDownloader extends VcsDownloader
                 default:
                     return parent::cleanChanges($path, $update);
             }
-        }
-
-        if (!$changes = $this->getLocalChanges($path)) {
-            return;
         }
 
         $changes = array_map(function ($elem) {

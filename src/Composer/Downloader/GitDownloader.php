@@ -90,6 +90,10 @@ class GitDownloader extends VcsDownloader
      */
     protected function cleanChanges($path, $update)
     {
+        if (!$changes = $this->getLocalChanges($path)) {
+            return;
+        }
+
         $discardChanges = $this->config->get('discard-changes');
         if (!$this->io->isInteractive()) {
             switch ($discardChanges) {
@@ -107,10 +111,6 @@ class GitDownloader extends VcsDownloader
                 default:
                     return parent::cleanChanges($path, $update);
             }
-        }
-
-        if (!$changes = $this->getLocalChanges($path)) {
-            return;
         }
 
         $changes = array_map(function ($elem) {
