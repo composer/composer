@@ -58,8 +58,8 @@ class CurlDriver
         $this->lastProgress = null;
 
         if (is_file($fileUrl)) {
-            $fd = new FileDriver($this->io, $this->options);
-            return $fd->get($originUrl, $fileUrl, $additionalOptions, $progress);
+            $sd = new StreamDriver($this->io, $this->options);
+            return $sd->get($originUrl, $fileUrl, $additionalOptions, $progress);
         }
         $options = $this->getOptionsForUrl($originUrl, $additionalOptions);
         if (isset($options['github-token'])) {
@@ -78,9 +78,7 @@ class CurlDriver
     protected function headerCallback($curl, $header)
     {
         if (preg_match('/Content-Length: ([0-9]+)/', $header, $match)) {
-            if ($this->bytesMax < $match[1]) {
-                $this->bytesMax = $match[1];
-            }
+            $this->bytesMax = $match[1];
         }
         return strlen($header);
     }

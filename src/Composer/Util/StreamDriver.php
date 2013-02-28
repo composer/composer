@@ -20,7 +20,7 @@ use Composer\Downloader\TransportException;
  * @author François Pluchino <francois.pluchino@opendisplay.com>
  * @author Flávio Heleno <flaviohbatista@gmail.com>
  */
-class FileDriver
+class StreamDriver
 {
     private $io;
     private $firstCall;

@@ -38,7 +38,7 @@ class RemoteFilesystem
                        break;
                    }
                default:
-                   $this->driver = new FileDriver($io, $options);
+                   $this->driver = new StreamDriver($io, $options);
            }
     }
 
