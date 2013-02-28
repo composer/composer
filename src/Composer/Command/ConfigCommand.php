@@ -76,7 +76,7 @@ You can add a repository to the global config.json file by passing in the
 
 To edit the file in an external editor:
 
-    <comment>%command.full_name% --edit</comment>
+    <comment>%command.full_name% --editor</comment>
 
 To choose your editor you can set the "EDITOR" env variable.
 
@@ -87,7 +87,7 @@ To get a list of configuration values in the file:
 You can always pass more than one option. As an example, if you want to edit the
 global config.json file.
 
-    <comment>%command.full_name% --edit --global</comment>
+    <comment>%command.full_name% --editor --global</comment>
 EOT
             )
         ;
