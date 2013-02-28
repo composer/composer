@@ -271,6 +271,10 @@ EOT
                 function ($val) { return preg_match('/^\s*([0-9.]+)\s*(?:([kmg])(?:i?b)?)?\s*$/i', $val) > 0; },
                 function ($val) { return $val; }
             ),
+            'discard-changes' => array(
+                function ($val) { return in_array($val, array('true', 'false', 'stash')); },
+                function ($val) { return $val; }
+            ),
         );
         $multiConfigValues = array(
             'github-protocols' => array(

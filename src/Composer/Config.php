@@ -33,6 +33,7 @@ class Config
         'cache-ttl' => 15552000, // 6 months
         'cache-files-ttl' => null, // fallback to cache-ttl
         'cache-files-maxsize' => '300MiB',
+        'discard-changes' => 'false',
     );
 
     public static $defaultRepositories = array(
@@ -173,6 +174,15 @@ class Config
 
             case 'home':
                 return rtrim($this->process($this->config[$key]), '/\\');
+
+            case 'discard-changes':
+                if (!in_array($this->config[$key], array('true', 'false', 'stash'))) {
+                    throw new \RuntimeException(
+                        "Invalid value of 'discard-changes' from your config: {$this->config[$key]}"
+                    );
+                }
+
+                return $this->config[$key];
 
             default:
                 if (!isset($this->config[$key])) {
