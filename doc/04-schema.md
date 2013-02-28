@@ -608,7 +608,7 @@ The following options are supported:
 * **cache-files-dir:** Defaults to `$cache-dir/files`. Stores the zip archives
   of packages.
 * **cache-repo-dir:** Defaults to `$cache-dir/repo`. Stores repository metadata
-  for the `composer` type and the VCS repos of type `svn`, `github` and `*bitbucket`.
+  for the `composer` type and the VCS repos of type `svn`, `github` and `bitbucket`.
 * **cache-vcs-dir:** Defaults to `$cache-dir/vcs`. Stores VCS clones for
   loading VCS repository metadata for the `git`/`hg` types and to speed up installs.
 * **cache-files-ttl:** Defaults to `15552000` (6 months). Composer caches all
@@ -622,6 +622,9 @@ The following options are supported:
 * **notify-on-install:** Defaults to `true`. Composer allows repositories to
   define a notification URL, so that they get notified whenever a package from
   that repository is installed. This option allows you to disable that behaviour.
+* **discard-changes:** Defaults to `false` and can be any of `true`, `false` or
+  `stash`. This option allows you to set the default style of handling dirty
+  updates, specially useful for non-interactive mode.
 
 Example:
 
