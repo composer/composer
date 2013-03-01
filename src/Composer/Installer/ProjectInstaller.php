@@ -58,13 +58,15 @@ class ProjectInstaller implements InstallerInterface
     public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
         $installPath = $this->installPath;
-        if (file_exists($installPath)) {
+        if (file_exists($installPath) && (count(glob($installPath.'/*')) || count(glob($installPath.'/.*')) > 2)) {
             throw new \InvalidArgumentException("Project directory $installPath already exists.");
         }
         if (!file_exists(dirname($installPath))) {
             throw new \InvalidArgumentException("Project root " . dirname($installPath) . " does not exist.");
         }
-        mkdir($installPath, 0777);
+        if (!is_dir($installPath)) {
+            mkdir($installPath, 0777);
+        }
         $this->downloadManager->download($package, $installPath);
     }
 
