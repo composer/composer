@@ -92,17 +92,12 @@ class SvnDownloader extends VcsDownloader
             return;
         }
 
-        $discardChanges = $this->config->get('discard-changes');
         if (!$this->io->isInteractive()) {
-            switch ($discardChanges) {
-                case 'true':
-                    return $this->discardChanges($path);
-
-                case 'false':
-                case 'stash':
-                default:
-                    return parent::cleanChanges($path, $update);
+            if (true === $this->config->get('discard-changes')) {
+                return $this->discardChanges($path);
             }
+
+            return parent::cleanChanges($path, $update);
         }
 
         $changes = array_map(function ($elem) {

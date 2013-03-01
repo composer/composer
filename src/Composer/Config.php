@@ -33,7 +33,7 @@ class Config
         'cache-ttl' => 15552000, // 6 months
         'cache-files-ttl' => null, // fallback to cache-ttl
         'cache-files-maxsize' => '300MiB',
-        'discard-changes' => 'false',
+        'discard-changes' => false,
     );
 
     public static $defaultRepositories = array(
@@ -145,7 +145,7 @@ class Config
             case 'cache-files-maxsize':
                 if (!preg_match('/^\s*([0-9.]+)\s*(?:([kmg])(?:i?b)?)?\s*$/i', $this->config[$key], $matches)) {
                     throw new \RuntimeException(
-                        "Could not parse the value of 'cache-files-maxsize' from your config: {$this->config[$key]}"
+                        "Could not parse the value of 'cache-files-maxsize': {$this->config[$key]}"
                     );
                 }
                 $size = $matches[1];
@@ -176,9 +176,9 @@ class Config
                 return rtrim($this->process($this->config[$key]), '/\\');
 
             case 'discard-changes':
-                if (!in_array($this->config[$key], array('true', 'false', 'stash'))) {
+                if (!in_array($this->config[$key], array(true, false, 'stash'), true)) {
                     throw new \RuntimeException(
-                        "Invalid value of 'discard-changes' from your config: {$this->config[$key]}"
+                        "Invalid value for 'discard-changes': {$this->config[$key]}"
                     );
                 }
 

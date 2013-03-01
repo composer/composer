@@ -252,11 +252,11 @@ EOT
         $uniqueConfigValues = array(
             'process-timeout' => array('is_numeric', 'intval'),
             'use-include-path' => array(
-                function ($val) { return true; },
+                function ($val) { return in_array($val, array('true', 'false', '1', '0'), true); },
                 function ($val) { return $val !== 'false' && (bool) $val; }
             ),
             'notify-on-install' => array(
-                function ($val) { return true; },
+                function ($val) { return in_array($val, array('true', 'false', '1', '0'), true); },
                 function ($val) { return $val !== 'false' && (bool) $val; }
             ),
             'vendor-dir' => array('is_string', function ($val) { return $val; }),
@@ -272,8 +272,13 @@ EOT
                 function ($val) { return $val; }
             ),
             'discard-changes' => array(
-                function ($val) { return in_array($val, array('true', 'false', 'stash')); },
-                function ($val) { return $val; }
+                function ($val) { return in_array($val, array('stash', 'true', 'false', '1', '0'), true); },
+                function ($val) {
+                    if ('stash' === $val) {
+                        return 'stash';
+                    }
+                    return $val !== 'false' && (bool) $val;
+                }
             ),
         );
         $multiConfigValues = array(

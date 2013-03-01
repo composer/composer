@@ -94,23 +94,20 @@ class GitDownloader extends VcsDownloader
             return;
         }
 
-        $discardChanges = $this->config->get('discard-changes');
         if (!$this->io->isInteractive()) {
-            switch ($discardChanges) {
-                case 'true':
-                    return $this->discardChanges($path);
-
-                case 'stash':
-                    if (!$update) {
-                        return parent::cleanChanges($path, $update);
-                    }
-
-                    return $this->stashChanges($path);
-
-                case 'false':
-                default:
-                    return parent::cleanChanges($path, $update);
+            $discardChanges = $this->config->get('discard-changes');
+            if (true === $discardChanges) {
+                return $this->discardChanges($path);
             }
+            if ('stash' === $discardChanges) {
+                if (!$update) {
+                    return parent::cleanChanges($path, $update);
+                }
+
+                return $this->stashChanges($path);
+            }
+
+            return parent::cleanChanges($path, $update);
         }
 
         $changes = array_map(function ($elem) {
