@@ -169,8 +169,8 @@
                     "description": "The cache max size for the files cache, defaults to \"300MiB\"."
                 },
                 "discard-changes": {
-                    "type": ["string"],
-                    "description": "The default style of handling dirty updates, defaults to \"false\" and can be any of \"true\", \"false\" or \"stash\"."
+                    "type": ["string", "boolean"],
+                    "description": "The default style of handling dirty updates, defaults to false and can be any of true, false or \"stash\"."
                 }
             }
         },

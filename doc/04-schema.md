@@ -623,8 +623,10 @@ The following options are supported:
   define a notification URL, so that they get notified whenever a package from
   that repository is installed. This option allows you to disable that behaviour.
 * **discard-changes:** Defaults to `false` and can be any of `true`, `false` or
-  `stash`. This option allows you to set the default style of handling dirty
-  updates, specially useful for non-interactive mode.
+  `"stash"`. This option allows you to set the default style of handling dirty
+  updates when in non-interactive mode. `true` will always discard changes in
+  vendors, while `"stash"` will try to stash and reapply. Use this for CI
+  servers or deploy scripts if you tend to have modified vendors.
 
 Example:
 
