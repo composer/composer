@@ -670,7 +670,12 @@ class Installer
         foreach ($this->updateWhitelist as $packageName => $void) {
             $packageQueue = new \SplQueue;
 
-            foreach ($pool->whatProvides($packageName) as $depPackage) {
+            $depPackages = $pool->whatProvides($packageName);
+            if (count($depPackages) == 0) {
+                $this->io->write('<warning>Package "' . $packageName . '" listed for update is not installed. Ignoring.<warning>');
+            }
+
+            foreach ($depPackages as $depPackage) {
                 $packageQueue->enqueue($depPackage);
             }
 
