@@ -90,12 +90,27 @@ class GitDownloader extends VcsDownloader
      */
     protected function cleanChanges($path, $update)
     {
-        if (!$this->io->isInteractive()) {
-            return parent::cleanChanges($path, $update);
-        }
-
         if (!$changes = $this->getLocalChanges($path)) {
             return;
+        }
+
+        $discardChanges = $this->config->get('discard-changes');
+        if (!$this->io->isInteractive()) {
+            switch ($discardChanges) {
+                case 'true':
+                    return $this->discardChanges($path);
+
+                case 'stash':
+                    if (!$update) {
+                        return parent::cleanChanges($path, $update);
+                    }
+
+                    return $this->stashChanges($path);
+
+                case 'false':
+                default:
+                    return parent::cleanChanges($path, $update);
+            }
         }
 
         $changes = array_map(function ($elem) {
@@ -110,9 +125,7 @@ class GitDownloader extends VcsDownloader
         while (true) {
             switch ($this->io->ask('    <info>Discard changes [y,n,v,'.($update ? 's,' : '').'?]?</info> ', '?')) {
                 case 'y':
-                    if (0 !== $this->process->execute('git reset --hard', $output, $path)) {
-                        throw new \RuntimeException("Could not reset changes\n\n:".$this->process->getErrorOutput());
-                    }
+                    $this->discardChanges($path);
                     break 2;
 
                 case 's':
@@ -120,11 +133,7 @@ class GitDownloader extends VcsDownloader
                         goto help;
                     }
 
-                    if (0 !== $this->process->execute('git stash', $output, $path)) {
-                        throw new \RuntimeException("Could not stash changes\n\n:".$this->process->getErrorOutput());
-                    }
-
-                    $this->hasStashedChanges = true;
+                    $this->stashChanges($path);
                     break 2;
 
                 case 'n':
@@ -368,5 +377,29 @@ class GitDownloader extends VcsDownloader
         }
 
         return $output;
+    }
+
+    /**
+     * @param $path
+     * @throws \RuntimeException
+     */
+    protected function discardChanges($path)
+    {
+        if (0 !== $this->process->execute('git reset --hard', $output, $path)) {
+            throw new \RuntimeException("Could not reset changes\n\n:".$this->process->getErrorOutput());
+        }
+    }
+
+    /**
+     * @param $path
+     * @throws \RuntimeException
+     */
+    protected function stashChanges($path)
+    {
+        if (0 !== $this->process->execute('git stash', $output, $path)) {
+            throw new \RuntimeException("Could not stash changes\n\n:".$this->process->getErrorOutput());
+        }
+
+        $this->hasStashedChanges = true;
     }
 }
