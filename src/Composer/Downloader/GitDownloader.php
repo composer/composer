@@ -103,9 +103,9 @@ class GitDownloader extends VcsDownloader
                 case 'stash':
                     if (!$update) {
                         return parent::cleanChanges($path, $update);
-                    } else {
-                        return $this->stashChanges($path);
                     }
+
+                    return $this->stashChanges($path);
 
                 case 'false':
                 default:
