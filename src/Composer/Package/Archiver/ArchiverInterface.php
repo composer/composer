@@ -26,13 +26,11 @@ interface ArchiverInterface
      * @param string $sources   The sources directory
      * @param string $target    The target file
      * @param string $format    The format used for archive
-     * @param string $sourceRef The reference of the source to archive or null
-     *                          for the current reference
      * @param array  $excludes  A list of patterns for files to exclude
      *
      * @return string The path to the written archive file
      */
-    public function archive($sources, $target, $format, $sourceRef = null, $excludes = array());
+    public function archive($sources, $target, $format, $excludes = array());
 
     /**
      * Format supported by the archiver.
