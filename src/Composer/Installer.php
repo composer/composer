@@ -653,6 +653,11 @@ class Installer
             return;
         }
 
+        $requiredPackageNames = array();
+        foreach (array_merge($rootRequires, $rootDevRequires) as $require) {
+            $requiredPackageNames[] = $require->getTarget();
+        }
+
         if ($devMode) {
             $rootRequires = array_merge($rootRequires, $rootDevRequires);
         }
@@ -671,7 +676,7 @@ class Installer
             $packageQueue = new \SplQueue;
 
             $depPackages = $pool->whatProvides($packageName);
-            if (count($depPackages) == 0) {
+            if (count($depPackages) == 0 && !in_array($packageName, $requiredPackageNames)) {
                 $this->io->write('<warning>Package "' . $packageName . '" listed for update is not installed. Ignoring.<warning>');
             }
 
