@@ -303,7 +303,7 @@ To create a new project using composer you can use the "create-project" command.
 Pass it a package name, and the directory to create the project in. You can also
 provide a version as third argument, otherwise the latest version is used.
 
-The directory is not allowed to exist, it will be created during installation.
+If the directory does not currently exist, it will be created during installation.
 
     php composer.phar create-project doctrine/orm path 2.2.0
 
