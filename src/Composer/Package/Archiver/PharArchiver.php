@@ -32,7 +32,7 @@ class PharArchiver implements ArchiverInterface
     /**
      * {@inheritdoc}
      */
-    public function archive($sources, $target, $format, $sourceRef = null, $excludes = array())
+    public function archive($sources, $target, $format, $excludes = array())
     {
         $sources = realpath($sources);
 

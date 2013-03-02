@@ -30,6 +30,11 @@ class ArchiveManager
     protected $archivers = array();
 
     /**
+     * @var bool
+     */
+    protected $overwriteFiles = true;
+
+    /**
      * @param DownloadManager $downloadManager A manager used to download package sources
      */
     public function __construct(DownloadManager $downloadManager)
@@ -43,6 +48,19 @@ class ArchiveManager
     public function addArchiver(ArchiverInterface $archiver)
     {
         $this->archivers[] = $archiver;
+    }
+
+    /**
+     * Set whether existing archives should be overwritten
+     *
+     * @param bool $overwriteFiles New setting
+     *
+     * @return $this
+     */
+    public function setOverwriteFiles($overwriteFiles)
+    {
+        $this->overwriteFiles = $overwriteFiles;
+        return $this;
     }
 
     /**
@@ -62,10 +80,13 @@ class ArchiveManager
             $nameParts = array_merge($nameParts, array($package->getPrettyVersion(), $package->getDistReference()));
         }
 
+        if ($package->getSourceReference()) {
+            $nameParts[] = substr(sha1($package->getSourceReference()), 0, 6);
+        }
+
         return implode('-', array_filter($nameParts, function ($p) {
             return !empty($p);
         }));
-
     }
 
     /**
@@ -105,6 +126,10 @@ class ArchiveManager
         $target = realpath($targetDir).'/'.$packageName.'.'.$format;
         $filesystem->ensureDirectoryExists(dirname($target));
 
+        if (!$this->overwriteFiles && file_exists($target)) {
+            return $target;
+        }
+
         if ($package instanceof RootPackage) {
             $sourcePath = realpath('.');
         } else {
@@ -117,7 +142,6 @@ class ArchiveManager
         }
 
         // Create the archive
-        $sourceRef = $package->getSourceReference();
-        return $usableArchiver->archive($sourcePath, $target, $format, $sourceRef, $package->getArchiveExcludes());
+        return $usableArchiver->archive($sourcePath, $target, $format, $package->getArchiveExcludes());
     }
 }
