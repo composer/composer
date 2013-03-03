@@ -287,6 +287,10 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     {
         return $this->aliasOf->getKeywords();
     }
+    public function getTitle()
+    {
+        return $this->aliasOf->getTitle();
+    }
     public function getDescription()
     {
         return $this->aliasOf->getDescription();
