@@ -83,6 +83,7 @@ class ArrayDumper
                 'scripts',
                 'license',
                 'authors',
+                'title',
                 'description',
                 'homepage',
                 'keywords',
