@@ -42,6 +42,10 @@ Examples:
 
 Required for published packages (libraries).
 
+### title
+
+Package title, a concise human-readable title for the package.
+
 ### description
 
 A short description of the package. Usually this is just one line long.
