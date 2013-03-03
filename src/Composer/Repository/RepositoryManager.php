@@ -145,6 +145,7 @@ class RepositoryManager
     /**
      * Returns all local repositories for the project.
      *
+     * @deprecated getLocalDevRepository is gone, so this is useless now, just use getLocalRepository instead
      * @return array[WritableRepositoryInterface]
      */
     public function getLocalRepositories()
