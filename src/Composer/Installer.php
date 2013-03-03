@@ -15,6 +15,7 @@ namespace Composer;
 use Composer\Autoload\AutoloadGenerator;
 use Composer\DependencyResolver\DefaultPolicy;
 use Composer\DependencyResolver\Operation\UpdateOperation;
+use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Solver;
@@ -24,6 +25,7 @@ use Composer\Installer\InstallationManager;
 use Composer\Config;
 use Composer\Installer\NoopInstaller;
 use Composer\IO\IOInterface;
+use Composer\Json\JsonFile;
 use Composer\Package\AliasPackage;
 use Composer\Package\Link;
 use Composer\Package\LinkConstraint\VersionConstraint;
@@ -32,6 +34,7 @@ use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\InstalledArrayRepository;
+use Composer\Repository\InstalledFilesystemRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositoryManager;
@@ -147,6 +150,20 @@ class Installer
             $this->installationManager->addInstaller(new NoopInstaller);
             $this->mockLocalRepositories($this->repositoryManager);
         }
+
+        // TODO remove this BC feature at some point
+        // purge old require-dev packages to avoid conflicts with the new way of handling dev requirements
+        $devRepo = new InstalledFilesystemRepository(new JsonFile($this->config->get('vendor-dir').'/composer/installed_dev.json'));
+        if ($devRepo->getPackages()) {
+            $this->io->write('<warning>BC Notice: Removing old dev packages to migrate to the new require-dev handling.</warning>');
+            foreach ($devRepo->getPackages() as $package) {
+                if ($this->installationManager->isPackageInstalled($devRepo, $package)) {
+                    $this->installationManager->uninstall($devRepo, new UninstallOperation($package));
+                }
+            }
+        }
+        unset($devRepo, $package);
+        // end BC
 
         if ($this->preferSource) {
             $this->downloadManager->setPreferSource(true);
