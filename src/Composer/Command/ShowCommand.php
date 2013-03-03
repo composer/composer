@@ -45,7 +45,6 @@ class ShowCommand extends Command
                 new InputOption('platform', 'p', InputOption::VALUE_NONE, 'List platform packages only'),
                 new InputOption('available', 'a', InputOption::VALUE_NONE, 'List available packages only'),
                 new InputOption('self', 's', InputOption::VALUE_NONE, 'Show the root package information'),
-                new InputOption('dev', null, InputOption::VALUE_NONE, 'Enables display of dev-require packages.'),
                 new InputOption('name-only', 'N', InputOption::VALUE_NONE, 'List package names only'),
             ))
             ->setHelp(<<<EOT
@@ -63,15 +62,6 @@ EOT
 
         // init repos
         $platformRepo = new PlatformRepository;
-        $getRepositories = function (Composer $composer, $dev) {
-            $manager = $composer->getRepositoryManager();
-            $repos = new CompositeRepository(array($manager->getLocalRepository()));
-            if ($dev) {
-                $repos->addRepository($manager->getLocalDevRepository());
-            }
-
-            return $repos;
-        };
 
         if ($input->getOption('self')) {
             $package = $this->getComposer(false)->getPackage();
@@ -79,7 +69,7 @@ EOT
         } elseif ($input->getOption('platform')) {
             $repos = $installedRepo = $platformRepo;
         } elseif ($input->getOption('installed')) {
-            $repos = $installedRepo = $getRepositories($this->getComposer(), $input->getOption('dev'));
+            $repos = $installedRepo = $this->getComposer()->getRepositoryManager()->getLocalRepository();
         } elseif ($input->getOption('available')) {
             $installedRepo = $platformRepo;
             if ($composer = $this->getComposer(false)) {
@@ -90,7 +80,7 @@ EOT
                 $output->writeln('No composer.json found in the current directory, showing available packages from ' . implode(', ', array_keys($defaultRepos)));
             }
         } elseif ($composer = $this->getComposer(false)) {
-            $localRepo = $getRepositories($composer, $input->getOption('dev'));
+            $localRepo = $composer = $this->getComposer()->getRepositoryManager()->getLocalRepository();
             $installedRepo = new CompositeRepository(array($localRepo, $platformRepo));
             $repos = new CompositeRepository(array_merge(array($installedRepo), $composer->getRepositoryManager()->getRepositories()));
         } else {
