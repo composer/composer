@@ -64,6 +64,7 @@ class InitCommand extends Command
                 new InputOption('require', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Package to require with a version constraint, e.g. foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"'),
                 new InputOption('require-dev', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Package to require for development with a version constraint, e.g. foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"'),
                 new InputOption('stability', 's', InputOption::VALUE_REQUIRED, 'Minimum stability (empty or one of: '.implode(', ', array_keys(BasePackage::$stabilities)).')'),
+                new InputOption('license', 'l', InputOption::VALUE_REQUIRED, 'License of package'),
             ))
             ->setHelp(<<<EOT
 The <info>init</info> command creates a basic composer.json file
@@ -80,7 +81,7 @@ EOT
     {
         $dialog = $this->getHelperSet()->get('dialog');
 
-        $whitelist = array('name', 'description', 'author', 'homepage', 'require', 'require-dev', 'stability');
+        $whitelist = array('name', 'description', 'author', 'homepage', 'require', 'require-dev', 'stability', 'license');
 
         $options = array_filter(array_intersect_key($input->getOptions(), array_flip($whitelist)));
 
@@ -253,6 +254,13 @@ EOT
             }
         );
         $input->setOption('stability', $minimumStability);
+
+        $license = $input->getOption('license') ?: false;
+        $license = $dialog->ask(
+            $output,
+            $dialog->getQuestion('License', $license)
+        );
+        $input->setOption('license', $license);
 
         $output->writeln(array(
             '',
