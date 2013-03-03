@@ -13,6 +13,7 @@ namespace Composer\Test\Mock;
 
 use Composer\Installer\InstallationManager;
 use Composer\Repository\RepositoryInterface;
+use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;

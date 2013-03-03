@@ -29,6 +29,19 @@ use Symfony\Component\Console\Output\StreamOutput;
 
 class InstallerTest extends TestCase
 {
+    protected $prevCwd;
+
+    public function setUp()
+    {
+        $this->prevCwd = getcwd();
+        chdir(__DIR__);
+    }
+
+    public function tearDown()
+    {
+        chdir($this->prevCwd);
+    }
+
     /**
      * @dataProvider provideInstaller
      */
