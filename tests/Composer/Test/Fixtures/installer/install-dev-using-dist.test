@@ -46,7 +46,9 @@ install --prefer-dist
     "minimum-stability": "dev",
     "stability-flags": {
         "a/a": 20
-    }
+    },
+    "platform": [],
+    "platform-dev": []
 }
 --EXPECT--
 Installing a/a (dev-master)

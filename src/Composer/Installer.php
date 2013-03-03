@@ -250,9 +250,14 @@ class Installer
                     }
                 }
 
+                $platformReqs = $this->extractPlatformRequirements($this->package->getRequires());
+                $platformDevReqs = $this->devMode ? $this->extractPlatformRequirements($this->package->getDevRequires()) : array();
+
                 $updatedLock = $this->locker->setLockData(
                     array_diff($localRepo->getPackages(), (array) $devPackages),
                     $devPackages,
+                    $platformReqs,
+                    $platformDevReqs,
                     $aliases,
                     $this->package->getMinimumStability(),
                     $this->package->getStabilityFlags()
@@ -349,6 +354,10 @@ class Installer
                 $constraint = new VersionConstraint('=', $version);
                 $constraint->setPrettyString($package->getPrettyVersion());
                 $request->install($package->getName(), $constraint);
+            }
+
+            foreach ($this->locker->getPlatformRequirements($withDevReqs) as $link) {
+                $request->install($link->getTarget(), $link->getConstraint());
             }
         } else {
             $this->io->write('<info>Installing dependencies'.($withDevReqs?' (including require-dev)':'').'</info>');
@@ -673,6 +682,17 @@ class Installer
         }
 
         return false;
+    }
+
+    private function extractPlatformRequirements($links) {
+        $platformReqs = array();
+        foreach ($links as $link) {
+            if (preg_match('{^(?:php(?:-64bit)?|(?:ext|lib)-[^/]+)$}i', $link->getTarget())) {
+                $platformReqs[$link->getTarget()] = $link->getPrettyConstraint();
+            }
+        }
+
+        return $platformReqs;
     }
 
     /**
