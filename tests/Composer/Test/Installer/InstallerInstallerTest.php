@@ -51,8 +51,8 @@ class InstallerInstallerTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $rm->expects($this->any())
-            ->method('getLocalRepositories')
-            ->will($this->returnValue(array($this->repository)));
+            ->method('getLocalRepository')
+            ->will($this->returnValue($this->repository));
 
         $this->io = $this->getMock('Composer\IO\IOInterface');
 
