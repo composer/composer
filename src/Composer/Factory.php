@@ -291,7 +291,6 @@ class Factory
     protected function addLocalRepository(RepositoryManager $rm, $vendorDir)
     {
         $rm->setLocalRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/composer/installed.json')));
-        $rm->setLocalDevRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/composer/installed_dev.json')));
     }
 
     /**
@@ -345,12 +344,10 @@ class Factory
      */
     protected function purgePackages(Repository\RepositoryManager $rm, Installer\InstallationManager $im)
     {
-        foreach ($rm->getLocalRepositories() as $repo) {
-            /* @var $repo   Repository\WritableRepositoryInterface */
-            foreach ($repo->getPackages() as $package) {
-                if (!$im->isPackageInstalled($repo, $package)) {
-                    $repo->removePackage($package);
-                }
+        $repo = $rm->getLocalRepository();
+        foreach ($repo->getPackages() as $package) {
+            if (!$im->isPackageInstalled($repo, $package)) {
+                $repo->removePackage($package);
             }
         }
     }
