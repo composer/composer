@@ -80,7 +80,8 @@ EOT
                 $output->writeln('No composer.json found in the current directory, showing available packages from ' . implode(', ', array_keys($defaultRepos)));
             }
         } elseif ($composer = $this->getComposer(false)) {
-            $localRepo = $composer = $this->getComposer()->getRepositoryManager()->getLocalRepository();
+            $composer = $this->getComposer();
+            $localRepo = $composer->getRepositoryManager()->getLocalRepository();
             $installedRepo = new CompositeRepository(array($localRepo, $platformRepo));
             $repos = new CompositeRepository(array_merge(array($installedRepo), $composer->getRepositoryManager()->getRepositories()));
         } else {
