@@ -377,7 +377,12 @@ class Installer
         // to the version specified in the lock, or their currently installed version
         if ($this->update && $this->updateWhitelist) {
             if ($this->locker->isLocked()) {
-                $currentPackages = $this->locker->getLockedRepository($withDevReqs)->getPackages();
+                try {
+                    $currentPackages = $this->locker->getLockedRepository($withDevReqs)->getPackages();
+                } catch (\RuntimeException $e) {
+                    // fetch only non-dev packages from lock if doing a dev update fails due to a previously incomplete lock file
+                    $currentPackages = $this->locker->getLockedRepository()->getPackages();
+                }
             } else {
                 $currentPackages = $installedRepo->getPackages();
             }
