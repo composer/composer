@@ -161,6 +161,7 @@ class Installer
                     $this->installationManager->uninstall($devRepo, new UninstallOperation($package));
                 }
             }
+            unlink($this->config->get('vendor-dir').'/composer/installed_dev.json');
         }
         unset($devRepo, $package);
         // end BC
