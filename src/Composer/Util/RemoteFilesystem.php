@@ -45,18 +45,6 @@ class RemoteFilesystem
     }
 
     /**
-     * Set the authentication information for the repository.
-     *
-     * @param string $originUrl The origin URL
-     * @param string $username  The username
-     * @param string $password  The password
-     */
-    public function setAuthentication($originUrl, $username, $password = null)
-    {
-        return $this->io->setAuthentication($originUrl, $username, $password);
-    }
-
-    /**
      * Copy the remote file in local.
      *
      * @param string  $originUrl The origin URL
@@ -136,6 +124,18 @@ class RemoteFilesystem
         } catch (\Exception $e) {
             if ($e instanceof TransportException && !empty($http_response_header[0])) {
                 $e->setHeaders($http_response_header);
+            }
+
+            // in case the remote filesystem responds with an 401 error ask for credentials
+            if($e instanceof TransportException && ($e->getCode() == 401))
+            {
+                $this->io->write('Enter the access credentials needed to access the resource at '.$originUrl);
+                $username = $this->io->ask('Username: ');
+                $password = $this->io->askAndHideAnswer('Password: ');
+                $this->io->setAuthentication($originUrl, $username, $password);
+
+                // try getting the file again
+                return $this->get($originUrl, $fileUrl, $additionalOptions, $fileName, $progress);
             }
         }
         if ($errorMessage && !ini_get('allow_url_fopen')) {
