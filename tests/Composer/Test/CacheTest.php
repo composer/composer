@@ -29,7 +29,7 @@ class CacheTest extends TestCase
             file_put_contents("{$this->root}/cached.file{$i}.zip", $zeros);
             $this->files[] = new \SplFileInfo("{$this->root}/cached.file{$i}.zip");
         }
-        $this->finder = $this->getMock('Symfony\Component\Finder\Finder');
+        $this->finder = $this->getMockBuilder('Symfony\Component\Finder\Finder')->disableOriginalConstructor()->getMock();
 
         $io = $this->getMock('Composer\IO\IOInterface');
         $this->cache = $this->getMock(
@@ -65,7 +65,7 @@ class CacheTest extends TestCase
 
     public function testRemoveFilesWhenCacheIsTooLarge()
     {
-        $emptyFinder = $this->getMock('Symfony\Component\Finder\Finder');
+        $emptyFinder = $this->getMockBuilder('Symfony\Component\Finder\Finder')->disableOriginalConstructor()->getMock();
         $emptyFinder
             ->expects($this->once())
             ->method('getIterator')

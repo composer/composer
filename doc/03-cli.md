@@ -76,6 +76,8 @@ resolution.
 * **--dev:** By default composer will only install required packages. By
   passing this option you can also make it install packages referenced by
   `require-dev`.
+* **--no-dev:** Skip installing packages listed in `require-dev` (this is
+  the default for `install`).
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--no-custom-installers:** Disables custom installers.
 * **--no-progress:** Removes the progress display that can mess with some
@@ -107,7 +109,8 @@ You can also use wildcards to update a bunch of packages at once:
 * **--prefer-source:** Install packages from `source` when available.
 * **--prefer-dist:** Install packages from `dist` when available.
 * **--dry-run:** Simulate the command without actually doing anything.
-* **--dev:** Install packages listed in `require-dev`.
+* **--dev:** Install packages listed in `require-dev` (this is the default for `update`).
+* **--no-dev:** Skip installing packages listed in `require-dev`.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--no-custom-installers:** Disables custom installers.
 * **--no-progress:** Removes the progress display that can mess with some
@@ -190,7 +193,6 @@ specific version.
 * **--installed (-i):** List the packages that are installed.
 * **--platform (-p):** List only platform packages (php & extensions).
 * **--self (-s):** List the root package info.
-* **--dev:** Include dev-required packages when combined with **--installed** or **--platform**.
 
 ## depends
 

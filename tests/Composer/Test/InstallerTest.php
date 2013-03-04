@@ -29,6 +29,19 @@ use Symfony\Component\Console\Output\StreamOutput;
 
 class InstallerTest extends TestCase
 {
+    protected $prevCwd;
+
+    public function setUp()
+    {
+        $this->prevCwd = getcwd();
+        chdir(__DIR__);
+    }
+
+    public function tearDown()
+    {
+        chdir($this->prevCwd);
+    }
+
     /**
      * @dataProvider provideInstaller
      */
@@ -41,7 +54,6 @@ class InstallerTest extends TestCase
 
         $repositoryManager = new RepositoryManager($io, $config);
         $repositoryManager->setLocalRepository(new WritableRepositoryMock());
-        $repositoryManager->setLocalDevRepository(new WritableRepositoryMock());
 
         if (!is_array($repositories)) {
             $repositories = array($repositories);
@@ -124,7 +136,7 @@ class InstallerTest extends TestCase
     /**
      * @dataProvider getIntegrationTests
      */
-    public function testIntegration($file, $message, $condition, $composerConfig, $lock, $installed, $installedDev, $run, $expectLock, $expectOutput, $expect)
+    public function testIntegration($file, $message, $condition, $composerConfig, $lock, $installed, $run, $expectLock, $expectOutput, $expect)
     {
         if ($condition) {
             eval('$res = '.$condition.';');
@@ -151,17 +163,8 @@ class InstallerTest extends TestCase
             ->method('exists')
             ->will($this->returnValue(true));
 
-        $devJsonMock = $this->getMockBuilder('Composer\Json\JsonFile')->disableOriginalConstructor()->getMock();
-        $devJsonMock->expects($this->any())
-            ->method('read')
-            ->will($this->returnValue($installedDev));
-        $devJsonMock->expects($this->any())
-            ->method('exists')
-            ->will($this->returnValue(true));
-
         $repositoryManager = $composer->getRepositoryManager();
         $repositoryManager->setLocalRepository(new InstalledFilesystemRepositoryMock($jsonMock));
-        $repositoryManager->setLocalDevRepository(new InstalledFilesystemRepositoryMock($devJsonMock));
 
         $lockJsonMock = $this->getMockBuilder('Composer\Json\JsonFile')->disableOriginalConstructor()->getMock();
         $lockJsonMock->expects($this->any())
@@ -253,7 +256,6 @@ class InstallerTest extends TestCase
                 --COMPOSER--\s*(?P<composer>'.$content.')\s*
                 (?:--LOCK--\s*(?P<lock>'.$content.'))?\s*
                 (?:--INSTALLED--\s*(?P<installed>'.$content.'))?\s*
-                (?:--INSTALLED-DEV--\s*(?P<installedDev>'.$content.'))?\s*
                 --RUN--\s*(?P<run>.*?)\s*
                 (?:--EXPECT-LOCK--\s*(?P<expectLock>'.$content.'))?\s*
                 (?:--EXPECT-OUTPUT--\s*(?P<expectOutput>'.$content.'))?\s*
@@ -279,9 +281,6 @@ class InstallerTest extends TestCase
                     if (!empty($match['installed'])) {
                         $installed = JsonFile::parseJson($match['installed']);
                     }
-                    if (!empty($match['installedDev'])) {
-                        $installedDev = JsonFile::parseJson($match['installedDev']);
-                    }
                     $run = $match['run'];
                     if (!empty($match['expectLock'])) {
                         $expectLock = JsonFile::parseJson($match['expectLock']);
@@ -295,7 +294,7 @@ class InstallerTest extends TestCase
                 die(sprintf('Test "%s" is not valid, did not match the expected format.', str_replace($fixturesDir.'/', '', $file)));
             }
 
-            $tests[] = array(str_replace($fixturesDir.'/', '', $file), $message, $condition, $composer, $lock, $installed, $installedDev, $run, $expectLock, $expectOutput, $expect);
+            $tests[] = array(str_replace($fixturesDir.'/', '', $file), $message, $condition, $composer, $lock, $installed, $run, $expectLock, $expectOutput, $expect);
         }
 
         return $tests;

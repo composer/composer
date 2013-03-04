@@ -41,11 +41,10 @@ class InstallerInstaller extends LibraryInstaller
         parent::__construct($io, $composer, 'composer-installer');
         $this->installationManager = $composer->getInstallationManager();
 
-        foreach ($composer->getRepositoryManager()->getLocalRepositories() as $repo) {
-            foreach ($repo->getPackages() as $package) {
-                if ('composer-installer' === $package->getType()) {
-                    $this->registerInstaller($package);
-                }
+        $repo = $composer->getRepositoryManager()->getLocalRepository();
+        foreach ($repo->getPackages() as $package) {
+            if ('composer-installer' === $package->getType()) {
+                $this->registerInstaller($package);
             }
         }
     }

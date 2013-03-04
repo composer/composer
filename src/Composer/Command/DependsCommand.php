@@ -50,13 +50,11 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $repos = $this->getComposer()->getRepositoryManager()->getLocalRepositories();
+        $repo = $this->getComposer()->getRepositoryManager()->getLocalRepository();
         $needle = $input->getArgument('package');
 
         $pool = new Pool();
-        foreach ($repos as $repo) {
-            $pool->addRepository($repo);
-        }
+        $pool->addRepository($repo);
 
         $packages = $pool->whatProvides($needle);
         if (empty($packages)) {
@@ -75,22 +73,20 @@ EOT
         }, $input->getOption('link-type'));
 
         $messages = array();
-        foreach ($repos as $repo) {
-            $repo->filterPackages(function ($package) use ($needle, $types, $linkTypes, &$messages) {
-                static $outputPackages = array();
+        $repo->filterPackages(function ($package) use ($needle, $types, $linkTypes, &$messages) {
+            static $outputPackages = array();
 
-                foreach ($types as $type) {
-                    foreach ($package->{'get'.$linkTypes[$type][0]}() as $link) {
-                        if ($link->getTarget() === $needle) {
-                            if (!isset($outputPackages[$package->getName()])) {
-                                $messages[] = '<info>'.$package->getPrettyName() . '</info> ' . $linkTypes[$type][1] . ' ' . $needle .' (<info>' . $link->getPrettyConstraint() . '</info>)';
-                                $outputPackages[$package->getName()] = true;
-                            }
+            foreach ($types as $type) {
+                foreach ($package->{'get'.$linkTypes[$type][0]}() as $link) {
+                    if ($link->getTarget() === $needle) {
+                        if (!isset($outputPackages[$package->getName()])) {
+                            $messages[] = '<info>'.$package->getPrettyName() . '</info> ' . $linkTypes[$type][1] . ' ' . $needle .' (<info>' . $link->getPrettyConstraint() . '</info>)';
+                            $outputPackages[$package->getName()] = true;
                         }
                     }
                 }
-            });
-        }
+            }
+        });
 
         if ($messages) {
             sort($messages);
