@@ -255,6 +255,10 @@ EOT
                 function ($val) { return in_array($val, array('true', 'false', '1', '0'), true); },
                 function ($val) { return $val !== 'false' && (bool) $val; }
             ),
+            'prefer-source' => array(
+                function ($val) { return in_array($val, array('true', 'false', '1', '0'), true); },
+                function ($val) { return $val !== 'false' && (bool) $val; }
+            ),
             'notify-on-install' => array(
                 function ($val) { return in_array($val, array('true', 'false', '1', '0'), true); },
                 function ($val) { return $val !== 'false' && (bool) $val; }
