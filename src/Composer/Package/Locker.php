@@ -20,6 +20,7 @@ use Composer\Package\AliasPackage;
 use Composer\Repository\ArrayRepository;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\Version\VersionParser;
 
 /**
  * Reads/writes project lockfile (composer.lock).
@@ -178,6 +179,41 @@ class Locker
         return $packages;
     }
 
+    /**
+     * Returns the platform requirements stored in the lock file
+     *
+     * @param bool $withDevReqs if true, the platform requirements from the require-dev block are also returned
+     * @return \Composer\Package\Link[]
+     */
+    public function getPlatformRequirements($withDevReqs = false)
+    {
+        $lockData = $this->getLockData();
+        $versionParser = new VersionParser();
+        $requirements = array();
+
+        if (!empty($lockData['platform'])) {
+            $requirements = $versionParser->parseLinks(
+                '__ROOT__',
+                '1.0.0',
+                'requires',
+                isset($lockData['platform']) ? $lockData['platform'] : array()
+            );
+        }
+
+        if ($withDevReqs && !empty($lockData['platform-dev'])) {
+            $devRequirements = $versionParser->parseLinks(
+                '__ROOT__',
+                '1.0.0',
+                'requires',
+                isset($lockData['platform-dev']) ? $lockData['platform-dev'] : array()
+            );
+
+            $requirements = array_merge($requirements, $devRequirements);
+        }
+
+        return $requirements;
+    }
+
     public function getMinimumStability()
     {
         $lockData = $this->getLockData();
@@ -217,13 +253,15 @@ class Locker
      *
      * @param array  $packages         array of packages
      * @param mixed  $devPackages      array of dev packages or null if installed without --dev
+     * @param array  $platformReqs     array of package name => constraint for required platform packages
+     * @param mixed  $platformDevReqs  array of package name => constraint for dev-required platform packages
      * @param array  $aliases          array of aliases
      * @param string $minimumStability
      * @param array  $stabilityFlags
      *
      * @return bool
      */
-    public function setLockData(array $packages, $devPackages, array $aliases, $minimumStability, array $stabilityFlags)
+    public function setLockData(array $packages, $devPackages, array $platformReqs, $platformDevReqs, array $aliases, $minimumStability, array $stabilityFlags)
     {
         $lock = array(
             'hash' => $this->hash,
@@ -257,6 +295,9 @@ class Locker
 
             return false;
         }
+
+        $lock['platform'] = $platformReqs;
+        $lock['platform-dev'] = $platformDevReqs;
 
         if (!$this->isLocked() || $lock !== $this->getLockData()) {
             $this->lockFile->write($lock);
