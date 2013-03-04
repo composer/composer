@@ -17,6 +17,7 @@ use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\Version\VersionParser;
 use Composer\DependencyResolver\Pool;
+use Composer\Downloader\TransportException;
 use Composer\Json\JsonFile;
 use Composer\Cache;
 use Composer\Config;
@@ -496,6 +497,18 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
                 if ($retries) {
                     usleep(100);
                     continue;
+                }
+
+                // in case the remote filesystem responds with an 401 error ask for credentials
+                if($e instanceof TransportException && ($e->getCode() == 401))
+                {
+                    $this->io->write('Enter the access credentials needed to access the repository');
+                    $username = $this->io->ask('Username: ');
+                    $password = $this->io->askAndHideAnswer('Password: ');
+                    $this->rfs->setAuthentication($filename, $username, $password);
+
+                    // try fetching the file again
+                    return $this->fetchFile($filename, $cacheKey, $sha256);
                 }
 
                 if ($e instanceof RepositorySecurityException) {

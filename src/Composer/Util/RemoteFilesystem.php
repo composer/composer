@@ -45,6 +45,18 @@ class RemoteFilesystem
     }
 
     /**
+     * Set the authentication information for the repository.
+     *
+     * @param string $originUrl The origin URL
+     * @param string $username  The username
+     * @param string $password  The password
+     */
+    public function setAuthentication($originUrl, $username, $password = null)
+    {
+        return $this->io->setAuthentication($originUrl, $username, $password);
+    }
+
+    /**
      * Copy the remote file in local.
      *
      * @param string  $originUrl The origin URL
