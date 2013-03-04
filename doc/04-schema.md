@@ -581,6 +581,8 @@ The following options are supported:
   higher if you have a slow connection or huge vendors.
 * **use-include-path:** Defaults to `false`. If true, the Composer autoloader
   will also look for classes in the PHP include path.
+* **prefer-source:** Defaults to `false`. If true, Composer will always prefer
+  source installs.
 * **github-protocols:** Defaults to `["git", "https", "http"]`. A list of
   protocols to use for github.com clones, in priority order. Use this if you are
   behind a proxy or have somehow bad performances with the git protocol.

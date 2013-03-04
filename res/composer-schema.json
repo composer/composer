@@ -116,6 +116,10 @@
                     "type": "boolean",
                     "description": "If true, the Composer autoloader will also look for classes in the PHP include path."
                 },
+                "prefer-source": {
+                    "type": "boolean",
+                    "description": "If true, Composer will always prefer source installs."
+                },
                 "notify-on-install": {
                     "type": "boolean",
                     "description": "Composer allows repositories to define a notification URL, so that they get notified whenever a package from that repository is installed. This option allows you to disable that behaviour, defaults to true."
