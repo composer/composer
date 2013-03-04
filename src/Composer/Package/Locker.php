@@ -58,19 +58,15 @@ class Locker
     /**
      * Checks whether locker were been locked (lockfile found).
      *
-     * @param  bool $dev true to check if dev packages are locked
      * @return bool
      */
-    public function isLocked($dev = false)
+    public function isLocked()
     {
         if (!$this->lockFile->exists()) {
             return false;
         }
 
         $data = $this->getLockData();
-        if ($dev) {
-            return isset($data['packages-dev']);
-        }
 
         return isset($data['packages']);
     }
@@ -90,13 +86,12 @@ class Locker
     /**
      * Checks whether the lock file is in the new complete format or not
      *
-     * @param  bool $dev true to check in dev mode
      * @return bool
      */
-    public function isCompleteFormat($dev)
+    public function isCompleteFormat()
     {
         $lockData = $this->getLockData();
-        $lockedPackages = $dev ? $lockData['packages-dev'] : $lockData['packages'];
+        $lockedPackages = $lockData['packages'];
 
         if (empty($lockedPackages) || isset($lockedPackages[0]['name'])) {
             return true;
@@ -108,15 +103,22 @@ class Locker
     /**
      * Searches and returns an array of locked packages, retrieved from registered repositories.
      *
-     * @param  bool                                     $dev true to retrieve the locked dev packages
+     * @param  bool                                     $withDevReqs true to retrieve the locked dev packages
      * @return \Composer\Repository\RepositoryInterface
      */
-    public function getLockedRepository($dev = false)
+    public function getLockedRepository($withDevReqs = false)
     {
         $lockData = $this->getLockData();
         $packages = new ArrayRepository();
 
-        $lockedPackages = $dev ? $lockData['packages-dev'] : $lockData['packages'];
+        $lockedPackages = $lockData['packages'];
+        if ($withDevReqs) {
+            if (isset($lockData['packages-dev'])) {
+                $lockedPackages = array_merge($lockedPackages, $lockData['packages-dev']);
+            } else {
+                throw new \RuntimeException('The lock file does not contain require-dev information, run install without --dev or run update to install those packages.');
+            }
+        }
 
         if (empty($lockedPackages)) {
             return $packages;
@@ -131,7 +133,7 @@ class Locker
         }
 
         // legacy lock file support
-        $repo = $dev ? $this->repositoryManager->getLocalDevRepository() : $this->repositoryManager->getLocalRepository();
+        $repo = $this->repositoryManager->getLocalRepository();
         foreach ($lockedPackages as $info) {
             $resolvedVersion = !empty($info['alias-version']) ? $info['alias-version'] : $info['version'];
 

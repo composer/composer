@@ -25,7 +25,6 @@ use Composer\Config;
 class RepositoryManager
 {
     private $localRepository;
-    private $localDevRepository;
     private $repositories = array();
     private $repositoryClasses = array();
     private $io;
@@ -144,32 +143,15 @@ class RepositoryManager
     }
 
     /**
-     * Sets localDev repository for the project.
-     *
-     * @param RepositoryInterface $repository repository instance
-     */
-    public function setLocalDevRepository(RepositoryInterface $repository)
-    {
-        $this->localDevRepository = $repository;
-    }
-
-    /**
-     * Returns localDev repository for the project.
-     *
-     * @return RepositoryInterface
-     */
-    public function getLocalDevRepository()
-    {
-        return $this->localDevRepository;
-    }
-
-    /**
      * Returns all local repositories for the project.
      *
+     * @deprecated getLocalDevRepository is gone, so this is useless now, just use getLocalRepository instead
      * @return array[WritableRepositoryInterface]
      */
     public function getLocalRepositories()
     {
-        return array($this->localRepository, $this->localDevRepository);
+        trigger_error('This method is deprecated, use getLocalRepository instead since the getLocalDevRepository is now gone', E_USER_DEPRECATED);
+
+        return array($this->localRepository);
     }
 }
