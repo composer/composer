@@ -56,7 +56,9 @@ update
     "packages-dev": null,
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": {"a/a":20}
+    "stability-flags": {"a/a":20},
+    "platform": [],
+    "platform-dev": []
 }
 --EXPECT--
 Updating a/a (dev-master oldref) to a/a (dev-master newref)
