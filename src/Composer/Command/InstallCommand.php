@@ -64,7 +64,7 @@ EOT
         $install
             ->setDryRun($input->getOption('dry-run'))
             ->setVerbose($input->getOption('verbose'))
-            ->setPreferSource($input->getOption('prefer-source'))
+            ->setPreferSource($input->getOption('prefer-source') || $composer->getConfig()->get('prefer-source'))
             ->setPreferDist($input->getOption('prefer-dist'))
             ->setDevMode($input->getOption('dev'))
             ->setRunScripts(!$input->getOption('no-scripts'))
