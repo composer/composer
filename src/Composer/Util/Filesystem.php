@@ -66,7 +66,7 @@ class Filesystem
             $cmd = sprintf('rm -rf %s', escapeshellarg($directory));
         }
 
-        $result = $this->getProcess()->execute($cmd) === 0;
+        $result = $this->getProcess()->execute($cmd, $output) === 0;
 
         // clear stat cache because external processes aren't tracked by the php stat cache
         clearstatcache();
@@ -108,7 +108,7 @@ class Filesystem
                     $directory.' exists and is not a directory.'
                 );
             }
-            if (!mkdir($directory, 0777, true)) {
+            if (!@mkdir($directory, 0777, true)) {
                 throw new \RuntimeException(
                     $directory.' does not exist and could not be created.'
                 );

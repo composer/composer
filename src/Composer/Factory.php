@@ -20,6 +20,8 @@ use Composer\Repository\RepositoryManager;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
+use Composer\Script\EventDispatcher;
+use Composer\Autoload\AutoloadGenerator;
 
 /**
  * Creates a configured instance of composer.
@@ -40,7 +42,7 @@ class Factory
         $cacheDir = getenv('COMPOSER_CACHE_DIR');
         if (!$home) {
             if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
-                $home = getenv('APPDATA') . '/Composer';
+                $home = strtr(getenv('APPDATA'), '\\', '/') . '/Composer';
             } else {
                 $home = rtrim(getenv('HOME'), '/') . '/.composer';
             }
@@ -52,6 +54,7 @@ class Factory
                 } else {
                     $cacheDir = getenv('APPDATA') . '/Composer/cache';
                 }
+                $cacheDir = strtr($cacheDir, '\\', '/');
             } else {
                 $cacheDir = $home.'/cache';
             }
@@ -236,6 +239,14 @@ class Factory
         $composer->setDownloadManager($dm);
         $composer->setInstallationManager($im);
 
+        // initialize event dispatcher
+        $dispatcher = new EventDispatcher($composer, $io);
+        $composer->setEventDispatcher($dispatcher);
+
+        // initialize autoload generator
+        $generator = new AutoloadGenerator($dispatcher);
+        $composer->setAutoloadGenerator($generator);
+
         // add installers to the manager
         $this->createDefaultInstallers($im, $composer, $io);
 
@@ -280,7 +291,6 @@ class Factory
     protected function addLocalRepository(RepositoryManager $rm, $vendorDir)
     {
         $rm->setLocalRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/composer/installed.json')));
-        $rm->setLocalDevRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/composer/installed_dev.json')));
     }
 
     /**
@@ -334,12 +344,10 @@ class Factory
      */
     protected function purgePackages(Repository\RepositoryManager $rm, Installer\InstallationManager $im)
     {
-        foreach ($rm->getLocalRepositories() as $repo) {
-            /* @var $repo   Repository\WritableRepositoryInterface */
-            foreach ($repo->getPackages() as $package) {
-                if (!$im->isPackageInstalled($repo, $package)) {
-                    $repo->removePackage($package);
-                }
+        $repo = $rm->getLocalRepository();
+        foreach ($repo->getPackages() as $package) {
+            if (!$im->isPackageInstalled($repo, $package)) {
+                $repo->removePackage($package);
             }
         }
     }

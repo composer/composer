@@ -18,6 +18,8 @@ use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
 use Composer\Repository\RepositoryInterface;
 use Composer\Util\Filesystem;
+use Composer\Script\EventDispatcher;
+use Composer\Script\ScriptEvents;
 
 /**
  * @author Igor Wiedler <igor@wiedler.ch>
@@ -25,11 +27,22 @@ use Composer\Util\Filesystem;
  */
 class AutoloadGenerator
 {
+    /**
+     * @var EventDispatcher
+     */
+    private $eventDispatcher;
+
+    public function __construct(EventDispatcher $eventDispatcher)
+    {
+        $this->eventDispatcher = $eventDispatcher;
+    }
+
     public function dump(Config $config, RepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir, $scanPsr0Packages = false, $suffix = '')
     {
         $filesystem = new Filesystem();
         $filesystem->ensureDirectoryExists($config->get('vendor-dir'));
         $vendorPath = strtr(realpath($config->get('vendor-dir')), '\\', '/');
+        $useGlobalIncludePath = (bool) $config->get('use-include-path');
         $targetDir = $vendorPath.'/'.$targetDir;
         $filesystem->ensureDirectoryExists($targetDir);
 
@@ -171,8 +184,10 @@ EOF;
             file_put_contents($targetDir.'/include_paths.php', $includePathFile);
         }
         file_put_contents($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, $suffix));
-        file_put_contents($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, true, (bool) $includePathFile, $targetDirLoader, $filesCode, $vendorPathCode, $appBaseDirCode, $suffix));
+        file_put_contents($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, true, (bool) $includePathFile, $targetDirLoader, $filesCode, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath));
         copy(__DIR__.'/ClassLoader.php', $targetDir.'/ClassLoader.php');
+
+        $this->eventDispatcher->dispatch(ScriptEvents::POST_AUTOLOAD_DUMP);
     }
 
     public function buildPackageMap(InstallationManager $installationManager, PackageInterface $mainPackage, array $packages)
@@ -326,7 +341,7 @@ return ComposerAutoloaderInit$suffix::getLoader();
 AUTOLOAD;
     }
 
-    protected function getAutoloadRealFile($usePSR0, $useClassMap, $useIncludePath, $targetDirLoader, $filesCode, $vendorPathCode, $appBaseDirCode, $suffix)
+    protected function getAutoloadRealFile($usePSR0, $useClassMap, $useIncludePath, $targetDirLoader, $filesCode, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath)
     {
         // TODO the class ComposerAutoloaderInit should be revert to a closure
         // when APC has been fixed:
@@ -403,6 +418,13 @@ PSR0;
 CLASSMAP;
         }
 
+        if ($useGlobalIncludePath) {
+            $file .= <<<'INCLUDEPATH'
+        $loader->setUseIncludePath(true);
+
+INCLUDEPATH;
+        }
+
         if ($targetDirLoader) {
             $file .= <<<REGISTER_AUTOLOAD
         spl_autoload_register(array('ComposerAutoloaderInit$suffix', 'autoload'), true, true);
@@ -448,10 +470,26 @@ FOOTER;
 
             foreach ($autoload[$type] as $namespace => $paths) {
                 foreach ((array) $paths as $path) {
-                    // remove target-dir from classmap entries of the root package
-                    if ($type === 'classmap' && $package === $mainPackage && $package->getTargetDir()) {
+                    // remove target-dir from file paths of the root package
+                    if ($type === 'files' && $package === $mainPackage && $package->getTargetDir() && !is_readable($installPath.'/'.$path)) {
                         $targetDir = str_replace('\\<dirsep\\>', '[\\\\/]', preg_quote(str_replace(array('/', '\\'), '<dirsep>', $package->getTargetDir())));
                         $path = ltrim(preg_replace('{^'.$targetDir.'}', '', ltrim($path, '\\/')), '\\/');
+                    }
+
+                    // add target-dir from file paths that don't have it
+                    if ($type === 'files' && $package !== $mainPackage && $package->getTargetDir() && !is_readable($installPath.'/'.$path)) {
+                        $path = $package->getTargetDir() . '/' . $path;
+                    }
+
+                    // remove target-dir from classmap entries of the root package
+                    if ($type === 'classmap' && $package === $mainPackage && $package->getTargetDir() && !is_readable($installPath.'/'.$path)) {
+                        $targetDir = str_replace('\\<dirsep\\>', '[\\\\/]', preg_quote(str_replace(array('/', '\\'), '<dirsep>', $package->getTargetDir())));
+                        $path = ltrim(preg_replace('{^'.$targetDir.'}', '', ltrim($path, '\\/')), '\\/');
+                    }
+
+                    // add target-dir to classmap entries that don't have it
+                    if ($type === 'classmap' && $package !== $mainPackage && $package->getTargetDir() && !is_readable($installPath.'/'.$path)) {
+                        $path = $package->getTargetDir() . '/' . $path;
                     }
 
                     $autoloads[$namespace][] = empty($installPath) ? $path : $installPath.'/'.$path;

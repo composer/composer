@@ -45,11 +45,10 @@ EOT
 
         $composer = $this->getComposer();
         $installationManager = $composer->getInstallationManager();
-        $localRepos = new CompositeRepository($composer->getRepositoryManager()->getLocalRepositories());
+        $localRepo = $composer->getRepositoryManager()->getLocalRepository();
         $package = $composer->getPackage();
         $config = $composer->getConfig();
 
-        $generator = new AutoloadGenerator();
-        $generator->dump($config, $localRepos, $package, $installationManager, 'composer', $input->getOption('optimize'));
+        $composer->getAutoloadGenerator()->dump($config, $localRepo, $package, $installationManager, 'composer', $input->getOption('optimize'));
     }
 }

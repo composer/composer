@@ -97,16 +97,16 @@ Here is a minimal package definition:
 
 It may include any of the other fields specified in the [schema](04-schema.md).
 
-#### notify_batch
+#### notify-batch
 
-The `notify_batch` field allows you to specify an URL that will be called
+The `notify-batch` field allows you to specify an URL that will be called
 every time a user installs a package. The URL can be either an absolute path
 (that will use the same domain as the repository) or a fully qualified URL.
 
 An example value:
 
     {
-        "notify_batch": "/downloads/"
+        "notify-batch": "/downloads/"
     }
 
 For `example.org/packages.json` containing a `monolog/monolog` package, this
@@ -126,7 +126,7 @@ This field is optional.
 
 #### includes
 
-For large repositories it is possible to split the `packages.json` into
+For larger repositories it is possible to split the `packages.json` into
 multiple files. The `includes` field allows you to reference these additional
 files.
 
@@ -148,6 +148,52 @@ An example:
 
 The SHA-1 sum of the file allows it to be cached and only re-requested if the
 hash changed.
+
+This field is optional. You probably don't need it for your own custom
+repository.
+
+#### provider-includes and providers-url
+
+For very large repositories like packagist.org using the so-called provider
+files is the preferred method. The `provider-includes` field allows you to
+list a set of files that list package names provided by this repository. The
+hash should be a sha256 of the files in this case.
+
+The `providers-url` describes how provider files are found on the server. It
+is an absolute path from the repository root.
+
+An example:
+
+    {
+        "provider-includes": {
+            "providers-a.json": {
+                "sha256": "f5b4bc0b354108ef08614e569c1ed01a2782e67641744864a74e788982886f4c"
+            },
+            "providers-b.json": {
+                "sha256": "b38372163fac0573053536f5b8ef11b86f804ea8b016d239e706191203f6efac"
+            }
+        },
+        "providers-url": "/p/%package%$%hash%.json"
+    }
+
+Those files contain lists of package names and hashes to verify the file
+integrity, for example:
+
+    {
+        "providers": {
+            "acme/foo": {
+                "sha256": "38968de1305c2e17f4de33aea164515bc787c42c7e2d6e25948539a14268bb82"
+            },
+            "acme/bar": {
+                "sha256": "4dd24c930bd6e1103251306d6336ac813b563a220d9ca14f4743c032fb047233"
+            }
+        }
+    }
+
+The file above declares that acme/foo and acme/bar can be found in this
+repository, by loading the file referenced by `providers-url`, replacing
+`%name%` by the package name and `%hash%` by the sha256 field. Those files
+themselves just contain package definitions as described [above](#packages).
 
 This field is optional. You probably don't need it for your own custom
 repository.

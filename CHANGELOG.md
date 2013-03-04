@@ -1,4 +1,4 @@
-* 1.0.0-alpha6 (2012-10-23)
+### 1.0.0-alpha6 (2012-10-23)
 
   * Schema: Added ability to pass additional options to repositories (i.e. ssh keys/client certificates to secure private repos)
   * Schema: Added a new `~` operator that should be prefered over `>=`, see http://getcomposer.org/doc/01-basic-usage.md#package-versions
@@ -23,7 +23,7 @@
   * Improved performance of a few essential code paths
   * Many bug small fixes and docs improvements
 
-* 1.0.0-alpha5 (2012-08-18)
+### 1.0.0-alpha5 (2012-08-18)
 
   * Added `dump-autoload` command to only regenerate the autoloader
   * Added --optimize to `dump-autoload` to generate a more performant classmap-based autoloader for production
@@ -41,7 +41,7 @@
   * Improved error reporting on network failures and some other edge cases
   * Various minor bug fixes and docs improvements
 
-* 1.0.0-alpha4 (2012-07-04)
+### 1.0.0-alpha4 (2012-07-04)
 
   * Break: The default `minimum-stability` is now `stable`, [read more](https://groups.google.com/d/topic/composer-dev/_g3ASeIFlrc/discussion)
   * Break: Custom installers now receive the IO instance and a Composer instance in their constructor
@@ -69,7 +69,7 @@
   * Cleaned up / refactored the dependency solver code as well as the output for unsolvable requirements
   * Various bug fixes and docs improvements
 
-* 1.0.0-alpha3 (2012-05-13)
+### 1.0.0-alpha3 (2012-05-13)
 
   * Schema: Added `require-dev` for development-time requirements (tests, etc), install with --dev
   * Schema: Added author.role to list the author's role in the project
@@ -91,7 +91,7 @@
   * Fixed various bugs relating to package aliasing, proxy configuration, binaries
   * Various bug fixes and docs improvements
 
-* 1.0.0-alpha2 (2012-04-03)
+### 1.0.0-alpha2 (2012-04-03)
 
   * Added `create-project` command to install a project from scratch with composer
   * Added automated `classmap` autoloading support for non-PSR-0 compliant projects
@@ -106,6 +106,6 @@
   * Removed dependency on filter_var
   * Various robustness & error handling improvements, docs fixes and more bug fixes
 
-* 1.0.0-alpha1 (2012-03-01)
+### 1.0.0-alpha1 (2012-03-01)
 
   * Initial release

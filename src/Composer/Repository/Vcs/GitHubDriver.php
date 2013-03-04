@@ -76,7 +76,7 @@ class GitHubDriver extends VcsDriver
             return $this->gitDriver->getUrl();
         }
 
-        return $this->url;
+        return 'https://github.com/'.$this->owner.'/'.$this->repository.'.git';
     }
 
     /**
@@ -128,8 +128,11 @@ class GitHubDriver extends VcsDriver
 
         if (!isset($this->infoCache[$identifier])) {
             try {
-                $resource = 'https://raw.github.com/'.$this->owner.'/'.$this->repository.'/'.urlencode($identifier).'/composer.json';
-                $composer = $this->getContents($resource);
+                $resource = 'https://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/contents/composer.json?ref='.urlencode($identifier);
+                $composer = JsonFile::parseJson($this->getContents($resource));
+                if (empty($composer['content']) || $composer['encoding'] !== 'base64' || !($composer = base64_decode($composer['content']))) {
+                    throw new \RuntimeException('Could not retrieve composer.json from '.$resource);
+                }
             } catch (TransportException $e) {
                 if (404 !== $e->getCode()) {
                     throw $e;

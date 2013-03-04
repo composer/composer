@@ -20,6 +20,7 @@ use Composer\Package\AliasPackage;
 use Composer\Repository\ArrayRepository;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\Version\VersionParser;
 
 /**
  * Reads/writes project lockfile (composer.lock).
@@ -58,19 +59,15 @@ class Locker
     /**
      * Checks whether locker were been locked (lockfile found).
      *
-     * @param  bool $dev true to check if dev packages are locked
      * @return bool
      */
-    public function isLocked($dev = false)
+    public function isLocked()
     {
         if (!$this->lockFile->exists()) {
             return false;
         }
 
         $data = $this->getLockData();
-        if ($dev) {
-            return isset($data['packages-dev']);
-        }
 
         return isset($data['packages']);
     }
@@ -90,13 +87,12 @@ class Locker
     /**
      * Checks whether the lock file is in the new complete format or not
      *
-     * @param  bool $dev true to check in dev mode
      * @return bool
      */
-    public function isCompleteFormat($dev)
+    public function isCompleteFormat()
     {
         $lockData = $this->getLockData();
-        $lockedPackages = $dev ? $lockData['packages-dev'] : $lockData['packages'];
+        $lockedPackages = $lockData['packages'];
 
         if (empty($lockedPackages) || isset($lockedPackages[0]['name'])) {
             return true;
@@ -108,15 +104,22 @@ class Locker
     /**
      * Searches and returns an array of locked packages, retrieved from registered repositories.
      *
-     * @param  bool                                     $dev true to retrieve the locked dev packages
+     * @param  bool                                     $withDevReqs true to retrieve the locked dev packages
      * @return \Composer\Repository\RepositoryInterface
      */
-    public function getLockedRepository($dev = false)
+    public function getLockedRepository($withDevReqs = false)
     {
         $lockData = $this->getLockData();
         $packages = new ArrayRepository();
 
-        $lockedPackages = $dev ? $lockData['packages-dev'] : $lockData['packages'];
+        $lockedPackages = $lockData['packages'];
+        if ($withDevReqs) {
+            if (isset($lockData['packages-dev'])) {
+                $lockedPackages = array_merge($lockedPackages, $lockData['packages-dev']);
+            } else {
+                throw new \RuntimeException('The lock file does not contain require-dev information, run install without --dev or run update to install those packages.');
+            }
+        }
 
         if (empty($lockedPackages)) {
             return $packages;
@@ -131,7 +134,7 @@ class Locker
         }
 
         // legacy lock file support
-        $repo = $dev ? $this->repositoryManager->getLocalDevRepository() : $this->repositoryManager->getLocalRepository();
+        $repo = $this->repositoryManager->getLocalRepository();
         foreach ($lockedPackages as $info) {
             $resolvedVersion = !empty($info['alias-version']) ? $info['alias-version'] : $info['version'];
 
@@ -176,6 +179,41 @@ class Locker
         return $packages;
     }
 
+    /**
+     * Returns the platform requirements stored in the lock file
+     *
+     * @param bool $withDevReqs if true, the platform requirements from the require-dev block are also returned
+     * @return \Composer\Package\Link[]
+     */
+    public function getPlatformRequirements($withDevReqs = false)
+    {
+        $lockData = $this->getLockData();
+        $versionParser = new VersionParser();
+        $requirements = array();
+
+        if (!empty($lockData['platform'])) {
+            $requirements = $versionParser->parseLinks(
+                '__ROOT__',
+                '1.0.0',
+                'requires',
+                isset($lockData['platform']) ? $lockData['platform'] : array()
+            );
+        }
+
+        if ($withDevReqs && !empty($lockData['platform-dev'])) {
+            $devRequirements = $versionParser->parseLinks(
+                '__ROOT__',
+                '1.0.0',
+                'requires',
+                isset($lockData['platform-dev']) ? $lockData['platform-dev'] : array()
+            );
+
+            $requirements = array_merge($requirements, $devRequirements);
+        }
+
+        return $requirements;
+    }
+
     public function getMinimumStability()
     {
         $lockData = $this->getLockData();
@@ -215,13 +253,15 @@ class Locker
      *
      * @param array  $packages         array of packages
      * @param mixed  $devPackages      array of dev packages or null if installed without --dev
+     * @param array  $platformReqs     array of package name => constraint for required platform packages
+     * @param mixed  $platformDevReqs  array of package name => constraint for dev-required platform packages
      * @param array  $aliases          array of aliases
      * @param string $minimumStability
      * @param array  $stabilityFlags
      *
      * @return bool
      */
-    public function setLockData(array $packages, $devPackages, array $aliases, $minimumStability, array $stabilityFlags)
+    public function setLockData(array $packages, $devPackages, array $platformReqs, $platformDevReqs, array $aliases, $minimumStability, array $stabilityFlags)
     {
         $lock = array(
             'hash' => $this->hash,
@@ -256,6 +296,9 @@ class Locker
             return false;
         }
 
+        $lock['platform'] = $platformReqs;
+        $lock['platform-dev'] = $platformDevReqs;
+
         if (!$this->isLocked() || $lock !== $this->getLockData()) {
             $this->lockFile->write($lock);
             $this->lockDataCache = null;
@@ -287,11 +330,15 @@ class Locker
             $spec = $this->dumper->dump($package);
             unset($spec['version_normalized']);
 
+            // always move time to the end of the package definition
+            $time = isset($spec['time']) ? $spec['time'] : null;
+            unset($spec['time']);
             if ($package->isDev()) {
-                $time = $this->getPackageTime($package);
-                if (null !== $time) {
-                    $spec['time'] = $time;
-                }
+                // use the exact commit time of the current reference if it's a dev package
+                $time = $this->getPackageTime($package) ?: $time;
+            }
+            if (null !== $time) {
+               $spec['time'] = $time;
             }
 
             unset($spec['installation-source']);

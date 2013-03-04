@@ -108,7 +108,7 @@ class JsonFile
                     $dir.' exists and is not a directory.'
                 );
             }
-            if (!mkdir($dir, 0777, true)) {
+            if (!@mkdir($dir, 0777, true)) {
                 throw new \UnexpectedValueException(
                     $dir.' does not exist and could not be created.'
                 );
@@ -195,7 +195,7 @@ class JsonFile
         $buffer = '';
         $noescape = true;
 
-        for ($i = 0; $i <= $strLen; $i++) {
+        for ($i = 0; $i < $strLen; $i++) {
             // Grab the next character in the string
             $char = substr($json, $i, 1);
 

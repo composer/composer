@@ -88,12 +88,16 @@ class SvnDownloader extends VcsDownloader
      */
     protected function cleanChanges($path, $update)
     {
-        if (!$this->io->isInteractive()) {
-            return parent::cleanChanges($path, $update);
-        }
-
         if (!$changes = $this->getLocalChanges($path)) {
             return;
+        }
+
+        if (!$this->io->isInteractive()) {
+            if (true === $this->config->get('discard-changes')) {
+                return $this->discardChanges($path);
+            }
+
+            return parent::cleanChanges($path, $update);
         }
 
         $changes = array_map(function ($elem) {
@@ -108,9 +112,7 @@ class SvnDownloader extends VcsDownloader
         while (true) {
             switch ($this->io->ask('    <info>Discard changes [y,n,v,?]?</info> ', '?')) {
                 case 'y':
-                    if (0 !== $this->process->execute('svn revert -R .', $output, $path)) {
-                        throw new \RuntimeException("Could not reset changes\n\n:".$this->process->getErrorOutput());
-                    }
+                    $this->discardChanges($path);
                     break 2;
 
                 case 'n':
@@ -149,5 +151,12 @@ class SvnDownloader extends VcsDownloader
         }
 
         return $output;
+    }
+
+    protected function discardChanges($path)
+    {
+        if (0 !== $this->process->execute('svn revert -R .', $output, $path)) {
+            throw new \RuntimeException("Could not reset changes\n\n:".$this->process->getErrorOutput());
+        }
     }
 }

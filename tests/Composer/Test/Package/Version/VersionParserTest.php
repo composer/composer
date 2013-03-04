@@ -165,6 +165,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
     {
         $parser = new VersionParser;
         $this->assertSame((string) new VersionConstraint('=', '1.0.9999999.9999999-dev'), (string) $parser->parseConstraints('1.0.x-dev#abcd123'));
+        $this->assertSame((string) new VersionConstraint('=', '1.0.9999999.9999999-dev'), (string) $parser->parseConstraints('1.0.x-dev#trunk/@123'));
     }
 
     /**
@@ -174,6 +175,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
     {
         $parser = new VersionParser;
         $this->assertSame((string) new VersionConstraint('=', '1.0.0.0'), (string) $parser->parseConstraints('1.0#abcd123'));
+        $this->assertSame((string) new VersionConstraint('=', '1.0.0.0'), (string) $parser->parseConstraints('1.0#trunk/@123'));
     }
 
     /**
@@ -265,6 +267,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             array('~1.2.3.4', new VersionConstraint('>=', '1.2.3.4'), new VersionConstraint('<', '1.2.4.0-dev')),
             array('~1.2-beta',new VersionConstraint('>=', '1.2.0.0-beta'), new VersionConstraint('<', '2.0.0.0-dev')),
             array('~1.2-b2',  new VersionConstraint('>=', '1.2.0.0-beta2'), new VersionConstraint('<', '2.0.0.0-dev')),
+            array('~1.2-BETA2', new VersionConstraint('>=', '1.2.0.0-beta2'), new VersionConstraint('<', '2.0.0.0-dev')),
             array('~1.2.2-dev', new VersionConstraint('>=', '1.2.2.0-dev'), new VersionConstraint('<', '1.3.0.0-dev')),
         );
     }
@@ -316,9 +319,13 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
     public function stabilityProvider()
     {
         return array(
+            array('stable', '1'),
             array('stable', '1.0'),
+            array('stable', '3.2.1'),
+            array('stable', 'v3.2.1'),
             array('dev',    'v2.0.x-dev'),
             array('dev',    'v2.0.x-dev#abc123'),
+            array('dev',    'v2.0.x-dev#trunk/@123'),
             array('RC',     '3.0-RC2'),
             array('dev',    'dev-master'),
             array('dev',    '3.1.2-dev'),

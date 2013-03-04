@@ -18,6 +18,7 @@ use Composer\Installer\InstallerInstaller;
 use Composer\Package\Loader\JsonLoader;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\PackageInterface;
+use Composer\Autoload\AutoloadGenerator;
 
 class InstallerInstallerTest extends \PHPUnit_Framework_TestCase
 {
@@ -26,6 +27,7 @@ class InstallerInstallerTest extends \PHPUnit_Framework_TestCase
     protected $im;
     protected $repository;
     protected $io;
+    protected $autoloadGenerator;
 
     protected function setUp()
     {
@@ -49,10 +51,13 @@ class InstallerInstallerTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $rm->expects($this->any())
-            ->method('getLocalRepositories')
-            ->will($this->returnValue(array($this->repository)));
+            ->method('getLocalRepository')
+            ->will($this->returnValue($this->repository));
 
         $this->io = $this->getMock('Composer\IO\IOInterface');
+
+        $dispatcher = $this->getMockBuilder('Composer\Script\EventDispatcher')->disableOriginalConstructor()->getMock();
+        $this->autoloadGenerator = new AutoloadGenerator($dispatcher);
 
         $this->composer = new Composer();
         $config = new Config();
@@ -60,6 +65,7 @@ class InstallerInstallerTest extends \PHPUnit_Framework_TestCase
         $this->composer->setDownloadManager($dm);
         $this->composer->setInstallationManager($this->im);
         $this->composer->setRepositoryManager($rm);
+        $this->composer->setAutoloadGenerator($this->autoloadGenerator);
 
         $config->merge(array(
             'config' => array(

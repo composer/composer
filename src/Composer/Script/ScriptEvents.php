@@ -109,4 +109,13 @@ class ScriptEvents
      * @var string
      */
     const POST_PACKAGE_UNINSTALL = 'post-package-uninstall';
+
+    /**
+     * The POST_AUTOLOAD_DUMP event occurs after the autoload file has been generated.
+     *
+     * The event listener method receives a Composer\Script\Event instance.
+     *
+     * @var string
+     */
+    const POST_AUTOLOAD_DUMP = 'post-autoload-dump';
 }

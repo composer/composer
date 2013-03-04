@@ -150,6 +150,8 @@ The recommended notation for the most common licenses is (alphabetical):
 Optional, but it is highly recommended to supply this. More identifiers are
 listed at the [SPDX Open Source License Registry](http://www.spdx.org/licenses/).
 
+For closed-source software, you may use `"proprietary"` as the license identifier.
+
 An Example:
 
     {
@@ -294,17 +296,7 @@ unless those requirements can be met.
 
 Lists packages required for developing this package, or running
 tests, etc. The dev requirements of the root package only will be installed
-if `install` or `update` is ran with `--dev`.
-
-Packages listed here and their dependencies can not overrule the resolution
-found with the packages listed in require. This is even true if a different
-version of a package would be installable and solve the conflict. The reason
-is that `install --dev` produces the exact same state as just `install`, apart
-from the additional dev packages.
-
-If you run into such a conflict, you can specify the conflicting package in
-the require section and require the right version number to resolve the
-conflict.
+if `install` is run with `--dev` or if `update` is run without `--no-dev`.
 
 #### conflict
 
@@ -584,13 +576,11 @@ A set of configuration options. It is only used for projects.
 
 The following options are supported:
 
-* **vendor-dir:** Defaults to `vendor`. You can install dependencies into a
-  different directory if you want to.
-* **bin-dir:** Defaults to `vendor/bin`. If a project includes binaries, they
-  will be symlinked into this directory.
 * **process-timeout:** Defaults to `300`. The duration processes like git clones
   can run before Composer assumes they died out. You may need to make this
   higher if you have a slow connection or huge vendors.
+* **use-include-path:** Defaults to `false`. If true, the Composer autoloader
+  will also look for classes in the PHP include path.
 * **github-protocols:** Defaults to `["git", "https", "http"]`. A list of
   protocols to use for github.com clones, in priority order. Use this if you are
   behind a proxy or have somehow bad performances with the git protocol.
@@ -598,22 +588,35 @@ The following options are supported:
   `{"github.com": "oauthtoken"}` as the value of this option will use `oauthtoken`
   to access private repositories on github and to circumvent the low IP-based
   rate limiting of their API.
+* **vendor-dir:** Defaults to `vendor`. You can install dependencies into a
+  different directory if you want to.
+* **bin-dir:** Defaults to `vendor/bin`. If a project includes binaries, they
+  will be symlinked into this directory.
 * **cache-dir:** Defaults to `$home/cache` on unix systems and
   `C:\Users\<user>\AppData\Local\Composer` on Windows. Stores all the caches
   used by composer. See also [COMPOSER_HOME](03-cli.md#composer-home).
 * **cache-files-dir:** Defaults to `$cache-dir/files`. Stores the zip archives
   of packages.
 * **cache-repo-dir:** Defaults to `$cache-dir/repo`. Stores repository metadata
-  for the `composer` type and the VCS repos of type `svn`, `github` and `*bitbucket`.
+  for the `composer` type and the VCS repos of type `svn`, `github` and `bitbucket`.
 * **cache-vcs-dir:** Defaults to `$cache-dir/vcs`. Stores VCS clones for
   loading VCS repository metadata for the `git`/`hg` types and to speed up installs.
 * **cache-files-ttl:** Defaults to `15552000` (6 months). Composer caches all
   dist (zip, tar, ..) packages that it downloads. Those are purged after six
   months of being unused by default. This option allows you to tweak this
   duration (in seconds) or disable it completely by setting it to 0.
+* **cache-files-maxsize:** Defaults to `300MiB`. Composer caches all
+  dist (zip, tar, ..) packages that it downloads. When the garbage collection
+  is periodically ran, this is the maximum size the cache will be able to use.
+  Older (less used) files will be removed first until the cache fits.
 * **notify-on-install:** Defaults to `true`. Composer allows repositories to
   define a notification URL, so that they get notified whenever a package from
   that repository is installed. This option allows you to disable that behaviour.
+* **discard-changes:** Defaults to `false` and can be any of `true`, `false` or
+  `"stash"`. This option allows you to set the default style of handling dirty
+  updates when in non-interactive mode. `true` will always discard changes in
+  vendors, while `"stash"` will try to stash and reapply. Use this for CI
+  servers or deploy scripts if you tend to have modified vendors.
 
 Example:
 

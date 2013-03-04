@@ -35,7 +35,7 @@ class Compiler
             unlink($pharFile);
         }
 
-        $process = new Process('git log --pretty="%h" -n1 HEAD', __DIR__);
+        $process = new Process('git log --pretty="%H" -n1 HEAD', __DIR__);
         if ($process->run() != 0) {
             throw new \RuntimeException('Can\'t run git log. You must ensure to run compile from composer git repository clone and that git binary is available.');
         }
@@ -94,6 +94,9 @@ class Compiler
         $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/composer/autoload_namespaces.php'));
         $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/composer/autoload_classmap.php'));
         $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/composer/autoload_real.php'));
+        if (file_exists(__DIR__.'/../../vendor/composer/include_paths.php')) {
+            $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/composer/include_paths.php'));
+        }
         $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/composer/ClassLoader.php'));
         $this->addComposerBin($phar);
 

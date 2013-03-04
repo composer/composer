@@ -52,6 +52,21 @@ class EventDispatcher
     }
 
     /**
+     * Dispatch a script event.
+     *
+     * @param string  $eventName The constant in ScriptEvents
+     * @param Event $event
+     */
+    public function dispatch($eventName, Event $event = null)
+    {
+        if (null == $event) {
+            $event = new Event($eventName, $this->composer, $this->io);
+        }
+
+        $this->doDispatch($event);
+    }
+
+    /**
      * Dispatch a package event.
      *
      * @param string             $eventName The constant in ScriptEvents
@@ -139,11 +154,8 @@ class EventDispatcher
             $this->loader->unregister();
         }
 
-        $generator = new AutoloadGenerator;
-        $packages = array_merge(
-            $this->composer->getRepositoryManager()->getLocalRepository()->getPackages(),
-            $this->composer->getRepositoryManager()->getLocalDevRepository()->getPackages()
-        );
+        $generator = $this->composer->getAutoloadGenerator();
+        $packages = $this->composer->getRepositoryManager()->getLocalRepository()->getPackages();
         $packageMap = $generator->buildPackageMap($this->composer->getInstallationManager(), $package, $packages);
         $map = $generator->parseAutoloads($packageMap, $package);
         $this->loader = $generator->createLoader($map);

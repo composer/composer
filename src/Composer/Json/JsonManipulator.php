@@ -29,7 +29,7 @@ class JsonManipulator
         if (!preg_match('#^\{(.*)\}$#s', $contents)) {
             throw new \InvalidArgumentException('The json file must be an object ({})');
         }
-        $this->newline = false !== strpos("\r\n", $contents) ? "\r\n": "\n";
+        $this->newline = false !== strpos($contents, "\r\n") ? "\r\n": "\n";
         $this->contents = $contents === '{}' ? '{' . $this->newline . '}' : $contents;
         $this->detectIndenting();
     }
@@ -58,12 +58,12 @@ class JsonManipulator
 
         // link exists already
         if (preg_match('{"'.$packageRegex.'"\s*:}i', $links)) {
-            $links = preg_replace('{"'.$packageRegex.'"(\s*:\s*)"[^"]+"}i', JsonFile::encode($package).'${1}"'.$constraint.'"', $links);
+            $links = preg_replace('{"'.$packageRegex.'"(\s*:\s*)"[^"]+"}i', addcslashes(JsonFile::encode($package).'${1}"'.$constraint.'"', '\\'), $links);
         } elseif (preg_match('#[^\s](\s*)$#', $links, $match)) {
             // link missing but non empty links
             $links = preg_replace(
                 '#'.$match[1].'$#',
-                ',' . $this->newline . $this->indent . $this->indent . JsonFile::encode($package).': '.JsonFile::encode($constraint) . $match[1],
+                addcslashes(',' . $this->newline . $this->indent . $this->indent . JsonFile::encode($package).': '.JsonFile::encode($constraint) . $match[1], '\\'),
                 $links
             );
         } else {
@@ -71,7 +71,7 @@ class JsonManipulator
             $links = $this->newline . $this->indent . $this->indent . JsonFile::encode($package).': '.JsonFile::encode($constraint) . $links;
         }
 
-        $this->contents = preg_replace($linksRegex, '${1}'.$links.'$3', $this->contents);
+        $this->contents = preg_replace($linksRegex, addcslashes('${1}'.$links.'$3', '\\'), $this->contents);
 
         return true;
     }
@@ -144,7 +144,7 @@ class JsonManipulator
             // child missing but non empty children
             $children = preg_replace(
                 '#'.$match[1].'$#',
-                ',' . $this->newline . $this->indent . $this->indent . JsonFile::encode($name).': '.$this->format($value, 1) . $match[1],
+                addcslashes(',' . $this->newline . $this->indent . $this->indent . JsonFile::encode($name).': '.$this->format($value, 1) . $match[1], '\\'),
                 $children
             );
         } else {
@@ -156,7 +156,7 @@ class JsonManipulator
             $children = $this->newline . $this->indent . $this->indent . JsonFile::encode($name).': '.$this->format($value, 1) . $children;
         }
 
-        $this->contents = preg_replace($nodeRegex, '${1}'.$children.'$3', $this->contents);
+        $this->contents = preg_replace($nodeRegex, addcslashes('${1}'.$children.'$3', '\\'), $this->contents);
 
         return true;
     }
@@ -225,10 +225,6 @@ class JsonManipulator
             return true;
         }
 
-        if ($subName !== null) {
-
-        }
-
         $that = $this;
         $this->contents = preg_replace_callback($nodeRegex, function ($matches) use ($that, $name, $subName, $childrenClean) {
             if ($subName !== null) {
@@ -248,13 +244,13 @@ class JsonManipulator
         if (preg_match('#[^{\s](\s*)\}$#', $this->contents, $match)) {
             $this->contents = preg_replace(
                 '#'.$match[1].'\}$#',
-                ',' . $this->newline . $this->indent . JsonFile::encode($key). ': '. $content . $this->newline . '}',
+                addcslashes(',' . $this->newline . $this->indent . JsonFile::encode($key). ': '. $content . $this->newline . '}', '\\'),
                 $this->contents
             );
         } else {
             $this->contents = preg_replace(
                 '#\}$#',
-                $this->indent . JsonFile::encode($key). ': '.$content . $this->newline . '}',
+                addcslashes($this->indent . JsonFile::encode($key). ': '.$content . $this->newline . '}', '\\'),
                 $this->contents
             );
         }

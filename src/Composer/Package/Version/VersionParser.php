@@ -35,7 +35,7 @@ class VersionParser
      */
     public static function parseStability($version)
     {
-        $version = preg_replace('{#[a-f0-9]+$}i', '', $version);
+        $version = preg_replace('{#.+$}i', '', $version);
 
         if ('dev-' === substr($version, 0, 4) || '-dev' === substr($version, -4)) {
             return 'dev';
@@ -217,7 +217,7 @@ class VersionParser
             $constraints = empty($match[1]) ? '*' : $match[1];
         }
 
-        if (preg_match('{^(dev-[^,\s@]+?|[^,\s@]+?\.x-dev)#[a-f0-9]+$}i', $constraints, $match)) {
+        if (preg_match('{^(dev-[^,\s@]+?|[^,\s@]+?\.x-dev)#.+$}i', $constraints, $match)) {
             $constraints = $match[1];
         }
 
@@ -256,7 +256,7 @@ class VersionParser
             return array();
         }
 
-        if (preg_match('{^~(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:\.(\d+))?'.self::$modifierRegex.'?$}', $constraint, $matches)) {
+        if (preg_match('{^~(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:\.(\d+))?'.self::$modifierRegex.'?$}i', $constraint, $matches)) {
             if (isset($matches[4]) && '' !== $matches[4]) {
                 $highVersion = $matches[1] . '.' . $matches[2] . '.' . ($matches[3] + 1) . '.0-dev';
                 $lowVersion = $matches[1] . '.' . $matches[2] . '.' . $matches[3]. '.' . $matches[4];
@@ -372,7 +372,7 @@ class VersionParser
         $pairs = array_values($pairs);
         $result = array();
 
-        for ($i = 0; $i < count($pairs); $i++) {
+        for ($i = 0, $count = count($pairs); $i < $count; $i++) {
             $pair = preg_replace('{^([^=: ]+)[=: ](.*)$}', '$1 $2', trim($pairs[$i]));
             if (false === strpos($pair, ' ') && isset($pairs[$i+1]) && false === strpos($pairs[$i+1], '/')) {
                 $pair .= ' '.$pairs[$i+1];

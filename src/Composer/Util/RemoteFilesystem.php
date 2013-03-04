@@ -101,6 +101,10 @@ class RemoteFilesystem
         $this->lastProgress = null;
 
         $options = $this->getOptionsForUrl($originUrl, $additionalOptions);
+        if (isset($options['github-token'])) {
+            $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'access_token='.$options['github-token'];
+            unset($options['github-token']);
+        }
         $ctx = StreamContextFactory::getContext($options, array('notification' => array($this, 'callbackGet')));
 
         if ($this->progress) {
@@ -279,13 +283,17 @@ class RemoteFilesystem
             $headers[] = 'Accept-Encoding: gzip';
         }
 
+        $options = array_replace_recursive($this->options, $additionalOptions);
+
         if ($this->io->hasAuthentication($originUrl)) {
             $auth = $this->io->getAuthentication($originUrl);
-            $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
-            $headers[] = 'Authorization: Basic '.$authStr;
+            if ('github.com' === $originUrl && 'x-oauth-basic' === $auth['password']) {
+                $options['github-token'] = $auth['username'];
+            } else {
+                $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
+                $headers[] = 'Authorization: Basic '.$authStr;
+            }
         }
-
-        $options = array_replace_recursive($this->options, $additionalOptions);
 
         if (isset($options['http']['header']) && !is_array($options['http']['header'])) {
             $options['http']['header'] = explode("\r\n", trim($options['http']['header'], "\r\n"));

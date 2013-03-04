@@ -4,7 +4,7 @@
 
 To install Composer, you just need to download the `composer.phar` executable.
 
-    $ curl -s https://getcomposer.org/installer | php
+    $ curl -sS https://getcomposer.org/installer | php
 
 For the details, see the [Introduction](00-intro.md) chapter.
 
@@ -17,7 +17,7 @@ This should give you a list of available commands.
 > **Note:** You can also perform the checks only without downloading Composer
 > by using the `--check` option. For more information, just use `--help`.
 >
->     $ curl -s https://getcomposer.org/installer | php -- --help
+>     $ curl -sS https://getcomposer.org/installer | php -- --help
 
 ## `composer.json`: Project Setup
 
@@ -78,8 +78,10 @@ Version constraints can be specified in a few different ways.
   explained by example: `~1.2` is equivalent to `>=1.2,<2.0`, while `~1.2.3` is
   equivalent to `>=1.2.3,<1.3`. As you can see it is mostly useful for projects
   respecting semantic versioning. A common usage would be to mark the minimum
-  minor version you depend on, like `~1.2`, since in theory there should be no
-  backwards compatibility breaks until 2.0, that works well.
+  minor version you depend on, like `~1.2` (which allows anything up to, but not
+  including, 2.0). Since in theory there should be no backwards compatibility
+  breaks until 2.0, that works well. Another way of looking at it is that using
+  `~` specifies a minimum version, but allows the last digit specified to go up.
 
 By default only stable releases are taken into consideration. If you would like
 to also get RC, beta, alpha or dev versions of your dependencies you can do

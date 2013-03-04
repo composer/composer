@@ -41,13 +41,14 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $protocol = extension_loaded('openssl') ? 'https' : 'http';
         $rfs = new RemoteFilesystem($this->getIO());
-        $latest = trim($rfs->getContents('getcomposer.org', 'http://getcomposer.org/version', false));
+        $latest = trim($rfs->getContents('getcomposer.org', $protocol . '://getcomposer.org/version', false));
 
         if (Composer::VERSION !== $latest) {
             $output->writeln(sprintf("Updating to version <info>%s</info>.", $latest));
 
-            $remoteFilename = 'http://getcomposer.org/composer.phar';
+            $remoteFilename = $protocol . '://getcomposer.org/composer.phar';
             $localFilename = $_SERVER['argv'][0];
             $tempFilename = basename($localFilename, '.phar').'-temp.phar';
 
