@@ -258,9 +258,9 @@ EOT
                 $booleanValidator,
                 $booleanNormalizer
             ),
-            'prefer-source' => array(
-                $booleanValidator,
-                $booleanNormalizer
+            'preferred-install' => array(
+                function ($val) { return in_array($val, array('auto', 'source', 'dist'), true); },
+                function ($val) { return $val; }
             ),
             'notify-on-install' => array(
                 $booleanValidator,
