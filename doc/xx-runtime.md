@@ -10,10 +10,10 @@ Composer includes a runtime that can be used to determine if your package is bei
     // do autoload stuff
     ...
 
-It is also useful for applications that use the Composer command-line interface.
+It is also useful for applications that call the Composer command-line interface.
 
     $composer = new \Composer\Runtime();
-    return $composer->processRun('self-update'));
+    return $composer->processRun('dump-autoload'));
 
 
 ## Core Methods
@@ -28,14 +28,14 @@ The following core methods are available if the `Composer\Runtime` class is foun
 
 * **processGetOuput($asString = true)** Returns output from a previous `processRun()`, as either a string or an array.
 
-### Additional Methods
+### Update Methods
 
-The following methods handle any future updates to the runtime.
+The following methods handle future updates to the runtime.
 
-* **methodExists($name, $update = false)** Checks if a new method exists in the current runtime or `composer.phar`. If $update is true, calls `self-update` and installs the new runtime.
+* **methodExists($name, $update = false)** Checks if a method exists in the current runtime or `composer.phar`. If $update is true, calls `self-update` and installs a newer runtime if found. Returns true if the method exists.
 
-* **runtimeUpdate()** Calls `self-update` and installs a newer runtime if found. Returns the runtime version.
+* **runtimeUpdate()** Calls `self-update` and installs a newer runtime if found. Returns the runtime version `int`.
 
-* **runtimeVersion()** Returns the version number of the runtime. Each release has a simple version number, incrementing from `1`.
+* **runtimeVersion()** Returns  the runtime version `int`. Uses a simple scheme, incrementing from `1`.
 
-Any new methods added will be listed below.
+Any new methods added by an update will be listed below.
