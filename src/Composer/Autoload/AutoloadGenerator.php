@@ -186,6 +186,11 @@ EOF;
         file_put_contents($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, $suffix));
         file_put_contents($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, true, (bool) $includePathFile, $targetDirLoader, $filesCode, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath));
         copy(__DIR__.'/ClassLoader.php', $targetDir.'/ClassLoader.php');
+        $filesystem->ensureDirectoryExists($targetDir.'/runtime');
+        $filesystem->ensureDirectoryExists($targetDir.'/runtime/Composer');
+        copy(dirname(__DIR__).'/Runtime.php', $targetDir.'/runtime/Composer/Runtime.php');
+        $filesystem->ensureDirectoryExists($targetDir.'/runtime/Composer/Runtime');
+        copy(dirname(__DIR__).'/Runtime/MethodsClass.php', $targetDir.'/runtime/Composer/Runtime/MethodsClass.php');
 
         $this->eventDispatcher->dispatch(ScriptEvents::POST_AUTOLOAD_DUMP);
     }
@@ -382,6 +387,11 @@ class ComposerAutoloaderInit$suffix
 
         \$vendorDir = $vendorPathCode;
         \$baseDir = $appBaseDirCode;
+
+        if (!class_exists('Composer\\Runtime')) {
+            require \$vendorDir . '/composer/runtime/Composer/Runtime.php';
+            \$loader->add('Composer\\Runtime', \$vendorDir . '/composer/runtime');
+        }
 
 
 HEADER;

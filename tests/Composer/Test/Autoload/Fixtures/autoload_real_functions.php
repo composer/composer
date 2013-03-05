@@ -26,6 +26,11 @@ class ComposerAutoloaderInitFilesAutoload
         $vendorDir = dirname(__DIR__);
         $baseDir = dirname($vendorDir);
 
+        if (!class_exists('Composer\Runtime')) {
+            require $vendorDir . '/composer/runtime/Composer/Runtime.php';
+            $loader->add('Composer\Runtime', $vendorDir . '/composer/runtime');
+        }
+
         $map = require __DIR__ . '/autoload_namespaces.php';
         foreach ($map as $namespace => $path) {
             $loader->add($namespace, $path);
