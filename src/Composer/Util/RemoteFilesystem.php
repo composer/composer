@@ -125,18 +125,6 @@ class RemoteFilesystem
             if ($e instanceof TransportException && !empty($http_response_header[0])) {
                 $e->setHeaders($http_response_header);
             }
-
-            // in case the remote filesystem responds with an 401 error ask for credentials
-            if($e instanceof TransportException && ($e->getCode() == 401))
-            {
-                $this->io->write('Enter the access credentials needed to access the resource at '.$originUrl);
-                $username = $this->io->ask('Username: ');
-                $password = $this->io->askAndHideAnswer('Password: ');
-                $this->io->setAuthentication($originUrl, $username, $password);
-
-                // try getting the file again
-                return $this->get($originUrl, $fileUrl, $additionalOptions, $fileName, $progress);
-            }
         }
         if ($errorMessage && !ini_get('allow_url_fopen')) {
             $errorMessage = 'allow_url_fopen must be enabled in php.ini ('.$errorMessage.')';
@@ -223,9 +211,6 @@ class RemoteFilesystem
     {
         switch ($notificationCode) {
             case STREAM_NOTIFY_FAILURE:
-                throw new TransportException('The "'.$this->fileUrl.'" file could not be downloaded ('.trim($message).')', $messageCode);
-                break;
-
             case STREAM_NOTIFY_AUTH_REQUIRED:
                 if (401 === $messageCode) {
                     if (!$this->io->isInteractive()) {
@@ -240,7 +225,10 @@ class RemoteFilesystem
                     $this->io->setAuthentication($this->originUrl, $username, $password);
 
                     $this->get($this->originUrl, $this->fileUrl, $this->fileName, $this->progress);
+                    break;
                 }
+
+                throw new TransportException('The "'.$this->fileUrl.'" file could not be downloaded ('.trim($message).')', $messageCode);
                 break;
 
             case STREAM_NOTIFY_AUTH_RESULT:
