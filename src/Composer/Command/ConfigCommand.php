@@ -248,16 +248,23 @@ EOT
             return $this->configSource->addConfigSetting('github-oauth.'.$matches[1], $values[0]);
         }
 
+        $booleanValidator = function ($val) { return in_array($val, array('true', 'false', '1', '0'), true); };
+        $booleanNormalizer = function ($val) { return $val !== 'false' && (bool) $val; };
+
         // handle config values
         $uniqueConfigValues = array(
             'process-timeout' => array('is_numeric', 'intval'),
             'use-include-path' => array(
-                function ($val) { return in_array($val, array('true', 'false', '1', '0'), true); },
-                function ($val) { return $val !== 'false' && (bool) $val; }
+                $booleanValidator,
+                $booleanNormalizer
+            ),
+            'preferred-install' => array(
+                function ($val) { return in_array($val, array('auto', 'source', 'dist'), true); },
+                function ($val) { return $val; }
             ),
             'notify-on-install' => array(
-                function ($val) { return in_array($val, array('true', 'false', '1', '0'), true); },
-                function ($val) { return $val !== 'false' && (bool) $val; }
+                $booleanValidator,
+                $booleanNormalizer
             ),
             'vendor-dir' => array('is_string', function ($val) { return $val; }),
             'bin-dir' => array('is_string', function ($val) { return $val; }),
