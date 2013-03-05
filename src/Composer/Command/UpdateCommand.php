@@ -64,11 +64,30 @@ EOT
         $io = $this->getIO();
         $install = Installer::create($io, $composer);
 
+        $preferSource = false;
+        $preferDist = false;
+        switch ($composer->getConfig()->get('preferred-install')) {
+            case 'source':
+                $preferSource = true;
+                break;
+            case 'dist':
+                $preferDist = true;
+                break;
+            case 'auto':
+            default:
+                // noop
+                break;
+        }
+        if ($input->getOption('prefer-source') || $input->getOption('prefer-dist')) {
+            $preferSource = $input->getOption('prefer-source');
+            $preferDist = $input->getOption('prefer-dist');
+        }
+
         $install
             ->setDryRun($input->getOption('dry-run'))
             ->setVerbose($input->getOption('verbose'))
-            ->setPreferSource($input->getOption('prefer-source') || $composer->getConfig()->get('prefer-source'))
-            ->setPreferDist($input->getOption('prefer-dist'))
+            ->setPreferSource($preferSource)
+            ->setPreferDist($preferDist)
             ->setDevMode(!$input->getOption('no-dev'))
             ->setRunScripts(!$input->getOption('no-scripts'))
             ->setOptimizeAutoloader($input->getOption('optimize-autoloader'))

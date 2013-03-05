@@ -22,7 +22,7 @@ class Config
     public static $defaultConfig = array(
         'process-timeout' => 300,
         'use-include-path' => false,
-        'prefer-source' => false,
+        'preferred-install' => 'auto',
         'notify-on-install' => true,
         'github-protocols' => array('git', 'https', 'http'),
         'vendor-dir' => 'vendor',
