@@ -3,9 +3,9 @@
 namespace Composer\Runtime;
 
 /**
-* The MethodsClass class provides the runtime methods, which are called by
-* the stub Composer\Runtime class, via __call. All methods should return
-* either a truthy or a falsey value (but not null as this is returned when
+* The MethodsClass class provides the runtime methods, invoked by
+* Composer\Runtime via __call. All methods should return either
+* a truthy or a falsey value (but not null as this is returned when
 * a method is not found). Method arguments cannot be by reference.
 *
 * @author John Stevenson <john-stevenson@blueyonder.co.uk>
@@ -88,7 +88,7 @@ class MethodsClass
     */
     public function processGetCommand()
     {
-        if ($composerPhar = $this->processGetComposerPhar(false)) {
+        if ($composerPhar = $this->workGetComposerPhar(false)) {
             $result = 'php '.escapeshellarg($composerPhar);
         } else {
             $result = 'composer';
@@ -100,38 +100,12 @@ class MethodsClass
     /**
     * Searches for composer.phar and returns its full path
     *
-    * @param boolean $global Whether to search outside the current project directory
-    * @return string The full path to composer.phar
+    * @return string|Boolean The full path to composer.phar
     */
-    public function processGetComposerPhar($global = true)
+    public function processGetComposerPhar()
     {
-        $composerPhar = false;
-
-        if ($pos = strrpos($this->dir, DIRECTORY_SEPARATOR.'vendor')) {
-            $path = substr($this->dir, 0, $pos + 1).'composer.phar';
-
-            if (file_exists($path)) {
-                $composerPhar = $path;
-            }
-        }
-
-        if (!$composerPhar && $global) {
-
-            foreach (explode(PATH_SEPARATOR, getenv('path')) as $path) {
-               $path .= '/composer.phar';
-               if (file_exists($path)) {
-                   $composerPhar = $path;
-                   break;
-               }
-            }
-
-            if (!$composerPhar) {
-                $composerPhar = stream_resolve_include_path('composer.phar');
-            }
-        }
-
-        return $composerPhar;
-    }
+        return $this->workGetComposerPhar(true);
+     }
 
     /**
     * Runs a composer CLI command and returns the exit code. If capture
@@ -192,6 +166,42 @@ class MethodsClass
     public function runtimeVersion()
     {
         return $this::VERSION;
+    }
+
+    /**
+    * Searches for composer.phar and returns its full path
+    *
+    * @param boolean $global Whether to search outside the current project directory
+    * @return string The full path to composer.phar
+    */
+    protected function workGetComposerPhar($global)
+    {
+        $composerPhar = false;
+
+        if ($pos = strrpos($this->dir, DIRECTORY_SEPARATOR.'vendor')) {
+            $path = substr($this->dir, 0, $pos + 1).'composer.phar';
+
+            if (file_exists($path)) {
+                $composerPhar = $path;
+            }
+        }
+
+        if (!$composerPhar && $global) {
+
+            foreach (explode(PATH_SEPARATOR, getenv('path')) as $path) {
+               $path .= '/composer.phar';
+               if (file_exists($path)) {
+                   $composerPhar = $path;
+                   break;
+               }
+            }
+
+            if (!$composerPhar) {
+                $composerPhar = stream_resolve_include_path('composer.phar');
+            }
+        }
+
+        return $composerPhar;
     }
 
     /**
