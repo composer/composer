@@ -29,6 +29,7 @@ class ConsoleIO implements IOInterface
     protected $helperSet;
     protected $authentications = array();
     protected $lastMessage;
+    private $startTime;
 
     /**
      * Constructor.
@@ -42,6 +43,11 @@ class ConsoleIO implements IOInterface
         $this->input = $input;
         $this->output = $output;
         $this->helperSet = $helperSet;
+    }
+
+    public function enableDebugging($startTime)
+    {
+        $this->startTime = $startTime;
     }
 
     /**
@@ -73,6 +79,15 @@ class ConsoleIO implements IOInterface
      */
     public function write($messages, $newline = true)
     {
+        if (null !== $this->startTime) {
+            $messages = (array) $messages;
+            $messages[0] = sprintf(
+                '[%.1fMB/%.2fs] %s',
+                memory_get_usage() / 1024 / 1024,
+                microtime(true) - $this->startTime,
+                $messages[0]
+            );
+        }
         $this->output->write($messages, $newline);
         $this->lastMessage = join($newline ? "\n" : '', (array) $messages);
     }

@@ -102,6 +102,7 @@ class Application extends BaseApplication
 
         if ($input->hasParameterOption('--profile')) {
             $startTime = microtime(true);
+            $this->io->enableDebugging($startTime);
         }
 
         $oldWorkingDir = getcwd();
