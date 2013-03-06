@@ -74,7 +74,8 @@ class ArrayLoader implements LoaderInterface
         if (isset($config['source'])) {
             if (!isset($config['source']['type']) || !isset($config['source']['url'])) {
                 throw new \UnexpectedValueException(sprintf(
-                    "package source should be specified as {\"type\": ..., \"url\": ...},\n%s given",
+                    "Package %s's source key should be specified as {\"type\": ..., \"url\": ...},\n%s given.",
+                    $config['name'],
                     json_encode($config['source'])
                 ));
             }
@@ -87,8 +88,9 @@ class ArrayLoader implements LoaderInterface
             if (!isset($config['dist']['type'])
              || !isset($config['dist']['url'])) {
                 throw new \UnexpectedValueException(sprintf(
-                    "package dist should be specified as ".
-                    "{\"type\": ..., \"url\": ..., \"reference\": ..., \"shasum\": ...},\n%s given",
+                    "Package %s's dist key should be specified as ".
+                    "{\"type\": ..., \"url\": ..., \"reference\": ..., \"shasum\": ...},\n%s given.",
+                    $config['name'],
                     json_encode($config['dist'])
                 ));
             }
