@@ -226,8 +226,11 @@ class Installer
         if (!$this->dryRun) {
             // write lock
             if ($this->update || !$this->locker->isLocked()) {
-                $devPackages = $this->devMode ? array() : null;
                 $localRepo->reload();
+
+                // if this is not run in dev mode and the root has dev requires, the lock must
+                // contain null to prevent dev installs from a non-dev lock
+                $devPackages = ($this->devMode || !$this->package->getDevRequires()) ? array() : null;
 
                 // split dev and non-dev requirements by checking what would be removed if we update without the dev requirements
                 if ($this->devMode && $this->package->getDevRequires()) {
