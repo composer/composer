@@ -101,7 +101,7 @@ class FileDownloader implements DownloaderInterface
         try {
             try {
                 if (!$this->cache || !$this->cache->copyTo($this->getCacheKey($package), $fileName)) {
-                    if ($s3util) {
+                    if (isset($s3util)) {
                         $s3util->download($processedUrl, $fileName);
                     } else {
                         $this->rfs->copy($hostname, $processedUrl, $fileName, $this->outputProgress);
@@ -128,8 +128,8 @@ class FileDownloader implements DownloaderInterface
                         throw $e;
                     }
                     $this->rfs->copy($hostname, $processedUrl, $fileName, $this->outputProgress);
-                } elseif (!$s3util) {
-                    // could be s3, let's try
+                } elseif (!isset($s3util)) {
+                    // could be on s3, might as well try
                     $s3util = new AWS($this->io, $this->config);
                     $s3util->download($processedUrl, $fileName);
                 } else {
