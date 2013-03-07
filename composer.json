@@ -28,7 +28,7 @@
         "symfony/console": "~2.1@dev",
         "symfony/finder": "~2.1",
         "symfony/process": "~2.1@dev",
-        "aws/aws-sdk-php": "2.1.2"
+        "aws/aws-sdk-php": "2.1.*"
     },
     "require-dev": {
         "phpunit/phpunit": "~3.7.10"
