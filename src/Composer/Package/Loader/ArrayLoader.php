@@ -153,7 +153,7 @@ class ArrayLoader implements LoaderInterface
         if ($package instanceof Package\CompletePackageInterface) {
             if (isset($config['scripts']) && is_array($config['scripts'])) {
                 foreach ($config['scripts'] as $event => $listeners) {
-                    $config['scripts'][$event]= (array) $listeners;
+                    $config['scripts'][$event] = (array) $listeners;
                 }
                 $package->setScripts($config['scripts']);
             }
