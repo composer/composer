@@ -227,7 +227,7 @@ class LibraryInstaller implements InstallerInterface
         }
         foreach ($binaries as $bin) {
             $link = $this->binDir.'/'.basename($bin);
-            if (file_exists($link)) {
+            if (is_link($link) || file_exists($link)) {
                 unlink($link);
             }
             if (file_exists($link.'.bat')) {
