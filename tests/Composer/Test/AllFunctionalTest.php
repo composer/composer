@@ -58,7 +58,9 @@ class AllFunctionalTest extends \PHPUnit_Framework_TestCase
         $proc = new Process('php '.escapeshellarg(__DIR__.'/../../../bin/compile'));
         $exitcode = $proc->run();
 
-        $this->assertSame(0, $exitcode);
+        if ($exitcode !== 0 || trim($proc->getOutput())) {
+            $this->fail($proc->getOutput());
+        }
         $this->assertTrue(file_exists(self::$pharPath));
     }
 
