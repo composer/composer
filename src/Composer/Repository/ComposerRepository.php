@@ -36,6 +36,7 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
     protected $rfs;
     protected $cache;
     protected $notifyUrl;
+    protected $searchUrl;
     protected $hasProviders = false;
     protected $providersUrl;
     protected $providerListing;
@@ -332,27 +333,17 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
 
         $data = $this->fetchFile($jsonUrl, 'packages.json');
 
-        // TODO remove this BC notify_batch support
-        if (!empty($data['notify_batch'])) {
-            $notifyBatchUrl = $data['notify_batch'];
-        }
         if (!empty($data['notify-batch'])) {
-            $notifyBatchUrl = $data['notify-batch'];
-        }
-        if (!empty($notifyBatchUrl)) {
-            if ('/' === $notifyBatchUrl[0]) {
-                $this->notifyUrl = preg_replace('{(https?://[^/]+).*}i', '$1' . $notifyBatchUrl, $this->url);
-            } else {
-                $this->notifyUrl = $notifyBatchUrl;
-            }
+            $this->notifyUrl = $this->canonicalizeUrl($data['notify-batch']);
+        } elseif (!empty($data['notify_batch'])) {
+            // TODO remove this BC notify_batch support
+            $this->notifyUrl = $this->canonicalizeUrl($data['notify_batch']);
+        } elseif (!empty($data['notify'])) {
+            $this->notifyUrl = $this->canonicalizeUrl($data['notify']);
         }
 
-        if (!$this->notifyUrl && !empty($data['notify'])) {
-            if ('/' === $data['notify'][0]) {
-                $this->notifyUrl = preg_replace('{(https?://[^/]+).*}i', '$1' . $data['notify'], $this->url);
-            } else {
-                $this->notifyUrl = $data['notify'];
-            }
+        if (!empty($data['search'])) {
+            $this->searchUrl = $this->canonicalizeUrl($data['search']);
         }
 
         if ($this->allowSslDowngrade) {
@@ -360,11 +351,7 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
         }
 
         if (!empty($data['providers-url'])) {
-            if ('/' === $data['providers-url'][0]) {
-                $this->providersUrl = preg_replace('{(https?://[^/]+).*}i', '$1' . $data['providers-url'], $this->url);
-            } else {
-                $this->providersUrl = $data['providers-url'];
-            }
+            $this->providersUrl = $this->canonicalizeUrl($data['providers-url']);
             $this->hasProviders = true;
         }
 
@@ -373,6 +360,15 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
         }
 
         return $this->rootData = $data;
+    }
+
+    protected function canonicalizeUrl($url)
+    {
+        if ('/' === $url[0]) {
+            return preg_replace('{(https?://[^/]+).*}i', '$1' . $url, $this->url);
+        }
+
+        return $url;
     }
 
     protected function loadDataFromServer()
