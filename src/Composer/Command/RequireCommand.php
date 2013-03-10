@@ -109,7 +109,7 @@ EOT
             ->setPreferDist($input->getOption('prefer-dist'))
             ->setDevMode($input->getOption('dev'))
             ->setUpdate(true)
-            ->setUpdateWhitelist($requirements);
+            ->setUpdateWhitelist(array_keys($requirements));
         ;
 
         if (!$install->run()) {

@@ -214,13 +214,13 @@ class Installer
         // output suggestions
         foreach ($this->suggestedPackages as $suggestion) {
             $target = $suggestion['target'];
-            if ($installedRepo->filterPackages(function (PackageInterface $package) use ($target) {
+            foreach ($installedRepo->getPackages() as $package) {
                 if (in_array($target, $package->getNames())) {
-                    return false;
+                    continue 2;
                 }
-            })) {
-                $this->io->write($suggestion['source'].' suggests installing '.$suggestion['target'].' ('.$suggestion['reason'].')');
             }
+
+            $this->io->write($suggestion['source'].' suggests installing '.$suggestion['target'].' ('.$suggestion['reason'].')');
         }
 
         if (!$this->dryRun) {
