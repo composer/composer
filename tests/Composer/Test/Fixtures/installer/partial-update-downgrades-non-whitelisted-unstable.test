@@ -1,0 +1,65 @@
+--TEST--
+Partial update from lock file should apply lock file and downgrade unstable packages even if not whitelisted
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/old", "version": "1.0.0" },
+                { "name": "a/old", "version": "2.0.0" },
+                { "name": "b/unstable", "version": "1.0.0" },
+                { "name": "b/unstable", "version": "1.1.0-alpha" },
+                { "name": "c/uptodate", "version": "1.0.0" },
+                { "name": "d/removed", "version": "1.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "a/old": "*",
+        "b/unstable": "*",
+        "c/uptodate": "*"
+    }
+}
+--LOCK--
+{
+    "packages": [
+        { "name": "a/old", "version": "1.0.0" },
+        { "name": "b/unstable", "version": "1.1.0-alpha" },
+        { "name": "c/uptodate", "version": "1.0.0" },
+        { "name": "d/removed", "version": "1.0.0" }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {
+        "b/unstable": 15
+    },
+    "platform": [],
+    "platform-dev": []
+}
+--INSTALLED--
+[
+    { "name": "a/old", "version": "0.9.0" },
+    { "name": "b/unstable", "version": "1.1.0-alpha" },
+    { "name": "c/uptodate", "version": "2.0.0" }
+]
+--RUN--
+update c/uptodate
+--EXPECT-LOCK--
+{
+    "packages": [
+        { "name": "a/old", "version": "1.0.0", "type": "library" },
+        { "name": "b/unstable", "version": "1.0.0", "type": "library" },
+        { "name": "c/uptodate", "version": "2.0.0", "type": "library" }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "platform": [],
+    "platform-dev": []
+}
+--EXPECT--
+Updating a/old (0.9.0) to a/old (1.0.0)
+Updating b/unstable (1.1.0-alpha) to b/unstable (1.0.0)

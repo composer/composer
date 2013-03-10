@@ -325,6 +325,20 @@ class Installer
         // creating requirements request
         $request = $this->createRequest($pool, $this->package, $platformRepo);
 
+        if (!$installFromLock) {
+            // remove unstable packages from the localRepo if they don't match the current stability settings
+            $removedUnstablePackages = array();
+            foreach ($localRepo->getPackages() as $package) {
+                if (
+                    !$pool->isPackageAcceptable($package->getName(), $package->getStability())
+                    && $this->installationManager->isPackageInstalled($localRepo, $package)
+                ) {
+                    $removedUnstablePackages[$package->getName()] = true;
+                    $request->remove($package->getName(), new VersionConstraint('=', $package->getVersion()));
+                }
+            }
+        }
+
         if ($this->update) {
             $this->io->write('<info>Updating dependencies'.($withDevReqs?' (including require-dev)':'').'</info>');
 
@@ -338,6 +352,43 @@ class Installer
 
             foreach ($links as $link) {
                 $request->install($link->getTarget(), $link->getConstraint());
+            }
+
+            // if the updateWhitelist is enabled, packages not in it are also fixed
+            // to the version specified in the lock, or their currently installed version
+            if ($this->updateWhitelist) {
+                if ($this->locker->isLocked()) {
+                    try {
+                        $currentPackages = $this->locker->getLockedRepository($withDevReqs)->getPackages();
+                    } catch (\RuntimeException $e) {
+                        // fetch only non-dev packages from lock if doing a dev update fails due to a previously incomplete lock file
+                        $currentPackages = $this->locker->getLockedRepository()->getPackages();
+                    }
+                } else {
+                    $currentPackages = $installedRepo->getPackages();
+                }
+
+                // collect packages to fixate from root requirements as well as installed packages
+                $candidates = array();
+                foreach ($links as $link) {
+                    $candidates[$link->getTarget()] = true;
+                }
+                foreach ($localRepo->getPackages() as $package) {
+                    $candidates[$package->getName()] = true;
+                }
+
+                // fix them to the version in lock (or currently installed) if they are not updateable
+                foreach ($candidates as $candidate => $dummy) {
+                    foreach ($currentPackages as $curPackage) {
+                        if ($curPackage->getName() === $candidate) {
+                            if (!$this->isUpdateable($curPackage) && !isset($removedUnstablePackages[$curPackage->getName()])) {
+                                $constraint = new VersionConstraint('=', $curPackage->getVersion());
+                                $request->install($curPackage->getName(), $constraint);
+                            }
+                            break;
+                        }
+                    }
+                }
             }
         } elseif ($installFromLock) {
             $this->io->write('<info>Installing dependencies'.($withDevReqs?' (including require-dev)':'').' from lock file</info>');
@@ -374,44 +425,6 @@ class Installer
 
             foreach ($links as $link) {
                 $request->install($link->getTarget(), $link->getConstraint());
-            }
-        }
-
-        // if the updateWhitelist is enabled, packages not in it are also fixed
-        // to the version specified in the lock, or their currently installed version
-        if ($this->update && $this->updateWhitelist) {
-            if ($this->locker->isLocked()) {
-                try {
-                    $currentPackages = $this->locker->getLockedRepository($withDevReqs)->getPackages();
-                } catch (\RuntimeException $e) {
-                    // fetch only non-dev packages from lock if doing a dev update fails due to a previously incomplete lock file
-                    $currentPackages = $this->locker->getLockedRepository()->getPackages();
-                }
-            } else {
-                $currentPackages = $installedRepo->getPackages();
-            }
-
-            // collect links from composer as well as installed packages
-            $candidates = array();
-            foreach ($links as $link) {
-                $candidates[$link->getTarget()] = true;
-            }
-            foreach ($localRepo->getPackages() as $package) {
-                $candidates[$package->getName()] = true;
-            }
-
-            // fix them to the version in lock (or currently installed) if they are not updateable
-            foreach ($candidates as $candidate => $dummy) {
-                foreach ($currentPackages as $curPackage) {
-                    if ($curPackage->getName() === $candidate) {
-                        if ($this->isUpdateable($curPackage)) {
-                            break;
-                        }
-
-                        $constraint = new VersionConstraint('=', $curPackage->getVersion());
-                        $request->install($curPackage->getName(), $constraint);
-                    }
-                }
             }
         }
 
@@ -512,9 +525,7 @@ class Installer
         $constraint->setPrettyString($rootPackage->getPrettyVersion());
         $request->install($rootPackage->getName(), $constraint);
 
-        // fix the version of all installed packages (+ platform) that are not
-        // in the current local repo to prevent rogue updates (e.g. non-dev
-        // updating when in dev)
+        // fix the version of all platform packages to prevent the solver trying to remove those
         foreach ($platformRepo->getPackages() as $package) {
             $constraint = new VersionConstraint('=', $package->getVersion());
             $constraint->setPrettyString($package->getPrettyVersion());
