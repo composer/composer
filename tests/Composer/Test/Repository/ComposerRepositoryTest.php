@@ -42,7 +42,7 @@ class ComposerRepositoryTest extends TestCase
         );
 
         $repository
-            ->expects($this->once())
+            ->expects($this->exactly(2))
             ->method('loadRootServerFile')
             ->will($this->returnValue($repoPackages));
 
@@ -50,7 +50,7 @@ class ComposerRepositoryTest extends TestCase
             $stubPackage = $this->getPackage('stub/stub', '1.0.0');
 
             $repository
-                ->expects($this->at($at + 1))
+                ->expects($this->at($at + 2))
                 ->method('createPackage')
                 ->with($this->identicalTo($arg), $this->equalTo('Composer\Package\CompletePackage'))
                 ->will($this->returnValue($stubPackage));

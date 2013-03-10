@@ -135,24 +135,54 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
     /**
      * {@inheritDoc}
      */
-    public function filterPackages($callback, $class = 'Composer\Package\Package')
+    public function search($query, $mode = 0)
     {
-        if (null === $this->rawData) {
-            $this->rawData = $this->loadDataFromServer();
+        $this->loadRootServerFile();
+
+        if ($this->searchUrl && $mode === self::SEARCH_FULLTEXT) {
+            $url = str_replace('%query%', $query, $this->searchUrl);
+
+            $json = $this->rfs->getContents($url, $url, false);
+            $results = JsonFile::parseJson($json, $url);
+
+            return $results['results'];
         }
 
-        foreach ($this->rawData as $package) {
-            if (false === call_user_func($callback, $package = $this->createPackage($package, $class))) {
-                return false;
-            }
-            if ($package->getAlias()) {
-                if (false === call_user_func($callback, $this->createAliasPackage($package))) {
-                    return false;
+        if ($this->hasProviders()) {
+            $results = array();
+            $regex = '{(?:'.implode('|', preg_split('{\s+}', $query)).')}i';
+
+            foreach ($this->getProviderNames() as $name) {
+                if (preg_match($regex, $name)) {
+                    $results[] = array('name' => $name);
                 }
             }
+
+            return $results;
         }
 
-        return true;
+        return parent::search($query, $mode);
+    }
+
+    public function getProviderNames()
+    {
+        $this->loadRootServerFile();
+
+        if (null === $this->providerListing) {
+            $this->loadProviderListings($this->loadRootServerFile());
+        }
+
+        if ($this->providersUrl) {
+            return array_keys($this->providerListing);
+        }
+
+        // BC handling for old providers-includes
+        $providers = array();
+        foreach (array_keys($this->providerListing) as $provider) {
+            $providers[] = substr($provider, 2, -5);
+        }
+
+        return $providers;
     }
 
     /**
@@ -196,13 +226,13 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
 
     public function whatProvides(Pool $pool, $name)
     {
-        // skip platform packages
-        if ($name === 'php' || in_array(substr($name, 0, 4), array('ext-', 'lib-'), true) || $name === '__root__') {
-            return array();
-        }
-
         if (isset($this->providers[$name])) {
             return $this->providers[$name];
+        }
+
+        // skip platform packages
+        if (preg_match('{^(?:php(?:-64bit)?|(?:ext|lib)-[^/]+)$}i', $name) || '__root__' === $name) {
+            return array();
         }
 
         if (null === $this->providerListing) {

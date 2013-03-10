@@ -292,15 +292,7 @@ EOT
             ));
         }
 
-        $token = strtolower($name);
-
-        $this->repos->filterPackages(function ($package) use ($token, &$packages) {
-            if (false !== strpos($package->getName(), $token)) {
-                $packages[] = $package;
-            }
-        });
-
-        return $packages;
+        return $this->repos->search($name);
     }
 
     protected function determineRequirements(InputInterface $input, OutputInterface $output, $requires = array())
@@ -339,31 +331,57 @@ EOT
                     ''
                 ));
 
+                $exactMatch = null;
+                $choices = array();
                 foreach ($matches as $position => $package) {
-                    $output->writeln(sprintf(' <info>%5s</info> %s <comment>%s</comment>', "[$position]", $package->getPrettyName(), $package->getPrettyVersion()));
+                    $choices[] = sprintf(' <info>%5s</info> %s', "[$position]", $package['name']);
+                    if ($package['name'] === $package) {
+                        $exactMatch = true;
+                        break;
+                    }
                 }
 
-                $output->writeln('');
+                // no match, prompt which to pick
+                if (!$exactMatch) {
+                    $output->writeln($choices);
+                    $output->writeln('');
 
-                $validator = function ($selection) use ($matches) {
-                    if ('' === $selection) {
-                        return false;
+                    $validator = function ($selection) use ($matches) {
+                        if ('' === $selection) {
+                            return false;
+                        }
+
+                        if (!is_numeric($selection) && preg_match('{^\s*(\S+)\s+(\S.*)\s*$}', $selection, $matches)) {
+                            return $matches[1].' '.$matches[2];
+                        }
+
+                        if (!isset($matches[(int) $selection])) {
+                            throw new \Exception('Not a valid selection');
+                        }
+
+                        $package = $matches[(int) $selection];
+
+                        return $package['name'];
+                    };
+
+                    $package = $dialog->askAndValidate($output, $dialog->getQuestion('Enter package # to add, or the complete package name if it is not listed', false, ':'), $validator, 3);
+                }
+
+                // no constraint yet, prompt user
+                if (false !== $package && false === strpos($package, ' ')) {
+                    $validator = function ($input) {
+                        $input = trim($input);
+
+                        return $input ?: false;
+                    };
+
+                    $constraint = $dialog->askAndValidate($output, $dialog->getQuestion('Enter the version constraint to require', false, ':'), $validator, 3);
+                    if (false === $constraint) {
+                        continue;
                     }
 
-                    if (!is_numeric($selection) && preg_match('{^\s*(\S+) +(\S.*)\s*}', $selection, $matches)) {
-                        return $matches[1].' '.$matches[2];
-                    }
-
-                    if (!isset($matches[(int) $selection])) {
-                        throw new \Exception('Not a valid selection');
-                    }
-
-                    $package = $matches[(int) $selection];
-
-                    return sprintf('%s %s', $package->getName(), $package->getPrettyVersion());
-                };
-
-                $package = $dialog->askAndValidate($output, $dialog->getQuestion('Enter package # to add, or a "[package] [version]" couple if it is not listed', false, ':'), $validator, 3);
+                    $package .= ' '.$constraint;
+                }
 
                 if (false !== $package) {
                     $requires[] = $package;

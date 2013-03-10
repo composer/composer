@@ -73,9 +73,8 @@ EOT
         }, $input->getOption('link-type'));
 
         $messages = array();
-        $repo->filterPackages(function ($package) use ($needle, $types, $linkTypes, &$messages) {
-            static $outputPackages = array();
-
+        $outputPackages = array();
+        foreach ($repo->getPackages() as $package) {
             foreach ($types as $type) {
                 foreach ($package->{'get'.$linkTypes[$type][0]}() as $link) {
                     if ($link->getTarget() === $needle) {
@@ -86,7 +85,7 @@ EOT
                     }
                 }
             }
-        });
+        }
 
         if ($messages) {
             sort($messages);
