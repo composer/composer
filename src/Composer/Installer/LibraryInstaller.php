@@ -121,12 +121,11 @@ class LibraryInstaller implements InstallerInterface
             throw new \InvalidArgumentException('Package is not installed: '.$package);
         }
 
-        $downloadPath = $this->getInstallPath($package);
-
         $this->removeCode($package);
         $this->removeBinaries($package);
         $repo->removePackage($package);
 
+        $downloadPath = $this->getPackageBasePath($package);
         if (strpos($package->getName(), '/')) {
             $packageVendorDir = dirname($downloadPath);
             if (is_dir($packageVendorDir) && !glob($packageVendorDir.'/*')) {
@@ -140,10 +139,14 @@ class LibraryInstaller implements InstallerInterface
      */
     public function getInstallPath(PackageInterface $package)
     {
-        $this->initializeVendorDir();
         $targetDir = $package->getTargetDir();
+        return $this->getPackageBasePath($package) . ($targetDir ? '/'.$targetDir : '');
+    }
 
-        return ($this->vendorDir ? $this->vendorDir.'/' : '') . $package->getPrettyName() . ($targetDir ? '/'.$targetDir : '');
+    protected function getPackageBasePath(PackageInterface $package)
+    {
+        $this->initializeVendorDir();
+        return ($this->vendorDir ? $this->vendorDir.'/' : '') . $package->getPrettyName();
     }
 
     protected function installCode(PackageInterface $package)
@@ -160,7 +163,7 @@ class LibraryInstaller implements InstallerInterface
 
     protected function removeCode(PackageInterface $package)
     {
-        $downloadPath = $this->getInstallPath($package);
+        $downloadPath = $this->getPackageBasePath($package);
         $this->downloadManager->remove($package, $downloadPath);
     }
 
