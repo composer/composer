@@ -52,14 +52,14 @@ class GitDownloader extends VcsDownloader
         $this->io->write("    Checking out ".$ref);
         $command = 'cd %s && git remote set-url composer %s && git fetch composer && git fetch --tags composer';
 
-        if (!$this->io->hasAuthentication('github.com')) {
-            // capture username/password from github URL if there is one
-            $this->process->execute(sprintf('cd %s && git remote -v', escapeshellarg($path)), $output);
-            if (preg_match('{^composer\s+https://(.+):(.+)@github.com/}im', $output, $match)) {
-                $this->io->setAuthentication('github.com', $match[1], $match[2]);
-            }
+        // capture username/password from URL if there is one
+        $this->process->execute(sprintf('cd %s && git remote -v', escapeshellarg($path)), $output);
+        if (preg_match('{^(?:composer|origin)\s+https?://(.+):(.+)@([^/]+)}im', $output, $match)) {
+            $this->io->setAuthorization($match[3], urldecode($match[1]), urldecode($match[2]));
         }
 
+        // added in git 1.7.1, prevents prompting the user
+        putenv('GIT_ASKPASS=echo');
         $commandCallable = function($url) use ($ref, $path, $command) {
             return sprintf($command, escapeshellarg($path), escapeshellarg($url), escapeshellarg($ref));
         };
@@ -312,12 +312,35 @@ class GitDownloader extends VcsDownloader
 
                 if ($this->io->hasAuthentication($match[1])) {
                     $auth = $this->io->getAuthentication($match[1]);
-                    $url = 'https://'.$auth['username'] . ':' . $auth['password'] . '@'.$match[1].'/'.$match[2].'.git';
+                    $url = 'https://'.urlencode($auth['username']) . ':' . urlencode($auth['password']) . '@'.$match[1].'/'.$match[2].'.git';
 
                     $command = call_user_func($commandCallable, $url);
                     if (0 === $this->process->execute($command, $handler)) {
                         return;
                     }
+                }
+            } elseif ( // private non-github repo that failed to authenticate
+                $this->io->isInteractive() &&
+                preg_match('{(https?://)([^/]+)(.*)$}i', $url, $match) &&
+                strpos($this->process->getErrorOutput(), 'fatal: Authentication failed') !== false
+            ) {
+                if ($this->io->hasAuthorization($match[2])) {
+                    $auth = $this->io->getAuthorization($match[2]);
+                } else {
+                    $this->io->write($url.' requires Authentication');
+                    $auth = array(
+                        'username'  => $this->io->ask('Username: '),
+                        'password'  => $this->io->askAndHideAnswer('Password: '),
+                    );
+                }
+
+                $url = $match[1].urlencode($auth['username']).':'.urlencode($auth['password']).'@'.$match[2].$match[3];
+
+                $command = call_user_func($commandCallable, $url);
+                if (0 === $this->process->execute($command, $handler)) {
+                    $this->io->setAuthorization($match[2], $auth['username'], $auth['password']);
+
+                    return;
                 }
             }
 
