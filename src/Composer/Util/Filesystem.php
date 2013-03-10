@@ -164,6 +164,8 @@ class Filesystem
 
                 return;
             }
+
+            return $this->copyThenRemove($source, $target);
         } else {
             // We do not use PHP's "rename" function here since it does not support
             // the case where $source, and $target are located on different partitions.
