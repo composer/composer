@@ -89,6 +89,15 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
         $this->rootAliases = $rootAliases;
     }
 
+    public function getPackages()
+    {
+        if ($this->hasProviders()) {
+            throw new \LogicException('Composer repositories that have providers can not load the complete list of packages, use getProviderNames instead.');
+        }
+
+        return parent::getPackages();
+    }
+
     /**
      * {@inheritDoc}
      */
