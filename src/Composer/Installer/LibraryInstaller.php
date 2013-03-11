@@ -203,8 +203,13 @@ class LibraryInstaller implements InstallerInterface
                     file_put_contents($link, $this->generateUnixyProxyCode($binPath, $link));
                     chmod($link, 0777 & ~umask());
                     $link .= '.bat';
+                    if (file_exists($link)) {
+                        $this->io->write('    Skipped installation of '.$bin.'.bat proxy for package '.$package->getName().': a .bat proxy was already installed');
+                    }
                 }
-                file_put_contents($link, $this->generateWindowsProxyCode($binPath, $link));
+                if (!file_exists($link)) {
+                    file_put_contents($link, $this->generateWindowsProxyCode($binPath, $link));
+                }
             } else {
                 $cwd = getcwd();
                 try {
