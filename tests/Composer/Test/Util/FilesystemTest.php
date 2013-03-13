@@ -38,6 +38,7 @@ class FilesystemTest extends TestCase
             array('c:/bin/run', 'd:/vendor/acme/bin/run', false, "'d:/vendor/acme/bin/run'"),
             array('c:\\bin\\run', 'd:/vendor/acme/bin/run', false, "'d:/vendor/acme/bin/run'"),
             array('/foo/bar', '/foo/bar', true, "__DIR__"),
+            array('/foo/bar/', '/foo/bar', true, "__DIR__"),
             array('/foo/bar', '/foo/baz', true, "dirname(__DIR__).'/baz'"),
             array('/foo/bin/run', '/foo/vendor/acme/bin/run', true, "dirname(dirname(__DIR__)).'/vendor/acme/bin/run'"),
             array('/foo/bin/run', '/bar/bin/run', true, "'/bar/bin/run'"),
@@ -52,6 +53,11 @@ class FilesystemTest extends TestCase
             array('/tmp/test', '/tmp', true, "dirname(__DIR__)"),
             array('/tmp', '/tmp/test', true, "__DIR__ . '/test'"),
             array('C:/Temp', 'c:\Temp\test', true, "__DIR__ . '/test'"),
+            array('/tmp/test/./', '/tmp/test/', true, '__DIR__'),
+            array('/tmp/test/../vendor', '/tmp/test', true, "dirname(__DIR__).'/test'"),
+            array('/tmp/test/.././vendor', '/tmp/test', true, "dirname(__DIR__).'/test'"),
+            array('C:/Temp', 'c:\Temp\..\..\test', true, "dirname(__DIR__).'/test'"),
+            array('C:/Temp/../..', 'd:\Temp\..\..\test', true, "'d:/test'"),
         );
     }
 
@@ -91,6 +97,12 @@ class FilesystemTest extends TestCase
             array('/tmp', '/tmp/test', "test"),
             array('C:/Temp', 'C:\Temp\test', "test"),
             array('C:/Temp', 'c:\Temp\test', "test"),
+            array('/tmp/test/./', '/tmp/test', './', true),
+            array('/tmp/test/../vendor', '/tmp/test', '../test', true),
+            array('/tmp/test/.././vendor', '/tmp/test', '../test', true),
+            array('C:/Temp', 'c:\Temp\..\..\test', "../test", true),
+            array('C:/Temp/../..', 'c:\Temp\..\..\test', "./test", true),
+            array('/tmp', '/tmp/../../test', '/test', true),
         );
     }
 
