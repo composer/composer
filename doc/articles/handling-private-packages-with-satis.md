@@ -69,7 +69,8 @@ to ssh key authentication instead of prompting for a password. This is also a
 good trick for continuous integration servers.
 
 Set up a virtual-host that points to that `web/` directory, let's say it is
-`packages.example.org`. Alternatively, with PHP >= 5.4.0, you can use the built-in CLI server `php -S localhost:port` inside `web/` for a temporary solution.
+`packages.example.org`. Alternatively, with PHP >= 5.4.0, you can use the built-in
+CLI server `php -S localhost:port -t satis-output-dir/` for a temporary solution.
 
 ## Usage
 
