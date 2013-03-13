@@ -4,8 +4,10 @@
 
 # Handling private packages with Satis
 
-Satis can be used to host the metadata of your company's private packages, or
-your own. It basically acts as a micro-packagist. You can get it from
+Satis is a static `composer` repository generator. It is a bit like an ultra-
+lightweight, static file-based version of packagist and can be used to host the
+metadata of your company's private packages, or your own. It basically acts as
+a micro-packagist. You can get it from
 [GitHub](http://github.com/composer/satis) or install via CLI:
 `composer.phar create-project composer/satis --stability=dev`.
 
@@ -20,6 +22,8 @@ Here is an example configuration, you see that it holds a few VCS repositories,
 but those could be any types of [repositories](../05-repositories.md). Then it
 uses `"require-all": true` which selects all versions of all packages in the
 repositories you defined.
+
+The default file Satis looks for is `satis.json` in the root of the repository.
 
     {
         "name": "My Repository",
@@ -65,7 +69,7 @@ to ssh key authentication instead of prompting for a password. This is also a
 good trick for continuous integration servers.
 
 Set up a virtual-host that points to that `web/` directory, let's say it is
-`packages.example.org`.
+`packages.example.org`. Alternatively, with PHP >= 5.4.0, you can use the built-in CLI server `php -S localhost:port` inside `web/` for a temporary solution.
 
 ## Usage
 
