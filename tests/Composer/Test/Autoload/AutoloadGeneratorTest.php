@@ -261,12 +261,12 @@ class AutoloadGeneratorTest extends TestCase
         $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, '_6');
         $this->assertTrue(file_exists($this->vendorDir.'/composer/autoload_classmap.php'), "ClassMap file needs to be generated.");
         $this->assertEquals(
-            $this->normalizePaths(array(
+            array(
                 'ClassMapBar' => $this->vendorDir.'/b/b/src/b.php',
                 'ClassMapBaz' => $this->vendorDir.'/b/b/lib/c.php',
                 'ClassMapFoo' => $this->vendorDir.'/a/a/src/a.php',
-            )),
-            $this->normalizePaths(include $this->vendorDir.'/composer/autoload_classmap.php')
+            ),
+            include $this->vendorDir.'/composer/autoload_classmap.php'
         );
         $this->assertAutoloadFiles('classmap4', $this->vendorDir.'/composer', 'classmap');
     }
@@ -297,12 +297,12 @@ class AutoloadGeneratorTest extends TestCase
         $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, '_6');
         $this->assertTrue(file_exists($this->vendorDir.'/composer/autoload_classmap.php'), "ClassMap file needs to be generated.");
         $this->assertEquals(
-            $this->normalizePaths(array(
+            array(
                 'ClassMapBar' => $this->vendorDir.'/a/a/target/lib/b.php',
                 'ClassMapBaz' => $this->vendorDir.'/b/b/src/c.php',
                 'ClassMapFoo' => $this->vendorDir.'/a/a/target/src/a.php',
-            )),
-            $this->normalizePaths(include $this->vendorDir.'/composer/autoload_classmap.php')
+            ),
+            include $this->vendorDir.'/composer/autoload_classmap.php'
         );
     }
 
@@ -333,12 +333,12 @@ class AutoloadGeneratorTest extends TestCase
         $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, '_7');
         $this->assertTrue(file_exists($this->vendorDir.'/composer/autoload_classmap.php'), "ClassMap file needs to be generated.");
         $this->assertEquals(
-            $this->normalizePaths(array(
+            array(
                 'ClassMapBar' => $this->vendorDir.'/b/b/test.php',
                 'ClassMapBaz' => $this->vendorDir.'/c/c/foo/test.php',
                 'ClassMapFoo' => $this->vendorDir.'/a/a/src/a.php',
-            )),
-            $this->normalizePaths(include $this->vendorDir.'/composer/autoload_classmap.php')
+            ),
+            include $this->vendorDir.'/composer/autoload_classmap.php'
         );
         $this->assertAutoloadFiles('classmap5', $this->vendorDir.'/composer', 'classmap');
     }
@@ -469,7 +469,6 @@ class AutoloadGeneratorTest extends TestCase
         file_put_contents($this->vendorDir.'/a/a/lib/A/B/C.php', '<?php namespace A\\B; class C {}');
         file_put_contents($this->vendorDir.'/a/a/classmap/classes.php', '<?php namespace Foo; class Bar {}');
 
-        $workDir = strtr($this->workingDir, '\\', '/');
         $expectedNamespace = <<<EOF
 <?php
 
@@ -479,9 +478,9 @@ class AutoloadGeneratorTest extends TestCase
 \$baseDir = dirname(\$vendorDir);
 
 return array(
-    'B\\\\Sub\\\\Name' => \$vendorDir . '/b/b/src/',
-    'A\\\\B' => array('$workDir/lib', \$vendorDir . '/a/a/lib/'),
-    'A' => \$vendorDir . '/a/a/src/',
+    'B\\\\Sub\\\\Name' => \$vendorDir . '/b/b/src',
+    'A\\\\B' => array(\$baseDir . '/lib', \$vendorDir . '/a/a/lib'),
+    'A' => \$vendorDir . '/a/a/src',
 );
 
 EOF;
@@ -755,23 +754,6 @@ EOF;
     {
         $a = __DIR__.'/Fixtures/autoload_'.$name.'.php';
         $b = $dir.'/autoload_'.$type.'.php';
-        $this->assertEquals(
-            str_replace('%vendorDir%', basename($this->vendorDir), file_get_contents($a)),
-            file_get_contents($b),
-            $a .' does not equal '. $b
-        );
-    }
-
-    private function normalizePaths($paths)
-    {
-        if (!is_array($paths)) {
-            return strtr($paths, '\\', '/');
-        }
-
-        foreach ($paths as $key => $path) {
-            $paths[$key] = strtr($path, '\\', '/');
-        }
-
-        return $paths;
+        $this->assertFileEquals($a, $b);
     }
 }
