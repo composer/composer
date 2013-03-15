@@ -105,12 +105,16 @@ class Application extends BaseApplication
             $this->io->enableDebugging($startTime);
         }
 
-        $oldWorkingDir = getcwd();
-        $this->switchWorkingDir($input);
+        if ($newWorkDir = $this->getNewWorkingDir($input)) {
+            $oldWorkingDir = getcwd();
+            chdir($newWorkDir);
+        }
 
         $result = parent::doRun($input, $output);
 
-        chdir($oldWorkingDir);
+        if (isset($oldWorkingDir)) {
+            chdir($oldWorkingDir);
+        }
 
         if (isset($startTime)) {
             $output->writeln('<info>Memory usage: '.round(memory_get_usage() / 1024 / 1024, 2).'MB (peak: '.round(memory_get_peak_usage() / 1024 / 1024, 2).'MB), time: '.round(microtime(true) - $startTime, 2).'s');
@@ -123,13 +127,14 @@ class Application extends BaseApplication
      * @param  InputInterface    $input
      * @throws \RuntimeException
      */
-    private function switchWorkingDir(InputInterface $input)
+    private function getNewWorkingDir(InputInterface $input)
     {
-        $workingDir = $input->getParameterOption(array('--working-dir', '-d'), getcwd());
-        if (!is_dir($workingDir)) {
+        $workingDir = $input->getParameterOption(array('--working-dir', '-d'));
+        if (false !== $workingDir && !is_dir($workingDir)) {
             throw new \RuntimeException('Invalid working directory specified.');
         }
-        chdir($workingDir);
+
+        return $workingDir;
     }
 
     /**
