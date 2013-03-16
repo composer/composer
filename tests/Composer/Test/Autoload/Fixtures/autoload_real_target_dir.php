@@ -19,7 +19,7 @@ class ComposerAutoloaderInitTargetDir
             return self::$loader;
         }
 
-        spl_autoload_register(array('ComposerAutoloaderInitTargetDir', 'loadClassLoader'));
+        spl_autoload_register(array('ComposerAutoloaderInitTargetDir', 'loadClassLoader'), true, true);
         self::$loader = $loader = new \Composer\Autoload\ClassLoader();
         spl_autoload_unregister(array('ComposerAutoloaderInitTargetDir', 'loadClassLoader'));
 

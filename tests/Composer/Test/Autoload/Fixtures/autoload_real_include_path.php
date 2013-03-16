@@ -19,7 +19,7 @@ class ComposerAutoloaderInitIncludePath
             return self::$loader;
         }
 
-        spl_autoload_register(array('ComposerAutoloaderInitIncludePath', 'loadClassLoader'));
+        spl_autoload_register(array('ComposerAutoloaderInitIncludePath', 'loadClassLoader'), true, true);
         self::$loader = $loader = new \Composer\Autoload\ClassLoader();
         spl_autoload_unregister(array('ComposerAutoloaderInitIncludePath', 'loadClassLoader'));
 
