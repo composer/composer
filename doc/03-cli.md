@@ -140,6 +140,7 @@ to the command.
 * **--prefer-dist:** Install packages from `dist` when available.
 * **--dev:** Add packages to `require-dev`.
 * **--no-update:** Disables the automatic update of the dependencies.
+* **--no-dev-update:** Disable the automatic update of packages in the `require-dev`.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
 
