@@ -16,11 +16,14 @@ problems:
   submodules. This is problematic because they are not real submodules, and you
   will run into issues.
 
-If you really feel like you must do this, you have two options:
+If you really feel like you must do this, you have three options:
 
-- Limit yourself to installing tagged releases (no dev versions), so that you
+1. Limit yourself to installing tagged releases (no dev versions), so that you
   only get zipped installs, and avoid problems with the git "submodules".
-- Remove the `.git` directory of every dependency after the installation, then
+2. Remove the `.git` directory of every dependency after the installation, then
   you can add them to your git repo. You can do that with `rm -rf vendor/**/.git`
   but this means you will have to delete those dependencies from disk before
+  running composer update.
+3. Add a .gitignore rule (`vendor/.git`) to ignore all the vendor .git folders.
+  This approach does not require to you delete dependencies from disk prior to
   running composer update.
