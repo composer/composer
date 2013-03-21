@@ -24,6 +24,6 @@ If you really feel like you must do this, you have three options:
   you can add them to your git repo. You can do that with `rm -rf vendor/**/.git`
   but this means you will have to delete those dependencies from disk before
   running composer update.
-3. Add a .gitignore rule (`vendor/.git`) to ignore all the vendor .git folders.
-  This approach does not require to you delete dependencies from disk prior to
-  running composer update.
+3. Add a .gitignore rule (`vendor/.git`) to ignore all the vendor `.git` folders.
+  This approach does not require that you delete dependencies from disk prior to
+  running a composer update.
