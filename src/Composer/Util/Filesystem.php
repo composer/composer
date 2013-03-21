@@ -130,7 +130,7 @@ class Filesystem
         $it = new RecursiveDirectoryIterator($source, RecursiveDirectoryIterator::SKIP_DOTS);
         $ri = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::SELF_FIRST);
 
-        if ( !file_exists($target)) {
+        if (!file_exists($target)) {
             mkdir($target, 0777, true);
         }
 
@@ -159,7 +159,12 @@ class Filesystem
         if (defined('PHP_WINDOWS_VERSION_BUILD')) {
             // Try to copy & delete - this is a workaround for random "Access denied" errors.
             $command = sprintf('xcopy %s %s /E /I /Q', escapeshellarg($source), escapeshellarg($target));
-            if (0 === $this->processExecutor->execute($command, $output)) {
+            $result = $this->processExecutor->execute($command, $output);
+
+            // clear stat cache because external processes aren't tracked by the php stat cache
+            clearstatcache();
+
+            if (0 === $result) {
                 $this->remove($source);
 
                 return;
@@ -170,7 +175,12 @@ class Filesystem
             // We do not use PHP's "rename" function here since it does not support
             // the case where $source, and $target are located on different partitions.
             $command = sprintf('mv %s %s', escapeshellarg($source), escapeshellarg($target));
-            if (0 === $this->processExecutor->execute($command)) {
+            $result = $this->processExecutor->execute($command, $output);
+
+            // clear stat cache because external processes aren't tracked by the php stat cache
+            clearstatcache();
+
+            if (0 === $result) {
                 return;
             }
         }
