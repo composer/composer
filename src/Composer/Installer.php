@@ -809,12 +809,15 @@ class Installer
      */
     private function mockLocalRepositories(RepositoryManager $rm)
     {
-        $packages = array_map(function ($p) {
-            return clone $p;
-        }, $rm->getLocalRepository()->getPackages());
+        $packages = array();
+        foreach ($rm->getLocalRepository()->getPackages() as $package) {
+            $packages[(string) $package] = clone $package;
+        }
         foreach ($packages as $key => $package) {
             if ($package instanceof AliasPackage) {
-                unset($packages[$key]);
+                $alias = (string) $package->getAliasOf();
+                $packages[$key] = new AliasPackage($packages[$alias], $package->getVersion(), $package->getPrettyVersion());
+                unset($packages[$alias]);
             }
         }
         $rm->setLocalRepository(
