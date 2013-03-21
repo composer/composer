@@ -118,7 +118,7 @@ class Factory
 
     public static function getComposerFile()
     {
-        return getenv('COMPOSER') ?: 'composer.json';
+        return trim(getenv('COMPOSER')) ?: 'composer.json';
     }
 
     public static function createAdditionalStyles()
