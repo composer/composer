@@ -817,7 +817,6 @@ class Installer
             if ($package instanceof AliasPackage) {
                 $alias = (string) $package->getAliasOf();
                 $packages[$key] = new AliasPackage($packages[$alias], $package->getVersion(), $package->getPrettyVersion());
-                unset($packages[$alias]);
             }
         }
         $rm->setLocalRepository(
