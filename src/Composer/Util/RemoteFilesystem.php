@@ -178,7 +178,7 @@ class RemoteFilesystem
             $result = (bool) file_put_contents($fileName, $result);
             restore_error_handler();
             if (false === $result) {
-                throw new TransportException('The "'.$fileUrl.'" file could not be written to '.$fileName.': '.$errorMessage);
+                throw new TransportException('The "'.$this->fileUrl.'" file could not be written to '.$fileName.': '.$errorMessage);
             }
         }
 
@@ -188,7 +188,7 @@ class RemoteFilesystem
         }
 
         if (false === $this->result) {
-            $e = new TransportException('The "'.$fileUrl.'" file could not be downloaded: '.$errorMessage, $errorCode);
+            $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded: '.$errorMessage, $errorCode);
             if (!empty($http_response_header[0])) {
                 $e->setHeaders($http_response_header);
             }
