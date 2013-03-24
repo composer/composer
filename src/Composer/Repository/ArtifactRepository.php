@@ -32,6 +32,7 @@ class ArtifactRepository extends ArrayRepository
     public function __construct(array $repoConfig, IOInterface $io, Config $config, array $drivers = null)
     {
         $this->path = $repoConfig['url'];
+        $this->io = $io;
     }
 
     protected function initialize()
@@ -55,7 +56,7 @@ class ArtifactRepository extends ArrayRepository
 
             $package = $this->getComposerInformation($file);
             if(!$package) {
-                // @todo add log
+                $this->io->write("File <comment>{$file->getBasename()}</comment> doesn't seem to hold a package");
                 continue;
             }
 
