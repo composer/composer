@@ -281,6 +281,7 @@ class Factory
         $rm->setRepositoryClass('git', 'Composer\Repository\VcsRepository');
         $rm->setRepositoryClass('svn', 'Composer\Repository\VcsRepository');
         $rm->setRepositoryClass('hg', 'Composer\Repository\VcsRepository');
+        $rm->setRepositoryClass('artifact', 'Composer\Repository\ArtifactRepository');
 
         return $rm;
     }
