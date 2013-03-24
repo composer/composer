@@ -1,4 +1,5 @@
 <?php
+
 /*
  * This file is part of Composer.
  *
@@ -18,7 +19,8 @@ use Composer\Package\Package;
 
 class ArtifactRepositoryTest extends TestCase
 {
-    public function testExtractsConfigsFromZipArchives() {
+    public function testExtractsConfigsFromZipArchives()
+    {
         $expectedPackages = array(
             'vendor0/package0-0.0.1',
             'vendor1/package2-4.3.2',

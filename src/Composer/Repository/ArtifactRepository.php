@@ -12,55 +12,56 @@
 
 namespace Composer\Repository;
 
+use Composer\IO\IOInterface;
+use Composer\Json\JsonFile;
+use Composer\Package\Loader\ArrayLoader;
+
 /**
  * @author Serge Smertin <serg.smertin@gmail.com>
  */
-use Composer\IO\IOInterface;
-use Composer\Config;
-use Composer\Json\JsonFile;
-use Composer\Package\Loader\LoaderInterface;
-use Composer\Package\Version\VersionParser;
-use Composer\Package\Loader\ArrayLoader;
-
 class ArtifactRepository extends ArrayRepository
 {
-    protected $path;
-
     /** @var LoaderInterface */
     protected $loader;
 
-    public function __construct(array $repoConfig, IOInterface $io, Config $config, array $drivers = null)
+    protected $lookup;
+
+    public function __construct(array $repoConfig, IOInterface $io)
     {
-        $this->path = $repoConfig['url'];
+        $this->loader = new ArrayLoader();
+        $this->lookup = $repoConfig['url'];
         $this->io = $io;
     }
 
     protected function initialize()
     {
         parent::initialize();
-        $this->versionParser = new VersionParser;
-        if (!$this->loader) {
-            $this->loader = new ArrayLoader($this->versionParser);
-        }
-
-        $this->getDirectoryPackages($this->path);
+        $this->scanDirectory($this->lookup);
     }
 
-    private function getDirectoryPackages($path)
+    private function scanDirectory($path)
     {
-        foreach(new \RecursiveDirectoryIterator($path) as $file) {
+        $io = $this->io;
+        foreach (new \RecursiveDirectoryIterator($path) as $file) {
             /* @var $file \SplFileInfo */
-            if(!$file->isFile()) {
+            if (!$file->isFile()) {
                 continue;
             }
 
             $package = $this->getComposerInformation($file);
-            if(!$package) {
-                $this->io->write("File <comment>{$file->getBasename()}</comment> doesn't seem to hold a package");
+            if (!$package) {
+                if ($io->isVerbose()) {
+                    $msg = "File <comment>{$file->getBasename()}</comment> doesn't seem to hold a package";
+                    $io->write($msg);
+                }
                 continue;
             }
 
-            $package = $this->loader->load($package);
+            if ($io->isVerbose()) {
+                $template = 'Found package <info>%s</info> (<comment>%s</comment>) in file <info>%s</info>';
+                $msg = sprintf($template, $package->getName(), $package->getPrettyVersion(), $file->getBasename());
+                $io->write($msg);
+            }
 
             $this->addPackage($package);
         }
@@ -68,12 +69,22 @@ class ArtifactRepository extends ArrayRepository
 
     private function getComposerInformation(\SplFileInfo $file)
     {
-        $config = "zip://{$file->getPathname()}#composer.json";
-        $json = @file_get_contents($config);
-        if(!$json) {
+        $composerFile = "zip://{$file->getPathname()}#composer.json";
+        $json = @file_get_contents($composerFile);
+        if (!$json) {
             return false;
         }
 
-        return JsonFile::parseJson($json, $config);
+        $package = JsonFile::parseJson($json, $composerFile);
+        $package['dist'] = array(
+            'type' => 'zip',
+            'url' => $file->getRealPath(),
+            'reference' => $file->getBasename(),
+            'shasum' => sha1_file($file->getRealPath())
+        );
+
+        $package = $this->loader->load($package);
+
+        return $package;
     }
 }
