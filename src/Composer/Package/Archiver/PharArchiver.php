@@ -37,7 +37,7 @@ class PharArchiver implements ArchiverInterface
         try {
             $phar = new \PharData($target, null, null, static::$formats[$format]);
             $files = new ArchivableFilesFinder($sources, $excludes);
-            $phar->buildFromIterator($files->getIterator(), $sources);
+            $phar->buildFromIterator($files, $sources);
             return $target;
         } catch (\UnexpectedValueException $e) {
             $message = sprintf("Could not create archive '%s' from '%s': %s",
