@@ -14,6 +14,7 @@ namespace Composer\Command;
 
 use Composer\Installer;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -39,7 +40,8 @@ class InstallCommand extends Command
                 new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Skips the execution of all scripts defined in composer.json file.'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
                 new InputOption('verbose', 'v', InputOption::VALUE_NONE, 'Shows more details including new commits pulled in when updating packages.'),
-                new InputOption('optimize-autoloader', 'o', InputOption::VALUE_NONE, 'Optimize autoloader during autoloader dump')
+                new InputOption('optimize-autoloader', 'o', InputOption::VALUE_NONE, 'Optimize autoloader during autoloader dump'),
+                new InputOption('script-param', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Add parameters that can be used for scripts.')
             ))
             ->setHelp(<<<EOT
 The <info>install</info> command reads the composer.lock file from
@@ -87,6 +89,7 @@ EOT
             ->setPreferDist($preferDist)
             ->setDevMode($input->getOption('dev'))
             ->setRunScripts(!$input->getOption('no-scripts'))
+            ->setScriptParams($input->getOption('script-param'))
             ->setOptimizeAutoloader($input->getOption('optimize-autoloader'))
         ;
 
