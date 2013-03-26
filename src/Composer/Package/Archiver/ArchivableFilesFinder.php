@@ -25,7 +25,7 @@ use Symfony\Component\Finder;
  *
  * @author Nils Adermann <naderman@naderman.de>
  */
-class ArchivableFilesFinder extends \IteratorIterator
+class ArchivableFilesFinder extends \FilterIterator
 {
     /**
      * @var Symfony\Component\Finder\Finder
@@ -70,20 +70,8 @@ class ArchivableFilesFinder extends \IteratorIterator
         parent::__construct($this->finder->getIterator());
     }
 
-    public function next()
+    public function accept()
     {
-        do {
-            $this->getInnerIterator()->next();
-        } while ($this->getInnerIterator()->valid() && $this->getInnerIterator()->current()->isDir());
-    }
-
-    public function current()
-    {
-        return $this->getInnerIterator()->current();
-    }
-
-    public function valid()
-    {
-        return $this->getInnerIterator()->valid();
+        return !$this->getInnerIterator()->current()->isDir();
     }
 }
