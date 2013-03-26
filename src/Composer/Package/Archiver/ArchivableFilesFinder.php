@@ -55,7 +55,7 @@ class ArchivableFilesFinder extends \IteratorIterator
                 $relativePath = preg_replace(
                     '#^'.preg_quote($sources, '#').'#',
                     '',
-                    str_replace(PATH_SEPARATOR, '/', $file->getRealPath())
+                    str_replace(DIRECTORY_SEPARATOR, '/', $file->getRealPath())
                 );
 
                 $exclude = false;
