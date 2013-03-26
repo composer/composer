@@ -48,6 +48,11 @@ For any given event:
 and command-line executables commands.
 - PHP classes containing defined callbacks must be autoloadable via Composer's
 autoload functionality.
+- Scripts and callbacks can be configured by adding commandline parameters:
+`composer install --script-param="name1:key1=value1"`
+`composer install --script-param="value2"` (key will be equal to value2)
+Multiple parameters can be added:
+`composer install --script-param="name1:key1=value1" --script-param="value2"`
 
 Script definition example:
 
@@ -59,7 +64,8 @@ Script definition example:
             ],
             "post-install-cmd": [
                 "MyVendor\\MyClass::warmCache",
-                "phpunit -c app/"
+                "phpunit -c app/",
+                "myscript {name1} {value2}"
             ]
         }
     }
@@ -78,6 +84,7 @@ that might be used to execute the PHP callbacks:
         public static function postUpdate(Event $event)
         {
             $composer = $event->getComposer();
+            $params = $event->getScriptParams();
             // do stuff
         }
 
@@ -101,3 +108,4 @@ PHP callback. This `Event` object has getters for other contextual objects:
 - `getName()`: returns the name of the event being fired as a string
 - `getIO()`: returns the current input/output stream which implements
 `Composer\IO\IOInterface` for writing to the console
+- `getScriptParams()`: returns an array of commandline parameters added with --script-param

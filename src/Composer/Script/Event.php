@@ -43,19 +43,27 @@ class Event
     private $devMode;
 
     /**
+     * @var array $scriptParams An array of parameters as additional parameters for Scripts
+     */
+    private $scriptParams;
+
+
+    /**
      * Constructor.
      *
      * @param string      $name     The event name
      * @param Composer    $composer The composer object
      * @param IOInterface $io       The IOInterface object
      * @param boolean     $devMode  Whether or not we are in dev mode
+     * @param array       $scriptParams  Additional parameters for scripts added on commandline
      */
-    public function __construct($name, Composer $composer, IOInterface $io, $devMode = false)
+    public function __construct($name, Composer $composer, IOInterface $io, $devMode = false, array $scriptParams = array() )
     {
         $this->name = $name;
         $this->composer = $composer;
         $this->io = $io;
         $this->devMode = $devMode;
+        $this->scriptParams = $scriptParams;
     }
 
     /**
@@ -97,4 +105,17 @@ class Event
     {
         return $this->devMode;
     }
+
+
+    /**
+     * Return optional additional script params
+     *
+     * @return array
+     */
+    public function getScriptParams()
+    {
+        return $this->scriptParams;
+    }
+
+
 }
