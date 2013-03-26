@@ -70,7 +70,7 @@ class ArchiveManager
      *
      * @return string A filename without an extension
      */
-    protected function getPackageFilename(PackageInterface $package)
+    public function getPackageFilename(PackageInterface $package)
     {
         $nameParts = array(preg_replace('#[^a-z0-9-_.]#i', '-', $package->getName()));
 
