@@ -25,7 +25,7 @@ use Symfony\Component\Finder;
  *
  * @author Nils Adermann <naderman@naderman.de>
  */
-class ArchivableFilesFinder
+class ArchivableFilesFinder extends \IteratorIterator
 {
     /**
      * @var Symfony\Component\Finder\Finder
@@ -66,13 +66,24 @@ class ArchivableFilesFinder
             })
             ->ignoreVCS(true)
             ->ignoreDotFiles(false);
+
+        parent::__construct($this->finder->getIterator());
     }
 
-    /**
-     * @return Symfony\Component\Finder\Finder
-     */
-    public function getIterator()
+    public function next()
     {
-        return $this->finder->getIterator();
+        do {
+            $this->getInnerIterator()->next();
+        } while ($this->getInnerIterator()->valid() && $this->getInnerIterator()->current()->isDir());
+    }
+
+    public function current()
+    {
+        return $this->getInnerIterator()->current();
+    }
+
+    public function valid()
+    {
+        return $this->getInnerIterator()->valid();
     }
 }

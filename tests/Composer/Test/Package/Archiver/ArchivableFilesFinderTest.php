@@ -169,7 +169,7 @@ class ArchivableFilesFinderTest extends \PHPUnit_Framework_TestCase
     protected function getArchivableFiles()
     {
         $files = array();
-        foreach ($this->finder->getIterator() as $file) {
+        foreach ($this->finder as $file) {
             if (!$file->isDir()) {
                 $files[] = preg_replace('#^'.preg_quote($this->sources, '#').'#', '', $file->getRealPath());
             }
