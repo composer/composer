@@ -17,6 +17,7 @@ use Composer\Package\PackageInterface;
 /**
  * @author Till Klampaeckel <till@php.net>
  * @author Matthieu Moquet <matthieu@moquet.net>
+ * @author Nils Adermann <naderman@naderman.de>
  */
 interface ArchiverInterface
 {
@@ -30,7 +31,7 @@ interface ArchiverInterface
      *
      * @return string The path to the written archive file
      */
-    public function archive($sources, $target, $format, $excludes = array());
+    public function archive($sources, $target, $format, array $excludes = array());
 
     /**
      * Format supported by the archiver.

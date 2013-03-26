@@ -51,8 +51,6 @@ class ArchiveManagerTest extends ArchiverTest
 
         $package = $this->setupPackage();
 
-        // The package is source from git,
-        // so it should `git archive --format tar`
         $this->manager->archive($package, 'tar', $this->targetDir);
 
         $target = $this->getTargetName($package, 'tar');
@@ -63,7 +61,7 @@ class ArchiveManagerTest extends ArchiverTest
 
     protected function getTargetName(PackageInterface $package, $format)
     {
-        $packageName = preg_replace('#[^a-z0-9-_.]#i', '-', $package->getPrettyString());
+        $packageName = $this->manager->getPackageFilename($package);
         $target = $this->targetDir.'/'.$packageName.'.'.$format;
 
         return $target;
