@@ -942,15 +942,15 @@ class Installer
     /**
      * set optional additional parameters for scripts
      *
-     * @param  array   $scriptParams
+     * @param  array        $scriptParams
      * @return Installer
      */
-    public function setScriptParams( array $scriptParams = array() )
+    public function setScriptParams(array $scriptParams = array())
     {
-        foreach( $scriptParams as $param ) {
+        foreach ($scriptParams as $param) {
             $param = explode(':',$param);
             $key = array_shift($param);
-            $this->scriptParams[$key] = ( count($param)>0 ? implode(':',$param) : $key );
+            $this->scriptParams[$key] = count($param)>0 ? implode(':', $param) : $key;
         }
 
         return $this;

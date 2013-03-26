@@ -12,7 +12,6 @@
 
 namespace Composer\Script;
 
-use Composer\Autoload\AutoloadGenerator;
 use Composer\IO\IOInterface;
 use Composer\Composer;
 use Composer\DependencyResolver\Operation\OperationInterface;
@@ -54,8 +53,8 @@ class EventDispatcher
     /**
      * Dispatch a script event.
      *
-     * @param string  $eventName The constant in ScriptEvents
-     * @param Event $event
+     * @param string $eventName The constant in ScriptEvents
+     * @param Event  $event
      */
     public function dispatch($eventName, Event $event = null)
     {
@@ -69,10 +68,10 @@ class EventDispatcher
     /**
      * Dispatch a package event.
      *
-     * @param string             $eventName The constant in ScriptEvents
-     * @param boolean            $devMode   Whether or not we are in dev mode
-     * @param OperationInterface $operation The package being installed/updated/removed
-     * @param array   $scriptParams  Additional script parameters added on commandline
+     * @param string             $eventName    The constant in ScriptEvents
+     * @param boolean            $devMode      Whether or not we are in dev mode
+     * @param OperationInterface $operation    The package being installed/updated/removed
+     * @param array              $scriptParams Additional script parameters added on commandline
      */
     public function dispatchPackageEvent($eventName, $devMode, OperationInterface $operation, array $scriptParams = array() )
     {
@@ -82,9 +81,9 @@ class EventDispatcher
     /**
      * Dispatch a command event.
      *
-     * @param string  $eventName The constant in ScriptEvents
-     * @param boolean $devMode   Whether or not we are in dev mode
-     * @param array   $scriptParams  Additional script parameters added on commandline
+     * @param string  $eventName    The constant in ScriptEvents
+     * @param boolean $devMode      Whether or not we are in dev mode
+     * @param array   $scriptParams Additional script parameters added on commandline
      */
     public function dispatchCommandEvent($eventName, $devMode, array $scriptParams = array() )
     {
@@ -122,13 +121,12 @@ class EventDispatcher
                     throw $e;
                 }
             } else {
-                $m = array();
-                if ( preg_match_all( '/\{(.*)\}/U', $callable, $m ) ) {
+                if (preg_match_all('/\{(.*)\}/U', $callable, $m)) {
                     $scriptParams = $event->getScriptParams();
 
-                    foreach ( $m[0] as $i => $find ) {
-                        $replace = ( isset($scriptParams[$m[1][$i]]) ? $scriptParams[$m[1][$i]] : '' );
-                        $callable = str_replace( $find, $replace, $callable );
+                    foreach ($m[0] as $i => $find) {
+                        $replace = isset($scriptParams[$m[1][$i]]) ? $scriptParams[$m[1][$i]] : '';
+                        $callable = str_replace($find, $replace, $callable);
                     }
                 }
 
