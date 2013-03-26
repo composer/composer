@@ -26,6 +26,8 @@ use Composer\IO\IOInterface;
 use Composer\IO\ConsoleIO;
 use Composer\Json\JsonValidationException;
 use Composer\Util\ErrorHandler;
+use SensioLabs\Security\Command\SecurityCheckerCommand;
+use SensioLabs\Security\SecurityChecker;
 
 /**
  * The console application that handles the commands
@@ -194,6 +196,7 @@ class Application extends BaseApplication
         $commands[] = new Command\RequireCommand();
         $commands[] = new Command\DumpAutoloadCommand();
         $commands[] = new Command\StatusCommand();
+        $commands[] = new SecurityCheckerCommand(new SecurityChecker());
 
         if ('phar:' === substr(__FILE__, 0, 5)) {
             $commands[] = new Command\SelfUpdateCommand();
