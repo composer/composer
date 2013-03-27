@@ -85,7 +85,7 @@ class EventDispatcher
      * @param boolean $devMode      Whether or not we are in dev mode
      * @param array   $scriptParams Additional script parameters added on commandline
      */
-    public function dispatchCommandEvent($eventName, $devMode, array $scriptParams = array() )
+    public function dispatchCommandEvent($eventName, $devMode, array $scriptParams = array())
     {
         $this->doDispatch(new CommandEvent($eventName, $this->composer, $this->io, $devMode, $scriptParams));
     }
