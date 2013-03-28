@@ -14,7 +14,7 @@
   * Added `discard-changes` config option to control the default behavior when updating "dirty" dependencies
   * Added `use-include-path` config option to make the autoloader look for files in the include path too
   * Added `cache-ttl`, `cache-files-ttl` and `cache-files-maxsize` config option
-  * Added `cache-dir`, `cache-files-dir`, `cache-repo-dir and `cache-vcs-dir` config option
+  * Added `cache-dir`, `cache-files-dir`, `cache-repo-dir` and `cache-vcs-dir` config option
   * Added support for using http(s) authentication to non-github repos
   * Added support for using multiple autoloaders at once (e.g. PHPUnit + application both using Composer autoloader)
   * Added support for .inc files for classmap autoloading (legacy support, do not do this on new projects!)
@@ -27,7 +27,7 @@
   * Added PHP 5.2 compatibility to the autoloader configuration files so they can be used to configure another autoloader
   * Fixed handling of platform requirements of the root package when installing from lock
   * Fixed handling of require-dev dependencies
-  * Fixed handling of unstable packages that should be downgraded to stable packages when
+  * Fixed handling of unstable packages that should be downgraded to stable packages when updating to new version constraints
   * Fixed parsing of the `~` operator combined with unstable versions
   * Fixed the `require` command corrupting the json if the new requirement was invalid
   * Fixed support of aliases used together with `<version>#<reference>` constraints
