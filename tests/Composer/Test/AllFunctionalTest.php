@@ -55,9 +55,8 @@ class AllFunctionalTest extends \PHPUnit_Framework_TestCase
         $fs->ensureDirectoryExists(dirname(self::$pharPath));
         chdir(dirname(self::$pharPath));
 
-        $proc = new Process('php '.escapeshellarg(__DIR__.'/../../../bin/compile'));
+        $proc = new Process('php '.escapeshellarg(__DIR__.'/../../../bin/compile'), dirname(self::$pharPath));
         $exitcode = $proc->run();
-
         if ($exitcode !== 0 || trim($proc->getOutput())) {
             $this->fail($proc->getOutput());
         }
@@ -76,7 +75,7 @@ class AllFunctionalTest extends \PHPUnit_Framework_TestCase
         putenv('COMPOSER_HOME='.$this->testDir.'home');
 
         $cmd = 'php '.escapeshellarg(self::$pharPath).' --no-ansi '.$testData['RUN'];
-        $proc = new Process($cmd);
+        $proc = new Process($cmd, __DIR__.'/Fixtures/functional');
         $exitcode = $proc->run();
 
         if (isset($testData['EXPECT'])) {

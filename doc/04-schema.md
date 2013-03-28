@@ -656,4 +656,29 @@ See [Vendor Binaries](articles/vendor-binaries.md) for more details.
 
 Optional.
 
+### archive
+
+A set of options for creating package archives.
+
+The following options are supported:
+
+* **exclude:** Allows configuring a list of patterns for excluded paths. The
+  pattern syntax matches .gitignore files. A leading exclamation mark (!) will
+  result in any matching files to be included even if a previous pattern
+  excluded them. A leading slash will only match at the beginning of the project
+  relative path. An asterisk will not expand to a directory separator.
+
+Example:
+
+    {
+        "archive": {
+            "exclude": ["/foo/bar", "baz", "/*.test", "!/foo/bar/baz"]
+        }
+    }
+
+The example will include `/dir/foo/bar/file`, `/foo/bar/baz`, `/file.php`,
+`/foo/my.test` but it will exclude `/foo/bar/any`, `/foo/baz`, and `/my.test`.
+
+Optional.
+
 &larr; [Command-line interface](03-cli.md)  |  [Repositories](05-repositories.md) &rarr;
