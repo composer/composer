@@ -2,6 +2,7 @@
 
   * Break: For forward compatibility, you should change your deployment scripts to run `composer install --no-dev`. The install command will install dev dependencies by default starting in the next release
   * Break: The `update` command now has --dev enabled by default. --no-dev can be used to update without dev requirements, but it will create an incomplete lock file and is discouraged
+  * Break: Removed support for lock files created before 2012-09-15 due to their outdated unusable format
   * Added `preferred-install` config option to always enable --prefer-source or --prefer-dist
   * Added wildcard support in the update whitelist, e.g. to update all packages of a vendor do `composer update vendor/*`
   * Added `archive` command to archive the current directory or a given package
