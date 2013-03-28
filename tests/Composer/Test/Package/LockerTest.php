@@ -13,6 +13,7 @@
 namespace Composer\Test\Package;
 
 use Composer\Package\Locker;
+use Composer\Package\CompletePackage;
 
 class LockerTest extends \PHPUnit_Framework_TestCase
 {
@@ -68,57 +69,14 @@ class LockerTest extends \PHPUnit_Framework_TestCase
             ->method('read')
             ->will($this->returnValue(array(
                 'packages' => array(
-                    array('package' => 'pkg1', 'version' => '1.0.0-beta'),
-                    array('package' => 'pkg2', 'version' => '0.1.10')
+                    array('name' => 'pkg1', 'version' => '1.0.0-beta'),
+                    array('name' => 'pkg2', 'version' => '0.1.10')
                 )
             )));
 
-        $package1 = $this->createPackageMock();
-        $package2 = $this->createPackageMock();
-
-        $repo->getLocalRepository()
-            ->expects($this->exactly(2))
-            ->method('findPackage')
-            ->with($this->logicalOr('pkg1', 'pkg2'), $this->logicalOr('1.0.0-beta', '0.1.10'))
-            ->will($this->onConsecutiveCalls($package1, $package2));
-
-        $this->assertEquals(array($package1, $package2), $locker->getLockedRepository()->getPackages());
-    }
-
-    public function testGetPackagesWithoutRepo()
-    {
-        $json = $this->createJsonFileMock();
-        $repo = $this->createRepositoryManagerMock();
-        $inst = $this->createInstallationManagerMock();
-
-        $locker = new Locker($json, $repo, $inst, 'md5');
-
-        $json
-            ->expects($this->once())
-            ->method('exists')
-            ->will($this->returnValue(true));
-        $json
-            ->expects($this->once())
-            ->method('read')
-            ->will($this->returnValue(array(
-                'packages' => array(
-                    array('package' => 'pkg1', 'version' => '1.0.0-beta'),
-                    array('package' => 'pkg2', 'version' => '0.1.10')
-                )
-            )));
-
-        $package1 = $this->createPackageMock();
-        $package2 = $this->createPackageMock();
-
-        $repo->getLocalRepository()
-            ->expects($this->exactly(2))
-            ->method('findPackage')
-            ->with($this->logicalOr('pkg1', 'pkg2'), $this->logicalOr('1.0.0-beta', '0.1.10'))
-            ->will($this->onConsecutiveCalls($package1, null));
-
-        $this->setExpectedException('LogicException');
-
-        $locker->getLockedRepository();
+        $repo = $locker->getLockedRepository();
+        $this->assertNotNull($repo->findPackage('pkg1', '1.0.0-beta'));
+        $this->assertNotNull($repo->findPackage('pkg2', '0.1.10'));
     }
 
     public function testSetLockData()
