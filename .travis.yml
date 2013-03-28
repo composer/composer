@@ -9,5 +9,7 @@ php:
 before_script: 
     - echo '' > ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini
     - composer install --dev --prefer-source
+    - git config --global user.name travis-ci
+    - git config --global user.email travis@example.com
 
 script: ./vendor/bin/phpunit -c tests/complete.phpunit.xml

@@ -150,6 +150,10 @@ class ArrayLoader implements LoaderInterface
             $package->setNotificationUrl($config['notification-url']);
         }
 
+        if (!empty($config['archive']['exclude'])) {
+            $package->setArchiveExcludes($config['archive']['exclude']);
+        }
+
         if ($package instanceof Package\CompletePackageInterface) {
             if (isset($config['scripts']) && is_array($config['scripts'])) {
                 foreach ($config['scripts'] as $event => $listeners) {
