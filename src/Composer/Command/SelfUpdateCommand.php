@@ -50,9 +50,15 @@ EOT
 
             $remoteFilename = $protocol . '://getcomposer.org/composer.phar';
             $localFilename = $_SERVER['argv'][0];
-            $tempFilename = basename($localFilename, '.phar').'-temp.phar';
+            $tempFilename = dirname($localFilename) . '/' . basename($localFilename, '.phar').'-temp.phar';
 
             $rfs->copy('getcomposer.org', $remoteFilename, $tempFilename);
+
+            if (!file_exists($tempFilename)) {
+                $output->writeln('<error>The download of the new composer version failed for an unexpected reason');
+
+                return 1;
+            }
 
             try {
                 chmod($tempFilename, 0777 & ~umask());
