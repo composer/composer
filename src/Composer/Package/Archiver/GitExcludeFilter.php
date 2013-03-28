@@ -53,7 +53,7 @@ class GitExcludeFilter extends BaseExcludeFilter
      *
      * @return array An exclude pattern for filter()
      */
-    protected function parseGitIgnoreLine($line)
+    public function parseGitIgnoreLine($line)
     {
         return $this->generatePattern($line);
     }
@@ -65,7 +65,7 @@ class GitExcludeFilter extends BaseExcludeFilter
      *
      * @return array An exclude pattern for filter()
      */
-    protected function parseGitAttributesLine($line)
+    public function parseGitAttributesLine($line)
     {
         $parts = preg_split('#\s+#', $line);
 
