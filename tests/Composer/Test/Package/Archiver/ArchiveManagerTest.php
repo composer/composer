@@ -75,7 +75,8 @@ class ArchiveManagerTest extends ArchiverTest
         $currentWorkDir = getcwd();
         chdir($this->testDir);
 
-        $result = $this->process->execute('git init -q');
+        $output = null;
+        $result = $this->process->execute('git init -q', $output, $this->testDir);
         if ($result > 0) {
             chdir($currentWorkDir);
             throw new \RuntimeException('Could not init: '.$this->process->getErrorOutput());
@@ -87,7 +88,7 @@ class ArchiveManagerTest extends ArchiverTest
             throw new \RuntimeException('Could not save file.');
         }
 
-        $result = $this->process->execute('git add b && git commit -m "commit b" -q');
+        $result = $this->process->execute('git add b && git commit -m "commit b" -q', $output, $this->testDir);
         if ($result > 0) {
             chdir($currentWorkDir);
             throw new \RuntimeException('Could not commit: '.$this->process->getErrorOutput());
