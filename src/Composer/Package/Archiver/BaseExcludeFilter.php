@@ -17,7 +17,7 @@ use Symfony\Component\Finder;
 /**
  * @author Nils Adermann <naderman@naderman.de>
  */
-abstract class ExcludeFilterBase
+abstract class BaseExcludeFilter
 {
     /**
      * @var string

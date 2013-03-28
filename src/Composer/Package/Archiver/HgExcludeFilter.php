@@ -19,7 +19,7 @@ use Symfony\Component\Finder;
  *
  * @author Nils Adermann <naderman@naderman.de>
  */
-class HgExcludeFilter extends ExcludeFilterBase
+class HgExcludeFilter extends BaseExcludeFilter
 {
     const HG_IGNORE_REGEX = 1;
     const HG_IGNORE_GLOB = 2;
