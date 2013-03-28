@@ -234,7 +234,7 @@ class Installer
 
                 // split dev and non-dev requirements by checking what would be removed if we update without the dev requirements
                 if ($this->devMode && $this->package->getDevRequires()) {
-                    $policy = new DefaultPolicy();
+                    $policy = $this->createPolicy();
                     $pool = $this->createPool();
                     $pool->addRepository($installedRepo, $aliases);
 
@@ -308,7 +308,7 @@ class Installer
         $this->io->write('<info>Loading composer repositories with package information</info>');
 
         // creating repository pool
-        $policy = new DefaultPolicy();
+        $policy = $this->createPolicy();
         $pool = $this->createPool();
         $pool->addRepository($installedRepo, $aliases);
         if ($installFromLock) {
@@ -511,6 +511,11 @@ class Installer
         }
 
         return new Pool($minimumStability, $stabilityFlags);
+    }
+
+    private function createPolicy()
+    {
+        return new DefaultPolicy($this->package->getPreferStable());
     }
 
     private function createRequest(Pool $pool, RootPackageInterface $rootPackage, PlatformRepository $platformRepo)
