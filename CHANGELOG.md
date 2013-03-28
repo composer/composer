@@ -1,3 +1,43 @@
+### 1.0.0-alpha7 ()
+
+  * Break: For forward compatibility, you should change your deployment scripts to run `composer install --no-dev`. The install command will install dev dependencies by default starting in the next release
+  * Break: The `update` command now has --dev enabled by default. --no-dev can be used to update without dev requirements, but it will create an incomplete lock file and is discouraged
+  * Added `preferred-install` config option to always enable --prefer-source or --prefer-dist
+  * Added wildcard support in the update whitelist, e.g. to update all packages of a vendor do `composer update vendor/*`
+  * Added `archive` command to archive the current directory or a given package
+  * Added `proprietary` as valid license identifier for non-free code
+  * Added a `php-64bit` platform package that you can require to force a 64bit php
+  * Added a `lib-ICU` platform package
+  * Added zip/dist local cache to speed up repetitive installations
+  * Added `post-autoload-dump` script event
+  * Added `Event::getDevMode` to let script handlers know if dev requirements are being installed
+  * Added `discard-changes` config option to control the default behavior when updating "dirty" dependencies
+  * Added `use-include-path` config option to make the autoloader look for files in the include path too
+  * Added `cache-ttl`, `cache-files-ttl` and `cache-files-maxsize` config option
+  * Added `cache-dir`, `cache-files-dir`, `cache-repo-dir and `cache-vcs-dir` config option
+  * Added support for using http(s) authentication to non-github repos
+  * Added support for using multiple autoloaders at once (e.g. PHPUnit + application both using Composer autoloader)
+  * Added support for .inc files for classmap autoloading (legacy support, do not do this on new projects!)
+  * Added --no-dev flag to `install` and `update` commands
+  * Added --stability (-s) flag to create-project to lower the required stability
+  * Added --no-progress to `install` and `update` to hide the progress indicators
+  * Added --available (-a) flag to the `show` command to display only available packages
+  * Added --name-only (-N) flag to the `show` command to show only package names (one per line, no formatting)
+  * Added --optimize-autoloader (-o) flag to optimize the autoloader from the `install` and `update` commands
+  * Added PHP 5.2 compatibility to the autoloader configuration files so they can be used to configure another autoloader
+  * Fixed handling of platform requirements of the root package when installing from lock
+  * Fixed handling of require-dev dependencies
+  * Fixed handling of unstable packages that should be downgraded to stable packages when
+  * Fixed parsing of the `~` operator combined with unstable versions
+  * Fixed the `require` command corrupting the json if the new requirement was invalid
+  * Fixed support of aliases used together with `<version>#<reference>` constraints
+  * Improved performance of classmap generation
+  * Improved mercurial support in various places
+  * Improved lock file format to minimize unnecessary diffs
+  * Improved the `config` command to support all options
+  * Improved the coverage of the `validate` command
+  * Tons of minor bug fixes and improvements
+
 ### 1.0.0-alpha6 (2012-10-23)
 
   * Schema: Added ability to pass additional options to repositories (i.e. ssh keys/client certificates to secure private repos)
