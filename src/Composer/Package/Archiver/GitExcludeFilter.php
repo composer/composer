@@ -19,7 +19,7 @@ namespace Composer\Package\Archiver;
  *
  * @author Nils Adermann <naderman@naderman.de>
  */
-class GitExcludeFilter extends ExcludeFilterBase
+class GitExcludeFilter extends BaseExcludeFilter
 {
     /**
      * Parses .gitignore and .gitattributes files if they exist

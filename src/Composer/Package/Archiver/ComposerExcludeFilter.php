@@ -17,7 +17,7 @@ namespace Composer\Package\Archiver;
  *
  * @author Nils Adermann <naderman@naderman.de>
  */
-class ComposerExcludeFilter extends ExcludeFilterBase
+class ComposerExcludeFilter extends BaseExcludeFilter
 {
     /**
      * @param string $sourcePath Directory containing sources to be filtered
