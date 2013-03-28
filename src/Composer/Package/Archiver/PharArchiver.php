@@ -34,6 +34,11 @@ class PharArchiver implements ArchiverInterface
     {
         $sources = realpath($sources);
 
+        // Phar would otherwise load the file which we don't want
+        if (file_exists($target)) {
+            unlink($target);
+        }
+
         try {
             $phar = new \PharData($target, null, null, static::$formats[$format]);
             $files = new ArchivableFilesFinder($sources, $excludes);
