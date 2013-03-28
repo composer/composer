@@ -315,7 +315,7 @@ class Installer
             $pool->addRepository($lockedRepository, $aliases);
         }
 
-        if (!$installFromLock || !$this->locker->isCompleteFormat()) {
+        if (!$installFromLock) {
             $repositories = $this->repositoryManager->getRepositories();
             foreach ($repositories as $repository) {
                 $pool->addRepository($repository, $aliases);
@@ -392,10 +392,6 @@ class Installer
             }
         } elseif ($installFromLock) {
             $this->io->write('<info>Installing dependencies'.($withDevReqs?' (including require-dev)':'').' from lock file</info>');
-
-            if (!$this->locker->isCompleteFormat($withDevReqs)) {
-                $this->io->write('<warning>Warning: Your lock file is in a deprecated format. It will most likely take a *long* time for composer to install dependencies, and may cause dependency solving issues.</warning>');
-            }
 
             if (!$this->locker->isFresh()) {
                 $this->io->write('<warning>Warning: The lock file is not up to date with the latest changes in composer.json. You may be getting outdated dependencies. Run update to update them.</warning>');
