@@ -308,4 +308,11 @@ interface PackageInterface
      * @return string
      */
     public function getPrettyString();
+
+    /**
+     * Returns a list of patterns to exclude from package archives
+     *
+     * @return array
+     */
+    public function getArchiveExcludes();
 }
