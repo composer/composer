@@ -64,7 +64,7 @@ EOT
         );
     }
 
-    public function archive(IOInterface $io, $packageName = false, $version = false, $format = 'tar', $dest = '.')
+    protected function archive(IOInterface $io, $packageName = null, $version = null, $format = 'tar', $dest = '.')
     {
         $config = Factory::createConfig();
         $factory = new Factory;
@@ -91,7 +91,7 @@ EOT
         return 0;
     }
 
-    protected function selectPackage(IOInterface $io, $packageName, $version = false)
+    protected function selectPackage(IOInterface $io, $packageName, $version = null)
     {
         $io->write('<info>Searching for the specified package.</info>');
 
