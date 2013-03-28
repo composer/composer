@@ -22,7 +22,7 @@ use Composer\Package\PackageInterface;
  */
 class PharArchiver implements ArchiverInterface
 {
-    static protected $formats = array(
+    protected static $formats = array(
         'zip' => \Phar::ZIP,
         'tar' => \Phar::TAR,
     );
