@@ -14,15 +14,28 @@ namespace Composer\DependencyResolver;
 
 use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
+use Composer\Package\BasePackage;
 use Composer\Package\LinkConstraint\VersionConstraint;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
+ * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 class DefaultPolicy implements PolicyInterface
 {
+    private $preferStable;
+
+    public function __construct($preferStable = false)
+    {
+        $this->preferStable = $preferStable;
+    }
+
     public function versionCompare(PackageInterface $a, PackageInterface $b, $operator)
     {
+        if ($this->preferStable && ($stabA = $a->getStability()) !== ($stabB = $b->getStability())) {
+            return BasePackage::$stabilities[$stabA] < BasePackage::$stabilities[$stabB];
+        }
+
         $constraint = new VersionConstraint($operator, $b->getVersion());
         $version = new VersionConstraint('==', $a->getVersion());
 
