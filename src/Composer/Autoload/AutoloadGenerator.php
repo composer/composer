@@ -158,8 +158,12 @@ EOF;
         $autoloads['classmap'] = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($autoloads['classmap']));
         foreach ($autoloads['classmap'] as $dir) {
             foreach (ClassMapGenerator::createMap($dir) as $class => $path) {
-                $path = '/'.$filesystem->findShortestPath(getcwd(), $path, true);
-                $classMap[$class] = '$baseDir . '.var_export($path, true).",\n";
+                $path = $filesystem->findShortestPath(getcwd(), $path, true);
+                if ($path[0] == '/') {
+                    $classMap[$class] = var_export($path, true).",\n";
+                } else {
+                    $classMap[$class] = '$baseDir . '.var_export('/'.$path, true).",\n";
+                }
             }
         }
 
