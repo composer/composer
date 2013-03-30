@@ -493,6 +493,13 @@ a given package can be done in `require` or `require-dev` (see
 Available options (in order of stability) are `dev`, `alpha`, `beta`, `RC`,
 and `stable`.
 
+### prefer-stable <span>(root-only)</span>
+
+When this is enabled, Composer will prefer more stable packages over unstable
+ones when finding compatible stable packages is possible. If you require a
+dev version or only alphas are available for a package, those will still be
+selected granted that the minimum-stability allows for it.
+
 ### repositories <span>(root-only)</span>
 
 Custom package repositories to use.
