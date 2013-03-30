@@ -131,7 +131,7 @@ Example using HTTP over SSL using a client certificate:
 
 ### Downloads
 
-When Github or Bitbucket repositories are mirrored on your local satis, the build process will include
+When GitHub or BitBucket repositories are mirrored on your local satis, the build process will include
 the location of the downloads these platforms make available. This means that the repository and your setup depend
 on the availability of these services.
 
@@ -153,17 +153,16 @@ following to your `satis.json`:
 #### Options explained
 
  * `directory`: the location of the dist files (inside the `output-dir`)
- * `format`: `zip` (default) or `tar`
- * `prefix-url`: homepage (from `satis.json`) by default (followed by `directory`)
- * `skip-dev`: when enabled (`true`) we will not create downloads for branches, `false` by default
+ * `format`: optional, `zip` (default) or `tar`
+ * `prefix-url`: optional, location of the downloads, homepage (from `satis.json`) followed by `directory` by default
+ * `skip-dev`: optional, `false` by default, when enabled (`true`) satis will not create downloads for branches
 
-Once enabled, all downloads (even those from Github and Bitbucket) will be replaced with a _local_ version.
+Once enabled, all downloads (include those from GitHub and BitBucket) will be replaced with a _local_ version.
 
 #### prefix-url
 
 Prefixing the URL with another host is especially helpful if the downloads end up in a private Amazon S3
-bucket or on a CDN host (which would drastically improve download times and therefor package installation).
+bucket or on a CDN host. A CDN would drastically improve download times and therefore package installation.
 
 Example: A `prefix-url` of `http://my-bucket.s3.amazonaws.com` (and `directory` set to `dist`) creates download URLs
 which look like the following: `http://my-bucket.s3.amazonaws.com/dist/vendor-package-version-ref.zip`.
-
