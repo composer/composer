@@ -46,12 +46,13 @@ class AutoloadGenerator
         $targetDir = $vendorPath.'/'.$targetDir;
         $filesystem->ensureDirectoryExists($targetDir);
 
-        $relVendorPath = $filesystem->findShortestPath(getcwd(), $vendorPath, true);
+        $cwd = getcwd();
+        $relVendorPath = $filesystem->findShortestPath($cwd, $vendorPath, true);
         $vendorPathCode = $filesystem->findShortestPathCode(realpath($targetDir), $vendorPath, true);
         $vendorPathCode52 = str_replace('__DIR__', 'dirname(__FILE__)', $vendorPathCode);
         $vendorPathToTargetDirCode = $filesystem->findShortestPathCode($vendorPath, realpath($targetDir), true);
 
-        $appBaseDirCode = $filesystem->findShortestPathCode($vendorPath, getcwd(), true);
+        $appBaseDirCode = $filesystem->findShortestPathCode($vendorPath, $cwd, true);
         $appBaseDirCode = str_replace('__DIR__', '$vendorDir', $appBaseDirCode);
 
         $namespacesFile = <<<EOF
@@ -104,7 +105,7 @@ EOF;
             $prefixes = implode(', ', array_map(function ($prefix) {
                 return var_export($prefix, true);
             }, array_keys($mainAutoload['psr-0'])));
-            $baseDirFromTargetDirCode = $filesystem->findShortestPathCode($targetDir, getcwd(), true);
+            $baseDirFromTargetDirCode = $filesystem->findShortestPathCode($targetDir, $cwd, true);
 
             $targetDirLoader = <<<EOF
 
@@ -145,7 +146,7 @@ EOF;
                     }
                     foreach (ClassMapGenerator::createMap($dir, $whitelist) as $class => $path) {
                         if ('' === $namespace || 0 === strpos($class, $namespace)) {
-                            $path = '/'.$filesystem->findShortestPath(getcwd(), $path, true);
+                            $path = '/'.$filesystem->findShortestPath($cwd, $path, true);
                             if (!isset($classMap[$class])) {
                                 $classMap[$class] = '$baseDir . '.var_export($path, true).",\n";
                             }
@@ -158,8 +159,12 @@ EOF;
         $autoloads['classmap'] = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($autoloads['classmap']));
         foreach ($autoloads['classmap'] as $dir) {
             foreach (ClassMapGenerator::createMap($dir) as $class => $path) {
-                $path = '/'.$filesystem->findShortestPath(getcwd(), $path, true);
-                $classMap[$class] = '$baseDir . '.var_export($path, true).",\n";
+                $path = $filesystem->findShortestPath($cwd, $path, true);
+                if ($filesystem->isAbsolutePath($path)) {
+                    $classMap[$class] = var_export($path, true).",\n";
+                } else {
+                    $classMap[$class] = '$baseDir . '.var_export('/'.$path, true).",\n";
+                }
             }
         }
 
