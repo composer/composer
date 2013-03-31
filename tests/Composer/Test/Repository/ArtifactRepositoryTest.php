@@ -15,13 +15,15 @@ namespace Composer\Repository;
 use Composer\Test\TestCase;
 use Composer\IO\NullIO;
 use Composer\Config;
-use Composer\Package\Package;
+use Composer\Package\BasePackage;
 
 class ArtifactRepositoryTest extends TestCase
 {
     public function testExtractsConfigsFromZipArchives()
     {
         $expectedPackages = array(
+            'composer/composer-dev-master',
+            'composer/composer-1.0.x-dev',
             'composer/composer-1.0.0-alpha6',
             'vendor0/package0-0.0.1',
             'vendor1/package2-4.3.2',
@@ -30,7 +32,7 @@ class ArtifactRepositoryTest extends TestCase
         $coordinates = array('type' => 'artifact', 'url' => __DIR__ . '/Fixtures/artifacts');
         $repo = new ArtifactRepository($coordinates, new NullIO(), new Config());
 
-        $foundPackages = array_map(function(Package $package) {
+        $foundPackages = array_map(function(BasePackage $package) {
             return "{$package->getPrettyName()}-{$package->getPrettyVersion()}";
         }, $repo->getPackages());
 
