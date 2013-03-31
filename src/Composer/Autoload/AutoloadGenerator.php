@@ -159,7 +159,7 @@ EOF;
         foreach ($autoloads['classmap'] as $dir) {
             foreach (ClassMapGenerator::createMap($dir) as $class => $path) {
                 $path = $filesystem->findShortestPath(getcwd(), $path, true);
-                if ($path[0] == '/') {
+                if ($filesystem->isAbsolutePath($path)) {
                     $classMap[$class] = var_export($path, true).",\n";
                 } else {
                     $classMap[$class] = '$baseDir . '.var_export('/'.$path, true).",\n";
