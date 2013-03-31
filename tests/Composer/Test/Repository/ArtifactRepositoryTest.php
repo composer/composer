@@ -22,9 +22,9 @@ class ArtifactRepositoryTest extends TestCase
     public function testExtractsConfigsFromZipArchives()
     {
         $expectedPackages = array(
+            'composer/composer-1.0.0-alpha6',
             'composer/composer-dev-master',
             'composer/composer-1.0.x-dev',
-            'composer/composer-1.0.0-alpha6',
             'vendor0/package0-0.0.1',
             'vendor1/package2-4.3.2',
         );
