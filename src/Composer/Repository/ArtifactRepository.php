@@ -69,11 +69,22 @@ class ArtifactRepository extends ArrayRepository
 
     private function getComposerInformation(\SplFileInfo $file)
     {
-        $composerFile = "zip://{$file->getPathname()}#composer.json";
-        $json = @file_get_contents($composerFile);
-        if (!$json) {
+        $zip = new \ZipArchive();
+        $zip->open($file->getPathname());
+
+        if (0 == $zip->numFiles) {
             return false;
         }
+
+        $foundFileIndex = $zip->locateName('composer.json', \ZipArchive::FL_NODIR);
+        if (false === $foundFileIndex) {
+            return false;
+        }
+
+        $configurationFileName = $zip->getNameIndex($foundFileIndex);
+
+        $composerFile = "zip://{$file->getPathname()}#$configurationFileName";
+        $json = file_get_contents($composerFile);
 
         $package = JsonFile::parseJson($json, $composerFile);
         $package['dist'] = array(
