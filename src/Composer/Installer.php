@@ -687,8 +687,6 @@ class Installer
             foreach ($versions as $version => $alias) {
                 $packages = $platformRepo->findPackages($package, $version);
                 foreach ($packages as $package) {
-                    $package->setAlias($alias['alias_normalized']);
-                    $package->setPrettyAlias($alias['alias']);
                     $aliasPackage = new AliasPackage($package, $alias['alias_normalized'], $alias['alias']);
                     $aliasPackage->setRootPackageAlias(true);
                     $platformRepo->addPackage($aliasPackage);
