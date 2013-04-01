@@ -41,18 +41,18 @@ class AutoloadGenerator
     {
         $filesystem = new Filesystem();
         $filesystem->ensureDirectoryExists($config->get('vendor-dir'));
-        $vendorPath = strtr(realpath($config->get('vendor-dir')), '\\', '/');
+        $basePath = $filesystem->normalizePath(getcwd());
+        $vendorPath = $filesystem->normalizePath(realpath($config->get('vendor-dir')));
         $useGlobalIncludePath = (bool) $config->get('use-include-path');
         $targetDir = $vendorPath.'/'.$targetDir;
         $filesystem->ensureDirectoryExists($targetDir);
 
-        $cwd = getcwd();
-        $relVendorPath = $filesystem->findShortestPath($cwd, $vendorPath, true);
+        $relVendorPath = $filesystem->findShortestPath($basePath, $vendorPath, true);
         $vendorPathCode = $filesystem->findShortestPathCode(realpath($targetDir), $vendorPath, true);
         $vendorPathCode52 = str_replace('__DIR__', 'dirname(__FILE__)', $vendorPathCode);
         $vendorPathToTargetDirCode = $filesystem->findShortestPathCode($vendorPath, realpath($targetDir), true);
 
-        $appBaseDirCode = $filesystem->findShortestPathCode($vendorPath, $cwd, true);
+        $appBaseDirCode = $filesystem->findShortestPathCode($vendorPath, $basePath, true);
         $appBaseDirCode = str_replace('__DIR__', '$vendorDir', $appBaseDirCode);
 
         $namespacesFile = <<<EOF
@@ -73,7 +73,7 @@ EOF;
         foreach ($autoloads['psr-0'] as $namespace => $paths) {
             $exportedPaths = array();
             foreach ($paths as $path) {
-                $exportedPaths[] = $this->getPathCode($filesystem, $relVendorPath, $vendorPath, $path);
+                $exportedPaths[] = $this->getPathCode($filesystem, $basePath, $relVendorPath, $vendorPath, $path);
             }
             $exportedPrefix = var_export($namespace, true);
             $namespacesFile .= "    $exportedPrefix => ";
@@ -101,11 +101,11 @@ EOF;
         $targetDirLoader = null;
         $mainAutoload = $mainPackage->getAutoload();
         if ($mainPackage->getTargetDir() && !empty($mainAutoload['psr-0'])) {
-            $levels = count(explode('/', trim(strtr($mainPackage->getTargetDir(), '\\', '/'), '/')));
+            $levels = count(explode('/', $filesystem->normalizePath($mainPackage->getTargetDir())));
             $prefixes = implode(', ', array_map(function ($prefix) {
                 return var_export($prefix, true);
             }, array_keys($mainAutoload['psr-0'])));
-            $baseDirFromTargetDirCode = $filesystem->findShortestPathCode($targetDir, $cwd, true);
+            $baseDirFromTargetDirCode = $filesystem->findShortestPathCode($targetDir, $basePath, true);
 
             $targetDirLoader = <<<EOF
 
@@ -135,7 +135,7 @@ EOF;
         if ($scanPsr0Packages) {
             foreach ($autoloads['psr-0'] as $namespace => $paths) {
                 foreach ($paths as $dir) {
-                    $dir = $this->getPath($filesystem, $relVendorPath, $vendorPath, $dir);
+                    $dir = $this->getPath($filesystem, $basePath, $relVendorPath, $vendorPath, $dir);
                     $whitelist = sprintf(
                         '{%s/%s.+(?<!(?<!/)Test\.php)$}',
                         preg_quote(rtrim($dir, '/')),
@@ -146,9 +146,9 @@ EOF;
                     }
                     foreach (ClassMapGenerator::createMap($dir, $whitelist) as $class => $path) {
                         if ('' === $namespace || 0 === strpos($class, $namespace)) {
-                            $path = '/'.$filesystem->findShortestPath($cwd, $path, true);
                             if (!isset($classMap[$class])) {
-                                $classMap[$class] = '$baseDir . '.var_export($path, true).",\n";
+                                $path = $this->getPathCode($filesystem, $basePath, $relVendorPath, $vendorPath, $path);
+                                $classMap[$class] = $path.",\n";
                             }
                         }
                     }
@@ -159,12 +159,8 @@ EOF;
         $autoloads['classmap'] = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($autoloads['classmap']));
         foreach ($autoloads['classmap'] as $dir) {
             foreach (ClassMapGenerator::createMap($dir) as $class => $path) {
-                $path = $filesystem->findShortestPath($cwd, $path, true);
-                if ($filesystem->isAbsolutePath($path)) {
-                    $classMap[$class] = var_export($path, true).",\n";
-                } else {
-                    $classMap[$class] = '$baseDir . '.var_export('/'.$path, true).",\n";
-                }
+                $path = $this->getPathCode($filesystem, $basePath, $relVendorPath, $vendorPath, $path);
+                $classMap[$class] = $path.",\n";
             }
         }
 
@@ -177,7 +173,7 @@ EOF;
         $filesCode = "";
         $autoloads['files'] = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($autoloads['files']));
         foreach ($autoloads['files'] as $functionFile) {
-            $filesCode .= '        require '.$this->getPathCode($filesystem, $relVendorPath, $vendorPath, $functionFile).";\n";
+            $filesCode .= '        require '.$this->getPathCode($filesystem, $basePath, $relVendorPath, $vendorPath, $functionFile).";\n";
         }
 
         if (!$suffix) {
@@ -186,7 +182,7 @@ EOF;
 
         file_put_contents($targetDir.'/autoload_namespaces.php', $namespacesFile);
         file_put_contents($targetDir.'/autoload_classmap.php', $classmapFile);
-        if ($includePathFile = $this->getIncludePathsFile($packageMap, $filesystem, $relVendorPath, $vendorPath, $vendorPathCode52, $appBaseDirCode)) {
+        if ($includePathFile = $this->getIncludePathsFile($packageMap, $filesystem, $basePath, $relVendorPath, $vendorPath, $vendorPathCode52, $appBaseDirCode)) {
             file_put_contents($targetDir.'/include_paths.php', $includePathFile);
         }
         file_put_contents($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, $suffix));
@@ -257,7 +253,7 @@ EOF;
         return $loader;
     }
 
-    protected function getIncludePathsFile(array $packageMap, Filesystem $filesystem, $relVendorPath, $vendorPath, $vendorPathCode, $appBaseDirCode)
+    protected function getIncludePathsFile(array $packageMap, Filesystem $filesystem, $basePath, $relVendorPath, $vendorPath, $vendorPathCode, $appBaseDirCode)
     {
         $includePaths = array();
 
@@ -291,15 +287,15 @@ return array(
 EOF;
 
         foreach ($includePaths as $path) {
-            $includePathsFile .= "    " . $this->getPathCode($filesystem, $relVendorPath, $vendorPath, $path) . ",\n";
+            $includePathsFile .= "    " . $this->getPathCode($filesystem, $basePath, $relVendorPath, $vendorPath, $path) . ",\n";
         }
 
         return $includePathsFile . ");\n";
     }
 
-    protected function getPathCode(Filesystem $filesystem, $relVendorPath, $vendorPath, $path)
+    protected function getPathCode(Filesystem $filesystem, $basePath, $relVendorPath, $vendorPath, $path)
     {
-        $path = strtr($path, '\\', '/');
+        $path = $filesystem->normalizePath($path);
         $baseDir = '';
         if (!$filesystem->isAbsolutePath($path)) {
             if (strpos($path, $relVendorPath) === 0) {
@@ -313,6 +309,9 @@ EOF;
         } elseif (strpos($path, $vendorPath) === 0) {
             $path = substr($path, strlen($vendorPath));
             $baseDir = '$vendorDir . ';
+        } elseif (strpos($path, $basePath) === 0) {
+            $path = substr($path, strlen($basePath));
+            $baseDir = '$baseDir . ';
         }
 
         if (preg_match('/\.phar$/', $path)){
@@ -322,16 +321,16 @@ EOF;
         return $baseDir.var_export($path, true);
     }
 
-    protected function getPath(Filesystem $filesystem, $relVendorPath, $vendorPath, $path)
+    protected function getPath(Filesystem $filesystem, $basePath, $relVendorPath, $vendorPath, $path)
     {
-        $path = strtr($path, '\\', '/');
+        $path = $filesystem->normalizePath($path);
         if (!$filesystem->isAbsolutePath($path)) {
             if (strpos($path, $relVendorPath) === 0) {
                 // path starts with vendor dir
                 return $vendorPath . substr($path, strlen($relVendorPath));
             }
 
-            return strtr(getcwd(), '\\', '/').'/'.$path;
+            return $basePath.'/'.$path;
         }
 
         return $path;
