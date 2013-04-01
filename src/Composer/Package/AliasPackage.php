@@ -175,22 +175,6 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
         return $this->rootPackageAlias;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getAlias()
-    {
-        return '';
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getPrettyAlias()
-    {
-        return '';
-    }
-
     /***************************************
      * Wrappers around the aliased package *
      ***************************************/
@@ -250,14 +234,6 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     public function getScripts()
     {
         return $this->aliasOf->getScripts();
-    }
-    public function setAliases(array $aliases)
-    {
-        return $this->aliasOf->setAliases($aliases);
-    }
-    public function getAliases()
-    {
-        return $this->aliasOf->getAliases();
     }
     public function getLicense()
     {

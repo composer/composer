@@ -322,16 +322,18 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
                     $package = $this->createPackage($version, 'Composer\Package\Package');
                     $package->setRepository($this);
 
-                    $this->providers[$name][$version['uid']] = $package;
-                    $this->providersByUid[$version['uid']] = $package;
+                    if ($package instanceof AliasPackage) {
+                        $aliased = $package->getAliasOf();
+                        $aliased->setRepository($this);
 
-                    if ($package->getAlias()) {
-                        $alias = $this->createAliasPackage($package);
-                        $alias->setRepository($this);
+                        $this->providers[$name][$version['uid']] = $aliased;
+                        $this->providers[$name][$version['uid'].'-alias'] = $package;
 
-                        $this->providers[$name][$version['uid'].'-alias'] = $alias;
                         // override provider with its alias so it can be expanded in the if block above
-                        $this->providersByUid[$version['uid']] = $alias;
+                        $this->providersByUid[$version['uid']] = $package;
+                    } else {
+                        $this->providers[$name][$version['uid']] = $package;
+                        $this->providersByUid[$version['uid']] = $package;
                     }
 
                     // handle root package aliases
@@ -339,8 +341,8 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
 
                     if (isset($this->rootAliases[$name][$package->getVersion()])) {
                         $rootAliasData = $this->rootAliases[$name][$package->getVersion()];
-                    } elseif (($aliasNormalized = $package->getAlias()) && isset($this->rootAliases[$name][$aliasNormalized])) {
-                        $rootAliasData = $this->rootAliases[$name][$aliasNormalized];
+                    } elseif ($package instanceof AliasPackage && isset($this->rootAliases[$name][$package->getAliasOf()->getVersion()])) {
+                        $rootAliasData = $this->rootAliases[$name][$package->getAliasOf()->getVersion()];
                     }
 
                     if (isset($rootAliasData)) {

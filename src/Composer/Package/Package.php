@@ -36,9 +36,6 @@ class Package extends BasePackage
     protected $releaseDate;
     protected $extra = array();
     protected $binaries = array();
-    protected $aliases = array();
-    protected $alias;
-    protected $prettyAlias;
     protected $dev;
     protected $stability;
     protected $notificationUrl;
@@ -153,54 +150,6 @@ class Package extends BasePackage
     public function getBinaries()
     {
         return $this->binaries;
-    }
-
-    /**
-     * @param array $aliases
-     */
-    public function setAliases(array $aliases)
-    {
-        $this->aliases = $aliases;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getAliases()
-    {
-        return $this->aliases;
-    }
-
-    /**
-     * @param string $alias
-     */
-    public function setAlias($alias)
-    {
-        $this->alias = $alias;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getAlias()
-    {
-        return $this->alias;
-    }
-
-    /**
-     * @param string $prettyAlias
-     */
-    public function setPrettyAlias($prettyAlias)
-    {
-        $this->prettyAlias = $prettyAlias;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getPrettyAlias()
-    {
-        return $this->prettyAlias;
     }
 
     /**
