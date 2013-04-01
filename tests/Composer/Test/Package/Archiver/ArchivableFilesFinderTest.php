@@ -29,7 +29,7 @@ class ArchivableFilesFinderTest extends \PHPUnit_Framework_TestCase
     {
         $fs = new Filesystem;
 
-        $this->sources = sys_get_temp_dir().
+        $this->sources = realpath(sys_get_temp_dir()).
             '/composer_archiver_test'.uniqid(mt_rand(), true);
 
         $fileTree = array(
