@@ -752,7 +752,7 @@ class Installer
             $packageQueue = new \SplQueue;
 
             $depPackages = $pool->whatProvides($packageName);
-            if (count($depPackages) == 0 && !in_array($packageName, $requiredPackageNames)) {
+            if (count($depPackages) == 0 && !in_array($packageName, $requiredPackageNames) && !in_array($packageName, array('nothing', 'lock'))) {
                 $this->io->write('<warning>Package "' . $packageName . '" listed for update is not installed. Ignoring.<warning>');
             }
 
