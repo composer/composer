@@ -14,6 +14,7 @@ namespace Composer\Package\Archiver;
 
 use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
+use Composer\Util\Filesystem;
 
 use Symfony\Component\Finder;
 
@@ -40,7 +41,9 @@ class ArchivableFilesFinder extends \FilterIterator
      */
     public function __construct($sources, array $excludes)
     {
-        $sources = realpath($sources);
+        $fs = new Filesystem();
+
+        $sources = $fs->normalizePath($sources);
 
         $filters = array(
             new HgExcludeFilter($sources),
@@ -51,11 +54,11 @@ class ArchivableFilesFinder extends \FilterIterator
         $this->finder = new Finder\Finder();
         $this->finder
             ->in($sources)
-            ->filter(function (\SplFileInfo $file) use ($sources, $filters) {
+            ->filter(function (\SplFileInfo $file) use ($sources, $filters, $fs) {
                 $relativePath = preg_replace(
                     '#^'.preg_quote($sources, '#').'#',
                     '',
-                    str_replace(DIRECTORY_SEPARATOR, '/', $file->getRealPath())
+                    $fs->normalizePath($file->getRealPath())
                 );
 
                 $exclude = false;

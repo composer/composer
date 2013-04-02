@@ -14,10 +14,6 @@ namespace Composer\Test\Package\Archiver;
 
 use Composer\Package\Archiver\PharArchiver;
 
-/**
- * @author Till Klampaeckel <till@php.net>
- * @author Matthieu Moquet <matthieu@moquet.net>
- */
 class PharArchiverTest extends ArchiverTest
 {
     public function testTarArchive()

@@ -14,9 +14,6 @@ namespace Composer\Test\Package\Archiver;
 
 use Composer\Package\Archiver\HgExcludeFilter;
 
-/**
- * @author Nils Adermann <naderman@naderman.de>
- */
 class HgExcludeFilterTest extends \PHPUnit_Framework_TestCase
 {
     /**
