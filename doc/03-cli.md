@@ -264,7 +264,7 @@ the local composer.json file or the global config.json file.
 configuration value.  For settings that can take an array of values (like
 `github-protocols`), more than one setting-value arguments are allowed.
 
-See the [config schema section](04-schema.md#config-root-only) for valid configuration
+See the [config schema section](04-schema.md#config) for valid configuration
 options.
 
 ### Options
