@@ -55,7 +55,7 @@ package that has the [type][1] `composer-installer`.
 A basic Installer would thus compose of two files:
 
 1. the package file: composer.json
-2. The Installer class, e.g.: `My\Project\Composer\Installer.php`, containing a class that implements `Composer\Installer\InstallerInterface˚.
+2. The Installer class, e.g.: `My\Project\Composer\Installer.php`, containing a class that implements `Composer\Installer\InstallerInterface`.
 
 ### composer.json
 
