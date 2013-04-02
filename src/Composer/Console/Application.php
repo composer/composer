@@ -100,6 +100,10 @@ class Application extends BaseApplication
             }
         }
 
+        if (getenv('COMPOSER_NO_INTERACTION')) {
+            $input->setInteractive(false);
+        }
+
         if ($input->hasParameterOption('--profile')) {
             $startTime = microtime(true);
             $this->io->enableDebugging($startTime);

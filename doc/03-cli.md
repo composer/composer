@@ -423,4 +423,9 @@ configuration in the project's `composer.json` always wins.
 This env var controls the time composer waits for commands (such as git
 commands) to finish executing. The default value is 300 seconds (5 minutes).
 
+### COMPOSER_NO_INTERACTION
+
+If set to 1, this env var will make composer behave as if you passed the
+`--no-interaction` flag to every command. This can be set on build boxes/CI.
+
 &larr; [Libraries](02-libraries.md)  |  [Schema](04-schema.md) &rarr;
