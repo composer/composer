@@ -91,6 +91,10 @@ class RootPackageLoader extends ArrayLoader
             $package->setMinimumStability(VersionParser::normalizeStability($config['minimum-stability']));
         }
 
+        if (isset($config['prefer-stable'])) {
+            $package->setPreferStable((bool) $config['prefer-stable']);
+        }
+
         $repos = Factory::createDefaultRepositories(null, $this->config, $this->manager);
         foreach ($repos as $repo) {
             $this->manager->addRepository($repo);
