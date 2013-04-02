@@ -20,6 +20,7 @@ namespace Composer\Package;
 class RootPackage extends CompletePackage implements RootPackageInterface
 {
     protected $minimumStability = 'stable';
+    protected $preferStable = false;
     protected $stabilityFlags = array();
     protected $references = array();
 
@@ -57,6 +58,24 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     public function getStabilityFlags()
     {
         return $this->stabilityFlags;
+    }
+
+    /**
+     * Set the preferStable
+     *
+     * @param bool $preferStable
+     */
+    public function setPreferStable($preferStable)
+    {
+        $this->preferStable = $preferStable;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getPreferStable()
+    {
+        return $this->preferStable;
     }
 
     /**
