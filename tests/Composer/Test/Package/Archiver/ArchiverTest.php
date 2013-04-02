@@ -16,10 +16,6 @@ use Composer\Util\Filesystem;
 use Composer\Util\ProcessExecutor;
 use Composer\Package\Package;
 
-/**
- * @author Till Klampaeckel <till@php.net>
- * @author Matthieu Moquet <matthieu@moquet.net>
- */
 abstract class ArchiverTest extends \PHPUnit_Framework_TestCase
 {
     /**

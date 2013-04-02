@@ -18,10 +18,6 @@ use Composer\Package\Archiver;
 use Composer\Package\Archiver\ArchiveManager;
 use Composer\Package\PackageInterface;
 
-/**
- * @author Till Klampaeckel <till@php.net>
- * @author Matthieu Moquet <matthieu@moquet.net>
- */
 class ArchiveManagerTest extends ArchiverTest
 {
     protected $manager;

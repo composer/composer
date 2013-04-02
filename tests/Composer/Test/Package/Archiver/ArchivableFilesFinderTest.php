@@ -17,20 +17,20 @@ use Composer\Util\Filesystem;
 
 use Symfony\Component\Process\Process;
 
-/**
- * @author Nils Adermann <naderman@naderman.de>
- */
 class ArchivableFilesFinderTest extends \PHPUnit_Framework_TestCase
 {
     protected $sources;
     protected $finder;
+    protected $fs;
 
-    protected function setup()
+    protected function setUp()
     {
         $fs = new Filesystem;
+        $this->fs = $fs;
 
-        $this->sources = realpath(sys_get_temp_dir()).
-            '/composer_archiver_test'.uniqid(mt_rand(), true);
+        $this->sources = $fs->normalizePath(
+            realpath(sys_get_temp_dir()).'/composer_archiver_test'.uniqid(mt_rand(), true)
+        );
 
         $fileTree = array(
             'A/prefixA.foo',
@@ -171,7 +171,7 @@ class ArchivableFilesFinderTest extends \PHPUnit_Framework_TestCase
         $files = array();
         foreach ($this->finder as $file) {
             if (!$file->isDir()) {
-                $files[] = preg_replace('#^'.preg_quote($this->sources, '#').'#', '', $file->getRealPath());
+                $files[] = preg_replace('#^'.preg_quote($this->sources, '#').'#', '', $this->fs->normalizePath($file->getRealPath()));
             }
         }
 
@@ -190,10 +190,12 @@ class ArchivableFilesFinderTest extends \PHPUnit_Framework_TestCase
 
         $files = array();
         foreach ($iterator as $file) {
-            $files[] = preg_replace('#^phar://'.preg_quote($this->sources, '#').'/archive\.zip/archive#', '', $file);
+            $files[] = preg_replace('#^phar://'.preg_quote($this->sources, '#').'/archive\.zip/archive#', '', $this->fs->normalizePath($file));
         }
 
+        unset($archive, $iterator, $file);
         unlink($this->sources.'/archive.zip');
+
         return $files;
     }
 
