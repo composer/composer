@@ -202,8 +202,8 @@ class Filesystem
             throw new \InvalidArgumentException(sprintf('$from (%s) and $to (%s) must be absolute paths.', $from, $to));
         }
 
-        $from = lcfirst(rtrim(strtr($from, '\\', '/'), '/'));
-        $to = lcfirst(rtrim(strtr($to, '\\', '/'), '/'));
+        $from = lcfirst($this->normalizePath($from));
+        $to = lcfirst($this->normalizePath($to));
 
         if ($directories) {
             $from .= '/dummy_file';
@@ -243,8 +243,8 @@ class Filesystem
             throw new \InvalidArgumentException(sprintf('$from (%s) and $to (%s) must be absolute paths.', $from, $to));
         }
 
-        $from = lcfirst(strtr($from, '\\', '/'));
-        $to = lcfirst(strtr($to, '\\', '/'));
+        $from = lcfirst($this->normalizePath($from));
+        $to = lcfirst($this->normalizePath($to));
 
         if ($from === $to) {
             return $directories ? '__DIR__' : '__FILE__';
@@ -298,6 +298,35 @@ class Filesystem
         }
 
         return filesize($path);
+    }
+
+    /**
+     * Normalize a path. This replaces backslashes with slashes, removes ending
+     * slash and collapses redundant separators and up-level references.
+     *
+     * @param string $path Path to the file or directory
+     * @return string
+     */
+    public function normalizePath($path)
+    {
+        $parts = array();
+        $path = strtr($path, '\\', '/');
+        $prefix = '';
+
+        if (preg_match('|^(([a-z]:)?/)|i', $path, $match)) {
+            $prefix = $match[1];
+            $path = substr($path, strlen($prefix));
+        }
+
+        foreach (explode('/', $path) as $chunk) {
+            if ('..' === $chunk) {
+                array_pop($parts);
+            } elseif ('.' !== $chunk && '' !== $chunk) {
+                $parts[] = $chunk;
+            }
+        }
+
+        return $prefix.implode('/', $parts);
     }
 
     protected function directorySize($directory)
