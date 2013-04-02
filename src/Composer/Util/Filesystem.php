@@ -313,7 +313,7 @@ class Filesystem
         $path = strtr($path, '\\', '/');
         $prefix = '';
 
-        if (preg_match('|^(([a-z]:)?/)|i', $path, $match)) {
+        if (preg_match('{^((?:[0-9a-z]+://)?(?:[a-z]:)?/)}i', $path, $match)) {
             $prefix = $match[1];
             $path = substr($path, strlen($prefix));
         }
