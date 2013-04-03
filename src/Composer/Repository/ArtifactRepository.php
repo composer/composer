@@ -94,10 +94,6 @@ class ArtifactRepository extends ArrayRepository
             'shasum' => sha1_file($file->getRealPath())
         );
 
-        if(empty($package['version'])) {
-            $package['version'] = 'dev-master';
-        }
-
         $package = $this->loader->load($package);
 
         return $package;
