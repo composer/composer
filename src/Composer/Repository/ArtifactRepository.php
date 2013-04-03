@@ -36,6 +36,14 @@ class ArtifactRepository extends ArrayRepository
     protected function initialize()
     {
         parent::initialize();
+
+        if (!extension_loaded('zip')) {
+            $msg = 'In order to use <comment>artifact</comment> repository, ' .
+                'you need to have <comment>zip</comment> extension enabled';
+            $this->io->write($msg);
+            return;
+        }
+
         $this->scanDirectory($this->lookup);
     }
 
