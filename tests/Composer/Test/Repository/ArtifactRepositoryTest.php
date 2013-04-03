@@ -24,8 +24,6 @@ class ArtifactRepositoryTest extends TestCase
         $expectedPackages = array(
             'vendor0/package0-0.0.1',
             'composer/composer-1.0.0-alpha6',
-            'composer/composer-dev-master',
-            'composer/composer-1.0.x-dev',
             'vendor1/package2-4.3.2',
         );
 
