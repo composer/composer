@@ -318,10 +318,12 @@ class Filesystem
             $path = substr($path, strlen($prefix));
         }
 
+        $appended = false;
         foreach (explode('/', $path) as $chunk) {
-            if ('..' === $chunk) {
+            if ('..' === $chunk && $appended) {
                 array_pop($parts);
             } elseif ('.' !== $chunk && '' !== $chunk) {
+                $appended = true;
                 $parts[] = $chunk;
             }
         }
