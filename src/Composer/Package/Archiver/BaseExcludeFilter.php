@@ -116,9 +116,9 @@ abstract class BaseExcludeFilter
     /**
      * Generates an exclude pattern for filter() from a gitignore rule
      *
-     * @param string An exclude rule in gitignore syntax
+     * @param string $rule An exclude rule in gitignore syntax
      *
-     * @param array An exclude pattern
+     * @return array An exclude pattern
      */
     protected function generatePattern($rule)
     {
@@ -133,6 +133,8 @@ abstract class BaseExcludeFilter
         if (strlen($rule) && $rule[0] === '/') {
             $pattern .= '^/';
             $rule = substr($rule, 1);
+        } elseif (false === strpos($rule, '/') || strlen($rule) - 1 === strpos($rule, '/')) {
+            $pattern .= '/';
         }
 
         $pattern .= substr(Finder\Glob::toRegex($rule), 2, -2);
