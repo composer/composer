@@ -270,6 +270,7 @@ class JsonManipulator
             }
 
             $out = '{' . $this->newline;
+            $elems = array();
             foreach ($data as $key => $val) {
                 $elems[] = str_repeat($this->indent, $depth + 2) . JsonFile::encode($key). ': '.$this->format($val, $depth + 1);
             }
