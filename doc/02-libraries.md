@@ -101,7 +101,7 @@ Here are some examples of version branch names:
 
 ### Aliases
 
-It is possible alias branch names to versions. For example, you could alias
+It is possible to alias branch names to versions. For example, you could alias
 `dev-master` to `1.0.x-dev`, which would allow you to require `1.0.x-dev` in all
 the packages.
 
