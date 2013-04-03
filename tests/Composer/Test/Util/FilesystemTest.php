@@ -139,4 +139,27 @@ class FilesystemTest extends TestCase
         $fs = new Filesystem;
         $this->assertGreaterThanOrEqual(10, $fs->size("$tmp/composer_testdir"));
     }
+
+    /**
+     * @dataProvider provideNormalizedPaths
+     */
+    public function testNormalizePath($expected, $actual)
+    {
+        $fs = new Filesystem;
+        $this->assertEquals($expected, $fs->normalizePath($actual));
+    }
+
+    public function provideNormalizedPaths()
+    {
+        return array(
+            array('../foo', '../foo'),
+            array('c:/foo/bar', 'c:/foo//bar'),
+            array('C:/foo/bar', 'C:/foo/./bar'),
+            array('C:/bar', 'C:/foo/../bar'),
+            array('/bar', '/foo/../bar/'),
+            array('phar://c:/Foo', 'phar://c:/Foo/Bar/..'),
+            array('phar://c:/', 'phar://c:/Foo/Bar/../../../..'),
+            array('/', '/Foo/Bar/../../../..'),
+        );
+    }
 }
