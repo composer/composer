@@ -24,7 +24,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class DiagCommand extends Command
+class DiagnoseCommand extends Command
 {
     protected $rfs;
     protected $failures = 0;
@@ -32,10 +32,10 @@ class DiagCommand extends Command
     protected function configure()
     {
         $this
-            ->setName('diag')
+            ->setName('diagnose')
             ->setDescription('Diagnoses the system to identify common errors.')
             ->setHelp(<<<EOT
-The <info>diag</info> command checks common errors to help debugging problems.
+The <info>diagnose</info> command checks common errors to help debugging problems.
 
 EOT
             )
@@ -162,9 +162,9 @@ EOT
 
         if (Composer::VERSION !== $latest && Composer::VERSION !== '@package_version@') {
             return '<warning>Your are not running the latest version</warning>';
-        } else {
-            return true;
         }
+
+        return true;
     }
 
     private function outputResult(OutputInterface $output, $result)
