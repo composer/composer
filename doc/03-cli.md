@@ -348,6 +348,14 @@ performance.
   autoloader. This is recommended especially for production, but can take
   a bit of time to run so it is currently not done by default.
 
+## diagnose
+
+If you think you found a bug, or something is behaving strangely, you might
+want to run the `diagnose` command to perform automated checks for many common
+problems.
+
+    $ php composer.phar diagnose
+
 ## help
 
 To get more information about a certain command, just use `help`.
