@@ -90,26 +90,28 @@ class Pool
                     $name = $package['name'];
                     $version = $package['version'];
                     $stability = VersionParser::parseStability($version);
-                    if ($exempt || $this->isPackageAcceptable($name, $stability)) {
+
+                    // collect names
+                    $names = array(
+                        $name => true,
+                    );
+                    if (isset($package['provide'])) {
+                        foreach ($package['provide'] as $target => $constraint) {
+                            $names[$target] = true;
+                        }
+                    }
+                    if (isset($package['replace'])) {
+                        foreach ($package['replace'] as $target => $constraint) {
+                            $names[$target] = true;
+                        }
+                    }
+                    $names = array_keys($names);
+
+                    if ($exempt || $this->isPackageAcceptable($names, $stability)) {
                         $package['id'] = $this->id++;
                         $this->packages[] = $package;
 
-                        // collect names
-                        $names = array(
-                            $name => true,
-                        );
-                        if (isset($package['provide'])) {
-                            foreach ($package['provide'] as $target => $constraint) {
-                                $names[$target] = true;
-                            }
-                        }
-                        if (isset($package['replace'])) {
-                            foreach ($package['replace'] as $target => $constraint) {
-                                $names[$target] = true;
-                            }
-                        }
-
-                        foreach (array_keys($names) as $provided) {
+                        foreach ($names as $provided) {
                             $this->packageByName[$provided][] =& $this->packages[$this->id - 2];
                         }
 
@@ -131,7 +133,7 @@ class Pool
                             $alias['root_alias'] = true;
                             $this->packages[] = $alias;
 
-                            foreach (array_keys($names) as $provided) {
+                            foreach ($names as $provided) {
                                 $this->packageByName[$provided][] =& $this->packages[$this->id - 2];
                             }
                         }
@@ -146,7 +148,7 @@ class Pool
                             $alias['id'] = $this->id++;
                             $this->packages[] = $alias;
 
-                            foreach (array_keys($names) as $provided) {
+                            foreach ($names as $provided) {
                                 $this->packageByName[$provided][] =& $this->packages[$this->id - 2];
                             }
                         }
@@ -154,17 +156,18 @@ class Pool
                 }
             } else {
                 foreach ($repo->getPackages() as $package) {
-                    $name = $package->getName();
+                    $names = $package->getNames();
                     $stability = $package->getStability();
-                    if ($exempt || $this->isPackageAcceptable($name, $stability)) {
+                    if ($exempt || $this->isPackageAcceptable($names, $stability)) {
                         $package->setId($this->id++);
                         $this->packages[] = $package;
 
-                        foreach ($package->getNames() as $provided) {
+                        foreach ($names as $provided) {
                             $this->packageByName[$provided][] = $package;
                         }
 
                         // handle root package aliases
+                        $name = $package->getName();
                         if (isset($rootAliases[$name][$package->getVersion()])) {
                             $alias = $rootAliases[$name][$package->getVersion()];
                             $package->setAlias($alias['alias_normalized']);
@@ -320,14 +323,16 @@ class Pool
 
     public function isPackageAcceptable($name, $stability)
     {
-        // allow if package matches the global stability requirement and has no exception
-        if (!isset($this->stabilityFlags[$name]) && isset($this->acceptableStabilities[$stability])) {
-            return true;
-        }
+        foreach ((array) $name as $n) {
+            // allow if package matches the global stability requirement and has no exception
+            if (!isset($this->stabilityFlags[$n]) && isset($this->acceptableStabilities[$stability])) {
+                return true;
+            }
 
-        // allow if package matches the package-specific stability flag
-        if (isset($this->stabilityFlags[$name]) && BasePackage::$stabilities[$stability] <= $this->stabilityFlags[$name]) {
-            return true;
+            // allow if package matches the package-specific stability flag
+            if (isset($this->stabilityFlags[$n]) && BasePackage::$stabilities[$stability] <= $this->stabilityFlags[$n]) {
+                return true;
+            }
         }
 
         return false;

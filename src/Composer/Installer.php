@@ -330,7 +330,7 @@ class Installer
             $removedUnstablePackages = array();
             foreach ($localRepo->getPackages() as $package) {
                 if (
-                    !$pool->isPackageAcceptable($package->getName(), $package->getStability())
+                    !$pool->isPackageAcceptable($package->getNames(), $package->getStability())
                     && $this->installationManager->isPackageInstalled($localRepo, $package)
                 ) {
                     $removedUnstablePackages[$package->getName()] = true;
