@@ -7,13 +7,16 @@ This is a list of common pitfalls on using Composer, and how to avoid them.
 
 ## General
 
-1. When facing any kind of problems using Composer, be sure to **work with the
+1. Before asking anyone, run [`composer diag`](../03-cli.md#diag) to check
+   for common problems. If it all checks out, proceed to the next steps.
+
+2. When facing any kind of problems using Composer, be sure to **work with the
    latest version**. See [self-update](../03-cli.md#self-update) for details.
 
-2. Make sure you have no problems with your setup by running the installer's
+3. Make sure you have no problems with your setup by running the installer's
    checks via `curl -sS https://getcomposer.org/installer | php -- --check`.
 
-3. Ensure you're **installing vendors straight from your `composer.json`** via
+4. Ensure you're **installing vendors straight from your `composer.json`** via
    `rm -rf vendor && composer update -v` when troubleshooting, excluding any
    possible interferences with existing vendor installations or `composer.lock`
    entries.
