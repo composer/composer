@@ -295,7 +295,16 @@ class Installer
         $installFromLock = false;
         if (!$this->update && $this->locker->isLocked()) {
             $installFromLock = true;
-            $lockedRepository = $this->locker->getLockedRepository($withDevReqs);
+            try {
+                $lockedRepository = $this->locker->getLockedRepository($withDevReqs);
+            } catch (\RuntimeException $e) {
+                // if there are dev requires, then we really can not install
+                if ($this->package->getDevRequires()) {
+                    throw $e;
+                }
+                // no require-dev in composer.json and the lock file was created with no dev info, so skip them
+                $lockedRepository = $this->locker->getLockedRepository();
+            }
         }
 
         $this->whitelistUpdateDependencies(
