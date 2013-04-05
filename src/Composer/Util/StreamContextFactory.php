@@ -30,7 +30,11 @@ final class StreamContextFactory
      */
     public static function getContext(array $defaultOptions = array(), array $defaultParams = array())
     {
-        $options = array('http' => array());
+        $options = array('http' => array(
+            // specify defaults again to try and work better with curlwrappers enabled
+            'follow_location' => 1,
+            'max_redirects' => 20,
+        ));
 
         // Handle system proxy
         if (!empty($_SERVER['HTTP_PROXY']) || !empty($_SERVER['http_proxy'])) {
@@ -57,10 +61,8 @@ final class StreamContextFactory
                 throw new \RuntimeException('You must enable the openssl extension to use a proxy over https');
             }
 
-            $options['http'] = array(
-                'proxy'           => $proxyURL,
-                'request_fulluri' => true,
-            );
+            $options['http']['proxy'] = $proxyURL;
+            $options['http']['request_fulluri'] = true;
 
             if (isset($proxy['user'])) {
                 $auth = $proxy['user'];
