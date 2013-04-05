@@ -160,6 +160,11 @@ class FilesystemTest extends TestCase
             array('phar://c:/Foo', 'phar://c:/Foo/Bar/..'),
             array('phar://c:/', 'phar://c:/Foo/Bar/../../../..'),
             array('/', '/Foo/Bar/../../../..'),
+            array('/', '/'),
+            array('c:/', 'c:\\'),
+            array('../src', 'Foo/Bar/../../../src'),
+            array('c:../b', 'c:.\\..\\a\\..\\b'),
+            array('phar://c:../Foo', 'phar://c:../Foo'),
         );
     }
 }
