@@ -97,11 +97,11 @@ EOT
             $output = '';
             foreach ($messages as $style => $msgs) {
                 foreach ($msgs as $msg) {
-                    $output .=  '<' . $style . '>' . $msg . '</' . $style . '>';
+                    $output .=  '<' . $style . '>' . $msg . '</' . $style . '>' . PHP_EOL;
                 }
             }
 
-            return $output;
+            return rtrim($output);
         }
 
         return true;
@@ -210,7 +210,7 @@ EOT
             $errors['php'] = PHP_VERSION;
         }
 
-        if (version_compare(PHP_VERSION, '5.3.4', '<')) {
+        if (!isset($errors['php']) && version_compare(PHP_VERSION, '5.3.4', '<')) {
             $warnings['php'] = PHP_VERSION;
         }
 
@@ -251,13 +251,10 @@ EOT
                         $displayIniMessage = true;
                         break;
                 }
-                if ($displayIniMessage) {
-                    $text .= $iniMessage;
-                }
                 $out($text, 'error');
             }
 
-            $out('');
+            $output .= PHP_EOL;
         }
 
         if (!empty($warnings)) {
@@ -291,11 +288,12 @@ EOT
                         $text .= "Composer works with 5.3.2+ for most people, but there might be edge case issues.";
                         break;
                 }
-                if ($displayIniMessage) {
-                    $text .= $iniMessage;
-                }
                 $out($text, 'warning');
             }
+        }
+
+        if ($displayIniMessage) {
+            $out($iniMessage, 'warning');
         }
 
         return !$warnings && !$errors ? true : $output;
