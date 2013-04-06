@@ -19,6 +19,7 @@ use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Util\Filesystem;
 use Composer\Util\GitHub;
+use Composer\Util\AWS;
 use Composer\Util\RemoteFilesystem;
 
 /**
@@ -87,6 +88,11 @@ class FileDownloader implements DownloaderInterface
 
         $processedUrl = $this->processUrl($package, $url);
         $hostname = parse_url($processedUrl, PHP_URL_HOST);
+        $protocol = parse_url($processedUrl, PHP_URL_SCHEME);
+
+        if ($protocol === 's3') {
+            $s3util = new AWS($this->io, $this->config);
+        }
 
         if (strpos($hostname, '.github.com') === (strlen($hostname) - 11)) {
             $hostname = 'github.com';
@@ -95,9 +101,13 @@ class FileDownloader implements DownloaderInterface
         try {
             try {
                 if (!$this->cache || !$this->cache->copyTo($this->getCacheKey($package), $fileName)) {
-                    $this->rfs->copy($hostname, $processedUrl, $fileName, $this->outputProgress);
-                    if (!$this->outputProgress) {
-                        $this->io->write('    Downloading');
+                    if (isset($s3util)) {
+                        $s3util->download($processedUrl, $fileName);
+                    } else {
+                        $this->rfs->copy($hostname, $processedUrl, $fileName, $this->outputProgress);
+                        if (!$this->outputProgress) {
+                            $this->io->write('    Downloading');
+                        }
                     }
                     if ($this->cache) {
                         $this->cache->copyFrom($this->getCacheKey($package), $fileName);
@@ -106,7 +116,10 @@ class FileDownloader implements DownloaderInterface
                     $this->io->write('    Loading from cache');
                 }
             } catch (TransportException $e) {
-                if (in_array($e->getCode(), array(404, 403)) && 'github.com' === $hostname && !$this->io->hasAuthentication($hostname)) {
+                if (!in_array($e->getCode(), array(404, 403, 412))) {
+                    throw $e;
+                }
+                if ('github.com' === $hostname && !$this->io->hasAuthentication($hostname)) {
                     $message = "\n".'Could not fetch '.$processedUrl.', enter your GitHub credentials '.($e->getCode() === 404 ? 'to access private repos' : 'to go over the API rate limit');
                     $gitHubUtil = new GitHub($this->io, $this->config, null, $this->rfs);
                     if (!$gitHubUtil->authorizeOAuth($hostname)
@@ -115,6 +128,10 @@ class FileDownloader implements DownloaderInterface
                         throw $e;
                     }
                     $this->rfs->copy($hostname, $processedUrl, $fileName, $this->outputProgress);
+                } elseif (!isset($s3util)) {
+                    // could be on s3, might as well try
+                    $s3util = new AWS($this->io, $this->config);
+                    $s3util->download($processedUrl, $fileName);
                 } else {
                     throw $e;
                 }
