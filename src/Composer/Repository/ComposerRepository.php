@@ -240,7 +240,7 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
         }
 
         // skip platform packages
-        if (preg_match('{^(?:php(?:-64bit)?|(?:ext|lib)-[^/]+)$}i', $name) || '__root__' === $name) {
+        if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name) || '__root__' === $name) {
             return array();
         }
 

@@ -717,7 +717,7 @@ class Installer
     private function extractPlatformRequirements($links) {
         $platformReqs = array();
         foreach ($links as $link) {
-            if (preg_match('{^(?:php(?:-64bit)?|(?:ext|lib)-[^/]+)$}i', $link->getTarget())) {
+            if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $link->getTarget())) {
                 $platformReqs[$link->getTarget()] = $link->getPrettyConstraint();
             }
         }
