@@ -20,6 +20,8 @@ use Composer\Package\Version\VersionParser;
  */
 class PlatformRepository extends ArrayRepository
 {
+    const PLATFORM_PACKAGE_REGEX = '{^(?:php(?:-64bit)?|(?:ext|lib)-[^/]+)$}i';
+
     protected function initialize()
     {
         parent::initialize();
