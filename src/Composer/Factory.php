@@ -43,8 +43,14 @@ class Factory
         $cacheDir = getenv('COMPOSER_CACHE_DIR');
         if (!$home) {
             if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
+                if (!getenv('APPDATA')) {
+                    throw new \RuntimeException('The APPDATA or COMPOSER_HOME environment variable must be set for composer to run correctly');
+                }
                 $home = strtr(getenv('APPDATA'), '\\', '/') . '/Composer';
             } else {
+                if (!getenv('HOME')) {
+                    throw new \RuntimeException('The HOME or COMPOSER_HOME environment variable must be set for composer to run correctly');
+                }
                 $home = rtrim(getenv('HOME'), '/') . '/.composer';
             }
         }
