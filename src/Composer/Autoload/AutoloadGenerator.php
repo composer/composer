@@ -47,7 +47,6 @@ class AutoloadGenerator
         $targetDir = $vendorPath.'/'.$targetDir;
         $filesystem->ensureDirectoryExists($targetDir);
 
-        $relVendorPath = $filesystem->findShortestPath($basePath, $vendorPath, true);
         $vendorPathCode = $filesystem->findShortestPathCode(realpath($targetDir), $vendorPath, true);
         $vendorPathCode52 = str_replace('__DIR__', 'dirname(__FILE__)', $vendorPathCode);
         $vendorPathToTargetDirCode = $filesystem->findShortestPathCode($vendorPath, realpath($targetDir), true);
@@ -73,7 +72,7 @@ EOF;
         foreach ($autoloads['psr-0'] as $namespace => $paths) {
             $exportedPaths = array();
             foreach ($paths as $path) {
-                $exportedPaths[] = $this->getPathCode($filesystem, $basePath, $relVendorPath, $vendorPath, $path);
+                $exportedPaths[] = $this->getPathCode($filesystem, $basePath, $vendorPath, $path);
             }
             $exportedPrefix = var_export($namespace, true);
             $namespacesFile .= "    $exportedPrefix => ";
@@ -135,19 +134,19 @@ EOF;
         if ($scanPsr0Packages) {
             foreach ($autoloads['psr-0'] as $namespace => $paths) {
                 foreach ($paths as $dir) {
-                    $dir = $this->getPath($filesystem, $basePath, $relVendorPath, $vendorPath, $dir);
-                    $whitelist = sprintf(
-                        '{%s/%s.+(?<!(?<!/)Test\.php)$}',
-                        preg_quote(rtrim($dir, '/')),
-                        strpos($namespace, '_') === false ? preg_quote(strtr($namespace, '\\', '/')) : ''
-                    );
+                    $dir = $filesystem->normalizePath($filesystem->isAbsolutePath($dir) ? $dir : $basePath.'/'.$dir);
                     if (!is_dir($dir)) {
                         continue;
                     }
+                    $whitelist = sprintf(
+                        '{%s/%s.+(?<!(?<!/)Test\.php)$}',
+                        preg_quote($dir),
+                        strpos($namespace, '_') === false ? preg_quote(strtr($namespace, '\\', '/')) : ''
+                    );
                     foreach (ClassMapGenerator::createMap($dir, $whitelist) as $class => $path) {
                         if ('' === $namespace || 0 === strpos($class, $namespace)) {
                             if (!isset($classMap[$class])) {
-                                $path = $this->getPathCode($filesystem, $basePath, $relVendorPath, $vendorPath, $path);
+                                $path = $this->getPathCode($filesystem, $basePath, $vendorPath, $path);
                                 $classMap[$class] = $path.",\n";
                             }
                         }
@@ -159,7 +158,7 @@ EOF;
         $autoloads['classmap'] = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($autoloads['classmap']));
         foreach ($autoloads['classmap'] as $dir) {
             foreach (ClassMapGenerator::createMap($dir) as $class => $path) {
-                $path = $this->getPathCode($filesystem, $basePath, $relVendorPath, $vendorPath, $path);
+                $path = $this->getPathCode($filesystem, $basePath, $vendorPath, $path);
                 $classMap[$class] = $path.",\n";
             }
         }
@@ -173,7 +172,7 @@ EOF;
         $filesCode = "";
         $autoloads['files'] = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($autoloads['files']));
         foreach ($autoloads['files'] as $functionFile) {
-            $filesCode .= '        require '.$this->getPathCode($filesystem, $basePath, $relVendorPath, $vendorPath, $functionFile).";\n";
+            $filesCode .= '        require '.$this->getPathCode($filesystem, $basePath, $vendorPath, $functionFile).";\n";
         }
 
         if (!$suffix) {
@@ -182,7 +181,7 @@ EOF;
 
         file_put_contents($targetDir.'/autoload_namespaces.php', $namespacesFile);
         file_put_contents($targetDir.'/autoload_classmap.php', $classmapFile);
-        if ($includePathFile = $this->getIncludePathsFile($packageMap, $filesystem, $basePath, $relVendorPath, $vendorPath, $vendorPathCode52, $appBaseDirCode)) {
+        if ($includePathFile = $this->getIncludePathsFile($packageMap, $filesystem, $basePath, $vendorPath, $vendorPathCode52, $appBaseDirCode)) {
             file_put_contents($targetDir.'/include_paths.php', $includePathFile);
         }
         file_put_contents($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, $suffix));
@@ -253,7 +252,7 @@ EOF;
         return $loader;
     }
 
-    protected function getIncludePathsFile(array $packageMap, Filesystem $filesystem, $basePath, $relVendorPath, $vendorPath, $vendorPathCode, $appBaseDirCode)
+    protected function getIncludePathsFile(array $packageMap, Filesystem $filesystem, $basePath, $vendorPath, $vendorPathCode, $appBaseDirCode)
     {
         $includePaths = array();
 
@@ -287,31 +286,29 @@ return array(
 EOF;
 
         foreach ($includePaths as $path) {
-            $includePathsFile .= "    " . $this->getPathCode($filesystem, $basePath, $relVendorPath, $vendorPath, $path) . ",\n";
+            $includePathsFile .= "    " . $this->getPathCode($filesystem, $basePath, $vendorPath, $path) . ",\n";
         }
 
         return $includePathsFile . ");\n";
     }
 
-    protected function getPathCode(Filesystem $filesystem, $basePath, $relVendorPath, $vendorPath, $path)
+    protected function getPathCode(Filesystem $filesystem, $basePath, $vendorPath, $path)
     {
-        $path = $filesystem->normalizePath($path);
-        $baseDir = '';
         if (!$filesystem->isAbsolutePath($path)) {
-            if (strpos($path, $relVendorPath) === 0) {
-                // path starts with vendor dir
-                $path = substr($path, strlen($relVendorPath));
-                $baseDir = '$vendorDir . ';
-            } else {
-                $path = '/'.$path;
-                $baseDir = '$baseDir . ';
-            }
-        } elseif (strpos($path, $vendorPath) === 0) {
+            $path = $basePath . '/' . $path;
+        }
+        $path = $filesystem->normalizePath($path);
+
+        $baseDir = '';
+        if (strpos($path, $vendorPath) === 0) {
             $path = substr($path, strlen($vendorPath));
             $baseDir = '$vendorDir . ';
-        } elseif (strpos($path, $basePath) === 0) {
-            $path = substr($path, strlen($basePath));
-            $baseDir = '$baseDir . ';
+        } else {
+            $path = $filesystem->normalizePath($filesystem->findShortestPath($basePath, $path, true));
+            if (!$filesystem->isAbsolutePath($path)) {
+                $baseDir = '$baseDir . ';
+                $path = '/' . $path;
+            }
         }
 
         if (preg_match('/\.phar$/', $path)){
@@ -319,21 +316,6 @@ EOF;
         }
 
         return $baseDir.var_export($path, true);
-    }
-
-    protected function getPath(Filesystem $filesystem, $basePath, $relVendorPath, $vendorPath, $path)
-    {
-        $path = $filesystem->normalizePath($path);
-        if (!$filesystem->isAbsolutePath($path)) {
-            if (strpos($path, $relVendorPath) === 0) {
-                // path starts with vendor dir
-                return $vendorPath . substr($path, strlen($relVendorPath));
-            }
-
-            return $basePath.'/'.$path;
-        }
-
-        return $path;
     }
 
     protected function getAutoloadFile($vendorPathToTargetDirCode, $suffix)
