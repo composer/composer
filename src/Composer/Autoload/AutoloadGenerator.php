@@ -483,7 +483,11 @@ FOOTER;
                         $path = $package->getTargetDir() . '/' . $path;
                     }
 
-                    $autoloads[$namespace][] = empty($installPath) ? $path : $installPath.'/'.$path;
+                    if (empty($installPath)) {
+                        $autoloads[$namespace][] = empty($path) ? '.' : $path;
+                    } else {
+                        $autoloads[$namespace][] = $installPath.'/'.$path;
+                    }
                 }
             }
         }
