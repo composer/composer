@@ -1,4 +1,8 @@
 {
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
+    ],
     "hash": "38828459a269ef0e409883721853d7fe",
     "packages": [
         {
@@ -18,13 +22,13 @@
             "require": {
                 "php": ">=5.3.0"
             },
-            "time": "2012-01-02 21:33:17",
             "type": "library",
             "autoload": {
                 "psr-0": {
                     "JsonSchema": "src/"
                 }
-            }
+            },
+            "time": "2012-01-02 21:33:17"
         },
         {
             "name": "seld/jsonlint",
@@ -43,7 +47,6 @@
             "require": {
                 "php": ">=5.3.0"
             },
-            "time": "2013-02-11 23:03:12",
             "bin": [
                 "bin/jsonlint"
             ],
@@ -71,7 +74,8 @@
                 "linter",
                 "parser",
                 "validator"
-            ]
+            ],
+            "time": "2013-02-11 23:03:12"
         },
         {
             "name": "symfony/console",
@@ -79,19 +83,21 @@
             "target-dir": "Symfony/Component/Console",
             "source": {
                 "type": "git",
-                "url": "https://github.com/symfony/Console",
-                "reference": "f65e34d058f0990a724f78e8d091dc0a20e439ac"
+                "url": "https://github.com/symfony/Console.git",
+                "reference": "d789216529d541b55cf39141724ca71733265f60"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Console/zipball/f65e34d058f0990a724f78e8d091dc0a20e439ac",
-                "reference": "f65e34d058f0990a724f78e8d091dc0a20e439ac",
+                "url": "https://api.github.com/repos/symfony/Console/zipball/d789216529d541b55cf39141724ca71733265f60",
+                "reference": "d789216529d541b55cf39141724ca71733265f60",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.3"
             },
-            "time": "2013-01-31 21:39:01",
+            "require-dev": {
+                "symfony/event-dispatcher": ">=2.1,<3.0"
+            },
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -118,31 +124,36 @@
                 }
             ],
             "description": "Symfony Console Component",
-            "homepage": "http://symfony.com"
+            "homepage": "http://symfony.com",
+            "time": "2013-04-07 20:25:23"
         },
         {
             "name": "symfony/finder",
-            "version": "v2.1.7",
+            "version": "v2.2.1",
             "target-dir": "Symfony/Component/Finder",
             "source": {
                 "type": "git",
-                "url": "https://github.com/symfony/Finder",
-                "reference": "v2.1.7"
+                "url": "https://github.com/symfony/Finder.git",
+                "reference": "v2.2.1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://github.com/symfony/Finder/archive/v2.1.7.zip",
-                "reference": "v2.1.7",
+                "url": "https://api.github.com/repos/symfony/Finder/zipball/v2.2.1",
+                "reference": "v2.2.1",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.3"
             },
-            "time": "2013-01-09 08:51:07",
             "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.2-dev"
+                }
+            },
             "autoload": {
                 "psr-0": {
-                    "Symfony\\Component\\Finder": ""
+                    "Symfony\\Component\\Finder\\": ""
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -160,7 +171,8 @@
                 }
             ],
             "description": "Symfony Finder Component",
-            "homepage": "http://symfony.com"
+            "homepage": "http://symfony.com",
+            "time": "2013-04-01 07:51:50"
         },
         {
             "name": "symfony/process",
@@ -169,18 +181,17 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Process.git",
-                "reference": "6ebe4ba544cfc0dd25bfe49402da4d5267ee1b43"
+                "reference": "cb6bbfbd5bc852cbd13768787f1b27d238ef6045"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Process/zipball/6ebe4ba544cfc0dd25bfe49402da4d5267ee1b43",
-                "reference": "6ebe4ba544cfc0dd25bfe49402da4d5267ee1b43",
+                "url": "https://api.github.com/repos/symfony/Process/zipball/cb6bbfbd5bc852cbd13768787f1b27d238ef6045",
+                "reference": "cb6bbfbd5bc852cbd13768787f1b27d238ef6045",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.3"
             },
-            "time": "2013-02-18 21:28:20",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -207,22 +218,23 @@
                 }
             ],
             "description": "Symfony Process Component",
-            "homepage": "http://symfony.com"
+            "homepage": "http://symfony.com",
+            "time": "2013-04-07 20:25:23"
         }
     ],
     "packages-dev": [
         {
             "name": "phpunit/php-code-coverage",
-            "version": "1.2.8",
+            "version": "1.2.9",
             "source": {
                 "type": "git",
-                "url": "git://github.com/sebastianbergmann/php-code-coverage.git",
-                "reference": "1.2.8"
+                "url": "https://github.com/sebastianbergmann/php-code-coverage.git",
+                "reference": "1.2.9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/1.2.8",
-                "reference": "1.2.8",
+                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/1.2.9",
+                "reference": "1.2.9",
                 "shasum": ""
             },
             "require": {
@@ -235,7 +247,6 @@
                 "ext-dom": "*",
                 "ext-xdebug": ">=2.0.5"
             },
-            "time": "2013-02-14 08:01:51",
             "type": "library",
             "autoload": {
                 "classmap": [
@@ -262,7 +273,8 @@
                 "coverage",
                 "testing",
                 "xunit"
-            ]
+            ],
+            "time": "2013-02-26 18:55:56"
         },
         {
             "name": "phpunit/php-file-iterator",
@@ -281,7 +293,6 @@
             "require": {
                 "php": ">=5.3.3"
             },
-            "time": "2012-10-11 04:44:38",
             "type": "library",
             "autoload": {
                 "classmap": [
@@ -307,7 +318,8 @@
             "keywords": [
                 "filesystem",
                 "iterator"
-            ]
+            ],
+            "time": "2012-10-11 04:44:38"
         },
         {
             "name": "phpunit/php-text-template",
@@ -326,7 +338,6 @@
             "require": {
                 "php": ">=5.3.3"
             },
-            "time": "2012-10-31 11:15:28",
             "type": "library",
             "autoload": {
                 "classmap": [
@@ -351,7 +362,8 @@
             "homepage": "https://github.com/sebastianbergmann/php-text-template/",
             "keywords": [
                 "template"
-            ]
+            ],
+            "time": "2012-10-31 11:15:28"
         },
         {
             "name": "phpunit/php-timer",
@@ -370,7 +382,6 @@
             "require": {
                 "php": ">=5.3.3"
             },
-            "time": "2012-10-11 04:45:58",
             "type": "library",
             "autoload": {
                 "classmap": [
@@ -395,7 +406,8 @@
             "homepage": "http://www.phpunit.de/",
             "keywords": [
                 "timer"
-            ]
+            ],
+            "time": "2012-10-11 04:45:58"
         },
         {
             "name": "phpunit/php-token-stream",
@@ -415,7 +427,6 @@
                 "ext-tokenizer": "*",
                 "php": ">=5.3.3"
             },
-            "time": "2012-10-11 04:47:14",
             "type": "library",
             "autoload": {
                 "classmap": [
@@ -440,20 +451,21 @@
             "homepage": "http://www.phpunit.de/",
             "keywords": [
                 "tokenizer"
-            ]
+            ],
+            "time": "2012-10-11 04:47:14"
         },
         {
             "name": "phpunit/phpunit",
-            "version": "3.7.14",
+            "version": "3.7.19",
             "source": {
                 "type": "git",
-                "url": "git://github.com/sebastianbergmann/phpunit.git",
-                "reference": "3.7.14"
+                "url": "https://github.com/sebastianbergmann/phpunit.git",
+                "reference": "3.7.19"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/3.7.14",
-                "reference": "3.7.14",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/3.7.19",
+                "reference": "3.7.19",
                 "shasum": ""
             },
             "require": {
@@ -467,7 +479,10 @@
                 "phpunit/php-text-template": ">=1.1.1",
                 "phpunit/php-timer": ">=1.0.2,<1.1.0",
                 "phpunit/phpunit-mock-objects": ">=1.2.0,<1.3.0",
-                "symfony/yaml": ">=2.1.0,<2.2.0"
+                "symfony/yaml": ">=2.0.0,<2.3.0"
+            },
+            "require-dev": {
+                "pear-pear/pear": "1.9.4"
             },
             "suggest": {
                 "ext-json": "*",
@@ -475,7 +490,6 @@
                 "ext-tokenizer": "*",
                 "phpunit/php-invoker": ">=1.1.0,<1.2.0"
             },
-            "time": "2013-02-14 08:07:17",
             "bin": [
                 "composer/bin/phpunit"
             ],
@@ -511,7 +525,8 @@
                 "phpunit",
                 "testing",
                 "xunit"
-            ]
+            ],
+            "time": "2013-03-25 11:45:06"
         },
         {
             "name": "phpunit/phpunit-mock-objects",
@@ -534,7 +549,6 @@
             "suggest": {
                 "ext-soap": "*"
             },
-            "time": "2013-01-13 10:24:48",
             "type": "library",
             "autoload": {
                 "classmap": [
@@ -560,31 +574,36 @@
             "keywords": [
                 "mock",
                 "xunit"
-            ]
+            ],
+            "time": "2013-01-13 10:24:48"
         },
         {
             "name": "symfony/yaml",
-            "version": "v2.1.7",
+            "version": "v2.2.1",
             "target-dir": "Symfony/Component/Yaml",
             "source": {
                 "type": "git",
-                "url": "https://github.com/symfony/Yaml",
-                "reference": "v2.1.7"
+                "url": "https://github.com/symfony/Yaml.git",
+                "reference": "v2.2.1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Yaml/zipball/v2.1.7",
-                "reference": "v2.1.7",
+                "url": "https://api.github.com/repos/symfony/Yaml/zipball/v2.2.1",
+                "reference": "v2.2.1",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.3"
             },
-            "time": "2013-01-17 21:21:51",
             "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.2-dev"
+                }
+            },
             "autoload": {
                 "psr-0": {
-                    "Symfony\\Component\\Yaml": ""
+                    "Symfony\\Component\\Yaml\\": ""
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -602,7 +621,8 @@
                 }
             ],
             "description": "Symfony Yaml Component",
-            "homepage": "http://symfony.com"
+            "homepage": "http://symfony.com",
+            "time": "2013-03-23 07:49:54"
         }
     ],
     "aliases": [
@@ -612,5 +632,11 @@
     "stability-flags": {
         "symfony/console": 20,
         "symfony/process": 20
-    }
+    },
+    "platform": {
+        "php": ">=5.3.2"
+    },
+    "platform-dev": [
+
+    ]
 }
