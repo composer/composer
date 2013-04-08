@@ -44,7 +44,7 @@ class ShowCommand extends Command
             ->setDescription('Show information about packages')
             ->setDefinition(array(
                 new InputArgument('package', InputArgument::OPTIONAL, 'Package to inspect'),
-                new InputArgument('version', InputArgument::OPTIONAL, 'Version to inspect'),
+                new InputArgument('version', InputArgument::OPTIONAL, 'Version or version constraint to inspect'),
                 new InputOption('installed', 'i', InputOption::VALUE_NONE, 'List installed packages only'),
                 new InputOption('platform', 'p', InputOption::VALUE_NONE, 'List platform packages only'),
                 new InputOption('available', 'a', InputOption::VALUE_NONE, 'List available packages only'),
@@ -228,8 +228,7 @@ EOT
         $name = strtolower($name);
         $constraint = null;
         if ($version) {
-            $version = $this->versionParser->normalize($version);
-            $constraint = new VersionConstraint('=', $version);
+            $constraint = $this->versionParser->parseConstraints($version);
         }
 
         $policy = new DefaultPolicy();
@@ -237,6 +236,7 @@ EOT
         $pool->addRepository($repos);
 
         $matchedPackage = null;
+        $versions = array();
         $matches = $pool->whatProvides($name, $constraint);
         foreach ($matches as $index => $package) {
             // skip providers/replacers
@@ -250,19 +250,13 @@ EOT
                 $matchedPackage = $package;
             }
 
+            $versions[$package->getPrettyVersion()] = $package->getVersion();
             $matches[$index] = $package->getId();
         }
 
         // select prefered package according to policy rules
         if (!$matchedPackage && $matches && $prefered = $policy->selectPreferedPackages($pool, array(), $matches)) {
             $matchedPackage = $pool->literalToPackage($prefered[0]);
-        }
-
-        // build versions array
-        $versions = array();
-        foreach ($matches as $package) {
-            $package = $pool->literalToPackage($package);
-            $versions[$package->getPrettyVersion()] = $package->getVersion();
         }
 
         return array($matchedPackage, $versions);
@@ -315,12 +309,6 @@ EOT
      */
     protected function printVersions(InputInterface $input, OutputInterface $output, CompletePackageInterface $package, array $versions, RepositoryInterface $installedRepo, RepositoryInterface $repos)
     {
-        if ($input->getArgument('version')) {
-            $output->writeln('<info>version</info>  : ' . $package->getPrettyVersion());
-
-            return;
-        }
-
         uasort($versions, 'version_compare');
         $versions = array_keys(array_reverse($versions));
 
