@@ -112,7 +112,7 @@ class Pool
                         $this->packages[] = $package;
 
                         foreach ($names as $provided) {
-                            $this->packageByName[$provided][] =& $this->packages[$this->id - 2];
+                            $this->packageByName[$provided][$package['id']] = $this->packages[$this->id - 2];
                         }
 
                         // handle root package aliases
@@ -134,7 +134,7 @@ class Pool
                             $this->packages[] = $alias;
 
                             foreach ($names as $provided) {
-                                $this->packageByName[$provided][] =& $this->packages[$this->id - 2];
+                                $this->packageByName[$provided][$alias['id']] = $this->packages[$this->id - 2];
                             }
                         }
 
@@ -149,7 +149,7 @@ class Pool
                             $this->packages[] = $alias;
 
                             foreach ($names as $provided) {
-                                $this->packageByName[$provided][] =& $this->packages[$this->id - 2];
+                                $this->packageByName[$provided][$alias['id']] = $this->packages[$this->id - 2];
                             }
                         }
                     }
@@ -349,6 +349,9 @@ class Pool
                 $package = $this->packages[$data['id'] - 1] = $data['repo']->loadPackage($data);
             }
 
+            foreach ($package->getNames() as $name) {
+                $this->packageByName[$name][$data['id']] = $package;
+            }
             $package->setId($data['id']);
             $data = $package;
         }
