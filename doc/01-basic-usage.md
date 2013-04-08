@@ -119,8 +119,15 @@ to those specific versions.
 
 This is important because the `install` command checks if a lock file is present,
 and if it is, it downloads the versions specified there (regardless of what `composer.json`
-says). This means that anyone who sets up the project will download the exact
-same version of the dependencies.
+says).
+
+This means that anyone who sets up the project will download the exact
+same version of the dependencies. Your CI server, production machines, other
+developers in your team, everything and everyone runs on the same dependencies, which
+mitigates the potential for bugs affecting only some parts of the deployments. Even if you
+develop alone, in six months when reinstalling the project you can feel confident the
+dependencies installed are still working even if your dependencies released
+many new versions since then.
 
 If no `composer.lock` file exists, Composer will read the dependencies and
 versions from `composer.json` and  create the lock file.
@@ -131,6 +138,10 @@ the latest matching versions (according to your `composer.json` file) and also u
 the lock file with the new version.
 
     $ php composer.phar update
+
+If you only want to install or update one dependency, you can whitelist them:
+
+    $ php composer.phar update monolog/monolog [...]
 
 > **Note:** For libraries it is not necessarily recommended to commit the lock file,
 > see also: [Libraries - Lock file](02-libraries.md#lock-file).
