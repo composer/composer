@@ -321,6 +321,20 @@ It is possible to install packages from any PEAR channel by using the `pear`
 repository. Composer will prefix all package names with `pear-{channelName}/` to
 avoid conflicts. All packages are also aliased with prefix `pear-{channelAlias}/`
 
+Example using `pear.php.net`:
+
+    {
+        "repositories": [
+            {
+                "type": "pear",
+                "url": "http://pear.php.net"
+            }
+        ],
+        "require": {
+            "pear-pear.php.net/Net_DNS2": "*",
+        }
+    }
+
 Example using `pear2.php.net`:
 
     {
