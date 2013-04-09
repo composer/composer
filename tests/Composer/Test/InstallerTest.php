@@ -226,6 +226,7 @@ class InstallerTest extends TestCase
 
         if ($expectLock) {
             unset($actualLock['hash']);
+            unset($actualLock['_readme']);
             $this->assertEquals($expectLock, $actualLock);
         }
 
