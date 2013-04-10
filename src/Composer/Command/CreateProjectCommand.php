@@ -91,14 +91,36 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $config = Factory::createConfig();
+
+        $preferSource = false;
+        $preferDist = false;
+        switch ($config->get('preferred-install')) {
+            case 'source':
+                $preferSource = true;
+                break;
+            case 'dist':
+                $preferDist = true;
+                break;
+            case 'auto':
+            default:
+                // noop
+                break;
+        }
+        if ($input->getOption('prefer-source') || $input->getOption('prefer-dist')) {
+            $preferSource = $input->getOption('prefer-source');
+            $preferDist = $input->getOption('prefer-dist');
+        }
+
         return $this->installProject(
             $this->getIO(),
+            $config,
             $input->getArgument('package'),
             $input->getArgument('directory'),
             $input->getArgument('version'),
             $input->getOption('stability'),
-            $input->getOption('prefer-source'),
-            $input->getOption('prefer-dist'),
+            $preferSource,
+            $preferDist,
             $input->getOption('dev'),
             $input->getOption('repository-url'),
             $input->getOption('no-custom-installers'),
@@ -108,10 +130,8 @@ EOT
         );
     }
 
-    public function installProject(IOInterface $io, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositoryUrl = null, $disableCustomInstallers = false, $noScripts = false, $keepVcs = false, $noProgress = false)
+    public function installProject(IOInterface $io, $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositoryUrl = null, $disableCustomInstallers = false, $noScripts = false, $keepVcs = false, $noProgress = false)
     {
-        $config = Factory::createConfig();
-
         $stability = strtolower($stability);
         if ($stability === 'rc') {
             $stability = 'RC';
