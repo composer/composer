@@ -177,7 +177,7 @@ class Config
                 return rtrim($this->process($this->config[$key]), '/\\');
 
             case 'discard-changes':
-                if (!in_array($this->config[$key], array(true, false, 'stash'), true)) {
+                if (!in_array(getenv('COMPOSER_DISCARD_CHANGES') ?: $this->config[$key], array(true, false, 'stash'), true)) {
                     throw new \RuntimeException(
                         "Invalid value for 'discard-changes': {$this->config[$key]}"
                     );
