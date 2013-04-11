@@ -121,12 +121,11 @@ class LibraryInstaller implements InstallerInterface
             throw new \InvalidArgumentException('Package is not installed: '.$package);
         }
 
-        $downloadPath = $this->getInstallPath($package);
-
         $this->removeCode($package);
         $this->removeBinaries($package);
         $repo->removePackage($package);
 
+        $downloadPath = $this->getPackageBasePath($package);
         if (strpos($package->getName(), '/')) {
             $packageVendorDir = dirname($downloadPath);
             if (is_dir($packageVendorDir) && !glob($packageVendorDir.'/*')) {
@@ -140,10 +139,14 @@ class LibraryInstaller implements InstallerInterface
      */
     public function getInstallPath(PackageInterface $package)
     {
-        $this->initializeVendorDir();
         $targetDir = $package->getTargetDir();
+        return $this->getPackageBasePath($package) . ($targetDir ? '/'.$targetDir : '');
+    }
 
-        return ($this->vendorDir ? $this->vendorDir.'/' : '') . $package->getPrettyName() . ($targetDir ? '/'.$targetDir : '');
+    protected function getPackageBasePath(PackageInterface $package)
+    {
+        $this->initializeVendorDir();
+        return ($this->vendorDir ? $this->vendorDir.'/' : '') . $package->getPrettyName();
     }
 
     protected function installCode(PackageInterface $package)
@@ -160,7 +163,7 @@ class LibraryInstaller implements InstallerInterface
 
     protected function removeCode(PackageInterface $package)
     {
-        $downloadPath = $this->getInstallPath($package);
+        $downloadPath = $this->getPackageBasePath($package);
         $this->downloadManager->remove($package, $downloadPath);
     }
 
@@ -200,8 +203,13 @@ class LibraryInstaller implements InstallerInterface
                     file_put_contents($link, $this->generateUnixyProxyCode($binPath, $link));
                     chmod($link, 0777 & ~umask());
                     $link .= '.bat';
+                    if (file_exists($link)) {
+                        $this->io->write('    Skipped installation of '.$bin.'.bat proxy for package '.$package->getName().': a .bat proxy was already installed');
+                    }
                 }
-                file_put_contents($link, $this->generateWindowsProxyCode($binPath, $link));
+                if (!file_exists($link)) {
+                    file_put_contents($link, $this->generateWindowsProxyCode($binPath, $link));
+                }
             } else {
                 $cwd = getcwd();
                 try {
@@ -209,7 +217,9 @@ class LibraryInstaller implements InstallerInterface
                     // when using it in smbfs mounted folder
                     $relativeBin = $this->filesystem->findShortestPath($link, $binPath);
                     chdir(dirname($link));
-                    symlink($relativeBin, $link);
+                    if (false === symlink($relativeBin, $link)) {
+                        throw new \ErrorException();
+                    }
                 } catch (\ErrorException $e) {
                     file_put_contents($link, $this->generateUnixyProxyCode($binPath, $link));
                 }
@@ -227,7 +237,7 @@ class LibraryInstaller implements InstallerInterface
         }
         foreach ($binaries as $bin) {
             $link = $this->binDir.'/'.basename($bin);
-            if (file_exists($link)) {
+            if (is_link($link) || file_exists($link)) {
                 unlink($link);
             }
             if (file_exists($link.'.bat')) {

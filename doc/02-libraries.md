@@ -63,6 +63,9 @@ you can just add a `version` field:
         "version": "1.0.0"
     }
 
+> **Note:** You should avoid specifying the version field explicitly, because
+> for tags the value must match the tag name.
+
 ### Tags
 
 For every tag that looks like a version, a package version of that tag will be
@@ -77,8 +80,6 @@ Here are a few examples of valid tag names:
     v4.4.4beta2
     v2.0.0-alpha
     v2.0.4-p1
-
-> **Note:** If you specify an explicit version in `composer.json`, the tag name must match the specified version.
 
 ### Branches
 
@@ -100,7 +101,7 @@ Here are some examples of version branch names:
 
 ### Aliases
 
-It is possible alias branch names to versions. For example, you could alias
+It is possible to alias branch names to versions. For example, you could alias
 `dev-master` to `1.0.x-dev`, which would allow you to require `1.0.x-dev` in all
 the packages.
 

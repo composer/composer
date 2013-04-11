@@ -53,7 +53,7 @@ update
             "dist": { "reference": "newref", "url": "newurl", "type": "zip", "shasum": "" }
         }
     ],
-    "packages-dev": null,
+    "packages-dev": [],
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {"a/a":20},

@@ -13,8 +13,11 @@
 namespace Composer\Command;
 
 use Composer\Composer;
+use Composer\DependencyResolver\Pool;
+use Composer\DependencyResolver\DefaultPolicy;
 use Composer\Factory;
 use Composer\Package\CompletePackageInterface;
+use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Package\Version\VersionParser;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
@@ -22,6 +25,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\CompositeRepository;
+use Composer\Repository\ComposerRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
 
@@ -40,7 +44,7 @@ class ShowCommand extends Command
             ->setDescription('Show information about packages')
             ->setDefinition(array(
                 new InputArgument('package', InputArgument::OPTIONAL, 'Package to inspect'),
-                new InputArgument('version', InputArgument::OPTIONAL, 'Version to inspect'),
+                new InputArgument('version', InputArgument::OPTIONAL, 'Version or version constraint to inspect'),
                 new InputOption('installed', 'i', InputOption::VALUE_NONE, 'List installed packages only'),
                 new InputOption('platform', 'p', InputOption::VALUE_NONE, 'List platform packages only'),
                 new InputOption('available', 'a', InputOption::VALUE_NONE, 'List available packages only'),
@@ -80,7 +84,8 @@ EOT
                 $output->writeln('No composer.json found in the current directory, showing available packages from ' . implode(', ', array_keys($defaultRepos)));
             }
         } elseif ($composer = $this->getComposer(false)) {
-            $localRepo = $composer = $this->getComposer()->getRepositoryManager()->getLocalRepository();
+            $composer = $this->getComposer();
+            $localRepo = $composer->getRepositoryManager()->getLocalRepository();
             $installedRepo = new CompositeRepository(array($localRepo, $platformRepo));
             $repos = new CompositeRepository(array_merge(array($installedRepo), $composer->getRepositoryManager()->getRepositories()));
         } else {
@@ -121,20 +126,39 @@ EOT
 
         // list packages
         $packages = array();
-        $repos->filterPackages(function ($package) use (&$packages, $platformRepo, $installedRepo) {
-            if ($platformRepo->hasPackage($package)) {
+
+        if ($repos instanceof CompositeRepository) {
+            $repos = $repos->getRepositories();
+        } elseif (!is_array($repos)) {
+            $repos = array($repos);
+        }
+
+        foreach ($repos as $repo) {
+            if ($repo === $platformRepo) {
                 $type = '<info>platform</info>:';
-            } elseif ($installedRepo->hasPackage($package)) {
+            } elseif (
+                $repo === $installedRepo
+                || ($installedRepo instanceof CompositeRepository && in_array($repo, $installedRepo->getRepositories(), true))
+            ) {
                 $type = '<info>installed</info>:';
             } else {
                 $type = '<comment>available</comment>:';
             }
-            if (!isset($packages[$type][$package->getName()])
-                || version_compare($packages[$type][$package->getName()]->getVersion(), $package->getVersion(), '<')
-            ) {
-                $packages[$type][$package->getName()] = $package;
+            if ($repo instanceof ComposerRepository && $repo->hasProviders()) {
+                foreach ($repo->getProviderNames() as $name) {
+                    $packages[$type][$name] = $name;
+                }
+            } else {
+                foreach ($repo->getPackages() as $package) {
+                    if (!isset($packages[$type][$package->getName()])
+                        || !is_object($packages[$type][$package->getName()])
+                        || version_compare($packages[$type][$package->getName()]->getVersion(), $package->getVersion(), '<')
+                    ) {
+                        $packages[$type][$package->getName()] = $package;
+                    }
+                }
             }
-        }, 'Composer\Package\CompletePackage');
+        }
 
         $tree = !$input->getOption('platform') && !$input->getOption('installed') && !$input->getOption('available');
         $indent = $tree ? '  ' : '';
@@ -147,8 +171,12 @@ EOT
 
                 $nameLength = $versionLength = 0;
                 foreach ($packages[$type] as $package) {
-                    $nameLength = max($nameLength, strlen($package->getPrettyName()));
-                    $versionLength = max($versionLength, strlen($this->versionParser->formatVersion($package)));
+                    if (is_object($package)) {
+                        $nameLength = max($nameLength, strlen($package->getPrettyName()));
+                        $versionLength = max($versionLength, strlen($this->versionParser->formatVersion($package)));
+                    } else {
+                        $nameLength = max($nameLength, $package);
+                    }
                 }
                 list($width) = $this->getApplication()->getTerminalDimensions();
                 if (defined('PHP_WINDOWS_VERSION_BUILD')) {
@@ -158,19 +186,23 @@ EOT
                 $writeVersion = !$input->getOption('name-only') && $showVersion && ($nameLength + $versionLength + 3 <= $width);
                 $writeDescription = !$input->getOption('name-only') && ($nameLength + ($showVersion ? $versionLength : 0) + 24 <= $width);
                 foreach ($packages[$type] as $package) {
-                    $output->write($indent . str_pad($package->getPrettyName(), $nameLength, ' '), false);
+                    if (is_object($package)) {
+                        $output->write($indent . str_pad($package->getPrettyName(), $nameLength, ' '), false);
 
-                    if ($writeVersion) {
-                        $output->write(' ' . str_pad($this->versionParser->formatVersion($package), $versionLength, ' '), false);
-                    }
-
-                    if ($writeDescription) {
-                        $description = strtok($package->getDescription(), "\r\n");
-                        $remaining = $width - $nameLength - $versionLength - 4;
-                        if (strlen($description) > $remaining) {
-                            $description = substr($description, 0, $remaining - 3) . '...';
+                        if ($writeVersion) {
+                            $output->write(' ' . str_pad($this->versionParser->formatVersion($package), $versionLength, ' '), false);
                         }
-                        $output->write(' ' . $description);
+
+                        if ($writeDescription) {
+                            $description = strtok($package->getDescription(), "\r\n");
+                            $remaining = $width - $nameLength - $versionLength - 4;
+                            if (strlen($description) > $remaining) {
+                                $description = substr($description, 0, $remaining - 3) . '...';
+                            }
+                            $output->write(' ' . $description);
+                        }
+                    } else {
+                        $output->write($indent . $package);
                     }
                     $output->writeln('');
                 }
@@ -194,51 +226,40 @@ EOT
     protected function getPackage(RepositoryInterface $installedRepo, RepositoryInterface $repos, $name, $version = null)
     {
         $name = strtolower($name);
+        $constraint = null;
         if ($version) {
-            $version = $this->versionParser->normalize($version);
+            $constraint = $this->versionParser->parseConstraints($version);
         }
 
-        $match = null;
-        $matches = array();
-        $repos->filterPackages(function ($package) use ($name, $version, &$matches) {
-            if ($package->getName() === $name) {
-                $matches[] = $package;
-            }
-        }, 'Composer\Package\CompletePackage');
+        $policy = new DefaultPolicy();
+        $pool = new Pool('dev');
+        $pool->addRepository($repos);
 
-        if (null === $version) {
-            // search for a locally installed version
-            foreach ($matches as $package) {
-                if ($installedRepo->hasPackage($package)) {
-                    $match = $package;
-                    break;
-                }
-            }
-
-            if (!$match) {
-                // fallback to the highest version
-                foreach ($matches as $package) {
-                    if (null === $match || version_compare($package->getVersion(), $match->getVersion(), '>=')) {
-                        $match = $package;
-                    }
-                }
-            }
-        } else {
-            // select the specified version
-            foreach ($matches as $package) {
-                if ($package->getVersion() === $version) {
-                    $match = $package;
-                }
-            }
-        }
-
-        // build versions array
+        $matchedPackage = null;
         $versions = array();
-        foreach ($matches as $package) {
+        $matches = $pool->whatProvides($name, $constraint);
+        foreach ($matches as $index => $package) {
+            // skip providers/replacers
+            if ($package->getName() !== $name) {
+                unset($matches[$index]);
+                continue;
+            }
+
+            // select an exact match if it is in the installed repo and no specific version was required
+            if (null === $version && $installedRepo->hasPackage($package)) {
+                $matchedPackage = $package;
+            }
+
             $versions[$package->getPrettyVersion()] = $package->getVersion();
+            $matches[$index] = $package->getId();
         }
 
-        return array($match, $versions);
+        // select prefered package according to policy rules
+        if (!$matchedPackage && $matches && $prefered = $policy->selectPreferedPackages($pool, array(), $matches)) {
+            $matchedPackage = $pool->literalToPackage($prefered[0]);
+        }
+
+        return array($matchedPackage, $versions);
     }
 
     /**
@@ -288,12 +309,6 @@ EOT
      */
     protected function printVersions(InputInterface $input, OutputInterface $output, CompletePackageInterface $package, array $versions, RepositoryInterface $installedRepo, RepositoryInterface $repos)
     {
-        if ($input->getArgument('version')) {
-            $output->writeln('<info>version</info>  : ' . $package->getPrettyVersion());
-
-            return;
-        }
-
         uasort($versions, 'version_compare');
         $versions = array_keys(array_reverse($versions));
 

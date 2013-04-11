@@ -87,6 +87,12 @@ installer capable of installing packages of that type.
 Out of the box, composer supports three types:
 
 - **library:** This is the default. It will simply copy the files to `vendor`.
+- **project:** This denotes a project rather than a library. For example
+  application shells like the [Symfony standard edition](https://github.com/symfony/symfony-standard),
+  CMSs like the [SilverStripe installer](https://github.com/silverstripe/silverstripe-installer)
+  or full fledged applications distributed as packages. This can for example
+  be used by IDEs to provide listings of projects to initialize when creating
+  a new workspace.
 - **metapackage:** An empty package that contains requirements and will trigger
   their installation, but contains no files and will not write anything to the
   filesystem. As such, it does not require a dist or source key to be
@@ -493,6 +499,13 @@ a given package can be done in `require` or `require-dev` (see
 Available options (in order of stability) are `dev`, `alpha`, `beta`, `RC`,
 and `stable`.
 
+### prefer-stable <span>(root-only)</span>
+
+When this is enabled, Composer will prefer more stable packages over unstable
+ones when finding compatible stable packages is possible. If you require a
+dev version or only alphas are available for a package, those will still be
+selected granted that the minimum-stability allows for it.
+
 ### repositories <span>(root-only)</span>
 
 Custom package repositories to use.
@@ -581,6 +594,9 @@ The following options are supported:
   higher if you have a slow connection or huge vendors.
 * **use-include-path:** Defaults to `false`. If true, the Composer autoloader
   will also look for classes in the PHP include path.
+* **preferred-install:** Defaults to `auto` and can be any of `source`, `dist` or
+  `auto`. This option allows you to set the install method Composer will prefer to
+  use.
 * **github-protocols:** Defaults to `["git", "https", "http"]`. A list of
   protocols to use for github.com clones, in priority order. Use this if you are
   behind a proxy or have somehow bad performances with the git protocol.
@@ -650,6 +666,31 @@ A set of files that should be treated as binaries and symlinked into the `bin-di
 (from config).
 
 See [Vendor Binaries](articles/vendor-binaries.md) for more details.
+
+Optional.
+
+### archive
+
+A set of options for creating package archives.
+
+The following options are supported:
+
+* **exclude:** Allows configuring a list of patterns for excluded paths. The
+  pattern syntax matches .gitignore files. A leading exclamation mark (!) will
+  result in any matching files to be included even if a previous pattern
+  excluded them. A leading slash will only match at the beginning of the project
+  relative path. An asterisk will not expand to a directory separator.
+
+Example:
+
+    {
+        "archive": {
+            "exclude": ["/foo/bar", "baz", "/*.test", "!/foo/bar/baz"]
+        }
+    }
+
+The example will include `/dir/foo/bar/file`, `/foo/bar/baz`, `/file.php`,
+`/foo/my.test` but it will exclude `/foo/bar/any`, `/foo/baz`, and `/my.test`.
 
 Optional.
 

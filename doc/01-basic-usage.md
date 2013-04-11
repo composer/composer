@@ -77,11 +77,12 @@ Version constraints can be specified in a few different ways.
 * **Next Significant Release (Tilde Operator):** The `~` operator is best
   explained by example: `~1.2` is equivalent to `>=1.2,<2.0`, while `~1.2.3` is
   equivalent to `>=1.2.3,<1.3`. As you can see it is mostly useful for projects
-  respecting semantic versioning. A common usage would be to mark the minimum
-  minor version you depend on, like `~1.2` (which allows anything up to, but not
-  including, 2.0). Since in theory there should be no backwards compatibility
-  breaks until 2.0, that works well. Another way of looking at it is that using
-  `~` specifies a minimum version, but allows the last digit specified to go up.
+  respecting [semantic versioning](http://semver.org/). A common usage would be
+  to mark the minimum minor version you depend on, like `~1.2` (which allows
+  anything up to, but not including, 2.0). Since in theory there should be no
+  backwards compatibility breaks until 2.0, that works well. Another way of
+  looking at it is that using `~` specifies a minimum version, but allows the
+  last digit specified to go up.
 
 By default only stable releases are taken into consideration. If you would like
 to also get RC, beta, alpha or dev versions of your dependencies you can do
@@ -118,8 +119,15 @@ to those specific versions.
 
 This is important because the `install` command checks if a lock file is present,
 and if it is, it downloads the versions specified there (regardless of what `composer.json`
-says). This means that anyone who sets up the project will download the exact
-same version of the dependencies.
+says).
+
+This means that anyone who sets up the project will download the exact
+same version of the dependencies. Your CI server, production machines, other
+developers in your team, everything and everyone runs on the same dependencies, which
+mitigates the potential for bugs affecting only some parts of the deployments. Even if you
+develop alone, in six months when reinstalling the project you can feel confident the
+dependencies installed are still working even if your dependencies released
+many new versions since then.
 
 If no `composer.lock` file exists, Composer will read the dependencies and
 versions from `composer.json` and  create the lock file.
@@ -130,6 +138,10 @@ the latest matching versions (according to your `composer.json` file) and also u
 the lock file with the new version.
 
     $ php composer.phar update
+
+If you only want to install or update one dependency, you can whitelist them:
+
+    $ php composer.phar update monolog/monolog [...]
 
 > **Note:** For libraries it is not necessarily recommended to commit the lock file,
 > see also: [Libraries - Lock file](02-libraries.md#lock-file).

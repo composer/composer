@@ -85,23 +85,6 @@ class Locker
     }
 
     /**
-     * Checks whether the lock file is in the new complete format or not
-     *
-     * @return bool
-     */
-    public function isCompleteFormat()
-    {
-        $lockData = $this->getLockData();
-        $lockedPackages = $lockData['packages'];
-
-        if (empty($lockedPackages) || isset($lockedPackages[0]['name'])) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * Searches and returns an array of locked packages, retrieved from registered repositories.
      *
      * @param  bool                                     $withDevReqs true to retrieve the locked dev packages
@@ -133,50 +116,7 @@ class Locker
             return $packages;
         }
 
-        // legacy lock file support
-        $repo = $this->repositoryManager->getLocalRepository();
-        foreach ($lockedPackages as $info) {
-            $resolvedVersion = !empty($info['alias-version']) ? $info['alias-version'] : $info['version'];
-
-            // try to find the package in the local repo (best match)
-            $package = $repo->findPackage($info['package'], $resolvedVersion);
-
-            // try to find the package in any repo
-            if (!$package) {
-                $package = $this->repositoryManager->findPackage($info['package'], $resolvedVersion);
-            }
-
-            // try to find the package in any repo (second pass without alias + rebuild alias since it disappeared)
-            if (!$package && !empty($info['alias-version'])) {
-                $package = $this->repositoryManager->findPackage($info['package'], $info['version']);
-                if ($package) {
-                    $package->setAlias($info['alias-version']);
-                    $package->setPrettyAlias($info['alias-pretty-version']);
-                }
-            }
-
-            if (!$package) {
-                throw new \LogicException(sprintf(
-                    'Can not find "%s-%s" package in registered repositories',
-                    $info['package'], $info['version']
-                ));
-            }
-
-            $package = clone $package;
-            if (!empty($info['time'])) {
-                $package->setReleaseDate($info['time']);
-            }
-            if (!empty($info['source-reference'])) {
-                $package->setSourceReference($info['source-reference']);
-                if (is_callable($package, 'setDistReference')) {
-                    $package->setDistReference($info['source-reference']);
-                }
-            }
-
-            $packages->addPackage($package);
-        }
-
-        return $packages;
+        throw new \RuntimeException('Your composer.lock was created before 2012-09-15, and is not supported anymore. Run "composer update" to generate a new one.');
     }
 
     /**
@@ -264,6 +204,7 @@ class Locker
     public function setLockData(array $packages, $devPackages, array $platformReqs, $platformDevReqs, array $aliases, $minimumStability, array $stabilityFlags)
     {
         $lock = array(
+            '_readme' => array('This file locks the dependencies of your project to a known state', 'Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file'),
             'hash' => $this->hash,
             'packages' => null,
             'packages-dev' => null,

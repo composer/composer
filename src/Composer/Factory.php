@@ -15,6 +15,7 @@ namespace Composer;
 use Composer\Config\JsonConfigSource;
 use Composer\Json\JsonFile;
 use Composer\IO\IOInterface;
+use Composer\Package\Archiver;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\RepositoryManager;
 use Composer\Util\ProcessExecutor;
@@ -42,8 +43,14 @@ class Factory
         $cacheDir = getenv('COMPOSER_CACHE_DIR');
         if (!$home) {
             if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
+                if (!getenv('APPDATA')) {
+                    throw new \RuntimeException('The APPDATA or COMPOSER_HOME environment variable must be set for composer to run correctly');
+                }
                 $home = strtr(getenv('APPDATA'), '\\', '/') . '/Composer';
             } else {
+                if (!getenv('HOME')) {
+                    throw new \RuntimeException('The HOME or COMPOSER_HOME environment variable must be set for composer to run correctly');
+                }
                 $home = rtrim(getenv('HOME'), '/') . '/.composer';
             }
         }
@@ -118,7 +125,7 @@ class Factory
 
     public static function getComposerFile()
     {
-        return getenv('COMPOSER') ?: 'composer.json';
+        return trim(getenv('COMPOSER')) ?: 'composer.json';
     }
 
     public static function createAdditionalStyles()
@@ -315,6 +322,24 @@ class Factory
         $dm->setDownloader('file', new Downloader\FileDownloader($io, $config, $cache));
 
         return $dm;
+    }
+
+    /**
+     * @param Config                     $config  The configuration
+     * @param Downloader\DownloadManager $dm      Manager use to download sources
+     *
+     * @return Archiver\ArchiveManager
+     */
+    public function createArchiveManager(Config $config, Downloader\DownloadManager $dm = null)
+    {
+        if (null === $dm) {
+            $dm = $this->createDownloadManager(new IO\NullIO(), $config);
+        }
+
+        $am = new Archiver\ArchiveManager($dm);
+        $am->addArchiver(new Archiver\PharArchiver);
+
+        return $am;
     }
 
     /**

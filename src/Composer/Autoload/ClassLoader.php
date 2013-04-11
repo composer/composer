@@ -175,7 +175,7 @@ class ClassLoader
      * Loads the given class or interface.
      *
      * @param  string    $class The name of the class
-     * @return bool|null True, if loaded
+     * @return bool|null True if loaded, null otherwise
      */
     public function loadClass($class)
     {
@@ -191,7 +191,7 @@ class ClassLoader
      *
      * @param string $class The name of the class
      *
-     * @return string|null The path, if found
+     * @return string|false The path if found, false otherwise
      */
     public function findFile($class)
     {

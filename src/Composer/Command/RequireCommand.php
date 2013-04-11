@@ -107,9 +107,9 @@ EOT
             ->setVerbose($input->getOption('verbose'))
             ->setPreferSource($input->getOption('prefer-source'))
             ->setPreferDist($input->getOption('prefer-dist'))
-            ->setDevMode($input->getOption('dev'))
+            ->setDevMode(true)
             ->setUpdate(true)
-            ->setUpdateWhitelist($requirements);
+            ->setUpdateWhitelist(array_keys($requirements));
         ;
 
         if (!$install->run()) {

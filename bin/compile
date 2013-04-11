@@ -8,5 +8,10 @@ use Composer\Compiler;
 error_reporting(-1);
 ini_set('display_errors', 1);
 
-$compiler = new Compiler();
-$compiler->compile();
+try {
+    $compiler = new Compiler();
+    $compiler->compile();
+} catch (\Exception $e) {
+    echo 'Failed to compile phar: ['.get_class($e).'] '.$e->getMessage().' at '.$e->getFile().':'.$e->getLine();
+    exit(1);
+}

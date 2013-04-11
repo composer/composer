@@ -95,6 +95,20 @@ class CompositeRepository implements RepositoryInterface
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function search($query, $mode = 0)
+    {
+        $matches = array();
+        foreach ($this->repositories as $repository) {
+            /* @var $repository RepositoryInterface */
+            $matches[] = $repository->search($query, $mode);
+        }
+
+        return call_user_func_array('array_merge', $matches);
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function filterPackages($callback, $class = 'Composer\Package\Package')

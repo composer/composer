@@ -33,6 +33,11 @@ class InstallationManagerMock extends InstallationManager
         return '';
     }
 
+    public function isPackageInstalled(InstalledRepositoryInterface $repo, PackageInterface $package)
+    {
+        return $repo->hasPackage($package);
+    }
+
     public function install(RepositoryInterface $repo, InstallOperation $operation)
     {
         $this->installed[] = $operation->getPackage();

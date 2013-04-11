@@ -77,6 +77,27 @@ class ArrayRepository implements RepositoryInterface
     /**
      * {@inheritDoc}
      */
+    public function search($query, $mode = 0)
+    {
+        $regex = '{(?:'.implode('|', preg_split('{\s+}', $query)).')}i';
+
+        $matches = array();
+        foreach ($this->getPackages() as $package) {
+            // TODO implement SEARCH_FULLTEXT handling with keywords/description matching
+            if (preg_match($regex, $package->getName())) {
+                $matches[] = array(
+                    'name' => $package->getName(),
+                    'description' => $package->getDescription(),
+                );
+            }
+        }
+
+        return $matches;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function hasPackage(PackageInterface $package)
     {
         $packageId = $package->getUniqueName();
@@ -110,20 +131,6 @@ class ArrayRepository implements RepositoryInterface
                 $this->addPackage($alias);
             }
         }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function filterPackages($callback, $class = 'Composer\Package\Package')
-    {
-        foreach ($this->getPackages() as $package) {
-            if (false === call_user_func($callback, $package)) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     protected function createAliasPackage(PackageInterface $package, $alias = null, $prettyAlias = null)

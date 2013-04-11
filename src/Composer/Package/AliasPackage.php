@@ -311,6 +311,10 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     {
         return $this->aliasOf->getNotificationUrl();
     }
+    public function getArchiveExcludes()
+    {
+        return $this->aliasOf->getArchiveExcludes();
+    }
     public function __toString()
     {
         return parent::__toString().' (alias of '.$this->aliasOf->getVersion().')';

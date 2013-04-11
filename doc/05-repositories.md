@@ -240,9 +240,16 @@ Example assuming you patched monolog to fix a bug in the `bugfix` branch:
 When you run `php composer.phar update`, you should get your modified version
 of `monolog/monolog` instead of the one from packagist.
 
-It is possible to inline-alias a package constraint so that it matches a
-constraint that it otherwise would not. For more information [see the
-aliases article](articles/aliases.md).
+Note that you should not rename the package unless you really intend to fork
+it in the long term, and completely move away from the original package.
+Composer will correctly pick your package over the original one since the
+custom repository has priority over packagist. If you want to rename the
+package, you should do so in the default (often master) branch and not in a
+feature branch, since the package name is taken from the default branch.
+
+If other dependencies rely on the package you forked, it is possible to
+inline-alias it so that it matches a constraint that it otherwise would not.
+For more information [see the aliases article](articles/aliases.md).
 
 #### Using private repositories
 

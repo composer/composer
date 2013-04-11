@@ -45,11 +45,11 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
     {
         return array(
             array(
-                array(), array(),
-                array('options' => array()), array()
+                $a = array('http' => array('follow_location' => 1, 'max_redirects' => 20)), array(),
+                array('options' => $a), array()
             ),
             array(
-                $a = array('http' => array('method' => 'GET')), $a,
+                $a = array('http' => array('method' => 'GET', 'max_redirects' => 20, 'follow_location' => 1)), array('http' => array('method' => 'GET')),
                 array('options' => $a, 'notification' => $f = function() {}), array('notification' => $f)
             ),
         );
@@ -67,7 +67,9 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
             'proxy' => 'tcp://proxyserver.net:3128',
             'request_fulluri' => true,
             'method' => 'GET',
-            'header' => array("Proxy-Authorization: Basic " . base64_encode('username:password'))
+            'header' => array("Proxy-Authorization: Basic " . base64_encode('username:password')),
+            'max_redirects' => 20,
+            'follow_location' => 1,
         )), $options);
     }
 
@@ -82,7 +84,9 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
             'proxy' => 'tcp://proxyserver.net:3128',
             'request_fulluri' => false,
             'method' => 'GET',
-            'header' => array("X-Foo: bar", "Proxy-Authorization: Basic " . base64_encode('username:password'))
+            'header' => array("X-Foo: bar", "Proxy-Authorization: Basic " . base64_encode('username:password')),
+            'max_redirects' => 20,
+            'follow_location' => 1,
         )), $options);
     }
 
@@ -97,7 +101,9 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
             'proxy' => 'tcp://proxyserver.net:80',
             'request_fulluri' => true,
             'method' => 'GET',
-            'header' => array("Proxy-Authorization: Basic " . base64_encode('username:password'))
+            'header' => array("Proxy-Authorization: Basic " . base64_encode('username:password')),
+            'max_redirects' => 20,
+            'follow_location' => 1,
         )), $options);
     }
 
@@ -115,6 +121,8 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
             $this->assertEquals(array('http' => array(
                 'proxy' => $expected,
                 'request_fulluri' => true,
+                'max_redirects' => 20,
+                'follow_location' => 1,
             )), $options);
         } else {
             try {

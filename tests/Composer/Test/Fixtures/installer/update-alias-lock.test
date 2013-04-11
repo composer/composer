@@ -60,7 +60,7 @@ update
             "type": "library"
         }
     ],
-    "packages-dev": null,
+    "packages-dev": [],
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": [],

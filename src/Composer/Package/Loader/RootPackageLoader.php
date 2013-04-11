@@ -91,6 +91,10 @@ class RootPackageLoader extends ArrayLoader
             $package->setMinimumStability(VersionParser::normalizeStability($config['minimum-stability']));
         }
 
+        if (isset($config['prefer-stable'])) {
+            $package->setPreferStable((bool) $config['prefer-stable']);
+        }
+
         $repos = Factory::createDefaultRepositories(null, $this->config, $this->manager);
         foreach ($repos as $repo) {
             $this->manager->addRepository($repo);
@@ -183,7 +187,7 @@ class RootPackageLoader extends ArrayLoader
 
             // find current branch and collect all branch names
             foreach ($this->process->splitLines($output) as $branch) {
-                if ($branch && preg_match('{^(?:\* ) *(?:[^/ ]+?/)?(\S+|\(no branch\)) *([a-f0-9]+) .*$}', $branch, $match)) {
+                if ($branch && preg_match('{^(?:\* ) *(\S+|\(no branch\)) *([a-f0-9]+) .*$}', $branch, $match)) {
                     if ($match[1] === '(no branch)') {
                         $version = 'dev-'.$match[2];
                         $isFeatureBranch = true;
@@ -197,7 +201,7 @@ class RootPackageLoader extends ArrayLoader
                 }
 
                 if ($branch && !preg_match('{^ *[^/]+/HEAD }', $branch)) {
-                    if (preg_match('{^(?:\* )? *(?:[^/ ]+?/)?(\S+) *([a-f0-9]+) .*$}', $branch, $match)) {
+                    if (preg_match('{^(?:\* )? *(\S+) *([a-f0-9]+) .*$}', $branch, $match)) {
                         $branches[] = $match[1];
                     }
                 }

@@ -29,7 +29,7 @@ class ProjectInstaller implements InstallerInterface
 
     public function __construct($installPath, DownloadManager $dm)
     {
-        $this->installPath = $installPath;
+        $this->installPath = rtrim(strtr($installPath, '\\', '/'), '/').'/';
         $this->downloadManager = $dm;
     }
 
@@ -58,14 +58,11 @@ class ProjectInstaller implements InstallerInterface
     public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
         $installPath = $this->installPath;
-        if (file_exists($installPath) && (count(glob($installPath.'/*')) || count(glob($installPath.'/.*')) > 2)) {
-            throw new \InvalidArgumentException("Project directory $installPath already exists.");
-        }
-        if (!file_exists(dirname($installPath))) {
-            throw new \InvalidArgumentException("Project root " . dirname($installPath) . " does not exist.");
+        if (file_exists($installPath) && (count(glob($installPath.'*')) || (count(glob($installPath.'.*')) > 2))) {
+            throw new \InvalidArgumentException("Project directory $installPath is not empty.");
         }
         if (!is_dir($installPath)) {
-            mkdir($installPath, 0777);
+            mkdir($installPath, 0777, true);
         }
         $this->downloadManager->download($package, $installPath);
     }

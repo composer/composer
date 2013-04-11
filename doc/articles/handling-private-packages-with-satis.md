@@ -4,8 +4,10 @@
 
 # Handling private packages with Satis
 
-Satis can be used to host the metadata of your company's private packages, or
-your own. It basically acts as a micro-packagist. You can get it from
+Satis is a static `composer` repository generator. It is a bit like an ultra-
+lightweight, static file-based version of packagist and can be used to host the
+metadata of your company's private packages, or your own. It basically acts as
+a micro-packagist. You can get it from
 [GitHub](http://github.com/composer/satis) or install via CLI:
 `composer.phar create-project composer/satis --stability=dev`.
 
@@ -20,6 +22,8 @@ Here is an example configuration, you see that it holds a few VCS repositories,
 but those could be any types of [repositories](../05-repositories.md). Then it
 uses `"require-all": true` which selects all versions of all packages in the
 repositories you defined.
+
+The default file Satis looks for is `satis.json` in the root of the repository.
 
     {
         "name": "My Repository",
@@ -65,7 +69,8 @@ to ssh key authentication instead of prompting for a password. This is also a
 good trick for continuous integration servers.
 
 Set up a virtual-host that points to that `web/` directory, let's say it is
-`packages.example.org`.
+`packages.example.org`. Alternatively, with PHP >= 5.4.0, you can use the built-in
+CLI server `php -S localhost:port -t satis-output-dir/` for a temporary solution.
 
 ## Usage
 
@@ -123,3 +128,41 @@ Example using HTTP over SSL using a client certificate:
             }
         ]
     }
+
+### Downloads
+
+When GitHub or BitBucket repositories are mirrored on your local satis, the build process will include
+the location of the downloads these platforms make available. This means that the repository and your setup depend
+on the availability of these services.
+
+At the same time, this implies that all code which is hosted somewhere else (on another service or for example in
+Subversion) will not have downloads available and thus installations usually take a lot longer.
+
+To enable your satis installation to create downloads for all (Git, Mercurial and Subversion) your packages, add the
+following to your `satis.json`:
+
+    {
+        "archive": {
+            "directory": "dist",
+            "format": "tar",
+            "prefix-url": "https://amazing.cdn.example.org",
+            "skip-dev": true
+        }
+    }
+
+#### Options explained
+
+ * `directory`: the location of the dist files (inside the `output-dir`)
+ * `format`: optional, `zip` (default) or `tar`
+ * `prefix-url`: optional, location of the downloads, homepage (from `satis.json`) followed by `directory` by default
+ * `skip-dev`: optional, `false` by default, when enabled (`true`) satis will not create downloads for branches
+
+Once enabled, all downloads (include those from GitHub and BitBucket) will be replaced with a _local_ version.
+
+#### prefix-url
+
+Prefixing the URL with another host is especially helpful if the downloads end up in a private Amazon S3
+bucket or on a CDN host. A CDN would drastically improve download times and therefore package installation.
+
+Example: A `prefix-url` of `http://my-bucket.s3.amazonaws.com` (and `directory` set to `dist`) creates download URLs
+which look like the following: `http://my-bucket.s3.amazonaws.com/dist/vendor-package-version-ref.zip`.

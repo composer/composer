@@ -36,6 +36,7 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
     protected $rfs;
     protected $cache;
     protected $notifyUrl;
+    protected $searchUrl;
     protected $hasProviders = false;
     protected $providersUrl;
     protected $providerListing;
@@ -88,6 +89,15 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
         $this->rootAliases = $rootAliases;
     }
 
+    public function getPackages()
+    {
+        if ($this->hasProviders()) {
+            throw new \LogicException('Composer repositories that have providers can not load the complete list of packages, use getProviderNames instead.');
+        }
+
+        return parent::getPackages();
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -134,24 +144,54 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
     /**
      * {@inheritDoc}
      */
-    public function filterPackages($callback, $class = 'Composer\Package\Package')
+    public function search($query, $mode = 0)
     {
-        if (null === $this->rawData) {
-            $this->rawData = $this->loadDataFromServer();
+        $this->loadRootServerFile();
+
+        if ($this->searchUrl && $mode === self::SEARCH_FULLTEXT) {
+            $url = str_replace('%query%', $query, $this->searchUrl);
+
+            $json = $this->rfs->getContents($url, $url, false);
+            $results = JsonFile::parseJson($json, $url);
+
+            return $results['results'];
         }
 
-        foreach ($this->rawData as $package) {
-            if (false === call_user_func($callback, $package = $this->createPackage($package, $class))) {
-                return false;
-            }
-            if ($package->getAlias()) {
-                if (false === call_user_func($callback, $this->createAliasPackage($package))) {
-                    return false;
+        if ($this->hasProviders()) {
+            $results = array();
+            $regex = '{(?:'.implode('|', preg_split('{\s+}', $query)).')}i';
+
+            foreach ($this->getProviderNames() as $name) {
+                if (preg_match($regex, $name)) {
+                    $results[] = array('name' => $name);
                 }
             }
+
+            return $results;
         }
 
-        return true;
+        return parent::search($query, $mode);
+    }
+
+    public function getProviderNames()
+    {
+        $this->loadRootServerFile();
+
+        if (null === $this->providerListing) {
+            $this->loadProviderListings($this->loadRootServerFile());
+        }
+
+        if ($this->providersUrl) {
+            return array_keys($this->providerListing);
+        }
+
+        // BC handling for old providers-includes
+        $providers = array();
+        foreach (array_keys($this->providerListing) as $provider) {
+            $providers[] = substr($provider, 2, -5);
+        }
+
+        return $providers;
     }
 
     /**
@@ -195,13 +235,13 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
 
     public function whatProvides(Pool $pool, $name)
     {
-        // skip platform packages
-        if ($name === 'php' || in_array(substr($name, 0, 4), array('ext-', 'lib-'), true) || $name === '__root__') {
-            return array();
-        }
-
         if (isset($this->providers[$name])) {
             return $this->providers[$name];
+        }
+
+        // skip platform packages
+        if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name) || '__root__' === $name) {
+            return array();
         }
 
         if (null === $this->providerListing) {
@@ -255,6 +295,25 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
                         }
                     }
                 } else {
+                    if (isset($version['provide']) || isset($version['replace'])) {
+                        // collect names
+                        $names = array(
+                            strtolower($version['name']) => true,
+                        );
+                        if (isset($version['provide'])) {
+                            foreach ($version['provide'] as $target => $constraint) {
+                                $names[strtolower($target)] = true;
+                            }
+                        }
+                        if (isset($version['replace'])) {
+                            foreach ($version['replace'] as $target => $constraint) {
+                                $names[strtolower($target)] = true;
+                            }
+                        }
+                        $names = array_keys($names);
+                    } else {
+                        $names = array(strtolower($version['name']));
+                    }
                     if (!$pool->isPackageAcceptable(strtolower($version['name']), VersionParser::parseStability($version['version']))) {
                         continue;
                     }
@@ -332,27 +391,17 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
 
         $data = $this->fetchFile($jsonUrl, 'packages.json');
 
-        // TODO remove this BC notify_batch support
-        if (!empty($data['notify_batch'])) {
-            $notifyBatchUrl = $data['notify_batch'];
-        }
         if (!empty($data['notify-batch'])) {
-            $notifyBatchUrl = $data['notify-batch'];
-        }
-        if (!empty($notifyBatchUrl)) {
-            if ('/' === $notifyBatchUrl[0]) {
-                $this->notifyUrl = preg_replace('{(https?://[^/]+).*}i', '$1' . $notifyBatchUrl, $this->url);
-            } else {
-                $this->notifyUrl = $notifyBatchUrl;
-            }
+            $this->notifyUrl = $this->canonicalizeUrl($data['notify-batch']);
+        } elseif (!empty($data['notify_batch'])) {
+            // TODO remove this BC notify_batch support
+            $this->notifyUrl = $this->canonicalizeUrl($data['notify_batch']);
+        } elseif (!empty($data['notify'])) {
+            $this->notifyUrl = $this->canonicalizeUrl($data['notify']);
         }
 
-        if (!$this->notifyUrl && !empty($data['notify'])) {
-            if ('/' === $data['notify'][0]) {
-                $this->notifyUrl = preg_replace('{(https?://[^/]+).*}i', '$1' . $data['notify'], $this->url);
-            } else {
-                $this->notifyUrl = $data['notify'];
-            }
+        if (!empty($data['search'])) {
+            $this->searchUrl = $this->canonicalizeUrl($data['search']);
         }
 
         if ($this->allowSslDowngrade) {
@@ -360,11 +409,7 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
         }
 
         if (!empty($data['providers-url'])) {
-            if ('/' === $data['providers-url'][0]) {
-                $this->providersUrl = preg_replace('{(https?://[^/]+).*}i', '$1' . $data['providers-url'], $this->url);
-            } else {
-                $this->providersUrl = $data['providers-url'];
-            }
+            $this->providersUrl = $this->canonicalizeUrl($data['providers-url']);
             $this->hasProviders = true;
         }
 
@@ -373,6 +418,15 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
         }
 
         return $this->rootData = $data;
+    }
+
+    protected function canonicalizeUrl($url)
+    {
+        if ('/' === $url[0]) {
+            return preg_replace('{(https?://[^/]+).*}i', '$1' . $url, $this->url);
+        }
+
+        return $url;
     }
 
     protected function loadDataFromServer()

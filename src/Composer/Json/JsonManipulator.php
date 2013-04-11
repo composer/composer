@@ -270,6 +270,7 @@ class JsonManipulator
             }
 
             $out = '{' . $this->newline;
+            $elems = array();
             foreach ($data as $key => $val) {
                 $elems[] = str_repeat($this->indent, $depth + 2) . JsonFile::encode($key). ': '.$this->format($val, $depth + 1);
             }
@@ -282,7 +283,7 @@ class JsonManipulator
 
     protected function detectIndenting()
     {
-        if (preg_match('{^(\s+)"}', $this->contents, $match)) {
+        if (preg_match('{^(\s+)"}m', $this->contents, $match)) {
             $this->indent = $match[1];
         } else {
             $this->indent = '    ';

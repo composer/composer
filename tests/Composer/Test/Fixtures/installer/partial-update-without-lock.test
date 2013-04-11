@@ -1,0 +1,49 @@
+--TEST--
+Partial update without lock file should update everything whitelisted, remove overly unstable packages
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/old", "version": "1.0.0" },
+                { "name": "a/old", "version": "2.0.0" },
+                { "name": "b/unstable", "version": "1.0.0" },
+                { "name": "b/unstable", "version": "1.1.0-alpha" },
+                { "name": "c/uptodate", "version": "1.0.0" },
+                { "name": "d/removed", "version": "1.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "a/old": "*",
+        "b/unstable": "*",
+        "c/uptodate": "*"
+    }
+}
+--INSTALLED--
+[
+    { "name": "a/old", "version": "1.0.0" },
+    { "name": "b/unstable", "version": "1.1.0-alpha" },
+    { "name": "c/uptodate", "version": "1.0.0" },
+    { "name": "d/removed", "version": "1.0.0" }
+]
+--RUN--
+update b/unstable
+--EXPECT-LOCK--
+{
+    "packages": [
+        { "name": "a/old", "version": "1.0.0", "type": "library" },
+        { "name": "b/unstable", "version": "1.0.0", "type": "library" },
+        { "name": "c/uptodate", "version": "1.0.0", "type": "library" },
+        { "name": "d/removed", "version": "1.0.0", "type": "library" }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "platform": [],
+    "platform-dev": []
+}
+--EXPECT--
+Updating b/unstable (1.1.0-alpha) to b/unstable (1.0.0)

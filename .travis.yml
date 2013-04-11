@@ -6,6 +6,10 @@ php:
   - 5.4
   - 5.5
 
-before_script: composer install --prefer-source
+before_script: 
+    - echo '' > ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini
+    - composer install --dev --prefer-source
+    - git config --global user.name travis-ci
+    - git config --global user.email travis@example.com
 
-script: phpunit -c tests/complete.phpunit.xml
+script: ./vendor/bin/phpunit -c tests/complete.phpunit.xml

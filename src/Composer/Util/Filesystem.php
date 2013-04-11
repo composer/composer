@@ -130,7 +130,7 @@ class Filesystem
         $it = new RecursiveDirectoryIterator($source, RecursiveDirectoryIterator::SKIP_DOTS);
         $ri = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::SELF_FIRST);
 
-        if ( !file_exists($target)) {
+        if (!file_exists($target)) {
             mkdir($target, 0777, true);
         }
 
@@ -159,16 +159,28 @@ class Filesystem
         if (defined('PHP_WINDOWS_VERSION_BUILD')) {
             // Try to copy & delete - this is a workaround for random "Access denied" errors.
             $command = sprintf('xcopy %s %s /E /I /Q', escapeshellarg($source), escapeshellarg($target));
-            if (0 === $this->processExecutor->execute($command, $output)) {
+            $result = $this->processExecutor->execute($command, $output);
+
+            // clear stat cache because external processes aren't tracked by the php stat cache
+            clearstatcache();
+
+            if (0 === $result) {
                 $this->remove($source);
 
                 return;
             }
+
+            return $this->copyThenRemove($source, $target);
         } else {
             // We do not use PHP's "rename" function here since it does not support
             // the case where $source, and $target are located on different partitions.
             $command = sprintf('mv %s %s', escapeshellarg($source), escapeshellarg($target));
-            if (0 === $this->processExecutor->execute($command)) {
+            $result = $this->processExecutor->execute($command, $output);
+
+            // clear stat cache because external processes aren't tracked by the php stat cache
+            clearstatcache();
+
+            if (0 === $result) {
                 return;
             }
         }
@@ -190,8 +202,8 @@ class Filesystem
             throw new \InvalidArgumentException(sprintf('$from (%s) and $to (%s) must be absolute paths.', $from, $to));
         }
 
-        $from = lcfirst(rtrim(strtr($from, '\\', '/'), '/'));
-        $to = lcfirst(rtrim(strtr($to, '\\', '/'), '/'));
+        $from = lcfirst($this->normalizePath($from));
+        $to = lcfirst($this->normalizePath($to));
 
         if ($directories) {
             $from .= '/dummy_file';
@@ -231,8 +243,8 @@ class Filesystem
             throw new \InvalidArgumentException(sprintf('$from (%s) and $to (%s) must be absolute paths.', $from, $to));
         }
 
-        $from = lcfirst(strtr($from, '\\', '/'));
-        $to = lcfirst(strtr($to, '\\', '/'));
+        $from = lcfirst($this->normalizePath($from));
+        $to = lcfirst($this->normalizePath($to));
 
         if ($from === $to) {
             return $directories ? '__DIR__' : '__FILE__';
@@ -286,6 +298,44 @@ class Filesystem
         }
 
         return filesize($path);
+    }
+
+    /**
+     * Normalize a path. This replaces backslashes with slashes, removes ending
+     * slash and collapses redundant separators and up-level references.
+     *
+     * @param string $path Path to the file or directory
+     * @return string
+     */
+    public function normalizePath($path)
+    {
+        $parts = array();
+        $path = strtr($path, '\\', '/');
+        $prefix = '';
+        $absolute = false;
+
+        if (preg_match('{^([0-9a-z]+:(?://(?:[a-z]:)?)?)}i', $path, $match)) {
+            $prefix = $match[1];
+            $path = substr($path, strlen($prefix));
+        }
+
+        if (substr($path, 0, 1) === '/') {
+            $absolute = true;
+            $path = substr($path, 1);
+        }
+
+        $up = false;
+        foreach (explode('/', $path) as $chunk) {
+            if ('..' === $chunk && ($absolute || $up)) {
+                array_pop($parts);
+                $up = !(empty($parts) || '..' === end($parts));
+            } elseif ('.' !== $chunk && '' !== $chunk) {
+                $parts[] = $chunk;
+                $up = '..' !== $chunk;
+            }
+        }
+
+        return $prefix.($absolute ? '/' : '').implode('/', $parts);
     }
 
     protected function directorySize($directory)
