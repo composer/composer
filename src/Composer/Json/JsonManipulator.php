@@ -283,7 +283,7 @@ class JsonManipulator
 
     protected function detectIndenting()
     {
-        if (preg_match('{^(\s+)"}', $this->contents, $match)) {
+        if (preg_match('{^(\s+)"}m', $this->contents, $match)) {
             $this->indent = $match[1];
         } else {
             $this->indent = '    ';

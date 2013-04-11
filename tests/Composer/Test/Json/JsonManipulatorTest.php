@@ -311,37 +311,37 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
     public function testAddRepositoryCanInitializeEmptyRepositories()
     {
         $manipulator = new JsonManipulator('{
-    "repositories": {
-    }
+  "repositories": {
+  }
 }');
 
         $this->assertTrue($manipulator->addRepository('bar', array('type' => 'composer')));
         $this->assertEquals('{
-    "repositories": {
-        "bar": {
-            "type": "composer"
-        }
+  "repositories": {
+    "bar": {
+      "type": "composer"
     }
+  }
 }
 ', $manipulator->getContents());
     }
 
     public function testAddRepositoryCanInitializeFromScratch()
     {
-        $manipulator = new JsonManipulator('{
-    "a": "b"
-}');
+        $manipulator = new JsonManipulator("{
+\t\"a\": \"b\"
+}");
 
         $this->assertTrue($manipulator->addRepository('bar2', array('type' => 'composer')));
-        $this->assertEquals('{
-    "a": "b",
-    "repositories": {
-        "bar2": {
-            "type": "composer"
-        }
-    }
+        $this->assertEquals("{
+\t\"a\": \"b\",
+\t\"repositories\": {
+\t\t\"bar2\": {
+\t\t\t\"type\": \"composer\"
+\t\t}
+\t}
 }
-', $manipulator->getContents());
+", $manipulator->getContents());
     }
 
     public function testAddRepositoryCanAdd()
