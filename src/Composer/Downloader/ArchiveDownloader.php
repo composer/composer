@@ -91,10 +91,12 @@ abstract class ArchiveDownloader extends FileDownloader
                 $url = 'https://api.github.com/repos/' . $match[1] . '/'. $match[2] . '/' . $match[3] . 'ball/' . $package->getDistReference();
             } elseif ($package->getDistReference() && preg_match('{^https?://(?:www\.)?github\.com/([^/]+)/([^/]+)/archive/.+\.(zip|tar)(?:\.gz)?$}i', $url, $match)) {
                 // update current github web archives to API calls with the proper reference
-                $url = 'https://api.github.com/repos/' . $match[1] . '/'. $match[2] . '/' . $match[3] . 'ball/' . $package->getDistReference();
+                #$url = 'https://api.github.com/repos/' . $match[1] . '/'. $match[2] . '/' . $match[3] . 'ball/' . $package->getDistReference();
+                $url = 'https://nodeload.github.com/' . $match[1] . '/'. $match[2] . '/' . $match[3] . '/' . $package->getDistReference();
             } elseif ($package->getDistReference() && preg_match('{^https?://api\.github\.com/repos/([^/]+)/([^/]+)/(zip|tar)ball(?:/.+)?$}i', $url, $match)) {
                 // update api archives to the proper reference
-                $url = 'https://api.github.com/repos/' . $match[1] . '/'. $match[2] . '/' . $match[3] . 'ball/' . $package->getDistReference();
+                #$url = 'https://api.github.com/repos/' . $match[1] . '/'. $match[2] . '/' . $match[3] . 'ball/' . $package->getDistReference();
+                $url = 'https://nodeload.github.com/' . $match[1] . '/'. $match[2] . '/' . $match[3] . '/' . $package->getDistReference();
             }
         }
 
