@@ -87,7 +87,7 @@ installer capable of installing packages of that type.
 Out of the box, composer supports three types:
 
 - **library:** This is the default. It will simply copy the files to `vendor`.
-- **project:** This denote a project rather than a library. For example
+- **project:** This denotes a project rather than a library. For example
   application shells like the [Symfony standard edition](https://github.com/symfony/symfony-standard),
   CMSs like the [SilverStripe installer](https://github.com/silverstripe/silverstripe-installer)
   or full fledged applications distributed as packages. This can for example
