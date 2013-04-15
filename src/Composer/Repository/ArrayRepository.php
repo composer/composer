@@ -83,10 +83,11 @@ class ArrayRepository implements RepositoryInterface
 
         $matches = array();
         foreach ($this->getPackages() as $package) {
+            $name = $package->getName();
             // TODO implement SEARCH_FULLTEXT handling with keywords/description matching
-            if (preg_match($regex, $package->getName())) {
-                $matches[] = array(
-                    'name' => $package->getName(),
+            if (!isset($matches[$name]) && preg_match($regex, $name)) {
+                $matches[$name] = array(
+                    'name' => $package->getPrettyName(),
                     'description' => $package->getDescription(),
                 );
             }
