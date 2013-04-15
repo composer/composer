@@ -177,9 +177,23 @@ class Config
                 return rtrim($this->process($this->config[$key]), '/\\');
 
             case 'discard-changes':
-                if (!in_array(getenv('COMPOSER_DISCARD_CHANGES') ?: $this->config[$key], array(true, false, 'stash'), true)) {
+                if ($env = getenv('COMPOSER_DISCARD_CHANGES')) {
+                    if (!in_array($env, array('stash', 'true', 'false', '1', '0'), true)) {
+                        throw new \RuntimeException(
+                            "Invalid value for 'discard-changes': {$this->config[$key]}, expected 1, 0, true, false or stash"
+                        );
+                    }
+                    if ('stash' === $env) {
+                        return 'stash';
+                    }
+
+                    // convert string value to bool
+                    return $env !== 'false' && (bool) $env;
+                }
+
+                if (!in_array($this->config[$key], array(true, false, 'stash'), true)) {
                     throw new \RuntimeException(
-                        "Invalid value for 'discard-changes': {$this->config[$key]}"
+                        "Invalid value for 'discard-changes': {$this->config[$key]}, expected true, false or stash"
                     );
                 }
 
