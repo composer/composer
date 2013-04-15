@@ -14,6 +14,7 @@ namespace Composer\Repository;
 
 use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
+use Composer\Package\CompletePackageInterface;
 use Composer\Package\Version\VersionParser;
 
 /**
@@ -84,8 +85,12 @@ class ArrayRepository implements RepositoryInterface
         $matches = array();
         foreach ($this->getPackages() as $package) {
             $name = $package->getName();
-            // TODO implement SEARCH_FULLTEXT handling with keywords/description matching
-            if (!isset($matches[$name]) && preg_match($regex, $name)) {
+            if (isset($matches[$name])) {
+                continue;
+            }
+            if (preg_match($regex, $name)
+                || ($mode === self::SEARCH_FULLTEXT && $package instanceof CompletePackageInterface && preg_match($regex, implode(' ', (array) $package->getKeywords()) . ' ' . $package->getDescription()))
+            ) {
                 $matches[$name] = array(
                     'name' => $package->getPrettyName(),
                     'description' => $package->getDescription(),
