@@ -16,7 +16,6 @@ use Composer\Repository\ArrayRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\DependencyResolver\DefaultPolicy;
 use Composer\DependencyResolver\Pool;
-use Composer\DependencyResolver\Rule;
 use Composer\Package\Link;
 use Composer\Package\AliasPackage;
 use Composer\Package\LinkConstraint\VersionConstraint;
