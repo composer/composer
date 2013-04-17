@@ -35,6 +35,8 @@ class Rule
     protected $literals;
     protected $type;
     protected $id;
+    protected $reason;
+    protected $reasonData;
 
     protected $job;
 
@@ -78,6 +80,16 @@ class Rule
     public function getJob()
     {
         return $this->job;
+    }
+
+    public function getReason()
+    {
+        return $this->reason;
+    }
+
+    public function getReasonData()
+    {
+        return $this->reasonData;
     }
 
     /**
