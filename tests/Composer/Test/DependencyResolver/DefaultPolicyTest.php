@@ -16,6 +16,7 @@ use Composer\Repository\ArrayRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\DependencyResolver\DefaultPolicy;
 use Composer\DependencyResolver\Pool;
+use Composer\DependencyResolver\Rule;
 use Composer\Package\Link;
 use Composer\Package\AliasPackage;
 use Composer\Package\LinkConstraint\VersionConstraint;
@@ -177,7 +178,6 @@ class DefaultPolicyTest extends TestCase
 
     public function testPreferNonReplacingFromSameRepo()
     {
-
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageB = $this->getPackage('B', '2.0'));
 
@@ -189,6 +189,32 @@ class DefaultPolicyTest extends TestCase
         $expected = $literals;
 
         $selected = $this->policy->selectPreferedPackages($this->pool, array(), $literals);
+
+        $this->assertEquals($expected, $selected);
+    }
+
+    public function testPreferReplacingPackageFromSameVendor()
+    {
+        $this->repo->addPackage($packageB = $this->getPackage('vendor-b/replacer', '1.0'));
+        $this->repo->addPackage($packageA = $this->getPackage('vendor-a/replacer', '1.0'));
+
+        $packageA->setReplaces(array(new Link('vendor-a/replacer', 'vendor-a/package', new VersionConstraint('==', '1.0'), 'replaces')));
+        $packageB->setReplaces(array(new Link('vendor-b/replacer', 'vendor-a/package', new VersionConstraint('==', '1.0'), 'replaces')));
+
+        $this->pool->addRepository($this->repo);
+
+        $literals = array($packageA->getId(), $packageB->getId());
+        $expected = $literals;
+
+        // test with install rule
+        $rule = new Rule($this->pool, $literals, Rule::RULE_JOB_INSTALL, 'vendor-a/package');
+        $selected = $this->policy->selectPreferedPackages($this->pool, array(), $literals, $rule);
+
+        $this->assertEquals($expected, $selected);
+
+        // test with requires rule
+        $rule = new Rule($this->pool, $literals, Rule::RULE_PACKAGE_REQUIRES, new Link('foo', 'vendor-a/package'));
+        $selected = $this->policy->selectPreferedPackages($this->pool, array(), $literals, $rule);
 
         $this->assertEquals($expected, $selected);
     }
