@@ -60,14 +60,14 @@ class DefaultPolicy implements PolicyInterface
         return $pool->getPriority($package->getRepository());
     }
 
-    public function selectPreferedPackages(Pool $pool, array $installedMap, array $literals, Rule $rule = null)
+    public function selectPreferedPackages(Pool $pool, array $installedMap, array $literals, $requiredPackage = null)
     {
         $packages = $this->groupLiteralsByNamePreferInstalled($pool, $installedMap, $literals);
 
         foreach ($packages as &$literals) {
             $policy = $this;
-            usort($literals, function ($a, $b) use ($policy, $pool, $installedMap, $rule) {
-                return $policy->compareByPriorityPreferInstalled($pool, $installedMap, $pool->literalToPackage($a), $pool->literalToPackage($b), $rule, true);
+            usort($literals, function ($a, $b) use ($policy, $pool, $installedMap, $requiredPackage) {
+                return $policy->compareByPriorityPreferInstalled($pool, $installedMap, $pool->literalToPackage($a), $pool->literalToPackage($b), $requiredPackage, true);
             });
         }
 
@@ -82,8 +82,8 @@ class DefaultPolicy implements PolicyInterface
         $selected = call_user_func_array('array_merge', $packages);
 
         // now sort the result across all packages to respect replaces across packages
-        usort($selected, function ($a, $b) use ($policy, $pool, $installedMap, $rule) {
-            return $policy->compareByPriorityPreferInstalled($pool, $installedMap, $pool->literalToPackage($a), $pool->literalToPackage($b), $rule);
+        usort($selected, function ($a, $b) use ($policy, $pool, $installedMap, $requiredPackage) {
+            return $policy->compareByPriorityPreferInstalled($pool, $installedMap, $pool->literalToPackage($a), $pool->literalToPackage($b), $requiredPackage);
         });
 
         return $selected;
@@ -112,7 +112,7 @@ class DefaultPolicy implements PolicyInterface
     /**
      * @protected
      */
-    public function compareByPriorityPreferInstalled(Pool $pool, array $installedMap, PackageInterface $a, PackageInterface $b, Rule $rule = null, $ignoreReplace = false)
+    public function compareByPriorityPreferInstalled(Pool $pool, array $installedMap, PackageInterface $a, PackageInterface $b, $requiredPackage = null, $ignoreReplace = false)
     {
         if ($a->getRepository() === $b->getRepository()) {
             // prefer aliases to the original package
@@ -138,21 +138,14 @@ class DefaultPolicy implements PolicyInterface
 
                 // for replacers not replacing each other, put a higher prio on replacing
                 // packages with the same vendor as the required package
-                if ($rule) {
-                    if ($rule->getReason() === Rule::RULE_JOB_INSTALL) {
-                        $required = $rule->getReasonData();
-                    } elseif ($rule->getReason() === Rule::RULE_PACKAGE_REQUIRES) {
-                        $required = $rule->getReasonData()->getTarget();
-                    }
+                if ($requiredPackage && false !== ($pos = strpos($requiredPackage, '/'))) {
+                    $requiredVendor = substr($requiredPackage, 0, $pos);
 
-                    if ($required && (false !== ($pos = strpos($required, '/')))) {
-                        $requiredVendor = substr($required, 0, $pos);
-                        $aIsSameVendor = substr($a->getName(), 0, $pos) === $requiredVendor;
-                        $bIsSameVendor = substr($b->getName(), 0, $pos) === $requiredVendor;
+                    $aIsSameVendor = substr($a->getName(), 0, $pos) === $requiredVendor;
+                    $bIsSameVendor = substr($b->getName(), 0, $pos) === $requiredVendor;
 
-                        if ($bIsSameVendor !== $aIsSameVendor) {
-                            return $aIsSameVendor ? -1 : 1;
-                        }
+                    if ($bIsSameVendor !== $aIsSameVendor) {
+                        return $aIsSameVendor ? -1 : 1;
                     }
                 }
             }

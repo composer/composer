@@ -195,6 +195,7 @@ class DefaultPolicyTest extends TestCase
 
     public function testPreferReplacingPackageFromSameVendor()
     {
+        // test with default order
         $this->repo->addPackage($packageB = $this->getPackage('vendor-b/replacer', '1.0'));
         $this->repo->addPackage($packageA = $this->getPackage('vendor-a/replacer', '1.0'));
 
@@ -206,16 +207,21 @@ class DefaultPolicyTest extends TestCase
         $literals = array($packageA->getId(), $packageB->getId());
         $expected = $literals;
 
-        // test with install rule
-        $rule = new Rule($this->pool, $literals, Rule::RULE_JOB_INSTALL, 'vendor-a/package');
-        $selected = $this->policy->selectPreferedPackages($this->pool, array(), $literals, $rule);
-
+        $selected = $this->policy->selectPreferedPackages($this->pool, array(), $literals, 'vendor-a/package');
         $this->assertEquals($expected, $selected);
 
-        // test with requires rule
-        $rule = new Rule($this->pool, $literals, Rule::RULE_PACKAGE_REQUIRES, new Link('foo', 'vendor-a/package'));
-        $selected = $this->policy->selectPreferedPackages($this->pool, array(), $literals, $rule);
+        // test with reversed order in repo
+        $repo = new ArrayRepository;
+        $repo->addPackage($packageA = clone $packageA);
+        $repo->addPackage($packageB = clone $packageB);
 
+        $pool = new Pool('dev');
+        $pool->addRepository($this->repo);
+
+        $literals = array($packageA->getId(), $packageB->getId());
+        $expected = $literals;
+
+        $selected = $this->policy->selectPreferedPackages($this->pool, array(), $literals, 'vendor-a/package');
         $this->assertEquals($expected, $selected);
     }
 

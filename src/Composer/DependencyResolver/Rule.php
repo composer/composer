@@ -82,14 +82,15 @@ class Rule
         return $this->job;
     }
 
-    public function getReason()
+    public function getRequiredPackage()
     {
-        return $this->reason;
-    }
+        if ($this->reason === self::RULE_JOB_INSTALL) {
+            return $this->reasonData;
+        }
 
-    public function getReasonData()
-    {
-        return $this->reasonData;
+        if ($this->reason === self::RULE_PACKAGE_REQUIRES) {
+            return $this->reasonData->getTarget();
+        }
     }
 
     /**
