@@ -86,6 +86,9 @@ You can run these commands to easily access `composer` from anywhere on your sys
     $ curl -sS https://getcomposer.org/installer | php
     $ mv composer.phar /usr/local/bin/composer
 
+> **Note:** If the above fails due to permissions, run the `mv` line
+> again with sudo.
+
 Then, just run `composer` in order to run Composer instead of `php composer.phar`.
 
 ## Installation - Windows
