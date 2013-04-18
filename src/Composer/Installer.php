@@ -106,6 +106,11 @@ class Installer
     /**
      * @var array
      */
+    protected $scriptParams = array();
+
+    /**
+     * @var array
+     */
     protected $suggestedPackages;
 
     /**
@@ -196,7 +201,7 @@ class Installer
         if ($this->runScripts) {
             // dispatch pre event
             $eventName = $this->update ? ScriptEvents::PRE_UPDATE_CMD : ScriptEvents::PRE_INSTALL_CMD;
-            $this->eventDispatcher->dispatchCommandEvent($eventName, $this->devMode);
+            $this->eventDispatcher->dispatchCommandEvent($eventName, $this->devMode, $this->scriptParams);
         }
 
         try {
@@ -278,7 +283,7 @@ class Installer
             if ($this->runScripts) {
                 // dispatch post event
                 $eventName = $this->update ? ScriptEvents::POST_UPDATE_CMD : ScriptEvents::POST_INSTALL_CMD;
-                $this->eventDispatcher->dispatchCommandEvent($eventName, $this->devMode);
+                $this->eventDispatcher->dispatchCommandEvent($eventName, $this->devMode, $this->scriptParams);
             }
         }
 
@@ -469,7 +474,7 @@ class Installer
 
             $event = 'Composer\Script\ScriptEvents::PRE_PACKAGE_'.strtoupper($operation->getJobType());
             if (defined($event) && $this->runScripts) {
-                $this->eventDispatcher->dispatchPackageEvent(constant($event), $this->devMode, $operation);
+                $this->eventDispatcher->dispatchPackageEvent(constant($event), $this->devMode, $operation, $this->scriptParams);
             }
 
             // not installing from lock, force dev packages' references if they're in root package refs
@@ -498,7 +503,7 @@ class Installer
 
             $event = 'Composer\Script\ScriptEvents::POST_PACKAGE_'.strtoupper($operation->getJobType());
             if (defined($event) && $this->runScripts) {
-                $this->eventDispatcher->dispatchPackageEvent(constant($event), $this->devMode, $operation);
+                $this->eventDispatcher->dispatchPackageEvent(constant($event), $this->devMode, $operation, $this->scriptParams);
             }
 
             if (!$this->dryRun) {
@@ -940,6 +945,23 @@ class Installer
     public function setRunScripts($runScripts = true)
     {
         $this->runScripts = (boolean) $runScripts;
+
+        return $this;
+    }
+
+    /**
+     * set optional additional parameters for scripts
+     *
+     * @param  array        $scriptParams
+     * @return Installer
+     */
+    public function setScriptParams(array $scriptParams = array())
+    {
+        foreach ($scriptParams as $param) {
+            $param = explode(':',$param);
+            $key = array_shift($param);
+            $this->scriptParams[$key] = count($param)>0 ? implode(':', $param) : $key;
+        }
 
         return $this;
     }

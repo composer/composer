@@ -12,7 +12,6 @@
 
 namespace Composer\Script;
 
-use Composer\Autoload\AutoloadGenerator;
 use Composer\IO\IOInterface;
 use Composer\Composer;
 use Composer\DependencyResolver\Operation\OperationInterface;
@@ -54,8 +53,8 @@ class EventDispatcher
     /**
      * Dispatch a script event.
      *
-     * @param string  $eventName The constant in ScriptEvents
-     * @param Event $event
+     * @param string $eventName The constant in ScriptEvents
+     * @param Event  $event
      */
     public function dispatch($eventName, Event $event = null)
     {
@@ -69,24 +68,26 @@ class EventDispatcher
     /**
      * Dispatch a package event.
      *
-     * @param string             $eventName The constant in ScriptEvents
-     * @param boolean            $devMode   Whether or not we are in dev mode
-     * @param OperationInterface $operation The package being installed/updated/removed
+     * @param string             $eventName    The constant in ScriptEvents
+     * @param boolean            $devMode      Whether or not we are in dev mode
+     * @param OperationInterface $operation    The package being installed/updated/removed
+     * @param array              $scriptParams Additional script parameters added on commandline
      */
-    public function dispatchPackageEvent($eventName, $devMode, OperationInterface $operation)
+    public function dispatchPackageEvent($eventName, $devMode, OperationInterface $operation, array $scriptParams = array() )
     {
-        $this->doDispatch(new PackageEvent($eventName, $this->composer, $this->io, $devMode, $operation));
+        $this->doDispatch(new PackageEvent($eventName, $this->composer, $this->io, $devMode, $operation, $scriptParams));
     }
 
     /**
      * Dispatch a command event.
      *
-     * @param string  $eventName The constant in ScriptEvents
-     * @param boolean $devMode   Whether or not we are in dev mode
+     * @param string  $eventName    The constant in ScriptEvents
+     * @param boolean $devMode      Whether or not we are in dev mode
+     * @param array   $scriptParams Additional script parameters added on commandline
      */
-    public function dispatchCommandEvent($eventName, $devMode)
+    public function dispatchCommandEvent($eventName, $devMode, array $scriptParams = array())
     {
-        $this->doDispatch(new CommandEvent($eventName, $this->composer, $this->io, $devMode));
+        $this->doDispatch(new CommandEvent($eventName, $this->composer, $this->io, $devMode, $scriptParams));
     }
 
     /**
@@ -120,6 +121,15 @@ class EventDispatcher
                     throw $e;
                 }
             } else {
+                if (preg_match_all('/\{(.*)\}/U', $callable, $m)) {
+                    $scriptParams = $event->getScriptParams();
+
+                    foreach ($m[0] as $i => $find) {
+                        $replace = isset($scriptParams[$m[1][$i]]) ? $scriptParams[$m[1][$i]] : '';
+                        $callable = str_replace($find, $replace, $callable);
+                    }
+                }
+
                 if (0 !== $this->process->execute($callable)) {
                     $event->getIO()->write(sprintf('<error>Script %s handling the %s event returned with an error: %s</error>', $callable, $event->getName(), $this->process->getErrorOutput()));
                 }
