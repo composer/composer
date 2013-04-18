@@ -52,6 +52,10 @@ EOT
             $localFilename = realpath($_SERVER['argv'][0]) ?: $_SERVER['argv'][0];
             $tempFilename = dirname($localFilename) . '/' . basename($localFilename, '.phar').'-temp.phar';
 
+            while (is_link($localFilename)) {
+                $localFilename = readlink($localFilename);
+            }
+
             $rfs->copy('getcomposer.org', $remoteFilename, $tempFilename);
 
             if (!file_exists($tempFilename)) {
