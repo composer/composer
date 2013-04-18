@@ -35,17 +35,27 @@ class ZipDownloader extends ArchiveDownloader
     {
         $processError = null;
 
-        // try to use unzip on *nix
-        if (!defined('PHP_WINDOWS_VERSION_BUILD')) {
+		if (class_exists('ZipArchive')) {
+			$zipArchive = new ZipArchive();
+
+			if (true !== ($retval = $zipArchive->open($file))) {
+				throw new \UnexpectedValueException($this->getErrorMessage($retval, $file));
+			}
+
+			if (true !== $zipArchive->extractTo($path)) {
+				throw new \RuntimeException("There was an error extracting the ZIP file. Corrupt file?");
+			}
+
+			$zipArchive->close();
+		} elseif (!defined('PHP_WINDOWS_VERSION_BUILD')) {
+			// try to use unzip on *nix
             $command = 'unzip '.escapeshellarg($file).' -d '.escapeshellarg($path);
             if (0 === $this->process->execute($command, $ignoredOutput)) {
                 return;
             }
 
             $processError = 'Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput();
-        }
-
-        if (!class_exists('ZipArchive')) {
+        } else {
             // php.ini path is added to the error message to help users find the correct file
             $iniPath = php_ini_loaded_file();
 
@@ -64,18 +74,6 @@ class ZipDownloader extends ArchiveDownloader
 
             throw new \RuntimeException($error);
         }
-
-        $zipArchive = new ZipArchive();
-
-        if (true !== ($retval = $zipArchive->open($file))) {
-            throw new \UnexpectedValueException($this->getErrorMessage($retval, $file));
-        }
-
-        if (true !== $zipArchive->extractTo($path)) {
-            throw new \RuntimeException("There was an error extracting the ZIP file. Corrupt file?");
-        }
-
-        $zipArchive->close();
     }
 
     /**
