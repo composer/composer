@@ -1,0 +1,59 @@
+{
+    "name": "a/a",
+    "require": {
+        "foo/foo": "0.8.x",
+        "foo/test": "1.0"
+    },
+
+    "repositories": [
+        {
+            "packagist": false
+        },
+        {
+            "type": "package",
+            "package": {
+                "name": "foo/foo",
+                "version": "0.8.3",
+                "dist": {
+                    "type": "file",
+                    "url": "http://example.org"
+                },
+                "require": {
+                    "foo/bar": "~1.1"
+                },
+                "autoload": {
+                    "psr-0": {"Foo\\Foo": "src/"}
+                }
+            }
+        },
+        {
+            "type": "package",
+            "package": {
+                "name": "foo/bar",
+                "version": "1.2",
+                "dist": {
+                    "type": "file",
+                    "url": "http://example.org"
+                },
+                "autoload": {
+                    "psr-0": {"Foo\\Bar": "lib/"}
+                }
+            }
+        },
+        {
+            "type": "package",
+            "package": {
+                "name": "foo/test",
+                "version": "1.0",
+                "dist": {
+                    "type": "file",
+                    "url": "http://example.org"
+                }
+            }
+        }
+    ],
+
+    "autoload": {
+        "psr-0": {"foo": "src"}
+    }
+}
