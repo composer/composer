@@ -35,20 +35,20 @@ class ZipDownloader extends ArchiveDownloader
     {
         $processError = null;
 
-		if (class_exists('ZipArchive')) {
-			$zipArchive = new ZipArchive();
+        if (class_exists('ZipArchive')) {
+            $zipArchive = new ZipArchive();
 
-			if (true !== ($retval = $zipArchive->open($file))) {
-				throw new \UnexpectedValueException($this->getErrorMessage($retval, $file));
-			}
+            if (true !== ($retval = $zipArchive->open($file))) {
+                throw new \UnexpectedValueException($this->getErrorMessage($retval, $file));
+            }
 
-			if (true !== $zipArchive->extractTo($path)) {
-				throw new \RuntimeException("There was an error extracting the ZIP file. Corrupt file?");
-			}
+            if (true !== $zipArchive->extractTo($path)) {
+                throw new \RuntimeException("There was an error extracting the ZIP file. Corrupt file?");
+            }
 
-			$zipArchive->close();
-		} elseif (!defined('PHP_WINDOWS_VERSION_BUILD')) {
-			// try to use unzip on *nix
+            $zipArchive->close();
+        } elseif (!defined('PHP_WINDOWS_VERSION_BUILD')) {
+            // try to use unzip on *nix
             $command = 'unzip '.escapeshellarg($file).' -d '.escapeshellarg($path);
             if (0 === $this->process->execute($command, $ignoredOutput)) {
                 return;
