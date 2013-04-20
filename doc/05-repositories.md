@@ -483,7 +483,7 @@ information.
 There are some cases, when there is no ability to have one of the previously
 mentioned repository types online, even the VCS one. Typical example could be
 cross-organisation library exchange through built artifacts. Of course, most
-of the times they are private. To simplify maintainance, one can simply specify
+of the times they are private. To simplify maintenance, one can simply specify
 repository of type `artifact` with a folder containing ZIP archives of those
 private packages:
 
