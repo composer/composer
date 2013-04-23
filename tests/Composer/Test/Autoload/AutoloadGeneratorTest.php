@@ -190,6 +190,7 @@ class AutoloadGeneratorTest extends TestCase
         $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, 'TargetDir');
         $this->assertFileEquals(__DIR__.'/Fixtures/autoload_target_dir.php', $this->vendorDir.'/autoload.php');
         $this->assertFileEquals(__DIR__.'/Fixtures/autoload_real_target_dir.php', $this->vendorDir.'/composer/autoload_real.php');
+        $this->assertFileEquals(__DIR__.'/Fixtures/autoload_target_dir_target_dir.php', $this->vendorDir.'/composer/autoload_target_dir.php');
         $this->assertAutoloadFiles('classmap6', $this->vendorDir.'/composer', 'classmap');
     }
 
