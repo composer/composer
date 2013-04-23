@@ -28,7 +28,7 @@ class GitDownloader extends VcsDownloader
     public function doDownload(PackageInterface $package, $path)
     {
         $ref = $package->getSourceReference();
-        $command = 'git clone %s %s && cd %2$s && git remote add composer %1$s && git fetch composer';
+        $command = 'git clone --depth 1 %s %s && cd %2$s && git remote add composer %1$s && git fetch --depth=1 composer';
         $this->io->write("    Cloning ".$ref);
 
         // added in git 1.7.1, prevents prompting the user
