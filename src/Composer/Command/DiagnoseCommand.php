@@ -56,6 +56,8 @@ EOT
         if (!empty($opts['http']['proxy'])) {
             $output->write('Checking HTTP proxy: ');
             $this->outputResult($output, $this->checkHttpProxy());
+            $output->write('Checking HTTP proxy fullrequest_uri: ');
+            $this->outputResult($output, $this->checkHttpProxyFullUriRequestParam($opts));
         }
 
         $composer = $this->getComposer(false);
@@ -137,6 +139,68 @@ EOT
         }
 
         return true;
+    }
+
+    private function checkHttpProxyFullUriRequestParam($opts)
+    {
+        if (!function_exists('curl_version'))
+        {
+            return "Sorry, but you need CURL extension installed for this check\n";
+        }
+
+        if (!extension_loaded('openssl'))
+        {
+            return "Sorry, but you need openssl extension installed for this check\n";
+        }
+
+        $protocol = 'https';
+        $resultMessage = true;
+
+        set_error_handler(function ($code, $msg) use (&$errorMessage) {
+        });
+
+        /* i've found no better file to test with so far :( */
+        $filePath = '://api.github.com/repos/Seldaek/jsonlint/zipball/1.0.0 ';
+        try
+        {
+            $rfcResult = $this->rfs->getContents('api.github.com', $protocol . $filePath);
+        }
+        catch (TransportException $e)
+        {
+            $resultMessage = false;
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $protocol . $filePath."");
+            curl_setopt($ch, CURLOPT_PROXY, $opts['http']['proxy']);
+            curl_setopt($ch, CURLOPT_HEADER, true);
+            curl_setopt($ch, CURLOPT_FILETIME, true);
+            curl_setopt($ch, CURLOPT_NOBODY, true);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, $opts['http']['follow_location']);
+            curl_setopt($ch, CURLOPT_MAXREDIRS, $opts['http']['max_redirects']);
+            curl_setopt($ch, CURLOPT_USERAGENT,
+                sprintf('User-Agent: Composer/%s (%s; %s; PHP %s.%s.%s)',
+                    Composer::VERSION === '@package_version@' ? 'source' : Composer::VERSION,
+                    php_uname('s'),
+                    php_uname('r'),
+                    PHP_MAJOR_VERSION,
+                    PHP_MINOR_VERSION,
+                    PHP_RELEASE_VERSION
+                )
+            );
+
+            curl_exec($ch);
+            $headers = curl_getinfo($ch);
+            if ($headers['http_code'] == 200)
+            {
+                $resultMessage = "Seems there is a problem with your proxy server, try setting value of your environment variable \"http_proxy_request_fulluri\" to false, and run diagnostics again\n";
+            }
+
+        }
+
+
+        restore_error_handler();
+
+        return $resultMessage;
     }
 
     private function checkGithubOauth($domain, $token)
