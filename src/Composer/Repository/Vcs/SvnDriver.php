@@ -36,7 +36,7 @@ class SvnDriver extends VcsDriver
     protected $trunkPath    = 'trunk';
     protected $branchesPath = 'branches';
     protected $tagsPath     = 'tags';
-    protected $modulePath   = '/';
+    protected $modulePath   = '';
 
     /**
      * @var \Composer\Util\Svn
