@@ -56,6 +56,8 @@ EOT
         if (!empty($opts['http']['proxy'])) {
             $output->write('Checking HTTP proxy: ');
             $this->outputResult($output, $this->checkHttpProxy());
+            $output->write('Checking HTTPS proxy fullrequest_uri: ');
+            $this->outputResult($output, $this->checkHttpsProxyFullUriRequestParam());
         }
 
         $composer = $this->getComposer(false);
@@ -137,6 +139,37 @@ EOT
         }
 
         return true;
+    }
+
+    /**
+     * Due to various proxy servers configurations, some servers cant handle non-standard HTTP "http_proxy_request_fulluri" parameter,
+     * and will return error 500/501 (as not implemented), see discussion @ https://github.com/composer/composer/pull/1825.
+     * This method will test, if you need to disable this parameter via setting extra environment variable in your system.
+     * @return bool|string
+     */
+    private function checkHttpsProxyFullUriRequestParam()
+    {
+        $protocol = 'https';
+        $resultMessage = true;
+
+        /* i've found no better file to test with so far :( */
+        $filePath = '://api.github.com/repos/Seldaek/jsonlint/zipball/1.0.0 ';
+        try
+        {
+            $rfcResult = $this->rfs->getContents('api.github.com', $protocol . $filePath, false);
+        }
+        catch (TransportException $e)
+        {
+            if (!extension_loaded('openssl'))
+            {
+                return "Sorry, but you need openssl extension installed for this check - please enable/recompile\n";
+            }
+
+            $this->rfs->getContents('api.github.com', $protocol . $filePath, false, array('http' => array('request_fulluri' => false)));
+            $resultMessage = "Seems there is a problem with your proxy server, try setting value of your environment variable \"http_proxy_request_fulluri\" to false, and run diagnostics again\n";
+        }
+
+        return $resultMessage;
     }
 
     private function checkGithubOauth($domain, $token)
