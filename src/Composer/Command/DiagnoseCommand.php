@@ -56,8 +56,8 @@ EOT
         if (!empty($opts['http']['proxy'])) {
             $output->write('Checking HTTP proxy: ');
             $this->outputResult($output, $this->checkHttpProxy());
-            $output->write('Checking HTTP proxy fullrequest_uri: ');
-            $this->outputResult($output, $this->checkHttpProxyFullUriRequestParam($opts));
+            $output->write('Checking HTTPS proxy fullrequest_uri: ');
+            $this->outputResult($output, $this->checkHttpsProxyFullUriRequestParam($opts));
         }
 
         $composer = $this->getComposer(false);
@@ -141,7 +141,14 @@ EOT
         return true;
     }
 
-    private function checkHttpProxyFullUriRequestParam($opts)
+    /**
+     * Due to various proxy servers configurations, some servers cant handle non-standard HTTP "http_proxy_request_fulluri" parameter,
+     * and will return error 500/501 (as not implemented), see discussion @ https://github.com/composer/composer/pull/1825.
+     * This method will test, if you need to disable this parameter via setting extra environment variable in your system.
+     * @param $opts
+     * @return bool|string
+     */
+    private function checkHttpsProxyFullUriRequestParam($opts)
     {
         if (!function_exists('curl_version'))
         {
@@ -194,9 +201,7 @@ EOT
             {
                 $resultMessage = "Seems there is a problem with your proxy server, try setting value of your environment variable \"http_proxy_request_fulluri\" to false, and run diagnostics again\n";
             }
-
         }
-
 
         restore_error_handler();
 
