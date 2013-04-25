@@ -62,13 +62,11 @@ final class StreamContextFactory
             }
 
             $options['http']['proxy'] = $proxyURL;
-            $options['http']['request_fulluri'] = true;
 
-            if ( strtolower( getenv('http_proxy_request_fulluri') ) == 'false' ||
-                 strtolower( getenv('HTTP_PROXY_REQUEST_FULLURI') ) == 'false'
-            )
-            {
-                $options['http']['request_fulluri'] = false;
+            // enabled request_fulluri unless it is explicitly disabled
+            $reqFullUriEnv = getenv('HTTP_PROXY_REQUEST_FULLURI');
+            if ($reqFullUriEnv === false || $reqFullUriEnv === '' || (strtolower($reqFullUriEnv) !== 'false' && (bool) $reqFullUriEnv)) {
+                $options['http']['request_fulluri'] = true;
             }
 
             if (isset($proxy['user'])) {
