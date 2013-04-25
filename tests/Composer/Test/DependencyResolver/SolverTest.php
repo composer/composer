@@ -75,6 +75,7 @@ class SolverTest extends TestCase
         } catch (SolverProblemsException $e) {
             $problems = $e->getProblems();
             $this->assertEquals(1, count($problems));
+            $this->assertEquals(2, $e->getCode());
             $this->assertEquals("\n    - The requested package b could not be found in any version, there may be a typo in the package name.", $problems[0]->getPrettyString());
         }
     }
