@@ -404,6 +404,12 @@ some tools like git or curl will only use the lower-cased `http_proxy` version.
 Alternatively you can also define the git proxy using
 `git config --global http.proxy <proxy url>`.
 
+### HTTP_PROXY_REQUEST_FULLURI
+
+If you use a proxy but it does not support the request_fulluri flag, then you
+should set this env var to `false` or `0` to prevent composer from setting the
+request_fulluri option.
+
 ### COMPOSER_HOME
 
 The `COMPOSER_HOME` var allows you to change the composer home directory. This
