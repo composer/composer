@@ -150,11 +150,6 @@ EOT
      */
     private function checkHttpsProxyFullUriRequestParam($opts)
     {
-        if (!extension_loaded('openssl'))
-        {
-            return "Sorry, but you need openssl extension installed for this check\n";
-        }
-
         $protocol = 'https';
         $resultMessage = true;
 
@@ -166,6 +161,11 @@ EOT
         }
         catch (TransportException $e)
         {
+            if (!extension_loaded('openssl'))
+            {
+                return "Sorry, but you need openssl extension installed for this check - please enable/recompile\n";
+            }
+
             $this->rfs->getContents('api.github.com', $protocol . $filePath, false, array('http' => array('request_fulluri' => false)));
             $resultMessage = "Seems there is a problem with your proxy server, try setting value of your environment variable \"http_proxy_request_fulluri\" to false, and run diagnostics again\n";
         }
