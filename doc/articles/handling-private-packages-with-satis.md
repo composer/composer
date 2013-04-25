@@ -113,6 +113,8 @@ Example using a custom repository using SSH (requires the SSH2 PECL extension):
         ]
     }
 
+> **Tip:** See [ssh2 context options](http://www.php.net/manual/en/wrappers.ssh2.php#refsect1-wrappers.ssh2-options) for more information.
+
 Example using HTTP over SSL using a client certificate:
 
     {
@@ -122,12 +124,14 @@ Example using HTTP over SSL using a client certificate:
                 "url": "https://example.org",
                 "options": {
                     "ssl": {
-                        "cert_file": "/home/composer/.ssl/composer.pem",
+                        "local_cert": "/home/composer/.ssl/composer.pem",
                     }
                 }
             }
         ]
     }
+
+> **Tip:** See [ssl context options](http://www.php.net/manual/en/context.ssl.php) for more information.
 
 ### Downloads
 

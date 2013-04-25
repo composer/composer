@@ -35,6 +35,8 @@ class Rule
     protected $literals;
     protected $type;
     protected $id;
+    protected $reason;
+    protected $reasonData;
 
     protected $job;
 
@@ -78,6 +80,17 @@ class Rule
     public function getJob()
     {
         return $this->job;
+    }
+
+    public function getRequiredPackage()
+    {
+        if ($this->reason === self::RULE_JOB_INSTALL) {
+            return $this->reasonData;
+        }
+
+        if ($this->reason === self::RULE_PACKAGE_REQUIRES) {
+            return $this->reasonData->getTarget();
+        }
     }
 
     /**

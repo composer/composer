@@ -84,7 +84,10 @@ executable and invoke it without `php`.
 You can run these commands to easily access `composer` from anywhere on your system:
 
     $ curl -sS https://getcomposer.org/installer | php
-    $ sudo mv composer.phar /usr/local/bin/composer
+    $ mv composer.phar /usr/local/bin/composer
+
+> **Note:** If the above fails due to permissions, run the `mv` line
+> again with sudo.
 
 Then, just run `composer` in order to run Composer instead of `php composer.phar`.
 

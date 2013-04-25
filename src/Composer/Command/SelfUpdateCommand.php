@@ -49,7 +49,7 @@ EOT
             $output->writeln(sprintf("Updating to version <info>%s</info>.", $latest));
 
             $remoteFilename = $protocol . '://getcomposer.org/composer.phar';
-            $localFilename = $_SERVER['argv'][0];
+            $localFilename = realpath($_SERVER['argv'][0]) ?: $_SERVER['argv'][0];
             $tempFilename = dirname($localFilename) . '/' . basename($localFilename, '.phar').'-temp.phar';
 
             $rfs->copy('getcomposer.org', $remoteFilename, $tempFilename);

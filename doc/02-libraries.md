@@ -122,9 +122,9 @@ the `.gitignore`.
 Once you have a vcs repository (version control system, e.g. git) containing a
 `composer.json` file, your library is already composer-installable. In this
 example we will publish the `acme/hello-world` library on GitHub under
-`github.com/composer/hello-world`.
+`github.com/username/hello-world`.
 
-Now, To test installing the `acme/hello-world` package, we create a new
+Now, to test installing the `acme/hello-world` package, we create a new
 project locally. We will call it `acme/blog`. This blog will depend on
 `acme/hello-world`, which in turn depends on `monolog/monolog`. We can
 accomplish this by creating a new `blog` directory somewhere, containing a
@@ -150,7 +150,7 @@ We do this by adding a package repository specification to the blog's
         "repositories": [
             {
                 "type": "vcs",
-                "url": "https://github.com/composer/hello-world"
+                "url": "https://github.com/username/hello-world"
             }
         ],
         "require": {
