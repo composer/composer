@@ -57,7 +57,7 @@ EOT
             $output->write('Checking HTTP proxy: ');
             $this->outputResult($output, $this->checkHttpProxy());
             $output->write('Checking HTTPS proxy fullrequest_uri: ');
-            $this->outputResult($output, $this->checkHttpsProxyFullUriRequestParam($opts));
+            $this->outputResult($output, $this->checkHttpsProxyFullUriRequestParam());
         }
 
         $composer = $this->getComposer(false);
@@ -145,10 +145,9 @@ EOT
      * Due to various proxy servers configurations, some servers cant handle non-standard HTTP "http_proxy_request_fulluri" parameter,
      * and will return error 500/501 (as not implemented), see discussion @ https://github.com/composer/composer/pull/1825.
      * This method will test, if you need to disable this parameter via setting extra environment variable in your system.
-     * @param $opts
      * @return bool|string
      */
-    private function checkHttpsProxyFullUriRequestParam($opts)
+    private function checkHttpsProxyFullUriRequestParam()
     {
         $protocol = 'https';
         $resultMessage = true;
