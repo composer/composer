@@ -150,6 +150,11 @@ EOT
      */
     private function checkHttpsProxyFullUriRequestParam($opts)
     {
+        if (!extension_loaded('openssl'))
+        {
+            return "Sorry, but you need openssl extension installed for this check\n";
+        }
+
         $protocol = 'https';
         $resultMessage = true;
 
