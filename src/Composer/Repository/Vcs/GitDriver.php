@@ -34,7 +34,7 @@ class GitDriver extends VcsDriver
     public function initialize()
     {
         if (static::isLocalUrl($this->url)) {
-            $this->repoDir = str_replace('file://', '', $this->url);
+            $this->repoDir = realpath(str_replace('file://', '', $this->url));
         } else {
             $this->repoDir = $this->config->get('cache-vcs-dir') . '/' . preg_replace('{[^a-z0-9.]}i', '-', $this->url) . '/';
 
