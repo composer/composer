@@ -64,6 +64,13 @@ final class StreamContextFactory
             $options['http']['proxy'] = $proxyURL;
             $options['http']['request_fulluri'] = true;
 
+            if ( strtolower( getenv('http_proxy_request_fulluri') ) == 'false' ||
+                 strtolower( getenv('HTTP_PROXY_REQUEST_FULLURI') ) == 'false'
+            )
+            {
+                $options['http']['request_fulluri'] = false;
+            }
+
             if (isset($proxy['user'])) {
                 $auth = $proxy['user'];
                 if (isset($proxy['pass'])) {
