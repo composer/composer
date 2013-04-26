@@ -18,6 +18,7 @@ use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
+use Composer\DependencyResolver\Rule;
 use Composer\DependencyResolver\Solver;
 use Composer\DependencyResolver\SolverProblemsException;
 use Composer\Downloader\DownloadManager;
@@ -495,6 +496,21 @@ class Installer
             }
 
             $this->installationManager->execute($localRepo, $operation);
+
+            // output reasons why the operation was ran
+            if ($this->verbose && $this->io->isVeryVerbose()) {
+                $reason = $operation->getReason();
+                if ($reason instanceof Rule) {
+                    switch ($reason->getReason()) {
+                        case Rule::RULE_JOB_INSTALL:
+                            $this->io->write('    REASON: Required to be installed: '.$reason->getRequiredPackage());
+                            break;
+                        case Rule::RULE_PACKAGE_REQUIRES:
+                            $this->io->write('    REASON: '.$reason->getPrettyString());
+                            break;
+                    }
+                }
+            }
 
             $event = 'Composer\Script\ScriptEvents::POST_PACKAGE_'.strtoupper($operation->getJobType());
             if (defined($event) && $this->runScripts) {
