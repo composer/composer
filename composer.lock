@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "38828459a269ef0e409883721853d7fe",
+    "hash": "01e4c62c851ae821a789f70484fed8a6",
     "packages": [
         {
             "name": "justinrainbow/json-schema",
@@ -84,12 +84,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Console.git",
-                "reference": "f22b036677ee58fdb256f2404c95a9f401b767cf"
+                "reference": "7bcef9e062cc89b893a35c67a7456d41cb50113d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Console/zipball/f22b036677ee58fdb256f2404c95a9f401b767cf",
-                "reference": "f22b036677ee58fdb256f2404c95a9f401b767cf",
+                "url": "https://api.github.com/repos/symfony/Console/zipball/7bcef9e062cc89b893a35c67a7456d41cb50113d",
+                "reference": "7bcef9e062cc89b893a35c67a7456d41cb50113d",
                 "shasum": ""
             },
             "require": {
@@ -125,7 +125,7 @@
             ],
             "description": "Symfony Console Component",
             "homepage": "http://symfony.com",
-            "time": "2013-04-23 16:54:01"
+            "time": "2013-04-25 13:33:44"
         },
         {
             "name": "symfony/finder",
@@ -181,12 +181,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Process.git",
-                "reference": "a2a22e359c8c6c6a44ec2d158d0865e9a94348b1"
+                "reference": "d55770ab111a89ee92773eb16f8acef9b09870f5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Process/zipball/a2a22e359c8c6c6a44ec2d158d0865e9a94348b1",
-                "reference": "a2a22e359c8c6c6a44ec2d158d0865e9a94348b1",
+                "url": "https://api.github.com/repos/symfony/Process/zipball/d55770ab111a89ee92773eb16f8acef9b09870f5",
+                "reference": "d55770ab111a89ee92773eb16f8acef9b09870f5",
                 "shasum": ""
             },
             "require": {
@@ -219,7 +219,7 @@
             ],
             "description": "Symfony Process Component",
             "homepage": "http://symfony.com",
-            "time": "2013-04-23 20:53:10"
+            "time": "2013-04-25 13:23:11"
         }
     ],
     "packages-dev": [

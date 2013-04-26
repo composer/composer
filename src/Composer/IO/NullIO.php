@@ -38,6 +38,22 @@ class NullIO implements IOInterface
     /**
      * {@inheritDoc}
      */
+    public function isVeryVerbose()
+    {
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function isDebug()
+    {
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function isDecorated()
     {
         return false;
