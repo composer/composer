@@ -27,11 +27,25 @@ interface IOInterface
     public function isInteractive();
 
     /**
-     * Is this input verbose?
+     * Is this output verbose?
      *
      * @return bool
      */
     public function isVerbose();
+
+    /**
+     * Is the output very verbose?
+     *
+     * @return bool
+     */
+    public function isVeryVerbose();
+
+    /**
+     * Is the output in debug verbosity?
+     *
+     * @return bool
+     */
+    public function isDebug();
 
     /**
      * Is this output decorated?

@@ -18,6 +18,7 @@ use Composer\Downloader\TransportException;
 
 /**
  * @author François Pluchino <francois.pluchino@opendisplay.com>
+ * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 class RemoteFilesystem
 {
@@ -101,6 +102,9 @@ class RemoteFilesystem
         $this->lastProgress = null;
 
         $options = $this->getOptionsForUrl($originUrl, $additionalOptions);
+        if ($this->io->isDebug()) {
+            $this->io->write('Downloading '.$fileUrl);
+        }
         if (isset($options['github-token'])) {
             $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'access_token='.$options['github-token'];
             unset($options['github-token']);
