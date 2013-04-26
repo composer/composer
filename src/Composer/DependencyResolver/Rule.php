@@ -82,6 +82,16 @@ class Rule
         return $this->job;
     }
 
+    public function getReason()
+    {
+        return $this->reason;
+    }
+
+    public function getReasonData()
+    {
+        return $this->reasonData;
+    }
+
     public function getRequiredPackage()
     {
         if ($this->reason === self::RULE_JOB_INSTALL) {
@@ -200,9 +210,12 @@ class Rule
                 if ($requires) {
                     $requireText = array();
                     foreach ($requires as $require) {
-                        $requireText[] = $require->getPrettyString();
+                        $requireText[$require->getName()][] = $require->getPrettyVersion();
                     }
-                    $text .= ' -> satisfiable by '.implode(', ', $requireText).'.';
+                    foreach ($requireText as $name => $versions) {
+                        $requireText[$name] = $name.'['.implode(', ', $versions).']';
+                    }
+                    $text .= ' -> satisfiable by '.implode(', ', $requireText);
                 } else {
                     $targetName = $this->reasonData->getTarget();
 
