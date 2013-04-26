@@ -80,12 +80,21 @@ EOT
             $preferDist = $input->getOption('prefer-dist');
         }
 
+        $preferDev = $composer->getConfig()->get('install-prefer-dev-mode');
+        if ($input->getOption('dev')) {
+            $preferDev = $input->getOption('dev');
+        }
+
+        if ($input->getOption('no-dev')) {
+            $preferDev = false;
+        }
+
         $install
             ->setDryRun($input->getOption('dry-run'))
             ->setVerbose($input->getOption('verbose'))
             ->setPreferSource($preferSource)
             ->setPreferDist($preferDist)
-            ->setDevMode($input->getOption('dev'))
+            ->setDevMode($preferDev)
             ->setRunScripts(!$input->getOption('no-scripts'))
             ->setOptimizeAutoloader($input->getOption('optimize-autoloader'))
         ;

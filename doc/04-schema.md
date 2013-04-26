@@ -633,6 +633,8 @@ The following options are supported:
   updates when in non-interactive mode. `true` will always discard changes in
   vendors, while `"stash"` will try to stash and reapply. Use this for CI
   servers or deploy scripts if you tend to have modified vendors.
+* **install-prefer-dev-mode:** Defaults to `false`; If true the composer will install dev
+  packages on install command.
 
 Example:
 

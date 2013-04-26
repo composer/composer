@@ -175,6 +175,10 @@
                 "discard-changes": {
                     "type": ["string", "boolean"],
                     "description": "The default style of handling dirty updates, defaults to false and can be any of true, false or \"stash\"."
+                },
+                "install-prefer-dev-mode": {
+                    "type": "boolean",
+                    "description": "By default installs require-dev packages, defaults to false."
                 }
             }
         },

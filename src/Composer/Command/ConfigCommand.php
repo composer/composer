@@ -287,6 +287,10 @@ EOT
                     return $val !== 'false' && (bool) $val;
                 }
             ),
+            'install-prefer-dev-mode' => array(
+                $booleanValidator,
+                $booleanNormalizer
+            ),
         );
         $multiConfigValues = array(
             'github-protocols' => array(
