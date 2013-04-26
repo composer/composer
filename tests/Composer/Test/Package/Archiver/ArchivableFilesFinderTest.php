@@ -101,6 +101,11 @@ class ArchivableFilesFinderTest extends \PHPUnit_Framework_TestCase
 
     public function testGitExcludes()
     {
+        // Ensure that git is available for testing.
+        if (!$this->getProcessAvailable('git')) {
+            return $this->markTestSkipped('git is not available.');
+        }
+
         file_put_contents($this->sources.'/.gitignore', implode("\n", array(
             '# gitignore rules with comments and blank lines',
             '',
@@ -140,6 +145,10 @@ class ArchivableFilesFinderTest extends \PHPUnit_Framework_TestCase
 
     public function testHgExcludes()
     {
+        // Ensure that Mercurial is available for testing.
+        if (!$this->getProcessAvailable('hg')) {
+            return $this->markTestSkipped('Mercurial is not available.');
+        }
         file_put_contents($this->sources.'/.hgignore', implode("\n", array(
             '# hgignore rules with comments, blank lines and syntax changes',
             '',
@@ -205,5 +214,21 @@ class ArchivableFilesFinderTest extends \PHPUnit_Framework_TestCase
         $actualFiles = $this->getArchivableFiles();
 
         $this->assertEquals($expectedFiles, $actualFiles);
+    }
+
+    /**
+     * Check whether or not the given process is available.
+     *
+     * @param string $process The name of the binary to test.
+     *
+     * @return boolean True if the process is available, false otherwise.
+     */
+    protected function getProcessAvailable($process)
+    {
+        // Check if the command is found. The 127 exit code is returned when the
+        // command is not found.
+        $process = new Process($process);
+
+        return $process->run() !== 127;
     }
 }
