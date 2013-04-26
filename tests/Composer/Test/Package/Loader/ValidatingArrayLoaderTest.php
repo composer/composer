@@ -234,6 +234,28 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                     'support.source : invalid value, must be a string',
                 )
             ),
+            array(
+                array(
+                    'name' => 'foo/bar',
+                    'autoload' => 'strings',
+                ),
+                array(
+                    'autoload : should be an array, string given'
+                )
+            ),
+            array(
+                array(
+                    'name' => 'foo/bar',
+                    'autoload' => array(
+                        'psr0' => array(
+                            'foo' => 'src',
+                        ),
+                    ),
+                ),
+                array(
+                    'autoload : invalid value (psr0), must be one of psr-0, classmap, files'
+                )
+            ),
         );
     }
 
