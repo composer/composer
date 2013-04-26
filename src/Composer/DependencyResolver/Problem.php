@@ -172,11 +172,16 @@ class Problem
 
     protected function getPackageList($packages)
     {
-        return implode(', ', array_unique(array_map(function ($package) {
-                return $package->getPrettyString();
-            },
-            $packages
-        )));
+        $prepared = array();
+        foreach ($packages as $package) {
+            $prepared[$package->getName()]['name'] = $package->getPrettyName();
+            $prepared[$package->getName()]['versions'][$package->getVersion()] = $package->getPrettyVersion();
+        }
+        foreach ($prepared as $name => $package) {
+            $prepared[$name] = $package['name'].'['.implode(', ', $package['versions']).']';
+        }
+
+        return implode(', ', $prepared);
     }
 
     /**
