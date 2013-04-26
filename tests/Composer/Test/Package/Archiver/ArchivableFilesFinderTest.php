@@ -16,6 +16,7 @@ use Composer\Package\Archiver\ArchivableFilesFinder;
 use Composer\Util\Filesystem;
 
 use Symfony\Component\Process\Process;
+use Symfony\Component\Process\ExecutableFinder;
 
 class ArchivableFilesFinderTest extends \PHPUnit_Framework_TestCase
 {
@@ -102,7 +103,7 @@ class ArchivableFilesFinderTest extends \PHPUnit_Framework_TestCase
     public function testGitExcludes()
     {
         // Ensure that git is available for testing.
-        if (!$this->getProcessAvailable('git')) {
+        if (!$this->isProcessAvailable('git')) {
             return $this->markTestSkipped('git is not available.');
         }
 
@@ -146,9 +147,10 @@ class ArchivableFilesFinderTest extends \PHPUnit_Framework_TestCase
     public function testHgExcludes()
     {
         // Ensure that Mercurial is available for testing.
-        if (!$this->getProcessAvailable('hg')) {
+        if (!$this->isProcessAvailable('hg')) {
             return $this->markTestSkipped('Mercurial is not available.');
         }
+
         file_put_contents($this->sources.'/.hgignore', implode("\n", array(
             '# hgignore rules with comments, blank lines and syntax changes',
             '',
@@ -223,12 +225,10 @@ class ArchivableFilesFinderTest extends \PHPUnit_Framework_TestCase
      *
      * @return boolean True if the process is available, false otherwise.
      */
-    protected function getProcessAvailable($process)
+    protected function isProcessAvailable($process)
     {
-        // Check if the command is found. The 127 exit code is returned when the
-        // command is not found.
-        $process = new Process($process);
+        $finder = new ExecutableFinder();
 
-        return $process->run() !== 127;
+        return (bool) $finder->find($process);
     }
 }
