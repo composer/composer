@@ -194,7 +194,7 @@ class Rule
                 $package1 = $this->pool->literalToPackage($this->literals[0]);
                 $package2 = $this->pool->literalToPackage($this->literals[1]);
 
-                return $package1->getPrettyString().' conflicts with '.$package2->getPrettyString().'.';
+                return $package1->getPrettyString().' conflicts with '.$this->formatPackagesUnique(array($package2)).'.';
 
             case self::RULE_PACKAGE_REQUIRES:
                 $literals = $this->literals;
@@ -208,14 +208,7 @@ class Rule
 
                 $text = $this->reasonData->getPrettyString($sourcePackage);
                 if ($requires) {
-                    $requireText = array();
-                    foreach ($requires as $require) {
-                        $requireText[$require->getName()][] = $require->getPrettyVersion();
-                    }
-                    foreach ($requireText as $name => $versions) {
-                        $requireText[$name] = $name.'['.implode(', ', $versions).']';
-                    }
-                    $text .= ' -> satisfiable by '.implode(', ', $requireText);
+                    $text .= ' -> satisfiable by ' . $this->formatPackagesUnique($requires) . '.';
                 } else {
                     $targetName = $this->reasonData->getTarget();
 
@@ -242,14 +235,7 @@ class Rule
             case self::RULE_INSTALLED_PACKAGE_OBSOLETES:
                 return $ruleText;
             case self::RULE_PACKAGE_SAME_NAME:
-                $text = "Can only install one of: ";
-
-                $packages = array();
-                foreach ($this->literals as $i => $literal) {
-                    $packages[] = $this->pool->literalToPackage($literal)->getPrettyString();
-                }
-
-                return $text.implode(', ', $packages).'.';
+                return 'Can only install one of: ' . $this->formatPackagesUnique($this->literals) . '.';
             case self::RULE_PACKAGE_IMPLICIT_OBSOLETES:
                 return $ruleText;
             case self::RULE_LEARNED:
@@ -257,6 +243,23 @@ class Rule
             case self::RULE_PACKAGE_ALIAS:
                 return $ruleText;
         }
+    }
+
+    protected function formatPackagesUnique(array $packages)
+    {
+        $prepared = array();
+        foreach ($packages as $package) {
+            if (!is_object($package)) {
+                $package = $this->pool->literalToPackage($package);
+            }
+            $prepared[$package->getName()]['name'] = $package->getPrettyName();
+            $prepared[$package->getName()]['versions'][$package->getVersion()] = $package->getPrettyVersion();
+        }
+        foreach ($prepared as $name => $package) {
+            $prepared[$name] = $package['name'].'['.implode(', ', $package['versions']).']';
+        }
+
+        return implode(', ', $prepared);
     }
 
     /**
