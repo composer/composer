@@ -36,7 +36,7 @@ class SvnDriver extends VcsDriver
     protected $trunkPath    = 'trunk';
     protected $branchesPath = 'branches';
     protected $tagsPath     = 'tags';
-    protected $modulePath   = '';
+    protected $packagePath   = '';
 
     /**
      * @var \Composer\Util\Svn
@@ -59,8 +59,8 @@ class SvnDriver extends VcsDriver
         if (isset($this->repoConfig['tags-path'])) {
             $this->tagsPath = $this->repoConfig['tags-path'];
         }
-        if (isset($this->repoConfig['module-path'])) {
-            $this->modulePath = '/' . trim($this->repoConfig['module-path'], '/');
+        if (isset($this->repoConfig['package-path'])) {
+            $this->packagePath = '/' . trim($this->repoConfig['package-path'], '/');
         }
 
         if (false !== ($pos = strrpos($this->url, '/' . $this->trunkPath))) {
@@ -171,7 +171,7 @@ class SvnDriver extends VcsDriver
                         $line = trim($line);
                         if ($line && preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match)) {
                             if (isset($match[1]) && isset($match[2]) && $match[2] !== './') {
-                                $this->tags[rtrim($match[2], '/')] = $this->buildModuleId(
+                                $this->tags[rtrim($match[2], '/')] = $this->buildIdentifier(
                                     '/' . $this->tagsPath . '/' . $match[2],
                                     $match[1]
                                 );
@@ -199,7 +199,7 @@ class SvnDriver extends VcsDriver
                     $line = trim($line);
                     if ($line && preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match)) {
                         if (isset($match[1]) && isset($match[2]) && $match[2] === $this->trunkPath . '/') {
-                            $this->branches[$this->trunkPath] = $this->buildModuleId(
+                            $this->branches[$this->trunkPath] = $this->buildIdentifier(
                                 '/' . $this->trunkPath,
                                 $match[1]
                             );
@@ -218,7 +218,7 @@ class SvnDriver extends VcsDriver
                         $line = trim($line);
                         if ($line && preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match)) {
                             if (isset($match[1]) && isset($match[2]) && $match[2] !== './') {
-                                $this->branches[rtrim($match[2], '/')] = $this->buildModuleId(
+                                $this->branches[rtrim($match[2], '/')] = $this->buildIdentifier(
                                     '/' . $this->branchesPath . '/' . $match[2],
                                     $match[1]
                                 );
@@ -314,16 +314,16 @@ class SvnDriver extends VcsDriver
     }
 
     /**
-     * Build module identifier respecting the module-path config option
+     * Build the identifier respecting "package-path" config option
      *
      * @param string $baseDir The path to trunk/branch/tag
      * @param int $revision The revision mark to add to identifier
      *
      * @return string
      */
-    protected function buildModuleId($baseDir, $revision)
+    protected function buildIdentifier($baseDir, $revision)
     {
-        return rtrim($baseDir, '/') . $this->modulePath . '/@' . $revision;
+        return rtrim($baseDir, '/') . $this->packagePath . '/@' . $revision;
     }
 }
 
