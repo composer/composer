@@ -485,6 +485,40 @@ Check [the satis GitHub repository](https://github.com/composer/satis) and
 the [Satis article](articles/handling-private-packages-with-satis.md) for more
 information.
 
+### Artifact
+
+There are some cases, when there is no ability to have one of the previously
+mentioned repository types online, even the VCS one. Typical example could be
+cross-organisation library exchange through built artifacts. Of course, most
+of the times they are private. To simplify maintenance, one can simply specify
+repository of type `artifact` with a folder containing ZIP archives of those
+private packages:
+
+    {
+        "repositories": [
+            {
+                "type": "artifact",
+                "url": "path/to/directory/with/zips/"
+            }
+        ],
+        "require": {
+            "private-vendor-one/core": "15.6.2",
+            "private-vendor-two/connectivity": "*",
+            "acme-corp/parser": "10.3.5"
+        }
+    }
+
+Each zip artifact is just a ZIP archive with `composer.json` in root folder:
+
+    $ tar -tf acme-corp-parser-10.3.5.zip
+    composer.json
+    ...
+
+If there is two archives with different versions of a package, they would be
+imported both. If archive with newer version would be put to artifact folder and
+`update` command would be triggered, that version would replace previous, at it
+ logically seems.
+
 ## Disabling Packagist
 
 You can disable the default Packagist repository by adding this to your

@@ -1,0 +1,109 @@
+<?php
+
+/*
+ * This file is part of Composer.
+ *
+ * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+namespace Composer\Repository;
+
+use Composer\IO\IOInterface;
+use Composer\Json\JsonFile;
+use Composer\Package\Loader\ArrayLoader;
+
+/**
+ * @author Serge Smertin <serg.smertin@gmail.com>
+ */
+class ArtifactRepository extends ArrayRepository
+{
+    /** @var LoaderInterface */
+    protected $loader;
+
+    protected $lookup;
+
+    public function __construct(array $repoConfig, IOInterface $io)
+    {
+        $this->loader = new ArrayLoader();
+        $this->lookup = $repoConfig['url'];
+        $this->io = $io;
+    }
+
+    protected function initialize()
+    {
+        parent::initialize();
+
+        if (!extension_loaded('zip')) {
+            $msg = 'In order to use <comment>artifact</comment> repository, ' .
+                'you need to have <comment>zip</comment> extension enabled';
+            $this->io->write($msg);
+            return;
+        }
+
+        $this->scanDirectory($this->lookup);
+    }
+
+    private function scanDirectory($path)
+    {
+        $io = $this->io;
+        foreach (new \RecursiveDirectoryIterator($path) as $file) {
+            /* @var $file \SplFileInfo */
+            if (!$file->isFile()) {
+                continue;
+            }
+
+            $package = $this->getComposerInformation($file);
+            if (!$package) {
+                if ($io->isVerbose()) {
+                    $msg = "File <comment>{$file->getBasename()}</comment> doesn't seem to hold a package";
+                    $io->write($msg);
+                }
+                continue;
+            }
+
+            if ($io->isVerbose()) {
+                $template = 'Found package <info>%s</info> (<comment>%s</comment>) in file <info>%s</info>';
+                $msg = sprintf($template, $package->getName(), $package->getPrettyVersion(), $file->getBasename());
+                $io->write($msg);
+            }
+
+            $this->addPackage($package);
+        }
+    }
+
+    private function getComposerInformation(\SplFileInfo $file)
+    {
+        $zip = new \ZipArchive();
+        $zip->open($file->getPathname());
+
+        if (0 == $zip->numFiles) {
+            return false;
+        }
+
+        $foundFileIndex = $zip->locateName('composer.json', \ZipArchive::FL_NODIR);
+        if (false === $foundFileIndex) {
+            return false;
+        }
+
+        $configurationFileName = $zip->getNameIndex($foundFileIndex);
+
+        $composerFile = "zip://{$file->getPathname()}#$configurationFileName";
+        $json = file_get_contents($composerFile);
+
+        $package = JsonFile::parseJson($json, $composerFile);
+        $package['dist'] = array(
+            'type' => 'zip',
+            'url' => $file->getRealPath(),
+            'reference' => $file->getBasename(),
+            'shasum' => sha1_file($file->getRealPath())
+        );
+
+        $package = $this->loader->load($package);
+
+        return $package;
+    }
+}
