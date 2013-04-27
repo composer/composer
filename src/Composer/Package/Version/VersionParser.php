@@ -15,6 +15,7 @@ namespace Composer\Package\Version;
 use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\Link;
+use Composer\Package\LinkConstraint\EmptyConstraint;
 use Composer\Package\LinkConstraint\MultiConstraint;
 use Composer\Package\LinkConstraint\VersionConstraint;
 
@@ -253,7 +254,7 @@ class VersionParser
         }
 
         if (preg_match('{^[x*](\.[x*])*$}i', $constraint)) {
-            return array();
+            return array(new EmptyConstraint);
         }
 
         if (preg_match('{^~(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:\.(\d+))?'.self::$modifierRegex.'?$}i', $constraint, $matches)) {
