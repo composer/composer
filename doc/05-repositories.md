@@ -315,6 +315,11 @@ repository like this:
 If you have no branches or tags directory you can disable them entirely by
 setting the `branches-path` or `tags-path` to `false`.
 
+If the package is in a sub-directory, e.g. `/trunk/foo/bar/composer.json` and
+`/tags/1.0/foo/bar/composer.json`, then you can make composer access it by
+setting the `"package-path"` option to the sub-directory, in this example it
+would be `"package-path": "foo/bar/"`.
+
 ### PEAR
 
 It is possible to install packages from any PEAR channel by using the `pear`
