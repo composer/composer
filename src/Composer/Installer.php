@@ -490,23 +490,29 @@ class Installer
                 }
             }
 
-            // output alias operations in verbose mode, or all ops in dry run
-            if ($this->dryRun || ($this->verbose && false !== strpos($operation->getJobType(), 'Alias'))) {
+            // output non-alias ops in dry run, output alias ops in debug verbosity
+            if ($this->dryRun && false === strpos($operation->getJobType(), 'Alias')) {
                 $this->io->write('  - ' . $operation);
+                $this->io->write('');
+            } elseif ($this->io->isDebug() && false !== strpos($operation->getJobType(), 'Alias')) {
+                $this->io->write('  - ' . $operation);
+                $this->io->write('');
             }
 
             $this->installationManager->execute($localRepo, $operation);
 
-            // output reasons why the operation was ran
-            if ($this->verbose && $this->io->isVeryVerbose()) {
+            // output reasons why the operation was ran, only for install/update operations
+            if ($this->verbose && $this->io->isVeryVerbose() && in_array($operation->getJobType(), array('install', 'update'))) {
                 $reason = $operation->getReason();
                 if ($reason instanceof Rule) {
                     switch ($reason->getReason()) {
                         case Rule::RULE_JOB_INSTALL:
-                            $this->io->write('    REASON: Required to be installed: '.$reason->getRequiredPackage());
+                            $this->io->write('    REASON: Required by root: '.$reason->getRequiredPackage());
+                            $this->io->write('');
                             break;
                         case Rule::RULE_PACKAGE_REQUIRES:
                             $this->io->write('    REASON: '.$reason->getPrettyString());
+                            $this->io->write('');
                             break;
                     }
                 }
