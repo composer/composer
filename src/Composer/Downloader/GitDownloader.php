@@ -269,8 +269,6 @@ class GitDownloader extends VcsDownloader
      */
     protected function runCommand($commandCallable, $url, $path = null)
     {
-        $handler = array($this, 'outputHandler');
-
         if (preg_match('{^ssh://[^@]+@[^:]+:[^0-9]+}', $url)) {
             throw new \InvalidArgumentException('The source URL '.$url.' is invalid, ssh URLs should have a port number after ":".'."\n".'Use ssh://git@example.com:22/path or just git@example.com:path if you do not want to provide a password or custom port.');
         }
@@ -284,7 +282,7 @@ class GitDownloader extends VcsDownloader
             $messages = array();
             foreach ($protocols as $protocol) {
                 $url = $protocol . $match[1];
-                if (0 === $this->process->execute(call_user_func($commandCallable, $url), $handler)) {
+                if (0 === $this->process->execute(call_user_func($commandCallable, $url), $ignoredOutput)) {
                     return;
                 }
                 $messages[] = '- ' . $url . "\n" . preg_replace('#^#m', '  ', $this->process->getErrorOutput());
@@ -298,7 +296,7 @@ class GitDownloader extends VcsDownloader
         }
 
         $command = call_user_func($commandCallable, $url);
-        if (0 !== $this->process->execute($command, $handler)) {
+        if (0 !== $this->process->execute($command, $ignoredOutput)) {
             // private github repository without git access, try https with auth
             if (preg_match('{^git@(github.com):(.+?)\.git$}i', $url, $match)) {
                 if (!$this->io->hasAuthentication($match[1])) {
@@ -315,7 +313,7 @@ class GitDownloader extends VcsDownloader
                     $url = 'https://'.urlencode($auth['username']) . ':' . urlencode($auth['password']) . '@'.$match[1].'/'.$match[2].'.git';
 
                     $command = call_user_func($commandCallable, $url);
-                    if (0 === $this->process->execute($command, $handler)) {
+                    if (0 === $this->process->execute($command, $ignoredOutput)) {
                         return;
                     }
                 }
@@ -337,7 +335,7 @@ class GitDownloader extends VcsDownloader
                 $url = $match[1].urlencode($auth['username']).':'.urlencode($auth['password']).'@'.$match[2].$match[3];
 
                 $command = call_user_func($commandCallable, $url);
-                if (0 === $this->process->execute($command, $handler)) {
+                if (0 === $this->process->execute($command, $ignoredOutput)) {
                     $this->io->setAuthentication($match[2], $auth['username'], $auth['password']);
 
                     return;
@@ -348,16 +346,6 @@ class GitDownloader extends VcsDownloader
                 $this->filesystem->removeDirectory($path);
             }
             $this->throwException('Failed to execute ' . $this->sanitizeUrl($command) . "\n\n" . $this->process->getErrorOutput(), $url);
-        }
-    }
-
-    public function outputHandler($type, $buffer)
-    {
-        if ($type !== 'out') {
-            return;
-        }
-        if ($this->io->isVerbose()) {
-            $this->io->write($buffer, false);
         }
     }
 
