@@ -28,6 +28,10 @@ class ArtifactRepository extends ArrayRepository
 
     public function __construct(array $repoConfig, IOInterface $io)
     {
+        if (!extension_loaded('zip')) {
+            throw new \RuntimeException('The artifact repository requires PHP\'s zip extension');
+        }
+
         $this->loader = new ArrayLoader();
         $this->lookup = $repoConfig['url'];
         $this->io = $io;
@@ -36,13 +40,6 @@ class ArtifactRepository extends ArrayRepository
     protected function initialize()
     {
         parent::initialize();
-
-        if (!extension_loaded('zip')) {
-            $msg = 'In order to use <comment>artifact</comment> repository, ' .
-                'you need to have <comment>zip</comment> extension enabled';
-            $this->io->write($msg);
-            return;
-        }
 
         $this->scanDirectory($this->lookup);
     }
@@ -59,16 +56,14 @@ class ArtifactRepository extends ArrayRepository
             $package = $this->getComposerInformation($file);
             if (!$package) {
                 if ($io->isVerbose()) {
-                    $msg = "File <comment>{$file->getBasename()}</comment> doesn't seem to hold a package";
-                    $io->write($msg);
+                    $io->write("File <comment>{$file->getBasename()}</comment> doesn't seem to hold a package");
                 }
                 continue;
             }
 
             if ($io->isVerbose()) {
                 $template = 'Found package <info>%s</info> (<comment>%s</comment>) in file <info>%s</info>';
-                $msg = sprintf($template, $package->getName(), $package->getPrettyVersion(), $file->getBasename());
-                $io->write($msg);
+                $io->write(sprintf($template, $package->getName(), $package->getPrettyVersion(), $file->getBasename()));
             }
 
             $this->addPackage($package);
