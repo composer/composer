@@ -23,6 +23,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     protected $license = array();
     protected $keywords;
     protected $authors;
+    protected $title;
     protected $description;
     protected $homepage;
     protected $scripts = array();
@@ -114,6 +115,24 @@ class CompletePackage extends Package implements CompletePackageInterface
     public function getAuthors()
     {
         return $this->authors;
+    }
+
+    /**
+     * Set the package title
+     *
+     * @param string $title
+     */
+    public function setTitle($title)
+    {
+        $this->title = $title;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getTitle()
+    {
+        return $this->title;
     }
 
     /**

@@ -96,8 +96,12 @@ class ArrayDumperTest extends \PHPUnit_Framework_TestCase
                 'http://getcomposer.org'
             ),
             array(
-                'description',
+                'title',
                 'Dependency Manager'
+            ),
+            array(
+                'description',
+                'Composer is a dependency manager that handles dependencies'
             ),
             array(
                 'keywords',

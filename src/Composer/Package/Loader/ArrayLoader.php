@@ -162,6 +162,10 @@ class ArrayLoader implements LoaderInterface
                 $package->setScripts($config['scripts']);
             }
 
+            if (isset($config['title']) && $config['title'] !== '') {
+                $package->setTitle($config['title']);
+            }
+
             if (!empty($config['description']) && is_string($config['description'])) {
                 $package->setDescription($config['description']);
             }

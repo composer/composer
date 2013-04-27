@@ -44,6 +44,7 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
             array( // complete
                 array(
                     'name' => 'foo/bar',
+                    'title' => 'Foo',
                     'description' => 'Foo bar',
                     'version' => '1.0.0',
                     'type' => 'library',

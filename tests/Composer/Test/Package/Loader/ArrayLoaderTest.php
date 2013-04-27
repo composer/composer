@@ -83,6 +83,7 @@ class ArrayLoaderTest extends \PHPUnit_Framework_TestCase
             'name' => 'A/B',
             'version' => '1.2.3',
             'version_normalized' => '1.2.3.0',
+            'title' => 'Foo',
             'description' => 'Foo bar',
             'type' => 'library',
             'keywords' => array('a', 'b', 'c'),

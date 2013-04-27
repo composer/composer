@@ -61,6 +61,7 @@ class ValidatingArrayLoader implements LoaderInterface
         $this->validateArray('extra');
         $this->validateFlatArray('bin');
         $this->validateArray('scripts'); // TODO validate event names & listener syntax
+        $this->validateString('title');
         $this->validateString('description');
         $this->validateUrl('homepage');
         $this->validateFlatArray('keywords', '[A-Za-z0-9 ._-]+');

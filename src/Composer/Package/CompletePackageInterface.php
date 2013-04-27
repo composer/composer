@@ -50,6 +50,13 @@ interface CompletePackageInterface extends PackageInterface
     public function getKeywords();
 
     /**
+     * Returns the package title
+     *
+     * @return string
+     */
+    public function getTitle();
+
+    /**
      * Returns the package description
      *
      * @return string
