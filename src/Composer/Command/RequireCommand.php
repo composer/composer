@@ -39,6 +39,7 @@ class RequireCommand extends InitCommand
                 new InputOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist even for dev versions.'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
                 new InputOption('no-update', null, InputOption::VALUE_NONE, 'Disables the automatic update of the dependencies.'),
+                new InputOption('no-dev-update', null, InputOption::VALUE_NONE, 'Disable update of require-dev.'),
             ))
             ->setHelp(<<<EOT
 The require command adds required packages to your composer.json and installs them
@@ -107,7 +108,7 @@ EOT
             ->setVerbose($input->getOption('verbose'))
             ->setPreferSource($input->getOption('prefer-source'))
             ->setPreferDist($input->getOption('prefer-dist'))
-            ->setDevMode(true)
+            ->setDevMode(!$input->getOption('no-dev-update'))
             ->setUpdate(true)
             ->setUpdateWhitelist(array_keys($requirements));
         ;
