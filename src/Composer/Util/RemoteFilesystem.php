@@ -215,9 +215,6 @@ class RemoteFilesystem
     {
         switch ($notificationCode) {
             case STREAM_NOTIFY_FAILURE:
-                throw new TransportException('The "'.$this->fileUrl.'" file could not be downloaded ('.trim($message).')', $messageCode);
-                break;
-
             case STREAM_NOTIFY_AUTH_REQUIRED:
                 if (401 === $messageCode) {
                     if (!$this->io->isInteractive()) {
@@ -232,8 +229,10 @@ class RemoteFilesystem
                     $this->io->setAuthentication($this->originUrl, $username, $password);
 
                     $this->get($this->originUrl, $this->fileUrl, $this->fileName, $this->progress);
+                    break;
                 }
-                break;
+
+                throw new TransportException('The "'.$this->fileUrl.'" file could not be downloaded ('.trim($message).')', $messageCode);
 
             case STREAM_NOTIFY_AUTH_RESULT:
                 if (403 === $messageCode) {
