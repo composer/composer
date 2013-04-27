@@ -490,7 +490,7 @@ information.
 There are some cases, when there is no ability to have one of the previously
 mentioned repository types online, even the VCS one. Typical example could be
 cross-organisation library exchange through built artifacts. Of course, most
-of the times they are private. To simplify maintenance, one can simply specify
+of the times they are private. To simplify maintenance, one can simply use a
 repository of type `artifact` with a folder containing ZIP archives of those
 private packages:
 
@@ -514,10 +514,10 @@ Each zip artifact is just a ZIP archive with `composer.json` in root folder:
     composer.json
     ...
 
-If there is two archives with different versions of a package, they would be
-imported both. If archive with newer version would be put to artifact folder and
-`update` command would be triggered, that version would replace previous, at it
- logically seems.
+If there are two archives with different versions of a package, they are both
+imported. When an archive with a newer version is added in the artifact folder
+and you run `update`, that version will be imported as well and Composer will
+update to the latest version.
 
 ## Disabling Packagist
 
