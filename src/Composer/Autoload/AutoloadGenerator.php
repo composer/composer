@@ -186,7 +186,15 @@ EOF;
         }
         file_put_contents($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, $suffix));
         file_put_contents($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, true, (bool) $includePathFile, $targetDirLoader, $filesCode, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath));
-        copy(__DIR__.'/ClassLoader.php', $targetDir.'/ClassLoader.php');
+
+        // use stream_copy_to_stream instead of copy
+        // to work around https://bugs.php.net/bug.php?id=64634
+        $sourceLoader = fopen(__DIR__.'/ClassLoader.php', 'r');
+        $targetLoader = fopen($targetDir.'/ClassLoader.php', 'w+');
+        stream_copy_to_stream($sourceLoader, $targetLoader);
+        fclose($sourceLoader);
+        fclose($targetLoader);
+        unset($sourceLoader, $targetLoader);
 
         $this->eventDispatcher->dispatch(ScriptEvents::POST_AUTOLOAD_DUMP);
     }
