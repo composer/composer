@@ -123,4 +123,18 @@ class ArrayLoaderTest extends \PHPUnit_Framework_TestCase
         $dumper = new ArrayDumper;
         $this->assertEquals($config, $dumper->dump($package));
     }
+
+    public function testPackageWithBranchAlias()
+    {
+        $config = array(
+            'name' => 'A',
+            'version' => 'dev-master',
+            'extra' => array('branch-alias' => array('dev-master' => '1.0.x-dev')),
+        );
+
+        $package = $this->loader->load($config);
+
+        $this->assertInstanceOf('Composer\Package\AliasPackage', $package);
+        $this->assertEquals('1.0.x-dev', $package->getPrettyVersion());
+    }
 }

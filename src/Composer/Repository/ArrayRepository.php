@@ -130,18 +130,17 @@ class ArrayRepository implements RepositoryInterface
         $package->setRepository($this);
         $this->packages[] = $package;
 
-        // create alias package on the fly if needed
-        if ($package->getAlias()) {
-            $alias = $this->createAliasPackage($package);
-            if (!$this->hasPackage($alias)) {
-                $this->addPackage($alias);
+        if ($package instanceof AliasPackage) {
+            $aliasedPackage = $package->getAliasOf();
+            if (null === $aliasedPackage->getRepository()) {
+                $this->addPackage($aliasedPackage);
             }
         }
     }
 
-    protected function createAliasPackage(PackageInterface $package, $alias = null, $prettyAlias = null)
+    protected function createAliasPackage(PackageInterface $package, $alias, $prettyAlias)
     {
-        return new AliasPackage($package, $alias ?: $package->getAlias(), $prettyAlias ?: $package->getPrettyAlias());
+        return new AliasPackage($package instanceof AliasPackage ? $package->getAliasOf() : $package, $alias, $prettyAlias);
     }
 
     /**
