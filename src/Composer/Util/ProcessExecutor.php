@@ -47,7 +47,7 @@ class ProcessExecutor
         $process = new Process($command, $cwd, null, null, static::getTimeout());
 
         if ($this->io && $this->io->isDebug()) {
-            $safeCommand = preg_replace('{(//[^:]+:)[^@]+}', '$1****', $command);
+            $safeCommand = preg_replace('{(://[^:/\s]+:)[^@\s/]+}i', '$1****', $command);
             $this->io->write('Executing command ('.($cwd ?: 'CWD').'): '.$safeCommand);
         }
 
