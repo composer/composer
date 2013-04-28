@@ -13,6 +13,7 @@
 namespace Composer\Package\Loader;
 
 use Composer\Package\BasePackage;
+use Composer\Package\AliasPackage;
 use Composer\Config;
 use Composer\Factory;
 use Composer\Package\Version\VersionParser;
@@ -65,6 +66,10 @@ class RootPackageLoader extends ArrayLoader
         }
 
         $package = parent::load($config, $class);
+
+        if ($package instanceof AliasPackage) {
+            $package = $package->getAliasOf();
+        }
 
         $aliases = array();
         $stabilityFlags = array();
