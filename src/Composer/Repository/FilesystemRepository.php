@@ -76,15 +76,19 @@ class FilesystemRepository extends ArrayRepository implements WritableRepository
      */
     public function write()
     {
-        $packages = array();
+        $data = array();
         $dumper   = new ArrayDumper();
-        foreach ($this->getPackages() as $package) {
+        $packages = $this->getPackages();
+        foreach ($packages as $package) {
+            // unfold aliased packages
+            while ($package instanceof AliasPackage && !in_array($package->getAliasOf(), $packages, true)) {
+                $package = $package->getAliasOf();
+            }
             if (!$package instanceof AliasPackage) {
-                $data = $dumper->dump($package);
-                $packages[] = $data;
+                $data[] = $dumper->dump($package);
             }
         }
 
-        $this->file->write($packages);
+        $this->file->write($data);
     }
 }

@@ -197,6 +197,10 @@ EOF;
         $packageMap = array(array($mainPackage, ''));
 
         foreach ($packages as $package) {
+            // unfold aliased packages
+            while ($package instanceof AliasPackage && !in_array($package->getAliasOf(), $packages, true)) {
+                $package = $package->getAliasOf();
+            }
             if ($package instanceof AliasPackage) {
                 continue;
             }
