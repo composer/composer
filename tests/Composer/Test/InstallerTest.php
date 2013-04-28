@@ -17,13 +17,13 @@ use Composer\Config;
 use Composer\Json\JsonFile;
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\RepositoryManager;
+use Composer\Repository\InstalledArrayRepository;
 use Composer\Package\RootPackageInterface;
 use Composer\Package\Link;
 use Composer\Package\Locker;
 use Composer\Test\Mock\FactoryMock;
 use Composer\Test\Mock\InstalledFilesystemRepositoryMock;
 use Composer\Test\Mock\InstallationManagerMock;
-use Composer\Test\Mock\WritableRepositoryMock;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\StreamOutput;
 
@@ -53,7 +53,7 @@ class InstallerTest extends TestCase
         $config = $this->getMock('Composer\Config');
 
         $repositoryManager = new RepositoryManager($io, $config);
-        $repositoryManager->setLocalRepository(new WritableRepositoryMock());
+        $repositoryManager->setLocalRepository(new InstalledArrayRepository());
 
         if (!is_array($repositories)) {
             $repositories = array($repositories);

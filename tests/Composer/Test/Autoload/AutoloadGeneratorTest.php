@@ -69,7 +69,7 @@ class AutoloadGeneratorTest extends TestCase
                 $targetDir = $package->getTargetDir();
                 return $that->vendorDir.'/'.$package->getName() . ($targetDir ? '/'.$targetDir : '');
             }));
-        $this->repository = $this->getMock('Composer\Repository\RepositoryInterface');
+        $this->repository = $this->getMock('Composer\Repository\InstalledRepositoryInterface');
 
         $this->eventDispatcher = $this->getMockBuilder('Composer\Script\EventDispatcher')
             ->disableOriginalConstructor()
@@ -99,7 +99,7 @@ class AutoloadGeneratorTest extends TestCase
         ));
 
         $this->repository->expects($this->once())
-            ->method('getPackages')
+            ->method('getCanonicalPackages')
             ->will($this->returnValue(array()));
 
         $this->fs->ensureDirectoryExists($this->workingDir.'/composer');
@@ -125,7 +125,7 @@ class AutoloadGeneratorTest extends TestCase
         ));
 
         $this->repository->expects($this->once())
-            ->method('getPackages')
+            ->method('getCanonicalPackages')
             ->will($this->returnValue(array()));
 
         $this->fs->ensureDirectoryExists($this->vendorDir.'/composer');
@@ -149,7 +149,7 @@ class AutoloadGeneratorTest extends TestCase
         ));
 
         $this->repository->expects($this->once())
-            ->method('getPackages')
+            ->method('getCanonicalPackages')
             ->will($this->returnValue(array()));
 
         $this->vendorDir .= '/subdir';
@@ -175,7 +175,7 @@ class AutoloadGeneratorTest extends TestCase
         $package->setTargetDir('Main/Foo/');
 
         $this->repository->expects($this->once())
-            ->method('getPackages')
+            ->method('getCanonicalPackages')
             ->will($this->returnValue(array()));
 
         $this->fs->ensureDirectoryExists($this->vendorDir.'/a');
@@ -205,7 +205,7 @@ class AutoloadGeneratorTest extends TestCase
         $b->setAutoload(array('psr-0' => array('B\\Sub\\Name' => 'src/')));
 
         $this->repository->expects($this->once())
-            ->method('getPackages')
+            ->method('getCanonicalPackages')
             ->will($this->returnValue($packages));
 
         $this->fs->ensureDirectoryExists($this->vendorDir.'/composer');
@@ -225,7 +225,7 @@ class AutoloadGeneratorTest extends TestCase
         $package->setAutoload(array('psr-0' => array('foo/bar/non/existing/')));
 
         $this->repository->expects($this->once())
-            ->method('getPackages')
+            ->method('getCanonicalPackages')
             ->will($this->returnValue(array()));
 
         $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', true, '_8');
@@ -247,7 +247,7 @@ class AutoloadGeneratorTest extends TestCase
         $b->setAutoload(array('classmap' => array('src/', 'lib/')));
 
         $this->repository->expects($this->once())
-            ->method('getPackages')
+            ->method('getCanonicalPackages')
             ->will($this->returnValue($packages));
 
         $this->fs->ensureDirectoryExists($this->vendorDir.'/composer');
@@ -283,7 +283,7 @@ class AutoloadGeneratorTest extends TestCase
         $b->setAutoload(array('classmap' => array('src/')));
 
         $this->repository->expects($this->once())
-            ->method('getPackages')
+            ->method('getCanonicalPackages')
             ->will($this->returnValue($packages));
 
         $this->fs->ensureDirectoryExists($this->vendorDir.'/composer');
@@ -319,7 +319,7 @@ class AutoloadGeneratorTest extends TestCase
         $c->setAutoload(array('classmap' => array('./')));
 
         $this->repository->expects($this->once())
-            ->method('getPackages')
+            ->method('getCanonicalPackages')
             ->will($this->returnValue($packages));
 
         $this->fs->ensureDirectoryExists($this->vendorDir.'/composer');
@@ -358,7 +358,7 @@ class AutoloadGeneratorTest extends TestCase
         $c->setTargetDir('foo/bar');
 
         $this->repository->expects($this->once())
-            ->method('getPackages')
+            ->method('getCanonicalPackages')
             ->will($this->returnValue($packages));
 
         $this->fs->ensureDirectoryExists($this->vendorDir.'/a/a');
@@ -412,7 +412,7 @@ class AutoloadGeneratorTest extends TestCase
         $e->setRequires(array(new Link('e/e', 'c/lorem')));
 
         $this->repository->expects($this->once())
-            ->method('getPackages')
+            ->method('getCanonicalPackages')
             ->will($this->returnValue($packages));
 
         $this->fs->ensureDirectoryExists($this->vendorDir . '/z/foo');
@@ -454,7 +454,7 @@ class AutoloadGeneratorTest extends TestCase
         $b->setAutoload(array('psr-0' => array('B\\Sub\\Name' => 'src/')));
 
         $this->repository->expects($this->once())
-            ->method('getPackages')
+            ->method('getCanonicalPackages')
             ->will($this->returnValue($packages));
 
         $this->fs->ensureDirectoryExists($this->workingDir.'/lib/A/B');
@@ -524,7 +524,7 @@ EOF;
         $packages[] = $c;
 
         $this->repository->expects($this->once())
-            ->method("getPackages")
+            ->method("getCanonicalPackages")
             ->will($this->returnValue($packages));
 
         $this->fs->ensureDirectoryExists($this->vendorDir.'/composer');
@@ -553,7 +553,7 @@ EOF;
         $packages[] = $a;
 
         $this->repository->expects($this->once())
-            ->method("getPackages")
+            ->method("getCanonicalPackages")
             ->will($this->returnValue($packages));
 
         mkdir($this->vendorDir."/composer", 0777, true);
@@ -581,7 +581,7 @@ EOF;
         $a->setIncludePaths(array("lib/"));
 
         $this->repository->expects($this->once())
-            ->method("getPackages")
+            ->method("getCanonicalPackages")
             ->will($this->returnValue($packages));
 
         mkdir($this->vendorDir."/composer", 0777, true);
@@ -609,7 +609,7 @@ EOF;
         $packages[] = $a;
 
         $this->repository->expects($this->once())
-            ->method("getPackages")
+            ->method("getCanonicalPackages")
             ->will($this->returnValue($packages));
 
         mkdir($this->vendorDir."/composer", 0777, true);
@@ -630,7 +630,7 @@ EOF;
         $package->setAutoload(array('psr-0' => array('foo/bar/non/existing/')));
 
         $this->repository->expects($this->once())
-            ->method('getPackages')
+            ->method('getCanonicalPackages')
             ->will($this->returnValue(array()));
 
         $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', true, '_8');
@@ -645,7 +645,7 @@ EOF;
         $package->setTargetDir('Main/Foo/');
 
         $this->repository->expects($this->once())
-            ->method('getPackages')
+            ->method('getCanonicalPackages')
             ->will($this->returnValue(array()));
 
         $this->config->expects($this->at(2))
@@ -682,7 +682,7 @@ EOF;
         ));
 
         $this->repository->expects($this->once())
-            ->method('getPackages')
+            ->method('getCanonicalPackages')
             ->will($this->returnValue(array($vendorPackage)));
 
         $im = $this->getMockBuilder('Composer\Installer\InstallationManager')
@@ -764,7 +764,7 @@ EOF;
         ));
 
         $this->repository->expects($this->once())
-            ->method('getPackages')
+            ->method('getCanonicalPackages')
             ->will($this->returnValue(array()));
 
         $this->fs->ensureDirectoryExists($this->workingDir.'/src/Foo');
@@ -818,7 +818,7 @@ EOF;
         ));
 
         $this->repository->expects($this->once())
-            ->method('getPackages')
+            ->method('getCanonicalPackages')
             ->will($this->returnValue(array()));
 
         $this->fs->ensureDirectoryExists($this->workingDir.'/Foo');

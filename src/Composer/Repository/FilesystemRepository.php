@@ -13,7 +13,6 @@
 namespace Composer\Repository;
 
 use Composer\Json\JsonFile;
-use Composer\Package\AliasPackage;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
 
@@ -23,7 +22,7 @@ use Composer\Package\Dumper\ArrayDumper;
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class FilesystemRepository extends ArrayRepository implements WritableRepositoryInterface
+class FilesystemRepository extends WritableArrayRepository
 {
     private $file;
 
@@ -77,16 +76,10 @@ class FilesystemRepository extends ArrayRepository implements WritableRepository
     public function write()
     {
         $data = array();
-        $dumper   = new ArrayDumper();
-        $packages = $this->getPackages();
-        foreach ($packages as $package) {
-            // unfold aliased packages
-            while ($package instanceof AliasPackage && !in_array($package->getAliasOf(), $packages, true)) {
-                $package = $package->getAliasOf();
-            }
-            if (!$package instanceof AliasPackage) {
-                $data[] = $dumper->dump($package);
-            }
+        $dumper = new ArrayDumper();
+
+        foreach ($this->getCanonicalPackages() as $package) {
+            $data[] = $dumper->dump($package);
         }
 
         $this->file->write($data);

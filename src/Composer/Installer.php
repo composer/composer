@@ -259,7 +259,7 @@ class Installer
                 $platformDevReqs = $this->devMode ? $this->extractPlatformRequirements($this->package->getDevRequires()) : array();
 
                 $updatedLock = $this->locker->setLockData(
-                    array_diff($localRepo->getPackages(), (array) $devPackages),
+                    array_diff($localRepo->getCanonicalPackages(), (array) $devPackages),
                     $devPackages,
                     $platformReqs,
                     $platformDevReqs,
@@ -582,13 +582,9 @@ class Installer
             $operations = array();
         }
 
-        foreach ($localRepo->getPackages() as $package) {
+        foreach ($localRepo->getCanonicalPackages() as $package) {
             // skip non-dev packages
             if (!$package->isDev()) {
-                continue;
-            }
-
-            if ($package instanceof AliasPackage) {
                 continue;
             }
 
