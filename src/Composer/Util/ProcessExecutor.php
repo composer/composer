@@ -13,6 +13,7 @@
 namespace Composer\Util;
 
 use Symfony\Component\Process\Process;
+use Composer\IO\IOInterface;
 
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>
@@ -23,6 +24,12 @@ class ProcessExecutor
 
     protected $captureOutput;
     protected $errorOutput;
+    protected $io;
+
+    public function __construct(IOInterface $io = null)
+    {
+        $this->io = $io;
+    }
 
     /**
      * runs a process on the commandline
@@ -38,6 +45,11 @@ class ProcessExecutor
         $this->captureOutput = count(func_get_args()) > 1;
         $this->errorOutput = null;
         $process = new Process($command, $cwd, null, null, static::getTimeout());
+
+        if ($this->io && $this->io->isDebug()) {
+            $safeCommand = preg_replace('{(//[^:]+:)[^@]+}', '$1****', $command);
+            $this->io->write('Executing command ('.($cwd ?: 'CWD').'): '.$safeCommand);
+        }
 
         $callback = is_callable($output) ? $output : array($this, 'outputHandler');
         $process->run($callback);

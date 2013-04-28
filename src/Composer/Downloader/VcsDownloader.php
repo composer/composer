@@ -33,7 +33,7 @@ abstract class VcsDownloader implements DownloaderInterface
     {
         $this->io = $io;
         $this->config = $config;
-        $this->process = $process ?: new ProcessExecutor;
+        $this->process = $process ?: new ProcessExecutor($io);
         $this->filesystem = $fs ?: new Filesystem;
     }
 
