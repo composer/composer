@@ -20,6 +20,13 @@ namespace Composer\Package;
 interface RootPackageInterface extends CompletePackageInterface
 {
     /**
+     * Returns a set of package names and theirs aliases
+     *
+     * @return array
+     */
+    public function getAliases();
+
+    /**
      * Returns the minimum stability of the package
      *
      * @return string

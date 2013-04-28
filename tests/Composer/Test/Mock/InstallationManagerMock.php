@@ -67,16 +67,15 @@ class InstallationManagerMock extends InstallationManager
         $this->installed[] = $package;
         $this->trace[] = (string) $operation;
 
-        if (!$repo->hasPackage($package)) {
-            $repo->addPackage($package);
-        }
+        parent::markAliasInstalled($repo, $operation);
     }
 
     public function markAliasUninstalled(RepositoryInterface $repo, MarkAliasUninstalledOperation $operation)
     {
         $this->uninstalled[] = $operation->getPackage();
         $this->trace[] = (string) $operation;
-        $repo->removePackage($operation->getPackage());
+
+        parent::markAliasUninstalled($repo, $operation);
     }
 
     public function getTrace()

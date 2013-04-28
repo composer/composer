@@ -1,0 +1,44 @@
+--TEST--
+Updates installed alias packages
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "a/a", "version": "dev-master",
+                    "require": { "b/b": "2.0.*" },
+                    "source": { "reference": "abcdef", "url": "", "type": "git" },
+                    "extra": { "branch-alias": { "dev-master": "1.0.x-dev" } }
+                },
+                {
+                    "name": "b/b", "version": "dev-master",
+                    "source": { "reference": "123456", "url": "", "type": "git" },
+                    "extra": { "branch-alias": { "dev-master": "2.0.x-dev" } }
+                }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "~1.0@dev",
+        "b/b": "@dev"
+    }
+}
+--INSTALLED--
+[
+    {
+        "name": "a/a", "version": "dev-master",
+        "require": { "b/b": "2.0.*" },
+        "source": { "reference": "abcdef", "url": "", "type": "git" },
+        "extra": { "branch-alias": { "dev-master": "1.0.x-dev" } }
+    },
+    {
+        "name": "b/b", "version": "dev-master",
+        "source": { "reference": "123456", "url": "", "type": "git" },
+        "extra": { "branch-alias": { "dev-master": "2.0.x-dev" } }
+    }
+]
+--RUN--
+update
+--EXPECT--
