@@ -187,7 +187,6 @@ class ConsoleIO implements IOInterface
                 fclose($target);
                 unset($source, $target);
 
-                copy($exe, $tmpExe);
                 $exe = $tmpExe;
             }
 
