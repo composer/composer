@@ -16,7 +16,7 @@ use Composer\Config;
 use Composer\Installer\InstallationManager;
 use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
-use Composer\Repository\RepositoryInterface;
+use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Util\Filesystem;
 use Composer\Script\EventDispatcher;
 use Composer\Script\ScriptEvents;
@@ -37,7 +37,7 @@ class AutoloadGenerator
         $this->eventDispatcher = $eventDispatcher;
     }
 
-    public function dump(Config $config, RepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir, $scanPsr0Packages = false, $suffix = '')
+    public function dump(Config $config, InstalledRepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir, $scanPsr0Packages = false, $suffix = '')
     {
         $filesystem = new Filesystem();
         $filesystem->ensureDirectoryExists($config->get('vendor-dir'));
@@ -66,7 +66,7 @@ return array(
 
 EOF;
 
-        $packageMap = $this->buildPackageMap($installationManager, $mainPackage, $localRepo->getPackages());
+        $packageMap = $this->buildPackageMap($installationManager, $mainPackage, $localRepo->getCanonicalPackages());
         $autoloads = $this->parseAutoloads($packageMap, $mainPackage);
 
         foreach ($autoloads['psr-0'] as $namespace => $paths) {
@@ -205,10 +205,6 @@ EOF;
         $packageMap = array(array($mainPackage, ''));
 
         foreach ($packages as $package) {
-            // unfold aliased packages
-            while ($package instanceof AliasPackage && !in_array($package->getAliasOf(), $packages, true)) {
-                $package = $package->getAliasOf();
-            }
             if ($package instanceof AliasPackage) {
                 continue;
             }

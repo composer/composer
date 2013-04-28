@@ -155,7 +155,7 @@ class EventDispatcher
         }
 
         $generator = $this->composer->getAutoloadGenerator();
-        $packages = $this->composer->getRepositoryManager()->getLocalRepository()->getPackages();
+        $packages = $this->composer->getRepositoryManager()->getLocalRepository()->getCanonicalPackages();
         $packageMap = $generator->buildPackageMap($this->composer->getInstallationManager(), $package, $packages);
         $map = $generator->parseAutoloads($packageMap, $package);
         $this->loader = $generator->createLoader($map);
