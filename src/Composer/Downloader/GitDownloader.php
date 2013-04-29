@@ -272,7 +272,7 @@ class GitDownloader extends VcsDownloader
     {
         if ($initialClone) {
             $origCwd = $cwd;
-            $cwd = dirname($cwd);
+            $cwd = null;
         }
 
         if (preg_match('{^ssh://[^@]+@[^:]+:[^0-9]+}', $url)) {
