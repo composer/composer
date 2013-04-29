@@ -172,6 +172,10 @@ class RemoteFilesystem
 
         // handle copy command if download was successful
         if (false !== $result && null !== $fileName) {
+            if ('' === $result) {
+                throw new TransportException('"'.$this->fileUrl.'" appears broken, and returned an empty 200 response');
+            }
+
             $errorMessage = '';
             set_error_handler(function ($code, $msg) use (&$errorMessage) {
                 if ($errorMessage) {
