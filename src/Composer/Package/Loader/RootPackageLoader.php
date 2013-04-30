@@ -65,10 +65,10 @@ class RootPackageLoader extends ArrayLoader
             $version = $config['version'];
         }
 
-        $package = parent::load($config, $class);
+        $realPackage = $package = parent::load($config, $class);
 
-        if ($package instanceof AliasPackage) {
-            $package = $package->getAliasOf();
+        if ($realPackage instanceof AliasPackage) {
+            $realPackage = $package->getAliasOf();
         }
 
         $aliases = array();
@@ -79,7 +79,7 @@ class RootPackageLoader extends ArrayLoader
                 $linkInfo = BasePackage::$supportedLinkTypes[$linkType];
                 $method = 'get'.ucfirst($linkInfo['method']);
                 $links = array();
-                foreach ($package->$method() as $link) {
+                foreach ($realPackage->$method() as $link) {
                     $links[$link->getTarget()] = $link->getConstraint()->getPrettyString();
                 }
                 $aliases = $this->extractAliases($links, $aliases);
@@ -88,23 +88,23 @@ class RootPackageLoader extends ArrayLoader
             }
         }
 
-        $package->setAliases($aliases);
-        $package->setStabilityFlags($stabilityFlags);
-        $package->setReferences($references);
+        $realPackage->setAliases($aliases);
+        $realPackage->setStabilityFlags($stabilityFlags);
+        $realPackage->setReferences($references);
 
         if (isset($config['minimum-stability'])) {
-            $package->setMinimumStability(VersionParser::normalizeStability($config['minimum-stability']));
+            $realPackage->setMinimumStability(VersionParser::normalizeStability($config['minimum-stability']));
         }
 
         if (isset($config['prefer-stable'])) {
-            $package->setPreferStable((bool) $config['prefer-stable']);
+            $realPackage->setPreferStable((bool) $config['prefer-stable']);
         }
 
         $repos = Factory::createDefaultRepositories(null, $this->config, $this->manager);
         foreach ($repos as $repo) {
             $this->manager->addRepository($repo);
         }
-        $package->setRepositories($this->config->getRepositories());
+        $realPackage->setRepositories($this->config->getRepositories());
 
         return $package;
     }
