@@ -236,6 +236,10 @@ class RemoteFilesystem
                     break;
                 }
 
+                if ($notificationCode === STREAM_NOTIFY_AUTH_REQUIRED) {
+                    break;
+                }
+
                 throw new TransportException('The "'.$this->fileUrl.'" file could not be downloaded ('.trim($message).')', $messageCode);
 
             case STREAM_NOTIFY_AUTH_RESULT:
