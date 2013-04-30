@@ -14,6 +14,8 @@ namespace Composer\Package\Loader;
 
 use Composer\Package;
 use Composer\Package\AliasPackage;
+use Composer\Package\RootAliasPackage;
+use Composer\Package\RootPackageInterface;
 use Composer\Package\Version\VersionParser;
 
 /**
@@ -184,7 +186,11 @@ class ArrayLoader implements LoaderInterface
         }
 
         if ($aliasNormalized = $this->getBranchAlias($config)) {
-            $package = new AliasPackage($package, $aliasNormalized, preg_replace('{(\.9{7})+}', '.x', $aliasNormalized));
+            if ($package instanceof RootPackageInterface) {
+                $package = new RootAliasPackage($package, $aliasNormalized, preg_replace('{(\.9{7})+}', '.x', $aliasNormalized));
+            } else {
+                $package = new AliasPackage($package, $aliasNormalized, preg_replace('{(\.9{7})+}', '.x', $aliasNormalized));
+            }
         }
 
         return $package;
