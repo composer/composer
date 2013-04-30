@@ -28,7 +28,7 @@ class RemoteFilesystem
     private $originUrl;
     private $fileUrl;
     private $fileName;
-    private $result;
+    private $retry;
     private $progress;
     private $lastProgress;
     private $options;
@@ -58,9 +58,7 @@ class RemoteFilesystem
      */
     public function copy($originUrl, $fileUrl, $fileName, $progress = true, $options = array())
     {
-        $this->get($originUrl, $fileUrl, $options, $fileName, $progress);
-
-        return $this->result;
+        return $this->get($originUrl, $fileUrl, $options, $fileName, $progress);
     }
 
     /**
@@ -75,9 +73,7 @@ class RemoteFilesystem
      */
     public function getContents($originUrl, $fileUrl, $progress = true, $options = array())
     {
-        $this->get($originUrl, $fileUrl, $options, null, $progress);
-
-        return $this->result;
+        return $this->get($originUrl, $fileUrl, $options, null, $progress);
     }
 
     /**
@@ -94,7 +90,6 @@ class RemoteFilesystem
     protected function get($originUrl, $fileUrl, $additionalOptions = array(), $fileName = null, $progress = true)
     {
         $this->bytesMax = 0;
-        $this->result = null;
         $this->originUrl = $originUrl;
         $this->fileUrl = $fileUrl;
         $this->fileName = $fileName;
@@ -134,7 +129,7 @@ class RemoteFilesystem
             $errorMessage = 'allow_url_fopen must be enabled in php.ini ('.$errorMessage.')';
         }
         restore_error_handler();
-        if (isset($e)) {
+        if (isset($e) && !$this->retry) {
             throw $e;
         }
 
@@ -190,12 +185,13 @@ class RemoteFilesystem
             }
         }
 
-        // avoid overriding if content was loaded by a sub-call to get()
-        if (null === $this->result) {
-            $this->result = $result;
+        if ($this->retry) {
+            $this->retry = false;
+
+            return $this->get($this->originUrl, $this->fileUrl, $this->fileName, $this->progress);
         }
 
-        if (false === $this->result) {
+        if (false === $result) {
             $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded: '.$errorMessage, $errorCode);
             if (!empty($http_response_header[0])) {
                 $e->setHeaders($http_response_header);
@@ -203,6 +199,8 @@ class RemoteFilesystem
 
             throw $e;
         }
+
+        return $result;
     }
 
     /**
@@ -232,7 +230,8 @@ class RemoteFilesystem
                     $password = $this->io->askAndHideAnswer('      Password: ');
                     $this->io->setAuthentication($this->originUrl, $username, $password);
 
-                    $this->get($this->originUrl, $this->fileUrl, $this->fileName, $this->progress);
+                    $this->retry = true;
+                    throw new TransportException('RETRY');
                     break;
                 }
 
