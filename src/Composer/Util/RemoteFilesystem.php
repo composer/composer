@@ -112,6 +112,7 @@ class RemoteFilesystem
 
         $errorMessage = '';
         $errorCode = 0;
+        $result = false;
         set_error_handler(function ($code, $msg) use (&$errorMessage) {
             if ($errorMessage) {
                 $errorMessage .= "\n";
@@ -188,7 +189,7 @@ class RemoteFilesystem
         if ($this->retry) {
             $this->retry = false;
 
-            return $this->get($this->originUrl, $this->fileUrl, $this->fileName, $this->progress);
+            return $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress);
         }
 
         if (false === $result) {
