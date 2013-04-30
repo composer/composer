@@ -5,6 +5,7 @@ Circular dependencies are possible between packages
     "name": "root/package",
     "type": "library",
     "minimum-stability": "dev",
+    "version": "dev-master",
     "require": {
         "required/package": "1.0"
     },
@@ -47,12 +48,7 @@ Circular dependencies are possible between packages
         }
     ]
 }
---INSTALLED--
-[
-    { "name": "root/package", "version": "2.0-dev" }
-]
 --RUN--
-install
+update
 --EXPECT--
 Installing required/package (1.0)
-Uninstalling root/package (2.0-dev)
