@@ -145,7 +145,7 @@ class RemoteFilesystem
         }
 
         // decode gzip
-        if (false !== $result && extension_loaded('zlib') && substr($fileUrl, 0, 4) === 'http') {
+        if ($result && extension_loaded('zlib') && substr($fileUrl, 0, 4) === 'http') {
             $decode = false;
             foreach ($http_response_header as $header) {
                 if (preg_match('{^content-encoding: *gzip *$}i', $header)) {
