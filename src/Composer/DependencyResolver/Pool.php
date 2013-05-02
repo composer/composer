@@ -209,9 +209,7 @@ class Pool
     */
     public function packageById($id)
     {
-        $this->ensurePackageIsLoaded($this->packages[$id - 1]);
-
-        return $this->packages[$id - 1];
+        return $this->ensurePackageIsLoaded($this->packages[$id - 1]);
     }
 
     /**
@@ -355,7 +353,8 @@ class Pool
                 $this->packageByName[$name][$data['id']] = $package;
             }
             $package->setId($data['id']);
-            $data = $package;
+
+            return $package;
         }
 
         return $data;
