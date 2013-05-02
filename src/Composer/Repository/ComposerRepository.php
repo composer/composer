@@ -200,6 +200,9 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
     public function loadPackage(array $data)
     {
         $package = $this->createPackage($data['raw'], 'Composer\Package\Package');
+        if ($package instanceof AliasPackage) {
+            $package = $package->getAliasOf();
+        }
         $package->setRepository($this);
 
         return $package;
