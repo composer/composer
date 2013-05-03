@@ -46,6 +46,7 @@ class ClassLoader
     private $fallbackDirs = array();
     private $useIncludePath = false;
     private $classMap = array();
+    private $classMapModified = false;
 
     public function getPrefixes()
     {
@@ -62,12 +63,18 @@ class ClassLoader
         return $this->classMap;
     }
 
+    public function getClassMapModified()
+    {
+        return $this->classMapModified;
+    }
+
     /**
      * @param array $classMap Class to filename map
      */
     public function addClassMap(array $classMap)
     {
         if ($this->classMap) {
+            $this->classMapModified = true;
             $this->classMap = array_merge($this->classMap, $classMap);
         } else {
             $this->classMap = $classMap;
@@ -217,8 +224,13 @@ class ClassLoader
 
         foreach ($this->prefixes as $prefix => $dirs) {
             if (0 === strpos($class, $prefix)) {
+                if (!is_array($dirs)){
+                    $dirs = [$dirs];
+                }
                 foreach ($dirs as $dir) {
                     if (file_exists($dir . DIRECTORY_SEPARATOR . $classPath)) {
+                        $this->classMap[$class] = $dir . DIRECTORY_SEPARATOR . $classPath;
+                        $this->classMapModified = true;
                         return $dir . DIRECTORY_SEPARATOR . $classPath;
                     }
                 }
@@ -227,11 +239,15 @@ class ClassLoader
 
         foreach ($this->fallbackDirs as $dir) {
             if (file_exists($dir . DIRECTORY_SEPARATOR . $classPath)) {
+                $this->classMap[$class] = $dir . DIRECTORY_SEPARATOR . $classPath;
+                $this->classMapModified = true;
                 return $dir . DIRECTORY_SEPARATOR . $classPath;
             }
         }
 
         if ($this->useIncludePath && $file = stream_resolve_include_path($classPath)) {
+            $this->classMap[$class] = $file;
+            $this->classMapModified = true;
             return $file;
         }
 
