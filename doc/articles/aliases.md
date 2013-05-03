@@ -25,23 +25,23 @@ Enter aliases.
 
 The `dev-master` branch is one in your main VCS repo. It is rather common that
 someone will want the latest master dev version. Thus, Composer allows you to
-alias your `dev-master` branch to a `1.0.x-dev` version. It is done by
+alias your `dev-master` branch to a `1.0-dev` version. It is done by
 specifying a `branch-alias` field under `extra` in `composer.json`:
 
     {
         "extra": {
             "branch-alias": {
-                "dev-master": "1.0.x-dev"
+                "dev-master": "1.0-dev"
             }
         }
     }
 
 The branch version must begin with `dev-` (non-comparable version), the alias
 must be a comparable dev version (i.e. start with numbers, and end with
-`.x-dev`). The `branch-alias` must be present on the branch that it references.
+`-dev`). The `branch-alias` must be present on the branch that it references.
 For `dev-master`, you need to commit it on the `master` branch.
 
-As a result, anyone can now require `1.0.*` and it will happily install
+As a result, anyone can now require `1.0.*@dev` and it will happily install
 `dev-master`.
 
 In order to use branch aliasing, you must own the repository of the package
@@ -76,18 +76,18 @@ Just add this to your project's root `composer.json`:
         ],
         "require": {
             "symfony/monolog-bundle": "2.0",
-            "monolog/monolog": "dev-bugfix as 1.0.x-dev"
+            "monolog/monolog": "dev-bugfix as 1.0-dev"
         }
     }
 
 That will fetch the `dev-bugfix` version of `monolog/monolog` from your GitHub
-and alias it to `1.0.x-dev`.
+and alias it to `1.0-dev`.
 
 > **Note:** If a package with inline aliases is required, the alias (right of
 > the `as`) is used as the version constraint. The part left of the `as` is
 > discarded. As a consequence, if A requires B and B requires `monolog/monolog`
-> version `dev-bugfix as 1.0.x-dev`, installing A will make B require
-> `1.0.x-dev`, which may exist as a branch alias or an actual `1.0` branch. If
+> version `dev-bugfix as 1.0-dev`, installing A will make B require
+> `1.0-dev`, which may exist as a branch alias or an actual `1.0` branch. If
 > it does not, it must be re-inline-aliased in A's `composer.json`.
 
 > **Note:** Inline aliasing should be avoided, especially for published
