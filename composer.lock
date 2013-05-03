@@ -84,12 +84,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Console.git",
-                "reference": "7bcef9e062cc89b893a35c67a7456d41cb50113d"
+                "reference": "23d784fe28aecc50d671eb9596b17b920e158e5f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Console/zipball/7bcef9e062cc89b893a35c67a7456d41cb50113d",
-                "reference": "7bcef9e062cc89b893a35c67a7456d41cb50113d",
+                "url": "https://api.github.com/repos/symfony/Console/zipball/23d784fe28aecc50d671eb9596b17b920e158e5f",
+                "reference": "23d784fe28aecc50d671eb9596b17b920e158e5f",
                 "shasum": ""
             },
             "require": {
@@ -125,7 +125,7 @@
             ],
             "description": "Symfony Console Component",
             "homepage": "http://symfony.com",
-            "time": "2013-04-25 13:33:44"
+            "time": "2013-04-30 07:16:44"
         },
         {
             "name": "symfony/finder",
@@ -181,12 +181,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Process.git",
-                "reference": "d55770ab111a89ee92773eb16f8acef9b09870f5"
+                "reference": "9b6fe3aa425d6c6f6b019d1948072f376de0ea41"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Process/zipball/d55770ab111a89ee92773eb16f8acef9b09870f5",
-                "reference": "d55770ab111a89ee92773eb16f8acef9b09870f5",
+                "url": "https://api.github.com/repos/symfony/Process/zipball/9b6fe3aa425d6c6f6b019d1948072f376de0ea41",
+                "reference": "9b6fe3aa425d6c6f6b019d1948072f376de0ea41",
                 "shasum": ""
             },
             "require": {
@@ -219,7 +219,7 @@
             ],
             "description": "Symfony Process Component",
             "homepage": "http://symfony.com",
-            "time": "2013-04-25 13:23:11"
+            "time": "2013-04-30 07:21:49"
         }
     ],
     "packages-dev": [

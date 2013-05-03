@@ -174,11 +174,14 @@ class Installer
             $this->downloadManager->setPreferDist(true);
         }
 
-        // create installed repo, this contains all local packages + platform packages (php & extensions)
+        // clone root package to have one in the installed repo that does not require anything
+        // we don't want it to be uninstallable, but its requirements should not conflict
+        // with the lock file for example
         $installedRootPackage = clone $this->package;
         $installedRootPackage->setRequires(array());
         $installedRootPackage->setDevRequires(array());
 
+        // create installed repo, this contains all local packages + platform packages (php & extensions)
         $localRepo = $this->repositoryManager->getLocalRepository();
         $platformRepo = new PlatformRepository();
         $repos = array(
