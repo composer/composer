@@ -216,6 +216,19 @@ class Factory
             }
         }
 
+        // reload http basic auth credentials from config if available
+        if ($basicauth = $config->get('basic-auth')) {
+            foreach ($basicauth as $domain => $credentials) {
+                if(!isset($credentials['username'])) {
+                    continue;
+                }
+                if(!isset($credentials['password'])) {
+                    $credentials['password'] = null;
+                }
+                $io->setAuthentication($domain, $credentials['username'], $credentials['password']);
+            }
+        }
+
         $vendorDir = $config->get('vendor-dir');
         $binDir = $config->get('bin-dir');
 
