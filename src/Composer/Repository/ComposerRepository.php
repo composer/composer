@@ -539,7 +539,7 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
                 $json = $this->rfs->getContents($filename, $filename, false);
                 if ($sha256 && $sha256 !== hash('sha256', $json)) {
                     if ($retries) {
-                        usleep(100);
+                        usleep(100000);
 
                         continue;
                     }
@@ -553,7 +553,7 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
                 break;
             } catch (\Exception $e) {
                 if ($retries) {
-                    usleep(100);
+                    usleep(100000);
                     continue;
                 }
 

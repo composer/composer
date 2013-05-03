@@ -95,10 +95,28 @@ class FileDownloader implements DownloaderInterface
         try {
             try {
                 if (!$this->cache || !$this->cache->copyTo($this->getCacheKey($package), $fileName)) {
-                    $this->rfs->copy($hostname, $processedUrl, $fileName, $this->outputProgress);
                     if (!$this->outputProgress) {
                         $this->io->write('    Downloading');
                     }
+
+                    // try to download 3 times then fail hard
+                    $retries = 3;
+                    while ($retries--) {
+                        try {
+                            $this->rfs->copy($hostname, $processedUrl, $fileName, $this->outputProgress);
+                            break;
+                        } catch (TransportException $e) {
+                            // if we got an http response with a proper code, then requesting again will probably not help, abort
+                            if (0 !== $e->getCode() || !$retries) {
+                                throw $e;
+                            }
+                            if ($this->io->isVerbose()) {
+                                $this->io->write('    Download failed, retrying...');
+                            }
+                            usleep(500000);
+                        }
+                    }
+
                     if ($this->cache) {
                         $this->cache->copyFrom($this->getCacheKey($package), $fileName);
                     }
@@ -172,7 +190,7 @@ class FileDownloader implements DownloaderInterface
         $this->io->write("  - Removing <info>" . $package->getName() . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
         if (!$this->filesystem->removeDirectory($path)) {
             // retry after a bit on windows since it tends to be touchy with mass removals
-            if (!defined('PHP_WINDOWS_VERSION_BUILD') || (usleep(250) && !$this->filesystem->removeDirectory($path))) {
+            if (!defined('PHP_WINDOWS_VERSION_BUILD') || (usleep(250000) && !$this->filesystem->removeDirectory($path))) {
                 throw new \RuntimeException('Could not completely delete '.$path.', aborting.');
             }
         }
