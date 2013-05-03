@@ -261,9 +261,16 @@ class Installer
                 $platformReqs = $this->extractPlatformRequirements($this->package->getRequires());
                 $platformDevReqs = $this->devMode ? $this->extractPlatformRequirements($this->package->getDevRequires()) : array();
 
+                $installedPackages = array_diff($localRepo->getCanonicalPackages(), (array) $devPackages);
+
+                $rootPackage = $this->package;
+                $filter = function ($var) use ($rootPackage) {
+                    return $rootPackage->getName() !== $var->getName();
+                };
+
                 $updatedLock = $this->locker->setLockData(
-                    array_diff($localRepo->getCanonicalPackages(), (array) $devPackages),
-                    $devPackages,
+                    array_filter($installedPackages, $filter),
+                    array_filter($devPackages, $filter),
                     $platformReqs,
                     $platformDevReqs,
                     $aliases,
@@ -502,7 +509,13 @@ class Installer
                 $this->io->write('');
             }
 
-            $this->installationManager->execute($localRepo, $operation);
+            if ('uninstall' === $operation->getJobType() && $this->package->getName() === $operation->getPackage()->getName()) {
+                // Special handling for the case where uninstalling the root
+                // package is requested.
+                $localRepo->removePackage($operation->getPackage());
+            } else {
+                $this->installationManager->execute($localRepo, $operation);
+            }
 
             // output reasons why the operation was ran, only for install/update operations
             if ($this->verbose && $this->io->isVeryVerbose() && in_array($operation->getJobType(), array('install', 'update'))) {
@@ -529,6 +542,11 @@ class Installer
             if (!$this->dryRun) {
                 $localRepo->write();
             }
+        }
+
+        if (!$this->dryRun) {
+            $localRepo->addPackage($this->package);
+            $localRepo->write();
         }
 
         return true;
