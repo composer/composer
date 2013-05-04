@@ -3,12 +3,16 @@
   * Break: For forward compatibility, you should change your deployment scripts to run `composer install --no-dev`. The install command will install dev dependencies by default starting in the next release
   * Break: The `update` command now has --dev enabled by default. --no-dev can be used to update without dev requirements, but it will create an incomplete lock file and is discouraged
   * Break: Removed support for lock files created before 2012-09-15 due to their outdated unusable format
+  * Added `prefer-stable` flag to pick stable packages over unstable ones when possible
   * Added `preferred-install` config option to always enable --prefer-source or --prefer-dist
+  * Added `diagnose` command to to system/network checks and find common problems
   * Added wildcard support in the update whitelist, e.g. to update all packages of a vendor do `composer update vendor/*`
   * Added `archive` command to archive the current directory or a given package
+  * Added `run-script` command to manually trigger scripts
   * Added `proprietary` as valid license identifier for non-free code
   * Added a `php-64bit` platform package that you can require to force a 64bit php
   * Added a `lib-ICU` platform package
+  * Added a new official package type `project` for project-bootstrapping packages
   * Added zip/dist local cache to speed up repetitive installations
   * Added `post-autoload-dump` script event
   * Added `Event::getDevMode` to let script handlers know if dev requirements are being installed
@@ -19,12 +23,17 @@
   * Added support for using http(s) authentication to non-github repos
   * Added support for using multiple autoloaders at once (e.g. PHPUnit + application both using Composer autoloader)
   * Added support for .inc files for classmap autoloading (legacy support, do not do this on new projects!)
+  * Added support for version constraints in show command, e.g. `composer show monolog/monolog 1.4.*`
+  * Added support for svn repositories containing packages in a deeper path (see package-path option)
+  * Added an `artifact` repository to scan a directory containing zipped packages
   * Added --no-dev flag to `install` and `update` commands
   * Added --stability (-s) flag to create-project to lower the required stability
   * Added --no-progress to `install` and `update` to hide the progress indicators
   * Added --available (-a) flag to the `show` command to display only available packages
   * Added --name-only (-N) flag to the `show` command to show only package names (one per line, no formatting)
   * Added --optimize-autoloader (-o) flag to optimize the autoloader from the `install` and `update` commands
+  * Added -vv and -vvv flags to get more verbose output, can be useful to debug some issues
+  * Added COMPOSER_NO_INTERACTION env var to do the equivalent of --no-interaction (should be set on build boxes, CI, PaaS)
   * Added PHP 5.2 compatibility to the autoloader configuration files so they can be used to configure another autoloader
   * Fixed handling of platform requirements of the root package when installing from lock
   * Fixed handling of require-dev dependencies
@@ -32,6 +41,7 @@
   * Fixed parsing of the `~` operator combined with unstable versions
   * Fixed the `require` command corrupting the json if the new requirement was invalid
   * Fixed support of aliases used together with `<version>#<reference>` constraints
+  * Improved output of dependency solver problems by grouping versions of a package together
   * Improved performance of classmap generation
   * Improved mercurial support in various places
   * Improved lock file format to minimize unnecessary diffs
