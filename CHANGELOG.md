@@ -1,4 +1,4 @@
-### 1.0.0-alpha7 ()
+### 1.0.0-alpha7 (2013-05-04)
 
   * Break: For forward compatibility, you should change your deployment scripts to run `composer install --no-dev`. The install command will install dev dependencies by default starting in the next release
   * Break: The `update` command now has --dev enabled by default. --no-dev can be used to update without dev requirements, but it will create an incomplete lock file and is discouraged
