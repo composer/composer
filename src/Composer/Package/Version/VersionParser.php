@@ -222,21 +222,33 @@ class VersionParser
             $constraints = $match[1];
         }
 
-        $constraints = preg_split('{\s*,\s*}', trim($constraints));
+        $orConstraints = preg_split('{\s*\|\s*}', trim($constraints));
+        $orGroups = array();
+        foreach ($orConstraints as $constraints) {
+            $andConstraints = preg_split('{\s*,\s*}', $constraints);
 
-        if (count($constraints) > 1) {
-            $constraintObjects = array();
-            foreach ($constraints as $constraint) {
-                $constraintObjects = array_merge($constraintObjects, $this->parseConstraint($constraint));
+            if (count($andConstraints) > 1) {
+                $constraintObjects = array();
+                foreach ($andConstraints as $constraint) {
+                    $constraintObjects = array_merge($constraintObjects, $this->parseConstraint($constraint));
+                }
+            } else {
+                $constraintObjects = $this->parseConstraint($andConstraints[0]);
             }
-        } else {
-            $constraintObjects = $this->parseConstraint($constraints[0]);
+
+            if (1 === count($constraintObjects)) {
+                $constraint = $constraintObjects[0];
+            } else {
+                $constraint = new MultiConstraint($constraintObjects);
+            }
+
+            $orGroups[] = $constraint;
         }
 
-        if (1 === count($constraintObjects)) {
-            $constraint = $constraintObjects[0];
+        if (1 === count($orGroups)) {
+            $constraint = $orGroups[0];
         } else {
-            $constraint = new MultiConstraint($constraintObjects);
+            $constraint = new MultiConstraint($orGroups, false);
         }
 
         $constraint->setPrettyString($prettyConstraint);
