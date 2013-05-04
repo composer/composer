@@ -21,6 +21,12 @@ The following options are available with every command:
 * **--no-ansi:** Disable ANSI output.
 * **--version (-V):** Display this application version.
 
+## Process Exit Codes
+
+* **0:** OK
+* **1:** Generic/unknown error code
+* **2:** Dependency solving error code
+
 ## init
 
 In the [Libraries](02-libraries.md) chapter we looked at how to create a
@@ -347,6 +353,11 @@ performance.
 * **--optimize (-o):** Convert PSR-0 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
   a bit of time to run so it is currently not done by default.
+
+## run-script
+
+To run [scripts](articles/scripts.md) manually you can use this command,
+just give it the script name and optionally --no-dev to disable the dev mode.
 
 ## diagnose
 
