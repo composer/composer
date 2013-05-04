@@ -285,6 +285,17 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
         $this->assertSame((string) $multi, (string) $parser->parseConstraints('>2.0,<=3.0'));
     }
 
+    public function testParseConstraintsMultiDisjunctiveHasPrioOverConjuctive()
+    {
+        $parser = new VersionParser;
+        $first = new VersionConstraint('>', '2.0.0.0');
+        $second = new VersionConstraint('<', '2.0.5.0-dev');
+        $third = new VersionConstraint('>', '2.0.6.0');
+        $multi1 = new MultiConstraint(array($first, $second));
+        $multi2 = new MultiConstraint(array($multi1, $third), false);
+        $this->assertSame((string) $multi2, (string) $parser->parseConstraints('>2.0,<2.0.5 | >2.0.6'));
+    }
+
     public function testParseConstraintsMultiWithStabilities()
     {
         $parser = new VersionParser;
