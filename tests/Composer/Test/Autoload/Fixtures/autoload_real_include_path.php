@@ -28,7 +28,7 @@ class ComposerAutoloaderInitIncludePath
 
         $map = require __DIR__ . '/autoload_namespaces.php';
         foreach ($map as $namespace => $path) {
-            $loader->add($namespace, $path);
+            $loader->set($namespace, $path);
         }
 
         $classMap = require __DIR__ . '/autoload_classmap.php';

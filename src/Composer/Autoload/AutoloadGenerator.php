@@ -395,7 +395,7 @@ INCLUDE_PATH;
             $file .= <<<'PSR0'
         $map = require __DIR__ . '/autoload_namespaces.php';
         foreach ($map as $namespace => $path) {
-            $loader->add($namespace, $path);
+            $loader->set($namespace, $path);
         }
 
 
