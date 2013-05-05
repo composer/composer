@@ -478,9 +478,9 @@ class AutoloadGeneratorTest extends TestCase
 \$baseDir = dirname(\$vendorDir);
 
 return array(
-    'B\\\\Sub\\\\Name' => \$vendorDir . '/b/b/src',
+    'B\\\\Sub\\\\Name' => array(\$vendorDir . '/b/b/src'),
     'A\\\\B' => array(\$baseDir . '/lib', \$vendorDir . '/a/a/lib'),
-    'A' => \$vendorDir . '/a/a/src',
+    'A' => array(\$vendorDir . '/a/a/src'),
 );
 
 EOF;
@@ -721,8 +721,8 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir).'/working-dir';
 
 return array(
-    'Foo' => $baseDir . '/src',
-    'Bar' => $vendorDir . '/b/b/lib',
+    'Foo' => array($baseDir . '/src'),
+    'Bar' => array($vendorDir . '/b/b/lib'),
 );
 
 EOF;
@@ -784,7 +784,7 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir).'/working-dir';
 
 return array(
-    'Foo' => $baseDir . '/../src',
+    'Foo' => array($baseDir . '/../src'),
 );
 
 EOF;
@@ -836,7 +836,7 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
-    'Foo' => $baseDir . '/',
+    'Foo' => array($baseDir . '/'),
 );
 
 EOF;
