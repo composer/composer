@@ -39,6 +39,8 @@ class AutoloadGenerator
 
     public function dump(Config $config, InstalledRepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir, $scanPsr0Packages = false, $suffix = '')
     {
+        $this->eventDispatcher->dispatch(ScriptEvents::PRE_AUTOLOAD_DUMP);
+
         $filesystem = new Filesystem();
         $filesystem->ensureDirectoryExists($config->get('vendor-dir'));
         $basePath = $filesystem->normalizePath(getcwd());
