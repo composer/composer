@@ -95,7 +95,7 @@ EOT
             $repos = new CompositeRepository(array_merge(array($localRepo), $composer->getRepositoryManager()->getRepositories()));
         } else {
             $defaultRepos = Factory::createDefaultRepositories($this->getIO());
-            $output->writeln('No composer.json found in the current directory, searching packages from ' . implode(', ', array_keys($defaultRepos)));
+            $io->write('No composer.json found in the current directory, searching packages from ' . implode(', ', array_keys($defaultRepos)));
             $repos = new CompositeRepository($defaultRepos);
         }
 
