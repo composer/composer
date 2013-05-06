@@ -98,7 +98,8 @@ class ClassLoader
 
             return;
         }
-        $first = substr($prefix, 0, 1);
+
+        $first = $prefix[0];
         if (!isset($this->prefixes[$first][$prefix])) {
             $this->prefixes[$first][$prefix] = (array) $paths;
 
@@ -216,7 +217,7 @@ class ClassLoader
 
         $classPath .= strtr($className, '_', DIRECTORY_SEPARATOR) . '.php';
 
-        $first = substr($class, 0, 1);
+        $first = $class[0];
         if (isset($this->prefixes[$first])) {
             foreach ($this->prefixes[$first] as $prefix => $dirs) {
                 if (0 === strpos($class, $prefix)) {
