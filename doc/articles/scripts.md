@@ -30,6 +30,8 @@ Composer fires the following named events during its execution process:
 - **post-package-update**: occurs after a package is updated.
 - **pre-package-uninstall**: occurs before a package has been uninstalled.
 - **post-package-uninstall**: occurs after a package has been uninstalled.
+- **pre-autoload-dump**: occurs before the autoloader is dumped, either
+  during `install`/`update`, or via the `dump-autoload` command.
 - **post-autoload-dump**: occurs after the autoloader is dumped, either
   during `install`/`update`, or via the `dump-autoload` command.
 
