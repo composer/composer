@@ -619,10 +619,15 @@ EOF;
         $this->assertFalse(file_exists($this->vendorDir."/composer/include_paths.php"));
     }
 
-    public function testEventIsDispatchedAfterAutoloadDump()
+    public function testPreAndPostEventsAreDispatchedDuringAutoloadDump()
     {
         $this->eventDispatcher
-            ->expects($this->once())
+            ->expects($this->at(0))
+            ->method('dispatch')
+            ->with(ScriptEvents::PRE_AUTOLOAD_DUMP, false);
+
+        $this->eventDispatcher
+            ->expects($this->at(1))
             ->method('dispatch')
             ->with(ScriptEvents::POST_AUTOLOAD_DUMP, false);
 
