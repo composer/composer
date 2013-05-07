@@ -127,11 +127,16 @@ class GitHubDriver extends VcsDriver
         }
 
         if (!isset($this->infoCache[$identifier])) {
+            $useOAuth = false;
             try {
-                $resource = 'https://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/contents/composer.json?ref='.urlencode($identifier);
-                $composer = JsonFile::parseJson($this->getContents($resource));
-                if (empty($composer['content']) || $composer['encoding'] !== 'base64' || !($composer = base64_decode($composer['content']))) {
-                    throw new \RuntimeException('Could not retrieve composer.json from '.$resource);
+                list($resource, $useOAuth) = $this->generateComposerJsonUrl($identifier);
+                if ($useOAuth) {
+                    $composer = JsonFile::parseJson($this->getContents($resource));
+                    if (empty($composer['content']) || $composer['encoding'] !== 'base64' || !($composer = base64_decode($composer['content']))) {
+                        throw new \RuntimeException('Could not retrieve composer.json from '.$resource);
+                    }
+                } else {
+                    $composer = $this->getContents($resource);
                 }
             } catch (TransportException $e) {
                 if (404 !== $e->getCode()) {
@@ -237,6 +242,22 @@ class GitHubDriver extends VcsDriver
     protected function generateSshUrl()
     {
         return 'git@github.com:'.$this->owner.'/'.$this->repository.'.git';
+    }
+
+    /**
+     * Generates composer.json URL depending on whether OAuth is used or not.
+     *
+     * @param  string $identifier Any identifier to a specific branch/tag/commit
+     * @return array
+     */
+    protected function generateComposerJsonUrl($identifier)
+    {
+        $oAuth    = $this->config->get('github-oauth');
+        $useOAuth = !empty($oAuth) && isset($oAuth['github.com']);
+        $url      = $useOAuth
+            ? 'https://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/contents/composer.json?ref='.urlencode($identifier)
+            : 'https://raw.github.com/'.$this->owner.'/'.$this->repository.'/'.urlencode($identifier).'/composer.json';
+        return array($url, $useOAuth);
     }
 
     /**
