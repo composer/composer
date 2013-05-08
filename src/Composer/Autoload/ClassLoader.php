@@ -181,6 +181,10 @@ class ClassLoader
      */
     public function loadClass($class)
     {
+        if (class_exists($class, false) || interface_exists($class, false)) {
+            return true;
+        }
+        
         if ($file = $this->findFile($class)) {
             include $file;
 
