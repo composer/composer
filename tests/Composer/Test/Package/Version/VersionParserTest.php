@@ -265,10 +265,12 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
     public function tildeConstraints()
     {
         return array(
-            array('~1',       new VersionConstraint('>=', '1.0.0.0'), new VersionConstraint('<', '2.0.0.0-dev')),
-            array('~1.2',     new VersionConstraint('>=', '1.2.0.0'), new VersionConstraint('<', '2.0.0.0-dev')),
-            array('~1.2.3',   new VersionConstraint('>=', '1.2.3.0'), new VersionConstraint('<', '1.3.0.0-dev')),
-            array('~1.2.3.4', new VersionConstraint('>=', '1.2.3.4'), new VersionConstraint('<', '1.2.4.0-dev')),
+            array('~1',       new VersionConstraint('>', '0.9999999.9999999.9999999'), new VersionConstraint('<', '2.0.0.0-dev')),
+            array('~1.0',     new VersionConstraint('>', '0.9999999.9999999.9999999'), new VersionConstraint('<', '2.0.0.0-dev')),
+            array('~1.0.0',     new VersionConstraint('>', '0.9999999.9999999.9999999'), new VersionConstraint('<', '1.1.0.0-dev')),
+            array('~1.2',     new VersionConstraint('>', '1.1.9999999.9999999'), new VersionConstraint('<', '2.0.0.0-dev')),
+            array('~1.2.3',   new VersionConstraint('>', '1.2.2.9999999'), new VersionConstraint('<', '1.3.0.0-dev')),
+            array('~1.2.3.4', new VersionConstraint('>', '1.2.3.3'), new VersionConstraint('<', '1.2.4.0-dev')),
             array('~1.2-beta',new VersionConstraint('>=', '1.2.0.0-beta'), new VersionConstraint('<', '2.0.0.0-dev')),
             array('~1.2-b2',  new VersionConstraint('>=', '1.2.0.0-beta2'), new VersionConstraint('<', '2.0.0.0-dev')),
             array('~1.2-BETA2', new VersionConstraint('>=', '1.2.0.0-beta2'), new VersionConstraint('<', '2.0.0.0-dev')),

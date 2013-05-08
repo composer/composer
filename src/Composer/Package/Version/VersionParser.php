@@ -269,33 +269,49 @@ class VersionParser
             return array(new EmptyConstraint);
         }
 
+        // match tilde constraints
+        // like wildcard constraints, unsuffixed tilde constraints say that they must be greater than the previous
+        // version, to ensure that unstable instances of the current version are allowed.
+        // however, if a stability suffix is added to the constraint, then a >= match on the current version is
+        // used instead
         if (preg_match('{^~(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:\.(\d+))?'.self::$modifierRegex.'?$}i', $constraint, $matches)) {
-            if (isset($matches[4]) && '' !== $matches[4]) {
-                $highVersion = $matches[1] . '.' . $matches[2] . '.' . ($matches[3] + 1) . '.0-dev';
-                $lowVersion = $matches[1] . '.' . $matches[2] . '.' . $matches[3]. '.' . $matches[4];
-            } elseif (isset($matches[3]) && '' !== $matches[3]) {
-                $highVersion = $matches[1] . '.' . ($matches[2] + 1) . '.0.0-dev';
-                $lowVersion = $matches[1] . '.' . $matches[2] . '.' . $matches[3]. '.0';
-            } else {
-                $highVersion = ($matches[1] + 1) . '.0.0.0-dev';
-                if (isset($matches[2]) && '' !== $matches[2]) {
-                    $lowVersion = $matches[1] . '.' . $matches[2] . '.0.0';
-                } else {
-                    $lowVersion = $matches[1] . '.0.0.0';
-                }
-            }
 
+            // Work out which position in the version we are operating at 
+            if (isset($matches[4]) && '' !== $matches[4]) $position = 4;
+            else if (isset($matches[3]) && '' !== $matches[3]) $position = 3;
+            else if (isset($matches[2]) && '' !== $matches[2]) $position = 2;
+            else $position = 1;
+
+            // Calculate the stability suffix
+            $stabilitySuffix = '';
             if (!empty($matches[5])) {
-                $lowVersion .= '-' . $this->expandStability($matches[5]) . (!empty($matches[6]) ? $matches[6] : '');
+                $stabilitySuffix .= '-' . $this->expandStability($matches[5]) . (!empty($matches[6]) ? $matches[6] : '');
             }
 
             if (!empty($matches[7])) {
-                $lowVersion .= '-dev';
+                $stabilitySuffix .= '-dev';
             }
 
+            // If we don't have a stability suffix, the lower bound is "> the previous version"
+            if ($stabilitySuffix == '') {
+                $lowVersion = $this->manipulateVersionString($matches, $position,-1,'9999999');
+                $lowerBound = new VersionConstraint('>', $lowVersion);
+
+            // If we have a stability suffix, then our comparison is ">= this version"
+            } else {
+                $lowVersion = $this->manipulateVersionString($matches,$position,0);
+                $lowerBound = new VersionConstraint('>=', $lowVersion . $stabilitySuffix);
+            }
+
+            // For upper bound, we increment the position of one more significance, 
+            // but highPosition = 0 would be illegal
+            $highPosition = max(1,$position-1);
+            $highVersion = $this->manipulateVersionString($matches,$highPosition,1).'-dev';
+            $upperBound = new VersionConstraint('<', $highVersion);
+
             return array(
-                new VersionConstraint('>=', $lowVersion),
-                new VersionConstraint('<', $highVersion),
+                $lowerBound,
+                $upperBound
             );
         }
 
@@ -353,6 +369,34 @@ class VersionParser
         }
 
         throw new \UnexpectedValueException($message);
+    }
+
+    /**
+     * Increment, decrement, or simply pad a version number.
+     * 
+     * Support function for {@link parseConstraint()}
+     * 
+     * @param  array  $matches Array with version parts in array indexes 1,2,3,4
+     * @param  int    $position 1,2,3,4 - which segment of the version to decrement
+     * @param  string $pad The string to pad version parts after $position
+     * @return string The new version
+     */
+    private function manipulateVersionString($matches, $position, $increment = 0, $pad = '0') {
+        for($i = 4; $i>0; $i--) {
+            if($i > $position) {
+                $matches[$i] = $pad;
+            
+            } else if(($i == $position) && $increment) {
+                $matches[$i] += $increment;
+                // If $matches[$i] was 0, carry the decrement
+                if($matches[$i] < 0) {
+                    $matches[$i] = $pad;
+                    $position--;
+                }
+            }
+        }
+
+        return $matches[1] . '.' . $matches[2] . '.' . $matches[3] . '.' . $matches[4];
     }
 
     private function expandStability($stability)
