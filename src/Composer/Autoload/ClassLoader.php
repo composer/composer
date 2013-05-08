@@ -46,7 +46,6 @@ class ClassLoader
     private $fallbackDirs = array();
     private $useIncludePath = false;
     private $classMap = array();
-    private $located = array();
 
     public function getPrefixes()
     {
@@ -182,13 +181,12 @@ class ClassLoader
      */
     public function loadClass($class)
     {
-        if (isset($this->located[$class])) {
+        if (class_exists($class, false) || interface_exists($class, false)) {
             return true;
         }
-
+        
         if ($file = $this->findFile($class)) {
-            $this->located[$class] = $file;
-            require_once $file;
+            include $file;
 
             return true;
         }
