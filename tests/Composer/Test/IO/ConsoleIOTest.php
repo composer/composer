@@ -68,12 +68,6 @@ class ConsoleIOTest extends TestCase
             ->with($this->equalTo(str_repeat("\x08", 12)), $this->equalTo(false));
         $outputMock->expects($this->at(4))
             ->method('write')
-            ->with($this->equalTo(str_repeat("\x08", 11)), $this->equalTo(false));
-        $outputMock->expects($this->at(5))
-            ->method('write')
-            ->with($this->equalTo(str_repeat("\x08", 12)), $this->equalTo(false));
-        $outputMock->expects($this->at(6))
-            ->method('write')
             ->with($this->equalTo('something longer than initial (<info>34</info>)'));
 
         $helperMock = $this->getMock('Symfony\Component\Console\Helper\HelperSet');
