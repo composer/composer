@@ -126,15 +126,6 @@ class ConsoleIO implements IOInterface
 
         // write the new message
         $this->write($messages, false);
-
-        $fill = $size - strlen(strip_tags($messages));
-        if ($fill > 0) {
-            // whitespace whatever has left
-            $this->write(str_repeat(' ', $fill), false);
-            // move the cursor back
-            $this->write(str_repeat("\x08", $fill), false);
-        }
-
         if ($newline) {
             $this->write('');
         }

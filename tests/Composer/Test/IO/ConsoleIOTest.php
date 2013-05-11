@@ -65,7 +65,7 @@ class ConsoleIOTest extends TestCase
             ->with($this->equalTo('shorter (<comment>12</comment>)'), $this->equalTo(false));
         $outputMock->expects($this->at(3))
             ->method('write')
-            ->with($this->equalTo(str_repeat(' ', 11)), $this->equalTo(false));
+            ->with($this->equalTo(str_repeat("\x08", 12)), $this->equalTo(false));
         $outputMock->expects($this->at(4))
             ->method('write')
             ->with($this->equalTo(str_repeat("\x08", 11)), $this->equalTo(false));
