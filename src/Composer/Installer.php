@@ -560,18 +560,21 @@ class Installer
         $constraint->setPrettyString($rootPackage->getPrettyVersion());
         $request->install($rootPackage->getName(), $constraint);
 
-        $installedPackages = $platformRepo->getPackages();
+        $fixedPackages = $platformRepo->getPackages();
         if ($this->additionalInstalledRepository) {
-            $additionalInstalledPackages = $this->additionalInstalledRepository->getPackages();
-            $installedPackages = array_merge($installedPackages, $additionalInstalledPackages);
+            $additionalFixedPackages = $this->additionalInstalledRepository->getPackages();
+            $fixedPackages = array_merge($fixedPackages, $additionalFixedPackages);
         }
 
-        // fix the version of all platform packages to prevent the solver trying to remove those
-        foreach ($installedPackages as $package) {
+        // fix the version of all platform packages + additionally installed packages
+        // to prevent the solver trying to remove or update those
+        $provided = $rootPackage->getProvides();
+        foreach ($fixedPackages as $package) {
             $constraint = new VersionConstraint('=', $package->getVersion());
             $constraint->setPrettyString($package->getPrettyVersion());
 
-            if (!($provided = $rootPackage->getProvides())
+            // skip platform packages that are provided by the root package
+            if ($package->getRepository() !== $platformRepo
                 || !isset($provided[$package->getName()])
                 || !$provided[$package->getName()]->getConstraint()->matches($constraint)
             ) {
