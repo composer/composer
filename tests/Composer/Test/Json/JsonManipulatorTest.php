@@ -613,4 +613,55 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
 }
 ', $manipulator->getContents());
     }
+
+    public function testAddMainKey()
+    {
+        $manipulator = new JsonManipulator('{
+    "foo": "bar"
+}');
+
+        $this->assertTrue($manipulator->addMainKey('bar', 'baz'));
+        $this->assertEquals('{
+    "foo": "bar",
+    "bar": "baz"
+}
+', $manipulator->getContents());
+    }
+
+    public function testUpdateMainKey()
+    {
+        $manipulator = new JsonManipulator('{
+    "foo": "bar"
+}');
+
+        $this->assertTrue($manipulator->addMainKey('foo', 'baz'));
+        $this->assertEquals('{
+    "foo": "baz"
+}
+', $manipulator->getContents());
+    }
+
+    public function testUpdateMainKey2()
+    {
+        $manipulator = new JsonManipulator('{
+    "a": {
+        "foo": "bar",
+        "baz": "qux"
+    },
+    "foo": "bar",
+    "baz": "bar"
+}');
+
+        $this->assertTrue($manipulator->addMainKey('foo', 'baz'));
+        $this->assertTrue($manipulator->addMainKey('baz', 'quux'));
+        $this->assertEquals('{
+    "a": {
+        "foo": "bar",
+        "baz": "qux"
+    },
+    "foo": "baz",
+    "baz": "quux"
+}
+', $manipulator->getContents());
+    }
 }
