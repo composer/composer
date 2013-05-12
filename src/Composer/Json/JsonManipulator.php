@@ -49,37 +49,47 @@ class JsonManipulator
 
     public function addLink($type, $package, $constraint)
     {
-        // no link of that type yet
-        if (!preg_match('#"'.$type.'":\s*\{#', $this->contents)) {
-            $this->addMainKey($type, array($package => $constraint));
+        $data = @json_decode($this->contents, true);
 
-            return true;
-        }
-
-        $linksRegex = '#("'.$type.'":\s*\{)([^}]+)(\})#s';
-        if (!preg_match($linksRegex, $this->contents, $match)) {
+        // abort if the file is not parseable
+        if (null === $data) {
             return false;
         }
 
-        $links = $match[2];
-        $packageRegex = str_replace('/', '\\\\?/', preg_quote($package));
-
-        // link exists already
-        if (preg_match('{"'.$packageRegex.'"\s*:}i', $links)) {
-            $links = preg_replace('{"'.$packageRegex.'"(\s*:\s*)"[^"]+"}i', addcslashes(JsonFile::encode($package).'${1}"'.$constraint.'"', '\\'), $links);
-        } elseif (preg_match('#[^\s](\s*)$#', $links, $match)) {
-            // link missing but non empty links
-            $links = preg_replace(
-                '#'.$match[1].'$#',
-                addcslashes(',' . $this->newline . $this->indent . $this->indent . JsonFile::encode($package).': '.JsonFile::encode($constraint) . $match[1], '\\'),
-                $links
-            );
-        } else {
-            // links empty
-            $links = $this->newline . $this->indent . $this->indent . JsonFile::encode($package).': '.JsonFile::encode($constraint) . $links;
+        // no link of that type yet
+        if (!isset($data[$type])) {
+            return $this->addMainKey($type, array($package => $constraint));
         }
 
-        $this->contents = preg_replace($linksRegex, addcslashes('${1}'.$links.'$3', '\\'), $this->contents);
+        $regex = '{^(\s*\{\s*(?:'.self::$JSON_STRING.'\s*:\s*'.self::$JSON_VALUE.'\s*,\s*)*?)'.
+            '('.preg_quote(JsonFile::encode($type)).'\s*:\s*)('.self::$JSON_VALUE.')(.*)}s';
+        if (!preg_match($regex, $this->contents, $matches)) {
+            return false;
+        }
+
+        $links = $matches[3];
+
+        if (isset($data[$type][$package])) {
+            // update existing link
+            $packageRegex = str_replace('/', '\\\\?/', preg_quote($package));
+            $links = preg_replace('{"'.$packageRegex.'"(\s*:\s*)'.self::$JSON_STRING.'}i', addcslashes(JsonFile::encode($package).'${1}"'.$constraint.'"', '\\'), $links);
+        } else {
+            if (preg_match('#^\s*\{\s*\S+.*?(\s*\}\s*)$#', $links, $match)) {
+                // link missing but non empty links
+                $links = preg_replace(
+                    '{'.preg_quote($match[1]).'$}',
+                    addcslashes(',' . $this->newline . $this->indent . $this->indent . JsonFile::encode($package).': '.JsonFile::encode($constraint) . $match[1], '\\'),
+                    $links
+                );
+            } else {
+                // links empty
+                $links = '{' . $this->newline .
+                    $this->indent . $this->indent . JsonFile::encode($package).': '.JsonFile::encode($constraint) . $this->newline .
+                    $this->indent . '}';
+            }
+        }
+
+        $this->contents = $matches[1] . $matches[2] . $links . $matches[4];
 
         return true;
     }
@@ -127,7 +137,7 @@ class JsonManipulator
         $children = $match[2];
 
         // invalid match due to un-regexable content, abort
-        if (!json_decode('{'.$children.'}')) {
+        if (!@json_decode('{'.$children.'}')) {
             return false;
         }
 
@@ -190,7 +200,7 @@ class JsonManipulator
         $children = $match[2];
 
         // invalid match due to un-regexable content, abort
-        if (!json_decode('{'.$children.'}')) {
+        if (!@json_decode('{'.$children.'}')) {
             return false;
         }
 
@@ -256,7 +266,7 @@ class JsonManipulator
             '('.preg_quote(JsonFile::encode($key)).'\s*:\s*'.self::$JSON_VALUE.')(.*)}s';
         if (preg_match($regex, $this->contents, $matches)) {
             // invalid match due to un-regexable content, abort
-            if (!json_decode('{'.$matches[2].'}')) {
+            if (!@json_decode('{'.$matches[2].'}')) {
                 return false;
             }
 
