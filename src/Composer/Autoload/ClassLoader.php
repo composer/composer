@@ -230,7 +230,7 @@ class ClassLoader
         foreach ($this->prefixes as $prefix => $dirs) {
             if (0 === strpos($class, $prefix)) {
                 if (!is_array($dirs)){
-                    $dirs = [$dirs];
+                    $dirs = array($dirs);
                 }
                 foreach ($dirs as $dir) {
                     if (file_exists($dir . DIRECTORY_SEPARATOR . $classPath)) {
