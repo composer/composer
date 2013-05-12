@@ -128,6 +128,67 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
 }
 '
             ),
+            array(
+                '{
+    "require": {
+        "foo": "bar"
+    },
+    "repositories": [{
+        "type": "package",
+        "package": {
+            "require": {
+                "foo": "bar"
+            }
+        }
+    }]
+}',
+                'require',
+                'foo',
+                'qux',
+                '{
+    "require": {
+        "foo": "qux"
+    },
+    "repositories": [{
+        "type": "package",
+        "package": {
+            "require": {
+                "foo": "bar"
+            }
+        }
+    }]
+}
+'
+            ),
+            array(
+                '{
+    "repositories": [{
+        "type": "package",
+        "package": {
+            "require": {
+                "foo": "bar"
+            }
+        }
+    }]
+}',
+                'require',
+                'foo',
+                'qux',
+                '{
+    "repositories": [{
+        "type": "package",
+        "package": {
+            "require": {
+                "foo": "bar"
+            }
+        }
+    }],
+    "require": {
+        "foo": "qux"
+    }
+}
+'
+            ),
         );
     }
 
