@@ -32,10 +32,10 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
 use Composer\Json\JsonFile;
+use Composer\Config\JsonConfigSource;
 use Composer\Util\Filesystem;
 use Composer\Util\RemoteFilesystem;
 use Composer\Package\Version\VersionParser;
-use Composer\Json\JsonManipulator;
 
 /**
  * Install a package as new project into new directory.
@@ -236,7 +236,7 @@ EOT
             return 1;
         }
 
-        $vcsWasRemoved = false;
+        $hasVcs = $installedFromVcs;
         if (!$keepVcs && $installedFromVcs
             && (
                 !$io->isInteractive()
@@ -262,44 +262,23 @@ EOT
                 $io->write('<error>An error occurred while removing the VCS metadata: '.$e->getMessage().'</error>');
             }
 
-            $vcsWasRemoved = true;
+            $hasVcs = false;
         }
 
-        // Rewriting self.version dependencies with explicit version numbers
-        if($vcsWasRemoved || !$installedFromVcs) {
+        // rewriting self.version dependencies with explicit version numbers if the package's vcs metadata is gone
+        if (!$hasVcs) {
             $package = $composer->getPackage();
-            $requires = $package->getRequires();
-
-            $requirementsToUpdate = array();
-            foreach($requires as $require) {
-                if($require->getPrettyConstraint() == 'self.version') {
-                    $requirementsToUpdate[] = $require->getTarget();
+            $configSource = new JsonConfigSource(new JsonFile('composer.json'));
+            foreach (BasePackage::$supportedLinkTypes as $type => $meta) {
+                foreach ($package->{'get'.$meta['method']}() as $link) {
+                    if ($link->getPrettyConstraint() === 'self.version') {
+                        $configSource->addLink($type, $link->getTarget(), $package->getPrettyVersion());
+                    }
                 }
-            }
-
-            if($requirementsToUpdate) {
-                $io->write("<info>Rewriting self.version entries for " . implode(", ",$requirementsToUpdate) . " to " . $package->getVersion() . "</info>");
-                $this->rewriteSelfVersion(Factory::getComposerFile(), $requirementsToUpdate, $package->getVersion());
             }
         }
 
         return 0;
-    }
-
-    private function rewriteSelfVersion($filename, array $packages, $newVersion)
-    {
-        $contents = file_get_contents($filename);
-        $manipulator = new JsonManipulator($contents);
-
-        foreach ($packages as $package) {
-            if (!$manipulator->addLink('require', $package, $newVersion)) {
-                return false;
-            }
-        }
-
-        file_put_contents($filename, $manipulator->getContents());
-
-        return true;
     }
 
     protected function createDownloadManager(IOInterface $io, Config $config)
