@@ -35,6 +35,7 @@ use Composer\Json\JsonFile;
 use Composer\Util\Filesystem;
 use Composer\Util\RemoteFilesystem;
 use Composer\Package\Version\VersionParser;
+use Composer\Json\JsonManipulator;
 
 /**
  * Install a package as new project into new directory.
@@ -235,6 +236,7 @@ EOT
             return 1;
         }
 
+        $vcsWasRemoved = false;
         if (!$keepVcs && $installedFromVcs
             && (
                 !$io->isInteractive()
@@ -259,9 +261,45 @@ EOT
             } catch (\Exception $e) {
                 $io->write('<error>An error occurred while removing the VCS metadata: '.$e->getMessage().'</error>');
             }
+
+            $vcsWasRemoved = true;
+        }
+
+        // Rewriting self.version dependencies with explicit version numbers
+        if($vcsWasRemoved || !$installedFromVcs) {
+            $package = $composer->getPackage();
+            $requires = $package->getRequires();
+
+            $requirementsToUpdate = array();
+            foreach($requires as $require) {
+                if($require->getPrettyConstraint() == 'self.version') {
+                    $requirementsToUpdate[] = $require->getTarget();
+                }
+            }
+
+            if($requirementsToUpdate) {
+                $io->write("<info>Rewriting self.version entries for " . implode(", ",$requirementsToUpdate) . " to " . $package->getVersion() . "</info>");
+                $this->rewriteSelfVersion(Factory::getComposerFile(), $requirementsToUpdate, $package->getVersion());
+            }
         }
 
         return 0;
+    }
+
+    private function rewriteSelfVersion($filename, array $packages, $newVersion)
+    {
+        $contents = file_get_contents($filename);
+        $manipulator = new JsonManipulator($contents);
+
+        foreach ($packages as $package) {
+            if (!$manipulator->addLink('require', $package, $newVersion)) {
+                return false;
+            }
+        }
+
+        file_put_contents($filename, $manipulator->getContents());
+
+        return true;
     }
 
     protected function createDownloadManager(IOInterface $io, Config $config)
