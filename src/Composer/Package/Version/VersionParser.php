@@ -277,10 +277,15 @@ class VersionParser
         if (preg_match('{^~(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:\.(\d+))?'.self::$modifierRegex.'?$}i', $constraint, $matches)) {
 
             // Work out which position in the version we are operating at 
-            if (isset($matches[4]) && '' !== $matches[4]) $position = 4;
-            else if (isset($matches[3]) && '' !== $matches[3]) $position = 3;
-            else if (isset($matches[2]) && '' !== $matches[2]) $position = 2;
-            else $position = 1;
+            if (isset($matches[4]) && '' !== $matches[4]) {
+                $position = 4;
+            } elseif (isset($matches[3]) && '' !== $matches[3]) {
+                $position = 3;
+            } elseif (isset($matches[2]) && '' !== $matches[2]) {
+                $position = 2;
+            } else {
+                $position = 1;
+            }
 
             // Calculate the stability suffix
             $stabilitySuffix = '';
@@ -294,19 +299,19 @@ class VersionParser
 
             // If we don't have a stability suffix, the lower bound is "> the previous version"
             if ($stabilitySuffix == '') {
-                $lowVersion = $this->manipulateVersionString($matches, $position,-1,'9999999');
+                $lowVersion = $this->manipulateVersionString($matches, $position, -1, '9999999');
                 $lowerBound = new VersionConstraint('>', $lowVersion);
 
             // If we have a stability suffix, then our comparison is ">= this version"
             } else {
-                $lowVersion = $this->manipulateVersionString($matches,$position,0);
+                $lowVersion = $this->manipulateVersionString($matches, $position, 0);
                 $lowerBound = new VersionConstraint('>=', $lowVersion . $stabilitySuffix);
             }
 
             // For upper bound, we increment the position of one more significance, 
             // but highPosition = 0 would be illegal
-            $highPosition = max(1,$position-1);
-            $highVersion = $this->manipulateVersionString($matches,$highPosition,1).'-dev';
+            $highPosition = max(1, $position - 1);
+            $highVersion = $this->manipulateVersionString($matches, $highPosition, 1) . '-dev';
             $upperBound = new VersionConstraint('<', $highVersion);
 
             return array(
@@ -317,12 +322,16 @@ class VersionParser
 
         // match wildcard constraints
         if (preg_match('{^(\d+)(?:\.(\d+))?(?:\.(\d+))?\.[x*]$}', $constraint, $matches)) {
-            if (isset($matches[3]) && '' !== $matches[3]) $position = 3;
-            else if (isset($matches[2]) && '' !== $matches[2]) $position = 2;
-            else $position = 1;
+            if (isset($matches[3]) && '' !== $matches[3]) {
+                $position = 3;
+            } elseif (isset($matches[2]) && '' !== $matches[2]) {
+                $position = 2;
+            } else {
+                $position = 1;
+            }
 
-            $highVersion = $this->manipulateVersionString($matches,$position,0,'9999999');
-            $lowVersion = $this->manipulateVersionString($matches,$position,-1,'9999999');
+            $highVersion = $this->manipulateVersionString($matches, $position, 0, '9999999');
+            $lowVersion = $this->manipulateVersionString($matches, $position, -1, '9999999');
 
             if($lowVersion === null) {
                 return array(new VersionConstraint('<', $highVersion));
@@ -353,7 +362,7 @@ class VersionParser
 
         $message = 'Could not parse version constraint '.$constraint;
         if (isset($e)) {
-            $message .= ': '.$e->getMessage();
+            $message .= ': '. $e->getMessage();
         }
 
         throw new \UnexpectedValueException($message);
