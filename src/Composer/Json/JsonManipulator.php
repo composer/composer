@@ -72,6 +72,7 @@ class JsonManipulator
         if (isset($data[$type][$package])) {
             // update existing link
             $packageRegex = str_replace('/', '\\\\?/', preg_quote($package));
+            // addcslashes is used to double up backslashes since preg_replace resolves them as back references otherwise, see #1588
             $links = preg_replace('{"'.$packageRegex.'"(\s*:\s*)'.self::$JSON_STRING.'}i', addcslashes(JsonFile::encode($package).'${1}"'.$constraint.'"', '\\'), $links);
         } else {
             if (preg_match('#^\s*\{\s*\S+.*?(\s*\}\s*)$#', $links, $match)) {
