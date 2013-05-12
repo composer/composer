@@ -31,6 +31,7 @@ class DumpAutoloadCommand extends Command
             ->setDescription('Dumps the autoloader')
             ->setDefinition(array(
                 new InputOption('optimize', 'o', InputOption::VALUE_NONE, 'Optimizes PSR0 packages to be loaded with classmaps too, good for production.'),
+                new InputOption('dynamic-optimize', 'y', InputOption::VALUE_NONE, 'Dynamically rewrites classmaps to add PSR0 classes after their first use. Good for production when using a large framework like ZF2 or Symfony.'),
             ))
             ->setHelp(<<<EOT
 <info>php composer.phar dump-autoload</info>
@@ -49,6 +50,6 @@ EOT
         $package = $composer->getPackage();
         $config = $composer->getConfig();
 
-        $composer->getAutoloadGenerator()->dump($config, $localRepo, $package, $installationManager, 'composer', $input->getOption('optimize'));
+        $composer->getAutoloadGenerator()->dump($config, $localRepo, $package, $installationManager, 'composer', $input->getOption('optimize'), null, $input->getOption('dynamic-optimize'));
     }
 }

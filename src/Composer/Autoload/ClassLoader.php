@@ -47,6 +47,7 @@ class ClassLoader
     private $useIncludePath = false;
     private $classMap = array();
     private $classMapModified = false;
+    private $destructCallback;
 
     public function getPrefixes()
     {
@@ -66,6 +67,10 @@ class ClassLoader
     public function getClassMapModified()
     {
         return $this->classMapModified;
+    }
+
+    public function setDestructCallback($destructCallback) {
+        $this->destructCallback = $destructCallback;
     }
 
     /**
@@ -252,5 +257,11 @@ class ClassLoader
         }
 
         return $this->classMap[$class] = false;
+    }
+
+    public function __destruct() {
+        if (isset($this->destructCallback)){
+            call_user_func($this->destructCallback);
+        }
     }
 }
