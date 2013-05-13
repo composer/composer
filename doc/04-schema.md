@@ -367,7 +367,7 @@ Under the `psr-0` key you define a mapping from namespaces to paths, relative to
 package root. Note that this also supports the PEAR-style non-namespaced convention.
 
 Please note namespace declarations should end in `\\` to make sure the autoloader
-responds extactly. For example `Foo` would match in `FooBar` so the traling
+responds extactly. For example `Foo` would match in `FooBar` so the trailing
 backslashes solve the problem: `Foo\\` and `FooBar\\` are distinct.
 
 The PSR-0 references are all combined, during install/update, into a single key => value
