@@ -366,6 +366,10 @@ classes).
 Under the `psr-0` key you define a mapping from namespaces to paths, relative to the
 package root. Note that this also supports the PEAR-style non-namespaced convention.
 
+Please note namespace declarations should end in `\\` to make sure the autoloader
+responds exactly. For example `Foo` would match in `FooBar` so the trailing
+backslashes solve the problem: `Foo\\` and `FooBar\\` are distinct.
+
 The PSR-0 references are all combined, during install/update, into a single key => value
 array which may be found in the generated file `vendor/composer/autoload_namespaces.php`.
 
@@ -374,7 +378,7 @@ Example:
     {
         "autoload": {
             "psr-0": {
-                "Monolog": "src/",
+                "Monolog\\": "src/",
                 "Vendor\\Namespace\\": "src/",
                 "Vendor_Namespace_": "src/"
             }
@@ -386,7 +390,7 @@ you can specify them as an array as such:
 
     {
         "autoload": {
-            "psr-0": { "Monolog": ["src/", "lib/"] }
+            "psr-0": { "Monolog\\": ["src/", "lib/"] }
         }
     }
 
@@ -477,7 +481,7 @@ To do that, `autoload` and `target-dir` are defined as follows:
 
     {
         "autoload": {
-            "psr-0": { "Symfony\\Component\\Yaml": "" }
+            "psr-0": { "Symfony\\Component\\Yaml\\": "" }
         },
         "target-dir": "Symfony/Component/Yaml"
     }
