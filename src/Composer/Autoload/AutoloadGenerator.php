@@ -435,7 +435,7 @@ REGISTER_AUTOLOAD;
 
         if ($dynamicOptimize) {
             $file .= <<<DESTRUCT_CALLBACK
-        \$loader->setDestructCallback('ComposerAutoloaderInit$suffix::persistModifiedClassmap');
+        \$loader->addDestructCallback('ComposerAutoloaderInit$suffix::persistModifiedClassmap');
 
 DESTRUCT_CALLBACK;
 
