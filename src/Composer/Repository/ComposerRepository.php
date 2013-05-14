@@ -518,7 +518,9 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
     protected function createPackage(array $data, $class)
     {
         try {
-            $data['notification-url'] = $this->notifyUrl;
+            if (!isset($data['notification-url'])) {
+                $data['notification-url'] = $this->notifyUrl;
+            }
 
             return $this->loader->load($data, 'Composer\Package\CompletePackage');
         } catch (\Exception $e) {
