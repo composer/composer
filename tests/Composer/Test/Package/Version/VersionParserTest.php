@@ -237,13 +237,13 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
     public function wildcardConstraints()
     {
         return array(
-            array('2.*',     new VersionConstraint('>=', '2.0.0.0-dev'), new VersionConstraint('<', '2.9999999.9999999.9999999')),
-            array('20.*',    new VersionConstraint('>=', '20.0.0.0-dev'), new VersionConstraint('<', '20.9999999.9999999.9999999')),
-            array('2.0.*',   new VersionConstraint('>=', '2.0.0.0-dev'), new VersionConstraint('<', '2.0.9999999.9999999')),
-            array('2.2.x',   new VersionConstraint('>=', '2.2.0.0-dev'), new VersionConstraint('<', '2.2.9999999.9999999')),
-            array('2.10.x',  new VersionConstraint('>=', '2.10.0.0-dev'), new VersionConstraint('<', '2.10.9999999.9999999')),
-            array('2.1.3.*', new VersionConstraint('>=', '2.1.3.0-dev'), new VersionConstraint('<', '2.1.3.9999999')),
-            array('0.*',     null, new VersionConstraint('<', '0.9999999.9999999.9999999')),
+            array('2.*',     new VersionConstraint('>=', '2.0.0.0-dev'), new VersionConstraint('<', '3.0.0.0-dev')),
+            array('20.*',    new VersionConstraint('>=', '20.0.0.0-dev'), new VersionConstraint('<', '21.0.0.0-dev')),
+            array('2.0.*',   new VersionConstraint('>=', '2.0.0.0-dev'), new VersionConstraint('<', '2.1.0.0-dev')),
+            array('2.2.x',   new VersionConstraint('>=', '2.2.0.0-dev'), new VersionConstraint('<', '2.3.0.0-dev')),
+            array('2.10.x',  new VersionConstraint('>=', '2.10.0.0-dev'), new VersionConstraint('<', '2.11.0.0-dev')),
+            array('2.1.3.*', new VersionConstraint('>=', '2.1.3.0-dev'), new VersionConstraint('<', '2.1.4.0-dev')),
+            array('0.*',     null, new VersionConstraint('<', '1.0.0.0-dev')),
         );
     }
 

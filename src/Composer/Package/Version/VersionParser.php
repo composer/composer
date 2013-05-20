@@ -324,7 +324,7 @@ class VersionParser
             }
 
             $lowVersion = $this->manipulateVersionString($matches, $position) . "-dev";
-            $highVersion = $this->manipulateVersionString($matches, $position, 0, '9999999');
+            $highVersion = $this->manipulateVersionString($matches, $position, 1) . "-dev";
 
             if($lowVersion === "0.0.0.0-dev") {
                 return array(new VersionConstraint('<', $highVersion));
