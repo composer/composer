@@ -237,12 +237,12 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
     public function wildcardConstraints()
     {
         return array(
-            array('2.*',     new VersionConstraint('>', '1.9999999.9999999.9999999'), new VersionConstraint('<', '2.9999999.9999999.9999999')),
-            array('20.*',    new VersionConstraint('>', '19.9999999.9999999.9999999'), new VersionConstraint('<', '20.9999999.9999999.9999999')),
-            array('2.0.*',   new VersionConstraint('>', '1.9999999.9999999.9999999'), new VersionConstraint('<', '2.0.9999999.9999999')),
-            array('2.2.x',   new VersionConstraint('>', '2.1.9999999.9999999'), new VersionConstraint('<', '2.2.9999999.9999999')),
-            array('2.10.x',  new VersionConstraint('>', '2.9.9999999.9999999'), new VersionConstraint('<', '2.10.9999999.9999999')),
-            array('2.1.3.*', new VersionConstraint('>', '2.1.2.9999999'), new VersionConstraint('<', '2.1.3.9999999')),
+            array('2.*',     new VersionConstraint('>=', '2.0.0.0-dev'), new VersionConstraint('<', '2.9999999.9999999.9999999')),
+            array('20.*',    new VersionConstraint('>=', '20.0.0.0-dev'), new VersionConstraint('<', '20.9999999.9999999.9999999')),
+            array('2.0.*',   new VersionConstraint('>=', '2.0.0.0-dev'), new VersionConstraint('<', '2.0.9999999.9999999')),
+            array('2.2.x',   new VersionConstraint('>=', '2.2.0.0-dev'), new VersionConstraint('<', '2.2.9999999.9999999')),
+            array('2.10.x',  new VersionConstraint('>=', '2.10.0.0-dev'), new VersionConstraint('<', '2.10.9999999.9999999')),
+            array('2.1.3.*', new VersionConstraint('>=', '2.1.3.0-dev'), new VersionConstraint('<', '2.1.3.9999999')),
             array('0.*',     null, new VersionConstraint('<', '0.9999999.9999999.9999999')),
         );
     }
@@ -265,12 +265,12 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
     public function tildeConstraints()
     {
         return array(
-            array('~1',       new VersionConstraint('>', '0.9999999.9999999.9999999'), new VersionConstraint('<', '2.0.0.0-dev')),
-            array('~1.0',     new VersionConstraint('>', '0.9999999.9999999.9999999'), new VersionConstraint('<', '2.0.0.0-dev')),
-            array('~1.0.0',     new VersionConstraint('>', '0.9999999.9999999.9999999'), new VersionConstraint('<', '1.1.0.0-dev')),
-            array('~1.2',     new VersionConstraint('>', '1.1.9999999.9999999'), new VersionConstraint('<', '2.0.0.0-dev')),
-            array('~1.2.3',   new VersionConstraint('>', '1.2.2.9999999'), new VersionConstraint('<', '1.3.0.0-dev')),
-            array('~1.2.3.4', new VersionConstraint('>', '1.2.3.3'), new VersionConstraint('<', '1.2.4.0-dev')),
+            array('~1',       new VersionConstraint('>=', '1.0.0.0-dev'), new VersionConstraint('<', '2.0.0.0-dev')),
+            array('~1.0',     new VersionConstraint('>=', '1.0.0.0-dev'), new VersionConstraint('<', '2.0.0.0-dev')),
+            array('~1.0.0',     new VersionConstraint('>=', '1.0.0.0-dev'), new VersionConstraint('<', '1.1.0.0-dev')),
+            array('~1.2',     new VersionConstraint('>=', '1.2.0.0-dev'), new VersionConstraint('<', '2.0.0.0-dev')),
+            array('~1.2.3',   new VersionConstraint('>=', '1.2.3.0-dev'), new VersionConstraint('<', '1.3.0.0-dev')),
+            array('~1.2.3.4', new VersionConstraint('>=', '1.2.3.4-dev'), new VersionConstraint('<', '1.2.4.0-dev')),
             array('~1.2-beta',new VersionConstraint('>=', '1.2.0.0-beta'), new VersionConstraint('<', '2.0.0.0-dev')),
             array('~1.2-b2',  new VersionConstraint('>=', '1.2.0.0-beta2'), new VersionConstraint('<', '2.0.0.0-dev')),
             array('~1.2-BETA2', new VersionConstraint('>=', '1.2.0.0-beta2'), new VersionConstraint('<', '2.0.0.0-dev')),
