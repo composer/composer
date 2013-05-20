@@ -297,16 +297,9 @@ class VersionParser
                 $stabilitySuffix .= '-dev';
             }
 
-            // If we don't have a stability suffix, the lower bound is "> the previous version"
-            if ($stabilitySuffix == '') {
-                $lowVersion = $this->manipulateVersionString($matches, $position, -1, '9999999');
-                $lowerBound = new VersionConstraint('>', $lowVersion);
-
-            // If we have a stability suffix, then our comparison is ">= this version"
-            } else {
-                $lowVersion = $this->manipulateVersionString($matches, $position, 0);
-                $lowerBound = new VersionConstraint('>=', $lowVersion . $stabilitySuffix);
-            }
+            if(!$stabilitySuffix) $stabilitySuffix = "-dev";
+            $lowVersion = $this->manipulateVersionString($matches, $position, 0) . $stabilitySuffix;
+            $lowerBound = new VersionConstraint('>=', $lowVersion);
 
             // For upper bound, we increment the position of one more significance, 
             // but highPosition = 0 would be illegal
@@ -330,14 +323,14 @@ class VersionParser
                 $position = 1;
             }
 
+            $lowVersion = $this->manipulateVersionString($matches, $position) . "-dev";
             $highVersion = $this->manipulateVersionString($matches, $position, 0, '9999999');
-            $lowVersion = $this->manipulateVersionString($matches, $position, -1, '9999999');
 
-            if($lowVersion === null) {
+            if($lowVersion === "0.0.0.0-dev") {
                 return array(new VersionConstraint('<', $highVersion));
             } else {
                 return array(
-                    new VersionConstraint('>', $lowVersion),
+                    new VersionConstraint('>=', $lowVersion),
                     new VersionConstraint('<', $highVersion),
                 );
             }
