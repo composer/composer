@@ -69,7 +69,7 @@ class RootPackageLoaderTest extends \PHPUnit_Framework_TestCase
 
         /* Can do away with this mock object when https://github.com/sebastianbergmann/phpunit-mock-objects/issues/81 is fixed */
         $processExecutor = new ProcessExecutorMock(function($command, &$output = null, $cwd = null) use ($self) {
-            $self->assertEquals('git describe --exact-match', $command);
+            $self->assertEquals('git describe --exact-match --tags', $command);
 
             $output = "v2.0.5-alpha2";
 
