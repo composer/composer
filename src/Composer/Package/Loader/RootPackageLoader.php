@@ -184,6 +184,11 @@ class RootPackageLoader extends ArrayLoader
 
     private function guessGitVersion(array $config)
     {
+        // try to fetch current version from git branch as a tag
+        if (0 === $this->process->execute('git describe --exact-match --tags', $output)) {
+            return $this->versionParser->normalize(rtrim($output));
+        }
+
         // try to fetch current version from git branch
         if (0 === $this->process->execute('git branch --no-color --no-abbrev -v', $output)) {
             $branches = array();
