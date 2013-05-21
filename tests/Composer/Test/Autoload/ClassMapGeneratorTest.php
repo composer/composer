@@ -55,6 +55,8 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
                 'Foo\\LargeGap'           => realpath(__DIR__).'/Fixtures/classmap/LargeGap.php',
                 'Foo\\MissingSpace'       => realpath(__DIR__).'/Fixtures/classmap/MissingSpace.php',
                 'Foo\\StripNoise'         => realpath(__DIR__).'/Fixtures/classmap/StripNoise.php',
+                'Foo\\SlashedA'           => realpath(__DIR__).'/Fixtures/classmap/BackslashLineEndingString.php',
+                'Foo\\SlashedB'           => realpath(__DIR__).'/Fixtures/classmap/BackslashLineEndingString.php',
                 'Unicode\\↑\\↑'              => realpath(__DIR__).'/Fixtures/classmap/Unicode.php',
             )),
             array(__DIR__.'/Fixtures/template', array()),
