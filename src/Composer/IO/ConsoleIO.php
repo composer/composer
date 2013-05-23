@@ -105,7 +105,7 @@ class ConsoleIO implements IOInterface
             );
         }
 
-        if ($this->isDecorated() && (strpos($messages, '<error>') !== false)) {
+        if (strpos($messages, '<error>') !== false) {
             $this->output->getErrorOutput()->write($messages, $newline);
         } else {
             $this->output->write($messages, $newline);
