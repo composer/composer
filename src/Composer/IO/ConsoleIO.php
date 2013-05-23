@@ -104,7 +104,13 @@ class ConsoleIO implements IOInterface
                 $messages[0]
             );
         }
-        $this->output->write($messages, $newline);
+
+        if ($this->isDecorated() && (strpos($messages, '<error>') !== false)) {
+            $this->output->getErrorOutput()->write($messages, $newline);
+        } else {
+            $this->output->write($messages, $newline);
+        }
+
         $this->lastMessage = join($newline ? "\n" : '', (array) $messages);
     }
 
