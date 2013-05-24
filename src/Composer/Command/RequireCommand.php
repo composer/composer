@@ -70,8 +70,6 @@ EOT
             return 1;
         }
 
-        $dialog = $this->getHelperSet()->get('dialog');
-
         $json = new JsonFile($file);
         $composer = $json->read();
         $composerBackup = file_get_contents($json->getPath());
