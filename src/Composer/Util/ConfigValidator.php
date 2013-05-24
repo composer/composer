@@ -49,7 +49,6 @@ class ConfigValidator
 
         // validate json schema
         $laxValid = false;
-        $valid = false;
         try {
             $json = new JsonFile($file, new RemoteFilesystem($this->io));
             $manifest = $json->read();
@@ -57,7 +56,6 @@ class ConfigValidator
             $json->validateSchema(JsonFile::LAX_SCHEMA);
             $laxValid = true;
             $json->validateSchema();
-            $valid = true;
         } catch (JsonValidationException $e) {
             foreach ($e->getErrors() as $message) {
                 if ($laxValid) {
