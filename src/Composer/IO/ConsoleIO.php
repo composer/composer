@@ -14,6 +14,7 @@ namespace Composer\IO;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Helper\HelperSet;
 
 /**
@@ -105,12 +106,14 @@ class ConsoleIO implements IOInterface
             );
         }
 
-        if (strpos($messages, '<error>') !== false) {
-            $this->output->getErrorOutput()->write($messages, $newline);
-        } else {
-            $this->output->write($messages, $newline);
+        if ($this->output instanceof ConsoleOutputInterface) {
+            $messages = $this->writeErrors($messages, $newline);
+            if (empty($messages)) {
+                return;
+            }
         }
 
+        $this->output->write($messages, $newline);
         $this->lastMessage = join($newline ? "\n" : '', (array) $messages);
     }
 
@@ -266,5 +269,42 @@ class ConsoleIO implements IOInterface
     public function setAuthentication($repositoryName, $username, $password = null)
     {
         $this->authentications[$repositoryName] = array('username' => $username, 'password' => $password);
+    }
+
+    /**
+     * Send errors to stdout
+     *
+     * Use stdout to output errors and remove them from `$messages` array.
+     *
+     * @param  string|array $messages The message as an array of lines or a single string
+     * @param  bool         $newline  Whether to add a newline or not
+     * @return array
+     */
+    protected function writeErrors($messages, $newline)
+    {
+        $output = $this->output->getErrorOutput();
+
+        if (is_array($messages)) {
+
+            $errors = array_filter($messages, function($message) use ($output, $newline) {
+                    if (strpos($message, '<error>') !== false) {
+                        $output->write($message, $newline);
+
+                        return $message;
+                    }
+                });
+
+            $this->lastMessage  = join($newline ? "\n" : '', (array) $errors);
+            $messages           = array_diff($messages, $errors);
+        } else {
+            if (strpos($messages, '<error>') !== false) {
+                $output->write($messages, $newline);
+                $this->lastMessage  = join($newline ? "\n" : '', (array) $messages);
+                $messages           = array();
+            }
+        }
+        unset($output);
+
+        return $messages;
     }
 }
