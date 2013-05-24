@@ -94,6 +94,20 @@ class DefaultPolicyTest extends TestCase
         $this->assertEquals($expected, $selected);
     }
 
+    public function testSelectNewestWithDevPicksNonDev()
+    {
+        $this->repo->addPackage($packageA1 = $this->getPackage('A', 'dev-foo'));
+        $this->repo->addPackage($packageA2 = $this->getPackage('A', '1.0.0'));
+        $this->pool->addRepository($this->repo);
+
+        $literals = array($packageA1->getId(), $packageA2->getId());
+        $expected = array($packageA2->getId());
+
+        $selected = $this->policy->selectPreferedPackages($this->pool, array(), $literals);
+
+        $this->assertEquals($expected, $selected);
+    }
+
     public function testSelectNewestOverInstalled()
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '2.0'));
