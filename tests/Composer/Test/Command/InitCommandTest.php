@@ -13,10 +13,17 @@ class InitCommandTest extends TestCase
         $command->parseAuthorString('John Smith <john@example.com>');
     }
 
-    function testParseInvalidAuthorString()
+    function testParseEmptyAuthorString()
     {
         $command = new InitCommand;
         $this->setExpectedException('InvalidArgumentException');
         $command->parseAuthorString('');
+    }
+
+    function testParseAuthorStringWithInvalidEmail()
+    {
+        $command = new InitCommand;
+        $this->setExpectedException('InvalidArgumentException');
+        $command->parseAuthorString('John Smith <john>');
     }
 }
