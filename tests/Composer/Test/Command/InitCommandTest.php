@@ -1,6 +1,6 @@
 <?php
 
-namespace Composer\Test\Autoload;
+namespace Composer\Test\Command;
 
 use Composer\Command\InitCommand;
 use Composer\Test\TestCase;
