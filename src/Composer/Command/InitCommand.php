@@ -490,8 +490,16 @@ EOT
 
     protected function isValidEmail($email)
     {
-        if (!function_exists('filter_var')) return true; // Bypass if we can't validate it
-        if (version_compare(PHP_VERSION, '5.3.3', '<')) return true; // ?
+        // assume it's valid if we can't validate it
+        if (!function_exists('filter_var')) {
+            return true;
+        }
+
+        // php <5.3.3 has a very broken email validator, so bypass checks
+        if (version_compare(PHP_VERSION, '5.3.3', '<')) {
+            return true;
+        }
+
         return false !== filter_var($email, FILTER_VALIDATE_EMAIL);
     }
 }
