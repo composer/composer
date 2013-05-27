@@ -27,12 +27,12 @@ class GitDownloader extends VcsDownloader
      */
     public function doDownload(PackageInterface $package, $path)
     {
+        $this->cleanEnv();
+
         $ref = $package->getSourceReference();
         $command = 'git clone %s %s && cd %2$s && git remote add composer %1$s && git fetch composer';
         $this->io->write("    Cloning ".$ref);
 
-        // added in git 1.7.1, prevents prompting the user
-        putenv('GIT_ASKPASS=echo');
         $commandCallable = function($url) use ($ref, $path, $command) {
             return sprintf($command, escapeshellarg($url), escapeshellarg($path), escapeshellarg($ref));
         };
@@ -48,6 +48,8 @@ class GitDownloader extends VcsDownloader
      */
     public function doUpdate(PackageInterface $initial, PackageInterface $target, $path)
     {
+        $this->cleanEnv();
+
         $ref = $target->getSourceReference();
         $this->io->write("    Checking out ".$ref);
         $command = 'git remote set-url composer %s && git fetch composer && git fetch --tags composer';
@@ -58,8 +60,6 @@ class GitDownloader extends VcsDownloader
             $this->io->setAuthentication($match[3], urldecode($match[1]), urldecode($match[2]));
         }
 
-        // added in git 1.7.1, prevents prompting the user
-        putenv('GIT_ASKPASS=echo');
         $commandCallable = function($url) use ($command) {
             return sprintf($command, escapeshellarg($url));
         };
@@ -415,5 +415,15 @@ class GitDownloader extends VcsDownloader
         }
 
         $this->hasStashedChanges = true;
+    }
+
+    protected function cleanEnv()
+    {
+        // clean up rogue git env vars in case this is running in a git hook
+        putenv('GIT_DIR');
+        putenv('GIT_WORK_TREE');
+
+        // added in git 1.7.1, prevents prompting the user for username/password
+        putenv('GIT_ASKPASS=echo');
     }
 }
