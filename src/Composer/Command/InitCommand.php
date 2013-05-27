@@ -36,7 +36,7 @@ class InitCommand extends Command
     public function parseAuthorString($author)
     {
         if (preg_match('/^(?P<name>[- \.,\w\'’]+) <(?P<email>.+?)>$/u', $author, $match)) {
-            if (!function_exists('filter_var') || version_compare(PHP_VERSION, '5.3.3', '<') || $match['email'] === filter_var($match['email'], FILTER_VALIDATE_EMAIL)) {
+            if ($this->isValidEmail($match['email'])) {
                 return array(
                     'name'  => trim($match['name']),
                     'email' => $match['email']
@@ -486,5 +486,12 @@ EOT
         }
 
         file_put_contents($ignoreFile, $contents . $vendor. "\n");
+    }
+
+    protected function isValidEmail($email)
+    {
+        if (!function_exists('filter_var')) return true; // Bypass if we can't validate it
+        if (version_compare(PHP_VERSION, '5.3.3', '<')) return true; // ?
+        return false !== filter_var($email, FILTER_VALIDATE_EMAIL);
     }
 }
