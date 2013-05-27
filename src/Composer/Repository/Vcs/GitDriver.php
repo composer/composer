@@ -38,6 +38,13 @@ class GitDriver extends VcsDriver
         } else {
             $this->repoDir = $this->config->get('cache-vcs-dir') . '/' . preg_replace('{[^a-z0-9.]}i', '-', $this->url) . '/';
 
+            // clean up rogue git env vars in case this is running in a git hook
+            putenv('GIT_DIR');
+            putenv('GIT_WORK_TREE');
+
+            // added in git 1.7.1, prevents prompting the user for username/password
+            putenv('GIT_ASKPASS=echo');
+
             $fs = new Filesystem();
             $fs->ensureDirectoryExists(dirname($this->repoDir));
 
@@ -58,8 +65,6 @@ class GitDriver extends VcsDriver
                 // clean up directory and do a fresh clone into it
                 $fs->removeDirectory($this->repoDir);
 
-                // added in git 1.7.1, prevents prompting the user
-                putenv('GIT_ASKPASS=echo');
                 $command = sprintf('git clone --mirror %s %s', escapeshellarg($this->url), escapeshellarg($this->repoDir));
                 if (0 !== $this->process->execute($command, $output)) {
                     $output = $this->process->getErrorOutput();
