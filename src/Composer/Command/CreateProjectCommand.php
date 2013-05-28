@@ -26,6 +26,7 @@ use Composer\Repository\ComposerRepository;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\FilesystemRepository;
 use Composer\Repository\InstalledFilesystemRepository;
+use Composer\Script\ScriptEvents;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -51,7 +52,7 @@ class CreateProjectCommand extends Command
             ->setName('create-project')
             ->setDescription('Create new project from a package into given directory.')
             ->setDefinition(array(
-                new InputArgument('package', InputArgument::REQUIRED, 'Package name to be installed'),
+                new InputArgument('package', InputArgument::OPTIONAL, 'Package name to be installed', 'local'),
                 new InputArgument('directory', InputArgument::OPTIONAL, 'Directory where the files should be created'),
                 new InputArgument('version', InputArgument::OPTIONAL, 'Version, will defaults to latest'),
                 new InputOption('stability', 's', InputOption::VALUE_REQUIRED, 'Minimum-stability allowed (unless a version is specified).', 'stable'),
@@ -133,6 +134,11 @@ EOT
 
     public function installProject(IOInterface $io, $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositoryUrl = null, $disableCustomInstallers = false, $noScripts = false, $keepVcs = false, $noProgress = false)
     {
+        if ($packageName === 'local') {
+            $installedFromVcs = false;
+            goto installDependencies;
+        }
+
         $stability = strtolower($stability);
         if ($stability === 'rc') {
             $stability = 'RC';
@@ -219,6 +225,12 @@ EOT
         // clean up memory
         unset($dm, $im, $config, $projectInstaller, $sourceRepo, $package);
 
+
+        installDependencies:
+        if ($noScripts === false) {
+            // dispatch event
+            $this->getComposer()->getEventDispatcher()->dispatchCommandEvent(ScriptEvents::POST_ROOT_PACKAGE_INSTALL, $installDevPackages);
+        }
         // install dependencies of the created project
         $composer = Factory::create($io);
         $installer = Installer::create($io, $composer);
@@ -234,6 +246,11 @@ EOT
 
         if (!$installer->run()) {
             return 1;
+        }
+
+        if ($noScripts === false) {
+            // dispatch event
+            $this->getComposer()->getEventDispatcher()->dispatchCommandEvent(ScriptEvents::POST_CREATE_PROJECT, $installDevPackages);
         }
 
         $hasVcs = $installedFromVcs;
