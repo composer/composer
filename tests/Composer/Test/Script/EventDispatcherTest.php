@@ -59,7 +59,8 @@ class EventDispatcherTest extends TestCase
 
         $process->expects($this->once())
             ->method('execute')
-            ->with($command);
+            ->with($command)
+            ->will($this->returnValue(0));
 
         $dispatcher->dispatchCommandEvent("post-install-cmd", false);
     }
@@ -80,7 +81,8 @@ class EventDispatcherTest extends TestCase
             ->getMock();
 
         $process->expects($this->exactly(2))
-            ->method('execute');
+            ->method('execute')
+            ->will($this->returnValue(0));
 
         $listeners = array(
             'echo -n foo',
@@ -165,8 +167,9 @@ class EventDispatcherTest extends TestCase
 
         $io->expects($this->once())
             ->method('write')
-            ->with($this->equalTo('<error>Script '.$code.' handling the post-install-cmd event returned with an error: </error>'));
+            ->with($this->equalTo('<error>Script '.$code.' handling the post-install-cmd event returned with an error</error>'));
 
+        $this->setExpectedException('RuntimeException');
         $dispatcher->dispatchCommandEvent("post-install-cmd", false);
     }
 
