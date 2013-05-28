@@ -56,6 +56,7 @@ class ArrayDumper
             $data['dist']['url'] = $package->getDistUrl();
             $data['dist']['reference'] = $package->getDistReference();
             $data['dist']['shasum'] = $package->getDistSha1Checksum();
+            $data['dist']['signature'] = $package->getSignature();
         }
 
         if ($package->getArchiveExcludes()) {

@@ -580,4 +580,24 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
 
         return $data;
     }
+
+    /**
+     * Get the base URL of the repository.
+     *
+     * @return string
+     */
+    public function getBaseUrl()
+    {
+        return $this->baseUrl;
+    }
+
+    /**
+     * Convention?
+     *
+     * @return string
+     */
+    public function getPublicKeyUrl()
+    {
+        return sprintf('%s/public-key.pem', $this->baseUrl);
+    }
 }

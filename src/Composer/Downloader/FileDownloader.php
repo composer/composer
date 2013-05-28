@@ -143,10 +143,9 @@ class FileDownloader implements DownloaderInterface
                     .' directory is writable and you have internet connectivity');
             }
 
-            $checksum = $package->getDistSha1Checksum();
-            if ($checksum && hash_file('sha1', $fileName) !== $checksum) {
-                throw new \UnexpectedValueException('The checksum verification of the file failed (downloaded from '.$url.')');
-            }
+            $this->handleChecksum($package, $fileName);
+            $this->handleSignature($package, $fileName);
+
         } catch (\Exception $e) {
             // clean up
             $this->filesystem->removeDirectory($path);
@@ -233,5 +232,62 @@ class FileDownloader implements DownloaderInterface
         }
 
         return $package->getName().'/'.$package->getVersion().'-'.$package->getDistReference().'.'.$package->getDistType();
+    }
+
+    /**
+     * @param \Composer\Package\PackageInterface $package
+     * @param string                             $fileName
+     *
+     * @return void
+     * @throws \UnexpectedValueException
+     */
+    protected function handleChecksum(PackageInterface $package, $fileName)
+    {
+        $checksum = $package->getDistSha1Checksum();
+        if (!$checksum) {
+            return;
+        }
+
+        if (hash_file('sha1', $fileName) === $checksum) {
+            return;
+        }
+
+        throw new \UnexpectedValueException(
+            sprintf(
+                "The checksum verification of the file failed (downloaded from '%s')",
+                $package->getDistUrl()
+            )
+        );
+    }
+
+    /**
+     * @param \Composer\Package\PackageInterface $package
+     * @param string                             $fileName
+     *
+     * @return void
+     */
+    protected function handleSignature(PackageInterface $package, $fileName)
+    {
+        $signature = $package->getSignature();
+        if (!$signature) {
+            return;
+        }
+
+        if (!($package->getRepository() instanceof \Composer\Repository\ComposerRepository)) {
+            return;
+        }
+
+        /** @var \Composer\Repository\ComposerRepository $repository */
+        $repository = $package->getRepository();
+        $signatureUtil = new \Composer\Util\Signature(
+            $this->config,
+            $repository->getBaseUrl()
+        );
+        if (false === $signatureUtil->hasPublicKey()) {
+            $signatureUtil->importPublicKey($repository->getPublicKeyUrl());
+        }
+        if (false === $signatureUtil->verify($fileName, $signature)) {
+            throw new \UnexpectedValueException("The signature verification of the file failed.");
+        }
     }
 }

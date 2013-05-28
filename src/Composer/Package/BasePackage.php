@@ -50,6 +50,8 @@ abstract class BasePackage implements PackageInterface
     protected $repository;
     protected $id;
 
+    protected $signature;
+
     /**
      * All descendants' constructors should call this parent constructor
      *
@@ -179,6 +181,23 @@ abstract class BasePackage implements PackageInterface
     public function getPrettyString()
     {
         return $this->getPrettyName().' '.$this->getPrettyVersion();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setSignature($signature)
+    {
+        $this->signature = $signature;
+        return $this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getSignature()
+    {
+        return $this->signature;
     }
 
     public function __clone()
