@@ -120,8 +120,10 @@ class EventDispatcher
                     throw $e;
                 }
             } else {
-                if (0 !== $this->process->execute($callable)) {
-                    $event->getIO()->write(sprintf('<error>Script %s handling the %s event returned with an error: %s</error>', $callable, $event->getName(), $this->process->getErrorOutput()));
+                if (0 !== ($exitCode = $this->process->execute($callable))) {
+                    $event->getIO()->write(sprintf('<error>Script %s handling the %s event returned with an error</error>', $callable, $event->getName()));
+
+                    throw new \RuntimeException('Error Output: '.$this->process->getErrorOutput(), $exitCode);
                 }
             }
         }
