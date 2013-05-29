@@ -232,6 +232,6 @@ class FileDownloader implements DownloaderInterface
             return $package->getName().'/'.$package->getDistReference().'.'.$package->getDistType();
         }
 
-        return $package->getName().'/'.$package->getVersion().'-'.$package->getDistReference().'.'.$package->getDistType();
+        return $package->getName().'/'.$package->getVersion().'-'.$package->getDistReference().'-'.$package->getDistSha1Checksum().'.'.$package->getDistType();
     }
 }
