@@ -37,6 +37,44 @@ class EventDispatcherTest extends TestCase
     }
 
     /**
+     * @expectedException RuntimeException
+     */
+    public function testCallableExceptionsAreCaught()
+    {
+        // First dispatch non-foo event. Should not be called
+        $root = $this->getMock('Composer\Package\RootPackageInterface');
+        $composer = $this->getMock('Composer\Composer');
+        $composer->expects($this->once())->method('getPackage')->will($this->returnValue($root));
+        $io = $this->getMock('Composer\IO\IOInterface');
+        $io->expects($this->once())
+            ->method('write')
+            ->with('<error>Callable handling the EventName event terminated with an exception</error>');
+
+        $event = new Event('EventName', $composer, $io);
+        $callable = function(Event $passed) use($event) {
+            $this->assertEquals($event, $passed);
+            throw new \RuntimeException('Noes, stuff went wrong');
+        };
+        $dispatcher = new EventDispatcher($composer, $io);
+        $dispatcher->bind('EventName', $callable);
+        $dispatcher->dispatch('EventName', $event);
+    }
+
+    public function testBind()
+    {
+        $composer = $this->getMock('Composer\Composer');
+        $io = $this->getMock('Composer\IO\IOInterface');
+        $dispatcher = new EventDispatcher($composer, $io);
+
+        // Static method is allowed
+        $dispatcher->bind('EventName', 'EventDispatcherTest::call');
+
+        // Anonymous function is allowed
+        $func = function() {};
+        $dispatcher->bind('EventName', $func);
+    }
+
+    /**
      * @dataProvider getValidCommands
      * @param string $command
      */
@@ -171,6 +209,32 @@ class EventDispatcherTest extends TestCase
 
         $this->setExpectedException('RuntimeException');
         $dispatcher->dispatchCommandEvent("post-install-cmd", false);
+    }
+
+    public function testDispatcherCallsBindFunction()
+    {
+        $root = $this->getMock('Composer\Package\RootPackageInterface');
+        $composer = $this->getMock('Composer\Composer');
+        $composer->expects($this->exactly(2))->method('getPackage')->will($this->returnValue($root));
+        $io = $this->getMock('Composer\IO\IOInterface');
+
+        $called = false;
+        $foo_event = new Event('Foo', $composer, $io);
+        $callable = function(Event $passed) use(&$called, $foo_event) {
+            $this->assertEquals($foo_event, $passed);
+            $called = true;
+        };
+        $dispatcher = new EventDispatcher($composer, $io);
+        $dispatcher->bind('Foo', $callable);
+
+        // First dispatch non-foo event. Should not be called
+        $bar_event = new Event('Bar', $composer, $io);
+        $dispatcher->dispatch('Bar', $bar_event);
+        $this->assertFalse($called);
+
+        // Now dispatch foo event.
+        $dispatcher->dispatch('Foo', $foo_event);
+        $this->assertTrue($called);
     }
 
     public static function call()

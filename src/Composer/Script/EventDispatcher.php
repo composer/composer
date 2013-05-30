@@ -38,6 +38,12 @@ class EventDispatcher
     protected $process;
 
     /**
+     * The subscribers to certain events
+     * @var array Keyed by the Event name, value = callback
+     */
+    protected $subscribers = array();
+
+    /**
      * Constructor.
      *
      * @param Composer        $composer The composer instance
@@ -49,6 +55,21 @@ class EventDispatcher
         $this->composer = $composer;
         $this->io = $io;
         $this->process = $process ?: new ProcessExecutor();
+    }
+
+    /**
+     * Bind to an event with a callback.
+     * @param string $eventName A constant from the ScriptEvents class
+     * @param string|Callback $callback The callback.
+     * @throws \RuntimeException When incorrect callback is provided
+     */
+    public function bind($eventName, $callback)
+    {
+        if(!is_callable($callback) && !$this->isPhpScript($callback)) {
+            throw new \RuntimeException('Someone tried to subscribe to ' . $eventName .
+                ', but didn\'t provide a callable');
+        }
+        $this->subscribers[$eventName][] = $callback;
     }
 
     /**
@@ -99,7 +120,15 @@ class EventDispatcher
         $listeners = $this->getListeners($event);
 
         foreach ($listeners as $callable) {
-            if ($this->isPhpScript($callable)) {
+            if ($this->isCallable($callable)) {
+                try {
+                  $callable($event);
+                } catch (\Exception $e) {
+                    $message = "Callable handling the %s event terminated with an exception";
+                    $this->io->write('<error>'.sprintf($message, $event->getName()).'</error>');
+                    throw $e;
+                }
+            } else if ($this->isPhpScript($callable)) {
                 $className = substr($callable, 0, strpos($callable, '::'));
                 $methodName = substr($callable, strpos($callable, '::') + 2);
 
@@ -145,11 +174,13 @@ class EventDispatcher
      */
     protected function getListeners(Event $event)
     {
+        $listeners = isset($this->subscribers[$event->getName()]) ?
+            $this->subscribers[$event->getName()] : array();
         $package = $this->composer->getPackage();
         $scripts = $package->getScripts();
 
         if (empty($scripts[$event->getName()])) {
-            return array();
+            return $listeners;
         }
 
         if ($this->loader) {
@@ -163,7 +194,12 @@ class EventDispatcher
         $this->loader = $generator->createLoader($map);
         $this->loader->register();
 
-        return $scripts[$event->getName()];
+        return array_merge($listeners, $scripts[$event->getName()]);
+    }
+
+    protected function isCallable($callable)
+    {
+      return $callable instanceof \Closure;
     }
 
     /**
@@ -176,4 +212,5 @@ class EventDispatcher
     {
         return false === strpos($callable, ' ') && false !== strpos($callable, '::');
     }
+
 }
