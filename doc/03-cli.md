@@ -423,6 +423,12 @@ If you use a proxy but it does not support the request_fulluri flag, then you
 should set this env var to `false` or `0` to prevent composer from setting the
 request_fulluri option.
 
+### HTTPS_PROXY_REQUEST_FULLURI
+
+If you use a proxy but it does not support the request_fulluri flag for HTTPS
+requests, then you should set this env var to `false` or `0` to prevent composer
+from setting the request_fulluri option.
+
 ### COMPOSER_HOME
 
 The `COMPOSER_HOME` var allows you to change the composer home directory. This

@@ -251,7 +251,7 @@ class InstallationManager
                         )
                     );
 
-                    $context = StreamContextFactory::getContext($opts);
+                    $context = StreamContextFactory::getContext($url, $opts);
                     @file_get_contents($url, false, $context);
                 }
 
@@ -275,7 +275,7 @@ class InstallationManager
                 )
             );
 
-            $context = StreamContextFactory::getContext($opts);
+            $context = StreamContextFactory::getContext($repoUrl, $opts);
             @file_get_contents($repoUrl, false, $context);
         }
 
