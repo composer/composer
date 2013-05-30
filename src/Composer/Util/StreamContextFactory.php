@@ -23,12 +23,13 @@ final class StreamContextFactory
     /**
      * Creates a context supporting HTTP proxies
      *
+     * @param  string            $url            URL the context is to be used for
      * @param  array             $defaultOptions Options to merge with the default
      * @param  array             $defaultParams  Parameters to specify on the context
      * @return resource          Default context
      * @throws \RuntimeException if https proxy required and OpenSSL uninstalled
      */
-    public static function getContext(array $defaultOptions = array(), array $defaultParams = array())
+    public static function getContext($url, array $defaultOptions = array(), array $defaultParams = array())
     {
         $options = array('http' => array(
             // specify defaults again to try and work better with curlwrappers enabled
@@ -64,9 +65,19 @@ final class StreamContextFactory
             $options['http']['proxy'] = $proxyURL;
 
             // enabled request_fulluri unless it is explicitly disabled
-            $reqFullUriEnv = getenv('HTTP_PROXY_REQUEST_FULLURI');
-            if ($reqFullUriEnv === false || $reqFullUriEnv === '' || (strtolower($reqFullUriEnv) !== 'false' && (bool) $reqFullUriEnv)) {
-                $options['http']['request_fulluri'] = true;
+            switch (parse_url($url, PHP_URL_SCHEME)) {
+                case 'http': // default request_fulluri to true
+                    $reqFullUriEnv = getenv('HTTP_PROXY_REQUEST_FULLURI');
+                    if ($reqFullUriEnv === false || $reqFullUriEnv === '' || (strtolower($reqFullUriEnv) !== 'false' && (bool) $reqFullUriEnv)) {
+                        $options['http']['request_fulluri'] = true;
+                    }
+                    break;
+                case 'https': // default request_fulluri to true
+                    $reqFullUriEnv = getenv('HTTPS_PROXY_REQUEST_FULLURI');
+                    if ($reqFullUriEnv === false || $reqFullUriEnv === '' || (strtolower($reqFullUriEnv) !== 'false' && (bool) $reqFullUriEnv)) {
+                        $options['http']['request_fulluri'] = true;
+                    }
+                    break;
             }
 
             if (isset($proxy['user'])) {

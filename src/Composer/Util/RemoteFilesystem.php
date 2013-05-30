@@ -104,7 +104,7 @@ class RemoteFilesystem
             $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'access_token='.$options['github-token'];
             unset($options['github-token']);
         }
-        $ctx = StreamContextFactory::getContext($options, array('notification' => array($this, 'callbackGet')));
+        $ctx = StreamContextFactory::getContext($fileUrl, $options, array('notification' => array($this, 'callbackGet')));
 
         if ($this->progress) {
             $this->io->write("    Downloading: <comment>connection...</comment>", false);
