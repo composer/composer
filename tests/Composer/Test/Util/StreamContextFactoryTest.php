@@ -126,9 +126,9 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
             )), $options);
         } else {
             try {
-                StreamContextFactory::getContext();
+                StreamContextFactory::getContext('http://example.org');
                 $this->fail();
-            } catch (\Exception $e) {
+            } catch (\RuntimeException $e) {
                 $this->assertInstanceOf('RuntimeException', $e);
             }
         }
