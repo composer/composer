@@ -124,6 +124,8 @@ You can also use wildcards to update a bunch of packages at once:
 * **--optimize-autoloader (-o):** Convert PSR-0 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
   a bit of time to run so it is currently not done by default.
+* **--lock:** Only updates the lock file hash to suppress warning about the
+  lock file being out of date
 
 ## require
 
