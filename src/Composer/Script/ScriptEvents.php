@@ -145,6 +145,6 @@ class ScriptEvents
      *
      * @var string
      */
-    const POST_CREATE_PROJECT = 'post-create-project';
+    const POST_CREATE_PROJECT_CMD = 'post-create-project-cmd';
 
 }

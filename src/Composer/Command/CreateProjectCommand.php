@@ -165,7 +165,7 @@ EOT
 
         if ($noScripts === false) {
             // dispatch event
-            $this->getComposer()->getEventDispatcher()->dispatchCommandEvent(ScriptEvents::POST_CREATE_PROJECT, $installDevPackages);
+            $this->getComposer()->getEventDispatcher()->dispatchCommandEvent(ScriptEvents::POST_CREATE_PROJECT_CMD, $installDevPackages);
         }
 
         $hasVcs = $installedFromVcs;
