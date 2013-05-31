@@ -290,6 +290,14 @@
                 "post-autoload-dump": {
                     "type": ["array", "string"],
                     "description": "Occurs after the autoloader is dumped, contains one or more Class::method callables or shell commands."
+                },
+                "post-root-package-install": {
+                    "type": ["array", "string"],
+                    "description": "Occurs after the root-package is installed, contains one or more Class::method callables or shell commands."
+                },
+                "post-create-project-cmd": {
+                    "type": ["array", "string"],
+                    "description": "Occurs after the create-project command is executed, contains one or more Class::method callables or shell commands."
                 }
             }
         },
