@@ -65,7 +65,7 @@ class EventDispatcher
      */
     public function bind($eventName, $callback)
     {
-        if(!is_callable($callback) && !$this->isPhpScript($callback)) {
+        if(!$this->isCallable($callback)) {
             throw new \RuntimeException('Someone tried to subscribe to ' . $eventName .
                 ', but didn\'t provide a callable');
         }
@@ -122,30 +122,15 @@ class EventDispatcher
         foreach ($listeners as $callable) {
             if ($this->isCallable($callable)) {
                 try {
-                  $callable($event);
+                  $this->executeCallable($callable, $event);
                 } catch (\Exception $e) {
-                    $message = "Callable handling the %s event terminated with an exception";
-                    $this->io->write('<error>'.sprintf($message, $event->getName()).'</error>');
-                    throw $e;
-                }
-            } else if ($this->isPhpScript($callable)) {
-                $className = substr($callable, 0, strpos($callable, '::'));
-                $methodName = substr($callable, strpos($callable, '::') + 2);
-
-                if (!class_exists($className)) {
-                    $this->io->write('<warning>Class '.$className.' is not autoloadable, can not call '.$event->getName().' script</warning>');
-                    continue;
-                }
-                if (!is_callable($callable)) {
-                    $this->io->write('<warning>Method '.$callable.' is not callable, can not call '.$event->getName().' script</warning>');
-                    continue;
-                }
-
-                try {
-                    $this->executeEventPhpScript($className, $methodName, $event);
-                } catch (\Exception $e) {
-                    $message = "Script %s handling the %s event terminated with an exception";
-                    $this->io->write('<error>'.sprintf($message, $callable, $event->getName()).'</error>');
+                    if($this->isStaticMethodCall($callable)) {
+                        $message = "Script %s handling the %s event terminated with an exception";
+                        $this->io->write('<error>'.sprintf($message, $callable, $event->getName()).'</error>');
+                    } else {
+                        $message = "Callable handling the %s event terminated with an exception";
+                        $this->io->write('<error>'.sprintf($message, $event->getName()).'</error>');
+                    }
                     throw $e;
                 }
             } else {
@@ -159,13 +144,12 @@ class EventDispatcher
     }
 
     /**
-     * @param string $className
-     * @param string $methodName
+     * @param callable $callable
      * @param Event  $event      Event invoking the PHP callable
      */
-    protected function executeEventPhpScript($className, $methodName, Event $event)
+    protected function executeCallable($callable, Event $event)
     {
-        $className::$methodName($event);
+        call_user_func($callable, $event);
     }
 
     /**
@@ -197,9 +181,14 @@ class EventDispatcher
         return array_merge($listeners, $scripts[$event->getName()]);
     }
 
+    /**
+     * Check whether $callable is.. callable? :)
+     * @param unknown_type $callable Something we will decide whether it's a callable
+     * @return boolean
+     */
     protected function isCallable($callable)
     {
-      return $callable instanceof \Closure;
+        return is_callable($callable);
     }
 
     /**
@@ -208,9 +197,9 @@ class EventDispatcher
      * @param  string  $callable
      * @return boolean
      */
-    protected function isPhpScript($callable)
+    protected function isStaticMethodCall($callable)
     {
-        return false === strpos($callable, ' ') && false !== strpos($callable, '::');
+        return is_string($callable) && false === strpos($callable, ' ') && false !== strpos($callable, '::');
     }
 
 }

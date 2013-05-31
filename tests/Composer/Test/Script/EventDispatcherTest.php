@@ -19,6 +19,8 @@ use Composer\Util\ProcessExecutor;
 
 class EventDispatcherTest extends TestCase
 {
+    private $call_me_called;
+
     /**
      * @expectedException RuntimeException
      */
@@ -51,8 +53,9 @@ class EventDispatcherTest extends TestCase
             ->with('<error>Callable handling the EventName event terminated with an exception</error>');
 
         $event = new Event('EventName', $composer, $io);
-        $callable = function(Event $passed) use($event) {
-            $this->assertEquals($event, $passed);
+        $test = $this;
+        $callable = function(Event $passed) use($event, $test) {
+            $test->assertEquals($event, $passed);
             throw new \RuntimeException('Noes, stuff went wrong');
         };
         $dispatcher = new EventDispatcher($composer, $io);
@@ -60,18 +63,32 @@ class EventDispatcherTest extends TestCase
         $dispatcher->dispatch('EventName', $event);
     }
 
-    public function testBind()
+    public function testBindWithAllowedValues()
     {
         $composer = $this->getMock('Composer\Composer');
         $io = $this->getMock('Composer\IO\IOInterface');
         $dispatcher = new EventDispatcher($composer, $io);
 
         // Static method is allowed
-        $dispatcher->bind('EventName', 'EventDispatcherTest::call');
+        $dispatcher->bind('EventName', 'Composer\Test\Script\EventDispatcherTest::call');
+
+        // Array is allowed
+        $dispatcher->bind('EventName', array('Composer\Test\Script\EventDispatcherTest', 'call'));
 
         // Anonymous function is allowed
         $func = function() {};
         $dispatcher->bind('EventName', $func);
+    }
+
+    /**
+     * @expectedException RuntimeException
+     */
+    public function testBindException()
+    {
+        $composer = $this->getMock('Composer\Composer');
+        $io = $this->getMock('Composer\IO\IOInterface');
+        $dispatcher = new EventDispatcher($composer, $io);
+        $dispatcher->bind('EventName', 'NonExistantFunctionThatShouldNeverBeDefined');
     }
 
     /**
@@ -114,7 +131,7 @@ class EventDispatcherTest extends TestCase
             ))
             ->setMethods(array(
                 'getListeners',
-                'executeEventPhpScript',
+                'executeCallable',
             ))
             ->getMock();
 
@@ -132,8 +149,8 @@ class EventDispatcherTest extends TestCase
             ->will($this->returnValue($listeners));
 
         $dispatcher->expects($this->once())
-            ->method('executeEventPhpScript')
-            ->with('Composer\Test\Script\EventDispatcherTest', 'someMethod')
+            ->method('executeCallable')
+            ->with('Composer\Test\Script\EventDispatcherTest::someMethod')
             ->will($this->returnValue(true));
 
         $dispatcher->dispatchCommandEvent("post-install-cmd", false);
@@ -220,21 +237,31 @@ class EventDispatcherTest extends TestCase
 
         $called = false;
         $foo_event = new Event('Foo', $composer, $io);
-        $callable = function(Event $passed) use(&$called, $foo_event) {
-            $this->assertEquals($foo_event, $passed);
+        $test = $this;
+        $callable = function(Event $passed) use(&$called, $foo_event, $test) {
+            $test->assertEquals($foo_event, $passed);
             $called = true;
         };
         $dispatcher = new EventDispatcher($composer, $io);
         $dispatcher->bind('Foo', $callable);
+        $dispatcher->bind('Foo', array($this, 'callMe'));
+        $this->call_me_called = false;
 
         // First dispatch non-foo event. Should not be called
         $bar_event = new Event('Bar', $composer, $io);
         $dispatcher->dispatch('Bar', $bar_event);
         $this->assertFalse($called);
+        $this->assertFalse($this->call_me_called);
 
         // Now dispatch foo event.
         $dispatcher->dispatch('Foo', $foo_event);
         $this->assertTrue($called);
+        $this->assertTrue($this->call_me_called);
+    }
+
+    public function callMe()
+    {
+      $this->call_me_called = true;
     }
 
     public static function call()
