@@ -317,6 +317,9 @@ If the directory does not currently exist, it will be created during installatio
 
     php composer.phar create-project doctrine/orm path 2.2.0
 
+It is also possible to run the command without params in a directory with an
+existing `composer.json` file to bootstrap a project.
+
 By default the command checks for the packages on packagist.org.
 
 ### Options
