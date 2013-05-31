@@ -34,7 +34,10 @@ Composer fires the following named events during its execution process:
   during `install`/`update`, or via the `dump-autoload` command.
 - **post-autoload-dump**: occurs after the autoloader is dumped, either
   during `install`/`update`, or via the `dump-autoload` command.
-
+- **post-root-package-install**: occurs after the root package has been
+  installed, during the `create-project` command.
+- **post-create-project-cmd**: occurs after the `create-project` command is
+  executed.
 
 ## Defining scripts
 
