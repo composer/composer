@@ -214,7 +214,8 @@ EOT
         return 0;
     }
 
-    protected function installRootPackage(IOInterface $io, $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositoryUrl = null, $disableCustomInstallers = false, $noScripts = false, $keepVcs = false, $noProgress = false) {
+    protected function installRootPackage(IOInterface $io, $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositoryUrl = null, $disableCustomInstallers = false, $noScripts = false, $keepVcs = false, $noProgress = false)
+    {
         $stability = strtolower($stability);
         if ($stability === 'rc') {
             $stability = 'RC';
@@ -297,9 +298,6 @@ EOT
         chdir($directory);
 
         putenv('COMPOSER_ROOT_VERSION='.$package->getPrettyVersion());
-
-        // clean up memory
-        unset($dm, $im, $config, $projectInstaller, $sourceRepo, $package);
 
         return $installedFromVcs;
     }
