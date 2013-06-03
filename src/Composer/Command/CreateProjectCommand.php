@@ -164,11 +164,6 @@ EOT
             return 1;
         }
 
-        if ($noScripts === false) {
-            // dispatch event
-            $this->getComposer()->getEventDispatcher()->dispatchCommandEvent(ScriptEvents::POST_CREATE_PROJECT_CMD, $installDevPackages);
-        }
-
         $hasVcs = $installedFromVcs;
         if (!$keepVcs && $installedFromVcs
             && (
@@ -209,6 +204,13 @@ EOT
                     }
                 }
             }
+        }
+
+        if ($noScripts === false) {
+            // TODO: improve autoloader refreshing
+            require($this->getComposer()->getConfig()->get('vendor-dir').'/autoload.php');
+            // dispatch event
+            $this->getComposer()->getEventDispatcher()->dispatchCommandEvent(ScriptEvents::POST_CREATE_PROJECT_CMD, $installDevPackages);
         }
 
         return 0;
