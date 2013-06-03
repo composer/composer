@@ -143,14 +143,15 @@ EOT
             $installedFromVcs = false;
         }
 
+        $composer = Factory::create($io);
+
         if ($noScripts === false) {
             // dispatch event
-            $this->getComposer()->getEventDispatcher()->dispatchCommandEvent(ScriptEvents::POST_ROOT_PACKAGE_INSTALL, $installDevPackages);
+            $composer->getEventDispatcher()->dispatchCommandEvent(ScriptEvents::POST_ROOT_PACKAGE_INSTALL, $installDevPackages);
         }
-        // install dependencies of the created project
-        $composer = Factory::create($io);
-        $installer = Installer::create($io, $composer);
 
+        // install dependencies of the created project
+        $installer = Installer::create($io, $composer);
         $installer->setPreferSource($preferSource)
             ->setPreferDist($preferDist)
             ->setDevMode($installDevPackages)
@@ -207,10 +208,8 @@ EOT
         }
 
         if ($noScripts === false) {
-            // TODO: improve autoloader refreshing
-            require($this->getComposer()->getConfig()->get('vendor-dir').'/autoload.php');
             // dispatch event
-            $this->getComposer()->getEventDispatcher()->dispatchCommandEvent(ScriptEvents::POST_CREATE_PROJECT_CMD, $installDevPackages);
+            $composer->getEventDispatcher()->dispatchCommandEvent(ScriptEvents::POST_CREATE_PROJECT_CMD, $installDevPackages);
         }
 
         return 0;
