@@ -207,8 +207,9 @@ EOT
         }
 
         if ($noScripts === false) {
-            // dispatch event
+            // TODO: improve autoloader refreshing
             require($this->getComposer()->getConfig()->get('vendor-dir').'/autoload.php');
+            // dispatch event
             $this->getComposer()->getEventDispatcher()->dispatchCommandEvent(ScriptEvents::POST_CREATE_PROJECT_CMD, $installDevPackages);
         }
 
