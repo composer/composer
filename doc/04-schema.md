@@ -602,8 +602,8 @@ The following options are supported:
   `auto`. This option allows you to set the install method Composer will prefer to
   use.
 * **github-protocols:** Defaults to `["git", "https", "http"]`. A list of
-  protocols to use for github.com clones, in priority order. Use this if you are
-  behind a proxy or have somehow bad performances with the git protocol.
+  protocols to use when cloning from github.com, in priority order. Use this if you
+  are behind a proxy or have somehow bad performances with the git protocol.
 * **github-oauth:** A list of domain names and oauth keys. For example using
   `{"github.com": "oauthtoken"}` as the value of this option will use `oauthtoken`
   to access private repositories on github and to circumvent the low IP-based
