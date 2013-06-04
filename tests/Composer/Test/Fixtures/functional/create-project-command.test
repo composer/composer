@@ -7,6 +7,6 @@ Installing seld/jsonlint (1.0.0)
 
 Created project in %testDir%
 Loading composer repositories with package information
-Installing dependencies
+Installing dependencies (including require-dev)
 Nothing to install or update
 Generating autoload files
