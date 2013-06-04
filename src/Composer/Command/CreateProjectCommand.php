@@ -60,7 +60,8 @@ class CreateProjectCommand extends Command
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist even for dev versions.'),
                 new InputOption('repository-url', null, InputOption::VALUE_REQUIRED, 'Pick a different repository url to look for the package.'),
-                new InputOption('dev', null, InputOption::VALUE_NONE, 'Whether to install dependencies for development.'),
+                new InputOption('dev', null, InputOption::VALUE_NONE, 'Enables installation of require-dev packages (enabled by default, only present for BC).'),
+                new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables installation of require-dev packages.'),
                 new InputOption('no-custom-installers', null, InputOption::VALUE_NONE, 'Whether to disable custom installers.'),
                 new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Whether to prevent execution of all defined scripts in the root package.'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
@@ -82,9 +83,7 @@ To install unstable packages, either specify the version you want, or use the
 --stability=dev (where dev can be one of RC, beta, alpha or dev).
 
 To setup a developer workable version you should create the project using the source
-controlled code by appending the <info>'--prefer-source'</info> flag. Also, it is
-advisable to install all dependencies required for development by appending the
-<info>'--dev'</info> flag.
+controlled code by appending the <info>'--prefer-source'</info> flag.
 
 To install a package from another repository than the default one you
 can pass the <info>'--repository-url=http://myrepository.org'</info> flag.
@@ -126,7 +125,7 @@ EOT
             $input->getOption('stability'),
             $preferSource,
             $preferDist,
-            $input->getOption('dev'),
+            !$input->getOption('no-dev'),
             $input->getOption('repository-url'),
             $input->getOption('no-custom-installers'),
             $input->getOption('no-scripts'),
