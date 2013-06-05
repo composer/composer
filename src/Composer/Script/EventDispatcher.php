@@ -65,7 +65,7 @@ class EventDispatcher
      */
     public function bind($eventName, $callback)
     {
-        if(!$this->isCallable($callback)) {
+        if(!is_callable($callback)) {
             throw new \RuntimeException('Someone tried to subscribe to ' . $eventName .
                 ', but didn\'t provide a callable');
         }
@@ -120,7 +120,7 @@ class EventDispatcher
         $listeners = $this->getListeners($event);
 
         foreach ($listeners as $callable) {
-            if ($this->isCallable($callable)) {
+            if (is_callable($callable)) {
                 try {
                   $this->executeCallable($callable, $event);
                 } catch (\Exception $e) {
@@ -179,16 +179,6 @@ class EventDispatcher
         $this->loader->register();
 
         return array_merge($listeners, $scripts[$event->getName()]);
-    }
-
-    /**
-     * Check whether $callable is.. callable? :)
-     * @param unknown_type $callable Something we will decide whether it's a callable
-     * @return boolean
-     */
-    protected function isCallable($callable)
-    {
-        return is_callable($callable);
     }
 
     /**
