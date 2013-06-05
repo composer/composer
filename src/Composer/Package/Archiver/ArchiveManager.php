@@ -142,6 +142,11 @@ class ArchiveManager
         }
 
         // Create the archive
-        return $usableArchiver->archive($sourcePath, $target, $format, $package->getArchiveExcludes());
+        $archivePath = $usableArchiver->archive($sourcePath, $target, $format, $package->getArchiveExcludes());
+
+        // Remove the source
+        $filesystem->removeDirectory($sourcePath);
+
+        return $archivePath;
     }
 }
