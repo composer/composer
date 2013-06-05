@@ -79,11 +79,8 @@ resolution.
 * **--dry-run:** If you want to run through an installation without actually
   installing a package, you can use `--dry-run`. This will simulate the
   installation and show you what would happen.
-* **--dev:** By default composer will only install required packages. By
-  passing this option you can also make it install packages referenced by
-  `require-dev`.
-* **--no-dev:** Skip installing packages listed in `require-dev` (this is
-  the default for `install`).
+* **--dev:** Install packages listed in `require-dev` (this is the default behavior).
+* **--no-dev:** Skip installing packages listed in `require-dev`.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--no-custom-installers:** Disables custom installers.
 * **--no-progress:** Removes the progress display that can mess with some
@@ -115,7 +112,7 @@ You can also use wildcards to update a bunch of packages at once:
 * **--prefer-source:** Install packages from `source` when available.
 * **--prefer-dist:** Install packages from `dist` when available.
 * **--dry-run:** Simulate the command without actually doing anything.
-* **--dev:** Install packages listed in `require-dev` (this is the default for `update`).
+* **--dev:** Install packages listed in `require-dev` (this is the default behavior).
 * **--no-dev:** Skip installing packages listed in `require-dev`.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--no-custom-installers:** Disables custom installers.
@@ -316,6 +313,9 @@ provide a version as third argument, otherwise the latest version is used.
 If the directory does not currently exist, it will be created during installation.
 
     php composer.phar create-project doctrine/orm path 2.2.0
+
+It is also possible to run the command without params in a directory with an
+existing `composer.json` file to bootstrap a project.
 
 By default the command checks for the packages on packagist.org.
 
