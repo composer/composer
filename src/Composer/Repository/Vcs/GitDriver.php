@@ -166,7 +166,7 @@ class GitDriver extends VcsDriver
         if (null === $this->tags) {
             $this->process->execute('git tag', $output, $this->repoDir);
             $output = $this->process->splitLines($output);
-            $this->tags = $output ? array_combine($output, $output) : array();
+            $this->tags = $output ? array_filter(array_combine($output, $output)) : array();
         }
 
         return $this->tags;
