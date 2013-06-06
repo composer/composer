@@ -177,7 +177,6 @@ class DownloadManager
         $this->filesystem->ensureDirectoryExists($targetDir);
 
         $downloader = $this->getDownloaderForInstalledPackage($package);
-
         $downloader->download($package, $targetDir);
     }
 
