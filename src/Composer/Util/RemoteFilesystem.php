@@ -47,6 +47,22 @@ class RemoteFilesystem
     }
 
     /**
+     * @param array $options
+     */
+    public function setOptions(array $options)
+    {
+        $this->options = $options;
+    }
+
+    /**
+     * @return array
+     */
+    public function getOptions()
+    {
+        return $this->options;
+    }
+
+    /**
      * Copy the remote file in local.
      *
      * @param string  $originUrl The origin URL

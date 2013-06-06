@@ -68,6 +68,14 @@ class FileDownloader implements DownloaderInterface
     }
 
     /**
+     * @return RemoteFilesystem
+     */
+    public function getRemoteFilesystem()
+    {
+        return $this->rfs;
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function getInstallationSource()
