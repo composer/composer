@@ -401,7 +401,7 @@ in the root of the package, for example, it may be declared like this:
 
     {
         "autoload": {
-            "psr-0": { "UniqueGlobalClass": "" }
+            "psr-0": { "UniqueGlobalClass\\": "" }
         }
     }
 
