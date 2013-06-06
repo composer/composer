@@ -183,7 +183,7 @@ to `composer.json`.
 
     {
         "autoload": {
-            "psr-0": {"Acme": "src/"}
+            "psr-0": {"Acme\\": "src/"}
         }
     }
 
@@ -203,7 +203,7 @@ the return value of the include call in a variable and add more namespaces.
 This can be useful for autoloading classes in a test suite, for example.
 
     $loader = require 'vendor/autoload.php';
-    $loader->add('Acme\Test', __DIR__);
+    $loader->add('Acme\\Test\\', __DIR__);
 
 In addition to PSR-0 autoloading, classmap is also supported. This allows
 classes to be autoloaded even if they do not conform to PSR-0. See the
