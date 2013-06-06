@@ -165,11 +165,6 @@ class DownloadManager
         $preferSource = null !== $preferSource ? $preferSource : $this->preferSource;
         $sourceType   = $package->getSourceType();
         $distType     = $package->getDistType();
-        $extra        = $package->getExtra();
-
-        if (isset($extra['context-options'])) {
-            $options = $extra['context-options'];
-        }
 
         if ((!$package->isDev() || $this->preferDist || !$sourceType) && !($preferSource && $sourceType) && $distType) {
             $package->setInstallationSource('dist');
@@ -183,20 +178,7 @@ class DownloadManager
 
         $downloader = $this->getDownloaderForInstalledPackage($package);
 
-        // in case the package provides custom context options we use them
-        if ($downloader instanceof FileDownloader && isset($options)) {
-            $rfs = $downloader->getRemoteFilesystem();
-            $oldOptions = $rfs->getOptions();
-            $rfs->setOptions($options);
-        }
-
         $downloader->download($package, $targetDir);
-
-        // restore the remote file system's context options
-        if ($downloader instanceof FileDownloader && isset($oldOptions)) {
-            $rfs = $downloader->getRemoteFilesystem();
-            $rfs->setOptions($oldOptions);
-        }
     }
 
     /**

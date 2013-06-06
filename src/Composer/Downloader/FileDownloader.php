@@ -68,14 +68,6 @@ class FileDownloader implements DownloaderInterface
     }
 
     /**
-     * @return RemoteFilesystem
-     */
-    public function getRemoteFilesystem()
-    {
-        return $this->rfs;
-    }
-
-    /**
      * {@inheritDoc}
      */
     public function getInstallationSource()
@@ -111,6 +103,15 @@ class FileDownloader implements DownloaderInterface
 
         if (strpos($hostname, '.github.com') === (strlen($hostname) - 11)) {
             $hostname = 'github.com';
+        }
+
+        $extra = $package->getExtra();
+
+        // in case the package provides custom context options we use them
+        if (isset($extra['context-options'])) {
+            $options = $extra['context-options'];
+            $oldOptions = $this->rfs->getOptions();
+            $this->rfs->setOptions($options);
         }
 
         try {
@@ -176,6 +177,11 @@ class FileDownloader implements DownloaderInterface
             $this->filesystem->removeDirectory($path);
             $this->clearCache($package, $path);
             throw $e;
+        }
+
+        // restore the remote file system's context options
+        if (isset($oldOptions)) {
+            $this->rfs->setOptions($oldOptions);
         }
 
         return $fileName;
