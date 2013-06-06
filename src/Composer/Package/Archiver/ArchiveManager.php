@@ -145,7 +145,7 @@ class ArchiveManager
         $archivePath = $usableArchiver->archive($sourcePath, $target, $format, $package->getArchiveExcludes());
 
         // Cleanup temp source files
-        if (!$package instanceof RootPackage) {
+        if (!$package instanceof RootPackage && $package->getSourceReference()) {
             $filesystem->removeDirectory($sourcePath);
         }
 
