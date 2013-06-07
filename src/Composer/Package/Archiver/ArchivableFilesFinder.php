@@ -52,21 +52,28 @@ class ArchivableFilesFinder extends \FilterIterator
         );
 
         $this->finder = new Finder\Finder();
+
+        $filter = function (\SplFileInfo $file) use ($sources, $filters, $fs) {
+            $relativePath = preg_replace(
+                '#^'.preg_quote($sources, '#').'#',
+                '',
+                $fs->normalizePath($file->getRealPath())
+            );
+
+            $exclude = false;
+            foreach ($filters as $filter) {
+                $exclude = $filter->filter($relativePath, $exclude);
+            }
+            return !$exclude;
+        };
+
+        if (method_exists($filter, 'bindTo')) {
+            $filter = $filter->bindTo(null);
+        }
+
         $this->finder
             ->in($sources)
-            ->filter(function (\SplFileInfo $file) use ($sources, $filters, $fs) {
-                $relativePath = preg_replace(
-                    '#^'.preg_quote($sources, '#').'#',
-                    '',
-                    $fs->normalizePath($file->getRealPath())
-                );
-
-                $exclude = false;
-                foreach ($filters as $filter) {
-                    $exclude = $filter->filter($relativePath, $exclude);
-                }
-                return !$exclude;
-            })
+            ->filter($filter)
             ->ignoreVCS(true)
             ->ignoreDotFiles(false);
 
