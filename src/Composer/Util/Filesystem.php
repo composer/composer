@@ -213,7 +213,7 @@ class Filesystem
             return './'.basename($to);
         }
 
-        $commonPath = $to;
+        $commonPath = $to.'/';
         while (strpos($from, $commonPath) !== 0 && '/' !== $commonPath && !preg_match('{^[a-z]:/?$}i', $commonPath) && '.' !== $commonPath) {
             $commonPath = strtr(dirname($commonPath), '\\', '/');
         }
@@ -250,7 +250,7 @@ class Filesystem
             return $directories ? '__DIR__' : '__FILE__';
         }
 
-        $commonPath = $to;
+        $commonPath = $to.'/';
         while (strpos($from, $commonPath) !== 0 && '/' !== $commonPath && !preg_match('{^[a-z]:/?$}i', $commonPath) && '.' !== $commonPath) {
             $commonPath = strtr(dirname($commonPath), '\\', '/');
         }
