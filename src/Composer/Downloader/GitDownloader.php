@@ -28,6 +28,7 @@ class GitDownloader extends VcsDownloader
     public function doDownload(PackageInterface $package, $path)
     {
         $this->cleanEnv();
+        $path = $this->normalizePath($path);
 
         $ref = $package->getSourceReference();
         $flag = defined('PHP_WINDOWS_VERSION_MAJOR') ? '/D ' : '';
@@ -50,6 +51,7 @@ class GitDownloader extends VcsDownloader
     public function doUpdate(PackageInterface $initial, PackageInterface $target, $path)
     {
         $this->cleanEnv();
+        $path = $this->normalizePath($path);
 
         $ref = $target->getSourceReference();
         $this->io->write("    Checking out ".$ref);
@@ -74,6 +76,7 @@ class GitDownloader extends VcsDownloader
      */
     public function getLocalChanges($path)
     {
+        $path = $this->normalizePath($path);
         if (!is_dir($path.'/.git')) {
             return;
         }
@@ -91,6 +94,7 @@ class GitDownloader extends VcsDownloader
      */
     protected function cleanChanges($path, $update)
     {
+        $path = $this->normalizePath($path);
         if (!$changes = $this->getLocalChanges($path)) {
             return;
         }
@@ -163,6 +167,7 @@ class GitDownloader extends VcsDownloader
      */
     protected function reapplyChanges($path)
     {
+        $path = $this->normalizePath($path);
         if ($this->hasStashedChanges) {
             $this->hasStashedChanges = false;
             $this->io->write('    <info>Re-applying stashed changes');
@@ -385,6 +390,7 @@ class GitDownloader extends VcsDownloader
      */
     protected function getCommitLogs($fromReference, $toReference, $path)
     {
+        $path = $this->normalizePath($path);
         $command = sprintf('git log %s..%s --pretty=format:"%%h - %%an: %%s"', $fromReference, $toReference);
 
         if (0 !== $this->process->execute($command, $output, $path)) {
@@ -400,6 +406,7 @@ class GitDownloader extends VcsDownloader
      */
     protected function discardChanges($path)
     {
+        $path = $this->normalizePath($path);
         if (0 !== $this->process->execute('git reset --hard', $output, $path)) {
             throw new \RuntimeException("Could not reset changes\n\n:".$this->process->getErrorOutput());
         }
@@ -411,6 +418,7 @@ class GitDownloader extends VcsDownloader
      */
     protected function stashChanges($path)
     {
+        $path = $this->normalizePath($path);
         if (0 !== $this->process->execute('git stash', $output, $path)) {
             throw new \RuntimeException("Could not stash changes\n\n:".$this->process->getErrorOutput());
         }
@@ -426,5 +434,26 @@ class GitDownloader extends VcsDownloader
 
         // added in git 1.7.1, prevents prompting the user for username/password
         putenv('GIT_ASKPASS=echo');
+    }
+
+    protected function normalizePath($path)
+    {
+        if (defined('PHP_WINDOWS_VERSION_MAJOR') && strlen($path) > 0) {
+            $basePath = $path;
+            $removed = array();
+
+            while (!is_dir($basePath) && $basePath !== '\\') {
+                array_unshift($removed, basename($basePath));
+                $basePath = dirname($basePath);
+            }
+
+            if ($basePath === '\\') {
+                return $path;
+            }
+
+            $path = rtrim(realpath($basePath) . '/' . implode('/', $removed), '/');
+        }
+
+        return $path;
     }
 }
