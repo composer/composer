@@ -42,10 +42,10 @@ namespace Composer\Autoload;
  */
 class ClassLoader
 {
-    private $prefixes = array();
-    private $fallbackDirs = array();
-    private $useIncludePath = false;
-    private $classMap = array();
+    protected $prefixes = array();
+    protected $fallbackDirs = array();
+    protected $useIncludePath = false;
+    protected $classMap = array();
 
     public function getPrefixes()
     {
