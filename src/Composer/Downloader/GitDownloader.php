@@ -30,7 +30,8 @@ class GitDownloader extends VcsDownloader
         $this->cleanEnv();
 
         $ref = $package->getSourceReference();
-        $command = 'git clone %s %s && cd %2$s && git remote add composer %1$s && git fetch composer';
+        $flag = defined('PHP_WINDOWS_VERSION_MAJOR') ? '/D ' : '';
+        $command = 'git clone %s %s && cd '.$flag.'%2$s && git remote add composer %1$s && git fetch composer';
         $this->io->write("    Cloning ".$ref);
 
         $commandCallable = function($url) use ($ref, $path, $command) {
