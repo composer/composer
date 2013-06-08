@@ -144,9 +144,9 @@ class SvnDownloader extends VcsDownloader
         $fromRevision = preg_replace('{.*@(\d+)$}', '$1', $fromReference);
         $toRevision = preg_replace('{.*@(\d+)$}', '$1', $toReference);
 
-        $command = sprintf('cd %s && svn log -r%s:%s --incremental', escapeshellarg($path), $fromRevision, $toRevision);
+        $command = sprintf('svn log -r%s:%s --incremental', $fromRevision, $toRevision);
 
-        if (0 !== $this->process->execute($command, $output)) {
+        if (0 !== $this->process->execute($command, $output, $path)) {
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
         }
 
