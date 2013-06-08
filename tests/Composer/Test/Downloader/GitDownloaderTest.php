@@ -300,6 +300,8 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
     private function getCmd($cmd)
     {
         if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+            $cmd = str_replace('cd ', 'cd /D ', $cmd);
+
             return strtr($cmd, "'", '"');
         }
 
