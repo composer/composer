@@ -18,8 +18,4 @@ class InstalledFilesystemRepositoryMock extends InstalledFilesystemRepository
     public function reload()
     {
     }
-
-    public function write()
-    {
-    }
 }

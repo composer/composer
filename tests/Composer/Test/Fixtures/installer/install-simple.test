@@ -16,5 +16,32 @@ Installs a simple package with exact match requirement
 }
 --RUN--
 install
+--EXPECT-INSTALLED--
+[
+    {
+        "name": "a/a",
+        "version": "1.0.0",
+        "version_normalized": "1.0.0.0",
+        "type": "library"
+    },
+    {
+        "name": "__root__",
+        "version": "dev-root-installed",
+        "version_normalized": "dev-root-installed",
+        "type": "library",
+        "repositories": [
+            {
+                "type": "package",
+                "package": [
+                    { "name": "a/a", "version": "1.0.0" }
+                ]
+            }
+        ],
+        "require": {
+            "a/a": "1.0.0"
+        },
+        "minimum-stability": "stable"
+    }
+]
 --EXPECT--
 Installing a/a (1.0.0)

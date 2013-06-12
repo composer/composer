@@ -1,0 +1,74 @@
+--TEST--
+Install results in root package version change
+--COMPOSER--
+{
+    "version": "1.0.2",
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.0.0"
+    }
+}
+--INSTALLED--
+[
+    {
+        "name": "a/a",
+        "version": "1.0.0",
+        "version_normalized": "1.0.0.0",
+        "type": "library"
+    },
+    {
+        "name": "__root__",
+        "version": "1.0.0",
+        "version_normalized": "1.0.0.0",
+        "type": "library",
+        "minimum-stability": "stable",
+        "repositories": [
+            {
+                "type": "package",
+                "package": [
+                    { "name": "a/a", "version": "1.0.0" }
+                ]
+            }
+        ],
+        "require": {
+            "a/a": "1.0.0"
+        }
+    }
+]
+--RUN--
+install
+--EXPECT-INSTALLED--
+[
+    {
+        "name": "a/a",
+        "version": "1.0.0",
+        "version_normalized": "1.0.0.0",
+        "type": "library"
+    },
+    {
+        "name": "__root__",
+        "version": "1.0.2",
+        "version_normalized": "1.0.2.0",
+        "type": "library",
+        "minimum-stability": "stable",
+            "repositories": [
+                {
+                    "type": "package",
+                    "package": [
+                        { "name": "a/a", "version": "1.0.0" }
+                    ]
+                }
+            ],
+            "require": {
+                "a/a": "1.0.0"
+            }
+    }
+]
+--EXPECT--

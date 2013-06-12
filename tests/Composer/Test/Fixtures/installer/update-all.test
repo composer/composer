@@ -35,6 +35,58 @@ Updates updateable packages
 ]
 --RUN--
 update --dev
+--EXPECT-INSTALLED--
+[
+    {
+        "name": "a/c",
+        "version": "1.0.0",
+        "version_normalized": "1.0.0.0",
+        "type": "library"
+    },
+    {
+        "name": "a/a",
+        "version": "1.0.1",
+        "version_normalized": "1.0.1.0",
+        "type": "library"
+    },
+    {
+        "name": "a/b",
+        "version": "2.0.0",
+        "version_normalized": "2.0.0.0",
+        "type": "library"
+    },
+    {
+        "name": "__root__",
+        "version": "dev-root-installed",
+        "version_normalized": "dev-root-installed",
+        "type": "library",
+        "minimum-stability": "stable",
+        "repositories": [
+            {
+                "type": "package",
+                "package": [
+                    { "name": "a/a", "version": "1.0.0" },
+                    { "name": "a/a", "version": "1.0.1" },
+                    { "name": "a/a", "version": "1.1.0" },
+
+                    { "name": "a/b", "version": "1.0.0" },
+                    { "name": "a/b", "version": "1.0.1" },
+                    { "name": "a/b", "version": "2.0.0" },
+
+                    { "name": "a/c", "version": "1.0.0" },
+                    { "name": "a/c", "version": "2.0.0" }
+                ]
+            }
+        ],
+        "require": {
+            "a/a": "1.0.*",
+            "a/c": "1.*"
+        },
+        "require-dev": {
+            "a/b": "*"
+        }
+    }
+]
 --EXPECT--
 Updating a/a (1.0.0) to a/a (1.0.1)
 Updating a/b (1.0.0) to a/b (2.0.0)

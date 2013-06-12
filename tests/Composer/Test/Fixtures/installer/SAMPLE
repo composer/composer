@@ -14,5 +14,7 @@
 install
 --EXPECT-LOCK--
 <composer.lock file after the run>
+--EXPECT-INSTALLED--
+<installed.json file after the run>
 --EXPECT--
 <output (stringified operations)>
