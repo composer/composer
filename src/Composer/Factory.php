@@ -341,8 +341,8 @@ class Factory
     }
 
     /**
-     * @param Config                     $config  The configuration
-     * @param Downloader\DownloadManager $dm      Manager use to download sources
+     * @param Config                     $config The configuration
+     * @param Downloader\DownloadManager $dm     Manager use to download sources
      *
      * @return Archiver\ArchiveManager
      */

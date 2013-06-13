@@ -86,7 +86,7 @@ class RemoteFilesystem
      * @param boolean $progress          Display the progression
      *
      * @throws TransportException|\Exception
-     * @throws TransportException When the file could not be downloaded
+     * @throws TransportException            When the file could not be downloaded
      *
      * @return bool|string
      */
@@ -210,12 +210,12 @@ class RemoteFilesystem
     /**
      * Get notification action.
      *
-     * @param integer $notificationCode The notification code
-     * @param integer $severity         The severity level
-     * @param string  $message          The message
-     * @param integer $messageCode      The message code
-     * @param integer $bytesTransferred The loaded size
-     * @param integer $bytesMax         The total size
+     * @param  integer            $notificationCode The notification code
+     * @param  integer            $severity         The severity level
+     * @param  string             $message          The message
+     * @param  integer            $messageCode      The message code
+     * @param  integer            $bytesTransferred The loaded size
+     * @param  integer            $bytesMax         The total size
      * @throws TransportException
      */
     protected function callbackGet($notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax)

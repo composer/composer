@@ -67,6 +67,7 @@ class AutoloadGeneratorTest extends TestCase
             ->method('getInstallPath')
             ->will($this->returnCallback(function ($package) use ($that) {
                 $targetDir = $package->getTargetDir();
+
                 return $that->vendorDir.'/'.$package->getName() . ($targetDir ? '/'.$targetDir : '');
             }));
         $this->repository = $this->getMock('Composer\Repository\InstalledRepositoryInterface');
@@ -697,6 +698,7 @@ EOF;
             ->method('getInstallPath')
             ->will($this->returnCallback(function ($package) use ($vendorDir) {
                 $targetDir = $package->getTargetDir();
+
                 return $vendorDir.'/'.$package->getName() . ($targetDir ? '/'.$targetDir : '');
             }));
 

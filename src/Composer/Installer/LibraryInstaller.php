@@ -140,12 +140,14 @@ class LibraryInstaller implements InstallerInterface
     public function getInstallPath(PackageInterface $package)
     {
         $targetDir = $package->getTargetDir();
+
         return $this->getPackageBasePath($package) . ($targetDir ? '/'.$targetDir : '');
     }
 
     protected function getPackageBasePath(PackageInterface $package)
     {
         $this->initializeVendorDir();
+
         return ($this->vendorDir ? $this->vendorDir.'/' : '') . $package->getPrettyName();
     }
 

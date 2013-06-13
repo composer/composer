@@ -12,8 +12,6 @@
 
 namespace Composer\Package\Archiver;
 
-use Composer\Package\BasePackage;
-use Composer\Package\PackageInterface;
 use Composer\Util\Filesystem;
 
 use Symfony\Component\Finder;
@@ -36,8 +34,8 @@ class ArchivableFilesFinder extends \FilterIterator
     /**
      * Initializes the internal Symfony Finder with appropriate filters
      *
-     * @param string $sources Path to source files to be archived
-     * @param array $excludes Composer's own exclude rules from composer.json
+     * @param string $sources  Path to source files to be archived
+     * @param array  $excludes Composer's own exclude rules from composer.json
      */
     public function __construct($sources, array $excludes)
     {
@@ -64,6 +62,7 @@ class ArchivableFilesFinder extends \FilterIterator
             foreach ($filters as $filter) {
                 $exclude = $filter->filter($relativePath, $exclude);
             }
+
             return !$exclude;
         };
 

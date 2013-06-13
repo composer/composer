@@ -142,7 +142,7 @@ class Application extends BaseApplication
     }
 
     /**
-     * @param  bool               $required
+     * @param  bool                    $required
      * @throws JsonValidationException
      * @return \Composer\Composer
      */
