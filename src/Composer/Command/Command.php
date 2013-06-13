@@ -38,6 +38,7 @@ abstract class Command extends BaseCommand
 
     /**
      * @param  bool     $required
+     * @throws \RuntimeException
      * @return Composer
      */
     public function getComposer($required = true)

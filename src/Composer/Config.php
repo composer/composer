@@ -123,6 +123,7 @@ class Config
      * Returns a setting
      *
      * @param  string $key
+     * @throws \RuntimeException
      * @return mixed
      */
     public function get($key)

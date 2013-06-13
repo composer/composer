@@ -90,7 +90,7 @@ class InstallationManager
      *
      * @return InstallerInterface
      *
-     * @throws InvalidArgumentException if installer for provided type is not registered
+     * @throws \InvalidArgumentException if installer for provided type is not registered
      */
     public function getInstaller($type)
     {
