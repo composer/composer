@@ -88,7 +88,7 @@ class RepositoryManager
      * @param  string                   $type   repository type
      * @param  string                   $config repository configuration
      * @return RepositoryInterface
-     * @throws InvalidArgumentException if repository for provided type is not registered
+     * @throws \InvalidArgumentException if repository for provided type is not registered
      */
     public function createRepository($type, $config)
     {

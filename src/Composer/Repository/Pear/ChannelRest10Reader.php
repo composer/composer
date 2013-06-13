@@ -107,6 +107,7 @@ class ChannelRest10Reader extends BaseChannelReader
      *
      * @param $baseUrl      string
      * @param $packageName  string
+     * @throws \Composer\Downloader\TransportException|\Exception
      * @return ReleaseInfo[] hash array with keys as version numbers
      */
     private function readPackageReleases($baseUrl, $packageName)

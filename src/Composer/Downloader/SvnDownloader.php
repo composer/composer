@@ -68,7 +68,7 @@ class SvnDownloader extends VcsDownloader
      * @param string $url     SVN url
      * @param string $cwd     Working directory
      * @param string $path    Target for a checkout
-     *
+     * @throws \RuntimeException
      * @return string
      */
     protected function execute($baseUrl, $command, $url, $cwd = null, $path = null)
