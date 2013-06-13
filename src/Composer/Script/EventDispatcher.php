@@ -93,6 +93,8 @@ class EventDispatcher
      * Triggers the listeners of an event.
      *
      * @param Event $event The event object to pass to the event handlers/listeners.
+     * @throws \RuntimeException
+     * @throws \Exception
      */
     protected function doDispatch(Event $event)
     {

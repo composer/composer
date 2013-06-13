@@ -25,6 +25,7 @@ class BufferIO extends ConsoleIO
     /**
      * @param string $input
      * @param int    $verbosity
+     * @param OutputFormatterInterface $formatter
      */
     public function __construct($input = '', $verbosity = null, OutputFormatterInterface $formatter = null)
     {

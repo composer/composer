@@ -272,6 +272,7 @@ class GitDownloader extends VcsDownloader
      * @param  string            $url
      * @param  string            $cwd
      * @param  bool              $initialClone    If true, the directory if cleared between every attempt
+     * @throws \InvalidArgumentException
      * @throws \RuntimeException
      */
     protected function runCommand($commandCallable, $url, $cwd, $initialClone = false)
