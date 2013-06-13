@@ -44,6 +44,7 @@ class DownloadManager
      * Makes downloader prefer source installation over the dist.
      *
      * @param bool $preferSource prefer downloading from source
+     * @return DownloadManager
      */
     public function setPreferSource($preferSource)
     {
@@ -56,6 +57,7 @@ class DownloadManager
      * Makes downloader prefer dist installation over the source.
      *
      * @param bool $preferDist prefer downloading from dist
+     * @return DownloadManager
      */
     public function setPreferDist($preferDist)
     {
@@ -85,6 +87,7 @@ class DownloadManager
      *
      * @param string              $type       installation type
      * @param DownloaderInterface $downloader downloader instance
+     * @return DownloadManager
      */
     public function setDownloader($type, DownloaderInterface $downloader)
     {
@@ -101,7 +104,7 @@ class DownloadManager
      *
      * @return DownloaderInterface
      *
-     * @throws UnexpectedValueException if downloader for provided type is not registered
+     * @throws \InvalidArgumentException if downloader for provided type is not registered
      */
     public function getDownloader($type)
     {
@@ -120,8 +123,8 @@ class DownloadManager
      *
      * @return DownloaderInterface
      *
-     * @throws InvalidArgumentException if package has no installation source specified
-     * @throws LogicException           if specific downloader used to load package with
+     * @throws \InvalidArgumentException if package has no installation source specified
+     * @throws \LogicException           if specific downloader used to load package with
      *                                          wrong type
      */
     public function getDownloaderForInstalledPackage(PackageInterface $package)
@@ -155,7 +158,7 @@ class DownloadManager
      * @param string           $targetDir    target dir
      * @param bool             $preferSource prefer installation from source
      *
-     * @throws InvalidArgumentException if package have no urls to download from
+     * @throws \InvalidArgumentException if package have no urls to download from
      */
     public function download(PackageInterface $package, $targetDir, $preferSource = null)
     {
@@ -184,7 +187,7 @@ class DownloadManager
      * @param PackageInterface $target    target package version
      * @param string           $targetDir target dir
      *
-     * @throws InvalidArgumentException if initial package is not installed
+     * @throws \InvalidArgumentException if initial package is not installed
      */
     public function update(PackageInterface $initial, PackageInterface $target, $targetDir)
     {

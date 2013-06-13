@@ -12,6 +12,8 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\Package\Link;
+
 /**
  * Represents a problem detected while solving dependencies
  *
@@ -67,6 +69,7 @@ class Problem
      * A human readable textual representation of the problem's reasons
      *
      * @param array $installedMap A map of all installed packages
+     * @return string
      */
     public function getPrettyString(array $installedMap = array())
     {

@@ -88,6 +88,7 @@ class Locker
      * Searches and returns an array of locked packages, retrieved from registered repositories.
      *
      * @param  bool                                     $withDevReqs true to retrieve the locked dev packages
+     * @throws \RuntimeException
      * @return \Composer\Repository\RepositoryInterface
      */
     public function getLockedRepository($withDevReqs = false)
