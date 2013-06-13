@@ -66,6 +66,7 @@ class Cache
             if ($this->io->isDebug()) {
                 $this->io->write('Reading '.$this->root . $file.' from cache');
             }
+
             return file_get_contents($this->root . $file);
         }
 
@@ -80,6 +81,7 @@ class Cache
             if ($this->io->isDebug()) {
                 $this->io->write('Writing '.$this->root . $file.' into cache');
             }
+
             return file_put_contents($this->root . $file, $contents);
         }
 
@@ -98,6 +100,7 @@ class Cache
             if ($this->io->isDebug()) {
                 $this->io->write('Writing '.$this->root . $file.' into cache');
             }
+
             return copy($source, $this->root . $file);
         }
 
@@ -116,6 +119,7 @@ class Cache
             if ($this->io->isDebug()) {
                 $this->io->write('Reading '.$this->root . $file.' from cache');
             }
+
             return copy($this->root . $file, $target);
         }
 

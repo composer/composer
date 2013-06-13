@@ -284,6 +284,7 @@ EOT
                     if ('stash' === $val) {
                         return 'stash';
                     }
+
                     return $val !== 'false' && (bool) $val;
                 }
             ),

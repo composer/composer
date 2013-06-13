@@ -14,9 +14,7 @@ namespace Composer\Command;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Composer\Repository\CompositeRepository;
 use Symfony\Component\Console\Output\OutputInterface;
-use Composer\Autoload\AutoloadGenerator;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>

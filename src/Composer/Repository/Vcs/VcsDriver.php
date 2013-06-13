@@ -44,13 +44,13 @@ abstract class VcsDriver implements VcsDriverInterface
      */
     final public function __construct(array $repoConfig, IOInterface $io, Config $config, ProcessExecutor $process = null, RemoteFilesystem $remoteFilesystem = null)
     {
-        
+
         if (self::isLocalUrl($repoConfig['url'])) {
             $repoConfig['url'] = realpath(
                 preg_replace('/^file:\/\//', '', $repoConfig['url'])
             );
         }
-        
+
         $this->url = $repoConfig['url'];
         $this->originUrl = $repoConfig['url'];
         $this->repoConfig = $repoConfig;

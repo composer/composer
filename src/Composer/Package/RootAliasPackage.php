@@ -12,9 +12,6 @@
 
 namespace Composer\Package;
 
-use Composer\Package\LinkConstraint\VersionConstraint;
-use Composer\Package\Version\VersionParser;
-
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */

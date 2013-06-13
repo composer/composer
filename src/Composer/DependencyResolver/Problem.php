@@ -66,7 +66,7 @@ class Problem
     /**
      * A human readable textual representation of the problem's reasons
      *
-     * @param array $installedMap A map of all installed packages
+     * @param  array  $installedMap A map of all installed packages
      * @return string
      */
     public function getPrettyString(array $installedMap = array())

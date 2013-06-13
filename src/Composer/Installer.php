@@ -742,7 +742,8 @@ class Installer
         return false;
     }
 
-    private function extractPlatformRequirements($links) {
+    private function extractPlatformRequirements($links)
+    {
         $platformReqs = array();
         foreach ($links as $link) {
             if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $link->getTarget())) {
@@ -857,8 +858,8 @@ class Installer
     /**
      * Create Installer
      *
-     * @param  IOInterface       $io
-     * @param  Composer          $composer
+     * @param  IOInterface $io
+     * @param  Composer    $composer
      * @return Installer
      */
     public static function create(IOInterface $io, Composer $composer)

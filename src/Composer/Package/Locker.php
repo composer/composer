@@ -123,7 +123,7 @@ class Locker
     /**
      * Returns the platform requirements stored in the lock file
      *
-     * @param bool $withDevReqs if true, the platform requirements from the require-dev block are also returned
+     * @param  bool                     $withDevReqs if true, the platform requirements from the require-dev block are also returned
      * @return \Composer\Package\Link[]
      */
     public function getPlatformRequirements($withDevReqs = false)
@@ -306,7 +306,7 @@ class Locker
      * Returns the packages's datetime for its source reference.
      *
      * @param  PackageInterface $package The package to scan.
-     * @return string|null               The formatted datetime or null if none was found.
+     * @return string|null      The formatted datetime or null if none was found.
      */
     private function getPackageTime(PackageInterface $package)
     {

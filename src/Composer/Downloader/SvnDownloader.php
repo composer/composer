@@ -63,11 +63,11 @@ class SvnDownloader extends VcsDownloader
      * Execute an SVN command and try to fix up the process with credentials
      * if necessary.
      *
-     * @param string $baseUrl Base URL of the repository
-     * @param string $command SVN command to run
-     * @param string $url     SVN url
-     * @param string $cwd     Working directory
-     * @param string $path    Target for a checkout
+     * @param  string            $baseUrl Base URL of the repository
+     * @param  string            $command SVN command to run
+     * @param  string            $url     SVN url
+     * @param  string            $cwd     Working directory
+     * @param  string            $path    Target for a checkout
      * @throws \RuntimeException
      * @return string
      */

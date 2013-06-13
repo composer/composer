@@ -13,7 +13,6 @@
 namespace Composer\Test\Package;
 
 use Composer\Package\Locker;
-use Composer\Package\CompletePackage;
 
 class LockerTest extends \PHPUnit_Framework_TestCase
 {
