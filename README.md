@@ -66,18 +66,6 @@ Composer is part of the homebrew-php project.
 2. Run `brew install josegonzalez/php/composer`.
 3. Use Composer with the `composer` command.
 
-Special installation tips for CentOS 5 users
------------------------------------------------
-
-the easy right way for CentOS 5 user :
-
-    cd /root && wget --no-check-certificate https://getcomposer.org/installer && php installer --install-dir=/bin
-
-1. You logged in with root user.
-2. You have wget and php installed in your CentOS 5.
-3. Type command get and install composer.
-4. After finished your job, just type: composer.phar to run composer any where.
-
 Updating Composer
 -----------------
 
