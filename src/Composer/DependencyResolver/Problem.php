@@ -12,8 +12,6 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\Package\Link;
-
 /**
  * Represents a problem detected while solving dependencies
  *
@@ -194,7 +192,7 @@ class Problem
     /**
      * Turns a constraint into text usable in a sentence describing a job
      *
-     * @param  LinkConstraint $constraint
+     * @param  \Composer\Package\LinkConstraint\LinkConstraintInterface $constraint
      * @return string
      */
     protected function constraintToText($constraint)
