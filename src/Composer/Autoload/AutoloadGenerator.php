@@ -317,7 +317,7 @@ EOF;
             }
         }
 
-        if (preg_match('/\.phar$/', $path)){
+        if (preg_match('/\.phar$/', $path)) {
             $baseDir = "'phar://' . " . $baseDir;
         }
 

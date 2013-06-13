@@ -191,9 +191,9 @@ class Filesystem
     /**
      * Returns the shortest path from $from to $to
      *
-     * @param  string $from
-     * @param  string $to
-     * @param  bool   $directories if true, the source/target are considered to be directories
+     * @param  string                    $from
+     * @param  string                    $to
+     * @param  bool                      $directories if true, the source/target are considered to be directories
      * @throws \InvalidArgumentException
      * @return string
      */
@@ -233,9 +233,9 @@ class Filesystem
     /**
      * Returns PHP code that, when executed in $from, will return the path to $to
      *
-     * @param  string $from
-     * @param  string $to
-     * @param  bool   $directories if true, the source/target are considered to be directories
+     * @param  string                    $from
+     * @param  string                    $to
+     * @param  bool                      $directories if true, the source/target are considered to be directories
      * @throws \InvalidArgumentException
      * @return string
      */
@@ -287,7 +287,7 @@ class Filesystem
      * Returns size of a file or directory specified by path. If a directory is
      * given, it's size will be computed recursively.
      *
-     * @param  string $path Path to the file or directory
+     * @param  string            $path Path to the file or directory
      * @throws \RuntimeException
      * @return int
      */
@@ -307,7 +307,7 @@ class Filesystem
      * Normalize a path. This replaces backslashes with slashes, removes ending
      * slash and collapses redundant separators and up-level references.
      *
-     * @param string $path Path to the file or directory
+     * @param  string $path Path to the file or directory
      * @return string
      */
     public function normalizePath($path)

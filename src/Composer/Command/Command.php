@@ -37,7 +37,7 @@ abstract class Command extends BaseCommand
     private $io;
 
     /**
-     * @param  bool     $required
+     * @param  bool              $required
      * @throws \RuntimeException
      * @return Composer
      */

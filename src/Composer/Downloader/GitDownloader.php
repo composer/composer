@@ -268,10 +268,10 @@ class GitDownloader extends VcsDownloader
     /**
      * Runs a command doing attempts for each protocol supported by github.
      *
-     * @param  callable          $commandCallable A callable building the command for the given url
-     * @param  string            $url
-     * @param  string            $cwd
-     * @param  bool              $initialClone    If true, the directory if cleared between every attempt
+     * @param  callable                  $commandCallable A callable building the command for the given url
+     * @param  string                    $url
+     * @param  string                    $cwd
+     * @param  bool                      $initialClone    If true, the directory if cleared between every attempt
      * @throws \InvalidArgumentException
      * @throws \RuntimeException
      */

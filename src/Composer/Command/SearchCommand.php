@@ -19,8 +19,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
-use Composer\Package\CompletePackageInterface;
-use Composer\Package\AliasPackage;
 use Composer\Factory;
 
 /**

@@ -68,11 +68,11 @@ class GitHub
     /**
      * Authorizes a GitHub domain interactively via OAuth
      *
-     * @param  string $originUrl The host this GitHub instance is located at
-     * @param  string $message   The reason this authorization is required
+     * @param  string                        $originUrl The host this GitHub instance is located at
+     * @param  string                        $message   The reason this authorization is required
      * @throws \RuntimeException
-     * @throws \Composer\Downloader\TransportException|\Exception
-     * @return bool   true on success
+     * @throws TransportException|\Exception
+     * @return bool                          true on success
      */
     public function authorizeOAuthInteractively($originUrl, $message = null)
     {
