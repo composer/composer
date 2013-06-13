@@ -194,6 +194,7 @@ class Filesystem
      * @param  string $from
      * @param  string $to
      * @param  bool   $directories if true, the source/target are considered to be directories
+     * @throws \InvalidArgumentException
      * @return string
      */
     public function findShortestPath($from, $to, $directories = false)
@@ -235,6 +236,7 @@ class Filesystem
      * @param  string $from
      * @param  string $to
      * @param  bool   $directories if true, the source/target are considered to be directories
+     * @throws \InvalidArgumentException
      * @return string
      */
     public function findShortestPathCode($from, $to, $directories = false)
@@ -286,6 +288,7 @@ class Filesystem
      * given, it's size will be computed recursively.
      *
      * @param  string $path Path to the file or directory
+     * @throws \RuntimeException
      * @return int
      */
     public function size($path)

@@ -143,6 +143,7 @@ class Application extends BaseApplication
 
     /**
      * @param  bool               $required
+     * @throws JsonValidationException
      * @return \Composer\Composer
      */
     public function getComposer($required = true)
