@@ -142,9 +142,6 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    /**
-     * @author Markus Tacker <m@coderbyheart.de>
-     */
     public function testEnsureThatfixHttpHeaderFieldMovesContentTypeToEndOfOptions()
     {
         $options = array(
