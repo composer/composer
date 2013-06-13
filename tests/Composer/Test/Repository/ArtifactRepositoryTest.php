@@ -25,6 +25,7 @@ class ArtifactRepositoryTest extends TestCase
             'vendor0/package0-0.0.1',
             'composer/composer-1.0.0-alpha6',
             'vendor1/package2-4.3.2',
+            'vendor3/package1-5.4.3',
         );
 
         $coordinates = array('type' => 'artifact', 'url' => __DIR__ . '/Fixtures/artifacts');
