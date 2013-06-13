@@ -26,7 +26,7 @@ class MarkAliasUninstalledOperation extends SolverOperation
     /**
      * Initializes operation.
      *
-     * @param PackageInterface $package package instance
+     * @param AliasPackage $package package instance
      * @param string           $reason  operation reason
      */
     public function __construct(AliasPackage $package, $reason = null)

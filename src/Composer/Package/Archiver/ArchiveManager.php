@@ -95,7 +95,8 @@ class ArchiveManager
      * @param PackageInterface $package   The package to archive
      * @param string           $format    The format of the archive (zip, tar, ...)
      * @param string           $targetDir The diretory where to build the archive
-     *
+     * @throws \InvalidArgumentException
+     * @throws \RuntimeException
      * @return string The path of the created archive
      */
     public function archive(PackageInterface $package, $format, $targetDir)

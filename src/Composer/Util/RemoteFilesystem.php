@@ -85,7 +85,10 @@ class RemoteFilesystem
      * @param string  $fileName          the local filename
      * @param boolean $progress          Display the progression
      *
+     * @throws TransportException|\Exception
      * @throws TransportException When the file could not be downloaded
+     *
+     * @return bool|string
      */
     protected function get($originUrl, $fileUrl, $additionalOptions = array(), $fileName = null, $progress = true)
     {
@@ -213,6 +216,7 @@ class RemoteFilesystem
      * @param integer $messageCode      The message code
      * @param integer $bytesTransferred The loaded size
      * @param integer $bytesMax         The total size
+     * @throws TransportException
      */
     protected function callbackGet($notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax)
     {

@@ -160,6 +160,8 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
      * Use by the policy for sorting manually aliased packages first, see #576
      *
      * @param bool $value
+     *
+     * @return mixed
      */
     public function setRootPackageAlias($value)
     {

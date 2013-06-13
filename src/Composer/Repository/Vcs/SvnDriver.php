@@ -291,7 +291,7 @@ class SvnDriver extends VcsDriver
      *
      * @param string $command The svn command to run.
      * @param string $url     The SVN URL.
-     *
+     * @throws \RuntimeException
      * @return string
      */
     protected function execute($command, $url)

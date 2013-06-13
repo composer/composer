@@ -299,7 +299,7 @@ class Package extends BasePackage
     /**
      * Set the releaseDate
      *
-     * @param DateTime $releaseDate
+     * @param \DateTime $releaseDate
      */
     public function setReleaseDate(\DateTime $releaseDate)
     {

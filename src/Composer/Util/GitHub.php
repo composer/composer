@@ -70,6 +70,8 @@ class GitHub
      *
      * @param  string $originUrl The host this GitHub instance is located at
      * @param  string $message   The reason this authorization is required
+     * @throws \RuntimeException
+     * @throws \Composer\Downloader\TransportException|\Exception
      * @return bool   true on success
      */
     public function authorizeOAuthInteractively($originUrl, $message = null)
