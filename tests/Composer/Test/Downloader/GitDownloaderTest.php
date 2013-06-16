@@ -137,7 +137,19 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
         $downloader->download($packageMock, 'composerPath');
     }
 
-    public function testDownloadUsesCustomVariousProtocolsForGithub()
+    public function pushUrlProvider()
+    {
+        return array(
+            array('git', 'git@github.com:composer/composer.git'),
+            array('https', 'https://github.com/composer/composer'),
+            array('http', 'https://github.com/composer/composer')
+        );
+    }
+
+    /**
+     * @dataProvider pushUrlProvider
+     */
+    public function testDownloadAndSetPushUrlUseCustomVariousProtocolsForGithub($protocol, $pushUrl)
     {
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $packageMock->expects($this->any())
@@ -151,10 +163,16 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue('1.0.0'));
         $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
 
-        $expectedGitCommand = $this->winCompat("git clone 'http://github.com/composer/composer' 'composerPath' && cd 'composerPath' && git remote add composer 'http://github.com/composer/composer' && git fetch composer");
+        $expectedGitCommand = $this->winCompat("git clone '{$protocol}://github.com/composer/composer' 'composerPath' && cd 'composerPath' && git remote add composer '{$protocol}://github.com/composer/composer' && git fetch composer");
         $processExecutor->expects($this->at(0))
             ->method('execute')
             ->with($this->equalTo($expectedGitCommand))
+            ->will($this->returnValue(0));
+
+        $expectedGitCommand = $this->winCompat("git remote set-url --push origin '{$pushUrl}'");
+        $processExecutor->expects($this->at(1))
+            ->method('execute')
+            ->with($this->equalTo($expectedGitCommand), $this->equalTo(null), $this->equalTo($this->winCompat('composerPath')))
             ->will($this->returnValue(0));
 
         $processExecutor->expects($this->exactly(4))
@@ -162,7 +180,7 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(0));
 
         $config = new Config();
-        $config->merge(array('config' => array('github-protocols' => array('http'))));
+        $config->merge(array('config' => array('github-protocols' => array($protocol))));
 
         $downloader = $this->getDownloaderMock(null, $config, $processExecutor);
         $downloader->download($packageMock, 'composerPath');
