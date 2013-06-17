@@ -20,6 +20,7 @@ use Composer\Package\Version\VersionParser;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PreFileDownloadEvent;
 use Composer\EventDispatcher\EventDispatcher;
+use Composer\Util\ArrayUtils;
 use Composer\Util\Filesystem;
 use Composer\Util\GitHub;
 use Composer\Util\RemoteFilesystem;
@@ -111,7 +112,7 @@ class FileDownloader implements DownloaderInterface
         if (isset($extra['context-options'])) {
             $options = $extra['context-options'];
             $oldOptions = $this->rfs->getOptions();
-            $this->rfs->setOptions($options);
+            $this->rfs->setOptions(ArrayUtils::merge($oldOptions, $options));
         }
 
         try {
