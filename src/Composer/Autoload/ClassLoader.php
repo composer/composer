@@ -241,6 +241,6 @@ class ClassLoader
             return $file;
         }
 
-        return $this->classMap[$class] = false;
+        return false;
     }
 }
