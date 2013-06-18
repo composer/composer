@@ -14,6 +14,7 @@ namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
 use Composer\Util\GitHub;
+use Composer\Util\Git as GitUtil;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -433,12 +434,8 @@ class GitDownloader extends VcsDownloader
 
     protected function cleanEnv()
     {
-        // clean up rogue git env vars in case this is running in a git hook
-        putenv('GIT_DIR');
-        putenv('GIT_WORK_TREE');
-
-        // added in git 1.7.1, prevents prompting the user for username/password
-        putenv('GIT_ASKPASS=echo');
+        $util = new GitUtil;
+        $util->cleanEnv();
     }
 
     protected function normalizePath($path)
