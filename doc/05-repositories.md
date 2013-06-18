@@ -442,6 +442,14 @@ Here is an example for the smarty template engine:
 
 Typically you would leave the source part off, as you don't really need it.
 
+> **Note**: This repository type has a few limitations and should be avoided
+> whenever possible:
+>
+> - Composer will not update the package unless you change the `version` field.
+> - Composer will not update the commit references, so if you use `master` as
+>   reference you will have to delete the package to force an update, and will
+>   have to deal with an unstable lock file.
+
 ## Hosting your own
 
 While you will probably want to put your packages on packagist most of the time,
