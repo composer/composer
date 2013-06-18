@@ -71,6 +71,8 @@ class ProcessExecutor
 
     public function splitLines($output)
     {
+        $output = trim($output);
+
         return ((string) $output === '') ? array() : preg_split('{\r?\n}', $output);
     }
 
