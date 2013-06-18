@@ -222,7 +222,7 @@ EOT
         if ((($df = disk_free_space($dir = $config->get('home'))) !== false && $df < $minSpaceFree)
             || (($df = disk_free_space($dir = $config->get('vendor-dir'))) !== false && $df < $minSpaceFree)
         ) {
-            return '<error>The disk hosting '.$dir.' is full, this may be the cause of the following exception</error>';
+            return '<error>The disk hosting '.$dir.' is full</error>';
         }
 
         return true;
