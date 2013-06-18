@@ -99,7 +99,13 @@ class RemoteFilesystem
         $this->progress = $progress;
         $this->lastProgress = null;
 
+        // capture username/password from URL if there is one
+        if (preg_match('{^https?://(.+):(.+)@([^/]+)}i', $fileUrl, $match)) {
+            $this->io->setAuthentication($originUrl, urldecode($match[1]), urldecode($match[2]));
+        }
+
         $options = $this->getOptionsForUrl($originUrl, $additionalOptions);
+
         if ($this->io->isDebug()) {
             $this->io->write('Downloading '.$fileUrl);
         }
