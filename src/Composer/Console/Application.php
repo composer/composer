@@ -144,7 +144,7 @@ class Application extends BaseApplication
     /**
      * {@inheritDoc}
      */
-    public function renderException($e, $output)
+    public function renderException($exception, $output)
     {
         try {
             $composer = $this->getComposer(false);
@@ -160,7 +160,7 @@ class Application extends BaseApplication
             }
         } catch (\Exception $e) {}
 
-        return parent::renderException($e, $output);
+        return parent::renderException($exception, $output);
     }
 
     /**
