@@ -141,8 +141,8 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
     {
         return array(
             array('git', 'git@github.com:composer/composer.git'),
-            array('https', 'https://github.com/composer/composer'),
-            array('http', 'https://github.com/composer/composer')
+            array('https', 'https://github.com/composer/composer.git'),
+            array('http', 'https://github.com/composer/composer.git')
         );
     }
 
