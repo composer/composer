@@ -305,7 +305,7 @@ class GitDownloader extends VcsDownloader
             }
 
             // failed to checkout, first check git accessibility
-            $this->throwException('Failed to clone ' . $this->sanitizeUrl($url) .' via git, https and http protocols, aborting.' . "\n\n" . implode("\n", $messages), $url);
+            $this->throwException('Failed to clone ' . $this->sanitizeUrl($url) .' via '.implode(', ', $protocols).' protocols, aborting.' . "\n\n" . implode("\n", $messages), $url);
         }
 
         $command = call_user_func($commandCallable, $url);
@@ -381,7 +381,10 @@ class GitDownloader extends VcsDownloader
         // set push url for github projects
         if (preg_match('{^(?:https?|git)://github.com/([^/]+)/([^/]+?)(?:\.git)?$}', $package->getSourceUrl(), $match)) {
             $protocols = $this->config->get('github-protocols');
-            $pushUrl = $protocols[0] === 'git' ? 'git@github.com:'.$match[1].'/'.$match[2].'.git' : $package->getSourceUrl();
+            $pushUrl = 'git@github.com:'.$match[1].'/'.$match[2].'.git';
+            if ($protocols[0] !== 'git') {
+                $pushUrl = 'https://github.com/'.$match[1].'/'.$match[2].'.git';
+            }
             $cmd = sprintf('git remote set-url --push origin %s', escapeshellarg($pushUrl));
             $this->process->execute($cmd, $ignoredOutput, $path);
         }
