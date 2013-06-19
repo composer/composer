@@ -56,6 +56,6 @@ class ProcessExecutorTest extends TestCase
         $this->assertEquals(array('foo'), $process->splitLines('foo'));
         $this->assertEquals(array('foo', 'bar'), $process->splitLines("foo\nbar"));
         $this->assertEquals(array('foo', 'bar'), $process->splitLines("foo\r\nbar"));
-        $this->assertEquals(array('foo', 'bar', ''), $process->splitLines("foo\r\nbar\n"));
+        $this->assertEquals(array('foo', 'bar'), $process->splitLines("foo\r\nbar\n"));
     }
 }
