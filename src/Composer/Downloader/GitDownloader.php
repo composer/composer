@@ -77,6 +77,7 @@ class GitDownloader extends VcsDownloader
      */
     public function getLocalChanges($path)
     {
+        $this->cleanEnv();
         $path = $this->normalizePath($path);
         if (!is_dir($path.'/.git')) {
             return;
@@ -95,6 +96,7 @@ class GitDownloader extends VcsDownloader
      */
     protected function cleanChanges($path, $update)
     {
+        $this->cleanEnv();
         $path = $this->normalizePath($path);
         if (!$changes = $this->getLocalChanges($path)) {
             return;
