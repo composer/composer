@@ -81,6 +81,9 @@ EOT
             }
         }
 
+        $output->write('Checking disk free space: ');
+        $this->outputResult($output, $this->checkDiskSpace($config));
+
         $output->write('Checking composer version: ');
         $this->outputResult($output, $this->checkVersion());
 
@@ -211,6 +214,18 @@ EOT
 
             return $e;
         }
+    }
+
+    private function checkDiskSpace($config)
+    {
+        $minSpaceFree = 1024*1024;
+        if ((($df = disk_free_space($dir = $config->get('home'))) !== false && $df < $minSpaceFree)
+            || (($df = disk_free_space($dir = $config->get('vendor-dir'))) !== false && $df < $minSpaceFree)
+        ) {
+            return '<error>The disk hosting '.$dir.' is full</error>';
+        }
+
+        return true;
     }
 
     private function checkVersion()

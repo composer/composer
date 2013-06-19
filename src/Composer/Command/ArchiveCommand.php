@@ -115,6 +115,7 @@ EOT
             $io->write('<info>Found an exact match '.$package->getPrettyString().'.</info>');
         } else {
             $io->write('<error>Could not find a package matching '.$packageName.'.</error>');
+
             return false;
         }
 

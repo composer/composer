@@ -47,7 +47,11 @@ class ArtifactRepository extends ArrayRepository
     private function scanDirectory($path)
     {
         $io = $this->io;
-        foreach (new \RecursiveDirectoryIterator($path) as $file) {
+
+        $directory = new \RecursiveDirectoryIterator($path);
+        $iterator = new \RecursiveIteratorIterator($directory);
+        $regex = new \RegexIterator($iterator, '/^.+\.(zip|phar)$/i');
+        foreach ($regex as $file) {
             /* @var $file \SplFileInfo */
             if (!$file->isFile()) {
                 continue;

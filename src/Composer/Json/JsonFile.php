@@ -40,8 +40,9 @@ class JsonFile
     /**
      * Initializes json file reader/parser.
      *
-     * @param string           $path path to a lockfile
-     * @param RemoteFilesystem $rfs  required for loading http/https json files
+     * @param  string                    $path path to a lockfile
+     * @param  RemoteFilesystem          $rfs  required for loading http/https json files
+     * @throws \InvalidArgumentException
      */
     public function __construct($path, RemoteFilesystem $rfs = null)
     {
@@ -74,6 +75,7 @@ class JsonFile
     /**
      * Reads json file.
      *
+     * @throws \RuntimeException
      * @return mixed
      */
     public function read()
@@ -96,8 +98,9 @@ class JsonFile
     /**
      * Writes json file.
      *
-     * @param array $hash    writes hash into json file
-     * @param int   $options json_encode options (defaults to JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+     * @param  array                     $hash    writes hash into json file
+     * @param  int                       $options json_encode options (defaults to JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+     * @throws \UnexpectedValueException
      */
     public function write(array $hash, $options = 448)
     {
@@ -120,9 +123,9 @@ class JsonFile
     /**
      * Validates the schema of the current json file according to composer-schema.json rules
      *
-     * @param  int                       $schema a JsonFile::*_SCHEMA constant
-     * @return bool                      true on success
-     * @throws \UnexpectedValueException
+     * @param  int                     $schema a JsonFile::*_SCHEMA constant
+     * @return bool                    true on success
+     * @throws JsonValidationException
      */
     public function validateSchema($schema = self::STRICT_SCHEMA)
     {
@@ -291,6 +294,7 @@ class JsonFile
      * @return bool                      true on success
      * @throws \UnexpectedValueException
      * @throws JsonValidationException
+     * @throws ParsingException
      */
     protected static function validateSyntax($json, $file = null)
     {

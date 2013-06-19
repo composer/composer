@@ -12,9 +12,6 @@
 
 namespace Composer\Package\Archiver;
 
-use Composer\Package\BasePackage;
-use Composer\Package\PackageInterface;
-
 /**
  * @author Till Klampaeckel <till@php.net>
  * @author Nils Adermann <naderman@naderman.de>
@@ -43,6 +40,7 @@ class PharArchiver implements ArchiverInterface
             $phar = new \PharData($target, null, null, static::$formats[$format]);
             $files = new ArchivableFilesFinder($sources, $excludes);
             $phar->buildFromIterator($files, $sources);
+
             return $target;
         } catch (\UnexpectedValueException $e) {
             $message = sprintf("Could not create archive '%s' from '%s': %s",

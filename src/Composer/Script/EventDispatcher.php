@@ -12,7 +12,6 @@
 
 namespace Composer\Script;
 
-use Composer\Autoload\AutoloadGenerator;
 use Composer\IO\IOInterface;
 use Composer\Composer;
 use Composer\DependencyResolver\Operation\OperationInterface;
@@ -75,8 +74,8 @@ class EventDispatcher
     /**
      * Dispatch a script event.
      *
-     * @param string  $eventName The constant in ScriptEvents
-     * @param Event $event
+     * @param string $eventName The constant in ScriptEvents
+     * @param Event  $event
      */
     public function dispatch($eventName, Event $event = null)
     {
@@ -113,7 +112,9 @@ class EventDispatcher
     /**
      * Triggers the listeners of an event.
      *
-     * @param Event $event The event object to pass to the event handlers/listeners.
+     * @param  Event             $event The event object to pass to the event handlers/listeners.
+     * @throws \RuntimeException
+     * @throws \Exception
      */
     protected function doDispatch(Event $event)
     {

@@ -34,6 +34,7 @@ use Composer\Autoload\AutoloadGenerator;
 class Factory
 {
     /**
+     * @throws \RuntimeException
      * @return Config
      */
     public static function createConfig()
@@ -175,6 +176,7 @@ class Factory
      * @param array|string|null $localConfig either a configuration array or a filename to read from, if null it will
      *                                       read from the default filename
      * @throws \InvalidArgumentException
+     * @throws \UnexpectedValueException
      * @return Composer
      */
     public function createComposer(IOInterface $io, $localConfig = null)
@@ -326,8 +328,8 @@ class Factory
     }
 
     /**
-     * @param Config                     $config  The configuration
-     * @param Downloader\DownloadManager $dm      Manager use to download sources
+     * @param Config                     $config The configuration
+     * @param Downloader\DownloadManager $dm     Manager use to download sources
      *
      * @return Archiver\ArchiveManager
      */

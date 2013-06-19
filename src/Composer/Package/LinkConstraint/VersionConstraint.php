@@ -61,8 +61,9 @@ class VersionConstraint extends SpecificConstraint
     }
 
     /**
-     *
-     * @param VersionConstraint $provider
+     * @param  VersionConstraint $provider
+     * @param  bool              $compareBranches
+     * @return bool
      */
     public function matchSpecific(VersionConstraint $provider, $compareBranches = false)
     {

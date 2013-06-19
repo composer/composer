@@ -142,7 +142,30 @@ class Application extends BaseApplication
     }
 
     /**
-     * @param  bool               $required
+     * {@inheritDoc}
+     */
+    public function renderException($exception, $output)
+    {
+        try {
+            $composer = $this->getComposer(false);
+            if ($composer) {
+                $config = $composer->getConfig();
+
+                $minSpaceFree = 1024*1024;
+                if ((($df = disk_free_space($dir = $config->get('home'))) !== false && $df < $minSpaceFree)
+                    || (($df = disk_free_space($dir = $config->get('vendor-dir'))) !== false && $df < $minSpaceFree)
+                ) {
+                    $output->writeln('<error>The disk hosting '.$dir.' is full, this may be the cause of the following exception</error>');
+                }
+            }
+        } catch (\Exception $e) {}
+
+        return parent::renderException($exception, $output);
+    }
+
+    /**
+     * @param  bool                    $required
+     * @throws JsonValidationException
      * @return \Composer\Composer
      */
     public function getComposer($required = true)

@@ -66,7 +66,8 @@ class Problem
     /**
      * A human readable textual representation of the problem's reasons
      *
-     * @param array $installedMap A map of all installed packages
+     * @param  array  $installedMap A map of all installed packages
+     * @return string
      */
     public function getPrettyString(array $installedMap = array())
     {
@@ -191,7 +192,7 @@ class Problem
     /**
      * Turns a constraint into text usable in a sentence describing a job
      *
-     * @param  LinkConstraint $constraint
+     * @param  \Composer\Package\LinkConstraint\LinkConstraintInterface $constraint
      * @return string
      */
     protected function constraintToText($constraint)

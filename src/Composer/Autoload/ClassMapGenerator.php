@@ -93,9 +93,9 @@ class ClassMapGenerator
     /**
      * Extract the classes in the given file
      *
-     * @param string $path The file to check
-     *
-     * @return array The found classes
+     * @param  string            $path The file to check
+     * @throws \RuntimeException
+     * @return array             The found classes
      */
     private static function findClasses($path)
     {

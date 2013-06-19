@@ -45,6 +45,7 @@ class ChannelReader extends BaseChannelReader
      * Reads PEAR channel through REST interface and builds list of packages
      *
      * @param $url string PEAR Channel url
+     * @throws \UnexpectedValueException
      * @return ChannelInfo
      */
     public function read($url)

@@ -64,6 +64,7 @@ class HgExcludeFilter extends BaseExcludeFilter
             } else {
                 $this->patternMode = self::HG_IGNORE_REGEX;
             }
+
             return null;
         }
 
@@ -85,6 +86,7 @@ class HgExcludeFilter extends BaseExcludeFilter
     {
         $pattern = '#'.substr(Finder\Glob::toRegex($line), 2, -1).'#';
         $pattern = str_replace('[^/]*', '.*', $pattern);
+
         return array($pattern, false, true);
     }
 
@@ -99,6 +101,7 @@ class HgExcludeFilter extends BaseExcludeFilter
     {
         // WTF need to escape the delimiter safely
         $pattern = '#'.preg_replace('/((?:\\\\\\\\)*)(\\\\?)#/', '\1\2\2\\#', $line).'#';
+
         return array($pattern, false, true);
     }
 }

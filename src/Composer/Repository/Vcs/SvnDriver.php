@@ -289,9 +289,9 @@ class SvnDriver extends VcsDriver
      * Execute an SVN command and try to fix up the process with credentials
      * if necessary.
      *
-     * @param string $command The svn command to run.
-     * @param string $url     The SVN URL.
-     *
+     * @param  string            $command The svn command to run.
+     * @param  string            $url     The SVN URL.
+     * @throws \RuntimeException
      * @return string
      */
     protected function execute($command, $url)
@@ -316,8 +316,8 @@ class SvnDriver extends VcsDriver
     /**
      * Build the identifier respecting "package-path" config option
      *
-     * @param string $baseDir The path to trunk/branch/tag
-     * @param int $revision The revision mark to add to identifier
+     * @param string $baseDir  The path to trunk/branch/tag
+     * @param int    $revision The revision mark to add to identifier
      *
      * @return string
      */
@@ -326,4 +326,3 @@ class SvnDriver extends VcsDriver
         return rtrim($baseDir, '/') . $this->packagePath . '/@' . $revision;
     }
 }
-

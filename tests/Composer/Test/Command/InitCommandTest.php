@@ -17,7 +17,7 @@ use Composer\Test\TestCase;
 
 class InitCommandTest extends TestCase
 {
-    function testParseValidAuthorString()
+    public function testParseValidAuthorString()
     {
         $command = new InitCommand;
         $author = $command->parseAuthorString('John Smith <john@example.com>');
@@ -25,14 +25,14 @@ class InitCommandTest extends TestCase
         $this->assertEquals('john@example.com', $author['email']);
     }
 
-    function testParseEmptyAuthorString()
+    public function testParseEmptyAuthorString()
     {
         $command = new InitCommand;
         $this->setExpectedException('InvalidArgumentException');
         $command->parseAuthorString('');
     }
 
-    function testParseAuthorStringWithInvalidEmail()
+    public function testParseAuthorStringWithInvalidEmail()
     {
         $command = new InitCommand;
         $this->setExpectedException('InvalidArgumentException');

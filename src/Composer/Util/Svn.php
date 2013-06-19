@@ -20,6 +20,8 @@ use Composer\IO\IOInterface;
  */
 class Svn
 {
+    const MAX_QTY_AUTH_TRIES = 5;
+
     /**
      * @var array
      */
@@ -49,6 +51,11 @@ class Svn
      * @var ProcessExecutor
      */
     protected $process;
+
+    /**
+     * @var integer
+     */
+    protected $qtyAuthTries = 0;
 
     /**
      * @param string                   $url
@@ -100,7 +107,8 @@ class Svn
         }
 
         // the error is not auth-related
-        if (false === stripos($output, 'Could not authenticate to server:')) {
+        if (false === stripos($output, 'Could not authenticate to server:')
+            && false === stripos($output, 'svn: E170001:')) {
             throw new \RuntimeException($output);
         }
 
@@ -111,11 +119,8 @@ class Svn
             );
         }
 
-        // TODO keep a count of user auth attempts and ask 5 times before
-        // failing hard (currently it fails hard directly if the URL has credentials)
-
-        // try to authenticate
-        if (!$this->hasAuth()) {
+        // try to authenticate if maximum quantity of tries not reached
+        if ($this->qtyAuthTries++ < self::MAX_QTY_AUTH_TRIES || !$this->hasAuth()) {
             $this->doAuthDance();
 
             // restart the process
