@@ -21,7 +21,6 @@ use Composer\Json\JsonFile;
 use Composer\Cache;
 use Composer\Config;
 use Composer\IO\IOInterface;
-use Composer\Util\ArrayUtils;
 use Composer\Util\RemoteFilesystem;
 
 /**
@@ -503,7 +502,7 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
                         if (!isset($metadata['extra']['context-options'])) {
                             $metadata['extra']['context-options'] = array();
                         }
-                        $metadata['extra']['context-options'] = ArrayUtils::merge($this->options, $metadata['extra']['context-options']);
+                        $metadata['extra']['context-options'] = array_replace_recursive($this->options, $metadata['extra']['context-options']);
                     }
 
                     $packages[] = $metadata;
