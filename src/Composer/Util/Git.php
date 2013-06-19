@@ -29,11 +29,7 @@ class Git
         putenv('GIT_ASKPASS=echo');
 
         // clean up rogue git env vars in case this is running in a git hook
-        if (getenv('GIT_DIR')) {
-            putenv('GIT_DIR');
-        }
-        if (getenv('GIT_WORK_TREE')) {
-            putenv('GIT_WORK_TREE');
-        }
+        putenv('GIT_DIR');
+        putenv('GIT_WORK_TREE');
     }
 }
