@@ -21,6 +21,7 @@ use Composer\Repository\RepositoryManager;
 use Composer\Repository\Vcs\HgDriver;
 use Composer\IO\NullIO;
 use Composer\Util\ProcessExecutor;
+use Composer\Util\Git as GitUtil;
 
 /**
  * ArrayLoader built for the sole purpose of loading the root package
@@ -182,6 +183,9 @@ class RootPackageLoader extends ArrayLoader
 
     private function guessGitVersion(array $config)
     {
+        $util = new GitUtil;
+        $util->cleanEnv();
+
         // try to fetch current version from git branch
         if (0 === $this->process->execute('git branch --no-color --no-abbrev -v', $output)) {
             $branches = array();
