@@ -26,10 +26,16 @@ class Git
         }
 
         // added in git 1.7.1, prevents prompting the user for username/password
-        putenv('GIT_ASKPASS=echo');
+        if (getenv('GIT_ASKPASS') !== 'echo') {
+            putenv('GIT_ASKPASS=echo');
+        }
 
         // clean up rogue git env vars in case this is running in a git hook
-        putenv('GIT_DIR');
-        putenv('GIT_WORK_TREE');
+        if (getenv('GIT_DIR')) {
+            putenv('GIT_DIR');
+        }
+        if (getenv('GIT_WORK_TREE')) {
+            putenv('GIT_WORK_TREE');
+        }
     }
 }
