@@ -57,7 +57,7 @@ class NoProxyPattern
             $match = false;
 
             if ($rule == '*') {
-                $match - true;
+                $match = true;
             } else {
                 list($ruleHost) = explode(':', $rule);
                 list($base) = explode('/', $ruleHost);
