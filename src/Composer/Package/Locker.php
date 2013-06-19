@@ -21,6 +21,7 @@ use Composer\Repository\ArrayRepository;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Version\VersionParser;
+use Composer\Util\Git as GitUtil;
 
 /**
  * Reads/writes project lockfile (composer.lock).
@@ -324,6 +325,9 @@ class Locker
 
             switch ($sourceType) {
                 case 'git':
+                    $util = new GitUtil;
+                    $util->cleanEnv();
+
                     if (0 === $process->execute('git log -n1 --pretty=%ct '.escapeshellarg($sourceRef), $output, $path) && preg_match('{^\s*\d+\s*$}', $output)) {
                         $datetime = new \DateTime('@'.trim($output), new \DateTimeZone('UTC'));
                     }
