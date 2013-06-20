@@ -54,40 +54,40 @@ class NoProxyPattern
         }
 
         foreach ($this->rules as $rule) {
+            if ($rule == '*') {
+                return true;
+            }
+
             $match = false;
 
-            if ($rule == '*') {
-                $match = true;
-            } else {
-                list($ruleHost) = explode(':', $rule);
-                list($base) = explode('/', $ruleHost);
+            list($ruleHost) = explode(':', $rule);
+            list($base) = explode('/', $ruleHost);
 
-                if (filter_var($base, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
-                    // ip or cidr match
+            if (filter_var($base, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+                // ip or cidr match
 
-                    if (!isset($ip)) {
-                        $ip = gethostbyname($host);
-                    }
-
-                    if (strpos($ruleHost, '/') === false) {
-                        $match = $ip === $ruleHost;
-                    } else {
-                        $match = self::inCIDRBlock($ruleHost, $ip);
-                    }
-                } else {
-                    // match end of domain
-
-                    $haystack = '.' . trim($host, '.') . '.';
-                    $needle = '.'. trim($ruleHost, '.') .'.';
-                    $match = stripos(strrev($haystack), strrev($needle)) === 0;
+                if (!isset($ip)) {
+                    $ip = gethostbyname($host);
                 }
 
-                // final port check
-                if ($match && strpos($rule, ':') !== false) {
-                    list(, $rulePort) = explode(':', $rule);
-                    if (!empty($rulePort) && $port != $rulePort) {
-                        $match = false;
-                    }
+                if (strpos($ruleHost, '/') === false) {
+                    $match = $ip === $ruleHost;
+                } else {
+                    $match = self::inCIDRBlock($ruleHost, $ip);
+                }
+            } else {
+                // match end of domain
+
+                $haystack = '.' . trim($host, '.') . '.';
+                $needle = '.'. trim($ruleHost, '.') .'.';
+                $match = stripos(strrev($haystack), strrev($needle)) === 0;
+            }
+
+            // final port check
+            if ($match && strpos($rule, ':') !== false) {
+                list(, $rulePort) = explode(':', $rule);
+                if (!empty($rulePort) && $port != $rulePort) {
+                    $match = false;
                 }
             }
 
