@@ -12,11 +12,12 @@
 
 namespace Composer\Installer;
 
+use Composer\Autoload\ClassLoader;
 use Composer\Composer;
-use Composer\Package\Package;
 use Composer\IO\IOInterface;
-use Composer\Repository\InstalledRepositoryInterface;
+use Composer\Package\Package;
 use Composer\Package\PackageInterface;
+use Composer\Repository\InstalledRepositoryInterface;
 
 /**
  * Installer installation manager.
@@ -78,15 +79,10 @@ class InstallerInstaller extends LibraryInstaller
 
     private function registerInstaller(PackageInterface $package)
     {
-        $downloadPath = $this->getInstallPath($package);
+        $classLoader = $this->autoloadPackage($package);
 
         $extra = $package->getExtra();
         $classes = is_array($extra['class']) ? $extra['class'] : array($extra['class']);
-
-        $generator = $this->composer->getAutoloadGenerator();
-        $map = $generator->parseAutoloads(array(array($package, $downloadPath)), new Package('dummy', '1.0.0.0', '1.0.0'));
-        $classLoader = $generator->createLoader($map);
-        $classLoader->register();
 
         foreach ($classes as $class) {
             if (class_exists($class, false)) {
@@ -99,6 +95,41 @@ class InstallerInstaller extends LibraryInstaller
 
             $installer = new $class($this->io, $this->composer);
             $this->installationManager->addInstaller($installer);
+
+            if (isset($extra['autoload_supported_packages'])) {
+                $this->autoloadSupportedPackages($installer);
+            }
         }
+    }
+
+    /**
+     * Autoloads all the packages this installer supports
+     * @param InstallerInterface $installer
+     */
+    private function autoloadSupportedPackages(InstallerInterface $installer)
+    {
+        $repo = $this->composer->getRepositoryManager()->getLocalRepository();
+        foreach ($repo->getPackages() as $package) {
+            if ($installer->supports($package)) {
+                $this->autoloadPackage($package);
+            }
+        }
+    }
+
+    /**
+     * @param PackageInterface $package
+     * @return ClassLoader
+     */
+    private function autoloadPackage(PackageInterface $package)
+    {
+      $downloadPath = $this->getInstallPath($package);
+      $generator = $this->composer->getAutoloadGenerator();
+      $map = $generator->parseAutoloads(array(array(
+          $package,
+          $downloadPath
+      )), new Package('dummy', '1.0.0.0', '1.0.0'));
+      $classLoader = $generator->createLoader($map);
+      $classLoader->register();
+      return $classLoader;
     }
 }
