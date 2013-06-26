@@ -96,9 +96,7 @@ class InstallerInstaller extends LibraryInstaller
             $installer = new $class($this->io, $this->composer);
             $this->installationManager->addInstaller($installer);
 
-            if (isset($extra['autoload_supported_packages'])) {
-                $this->autoloadSupportedPackages($installer);
-            }
+            $this->autoloadSupportedPackages($installer);
         }
     }
 
@@ -122,14 +120,14 @@ class InstallerInstaller extends LibraryInstaller
      */
     private function autoloadPackage(PackageInterface $package)
     {
-      $downloadPath = $this->getInstallPath($package);
-      $generator = $this->composer->getAutoloadGenerator();
-      $map = $generator->parseAutoloads(array(array(
-          $package,
-          $downloadPath
-      )), new Package('dummy', '1.0.0.0', '1.0.0'));
-      $classLoader = $generator->createLoader($map);
-      $classLoader->register();
-      return $classLoader;
+        $downloadPath = $this->getInstallPath($package);
+        $generator = $this->composer->getAutoloadGenerator();
+        $map = $generator->parseAutoloads(array(array(
+            $package,
+            $downloadPath
+        )), new Package('dummy', '1.0.0.0', '1.0.0'));
+        $classLoader = $generator->createLoader($map);
+        $classLoader->register();
+        return $classLoader;
     }
 }
