@@ -15,6 +15,7 @@ namespace Composer\Repository\Vcs;
 use Composer\Json\JsonFile;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Filesystem;
+use Composer\Util\Git as GitUtil;
 use Composer\IO\IOInterface;
 
 /**
@@ -38,6 +39,9 @@ class GitDriver extends VcsDriver
         } else {
             $this->repoDir = $this->config->get('cache-vcs-dir') . '/' . preg_replace('{[^a-z0-9.]}i', '-', $this->url) . '/';
 
+            $util = new GitUtil;
+            $util->cleanEnv();
+
             $fs = new Filesystem();
             $fs->ensureDirectoryExists(dirname($this->repoDir));
 
@@ -58,8 +62,6 @@ class GitDriver extends VcsDriver
                 // clean up directory and do a fresh clone into it
                 $fs->removeDirectory($this->repoDir);
 
-                // added in git 1.7.1, prevents prompting the user
-                putenv('GIT_ASKPASS=echo');
                 $command = sprintf('git clone --mirror %s %s', escapeshellarg($this->url), escapeshellarg($this->repoDir));
                 if (0 !== $this->process->execute($command, $output)) {
                     $output = $this->process->getErrorOutput();

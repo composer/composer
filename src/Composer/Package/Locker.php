@@ -21,6 +21,7 @@ use Composer\Repository\ArrayRepository;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Version\VersionParser;
+use Composer\Util\Git as GitUtil;
 
 /**
  * Reads/writes project lockfile (composer.lock).
@@ -88,6 +89,7 @@ class Locker
      * Searches and returns an array of locked packages, retrieved from registered repositories.
      *
      * @param  bool                                     $withDevReqs true to retrieve the locked dev packages
+     * @throws \RuntimeException
      * @return \Composer\Repository\RepositoryInterface
      */
     public function getLockedRepository($withDevReqs = false)
@@ -100,7 +102,7 @@ class Locker
             if (isset($lockData['packages-dev'])) {
                 $lockedPackages = array_merge($lockedPackages, $lockData['packages-dev']);
             } else {
-                throw new \RuntimeException('The lock file does not contain require-dev information, run install without --dev or run update to install those packages.');
+                throw new \RuntimeException('The lock file does not contain require-dev information, run install with the --no-dev option or run update to install those packages.');
             }
         }
 
@@ -122,7 +124,7 @@ class Locker
     /**
      * Returns the platform requirements stored in the lock file
      *
-     * @param bool $withDevReqs if true, the platform requirements from the require-dev block are also returned
+     * @param  bool                     $withDevReqs if true, the platform requirements from the require-dev block are also returned
      * @return \Composer\Package\Link[]
      */
     public function getPlatformRequirements($withDevReqs = false)
@@ -305,7 +307,7 @@ class Locker
      * Returns the packages's datetime for its source reference.
      *
      * @param  PackageInterface $package The package to scan.
-     * @return string|null               The formatted datetime or null if none was found.
+     * @return string|null      The formatted datetime or null if none was found.
      */
     private function getPackageTime(PackageInterface $package)
     {
@@ -323,6 +325,9 @@ class Locker
 
             switch ($sourceType) {
                 case 'git':
+                    $util = new GitUtil;
+                    $util->cleanEnv();
+
                     if (0 === $process->execute('git log -n1 --pretty=%ct '.escapeshellarg($sourceRef), $output, $path) && preg_match('{^\s*\d+\s*$}', $output)) {
                         $datetime = new \DateTime('@'.trim($output), new \DateTimeZone('UTC'));
                     }

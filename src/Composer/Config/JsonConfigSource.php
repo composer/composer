@@ -81,7 +81,7 @@ class JsonConfigSource implements ConfigSourceInterface
      */
     public function addLink($type, $name, $value)
     {
-        $this->manipulateJson('addLink', $type, $name, $value, function (&$config, $key) {
+        $this->manipulateJson('addLink', $type, $name, $value, function (&$config, $type, $name, $value) {
             $config[$type][$name] = $value;
         });
     }
@@ -91,7 +91,7 @@ class JsonConfigSource implements ConfigSourceInterface
      */
     public function removeLink($type, $name)
     {
-        $this->manipulateJson('removeSubNode', $type, $name, function (&$config, $key) {
+        $this->manipulateJson('removeSubNode', $type, $name, function (&$config, $type, $name) {
             unset($config[$type][$name]);
         });
     }

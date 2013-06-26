@@ -12,8 +12,6 @@
 
 namespace Composer\Package\Archiver;
 
-use Composer\Package\BasePackage;
-use Composer\Package\PackageInterface;
 use Composer\Util\Filesystem;
 
 use Symfony\Component\Finder;
@@ -36,8 +34,8 @@ class ArchivableFilesFinder extends \FilterIterator
     /**
      * Initializes the internal Symfony Finder with appropriate filters
      *
-     * @param string $sources Path to source files to be archived
-     * @param array $excludes Composer's own exclude rules from composer.json
+     * @param string $sources  Path to source files to be archived
+     * @param array  $excludes Composer's own exclude rules from composer.json
      */
     public function __construct($sources, array $excludes)
     {
@@ -52,21 +50,29 @@ class ArchivableFilesFinder extends \FilterIterator
         );
 
         $this->finder = new Finder\Finder();
+
+        $filter = function (\SplFileInfo $file) use ($sources, $filters, $fs) {
+            $relativePath = preg_replace(
+                '#^'.preg_quote($sources, '#').'#',
+                '',
+                $fs->normalizePath($file->getRealPath())
+            );
+
+            $exclude = false;
+            foreach ($filters as $filter) {
+                $exclude = $filter->filter($relativePath, $exclude);
+            }
+
+            return !$exclude;
+        };
+
+        if (method_exists($filter, 'bindTo')) {
+            $filter = $filter->bindTo(null);
+        }
+
         $this->finder
             ->in($sources)
-            ->filter(function (\SplFileInfo $file) use ($sources, $filters, $fs) {
-                $relativePath = preg_replace(
-                    '#^'.preg_quote($sources, '#').'#',
-                    '',
-                    $fs->normalizePath($file->getRealPath())
-                );
-
-                $exclude = false;
-                foreach ($filters as $filter) {
-                    $exclude = $filter->filter($relativePath, $exclude);
-                }
-                return !$exclude;
-            })
+            ->filter($filter)
             ->ignoreVCS(true)
             ->ignoreDotFiles(false);
 

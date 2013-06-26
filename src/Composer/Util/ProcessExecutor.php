@@ -42,14 +42,20 @@ class ProcessExecutor
      */
     public function execute($command, &$output = null, $cwd = null)
     {
-        $this->captureOutput = count(func_get_args()) > 1;
-        $this->errorOutput = null;
-        $process = new Process($command, $cwd, null, null, static::getTimeout());
-
         if ($this->io && $this->io->isDebug()) {
             $safeCommand = preg_replace('{(://[^:/\s]+:)[^@\s/]+}i', '$1****', $command);
             $this->io->write('Executing command ('.($cwd ?: 'CWD').'): '.$safeCommand);
         }
+
+        // make sure that null translate to the proper directory in case the dir is a symlink
+        // and we call a git command, because msysgit does not handle symlinks properly
+        if (null === $cwd && defined('PHP_WINDOWS_VERSION_BUILD') && false !== strpos($command, 'git') && getcwd()) {
+            $cwd = realpath(getcwd());
+        }
+
+        $this->captureOutput = count(func_get_args()) > 1;
+        $this->errorOutput = null;
+        $process = new Process($command, $cwd, null, null, static::getTimeout());
 
         $callback = is_callable($output) ? $output : array($this, 'outputHandler');
         $process->run($callback);
@@ -65,6 +71,8 @@ class ProcessExecutor
 
     public function splitLines($output)
     {
+        $output = trim($output);
+
         return ((string) $output === '') ? array() : preg_split('{\r?\n}', $output);
     }
 

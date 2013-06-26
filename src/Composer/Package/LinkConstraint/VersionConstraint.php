@@ -44,20 +44,28 @@ class VersionConstraint extends SpecificConstraint
         $this->version = $version;
     }
 
-    public function versionCompare($a, $b, $operator)
+    public function versionCompare($a, $b, $operator, $compareBranches = false)
     {
-        if ('dev-' === substr($a, 0, 4) && 'dev-' === substr($b, 0, 4)) {
+        $aIsBranch = 'dev-' === substr($a, 0, 4);
+        $bIsBranch = 'dev-' === substr($b, 0, 4);
+        if ($aIsBranch && $bIsBranch) {
             return $operator == '==' && $a === $b;
+        }
+
+        // when branches are not comparable, we make sure dev branches never match anything
+        if (!$compareBranches && ($aIsBranch || $bIsBranch)) {
+            return false;
         }
 
         return version_compare($a, $b, $operator);
     }
 
     /**
-     *
-     * @param VersionConstraint $provider
+     * @param  VersionConstraint $provider
+     * @param  bool              $compareBranches
+     * @return bool
      */
-    public function matchSpecific(VersionConstraint $provider)
+    public function matchSpecific(VersionConstraint $provider, $compareBranches = false)
     {
         $noEqualOp = str_replace('=', '', $this->operator);
         $providerNoEqualOp = str_replace('=', '', $provider->operator);
@@ -71,7 +79,7 @@ class VersionConstraint extends SpecificConstraint
         // these kinds of comparisons always have a solution
         if ($isNonEqualOp || $isProviderNonEqualOp) {
             return !$isEqualOp && !$isProviderEqualOp
-                || $this->versionCompare($provider->version, $this->version, '!=');
+                || $this->versionCompare($provider->version, $this->version, '!=', $compareBranches);
         }
 
         // an example for the condition is <= 2.0 & < 1.0
@@ -80,7 +88,7 @@ class VersionConstraint extends SpecificConstraint
             return true;
         }
 
-        if ($this->versionCompare($provider->version, $this->version, $this->operator)) {
+        if ($this->versionCompare($provider->version, $this->version, $this->operator, $compareBranches)) {
             // special case, e.g. require >= 1.0 and provide < 1.0
             // 1.0 >= 1.0 but 1.0 is outside of the provided interval
             if ($provider->version == $this->version && $provider->operator == $providerNoEqualOp && $this->operator != $noEqualOp) {

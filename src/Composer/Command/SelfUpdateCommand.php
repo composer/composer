@@ -14,6 +14,7 @@ namespace Composer\Command;
 
 use Composer\Composer;
 use Composer\Util\RemoteFilesystem;
+use Composer\Downloader\FilesystemException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -41,6 +42,18 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $localFilename = realpath($_SERVER['argv'][0]) ?: $_SERVER['argv'][0];
+        $tempFilename = dirname($localFilename) . '/' . basename($localFilename, '.phar').'-temp.phar';
+
+        // check for permissions in local filesystem before start connection process
+        if (!is_writable($tempDirectory = dirname($tempFilename))) {
+            throw new FilesystemException('Composer update failed: the "'.$tempDirectory.'" directory used to download the temp file could not be written');
+        }
+
+        if (!is_writable($localFilename)) {
+            throw new FilesystemException('Composer update failed: the "'.$localFilename. '" file could not be written');
+        }
+
         $protocol = extension_loaded('openssl') ? 'https' : 'http';
         $rfs = new RemoteFilesystem($this->getIO());
         $latest = trim($rfs->getContents('getcomposer.org', $protocol . '://getcomposer.org/version', false));
@@ -49,8 +62,6 @@ EOT
             $output->writeln(sprintf("Updating to version <info>%s</info>.", $latest));
 
             $remoteFilename = $protocol . '://getcomposer.org/composer.phar';
-            $localFilename = realpath($_SERVER['argv'][0]) ?: $_SERVER['argv'][0];
-            $tempFilename = dirname($localFilename) . '/' . basename($localFilename, '.phar').'-temp.phar';
 
             $rfs->copy('getcomposer.org', $remoteFilename, $tempFilename);
 

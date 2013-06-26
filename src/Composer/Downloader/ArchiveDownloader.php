@@ -35,7 +35,7 @@ abstract class ArchiveDownloader extends FileDownloader
             $this->io->write('    Extracting archive');
         }
 
-        $temporaryDir = sys_get_temp_dir().'/cmp'.substr(md5(time().mt_rand()), 0, 5);
+        $temporaryDir = $this->config->get('vendor-dir').'/composer/'.substr(md5(uniqid('', true)), 0, 8);
         try {
             $this->filesystem->ensureDirectoryExists($temporaryDir);
             try {

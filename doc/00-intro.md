@@ -108,6 +108,8 @@ composer.phar:
 
     C:\Users\username>cd C:\bin
     C:\bin>php -r "eval('?>'.file_get_contents('https://getcomposer.org/installer'));"
+    
+> **Note:** If the above fails due to file_get_contents, use the `http` url or enable php_openssl.dll in php.ini
 
 Create a new `.bat` file alongside composer:
 

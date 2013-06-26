@@ -13,8 +13,6 @@
 namespace Composer\Package\Archiver;
 
 use Composer\Downloader\DownloadManager;
-use Composer\Factory;
-use Composer\IO\NullIO;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackage;
 use Composer\Util\Filesystem;
@@ -60,6 +58,7 @@ class ArchiveManager
     public function setOverwriteFiles($overwriteFiles)
     {
         $this->overwriteFiles = $overwriteFiles;
+
         return $this;
     }
 
@@ -92,11 +91,12 @@ class ArchiveManager
     /**
      * Create an archive of the specified package.
      *
-     * @param PackageInterface $package   The package to archive
-     * @param string           $format    The format of the archive (zip, tar, ...)
-     * @param string           $targetDir The diretory where to build the archive
-     *
-     * @return string The path of the created archive
+     * @param  PackageInterface          $package   The package to archive
+     * @param  string                    $format    The format of the archive (zip, tar, ...)
+     * @param  string                    $targetDir The diretory where to build the archive
+     * @throws \InvalidArgumentException
+     * @throws \RuntimeException
+     * @return string                    The path of the created archive
      */
     public function archive(PackageInterface $package, $format, $targetDir)
     {

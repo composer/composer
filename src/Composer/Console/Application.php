@@ -94,7 +94,7 @@ class Application extends BaseApplication
             $output->writeln('<warning>Composer only officially supports PHP 5.3.2 and above, you will most likely encounter problems with your PHP '.PHP_VERSION.', upgrading is strongly recommended.</warning>');
         }
 
-        if (defined('COMPOSER_DEV_WARNING_TIME') && $this->getCommandName($input) !== 'self-update') {
+        if (defined('COMPOSER_DEV_WARNING_TIME') && $this->getCommandName($input) !== 'self-update' && $this->getCommandName($input) !== 'selfupdate') {
             if (time() > COMPOSER_DEV_WARNING_TIME) {
                 $output->writeln(sprintf('<warning>Warning: This development build of composer is over 30 days old. It is recommended to update it by running "%s self-update" to get the latest version.</warning>', $_SERVER['PHP_SELF']));
             }
@@ -142,7 +142,30 @@ class Application extends BaseApplication
     }
 
     /**
-     * @param  bool               $required
+     * {@inheritDoc}
+     */
+    public function renderException($exception, $output)
+    {
+        try {
+            $composer = $this->getComposer(false);
+            if ($composer) {
+                $config = $composer->getConfig();
+
+                $minSpaceFree = 1024*1024;
+                if ((($df = @disk_free_space($dir = $config->get('home'))) !== false && $df < $minSpaceFree)
+                    || (($df = @disk_free_space($dir = $config->get('vendor-dir'))) !== false && $df < $minSpaceFree)
+                ) {
+                    $output->writeln('<error>The disk hosting '.$dir.' is full, this may be the cause of the following exception</error>');
+                }
+            }
+        } catch (\Exception $e) {}
+
+        return parent::renderException($exception, $output);
+    }
+
+    /**
+     * @param  bool                    $required
+     * @throws JsonValidationException
      * @return \Composer\Composer
      */
     public function getComposer($required = true)

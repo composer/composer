@@ -33,7 +33,7 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetContext($expectedOptions, $defaultOptions, $expectedParams, $defaultParams)
     {
-        $context = StreamContextFactory::getContext($defaultOptions, $defaultParams);
+        $context = StreamContextFactory::getContext('http://example.org', $defaultOptions, $defaultParams);
         $options = stream_context_get_options($context);
         $params = stream_context_get_params($context);
 
@@ -60,7 +60,7 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
         $_SERVER['http_proxy'] = 'http://username:password@proxyserver.net:3128/';
         $_SERVER['HTTP_PROXY'] = 'http://proxyserver/';
 
-        $context = StreamContextFactory::getContext(array('http' => array('method' => 'GET')));
+        $context = StreamContextFactory::getContext('http://example.org', array('http' => array('method' => 'GET')));
         $options = stream_context_get_options($context);
 
         $this->assertEquals(array('http' => array(
@@ -77,7 +77,7 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
     {
         $_SERVER['http_proxy'] = 'http://username:password@proxyserver.net:3128/';
 
-        $context = StreamContextFactory::getContext(array('http' => array('method' => 'GET', 'header' => array("X-Foo: bar"), 'request_fulluri' => false)));
+        $context = StreamContextFactory::getContext('http://example.org', array('http' => array('method' => 'GET', 'header' => array("X-Foo: bar"), 'request_fulluri' => false)));
         $options = stream_context_get_options($context);
 
         $this->assertEquals(array('http' => array(
@@ -94,7 +94,7 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
     {
         $_SERVER['http_proxy'] = 'http://username:password@proxyserver.net';
 
-        $context = StreamContextFactory::getContext(array('http' => array('method' => 'GET')));
+        $context = StreamContextFactory::getContext('http://example.org', array('http' => array('method' => 'GET')));
         $options = stream_context_get_options($context);
 
         $this->assertEquals(array('http' => array(
@@ -115,7 +115,7 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
         $_SERVER['http_proxy'] = $proxy;
 
         if (extension_loaded('openssl')) {
-            $context = StreamContextFactory::getContext();
+            $context = StreamContextFactory::getContext('http://example.org');
             $options = stream_context_get_options($context);
 
             $this->assertEquals(array('http' => array(
@@ -126,9 +126,9 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
             )), $options);
         } else {
             try {
-                StreamContextFactory::getContext();
+                StreamContextFactory::getContext('http://example.org');
                 $this->fail();
-            } catch (\Exception $e) {
+            } catch (\RuntimeException $e) {
                 $this->assertInstanceOf('RuntimeException', $e);
             }
         }
@@ -142,9 +142,6 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    /**
-     * @author Markus Tacker <m@coderbyheart.de>
-     */
     public function testEnsureThatfixHttpHeaderFieldMovesContentTypeToEndOfOptions()
     {
         $options = array(
@@ -161,7 +158,7 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
                 )
             )
         );
-        $context = StreamContextFactory::getContext($options);
+        $context = StreamContextFactory::getContext('http://example.org', $options);
         $ctxoptions = stream_context_get_options($context);
         $this->assertEquals(join("\n", $ctxoptions['http']['header']), join("\n", $expectedOptions['http']['header']));
     }

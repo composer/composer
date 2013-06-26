@@ -26,12 +26,14 @@ use Composer\Repository\ComposerRepository;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\FilesystemRepository;
 use Composer\Repository\InstalledFilesystemRepository;
+use Composer\Script\ScriptEvents;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
 use Composer\Json\JsonFile;
+use Composer\Config\JsonConfigSource;
 use Composer\Util\Filesystem;
 use Composer\Util\RemoteFilesystem;
 use Composer\Package\Version\VersionParser;
@@ -41,6 +43,7 @@ use Composer\Package\Version\VersionParser;
  *
  * @author Benjamin Eberlei <kontakt@beberlei.de>
  * @author Jordi Boggiano <j.boggiano@seld.be>
+ * @author Tobias Munk <schmunk@usrbin.de>
  */
 class CreateProjectCommand extends Command
 {
@@ -50,14 +53,15 @@ class CreateProjectCommand extends Command
             ->setName('create-project')
             ->setDescription('Create new project from a package into given directory.')
             ->setDefinition(array(
-                new InputArgument('package', InputArgument::REQUIRED, 'Package name to be installed'),
+                new InputArgument('package', InputArgument::OPTIONAL, 'Package name to be installed'),
                 new InputArgument('directory', InputArgument::OPTIONAL, 'Directory where the files should be created'),
                 new InputArgument('version', InputArgument::OPTIONAL, 'Version, will defaults to latest'),
                 new InputOption('stability', 's', InputOption::VALUE_REQUIRED, 'Minimum-stability allowed (unless a version is specified).', 'stable'),
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist even for dev versions.'),
                 new InputOption('repository-url', null, InputOption::VALUE_REQUIRED, 'Pick a different repository url to look for the package.'),
-                new InputOption('dev', null, InputOption::VALUE_NONE, 'Whether to install dependencies for development.'),
+                new InputOption('dev', null, InputOption::VALUE_NONE, 'Enables installation of require-dev packages (enabled by default, only present for BC).'),
+                new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables installation of require-dev packages.'),
                 new InputOption('no-custom-installers', null, InputOption::VALUE_NONE, 'Whether to disable custom installers.'),
                 new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Whether to prevent execution of all defined scripts in the root package.'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
@@ -65,9 +69,11 @@ class CreateProjectCommand extends Command
             ))
             ->setHelp(<<<EOT
 The <info>create-project</info> command creates a new project from a given
-package into a new directory. You can use this command to bootstrap new
-projects or setup a clean version-controlled installation
-for developers of your project.
+package into a new directory. If executed without params and in a directory
+with a composer.json file it installs the packages for the current project.
+
+You can use this command to bootstrap new projects or setup a clean
+version-controlled installation for developers of your project.
 
 <info>php composer.phar create-project vendor/project target-directory [version]</info>
 
@@ -77,9 +83,7 @@ To install unstable packages, either specify the version you want, or use the
 --stability=dev (where dev can be one of RC, beta, alpha or dev).
 
 To setup a developer workable version you should create the project using the source
-controlled code by appending the <info>'--prefer-source'</info> flag. Also, it is
-advisable to install all dependencies required for development by appending the
-<info>'--dev'</info> flag.
+controlled code by appending the <info>'--prefer-source'</info> flag.
 
 To install a package from another repository than the default one you
 can pass the <info>'--repository-url=http://myrepository.org'</info> flag.
@@ -121,7 +125,7 @@ EOT
             $input->getOption('stability'),
             $preferSource,
             $preferDist,
-            $input->getOption('dev'),
+            !$input->getOption('no-dev'),
             $input->getOption('repository-url'),
             $input->getOption('no-custom-installers'),
             $input->getOption('no-scripts'),
@@ -131,6 +135,86 @@ EOT
     }
 
     public function installProject(IOInterface $io, $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositoryUrl = null, $disableCustomInstallers = false, $noScripts = false, $keepVcs = false, $noProgress = false)
+    {
+        if ($packageName !== null) {
+            $installedFromVcs = $this->installRootPackage($io, $config, $packageName, $directory, $packageVersion, $stability, $preferSource, $preferDist, $installDevPackages, $repositoryUrl, $disableCustomInstallers, $noScripts, $keepVcs, $noProgress);
+        } else {
+            $installedFromVcs = false;
+        }
+
+        $composer = Factory::create($io);
+
+        if ($noScripts === false) {
+            // dispatch event
+            $composer->getEventDispatcher()->dispatchCommandEvent(ScriptEvents::POST_ROOT_PACKAGE_INSTALL, $installDevPackages);
+        }
+
+        // install dependencies of the created project
+        $installer = Installer::create($io, $composer);
+        $installer->setPreferSource($preferSource)
+            ->setPreferDist($preferDist)
+            ->setDevMode($installDevPackages)
+            ->setRunScripts( ! $noScripts);
+
+        if ($disableCustomInstallers) {
+            $installer->disableCustomInstallers();
+        }
+
+        if (!$installer->run()) {
+            return 1;
+        }
+
+        $hasVcs = $installedFromVcs;
+        if (!$keepVcs && $installedFromVcs
+            && (
+                !$io->isInteractive()
+                || $io->askConfirmation('<info>Do you want to remove the existing VCS (.git, .svn..) history?</info> [<comment>Y,n</comment>]? ', true)
+            )
+        ) {
+            $finder = new Finder();
+            $finder->depth(0)->directories()->in(getcwd())->ignoreVCS(false)->ignoreDotFiles(false);
+            foreach (array('.svn', '_svn', 'CVS', '_darcs', '.arch-params', '.monotone', '.bzr', '.git', '.hg') as $vcsName) {
+                $finder->name($vcsName);
+            }
+
+            try {
+                $fs = new Filesystem();
+                $dirs = iterator_to_array($finder);
+                unset($finder);
+                foreach ($dirs as $dir) {
+                    if (!$fs->removeDirectory($dir)) {
+                        throw new \RuntimeException('Could not remove '.$dir);
+                    }
+                }
+            } catch (\Exception $e) {
+                $io->write('<error>An error occurred while removing the VCS metadata: '.$e->getMessage().'</error>');
+            }
+
+            $hasVcs = false;
+        }
+
+        // rewriting self.version dependencies with explicit version numbers if the package's vcs metadata is gone
+        if (!$hasVcs) {
+            $package = $composer->getPackage();
+            $configSource = new JsonConfigSource(new JsonFile('composer.json'));
+            foreach (BasePackage::$supportedLinkTypes as $type => $meta) {
+                foreach ($package->{'get'.$meta['method']}() as $link) {
+                    if ($link->getPrettyConstraint() === 'self.version') {
+                        $configSource->addLink($type, $link->getTarget(), $package->getPrettyVersion());
+                    }
+                }
+            }
+        }
+
+        if ($noScripts === false) {
+            // dispatch event
+            $composer->getEventDispatcher()->dispatchCommandEvent(ScriptEvents::POST_CREATE_PROJECT_CMD, $installDevPackages);
+        }
+
+        return 0;
+    }
+
+    protected function installRootPackage(IOInterface $io, $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositoryUrl = null, $disableCustomInstallers = false, $noScripts = false, $keepVcs = false, $noProgress = false)
     {
         $stability = strtolower($stability);
         if ($stability === 'rc') {
@@ -215,53 +299,7 @@ EOT
 
         putenv('COMPOSER_ROOT_VERSION='.$package->getPrettyVersion());
 
-        // clean up memory
-        unset($dm, $im, $config, $projectInstaller, $sourceRepo, $package);
-
-        // install dependencies of the created project
-        $composer = Factory::create($io);
-        $installer = Installer::create($io, $composer);
-
-        $installer->setPreferSource($preferSource)
-            ->setPreferDist($preferDist)
-            ->setDevMode($installDevPackages)
-            ->setRunScripts( ! $noScripts);
-
-        if ($disableCustomInstallers) {
-            $installer->disableCustomInstallers();
-        }
-
-        if (!$installer->run()) {
-            return 1;
-        }
-
-        if (!$keepVcs && $installedFromVcs
-            && (
-                !$io->isInteractive()
-                || $io->askConfirmation('<info>Do you want to remove the existing VCS (.git, .svn..) history?</info> [<comment>Y,n</comment>]? ', true)
-            )
-        ) {
-            $finder = new Finder();
-            $finder->depth(0)->directories()->in(getcwd())->ignoreVCS(false)->ignoreDotFiles(false);
-            foreach (array('.svn', '_svn', 'CVS', '_darcs', '.arch-params', '.monotone', '.bzr', '.git', '.hg') as $vcsName) {
-                $finder->name($vcsName);
-            }
-
-            try {
-                $fs = new Filesystem();
-                $dirs = iterator_to_array($finder);
-                unset($finder);
-                foreach ($dirs as $dir) {
-                    if (!$fs->removeDirectory($dir)) {
-                        throw new \RuntimeException('Could not remove '.$dir);
-                    }
-                }
-            } catch (\Exception $e) {
-                $io->write('<error>An error occurred while removing the VCS metadata: '.$e->getMessage().'</error>');
-            }
-        }
-
-        return 0;
+        return $installedFromVcs;
     }
 
     protected function createDownloadManager(IOInterface $io, Config $config)

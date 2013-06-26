@@ -85,10 +85,10 @@ class RepositoryManager
     /**
      * Returns a new repository for a specific installation type.
      *
-     * @param  string                   $type   repository type
-     * @param  string                   $config repository configuration
+     * @param  string                    $type   repository type
+     * @param  string                    $config repository configuration
      * @return RepositoryInterface
-     * @throws InvalidArgumentException if repository for provided type is not registered
+     * @throws \InvalidArgumentException if repository for provided type is not registered
      */
     public function createRepository($type, $config)
     {

@@ -127,18 +127,25 @@ class GitHubDriver extends VcsDriver
         }
 
         if (!isset($this->infoCache[$identifier])) {
-            try {
-                $resource = 'https://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/contents/composer.json?ref='.urlencode($identifier);
-                $composer = JsonFile::parseJson($this->getContents($resource));
-                if (empty($composer['content']) || $composer['encoding'] !== 'base64' || !($composer = base64_decode($composer['content']))) {
-                    throw new \RuntimeException('Could not retrieve composer.json from '.$resource);
-                }
-            } catch (TransportException $e) {
-                if (404 !== $e->getCode()) {
-                    throw $e;
-                }
+            $notFoundRetries = 2;
+            while ($notFoundRetries) {
+                try {
+                    $resource = 'https://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/contents/composer.json?ref='.urlencode($identifier);
+                    $composer = JsonFile::parseJson($this->getContents($resource));
+                    if (empty($composer['content']) || $composer['encoding'] !== 'base64' || !($composer = base64_decode($composer['content']))) {
+                        throw new \RuntimeException('Could not retrieve composer.json from '.$resource);
+                    }
+                    break;
+                } catch (TransportException $e) {
+                    if (404 !== $e->getCode()) {
+                        throw $e;
+                    }
 
-                $composer = false;
+                    // TODO should be removed when possible
+                    // retry fetching if github returns a 404 since they happen randomly
+                    $notFoundRetries--;
+                    $composer = false;
+                }
             }
 
             if ($composer) {

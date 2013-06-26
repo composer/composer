@@ -39,6 +39,8 @@ class AutoloadGenerator
 
     public function dump(Config $config, InstalledRepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir, $scanPsr0Packages = false, $suffix = '')
     {
+        $this->eventDispatcher->dispatch(ScriptEvents::PRE_AUTOLOAD_DUMP);
+
         $filesystem = new Filesystem();
         $filesystem->ensureDirectoryExists($config->get('vendor-dir'));
         $basePath = $filesystem->normalizePath(getcwd());
@@ -76,11 +78,7 @@ EOF;
             }
             $exportedPrefix = var_export($namespace, true);
             $namespacesFile .= "    $exportedPrefix => ";
-            if (count($exportedPaths) > 1) {
-                $namespacesFile .= "array(".implode(', ', $exportedPaths)."),\n";
-            } else {
-                $namespacesFile .= $exportedPaths[0].",\n";
-            }
+            $namespacesFile .= "array(".implode(', ', $exportedPaths)."),\n";
         }
         $namespacesFile .= ");\n";
 
@@ -319,8 +317,8 @@ EOF;
             }
         }
 
-        if (preg_match('/\.phar$/', $path)){
-            $baseDir = "'phar://' . '" . $baseDir;
+        if (preg_match('/\.phar$/', $path)) {
+            $baseDir = "'phar://' . " . $baseDir;
         }
 
         return $baseDir.var_export($path, true);
@@ -399,7 +397,7 @@ INCLUDE_PATH;
             $file .= <<<'PSR0'
         $map = require __DIR__ . '/autoload_namespaces.php';
         foreach ($map as $namespace => $path) {
-            $loader->add($namespace, $path);
+            $loader->set($namespace, $path);
         }
 
 

@@ -309,6 +309,11 @@ if `install` is run with `--dev` or if `update` is run without `--no-dev`.
 Lists packages that conflict with this version of this package. They
 will not be allowed to be installed together with your package.
 
+Note that when specifying ranges like "<1.0, >= 1.1" in a `conflict` link,
+this will state a conflict with all versions that are less than 1.0 *and* equal
+or newer than 1.1 at the same time, which is probably not what you want. You
+probably want to go for "<1.0 | >= 1.1" in this case.
+
 #### replace
 
 Lists packages that are replaced by this package. This allows you to fork a
@@ -366,6 +371,10 @@ classes).
 Under the `psr-0` key you define a mapping from namespaces to paths, relative to the
 package root. Note that this also supports the PEAR-style non-namespaced convention.
 
+Please note namespace declarations should end in `\\` to make sure the autoloader
+responds exactly. For example `Foo` would match in `FooBar` so the trailing
+backslashes solve the problem: `Foo\\` and `FooBar\\` are distinct.
+
 The PSR-0 references are all combined, during install/update, into a single key => value
 array which may be found in the generated file `vendor/composer/autoload_namespaces.php`.
 
@@ -374,7 +383,7 @@ Example:
     {
         "autoload": {
             "psr-0": {
-                "Monolog": "src/",
+                "Monolog\\": "src/",
                 "Vendor\\Namespace\\": "src/",
                 "Vendor_Namespace_": "src/"
             }
@@ -386,7 +395,7 @@ you can specify them as an array as such:
 
     {
         "autoload": {
-            "psr-0": { "Monolog": ["src/", "lib/"] }
+            "psr-0": { "Monolog\\": ["src/", "lib/"] }
         }
     }
 
@@ -477,7 +486,7 @@ To do that, `autoload` and `target-dir` are defined as follows:
 
     {
         "autoload": {
-            "psr-0": { "Symfony\\Component\\Yaml": "" }
+            "psr-0": { "Symfony\\Component\\Yaml\\": "" }
         },
         "target-dir": "Symfony/Component/Yaml"
     }
@@ -598,8 +607,8 @@ The following options are supported:
   `auto`. This option allows you to set the install method Composer will prefer to
   use.
 * **github-protocols:** Defaults to `["git", "https", "http"]`. A list of
-  protocols to use for github.com clones, in priority order. Use this if you are
-  behind a proxy or have somehow bad performances with the git protocol.
+  protocols to use when cloning from github.com, in priority order. Use this if you
+  are behind a proxy or have somehow bad performances with the git protocol.
 * **github-oauth:** A list of domain names and oauth keys. For example using
   `{"github.com": "oauthtoken"}` as the value of this option will use `oauthtoken`
   to access private repositories on github and to circumvent the low IP-based

@@ -44,7 +44,7 @@ abstract class BaseExcludeFilter
      * Negated patterns overwrite exclude decisions of previous filters.
      *
      * @param string $relativePath The file's path relative to the sourcePath
-     * @param bool $exclude Whether a previous filter wants to exclude this file
+     * @param bool   $exclude      Whether a previous filter wants to exclude this file
      *
      * @return bool Whether the file should be excluded
      */
@@ -63,13 +63,14 @@ abstract class BaseExcludeFilter
                 $exclude = !$negate;
             }
         }
+
         return $exclude;
     }
 
     /**
      * Processes a file containing exclude rules of different formats per line
      *
-     * @param array $lines A set of lines to be parsed
+     * @param array    $lines      A set of lines to be parsed
      * @param callback $lineParser The parser to be used on each line
      *
      * @return array Exclude patterns to be used in filter()
@@ -89,6 +90,7 @@ abstract class BaseExcludeFilter
                     if ($line) {
                         return call_user_func($lineParser, $line);
                     }
+
                     return null;
                 }, $lines),
             function ($pattern) {
@@ -110,6 +112,7 @@ abstract class BaseExcludeFilter
         foreach ($rules as $rule) {
             $patterns[] = $this->generatePattern($rule);
         }
+
         return $patterns;
     }
 
@@ -138,6 +141,7 @@ abstract class BaseExcludeFilter
         }
 
         $pattern .= substr(Finder\Glob::toRegex($rule), 2, -2);
+
         return array($pattern . '#', $negate, false);
     }
 }

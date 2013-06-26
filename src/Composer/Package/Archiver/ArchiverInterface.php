@@ -12,8 +12,6 @@
 
 namespace Composer\Package\Archiver;
 
-use Composer\Package\PackageInterface;
-
 /**
  * @author Till Klampaeckel <till@php.net>
  * @author Matthieu Moquet <matthieu@moquet.net>
@@ -24,10 +22,10 @@ interface ArchiverInterface
     /**
      * Create an archive from the sources.
      *
-     * @param string $sources   The sources directory
-     * @param string $target    The target file
-     * @param string $format    The format used for archive
-     * @param array  $excludes  A list of patterns for files to exclude
+     * @param string $sources  The sources directory
+     * @param string $target   The target file
+     * @param string $format   The format used for archive
+     * @param array  $excludes A list of patterns for files to exclude
      *
      * @return string The path to the written archive file
      */

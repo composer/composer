@@ -34,13 +34,11 @@ use Composer\Autoload\AutoloadGenerator;
 class Factory
 {
     /**
-     * @return Config
+     * @return string
      */
-    public static function createConfig()
+    protected static function determinHomeDirectory()
     {
-        // determine home and cache dirs
         $home = getenv('COMPOSER_HOME');
-        $cacheDir = getenv('COMPOSER_CACHE_DIR');
         if (!$home) {
             if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
                 if (!getenv('APPDATA')) {
@@ -54,6 +52,16 @@ class Factory
                 $home = rtrim(getenv('HOME'), '/') . '/.composer';
             }
         }
+
+        return $home;
+    }
+
+    /**
+     * @return string
+     */
+    protected static function determinCacheDirectory()
+    {
+        $cacheDir = getenv('COMPOSER_CACHE_DIR');
         if (!$cacheDir) {
             if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
                 if ($cacheDir = getenv('LOCALAPPDATA')) {
@@ -66,6 +74,18 @@ class Factory
                 $cacheDir = $home.'/cache';
             }
         }
+
+        return $cacheDir;
+    }
+
+    /**
+     * @return Config
+     */
+    public static function createConfig()
+    {
+        // determine home and cache dirs
+        $home = self::determinComposerHomeDirectory();
+        $cacheDir = self::determinComposerCacheDirectory();
 
         // Protect directory against web access. Since HOME could be
         // the www-data's user home and be web-accessible it is a
@@ -175,6 +195,7 @@ class Factory
      * @param array|string|null $localConfig either a configuration array or a filename to read from, if null it will
      *                                       read from the default filename
      * @throws \InvalidArgumentException
+     * @throws \UnexpectedValueException
      * @return Composer
      */
     public function createComposer(IOInterface $io, $localConfig = null)
@@ -339,8 +360,8 @@ class Factory
     }
 
     /**
-     * @param Config                     $config  The configuration
-     * @param Downloader\DownloadManager $dm      Manager use to download sources
+     * @param Config                     $config The configuration
+     * @param Downloader\DownloadManager $dm     Manager use to download sources
      *
      * @return Archiver\ArchiveManager
      */

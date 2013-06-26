@@ -67,6 +67,7 @@ class AutoloadGeneratorTest extends TestCase
             ->method('getInstallPath')
             ->will($this->returnCallback(function ($package) use ($that) {
                 $targetDir = $package->getTargetDir();
+
                 return $that->vendorDir.'/'.$package->getName() . ($targetDir ? '/'.$targetDir : '');
             }));
         $this->repository = $this->getMock('Composer\Repository\InstalledRepositoryInterface');
@@ -478,9 +479,9 @@ class AutoloadGeneratorTest extends TestCase
 \$baseDir = dirname(\$vendorDir);
 
 return array(
-    'B\\\\Sub\\\\Name' => \$vendorDir . '/b/b/src',
+    'B\\\\Sub\\\\Name' => array(\$vendorDir . '/b/b/src'),
     'A\\\\B' => array(\$baseDir . '/lib', \$vendorDir . '/a/a/lib'),
-    'A' => \$vendorDir . '/a/a/src',
+    'A' => array(\$vendorDir . '/a/a/src'),
 );
 
 EOF;
@@ -619,10 +620,15 @@ EOF;
         $this->assertFalse(file_exists($this->vendorDir."/composer/include_paths.php"));
     }
 
-    public function testEventIsDispatchedAfterAutoloadDump()
+    public function testPreAndPostEventsAreDispatchedDuringAutoloadDump()
     {
         $this->eventDispatcher
-            ->expects($this->once())
+            ->expects($this->at(0))
+            ->method('dispatch')
+            ->with(ScriptEvents::PRE_AUTOLOAD_DUMP, false);
+
+        $this->eventDispatcher
+            ->expects($this->at(1))
             ->method('dispatch')
             ->with(ScriptEvents::POST_AUTOLOAD_DUMP, false);
 
@@ -692,6 +698,7 @@ EOF;
             ->method('getInstallPath')
             ->will($this->returnCallback(function ($package) use ($vendorDir) {
                 $targetDir = $package->getTargetDir();
+
                 return $vendorDir.'/'.$package->getName() . ($targetDir ? '/'.$targetDir : '');
             }));
 
@@ -721,8 +728,8 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir).'/working-dir';
 
 return array(
-    'Foo' => $baseDir . '/src',
-    'Bar' => $vendorDir . '/b/b/lib',
+    'Foo' => array($baseDir . '/src'),
+    'Bar' => array($vendorDir . '/b/b/lib'),
 );
 
 EOF;
@@ -784,7 +791,7 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir).'/working-dir';
 
 return array(
-    'Foo' => $baseDir . '/../src',
+    'Foo' => array($baseDir . '/../src'),
 );
 
 EOF;
@@ -836,7 +843,7 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
-    'Foo' => $baseDir . '/',
+    'Foo' => array($baseDir . '/'),
 );
 
 EOF;

@@ -23,7 +23,7 @@ class SvnDriverTest extends \PHPUnit_Framework_TestCase
     public function testWrongCredentialsInUrl()
     {
         $console = $this->getMock('Composer\IO\IOInterface');
-        $console->expects($this->once())
+        $console->expects($this->exactly(6))
             ->method('isInteractive')
             ->will($this->returnValue(true));
 
@@ -35,7 +35,7 @@ class SvnDriverTest extends \PHPUnit_Framework_TestCase
         $process->expects($this->at(1))
             ->method('execute')
             ->will($this->returnValue(1));
-        $process->expects($this->once())
+        $process->expects($this->exactly(7))
             ->method('getErrorOutput')
             ->will($this->returnValue($output));
         $process->expects($this->at(2))

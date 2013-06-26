@@ -200,6 +200,9 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
     public function loadPackage(array $data)
     {
         $package = $this->createPackage($data['raw'], 'Composer\Package\Package');
+        if ($package instanceof AliasPackage) {
+            $package = $package->getAliasOf();
+        }
         $package->setRepository($this);
 
         return $package;
@@ -515,7 +518,9 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
     protected function createPackage(array $data, $class)
     {
         try {
-            $data['notification-url'] = $this->notifyUrl;
+            if (!isset($data['notification-url'])) {
+                $data['notification-url'] = $this->notifyUrl;
+            }
 
             return $this->loader->load($data, 'Composer\Package\CompletePackage');
         } catch (\Exception $e) {
@@ -536,7 +541,7 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
                 $json = $this->rfs->getContents($filename, $filename, false);
                 if ($sha256 && $sha256 !== hash('sha256', $json)) {
                     if ($retries) {
-                        usleep(100);
+                        usleep(100000);
 
                         continue;
                     }
@@ -550,7 +555,7 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
                 break;
             } catch (\Exception $e) {
                 if ($retries) {
-                    usleep(100);
+                    usleep(100000);
                     continue;
                 }
 

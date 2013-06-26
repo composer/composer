@@ -12,7 +12,6 @@
 
 namespace Composer\Script;
 
-use Composer\Autoload\AutoloadGenerator;
 use Composer\IO\IOInterface;
 use Composer\Composer;
 use Composer\DependencyResolver\Operation\OperationInterface;
@@ -54,8 +53,8 @@ class EventDispatcher
     /**
      * Dispatch a script event.
      *
-     * @param string  $eventName The constant in ScriptEvents
-     * @param Event $event
+     * @param string $eventName The constant in ScriptEvents
+     * @param Event  $event
      */
     public function dispatch($eventName, Event $event = null)
     {
@@ -92,7 +91,9 @@ class EventDispatcher
     /**
      * Triggers the listeners of an event.
      *
-     * @param Event $event The event object to pass to the event handlers/listeners.
+     * @param  Event             $event The event object to pass to the event handlers/listeners.
+     * @throws \RuntimeException
+     * @throws \Exception
      */
     protected function doDispatch(Event $event)
     {
@@ -120,8 +121,10 @@ class EventDispatcher
                     throw $e;
                 }
             } else {
-                if (0 !== $this->process->execute($callable)) {
-                    $event->getIO()->write(sprintf('<error>Script %s handling the %s event returned with an error: %s</error>', $callable, $event->getName(), $this->process->getErrorOutput()));
+                if (0 !== ($exitCode = $this->process->execute($callable))) {
+                    $event->getIO()->write(sprintf('<error>Script %s handling the %s event returned with an error</error>', $callable, $event->getName()));
+
+                    throw new \RuntimeException('Error Output: '.$this->process->getErrorOutput(), $exitCode);
                 }
             }
         }

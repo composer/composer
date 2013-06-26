@@ -39,7 +39,7 @@ class DefaultPolicy implements PolicyInterface
         $constraint = new VersionConstraint($operator, $b->getVersion());
         $version = new VersionConstraint('==', $a->getVersion());
 
-        return $constraint->matchSpecific($version);
+        return $constraint->matchSpecific($version, true);
     }
 
     public function findUpdatePackages(Pool $pool, array $installedMap, PackageInterface $package)

@@ -111,6 +111,15 @@ class ScriptEvents
     const POST_PACKAGE_UNINSTALL = 'post-package-uninstall';
 
     /**
+     * The PRE_AUTOLOAD_DUMP event occurs before the autoload file is generated.
+     *
+     * The event listener method receives a Composer\Script\Event instance.
+     *
+     * @var string
+     */
+    const PRE_AUTOLOAD_DUMP = 'pre-autoload-dump';
+
+    /**
      * The POST_AUTOLOAD_DUMP event occurs after the autoload file has been generated.
      *
      * The event listener method receives a Composer\Script\Event instance.
@@ -118,4 +127,24 @@ class ScriptEvents
      * @var string
      */
     const POST_AUTOLOAD_DUMP = 'post-autoload-dump';
+
+    /**
+     * The POST_ROOT_PACKAGE_INSTALL event occurs after the root package has been installed.
+     *
+     * The event listener method receives a Composer\Script\PackageEvent instance.
+     *
+     * @var string
+     */
+    const POST_ROOT_PACKAGE_INSTALL = 'post-root-package-install';
+
+    /**
+     * The POST_CREATE_PROJECT event occurs after the create-project command has been executed.
+     * Note: Event occurs after POST_INSTALL_CMD
+     *
+     * The event listener method receives a Composer\Script\PackageEvent instance.
+     *
+     * @var string
+     */
+    const POST_CREATE_PROJECT_CMD = 'post-create-project-cmd';
+
 }

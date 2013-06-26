@@ -66,7 +66,8 @@ class Problem
     /**
      * A human readable textual representation of the problem's reasons
      *
-     * @param array $installedMap A map of all installed packages
+     * @param  array  $installedMap A map of all installed packages
+     * @return string
      */
     public function getPrettyString(array $installedMap = array())
     {
@@ -90,9 +91,13 @@ class Problem
 
                 // handle linked libs
                 if (0 === stripos($job['packageName'], 'lib-')) {
-                    $lib = substr($job['packageName'], 4);
+                    if (strtolower($job['packageName']) === 'lib-icu') {
+                        $error = extension_loaded('intl') ? 'has the wrong version installed, try upgrading the intl extension.' : 'is missing from your system, make sure the intl extension is loaded.';
 
-                    return "\n    - The requested linked library ".$job['packageName'].$this->constraintToText($job['constraint']).' has the wrong version installed or is missing from your system, make sure to have the extension providing it.';
+                        return "\n    - The requested linked library ".$job['packageName'].$this->constraintToText($job['constraint']).' '.$error;
+                    }
+
+                    return "\n    - The requested linked library ".$job['packageName'].$this->constraintToText($job['constraint']).' has the wrong version installed or is missing from your system, make sure to load the extension providing it.';
                 }
 
                 if (!preg_match('{^[A-Za-z0-9_./-]+$}', $job['packageName'])) {
@@ -187,7 +192,7 @@ class Problem
     /**
      * Turns a constraint into text usable in a sentence describing a job
      *
-     * @param  LinkConstraint $constraint
+     * @param  \Composer\Package\LinkConstraint\LinkConstraintInterface $constraint
      * @return string
      */
     protected function constraintToText($constraint)

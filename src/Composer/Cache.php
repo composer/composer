@@ -63,6 +63,10 @@ class Cache
     {
         $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
         if ($this->enabled && file_exists($this->root . $file)) {
+            if ($this->io->isDebug()) {
+                $this->io->write('Reading '.$this->root . $file.' from cache');
+            }
+
             return file_get_contents($this->root . $file);
         }
 
@@ -74,17 +78,28 @@ class Cache
         if ($this->enabled) {
             $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
 
+            if ($this->io->isDebug()) {
+                $this->io->write('Writing '.$this->root . $file.' into cache');
+            }
+
             return file_put_contents($this->root . $file, $contents);
         }
 
         return false;
     }
 
+    /**
+     * Copy a file into the cache
+     */
     public function copyFrom($file, $source)
     {
         if ($this->enabled) {
             $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
             $this->filesystem->ensureDirectoryExists(dirname($this->root . $file));
+
+            if ($this->io->isDebug()) {
+                $this->io->write('Writing '.$this->root . $file.' into cache');
+            }
 
             return copy($source, $this->root . $file);
         }
@@ -92,11 +107,18 @@ class Cache
         return false;
     }
 
+    /**
+     * Copy a file out of the cache
+     */
     public function copyTo($file, $target)
     {
         $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
         if ($this->enabled && file_exists($this->root . $file)) {
             touch($this->root . $file);
+
+            if ($this->io->isDebug()) {
+                $this->io->write('Reading '.$this->root . $file.' from cache');
+            }
 
             return copy($this->root . $file, $target);
         }

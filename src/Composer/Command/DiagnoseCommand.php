@@ -52,10 +52,12 @@ EOT
         $output->write('Checking http connectivity: ');
         $this->outputResult($output, $this->checkHttp());
 
-        $opts = stream_context_get_options(StreamContextFactory::getContext());
+        $opts = stream_context_get_options(StreamContextFactory::getContext('http://example.org'));
         if (!empty($opts['http']['proxy'])) {
             $output->write('Checking HTTP proxy: ');
             $this->outputResult($output, $this->checkHttpProxy());
+            $output->write('Checking HTTP proxy support for request_fulluri: ');
+            $this->outputResult($output, $this->checkHttpProxyFullUriRequestParam());
             $output->write('Checking HTTPS proxy support for request_fulluri: ');
             $this->outputResult($output, $this->checkHttpsProxyFullUriRequestParam());
         }
@@ -78,6 +80,9 @@ EOT
                 $this->outputResult($output, $this->checkGithubOauth($domain, $token));
             }
         }
+
+        $output->write('Checking disk free space: ');
+        $this->outputResult($output, $this->checkDiskSpace($config));
 
         $output->write('Checking composer version: ');
         $this->outputResult($output, $this->checkVersion());
@@ -142,7 +147,32 @@ EOT
     }
 
     /**
-     * Due to various proxy servers configurations, some servers cant handle non-standard HTTP "http_proxy_request_fulluri" parameter,
+     * Due to various proxy servers configurations, some servers can't handle non-standard HTTP "http_proxy_request_fulluri" parameter,
+     * and will return error 500/501 (as not implemented), see discussion @ https://github.com/composer/composer/pull/1825.
+     * This method will test, if you need to disable this parameter via setting extra environment variable in your system.
+     *
+     * @return bool|string
+     */
+    private function checkHttpProxyFullUriRequestParam()
+    {
+        $url = 'http://packagist.org/packages.json';
+        try {
+            $this->rfs->getContents('packagist.org', $url, false);
+        } catch (TransportException $e) {
+            try {
+                $this->rfs->getContents('packagist.org', $url, false, array('http' => array('request_fulluri' => false)));
+            } catch (TransportException $e) {
+                return 'Unable to assert the situation, maybe packagist.org is down ('.$e->getMessage().')';
+            }
+
+            return 'It seems there is a problem with your proxy server, try setting the "HTTP_PROXY_REQUEST_FULLURI" and "HTTPS_PROXY_REQUEST_FULLURI" environment variables to "false"';
+        }
+
+        return true;
+    }
+
+    /**
+     * Due to various proxy servers configurations, some servers can't handle non-standard HTTP "http_proxy_request_fulluri" parameter,
      * and will return error 500/501 (as not implemented), see discussion @ https://github.com/composer/composer/pull/1825.
      * This method will test, if you need to disable this parameter via setting extra environment variable in your system.
      *
@@ -150,21 +180,21 @@ EOT
      */
     private function checkHttpsProxyFullUriRequestParam()
     {
-        $url = 'https://api.github.com/repos/Seldaek/jsonlint/zipball/1.0.0 ';
+        if (!extension_loaded('openssl')) {
+            return 'You need the openssl extension installed for this check';
+        }
+
+        $url = 'https://api.github.com/repos/Seldaek/jsonlint/zipball/1.0.0';
         try {
             $rfcResult = $this->rfs->getContents('api.github.com', $url, false);
         } catch (TransportException $e) {
-            if (!extension_loaded('openssl')) {
-                return 'You need the openssl extension installed for this check';
-            }
-
             try {
                 $this->rfs->getContents('api.github.com', $url, false, array('http' => array('request_fulluri' => false)));
             } catch (TransportException $e) {
                 return 'Unable to assert the situation, maybe github is down ('.$e->getMessage().')';
             }
 
-            return 'It seems there is a problem with your proxy server, try setting the "HTTP_PROXY_REQUEST_FULLURI" environment variable to "false"';
+            return 'It seems there is a problem with your proxy server, try setting the "HTTPS_PROXY_REQUEST_FULLURI" environment variable to "false"';
         }
 
         return true;
@@ -184,6 +214,18 @@ EOT
 
             return $e;
         }
+    }
+
+    private function checkDiskSpace($config)
+    {
+        $minSpaceFree = 1024*1024;
+        if ((($df = @disk_free_space($dir = $config->get('home'))) !== false && $df < $minSpaceFree)
+            || (($df = @disk_free_space($dir = $config->get('vendor-dir'))) !== false && $df < $minSpaceFree)
+        ) {
+            return '<error>The disk hosting '.$dir.' is full</error>';
+        }
+
+        return true;
     }
 
     private function checkVersion()

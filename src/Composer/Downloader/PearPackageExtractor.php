@@ -194,7 +194,7 @@ class PearPackageExtractor
         }
     }
 
-    private function buildSourceList10($children, $targetRoles, $source = '', $target = '', $role = null, $packageName)
+    private function buildSourceList10($children, $targetRoles, $source, $target, $role, $packageName)
     {
         $result = array();
 
@@ -224,7 +224,7 @@ class PearPackageExtractor
         return $result;
     }
 
-    private function buildSourceList20($children, $targetRoles, $source = '', $target = '', $role = null, $packageName)
+    private function buildSourceList20($children, $targetRoles, $source, $target, $role, $packageName)
     {
         $result = array();
 
