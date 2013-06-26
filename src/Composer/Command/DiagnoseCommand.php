@@ -219,8 +219,8 @@ EOT
     private function checkDiskSpace($config)
     {
         $minSpaceFree = 1024*1024;
-        if ((($df = disk_free_space($dir = $config->get('home'))) !== false && $df < $minSpaceFree)
-            || (($df = disk_free_space($dir = $config->get('vendor-dir'))) !== false && $df < $minSpaceFree)
+        if ((($df = @disk_free_space($dir = $config->get('home'))) !== false && $df < $minSpaceFree)
+            || (($df = @disk_free_space($dir = $config->get('vendor-dir'))) !== false && $df < $minSpaceFree)
         ) {
             return '<error>The disk hosting '.$dir.' is full</error>';
         }
