@@ -78,7 +78,7 @@ class InstallerInstallerTest extends \PHPUnit_Framework_TestCase
     public function testInstallNewInstaller()
     {
         $this->repository
-            ->expects($this->once())
+            ->expects($this->exactly(2))
             ->method('getPackages')
             ->will($this->returnValue(array()));
         $installer = new InstallerInstallerMock($this->io, $this->composer);
@@ -97,7 +97,7 @@ class InstallerInstallerTest extends \PHPUnit_Framework_TestCase
     public function testInstallMultipleInstallers()
     {
         $this->repository
-            ->expects($this->once())
+            ->expects($this->exactly(3))
             ->method('getPackages')
             ->will($this->returnValue(array()));
 
@@ -127,7 +127,7 @@ class InstallerInstallerTest extends \PHPUnit_Framework_TestCase
     public function testUpgradeWithNewClassName()
     {
         $this->repository
-            ->expects($this->once())
+            ->expects($this->exactly(3))
             ->method('getPackages')
             ->will($this->returnValue(array($this->packages[0])));
         $this->repository
@@ -150,7 +150,7 @@ class InstallerInstallerTest extends \PHPUnit_Framework_TestCase
     public function testUpgradeWithSameClassName()
     {
         $this->repository
-            ->expects($this->once())
+            ->expects($this->exactly(3))
             ->method('getPackages')
             ->will($this->returnValue(array($this->packages[1])));
         $this->repository
