@@ -99,16 +99,7 @@ abstract class ArchiveDownloader extends FileDownloader
         }
 
         if (!extension_loaded('openssl') && (0 === strpos($url, 'https:') || 0 === strpos($url, 'http://github.com'))) {
-            // bypass https for github if openssl is disabled
-            if (preg_match('{^https://api\.github\.com/repos/([^/]+/[^/]+)/(zip|tar)ball/([^/]+)$}i', $url, $match)) {
-                $url = 'http://nodeload.github.com/'.$match[1].'/'.$match[2].'/'.$match[3];
-            } elseif (preg_match('{^https://github\.com/([^/]+/[^/]+)/(zip|tar)ball/([^/]+)$}i', $url, $match)) {
-                $url = 'http://nodeload.github.com/'.$match[1].'/'.$match[2].'/'.$match[3];
-            } elseif (preg_match('{^https://github\.com/([^/]+/[^/]+)/archive/([^/]+)\.(zip|tar\.gz)$}i', $url, $match)) {
-                $url = 'http://nodeload.github.com/'.$match[1].'/'.$match[3].'/'.$match[2];
-            } else {
-                throw new \RuntimeException('You must enable the openssl extension to download files via https');
-            }
+            throw new \RuntimeException('You must enable the openssl extension to download files via https');
         }
 
         return parent::processUrl($package, $url);
