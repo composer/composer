@@ -24,7 +24,7 @@ class Config
         'use-include-path' => false,
         'preferred-install' => 'auto',
         'notify-on-install' => true,
-        'github-protocols' => array('git', 'https', 'http'),
+        'github-protocols' => array('git', 'https'),
         'vendor-dir' => 'vendor',
         'bin-dir' => '{$vendor-dir}/bin',
         'cache-dir' => '{$home}/cache',
@@ -196,6 +196,13 @@ class Config
                     throw new \RuntimeException(
                         "Invalid value for 'discard-changes': {$this->config[$key]}. Expected true, false or stash"
                     );
+                }
+
+                return $this->config[$key];
+
+            case 'github-protocols':
+                if (reset($this->config['github-protocols']) === 'http') {
+                    throw new \RuntimeException('The http protocol for github is not available anymore, update your config\'s github-protocols to use "https" or "git"');
                 }
 
                 return $this->config[$key];
