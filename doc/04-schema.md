@@ -513,7 +513,9 @@ and `stable`.
 When this is enabled, Composer will prefer more stable packages over unstable
 ones when finding compatible stable packages is possible. If you require a
 dev version or only alphas are available for a package, those will still be
-selected granted that the minimum-stability allows for it. Use `"prefer-stable": true` to enable.
+selected granted that the minimum-stability allows for it.
+
+Use `"prefer-stable": true` to enable.
 
 ### repositories <span>(root-only)</span>
 
