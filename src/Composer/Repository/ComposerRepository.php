@@ -43,6 +43,7 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
     protected $searchUrl;
     protected $hasProviders = false;
     protected $providersUrl;
+    protected $lazyProvidersUrl;
     protected $providerListing;
     protected $providers = array();
     protected $providersByUid = array();
@@ -267,7 +268,11 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
             $this->loadProviderListings($this->loadRootServerFile());
         }
 
-        if ($this->providersUrl) {
+        if ($this->lazyProvidersUrl && !isset($this->providerListing[$name])) {
+            $hash = $this->providerListing[$name]['sha256'];
+            $url = str_replace('%package%', $name, $this->lazyProvidersUrl);
+            $cacheKey = false;
+        } elseif ($this->providersUrl) {
             // package does not exist in this repo
             if (!isset($this->providerListing[$name])) {
                 return array();
@@ -288,7 +293,7 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
             $cacheKey = null;
         }
 
-        if ($this->cache->sha256($cacheKey) === $hash) {
+        if ($cacheKey && $this->cache->sha256($cacheKey) === $hash) {
             $packages = json_decode($this->cache->read($cacheKey), true);
         } else {
             $packages = $this->fetchFile($url, $cacheKey, $hash);
@@ -447,6 +452,11 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
             }
         }
 
+        if (!empty($data['providers-lazy-url'])) {
+            $this->lazyProvidersUrl = $this->canonicalizeUrl($data['providers-lazy-url']);
+            $this->hasProviders = true;
+        }
+
         if ($this->allowSslDowngrade) {
             $this->url = str_replace('https://', 'http://', $this->url);
         }
@@ -573,7 +583,7 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
 
     protected function fetchFile($filename, $cacheKey = null, $sha256 = null)
     {
-        if (!$cacheKey) {
+        if (null === $cacheKey) {
             $cacheKey = $filename;
             $filename = $this->baseUrl.'/'.$filename;
         }
@@ -597,7 +607,9 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
                     throw new RepositorySecurityException('The contents of '.$filename.' do not match its signature. This should indicate a man-in-the-middle attack. Try running composer again and report this if you think it is a mistake.');
                 }
                 $data = JsonFile::parseJson($json, $filename);
-                $this->cache->write($cacheKey, $json);
+                if ($cacheKey) {
+                    $this->cache->write($cacheKey, $json);
+                }
 
                 break;
             } catch (\Exception $e) {
@@ -610,7 +622,7 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
                     throw $e;
                 }
 
-                if ($contents = $this->cache->read($cacheKey)) {
+                if ($cacheKey && ($contents = $this->cache->read($cacheKey))) {
                     if (!$this->degradedMode) {
                         $this->io->write('<warning>'.$e->getMessage().'</warning>');
                         $this->io->write('<warning>'.$this->url.' could not be fully loaded, package information was loaded from the local cache and may be out of date</warning>');
