@@ -51,8 +51,8 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
             ->method('getSourceReference')
             ->will($this->returnValue('1234567890123456789012345678901234567890'));
         $packageMock->expects($this->any())
-            ->method('getSourceUrl')
-            ->will($this->returnValue('https://example.com/composer/composer'));
+            ->method('getSourceUrls')
+            ->will($this->returnValue(array('https://example.com/composer/composer')));
         $packageMock->expects($this->any())
             ->method('getPrettyVersion')
             ->will($this->returnValue('dev-master'));
@@ -90,8 +90,8 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
             ->method('getSourceReference')
             ->will($this->returnValue('ref'));
         $packageMock->expects($this->any())
-            ->method('getSourceUrl')
-            ->will($this->returnValue('https://github.com/composer/composer'));
+            ->method('getSourceUrls')
+            ->will($this->returnValue(array('https://github.com/composer/composer')));
         $packageMock->expects($this->any())
             ->method('getPrettyVersion')
             ->will($this->returnValue('1.0.0'));
@@ -147,8 +147,8 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
             ->method('getSourceReference')
             ->will($this->returnValue('ref'));
         $packageMock->expects($this->any())
-            ->method('getSourceUrl')
-            ->will($this->returnValue('https://github.com/composer/composer'));
+            ->method('getSourceUrls')
+            ->will($this->returnValue(array('https://github.com/composer/composer')));
         $packageMock->expects($this->any())
             ->method('getPrettyVersion')
             ->will($this->returnValue('1.0.0'));
@@ -188,8 +188,8 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
             ->method('getSourceReference')
             ->will($this->returnValue('ref'));
         $packageMock->expects($this->any())
-            ->method('getSourceUrl')
-            ->will($this->returnValue('https://example.com/composer/composer'));
+            ->method('getSourceUrls')
+            ->will($this->returnValue(array('https://example.com/composer/composer')));
         $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
         $processExecutor->expects($this->at(0))
             ->method('execute')
@@ -227,8 +227,8 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
             ->method('getSourceReference')
             ->will($this->returnValue('ref'));
         $packageMock->expects($this->any())
-            ->method('getSourceUrl')
-            ->will($this->returnValue('https://github.com/composer/composer'));
+            ->method('getSourceUrls')
+            ->will($this->returnValue(array('https://github.com/composer/composer')));
         $packageMock->expects($this->any())
             ->method('getPrettyVersion')
             ->will($this->returnValue('1.0.0'));
@@ -273,8 +273,8 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
             ->method('getSourceReference')
             ->will($this->returnValue('ref'));
         $packageMock->expects($this->any())
-            ->method('getSourceUrl')
-            ->will($this->returnValue('https://github.com/composer/composer'));
+            ->method('getSourceUrls')
+            ->will($this->returnValue(array('https://github.com/composer/composer')));
         $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
         $processExecutor->expects($this->at(0))
             ->method('execute')

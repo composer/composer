@@ -87,6 +87,9 @@ class ArrayLoader implements LoaderInterface
             $package->setSourceType($config['source']['type']);
             $package->setSourceUrl($config['source']['url']);
             $package->setSourceReference($config['source']['reference']);
+            if (isset($config['source']['mirrors'])) {
+                $package->setSourceMirrors($config['source']['mirrors']);
+            }
         }
 
         if (isset($config['dist'])) {
@@ -103,6 +106,9 @@ class ArrayLoader implements LoaderInterface
             $package->setDistUrl($config['dist']['url']);
             $package->setDistReference(isset($config['dist']['reference']) ? $config['dist']['reference'] : null);
             $package->setDistSha1Checksum(isset($config['dist']['shasum']) ? $config['dist']['shasum'] : null);
+            if (isset($config['dist']['mirrors'])) {
+                $package->setDistMirrors($config['dist']['mirrors']);
+            }
         }
 
         foreach (Package\BasePackage::$supportedLinkTypes as $type => $opts) {

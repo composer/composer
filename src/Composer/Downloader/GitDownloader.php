@@ -26,7 +26,7 @@ class GitDownloader extends VcsDownloader
     /**
      * {@inheritDoc}
      */
-    public function doDownload(PackageInterface $package, $path)
+    public function doDownload(PackageInterface $package, $path, $url)
     {
         $this->cleanEnv();
         $path = $this->normalizePath($path);
@@ -40,8 +40,8 @@ class GitDownloader extends VcsDownloader
             return sprintf($command, escapeshellarg($url), escapeshellarg($path), escapeshellarg($ref));
         };
 
-        $this->runCommand($commandCallable, $package->getSourceUrl(), $path, true);
-        $this->setPushUrl($package, $path);
+        $this->runCommand($commandCallable, $url, $path, true);
+        $this->setPushUrl($path, $url);
 
         if ($newRef = $this->updateToCommit($path, $ref, $package->getPrettyVersion(), $package->getReleaseDate())) {
             if ($package->getDistReference() === $package->getSourceReference()) {
@@ -54,7 +54,7 @@ class GitDownloader extends VcsDownloader
     /**
      * {@inheritDoc}
      */
-    public function doUpdate(PackageInterface $initial, PackageInterface $target, $path)
+    public function doUpdate(PackageInterface $initial, PackageInterface $target, $path, $url)
     {
         $this->cleanEnv();
         $path = $this->normalizePath($path);
@@ -76,7 +76,7 @@ class GitDownloader extends VcsDownloader
             return sprintf($command, escapeshellarg($url));
         };
 
-        $this->runCommand($commandCallable, $target->getSourceUrl(), $path);
+        $this->runCommand($commandCallable, $url, $path);
         if ($newRef =  $this->updateToCommit($path, $ref, $target->getPrettyVersion(), $target->getReleaseDate())) {
             if ($target->getDistReference() === $target->getSourceReference()) {
                 $target->setDistReference($newRef);
@@ -412,10 +412,10 @@ class GitDownloader extends VcsDownloader
         return preg_replace('{://([^@]+?):.+?@}', '://$1:***@', $message);
     }
 
-    protected function setPushUrl(PackageInterface $package, $path)
+    protected function setPushUrl($path, $url)
     {
         // set push url for github projects
-        if (preg_match('{^(?:https?|git)://'.$this->getGitHubDomainsRegex().'/([^/]+)/([^/]+?)(?:\.git)?$}', $package->getSourceUrl(), $match)) {
+        if (preg_match('{^(?:https?|git)://'.$this->getGitHubDomainsRegex().'/([^/]+)/([^/]+?)(?:\.git)?$}', $url, $match)) {
             $protocols = $this->config->get('github-protocols');
             $pushUrl = 'git@'.$match[1].':'.$match[2].'/'.$match[3].'.git';
             if ($protocols[0] !== 'git') {

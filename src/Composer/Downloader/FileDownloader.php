@@ -79,17 +79,37 @@ class FileDownloader implements DownloaderInterface
      */
     public function download(PackageInterface $package, $path)
     {
-        $url = $package->getDistUrl();
-        if (!$url) {
+        if (!$package->getDistUrl()) {
             throw new \InvalidArgumentException('The given package is missing url information');
         }
 
+        $this->io->write("  - Installing <info>" . $package->getName() . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
+
+        $urls = $package->getDistUrls();
+        while ($url = array_shift($urls)) {
+            try {
+                $this->doDownload($package, $path, $url);
+                break;
+            } catch (\Exception $e) {
+                if ($this->io->isDebug()) {
+                    $this->io->write('');
+                    $this->io->write('Failed: ['.get_class($e).'] '.$e->getMessage());
+                } elseif (count($urls)) {
+                    $this->io->write('');
+                    $this->io->write('    Failed, trying the next URL');
+                } else {
+                    throw $e;
+                }
+            }
+        }
+    }
+
+    protected function doDownload(PackageInterface $package, $path, $url)
+    {
         $this->filesystem->removeDirectory($path);
         $this->filesystem->ensureDirectoryExists($path);
 
         $fileName = $this->getFileName($package, $path);
-
-        $this->io->write("  - Installing <info>" . $package->getName() . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
 
         $processedUrl = $this->processUrl($package, $url);
         $hostname = parse_url($processedUrl, PHP_URL_HOST);

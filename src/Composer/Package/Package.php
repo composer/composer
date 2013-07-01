@@ -27,10 +27,12 @@ class Package extends BasePackage
     protected $sourceType;
     protected $sourceUrl;
     protected $sourceReference;
+    protected $sourceMirrors;
     protected $distType;
     protected $distUrl;
     protected $distReference;
     protected $distSha1Checksum;
+    protected $distMirrors;
     protected $version;
     protected $prettyVersion;
     protected $releaseDate;
@@ -218,6 +220,30 @@ class Package extends BasePackage
     }
 
     /**
+     * @param array|null $mirrors
+     */
+    public function setSourceMirrors($mirrors)
+    {
+        $this->sourceMirrors = $mirrors;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getSourceMirrors()
+    {
+        return $this->sourceMirrors;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getSourceUrls()
+    {
+        return $this->getUrls($this->sourceUrl, $this->sourceMirrors, $this->sourceReference, $this->sourceType);
+    }
+
+    /**
      * @param string $type
      */
     public function setDistType($type)
@@ -279,6 +305,30 @@ class Package extends BasePackage
     public function getDistSha1Checksum()
     {
         return $this->distSha1Checksum;
+    }
+
+    /**
+     * @param array|null $mirrors
+     */
+    public function setDistMirrors($mirrors)
+    {
+        $this->distMirrors = $mirrors;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getDistMirrors()
+    {
+        return $this->distMirrors;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getDistUrls()
+    {
+        return $this->getUrls($this->distUrl, $this->distMirrors, $this->distReference, $this->distType);
     }
 
     /**
@@ -527,5 +577,23 @@ class Package extends BasePackage
 
         $this->stability = VersionParser::parseStability($version);
         $this->dev = $this->stability === 'dev';
+    }
+
+    protected function getUrls($url, $mirrors, $ref, $type)
+    {
+        $urls = array($url);
+        if ($mirrors) {
+            foreach ($mirrors as $mirror) {
+                $mirrorUrl = str_replace(
+                    array('%package%', '%version%', '%reference%', '%type%'),
+                    array($this->name, $this->version, $ref, $type),
+                    $mirror['url']
+                );
+                $func = $mirror['preferred'] ? 'array_unshift' : 'array_push';
+                $func($urls, $mirrorUrl);
+            }
+        }
+
+        return $urls;
     }
 }

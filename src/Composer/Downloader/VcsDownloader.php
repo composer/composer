@@ -56,7 +56,23 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
 
         $this->io->write("  - Installing <info>" . $package->getName() . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
         $this->filesystem->removeDirectory($path);
-        $this->doDownload($package, $path);
+
+        $urls = $package->getSourceUrls();
+        while ($url = array_shift($urls)) {
+            try {
+                $this->doDownload($package, $path, $url);
+                break;
+            } catch (\Exception $e) {
+                if ($this->io->isDebug()) {
+                    $this->io->write('Failed: ['.get_class($e).'] '.$e->getMessage());
+                } elseif (count($urls)) {
+                    $this->io->write('    Failed, trying the next URL');
+                } else {
+                    throw $e;
+                }
+            }
+        }
+
         $this->io->write('');
     }
 
@@ -87,17 +103,28 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
         $this->io->write("  - Updating <info>" . $name . "</info> (<comment>" . $from . "</comment> => <comment>" . $to . "</comment>)");
 
         $this->cleanChanges($initial, $path, true);
-        try {
-            $this->doUpdate($initial, $target, $path);
-        } catch (\Exception $e) {
-            // in case of failed update, try to reapply the changes before aborting
-            $this->reapplyChanges($path);
+        $urls = $target->getSourceUrls();
+        while ($url = array_shift($urls)) {
+            try {
+                $this->doUpdate($initial, $target, $path, $url);
+                break;
+            } catch (\Exception $e) {
+                if ($this->io->isDebug()) {
+                    $this->io->write('Failed: ['.get_class($e).'] '.$e->getMessage());
+                } elseif (count($urls)) {
+                    $this->io->write('    Failed, trying the next URL');
+                } else {
+                    // in case of failed update, try to reapply the changes before aborting
+                    $this->reapplyChanges($path);
 
-            throw $e;
+                    throw $e;
+                }
+            }
         }
+
         $this->reapplyChanges($path);
 
-        //print the commit logs if in verbose mode
+        // print the commit logs if in verbose mode
         if ($this->io->isVerbose()) {
             $message = 'Pulling in changes:';
             $logs = $this->getCommitLogs($initial->getSourceReference(), $target->getSourceReference(), $path);
@@ -176,8 +203,9 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
      *
      * @param PackageInterface $package package instance
      * @param string           $path    download path
+     * @param string           $url     package url
      */
-    abstract protected function doDownload(PackageInterface $package, $path);
+    abstract protected function doDownload(PackageInterface $package, $path, $url);
 
     /**
      * Updates specific package in specific folder from initial to target version.
@@ -185,8 +213,9 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
      * @param PackageInterface $initial initial package
      * @param PackageInterface $target  updated package
      * @param string           $path    download path
+     * @param string           $url     package url
      */
-    abstract protected function doUpdate(PackageInterface $initial, PackageInterface $target, $path);
+    abstract protected function doUpdate(PackageInterface $initial, PackageInterface $target, $path, $url);
 
     /**
      * Fetches the commit logs between two commits

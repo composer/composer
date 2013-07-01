@@ -50,6 +50,8 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
     protected $rootAliases;
     protected $allowSslDowngrade = false;
     protected $eventDispatcher;
+    protected $sourceMirrors;
+    protected $distMirrors;
     private $rawData;
     private $minimalPackages;
     private $degradedMode = false;
@@ -434,6 +436,17 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
             $this->searchUrl = $this->canonicalizeUrl($data['search']);
         }
 
+        if (!empty($data['mirrors'])) {
+            foreach ($data['mirrors'] as $mirror) {
+                if (!empty($mirror['source-url'])) {
+                    $this->sourceMirrors[] = array('url' => $mirror['source-url'], 'preferred' => !empty($mirror['preferred']));
+                }
+                if (!empty($mirror['dist-url'])) {
+                    $this->distMirrors[] = array('url' => $mirror['dist-url'], 'preferred' => !empty($mirror['preferred']));
+                }
+            }
+        }
+
         if ($this->allowSslDowngrade) {
             $this->url = str_replace('https://', 'http://', $this->url);
         }
@@ -548,6 +561,8 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
             }
 
             $package = $this->loader->load($data, 'Composer\Package\CompletePackage');
+            $package->setSourceMirrors($this->sourceMirrors);
+            $package->setDistMirrors($this->distMirrors);
             $this->configurePackageTransportOptions($package);
 
             return $package;

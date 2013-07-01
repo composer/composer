@@ -209,6 +209,10 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     {
         return $this->aliasOf->getSourceUrl();
     }
+    public function getSourceUrls()
+    {
+        return $this->aliasOf->getSourceUrls();
+    }
     public function getSourceReference()
     {
         return $this->aliasOf->getSourceReference();
@@ -217,6 +221,14 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     {
         return $this->aliasOf->setSourceReference($reference);
     }
+    public function setSourceMirrors($mirrors)
+    {
+        return $this->aliasOf->setSourceMirrors($mirrors);
+    }
+    public function getSourceMirrors()
+    {
+        return $this->aliasOf->getSourceMirrors();
+    }
     public function getDistType()
     {
         return $this->aliasOf->getDistType();
@@ -224,6 +236,10 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     public function getDistUrl()
     {
         return $this->aliasOf->getDistUrl();
+    }
+    public function getDistUrls()
+    {
+        return $this->aliasOf->getDistUrls();
     }
     public function getDistReference()
     {
@@ -240,6 +256,14 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     public function getTransportOptions()
     {
         return $this->aliasOf->getTransportOptions();
+    }
+    public function setDistMirrors($mirrors)
+    {
+        return $this->aliasOf->setDistMirrors($mirrors);
+    }
+    public function getDistMirrors()
+    {
+        return $this->aliasOf->getDistMirrors();
     }
     public function getScripts()
     {
