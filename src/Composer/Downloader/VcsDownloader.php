@@ -67,7 +67,8 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
                     $this->io->write('Failed: ['.get_class($e).'] '.$e->getMessage());
                 } elseif (count($urls)) {
                     $this->io->write('    Failed, trying the next URL');
-                } else {
+                }
+                if (!count($urls)) {
                     throw $e;
                 }
             }

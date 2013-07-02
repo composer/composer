@@ -97,7 +97,9 @@ class FileDownloader implements DownloaderInterface
                 } elseif (count($urls)) {
                     $this->io->write('');
                     $this->io->write('    Failed, trying the next URL');
-                } else {
+                }
+
+                if (!count($urls)) {
                     throw $e;
                 }
             }
