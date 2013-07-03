@@ -277,7 +277,7 @@ class LibraryInstaller implements InstallerInterface
         }
 
         return "@ECHO OFF\r\n".
-            "SET BIN_TARGET=%~dp0\\".escapeshellarg(dirname($binPath)).'\\'.basename($binPath)."\r\n".
+            "SET BIN_TARGET=%~dp0/".trim(escapeshellarg($binPath), '"')."\r\n".
             "{$caller} \"%BIN_TARGET%\" %*\r\n";
     }
 
