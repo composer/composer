@@ -54,7 +54,7 @@ class ClassMapGenerator
             if (is_file($path)) {
                 $path = array(new \SplFileInfo($path));
             } elseif (is_dir($path)) {
-                $path = Finder::create()->useBestAdapter()->files()->followLinks()->name('/.*[php|inc]/')->in($path);
+                $path = Finder::create()->useBestAdapter()->files()->followLinks()->name('/\.(php|inc)$/')->in($path);
             } else {
                 throw new \RuntimeException(
                     'Could not scan for classes inside "'.$path.
@@ -98,11 +98,7 @@ class ClassMapGenerator
         $traits = version_compare(PHP_VERSION, '5.4', '<') ? '' : '|trait';
 
         try {
-            if (!is_readable($path)) {
-                throw new \RuntimeException('file not found');
-            }
-            //suppress warnings on unclosed comments
-            $contents = @php_strip_whitespace($path);
+            $contents = php_strip_whitespace($path);
         } catch (\Exception $e) {
             throw new \RuntimeException('Could not scan for classes inside '.$path.": \n".$e->getMessage(), 0, $e);
         }
