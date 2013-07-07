@@ -1012,7 +1012,7 @@ class Installer
      */
     public function setNoSuggest($noSuggest = true)
     {
-        $this->noSuggest = $true;
+        $this->noSuggest = $noSuggest;
 
         return $this;
     }

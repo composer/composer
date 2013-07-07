@@ -87,7 +87,7 @@ EOT
             ->setPreferSource($preferSource)
             ->setPreferDist($preferDist)
             ->setDevMode(!$input->getOption('no-dev'))
-            ->setNoSuggest($input->getOption('no-dev', $this->getOption('no-suggest')))
+            ->setNoSuggest($input->getOption('no-dev') || $input->getOption('no-suggest'))
             ->setRunScripts(!$input->getOption('no-scripts'))
             ->setOptimizeAutoloader($input->getOption('optimize-autoloader'))
         ;
