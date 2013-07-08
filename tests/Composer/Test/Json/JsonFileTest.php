@@ -198,6 +198,30 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
         $this->assertJsonFormat('"\\u018c"', $data, 0);
     }
 
+    public function testReplaceVariables()
+    {
+        $expected = array(
+            'name'        => 'composer/composer',
+            'description' => 'description',
+            'require'     => array(
+                'a/b' => 'v1.0.0',
+            ),
+            'require-dev' => array(
+                'c/d' => 'v2.0.0',
+            ),
+            'variables'   => array(
+                'var1.value' => 'v1.0.0',
+                'var2.value' => 'v2.0.0',
+                'var3.value' => 'description',
+            ),
+        );
+
+        $file = new JsonFile(__DIR__.'/Fixtures/composer.json');
+        $json = $file->read();
+        $this->assertEquals($expected, $json);
+    }
+
+
     private function expectParseException($text, $json)
     {
         try {
