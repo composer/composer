@@ -127,6 +127,7 @@ class HgBitbucketDriver extends VcsDriver
             foreach ($tagsData as $tag => $data) {
                 $this->tags[$tag] = $data['raw_node'];
             }
+            unset($this->tags['tip']);
         }
 
         return $this->tags;
