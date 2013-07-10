@@ -335,6 +335,12 @@
                     "format": "uri"
                 }
             }
+        },
+        "variables": {
+            "type": "object",
+            "description": "This is a hash of variable name (keys) and value (values) that can be referenced in the composer.json.",
+            "additionalProperties": true
         }
+
     }
 }

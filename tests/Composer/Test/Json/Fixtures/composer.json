@@ -1,0 +1,15 @@
+{
+    "name": "composer/composer",
+    "description": "%var3.value%",
+    "require": {
+        "a/b": "%var1.value%"
+    },
+    "require-dev": {
+        "c/d": "%var2.value%"
+    },
+    "variables": {
+        "var1.value": "v1.0.0",
+        "var2.value": "v2.0.0",
+        "var3.value": "description"
+    }
+}

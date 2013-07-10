@@ -92,7 +92,7 @@ class JsonFile
             throw new \RuntimeException('Could not read '.$this->path."\n\n".$e->getMessage());
         }
 
-        return static::parseJson($json, $this->path);
+        return $this->replaceVariables(static::parseJson($json, $this->path));
     }
 
     /**
@@ -309,5 +309,23 @@ class JsonFile
         }
 
         throw new ParsingException('"'.$file.'" does not contain valid JSON'."\n".$result->getMessage(), $result->getDetails());
+    }
+
+    /**
+     * @param $json
+     * @return mixed
+     */
+    private function replaceVariables($json)
+    {
+        if (isset($json['variables'])) {
+            $variables = $json['variables'];
+            array_walk_recursive($json, function(&$version) use($variables) {
+                foreach ($variables as $key => $variable) {
+                    $version = ($version === '%' . $key . '%') ? $variable : $version;
+                }
+            });
+        }
+
+        return $json;
     }
 }
