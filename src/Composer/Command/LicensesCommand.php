@@ -30,7 +30,7 @@ class LicensesCommand extends Command
             ->setName('licenses')
             ->setDescription('Show information about licenses of dependencies')
             ->setDefinition(array(
-                new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: flat or json', 'flat'),
+                new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text'),
             ))
             ->setHelp(<<<EOT
 The license command displays detailed information about the licenses of
@@ -61,7 +61,7 @@ EOT
         ksort($packages);
 
         switch ($format = $input->getOption('format')) {
-            case 'flat':
+            case 'text':
                 $formatRowCallback = function (PackageInterface $package) use ($versionParser, $nameLength, $versionLength) {
                     return sprintf(
                         '  %s  %s  %s',
