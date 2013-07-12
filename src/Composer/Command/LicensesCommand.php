@@ -48,20 +48,22 @@ EOT
 
         $versionParser = new VersionParser;
 
-        $nameLength = strlen($root->getPrettyName());
-        $versionLength = strlen($versionParser->formatVersion($root));
-
         foreach ($repo->getPackages() as $package) {
             $packages[$package->getName()] = $package;
-
-            $nameLength    = max($nameLength, strlen($package->getPrettyName()));
-            $versionLength = max($versionLength, strlen($versionParser->formatVersion($package)));
         }
 
         ksort($packages);
 
         switch ($format = $input->getOption('format')) {
             case 'text':
+                $nameLength = strlen($root->getPrettyName());
+                $versionLength = strlen($versionParser->formatVersion($root));
+
+                foreach ($packages as $package) {
+                    $nameLength    = max($nameLength, strlen($package->getPrettyName()));
+                    $versionLength = max($versionLength, strlen($versionParser->formatVersion($package)));
+                }
+
                 $formatRowCallback = function (PackageInterface $package) use ($versionParser, $nameLength, $versionLength) {
                     return sprintf(
                         '  %s  %s  %s',
