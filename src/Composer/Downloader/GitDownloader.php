@@ -109,7 +109,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
         $branch = trim($output);
 
-        $command = sprintf('git diff --name-status %s..origin/%s', $branch, $branch);
+        $command = sprintf('git diff --name-status %s..composer/%s', $branch, $branch);
         if (0 !== $this->process->execute($command, $output, $path)) {
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
         }
