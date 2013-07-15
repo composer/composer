@@ -125,8 +125,10 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         $this->cleanEnv();
         $path = $this->normalizePath($path);
 
-        if (null !== $this->getUnpushedChanges($path)) {
-            throw new \RuntimeException('Source directory ' . $path . ' has unpushed changes on the current branch.');
+        if ($this instanceof DvcsDownloaderInterface) {
+            if (null !== $this->getUnpushedChanges($path)) {
+                throw new \RuntimeException('Source directory ' . $path . ' has unpushed changes on the current branch.');
+            }
         }
 
         if (!$changes = $this->getLocalChanges($path)) {
