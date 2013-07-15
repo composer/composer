@@ -14,6 +14,7 @@ namespace Composer\Command;
 
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
+use Symfony\Component\Console\Helper\TableHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -56,29 +57,22 @@ EOT
 
         switch ($format = $input->getOption('format')) {
             case 'text':
-                $nameLength = strlen($root->getPrettyName());
-                $versionLength = strlen($versionParser->formatVersion($root));
-
-                foreach ($packages as $package) {
-                    $nameLength    = max($nameLength, strlen($package->getPrettyName()));
-                    $versionLength = max($versionLength, strlen($versionParser->formatVersion($package)));
-                }
-
-                $formatRowCallback = function (PackageInterface $package) use ($versionParser, $nameLength, $versionLength) {
-                    return sprintf(
-                        '  %s  %s  %s',
-                        str_pad($package->getPrettyName(), $nameLength, ' '),
-                        str_pad($versionParser->formatVersion($package), $versionLength, ' '),
-                        implode(', ', $package->getLicense()) ?: 'none'
-                    );
-                };
-
-                $output->writeln('Root Package:');
-                $output->writeln($formatRowCallback($root));
+                $output->writeln('Name: <comment>'.$root->getPrettyName().'</comment>');
+                $output->writeln('Version: <comment>'.$versionParser->formatVersion($root).'</comment>');
+                $output->writeln('Licenses: <comment>'.(implode(', ', $root->getLicense()) ?: 'none').'</comment>');
                 $output->writeln('Dependencies:');
+
+                $table = $this->getHelperSet()->get('table');
+                $table->setLayout(TableHelper::LAYOUT_BORDERLESS);
+                $table->setHorizontalBorderChar('');
                 foreach ($packages as $package) {
-                    $output->writeln($formatRowCallback($package));
+                    $table->addRow(array(
+                        $package->getPrettyName(),
+                        $versionParser->formatVersion($package),
+                        implode(', ', $package->getLicense()) ?: 'none',
+                    ));
                 }
+                $table->render($output);
                 break;
 
             case 'json':
