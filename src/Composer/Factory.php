@@ -36,7 +36,7 @@ class Factory
     /**
      * @return string
      */
-    protected static function determinHomeDirectory()
+    protected static function getHomeDir()
     {
         $home = getenv('COMPOSER_HOME');
         if (!$home) {
@@ -59,7 +59,7 @@ class Factory
     /**
      * @return string
      */
-    protected static function determinCacheDirectory()
+    protected static function getCacheDir($home)
     {
         $cacheDir = getenv('COMPOSER_CACHE_DIR');
         if (!$cacheDir) {
@@ -84,8 +84,8 @@ class Factory
     public static function createConfig()
     {
         // determine home and cache dirs
-        $home = self::determinComposerHomeDirectory();
-        $cacheDir = self::determinComposerCacheDirectory();
+        $home     = self::getHomeDir();
+        $cacheDir = self::getCacheDir($home);
 
         // Protect directory against web access. Since HOME could be
         // the www-data's user home and be web-accessible it is a
@@ -139,6 +139,26 @@ class Factory
                 }
             }
         }
+
+        return $config;
+    }
+
+    /**
+     * @return Config
+     */
+    protected static function createAuthConfig()
+    {
+        $home = self::getHomeDir();
+
+        $config = new Config();
+        // add dirs to the config
+        $config->merge(array('config' => array('home' => $home)));
+
+        $file = new JsonFile($home.'/auth.json');
+        if ($file->exists()) {
+            $config->merge($file->read());
+        }
+        $config->setConfigSource(new JsonConfigSource($file));
 
         return $config;
     }
@@ -237,8 +257,9 @@ class Factory
             }
         }
 
-        // reload http basic auth credentials from config if available
-        if ($basicauth = $config->get('basic-auth')) {
+        // load separate auth config
+        $authConfig = static::createAuthConfig();
+        if ($basicauth = $authConfig->get('basic-auth')) {
             foreach ($basicauth as $domain => $credentials) {
                 if(!isset($credentials['username'])) {
                     continue;
