@@ -19,7 +19,7 @@ use Composer\Util\Git as GitUtil;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class GitDownloader extends VcsDownloader
+class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 {
     private $hasStashedChanges = false;
 
@@ -94,10 +94,41 @@ class GitDownloader extends VcsDownloader
     /**
      * {@inheritDoc}
      */
+    public function getUnpushedChanges($path)
+    {
+        $this->cleanEnv();
+        $path = $this->normalizePath($path);
+        if (!is_dir($path.'/.git')) {
+            return;
+        }
+
+        $command = 'git rev-parse --abbrev-ref HEAD';
+        if (0 !== $this->process->execute($command, $output, $path)) {
+            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+        }
+
+        $branch = trim($output);
+
+        $command = sprintf('git diff --name-status %s..origin/%s', $branch, $branch);
+        if (0 !== $this->process->execute($command, $output, $path)) {
+            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+        }
+
+        return trim($output) ?: null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     protected function cleanChanges($path, $update)
     {
         $this->cleanEnv();
         $path = $this->normalizePath($path);
+
+        if (null !== $this->getUnpushedChanges($path)) {
+            throw new \RuntimeException('Source directory ' . $path . ' has unpushed changes on the current branch.');
+        }
+
         if (!$changes = $this->getLocalChanges($path)) {
             return;
         }
