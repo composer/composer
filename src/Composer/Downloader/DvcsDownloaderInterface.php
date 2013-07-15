@@ -15,8 +15,7 @@ namespace Composer\Downloader;
 /**
  * DVCS Downloader interface.
  *
- * @author Konstantin Kudryashov <ever.zet@gmail.com>
- * @author Jordi Boggiano <j.boggiano@seld.be>
+ * @author James Titcumb <james@asgrim.com>
  */
 interface DvcsDownloaderInterface
 {
