@@ -92,8 +92,7 @@ EOT
                 break;
 
             default:
-                $output->writeln(sprintf('Unsupported format "%s".  See help for supported formats.', $format));
-                break;
+                throw new \RuntimeException(sprintf('Unsupported format "%s".  See help for supported formats.', $format));
         }
     }
 }
