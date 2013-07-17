@@ -142,6 +142,13 @@ class ArchiveManager
         }
 
         // Create the archive
-        return $usableArchiver->archive($sourcePath, $target, $format, $package->getArchiveExcludes());
+        $archivePath = $usableArchiver->archive($sourcePath, $target, $format, $package->getArchiveExcludes());
+
+        //cleanup temporary download
+        if (!($package instanceof RootPackage)) {
+            $filesystem->removeDirectory($sourcePath);
+        }
+
+        return $archivePath;
     }
 }
