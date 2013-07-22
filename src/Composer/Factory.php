@@ -316,6 +316,19 @@ class Factory
         }
 
         $dm = new Downloader\DownloadManager();
+        switch ($config->get('preferred-install')) {
+            case 'dist':
+                $dm->setPreferDist(true);
+                break;
+            case 'source':
+                $dm->setPreferSource(true);
+                break;
+            case 'auto':
+            default:
+                // noop
+                break;
+        }
+
         $dm->setDownloader('git', new Downloader\GitDownloader($io, $config));
         $dm->setDownloader('svn', new Downloader\SvnDownloader($io, $config));
         $dm->setDownloader('hg', new Downloader\HgDownloader($io, $config));
