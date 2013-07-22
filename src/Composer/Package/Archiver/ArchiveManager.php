@@ -138,7 +138,7 @@ class ArchiveManager
             $filesystem->ensureDirectoryExists($sourcePath);
 
             // Download sources
-            $this->downloadManager->download($package, $sourcePath, true);
+            $this->downloadManager->download($package, $sourcePath);
         }
 
         // Create the archive
