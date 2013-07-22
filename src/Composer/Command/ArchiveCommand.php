@@ -68,7 +68,8 @@ EOT
     {
         $config = Factory::createConfig();
         $factory = new Factory;
-        $archiveManager = $factory->createArchiveManager($config);
+        $downloadManager = $factory->createDownloadManager($this->getIO(), $config);
+        $archiveManager = $factory->createArchiveManager($config, $downloadManager);
 
         if ($packageName) {
             $package = $this->selectPackage($io, $packageName, $version);
