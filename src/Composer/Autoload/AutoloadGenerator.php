@@ -170,7 +170,7 @@ EOF;
         $filesCode = "";
         $autoloads['files'] = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($autoloads['files']));
         foreach ($autoloads['files'] as $functionFile) {
-            $filesCode .= '        require '.$this->getPathCode($filesystem, $basePath, $vendorPath, $functionFile).";\n";
+            $filesCode .= 'require '.$this->getPathCode($filesystem, $basePath, $vendorPath, $functionFile).";\n";
         }
 
         if (!$suffix) {
@@ -181,6 +181,11 @@ EOF;
         file_put_contents($targetDir.'/autoload_classmap.php', $classmapFile);
         if ($includePathFile = $this->getIncludePathsFile($packageMap, $filesystem, $basePath, $vendorPath, $vendorPathCode52, $appBaseDirCode)) {
             file_put_contents($targetDir.'/include_paths.php', $includePathFile);
+        }
+        if ($filesCode) {
+            $filesCode = "<?php\n\n".rtrim($filesCode)."\n";
+            file_put_contents($targetDir.'/autoload_files.php', $filesCode);
+            $filesCode = "        require __DIR__ . '/autoload_files.php';";
         }
         file_put_contents($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, $suffix));
         file_put_contents($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, true, (bool) $includePathFile, $targetDirLoader, $filesCode, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath));
