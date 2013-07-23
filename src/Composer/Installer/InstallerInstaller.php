@@ -91,7 +91,7 @@ class InstallerInstaller extends LibraryInstaller
         foreach ($classes as $class) {
             if (class_exists($class, false)) {
                 $code = file_get_contents($classLoader->findFile($class));
-                $code = preg_replace('{^class\s+(\S+)}mi', 'class $1_composer_tmp'.self::$classCounter, $code);
+                $code = preg_replace('{^(\s*)class\s+(\S+)}mi', '$1class $2_composer_tmp'.self::$classCounter, $code);
                 eval('?>'.$code);
                 $class .= '_composer_tmp'.self::$classCounter;
                 self::$classCounter++;
