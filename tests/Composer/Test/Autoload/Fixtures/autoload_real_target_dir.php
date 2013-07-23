@@ -40,8 +40,7 @@ class ComposerAutoloaderInitTargetDir
 
         $loader->register(true);
 
-        require $baseDir . '/foo.php';
-        require $baseDir . '/bar.php';
+        require __DIR__ . '/autoload_files.php';
 
         return $loader;
     }
