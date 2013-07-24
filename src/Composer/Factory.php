@@ -325,6 +325,7 @@ class Factory
         $dm->setDownloader('git', new Downloader\GitDownloader($io, $config));
         $dm->setDownloader('svn', new Downloader\SvnDownloader($io, $config));
         $dm->setDownloader('hg', new Downloader\HgDownloader($io, $config));
+        $dm->setDownloader('perforce', new Downloader\PerforceDownloader($io, $config));
         $dm->setDownloader('zip', new Downloader\ZipDownloader($io, $config, $cache));
         $dm->setDownloader('tar', new Downloader\TarDownloader($io, $config, $cache));
         $dm->setDownloader('phar', new Downloader\PharDownloader($io, $config, $cache));

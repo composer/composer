@@ -46,6 +46,7 @@ class VcsRepository extends ArrayRepository
             'git'           => 'Composer\Repository\Vcs\GitDriver',
             'hg-bitbucket'  => 'Composer\Repository\Vcs\HgBitbucketDriver',
             'hg'            => 'Composer\Repository\Vcs\HgDriver',
+            'perforce'      => 'Composer\Repository\Vcs\PerforceDriver',
             // svn must be last because identifying a subversion server for sure is practically impossible
             'svn'           => 'Composer\Repository\Vcs\SvnDriver',
         );
