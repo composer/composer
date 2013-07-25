@@ -15,62 +15,39 @@
 
 namespace Composer\Repository\Vcs;
 
-#use Composer\Downloader\TransportException;
-#use Composer\Json\JsonFile;
-#use Composer\Cache;
 use Composer\IO\IOInterface;
 use Composer\Util\Filesystem;
 use Composer\Util\Perforce;
-#use Composer\Util\RemoteFilesystem;
-#use Composer\Util\GitHub;
 
 /**
  * @author matt-whittom <>
  */
 class PerforceDriver extends VcsDriver
 {
-//    protected $cache;
-//    protected $owner;
-//    protected $repository;
-//    protected $tags;
-//    protected $branches;
-    protected $rootIdentifier = 'mainline';
-    protected $repoDir;
-//    protected $hasIssues;
-//    protected $infoCache = array();
-//    protected $isPrivate = false;
+    protected $rootIdentifier;
     protected $depot;
-    protected $p4client;
+    protected $perforce;
 
     /**
      * {@inheritDoc}
      */
     public function initialize()
     {
-        print ("PerforceDriver:initialize\n");
+        print ("\nPerforceDriver:initialize\n");
+        $this->rootIdentifier = "mainline";
         $this->depot = $this->repoConfig['depot'];
-        $this->p4client = "composer_perforce_$this->depot";
-        $this->repoDir = $this->config->get('cache-vcs-dir') . "/$this->depot";
-        $clientSpec = $this->config->get('cache-dir') . "/perforce/$this->p4client.p4.spec";
-
-        $this->p4Login();
-
-        $fs = new Filesystem();
-        $fs->ensureDirectoryExists($this->repoDir);
 
         $stream = "//$this->depot/$this->rootIdentifier";
-        $perforce = new Perforce();
-        $perforce->writeP4ClientSpec($clientSpec, $this->repoDir, $this->p4client, $stream);
-        $perforce->syncCodeBase($clientSpec, $this->repoDir, $this->p4client);
+        $repoDir = $this->config->get('cache-vcs-dir') . "/$this->depot";
+        $this->perforce = new Perforce($stream, $this->getUrl(), $repoDir);
+
+        $this->perforce->p4Login($this->io);
+        $this->perforce->writeP4ClientSpec();
+        $this->perforce->syncCodeBase();
 
         return true;
     }
 
-    protected function p4Login(){
-        $password = trim(shell_exec('echo $P4PASSWD'));
-        $command = "echo $password | p4 login -a ";
-        shell_exec($command);
-    }
 
 
 
@@ -79,31 +56,9 @@ class PerforceDriver extends VcsDriver
      */
     public function getComposerInformation($identifier)
     {
-        print ("PerforceDriver:getComposerInformation: $identifier\n");
-        $command = "p4 print $identifier/composer.json";
-        $result = shell_exec($command);
-        $index = strpos($result, "{");
-        if ($index === false){
-            return;
-        }
-        if ($index >=0){
-           $rawData = substr($result, $index);
-            $composer_info = json_decode($rawData, true);
-            print ("ComposerInfo is:".var_export($composer_info, true) . "\n");
-            return $composer_info;
-        }
-
-
-//   Basically, read the composer.json file from the project.
-//
-//        Git stuff:
-//        ..getComposerInfo is: array (
-//        'support' =>
-//        array (
-//            'source' => 'http://github.com/composer/packagist',
-//        ),
-//        'time' => '2012-09-10',
-//    )
+        print ("PerforceDriver:getComposerInformation - identifier: $identifier\n");
+        $composer_info =$this->perforce->getComposerInformation($identifier);
+        return $composer_info;
     }
 
     /**
@@ -120,9 +75,6 @@ class PerforceDriver extends VcsDriver
      */
     public function getBranches()
     {
-        //return $branch->$identifier
-        //getComposer($identifier)
-        //validate($branch)
         print ("PerforceDriver:getBranches\n");
         $command = "p4 streams //$this->depot/...";
         $result = shell_exec($command);
@@ -137,7 +89,6 @@ class PerforceDriver extends VcsDriver
             }
         }
         $branches['master'] = $branches['mainline'];
-        print ("PerforceDriver:getBranches - returning branches:".var_export($branches, true)."\n");
         return $branches;
     }
 
@@ -155,7 +106,7 @@ class PerforceDriver extends VcsDriver
      */
     public function getDist($identifier)
     {
-        print ("PerforceDriver:getDist: $identifier\n");
+        print("\nPerforceDriver:getDist: identifier: $identifier\n");
         return null;
     }
 
@@ -164,7 +115,7 @@ class PerforceDriver extends VcsDriver
      */
     public function getSource($identifier)
     {
-        print ("PerforceDriver:getSource: $identifier\n");
+        print ("\nPerforceDriver:getSource - identifier: $identifier\n");
 
         $source = array (
             'type' => 'perforce',
@@ -180,7 +131,7 @@ class PerforceDriver extends VcsDriver
     public function getUrl()
     {
         print ("PerforceDriver:getUrl\n");
-
+        return $this->url;
     }
 
     /**
@@ -188,10 +139,10 @@ class PerforceDriver extends VcsDriver
      */
     public function hasComposerFile($identifier)
     {
-        print ("PerforceDriver:hasComposerFile: $identifier\n");
-
-        //Does the project have a composer file?
-        return true;
+        print ("\nPerforceDriver:hasComposerFile - identifier: $identifier\n");
+        $composerFile = $this->perforce->getComposerFilePath($identifier);
+        print ("returning: " . var_export(file_exists($composerFile),true) . "\n");
+        return file_exists($composerFile);
     }
 
     /**
@@ -199,7 +150,8 @@ class PerforceDriver extends VcsDriver
      */
     public function getContents($url)
     {
-        print("PerforceDriver:getContents - url: $url");
+        print ("\nPerforceDriver:getContents - url: $url\n");
+        return false;
     }
 
     /**
@@ -207,12 +159,7 @@ class PerforceDriver extends VcsDriver
      */
     public static function supports(IOInterface $io, $url, $deep = false)
     {
-        print ("PerforceDriver:supports\n");
-
-        print ("\nChecking url for support: $url\n\n");
-        if (preg_match('#(^perforce)#', $url)) {
-            return true;
-        }
-        return false;
+        print ("PerforceDriver:supports - url: $url\n");
+        return Perforce::checkServerExists($url);
     }
 }
