@@ -14,6 +14,7 @@ namespace Composer\Test\Downloader;
 
 use Composer\Downloader\GitDownloader;
 use Composer\Config;
+use Composer\Util\Filesystem;
 
 class GitDownloaderTest extends \PHPUnit_Framework_TestCase
 {
@@ -221,10 +222,9 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
     {
         $expectedGitUpdateCommand = $this->winCompat("git remote set-url composer 'git://github.com/composer/composer' && git fetch composer && git fetch --tags composer");
 
-        $tmpDir = sys_get_temp_dir().DIRECTORY_SEPARATOR.'test-git-update';
-        if (!is_dir($tmpDir.'/.git')) {
-            mkdir($tmpDir.'/.git', true, 0777);
-        }
+        $tmpDir = realpath(sys_get_temp_dir()).DIRECTORY_SEPARATOR.'cmptest-'.md5(uniqid('', true));
+        $fs = new Filesystem;
+        $fs->ensureDirectoryExists($tmpDir.'/.git');
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $packageMock->expects($this->any())
             ->method('getSourceReference')
@@ -268,10 +268,9 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
     {
         $expectedGitUpdateCommand = $this->winCompat("git remote set-url composer 'git://github.com/composer/composer' && git fetch composer && git fetch --tags composer");
 
-        $tmpDir = sys_get_temp_dir().DIRECTORY_SEPARATOR.'test-git-update';
-        if (!is_dir($tmpDir.'/.git')) {
-            mkdir($tmpDir.'/.git', true, 0777);
-        }
+        $tmpDir = realpath(sys_get_temp_dir()).DIRECTORY_SEPARATOR.'cmptest-'.md5(uniqid('', true));
+        $fs = new Filesystem;
+        $fs->ensureDirectoryExists($tmpDir.'/.git');
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $packageMock->expects($this->any())
             ->method('getSourceReference')
