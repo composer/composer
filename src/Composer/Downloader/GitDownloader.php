@@ -53,6 +53,9 @@ class GitDownloader extends VcsDownloader
     {
         $this->cleanEnv();
         $path = $this->normalizePath($path);
+        if (!is_dir($path.'/.git')) {
+            throw new \RuntimeException('The .git directory is missing from '.$path.', see http://getcomposer.org/commit-deps for more information');
+        }
 
         $ref = $target->getSourceReference();
         $this->io->write("    Checking out ".$ref);
