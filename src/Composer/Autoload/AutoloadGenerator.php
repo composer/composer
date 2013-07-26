@@ -187,12 +187,18 @@ EOF;
 
         // use stream_copy_to_stream instead of copy
         // to work around https://bugs.php.net/bug.php?id=64634
-        $sourceLoader = fopen(__DIR__.'/ClassLoader.php', 'r');
-        $targetLoader = fopen($targetDir.'/ClassLoader.php', 'w+');
-        stream_copy_to_stream($sourceLoader, $targetLoader);
-        fclose($sourceLoader);
-        fclose($targetLoader);
-        unset($sourceLoader, $targetLoader);
+        $files = array(
+            __DIR__.'/ClassLoader.php' => $targetDir.'/ClassLoader.php',
+            __DIR__.'/ApcClassLoader.php' => $targetDir.'/ApcClassLoader.php',
+        );
+        foreach ($files as $source => $dest) {
+            $sourceLoader = fopen($source, 'r');
+            $targetLoader = fopen($dest, 'w+');
+            stream_copy_to_stream($sourceLoader, $targetLoader);
+            fclose($sourceLoader);
+            fclose($targetLoader);
+            unset($sourceLoader, $targetLoader);
+        }
 
         $this->eventDispatcher->dispatch(ScriptEvents::POST_AUTOLOAD_DUMP);
     }
@@ -365,6 +371,9 @@ class ComposerAutoloaderInit$suffix
         if ('Composer\\Autoload\\ClassLoader' === \$class) {
             require __DIR__ . '/ClassLoader.php';
         }
+        elseif ('Composer\\Autoload\\ApcClassLoader' === \$class) {
+            require __DIR__ . '/ApcClassLoader.php';
+        }
     }
 
     public static function getLoader()
@@ -374,7 +383,12 @@ class ComposerAutoloaderInit$suffix
         }
 
         spl_autoload_register(array('ComposerAutoloaderInit$suffix', 'loadClassLoader'), true, true);
-        self::\$loader = \$loader = new \\Composer\\Autoload\\ClassLoader();
+        if (extension_loaded('apc')) {
+            self::\$loader = \$loader = new \\Composer\\Autoload\\ApcClassLoader('$suffix');
+        }
+        else {
+            self::\$loader = \$loader = new \\Composer\\Autoload\\ClassLoader();
+        }
         spl_autoload_unregister(array('ComposerAutoloaderInit$suffix', 'loadClassLoader'));
 
         \$vendorDir = $vendorPathCode;

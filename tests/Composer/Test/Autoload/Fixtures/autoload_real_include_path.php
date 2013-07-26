@@ -11,6 +11,9 @@ class ComposerAutoloaderInitIncludePath
         if ('Composer\Autoload\ClassLoader' === $class) {
             require __DIR__ . '/ClassLoader.php';
         }
+        elseif ('Composer\Autoload\ApcClassLoader' === $class) {
+            require __DIR__ . '/ApcClassLoader.php';
+        }
     }
 
     public static function getLoader()
@@ -20,7 +23,12 @@ class ComposerAutoloaderInitIncludePath
         }
 
         spl_autoload_register(array('ComposerAutoloaderInitIncludePath', 'loadClassLoader'), true, true);
-        self::$loader = $loader = new \Composer\Autoload\ClassLoader();
+        if (extension_loaded('apc')) {
+            self::$loader = $loader = new \Composer\Autoload\ApcClassLoader('IncludePath');
+        }
+        else {
+            self::$loader = $loader = new \Composer\Autoload\ClassLoader();
+        }
         spl_autoload_unregister(array('ComposerAutoloaderInitIncludePath', 'loadClassLoader'));
 
         $vendorDir = dirname(__DIR__);
