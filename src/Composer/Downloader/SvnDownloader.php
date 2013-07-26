@@ -41,6 +41,10 @@ class SvnDownloader extends VcsDownloader
         $url = $target->getSourceUrl();
         $ref = $target->getSourceReference();
 
+        if (!is_dir($path.'/.svn')) {
+            throw new \RuntimeException('The .svn directory is missing from '.$path.', see http://getcomposer.org/commit-deps for more information');
+        }
+
         $this->io->write("    Checking out " . $ref);
         $this->execute($url, "svn switch", sprintf("%s/%s", $url, $ref), $path);
     }

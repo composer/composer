@@ -221,6 +221,10 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
     {
         $expectedGitUpdateCommand = $this->winCompat("git remote set-url composer 'git://github.com/composer/composer' && git fetch composer && git fetch --tags composer");
 
+        $tmpDir = sys_get_temp_dir().DIRECTORY_SEPARATOR.'test-git-update';
+        if (!is_dir($tmpDir.'/.git')) {
+            mkdir($tmpDir.'/.git', true, 0777);
+        }
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $packageMock->expects($this->any())
             ->method('getSourceReference')
@@ -234,23 +238,27 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
         $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
         $processExecutor->expects($this->at(0))
             ->method('execute')
-            ->with($this->equalTo($this->winCompat("git remote -v")))
+            ->with($this->equalTo($this->winCompat("git status --porcelain --untracked-files=no")))
             ->will($this->returnValue(0));
         $processExecutor->expects($this->at(1))
             ->method('execute')
-            ->with($this->equalTo($expectedGitUpdateCommand))
+            ->with($this->equalTo($this->winCompat("git remote -v")))
             ->will($this->returnValue(0));
         $processExecutor->expects($this->at(2))
             ->method('execute')
-            ->with($this->equalTo('git branch -r'))
+            ->with($this->equalTo($expectedGitUpdateCommand))
             ->will($this->returnValue(0));
         $processExecutor->expects($this->at(3))
             ->method('execute')
-            ->with($this->equalTo($this->winCompat("git checkout 'ref' && git reset --hard 'ref'")), $this->equalTo(null), $this->equalTo($this->winCompat('composerPath')))
+            ->with($this->equalTo('git branch -r'))
+            ->will($this->returnValue(0));
+        $processExecutor->expects($this->at(4))
+            ->method('execute')
+            ->with($this->equalTo($this->winCompat("git checkout 'ref' && git reset --hard 'ref'")), $this->equalTo(null), $this->equalTo($this->winCompat($tmpDir)))
             ->will($this->returnValue(0));
 
         $downloader = $this->getDownloaderMock(null, new Config(), $processExecutor);
-        $downloader->update($packageMock, $packageMock, 'composerPath');
+        $downloader->update($packageMock, $packageMock, $tmpDir);
     }
 
     /**
@@ -260,6 +268,10 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
     {
         $expectedGitUpdateCommand = $this->winCompat("git remote set-url composer 'git://github.com/composer/composer' && git fetch composer && git fetch --tags composer");
 
+        $tmpDir = sys_get_temp_dir().DIRECTORY_SEPARATOR.'test-git-update';
+        if (!is_dir($tmpDir.'/.git')) {
+            mkdir($tmpDir.'/.git', true, 0777);
+        }
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $packageMock->expects($this->any())
             ->method('getSourceReference')
@@ -270,15 +282,19 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
         $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
         $processExecutor->expects($this->at(0))
             ->method('execute')
-            ->with($this->equalTo($this->winCompat("git remote -v")))
+            ->with($this->equalTo($this->winCompat("git status --porcelain --untracked-files=no")))
             ->will($this->returnValue(0));
         $processExecutor->expects($this->at(1))
+            ->method('execute')
+            ->with($this->equalTo($this->winCompat("git remote -v")))
+            ->will($this->returnValue(0));
+        $processExecutor->expects($this->at(2))
             ->method('execute')
             ->with($this->equalTo($expectedGitUpdateCommand))
             ->will($this->returnValue(1));
 
         $downloader = $this->getDownloaderMock(null, new Config(), $processExecutor);
-        $downloader->update($packageMock, $packageMock, 'composerPath');
+        $downloader->update($packageMock, $packageMock, $tmpDir);
     }
 
     public function testRemove()

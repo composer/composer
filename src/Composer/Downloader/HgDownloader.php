@@ -45,6 +45,11 @@ class HgDownloader extends VcsDownloader
         $url = escapeshellarg($target->getSourceUrl());
         $ref = escapeshellarg($target->getSourceReference());
         $this->io->write("    Updating to ".$target->getSourceReference());
+
+        if (!is_dir($path.'/.hg')) {
+            throw new \RuntimeException('The .hg directory is missing from '.$path.', see http://getcomposer.org/commit-deps for more information');
+        }
+
         $command = sprintf('hg pull %s && hg up %s', $url, $ref);
         if (0 !== $this->process->execute($command, $ignoredOutput, $path)) {
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
