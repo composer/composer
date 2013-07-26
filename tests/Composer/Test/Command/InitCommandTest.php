@@ -25,6 +25,14 @@ class InitCommandTest extends TestCase
         $this->assertEquals('john@example.com', $author['email']);
     }
 
+    public function testParseValidUtf8AuthorString()
+    {
+        $command = new InitCommand;
+        $author = $command->parseAuthorString('Matti Meikäläinen <matti@example.com>');
+        $this->assertEquals('Matti Meikäläinen', $author['name']);
+        $this->assertEquals('matti@example.com', $author['email']);
+    }
+
     public function testParseEmptyAuthorString()
     {
         $command = new InitCommand;
