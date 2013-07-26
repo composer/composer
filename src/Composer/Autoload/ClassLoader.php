@@ -42,19 +42,26 @@ namespace Composer\Autoload;
  */
 class ClassLoader
 {
-    private $prefixes = array();
-    private $fallbackDirs = array();
+    // PSR-4
+    private $prefixLengthsPsr4 = array();
+    private $prefixDirsPsr4 = array();
+    private $fallbackDirsPsr4 = array();
+
+    // PSR-0
+    private $prefixesPsr0 = array();
+    private $fallbackDirsPsr0 = array();
+
     private $useIncludePath = false;
     private $classMap = array();
 
     public function getPrefixes()
     {
-        return call_user_func_array('array_merge', $this->prefixes);
+        return call_user_func_array('array_merge', $this->prefixesPsr0);
     }
 
     public function getFallbackDirs()
     {
-        return $this->fallbackDirs;
+        return $this->fallbackDirsPsr0;
     }
 
     public function getClassMap()
@@ -85,13 +92,13 @@ class ClassLoader
     {
         if (!$prefix) {
             if ($prepend) {
-                $this->fallbackDirs = array_merge(
+                $this->fallbackDirsPsr0 = array_merge(
                     (array) $paths,
-                    $this->fallbackDirs
+                    $this->fallbackDirsPsr0
                 );
             } else {
-                $this->fallbackDirs = array_merge(
-                    $this->fallbackDirs,
+                $this->fallbackDirsPsr0 = array_merge(
+                    $this->fallbackDirsPsr0,
                     (array) $paths
                 );
             }
@@ -100,19 +107,58 @@ class ClassLoader
         }
 
         $first = $prefix[0];
-        if (!isset($this->prefixes[$first][$prefix])) {
-            $this->prefixes[$first][$prefix] = (array) $paths;
+        if (!isset($this->prefixesPsr0[$first][$prefix])) {
+            $this->prefixesPsr0[$first][$prefix] = (array) $paths;
 
             return;
         }
         if ($prepend) {
-            $this->prefixes[$first][$prefix] = array_merge(
+            $this->prefixesPsr0[$first][$prefix] = array_merge(
                 (array) $paths,
-                $this->prefixes[$first][$prefix]
+                $this->prefixesPsr0[$first][$prefix]
             );
         } else {
-            $this->prefixes[$first][$prefix] = array_merge(
-                $this->prefixes[$first][$prefix],
+            $this->prefixesPsr0[$first][$prefix] = array_merge(
+                $this->prefixesPsr0[$first][$prefix],
+                (array) $paths
+            );
+        }
+    }
+
+    public function addPsr4($prefix, $paths, $prepend = false)
+    {
+        if (!$prefix) {
+            if ($prepend) {
+                $this->fallbackDirsPsr4 = array_merge(
+                    (array) $paths,
+                    $this->fallbackDirsPsr4
+                );
+            } else {
+                $this->fallbackDirsPsr4 = array_merge(
+                    $this->fallbackDirsPsr4,
+                    (array) $paths
+                );
+            }
+
+            return;
+        }
+
+        $prefix = rtrim($prefix, '\\');
+        $prefix = $prefix . '\\';
+
+        if (!isset($this->prefixDirsPsr4[$prefix])) {
+            $this->prefixLengthsPsr4[$prefix[0]][$prefix] = strlen($prefix);
+            $this->prefixDirsPsr4[$prefix] = (array) $paths;
+            return;
+        }
+        if ($prepend) {
+            $this->prefixDirsPsr4[$prefix] = array_merge(
+                (array) $paths,
+                $this->prefixDirsPsr4[$prefix]
+            );
+        } else {
+            $this->prefixDirsPsr4[$prefix] = array_merge(
+                $this->prefixDirsPsr4[$prefix],
                 (array) $paths
             );
         }
@@ -127,11 +173,11 @@ class ClassLoader
     public function set($prefix, $paths)
     {
         if (!$prefix) {
-            $this->fallbackDirs = (array) $paths;
+            $this->fallbackDirsPsr0 = (array) $paths;
 
             return;
         }
-        $this->prefixes[substr($prefix, 0, 1)][$prefix] = (array) $paths;
+        $this->prefixesPsr0[substr($prefix, 0, 1)][$prefix] = (array) $paths;
     }
 
     /**
@@ -206,38 +252,58 @@ class ClassLoader
             return $this->classMap[$class];
         }
 
-        if (false !== $pos = strrpos($class, '\\')) {
-            // namespaced class name
-            $classPath = strtr(substr($class, 0, $pos), '\\', DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-            $className = substr($class, $pos + 1);
-        } else {
-            // PEAR-like class name
-            $classPath = null;
-            $className = $class;
-        }
-
-        $classPath .= strtr($className, '_', DIRECTORY_SEPARATOR) . '.php';
+        $logicalPathPsr4 = strtr($class, '\\', DIRECTORY_SEPARATOR) . '.php';
 
         $first = $class[0];
-        if (isset($this->prefixes[$first])) {
-            foreach ($this->prefixes[$first] as $prefix => $dirs) {
+        if (isset($this->prefixLengthsPsr4[$first])) {
+            foreach ($this->prefixLengthsPsr4[$first] as $prefix => $length) {
                 if (0 === strpos($class, $prefix)) {
-                    foreach ($dirs as $dir) {
-                        if (file_exists($dir . DIRECTORY_SEPARATOR . $classPath)) {
-                            return $dir . DIRECTORY_SEPARATOR . $classPath;
+                    foreach ($this->prefixDirsPsr4[$prefix] as $dir) {
+                        if (file_exists($file = $dir . DIRECTORY_SEPARATOR . substr($logicalPathPsr4, $length))) {
+                            return $file;
                         }
                     }
                 }
             }
         }
 
-        foreach ($this->fallbackDirs as $dir) {
-            if (file_exists($dir . DIRECTORY_SEPARATOR . $classPath)) {
-                return $dir . DIRECTORY_SEPARATOR . $classPath;
+        foreach ($this->fallbackDirsPsr4 as $dir) {
+            if (file_exists($file = $dir . DIRECTORY_SEPARATOR . $logicalPathPsr4)) {
+                return $file;
             }
         }
 
-        if ($this->useIncludePath && $file = stream_resolve_include_path($classPath)) {
+        if (false !== $pos = strrpos($class, '\\')) {
+            // namespaced class name
+            $logicalPathPsr0
+              = substr($logicalPathPsr4, 0, $pos + 1)
+              . strtr(substr($logicalPathPsr4, $pos + 1), '_', DIRECTORY_SEPARATOR)
+            ;
+        } else {
+            // PEAR-like class name
+            $logicalPathPsr0 = strtr($class, '_', DIRECTORY_SEPARATOR);
+        }
+
+        $first = $class[0];
+        if (isset($this->prefixesPsr0[$first])) {
+            foreach ($this->prefixesPsr0[$first] as $prefix => $dirs) {
+                if (0 === strpos($class, $prefix)) {
+                    foreach ($dirs as $dir) {
+                        if (file_exists($file = $dir . DIRECTORY_SEPARATOR . $logicalPathPsr0)) {
+                            return $file;
+                        }
+                    }
+                }
+            }
+        }
+
+        foreach ($this->fallbackDirsPsr0 as $dir) {
+            if (file_exists($file = $dir . DIRECTORY_SEPARATOR . $logicalPathPsr0)) {
+                return $file;
+            }
+        }
+
+        if ($this->useIncludePath && $file = stream_resolve_include_path($logicalPathPsr0)) {
             return $file;
         }
 
