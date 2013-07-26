@@ -84,6 +84,11 @@ class HgDownloaderTest extends \PHPUnit_Framework_TestCase
 
     public function testUpdate()
     {
+        $tmpDir = sys_get_temp_dir().'/test-hg-update';
+        if (!is_dir($tmpDir.'/.hg')) {
+            mkdir($tmpDir.'/.hg', true, 0777);
+        }
+
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $packageMock->expects($this->any())
             ->method('getSourceReference')
@@ -93,14 +98,19 @@ class HgDownloaderTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue('https://github.com/l3l0/composer'));
         $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
 
-        $expectedGitCommand = $this->getCmd("hg pull 'https://github.com/l3l0/composer' && hg up 'ref'");
+        $expectedHgCommand = $this->getCmd("hg st");
         $processExecutor->expects($this->at(0))
             ->method('execute')
-            ->with($this->equalTo($expectedGitCommand))
+            ->with($this->equalTo($expectedHgCommand))
+            ->will($this->returnValue(0));
+        $expectedHgCommand = $this->getCmd("hg pull 'https://github.com/l3l0/composer' && hg up 'ref'");
+        $processExecutor->expects($this->at(1))
+            ->method('execute')
+            ->with($this->equalTo($expectedHgCommand))
             ->will($this->returnValue(0));
 
         $downloader = $this->getDownloaderMock(null, null, $processExecutor);
-        $downloader->update($packageMock, $packageMock, 'composerPath');
+        $downloader->update($packageMock, $packageMock, $tmpDir);
     }
 
     public function testRemove()
