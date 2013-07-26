@@ -13,6 +13,7 @@
 namespace Composer\Test\Downloader;
 
 use Composer\Downloader\HgDownloader;
+use Composer\Util\Filesystem;
 
 class HgDownloaderTest extends \PHPUnit_Framework_TestCase
 {
@@ -84,11 +85,9 @@ class HgDownloaderTest extends \PHPUnit_Framework_TestCase
 
     public function testUpdate()
     {
-        $tmpDir = sys_get_temp_dir().'/test-hg-update';
-        if (!is_dir($tmpDir.'/.hg')) {
-            mkdir($tmpDir.'/.hg', true, 0777);
-        }
-
+        $tmpDir = realpath(sys_get_temp_dir()).DIRECTORY_SEPARATOR.'cmptest-'.md5(uniqid('', true));
+        $fs = new Filesystem;
+        $fs->ensureDirectoryExists($tmpDir.'/.hg');
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $packageMock->expects($this->any())
             ->method('getSourceReference')
