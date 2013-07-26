@@ -46,8 +46,8 @@ class HgBitbucketDriver extends VcsDriver
         if (null === $this->rootIdentifier) {
             $resource = $this->getScheme() . '://bitbucket.org/api/1.0/repositories/'.$this->owner.'/'.$this->repository.'/tags';
             $repoData = JsonFile::parseJson($this->getContents($resource), $resource);
-            if (array() === $repoData) {
-                throw new \RuntimeException('This does not appear to be a mercurial repository, use '.$this->url.'.git if this is a git bitbucket repository');
+            if (array() === $repoData || !isset($repoData['tip'])) {
+                throw new \RuntimeException($this->url.' does not appear to be a mercurial repository, use '.$this->url.'.git if this is a git bitbucket repository');
             }
             $this->rootIdentifier = $repoData['tip']['raw_node'];
         }
