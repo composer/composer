@@ -107,7 +107,7 @@ class FileDownloader implements DownloaderInterface
                             break;
                         } catch (TransportException $e) {
                             // if we got an http response with a proper code, then requesting again will probably not help, abort
-                            if (0 !== $e->getCode() || !$retries) {
+                            if ((0 !== $e->getCode() && 500 !== $e->getCode()) || !$retries) {
                                 throw $e;
                             }
                             if ($this->io->isVerbose()) {
