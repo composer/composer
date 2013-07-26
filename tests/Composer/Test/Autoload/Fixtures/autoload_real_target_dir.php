@@ -40,7 +40,9 @@ class ComposerAutoloaderInitTargetDir
 
         $loader->register(true);
 
-        require __DIR__ . '/autoload_files.php';
+        foreach (require __DIR__ . '/autoload_files.php' as $file) {
+            require_once $file;
+        }
 
         return $loader;
     }
