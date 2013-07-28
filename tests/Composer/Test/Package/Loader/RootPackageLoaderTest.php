@@ -14,6 +14,7 @@ namespace Composer\Test\Package\Loader;
 
 use Composer\Config;
 use Composer\Package\Loader\RootPackageLoader;
+use Composer\Package\BasePackage;
 use Composer\Test\Mock\ProcessExecutorMock;
 use Composer\Repository\RepositoryManager;
 
@@ -48,5 +49,41 @@ class RootPackageLoaderTest extends \PHPUnit_Framework_TestCase
         $package = $loader->load(array());
 
         $this->assertEquals("dev-$commitHash", $package->getVersion());
+    }
+
+    protected function loadPackage($data)
+    {
+        $manager = $this->getMockBuilder('\\Composer\\Repository\\RepositoryManager')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $processExecutor = new ProcessExecutorMock(function($command, &$output = null, $cwd = null) {
+            return 1;
+        });
+
+        $config = new Config;
+        $config->merge(array('repositories' => array('packagist' => false)));
+
+        $loader = new RootPackageLoader($manager, $config);
+
+        return $loader->load($data);
+    }
+
+    public function testStabilityFlagsParsing()
+    {
+        $package = $this->loadPackage(array(
+            'require' => array(
+                'foo/bar' => '~2.1.0-beta2',
+                'bar/baz' => '1.0.x-dev as 1.2.0',
+                'qux/quux' => '1.0.*@rc',
+            ),
+            'minimum-stability' => 'alpha',
+        ));
+
+        $this->assertEquals('alpha', $package->getMinimumStability());
+        $this->assertEquals(array(
+            'bar/baz' => BasePackage::STABILITY_DEV,
+            'qux/quux' => BasePackage::STABILITY_RC,
+        ), $package->getStabilityFlags());
     }
 }
