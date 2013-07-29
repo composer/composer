@@ -68,6 +68,10 @@ class ZipDownloader extends ArchiveDownloader
         $zipArchive = new ZipArchive();
 
         if (true !== ($retval = $zipArchive->open($file))) {
+            if (ZipArchive::ER_NOZIP === $retval) {
+                @copy($file, $copy = sys_get_temp_dir().'/composer-zip-debug.zip');
+                throw new \UnexpectedValueException($this->getErrorMessage($retval, $file).' filesize: '.filesize($file).', file copied to '.$copy.' for debugging, please report this and email us the file if possible');
+            }
             throw new \UnexpectedValueException($this->getErrorMessage($retval, $file));
         }
 
