@@ -95,9 +95,9 @@ class ClassLoader
      * Registers a set of PSR-0 directories for a given prefix, either
      * appending or prepending to the ones previously set for this prefix.
      *
-     * @param string       $prefix  The prefix.
-     * @param array|string $paths   The location(s) of the classes
-     * @param bool         $prepend Prepend the location(s)
+     * @param string       $prefix  The prefix
+     * @param array|string $paths   The PSR-0 root directories
+     * @param bool         $prepend Whether to prepend the directories
      */
     public function add($prefix, $paths, $prepend = false)
     {
@@ -140,9 +140,9 @@ class ClassLoader
      * Registers a set of PSR-4 directories for a given namespace, either
      * appending or prepending to the ones previously set for this namespace.
      *
-     * @param string       $prefix  The namespace, with trailing '\\'.
-     * @param array|string $paths   The location(s) of the classes
-     * @param bool         $prepend Prepend the location(s)
+     * @param string       $prefix  The prefix/namespace, with trailing '\\'
+     * @param array|string $paths   The PSR-0 base directories
+     * @param bool         $prepend Whether to prepend the directories
      */
     public function addPsr4($prefix, $paths, $prepend = false)
     {
@@ -186,8 +186,8 @@ class ClassLoader
      * Registers a set of PSR-0 directories for a given prefix,
      * replacing any others previously set for this prefix.
      *
-     * @param string       $prefix The classes prefix
-     * @param array|string $paths  The location(s) of the classes
+     * @param string       $prefix The prefix
+     * @param array|string $paths  The PSR-0 base directories
      */
     public function set($prefix, $paths)
     {
@@ -202,8 +202,8 @@ class ClassLoader
      * Registers a set of PSR-4 directories for a given namespace,
      * replacing any others previously set for this namespace.
      *
-     * @param string       $prefix The namespace, with trailing slash.
-     * @param array|string $paths  The location(s) of the classes
+     * @param string       $prefix  The prefix/namespace, with trailing '\\'
+     * @param array|string $paths   The PSR-4 base directories
      */
     public function setPsr4($prefix, $paths) {
         if (!$prefix) {
