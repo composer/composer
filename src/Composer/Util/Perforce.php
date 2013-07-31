@@ -135,7 +135,6 @@ class Perforce {
 
     public function syncCodeBase($label){
         $p4CreateClientCommand = $this->generateP4Command( "client -i < " . $this->getP4ClientSpec());
-        print ("Perforce: syncCodeBase - client command:$p4CreateClientCommand \n");
         $result = shell_exec($p4CreateClientCommand);
 
         $prevDir = getcwd();
@@ -149,14 +148,12 @@ class Perforce {
                 $p4SyncCommand = $p4SyncCommand . "@" . $label;
             }
         }
-        print ("Perforce: syncCodeBase - sync command:$p4SyncCommand \n");
         $result = shell_exec($p4SyncCommand);
 
         chdir($prevDir);
     }
 
     public function writeP4ClientSpec(){
-        print ("Perforce: writeP4ClientSpec\n");
         $spec = fopen($this->getP4ClientSpec(), 'w');
         try {
             fwrite($spec, "Client: " . $this->getClient() . "\n\n");
@@ -193,7 +190,6 @@ class Perforce {
     }
 
     public function p4Login(IOInterface $io){
-        print ("Perforce: P4Login\n");
         $this->queryP4User($io);
         if (!$this->isLoggedIn()){
             $password = $this->queryP4Password($io);
@@ -204,7 +200,6 @@ class Perforce {
 
     public static function checkServerExists($url)
     {
-        print ("Perforce: checkServerExists\n");
         $result = shell_exec("p4 -p $url info -s");
         $index = strpos($result, "error");
         if ($index === false){
@@ -226,7 +221,6 @@ class Perforce {
     public function getComposerInformationFromPath($composer_json)
     {
         $command = $this->generateP4Command(" print $composer_json", false);
-        print ("Perforce: getComposerInformation: command: $command\n");
         $result = shell_exec($command);
         $index = strpos($result, "{");
         if ($index === false){
@@ -244,9 +238,7 @@ class Perforce {
     {
         $composer_json_path = substr($identifier, 0, $index) . "/composer.json" . substr($identifier, $index);
         $command = $this->generateP4Command(" files $composer_json_path", false);
-        print("Perforce: getComposerInformationFromTag: $identifier, command:\n $command\n");
         $result = shell_exec($command);
-        print("Perforce: getComposerInformationFromTag: result: \n $result\n");
         $index2 = strpos($result, "no such file(s).");
         if ($index2 === false){
             $index3 = strpos($result, "change");
@@ -280,7 +272,6 @@ class Perforce {
         }
         $branches = array();
         $branches['master'] = $possible_branches[$this->p4branch];
-        print ("Perforce: getBranches: returning: \n" . var_export($branches, true) . "\n");
         return $branches;
     }
 
@@ -289,7 +280,6 @@ class Perforce {
         $command = $this->generateP4Command("labels");
         $result = shell_exec($command);
         $resArray = explode("\n", $result);
-        print("Perforce:getTags - result:\n$result\n");
         $tags = array();
         foreach ($resArray as $line){
             $index = strpos($line, "Label");

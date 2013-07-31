@@ -33,7 +33,6 @@ class PerforceDriver extends VcsDriver
      */
     public function initialize()
     {
-        print ("PerforceDriver:initialize\n");
         $this->depot = $this->repoConfig['depot'];
         $this->branch = "";
         if (isset($this->repoConfig['branch'])){
@@ -60,7 +59,6 @@ class PerforceDriver extends VcsDriver
      */
     public function getComposerInformation($identifier)
     {
-        print("\nPerforceDriver:getComposerInformation - identifier: $identifier\n");
         $composer_info =$this->perforce->getComposerInformation($identifier);
         return $composer_info;
     }
@@ -70,7 +68,6 @@ class PerforceDriver extends VcsDriver
      */
     public function getRootIdentifier()
     {
-        print ("PerforceDriver:getRootIdentifier\n");
         return $this->branch;
     }
 
@@ -79,7 +76,6 @@ class PerforceDriver extends VcsDriver
      */
     public function getBranches()
     {
-        print ("PerforceDriver:getBranches\n");
         $branches = $this->perforce->getBranches();
         return $branches;
     }
@@ -89,7 +85,6 @@ class PerforceDriver extends VcsDriver
      */
     public function getTags()
     {
-        print ("PerforceDriver:getTags\n");
         $tags = $this->perforce->getTags();
         return $tags;
     }
@@ -120,7 +115,6 @@ class PerforceDriver extends VcsDriver
      */
     public function getUrl()
     {
-        print ("PerforceDriver:getUrl\n");
         return $this->url;
     }
 
@@ -129,9 +123,7 @@ class PerforceDriver extends VcsDriver
      */
     public function hasComposerFile($identifier)
     {
-        print ("PerforceDriver:hasComposerFile - identifier: $identifier\n");
         $composerFile = $this->perforce->getComposerFilePath($identifier);
-        print ("composerFile: $composerFile\n");
         if (!file_exists(filename)){
             $composer_info = $this->perforce->getComposerInformation();
             $result = strlen(trim($composer_info))>0;
@@ -154,7 +146,6 @@ class PerforceDriver extends VcsDriver
      */
     public static function supports(IOInterface $io, $url, $deep = false)
     {
-        print ("PerforceDriver:supports - url: $url\n");
         return Perforce::checkServerExists($url);
     }
 }
