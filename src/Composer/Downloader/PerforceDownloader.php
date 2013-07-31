@@ -27,7 +27,6 @@ class PerforceDownloader extends VcsDownloader
     {
         $ref = $package->getSourceReference();
         $label = $package->getPrettyVersion();
-        print ("PerforceDownloader: doDownload: ref:$ref, label:$label\n");
 
         $perforce = new Perforce("", "", $package->getSourceUrl(), $path);
         $perforce->setStream($ref);
