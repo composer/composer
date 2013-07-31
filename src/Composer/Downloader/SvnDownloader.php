@@ -52,7 +52,7 @@ class SvnDownloader extends VcsDownloader
     /**
      * {@inheritDoc}
      */
-    public function getLocalChanges($path)
+    public function getLocalChanges($path, PackageInterface $package)
     {
         if (!is_dir($path.'/.svn')) {
             return;
@@ -90,9 +90,9 @@ class SvnDownloader extends VcsDownloader
     /**
      * {@inheritDoc}
      */
-    protected function cleanChanges($path, $update)
+    protected function cleanChanges($path, $update, $package)
     {
-        if (!$changes = $this->getLocalChanges($path)) {
+        if (!$changes = $this->getLocalChanges($path, $package)) {
             return;
         }
 
@@ -101,7 +101,7 @@ class SvnDownloader extends VcsDownloader
                 return $this->discardChanges($path);
             }
 
-            return parent::cleanChanges($path, $update);
+            return parent::cleanChanges($path, $update, $package);
         }
 
         $changes = array_map(function ($elem) {
