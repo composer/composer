@@ -78,7 +78,7 @@ class GitDownloader extends VcsDownloader
     /**
      * {@inheritDoc}
      */
-    public function getLocalChanges($path)
+    public function getLocalChanges($path, PackageInterface $package)
     {
         $this->cleanEnv();
         $path = $this->normalizePath($path);
@@ -97,11 +97,11 @@ class GitDownloader extends VcsDownloader
     /**
      * {@inheritDoc}
      */
-    protected function cleanChanges($path, $update)
+    protected function cleanChanges($path, $update, $package)
     {
         $this->cleanEnv();
         $path = $this->normalizePath($path);
-        if (!$changes = $this->getLocalChanges($path)) {
+        if (!$changes = $this->getLocalChanges($path, $package)) {
             return;
         }
 
@@ -112,13 +112,13 @@ class GitDownloader extends VcsDownloader
             }
             if ('stash' === $discardChanges) {
                 if (!$update) {
-                    return parent::cleanChanges($path, $update);
+                    return parent::cleanChanges($path, $update, $package);
                 }
 
                 return $this->stashChanges($path);
             }
 
-            return parent::cleanChanges($path, $update);
+            return parent::cleanChanges($path, $update, $package);
         }
 
         $changes = array_map(function ($elem) {
