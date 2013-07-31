@@ -28,45 +28,60 @@ abstract class ArchiveDownloader extends FileDownloader
      */
     public function download(PackageInterface $package, $path)
     {
-        parent::download($package, $path);
-
-        $fileName = $this->getFileName($package, $path);
-        if ($this->io->isVerbose()) {
-            $this->io->write('    Extracting archive');
-        }
-
         $temporaryDir = $this->config->get('vendor-dir').'/composer/'.substr(md5(uniqid('', true)), 0, 8);
-        try {
-            $this->filesystem->ensureDirectoryExists($temporaryDir);
+        $retries = 3;
+        while ($retries--) {
+            parent::download($package, $path);
+
+            $fileName = $this->getFileName($package, $path);
+            if ($this->io->isVerbose()) {
+                $this->io->write('    Extracting archive');
+            }
+
             try {
-                $this->extract($fileName, $temporaryDir);
+                $this->filesystem->ensureDirectoryExists($temporaryDir);
+                try {
+                    $this->extract($fileName, $temporaryDir);
+                } catch (\Exception $e) {
+                    // remove cache if the file was corrupted
+                    parent::clearCache($package, $path);
+                    throw $e;
+                }
+
+                unlink($fileName);
+
+                // get file list
+                $contentDir = $this->listFiles($temporaryDir);
+
+                // only one dir in the archive, extract its contents out of it
+                if (1 === count($contentDir) && !is_file($contentDir[0])) {
+                    $contentDir = $this->listFiles($contentDir[0]);
+                }
+
+                // move files back out of the temp dir
+                foreach ($contentDir as $file) {
+                    $this->filesystem->rename($file, $path . '/' . basename($file));
+                }
+
+                $this->filesystem->removeDirectory($temporaryDir);
             } catch (\Exception $e) {
-                // remove cache if the file was corrupted
-                parent::clearCache($package, $path);
+                // clean up
+                $this->filesystem->removeDirectory($path);
+                $this->filesystem->removeDirectory($temporaryDir);
+
+                // retry downloading if we have an invalid zip file
+                if ($retries && $e instanceof \UnexpectedValueException && $e->getCode() === \ZipArchive::ER_NOZIP) {
+                    if ($this->io->isVerbose()) {
+                        $this->io->write('    Invalid zip file, retrying...');
+                    }
+                    usleep(500000);
+                    continue;
+                }
+
                 throw $e;
             }
 
-            unlink($fileName);
-
-            // get file list
-            $contentDir = $this->listFiles($temporaryDir);
-
-            // only one dir in the archive, extract its contents out of it
-            if (1 === count($contentDir) && !is_file($contentDir[0])) {
-                $contentDir = $this->listFiles($contentDir[0]);
-            }
-
-            // move files back out of the temp dir
-            foreach ($contentDir as $file) {
-                $this->filesystem->rename($file, $path . '/' . basename($file));
-            }
-
-            $this->filesystem->removeDirectory($temporaryDir);
-        } catch (\Exception $e) {
-            // clean up
-            $this->filesystem->removeDirectory($path);
-            $this->filesystem->removeDirectory($temporaryDir);
-            throw $e;
+            break;
         }
 
         $this->io->write('');
