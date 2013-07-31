@@ -33,7 +33,7 @@ class PerforceDriver extends VcsDriver
      */
     public function initialize()
     {
-        print ("\nPerforceDriver:initialize\n");
+        print ("PerforceDriver:initialize\n");
         $this->depot = $this->repoConfig['depot'];
         $this->branch = "";
         if (isset($this->repoConfig['branch'])){
@@ -46,7 +46,7 @@ class PerforceDriver extends VcsDriver
         $this->perforce->p4Login($this->io);
         $this->perforce->checkStream($this->depot);
 
-//        $this->perforce->writeP4ClientSpec();
+        $this->perforce->writeP4ClientSpec();
 //        $this->perforce->syncCodeBase();
 
         return true;
@@ -60,7 +60,7 @@ class PerforceDriver extends VcsDriver
      */
     public function getComposerInformation($identifier)
     {
-        print("PerforceDriver:getComposerInformation - identifier: $identifier\n");
+        print("\nPerforceDriver:getComposerInformation - identifier: $identifier\n");
         $composer_info =$this->perforce->getComposerInformation($identifier);
         return $composer_info;
     }
@@ -129,10 +129,15 @@ class PerforceDriver extends VcsDriver
      */
     public function hasComposerFile($identifier)
     {
-        print ("\nPerforceDriver:hasComposerFile - identifier: $identifier\n");
+        print ("PerforceDriver:hasComposerFile - identifier: $identifier\n");
         $composerFile = $this->perforce->getComposerFilePath($identifier);
-        print ("returning: " . var_export(file_exists($composerFile),true) . "\n");
-        return file_exists($composerFile);
+        print ("composerFile: $composerFile\n");
+        if (!file_exists(filename)){
+            $composer_info = $this->perforce->getComposerInformation();
+            $result = strlen(trim($composer_info))>0;
+            return $result;
+        }
+        return true;
     }
 
     /**
