@@ -20,9 +20,12 @@ class Perforce {
     protected $p4port;
     protected $p4stream;
     protected $p4clientSpec;
+    protected $p4depotType;
+    protected $p4branch;
 
-    final public function __construct($stream, $port, $path){
-        $this->p4stream = $stream;
+    final public function __construct($depot, $branch, $port, $path){
+        $this->p4depot = $depot;
+        $this->p4branch = $branch;
         $this->p4port = $port;
         $this->path = $path;
         $fs = new Filesystem();
@@ -33,7 +36,8 @@ class Perforce {
     {
         if (!isset($this->p4client)){
             $random_value = mt_rand(1000,9999);
-            $this->p4client = "composer_perforce_" . $random_value . "_".str_replace("/", "_", str_replace("//", "", $this->p4stream));
+            $clean_stream_name = str_replace("@", "", str_replace("/", "_", str_replace("//", "", $this->p4stream)));
+            $this->p4client = "composer_perforce_" . $random_value . "_".$clean_stream_name;
         }
         return $this->p4client;
     }
@@ -50,6 +54,7 @@ class Perforce {
     {
         return $this->path;
     }
+
     protected function getPort()
     {
         return $this->p4port;
@@ -57,16 +62,80 @@ class Perforce {
 
     protected function getStream()
     {
+        if (!isset($this->p4stream)){
+            if ($this->isStream()){
+                $this->p4stream = "//$this->p4depot/$this->p4branch";
+            } else {
+                $this->p4stream = "//$this->p4depot";
+            }
+        }
         return $this->p4stream;
     }
+
+    protected function getStreamWithoutLabel()
+    {
+        $stream = $this->getStream();
+        $index = strpos($stream, "@");
+        if ($index === false){
+            return $stream;
+        }
+        return substr($stream, 0, $index);
+    }
+
     protected function getP4ClientSpec()
     {
         $p4clientSpec = $this->path . "/" . $this->getClient() . ".p4.spec";
         return $p4clientSpec;
     }
 
-    public function syncCodeBase(){
+    protected function queryP4User(IOInterface $io){
+        $this->getUser();
+        if (strlen($this->p4user) <= 0){
+            $this->p4user = $io->ask("Enter P4 User:");
+        }
+    }
+
+    protected function queryP4Password(IOInterface $io){
+        $password = trim(shell_exec('echo $P4PASSWD'));
+        if (strlen($password) <= 0){
+            $password = $io->ask("Enter password for Perforce user " . $this->getUser() . ": " );
+        }
+        return $password;
+    }
+
+    protected function isStream(){
+        return (strcmp($this->p4depotType, "stream") === 0);
+    }
+
+    protected function generateP4Command($command, $useClient = true) {
+        $p4Command = "p4 ";
+        $p4Command = $p4Command . "-u " . $this->getUser() . " ";
+        if ($useClient){
+           $p4Command = $p4Command . "-c " . $this->getClient() . " ";
+        }
+        $p4Command = $p4Command . "-p " . $this->getPort() . " ";
+        $p4Command = $p4Command . $command;
+        return $p4Command;
+    }
+
+    protected function isLoggedIn(){
+        $command = $this->generateP4Command("login -s ");
+        $result = trim(shell_exec($command));
+        $index = strpos($result, $this->getUser());
+        if ($index === false){
+            return false;
+        }
+        return true;
+    }
+
+    public function setStream($stream){
+        $this->p4stream = $stream;
+        $this->p4depotType = "stream";
+    }
+
+    public function syncCodeBase($label){
         $p4CreateClientCommand = $this->generateP4Command( "client -i < " . $this->getP4ClientSpec());
+        print ("Perforce: syncCodeBase - client command:$p4CreateClientCommand \n");
         $result = shell_exec($p4CreateClientCommand);
 
         $prevDir = getcwd();
@@ -75,13 +144,19 @@ class Perforce {
         $result = shell_exec("pwd");
 
         $p4SyncCommand = $this->generateP4Command( "sync -f //".$this->getClient()."/...");
+        if (isset($label)){
+            if (strcmp($label, "dev-master") != 0){
+                $p4SyncCommand = $p4SyncCommand . "@" . $label;
+            }
+        }
+        print ("Perforce: syncCodeBase - sync command:$p4SyncCommand \n");
         $result = shell_exec($p4SyncCommand);
 
         chdir($prevDir);
     }
 
     public function writeP4ClientSpec(){
-
+        print ("Perforce: writeP4ClientSpec\n");
         $spec = fopen($this->getP4ClientSpec(), 'w');
         try {
             fwrite($spec, "Client: " . $this->getClient() . "\n\n");
@@ -94,8 +169,12 @@ class Perforce {
             fwrite($spec, "Options:  noallwrite noclobber nocompress unlocked modtime rmdir\n\n" );
             fwrite($spec, "SubmitOptions:  revertunchanged\n\n" );
             fwrite($spec, "LineEnd:  local\n\n" );
-            fwrite($spec, "Stream:\n" );
-            fwrite($spec, "  " . $this->getStream()."\n" );
+            if ($this->isStream()){
+                fwrite($spec, "Stream:\n" );
+                fwrite($spec, "  " . $this->getStreamWithoutLabel()."\n" );
+            } else {
+                fwrite($spec, "View:  " . $this->getStream() . "/...  //" . $this->getClient() . "/" . str_replace("//", "", $this->getStream()) . "/... \n");
+            }
         }  catch(Exception $e){
             fclose($spec);
             throw $e;
@@ -105,35 +184,27 @@ class Perforce {
 
     public function getComposerFilePath($identifier)
     {
-        $composerFilePath = $this->path . "/composer.json" ;
-        print ("\nPerforceUtility - getComposerPath: $composerFilePath\n\n");
+        if ($this->isStream()){
+            $composerFilePath = $this->path . "/composer.json" ;
+        } else {
+            $composerFilePath = $this->path . "/" . $this->p4depot . "/composer.json" ;
+        }
         return $composerFilePath;
-    }
-    protected function generateP4Command($command) {
-        $p4Command = "p4 ";
-        $p4Command = $p4Command . "-u " . $this->getUser() . " ";
-        $p4Command = $p4Command . "-c " . $this->getClient() . " ";
-        $p4Command = $p4Command . "-p " . $this->getPort() . " ";
-        $p4Command = $p4Command . $command;
-        return $p4Command;
     }
 
     public function p4Login(IOInterface $io){
-        $user = $this->getUser();
-        $result = trim(shell_exec("p4 login -s"));
-        $index = strpos($result, $user);
-        if ($index === false){
-            $password = trim(shell_exec('echo $P4PASSWD'));
-            if (strlen($password) <= 0){
-                $password = $io->ask("Enter password for Perforce user " . $this->getUser() . ": " );
-            }
-            $command = "echo $password | p4 login -a ";
+        print ("Perforce: P4Login\n");
+        $this->queryP4User($io);
+        if (!$this->isLoggedIn()){
+            $password = $this->queryP4Password($io);
+            $command = "echo $password | " . $this->generateP4Command("login -a ");
             shell_exec($command);
         }
     }
 
     public static function checkServerExists($url)
     {
+        print ("Perforce: checkServerExists\n");
         $result = shell_exec("p4 -p $url info -s");
         $index = strpos($result, "error");
         if ($index === false){
@@ -144,9 +215,142 @@ class Perforce {
 
     public function getComposerInformation($identifier)
     {
-        $composerFilePath =$this->getComposerFilePath($identifier);
-        $contents = file_get_contents($composerFilePath);
-        $composer_info = json_decode($contents, true);
-        return $composer_info;
+        $index = strpos($identifier, "@");
+        if ($index === false){
+            return $this->getComposerInformationFromId($identifier);
+        } else {
+            return $this->getComposerInformationFromTag($identifier, $index);
+        }
+    }
+    public function getComposerInformationFromId($identifier)
+    {
+        $composer_json =  "$identifier/composer.json";
+        $command = $this->generateP4Command(" print $composer_json", false);
+        print ("Perforce: getComposerInformation: command: $command\n\n");
+        $result = shell_exec($command);
+        $index = strpos($result, "{");
+        if ($index === false){
+            return "";
+        }
+        if ($index >=0){
+            $rawData = substr($result, $index);
+            $composer_info = json_decode($rawData, true);
+            print ("ComposerInfo is:".var_export($composer_info, true) . "\n");
+            return $composer_info;
+        }
+        return "";
+    }
+
+    public function getComposerInformationFromTag($identifier, $index)
+    {
+        $composer_json = substr($identifier, 0, $index) . "/composer.json" . substr($identifier, $index);
+        $command = $this->generateP4Command(" files $composer_json", false);
+        print("\n\nPerforce: getComposerInformationFromTag: $identifier, command:\n $command\n\n");
+        $result = shell_exec($command);
+        print("\n\nPerforce: getComposerInformationFromTag: result: \n $result\n\n");
+        $index2 = strpos($result, "no such file(s).");
+        if ($index2 === false){
+            $index3 = strpos($result, "change");
+            if (!($index3 ===false )){
+                $phrase = trim(substr($result, $index3));
+                $fields = explode(" ", $phrase);
+                $id = $fields[1];
+                $composer_json = substr($identifier, 0, $index) . "/composer.json@" . $id;
+                $command = $this->generateP4Command(" print $composer_json", false);
+                $result = shell_exec($command);
+                $index = strpos($result, "{");
+                if ($index === false){
+                    return "";
+                }
+                if ($index >=0){
+                    $rawData = substr($result, $index);
+                    $composer_info = json_decode($rawData, true);
+                    print ("ComposerInfo is:".var_export($composer_info, true) . "\n");
+                    return $composer_info;
+                }
+            }
+        }
+
+        return "";
+    }
+
+//    public function getComposerInformation($identifier)
+//    {
+//        $composerFilePath =$this->getComposerFilePath($identifier);
+//        $contents = file_get_contents($composerFilePath);
+//        $composer_info = json_decode($contents, true);
+//        return $composer_info;
+//    }
+
+    public function getBranches()
+    {
+        $branches = array();
+        if (!$this->isStream()){
+             $branches[$this->p4branch] =  $this->p4stream;
+        } else {
+            $command = $this->generateP4Command("streams //$this->p4depot/...");
+            $result = shell_exec($command);
+            print ("Perforce: getBranches: result: $result\n");
+            $resArray = explode("\n", $result);
+            foreach ($resArray as $line){
+                $resBits = explode(" ", $line);
+                if (count($resBits) > 4){
+                    $branch = substr($resBits[4], 1, strlen($resBits[4])-2);
+                    $branches[$branch] = $resBits[1];
+                }
+            }
+        }
+        $branches['master'] = $branches[$this->p4branch];
+        return $branches;
+    }
+
+    public function getTags()
+    {
+
+        $command = $this->generateP4Command("changes " . $this->getStream() . "/...");
+        print("\nPerforce:getTags - command:($command)\n");
+        $result = shell_exec($command);
+        $resArray = explode("\n", $result);
+        $tags = array();
+        foreach ($resArray as $line){
+            $index = strpos($line, "Change");
+            if (!($index===false)){
+//                $fields = explode(" ", $line);
+//                $tags["0.0.".$fields[1]] = $this->getStream() . "@" . $fields[1];
+            }
+        }
+
+        $command = $this->generateP4Command("labels");
+        print("\nPerforce:getTags - command:($command)\n");
+        $result = shell_exec($command);
+        $resArray = explode("\n", $result);
+        print("\nPerforce:getTags - result:$result\n");
+        foreach ($resArray as $line){
+            $index = strpos($line, "Label");
+            if (!($index===false)){
+                $fields = explode(" ", $line);
+                $tags[$fields[1]] = $this->getStream()."@" . $fields[1];
+            }
+        }
+        print ("Perforce:getTags - tags:" . var_export($tags, true)."\n");
+        return $tags;
+    }
+
+    public function checkStream ()
+    {
+        $command = $this->generateP4Command("depots");
+        $result = shell_exec($command);
+        $resArray = explode("\n", $result);
+        foreach ($resArray as $line){
+            $index = strpos($line, "Depot");
+            if (!($index===false)){
+                $fields = explode(" ", $line);
+                if (strcmp($this->p4depot, $fields[1]) === 0){
+                    $this->p4depotType = $fields[3];
+                    return $this->isStream();
+                }
+            }
+        }
+        return false;
     }
 }

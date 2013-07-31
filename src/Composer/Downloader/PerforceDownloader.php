@@ -20,18 +20,19 @@ use Composer\Util\Perforce;
  */
 class PerforceDownloader extends VcsDownloader
 {
-    private $hasStashedChanges = false;
-
     /**
      * {@inheritDoc}
      */
     public function doDownload(PackageInterface $package, $path)
     {
         $ref = $package->getSourceReference();
+        $label = $package->getPrettyVersion();
+        print ("PerforceDownloader: doDownload: ref:$ref, label:$label\n");
 
-        $perforce = new Perforce($ref, $package->getSourceUrl(), $path);
+        $perforce = new Perforce("", "", $package->getSourceUrl(), $path);
+        $perforce->setStream($ref);
         $perforce->writeP4ClientSpec();
-        $perforce->syncCodeBase();
+        $perforce->syncCodeBase($label);
     }
 
     /**

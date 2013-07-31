@@ -24,8 +24,8 @@ use Composer\Util\Perforce;
  */
 class PerforceDriver extends VcsDriver
 {
-    protected $rootIdentifier;
     protected $depot;
+    protected $branch;
     protected $perforce;
 
     /**
@@ -34,16 +34,20 @@ class PerforceDriver extends VcsDriver
     public function initialize()
     {
         print ("\nPerforceDriver:initialize\n");
-        $this->rootIdentifier = "mainline";
         $this->depot = $this->repoConfig['depot'];
+        $this->branch = "";
+        if (isset($this->repoConfig['branch'])){
+            $this->branch = $this->repoConfig['branch'];
+        }
 
-        $stream = "//$this->depot/$this->rootIdentifier";
         $repoDir = $this->config->get('cache-vcs-dir') . "/$this->depot";
-        $this->perforce = new Perforce($stream, $this->getUrl(), $repoDir);
+        $this->perforce = new Perforce($this->depot, $this->branch, $this->getUrl(), $repoDir);
 
         $this->perforce->p4Login($this->io);
-        $this->perforce->writeP4ClientSpec();
-        $this->perforce->syncCodeBase();
+        $this->perforce->checkStream($this->depot);
+
+//        $this->perforce->writeP4ClientSpec();
+//        $this->perforce->syncCodeBase();
 
         return true;
     }
@@ -56,7 +60,7 @@ class PerforceDriver extends VcsDriver
      */
     public function getComposerInformation($identifier)
     {
-        print ("PerforceDriver:getComposerInformation - identifier: $identifier\n");
+        print("PerforceDriver:getComposerInformation - identifier: $identifier\n");
         $composer_info =$this->perforce->getComposerInformation($identifier);
         return $composer_info;
     }
@@ -67,7 +71,7 @@ class PerforceDriver extends VcsDriver
     public function getRootIdentifier()
     {
         print ("PerforceDriver:getRootIdentifier\n");
-        return $this->rootIdentifier;
+        return $this->branch;
     }
 
     /**
@@ -76,19 +80,7 @@ class PerforceDriver extends VcsDriver
     public function getBranches()
     {
         print ("PerforceDriver:getBranches\n");
-        $command = "p4 streams //$this->depot/...";
-        $result = shell_exec($command);
-
-        $resArray = explode("\n", $result);
-        $branches = array();
-        foreach ($resArray as $line){
-            $resBits = explode(" ", $line);
-            if (count($resBits) > 4){
-                $branch = substr($resBits[4], 1, strlen($resBits[4])-2);
-                $branches[$branch] = $resBits[1];
-            }
-        }
-        $branches['master'] = $branches['mainline'];
+        $branches = $this->perforce->getBranches();
         return $branches;
     }
 
@@ -98,7 +90,8 @@ class PerforceDriver extends VcsDriver
     public function getTags()
     {
         print ("PerforceDriver:getTags\n");
-        return array();
+        $tags = $this->perforce->getTags();
+        return $tags;
     }
 
     /**
@@ -106,7 +99,6 @@ class PerforceDriver extends VcsDriver
      */
     public function getDist($identifier)
     {
-        print("\nPerforceDriver:getDist: identifier: $identifier\n");
         return null;
     }
 
@@ -115,8 +107,6 @@ class PerforceDriver extends VcsDriver
      */
     public function getSource($identifier)
     {
-        print ("\nPerforceDriver:getSource - identifier: $identifier\n");
-
         $source = array (
             'type' => 'perforce',
             'url' => $this->repoConfig['url'],
