@@ -59,7 +59,7 @@ EOT
             if ($downloader instanceof ChangeReportInterface) {
                 $targetDir = $im->getInstallPath($package);
 
-                if ($changes = $downloader->getLocalChanges($targetDir, $package)) {
+                if ($changes = $downloader->getLocalChanges($package, $targetDir)) {
                     $errors[$targetDir] = $changes;
                 }
             }

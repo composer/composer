@@ -59,7 +59,7 @@ class HgDownloader extends VcsDownloader
     /**
      * {@inheritDoc}
      */
-    public function getLocalChanges($path, PackageInterface $package)
+    public function getLocalChanges(PackageInterface $package, $path)
     {
         if (!is_dir($path.'/.hg')) {
             return;

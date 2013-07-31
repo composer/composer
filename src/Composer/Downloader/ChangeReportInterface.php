@@ -24,9 +24,9 @@ interface ChangeReportInterface
     /**
      * Checks for changes to the local copy
      *
-     * @param string $path package directory
      * @param PackageInterface $package package instance
+     * @param string $path package directory
      * @return string|null changes or null
      */
-    public function getLocalChanges($path, PackageInterface $package);
+    public function getLocalChanges(PackageInterface $package, $path);
 }
