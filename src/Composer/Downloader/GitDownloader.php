@@ -78,7 +78,7 @@ class GitDownloader extends VcsDownloader
     /**
      * {@inheritDoc}
      */
-    public function getLocalChanges($path)
+    public function getLocalChanges($path, PackageInterface $package)
     {
         $this->cleanEnv();
         $path = $this->normalizePath($path);
