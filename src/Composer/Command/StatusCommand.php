@@ -15,6 +15,7 @@ namespace Composer\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Composer\Downloader\ChangeReportInterface;
 use Composer\Downloader\VcsDownloader;
 
 /**
@@ -55,10 +56,10 @@ EOT
         foreach ($installedRepo->getPackages() as $package) {
             $downloader = $dm->getDownloaderForInstalledPackage($package);
 
-            if ($downloader instanceof VcsDownloader) {
+            if ($downloader instanceof ChangeReportInterface) {
                 $targetDir = $im->getInstallPath($package);
 
-                if ($changes = $downloader->getLocalChanges($targetDir)) {
+                if ($changes = $downloader->getLocalChanges($targetDir, $package)) {
                     $errors[$targetDir] = $changes;
                 }
             }
