@@ -148,13 +148,18 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
     public function testCaptureAuthenticationParamsFromUrl()
     {
         $io = $this->getMock('Composer\IO\IOInterface');
-        $io
-        ->expects($this->once())
-        ->method('setAuthentication')
-        ;
+        $io->expects($this->once())
+            ->method('setAuthentication')
+            ->with($this->equalTo('example.com'), $this->equalTo('user'), $this->equalTo('pass'));
 
         $fs = new RemoteFilesystem($io);
-        $fs->getContents('example.com', 'http://user:pass@www.example.com/something');
+        try {
+            $fs->getContents('example.com', 'http://user:pass@www.example.com/something');
+        } catch (\Exception $e) {
+            $this->assertInstanceOf('Composer\Downloader\TransportException', $e);
+            $this->assertEquals(404, $e->getCode());
+            $this->assertContains('404 Not Found', $e->getMessage());
+        }
     }
 
     public function testGetContents()
