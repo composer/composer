@@ -28,5 +28,5 @@ interface ChangeReportInterface
      * @param PackageInterface $package package instance
      * @return string|null changes or null
      */
-	public function getLocalChanges($path, PackageInterface $package);
+    public function getLocalChanges($path, PackageInterface $package);
 }
