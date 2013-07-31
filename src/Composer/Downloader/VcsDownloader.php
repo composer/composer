@@ -22,7 +22,7 @@ use Composer\Util\Filesystem;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-abstract class VcsDownloader implements DownloaderInterface
+abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterface
 {
     protected $io;
     protected $config;
@@ -186,14 +186,6 @@ abstract class VcsDownloader implements DownloaderInterface
      * @param string           $path    download path
      */
     abstract protected function doUpdate(PackageInterface $initial, PackageInterface $target, $path);
-
-    /**
-     * Checks for changes to the local copy
-     *
-     * @param  string      $path package directory
-     * @return string|null changes or null
-     */
-    abstract public function getLocalChanges($path);
 
     /**
      * Fetches the commit logs between two commits
