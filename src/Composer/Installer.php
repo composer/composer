@@ -99,6 +99,7 @@ class Installer
     protected $optimizeAutoloader = false;
     protected $devMode = false;
     protected $dryRun = false;
+    protected $noSuggest = false;
     protected $verbose = false;
     protected $update = false;
     protected $runScripts = true;
@@ -215,16 +216,18 @@ class Installer
         }
         $this->installationManager->notifyInstalls();
 
-        // output suggestions
-        foreach ($this->suggestedPackages as $suggestion) {
-            $target = $suggestion['target'];
-            foreach ($installedRepo->getPackages() as $package) {
-                if (in_array($target, $package->getNames())) {
-                    continue 2;
+        // output suggestions only --no-suggest is not set
+        if (!$this->noSuggest) {
+            foreach ($this->suggestedPackages as $suggestion) {
+                $target = $suggestion['target'];
+                foreach ($installedRepo->getPackages() as $package) {
+                    if (in_array($target, $package->getNames())) {
+                        continue 2;
+                    }
                 }
-            }
 
-            $this->io->write($suggestion['source'].' suggests installing '.$suggestion['target'].' ('.$suggestion['reason'].')');
+                $this->io->write($suggestion['source'].' suggests installing '.$suggestion['target'].' ('.$suggestion['reason'].')');
+            }
         }
 
         if (!$this->dryRun) {
@@ -997,6 +1000,19 @@ class Installer
     public function setVerbose($verbose = true)
     {
         $this->verbose = (boolean) $verbose;
+
+        return $this;
+    }
+
+    /**
+     * Do not show suggested packages.
+     *
+     * @param  boolean   $noSuggest
+     * @return Installer
+     */
+    public function setNoSuggest($noSuggest = true)
+    {
+        $this->noSuggest = $noSuggest;
 
         return $this;
     }
