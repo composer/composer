@@ -17,6 +17,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Downloader\ChangeReportInterface;
 use Composer\Downloader\VcsDownloader;
+use Composer\Script\ScriptEvents;
 
 /**
  * @author Tiago Ribeiro <tiago.ribeiro@seegno.com>
@@ -49,6 +50,9 @@ EOT
 
         $dm = $composer->getDownloadManager();
         $im = $composer->getInstallationManager();
+
+        // Dispatch pre-status-command
+        $composer->getEventDispatcher()->dispatchCommandEvent(ScriptEvents::PRE_STATUS_CMD, true);
 
         $errors = array();
 
@@ -87,6 +91,9 @@ EOT
         if ($errors && !$input->getOption('verbose')) {
             $output->writeln('Use --verbose (-v) to see modified files');
         }
+
+        // Dispatch post-status-command
+        $composer->getEventDispatcher()->dispatchCommandEvent(ScriptEvents::POST_STATUS_CMD, true);
 
         return $errors ? 1 : 0;
     }
