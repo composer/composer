@@ -50,13 +50,6 @@ class AutoloadGeneratorTest extends TestCase
                 return $that->vendorDir;
             }));
 
-        $this->config->expects($this->at(1))
-            ->method('get')
-            ->with($this->equalTo('vendor-dir'))
-            ->will($this->returnCallback(function () use ($that) {
-                return $that->vendorDir;
-            }));
-
         $this->origDir = getcwd();
         chdir($this->workingDir);
 
@@ -656,7 +649,7 @@ EOF;
             ->method('getCanonicalPackages')
             ->will($this->returnValue(array()));
 
-        $this->config->expects($this->at(2))
+        $this->config->expects($this->at(1))
             ->method('get')
             ->with($this->equalTo('use-include-path'))
             ->will($this->returnValue(true));
