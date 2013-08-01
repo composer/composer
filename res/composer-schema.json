@@ -259,6 +259,14 @@
                     "type": ["array", "string"],
                     "description": "Occurs after the update command is executed, contains one or more Class::method callables or shell commands."
                 },
+                "pre-status-cmd": {
+                    "type": ["array", "string"],
+                    "description": "Occurs before the status command is executed, contains one or more Class::method callables or shell commands."
+                },
+                "post-status-cmd": {
+                    "type": ["array", "string"],
+                    "description": "Occurs after the status command is executed, contains one or more Class::method callables or shell commands."
+                },
                 "pre-package-install": {
                     "type": ["array", "string"],
                     "description": "Occurs before a package is installed, contains one or more Class::method callables or shell commands."
