@@ -92,8 +92,8 @@ EOT
             $output->writeln('Use --verbose (-v) to see modified files');
         }
 
-		// Dispatch post-status-command
-		$composer->getEventDispatcher()->dispatchCommandEvent(ScriptEvents::POST_STATUS_CMD, true);
+        // Dispatch post-status-command
+        $composer->getEventDispatcher()->dispatchCommandEvent(ScriptEvents::POST_STATUS_CMD, true);
 
         return $errors ? 1 : 0;
     }
