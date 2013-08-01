@@ -48,25 +48,19 @@ class AutoloadGenerator
         $vendorPath = $helper->getVendorPath();
         $targetPath = $vendorPath.'/'.$targetDir;
 
-        $namespacesFile = $helper->getNamespacesFile($autoloads['psr-0']);
-        file_put_contents($targetPath.'/autoload_namespaces.php', $namespacesFile);
+        $helper->dumpNamespacesFile($autoloads['psr-0']);
 
         $classMap = $this->buildClassMap($helper, $autoloads, $scanPsr0Packages);
-        file_put_contents($targetPath.'/autoload_classmap.php', $helper->getClassmapFile($classMap));
+        $helper->dumpClassMapFile($classMap);
 
-        if ($includePathFile = $helper->getIncludePathsFile($packageMap)) {
-            file_put_contents($targetPath.'/include_paths.php', $includePathFile);
-        }
-
-        if ($includeFilesFile = $helper->getIncludeFilesFile($autoloads['files'])) {
-            file_put_contents($targetPath.'/autoload_files.php', $includeFilesFile);
-        }
+        $useIncludePath = $helper->dumpIncludePathsFile($packageMap);
+        $useAutoloadFiles = $helper->dumpIncludeFilesFile($autoloads['files']);
 
         if (!$suffix) {
             $suffix = md5(uniqid('', true));
         }
 
-        file_put_contents($helper->getVendorPath().'/autoload.php', $helper->getAutoloadFile($suffix));
+        $helper->dumpAutoloadFile($suffix);
 
         // add custom psr-0 autoloading if the root package has a target dir
         $targetDirLoader = null;
@@ -76,7 +70,7 @@ class AutoloadGenerator
         }
 
         $useGlobalIncludePath = (bool) $config->get('use-include-path');
-        file_put_contents($targetPath.'/autoload_real.php', $helper->getAutoloadRealFile(true, true, (bool) $includePathFile, (bool) $includeFilesFile, $suffix, $targetDirLoader, $useGlobalIncludePath));
+        $helper->dumpAutoloadRealFile(true, true, $useIncludePath, $useAutoloadFiles, $suffix, $targetDirLoader, $useGlobalIncludePath);
 
         // use stream_copy_to_stream instead of copy
         // to work around https://bugs.php.net/bug.php?id=64634
