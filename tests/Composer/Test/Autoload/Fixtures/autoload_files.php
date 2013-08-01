@@ -5,5 +5,7 @@
 $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
-require $baseDir . '/foo.php';
-require $baseDir . '/bar.php';
+return array(
+    $baseDir . '/foo.php',
+    $baseDir . '/bar.php',
+);

@@ -755,8 +755,8 @@ EOF;
 
         $this->assertEquals($expectedNamespace, file_get_contents($vendorDir.'/composer/autoload_namespaces.php'));
         $this->assertEquals($expectedClassmap, file_get_contents($vendorDir.'/composer/autoload_classmap.php'));
-        $this->assertContains("require \$vendorDir . '/b/b/bootstrap.php';", file_get_contents($vendorDir.'/composer/autoload_files.php'));
-        $this->assertContains("require \$baseDir . '/test.php';", file_get_contents($vendorDir.'/composer/autoload_files.php'));
+        $this->assertContains("\n    \$vendorDir . '/b/b/bootstrap.php',\n", file_get_contents($vendorDir.'/composer/autoload_files.php'));
+        $this->assertContains("\n    \$baseDir . '/test.php',\n", file_get_contents($vendorDir.'/composer/autoload_files.php'));
     }
 
     public function testUpLevelRelativePaths()
@@ -815,7 +815,7 @@ EOF;
 
         $this->assertEquals($expectedNamespace, file_get_contents($this->vendorDir.'/composer/autoload_namespaces.php'));
         $this->assertEquals($expectedClassmap, file_get_contents($this->vendorDir.'/composer/autoload_classmap.php'));
-        $this->assertContains("require \$baseDir . '/../test.php';", file_get_contents($this->vendorDir.'/composer/autoload_files.php'));
+        $this->assertContains("\n    \$baseDir . '/../test.php',\n", file_get_contents($this->vendorDir.'/composer/autoload_files.php'));
     }
 
     public function testEmptyPaths()

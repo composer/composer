@@ -5,9 +5,11 @@
 $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
-require $vendorDir . '/c/lorem/testC.php';
-require $vendorDir . '/z/foo/testA.php';
-require $vendorDir . '/d/d/testD.php';
-require $vendorDir . '/b/bar/testB.php';
-require $vendorDir . '/e/e/testE.php';
-require $baseDir . '/root.php';
+return array(
+    $vendorDir . '/c/lorem/testC.php',
+    $vendorDir . '/z/foo/testA.php',
+    $vendorDir . '/d/d/testD.php',
+    $vendorDir . '/b/bar/testB.php',
+    $vendorDir . '/e/e/testE.php',
+    $baseDir . '/root.php',
+);

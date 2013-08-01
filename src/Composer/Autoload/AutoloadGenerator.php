@@ -300,13 +300,12 @@ EOF;
         $filesCode = '';
         $files = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($files));
         foreach ($files as $functionFile) {
-            $filesCode .= 'require '.$this->getPathCode($filesystem, $basePath, $vendorPath, $functionFile).";\n";
+            $filesCode .= '    '.$this->getPathCode($filesystem, $basePath, $vendorPath, $functionFile).",\n";
         }
 
         if (!$filesCode) {
             return FALSE;
         }
-        $filesCode = rtrim($filesCode);
 
         return <<<EOF
 <?php
@@ -316,7 +315,8 @@ EOF;
 \$vendorDir = $vendorPathCode;
 \$baseDir = $appBaseDirCode;
 
-$filesCode
+return array(
+$filesCode);
 EOF;
     }
 
@@ -457,7 +457,9 @@ REGISTER_LOADER;
 
         if ($useIncludeFiles) {
             $file .= <<<INCLUDE_FILES
-        require __DIR__ . '/autoload_files.php';
+        foreach (require __DIR__ . '/autoload_files.php' as \$file) {
+            require \$file;
+        }
 
 
 INCLUDE_FILES;
