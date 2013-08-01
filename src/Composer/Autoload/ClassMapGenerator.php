@@ -23,7 +23,7 @@ class ClassMapGenerator
     /**
      * Generate a class map file
      *
-     * @param Traversable $dirs Directories or a single path to search in
+     * @param \Traversable $dirs Directories or a single path to search in
      * @param string      $file The name of the class map file
      */
     public static function dump($dirs, $file)
@@ -40,7 +40,7 @@ class ClassMapGenerator
     /**
      * Iterate over all files in the given directory searching for classes
      *
-     * @param Iterator|string $path      The path to search in or an iterator
+     * @param \Iterator|string $path      The path to search in or an iterator
      * @param string          $whitelist Regex that matches against the file path
      *
      * @return array A class map array
@@ -65,6 +65,9 @@ class ClassMapGenerator
         $map = array();
 
         foreach ($path as $file) {
+            /**
+             * @var \SplFileInfo $file
+             */
             if (!$file->isFile()) {
                 continue;
             }
