@@ -48,19 +48,14 @@ class AutoloadGenerator
         $vendorPath = $helper->getVendorPath();
         $targetPath = $vendorPath.'/'.$targetDir;
 
-        $helper->dumpNamespacesFile($autoloads['psr-0']);
+        $loaderSetupCode = '';
+
+        $loaderSetupCode .= $helper->dumpNamespacesFile($autoloads['psr-0']);
 
         $classMap = $this->buildClassMap($helper, $autoloads, $scanPsr0Packages);
-        $helper->dumpClassMapFile($classMap);
+        $loaderSetupCode .= $helper->dumpClassMapFile($classMap);
 
-        $useIncludePath = $helper->dumpIncludePathsFile($packageMap);
-        $useAutoloadFiles = $helper->dumpIncludeFilesFile($autoloads['files']);
-
-        if (!$suffix) {
-            $suffix = md5(uniqid('', true));
-        }
-
-        $helper->dumpAutoloadFile($suffix);
+        $loaderSetupCode .= $helper->dumpIncludePathsFile($packageMap);
 
         // add custom psr-0 autoloading if the root package has a target dir
         $targetDirLoader = null;
@@ -70,7 +65,17 @@ class AutoloadGenerator
         }
 
         $useGlobalIncludePath = (bool) $config->get('use-include-path');
-        $helper->dumpAutoloadRealFile(true, true, $useIncludePath, $useAutoloadFiles, $suffix, $targetDirLoader, $useGlobalIncludePath);
+
+        if (!$suffix) {
+            $suffix = md5(uniqid('', true));
+        }
+
+        $loaderSetupCode .= $this->buildLoaderSetupCode((bool) $targetDirLoader, $useGlobalIncludePath, $suffix);
+
+        $loaderSetupCode .= $helper->dumpIncludeFilesFile($autoloads['files']);
+
+        $helper->dumpAutoloadFile($suffix);
+        $helper->dumpAutoloadRealFile($loaderSetupCode, $suffix, $targetDirLoader);
 
         // use stream_copy_to_stream instead of copy
         // to work around https://bugs.php.net/bug.php?id=64634
@@ -143,6 +148,35 @@ class AutoloadGenerator
         }
 
         return $loader;
+    }
+
+    protected function buildLoaderSetupCode($useTargetDirLoader, $useGlobalIncludePath, $suffix)
+    {
+        $loaderSetupCode = '';
+
+        if ($useGlobalIncludePath) {
+            $loaderSetupCode .= <<<'INCLUDEPATH'
+
+        $loader->setUseIncludePath(true);
+INCLUDEPATH;
+        }
+
+        if ($useTargetDirLoader) {
+            $loaderSetupCode .= <<<REGISTER_AUTOLOAD
+
+        spl_autoload_register(array('ComposerAutoloaderInit$suffix', 'autoload'), true, true);
+
+REGISTER_AUTOLOAD;
+
+        }
+
+        $loaderSetupCode .= <<<REGISTER_LOADER
+
+        \$loader->register(true);
+
+REGISTER_LOADER;
+
+        return $loaderSetupCode;
     }
 
     protected function buildClassMap(AutoloadGeneratorHelper $helper, array $autoloads, $scanPsr0Packages)
