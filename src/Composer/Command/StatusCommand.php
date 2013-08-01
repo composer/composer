@@ -129,6 +129,6 @@ EOT
         // Dispatch post-status-command
         $composer->getEventDispatcher()->dispatchScript(ScriptEvents::POST_STATUS_CMD, true);
 
-        return ($errors || $unpushedChanges) ? 1 : 0;
+        return ($errors ? 1 : 0) + ($unpushedChanges ? 2 : 0);
     }
 }
