@@ -323,7 +323,7 @@ class ClassLoader
             ;
         } else {
             // PEAR-like class name
-            $logicalPathPsr0 = strtr($class, '_', DIRECTORY_SEPARATOR);
+            $logicalPathPsr0 = strtr($class, '_', DIRECTORY_SEPARATOR) . '.php';
         }
 
         if (isset($this->prefixesPsr0[$first])) {
