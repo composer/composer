@@ -179,6 +179,13 @@ class GitDownloader extends VcsDownloader
 
     protected function updateToCommit($path, $reference, $branch, $date)
     {
+        // check if reference is valid
+        $command = sprintf('git show-ref --quiet --verify %s', escapeshellarg($reference));
+        if (1 === $this->process->execute($command, $output, $path)) {
+            $this->io->write('    '.$reference.' does not exists, nothing to update');
+            return;
+        }
+
         $template = 'git checkout %s && git reset --hard %1$s';
         $branch = preg_replace('{(?:^dev-|(?:\.x)?-dev$)}i', '', $branch);
 
