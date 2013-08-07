@@ -301,8 +301,9 @@ unless those requirements can be met.
 #### require-dev <span>(root-only)</span>
 
 Lists packages required for developing this package, or running
-tests, etc. The dev requirements of the root package only will be installed
-if `install` is run with `--dev` or if `update` is run without `--no-dev`.
+tests, etc. The dev requirements of the root package are installed by default.
+Both `install` or `update` support the `--no-dev` option that prevents dev
+dependencies from being installed.
 
 #### conflict
 
