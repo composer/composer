@@ -37,10 +37,18 @@ class PerforceDriver extends VcsDriver {
         if (isset($this->repoConfig['branch'])) {
             $this->branch = $this->repoConfig['branch'];
         }
+        $p4user = "";
+        if (isset($this->repoConfig['p4user'])) {
+            $p4user = $this->repoConfig['p4user'];
+        }
+        $p4password = "";
+        if (isset($this->repoConfig['p4password'])) {
+            $p4password = $this->repoConfig['p4password'];
+        }
 
         $repoDir = $this->config->get('cache-vcs-dir') . "/$this->depot";
         if (!isset($this->perforce)) {
-            $this->perforce = new Perforce($this->depot, $this->branch, $this->getUrl(), $repoDir, $this->process);
+            $this->perforce = new Perforce($this->depot, $this->branch, $this->getUrl(), $repoDir, $this->process, $p4user, $p4password);
         }
 
         $this->perforce->p4Login($this->io);
