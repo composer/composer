@@ -17,6 +17,7 @@ class Perforce {
     protected $path;
     protected $p4client;
     protected $p4user;
+    protected $p4password;
     protected $p4port;
     protected $p4stream;
     protected $p4clientSpec;
@@ -24,7 +25,7 @@ class Perforce {
     protected $p4branch;
     protected $process;
 
-    public function __construct($depot, $branch, $port, $path, ProcessExecutor $process = null) {
+    public function __construct($depot, $branch, $port, $path, ProcessExecutor $process = null, $p4user = null, $p4password = null) {
         $this->p4depot = $depot;
         $this->p4branch = $branch;
         $this->p4port = $port;
@@ -32,6 +33,14 @@ class Perforce {
         $this->process = $process ? : new ProcessExecutor;
         $fs = new Filesystem();
         $fs->ensureDirectoryExists($path);
+        if (isset($p4user)){
+            $this->p4user = $p4user;
+        } else {
+            $this->p4user = $this->getP4variable("P4USER");
+        }
+        if (isset($p4password)){
+            $this->p4password = $p4password;
+        }
     }
 
     protected function getRandomValue() {
@@ -53,14 +62,6 @@ class Perforce {
         }
 
         return $this->p4client;
-    }
-
-    public function getUser() {
-        if (!isset($this->p4user)) {
-            $this->p4user = $this->getP4variable("P4USER");
-        }
-
-        return $this->p4user;
     }
 
     protected function getPath() {
@@ -100,6 +101,10 @@ class Perforce {
         return $p4clientSpec;
     }
 
+    public function getUser() {
+        return $this->p4user;
+    }
+
     public function queryP4User(IOInterface $io) {
         $this->getUser();
         if (strlen($this->p4user) <= 0) {
@@ -113,11 +118,41 @@ class Perforce {
         }
     }
 
+    protected function getP4variable($name){
+        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+            $command = "p4 set";
+            $result = $this->executeCommand($command);
+            $resArray = explode("\n", $result);
+            foreach ($resArray as $line) {
+                $fields = explode("=", $line);
+                if (strcmp($name, $fields[0]) == 0){
+                    $index = strpos($fields[1], " ");
+                    if ($index === false){
+                        $value = $fields[1];
+                    } else {
+                        $value = substr($fields[1], 0, $index);
+                    }
+                    $value = trim($value);
+                    return $value;
+                }
+            }
+        } else {
+            $command = 'echo $' . $name;
+            $result = trim($this->executeCommand($command));
+            return $result;
+        }
+
+    }
+
     protected function queryP4Password(IOInterface $io) {
+        if (isset($this->p4password)){
+            return $this->p4password;
+        }
         $password = $this->getP4variable("P4PASSWD");
         if (strlen($password) <= 0) {
             $password = $io->askAndHideAnswer("Enter password for Perforce user " . $this->getUser() . ": ");
         }
+        $this->p4password = $password;
         return $password;
     }
 
@@ -209,31 +244,6 @@ class Perforce {
         fclose($spec);
     }
 
-    protected function getP4variable($name){
-        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
-            $command = "p4 set";
-            $result = $this->executeCommand($command);
-            $resArray = explode("\n", $result);
-            foreach ($resArray as $line) {
-                $fields = explode("=", $line);
-                if (strcmp($name, $fields[0]) == 0){
-                    $index = strpos($fields[1], " ");
-                    if ($index === false){
-                        $value = $fields[1];
-                    } else {
-                        $value = substr($fields[1], 0, $index);
-                    }
-                    $value = trim($value);
-                    return $value;
-                }
-            }
-        } else {
-            $command = 'echo $' . $name;
-            $result = trim($this->executeCommand($command));
-            return $result;
-        }
-
-    }
 
     protected function read($pipe, $name){
         if (feof($pipe)) {

@@ -28,7 +28,25 @@ class PerforceDownloader extends VcsDownloader
         $ref = $package->getSourceReference();
         $label = $package->getPrettyVersion();
 
-        $perforce = new Perforce("", "", $package->getSourceUrl(), $path);
+        $repository = $package->getRepository();
+        //assume repository is a Perforce Repository
+
+        $reflector = new \ReflectionClass($repository);
+        $repoConfigProperty = $reflector->getProperty("repoConfig");
+        $repoConfigProperty->setAccessible(true);
+        $repoConfig = $repoConfigProperty->getValue($repository);
+
+        $p4user = "";
+        if (isset($repoConfig['p4user'])) {
+            $p4user = $repoConfig['p4user'];
+        }
+        $p4password = "";
+        if (isset($repoConfig['p4password'])) {
+            $p4password = $repoConfig['p4password'];
+        }
+
+//        print("Perforce Downloader:doDownload - repoConfig:" . var_dump($repoConfig, true) . "\n\n");
+        $perforce = new Perforce("", "", $package->getSourceUrl(), $path, null, $p4user, $p4password);
         $perforce->setStream($ref);
         $perforce->queryP4User($this->io);
         $perforce->writeP4ClientSpec();
