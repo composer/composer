@@ -63,6 +63,19 @@ final class StreamContextFactory
             }
 
             $options['http']['proxy'] = $proxyURL;
+            
+            // Handle no_proxy directive
+            if (!empty($_SERVER['no_proxy'])) {
+                $host = parse_url($url, PHP_URL_HOST);
+                
+                if (!empty($host)) {
+                    $pattern = new NoProxyPattern($_SERVER['no_proxy']);
+                    
+                    if ($pattern->test($url)) {
+                        $options['http']['proxy'] = '';
+                    }
+                }
+            }
 
             // enabled request_fulluri unless it is explicitly disabled
             switch (parse_url($url, PHP_URL_SCHEME)) {
