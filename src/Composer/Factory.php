@@ -126,7 +126,7 @@ class Factory
 
     public static function getComposerFile()
     {
-        return trim(getenv('COMPOSER')) ?: 'composer.json';
+        return trim(getenv('COMPOSER')) ?: './composer.json';
     }
 
     public static function createAdditionalStyles()
@@ -191,7 +191,7 @@ class Factory
             $file = new JsonFile($localConfig, new RemoteFilesystem($io));
 
             if (!$file->exists()) {
-                if ($localConfig === 'composer.json') {
+                if ($localConfig === './composer.json' || $localConfig === 'composer.json') {
                     $message = 'Composer could not find a composer.json file in '.getcwd();
                 } else {
                     $message = 'Composer could not find the config file: '.$localConfig;
