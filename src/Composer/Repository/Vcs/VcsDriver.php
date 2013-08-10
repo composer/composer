@@ -56,7 +56,7 @@ abstract class VcsDriver implements VcsDriverInterface
         $this->repoConfig = $repoConfig;
         $this->io = $io;
         $this->config = $config;
-        $this->process = $process ?: new ProcessExecutor;
+        $this->process = $process ?: new ProcessExecutor($io);
         $this->remoteFilesystem = $remoteFilesystem ?: new RemoteFilesystem($io);
     }
 

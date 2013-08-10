@@ -22,6 +22,7 @@ use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Version\VersionParser;
 use Composer\Util\Git as GitUtil;
+use Composer\IO\IOInterface;
 
 /**
  * Reads/writes project lockfile (composer.lock).
@@ -37,24 +38,27 @@ class Locker
     private $hash;
     private $loader;
     private $dumper;
+    private $process;
     private $lockDataCache;
 
     /**
      * Initializes packages locker.
      *
+     * @param IOInterface         $io
      * @param JsonFile            $lockFile            lockfile loader
      * @param RepositoryManager   $repositoryManager   repository manager instance
      * @param InstallationManager $installationManager installation manager instance
      * @param string              $hash                unique hash of the current composer configuration
      */
-    public function __construct(JsonFile $lockFile, RepositoryManager $repositoryManager, InstallationManager $installationManager, $hash)
+    public function __construct(IOInterface $io, JsonFile $lockFile, RepositoryManager $repositoryManager, InstallationManager $installationManager, $hash)
     {
-        $this->lockFile          = $lockFile;
+        $this->lockFile = $lockFile;
         $this->repositoryManager = $repositoryManager;
         $this->installationManager = $installationManager;
         $this->hash = $hash;
         $this->loader = new ArrayLoader();
         $this->dumper = new ArrayDumper();
+        $this->process = new ProcessExecutor($io);
     }
 
     /**
@@ -321,20 +325,18 @@ class Locker
 
         if ($path && in_array($sourceType, array('git', 'hg'))) {
             $sourceRef = $package->getSourceReference() ?: $package->getDistReference();
-            $process = new ProcessExecutor();
-
             switch ($sourceType) {
                 case 'git':
                     $util = new GitUtil;
                     $util->cleanEnv();
 
-                    if (0 === $process->execute('git log -n1 --pretty=%ct '.escapeshellarg($sourceRef), $output, $path) && preg_match('{^\s*\d+\s*$}', $output)) {
+                    if (0 === $this->process->execute('git log -n1 --pretty=%ct '.escapeshellarg($sourceRef), $output, $path) && preg_match('{^\s*\d+\s*$}', $output)) {
                         $datetime = new \DateTime('@'.trim($output), new \DateTimeZone('UTC'));
                     }
                     break;
 
                 case 'hg':
-                    if (0 === $process->execute('hg log --template "{date|hgdate}" -r '.escapeshellarg($sourceRef), $output, $path) && preg_match('{^\s*(\d+)\s*}', $output, $match)) {
+                    if (0 === $this->process->execute('hg log --template "{date|hgdate}" -r '.escapeshellarg($sourceRef), $output, $path) && preg_match('{^\s*(\d+)\s*}', $output, $match)) {
                         $datetime = new \DateTime('@'.$match[1], new \DateTimeZone('UTC'));
                     }
                     break;
