@@ -280,7 +280,7 @@ class Locker
             // always move time to the end of the package definition
             $time = isset($spec['time']) ? $spec['time'] : null;
             unset($spec['time']);
-            if ($package->isDev()) {
+            if ($package->isDev() && $package->getInstallationSource() === 'source') {
                 // use the exact commit time of the current reference if it's a dev package
                 $time = $this->getPackageTime($package) ?: $time;
             }
