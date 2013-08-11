@@ -459,6 +459,8 @@ class Installer
             $this->io->write('Nothing to install or update');
         }
 
+		$operations = $this->moveComposerInstallerToFrontIfNeeded($operations);
+
         foreach ($operations as $operation) {
             // collect suggestions
             if ('install' === $operation->getJobType()) {
@@ -532,6 +534,39 @@ class Installer
         }
 
         return true;
+    }
+
+
+    /**
+	 * Workaround: if your packages depend on composer/installers, we must be sure
+	 * that composer/installers is installed / updated at FIRST; else it would lead
+	 * to packages being installed multiple times in different folders, when running
+	 * composer twice.
+	 *
+	 * While this does not fix the root-causes of https://github.com/composer/composer/issues/1147,
+	 * it at least fixes the symptoms and makes usage of composer possible (again)
+	 * in such scenarios.
+     *
+     * @param array<DependencyResolver\Operation\OperationInterface> $operations
+     * @return array<DependencyResolver\Operation\OperationInterface> the modified
+     */
+    private function moveComposerInstallerToFrontIfNeeded($operations)
+    {
+        $operationForComposerInstallers = NULL;
+        $operations = array_filter($operations, function($operation) use (&$operationForComposerInstallers) {
+            if (   ($operation instanceof DependencyResolver\Operation\InstallOperation && $operation->getPackage()->getName() === 'composer/installers')
+                || ($operation instanceof DependencyResolver\Operation\UpdateOperation && $operation->getInitialPackage()->getName() === 'composer/installers')
+            ) {
+                $operationForComposerInstallers = $operation;
+                return FALSE;
+            }
+
+            return TRUE;
+        });
+        if ($operationForComposerInstallers !== NULL) {
+            array_unshift($operations, $operationForComposerInstallers);
+        }
+        return $operations;
     }
 
     private function createPool()
