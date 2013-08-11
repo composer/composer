@@ -63,51 +63,49 @@ final class StreamContextFactory
             }
 
             $options['http']['proxy'] = $proxyURL;
-            
+
             // Handle no_proxy directive
-            if (!empty($_SERVER['no_proxy'])) {
-                $host = parse_url($url, PHP_URL_HOST);
-                
-                if (!empty($host)) {
-                    $pattern = new NoProxyPattern($_SERVER['no_proxy']);
-                    
-                    if ($pattern->test($url)) {
-                        $options['http']['proxy'] = '';
-                    }
+            if (!empty($_SERVER['no_proxy']) && parse_url($url, PHP_URL_HOST)) {
+                $pattern = new NoProxyPattern($_SERVER['no_proxy']);
+                if ($pattern->test($url)) {
+                    unset($options['http']['proxy']);
                 }
             }
 
-            // enabled request_fulluri unless it is explicitly disabled
-            switch (parse_url($url, PHP_URL_SCHEME)) {
-                case 'http': // default request_fulluri to true
-                    $reqFullUriEnv = getenv('HTTP_PROXY_REQUEST_FULLURI');
-                    if ($reqFullUriEnv === false || $reqFullUriEnv === '' || (strtolower($reqFullUriEnv) !== 'false' && (bool) $reqFullUriEnv)) {
-                        $options['http']['request_fulluri'] = true;
-                    }
-                    break;
-                case 'https': // default request_fulluri to true
-                    $reqFullUriEnv = getenv('HTTPS_PROXY_REQUEST_FULLURI');
-                    if ($reqFullUriEnv === false || $reqFullUriEnv === '' || (strtolower($reqFullUriEnv) !== 'false' && (bool) $reqFullUriEnv)) {
-                        $options['http']['request_fulluri'] = true;
-                    }
-                    break;
-            }
-
-            if (isset($proxy['user'])) {
-                $auth = $proxy['user'];
-                if (isset($proxy['pass'])) {
-                    $auth .= ':' . $proxy['pass'];
+            // add request_fulluri and authentication if we still have a proxy to connect to
+            if (isset($options['http']['proxy'])) {
+                // enabled request_fulluri unless it is explicitly disabled
+                switch (parse_url($url, PHP_URL_SCHEME)) {
+                    case 'http': // default request_fulluri to true
+                        $reqFullUriEnv = getenv('HTTP_PROXY_REQUEST_FULLURI');
+                        if ($reqFullUriEnv === false || $reqFullUriEnv === '' || (strtolower($reqFullUriEnv) !== 'false' && (bool) $reqFullUriEnv)) {
+                            $options['http']['request_fulluri'] = true;
+                        }
+                        break;
+                    case 'https': // default request_fulluri to true
+                        $reqFullUriEnv = getenv('HTTPS_PROXY_REQUEST_FULLURI');
+                        if ($reqFullUriEnv === false || $reqFullUriEnv === '' || (strtolower($reqFullUriEnv) !== 'false' && (bool) $reqFullUriEnv)) {
+                            $options['http']['request_fulluri'] = true;
+                        }
+                        break;
                 }
-                $auth = base64_encode($auth);
 
-                // Preserve headers if already set in default options
-                if (isset($defaultOptions['http']['header'])) {
-                    if (is_string($defaultOptions['http']['header'])) {
-                        $defaultOptions['http']['header'] = array($defaultOptions['http']['header']);
+                if (isset($proxy['user'])) {
+                    $auth = $proxy['user'];
+                    if (isset($proxy['pass'])) {
+                        $auth .= ':' . $proxy['pass'];
                     }
-                    $defaultOptions['http']['header'][] = "Proxy-Authorization: Basic {$auth}";
-                } else {
-                    $options['http']['header'] = array("Proxy-Authorization: Basic {$auth}");
+                    $auth = base64_encode($auth);
+
+                    // Preserve headers if already set in default options
+                    if (isset($defaultOptions['http']['header'])) {
+                        if (is_string($defaultOptions['http']['header'])) {
+                            $defaultOptions['http']['header'] = array($defaultOptions['http']['header']);
+                        }
+                        $defaultOptions['http']['header'][] = "Proxy-Authorization: Basic {$auth}";
+                    } else {
+                        $options['http']['header'] = array("Proxy-Authorization: Basic {$auth}");
+                    }
                 }
             }
         }
