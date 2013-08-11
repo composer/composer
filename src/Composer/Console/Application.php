@@ -224,6 +224,7 @@ class Application extends BaseApplication
         $commands[] = new Command\ArchiveCommand();
         $commands[] = new Command\DiagnoseCommand();
         $commands[] = new Command\RunScriptCommand();
+        $commands[] = new Command\LicensesCommand();
 
         if ('phar:' === substr(__FILE__, 0, 5)) {
             $commands[] = new Command\SelfUpdateCommand();
