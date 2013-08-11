@@ -73,7 +73,7 @@ final class StreamContextFactory
             }
 
             // add request_fulluri and authentication if we still have a proxy to connect to
-            if (isset($options['http']['proxy'])) {
+            if (!empty($options['http']['proxy'])) {
                 // enabled request_fulluri unless it is explicitly disabled
                 switch (parse_url($url, PHP_URL_SCHEME)) {
                     case 'http': // default request_fulluri to true
