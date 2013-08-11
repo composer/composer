@@ -13,6 +13,7 @@
 namespace Composer\Command;
 
 use Composer\Package\PackageInterface;
+use Composer\Json\JsonFile;
 use Composer\Package\Version\VersionParser;
 use Symfony\Component\Console\Helper\TableHelper;
 use Symfony\Component\Console\Input\InputInterface;
@@ -44,8 +45,9 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $root = $this->getComposer()->getPackage();
-        $repo = $this->getComposer()->getRepositoryManager()->getLocalRepository();
+        $composer = $this->getComposer();
+        $root = $composer->getPackage();
+        $repo = $composer->getRepositoryManager()->getLocalRepository();
 
         $versionParser = new VersionParser;
 
@@ -83,7 +85,7 @@ EOT
                     );
                 }
 
-                $output->writeln(json_encode(array(
+                $output->writeln(JsonFile::encode(array(
                     'name'         => $root->getPrettyName(),
                     'version'      => $versionParser->formatVersion($root),
                     'license'      => $root->getLicense(),
