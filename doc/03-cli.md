@@ -417,6 +417,16 @@ some tools like git or curl will only use the lower-cased `http_proxy` version.
 Alternatively you can also define the git proxy using
 `git config --global http.proxy <proxy url>`.
 
+### no_proxy
+
+If you are behind a proxy and would like to disable it for certain domains, you
+can use the `no_proxy` env var. Simply set it to a comma separated list of
+domains the proxy should *not* be used for.
+
+The env var accepts domains, IP addresses, and IP address blocks in CIDR
+notation. You can restrict the filter to a particular port (e.g. `:80`). You
+can also set it to `*` to ignore the proxy for all HTTP requests.
+
 ### HTTP_PROXY_REQUEST_FULLURI
 
 If you use a proxy but it does not support the request_fulluri flag, then you
@@ -435,7 +445,7 @@ The `COMPOSER_HOME` var allows you to change the composer home directory. This
 is a hidden, global (per-user on the machine) directory that is shared between
 all projects.
 
-By default it points to `/home/<user>/.composer` on *nix,
+By default it points to `/home/<user>/.composer` on \*nix,
 `/Users/<user>/.composer` on OSX and
 `C:\Users\<user>\AppData\Roaming\Composer` on Windows.
 
