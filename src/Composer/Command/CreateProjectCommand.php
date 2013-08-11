@@ -136,6 +136,8 @@ EOT
 
     public function installProject(IOInterface $io, $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositoryUrl = null, $disableCustomInstallers = false, $noScripts = false, $keepVcs = false, $noProgress = false)
     {
+        $oldCwd = getcwd();
+
         if ($packageName !== null) {
             $installedFromVcs = $this->installRootPackage($io, $config, $packageName, $directory, $packageVersion, $stability, $preferSource, $preferDist, $installDevPackages, $repositoryUrl, $disableCustomInstallers, $noScripts, $keepVcs, $noProgress);
         } else {
@@ -209,6 +211,16 @@ EOT
         if ($noScripts === false) {
             // dispatch event
             $composer->getEventDispatcher()->dispatchCommandEvent(ScriptEvents::POST_CREATE_PROJECT_CMD, $installDevPackages);
+        }
+
+        chdir($oldCwd);
+        $vendorComposerDir = $composer->getConfig()->get('vendor-dir').'/composer';
+        if (is_dir($vendorComposerDir) && glob($vendorComposerDir.'/*') === array() && count(glob($vendorComposerDir.'/.*')) === 2) {
+            @rmdir($vendorComposerDir);
+            $vendorDir = $composer->getConfig()->get('vendor-dir');
+            if (is_dir($vendorDir) && glob($vendorDir.'/*') === array() && count(glob($vendorDir.'/.*')) === 2) {
+                @rmdir($vendorDir);
+            }
         }
 
         return 0;
