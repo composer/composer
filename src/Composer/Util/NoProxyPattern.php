@@ -135,10 +135,6 @@ class NoProxyPattern
 
         // If the ip is within the range, including highest/lowest values,
         // then it's witin the CIDR range
-        if ($check >= $low && $check <= $high) {
-            return true;
-        } else {
-            return false;
-        }
+        return $check >= $low && $check <= $high;
     }
 }
