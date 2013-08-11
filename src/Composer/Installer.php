@@ -15,7 +15,9 @@ namespace Composer;
 use Composer\Autoload\AutoloadGenerator;
 use Composer\DependencyResolver\DefaultPolicy;
 use Composer\DependencyResolver\Operation\UpdateOperation;
+use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
+use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Rule;
@@ -459,7 +461,7 @@ class Installer
             $this->io->write('Nothing to install or update');
         }
 
-		$operations = $this->moveComposerInstallerToFrontIfNeeded($operations);
+        $operations = $this->moveCustomInstallersToFront($operations);
 
         foreach ($operations as $operation) {
             // collect suggestions
@@ -538,35 +540,37 @@ class Installer
 
 
     /**
-	 * Workaround: if your packages depend on composer/installers, we must be sure
-	 * that composer/installers is installed / updated at FIRST; else it would lead
-	 * to packages being installed multiple times in different folders, when running
-	 * composer twice.
-	 *
-	 * While this does not fix the root-causes of https://github.com/composer/composer/issues/1147,
-	 * it at least fixes the symptoms and makes usage of composer possible (again)
-	 * in such scenarios.
+     * Workaround: if your packages depend on custom installers, we must be sure
+     * that those are installed / updated first; else it would lead to packages
+     * being installed multiple times in different folders, when running Composer
+     * twice.
      *
-     * @param array<DependencyResolver\Operation\OperationInterface> $operations
-     * @return array<DependencyResolver\Operation\OperationInterface> the modified
+     * While this does not fix the root-causes of https://github.com/composer/composer/issues/1147,
+     * it at least fixes the symptoms and makes usage of composer possible (again)
+     * in such scenarios.
+     *
+     * @param OperationInterface[] $operations
+     * @return OperationInterface[] reordered operation list
      */
-    private function moveComposerInstallerToFrontIfNeeded($operations)
+    private function moveCustomInstallersToFront(array $operations)
     {
-        $operationForComposerInstallers = NULL;
-        $operations = array_filter($operations, function($operation) use (&$operationForComposerInstallers) {
-            if (   ($operation instanceof DependencyResolver\Operation\InstallOperation && $operation->getPackage()->getName() === 'composer/installers')
-                || ($operation instanceof DependencyResolver\Operation\UpdateOperation && $operation->getInitialPackage()->getName() === 'composer/installers')
-            ) {
-                $operationForComposerInstallers = $operation;
-                return FALSE;
+        $installerOps = array();
+        foreach ($operations as $idx => $op) {
+            if ($op instanceof InstallOperation) {
+                $package = $op->getPackage();
+            } else if ($op instanceof UpdateOperation) {
+                $package = $op->getTargetPackage();
+            } else {
+                continue;
             }
 
-            return TRUE;
-        });
-        if ($operationForComposerInstallers !== NULL) {
-            array_unshift($operations, $operationForComposerInstallers);
+            if ($package->getRequires() === array() && $package->getType() === 'composer-installer') {
+                $installerOps[] = $op;
+                unset($operations[$idx]);
+            }
         }
-        return $operations;
+
+        return array_merge($installerOps, $operations);
     }
 
     private function createPool()
