@@ -190,7 +190,10 @@ class RootPackageLoader extends ArrayLoader
 
         // try to fetch current version from git tags
         if (0 === $this->process->execute('git describe --exact-match --tags', $output)) {
-            return $this->versionParser->normalize(trim($output));
+            try {
+                return $this->versionParser->normalize(trim($output));
+            } catch (\Exception $e) {
+            }
         }
 
         // try to fetch current version from git branch
