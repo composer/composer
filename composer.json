@@ -26,7 +26,7 @@
         "justinrainbow/json-schema": "1.1.*",
         "seld/jsonlint": "1.*",
         "symfony/console": "~2.3@dev",
-        "symfony/finder": "~2.1",
+        "symfony/finder": "~2.2",
         "symfony/process": "~2.1@dev"
     },
     "require-dev": {
