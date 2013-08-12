@@ -22,6 +22,7 @@ use Composer\Util\Perforce;
 class PerforceDownloader extends VcsDownloader
 {
     protected $perforce;
+    protected $perforceInjected = false;
 
     /**
      * {@inheritDoc}
@@ -31,6 +32,7 @@ class PerforceDownloader extends VcsDownloader
         $ref = $package->getSourceReference();
         $label = $package->getPrettyVersion();
 
+        $this->io->write("    Cloning ".$ref);
         $this->initPerforce($package, $path);
         $this->perforce->setStream($ref);
         $this->perforce->queryP4User($this->io);
@@ -40,7 +42,7 @@ class PerforceDownloader extends VcsDownloader
     }
 
     private function initPerforce($package, $path){
-        if (isset($this->perforce)){
+        if ($this->perforceInjected){
             return;
         }
         $repository = $package->getRepository();
@@ -50,6 +52,7 @@ class PerforceDownloader extends VcsDownloader
 
     public function injectPerforce($perforce){
         $this->perforce = $perforce;
+        $this->perforceInjected = true;
     }
 
     private function getRepoConfig(VcsRepository $repository){
@@ -62,7 +65,7 @@ class PerforceDownloader extends VcsDownloader
     public function doUpdate(PackageInterface $initial, PackageInterface $target, $path)
     {
         print("PerforceDownloader:doUpdate\n");
-        throw new Exception("Unsupported Operation: PerforceDownloader:doUpdate");
+        $this->doDownload($target, $path);
     }
 
     /**
@@ -70,8 +73,8 @@ class PerforceDownloader extends VcsDownloader
      */
     public function getLocalChanges($path)
     {
-        print("PerforceDownloader:getLocalChanges\n");
-        throw new Exception("Unsupported Operation: PerforceDownloader:getLocalChanges");
+        print ("Perforce driver does not check for local changes before overriding\n");
+        return;
     }
 
 
@@ -80,8 +83,8 @@ class PerforceDownloader extends VcsDownloader
      */
     protected function getCommitLogs($fromReference, $toReference, $path)
     {
-        print("PerforceDownloader:getCommitLogs\n");
-        throw new Exception("Unsupported Operation: PerforceDownloader:getCommitLogs");
+        $commitLogs = $this->perforce->getCommitLogs($fromReference, $toReference);
+        return $commitLogs;
     }
 
 }

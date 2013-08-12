@@ -437,4 +437,35 @@ class Perforce {
 
         return FALSE;
     }
+
+    protected function getChangeList($reference){
+        $index = strpos($reference, "@");
+        if ($index === false){
+            return;
+        }
+        $label = substr($reference, $index);
+        $command = $this->generateP4Command(" changes -m1 $label");
+        $changes = $this->executeCommand($command);
+        if (strpos($changes, "Change") !== 0){
+            return;
+        }
+        $fields = explode(" ", $changes);
+        $changeList = $fields[1];
+        return $changeList;
+    }
+    public function getCommitLogs($fromReference, $toReference){
+        $fromChangeList = $this->getChangeList($fromReference);
+        if ($fromChangeList == null){
+            return;
+        }
+        $toChangeList = $this->getChangeList($toReference);
+        if ($toChangeList == null){
+            return;
+        }
+        $index = strpos($fromReference, "@");
+        $main = substr($fromReference, 0, $index) . "/...";
+        $command = $this->generateP4Command("filelog $main@$fromChangeList,$toChangeList");
+        $result = $this->executeCommand($command);
+        return $result;
+    }
 }
