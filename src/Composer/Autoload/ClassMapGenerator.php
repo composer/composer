@@ -54,7 +54,7 @@ class ClassMapGenerator
             if (is_file($path)) {
                 $path = array(new \SplFileInfo($path));
             } elseif (is_dir($path)) {
-                $path = Finder::create()->useBestAdapter()->files()->followLinks()->name('/\.(php|inc)$/')->in($path);
+                $path = Finder::create()->files()->followLinks()->name('/\.(php|inc)$/')->in($path);
             } else {
                 throw new \RuntimeException(
                     'Could not scan for classes inside "'.$path.
