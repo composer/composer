@@ -276,8 +276,7 @@ class VersionParser
         // however, if a stability suffix is added to the constraint, then a >= match on the current version is
         // used instead
         if (preg_match('{^~(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:\.(\d+))?'.self::$modifierRegex.'?$}i', $constraint, $matches)) {
-
-            // Work out which position in the version we are operating at 
+            // Work out which position in the version we are operating at
             if (isset($matches[4]) && '' !== $matches[4]) {
                 $position = 4;
             } elseif (isset($matches[3]) && '' !== $matches[3]) {
@@ -298,11 +297,13 @@ class VersionParser
                 $stabilitySuffix .= '-dev';
             }
 
-            if(!$stabilitySuffix) $stabilitySuffix = "-dev";
+            if (!$stabilitySuffix) {
+                $stabilitySuffix = "-dev";
+            }
             $lowVersion = $this->manipulateVersionString($matches, $position, 0) . $stabilitySuffix;
             $lowerBound = new VersionConstraint('>=', $lowVersion);
 
-            // For upper bound, we increment the position of one more significance, 
+            // For upper bound, we increment the position of one more significance,
             // but highPosition = 0 would be illegal
             $highPosition = max(1, $position - 1);
             $highVersion = $this->manipulateVersionString($matches, $highPosition, 1) . '-dev';
@@ -327,14 +328,14 @@ class VersionParser
             $lowVersion = $this->manipulateVersionString($matches, $position) . "-dev";
             $highVersion = $this->manipulateVersionString($matches, $position, 1) . "-dev";
 
-            if($lowVersion === "0.0.0.0-dev") {
+            if ($lowVersion === "0.0.0.0-dev") {
                 return array(new VersionConstraint('<', $highVersion));
-            } else {
-                return array(
-                    new VersionConstraint('>=', $lowVersion),
-                    new VersionConstraint('<', $highVersion),
-                );
             }
+
+            return array(
+                new VersionConstraint('>=', $lowVersion),
+                new VersionConstraint('<', $highVersion),
+            );
         }
 
         // match operators constraints
@@ -364,28 +365,30 @@ class VersionParser
 
     /**
      * Increment, decrement, or simply pad a version number.
-     * 
+     *
      * Support function for {@link parseConstraint()}
-     * 
+     *
      * @param  array  $matches Array with version parts in array indexes 1,2,3,4
      * @param  int    $position 1,2,3,4 - which segment of the version to decrement
      * @param  string $pad The string to pad version parts after $position
      * @return string The new version
      */
-    private function manipulateVersionString($matches, $position, $increment = 0, $pad = '0') {
-        for($i = 4; $i>0; $i--) {
-            if($i > $position) {
+    private function manipulateVersionString($matches, $position, $increment = 0, $pad = '0')
+    {
+        for ($i = 4; $i > 0; $i--) {
+            if ($i > $position) {
                 $matches[$i] = $pad;
-            
-            } else if(($i == $position) && $increment) {
+            } else if ($i == $position && $increment) {
                 $matches[$i] += $increment;
                 // If $matches[$i] was 0, carry the decrement
-                if($matches[$i] < 0) {
+                if ($matches[$i] < 0) {
                     $matches[$i] = $pad;
                     $position--;
 
                     // Return null on a carry overflow
-                    if($i == 1) return null;
+                    if ($i == 1) {
+                        return;
+                    }
                 }
             }
         }
