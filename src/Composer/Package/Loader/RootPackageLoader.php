@@ -188,6 +188,11 @@ class RootPackageLoader extends ArrayLoader
         $util = new GitUtil;
         $util->cleanEnv();
 
+        // try to fetch current version from git tags
+        if (0 === $this->process->execute('git describe --exact-match --tags', $output)) {
+            return $this->versionParser->normalize(trim($output));
+        }
+
         // try to fetch current version from git branch
         if (0 === $this->process->execute('git branch --no-color --no-abbrev -v', $output)) {
             $branches = array();
