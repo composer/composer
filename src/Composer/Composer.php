@@ -55,7 +55,7 @@ class Composer
     private $installationManager;
 
     /**
-     *
+     * @var Plugin\PluginManager
      */
     private $pluginManager;
 

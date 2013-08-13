@@ -42,14 +42,6 @@ class PluginInstallerTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->im = $this->getMockBuilder('Composer\Installer\InstallationManager')
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $this->pm = $this->getMockBuilder('Composer\Plugin\PluginManager')
-            ->disableOriginalConstructor()
-            ->getMock();
-
         $this->repository = $this->getMock('Composer\Repository\InstalledRepositoryInterface');
 
         $rm = $this->getMockBuilder('Composer\Repository\RepositoryManager')
@@ -68,10 +60,11 @@ class PluginInstallerTest extends \PHPUnit_Framework_TestCase
         $config = new Config();
         $this->composer->setConfig($config);
         $this->composer->setDownloadManager($dm);
-        $this->composer->setInstallationManager($this->im);
-        $this->composer->setPluginManager($this->pm);
         $this->composer->setRepositoryManager($rm);
         $this->composer->setAutoloadGenerator($this->autoloadGenerator);
+
+        $this->pm = new \Composer\Plugin\PluginManager($this->composer, $this->io);
+        $this->composer->setPluginManager($this->pm);
 
         $config->merge(array(
             'config' => array(
@@ -87,17 +80,13 @@ class PluginInstallerTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('getPackages')
             ->will($this->returnValue(array()));
-        $installer = new PluginInstallerMock($this->io, $this->composer);
-
-        $test = $this;
-        $this->pm
-            ->expects($this->once())
-            ->method('addPlugin')
-            ->will($this->returnCallback(function ($installer) use ($test) {
-                $test->assertEquals('installer-v1', $installer->version);
-            }));
+        $installer = new PluginInstaller($this->io, $this->composer);
+        $this->pm->loadInstalledPlugins();
 
         $installer->install($this->repository, $this->packages[0]);
+
+        $plugins = $this->pm->getPlugins();
+        $this->assertEquals('installer-v1', $plugins[0]->version);
     }
 
     public function testInstallMultiplePlugins()
@@ -106,28 +95,16 @@ class PluginInstallerTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('getPackages')
             ->will($this->returnValue(array()));
-
-        $installer = new PluginInstallerMock($this->io, $this->composer);
-
-        $test = $this;
-
-        $this->pm
-            ->expects($this->at(0))
-            ->method('addPlugin')
-            ->will($this->returnCallback(function ($plugin) use ($test) {
-                $test->assertEquals('plugin1', $plugin->name);
-                $test->assertEquals('installer-v4', $plugin->version);
-            }));
-
-        $this->pm
-            ->expects($this->at(1))
-            ->method('addPlugin')
-            ->will($this->returnCallback(function ($plugin) use ($test) {
-                $test->assertEquals('plugin2', $plugin->name);
-                $test->assertEquals('installer-v4', $plugin->version);
-            }));
+        $installer = new PluginInstaller($this->io, $this->composer);
+        $this->pm->loadInstalledPlugins();
 
         $installer->install($this->repository, $this->packages[3]);
+
+        $plugins = $this->pm->getPlugins();
+        $this->assertEquals('plugin1', $plugins[0]->name);
+        $this->assertEquals('installer-v4', $plugins[0]->version);
+        $this->assertEquals('plugin2', $plugins[1]->name);
+        $this->assertEquals('installer-v4', $plugins[1]->version);
     }
 
     public function testUpgradeWithNewClassName()
@@ -140,17 +117,13 @@ class PluginInstallerTest extends \PHPUnit_Framework_TestCase
             ->expects($this->exactly(2))
             ->method('hasPackage')
             ->will($this->onConsecutiveCalls(true, false));
-        $installer = new PluginInstallerMock($this->io, $this->composer);
-
-        $test = $this;
-        $this->pm
-            ->expects($this->once())
-            ->method('addPlugin')
-            ->will($this->returnCallback(function ($plugin) use ($test) {
-                $test->assertEquals('installer-v2', $plugin->version);
-            }));
+        $installer = new PluginInstaller($this->io, $this->composer);
+        $this->pm->loadInstalledPlugins();
 
         $installer->update($this->repository, $this->packages[0], $this->packages[1]);
+
+        $plugins = $this->pm->getPlugins();
+        $this->assertEquals('installer-v2', $plugins[1]->version);
     }
 
     public function testUpgradeWithSameClassName()
@@ -163,26 +136,13 @@ class PluginInstallerTest extends \PHPUnit_Framework_TestCase
             ->expects($this->exactly(2))
             ->method('hasPackage')
             ->will($this->onConsecutiveCalls(true, false));
-        $installer = new PluginInstallerMock($this->io, $this->composer);
-
-        $test = $this;
-        $this->pm
-            ->expects($this->once())
-            ->method('addPlugin')
-            ->will($this->returnCallback(function ($plugin) use ($test) {
-                $test->assertEquals('installer-v3', $plugin->version);
-            }));
+        $installer = new PluginInstaller($this->io, $this->composer);
+        $this->pm->loadInstalledPlugins();
 
         $installer->update($this->repository, $this->packages[1], $this->packages[2]);
+
+        $plugins = $this->pm->getPlugins();
+        $this->assertEquals('installer-v3', $plugins[1]->version);
     }
 }
 
-class PluginInstallerMock extends PluginInstaller
-{
-    public function getInstallPath(PackageInterface $package)
-    {
-        $version = $package->getVersion();
-
-        return __DIR__.'/Fixtures/plugin-v'.$version[0].'/';
-    }
-}
