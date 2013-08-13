@@ -5,8 +5,8 @@
     "autoload": { "psr-0": { "Installer": "" } },
     "extra": {
         "class": [
-            "Installer\\Custom1",
-            "Installer\\Custom2"
+            "Installer\\Plugin1",
+            "Installer\\Plugin2"
         ]
     }
 }

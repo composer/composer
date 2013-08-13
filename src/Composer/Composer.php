@@ -16,6 +16,7 @@ use Composer\Package\RootPackageInterface;
 use Composer\Package\Locker;
 use Composer\Repository\RepositoryManager;
 use Composer\Installer\InstallationManager;
+use Composer\Plugin\PluginManager;
 use Composer\Downloader\DownloadManager;
 use Composer\Script\EventDispatcher;
 use Composer\Autoload\AutoloadGenerator;
@@ -52,6 +53,11 @@ class Composer
      * @var Installer\InstallationManager
      */
     private $installationManager;
+
+    /**
+     *
+     */
+    private $pluginManager;
 
     /**
      * @var Config
@@ -163,6 +169,22 @@ class Composer
     public function getInstallationManager()
     {
         return $this->installationManager;
+    }
+
+    /**
+     * @param Plugin\PluginManager $manager
+     */
+    public function setPluginManager(PluginManager $manager)
+    {
+        $this->pluginManager = $manager;
+    }
+
+    /**
+     * @return Plugin\PluginManager
+     */
+    public function getPluginManager()
+    {
+        return $this->pluginManager;
     }
 
     /**
