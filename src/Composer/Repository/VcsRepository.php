@@ -59,6 +59,11 @@ class VcsRepository extends ArrayRepository
         $this->repoConfig = $repoConfig;
     }
 
+    public function getRepoConfig()
+    {
+        return $this->repoConfig;
+    }
+
     public function setLoader(LoaderInterface $loader)
     {
         $this->loader = $loader;

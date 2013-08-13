@@ -32,25 +32,13 @@ class PerforceDriver extends VcsDriver {
      * {@inheritDoc}
      */
     public function initialize() {
-        $this->depot  = $this->repoConfig['depot'];
+        $this->depot = $this->repoConfig['depot'];
         $this->branch = "";
         if (isset($this->repoConfig['branch'])) {
             $this->branch = $this->repoConfig['branch'];
         }
-        $p4user = "";
-        if (isset($this->repoConfig['p4user'])) {
-            $p4user = $this->repoConfig['p4user'];
-        }
-        $p4password = "";
-        if (isset($this->repoConfig['p4password'])) {
-            $p4password = $this->repoConfig['p4password'];
-        }
 
-        $repoDir = $this->config->get('cache-vcs-dir') . "/$this->depot";
-        if (!isset($this->perforce)) {
-            $this->perforce = new Perforce($this->depot, $this->branch, $this->getUrl(), $repoDir, $this->process, $p4user, $p4password);
-        }
-
+        $this->initPerforce();
         $this->perforce->p4Login($this->io);
         $this->perforce->checkStream($this->depot);
 
@@ -58,6 +46,15 @@ class PerforceDriver extends VcsDriver {
         $this->perforce->connectClient();
 
         return TRUE;
+    }
+
+    private function initPerforce() {
+        if (isset($this->perforce)) {
+            return;
+        }
+
+        $repoDir = $this->config->get('cache-vcs-dir') . "/$this->depot";
+        $this->perforce = new Perforce($this->repoConfig, $this->getUrl(), $repoDir, $this->process);
     }
 
     public function injectPerforce(Perforce $perforce) {
@@ -95,6 +92,7 @@ class PerforceDriver extends VcsDriver {
      */
     public function getTags() {
         $tags = $this->perforce->getTags();
+
         return $tags;
     }
 

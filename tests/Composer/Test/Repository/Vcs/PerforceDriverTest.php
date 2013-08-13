@@ -14,97 +14,103 @@
 
 namespace Composer\Test\Repository\Vcs;
 
-#use Composer\Downloader\TransportException;
+
 use Composer\Repository\Vcs\PerforceDriver;
 use Composer\Util\Filesystem;
 use Composer\Config;
-use Composer\IO\ConsoleIO;
-use Symfony\Component\Console\Input\ArrayInput;
-use Symfony\Component\Console\Output\ConsoleOutput;
-use Symfony\Component\Console\Helper\HelperSet;
 
 
-class PerforceDriverTest extends \PHPUnit_Framework_TestCase
-{
+class PerforceDriverTest extends \PHPUnit_Framework_TestCase {
     private $config;
     private $io;
+    private $process;
+    private $remoteFileSystem;
+    private $testPath;
 
-    public function setUp()
-    {
+    public function setUp() {
+        $this->testPath = sys_get_temp_dir() . '/composer-test';
         $this->config = new Config();
-        $this->config->merge(array(
-            'config' => array(
-                'home' => sys_get_temp_dir() . '/composer-test',
-            ),
-        ));
-        $inputParameters = array();
-        $input = new ArrayInput($inputParameters);
-        $output = new ConsoleOutput();
-        $helperSet = new HelperSet();
-        $this->io = new ConsoleIO($input, $output, $helperSet);
+        $this->config->merge(
+            array(
+                 'config' => array(
+                     'home' => $this->testPath,
+                 ),
+            )
+        );
+
+        $this->io = $this->getMock('Composer\IO\IOInterface');
+        $this->process = $this->getMock('Composer\Util\ProcessExecutor');
+        $this->remoteFileSystem = $this->getMockBuilder('Composer\Util\RemoteFilesystem')->disableOriginalConstructor()->getMock();
     }
 
-    public function tearDown()
-    {
+    public function tearDown() {
         $fs = new Filesystem;
-        $fs->removeDirectory(sys_get_temp_dir() . '/composer-test');
+        $fs->removeDirectory($this->testPath);
     }
 
-    public function testPrivateRepository()
-    {
-        $repo_config = array(
-            'url' => "perforce.vuhl.root.mrc.local:3710",
-            'depot' => "lighthouse"
-        );
+    //Test:
+    //hasComposerFile
 
-        $vcs = new PerforceDriver($repo_config, $this->io, $this->config);
-        $result = $vcs->initialize();
-        $this->assertTrue($result);
+    public function testInitializeCapturesVariablesFromRepoConfig() {
+        $this->setUp();
+        $repo_config = array(
+            'url' => 'TEST_PERFORCE_URL',
+            'depot' => 'TEST_DEPOT_CONFIG',
+            'branch' => 'TEST_BRANCH_CONFIG'
+        );
+        $driver = new TestingPerforceDriver($repo_config, $this->io, $this->config, $this->process, $this->remoteFileSystem);
+        $arguments = array(array('depot'=>'TEST_DEPOT', 'branch'=>'TEST_BRANCH'), 'port'=>'TEST_PORT', 'path'=>$this->testPath);
+        $perforce = $this->getMock('Composer\Util\Perforce', null, $arguments);
+        $driver->injectPerforce($perforce);
+        $driver->initialize();
+        $this->assertEquals("TEST_PERFORCE_URL", $driver->getUrl());
+        $this->assertEquals("TEST_DEPOT_CONFIG", $driver->getDepot());
+        $this->assertEquals("TEST_BRANCH_CONFIG", $driver->getBranch());
     }
 
-    public function testGetTags()
-    {
+    public function testInitializeLogsInAndConnectsClient() {
+        $this->setUp();
         $repo_config = array(
-            'url' => "perforce.vuhl.root.mrc.local:3710",
-            'depot' => "lighthouse"
+            'url' => 'TEST_PERFORCE_URL',
+            'depot' => 'TEST_DEPOT_CONFIG',
+            'branch' => 'TEST_BRANCH_CONFIG'
         );
+        $driver = new TestingPerforceDriver($repo_config, $this->io, $this->config, $this->process, $this->remoteFileSystem);
+        $perforce = $this->getMockBuilder('Composer\Util\Perforce')->disableOriginalConstructor()->getMock();
+        $perforce->expects($this->at(0))
+            ->method('p4Login')
+            ->with($this->io);
+        $perforce->expects($this->at(1))
+            ->method('checkStream')
+            ->with($this->equalTo("TEST_DEPOT_CONFIG"));
+        $perforce->expects($this->at(2))
+            ->method('writeP4ClientSpec');
+        $perforce->expects($this->at(3))
+            ->method('connectClient');
 
-        $vcs = new PerforceDriver($repo_config, $this->io, $this->config);
-        $result = $vcs->initialize();
-        $this->assertTrue($result);
-        $tags = $vcs->getTags();
-        $this->assertTrue(empty($tags));
+        $driver->injectPerforce($perforce);
+        $driver->initialize();
     }
 
-    public function testGetSource()
-    {
+    public function testHasComposerFile() {
+        $this->setUp();
         $repo_config = array(
-            'url' => "perforce.vuhl.root.mrc.local:3710",
-            'depot' => "lighthouse"
+            'url' => 'TEST_PERFORCE_URL',
+            'depot' => 'TEST_DEPOT_CONFIG',
+            'branch' => 'TEST_BRANCH_CONFIG'
         );
-
-        $vcs = new PerforceDriver($repo_config, $this->io, $this->config);
-        $result = $vcs->initialize();
+        $driver = new TestingPerforceDriver($repo_config, $this->io, $this->config, $this->process, $this->remoteFileSystem);
+        $arguments = array(array('depot'=>'TEST_DEPOT', 'branch'=>'TEST_BRANCH'), 'port'=>'TEST_PORT', 'path'=>$this->testPath);
+        $perforce = $this->getMock('Composer\Util\Perforce', array('getComposerInformation'), $arguments);
+        $perforce->expects($this->at(0))
+            ->method('getComposerInformation')
+            ->with($this->equalTo("//TEST_DEPOT_CONFIG/TEST_IDENTIFIER"))
+            ->will($this->returnValue("Some json stuff"));
+        $driver->injectPerforce($perforce);
+        $driver->initialize();
+        $identifier = "TEST_IDENTIFIER";
+        $result = $driver->hasComposerFile($identifier);
         $this->assertTrue($result);
-        $identifier = $vcs->getRootIdentifier();
-        $source = $vcs->getSource($identifier);
-        $this->assertEquals($source['type'], "perforce");
-        $this->assertEquals($source['reference'], $identifier);
-    }
-
-    public function testGetDist()
-    {
-        $repo_config = array(
-            'url' => "perforce.vuhl.root.mrc.local:3710",
-            'depot' => "lighthouse"
-        );
-
-        $vcs = new PerforceDriver($repo_config, $this->io, $this->config);
-        $result = $vcs->initialize();
-        $this->assertTrue($result);
-        $identifier = $vcs->getRootIdentifier();
-        $dist = $vcs->getDist($identifier);
-        $this->assertNull($dist);
     }
 
 }
