@@ -461,6 +461,14 @@ This file allows you to set [configuration](04-schema.md#config) and
 In case global configuration matches _local_ configuration, the _local_
 configuration in the project's `composer.json` always wins.
 
+### COMPOSER_CACHE_DIR
+
+The `COMPOSER_CACHE_DIR` var allows you to change the composer cache directory,
+which is also configurable via the [`cache-dir`](04-schema.md#config) option.
+
+By default it points to $COMPOSER_HOME/cache on \*nix and OSX, and
+`C:\Users\<user>\AppData\Local\Composer` (or `%LOCALAPPDATA%/Composer`) on Windows.
+
 ### COMPOSER_PROCESS_TIMEOUT
 
 This env var controls the time composer waits for commands (such as git

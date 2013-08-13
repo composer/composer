@@ -60,7 +60,7 @@ class Factory
                 if ($cacheDir = getenv('LOCALAPPDATA')) {
                     $cacheDir .= '/Composer';
                 } else {
-                    $cacheDir = getenv('APPDATA') . '/Composer/cache';
+                    $cacheDir = $home . '/cache';
                 }
                 $cacheDir = strtr($cacheDir, '\\', '/');
             } else {
