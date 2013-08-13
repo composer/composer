@@ -50,10 +50,12 @@ Required for published packages (libraries).
 
 ### version
 
-The version of the package.
+The version of the package. In most cases this is not required and should
+be omitted (see below).
 
-This must follow the format of `X.Y.Z` with an optional suffix of `-dev`,
-`-alphaN`, `-betaN` or `-RCN`.
+This must follow the format of `X.Y.Z` or `vX.Y.Z` with an optional suffix
+of `-dev`, `-patch`, `-alpha`, `-beta` or `-RC`. The patch, alpha, beta and
+RC suffixes can also be followed by a number.
 
 Examples:
 
