@@ -62,21 +62,6 @@ class PerforceDriverTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($result);
     }
 
-    public function testGetBranches()
-    {
-        $repo_config = array(
-            'url' => "perforce.vuhl.root.mrc.local:3710",
-            'depot' => "lighthouse"
-        );
-
-        $vcs = new PerforceDriver($repo_config, $this->io, $this->config);
-        $result = $vcs->initialize();
-        $this->assertTrue($result);
-        $branches = $vcs->getBranches();
-        //print ("\nBranches are: " . var_export($branches, true));
-        $this->assertTrue(strcmp($branches['mainline'], "//lighthouse/mainline") == 0);
-    }
-
     public function testGetTags()
     {
         $repo_config = array(
@@ -122,31 +107,5 @@ class PerforceDriverTest extends \PHPUnit_Framework_TestCase
         $this->assertNull($dist);
     }
 
-    public function testGetRootIdentifier(){
-        $repo_config = array(
-            'url' => "perforce.vuhl.root.mrc.local:3710",
-            'depot' => "lighthouse"
-        );
-
-        $vcs = new PerforceDriver($repo_config, $this->io, $this->config);
-        $result = $vcs->initialize();
-        $this->assertTrue($result);
-        $rootId = $vcs->getRootIdentifier();
-        $this->assertEquals("mainline", $rootId);
-    }
-
-    public function testHasComposerFile(){
-        $repo_config = array(
-            'url' => "perforce.vuhl.root.mrc.local:3710",
-            'depot' => "lighthouse"
-        );
-
-        $vcs = new PerforceDriver($repo_config, $this->io, $this->config);
-        $result = $vcs->initialize();
-        $this->assertTrue($result);
-        $identifier = $vcs->getRootIdentifier();
-        $value = $vcs->hasComposerFile($identifier);
-        $this->assertTrue($value);
-    }
 }
 
