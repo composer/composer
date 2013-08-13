@@ -14,13 +14,13 @@ namespace Composer\Test\Installer;
 
 use Composer\Composer;
 use Composer\Config;
-use Composer\Installer\InstallerInstaller;
+use Composer\Installer\PluginInstaller;
 use Composer\Package\Loader\JsonLoader;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\PackageInterface;
 use Composer\Autoload\AutoloadGenerator;
 
-class InstallerInstallerTest extends \PHPUnit_Framework_TestCase
+class PluginInstallerTest extends \PHPUnit_Framework_TestCase
 {
     protected $composer;
     protected $packages;
@@ -81,7 +81,7 @@ class InstallerInstallerTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('getPackages')
             ->will($this->returnValue(array()));
-        $installer = new InstallerInstallerMock($this->io, $this->composer);
+        $installer = new PluginInstallerMock($this->io, $this->composer);
 
         $test = $this;
         $this->im
@@ -101,7 +101,7 @@ class InstallerInstallerTest extends \PHPUnit_Framework_TestCase
             ->method('getPackages')
             ->will($this->returnValue(array()));
 
-        $installer = new InstallerInstallerMock($this->io, $this->composer);
+        $installer = new PluginInstallerMock($this->io, $this->composer);
 
         $test = $this;
 
@@ -134,7 +134,7 @@ class InstallerInstallerTest extends \PHPUnit_Framework_TestCase
             ->expects($this->exactly(2))
             ->method('hasPackage')
             ->will($this->onConsecutiveCalls(true, false));
-        $installer = new InstallerInstallerMock($this->io, $this->composer);
+        $installer = new PluginInstallerMock($this->io, $this->composer);
 
         $test = $this;
         $this->im
@@ -157,7 +157,7 @@ class InstallerInstallerTest extends \PHPUnit_Framework_TestCase
             ->expects($this->exactly(2))
             ->method('hasPackage')
             ->will($this->onConsecutiveCalls(true, false));
-        $installer = new InstallerInstallerMock($this->io, $this->composer);
+        $installer = new PluginInstallerMock($this->io, $this->composer);
 
         $test = $this;
         $this->im
@@ -171,7 +171,7 @@ class InstallerInstallerTest extends \PHPUnit_Framework_TestCase
     }
 }
 
-class InstallerInstallerMock extends InstallerInstaller
+class PluginInstallerMock extends PluginInstaller
 {
     public function getInstallPath(PackageInterface $package)
     {

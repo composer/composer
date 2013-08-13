@@ -66,16 +66,16 @@ class InstallationManager
     }
 
     /**
-     * Disables custom installers.
+     * Disables plugins.
      *
-     * We prevent any custom installers from being instantiated by simply
+     * We prevent any plugins from being instantiated by simply
      * deactivating the installer for them. This ensure that no third-party
      * code is ever executed.
      */
-    public function disableCustomInstallers()
+    public function disablePlugins()
     {
         foreach ($this->installers as $i => $installer) {
-            if (!$installer instanceof InstallerInstaller) {
+            if (!$installer instanceof PluginInstaller) {
                 continue;
             }
 

@@ -36,7 +36,7 @@ class UpdateCommand extends Command
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Enables installation of require-dev packages (enabled by default, only present for BC).'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables installation of require-dev packages.'),
                 new InputOption('lock', null, InputOption::VALUE_NONE, 'Only updates the lock file hash to suppress warning about the lock file being out of date.'),
-                new InputOption('no-custom-installers', null, InputOption::VALUE_NONE, 'Disables all custom installers.'),
+                new InputOption('no-plugins', null, InputOption::VALUE_NONE, 'Disables all plugins.'),
                 new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Skips the execution of all scripts defined in composer.json file.'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
                 new InputOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Shows more details including new commits pulled in when updating packages.'),
@@ -96,8 +96,8 @@ EOT
             ->setUpdateWhitelist($input->getOption('lock') ? array('lock') : $input->getArgument('packages'))
         ;
 
-        if ($input->getOption('no-custom-installers')) {
-            $install->disableCustomInstallers();
+        if ($input->getOption('no-plugins')) {
+            $install->disablePlugins();
         }
 
         return $install->run() ? 0 : 1;
