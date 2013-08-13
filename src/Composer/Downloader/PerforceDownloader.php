@@ -30,7 +30,9 @@ class PerforceDownloader extends VcsDownloader
 
         $perforce = new Perforce("", "", $package->getSourceUrl(), $path);
         $perforce->setStream($ref);
+        $perforce->queryP4User($this->io);
         $perforce->writeP4ClientSpec();
+        $perforce->connectClient();
         $perforce->syncCodeBase($label);
     }
 
@@ -40,6 +42,7 @@ class PerforceDownloader extends VcsDownloader
     public function doUpdate(PackageInterface $initial, PackageInterface $target, $path)
     {
         print("PerforceDownloader:doUpdate\n");
+        throw new Exception("Unsupported Operation: PerforceDownloader:doUpdate");
     }
 
     /**
@@ -48,6 +51,7 @@ class PerforceDownloader extends VcsDownloader
     public function getLocalChanges($path)
     {
         print("PerforceDownloader:getLocalChanges\n");
+        throw new Exception("Unsupported Operation: PerforceDownloader:getLocalChanges");
     }
 
 
@@ -57,6 +61,7 @@ class PerforceDownloader extends VcsDownloader
     protected function getCommitLogs($fromReference, $toReference, $path)
     {
         print("PerforceDownloader:getCommitLogs\n");
+        throw new Exception("Unsupported Operation: PerforceDownloader:getCommitLogs");
     }
 
 }
