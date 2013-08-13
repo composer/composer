@@ -99,7 +99,7 @@ Out of the box, composer supports three types:
   their installation, but contains no files and will not write anything to the
   filesystem. As such, it does not require a dist or source key to be
   installable.
-- **composer-installer:** A package of type `composer-installer` provides an
+- **composer-plugin:** A package of type `composer-plugin` may provide an
   installer for other packages that have a custom type. Read more in the
   [dedicated article](articles/custom-installers.md).
 

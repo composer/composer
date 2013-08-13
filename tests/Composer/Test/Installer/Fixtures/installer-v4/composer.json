@@ -1,7 +1,7 @@
 {
     "name": "",
     "version": "4.0.0",
-    "type": "composer-installer",
+    "type": "composer-plugin",
     "autoload": { "psr-0": { "Installer": "" } },
     "extra": {
         "class": [

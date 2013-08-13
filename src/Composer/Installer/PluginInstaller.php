@@ -23,7 +23,7 @@ use Composer\Package\PackageInterface;
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class InstallerInstaller extends LibraryInstaller
+class PluginInstaller extends LibraryInstaller
 {
     private $installationManager;
     private static $classCounter = 0;
@@ -37,12 +37,15 @@ class InstallerInstaller extends LibraryInstaller
      */
     public function __construct(IOInterface $io, Composer $composer, $type = 'library')
     {
-        parent::__construct($io, $composer, 'composer-installer');
+        parent::__construct($io, $composer, $type);
         $this->installationManager = $composer->getInstallationManager();
 
         $repo = $composer->getRepositoryManager()->getLocalRepository();
         foreach ($repo->getPackages() as $package) {
             if ('composer-installer' === $package->getType()) {
+                $this->registerInstaller($package);
+            }
+            if ('composer-plugin' === $package->getType()) {
                 $this->registerInstaller($package);
             }
         }
@@ -55,7 +58,7 @@ class InstallerInstaller extends LibraryInstaller
     {
         $extra = $package->getExtra();
         if (empty($extra['class'])) {
-            throw new \UnexpectedValueException('Error while installing '.$package->getPrettyName().', composer-installer packages should have a class defined in their extra key to be usable.');
+            throw new \UnexpectedValueException('Error while installing '.$package->getPrettyName().', composer-plugin packages should have a class defined in their extra key to be usable.');
         }
 
         parent::install($repo, $package);
@@ -69,7 +72,7 @@ class InstallerInstaller extends LibraryInstaller
     {
         $extra = $target->getExtra();
         if (empty($extra['class'])) {
-            throw new \UnexpectedValueException('Error while installing '.$target->getPrettyName().', composer-installer packages should have a class defined in their extra key to be usable.');
+            throw new \UnexpectedValueException('Error while installing '.$target->getPrettyName().', composer-plugin packages should have a class defined in their extra key to be usable.');
         }
 
         parent::update($repo, $initial, $target);
