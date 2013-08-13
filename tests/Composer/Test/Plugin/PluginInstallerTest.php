@@ -35,7 +35,7 @@ class PluginInstallerTest extends \PHPUnit_Framework_TestCase
         $loader = new JsonLoader(new ArrayLoader());
         $this->packages = array();
         for ($i = 1; $i <= 4; $i++) {
-            $this->packages[] = $loader->load(__DIR__.'/Fixtures/installer-v'.$i.'/composer.json');
+            $this->packages[] = $loader->load(__DIR__.'/Fixtures/plugin-v'.$i.'/composer.json');
         }
 
         $dm = $this->getMockBuilder('Composer\Downloader\DownloadManager')
@@ -183,6 +183,6 @@ class PluginInstallerMock extends PluginInstaller
     {
         $version = $package->getVersion();
 
-        return __DIR__.'/Fixtures/installer-v'.$version[0].'/';
+        return __DIR__.'/Fixtures/plugin-v'.$version[0].'/';
     }
 }
