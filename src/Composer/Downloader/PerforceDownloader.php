@@ -13,6 +13,7 @@
 namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
+use Composer\Repository\VcsRepository;
 use Composer\Util\Perforce;
 
 /**
@@ -20,6 +21,8 @@ use Composer\Util\Perforce;
  */
 class PerforceDownloader extends VcsDownloader
 {
+    protected $perforce;
+
     /**
      * {@inheritDoc}
      */
@@ -28,30 +31,29 @@ class PerforceDownloader extends VcsDownloader
         $ref = $package->getSourceReference();
         $label = $package->getPrettyVersion();
 
+        $this->initPerforce($package, $path);
+        $this->perforce->setStream($ref);
+        $this->perforce->queryP4User($this->io);
+        $this->perforce->writeP4ClientSpec();
+        $this->perforce->connectClient();
+        $this->perforce->syncCodeBase($label);
+    }
+
+    private function initPerforce($package, $path){
+        if (isset($this->perforce)){
+            return;
+        }
         $repository = $package->getRepository();
-        //assume repository is a Perforce Repository
+        $repoConfig = $this->getRepoConfig($repository);
+        $this->perforce = new Perforce($repoConfig, $package->getSourceUrl(), $path);
+    }
 
-        $reflector = new \ReflectionClass($repository);
-        $repoConfigProperty = $reflector->getProperty("repoConfig");
-        $repoConfigProperty->setAccessible(true);
-        $repoConfig = $repoConfigProperty->getValue($repository);
+    public function injectPerforce($perforce){
+        $this->perforce = $perforce;
+    }
 
-        $p4user = "";
-        if (isset($repoConfig['p4user'])) {
-            $p4user = $repoConfig['p4user'];
-        }
-        $p4password = "";
-        if (isset($repoConfig['p4password'])) {
-            $p4password = $repoConfig['p4password'];
-        }
-
-//        print("Perforce Downloader:doDownload - repoConfig:" . var_dump($repoConfig, true) . "\n\n");
-        $perforce = new Perforce("", "", $package->getSourceUrl(), $path, null, $p4user, $p4password);
-        $perforce->setStream($ref);
-        $perforce->queryP4User($this->io);
-        $perforce->writeP4ClientSpec();
-        $perforce->connectClient();
-        $perforce->syncCodeBase($label);
+    private function getRepoConfig(VcsRepository $repository){
+        return $repository->getRepoConfig();
     }
 
     /**

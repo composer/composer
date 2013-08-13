@@ -25,26 +25,36 @@ class Perforce {
     protected $p4branch;
     protected $process;
 
-    public function __construct($depot, $branch, $port, $path, ProcessExecutor $process = null, $p4user = null, $p4password = null) {
-        $this->p4depot = $depot;
-        $this->p4branch = $branch;
+    public function __construct($repoConfig, $port, $path, ProcessExecutor $process = NULL) {
         $this->p4port = $port;
         $this->path = $path;
         $this->process = $process ? : new ProcessExecutor;
         $fs = new Filesystem();
         $fs->ensureDirectoryExists($path);
-        if (isset($p4user)){
-            $this->p4user = $p4user;
-        } else {
+
+        if (isset($repoConfig['depot'])) {
+            $this->p4depot = $repoConfig['depot'];
+        }
+        if (isset($repoConfig['branch'])) {
+            $this->p4branch = $repoConfig['branch'];
+        }
+        if (isset($repoConfig['p4user'])) {
+            $this->p4user = $repoConfig['p4user'];
+        }
+        else {
             $this->p4user = $this->getP4variable("P4USER");
         }
-        if (isset($p4password)){
-            $this->p4password = $p4password;
+        if (isset($repoConfig['p4password'])) {
+            $this->p4password = $repoConfig['p4password'];
         }
     }
 
     protected function getRandomValue() {
         return mt_rand(1000, 9999);
+    }
+
+    protected function isWindows(){
+        return defined('PHP_WINDOWS_VERSION_BUILD');
     }
 
     protected function executeCommand($command) {
@@ -70,6 +80,10 @@ class Perforce {
 
     protected function getPort() {
         return $this->p4port;
+    }
+
+    protected function isStream() {
+        return (strcmp($this->p4depotType, "stream") === 0);
     }
 
     protected function getStream() {
@@ -107,45 +121,54 @@ class Perforce {
 
     public function queryP4User(IOInterface $io) {
         $this->getUser();
-        if (strlen($this->p4user) <= 0) {
-            $this->p4user = $io->ask("Enter P4 User:");
-            if (defined('PHP_WINDOWS_VERSION_BUILD')) {
-                $command = "p4 set P4USER=$this->p4user";
-            } else {
-                $command = "export P4USER=$this->p4user";
-            }
-            $result = $this->executeCommand($command);
+        if (strlen($this->p4user) > 0) {
+            return;
         }
+        $this->p4user = $this->getP4variable("P4USER");
+        if (strlen($this->p4user) > 0) {
+            return;
+        }
+        $this->p4user = $io->ask("Enter P4 User:");
+        if ($this->isWindows()) {
+            $command = "p4 set P4USER=$this->p4user";
+        }
+        else {
+            $command = "export P4USER=$this->p4user";
+        }
+        $result = $this->executeCommand($command);
     }
 
-    protected function getP4variable($name){
-        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+    protected function getP4variable($name) {
+        if ($this->isWindows()) {
             $command = "p4 set";
             $result = $this->executeCommand($command);
             $resArray = explode("\n", $result);
             foreach ($resArray as $line) {
                 $fields = explode("=", $line);
-                if (strcmp($name, $fields[0]) == 0){
+                if (strcmp($name, $fields[0]) == 0) {
                     $index = strpos($fields[1], " ");
-                    if ($index === false){
+                    if ($index === FALSE) {
                         $value = $fields[1];
-                    } else {
+                    }
+                    else {
                         $value = substr($fields[1], 0, $index);
                     }
                     $value = trim($value);
+
                     return $value;
                 }
             }
-        } else {
+        }
+        else {
             $command = 'echo $' . $name;
             $result = trim($this->executeCommand($command));
+
             return $result;
         }
-
     }
 
     protected function queryP4Password(IOInterface $io) {
-        if (isset($this->p4password)){
+        if (isset($this->p4password)) {
             return $this->p4password;
         }
         $password = $this->getP4variable("P4PASSWD");
@@ -153,11 +176,8 @@ class Perforce {
             $password = $io->askAndHideAnswer("Enter password for Perforce user " . $this->getUser() . ": ");
         }
         $this->p4password = $password;
-        return $password;
-    }
 
-    protected function isStream() {
-        return (strcmp($this->p4depotType, "stream") === 0);
+        return $password;
     }
 
     protected function generateP4Command($command, $useClient = TRUE) {
@@ -179,6 +199,7 @@ class Perforce {
         if ($index === FALSE) {
             return FALSE;
         }
+
         return TRUE;
     }
 
@@ -245,18 +266,19 @@ class Perforce {
     }
 
 
-    protected function read($pipe, $name){
+    protected function read($pipe, $name) {
         if (feof($pipe)) {
             return;
         }
         $line = fgets($pipe);
-        while ($line != false){
+        while ($line != FALSE) {
             $line = fgets($pipe);
         }
+
         return;
     }
 
-    public function windowsLogin($password){
+    public function windowsLogin($password) {
         $descriptorspec = array(
             0 => array("pipe", "r"),
             1 => array("pipe", "w"),
@@ -264,8 +286,8 @@ class Perforce {
         );
         $command = $this->generateP4Command(" login -a");
         $process = proc_open($command, $descriptorspec, $pipes);
-        if (!is_resource($process)){
-            return false;
+        if (!is_resource($process)) {
+            return FALSE;
         }
         fwrite($pipes[0], $password);
         fclose($pipes[0]);
@@ -286,10 +308,11 @@ class Perforce {
         $this->queryP4User($io);
         if (!$this->isLoggedIn()) {
             $password = $this->queryP4Password($io);
-            if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+            if ($this->isWindows()) {
                 $this->windowsLogin($password);
-            } else {
-                $command = "echo $password | ".$this->generateP4Command(" login -a", false);
+            }
+            else {
+                $command = "echo $password | " . $this->generateP4Command(" login -a", FALSE);
                 $this->executeCommand($command);
             }
         }
@@ -392,6 +415,7 @@ class Perforce {
                 $tags[$fields[1]] = $this->getStream() . "@" . $fields[1];
             }
         }
+
         return $tags;
     }
 
