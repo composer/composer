@@ -1,5 +1,5 @@
 {
-    "name": "",
+    "name": "plugin-v3",
     "version": "3.0.0",
     "type": "composer-plugin",
     "autoload": { "psr-0": { "Installer": "" } },

@@ -249,6 +249,9 @@ class Factory
         $generator = new AutoloadGenerator($dispatcher);
         $composer->setAutoloadGenerator($generator);
 
+        $pm = $this->createPluginManager($composer, $io);
+        $composer->setPluginManager($pm);
+
         // add installers to the manager
         $this->createDefaultInstallers($im, $composer, $io);
 
@@ -264,9 +267,7 @@ class Factory
             $composer->setLocker($locker);
         }
 
-        $pm = $this->createPluginManager($composer);
-
-        $composer->setPluginManager($pm);
+        $pm->loadInstalledPlugins();
 
         return $composer;
     }
@@ -360,9 +361,9 @@ class Factory
     /**
      * @return Plugin\PluginManager
      */
-    protected function createPluginManager(Composer $composer)
+    protected function createPluginManager(Composer $composer, IOInterface $io)
     {
-        return new Plugin\PluginManager($composer);
+        return new Plugin\PluginManager($composer, $io);
     }
 
     /**

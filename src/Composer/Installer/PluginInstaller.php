@@ -37,15 +37,17 @@ class PluginInstaller extends LibraryInstaller
      */
     public function __construct(IOInterface $io, Composer $composer, $type = 'library')
     {
-        parent::__construct($io, $composer, $type);
+        parent::__construct($io, $composer, 'composer-plugin');
         $this->installationManager = $composer->getInstallationManager();
 
-        $repo = $composer->getRepositoryManager()->getLocalRepository();
-        foreach ($repo->getPackages() as $package) {
-            if ('composer-plugin' === $package->getType() || 'composer-installer' === $package->getType()) {
-                $this->registerPlugin($package);
-            }
-        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function supports($packageType)
+    {
+        return $packageType === 'composer-plugin' || $packageType === 'composer-installer';
     }
 
     /**
@@ -59,7 +61,7 @@ class PluginInstaller extends LibraryInstaller
         }
 
         parent::install($repo, $package);
-        $this->registerPlugin($package);
+        $this->composer->getPluginManager()->registerPackage($package);
     }
 
     /**
@@ -73,39 +75,6 @@ class PluginInstaller extends LibraryInstaller
         }
 
         parent::update($repo, $initial, $target);
-        $this->registerPlugin($target);
-    }
-
-    private function registerPlugin(PackageInterface $package)
-    {
-        $oldInstallerPlugin = ($package->getType() === 'composer-installer');
-
-        $downloadPath = $this->getInstallPath($package);
-
-        $extra = $package->getExtra();
-        $classes = is_array($extra['class']) ? $extra['class'] : array($extra['class']);
-
-        $generator = $this->composer->getAutoloadGenerator();
-        $map = $generator->parseAutoloads(array(array($package, $downloadPath)), new Package('dummy', '1.0.0.0', '1.0.0'));
-        $classLoader = $generator->createLoader($map);
-        $classLoader->register();
-
-        foreach ($classes as $class) {
-            if (class_exists($class, false)) {
-                $code = file_get_contents($classLoader->findFile($class));
-                $code = preg_replace('{^(\s*)class\s+(\S+)}mi', '$1class $2_composer_tmp'.self::$classCounter, $code);
-                eval('?>'.$code);
-                $class .= '_composer_tmp'.self::$classCounter;
-                self::$classCounter++;
-            }
-
-            $plugin = new $class($this->io, $this->composer);
-
-            if ($oldInstallerPlugin) {
-                $this->installationManager->addInstaller($installer);
-            } else {
-                $this->composer->getPluginManager()->addPlugin($plugin);
-            }
-        }
+        $this->composer->getPluginManager()->registerPackage($target);
     }
 }
