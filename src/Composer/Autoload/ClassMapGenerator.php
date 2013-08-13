@@ -104,7 +104,7 @@ class ClassMapGenerator
         }
 
         // return early if there is no chance of matching anything in this file
-        if (!preg_match('{\b(?:class|interface'.$traits.')\b}i', $contents)) {
+        if (!preg_match('{\b(?:class|interface'.$traits.')\s}i', $contents)) {
             return array();
         }
 
