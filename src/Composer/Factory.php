@@ -264,6 +264,10 @@ class Factory
             $composer->setLocker($locker);
         }
 
+        $pm = $this->createPluginManager($composer);
+
+        $composer->setPluginManager($pm);
+
         return $composer;
     }
 
@@ -351,6 +355,14 @@ class Factory
         $am->addArchiver(new Archiver\PharArchiver);
 
         return $am;
+    }
+
+    /**
+     * @return Plugin\PluginManager
+     */
+    protected function createPluginManager(Composer $composer)
+    {
+        return new Plugin\PluginManager($composer);
     }
 
     /**

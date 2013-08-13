@@ -4,6 +4,6 @@
     "type": "composer-plugin",
     "autoload": { "psr-0": { "Installer": "" } },
     "extra": {
-        "class": "Installer\\Custom2"
+        "class": "Installer\\Plugin2"
     }
 }

@@ -29,7 +29,7 @@ class PluginInstaller extends LibraryInstaller
     private static $classCounter = 0;
 
     /**
-     * Initializes Installer installer.
+     * Initializes Plugin installer.
      *
      * @param IOInterface $io
      * @param Composer    $composer
@@ -42,11 +42,8 @@ class PluginInstaller extends LibraryInstaller
 
         $repo = $composer->getRepositoryManager()->getLocalRepository();
         foreach ($repo->getPackages() as $package) {
-            if ('composer-installer' === $package->getType()) {
-                $this->registerInstaller($package);
-            }
-            if ('composer-plugin' === $package->getType()) {
-                $this->registerInstaller($package);
+            if ('composer-plugin' === $package->getType() || 'composer-installer' === $package->getType()) {
+                $this->registerPlugin($package);
             }
         }
     }
@@ -62,7 +59,7 @@ class PluginInstaller extends LibraryInstaller
         }
 
         parent::install($repo, $package);
-        $this->registerInstaller($package);
+        $this->registerPlugin($package);
     }
 
     /**
@@ -76,11 +73,13 @@ class PluginInstaller extends LibraryInstaller
         }
 
         parent::update($repo, $initial, $target);
-        $this->registerInstaller($target);
+        $this->registerPlugin($target);
     }
 
-    private function registerInstaller(PackageInterface $package)
+    private function registerPlugin(PackageInterface $package)
     {
+        $oldInstallerPlugin = ($package->getType() === 'composer-installer');
+
         $downloadPath = $this->getInstallPath($package);
 
         $extra = $package->getExtra();
@@ -100,8 +99,13 @@ class PluginInstaller extends LibraryInstaller
                 self::$classCounter++;
             }
 
-            $installer = new $class($this->io, $this->composer);
-            $this->installationManager->addInstaller($installer);
+            $plugin = new $class($this->io, $this->composer);
+
+            if ($oldInstallerPlugin) {
+                $this->installationManager->addInstaller($installer);
+            } else {
+                $this->composer->getPluginManager()->addPlugin($plugin);
+            }
         }
     }
 }
