@@ -21,9 +21,9 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
     {
         $io = $this->getMock('Composer\IO\IOInterface');
         $io
-            ->expects($this->once())
-            ->method('hasAuthentication')
-            ->will($this->returnValue(false))
+        ->expects($this->once())
+        ->method('hasAuthentication')
+        ->will($this->returnValue(false))
         ;
 
         $res = $this->callGetOptionsForUrl($io, array('http://example.org', array()));
@@ -42,14 +42,14 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
     {
         $io = $this->getMock('Composer\IO\IOInterface');
         $io
-            ->expects($this->once())
-            ->method('hasAuthentication')
-            ->will($this->returnValue(true))
+        ->expects($this->once())
+        ->method('hasAuthentication')
+        ->will($this->returnValue(true))
         ;
         $io
-            ->expects($this->once())
-            ->method('getAuthentication')
-            ->will($this->returnValue(array('username' => 'login', 'password' => 'password')))
+        ->expects($this->once())
+        ->method('getAuthentication')
+        ->will($this->returnValue(array('username' => 'login', 'password' => 'password')))
         ;
 
         $options = $this->callGetOptionsForUrl($io, array('http://example.org', array()));
@@ -67,9 +67,9 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
     {
         $io = $this->getMock('Composer\IO\IOInterface');
         $io
-            ->expects($this->once())
-            ->method('hasAuthentication')
-            ->will($this->returnValue(true))
+        ->expects($this->once())
+        ->method('hasAuthentication')
+        ->will($this->returnValue(true))
         ;
 
         $streamOptions = array('ssl' => array(
@@ -84,9 +84,9 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
     {
         $io = $this->getMock('Composer\IO\IOInterface');
         $io
-            ->expects($this->once())
-            ->method('hasAuthentication')
-            ->will($this->returnValue(true))
+        ->expects($this->once())
+        ->method('hasAuthentication')
+        ->will($this->returnValue(true))
         ;
 
         $streamOptions = array('http' => array(
@@ -118,8 +118,8 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
     {
         $io = $this->getMock('Composer\IO\IOInterface');
         $io
-            ->expects($this->once())
-            ->method('overwrite')
+        ->expects($this->once())
+        ->method('overwrite')
         ;
 
         $fs = new RemoteFilesystem($io);
@@ -148,13 +148,18 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
     public function testCaptureAuthenticationParamsFromUrl()
     {
         $io = $this->getMock('Composer\IO\IOInterface');
-        $io
-        ->expects($this->once())
+        $io->expects($this->once())
         ->method('setAuthentication')
-        ;
+        ->with($this->equalTo('example.com'), $this->equalTo('user'), $this->equalTo('pass'));
 
         $fs = new RemoteFilesystem($io);
-        $fs->getContents('example.com', 'http://user:pass@www.example.com');
+        try {
+            $fs->getContents('example.com', 'http://user:pass@www.example.com/something');
+        } catch (\Exception $e) {
+            $this->assertInstanceOf('Composer\Downloader\TransportException', $e);
+            $this->assertEquals(404, $e->getCode());
+            $this->assertContains('404 Not Found', $e->getMessage());
+        }
     }
 
     public function testGetContents()
