@@ -13,6 +13,7 @@
 namespace Composer\Plugin;
 
 use Composer\Composer;
+use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\Package\Package;
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
@@ -65,8 +66,8 @@ class PluginManager
         $this->plugins[] =  $plugin;
         $plugin->activate($this->composer);
 
-        if ($plugin instanceof \Symfony\Component\EventDispatcher\EventSubscriberInterface) {
-            $this->composer->getPluginEventDispatcher()->addSubscriber($plugin);
+        if ($plugin instanceof EventSubscriberInterface) {
+            $this->composer->getEventDispatcher()->addSubscriber($plugin);
         }
     }
 
