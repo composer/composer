@@ -22,9 +22,7 @@ use Composer\Composer;
 interface PluginInterface
 {
     /**
-     * Apply plugin modifications to the passed in composer object
-     *
-     * @param Composer $composer
+     * Apply plugin modifications to composer
      */
-    public function activate(Composer $composer);
+    public function activate();
 }

@@ -77,6 +77,16 @@ class RemoteFilesystem
     }
 
     /**
+     * Retrieve the options set in the constructor
+     *
+     * @return array Options
+     */
+    public function getOptions()
+    {
+        return $this->options;
+    }
+
+    /**
      * Get file content or copy action.
      *
      * @param string  $originUrl         The origin URL

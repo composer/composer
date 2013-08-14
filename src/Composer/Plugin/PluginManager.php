@@ -64,7 +64,7 @@ class PluginManager
     public function addPlugin(PluginInterface $plugin)
     {
         $this->plugins[] =  $plugin;
-        $plugin->activate($this->composer);
+        $plugin->activate();
 
         if ($plugin instanceof EventSubscriberInterface) {
             $this->composer->getEventDispatcher()->addSubscriber($plugin);
@@ -102,7 +102,7 @@ class PluginManager
                 self::$classCounter++;
             }
 
-            $plugin = new $class($this->io, $this->composer);
+            $plugin = new $class($this->composer, $this->io);
 
             if ($oldInstallerPlugin) {
                 $this->composer->getInstallationManager()->addInstaller($installer);
