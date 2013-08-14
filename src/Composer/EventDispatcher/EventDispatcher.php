@@ -119,7 +119,7 @@ class EventDispatcher
         $listeners = $this->getListeners($event);
 
         foreach ($listeners as $callable) {
-            if ((is_array($callable) && $is_callable($callable)) || $callable instanceof Closure) {
+            if ((is_array($callable) && is_callable($callable)) || $callable instanceof Closure) {
                 $callable($event);
             } elseif ($this->isPhpScript($callable)) {
                 $className = substr($callable, 0, strpos($callable, '::'));
