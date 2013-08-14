@@ -9,7 +9,7 @@ class Plugin2 implements PluginInterface
 {
     public $version = 'installer-v3';
 
-    public function activate(Composer $composer)
+    public function activate()
     {
     }
 }
