@@ -14,6 +14,7 @@ namespace Composer\Downloader;
 
 use Composer\Config;
 use Composer\Cache;
+use Composer\EventDispatcher\EventDispatcher;
 use Composer\Util\ProcessExecutor;
 use Composer\IO\IOInterface;
 use ZipArchive;
@@ -25,10 +26,10 @@ class ZipDownloader extends ArchiveDownloader
 {
     protected $process;
 
-    public function __construct(IOInterface $io, Config $config, Cache $cache = null, ProcessExecutor $process = null)
+    public function __construct(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, Cache $cache = null, ProcessExecutor $process = null)
     {
         $this->process = $process ?: new ProcessExecutor($io);
-        parent::__construct($io, $config, $cache);
+        parent::__construct($io, $config, $eventDispatcher, $cache);
     }
 
     protected function extract($file, $path)
