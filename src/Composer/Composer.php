@@ -18,7 +18,7 @@ use Composer\Repository\RepositoryManager;
 use Composer\Installer\InstallationManager;
 use Composer\Plugin\PluginManager;
 use Composer\Downloader\DownloadManager;
-use Composer\Script\EventDispatcher;
+use Composer\EventDispatcher\EventDispatcher;
 use Composer\Autoload\AutoloadGenerator;
 
 /**
@@ -65,7 +65,7 @@ class Composer
     private $config;
 
     /**
-     * @var Script\EventDispatcher
+     * @var EventDispatcher\EventDispatcher
      */
     private $eventDispatcher;
 
@@ -188,7 +188,7 @@ class Composer
     }
 
     /**
-     * @param Script\EventDispatcher $eventDispatcher
+     * @param EventDispatcher\EventDispatcher $eventDispatcher
      */
     public function setEventDispatcher(EventDispatcher $eventDispatcher)
     {
@@ -196,7 +196,7 @@ class Composer
     }
 
     /**
-     * @return Script\EventDispatcher
+     * @return EventDispatcher\EventDispatcher
      */
     public function getEventDispatcher()
     {

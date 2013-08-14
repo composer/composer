@@ -21,7 +21,7 @@ use Composer\Repository\RepositoryManager;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
-use Composer\Script\EventDispatcher;
+use Composer\EventDispatcher\EventDispatcher;
 use Composer\Autoload\AutoloadGenerator;
 use Composer\Package\Version\VersionParser;
 
@@ -227,9 +227,6 @@ class Factory
         $loader  = new Package\Loader\RootPackageLoader($rm, $config, $parser, new ProcessExecutor($io));
         $package = $loader->load($localConfig);
 
-        // initialize download manager
-        $dm = $this->createDownloadManager($io, $config);
-
         // initialize installation manager
         $im = $this->createInstallationManager();
 
@@ -238,11 +235,15 @@ class Factory
         $composer->setConfig($config);
         $composer->setPackage($package);
         $composer->setRepositoryManager($rm);
-        $composer->setDownloadManager($dm);
         $composer->setInstallationManager($im);
 
         // initialize event dispatcher
         $dispatcher = new EventDispatcher($composer, $io);
+
+        // initialize download manager
+        $dm = $this->createDownloadManager($io, $config, $dispatcher);
+
+        $composer->setDownloadManager($dm);
         $composer->setEventDispatcher($dispatcher);
 
         // initialize autoload generator
@@ -304,9 +305,10 @@ class Factory
     /**
      * @param  IO\IOInterface             $io
      * @param  Config                     $config
+     * @param  EventDispatcher            $eventDispatcher
      * @return Downloader\DownloadManager
      */
-    public function createDownloadManager(IOInterface $io, Config $config)
+    public function createDownloadManager(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null)
     {
         $cache = null;
         if ($config->get('cache-files-ttl') > 0) {
@@ -330,10 +332,10 @@ class Factory
         $dm->setDownloader('git', new Downloader\GitDownloader($io, $config));
         $dm->setDownloader('svn', new Downloader\SvnDownloader($io, $config));
         $dm->setDownloader('hg', new Downloader\HgDownloader($io, $config));
-        $dm->setDownloader('zip', new Downloader\ZipDownloader($io, $config, $cache));
-        $dm->setDownloader('tar', new Downloader\TarDownloader($io, $config, $cache));
-        $dm->setDownloader('phar', new Downloader\PharDownloader($io, $config, $cache));
-        $dm->setDownloader('file', new Downloader\FileDownloader($io, $config, $cache));
+        $dm->setDownloader('zip', new Downloader\ZipDownloader($io, $config, $eventDispatcher, $cache));
+        $dm->setDownloader('tar', new Downloader\TarDownloader($io, $config, $eventDispatcher, $cache));
+        $dm->setDownloader('phar', new Downloader\PharDownloader($io, $config, $eventDispatcher, $cache));
+        $dm->setDownloader('file', new Downloader\FileDownloader($io, $config, $eventDispatcher, $cache));
 
         return $dm;
     }

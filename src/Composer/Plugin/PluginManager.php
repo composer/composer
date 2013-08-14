@@ -64,6 +64,10 @@ class PluginManager
     {
         $this->plugins[] =  $plugin;
         $plugin->activate($this->composer);
+
+        if ($plugin instanceof \Symfony\Component\EventDispatcher\EventSubscriberInterface) {
+            $this->composer->getPluginEventDispatcher()->addSubscriber($plugin);
+        }
     }
 
     public function getPlugins()

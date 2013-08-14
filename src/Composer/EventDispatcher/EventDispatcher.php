@@ -10,11 +10,14 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Script;
+namespace Composer\EventDispatcher;
 
 use Composer\IO\IOInterface;
 use Composer\Composer;
 use Composer\DependencyResolver\Operation\OperationInterface;
+use Composer\Script;
+use Composer\Script\CommandEvent;
+use Composer\Script\PackageEvent;
 use Composer\Util\ProcessExecutor;
 
 /**
@@ -28,6 +31,7 @@ use Composer\Util\ProcessExecutor;
  *
  * @author François Pluchino <francois.pluchino@opendisplay.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
+ * @author Nils Adermann <naderman@naderman.de>
  */
 class EventDispatcher
 {
@@ -51,15 +55,30 @@ class EventDispatcher
     }
 
     /**
-     * Dispatch a script event.
+     * Dispatch an event
      *
-     * @param string $eventName The constant in ScriptEvents
+     * @param string $eventName An event name
      * @param Event  $event
      */
     public function dispatch($eventName, Event $event = null)
     {
         if (null == $event) {
-            $event = new Event($eventName, $this->composer, $this->io);
+            $event = new Event($eventName);
+        }
+
+        $this->doDispatch($event);
+    }
+
+    /**
+     * Dispatch a script event.
+     *
+     * @param string $eventName The constant in ScriptEvents
+     * @param Event  $event
+     */
+    public function dispatchScript($eventName, Script\Event $event = null)
+    {
+        if (null == $event) {
+            $event = new Script\Event($eventName, $this->composer, $this->io);
         }
 
         $this->doDispatch($event);
@@ -100,7 +119,9 @@ class EventDispatcher
         $listeners = $this->getListeners($event);
 
         foreach ($listeners as $callable) {
-            if ($this->isPhpScript($callable)) {
+            if ((is_array($callable) && $is_callable($callable)) || $callable instanceof Closure) {
+                $callable($event);
+            } elseif ($this->isPhpScript($callable)) {
                 $className = substr($callable, 0, strpos($callable, '::'));
                 $methodName = substr($callable, strpos($callable, '::') + 2);
 
@@ -127,6 +148,10 @@ class EventDispatcher
                     throw new \RuntimeException('Error Output: '.$this->process->getErrorOutput(), $exitCode);
                 }
             }
+
+            if ($event->isPropagationStopped()) {
+                break;
+            }
         }
     }
 
@@ -140,11 +165,46 @@ class EventDispatcher
         $className::$methodName($event);
     }
 
+    protected function addListener($eventName, $listener, $priority = 0)
+    {
+        $this->listeners[$eventName][$priority][] = $listener;
+    }
+
+    protected function addSubscriber($subscriber)
+    {
+        foreach ($subscriber->getSubscribedEvents() as $eventName => $params) {
+            if (is_string($params)) {
+                $this->addListener($eventName, array($subscriber, $params));
+            } elseif (is_string($params[0])) {
+                $this->addListener($eventName, array($subscriber, $params[0]), isset($params[1]) ? $params[1] : 0);
+            } else {
+                foreach ($params as $listener) {
+                    $this->addListener($eventName, array($subscriber, $listener[0]), isset($listener[1]) ? $listener[1] : 0);
+                }
+            }
+        }
+    }
+
+    protected function getListeners(Event $event)
+    {
+        $scriptListeners = $this->getScriptListeners($event);
+
+        if (!isset($this->listeners[$event->getName()][0])) {
+            $this->listeners[$event->getName()][0] = array();
+        }
+        krsort($this->listeners[$event->getName()]);
+
+        $listeners = $this->listeners;
+        $listeners[$event->getName()][0] = array_merge($listeners[$event->getName()][0], $scriptListeners);
+
+        return call_user_func_array('array_merge', $listeners[$event->getName()]);
+    }
+
     /**
      * @param  Event $event Event object
      * @return array Listeners
      */
-    protected function getListeners(Event $event)
+    protected function getScriptListeners(Event $event)
     {
         $package = $this->composer->getPackage();
         $scripts = $package->getScripts();

@@ -53,7 +53,7 @@ class PluginInstallerTest extends \PHPUnit_Framework_TestCase
 
         $this->io = $this->getMock('Composer\IO\IOInterface');
 
-        $dispatcher = $this->getMockBuilder('Composer\Script\EventDispatcher')->disableOriginalConstructor()->getMock();
+        $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock();
         $this->autoloadGenerator = new AutoloadGenerator($dispatcher);
 
         $this->composer = new Composer();

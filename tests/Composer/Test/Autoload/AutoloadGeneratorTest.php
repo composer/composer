@@ -72,7 +72,7 @@ class AutoloadGeneratorTest extends TestCase
             }));
         $this->repository = $this->getMock('Composer\Repository\InstalledRepositoryInterface');
 
-        $this->eventDispatcher = $this->getMockBuilder('Composer\Script\EventDispatcher')
+        $this->eventDispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -626,12 +626,12 @@ EOF;
     {
         $this->eventDispatcher
             ->expects($this->at(0))
-            ->method('dispatch')
+            ->method('dispatchScript')
             ->with(ScriptEvents::PRE_AUTOLOAD_DUMP, false);
 
         $this->eventDispatcher
             ->expects($this->at(1))
-            ->method('dispatch')
+            ->method('dispatchScript')
             ->with(ScriptEvents::POST_AUTOLOAD_DUMP, false);
 
         $package = new Package('a', '1.0', '1.0');
