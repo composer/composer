@@ -379,8 +379,8 @@ To get more information about a certain command, just use `help`.
 
 You can set a number of environment variables that override certain settings.
 Whenever possible it is recommended to specify these settings in the `config`
-section of `composer.json` instead. It is worth noting that that the env vars
-will always take precedence over the values specified in `composer.json`.
+section of `composer.json` instead. It is worth noting that the env vars will
+always take precedence over the values specified in `composer.json`.
 
 ### COMPOSER
 
