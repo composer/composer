@@ -170,7 +170,7 @@ class EventDispatcher
         $this->listeners[$eventName][$priority][] = $listener;
     }
 
-    protected function addSubscriber($subscriber)
+    public function addSubscriber(EventSubscriberInterface $subscriber)
     {
         foreach ($subscriber->getSubscribedEvents() as $eventName => $params) {
             if (is_string($params)) {

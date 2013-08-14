@@ -12,9 +12,6 @@
 
 namespace Composer\EventDispatcher;
 
-use Composer\Composer;
-use Composer\IO\IOInterface;
-
 /**
  * The base event class
  *
