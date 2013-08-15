@@ -6,12 +6,13 @@
  * (c) Nils Adermann <naderman@naderman.de>
  *     Jordi Boggiano <j.boggiano@seld.be>
  *
- *  Contributor: matt-whittom
+ *  Contributor: Matt Whittom <Matt.Whittom@veteransunited.com>
  *  Date: 7/17/13
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 
 namespace Composer\Repository\Vcs;
 
@@ -21,12 +22,14 @@ use Composer\Util\Filesystem;
 use Composer\Util\Perforce;
 
 /**
- * @author matt-whittom <>
+ * @author Matt Whittom <Matt.Whittom@veteransunited.com>
  */
 class PerforceDriver extends VcsDriver {
     protected $depot;
     protected $branch;
     protected $perforce;
+    protected $composer_info;
+    protected $composer_info_identifier;
 
     /**
      * {@inheritDoc}
@@ -54,7 +57,7 @@ class PerforceDriver extends VcsDriver {
         }
 
         $repoDir = $this->config->get('cache-vcs-dir') . "/$this->depot";
-        $this->perforce = new Perforce($this->repoConfig, $this->getUrl(), $repoDir, $this->process);
+        $this->perforce = Perforce::createPerforce($this->repoConfig, $this->getUrl(), $repoDir, $this->process);
     }
 
     public function injectPerforce(Perforce $perforce) {
@@ -66,6 +69,12 @@ class PerforceDriver extends VcsDriver {
      * {@inheritDoc}
      */
     public function getComposerInformation($identifier) {
+        if (isset($this->composer_info_identifier)){
+            if (strcmp($identifier, $this->composer_info_identifier) === 0 )
+            {
+                return $this->composer_info;
+            }
+        }
         $composer_info = $this->perforce->getComposerInformation($identifier);
 
         return $composer_info;
@@ -127,9 +136,12 @@ class PerforceDriver extends VcsDriver {
      * {@inheritDoc}
      */
     public function hasComposerFile($identifier) {
-        $composer_info = $this->perforce->getComposerInformation("//$this->depot/$identifier");
-        $result = strlen(trim($composer_info)) > 0;
-
+        $this->composer_info = $this->perforce->getComposerInformation("//$this->depot/$identifier");
+        $this->composer_info_identifier = $identifier;
+        $result = false;
+        if (isset($this->composer_info)){
+            $result = count($this->composer_info) > 0;
+        }
         return $result;
     }
 
@@ -145,5 +157,21 @@ class PerforceDriver extends VcsDriver {
      */
     public static function supports(IOInterface $io, $url, $deep = FALSE) {
         return Perforce::checkServerExists($url, new ProcessExecutor);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function cleanup(){
+        $this->perforce->cleanupClientSpec();
+        $this->perforce = null;
+    }
+
+    public function getDepot(){
+        return $this->depot;
+    }
+
+    public function getBranch(){
+        return $this->branch;
     }
 }

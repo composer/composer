@@ -60,7 +60,8 @@ class PerforceDownloaderTest extends \PHPUnit_Framework_TestCase {
         $repoConfig = array("depot"=>"TEST_DEPOT", "branch"=>"TEST_BRANCH", "p4user"=>"TEST_USER");
         $port = "TEST_PORT";
         $path = "TEST_PATH";
-        $perforce = $this->getMock('Composer\Util\Perforce', array('setStream', 'queryP4User', 'writeP4ClientSpec', 'connectClient', 'syncCodeBase'), array($repoConfig, $port, $path));
+        $process = $this->getmock('Composer\Util\ProcessExecutor');
+        $perforce = $this->getMock('Composer\Util\Perforce', array('setStream', 'queryP4User', 'writeP4ClientSpec', 'connectClient', 'syncCodeBase'), array($repoConfig, $port, $path, $process, true, "TEST"));
         $ref = "SOURCE_REF";
         $label = "LABEL";
         $perforce->expects($this->at(0))

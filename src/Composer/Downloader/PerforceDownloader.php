@@ -6,9 +6,13 @@
  * (c) Nils Adermann <naderman@naderman.de>
  *     Jordi Boggiano <j.boggiano@seld.be>
  *
+ *  Contributor: Matt Whittom <Matt.Whittom@veteransunited.com>
+ *  Date: 7/17/13
+ *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 
 namespace Composer\Downloader;
 
@@ -17,7 +21,7 @@ use Composer\Repository\VcsRepository;
 use Composer\Util\Perforce;
 
 /**
- * @author Jordi Boggiano <j.boggiano@seld.be>
+ * @author Matt Whittom <Matt.Whittom@veteransunited.com>
  */
 class PerforceDownloader extends VcsDownloader
 {
@@ -39,6 +43,7 @@ class PerforceDownloader extends VcsDownloader
         $this->perforce->writeP4ClientSpec();
         $this->perforce->connectClient();
         $this->perforce->syncCodeBase($label);
+        $this->perforce->cleanupClientSpec();
     }
 
     private function initPerforce($package, $path){
@@ -47,7 +52,7 @@ class PerforceDownloader extends VcsDownloader
         }
         $repository = $package->getRepository();
         $repoConfig = $this->getRepoConfig($repository);
-        $this->perforce = new Perforce($repoConfig, $package->getSourceUrl(), $path);
+        $this->perforce = Perforce::createPerforce($repoConfig, $package->getSourceUrl(), $path);
     }
 
     public function injectPerforce($perforce){
@@ -64,14 +69,13 @@ class PerforceDownloader extends VcsDownloader
      */
     public function doUpdate(PackageInterface $initial, PackageInterface $target, $path)
     {
-        print("PerforceDownloader:doUpdate\n");
         $this->doDownload($target, $path);
     }
 
     /**
      * {@inheritDoc}
      */
-    public function getLocalChanges($path)
+    public function getLocalChanges(PackageInterface $package, $path)
     {
         print ("Perforce driver does not check for local changes before overriding\n");
         return;
