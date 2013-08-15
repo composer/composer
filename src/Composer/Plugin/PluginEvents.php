@@ -20,12 +20,12 @@ namespace Composer\Plugin;
 class PluginEvents
 {
     /**
-     * The PREPARE_REMOTE_FILESYSTEM event occurs before downloading a file
+     * The PRE_FILE_DOWNLOAD event occurs before downloading a file
      *
      * The event listener method receives a
-     * Composer\Plugin\PrepareRemoteFilesystemEvent instance.
+     * Composer\Plugin\PreFileDownloadEvent instance.
      *
      * @var string
      */
-    const PREPARE_REMOTE_FILESYSTEM = 'prepare-remote-filesystem';
+    const PRE_FILE_DOWNLOAD = 'pre-file-download';
 }

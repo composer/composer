@@ -18,7 +18,7 @@ use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Plugin\PluginEvents;
-use Composer\Plugin\PrepareRemoteFilesystemEvent;
+use Composer\Plugin\PreFileDownloadEvent;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Util\Filesystem;
 use Composer\Util\GitHub;
@@ -94,11 +94,11 @@ class FileDownloader implements DownloaderInterface
         $processedUrl = $this->processUrl($package, $url);
         $hostname = parse_url($processedUrl, PHP_URL_HOST);
 
-        $prepRfsEvent = new PrepareRemoteFilesystemEvent(PluginEvents::PREPARE_REMOTE_FILESYSTEM, $this->rfs, $processedUrl);
+        $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->rfs, $processedUrl);
         if ($this->eventDispatcher) {
-            $this->eventDispatcher->dispatch($prepRfsEvent->getName(), $prepRfsEvent);
+            $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
         }
-        $rfs = $prepRfsEvent->getRemoteFilesystem();
+        $rfs = $preFileDownloadEvent->getRemoteFilesystem();
 
         if (strpos($hostname, '.github.com') === (strlen($hostname) - 11)) {
             $hostname = 'github.com';
