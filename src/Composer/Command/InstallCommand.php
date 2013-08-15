@@ -36,6 +36,7 @@ class InstallCommand extends Command
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Enables installation of require-dev packages (enabled by default, only present for BC).'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables installation of require-dev packages.'),
                 new InputOption('no-plugins', null, InputOption::VALUE_NONE, 'Disables all plugins.'),
+                new InputOption('no-custom-installers', null, InputOption::VALUE_NONE, 'DEPRECATED: Use no-plugins instead.'),
                 new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Skips the execution of all scripts defined in composer.json file.'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
                 new InputOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Shows more details including new commits pulled in when updating packages.'),
@@ -90,6 +91,10 @@ EOT
             ->setOptimizeAutoloader($input->getOption('optimize-autoloader'))
         ;
 
+        if ($input->getOption('no-custom-installers')) {
+            $output->writeln('<warning>You are using the deprecated option "no-custom-installers". Use "no-plugins" instead.</warning>');
+            $input->setOption('no-plugins', true);
+        }
         if ($input->getOption('no-plugins')) {
             $install->disablePlugins();
         }
