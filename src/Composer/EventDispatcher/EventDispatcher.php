@@ -165,11 +165,25 @@ class EventDispatcher
         $className::$methodName($event);
     }
 
+    /**
+     * Add a listener for a particular event
+     *
+     * @param string   $eventName The event name - typically a constant
+     * @param Callable $listener  A callable expecting an event argument
+     * @param integer  $priority  A higher value represents a higher priority
+     */
     protected function addListener($eventName, $listener, $priority = 0)
     {
         $this->listeners[$eventName][$priority][] = $listener;
     }
 
+    /**
+     * Adds object methods as listeners for the events in getSubscribedEvents
+     *
+     * @see EventSubscriberInterface
+     *
+     * @param EventSubscriberInterface $subscriber
+     */
     public function addSubscriber(EventSubscriberInterface $subscriber)
     {
         foreach ($subscriber->getSubscribedEvents() as $eventName => $params) {
@@ -185,6 +199,12 @@ class EventDispatcher
         }
     }
 
+    /**
+     * Retrieves all listeners for a given event
+     *
+     * @param Event $event
+     * @return array All listeners: callables and scripts
+     */
     protected function getListeners(Event $event)
     {
         $scriptListeners = $this->getScriptListeners($event);
@@ -201,6 +221,8 @@ class EventDispatcher
     }
 
     /**
+     * Finds all listeners defined as scripts in the package
+     *
      * @param  Event $event Event object
      * @return array Listeners
      */
