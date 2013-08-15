@@ -177,11 +177,12 @@ class Factory
      * @param IOInterface       $io          IO instance
      * @param array|string|null $localConfig either a configuration array or a filename to read from, if null it will
      *                                       read from the default filename
+     * @param bool        $disablePlugins Whether plugins should not be loaded
      * @throws \InvalidArgumentException
      * @throws \UnexpectedValueException
      * @return Composer
      */
-    public function createComposer(IOInterface $io, $localConfig = null)
+    public function createComposer(IOInterface $io, $localConfig = null, $disablePlugins = false)
     {
         // load Composer configuration
         if (null === $localConfig) {
@@ -269,7 +270,9 @@ class Factory
             $composer->setLocker($locker);
         }
 
-        $pm->loadInstalledPlugins();
+        if (!$disablePlugins) {
+            $pm->loadInstalledPlugins();
+        }
 
         return $composer;
     }
@@ -408,12 +411,13 @@ class Factory
      * @param IOInterface $io     IO instance
      * @param mixed       $config either a configuration array or a filename to read from, if null it will read from
      *                             the default filename
+     * @param bool        $disablePlugins Whether plugins should not be loaded
      * @return Composer
      */
-    public static function create(IOInterface $io, $config = null)
+    public static function create(IOInterface $io, $config = null, $disablePlugins = false)
     {
         $factory = new static();
 
-        return $factory->createComposer($io, $config);
+        return $factory->createComposer($io, $config, $disablePlugins);
     }
 }

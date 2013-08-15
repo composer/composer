@@ -58,7 +58,12 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $composer = $this->getComposer();
+        if ($input->getOption('no-custom-installers')) {
+            $output->writeln('<warning>You are using the deprecated option "no-custom-installers". Use "no-plugins" instead.</warning>');
+            $input->setOption('no-plugins', true);
+        }
+
+        $composer = $this->getComposer(true, $input->getOption('no-plugins'));
         $composer->getDownloadManager()->setOutputProgress(!$input->getOption('no-progress'));
         $io = $this->getIO();
         $install = Installer::create($io, $composer);
@@ -92,10 +97,6 @@ EOT
             ->setOptimizeAutoloader($input->getOption('optimize-autoloader'))
         ;
 
-        if ($input->getOption('no-custom-installers')) {
-            $output->writeln('<warning>You are using the deprecated option "no-custom-installers". Use "no-plugins" instead.</warning>');
-            $input->setOption('no-plugins', true);
-        }
         if ($input->getOption('no-plugins')) {
             $install->disablePlugins();
         }
