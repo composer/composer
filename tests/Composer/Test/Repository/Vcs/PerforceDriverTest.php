@@ -19,7 +19,9 @@ use Composer\Repository\Vcs\PerforceDriver;
 use Composer\Util\Filesystem;
 use Composer\Config;
 
-
+/**
+ * @author Matt Whittom <Matt.Whittom@veteransunited.com>
+ */
 class PerforceDriverTest extends \PHPUnit_Framework_TestCase {
     private $config;
     private $io;
