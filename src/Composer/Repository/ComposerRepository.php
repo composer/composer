@@ -496,6 +496,15 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
         if (isset($data['packages'])) {
             foreach ($data['packages'] as $package => $versions) {
                 foreach ($versions as $version => $metadata) {
+
+                    // we copy over the repository's connection options
+                    if (!empty($this->options)) {
+                        if (!isset($metadata['extra']['context-options'])) {
+                            $metadata['extra']['context-options'] = array();
+                        }
+                        $metadata['extra']['context-options'] = array_replace_recursive($this->options, $metadata['extra']['context-options']);
+                    }
+
                     $packages[] = $metadata;
                 }
             }
