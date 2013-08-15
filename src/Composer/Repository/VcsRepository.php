@@ -253,6 +253,7 @@ class VcsRepository extends ArrayRepository
                 continue;
             }
         }
+        $driver->cleanup();
 
         if (!$verbose) {
             $this->io->overwrite('', false);

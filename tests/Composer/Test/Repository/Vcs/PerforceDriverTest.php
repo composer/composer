@@ -48,9 +48,6 @@ class PerforceDriverTest extends \PHPUnit_Framework_TestCase {
         $fs->removeDirectory($this->testPath);
     }
 
-    //Test:
-    //hasComposerFile
-
     public function testInitializeCapturesVariablesFromRepoConfig() {
         $this->setUp();
         $repo_config = array(
@@ -58,8 +55,9 @@ class PerforceDriverTest extends \PHPUnit_Framework_TestCase {
             'depot' => 'TEST_DEPOT_CONFIG',
             'branch' => 'TEST_BRANCH_CONFIG'
         );
-        $driver = new TestingPerforceDriver($repo_config, $this->io, $this->config, $this->process, $this->remoteFileSystem);
-        $arguments = array(array('depot'=>'TEST_DEPOT', 'branch'=>'TEST_BRANCH'), 'port'=>'TEST_PORT', 'path'=>$this->testPath);
+        $driver = new PerforceDriver($repo_config, $this->io, $this->config, $this->process, $this->remoteFileSystem);
+        $process = $this->getMock('Composer\Util\ProcessExecutor');
+        $arguments = array(array('depot'=>'TEST_DEPOT', 'branch'=>'TEST_BRANCH'), 'port'=>'TEST_PORT', 'path'=>$this->testPath, $process, true, "TEST");
         $perforce = $this->getMock('Composer\Util\Perforce', null, $arguments);
         $driver->injectPerforce($perforce);
         $driver->initialize();
@@ -75,7 +73,7 @@ class PerforceDriverTest extends \PHPUnit_Framework_TestCase {
             'depot' => 'TEST_DEPOT_CONFIG',
             'branch' => 'TEST_BRANCH_CONFIG'
         );
-        $driver = new TestingPerforceDriver($repo_config, $this->io, $this->config, $this->process, $this->remoteFileSystem);
+        $driver = new PerforceDriver($repo_config, $this->io, $this->config, $this->process, $this->remoteFileSystem);
         $perforce = $this->getMockBuilder('Composer\Util\Perforce')->disableOriginalConstructor()->getMock();
         $perforce->expects($this->at(0))
             ->method('p4Login')
@@ -99,8 +97,9 @@ class PerforceDriverTest extends \PHPUnit_Framework_TestCase {
             'depot' => 'TEST_DEPOT_CONFIG',
             'branch' => 'TEST_BRANCH_CONFIG'
         );
-        $driver = new TestingPerforceDriver($repo_config, $this->io, $this->config, $this->process, $this->remoteFileSystem);
-        $arguments = array(array('depot'=>'TEST_DEPOT', 'branch'=>'TEST_BRANCH'), 'port'=>'TEST_PORT', 'path'=>$this->testPath);
+        $driver = new PerforceDriver($repo_config, $this->io, $this->config, $this->process, $this->remoteFileSystem);
+        $process = $this->getMock('Composer\Util\ProcessExecutor');
+        $arguments = array(array('depot'=>'TEST_DEPOT', 'branch'=>'TEST_BRANCH'), 'port'=>'TEST_PORT', 'path'=>$this->testPath, $process, true, "TEST");
         $perforce = $this->getMock('Composer\Util\Perforce', array('getComposerInformation'), $arguments);
         $perforce->expects($this->at(0))
             ->method('getComposerInformation')
