@@ -63,6 +63,7 @@ class CreateProjectCommand extends Command
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Enables installation of require-dev packages (enabled by default, only present for BC).'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables installation of require-dev packages.'),
                 new InputOption('no-plugins', null, InputOption::VALUE_NONE, 'Whether to disable plugins.'),
+                new InputOption('no-custom-installers', null, InputOption::VALUE_NONE, 'DEPRECATED: Use no-plugins instead.'),
                 new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Whether to prevent execution of all defined scripts in the root package.'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
                 new InputOption('keep-vcs', null, InputOption::VALUE_NONE, 'Whether to prevent deletion vcs folder.'),
@@ -114,6 +115,11 @@ EOT
         if ($input->getOption('prefer-source') || $input->getOption('prefer-dist')) {
             $preferSource = $input->getOption('prefer-source');
             $preferDist = $input->getOption('prefer-dist');
+        }
+
+        if ($input->getOption('no-custom-installers')) {
+            $output->writeln('<warning>You are using the deprecated option "no-custom-installers". Use "no-plugins" instead.</warning>');
+            $input->setOption('no-plugins', true);
         }
 
         return $this->installProject(
