@@ -18,11 +18,11 @@ use Composer\EventDispatcher\Event;
 use Composer\Util\RemoteFilesystem;
 
 /**
- * The Prepare Remote Filesystem Event.
+ * The pre file download event.
  *
  * @author Nils Adermann <naderman@naderman.de>
  */
-class PrepareRemoteFilesystemEvent extends Event
+class PreFileDownloadEvent extends Event
 {
     /**
      * @var RemoteFilesystem
