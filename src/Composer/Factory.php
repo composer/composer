@@ -31,6 +31,7 @@ use Composer\Package\Version\VersionParser;
  * @author Ryan Weaver <ryan@knplabs.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Igor Wiedler <igor@wiedler.ch>
+ * @author Nils Adermann <naderman@naderman.de>
  */
 class Factory
 {

@@ -19,6 +19,7 @@ use Composer\Downloader\TransportException;
 /**
  * @author François Pluchino <francois.pluchino@opendisplay.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
+ * @author Nils Adermann <naderman@naderman.de>
  */
 class RemoteFilesystem
 {

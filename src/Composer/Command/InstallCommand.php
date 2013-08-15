@@ -21,6 +21,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Ryan Weaver <ryan@knplabs.com>
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
+ * @author Nils Adermann <naderman@naderman.de>
  */
 class InstallCommand extends Command
 {

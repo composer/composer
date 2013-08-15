@@ -19,9 +19,10 @@ use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
 
 /**
- * Installer installation manager.
+ * Installer for plugin packages
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
+ * @author Nils Adermann <naderman@naderman.de>
  */
 class PluginInstaller extends LibraryInstaller
 {

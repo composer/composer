@@ -24,6 +24,7 @@ use Composer\Autoload\AutoloadGenerator;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Konstantin Kudryashiv <ever.zet@gmail.com>
+ * @author Nils Adermann <naderman@naderman.de>
  */
 class Composer
 {
