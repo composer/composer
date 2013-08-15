@@ -17,6 +17,8 @@ use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\Package\Package;
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
+use Composer\Package\Link;
+use Composer\DependencyResolver\Pool;
 
 /**
  * Plugin manager
@@ -76,11 +78,34 @@ class PluginManager
         return $this->plugins;
     }
 
+    protected function collectDependencies(Pool $pool, array $collected, PackageInterface $package)
+    {
+        $requires = array_merge(
+            $package->getRequires(),
+            $package->getDevRequires()
+        );
+
+        foreach ($requires as $requireLink) {
+            $requiredPackage = $this->lookupInstalledPackage($pool, $requireLink);
+            if ($requiredPackage && !isset($collected[$requiredPackage->getName()])) {
+                $collected[$requiredPackage->getName()] = $requiredPackage;
+                $collected = $this->collectDependencies($pool, $collected, $requiredPackage);
+            }
+        }
+
+        return $collected;
+    }
+
+    protected function lookupInstalledPackage(Pool $pool, Link $link)
+    {
+        $packages = $pool->whatProvides($link->getTarget(), $link->getConstraint());
+
+        return (!empty($packages)) ? $packages[0] : null;
+    }
+
     public function registerPackage(PackageInterface $package)
     {
         $oldInstallerPlugin = ($package->getType() === 'composer-installer');
-
-        $downloadPath = $this->getInstallPath($package);
 
         $extra = $package->getExtra();
         if (empty($extra['class'])) {
@@ -88,8 +113,20 @@ class PluginManager
         }
         $classes = is_array($extra['class']) ? $extra['class'] : array($extra['class']);
 
+        $pool = new Pool('dev');
+        $pool->addRepository($this->composer->getRepositoryManager()->getLocalRepository());
+
+        $autoloadPackages = array($package->getName() => $package);
+        $autoloadPackages = $this->collectDependencies($pool, $autoloadPackages, $package);
+
         $generator = $this->composer->getAutoloadGenerator();
-        $map = $generator->parseAutoloads(array(array($package, $downloadPath)), new Package('dummy', '1.0.0.0', '1.0.0'));
+        $autoloads = array();
+        foreach ($autoloadPackages as $autoloadPackage) {
+            $downloadPath = $this->getInstallPath($autoloadPackage);
+            $autoloads[] = array($autoloadPackage, $downloadPath);
+        }
+
+        $map = $generator->parseAutoloads($autoloads, new Package('dummy', '1.0.0.0', '1.0.0'));
         $classLoader = $generator->createLoader($map);
         $classLoader->register();
 
