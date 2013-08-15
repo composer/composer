@@ -13,6 +13,7 @@
 namespace Composer\Plugin;
 
 use Composer\Composer;
+use Composer\IO\IOInterface;
 
 /**
  * Plugin interface
@@ -23,6 +24,9 @@ interface PluginInterface
 {
     /**
      * Apply plugin modifications to composer
+     *
+     * @param Composer $composer
+     * @param IOInterface $io
      */
-    public function activate();
+    public function activate(Composer $composer, IOInterface $io);
 }
