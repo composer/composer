@@ -45,6 +45,9 @@ class PluginManager
         $this->io = $io;
     }
 
+    /**
+     * Loads all plugins from currently installed plugin packages
+     */
     public function loadInstalledPlugins()
     {
         $repo = $this->composer->getRepositoryManager()->getLocalRepository();
@@ -59,7 +62,7 @@ class PluginManager
     }
 
     /**
-     * Adds plugin
+     * Adds a plugin, activates it and registers it with the event dispatcher
      *
      * @param PluginInterface $plugin plugin instance
      */
@@ -73,11 +76,25 @@ class PluginManager
         }
     }
 
+    /**
+     * Gets all currently active plugin instances
+     *
+     * @return array plugins
+     */
     public function getPlugins()
     {
         return $this->plugins;
     }
 
+    /**
+     * Recursively generates a map of package names to packages for all deps
+     *
+     * @param Pool             $pool      Package pool of installed packages
+     * @param array            $collected Current state of the map for recursion
+     * @param PackageInterface $package   The package to analyze
+     *
+     * @return array Map of package names to packages
+     */
     protected function collectDependencies(Pool $pool, array $collected, PackageInterface $package)
     {
         $requires = array_merge(
@@ -96,6 +113,16 @@ class PluginManager
         return $collected;
     }
 
+    /**
+     * Resolves a package link to a package in the installed pool
+     *
+     * Since dependencies are already installed this should always find one.
+     *
+     * @param Pool $pool Pool of installed packages only
+     * @param Link $link Package link to look up
+     *
+     * @return PackageInterface|null The found package
+     */
     protected function lookupInstalledPackage(Pool $pool, Link $link)
     {
         $packages = $pool->whatProvides($link->getTarget(), $link->getConstraint());
@@ -103,6 +130,14 @@ class PluginManager
         return (!empty($packages)) ? $packages[0] : null;
     }
 
+    /**
+     * Register a plugin package, activate it etc.
+     *
+     * If it's of type composer-installer it is registered as an installer
+     * instead for BC
+     *
+     * @param PackageInterface $package
+     */
     public function registerPackage(PackageInterface $package)
     {
         $oldInstallerPlugin = ($package->getType() === 'composer-installer');
@@ -149,6 +184,12 @@ class PluginManager
         }
     }
 
+    /**
+     * Retrieves the path a package is installed to.
+     *
+     * @param PackageInterface $package
+     * @return string Install path
+     */
     public function getInstallPath(PackageInterface $package)
     {
         $targetDir = $package->getTargetDir();
@@ -156,6 +197,14 @@ class PluginManager
         return $this->getPackageBasePath($package) . ($targetDir ? '/'.$targetDir : '');
     }
 
+    /**
+     * Retrieves the base path a package gets installed into.
+     *
+     * Does not take targetDir into account.
+     *
+     * @param PackageInterface $package
+     * @return string Base path
+     */
     protected function getPackageBasePath(PackageInterface $package)
     {
         $vendorDir = rtrim($this->composer->getConfig()->get('vendor-dir'), '/');
