@@ -151,7 +151,7 @@ EOT
             $installedFromVcs = false;
         }
 
-        $composer = Factory::create($io);
+        $composer = Factory::create($io, null, $disablePlugins);
 
         if ($noScripts === false) {
             // dispatch event
