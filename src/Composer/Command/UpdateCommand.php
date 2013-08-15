@@ -20,6 +20,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
+ * @author Nils Adermann <naderman@naderman.de>
  */
 class UpdateCommand extends Command
 {

@@ -48,6 +48,7 @@ use Composer\Script\ScriptEvents;
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Beau Simensen <beau@dflydev.com>
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
+ * @author Nils Adermann <naderman@naderman.de>
  */
 class Installer
 {

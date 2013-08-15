@@ -44,6 +44,7 @@ use Composer\Package\Version\VersionParser;
  * @author Benjamin Eberlei <kontakt@beberlei.de>
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Tobias Munk <schmunk@usrbin.de>
+ * @author Nils Adermann <naderman@naderman.de>
  */
 class CreateProjectCommand extends Command
 {

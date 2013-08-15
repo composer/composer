@@ -29,6 +29,7 @@ use Composer\Util\StreamContextFactory;
  *
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
+ * @author Nils Adermann <naderman@naderman.de>
  */
 class InstallationManager
 {
