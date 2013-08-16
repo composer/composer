@@ -23,6 +23,7 @@ use Composer\Util\RemoteFilesystem;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Composer\Script\EventDispatcher;
 use Composer\Autoload\AutoloadGenerator;
+use Composer\Package\Version\VersionParser;
 
 /**
  * Creates a configured instance of composer.
@@ -231,7 +232,8 @@ class Factory
         $this->addLocalRepository($rm, $vendorDir);
 
         // load package
-        $loader  = new Package\Loader\RootPackageLoader($rm, $config);
+        $parser = new VersionParser;
+        $loader  = new Package\Loader\RootPackageLoader($rm, $config, $parser, new ProcessExecutor($io));
         $package = $loader->load($localConfig);
 
         // initialize download manager
