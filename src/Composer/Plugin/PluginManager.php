@@ -175,7 +175,7 @@ class PluginManager
             }
 
             if ($oldInstallerPlugin) {
-                $installer = new $class($this->composer, $this->io);
+                $installer = new $class($this->io, $this->composer);
                 $this->composer->getInstallationManager()->addInstaller($installer);
             } else {
                 $plugin = new $class();
