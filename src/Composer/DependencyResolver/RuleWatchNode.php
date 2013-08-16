@@ -64,7 +64,7 @@ class RuleWatchNode
             $level = $decisions->decisionLevel($literal);
 
             if ($level > $watchLevel) {
-                $this->rule->watch2 = $literal;
+                $this->watch2 = $literal;
                 $watchLevel = $level;
             }
         }
