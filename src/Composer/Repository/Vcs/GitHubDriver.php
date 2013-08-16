@@ -304,7 +304,12 @@ class GitHubDriver extends VcsDriver
                     }
 
                     if ($rateLimited) {
-                        $this->io->write('<error>GitHub API limit exhausted. You are already authorized so you will have to wait a while before doing more requests</error>');
+                        $rateLimit = $this->getRateLimit($e->getHeaders());
+                        $this->io->write(sprintf(
+                            '<error>GitHub API limit (%d calls/hr) is exhausted. You are already authorized so you have to wait until %s before doing more requests</error>',
+                            $rateLimit['limit'],
+                            $rateLimit['reset']
+                        ));
                     }
 
                     throw $e;
@@ -313,6 +318,39 @@ class GitHubDriver extends VcsDriver
                     throw $e;
             }
         }
+    }
+
+    /**
+     * Extract ratelimit from response.
+     *
+     * @param array $headers Headers from Composer\Downloader\TransportException.
+     *
+     * @return array Associative array with the keys limit and reset.
+     */
+    protected function getRateLimit(array $headers)
+    {
+        $rateLimit = array(
+            'limit' => '?',
+            'reset' => '?',
+        );
+
+        foreach ($headers as $header) {
+            $header = trim($header);
+            if (false === strpos($header, 'X-RateLimit-')) {
+                continue;
+            }
+            list($type, $value) = explode(':', $header, 2);
+            switch ($type) {
+                case 'X-RateLimit-Limit':
+                    $rateLimit['limit'] = (int) trim($value);
+                    break;
+                case 'X-RateLimit-Reset':
+                    $rateLimit['reset'] = date('Y-m-d H:i:s', (int) trim($value));
+                    break;
+            }
+        }
+
+        return $rateLimit;
     }
 
     /**
