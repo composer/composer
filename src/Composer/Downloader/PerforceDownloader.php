@@ -51,17 +51,8 @@ class PerforceDownloader extends VcsDownloader
             return;
         }
         $repository = $package->getRepository();
-        $repoConfig = $this->getRepoConfig($repository);
+        $repoConfig = $repository->getRepoConfig();
         $this->perforce = Perforce::createPerforce($repoConfig, $package->getSourceUrl(), $path);
-    }
-
-    public function injectPerforce($perforce){
-        $this->perforce = $perforce;
-        $this->perforceInjected = true;
-    }
-
-    private function getRepoConfig(VcsRepository $repository){
-        return $repository->getRepoConfig();
     }
 
     /**
@@ -90,5 +81,11 @@ class PerforceDownloader extends VcsDownloader
         $commitLogs = $this->perforce->getCommitLogs($fromReference, $toReference);
         return $commitLogs;
     }
+
+    public function injectPerforce($perforce){
+        $this->perforce = $perforce;
+        $this->perforceInjected = true;
+    }
+
 
 }

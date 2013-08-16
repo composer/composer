@@ -34,7 +34,8 @@ class PerforceDriver extends VcsDriver {
     /**
      * {@inheritDoc}
      */
-    public function initialize() {
+    public function initialize()
+    {
         $this->depot = $this->repoConfig['depot'];
         $this->branch = "";
         if (isset($this->repoConfig['branch'])) {
@@ -51,7 +52,8 @@ class PerforceDriver extends VcsDriver {
         return TRUE;
     }
 
-    private function initPerforce() {
+    private function initPerforce()
+    {
         if (isset($this->perforce)) {
             return;
         }
@@ -60,15 +62,11 @@ class PerforceDriver extends VcsDriver {
         $this->perforce = Perforce::createPerforce($this->repoConfig, $this->getUrl(), $repoDir, $this->process);
     }
 
-    public function injectPerforce(Perforce $perforce) {
-        $this->perforce = $perforce;
-    }
-
-
     /**
      * {@inheritDoc}
      */
-    public function getComposerInformation($identifier) {
+    public function getComposerInformation($identifier)
+    {
         if (isset($this->composer_info_identifier)){
             if (strcmp($identifier, $this->composer_info_identifier) === 0 )
             {
@@ -83,14 +81,16 @@ class PerforceDriver extends VcsDriver {
     /**
      * {@inheritDoc}
      */
-    public function getRootIdentifier() {
+    public function getRootIdentifier()
+    {
         return $this->branch;
     }
 
     /**
      * {@inheritDoc}
      */
-    public function getBranches() {
+    public function getBranches()
+    {
         $branches = $this->perforce->getBranches();
 
         return $branches;
@@ -99,7 +99,8 @@ class PerforceDriver extends VcsDriver {
     /**
      * {@inheritDoc}
      */
-    public function getTags() {
+    public function getTags()
+    {
         $tags = $this->perforce->getTags();
 
         return $tags;
@@ -108,14 +109,16 @@ class PerforceDriver extends VcsDriver {
     /**
      * {@inheritDoc}
      */
-    public function getDist($identifier) {
+    public function getDist($identifier)
+    {
         return NULL;
     }
 
     /**
      * {@inheritDoc}
      */
-    public function getSource($identifier) {
+    public function getSource($identifier)
+    {
         $source = array(
             'type'      => 'perforce',
             'url'       => $this->repoConfig['url'],
@@ -128,14 +131,16 @@ class PerforceDriver extends VcsDriver {
     /**
      * {@inheritDoc}
      */
-    public function getUrl() {
+    public function getUrl()
+    {
         return $this->url;
     }
 
     /**
      * {@inheritDoc}
      */
-    public function hasComposerFile($identifier) {
+    public function hasComposerFile($identifier)
+    {
         $this->composer_info = $this->perforce->getComposerInformation("//$this->depot/$identifier");
         $this->composer_info_identifier = $identifier;
         $result = false;
@@ -148,30 +153,40 @@ class PerforceDriver extends VcsDriver {
     /**
      * {@inheritDoc}
      */
-    public function getContents($url) {
+    public function getContents($url)
+    {
         return FALSE;
     }
 
     /**
      * {@inheritDoc}
      */
-    public static function supports(IOInterface $io, $url, $deep = FALSE) {
+    public static function supports(IOInterface $io, $url, $deep = FALSE)
+    {
         return Perforce::checkServerExists($url, new ProcessExecutor);
     }
 
     /**
      * {@inheritDoc}
      */
-    public function cleanup(){
+    public function cleanup()
+    {
         $this->perforce->cleanupClientSpec();
         $this->perforce = null;
     }
 
-    public function getDepot(){
+    public function getDepot()
+    {
         return $this->depot;
     }
 
-    public function getBranch(){
+    public function getBranch()
+    {
         return $this->branch;
+    }
+
+    public function injectPerforce(Perforce $perforce)
+    {
+        $this->perforce = $perforce;
     }
 }
