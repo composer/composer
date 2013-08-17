@@ -148,6 +148,24 @@ to the command.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
 
+## global
+
+The global command allows you to run other commands like `install`, `require`
+or `update` as if you were running them from the [COMPOSER_HOME](#COMPOSER_HOME)
+directory.
+
+This can be used to install CLI utilities globally and if you add
+`$COMPOSER_HOME/vendor/bin` to your `$PATH` environment variable. Here is an
+example:
+
+    $ php composer.phar global require fabpot/php-cs-fixer:dev-master
+
+Now the `php-cs-fixer` binary is available globally (assuming you adjusted
+your PATH). If you wish to update the binary later on you can just run a
+global update:
+
+    $ php composer.phar global update
+
 ## search
 
 The search command allows you to search through the current project's package
@@ -355,6 +373,11 @@ performance.
 * **--optimize (-o):** Convert PSR-0 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
   a bit of time to run so it is currently not done by default.
+
+## licenses
+
+Lists the name, version and license of every package installed. Use
+`--format=json` to get machine readable output.
 
 ## run-script
 
