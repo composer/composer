@@ -40,15 +40,19 @@ class VcsRepository extends ArrayRepository
 
     public function __construct(array $repoConfig, IOInterface $io, Config $config, array $drivers = null)
     {
-        $this->drivers = $drivers ?: array(
-            'github'        => 'Composer\Repository\Vcs\GitHubDriver',
-            'git-bitbucket' => 'Composer\Repository\Vcs\GitBitbucketDriver',
-            'git'           => 'Composer\Repository\Vcs\GitDriver',
-            'hg-bitbucket'  => 'Composer\Repository\Vcs\HgBitbucketDriver',
-            'hg'            => 'Composer\Repository\Vcs\HgDriver',
-            // svn must be last because identifying a subversion server for sure is practically impossible
-            'svn'           => 'Composer\Repository\Vcs\SvnDriver',
-        );
+        if ($drivers) {
+            $this->drivers = $drivers;
+        } else {
+            $this->drivers = array();
+            $vcsDrivers = $config->get("vcs-drivers");
+            $camelize = function ($matches) {
+                return ucfirst($matches[2]);
+            };
+            foreach ($vcsDrivers as $driver) {
+                $className = preg_replace_callback("/([-]?([a-z0-9]+))/", $camelize, $driver);
+                $this->drivers[$driver] = "Composer\\Repository\\Vcs\\" . $className . "Driver";
+            }
+        }
 
         $this->url = $repoConfig['url'];
         $this->io = $io;
