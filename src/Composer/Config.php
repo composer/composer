@@ -25,6 +25,8 @@ class Config
         'preferred-install' => 'auto',
         'notify-on-install' => true,
         'github-protocols' => array('git', 'https'),
+        // svn must be last because identifying a subversion server for sure is practically impossible
+        'vcs-drivers' => array('git-hub', 'git-bitbucket', 'git', 'hg-bitbucket', 'hg', 'svn'),
         'vendor-dir' => 'vendor',
         'bin-dir' => '{$vendor-dir}/bin',
         'cache-dir' => '{$home}/cache',

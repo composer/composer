@@ -308,6 +308,18 @@ EOT
                     return $vals;
                 }
             ),
+            'vcs-drivers' => array(
+                function ($vals) {
+                    if (!is_array($vals)) {
+                        return 'array expected';
+                    }
+
+                    return true;
+                },
+                function ($vals) {
+                    return $vals;
+                }
+            )
         );
 
         foreach ($uniqueConfigValues as $name => $callbacks) {
