@@ -153,6 +153,8 @@ class FileDownloader implements DownloaderInterface
             $this->clearCache($package, $path);
             throw $e;
         }
+
+        return $fileName;
     }
 
     /**

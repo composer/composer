@@ -31,9 +31,8 @@ abstract class ArchiveDownloader extends FileDownloader
         $temporaryDir = $this->config->get('vendor-dir').'/composer/'.substr(md5(uniqid('', true)), 0, 8);
         $retries = 3;
         while ($retries--) {
-            parent::download($package, $path);
+            $fileName = parent::download($package, $path);
 
-            $fileName = $this->getFileName($package, $path);
             if ($this->io->isVerbose()) {
                 $this->io->write('    Extracting archive');
             }
