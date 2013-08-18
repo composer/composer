@@ -330,7 +330,11 @@ EOF;
         $baseDir = '';
         if (strpos($path, $vendorPath) === 0) {
             $path = substr($path, strlen($vendorPath));
-            $baseDir = '$vendorDir . ';
+            $baseDir = '$vendorDir';
+
+            if ($path !== false) {
+                $baseDir .= " . ";
+            }
         } else {
             $path = $filesystem->normalizePath($filesystem->findShortestPath($basePath, $path, true));
             if (!$filesystem->isAbsolutePath($path)) {
@@ -343,7 +347,7 @@ EOF;
             $baseDir = "'phar://' . " . $baseDir;
         }
 
-        return $baseDir.var_export($path, true);
+        return $baseDir . (($path !== false) ? var_export($path, true) : "");
     }
 
     protected function getAutoloadFile($vendorPathToTargetDirCode, $suffix)
