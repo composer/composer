@@ -582,15 +582,17 @@ class Package extends BasePackage
 
     protected function getUrls($url, $mirrors, $ref, $type)
     {
-        $urls = array();
-        if ($url) {
-            $urls[] = $url;
+        if (!$url) {
+            return array();
         }
+        $urls = array($url);
         if ($mirrors) {
             foreach ($mirrors as $mirror) {
                 $mirrorUrl = ComposerMirror::processUrl($mirror['url'], $this->name, $this->version, $ref, $type);
-                $func = $mirror['preferred'] ? 'array_unshift' : 'array_push';
-                $func($urls, $mirrorUrl);
+                if (!in_array($urls, $mirrorUrl)) {
+                    $func = $mirror['preferred'] ? 'array_unshift' : 'array_push';
+                    $func($urls, $mirrorUrl);
+                }
             }
         }
 
