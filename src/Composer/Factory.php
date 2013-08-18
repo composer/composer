@@ -208,16 +208,7 @@ class Factory
         // Configuration defaults
         $config = static::createConfig();
         $config->merge($localConfig);
-
-        // reload oauth token from config if available
-        if ($tokens = $config->get('github-oauth')) {
-            foreach ($tokens as $domain => $token) {
-                if (!preg_match('{^[a-z0-9]+$}', $token)) {
-                    throw new \UnexpectedValueException('Your github oauth token for '.$domain.' contains invalid characters: "'.$token.'"');
-                }
-                $io->setAuthentication($domain, $token, 'x-oauth-basic');
-            }
-        }
+        $io->loadConfiguration($config);
 
         $vendorDir = $config->get('vendor-dir');
         $binDir = $config->get('bin-dir');
