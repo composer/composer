@@ -82,29 +82,25 @@ class ArtifactRepository extends ArrayRepository
      * @return bool|int
      */
     private function locateFile(\ZipArchive $zip, $filename) {
-        $shortestIndex = -1;
-        $shortestIndexLength = -1;
+        $indexOfShortestMatch = false;
+        $lengthOfShortestMatch = -1;
 
         for ($i = 0; $i < $zip->numFiles; $i++ ){
             $stat = $zip->statIndex($i);
             if (strcmp(basename($stat['name']), $filename) === 0){
                 $length = strlen($stat['name']);
-                if ($shortestIndex == -1 || $length < $shortestIndexLength) {
+                if ($indexOfShortestMatch == false || $length < $lengthOfShortestMatch) {
                     //Check it's not a directory.
                     $contents = $zip->getFromIndex($i);
                     if ($contents !== false) {
-                        $shortestIndex = $i;
-                        $shortestIndexLength = $length;
+                        $indexOfShortestMatch = $i;
+                        $lengthOfShortestMatch = $length;
                     }
                 }
             }
         }
 
-        if ($shortestIndex == -1) {
-            return false;
-        }
-
-        return $shortestIndex;
+        return $indexOfShortestMatch;
     }
     
     private function getComposerInformation(\SplFileInfo $file)
