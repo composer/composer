@@ -74,6 +74,39 @@ class ArtifactRepository extends ArrayRepository
         }
     }
 
+    /**
+     * Find a file by name, returning the one that has the shortest path. 
+     * 
+     * @param \ZipArchive $zip
+     * @param $filename
+     * @return bool|int
+     */
+    private function locateFile(\ZipArchive $zip, $filename) {
+        $shortestIndex = -1;
+        $shortestIndexLength = -1;
+
+        for ($i = 0; $i < $zip->numFiles; $i++ ){
+            $stat = $zip->statIndex($i);
+            if (strcmp(basename($stat['name']), $filename) === 0){
+                $length = strlen($stat['name']);
+                if ($shortestIndex == -1 || $length < $shortestIndexLength) {
+                    //Check it's not a directory.
+                    $contents = $zip->getFromIndex($i);
+                    if ($contents !== false) {
+                        $shortestIndex = $i;
+                        $shortestIndexLength = $length;
+                    }
+                }
+            }
+        }
+
+        if ($shortestIndex == -1) {
+            return false;
+        }
+
+        return $shortestIndex;
+    }
+    
     private function getComposerInformation(\SplFileInfo $file)
     {
         $zip = new \ZipArchive();
@@ -83,7 +116,7 @@ class ArtifactRepository extends ArrayRepository
             return false;
         }
 
-        $foundFileIndex = $zip->locateName('composer.json', \ZipArchive::FL_NODIR);
+        $foundFileIndex = $this->locateFile($zip, 'composer.json');
         if (false === $foundFileIndex) {
             return false;
         }
