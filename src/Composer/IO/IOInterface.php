@@ -12,6 +12,8 @@
 
 namespace Composer\IO;
 
+use Composer\Config;
+
 /**
  * The Input/Output helper interface.
  *
@@ -155,4 +157,11 @@ interface IOInterface
      * @param string $password       The password
      */
     public function setAuthentication($repositoryName, $username, $password = null);
+
+    /**
+     * Loads authentications from a config instance
+     *
+     * @param Config $config
+     */
+    public function loadConfiguration(Config $config);
 }

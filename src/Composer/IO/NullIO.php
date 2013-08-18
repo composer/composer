@@ -17,7 +17,7 @@ namespace Composer\IO;
  *
  * @author Christophe Coevoet <stof@notk.org>
  */
-class NullIO implements IOInterface
+class NullIO extends BaseIO
 {
     /**
      * {@inheritDoc}
@@ -103,36 +103,5 @@ class NullIO implements IOInterface
     public function askAndHideAnswer($question)
     {
         return null;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getAuthentications()
-    {
-        return array();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function hasAuthentication($repositoryName)
-    {
-        return false;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getAuthentication($repositoryName)
-    {
-        return array('username' => null, 'password' => null);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function setAuthentication($repositoryName, $username, $password = null)
-    {
     }
 }
