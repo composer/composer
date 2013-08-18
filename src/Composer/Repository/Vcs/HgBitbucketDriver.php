@@ -68,9 +68,7 @@ class HgBitbucketDriver extends VcsDriver
      */
     public function getSource($identifier)
     {
-        $label = array_search($identifier, $this->getTags()) ?: $identifier;
-
-        return array('type' => 'hg', 'url' => $this->getUrl(), 'reference' => $label);
+        return array('type' => 'hg', 'url' => $this->getUrl(), 'reference' => $identifier);
     }
 
     /**
@@ -78,10 +76,9 @@ class HgBitbucketDriver extends VcsDriver
      */
     public function getDist($identifier)
     {
-        $label = array_search($identifier, $this->getTags()) ?: $identifier;
-        $url = $this->getScheme() . '://bitbucket.org/'.$this->owner.'/'.$this->repository.'/get/'.$label.'.zip';
+        $url = $this->getScheme() . '://bitbucket.org/'.$this->owner.'/'.$this->repository.'/get/'.$identifier.'.zip';
 
-        return array('type' => 'zip', 'url' => $url, 'reference' => $label, 'shasum' => '');
+        return array('type' => 'zip', 'url' => $url, 'reference' => $identifier, 'shasum' => '');
     }
 
     /**
