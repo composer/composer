@@ -87,7 +87,6 @@ class GitHubDriver extends VcsDriver
         if ($this->gitDriver) {
             return $this->gitDriver->getSource($identifier);
         }
-        $label = array_search($identifier, $this->getTags()) ?: $identifier;
         if ($this->isPrivate) {
             // Private GitHub repositories should be accessed using the
             // SSH version of the URL.
@@ -96,7 +95,7 @@ class GitHubDriver extends VcsDriver
             $url = $this->getUrl();
         }
 
-        return array('type' => 'git', 'url' => $url, 'reference' => $label);
+        return array('type' => 'git', 'url' => $url, 'reference' => $identifier);
     }
 
     /**
@@ -107,10 +106,9 @@ class GitHubDriver extends VcsDriver
         if ($this->gitDriver) {
             return $this->gitDriver->getDist($identifier);
         }
-        $label = array_search($identifier, $this->getTags()) ?: $identifier;
-        $url = 'https://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/zipball/'.$label;
+        $url = 'https://api.github.com/repos/'.$this->owner.'/'.$this->repository.'/zipball/'.$identifier;
 
-        return array('type' => 'zip', 'url' => $url, 'reference' => $label, 'shasum' => '');
+        return array('type' => 'zip', 'url' => $url, 'reference' => $identifier, 'shasum' => '');
     }
 
     /**
