@@ -252,11 +252,11 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
 
         $process->expects($this->at(2))
             ->method('execute')
-            ->with($this->stringContains('git tag'));
+            ->with($this->stringContains('git show-ref --tags'));
 
         $process->expects($this->at(3))
             ->method('splitLines')
-            ->will($this->returnValue(array($identifier)));
+            ->will($this->returnValue(array($sha.' refs/tags/'.$identifier)));
 
         $process->expects($this->at(4))
             ->method('execute')
