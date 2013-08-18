@@ -8,14 +8,56 @@ use Composer\Util\Filesystem;
 
 class AutoloadGeneratorHelper
 {
+    /**
+     * @var \Composer\Util\Filesystem
+     */
     private $filesystem;
+
+    /**
+     * @var string
+     *   The project root path.
+     */
     private $basePath;
+
+    /**
+     * @var string
+     *   The vendor path, typically (project root)/vendor.
+     */
     private $vendorPath;
+
+    /**
+     * @var string
+     *   The target path, typically (project root)/vendor/composer.
+     */
     private $targetPath;
+
+    /**
+     * @var string
+     *   PHP code to obtain the vendor dir from within a generated file in the target dir,
+     *   with __DIR__ being replaced with dirname(__FILE__) for PHP 5.2 compatibility.
+     */
     private $vendorPathCode52;
+
+    /**
+     * @var string
+     *   PHP code to obtain the application base directory from within a generated file in the target dir.
+     */
     private $appBaseDirCode;
+
+    /**
+     * @var string
+     *   PHP code to obtain the target dir from within a generated file in the vendor dir.
+     */
     private $vendorPathToTargetDirCode;
 
+    /**
+     * @param string $vendorDir
+     *   The vendor dir, typically (project root)/vendor
+     * @param string $targetDir
+     *   The target dir, relative to the vendor dir.
+     *   E.g. if $targetDir is 'composer', and $vendorDir is (project root)/vendor,
+     *   then the absolute target dir is (project root)/vendor/composer.
+     */
     public function __construct($vendorDir, $targetDir)
     {
         $this->filesystem = new Filesystem();
@@ -33,11 +75,25 @@ class AutoloadGeneratorHelper
         $this->appBaseDirCode = str_replace('__DIR__', '$vendorDir', $appBaseDirCode);
     }
 
+    /**
+     * @return string
+     *   Path of the vendor directory.
+     */
     public function getVendorPath()
     {
         return $this->vendorPath;
     }
 
+    /**
+     * Generates the autoload_namespaces.php, typically in (project root)/vendor/composer/autoload_namespaces.php.
+     * Returns the PHP code snippet for AutoloaderInit::getLoader() that will register these PSR-0 directories to the
+     * class loader.
+     *
+     * @param array $psr0
+     *   Array of PSR-0 namespaces and directories, as collected from various composer.json files.
+     * @return string
+     *   PHP snippet for AutoloaderInit::getLoader().
+     */
     public function dumpNamespacesFile($psr0)
     {
         $namespacesCode = '';
@@ -74,6 +130,12 @@ EOF;
 PSR0;
     }
 
+    /**
+     * @param array $psr0
+     *   Array of PSR-0 namespaces and directories, as collected from various composer.json files.
+     * @return array
+     *   The generated class map.
+     */
     public function buildClassMapFromPsr0Scan(array $psr0)
     {
         // flatten array
@@ -102,6 +164,15 @@ PSR0;
         return $classMap;
     }
 
+    /**
+     * Generates the autoload_classmap.php, typically in (project root)/vendor/composer/autoload_classmap.php
+     * Returns the PHP code snippet for AutoloaderInit::getLoader() that will register the class map to the class loader.
+     *
+     * @param array $classMap
+     *   Class map generated from directory scans and information in composer.json.
+     * @return string
+     *   PHP snippet for AutoloaderInit::getLoader().
+     */
     public function dumpClassmapFile(array $classMap)
     {
         $classmapCode = '';
@@ -133,6 +204,14 @@ EOF;
 CLASSMAP;
     }
 
+    /**
+     * Generates the autoload_classmap.php, typically in (project root)/vendor/composer/autoload_classmap.php
+     * Returns the PHP code snippet for AutoloaderInit::getLoader() that will register the class map to the class loader.
+     *
+     * @param array $packageMap
+     * @return string
+     *   PHP snippet for AutoloaderInit::getLoader().
+     */
     public function dumpIncludePathsFile(array $packageMap)
     {
         $includePaths = array();
@@ -185,6 +264,14 @@ EOF;
 INCLUDE_PATH;
     }
 
+    /**
+     * Generates the autoload_files.php, typically in (project root)/vendor/composer/autoload_files.php
+     * Returns the PHP code snippet for AutoloaderInit::getLoader() that will include these files..
+     *
+     * @param array $files
+     * @return string
+     *   PHP snippet for AutoloaderInit::getLoader().
+     */
     public function dumpIncludeFilesFile(array $files)
     {
         $filesCode = '';
@@ -219,6 +306,10 @@ EOF;
 INCLUDE_FILES;
     }
 
+    /**
+     * @param $suffix
+     * @return bool
+     */
     public function dumpAutoloadFile($suffix)
     {
         $php = <<<AUTOLOAD
@@ -236,6 +327,12 @@ AUTOLOAD;
         return true;
     }
 
+    /**
+     * @param $loaderSetupCode
+     * @param $suffix
+     * @param $targetDirLoader
+     * @return bool
+     */
     public function dumpAutoloadRealFile($loaderSetupCode, $suffix, $targetDirLoader)
     {
         // TODO the class ComposerAutoloaderInit should be revert to a closure
@@ -283,6 +380,11 @@ EOF;
         return true;
     }
 
+    /**
+     * @param $mainPackageTargetDir
+     * @param $psr0
+     * @return string
+     */
     public function getTargetDirLoaderMethod($mainPackageTargetDir, $psr0)
     {
         $levels = count(explode('/', $this->filesystem->normalizePath($mainPackageTargetDir)));
@@ -315,6 +417,10 @@ EOF;
 EOF;
     }
 
+    /**
+     * @param $path
+     * @return string
+     */
     protected function getPathCode($path)
     {
         if (!$this->filesystem->isAbsolutePath($path)) {

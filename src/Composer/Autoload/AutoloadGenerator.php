@@ -32,11 +32,24 @@ class AutoloadGenerator
      */
     private $eventDispatcher;
 
+    /**
+     * @param EventDispatcher $eventDispatcher
+     */
     public function __construct(EventDispatcher $eventDispatcher)
     {
         $this->eventDispatcher = $eventDispatcher;
     }
 
+    /**
+     * @param Config $config
+     * @param InstalledRepositoryInterface $localRepo
+     * @param PackageInterface $mainPackage
+     * @param InstallationManager $installationManager
+     * @param $targetDir
+     *   The string to append to
+     * @param bool $scanPsr0Packages
+     * @param string $suffix
+     */
     public function dump(Config $config, InstalledRepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir, $scanPsr0Packages = false, $suffix = '')
     {
         $packageMap = $this->buildPackageMap($installationManager, $mainPackage, $localRepo->getCanonicalPackages());
@@ -89,6 +102,12 @@ class AutoloadGenerator
         $this->eventDispatcher->dispatch(ScriptEvents::POST_AUTOLOAD_DUMP);
     }
 
+    /**
+     * @param InstallationManager $installationManager
+     * @param PackageInterface $mainPackage
+     * @param array $packages
+     * @return array
+     */
     public function buildPackageMap(InstallationManager $installationManager, PackageInterface $mainPackage, array $packages)
     {
         // build package => install path map
@@ -132,9 +151,9 @@ class AutoloadGenerator
     }
 
     /**
-     * Registers an autoloader based on an autoload map returned by parseAutoloads
+     * Registers an autoloader based on an autoload map returned by parseAutoloads()
      *
-     * @param  array       $autoloads see parseAutoloads return value
+     * @param  array       $autoloads see parseAutoloads() return value
      * @return ClassLoader
      */
     public function createLoader(array $autoloads)
@@ -150,6 +169,12 @@ class AutoloadGenerator
         return $loader;
     }
 
+    /**
+     * @param $useTargetDirLoader
+     * @param $useGlobalIncludePath
+     * @param $suffix
+     * @return string
+     */
     protected function buildLoaderSetupCode($useTargetDirLoader, $useGlobalIncludePath, $suffix)
     {
         $loaderSetupCode = '';
@@ -179,6 +204,12 @@ REGISTER_LOADER;
         return $loaderSetupCode;
     }
 
+    /**
+     * @param AutoloadGeneratorHelper $helper
+     * @param array $autoloads
+     * @param $scanPsr0Packages
+     * @return array
+     */
     protected function buildClassMap(AutoloadGeneratorHelper $helper, array $autoloads, $scanPsr0Packages)
     {
         if ($scanPsr0Packages) {
@@ -198,6 +229,12 @@ REGISTER_LOADER;
         return $classMap;
     }
 
+    /**
+     * @param array $packageMap
+     * @param $type
+     * @param PackageInterface $mainPackage
+     * @return array
+     */
     protected function parseAutoloadsType(array $packageMap, $type, PackageInterface $mainPackage)
     {
         $autoloads = array();
@@ -254,6 +291,10 @@ REGISTER_LOADER;
         return $autoloads;
     }
 
+    /**
+     * @param array $packageMap
+     * @return array
+     */
     protected function sortPackageMap(array $packageMap)
     {
         $positions = array();
