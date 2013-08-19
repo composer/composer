@@ -103,7 +103,7 @@ class FileDownloader implements DownloaderInterface
                     $retries = 3;
                     while ($retries--) {
                         try {
-                            $this->rfs->copy($hostname, $processedUrl, $fileName, $this->outputProgress);
+                            $this->rfs->copy($hostname, $processedUrl, $fileName, $this->outputProgress, $package->getOptions());
                             break;
                         } catch (TransportException $e) {
                             // if we got an http response with a proper code, then requesting again will probably not help, abort
@@ -132,7 +132,7 @@ class FileDownloader implements DownloaderInterface
                     ) {
                         throw $e;
                     }
-                    $this->rfs->copy($hostname, $processedUrl, $fileName, $this->outputProgress);
+                    $this->rfs->copy($hostname, $processedUrl, $fileName, $this->outputProgress, $package->getOptions());
                 } else {
                     throw $e;
                 }
