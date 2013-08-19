@@ -108,6 +108,10 @@ class ArrayDumper
             }
         }
 
+        if (count($package->getOptions()) > 0) {
+            $data['options'] = $package->getOptions();
+        }
+
         return $data;
     }
 

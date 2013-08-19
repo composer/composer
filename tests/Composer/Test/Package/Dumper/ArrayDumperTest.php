@@ -194,6 +194,10 @@ class ArrayDumperTest extends \PHPUnit_Framework_TestCase
                 array(new Link('foo', 'foo/bar', new VersionConstraint('=', '1.0.0.0'), 'requires', '1.0.0'), new Link('bar', 'bar/baz', new VersionConstraint('=', '1.0.0.0'), 'requires', '1.0.0')),
                 'conflicts',
                 array('bar/baz' => '1.0.0', 'foo/bar' => '1.0.0')
+            ),
+            array(
+                'options',
+                array('ssl' => array('local_cert' => '/opt/certs/test.pem'))
             )
         );
     }
