@@ -49,6 +49,7 @@ abstract class BasePackage implements PackageInterface
 
     protected $repository;
     protected $id;
+    protected $options;
 
     /**
      * All descendants' constructors should call this parent constructor
@@ -60,6 +61,7 @@ abstract class BasePackage implements PackageInterface
         $this->prettyName = $name;
         $this->name = strtolower($name);
         $this->id = -1;
+        $this->options = array();
     }
 
     /**
@@ -131,6 +133,22 @@ abstract class BasePackage implements PackageInterface
     public function getRepository()
     {
         return $this->repository;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getOptions()
+    {
+        return $this->options;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setOptions(array $options)
+    {
+        $this->options = $options;
     }
 
     /**
