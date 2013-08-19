@@ -13,6 +13,7 @@
 namespace Composer\Repository;
 
 use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\Package;
 use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\Version\VersionParser;
@@ -204,8 +205,17 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
             $package = $package->getAliasOf();
         }
         $package->setRepository($this);
+        $this->configurePackageOptions($package);
 
         return $package;
+    }
+
+    protected function configurePackageOptions(PackageInterface $package)
+    {
+        if ($package instanceof Package
+            && strpos($package->getDistUrl(), $this->baseUrl) === 0) {
+            $package->setOptions($this->options);
+        }
     }
 
     /**
@@ -374,6 +384,17 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
         foreach ($repoData as $package) {
             $this->addPackage($this->createPackage($package, 'Composer\Package\CompletePackage'));
         }
+    }
+
+    /**
+     * Adds a new package to the repository
+     *
+     * @param PackageInterface $package
+     */
+    public function addPackage(PackageInterface $package)
+    {
+        parent::addPackage($package);
+        $this->configurePackageOptions($package);
     }
 
     protected function loadRootServerFile()
