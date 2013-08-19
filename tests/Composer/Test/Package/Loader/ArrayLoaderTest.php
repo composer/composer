@@ -117,6 +117,7 @@ class ArrayLoaderTest extends \PHPUnit_Framework_TestCase
             'archive' => array(
                 'exclude' => array('/foo/bar', 'baz', '!/foo/bar/baz'),
             ),
+            'options' => array('ssl' => array('local_cert' => '/opt/certs/test.pem'))
         );
 
         $package = $this->loader->load($config);
