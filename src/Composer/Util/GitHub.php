@@ -58,7 +58,7 @@ class GitHub
         $token = null;
 
         $oauthConfig = $this->config->get('github-oauth');
-        if (isset($oauthConfig['github.com'])) {
+        if (isset($oauthConfig['github.com']) && null !== $oauthConfig['github.com']) {
             // use token from config
             $token = $oauthConfig['github.com'];
         } elseif (0 === $this->process->execute('git config github.accesstoken', $output)) {
