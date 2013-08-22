@@ -42,7 +42,7 @@ class PerforceDriver extends VcsDriver {
             $this->branch = $this->repoConfig['branch'];
         }
 
-        $this->initPerforce();
+        $this->initPerforce($this->repoConfig);
         $this->perforce->p4Login($this->io);
         $this->perforce->checkStream($this->depot);
 
@@ -52,14 +52,14 @@ class PerforceDriver extends VcsDriver {
         return TRUE;
     }
 
-    private function initPerforce()
+    private function initPerforce($repoConfig)
     {
         if (isset($this->perforce)) {
             return;
         }
 
         $repoDir = $this->config->get('cache-vcs-dir') . "/$this->depot";
-        $this->perforce = Perforce::createPerforce($this->repoConfig, $this->getUrl(), $repoDir, $this->process);
+        $this->perforce = Perforce::createPerforce($repoConfig, $this->getUrl(), $repoDir, $this->process);
     }
 
     /**
@@ -122,7 +122,8 @@ class PerforceDriver extends VcsDriver {
         $source = array(
             'type'      => 'perforce',
             'url'       => $this->repoConfig['url'],
-            'reference' => $identifier
+            'reference' => $identifier,
+            'p4user' => $this->perforce->getUser()
         );
 
         return $source;
