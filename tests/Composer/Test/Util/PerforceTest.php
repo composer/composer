@@ -28,8 +28,8 @@ class PerforceTest extends \PHPUnit_Framework_TestCase {
 
     public function setUp() {
         $this->processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
-        $repoConfig = array("depot"=>"depot", "branch"=>"branch", "p4user"=>"user");
-        $this->perforce = new Perforce($repoConfig, "port", "path", $this->processExecutor, true, "TEST");
+        $repoConfig = array("depot"=>"depot", "branch"=>"branch", "p4user"=>"user", "unique_perforce_client_name" => "TEST");
+        $this->perforce = new Perforce($repoConfig, "port", "path", $this->processExecutor, true);
     }
 
     public function testGetClientWithoutStream() {

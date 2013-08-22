@@ -42,30 +42,34 @@ class Perforce {
             $process = new ProcessExecutor;
         }
         $isWindows = defined('PHP_WINDOWS_VERSION_BUILD');
-        if (isset($repoConfig['unique_perforce_client_name'])){
-            $unique_perforce_client_name = $repoConfig['unique_perforce_client_name'];
-        } else {
-            $unique_perforce_client_name = gethostname() . "_" . time();
-            $repoConfig['unique_perforce_client_name'] = $unique_perforce_client_name;
-        }
 
-        $perforce = new Perforce($repoConfig, $port, $path, $process, $isWindows, $unique_perforce_client_name);
+        $perforce = new Perforce($repoConfig, $port, $path, $process, $isWindows);
         return $perforce;
     }
 
-    public function __construct($repoConfig, $port, $path, ProcessExecutor $process, $isWindows, $unique_perforce_client_name) {
+    public function __construct($repoConfig, $port, $path, ProcessExecutor $process, $isWindows) {
         $this->windowsFlag = $isWindows;
-        $this->unique_perforce_client_name = $unique_perforce_client_name;
         $this->p4Port = $port;
         $this->path = $path;
         $fs = new Filesystem();
         $fs->ensureDirectoryExists($path);
         $this->process = $process;
+        $this->initialize($repoConfig);
+    }
 
-        if (isset($repoConfig['depot'])) {
+    public function initialize($repoConfig){
+        $this->unique_perforce_client_name = $this->generateUniquePerforceClientName();
+        if (!isset ($repoConfig)){
+            return;
+        }
+        if (isset($repoConfig['unique_perforce_client_name'])){
+            $this->unique_perforce_client_name = $repoConfig['unique_perforce_client_name'];
+        }
+
+        if (isset($repoConfig['depot'])){
             $this->p4Depot = $repoConfig['depot'];
         }
-        if (isset($repoConfig['branch'])) {
+        if (isset($repoConfig['branch'])){
             $this->p4Branch = $repoConfig['branch'];
         }
         if (isset($repoConfig['p4user'])) {
@@ -77,6 +81,19 @@ class Perforce {
         if (isset($repoConfig['p4password'])) {
             $this->p4Password = $repoConfig['p4password'];
         }
+    }
+
+    public function initializeDepotAndBranch($depot, $branch){
+        if (isset($depot)) {
+            $this->p4Depot = $depot;
+        }
+        if (isset($branch)) {
+            $this->p4Branch = $branch;
+        }
+    }
+
+    public function generateUniquePerforceClientName(){
+            return gethostname() . "_" . time();
     }
 
     public function cleanupClientSpec(){
@@ -114,7 +131,11 @@ class Perforce {
 
     public function setStream($stream) {
         $this->p4Stream = $stream;
-        $this->p4DepotType = "stream";
+        $index = strrpos($stream, "/");
+        //Stream format is //depot/stream, while non-streaming depot is //depot
+        if ($index > 2){
+            $this->p4DepotType = "stream";
+        }
     }
 
     public function isStream() {

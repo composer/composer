@@ -37,7 +37,7 @@ class PerforceDownloader extends VcsDownloader
         $label = $package->getPrettyVersion();
 
         $this->io->write("    Cloning ".$ref);
-        $this->initPerforce($package, $path);
+        $this->initPerforce($package, $path, $ref);
         $this->perforce->setStream($ref);
         $this->perforce->queryP4User($this->io);
         $this->perforce->writeP4ClientSpec();
@@ -46,13 +46,20 @@ class PerforceDownloader extends VcsDownloader
         $this->perforce->cleanupClientSpec();
     }
 
-    private function initPerforce($package, $path){
+    private function initPerforce($package, $path, $ref){
         if ($this->perforceInjected){
             return;
         }
         $repository = $package->getRepository();
-        $repoConfig = $repository->getRepoConfig();
+        $repoConfig = null;
+        if ($repository instanceof VcsRepository){
+            $repoConfig = $this->getRepoConfig($repository);
+        }
         $this->perforce = Perforce::createPerforce($repoConfig, $package->getSourceUrl(), $path);
+    }
+
+    private function getRepoConfig(VcsRepository $repository){
+        return $repository->getRepoConfig();
     }
 
     /**
