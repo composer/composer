@@ -108,6 +108,7 @@ class Svn
 
         // the error is not auth-related
         if (false === stripos($output, 'Could not authenticate to server:')
+            && false === stripos($output, 'authorization failed')
             && false === stripos($output, 'svn: E170001:')) {
             throw new \RuntimeException($output);
         }
