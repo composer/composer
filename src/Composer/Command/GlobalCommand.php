@@ -38,7 +38,7 @@ Use this command as a wrapper to run other Composer commands
 within the global context of COMPOSER_HOME.
 
 You can use this to install CLI utilities globally, all you need
-is to add the COMPOSER_HOME/vendor/bin dir to your PATH env var.
+is to add the COMPOSER_HOME/bin dir to your PATH env var.
 
 COMPOSER_HOME is c:\Users\<user>\AppData\Roaming\Composer on Windows
 and /home/<user>/.composer on unix systems.
