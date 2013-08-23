@@ -263,7 +263,7 @@ All links are optional fields.
 These allow you to further restrict or expand the stability of a package beyond
 the scope of the [minimum-stability](#minimum-stability) setting. You can apply
 them to a constraint, or just apply them to an empty constraint if you want to
-allow unstable packages of a dependency's dependency for example.
+allow unstable packages of a dependency for example.
 
 Example:
 
@@ -271,6 +271,18 @@ Example:
         "require": {
             "monolog/monolog": "1.0.*@beta",
             "acme/foo": "@dev"
+        }
+    }
+
+If one of your dependencies has a dependency on an unstable package you need to
+explicitly require it as well, along with its sufficient stability flag.
+
+Example:
+
+    {
+        "require": {
+            "doctrine/doctrine-fixtures-bundle": "dev-master",
+            "doctrine/data-fixtures": "@dev"
         }
     }
 
