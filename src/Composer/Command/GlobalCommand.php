@@ -74,6 +74,6 @@ EOT
         // create new input without "global" command prefix
         $input = new StringInput(preg_replace('{\bg(?:l(?:o(?:b(?:a(?:l)?)?)?)?)?\b}', '', $input->__toString(), 1));
 
-        return $this->getApplication()->get($args[1])->run($input, $output);
+        return $this->getApplication()->run($input, $output);
     }
 }
