@@ -20,6 +20,7 @@ use Composer\Factory;
 use Composer\Installer;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
+use Composer\Package\Version\VersionParser;
 
 /**
  * @author Jérémy Romey <jeremy@free-agent.fr>
@@ -79,6 +80,12 @@ EOT
         $requireKey = $input->getOption('dev') ? 'require-dev' : 'require';
         $baseRequirements = array_key_exists($requireKey, $composer) ? $composer[$requireKey] : array();
         $requirements = $this->formatRequirements($requirements);
+
+        // validate requirements format
+        $versionParser = new VersionParser();
+        foreach ($requirements as $constraint) {
+            $versionParser->parseConstraints($constraint);
+        }
 
         if (!$this->updateFileCleanly($json, $baseRequirements, $requirements, $requireKey)) {
             foreach ($requirements as $package => $version) {
