@@ -98,7 +98,9 @@ Here are some examples of version branch names:
     1.0 (equals 1.0.x)
     1.1.x
 
-> **Note:** When you install a dev version, it will install it from source.
+> **Note:** When you install a development version, it will be automatically
+> pulled from its `source`. See the [`install`](03-cli.md#install) command
+> for more details.
 
 ### Aliases
 
