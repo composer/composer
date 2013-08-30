@@ -160,7 +160,8 @@ class PluginManager
         $classes = is_array($extra['class']) ? $extra['class'] : array($extra['class']);
 
         $pool = new Pool('dev');
-        $pool->addRepository($this->composer->getRepositoryManager()->getLocalRepository());
+        $localRepo = $this->composer->getRepositoryManager()->getLocalRepository();
+        $pool->addRepository($localRepo);
         if ($this->globalRepository) {
             $pool->addRepository($this->globalRepository);
         }
@@ -171,7 +172,7 @@ class PluginManager
         $generator = $this->composer->getAutoloadGenerator();
         $autoloads = array();
         foreach ($autoloadPackages as $autoloadPackage) {
-            $downloadPath = $this->getInstallPath($autoloadPackage);
+            $downloadPath = $this->getInstallPath($autoloadPackage, !$localRepo->hasPackage($autoloadPackage));
             $autoloads[] = array($autoloadPackage, $downloadPath);
         }
 
@@ -202,13 +203,15 @@ class PluginManager
      * Retrieves the path a package is installed to.
      *
      * @param PackageInterface $package
+     * @param bool             $global  Whether this is a global package
+     *
      * @return string Install path
      */
-    public function getInstallPath(PackageInterface $package)
+    public function getInstallPath(PackageInterface $package, $global = false)
     {
         $targetDir = $package->getTargetDir();
 
-        return $this->getPackageBasePath($package) . ($targetDir ? '/'.$targetDir : '');
+        return $this->getPackageBasePath($package, $global) . ($targetDir ? '/'.$targetDir : '');
     }
 
     /**
@@ -217,11 +220,17 @@ class PluginManager
      * Does not take targetDir into account.
      *
      * @param PackageInterface $package
+     * @param bool             $global  Whether this is a global package
+     *
      * @return string Base path
      */
-    protected function getPackageBasePath(PackageInterface $package)
+    protected function getPackageBasePath(PackageInterface $package, $global = false)
     {
-        $vendorDir = rtrim($this->composer->getConfig()->get('vendor-dir'), '/');
+        if ($global) {
+            $vendorDir = $this->composer->getConfig()->get('home').'/vendor';
+        } else {
+            $vendorDir = rtrim($this->composer->getConfig()->get('vendor-dir'), '/');
+        }
         return ($vendorDir ? $vendorDir.'/' : '') . $package->getPrettyName();
     }
 }

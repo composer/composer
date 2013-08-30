@@ -254,7 +254,7 @@ class Factory
         $composer->setAutoloadGenerator($generator);
 
         $globalRepository = $this->createGlobalRepository($config, $vendorDir);
-        $pm = $this->createPluginManager($composer, $io);
+        $pm = $this->createPluginManager($composer, $io, $globalRepository);
         $composer->setPluginManager($pm);
 
         // add installers to the manager
