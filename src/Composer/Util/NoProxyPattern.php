@@ -68,6 +68,10 @@ class NoProxyPattern
 
                 if (!isset($ip)) {
                     $ip = gethostbyname($host);
+                    // if hostname cannot be resolved abort
+                    if (!preg_match('/^(\d{1,3}\.){3}\d{1,3}$/', $ip)) {
+                        return false;
+                    }
                 }
 
                 if (strpos($ruleHost, '/') === false) {
@@ -128,6 +132,8 @@ class NoProxyPattern
         $high = $i | (~$mask & 0xFFFFFFFF);
 
         // Now split the ip we're checking against up into classes
+        echo 'ip: ';
+        var_dump($ip);
         list($a, $b, $c, $d) = explode('.', $ip);
 
         // Now convert the ip we're checking against to an int
