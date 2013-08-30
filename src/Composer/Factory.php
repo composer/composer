@@ -18,6 +18,7 @@ use Composer\IO\IOInterface;
 use Composer\Package\Archiver;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\RepositoryManager;
+use Composer\Repository\RepositoryInterface;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
@@ -252,6 +253,7 @@ class Factory
         $generator = new AutoloadGenerator($dispatcher);
         $composer->setAutoloadGenerator($generator);
 
+        $globalRepository = $this->createGlobalRepository($config, $vendorDir);
         $pm = $this->createPluginManager($composer, $io);
         $composer->setPluginManager($pm);
 
@@ -304,6 +306,24 @@ class Factory
     protected function addLocalRepository(RepositoryManager $rm, $vendorDir)
     {
         $rm->setLocalRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/composer/installed.json')));
+    }
+
+     /**
+     * @param Config $config
+     * @param string $vendorDir
+     */
+    protected function createGlobalRepository(Config $config, $vendorDir)
+    {
+        if ($config->get('home') == $vendorDir) {
+            return null;
+        }
+
+        $path = $config->get('home').'/vendor/composer/installed.json';
+        if (!file_exists($path)) {
+            return null;
+        }
+
+        return new Repository\InstalledFilesystemRepository(new JsonFile($path));
     }
 
     /**
@@ -367,9 +387,9 @@ class Factory
     /**
      * @return Plugin\PluginManager
      */
-    protected function createPluginManager(Composer $composer, IOInterface $io)
+    protected function createPluginManager(Composer $composer, IOInterface $io, RepositoryInterface $globalRepository = null)
     {
-        return new Plugin\PluginManager($composer, $io);
+        return new Plugin\PluginManager($composer, $io, $globalRepository);
     }
 
     /**

@@ -14,8 +14,9 @@ namespace Composer\Plugin;
 
 use Composer\Composer;
 use Composer\EventDispatcher\EventSubscriberInterface;
-use Composer\Package\Package;
 use Composer\IO\IOInterface;
+use Composer\Package\Package;
+use Composer\Repository\RepositoryInterface;
 use Composer\Package\PackageInterface;
 use Composer\Package\Link;
 use Composer\DependencyResolver\Pool;
@@ -29,6 +30,7 @@ class PluginManager
 {
     protected $composer;
     protected $io;
+    protected $globalRepository;
 
     protected $plugins = array();
 
@@ -39,10 +41,11 @@ class PluginManager
      *
      * @param Composer $composer
      */
-    public function __construct(Composer $composer, IOInterface $io)
+    public function __construct(Composer $composer, IOInterface $io, RepositoryInterface $globalRepository = null)
     {
         $this->composer = $composer;
         $this->io = $io;
+        $this->globalRepository = $globalRepository;
     }
 
     /**
@@ -53,11 +56,10 @@ class PluginManager
         $repo = $this->composer->getRepositoryManager()->getLocalRepository();
 
         if ($repo) {
-            foreach ($repo->getPackages() as $package) {
-                if ('composer-plugin' === $package->getType() || 'composer-installer' === $package->getType()) {
-                    $this->registerPackage($package);
-                }
-            }
+            $this->loadRepository($repo);
+        }
+        if ($this->globalRepository) {
+            $this->loadRepository($this->globalRepository);
         }
     }
 
@@ -84,6 +86,15 @@ class PluginManager
     public function getPlugins()
     {
         return $this->plugins;
+    }
+
+    protected function loadRepository(RepositoryInterface $repo)
+    {
+        foreach ($repo->getPackages() as $package) {
+            if ('composer-plugin' === $package->getType() || 'composer-installer' === $package->getType()) {
+                $this->registerPackage($package);
+            }
+        }
     }
 
     /**
@@ -150,6 +161,9 @@ class PluginManager
 
         $pool = new Pool('dev');
         $pool->addRepository($this->composer->getRepositoryManager()->getLocalRepository());
+        if ($this->globalRepository) {
+            $pool->addRepository($this->globalRepository);
+        }
 
         $autoloadPackages = array($package->getName() => $package);
         $autoloadPackages = $this->collectDependencies($pool, $autoloadPackages, $package);
