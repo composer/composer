@@ -132,8 +132,6 @@ class NoProxyPattern
         $high = $i | (~$mask & 0xFFFFFFFF);
 
         // Now split the ip we're checking against up into classes
-        echo 'ip: ';
-        var_dump($ip);
         list($a, $b, $c, $d) = explode('.', $ip);
 
         // Now convert the ip we're checking against to an int
