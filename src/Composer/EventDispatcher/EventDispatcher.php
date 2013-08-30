@@ -119,8 +119,8 @@ class EventDispatcher
         $listeners = $this->getListeners($event);
 
         foreach ($listeners as $callable) {
-            if ((is_array($callable) && is_callable($callable)) || $callable instanceof Closure) {
-                $callable($event);
+            if (!is_string($callable) && is_callable($callable)) {
+                call_user_func($callable, $event);
             } elseif ($this->isPhpScript($callable)) {
                 $className = substr($callable, 0, strpos($callable, '::'));
                 $methodName = substr($callable, strpos($callable, '::') + 2);
