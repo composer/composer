@@ -460,9 +460,10 @@ REGISTER_AUTOLOAD;
 REGISTER_LOADER;
 
         if ($useIncludeFiles) {
-            $file .= <<<INCLUDE_FILES
-        foreach (require __DIR__ . '/autoload_files.php' as \$file) {
-            require \$file;
+            $file .= <<<'INCLUDE_FILES'
+        $includeFiles = require __DIR__ . '/autoload_files.php';
+        foreach ($includeFiles as $file) {
+            require $file;
         }
 
 
