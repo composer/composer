@@ -260,6 +260,10 @@ class Factory
         // add installers to the manager
         $this->createDefaultInstallers($im, $composer, $io);
 
+        if (!$disablePlugins) {
+            $pm->loadInstalledPlugins();
+        }
+
         // purge packages if they have been deleted on the filesystem
         $this->purgePackages($rm, $im);
 
@@ -270,10 +274,6 @@ class Factory
                 : $composerFile . '.lock';
             $locker = new Package\Locker($io, new JsonFile($lockFile, new RemoteFilesystem($io)), $rm, $im, md5_file($composerFile));
             $composer->setLocker($locker);
-        }
-
-        if (!$disablePlugins) {
-            $pm->loadInstalledPlugins();
         }
 
         return $composer;

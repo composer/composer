@@ -69,6 +69,7 @@ class PluginInstallerTest extends \PHPUnit_Framework_TestCase
         $config->merge(array(
             'config' => array(
                 'vendor-dir' => __DIR__.'/Fixtures/',
+                'home' => __DIR__.'/Fixtures',
                 'bin-dir' => __DIR__.'/Fixtures/bin',
             ),
         ));
