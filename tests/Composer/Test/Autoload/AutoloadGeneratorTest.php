@@ -169,7 +169,7 @@ class AutoloadGeneratorTest extends TestCase
     {
         $package = new Package('a', '1.0', '1.0');
         $package->setAutoload(array(
-            'psr-0' => array('Main\\Foo' => '', 'Main\\Bar' => ''),
+            'psr-0' => array('Main\\Foo' => '', 'Main\\Bar' => '', 'Main\\Boo' => 'altroot/'),
             'classmap' => array('Main/Foo/src', 'lib'),
             'files' => array('foo.php', 'Main/Foo/bar.php'),
         ));
@@ -182,11 +182,13 @@ class AutoloadGeneratorTest extends TestCase
         $this->fs->ensureDirectoryExists($this->vendorDir.'/a');
         $this->fs->ensureDirectoryExists($this->workingDir.'/src');
         $this->fs->ensureDirectoryExists($this->workingDir.'/lib');
+        $this->fs->ensureDirectoryExists($this->workingDir.'/altroot');
 
         file_put_contents($this->workingDir.'/src/rootfoo.php', '<?php class ClassMapFoo {}');
         file_put_contents($this->workingDir.'/lib/rootbar.php', '<?php class ClassMapBar {}');
         file_put_contents($this->workingDir.'/foo.php', '<?php class FilesFoo {}');
         file_put_contents($this->workingDir.'/bar.php', '<?php class FilesBar {}');
+        file_put_contents($this->workingDir.'/altroot/boo.php', '<?php class FilesBoo {}');
 
         $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, 'TargetDir');
         $this->assertFileEquals(__DIR__.'/Fixtures/autoload_target_dir.php', $this->vendorDir.'/autoload.php');
@@ -648,7 +650,7 @@ EOF;
     {
         $package = new Package('a', '1.0', '1.0');
         $package->setAutoload(array(
-            'psr-0' => array('Main\\Foo' => '', 'Main\\Bar' => ''),
+            'psr-0' => array('Main\\Foo' => '', 'Main\\Bar' => '', 'Main\\Boo' => 'altroot/'),
         ));
         $package->setTargetDir('Main/Foo/');
 
