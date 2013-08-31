@@ -79,6 +79,7 @@ class FileDownloader implements DownloaderInterface
             throw new \InvalidArgumentException('The given package is missing url information');
         }
 
+        $this->filesystem->removeDirectory($path);
         $this->filesystem->ensureDirectoryExists($path);
 
         $fileName = $this->getFileName($package, $path);
