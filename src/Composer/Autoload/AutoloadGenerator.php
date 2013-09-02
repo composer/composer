@@ -98,10 +98,7 @@ EOF;
         $targetDirLoader = null;
         $mainAutoload = $mainPackage->getAutoload();
         if ($mainPackage->getTargetDir() && !empty($mainAutoload['psr-0'])) {
-            $levels = count(explode('/', $filesystem->normalizePath($mainPackage->getTargetDir())));
-            $prefixes = implode(', ', array_map(function ($prefix) {
-                return var_export($prefix, true);
-            }, array_keys($mainAutoload['psr-0'])));
+            $autoloadPsrZero = str_replace( "\n", '', var_export( $mainAutoload['psr-0'], true ) );
             $baseDirFromTargetDirCode = $filesystem->findShortestPathCode($targetDir, $basePath, true);
 
             $targetDirLoader = <<<EOF
@@ -109,12 +106,12 @@ EOF;
     public static function autoload(\$class)
     {
         \$dir = $baseDirFromTargetDirCode . '/';
-        \$prefixes = array($prefixes);
-        foreach (\$prefixes as \$prefix) {
+        \$autoloadPsrZero = $autoloadPsrZero;
+        foreach (\$autoloadPsrZero as \$prefix => \$prefixPath) {
             if (0 !== strpos(\$class, \$prefix)) {
                 continue;
             }
-            \$path = \$dir . implode('/', array_slice(explode('\\\\', \$class), $levels)).'.php';
+            \$path = \$dir . strtr( substr_replace( \$class, \$prefixPath, 0, strlen( \$prefix ) ), '\\\\', DIRECTORY_SEPARATOR ) . '.php';
             if (!\$path = stream_resolve_include_path(\$path)) {
                 return false;
             }
@@ -126,7 +123,6 @@ EOF;
 
 EOF;
         }
-
         // flatten array
         $classMap = array();
         if ($scanPsr0Packages) {

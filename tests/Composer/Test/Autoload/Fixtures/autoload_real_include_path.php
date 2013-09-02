@@ -47,12 +47,12 @@ class ComposerAutoloaderInitIncludePath
     public static function autoload($class)
     {
         $dir = dirname(dirname(__DIR__)) . '/';
-        $prefixes = array('Main\\Foo', 'Main\\Bar');
-        foreach ($prefixes as $prefix) {
+        $autoloadPsrZero = array (  'Main\\Foo' => '',  'Main\\Bar' => '',  'Main\\Boo' => 'altroot/',);
+        foreach ($autoloadPsrZero as $prefix => $prefixPath) {
             if (0 !== strpos($class, $prefix)) {
                 continue;
             }
-            $path = $dir . implode('/', array_slice(explode('\\', $class), 2)).'.php';
+            $path = $dir . strtr( substr_replace( $class, $prefixPath, 0, strlen( $prefix ) ), '\\', DIRECTORY_SEPARATOR ) . '.php';
             if (!$path = stream_resolve_include_path($path)) {
                 return false;
             }
