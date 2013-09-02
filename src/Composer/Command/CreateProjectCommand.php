@@ -275,7 +275,7 @@ EOT
         }
 
         // select highest version if we have many
-        $package = $candidates[0];
+        $package = reset($candidates);
         foreach ($candidates as $candidate) {
             if (version_compare($package->getVersion(), $candidate->getVersion(), '<')) {
                 $package = $candidate;
