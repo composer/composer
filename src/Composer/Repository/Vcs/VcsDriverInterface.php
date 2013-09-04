@@ -82,6 +82,12 @@ interface VcsDriverInterface
     public function hasComposerFile($identifier);
 
     /**
+     * Performs any cleanup necessary as the driver is not longer needed
+     *
+     */
+    public function cleanup();
+
+    /**
      * Checks if this driver can handle a given url
      *
      * @param  IOInterface $io   IO instance
