@@ -5,9 +5,6 @@
  * (c) Nils Adermann <naderman@naderman.de>
  *     Jordi Boggiano <j.boggiano@seld.be>
  *
- *  Contributor: Matt Whittom <Matt.Whittom@veteransunited.com>
- *  Date: 7/17/13
- *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
@@ -22,14 +19,16 @@ use Composer\Repository\VcsRepository;
 /**
  * @author Matt Whittom <Matt.Whittom@veteransunited.com>
  */
-class PerforceDownloaderTest extends \PHPUnit_Framework_TestCase {
+class PerforceDownloaderTest extends \PHPUnit_Framework_TestCase
+{
 
     private $io;
     private $config;
     private $testPath;
     public static $repository;
 
-    function setUp() {
+    function setUp()
+    {
         $this->testPath = sys_get_temp_dir() . '/composer-test';
         $this->config = new Config();
         $this->config->merge(
@@ -43,58 +42,67 @@ class PerforceDownloaderTest extends \PHPUnit_Framework_TestCase {
     }
 
 
-    public function testDoDownloadGetRepoConfig() {
+    public function testDoDownloadGetRepoConfig()
+    {
         $downloader = new PerforceDownloader($this->io, $this->config);
-        $package = $this->getMock('Composer\Package\PackageInterface' );
-        $repoConfig = array('url'=>'TEST_URL','p4user'=>'TEST_USER');
-        $repository = $this->getMock('Composer\Repository\VcsRepository', array('getRepoConfig'), array($repoConfig, $this->io, $this->config));
+        $package = $this->getMock('Composer\Package\PackageInterface');
+        $repoConfig = array('url' => 'TEST_URL', 'p4user' => 'TEST_USER');
+        $repository = $this->getMock(
+            'Composer\Repository\VcsRepository',
+            array('getRepoConfig'),
+            array($repoConfig, $this->io, $this->config)
+        );
         $package->expects($this->at(0))
-            ->method('getSourceReference')
-            ->will($this->returnValue("SOURCE_REF"));
+        ->method('getSourceReference')
+        ->will($this->returnValue("SOURCE_REF"));
         $package->expects($this->at(1))
-            ->method('getPrettyVersion')
-            ->will($this->returnValue("100"));
+        ->method('getPrettyVersion')
+        ->will($this->returnValue("100"));
         $package->expects($this->at(2))
-               ->method('getRepository')
-               ->will($this->returnValue($repository));
+        ->method('getRepository')
+        ->will($this->returnValue($repository));
         $repository->expects($this->at(0))
-            ->method('getRepoConfig');
+        ->method('getRepoConfig');
         $path = $this->testPath;
         $downloader->doDownload($package, $path);
     }
 
-    public function testDoDownload() {
+    public function testDoDownload()
+    {
         $downloader = new PerforceDownloader($this->io, $this->config);
-        $repoConfig = array("depot"=>"TEST_DEPOT", "branch"=>"TEST_BRANCH", "p4user"=>"TEST_USER");
+        $repoConfig = array("depot" => "TEST_DEPOT", "branch" => "TEST_BRANCH", "p4user" => "TEST_USER");
         $port = "TEST_PORT";
         $path = "TEST_PATH";
         $process = $this->getmock('Composer\Util\ProcessExecutor');
-        $perforce = $this->getMock('Composer\Util\Perforce', array('setStream', 'queryP4User', 'writeP4ClientSpec', 'connectClient', 'syncCodeBase'), array($repoConfig, $port, $path, $process, true, "TEST"));
+        $perforce = $this->getMock(
+            'Composer\Util\Perforce',
+            array('setStream', 'queryP4User', 'writeP4ClientSpec', 'connectClient', 'syncCodeBase'),
+            array($repoConfig, $port, $path, $process, true, "TEST")
+        );
         $ref = "SOURCE_REF";
         $label = "LABEL";
         $perforce->expects($this->at(0))
-            ->method('setStream')
-            ->with($this->equalTo($ref));
+        ->method('setStream')
+        ->with($this->equalTo($ref));
         $perforce->expects($this->at(1))
-            ->method('queryP4User')
-            ->with($this->io);
+        ->method('queryP4User')
+        ->with($this->io);
         $perforce->expects($this->at(2))
-            ->method('writeP4ClientSpec');
+        ->method('writeP4ClientSpec');
         $perforce->expects($this->at(3))
-            ->method('connectClient');
+        ->method('connectClient');
         $perforce->expects($this->at(4))
-            ->method('syncCodeBase')
-            ->with($this->equalTo($label));
+        ->method('syncCodeBase')
+        ->with($this->equalTo($label));
         $downloader->injectPerforce($perforce);
-        $package = $this->getMock('Composer\Package\PackageInterface' );
+        $package = $this->getMock('Composer\Package\PackageInterface');
         $package->expects($this->at(0))
-            ->method('getSourceReference')
-            ->will($this->returnValue($ref));
+        ->method('getSourceReference')
+        ->will($this->returnValue($ref));
         $package->expects($this->at(1))
-            ->method('getPrettyVersion')
-            ->will($this->returnValue($label));
+        ->method('getPrettyVersion')
+        ->will($this->returnValue($label));
         $path = $this->testPath;
         $downloader->doDownload($package, $path);
-
     }
 }

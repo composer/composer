@@ -6,9 +6,6 @@
  * (c) Nils Adermann <naderman@naderman.de>
  *     Jordi Boggiano <j.boggiano@seld.be>
  *
- *  Contributor: Matt Whittom <Matt.Whittom@veteransunited.com>
- *  Date: 7/17/13
- *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
@@ -24,7 +21,8 @@ use Composer\Util\Perforce;
 /**
  * @author Matt Whittom <Matt.Whittom@veteransunited.com>
  */
-class PerforceDriver extends VcsDriver {
+class PerforceDriver extends VcsDriver
+{
     protected $depot;
     protected $branch;
     protected $perforce;
@@ -49,7 +47,7 @@ class PerforceDriver extends VcsDriver {
         $this->perforce->writeP4ClientSpec();
         $this->perforce->connectClient();
 
-        return TRUE;
+        return true;
     }
 
     private function initPerforce($repoConfig)
@@ -67,9 +65,8 @@ class PerforceDriver extends VcsDriver {
      */
     public function getComposerInformation($identifier)
     {
-        if (isset($this->composer_info_identifier)){
-            if (strcmp($identifier, $this->composer_info_identifier) === 0 )
-            {
+        if (isset($this->composer_info_identifier)) {
+            if (strcmp($identifier, $this->composer_info_identifier) === 0) {
                 return $this->composer_info;
             }
         }
@@ -111,7 +108,7 @@ class PerforceDriver extends VcsDriver {
      */
     public function getDist($identifier)
     {
-        return NULL;
+        return null;
     }
 
     /**
@@ -123,7 +120,7 @@ class PerforceDriver extends VcsDriver {
             'type'      => 'perforce',
             'url'       => $this->repoConfig['url'],
             'reference' => $identifier,
-            'p4user' => $this->perforce->getUser()
+            'p4user'    => $this->perforce->getUser()
         );
 
         return $source;
@@ -145,7 +142,7 @@ class PerforceDriver extends VcsDriver {
         $this->composer_info = $this->perforce->getComposerInformation("//$this->depot/$identifier");
         $this->composer_info_identifier = $identifier;
         $result = false;
-        if (isset($this->composer_info)){
+        if (isset($this->composer_info)) {
             $result = count($this->composer_info) > 0;
         }
         return $result;
@@ -156,13 +153,13 @@ class PerforceDriver extends VcsDriver {
      */
     public function getContents($url)
     {
-        return FALSE;
+        return false;
     }
 
     /**
      * {@inheritDoc}
      */
-    public static function supports(IOInterface $io, $url, $deep = FALSE)
+    public static function supports(IOInterface $io, $url, $deep = false)
     {
         return Perforce::checkServerExists($url, new ProcessExecutor);
     }
