@@ -6,9 +6,6 @@
  * (c) Nils Adermann <naderman@naderman.de>
  *     Jordi Boggiano <j.boggiano@seld.be>
  *
- *  Contributor: Matt Whittom <Matt.Whittom@veteransunited.com>
- *  Date: 7/17/13
- *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
@@ -36,7 +33,7 @@ class PerforceDownloader extends VcsDownloader
         $ref = $package->getSourceReference();
         $label = $package->getPrettyVersion();
 
-        $this->io->write("    Cloning ".$ref);
+        $this->io->write("    Cloning " . $ref);
         $this->initPerforce($package, $path, $ref);
         $this->perforce->setStream($ref);
         $this->perforce->queryP4User($this->io);
@@ -46,19 +43,21 @@ class PerforceDownloader extends VcsDownloader
         $this->perforce->cleanupClientSpec();
     }
 
-    private function initPerforce($package, $path, $ref){
-        if ($this->perforceInjected){
+    private function initPerforce($package, $path, $ref)
+    {
+        if ($this->perforceInjected) {
             return;
         }
         $repository = $package->getRepository();
         $repoConfig = null;
-        if ($repository instanceof VcsRepository){
+        if ($repository instanceof VcsRepository) {
             $repoConfig = $this->getRepoConfig($repository);
         }
         $this->perforce = Perforce::createPerforce($repoConfig, $package->getSourceUrl(), $path);
     }
 
-    private function getRepoConfig(VcsRepository $repository){
+    private function getRepoConfig(VcsRepository $repository)
+    {
         return $repository->getRepoConfig();
     }
 
@@ -75,7 +74,7 @@ class PerforceDownloader extends VcsDownloader
      */
     public function getLocalChanges(PackageInterface $package, $path)
     {
-        print ("Perforce driver does not check for local changes before overriding\n");
+        $this->io->write("Perforce driver does not check for local changes before overriding", true);
         return;
     }
 
@@ -89,10 +88,9 @@ class PerforceDownloader extends VcsDownloader
         return $commitLogs;
     }
 
-    public function injectPerforce($perforce){
+    public function injectPerforce($perforce)
+    {
         $this->perforce = $perforce;
         $this->perforceInjected = true;
     }
-
-
 }
