@@ -15,6 +15,8 @@ namespace Composer\Command;
 use Composer\Package\PackageInterface;
 use Composer\Json\JsonFile;
 use Composer\Package\Version\VersionParser;
+use Composer\Plugin\CommandEvent;
+use Composer\Plugin\PluginEvents;
 use Symfony\Component\Console\Helper\TableHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
@@ -46,6 +48,10 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $composer = $this->getComposer();
+
+        $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'licenses', $input, $output);
+        $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
+
         $root = $composer->getPackage();
         $repo = $composer->getRepositoryManager()->getLocalRepository();
 

@@ -13,6 +13,8 @@
 namespace Composer\Command;
 
 use Composer\DependencyResolver\Pool;
+use Composer\Plugin\CommandEvent;
+use Composer\Plugin\PluginEvents;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -50,7 +52,12 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $repo = $this->getComposer()->getRepositoryManager()->getLocalRepository();
+        $composer = $this->getComposer();
+
+        $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'depends', $input, $output);
+        $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
+
+        $repo = $composer->getRepositoryManager()->getLocalRepository();
         $needle = $input->getArgument('package');
 
         $pool = new Pool();
