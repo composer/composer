@@ -18,6 +18,7 @@ use Composer\Installer\PluginInstaller;
 use Composer\Package\Loader\JsonLoader;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\PackageInterface;
+use Composer\Plugin\PluginManager;
 use Composer\Autoload\AutoloadGenerator;
 
 class PluginInstallerTest extends \PHPUnit_Framework_TestCase
@@ -63,7 +64,7 @@ class PluginInstallerTest extends \PHPUnit_Framework_TestCase
         $this->composer->setRepositoryManager($rm);
         $this->composer->setAutoloadGenerator($this->autoloadGenerator);
 
-        $this->pm = new \Composer\Plugin\PluginManager($this->composer, $this->io);
+        $this->pm = new PluginManager($this->composer, $this->io);
         $this->composer->setPluginManager($this->pm);
 
         $config->merge(array(
