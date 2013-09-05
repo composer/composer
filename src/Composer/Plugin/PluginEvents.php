@@ -20,6 +20,16 @@ namespace Composer\Plugin;
 class PluginEvents
 {
     /**
+     * The COMMAND event occurs as a command begins
+     *
+     * The event listener method receives a
+     * Composer\Plugin\CommandEvent instance.
+     *
+     * @var string
+     */
+    const COMMAND = 'command';
+
+    /**
      * The PRE_FILE_DOWNLOAD event occurs before downloading a file
      *
      * The event listener method receives a

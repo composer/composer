@@ -13,6 +13,8 @@
 namespace Composer\Command;
 
 use Composer\Installer;
+use Composer\Plugin\CommandEvent;
+use Composer\Plugin\PluginEvents;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
@@ -70,6 +72,10 @@ EOT
         $composer = $this->getComposer(true, $input->getOption('no-plugins'));
         $composer->getDownloadManager()->setOutputProgress(!$input->getOption('no-progress'));
         $io = $this->getIO();
+
+        $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'update', $input, $output);
+        $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
+
         $install = Installer::create($io, $composer);
 
         $preferSource = false;
