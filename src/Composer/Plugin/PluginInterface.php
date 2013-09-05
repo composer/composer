@@ -23,6 +23,13 @@ use Composer\IO\IOInterface;
 interface PluginInterface
 {
     /**
+     * Version number of the fake composer-plugin-api package
+     *
+     * @var string
+     */
+    const PLUGIN_API_VERSION = '1.0.0';
+
+    /**
      * Apply plugin modifications to composer
      *
      * @param Composer $composer

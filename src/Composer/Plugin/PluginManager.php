@@ -16,9 +16,11 @@ use Composer\Composer;
 use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\IO\IOInterface;
 use Composer\Package\Package;
+use Composer\Package\Version\VersionParser;
 use Composer\Repository\RepositoryInterface;
 use Composer\Package\PackageInterface;
 use Composer\Package\Link;
+use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\DependencyResolver\Pool;
 
 /**
@@ -31,6 +33,7 @@ class PluginManager
     protected $composer;
     protected $io;
     protected $globalRepository;
+    protected $versionParser;
 
     protected $plugins = array();
 
@@ -46,6 +49,7 @@ class PluginManager
         $this->composer = $composer;
         $this->io = $io;
         $this->globalRepository = $globalRepository;
+        $this->versionParser = new VersionParser();
     }
 
     /**
@@ -92,6 +96,25 @@ class PluginManager
     {
         foreach ($repo->getPackages() as $package) {
             if ('composer-plugin' === $package->getType() || 'composer-installer' === $package->getType()) {
+                $requiresComposer = null;
+                foreach ($package->getRequires() as $link) {
+                    if ($link->getTarget() == 'composer-plugin-api') {
+                        $requiresComposer = $link->getConstraint();
+                    }
+                }
+
+                if (!$requiresComposer) {
+                    throw new \RuntimeException("Plugin ".$package->getName()." is missing a require statement for a version of the composer-plugin-api package.");
+                }
+
+                if (!$requiresComposer->matches(new VersionConstraint('==', $this->versionParser->normalize(PluginInterface::PLUGIN_API_VERSION)))) {
+                    $this->io->write("<warning>The plugin ".$package->getName()." requires a version of composer-plugin-api that does not match your composer installation. You may need to run composer update with the '--no-plugins' option.</warning>");
+                }
+
+                $this->registerPackage($package);
+            }
+            // Backward compatability
+            if ('composer-installer' === $package->getType()) {
                 $this->registerPackage($package);
             }
         }
