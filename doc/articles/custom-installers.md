@@ -72,7 +72,7 @@ Example:
 
     {
         "name": "phpdocumentor/template-installer-plugin",
-        "type": "composer-installer-plugin",
+        "type": "composer-plugin",
         "license": "MIT",
         "autoload": {
             "psr-0": {"phpDocumentor\\Composer": "src/"}
@@ -97,7 +97,7 @@ Example:
 
     use Composer\Composer;
     use Composer\IO\IOInterface;
-    use Composer\Plugin\PluginInterface
+    use Composer\Plugin\PluginInterface;
 
     class TemplateInstallerPlugin implements PluginInterface
     {
