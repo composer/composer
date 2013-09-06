@@ -95,7 +95,7 @@ class PluginManager
     protected function loadRepository(RepositoryInterface $repo)
     {
         foreach ($repo->getPackages() as $package) {
-            if ('composer-plugin' === $package->getType() || 'composer-installer' === $package->getType()) {
+            if ('composer-plugin' === $package->getType()) {
                 $requiresComposer = null;
                 foreach ($package->getRequires() as $link) {
                     if ($link->getTarget() == 'composer-plugin-api') {
