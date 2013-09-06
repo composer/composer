@@ -104,6 +104,10 @@ class ConfigValidator
             );
         }
 
+        if (!empty($manifest['type']) && $manifest['type'] == 'composer-installer') {
+            $warnings[] = "The package type 'composer-installer' is deprecated. Please distribute your custom installers as plugins from now on. See http://getcomposer.org/doc/articles/plugins.md for plugin documentation.";
+        }
+
         try {
             $loader = new ValidatingArrayLoader(new ArrayLoader());
             if (!isset($manifest['version'])) {
