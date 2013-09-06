@@ -17,6 +17,9 @@ use Composer\Cache;
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
+use Composer\Plugin\PluginEvents;
+use Composer\Plugin\PreFileDownloadEvent;
+use Composer\EventDispatcher\EventDispatcher;
 use Composer\Util\Filesystem;
 use Composer\Util\GitHub;
 use Composer\Util\RemoteFilesystem;
@@ -27,6 +30,7 @@ use Composer\Util\RemoteFilesystem;
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author François Pluchino <francois.pluchino@opendisplay.com>
+ * @author Nils Adermann <naderman@naderman.de>
  */
 class FileDownloader implements DownloaderInterface
 {
@@ -43,14 +47,16 @@ class FileDownloader implements DownloaderInterface
      *
      * @param IOInterface      $io         The IO instance
      * @param Config           $config     The config
+     * @param EventDispatcher  $eventDispatcher The event dispatcher
      * @param Cache            $cache      Optional cache instance
      * @param RemoteFilesystem $rfs        The remote filesystem
      * @param Filesystem       $filesystem The filesystem
      */
-    public function __construct(IOInterface $io, Config $config, Cache $cache = null, RemoteFilesystem $rfs = null, Filesystem $filesystem = null)
+    public function __construct(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, Cache $cache = null, RemoteFilesystem $rfs = null, Filesystem $filesystem = null)
     {
         $this->io = $io;
         $this->config = $config;
+        $this->eventDispatcher = $eventDispatcher;
         $this->rfs = $rfs ?: new RemoteFilesystem($io);
         $this->filesystem = $filesystem ?: new Filesystem();
         $this->cache = $cache;
@@ -89,6 +95,12 @@ class FileDownloader implements DownloaderInterface
         $processedUrl = $this->processUrl($package, $url);
         $hostname = parse_url($processedUrl, PHP_URL_HOST);
 
+        $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->rfs, $processedUrl);
+        if ($this->eventDispatcher) {
+            $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
+        }
+        $rfs = $preFileDownloadEvent->getRemoteFilesystem();
+
         if (strpos($hostname, '.github.com') === (strlen($hostname) - 11)) {
             $hostname = 'github.com';
         }
@@ -104,7 +116,7 @@ class FileDownloader implements DownloaderInterface
                     $retries = 3;
                     while ($retries--) {
                         try {
-                            $this->rfs->copy($hostname, $processedUrl, $fileName, $this->outputProgress);
+                            $rfs->copy($hostname, $processedUrl, $fileName, $this->outputProgress);
                             break;
                         } catch (TransportException $e) {
                             // if we got an http response with a proper code, then requesting again will probably not help, abort
@@ -125,15 +137,18 @@ class FileDownloader implements DownloaderInterface
                     $this->io->write('    Loading from cache');
                 }
             } catch (TransportException $e) {
-                if (in_array($e->getCode(), array(404, 403)) && 'github.com' === $hostname && !$this->io->hasAuthentication($hostname)) {
+                if (!in_array($e->getCode(), array(404, 403, 412))) {
+                    throw $e;
+                }
+                if ('github.com' === $hostname && !$this->io->hasAuthentication($hostname)) {
                     $message = "\n".'Could not fetch '.$processedUrl.', enter your GitHub credentials '.($e->getCode() === 404 ? 'to access private repos' : 'to go over the API rate limit');
-                    $gitHubUtil = new GitHub($this->io, $this->config, null, $this->rfs);
+                    $gitHubUtil = new GitHub($this->io, $this->config, null, $rfs);
                     if (!$gitHubUtil->authorizeOAuth($hostname)
                         && (!$this->io->isInteractive() || !$gitHubUtil->authorizeOAuthInteractively($hostname, $message))
                     ) {
                         throw $e;
                     }
-                    $this->rfs->copy($hostname, $processedUrl, $fileName, $this->outputProgress);
+                    $rfs->copy($hostname, $processedUrl, $fileName, $this->outputProgress);
                 } else {
                     throw $e;
                 }

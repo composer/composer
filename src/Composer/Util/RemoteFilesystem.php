@@ -19,6 +19,7 @@ use Composer\Downloader\TransportException;
 /**
  * @author François Pluchino <francois.pluchino@opendisplay.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
+ * @author Nils Adermann <naderman@naderman.de>
  */
 class RemoteFilesystem
 {
@@ -74,6 +75,16 @@ class RemoteFilesystem
     public function getContents($originUrl, $fileUrl, $progress = true, $options = array())
     {
         return $this->get($originUrl, $fileUrl, $options, null, $progress);
+    }
+
+    /**
+     * Retrieve the options set in the constructor
+     *
+     * @return array Options
+     */
+    public function getOptions()
+    {
+        return $this->options;
     }
 
     /**

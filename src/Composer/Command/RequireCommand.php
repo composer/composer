@@ -21,6 +21,8 @@ use Composer\Installer;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
 use Composer\Package\Version\VersionParser;
+use Composer\Plugin\CommandEvent;
+use Composer\Plugin\PluginEvents;
 
 /**
  * @author Jérémy Romey <jeremy@free-agent.fr>
@@ -106,6 +108,10 @@ EOT
         $composer = $this->getComposer();
         $composer->getDownloadManager()->setOutputProgress(!$input->getOption('no-progress'));
         $io = $this->getIO();
+
+        $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'require', $input, $output);
+        $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
+
         $install = Installer::create($io, $composer);
 
         $install

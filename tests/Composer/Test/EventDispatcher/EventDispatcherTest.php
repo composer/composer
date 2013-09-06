@@ -10,11 +10,12 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Test\Script;
+namespace Composer\Test\EventDispatcher;
 
+use Composer\EventDispatcher\Event;
+use Composer\EventDispatcher\EventDispatcher;
 use Composer\Test\TestCase;
-use Composer\Script\Event;
-use Composer\Script\EventDispatcher;
+use Composer\Script;
 use Composer\Util\ProcessExecutor;
 
 class EventDispatcherTest extends TestCase
@@ -26,12 +27,12 @@ class EventDispatcherTest extends TestCase
     {
         $io = $this->getMock('Composer\IO\IOInterface');
         $dispatcher = $this->getDispatcherStubForListenersTest(array(
-            "Composer\Test\Script\EventDispatcherTest::call"
+            "Composer\Test\EventDispatcher\EventDispatcherTest::call"
         ), $io);
 
         $io->expects($this->once())
             ->method('write')
-            ->with('<error>Script Composer\Test\Script\EventDispatcherTest::call handling the post-install-cmd event terminated with an exception</error>');
+            ->with('<error>Script Composer\Test\EventDispatcher\EventDispatcherTest::call handling the post-install-cmd event terminated with an exception</error>');
 
         $dispatcher->dispatchCommandEvent("post-install-cmd", false);
     }
@@ -43,7 +44,7 @@ class EventDispatcherTest extends TestCase
     public function testDispatcherCanExecuteSingleCommandLineScript($command)
     {
         $process = $this->getMock('Composer\Util\ProcessExecutor');
-        $dispatcher = $this->getMockBuilder('Composer\Script\EventDispatcher')
+        $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->setConstructorArgs(array(
                 $this->getMock('Composer\Composer'),
                 $this->getMock('Composer\IO\IOInterface'),
@@ -68,7 +69,7 @@ class EventDispatcherTest extends TestCase
     public function testDispatcherCanExecuteCliAndPhpInSameEventScriptStack()
     {
         $process = $this->getMock('Composer\Util\ProcessExecutor');
-        $dispatcher = $this->getMockBuilder('Composer\Script\EventDispatcher')
+        $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->setConstructorArgs(array(
                 $this->getMock('Composer\Composer'),
                 $this->getMock('Composer\IO\IOInterface'),
@@ -86,7 +87,7 @@ class EventDispatcherTest extends TestCase
 
         $listeners = array(
             'echo -n foo',
-            'Composer\\Test\\Script\\EventDispatcherTest::someMethod',
+            'Composer\\Test\\EventDispatcher\\EventDispatcherTest::someMethod',
             'echo -n bar',
         );
         $dispatcher->expects($this->atLeastOnce())
@@ -95,7 +96,7 @@ class EventDispatcherTest extends TestCase
 
         $dispatcher->expects($this->once())
             ->method('executeEventPhpScript')
-            ->with('Composer\Test\Script\EventDispatcherTest', 'someMethod')
+            ->with('Composer\Test\EventDispatcher\EventDispatcherTest', 'someMethod')
             ->will($this->returnValue(true));
 
         $dispatcher->dispatchCommandEvent("post-install-cmd", false);
@@ -103,7 +104,7 @@ class EventDispatcherTest extends TestCase
 
     private function getDispatcherStubForListenersTest($listeners, $io)
     {
-        $dispatcher = $this->getMockBuilder('Composer\Script\EventDispatcher')
+        $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->setConstructorArgs(array(
                 $this->getMock('Composer\Composer'),
                 $io,
@@ -129,7 +130,7 @@ class EventDispatcherTest extends TestCase
 
     public function testDispatcherOutputsCommands()
     {
-        $dispatcher = $this->getMockBuilder('Composer\Script\EventDispatcher')
+        $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->setConstructorArgs(array(
                 $this->getMock('Composer\Composer'),
                 $this->getMock('Composer\IO\IOInterface'),
@@ -150,7 +151,7 @@ class EventDispatcherTest extends TestCase
 
     public function testDispatcherOutputsErrorOnFailedCommand()
     {
-        $dispatcher = $this->getMockBuilder('Composer\Script\EventDispatcher')
+        $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->setConstructorArgs(array(
                 $this->getMock('Composer\Composer'),
                 $io = $this->getMock('Composer\IO\IOInterface'),

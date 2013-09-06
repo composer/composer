@@ -23,7 +23,7 @@ class FileDownloaderTest extends \PHPUnit_Framework_TestCase
         $config = $config ?: $this->getMock('Composer\Config');
         $rfs = $rfs ?: $this->getMockBuilder('Composer\Util\RemoteFilesystem')->disableOriginalConstructor()->getMock();
 
-        return new FileDownloader($io, $config, null, $rfs, $filesystem);
+        return new FileDownloader($io, $config, null, null, $rfs, $filesystem);
     }
 
     /**
