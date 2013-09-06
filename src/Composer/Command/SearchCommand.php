@@ -20,6 +20,8 @@ use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Factory;
+use Composer\Plugin\CommandEvent;
+use Composer\Plugin\PluginEvents;
 
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>
@@ -63,6 +65,11 @@ EOT
             $output->writeln('No composer.json found in the current directory, showing packages from ' . implode(', ', array_keys($defaultRepos)));
             $installedRepo = $platformRepo;
             $repos = new CompositeRepository(array_merge(array($installedRepo), $defaultRepos));
+        }
+
+        if ($composer) {
+            $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'search', $input, $output);
+            $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
         }
 
         $onlyName = $input->getOption('only-name');

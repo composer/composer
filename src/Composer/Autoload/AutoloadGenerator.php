@@ -13,12 +13,12 @@
 namespace Composer\Autoload;
 
 use Composer\Config;
+use Composer\EventDispatcher\EventDispatcher;
 use Composer\Installer\InstallationManager;
 use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Util\Filesystem;
-use Composer\Script\EventDispatcher;
 use Composer\Script\ScriptEvents;
 
 /**
@@ -39,7 +39,7 @@ class AutoloadGenerator
 
     public function dump(Config $config, InstalledRepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir, $scanPsr0Packages = false, $suffix = '')
     {
-        $this->eventDispatcher->dispatch(ScriptEvents::PRE_AUTOLOAD_DUMP);
+        $this->eventDispatcher->dispatchScript(ScriptEvents::PRE_AUTOLOAD_DUMP);
 
         $filesystem = new Filesystem();
         $filesystem->ensureDirectoryExists($config->get('vendor-dir'));
@@ -191,7 +191,7 @@ EOF;
         fclose($targetLoader);
         unset($sourceLoader, $targetLoader);
 
-        $this->eventDispatcher->dispatch(ScriptEvents::POST_AUTOLOAD_DUMP);
+        $this->eventDispatcher->dispatchScript(ScriptEvents::POST_AUTOLOAD_DUMP);
     }
 
     public function buildPackageMap(InstallationManager $installationManager, PackageInterface $mainPackage, array $packages)

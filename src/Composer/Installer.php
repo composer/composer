@@ -24,6 +24,7 @@ use Composer\DependencyResolver\Rule;
 use Composer\DependencyResolver\Solver;
 use Composer\DependencyResolver\SolverProblemsException;
 use Composer\Downloader\DownloadManager;
+use Composer\EventDispatcher\EventDispatcher;
 use Composer\Installer\InstallationManager;
 use Composer\Config;
 use Composer\Installer\NoopInstaller;
@@ -41,13 +42,13 @@ use Composer\Repository\InstalledFilesystemRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositoryManager;
-use Composer\Script\EventDispatcher;
 use Composer\Script\ScriptEvents;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Beau Simensen <beau@dflydev.com>
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
+ * @author Nils Adermann <naderman@naderman.de>
  */
 class Installer
 {
@@ -461,7 +462,7 @@ class Installer
             $this->io->write('Nothing to install or update');
         }
 
-        $operations = $this->moveCustomInstallersToFront($operations);
+        $operations = $this->movePluginsToFront($operations);
 
         foreach ($operations as $operation) {
             // collect suggestions
@@ -540,7 +541,7 @@ class Installer
 
 
     /**
-     * Workaround: if your packages depend on custom installers, we must be sure
+     * Workaround: if your packages depend on plugins, we must be sure
      * that those are installed / updated first; else it would lead to packages
      * being installed multiple times in different folders, when running Composer
      * twice.
@@ -552,7 +553,7 @@ class Installer
      * @param OperationInterface[] $operations
      * @return OperationInterface[] reordered operation list
      */
-    private function moveCustomInstallersToFront(array $operations)
+    private function movePluginsToFront(array $operations)
     {
         $installerOps = array();
         foreach ($operations as $idx => $op) {
@@ -564,7 +565,7 @@ class Installer
                 continue;
             }
 
-            if ($package->getRequires() === array() && $package->getType() === 'composer-installer') {
+            if ($package->getRequires() === array() && ($package->getType() === 'composer-plugin' || $package->getType() === 'composer-installer')) {
                 $installerOps[] = $op;
                 unset($operations[$idx]);
             }
@@ -1055,7 +1056,7 @@ class Installer
     }
 
     /**
-     * Disables custom installers.
+     * Disables plugins.
      *
      * Call this if you want to ensure that third-party code never gets
      * executed. The default is to automatically install, and execute
@@ -1063,9 +1064,9 @@ class Installer
      *
      * @return Installer
      */
-    public function disableCustomInstallers()
+    public function disablePlugins()
     {
-        $this->installationManager->disableCustomInstallers();
+        $this->installationManager->disablePlugins();
 
         return $this;
     }

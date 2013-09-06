@@ -17,6 +17,8 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Downloader\ChangeReportInterface;
 use Composer\Downloader\VcsDownloader;
+use Composer\Plugin\CommandEvent;
+use Composer\Plugin\PluginEvents;
 use Composer\Script\ScriptEvents;
 
 /**
@@ -46,6 +48,10 @@ EOT
     {
         // init repos
         $composer = $this->getComposer();
+
+        $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'status', $input, $output);
+        $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
+
         $installedRepo = $composer->getRepositoryManager()->getLocalRepository();
 
         $dm = $composer->getDownloadManager();
