@@ -145,7 +145,7 @@ Example:
         /**
          * {@inheritDoc}
          */
-        public function getInstallPath(PackageInterface $package)
+        public function getPackageBasePath(PackageInterface $package)
         {
             $prefix = substr($package->getPrettyName(), 0, 23);
             if ('phpdocumentor/template-' !== $prefix) {
