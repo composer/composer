@@ -8,5 +8,8 @@
             "Installer\\Plugin1",
             "Installer\\Plugin2"
         ]
+    },
+    "require": {
+        "composer-plugin-api": "1.0.0"
     }
 }

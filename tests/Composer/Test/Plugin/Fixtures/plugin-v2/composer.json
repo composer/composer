@@ -5,5 +5,8 @@
     "autoload": { "psr-0": { "Installer": "" } },
     "extra": {
         "class": "Installer\\Plugin2"
+    },
+    "require": {
+        "composer-plugin-api": "1.0.0"
     }
 }
