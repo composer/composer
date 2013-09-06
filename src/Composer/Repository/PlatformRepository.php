@@ -14,6 +14,7 @@ namespace Composer\Repository;
 
 use Composer\Package\CompletePackage;
 use Composer\Package\Version\VersionParser;
+use Composer\Plugin\PluginInterface;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -28,6 +29,12 @@ class PlatformRepository extends ArrayRepository
 
         $versionParser = new VersionParser();
 
+        $prettyVersion = PluginInterface::PLUGIN_API_VERSION;
+        $version = $versionParser->normalize($prettyVersion);
+        $composerPluginApi = new CompletePackage('composer-plugin-api', $version, $prettyVersion);
+        $composerPluginApi->setDescription('The Composer Plugin API');
+        parent::addPackage($composerPluginApi);
+
         try {
             $prettyVersion = PHP_VERSION;
             $version = $versionParser->normalize($prettyVersion);
@@ -35,6 +42,7 @@ class PlatformRepository extends ArrayRepository
             $prettyVersion = preg_replace('#^([^~+-]+).*$#', '$1', PHP_VERSION);
             $version = $versionParser->normalize($prettyVersion);
         }
+
 
         $php = new CompletePackage('php', $version, $prettyVersion);
         $php->setDescription('The PHP interpreter');
