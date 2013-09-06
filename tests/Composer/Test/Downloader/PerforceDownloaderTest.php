@@ -27,7 +27,7 @@ class PerforceDownloaderTest extends \PHPUnit_Framework_TestCase
     private $testPath;
     public static $repository;
 
-    function setUp()
+    private function setUp()
     {
         $this->testPath = sys_get_temp_dir() . '/composer-test';
         $this->config = new Config();
