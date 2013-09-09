@@ -13,6 +13,7 @@
 namespace Composer\Util;
 
 use Composer\IO\IOInterface;
+use Symfony\Component\Process\Process;
 
 /**
  * @author Matt Whittom <Matt.Whittom@veteransunited.com>
@@ -350,28 +351,9 @@ class Perforce
 
     public function windowsLogin($password)
     {
-        $descriptorspec = array(
-            0 => array('pipe', 'r'),
-            1 => array('pipe', 'w'),
-            2 => array('pipe', 'a')
-        );
         $command = $this->generateP4Command(' login -a');
-        $process = proc_open($command, $descriptorspec, $pipes);
-        if (!is_resource($process)) {
-            return false;
-        }
-        fwrite($pipes[0], $password);
-        fclose($pipes[0]);
-
-        $this->read($pipes[1], 'Output');
-        $this->read($pipes[2], 'Error');
-
-        fclose($pipes[1]);
-        fclose($pipes[2]);
-
-        $returnCode = proc_close($process);
-
-        return $returnCode;
+        $process = new Process($command, null, null, $password);
+        return $process->run();
     }
 
 
