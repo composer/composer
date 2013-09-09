@@ -297,7 +297,7 @@ EOT
 
                 if ($type === 'psr-0') {
                     foreach ($autoloads as $name => $path) {
-                        $output->writeln(($name ?: '*') . ' => ' . ($path ?: '.'));
+                        $output->writeln(($name ?: '*') . ' => ' . (is_array($path) ? implode(', ', $path) : ($path ?: '.')));
                     }
                 } elseif ($type === 'classmap') {
                     $output->writeln(implode(', ', $autoloads));
