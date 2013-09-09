@@ -67,14 +67,14 @@ class PerforceDriverTest extends \PHPUnit_Framework_TestCase
             'path' => $this->testPath,
             $process,
             true,
-            "TEST"
+            'TEST'
         );
         $perforce = $this->getMock('Composer\Util\Perforce', null, $arguments);
         $driver->injectPerforce($perforce);
         $driver->initialize();
-        $this->assertEquals("TEST_PERFORCE_URL", $driver->getUrl());
-        $this->assertEquals("TEST_DEPOT_CONFIG", $driver->getDepot());
-        $this->assertEquals("TEST_BRANCH_CONFIG", $driver->getBranch());
+        $this->assertEquals('TEST_PERFORCE_URL', $driver->getUrl());
+        $this->assertEquals('TEST_DEPOT_CONFIG', $driver->getDepot());
+        $this->assertEquals('TEST_BRANCH_CONFIG', $driver->getBranch());
     }
 
     public function testInitializeLogsInAndConnectsClient()
@@ -92,7 +92,7 @@ class PerforceDriverTest extends \PHPUnit_Framework_TestCase
         ->with($this->io);
         $perforce->expects($this->at(1))
         ->method('checkStream')
-        ->with($this->equalTo("TEST_DEPOT_CONFIG"));
+        ->with($this->equalTo('TEST_DEPOT_CONFIG'));
         $perforce->expects($this->at(2))
         ->method('writeP4ClientSpec');
         $perforce->expects($this->at(3))
@@ -118,16 +118,16 @@ class PerforceDriverTest extends \PHPUnit_Framework_TestCase
             'path' => $this->testPath,
             $process,
             true,
-            "TEST"
+            'TEST'
         );
         $perforce = $this->getMock('Composer\Util\Perforce', array('getComposerInformation'), $arguments);
         $perforce->expects($this->at(0))
         ->method('getComposerInformation')
-        ->with($this->equalTo("//TEST_DEPOT_CONFIG/TEST_IDENTIFIER"))
-        ->will($this->returnValue("Some json stuff"));
+        ->with($this->equalTo('//TEST_DEPOT_CONFIG/TEST_IDENTIFIER'))
+        ->will($this->returnValue('Some json stuff'));
         $driver->injectPerforce($perforce);
         $driver->initialize();
-        $identifier = "TEST_IDENTIFIER";
+        $identifier = 'TEST_IDENTIFIER';
         $result = $driver->hasComposerFile($identifier);
         $this->assertTrue($result);
     }
