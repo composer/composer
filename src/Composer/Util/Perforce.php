@@ -31,7 +31,7 @@ class Perforce
     protected $p4DepotType;
     protected $p4Branch;
     protected $process;
-    protected $unique_perforce_client_name;
+    protected $uniquePerforceClientName;
     protected $windowsFlag;
 
 
@@ -59,12 +59,12 @@ class Perforce
 
     public function initialize($repoConfig)
     {
-        $this->unique_perforce_client_name = $this->generateUniquePerforceClientName();
-        if (!isset ($repoConfig)) {
+        $this->uniquePerforceClientName = $this->generateUniquePerforceClientName();
+        if (null == $repoConfig) {
             return;
         }
         if (isset($repoConfig['unique_perforce_client_name'])) {
-            $this->unique_perforce_client_name = $repoConfig['unique_perforce_client_name'];
+            $this->uniquePerforceClientName = $repoConfig['unique_perforce_client_name'];
         }
 
         if (isset($repoConfig['depot'])) {
@@ -119,8 +119,8 @@ class Perforce
     public function getClient()
     {
         if (!isset($this->p4Client)) {
-            $clean_stream_name = str_replace("@", "", str_replace("/", "_", str_replace("//", "", $this->getStream())));
-            $this->p4Client = "composer_perforce_" . $this->unique_perforce_client_name . "_" . $clean_stream_name;
+            $cleanStreamName = str_replace("@", "", str_replace("/", "_", str_replace("//", "", $this->getStream())));
+            $this->p4Client = "composer_perforce_" . $this->uniquePerforceClientName . "_" . $cleanStreamName;
         }
 
         return $this->p4Client;
@@ -327,7 +327,7 @@ class Perforce
         $spec = fopen($clientSpec, 'w');
         try {
             $this->writeClientSpecToFile($spec);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             fclose($spec);
             throw $e;
         }
@@ -369,9 +369,9 @@ class Perforce
         fclose($pipes[1]);
         fclose($pipes[2]);
 
-        $return_code = proc_close($process);
+        $returnCode = proc_close($process);
 
-        return $return_code;
+        return $returnCode;
     }
 
 
@@ -389,34 +389,27 @@ class Perforce
         }
     }
 
-    public static function checkServerExists($url, ProcessExecutor $process_executor)
+    public static function checkServerExists($url, ProcessExecutor $processExecutor)
     {
-        $process = $process_executor ? : new ProcessExecutor;
         $result = "";
-        $process->execute("p4 -p $url info -s", $result);
-        $index = strpos($result, "error");
-        if ($index === false) {
-            return true;
-        }
-
-        return false;
+        $processExecutor->execute("p4 -p $url info -s", $result);
+        return false === strpos($result, "error");
     }
 
     public function getComposerInformation($identifier)
     {
         $index = strpos($identifier, "@");
         if ($index === false) {
-            $composer_json = "$identifier/composer.json";
+            $composerJson = "$identifier/composer.json";
 
-            return $this->getComposerInformationFromPath($composer_json);
-        } else {
-            return $this->getComposerInformationFromLabel($identifier, $index);
+            return $this->getComposerInformationFromPath($composerJson);
         }
+        return $this->getComposerInformationFromLabel($identifier, $index);
     }
 
-    public function getComposerInformationFromPath($composer_json)
+    public function getComposerInformationFromPath($composerJson)
     {
-        $command = $this->generateP4Command(" print $composer_json");
+        $command = $this->generateP4Command(" print $composerJson");
         $result = $this->executeCommand($command);
         $index = strpos($result, "{");
         if ($index === false) {
@@ -434,8 +427,8 @@ class Perforce
 
     public function getComposerInformationFromLabel($identifier, $index)
     {
-        $composer_json_path = substr($identifier, 0, $index) . "/composer.json" . substr($identifier, $index);
-        $command = $this->generateP4Command(" files $composer_json_path", false);
+        $composerJsonPath = substr($identifier, 0, $index) . "/composer.json" . substr($identifier, $index);
+        $command = $this->generateP4Command(" files $composerJsonPath", false);
         $result = $this->executeCommand($command);
         $index2 = strpos($result, "no such file(s).");
         if ($index2 === false) {
@@ -444,9 +437,9 @@ class Perforce
                 $phrase = trim(substr($result, $index3));
                 $fields = explode(" ", $phrase);
                 $id = $fields[1];
-                $composer_json = substr($identifier, 0, $index) . "/composer.json@" . $id;
+                $composerJson = substr($identifier, 0, $index) . "/composer.json@" . $id;
 
-                return $this->getComposerInformationFromPath($composer_json);
+                return $this->getComposerInformationFromPath($composerJson);
             }
         }
 
@@ -455,9 +448,9 @@ class Perforce
 
     public function getBranches()
     {
-        $possible_branches = array();
+        $possibleBranches = array();
         if (!$this->isStream()) {
-            $possible_branches[$this->p4Branch] = $this->getStream();
+            $possibleBranches[$this->p4Branch] = $this->getStream();
         } else {
             $command = $this->generateP4Command("streams //$this->p4Depot/...");
             $result = $this->executeCommand($command);
@@ -466,12 +459,12 @@ class Perforce
                 $resBits = explode(" ", $line);
                 if (count($resBits) > 4) {
                     $branch = preg_replace("/[^A-Za-z0-9 ]/", '', $resBits[4]);
-                    $possible_branches[$branch] = $resBits[1];
+                    $possibleBranches[$branch] = $resBits[1];
                 }
             }
         }
         $branches = array();
-        $branches['master'] = $possible_branches[$this->p4Branch];
+        $branches['master'] = $possibleBranches[$this->p4Branch];
 
         return $branches;
     }
