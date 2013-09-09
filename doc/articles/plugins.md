@@ -58,7 +58,7 @@ Example:
 
     use Composer\Composer;
     use Composer\IO\IOInterface;
-    use Composer\Plugin\PluginInterface
+    use Composer\Plugin\PluginInterface;
 
     class TemplateInstallerPlugin implements PluginInterface
     {
