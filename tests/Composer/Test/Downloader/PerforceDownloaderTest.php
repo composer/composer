@@ -54,10 +54,10 @@ class PerforceDownloaderTest extends \PHPUnit_Framework_TestCase
         );
         $package->expects($this->at(0))
         ->method('getSourceReference')
-        ->will($this->returnValue("SOURCE_REF"));
+        ->will($this->returnValue('SOURCE_REF'));
         $package->expects($this->at(1))
         ->method('getPrettyVersion')
-        ->will($this->returnValue("100"));
+        ->will($this->returnValue('100'));
         $package->expects($this->at(2))
         ->method('getRepository')
         ->will($this->returnValue($repository));
@@ -70,17 +70,17 @@ class PerforceDownloaderTest extends \PHPUnit_Framework_TestCase
     public function testDoDownload()
     {
         $downloader = new PerforceDownloader($this->io, $this->config);
-        $repoConfig = array("depot" => "TEST_DEPOT", "branch" => "TEST_BRANCH", "p4user" => "TEST_USER");
-        $port = "TEST_PORT";
-        $path = "TEST_PATH";
+        $repoConfig = array('depot' => 'TEST_DEPOT', 'branch' => 'TEST_BRANCH', 'p4user' => 'TEST_USER');
+        $port = 'TEST_PORT';
+        $path = 'TEST_PATH';
         $process = $this->getmock('Composer\Util\ProcessExecutor');
         $perforce = $this->getMock(
             'Composer\Util\Perforce',
             array('setStream', 'queryP4User', 'writeP4ClientSpec', 'connectClient', 'syncCodeBase'),
-            array($repoConfig, $port, $path, $process, true, "TEST")
+            array($repoConfig, $port, $path, $process, true, 'TEST')
         );
-        $ref = "SOURCE_REF";
-        $label = "LABEL";
+        $ref = 'SOURCE_REF';
+        $label = 'LABEL';
         $perforce->expects($this->at(0))
         ->method('setStream')
         ->with($this->equalTo($ref));
