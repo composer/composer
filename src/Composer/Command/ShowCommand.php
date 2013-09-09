@@ -68,8 +68,9 @@ EOT
         // init repos
         $platformRepo = new PlatformRepository;
 
+        $composer = $this->getComposer(false);
         if ($input->getOption('self')) {
-            $package = $this->getComposer(false)->getPackage();
+            $package = $this->getComposer()->getPackage();
             $repos = $installedRepo = new ArrayRepository(array($package));
         } elseif ($input->getOption('platform')) {
             $repos = $installedRepo = $platformRepo;
@@ -77,15 +78,14 @@ EOT
             $repos = $installedRepo = $this->getComposer()->getRepositoryManager()->getLocalRepository();
         } elseif ($input->getOption('available')) {
             $installedRepo = $platformRepo;
-            if ($composer = $this->getComposer(false)) {
+            if ($composer) {
                 $repos = new CompositeRepository($composer->getRepositoryManager()->getRepositories());
             } else {
                 $defaultRepos = Factory::createDefaultRepositories($this->getIO());
                 $repos = new CompositeRepository($defaultRepos);
                 $output->writeln('No composer.json found in the current directory, showing available packages from ' . implode(', ', array_keys($defaultRepos)));
             }
-        } elseif ($composer = $this->getComposer(false)) {
-            $composer = $this->getComposer();
+        } elseif ($composer) {
             $localRepo = $composer->getRepositoryManager()->getLocalRepository();
             $installedRepo = new CompositeRepository(array($localRepo, $platformRepo));
             $repos = new CompositeRepository(array_merge(array($installedRepo), $composer->getRepositoryManager()->getRepositories()));
