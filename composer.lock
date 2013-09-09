@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "370b764a9317165e8ea7a2e1623e031b",
+    "hash": "4494d3567c8c22b1adaded932825b969",
     "packages": [
         {
             "name": "justinrainbow/json-schema",
@@ -179,17 +179,17 @@
         },
         {
             "name": "symfony/process",
-            "version": "v2.3.4",
+            "version": "dev-master",
             "target-dir": "Symfony/Component/Process",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Process.git",
-                "reference": "1e91553e1cedd0b8fb1da6ea4f89b02e21713d5b"
+                "reference": "f1386b09571aa886e3d51691442bee5554dc11da"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Process/zipball/1e91553e1cedd0b8fb1da6ea4f89b02e21713d5b",
-                "reference": "1e91553e1cedd0b8fb1da6ea4f89b02e21713d5b",
+                "url": "https://api.github.com/repos/symfony/Process/zipball/f1386b09571aa886e3d51691442bee5554dc11da",
+                "reference": "f1386b09571aa886e3d51691442bee5554dc11da",
                 "shasum": ""
             },
             "require": {
@@ -198,7 +198,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "2.3-dev"
+                    "dev-master": "2.4-dev"
                 }
             },
             "autoload": {
@@ -222,7 +222,7 @@
             ],
             "description": "Symfony Process Component",
             "homepage": "http://symfony.com",
-            "time": "2013-08-22 06:42:25"
+            "time": "2013-09-07 16:33:27"
         }
     ],
     "packages-dev": [
@@ -645,9 +645,9 @@
 
     ],
     "minimum-stability": "stable",
-    "stability-flags": [
-
-    ],
+    "stability-flags": {
+        "symfony/process": 20
+    },
     "platform": {
         "php": ">=5.3.2"
     },
