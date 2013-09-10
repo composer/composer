@@ -299,7 +299,7 @@ class Perforce
     {
         fwrite($spec, 'Client: ' . $this->getClient() . PHP_EOL . PHP_EOL);
         fwrite($spec, 'Update: ' . date('Y/m/d H:i:s') . PHP_EOL . PHP_EOL);
-        fwrite($spec, 'Access: ' . date('Y/m/d H:i:s') . PHP_EOL );
+        fwrite($spec, 'Access: ' . date('Y/m/d H:i:s') . PHP_EOL);
         fwrite($spec, 'Owner:  ' . $this->getUser() . PHP_EOL . PHP_EOL);
         fwrite($spec, 'Description:' . PHP_EOL);
         fwrite($spec, '  Created by ' . $this->getUser() . ' from composer.' . PHP_EOL . PHP_EOL);
