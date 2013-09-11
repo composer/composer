@@ -253,12 +253,12 @@ class Factory
         $generator = new AutoloadGenerator($dispatcher);
         $composer->setAutoloadGenerator($generator);
 
+        // add installers to the manager
+        $this->createDefaultInstallers($im, $composer, $io);
+
         $globalRepository = $this->createGlobalRepository($config, $vendorDir);
         $pm = $this->createPluginManager($composer, $io, $globalRepository);
         $composer->setPluginManager($pm);
-
-        // add installers to the manager
-        $this->createDefaultInstallers($im, $composer, $io);
 
         if (!$disablePlugins) {
             $pm->loadInstalledPlugins();
