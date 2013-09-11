@@ -165,14 +165,15 @@ class Application extends BaseApplication
 
     /**
      * @param  bool                    $required
+     * @param  bool                    $disablePlugins
      * @throws JsonValidationException
      * @return \Composer\Composer
      */
-    public function getComposer($required = true)
+    public function getComposer($required = true, $disablePlugins = false)
     {
         if (null === $this->composer) {
             try {
-                $this->composer = Factory::create($this->io);
+                $this->composer = Factory::create($this->io, null, $disablePlugins);
             } catch (\InvalidArgumentException $e) {
                 if ($required) {
                     $this->io->write($e->getMessage());
@@ -224,6 +225,8 @@ class Application extends BaseApplication
         $commands[] = new Command\ArchiveCommand();
         $commands[] = new Command\DiagnoseCommand();
         $commands[] = new Command\RunScriptCommand();
+        $commands[] = new Command\LicensesCommand();
+        $commands[] = new Command\GlobalCommand();
 
         if ('phar:' === substr(__FILE__, 0, 5)) {
             $commands[] = new Command\SelfUpdateCommand();

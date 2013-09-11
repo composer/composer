@@ -19,6 +19,7 @@ use Composer\Downloader\TransportException;
 /**
  * @author François Pluchino <francois.pluchino@opendisplay.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
+ * @author Nils Adermann <naderman@naderman.de>
  */
 class RemoteFilesystem
 {
@@ -77,6 +78,16 @@ class RemoteFilesystem
     }
 
     /**
+     * Retrieve the options set in the constructor
+     *
+     * @return array Options
+     */
+    public function getOptions()
+    {
+        return $this->options;
+    }
+
+    /**
      * Get file content or copy action.
      *
      * @param string  $originUrl         The origin URL
@@ -107,7 +118,7 @@ class RemoteFilesystem
         $options = $this->getOptionsForUrl($originUrl, $additionalOptions);
 
         if ($this->io->isDebug()) {
-            $this->io->write('Downloading '.$fileUrl);
+            $this->io->write((substr($fileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $fileUrl);
         }
         if (isset($options['github-token'])) {
             $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'access_token='.$options['github-token'];

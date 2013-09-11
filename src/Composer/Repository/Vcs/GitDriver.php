@@ -116,9 +116,7 @@ class GitDriver extends VcsDriver
      */
     public function getSource($identifier)
     {
-        $label = array_search($identifier, (array) $this->tags) ?: $identifier;
-
-        return array('type' => 'git', 'url' => $this->getUrl(), 'reference' => $label);
+        return array('type' => 'git', 'url' => $this->getUrl(), 'reference' => $identifier);
     }
 
     /**
@@ -161,9 +159,14 @@ class GitDriver extends VcsDriver
     public function getTags()
     {
         if (null === $this->tags) {
-            $this->process->execute('git tag', $output, $this->repoDir);
-            $output = $this->process->splitLines($output);
-            $this->tags = $output ? array_combine($output, $output) : array();
+            $this->tags = array();
+
+            $this->process->execute('git show-ref --tags', $output, $this->repoDir);
+            foreach ($output = $this->process->splitLines($output) as $tag) {
+                if ($tag && preg_match('{^([a-f0-9]{40}) refs/tags/(\S+)$}', $tag, $match)) {
+                    $this->tags[$match[2]] = $match[1];
+                }
+            }
         }
 
         return $this->tags;

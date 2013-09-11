@@ -116,8 +116,6 @@ class LibraryInstaller implements InstallerInterface
     public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
         if (!$repo->hasPackage($package)) {
-            // TODO throw exception again here, when update is fixed and we don't have to remove+install (see #125)
-            return;
             throw new \InvalidArgumentException('Package is not installed: '.$package);
         }
 
@@ -277,7 +275,7 @@ class LibraryInstaller implements InstallerInterface
         }
 
         return "@ECHO OFF\r\n".
-            "SET BIN_TARGET=%~dp0\\".escapeshellarg(dirname($binPath)).'\\'.basename($binPath)."\r\n".
+            "SET BIN_TARGET=%~dp0/".trim(escapeshellarg($binPath), '"')."\r\n".
             "{$caller} \"%BIN_TARGET%\" %*\r\n";
     }
 

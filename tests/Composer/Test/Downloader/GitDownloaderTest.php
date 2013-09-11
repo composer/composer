@@ -14,6 +14,7 @@ namespace Composer\Test\Downloader;
 
 use Composer\Downloader\GitDownloader;
 use Composer\Config;
+use Composer\Util\Filesystem;
 
 class GitDownloaderTest extends \PHPUnit_Framework_TestCase
 {
@@ -109,26 +110,20 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
         $processExecutor->expects($this->at(2))
             ->method('execute')
             ->with($this->equalTo($expectedGitCommand))
-            ->will($this->returnValue(1));
-
-        $expectedGitCommand = $this->winCompat("git clone 'http://github.com/composer/composer' 'composerPath' && cd 'composerPath' && git remote add composer 'http://github.com/composer/composer' && git fetch composer");
-        $processExecutor->expects($this->at(4))
-            ->method('execute')
-            ->with($this->equalTo($expectedGitCommand))
             ->will($this->returnValue(0));
 
         $expectedGitCommand = $this->winCompat("git remote set-url --push origin 'git@github.com:composer/composer.git'");
-        $processExecutor->expects($this->at(5))
+        $processExecutor->expects($this->at(3))
             ->method('execute')
             ->with($this->equalTo($expectedGitCommand), $this->equalTo(null), $this->equalTo($this->winCompat('composerPath')))
             ->will($this->returnValue(0));
 
-        $processExecutor->expects($this->at(6))
+        $processExecutor->expects($this->at(4))
             ->method('execute')
             ->with($this->equalTo('git branch -r'))
             ->will($this->returnValue(0));
 
-        $processExecutor->expects($this->at(7))
+        $processExecutor->expects($this->at(5))
             ->method('execute')
             ->with($this->equalTo($this->winCompat("git checkout 'ref' && git reset --hard 'ref'")), $this->equalTo(null), $this->equalTo($this->winCompat('composerPath')))
             ->will($this->returnValue(0));
@@ -142,7 +137,6 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
         return array(
             array('git', 'git@github.com:composer/composer.git'),
             array('https', 'https://github.com/composer/composer.git'),
-            array('http', 'https://github.com/composer/composer.git')
         );
     }
 
@@ -228,6 +222,9 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
     {
         $expectedGitUpdateCommand = $this->winCompat("git remote set-url composer 'git://github.com/composer/composer' && git fetch composer && git fetch --tags composer");
 
+        $tmpDir = realpath(sys_get_temp_dir()).DIRECTORY_SEPARATOR.'cmptest-'.md5(uniqid('', true));
+        $fs = new Filesystem;
+        $fs->ensureDirectoryExists($tmpDir.'/.git');
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $packageMock->expects($this->any())
             ->method('getSourceReference')
@@ -241,23 +238,27 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
         $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
         $processExecutor->expects($this->at(0))
             ->method('execute')
-            ->with($this->equalTo($this->winCompat("git remote -v")))
+            ->with($this->equalTo($this->winCompat("git status --porcelain --untracked-files=no")))
             ->will($this->returnValue(0));
         $processExecutor->expects($this->at(1))
             ->method('execute')
-            ->with($this->equalTo($expectedGitUpdateCommand))
+            ->with($this->equalTo($this->winCompat("git remote -v")))
             ->will($this->returnValue(0));
         $processExecutor->expects($this->at(2))
             ->method('execute')
-            ->with($this->equalTo('git branch -r'))
+            ->with($this->equalTo($expectedGitUpdateCommand))
             ->will($this->returnValue(0));
         $processExecutor->expects($this->at(3))
             ->method('execute')
-            ->with($this->equalTo($this->winCompat("git checkout 'ref' && git reset --hard 'ref'")), $this->equalTo(null), $this->equalTo($this->winCompat('composerPath')))
+            ->with($this->equalTo('git branch -r'))
+            ->will($this->returnValue(0));
+        $processExecutor->expects($this->at(4))
+            ->method('execute')
+            ->with($this->equalTo($this->winCompat("git checkout 'ref' && git reset --hard 'ref'")), $this->equalTo(null), $this->equalTo($this->winCompat($tmpDir)))
             ->will($this->returnValue(0));
 
         $downloader = $this->getDownloaderMock(null, new Config(), $processExecutor);
-        $downloader->update($packageMock, $packageMock, 'composerPath');
+        $downloader->update($packageMock, $packageMock, $tmpDir);
     }
 
     /**
@@ -267,6 +268,9 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
     {
         $expectedGitUpdateCommand = $this->winCompat("git remote set-url composer 'git://github.com/composer/composer' && git fetch composer && git fetch --tags composer");
 
+        $tmpDir = realpath(sys_get_temp_dir()).DIRECTORY_SEPARATOR.'cmptest-'.md5(uniqid('', true));
+        $fs = new Filesystem;
+        $fs->ensureDirectoryExists($tmpDir.'/.git');
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $packageMock->expects($this->any())
             ->method('getSourceReference')
@@ -277,15 +281,19 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
         $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
         $processExecutor->expects($this->at(0))
             ->method('execute')
-            ->with($this->equalTo($this->winCompat("git remote -v")))
+            ->with($this->equalTo($this->winCompat("git status --porcelain --untracked-files=no")))
             ->will($this->returnValue(0));
         $processExecutor->expects($this->at(1))
+            ->method('execute')
+            ->with($this->equalTo($this->winCompat("git remote -v")))
+            ->will($this->returnValue(0));
+        $processExecutor->expects($this->at(2))
             ->method('execute')
             ->with($this->equalTo($expectedGitUpdateCommand))
             ->will($this->returnValue(1));
 
         $downloader = $this->getDownloaderMock(null, new Config(), $processExecutor);
-        $downloader->update($packageMock, $packageMock, 'composerPath');
+        $downloader->update($packageMock, $packageMock, $tmpDir);
     }
 
     public function testRemove()

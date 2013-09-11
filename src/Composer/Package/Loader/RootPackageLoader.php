@@ -70,6 +70,10 @@ class RootPackageLoader extends ArrayLoader
             $realPackage = $package->getAliasOf();
         }
 
+        if (isset($config['minimum-stability'])) {
+            $realPackage->setMinimumStability(VersionParser::normalizeStability($config['minimum-stability']));
+        }
+
         $aliases = array();
         $stabilityFlags = array();
         $references = array();
@@ -82,7 +86,7 @@ class RootPackageLoader extends ArrayLoader
                     $links[$link->getTarget()] = $link->getConstraint()->getPrettyString();
                 }
                 $aliases = $this->extractAliases($links, $aliases);
-                $stabilityFlags = $this->extractStabilityFlags($links, $stabilityFlags);
+                $stabilityFlags = $this->extractStabilityFlags($links, $stabilityFlags, $realPackage->getMinimumStability());
                 $references = $this->extractReferences($links, $references);
             }
         }
@@ -90,10 +94,6 @@ class RootPackageLoader extends ArrayLoader
         $realPackage->setAliases($aliases);
         $realPackage->setStabilityFlags($stabilityFlags);
         $realPackage->setReferences($references);
-
-        if (isset($config['minimum-stability'])) {
-            $realPackage->setMinimumStability(VersionParser::normalizeStability($config['minimum-stability']));
-        }
 
         if (isset($config['prefer-stable'])) {
             $realPackage->setPreferStable((bool) $config['prefer-stable']);
@@ -124,11 +124,12 @@ class RootPackageLoader extends ArrayLoader
         return $aliases;
     }
 
-    private function extractStabilityFlags(array $requires, array $stabilityFlags)
+    private function extractStabilityFlags(array $requires, array $stabilityFlags, $minimumStability)
     {
         $stabilities = BasePackage::$stabilities;
+        $minimumStability = $stabilities[$minimumStability];
         foreach ($requires as $reqName => $reqVersion) {
-            // parse explicit stability flags
+            // parse explicit stability flags to the most unstable
             if (preg_match('{^[^,\s]*?@('.implode('|', array_keys($stabilities)).')$}i', $reqVersion, $match)) {
                 $name = strtolower($reqName);
                 $stability = $stabilities[VersionParser::normalizeStability($match[1])];
@@ -141,12 +142,13 @@ class RootPackageLoader extends ArrayLoader
                 continue;
             }
 
-            // infer flags for requirements that have an explicit -dev or -beta version specified for example
+            // infer flags for requirements that have an explicit -dev or -beta version specified but only
+            // for those that are more unstable than the minimumStability or existing flags
             $reqVersion = preg_replace('{^([^,\s@]+) as .+$}', '$1', $reqVersion);
             if (preg_match('{^[^,\s@]+$}', $reqVersion) && 'stable' !== ($stabilityName = VersionParser::parseStability($reqVersion))) {
                 $name = strtolower($reqName);
                 $stability = $stabilities[$stabilityName];
-                if (isset($stabilityFlags[$name]) && $stabilityFlags[$name] > $stability) {
+                if ((isset($stabilityFlags[$name]) && $stabilityFlags[$name] > $stability) || ($minimumStability > $stability)) {
                     continue;
                 }
                 $stabilityFlags[$name] = $stability;
@@ -186,6 +188,14 @@ class RootPackageLoader extends ArrayLoader
         $util = new GitUtil;
         $util->cleanEnv();
 
+        // try to fetch current version from git tags
+        if (0 === $this->process->execute('git describe --exact-match --tags', $output)) {
+            try {
+                return $this->versionParser->normalize(trim($output));
+            } catch (\Exception $e) {
+            }
+        }
+
         // try to fetch current version from git branch
         if (0 === $this->process->execute('git branch --no-color --no-abbrev -v', $output)) {
             $branches = array();
@@ -194,8 +204,8 @@ class RootPackageLoader extends ArrayLoader
 
             // find current branch and collect all branch names
             foreach ($this->process->splitLines($output) as $branch) {
-                if ($branch && preg_match('{^(?:\* ) *(\S+|\(no branch\)) *([a-f0-9]+) .*$}', $branch, $match)) {
-                    if ($match[1] === '(no branch)') {
+                if ($branch && preg_match('{^(?:\* ) *(\(no branch\)|\(detached from [a-f0-9]+\)|\S+) *([a-f0-9]+) .*$}', $branch, $match)) {
+                    if ($match[1] === '(no branch)' || substr($match[1], 0, 10) === '(detached ') {
                         $version = 'dev-'.$match[2];
                         $isFeatureBranch = true;
                     } else {

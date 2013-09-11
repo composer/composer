@@ -12,6 +12,7 @@
  */
 
 namespace Composer\Autoload;
+use Symfony\Component\Finder\Finder;
 
 /**
  * ClassMapGenerator
@@ -53,7 +54,7 @@ class ClassMapGenerator
             if (is_file($path)) {
                 $path = array(new \SplFileInfo($path));
             } elseif (is_dir($path)) {
-                $path = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path));
+                $path = Finder::create()->files()->followLinks()->name('/\.(php|inc)$/')->in($path);
             } else {
                 throw new \RuntimeException(
                     'Could not scan for classes inside "'.$path.
@@ -65,10 +66,6 @@ class ClassMapGenerator
         $map = array();
 
         foreach ($path as $file) {
-            if (!$file->isFile()) {
-                continue;
-            }
-
             $filePath = $file->getRealPath();
 
             if (!in_array(pathinfo($filePath, PATHINFO_EXTENSION), array('php', 'inc'))) {
@@ -84,7 +81,6 @@ class ClassMapGenerator
             foreach ($classes as $class) {
                 $map[$class] = $filePath;
             }
-
         }
 
         return $map;
@@ -108,7 +104,7 @@ class ClassMapGenerator
         }
 
         // return early if there is no chance of matching anything in this file
-        if (!preg_match('{\b(?:class|interface'.$traits.')\b}i', $contents)) {
+        if (!preg_match('{\b(?:class|interface'.$traits.')\s}i', $contents)) {
             return array();
         }
 

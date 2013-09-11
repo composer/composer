@@ -138,10 +138,17 @@ class ArchiveManager
             $filesystem->ensureDirectoryExists($sourcePath);
 
             // Download sources
-            $this->downloadManager->download($package, $sourcePath, true);
+            $this->downloadManager->download($package, $sourcePath);
         }
 
         // Create the archive
-        return $usableArchiver->archive($sourcePath, $target, $format, $package->getArchiveExcludes());
+        $archivePath = $usableArchiver->archive($sourcePath, $target, $format, $package->getArchiveExcludes());
+
+        //cleanup temporary download
+        if (!$package instanceof RootPackage) {
+            $filesystem->removeDirectory($sourcePath);
+        }
+
+        return $archivePath;
     }
 }

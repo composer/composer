@@ -46,8 +46,8 @@ class HgBitbucketDriver extends VcsDriver
         if (null === $this->rootIdentifier) {
             $resource = $this->getScheme() . '://bitbucket.org/api/1.0/repositories/'.$this->owner.'/'.$this->repository.'/tags';
             $repoData = JsonFile::parseJson($this->getContents($resource), $resource);
-            if (array() === $repoData) {
-                throw new \RuntimeException('This does not appear to be a mercurial repository, use '.$this->url.'.git if this is a git bitbucket repository');
+            if (array() === $repoData || !isset($repoData['tip'])) {
+                throw new \RuntimeException($this->url.' does not appear to be a mercurial repository, use '.$this->url.'.git if this is a git bitbucket repository');
             }
             $this->rootIdentifier = $repoData['tip']['raw_node'];
         }
@@ -68,9 +68,7 @@ class HgBitbucketDriver extends VcsDriver
      */
     public function getSource($identifier)
     {
-        $label = array_search($identifier, $this->getTags()) ?: $identifier;
-
-        return array('type' => 'hg', 'url' => $this->getUrl(), 'reference' => $label);
+        return array('type' => 'hg', 'url' => $this->getUrl(), 'reference' => $identifier);
     }
 
     /**
@@ -78,10 +76,9 @@ class HgBitbucketDriver extends VcsDriver
      */
     public function getDist($identifier)
     {
-        $label = array_search($identifier, $this->getTags()) ?: $identifier;
-        $url = $this->getScheme() . '://bitbucket.org/'.$this->owner.'/'.$this->repository.'/get/'.$label.'.zip';
+        $url = $this->getScheme() . '://bitbucket.org/'.$this->owner.'/'.$this->repository.'/get/'.$identifier.'.zip';
 
-        return array('type' => 'zip', 'url' => $url, 'reference' => $label, 'shasum' => '');
+        return array('type' => 'zip', 'url' => $url, 'reference' => $identifier, 'shasum' => '');
     }
 
     /**
@@ -127,6 +124,7 @@ class HgBitbucketDriver extends VcsDriver
             foreach ($tagsData as $tag => $data) {
                 $this->tags[$tag] = $data['raw_node'];
             }
+            unset($this->tags['tip']);
         }
 
         return $this->tags;

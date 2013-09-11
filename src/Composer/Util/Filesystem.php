@@ -169,8 +169,6 @@ class Filesystem
 
                 return;
             }
-
-            return $this->copyThenRemove($source, $target);
         } else {
             // We do not use PHP's "rename" function here since it does not support
             // the case where $source, and $target are located on different partitions.
@@ -185,7 +183,7 @@ class Filesystem
             }
         }
 
-        throw new \RuntimeException(sprintf('Could not rename "%s" to "%s".', $source, $target));
+        return $this->copyThenRemove($source, $target);
     }
 
     /**

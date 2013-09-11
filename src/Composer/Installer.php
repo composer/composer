@@ -15,13 +15,16 @@ namespace Composer;
 use Composer\Autoload\AutoloadGenerator;
 use Composer\DependencyResolver\DefaultPolicy;
 use Composer\DependencyResolver\Operation\UpdateOperation;
+use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
+use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Rule;
 use Composer\DependencyResolver\Solver;
 use Composer\DependencyResolver\SolverProblemsException;
 use Composer\Downloader\DownloadManager;
+use Composer\EventDispatcher\EventDispatcher;
 use Composer\Installer\InstallationManager;
 use Composer\Config;
 use Composer\Installer\NoopInstaller;
@@ -39,13 +42,13 @@ use Composer\Repository\InstalledFilesystemRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositoryManager;
-use Composer\Script\EventDispatcher;
 use Composer\Script\ScriptEvents;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Beau Simensen <beau@dflydev.com>
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
+ * @author Nils Adermann <naderman@naderman.de>
  */
 class Installer
 {
@@ -459,6 +462,8 @@ class Installer
             $this->io->write('Nothing to install or update');
         }
 
+        $operations = $this->movePluginsToFront($operations);
+
         foreach ($operations as $operation) {
             // collect suggestions
             if ('install' === $operation->getJobType()) {
@@ -532,6 +537,41 @@ class Installer
         }
 
         return true;
+    }
+
+
+    /**
+     * Workaround: if your packages depend on plugins, we must be sure
+     * that those are installed / updated first; else it would lead to packages
+     * being installed multiple times in different folders, when running Composer
+     * twice.
+     *
+     * While this does not fix the root-causes of https://github.com/composer/composer/issues/1147,
+     * it at least fixes the symptoms and makes usage of composer possible (again)
+     * in such scenarios.
+     *
+     * @param OperationInterface[] $operations
+     * @return OperationInterface[] reordered operation list
+     */
+    private function movePluginsToFront(array $operations)
+    {
+        $installerOps = array();
+        foreach ($operations as $idx => $op) {
+            if ($op instanceof InstallOperation) {
+                $package = $op->getPackage();
+            } else if ($op instanceof UpdateOperation) {
+                $package = $op->getTargetPackage();
+            } else {
+                continue;
+            }
+
+            if ($package->getRequires() === array() && ($package->getType() === 'composer-plugin' || $package->getType() === 'composer-installer')) {
+                $installerOps[] = $op;
+                unset($operations[$idx]);
+            }
+        }
+
+        return array_merge($installerOps, $operations);
     }
 
     private function createPool()
@@ -1016,7 +1056,7 @@ class Installer
     }
 
     /**
-     * Disables custom installers.
+     * Disables plugins.
      *
      * Call this if you want to ensure that third-party code never gets
      * executed. The default is to automatically install, and execute
@@ -1024,9 +1064,9 @@ class Installer
      *
      * @return Installer
      */
-    public function disableCustomInstallers()
+    public function disablePlugins()
     {
-        $this->installationManager->disableCustomInstallers();
+        $this->installationManager->disablePlugins();
 
         return $this;
     }

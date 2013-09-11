@@ -9,7 +9,7 @@
             "required": true
         },
         "type": {
-            "description": "Package type, either 'library' for common packages, 'composer-installer' for custom installers, 'metapackage' for empty packages, or a custom type ([a-z0-9-]+) defined by whatever project this package applies to.",
+            "description": "Package type, either 'library' for common packages, 'composer-plugin' for plugins, 'metapackage' for empty packages, or a custom type ([a-z0-9-]+) defined by whatever project this package applies to.",
             "type": "string"
         },
         "target-dir": {
@@ -180,7 +180,7 @@
         },
         "extra": {
             "type": ["object", "array"],
-            "description": "Arbitrary extra data that can be used by custom installers, for example, package of type composer-installer must have a 'class' key defining the installer class name.",
+            "description": "Arbitrary extra data that can be used by plugins, for example, package of type composer-plugin may have a 'class' key defining an installer class name.",
             "additionalProperties": true
         },
         "autoload": {
@@ -258,6 +258,14 @@
                 "post-update-cmd": {
                     "type": ["array", "string"],
                     "description": "Occurs after the update command is executed, contains one or more Class::method callables or shell commands."
+                },
+                "pre-status-cmd": {
+                    "type": ["array", "string"],
+                    "description": "Occurs before the status command is executed, contains one or more Class::method callables or shell commands."
+                },
+                "post-status-cmd": {
+                    "type": ["array", "string"],
+                    "description": "Occurs after the status command is executed, contains one or more Class::method callables or shell commands."
                 },
                 "pre-package-install": {
                     "type": ["array", "string"],

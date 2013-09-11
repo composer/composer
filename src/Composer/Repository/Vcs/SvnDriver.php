@@ -193,7 +193,13 @@ class SvnDriver extends VcsDriver
         if (null === $this->branches) {
             $this->branches = array();
 
-            $output = $this->execute('svn ls --verbose', $this->baseUrl . '/');
+            if (false === strpos($this->trunkPath, '/')) {
+                $trunkParent = $this->baseUrl . '/';
+            } else {
+                $trunkParent = $this->baseUrl . '/' . dirname($this->trunkPath) . '/';
+            }
+
+            $output = $this->execute('svn ls --verbose', $trunkParent);
             if ($output) {
                 foreach ($this->process->splitLines($output) as $line) {
                     $line = trim($line);

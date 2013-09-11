@@ -57,6 +57,24 @@ class ScriptEvents
     const POST_UPDATE_CMD = 'post-update-cmd';
 
     /**
+     * The PRE_STATUS_CMD event occurs before the status command is executed.
+     *
+     * The event listener method receives a Composer\Script\CommandEvent instance.
+     *
+     * @var string
+     */
+    const PRE_STATUS_CMD = 'pre-status-cmd';
+
+    /**
+     * The POST_STATUS_CMD event occurs after the status command is executed.
+     *
+     * The event listener method receives a Composer\Script\CommandEvent instance.
+     *
+     * @var string
+     */
+    const POST_STATUS_CMD = 'post-status-cmd';
+
+    /**
      * The PRE_PACKAGE_INSTALL event occurs before a package is installed.
      *
      * The event listener method receives a Composer\Script\PackageEvent instance.

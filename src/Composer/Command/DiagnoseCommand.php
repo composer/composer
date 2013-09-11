@@ -15,6 +15,8 @@ namespace Composer\Command;
 use Composer\Composer;
 use Composer\Factory;
 use Composer\Downloader\TransportException;
+use Composer\Plugin\CommandEvent;
+use Composer\Plugin\PluginEvents;
 use Composer\Util\ConfigValidator;
 use Composer\Util\RemoteFilesystem;
 use Composer\Util\StreamContextFactory;
@@ -64,6 +66,9 @@ EOT
 
         $composer = $this->getComposer(false);
         if ($composer) {
+            $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'diagnose', $input, $output);
+            $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
+
             $output->write('Checking composer.json: ');
             $this->outputResult($output, $this->checkComposerSchema());
         }

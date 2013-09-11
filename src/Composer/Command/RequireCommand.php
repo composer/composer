@@ -20,6 +20,9 @@ use Composer\Factory;
 use Composer\Installer;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
+use Composer\Package\Version\VersionParser;
+use Composer\Plugin\CommandEvent;
+use Composer\Plugin\PluginEvents;
 
 /**
  * @author Jérémy Romey <jeremy@free-agent.fr>
@@ -80,6 +83,12 @@ EOT
         $baseRequirements = array_key_exists($requireKey, $composer) ? $composer[$requireKey] : array();
         $requirements = $this->formatRequirements($requirements);
 
+        // validate requirements format
+        $versionParser = new VersionParser();
+        foreach ($requirements as $constraint) {
+            $versionParser->parseConstraints($constraint);
+        }
+
         if (!$this->updateFileCleanly($json, $baseRequirements, $requirements, $requireKey)) {
             foreach ($requirements as $package => $version) {
                 $baseRequirements[$package] = $version;
@@ -99,6 +108,10 @@ EOT
         $composer = $this->getComposer();
         $composer->getDownloadManager()->setOutputProgress(!$input->getOption('no-progress'));
         $io = $this->getIO();
+
+        $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'require', $input, $output);
+        $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
+
         $install = Installer::create($io, $composer);
 
         $install
