@@ -232,28 +232,13 @@ class PluginManager
      */
     public function getInstallPath(PackageInterface $package, $global = false)
     {
-        $targetDir = $package->getTargetDir();
-
-        return $this->getPackageBasePath($package, $global) . ($targetDir ? '/'.$targetDir : '');
-    }
-
-    /**
-     * Retrieves the base path a package gets installed into.
-     *
-     * Does not take targetDir into account.
-     *
-     * @param PackageInterface $package
-     * @param bool             $global  Whether this is a global package
-     *
-     * @return string Base path
-     */
-    protected function getPackageBasePath(PackageInterface $package, $global = false)
-    {
-        if ($global) {
-            $vendorDir = $this->composer->getConfig()->get('home').'/vendor';
-        } else {
-            $vendorDir = rtrim($this->composer->getConfig()->get('vendor-dir'), '/');
+        if (!$global) {
+            return $this->composer->getInstallationManager()->getInstallPath($package);
         }
-        return ($vendorDir ? $vendorDir.'/' : '') . $package->getPrettyName();
+
+        $targetDir = $package->getTargetDir();
+        $vendorDir = $this->composer->getConfig()->get('home').'/vendor';
+
+        return ($vendorDir ? $vendorDir.'/' : '').$package->getPrettyName().($targetDir ? '/'.$targetDir : '');
     }
 }
