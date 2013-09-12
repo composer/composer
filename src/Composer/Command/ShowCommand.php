@@ -188,7 +188,7 @@ EOT
                 if (null === $width) {
                     // In case the width is not detected, we're probably running the command
                     // outside of a real terminal, use space without a limit
-                    $width = INF;
+                    $width = PHP_INT_MAX;
                 }
                 if (defined('PHP_WINDOWS_VERSION_BUILD')) {
                     $width--;
