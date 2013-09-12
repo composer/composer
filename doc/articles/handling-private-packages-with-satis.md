@@ -124,7 +124,7 @@ Example using HTTP over SSL using a client certificate:
                 "url": "https://example.org",
                 "options": {
                     "ssl": {
-                        "local_cert": "/home/composer/.ssl/composer.pem",
+                        "local_cert": "/home/composer/.ssl/composer.pem"
                     }
                 }
             }
