@@ -36,7 +36,7 @@ class PerforceDownloader extends VcsDownloader
         $this->io->write('    Cloning ' . $ref);
         $this->initPerforce($package, $path, $ref);
         $this->perforce->setStream($ref);
-        $this->perforce->queryP4User($this->io);
+        $this->perforce->p4Login($this->io);
         $this->perforce->writeP4ClientSpec();
         $this->perforce->connectClient();
         $this->perforce->syncCodeBase($label);

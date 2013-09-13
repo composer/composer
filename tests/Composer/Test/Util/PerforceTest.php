@@ -663,7 +663,7 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
             $expectedArray[] = 'Stream:';
             $expectedArray[] = '  //depot/branch';
         } else {
-            $expectedArray[] = 'View:  //depot/...  //composer_perforce_TEST_depot/depot/...';
+            $expectedArray[] = 'View:  //depot/...  //composer_perforce_TEST_depot/...';
         }
 
         return $expectedArray;
