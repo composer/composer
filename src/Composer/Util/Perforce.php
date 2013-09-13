@@ -282,15 +282,13 @@ class Perforce
         $prevDir = getcwd();
         chdir($this->path);
 
-        $this->executeCommand('pwd');
-
         $p4SyncCommand = $this->generateP4Command('sync -f ');
         if (isset($label)) {
             if (strcmp($label, 'dev-master') != 0) {
                 $p4SyncCommand = $p4SyncCommand . '@' . $label;
             }
         }
-        $this->executeCommand($p4SyncCommand);
+        $result = $this->executeCommand($p4SyncCommand);
 
         chdir($prevDir);
     }
@@ -313,11 +311,7 @@ class Perforce
         } else {
             fwrite(
                 $spec,
-                'View:  ' . $this->getStream() . '/...  //' . $this->getClient() . '/' . str_replace(
-                    '//',
-                    '',
-                    $this->getStream()
-                ) . '/... ' . PHP_EOL
+                'View:  ' . $this->getStream() . '/...  //' . $this->getClient() . '/... ' . PHP_EOL
             );
         }
     }
