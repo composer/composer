@@ -357,6 +357,7 @@ class Factory
         $dm->setDownloader('svn', new Downloader\SvnDownloader($io, $config));
         $dm->setDownloader('hg', new Downloader\HgDownloader($io, $config));
         $dm->setDownloader('zip', new Downloader\ZipDownloader($io, $config, $eventDispatcher, $cache));
+        $dm->setDownloader('rar', new Downloader\RarDownloader($io, $config, $eventDispatcher, $cache));
         $dm->setDownloader('tar', new Downloader\TarDownloader($io, $config, $eventDispatcher, $cache));
         $dm->setDownloader('phar', new Downloader\PharDownloader($io, $config, $eventDispatcher, $cache));
         $dm->setDownloader('file', new Downloader\FileDownloader($io, $config, $eventDispatcher, $cache));
