@@ -523,7 +523,7 @@ private packages:
 
 Each zip artifact is just a ZIP archive with `composer.json` in root folder:
 
-    $ tar -tf acme-corp-parser-10.3.5.zip
+    $ unzip -l acme-corp-parser-10.3.5.zip
     composer.json
     ...
 
