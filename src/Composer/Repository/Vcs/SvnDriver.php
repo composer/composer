@@ -193,10 +193,10 @@ class SvnDriver extends VcsDriver
         if (null === $this->branches) {
             $this->branches = array();
 
-            if (false === strpos($this->trunkPath, '/')) {
+            if(false === $this->trunkPath) {
                 $trunkParent = $this->baseUrl . '/';
             } else {
-                $trunkParent = $this->baseUrl . '/' . dirname($this->trunkPath) . '/';
+                $trunkParent = $this->baseUrl . '/' . $this->trunkPath;
             }
 
             $output = $this->execute('svn ls --verbose', $trunkParent);
@@ -204,12 +204,12 @@ class SvnDriver extends VcsDriver
                 foreach ($this->process->splitLines($output) as $line) {
                     $line = trim($line);
                     if ($line && preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match)) {
-                        if (isset($match[1]) && isset($match[2]) && $match[2] === $this->trunkPath . '/') {
-                            $this->branches[$this->trunkPath] = $this->buildIdentifier(
+                        if (isset($match[1]) && isset($match[2]) && $match[2] === 'composer.json') {
+                            $this->branches['trunk'] = $this->buildIdentifier(
                                 '/' . $this->trunkPath,
                                 $match[1]
                             );
-                            $this->rootIdentifier = $this->branches[$this->trunkPath];
+                            $this->rootIdentifier = $this->branches['trunk'];
                             break;
                         }
                     }
