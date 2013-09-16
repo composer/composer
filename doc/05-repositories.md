@@ -523,9 +523,7 @@ private packages:
 
 Each zip artifact is just a ZIP archive with `composer.json` in root folder:
 
-    $ tar -tf acme-corp-parser-10.3.5.zip
-    composer.json
-    ...
+    $ unzip acme-corp-parser-10.3.5.zip
 
 If there are two archives with different versions of a package, they are both
 imported. When an archive with a newer version is added in the artifact folder
