@@ -193,7 +193,7 @@ class SvnDriver extends VcsDriver
         if (null === $this->branches) {
             $this->branches = array();
 
-            if(false === $this->trunkPath) {
+            if (false === $this->trunkPath) {
                 $trunkParent = $this->baseUrl . '/';
             } else {
                 $trunkParent = $this->baseUrl . '/' . $this->trunkPath;
