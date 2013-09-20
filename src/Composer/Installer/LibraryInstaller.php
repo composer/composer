@@ -41,15 +41,16 @@ class LibraryInstaller implements InstallerInterface
      * @param IOInterface $io
      * @param Composer    $composer
      * @param string      $type
+     * @param Filesystem  $filesystem
      */
-    public function __construct(IOInterface $io, Composer $composer, $type = 'library')
+    public function __construct(IOInterface $io, Composer $composer, $type = 'library', $filesystem = NULL)
     {
         $this->composer = $composer;
         $this->downloadManager = $composer->getDownloadManager();
         $this->io = $io;
         $this->type = $type;
 
-        $this->filesystem = new Filesystem();
+        $this->filesystem = $filesystem ?: new Filesystem();
         $this->vendorDir = rtrim($composer->getConfig()->get('vendor-dir'), '/');
         $this->binDir = rtrim($composer->getConfig()->get('bin-dir'), '/');
     }

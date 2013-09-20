@@ -131,12 +131,18 @@ class LibraryInstallerTest extends TestCase
      */
     public function testUpdate()
     {
-        $library = new LibraryInstaller($this->io, $this->composer);
+        $filesystem = $this->getMockBuilder('Composer\Util\Filesystem')->getMock();
+        $library = new LibraryInstaller($this->io, $this->composer, 'library', $filesystem);
         $initial = $this->createPackageMock();
         $target  = $this->createPackageMock();
 
         $initial
             ->expects($this->any())
+            ->method('getPrettyName')
+            ->will($this->returnValue('package1'));
+
+        $target
+            ->expects($this->once())
             ->method('getPrettyName')
             ->will($this->returnValue('package1'));
 
