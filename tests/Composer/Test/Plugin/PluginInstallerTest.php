@@ -91,7 +91,7 @@ class PluginInstallerTest extends \PHPUnit_Framework_TestCase
 
     protected function tearDown() {
         $filesystem = new Filesystem();
-        $filesystem->removeDirectoryPhp($this->directory);
+        $filesystem->removeDirectory($this->directory);
     }
 
     public function testInstallNewPlugin()
