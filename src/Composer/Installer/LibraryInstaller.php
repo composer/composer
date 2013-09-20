@@ -157,8 +157,12 @@ class LibraryInstaller implements InstallerInterface
 
     protected function updateCode(PackageInterface $initial, PackageInterface $target)
     {
-        $downloadPath = $this->getInstallPath($initial);
-        $this->downloadManager->update($initial, $target, $downloadPath);
+        $initialDownloadPath = $this->getInstallPath($initial);
+        $targetDownloadPath = $this->getInstallPath($target);
+        if ($targetDownloadPath != $initialDownloadPath) {
+            $this->filesystem->copyThenRemove($initialDownloadPath, $targetDownloadPath);
+        }
+        $this->downloadManager->update($initial, $target, $targetDownloadPath);
     }
 
     protected function removeCode(PackageInterface $package)
