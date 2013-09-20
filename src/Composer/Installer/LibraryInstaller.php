@@ -43,7 +43,7 @@ class LibraryInstaller implements InstallerInterface
      * @param string      $type
      * @param Filesystem  $filesystem
      */
-    public function __construct(IOInterface $io, Composer $composer, $type = 'library', $filesystem = NULL)
+    public function __construct(IOInterface $io, Composer $composer, $type = 'library', $filesystem = null)
     {
         $this->composer = $composer;
         $this->downloadManager = $composer->getDownloadManager();
@@ -160,7 +160,7 @@ class LibraryInstaller implements InstallerInterface
     {
         $initialDownloadPath = $this->getInstallPath($initial);
         $targetDownloadPath = $this->getInstallPath($target);
-        if ($targetDownloadPath != $initialDownloadPath) {
+        if ($targetDownloadPath !== $initialDownloadPath) {
             $this->filesystem->copyThenRemove($initialDownloadPath, $targetDownloadPath);
         }
         $this->downloadManager->update($initial, $target, $targetDownloadPath);
