@@ -66,6 +66,7 @@ class CreateProjectCommand extends Command
                 new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Whether to prevent execution of all defined scripts in the root package.'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
                 new InputOption('keep-vcs', null, InputOption::VALUE_NONE, 'Whether to prevent deletion vcs folder.'),
+                new InputOption('no-install', null, InputOption::VALUE_NONE, 'Whether to skip installation of the package dependencies.'),
             ))
             ->setHelp(<<<EOT
 The <info>create-project</info> command creates a new project from a given
@@ -130,11 +131,12 @@ EOT
             $input->getOption('no-custom-installers'),
             $input->getOption('no-scripts'),
             $input->getOption('keep-vcs'),
-            $input->getOption('no-progress')
+            $input->getOption('no-progress'),
+            $input->getOption('no-install')
         );
     }
 
-    public function installProject(IOInterface $io, $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositoryUrl = null, $disableCustomInstallers = false, $noScripts = false, $keepVcs = false, $noProgress = false)
+    public function installProject(IOInterface $io, $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositoryUrl = null, $disableCustomInstallers = false, $noScripts = false, $keepVcs = false, $noProgress = false, $noInstall = false)
     {
         if ($packageName !== null) {
             $installedFromVcs = $this->installRootPackage($io, $config, $packageName, $directory, $packageVersion, $stability, $preferSource, $preferDist, $installDevPackages, $repositoryUrl, $disableCustomInstallers, $noScripts, $keepVcs, $noProgress);
@@ -150,18 +152,20 @@ EOT
         }
 
         // install dependencies of the created project
-        $installer = Installer::create($io, $composer);
-        $installer->setPreferSource($preferSource)
-            ->setPreferDist($preferDist)
-            ->setDevMode($installDevPackages)
-            ->setRunScripts( ! $noScripts);
+        if ($noInstall === false) {
+            $installer = Installer::create($io, $composer);
+            $installer->setPreferSource($preferSource)
+                ->setPreferDist($preferDist)
+                ->setDevMode($installDevPackages)
+                ->setRunScripts( ! $noScripts);
 
-        if ($disableCustomInstallers) {
-            $installer->disableCustomInstallers();
-        }
+            if ($disableCustomInstallers) {
+                $installer->disableCustomInstallers();
+            }
 
-        if (!$installer->run()) {
-            return 1;
+            if (!$installer->run()) {
+                return 1;
+            }
         }
 
         $hasVcs = $installedFromVcs;
