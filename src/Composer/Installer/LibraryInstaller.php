@@ -43,7 +43,7 @@ class LibraryInstaller implements InstallerInterface
      * @param string      $type
      * @param Filesystem  $filesystem
      */
-    public function __construct(IOInterface $io, Composer $composer, $type = 'library', $filesystem = null)
+    public function __construct(IOInterface $io, Composer $composer, $type = 'library', Filesystem $filesystem = null)
     {
         $this->composer = $composer;
         $this->downloadManager = $composer->getDownloadManager();
