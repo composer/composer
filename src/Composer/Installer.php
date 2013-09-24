@@ -531,9 +531,9 @@ class Installer
                 $this->eventDispatcher->dispatchPackageEvent(constant($event), $this->devMode, $operation);
             }
 
-            if (!$this->dryRun) {
-                $localRepo->write();
-            }
+        }
+        if (!$this->dryRun) {
+            $localRepo->write();
         }
 
         return true;
