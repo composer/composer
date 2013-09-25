@@ -1,7 +1,7 @@
 <?php
 namespace Composer\Test\Util;
 
-use Composer\Test\TestCase;
+use Composer\TestCase;
 use Composer\Util\SpdxLicenseIdentifier;
 
 class SpdxLicenseIdentifierTest extends TestCase

@@ -17,7 +17,7 @@ use Composer\Package\Link;
 use Composer\Util\Filesystem;
 use Composer\Package\AliasPackage;
 use Composer\Package\Package;
-use Composer\Test\TestCase;
+use Composer\TestCase;
 use Composer\Script\ScriptEvents;
 
 class AutoloadGeneratorTest extends TestCase
