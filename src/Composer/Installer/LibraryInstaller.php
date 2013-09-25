@@ -41,15 +41,16 @@ class LibraryInstaller implements InstallerInterface
      * @param IOInterface $io
      * @param Composer    $composer
      * @param string      $type
+     * @param Filesystem  $filesystem
      */
-    public function __construct(IOInterface $io, Composer $composer, $type = 'library')
+    public function __construct(IOInterface $io, Composer $composer, $type = 'library', Filesystem $filesystem = null)
     {
         $this->composer = $composer;
         $this->downloadManager = $composer->getDownloadManager();
         $this->io = $io;
         $this->type = $type;
 
-        $this->filesystem = new Filesystem();
+        $this->filesystem = $filesystem ?: new Filesystem();
         $this->vendorDir = rtrim($composer->getConfig()->get('vendor-dir'), '/');
         $this->binDir = rtrim($composer->getConfig()->get('bin-dir'), '/');
     }
@@ -157,8 +158,12 @@ class LibraryInstaller implements InstallerInterface
 
     protected function updateCode(PackageInterface $initial, PackageInterface $target)
     {
-        $downloadPath = $this->getInstallPath($initial);
-        $this->downloadManager->update($initial, $target, $downloadPath);
+        $initialDownloadPath = $this->getInstallPath($initial);
+        $targetDownloadPath = $this->getInstallPath($target);
+        if ($targetDownloadPath !== $initialDownloadPath) {
+            $this->filesystem->copyThenRemove($initialDownloadPath, $targetDownloadPath);
+        }
+        $this->downloadManager->update($initial, $target, $targetDownloadPath);
     }
 
     protected function removeCode(PackageInterface $package)
