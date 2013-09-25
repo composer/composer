@@ -12,7 +12,7 @@
 
 namespace Composer\Repository;
 
-use Composer\Test\TestCase;
+use Composer\TestCase;
 
 /**
  * @group slow

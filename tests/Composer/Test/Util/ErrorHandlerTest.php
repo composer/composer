@@ -13,7 +13,7 @@
 namespace Composer\Test\Util;
 
 use Composer\Util\ErrorHandler;
-use Composer\Test\TestCase;
+use Composer\TestCase;
 
 /**
  * ErrorHandler test case
