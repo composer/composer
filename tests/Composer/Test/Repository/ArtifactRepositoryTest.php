@@ -12,7 +12,7 @@
 
 namespace Composer\Repository;
 
-use Composer\Test\TestCase;
+use Composer\TestCase;
 use Composer\IO\NullIO;
 use Composer\Config;
 use Composer\Package\BasePackage;

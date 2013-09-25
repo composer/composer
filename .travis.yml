@@ -6,10 +6,12 @@ php:
   - 5.4
   - 5.5
 
-before_script: 
+before_script:
+    - sudo apt-get install parallel
     - echo '' > ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini
     - composer install --dev --prefer-source
     - git config --global user.name travis-ci
     - git config --global user.email travis@example.com
 
-script: ./vendor/bin/phpunit -c tests/complete.phpunit.xml
+script:
+    - ls -d tests/Composer/Test/* | parallel --gnu --keep-order 'echo "Running {} tests"; ./vendor/bin/phpunit -c tests/complete.phpunit.xml {};' || exit 1
