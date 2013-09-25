@@ -161,7 +161,15 @@ class LibraryInstaller implements InstallerInterface
         $initialDownloadPath = $this->getInstallPath($initial);
         $targetDownloadPath = $this->getInstallPath($target);
         if ($targetDownloadPath !== $initialDownloadPath) {
-            $this->filesystem->copyThenRemove($initialDownloadPath, $targetDownloadPath);
+            // if the target is part of the initial dir, we force a remove + install
+            // to avoid the rename wiping the target dir as part of the initial dir cleanup
+            if (strpos($initialDownloadPath, $targetDownloadPath) === 0) {
+                $this->removeCode($initial);
+                $this->installCode($target);
+                return;
+            }
+
+            $this->filesystem->rename($initialDownloadPath, $targetDownloadPath);
         }
         $this->downloadManager->update($initial, $target, $targetDownloadPath);
     }

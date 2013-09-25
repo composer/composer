@@ -135,7 +135,7 @@ class LibraryInstallerTest extends TestCase
           ->getMock();
         $filesystem
           ->expects($this->once())
-          ->method('copyThenRemove')
+          ->method('rename')
           ->with($this->vendorDir.'/package1', $this->vendorDir.'/package1/newtarget');
 
         $initial = $this->createPackageMock();
