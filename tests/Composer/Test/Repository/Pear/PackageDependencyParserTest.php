@@ -12,7 +12,7 @@
 
 namespace Composer\Repository\Pear;
 
-use Composer\Test\TestCase;
+use Composer\TestCase;
 
 class PackageDependencyParserTest extends TestCase
 {

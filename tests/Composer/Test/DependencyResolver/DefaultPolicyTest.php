@@ -19,7 +19,7 @@ use Composer\DependencyResolver\Pool;
 use Composer\Package\Link;
 use Composer\Package\AliasPackage;
 use Composer\Package\LinkConstraint\VersionConstraint;
-use Composer\Test\TestCase;
+use Composer\TestCase;
 
 class DefaultPolicyTest extends TestCase
 {

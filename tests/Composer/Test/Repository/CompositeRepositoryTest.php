@@ -14,7 +14,7 @@ namespace Composer\Test\Repository;
 
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\ArrayRepository;
-use Composer\Test\TestCase;
+use Composer\TestCase;
 
 class CompositeRepositoryTest extends TestCase
 {
