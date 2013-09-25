@@ -253,12 +253,12 @@ class Factory
         $generator = new AutoloadGenerator($dispatcher);
         $composer->setAutoloadGenerator($generator);
 
+        // add installers to the manager
+        $this->createDefaultInstallers($im, $composer, $io);
+
         $globalRepository = $this->createGlobalRepository($config, $vendorDir);
         $pm = $this->createPluginManager($composer, $io, $globalRepository);
         $composer->setPluginManager($pm);
-
-        // add installers to the manager
-        $this->createDefaultInstallers($im, $composer, $io);
 
         if (!$disablePlugins) {
             $pm->loadInstalledPlugins();
@@ -357,6 +357,7 @@ class Factory
         $dm->setDownloader('svn', new Downloader\SvnDownloader($io, $config));
         $dm->setDownloader('hg', new Downloader\HgDownloader($io, $config));
         $dm->setDownloader('zip', new Downloader\ZipDownloader($io, $config, $eventDispatcher, $cache));
+        $dm->setDownloader('rar', new Downloader\RarDownloader($io, $config, $eventDispatcher, $cache));
         $dm->setDownloader('tar', new Downloader\TarDownloader($io, $config, $eventDispatcher, $cache));
         $dm->setDownloader('phar', new Downloader\PharDownloader($io, $config, $eventDispatcher, $cache));
         $dm->setDownloader('file', new Downloader\FileDownloader($io, $config, $eventDispatcher, $cache));

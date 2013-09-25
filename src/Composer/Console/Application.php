@@ -238,6 +238,14 @@ class Application extends BaseApplication
     /**
      * {@inheritDoc}
      */
+    public function getLongVersion()
+    {
+        return parent::getLongVersion() . ' ' . Composer::RELEASE_DATE;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     protected function getDefaultInputDefinition()
     {
         $definition = parent::getDefaultInputDefinition();
