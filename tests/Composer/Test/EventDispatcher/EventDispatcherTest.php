@@ -14,7 +14,7 @@ namespace Composer\Test\EventDispatcher;
 
 use Composer\EventDispatcher\Event;
 use Composer\EventDispatcher\EventDispatcher;
-use Composer\Test\TestCase;
+use Composer\TestCase;
 use Composer\Script;
 use Composer\Util\ProcessExecutor;
 

@@ -13,7 +13,7 @@
 namespace Composer\Test\Util;
 
 use Composer\Util\Filesystem;
-use Composer\Test\TestCase;
+use Composer\TestCase;
 
 class FilesystemTest extends TestCase
 {

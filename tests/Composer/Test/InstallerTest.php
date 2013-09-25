@@ -27,6 +27,7 @@ use Composer\Test\Mock\InstalledFilesystemRepositoryMock;
 use Composer\Test\Mock\InstallationManagerMock;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\StreamOutput;
+use Composer\TestCase;
 
 class InstallerTest extends TestCase
 {
