@@ -42,6 +42,19 @@ class Filesystem
     }
 
     /**
+     * Checks if a directory is empty
+     *
+     * @param string $dir
+     * @return bool
+     */
+    public function isDirEmpty($dir)
+    {
+        $dir = rtrim($dir, '/\\');
+
+        return count(glob($dir.'/*') ?: array()) === 0 && count(glob($dir.'/.*') ?: array()) === 2;
+    }
+
+    /**
      * Recursively remove a directory
      *
      * Uses the process component if proc_open is enabled on the PHP
