@@ -152,6 +152,7 @@ EOT
         }
 
         $composer = Factory::create($io, null, $disablePlugins);
+        $fs = new Filesystem();
 
         if ($noScripts === false) {
             // dispatch event
@@ -187,7 +188,6 @@ EOT
             }
 
             try {
-                $fs = new Filesystem();
                 $dirs = iterator_to_array($finder);
                 unset($finder);
                 foreach ($dirs as $dir) {
@@ -222,10 +222,10 @@ EOT
 
         chdir($oldCwd);
         $vendorComposerDir = $composer->getConfig()->get('vendor-dir').'/composer';
-        if (is_dir($vendorComposerDir) && glob($vendorComposerDir.'/*') === array() && count(glob($vendorComposerDir.'/.*')) === 2) {
+        if (is_dir($vendorComposerDir) && $fs->isDirEmpty($vendorComposerDir)) {
             @rmdir($vendorComposerDir);
             $vendorDir = $composer->getConfig()->get('vendor-dir');
-            if (is_dir($vendorDir) && glob($vendorDir.'/*') === array() && count(glob($vendorDir.'/.*')) === 2) {
+            if (is_dir($vendorDir) && $fs->isDirEmpty($vendorDir)) {
                 @rmdir($vendorDir);
             }
         }
