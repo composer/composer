@@ -33,6 +33,13 @@ class AutoloadGeneratorHelper
 
     /**
      * @var string
+     *   PHP code to obtain the vendor dir from within a generated file in the target dir.
+     *   Note: This may break in PHP 5.2 because it may contain __DIR__.
+     */
+    private $vendorPathCode;
+
+    /**
+     * @var string
      *   PHP code to obtain the vendor dir from within a generated file in the target dir,
      *   with __DIR__ being replaced with dirname(__FILE__) for PHP 5.2 compatibility.
      */
