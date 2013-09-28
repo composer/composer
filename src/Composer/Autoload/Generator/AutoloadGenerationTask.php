@@ -13,6 +13,10 @@ use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Util\Filesystem;
 
 /**
+ * Provides information about the current autoload generation process.
+ * The methods of this class will compute values or create objects, but they do not have side effects such as file
+ * generation.
+ *
  * @property Config config
  * @property InstalledRepositoryInterface localRepo
  * @property PackageInterface mainPackage
@@ -29,15 +33,26 @@ use Composer\Util\Filesystem;
  * @property AutoloadGeneratorHelper helper
  * @property Filesystem filesystem
  * @property string basePath
+ *   The project root path.
  * @property string vendorPath
+ *   The vendor path, typically (project root)/vendor.
  * @property string targetPath
+ *   The target path, typically (project root)/vendor/composer.
  * @property string vendorPathCode
+ *   PHP code to obtain the vendor dir from within a generated file in the target dir.
  * @property string vendorPathCode52
+ *   PHP code to obtain the vendor dir from within a generated file in the target dir,
+ *   with __DIR__ being replaced with dirname(__FILE__) for PHP 5.2 compatibility.
  * @property string vendorPathToTargetDirCode
+ *   PHP code to obtain the target dir from within a generated file in the vendor dir.
  * @property string appBaseDirCode
+ *   PHP code to obtain the application base directory from within a generated file in the target dir.
  * @property array generatorAspects
+ *   Objects that may dump files into the vendor directory, and that provide code snippets for ComposerAutoloaderInit.
  * @property \Composer\Autoload\Generator\Aspect\ClassMapAspect classMapAspect
+ *   Aspect object for class map.
  * @property \Composer\Autoload\Generator\Aspect\TargetDirAspect targetDirAspect
+ *   Aspect object for target dir handling.
  */
 class AutoloadGenerationTask {
 
@@ -50,7 +65,9 @@ class AutoloadGenerationTask {
     /**
      * @param array $data
      *   Starting values for some data keys.
-     *   @todo verify required keys
+     *   @todo verify required keys?
+     *     Not doing this allows to use an incomplete version of this, if only one or a few values are needed.
+     *     See e.g. AutoloadGenerator::buildPackageMap()
      */
     public function __construct(array $data)
     {
