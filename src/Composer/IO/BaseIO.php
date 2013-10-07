@@ -12,9 +12,6 @@
 
 namespace Composer\IO;
 
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Helper\HelperSet;
 use Composer\Config;
 
 abstract class BaseIO implements IOInterface
