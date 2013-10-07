@@ -12,8 +12,6 @@
 
 namespace Composer\Plugin;
 
-use Composer\Composer;
-use Composer\IO\IOInterface;
 use Composer\EventDispatcher\Event;
 use Composer\Util\RemoteFilesystem;
 

@@ -16,7 +16,6 @@ use Composer\Config\JsonConfigSource;
 use Composer\Json\JsonFile;
 use Composer\IO\IOInterface;
 use Composer\Package\Archiver;
-use Composer\Repository\ComposerRepository;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\RepositoryInterface;
 use Composer\Util\ProcessExecutor;
