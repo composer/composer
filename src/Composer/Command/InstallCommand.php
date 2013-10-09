@@ -43,7 +43,8 @@ class InstallCommand extends Command
                 new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Skips the execution of all scripts defined in composer.json file.'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
                 new InputOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Shows more details including new commits pulled in when updating packages.'),
-                new InputOption('optimize-autoloader', 'o', InputOption::VALUE_NONE, 'Optimize autoloader during autoloader dump')
+                new InputOption('optimize-autoloader', 'o', InputOption::VALUE_NONE, 'Optimize autoloader during autoloader dump'),
+                new InputOption('no-prepend', null, InputOption::VALUE_NONE, 'Disables the prepending of the autoloader')
             ))
             ->setHelp(<<<EOT
 The <info>install</info> command reads the composer.lock file from
@@ -101,6 +102,7 @@ EOT
             ->setDevMode(!$input->getOption('no-dev'))
             ->setRunScripts(!$input->getOption('no-scripts'))
             ->setOptimizeAutoloader($input->getOption('optimize-autoloader'))
+            ->setPrepend(!$input->getOption('no-prepend'))
         ;
 
         if ($input->getOption('no-plugins')) {
