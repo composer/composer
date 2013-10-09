@@ -37,7 +37,7 @@ class AutoloadGenerator
         $this->eventDispatcher = $eventDispatcher;
     }
 
-    public function dump(Config $config, InstalledRepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir, $scanPsr0Packages = false, $suffix = '')
+    public function dump(Config $config, InstalledRepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir, $scanPsr0Packages = false, $suffix = '', $prepend = 'true')
     {
         $this->eventDispatcher->dispatchScript(ScriptEvents::PRE_AUTOLOAD_DUMP);
 
@@ -180,7 +180,7 @@ EOF;
             file_put_contents($targetDir.'/autoload_files.php', $includeFilesFile);
         }
         file_put_contents($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, $suffix));
-        file_put_contents($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, true, (bool) $includePathFile, $targetDirLoader, (bool) $includeFilesFile, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath));
+        file_put_contents($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, true, (bool) $includePathFile, $targetDirLoader, (bool) $includeFilesFile, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prepend));
 
         // use stream_copy_to_stream instead of copy
         // to work around https://bugs.php.net/bug.php?id=64634
@@ -364,7 +364,7 @@ return ComposerAutoloaderInit$suffix::getLoader();
 AUTOLOAD;
     }
 
-    protected function getAutoloadRealFile($usePSR0, $useClassMap, $useIncludePath, $targetDirLoader, $useIncludeFiles, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath)
+    protected function getAutoloadRealFile($usePSR0, $useClassMap, $useIncludePath, $targetDirLoader, $useIncludeFiles, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prepend)
     {
         // TODO the class ComposerAutoloaderInit should be revert to a closure
         // when APC has been fixed:
@@ -395,7 +395,7 @@ class ComposerAutoloaderInit$suffix
             return self::\$loader;
         }
 
-        spl_autoload_register(array('ComposerAutoloaderInit$suffix', 'loadClassLoader'), true, true);
+        spl_autoload_register(array('ComposerAutoloaderInit$suffix', 'loadClassLoader'), true, $prepend);
         self::\$loader = \$loader = new \\Composer\\Autoload\\ClassLoader();
         spl_autoload_unregister(array('ComposerAutoloaderInit$suffix', 'loadClassLoader'));
 
@@ -454,7 +454,7 @@ REGISTER_AUTOLOAD;
         }
 
         $file .= <<<REGISTER_LOADER
-        \$loader->register(true);
+        \$loader->register($prepend);
 
 
 REGISTER_LOADER;

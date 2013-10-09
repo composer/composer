@@ -106,6 +106,7 @@ class Installer
     protected $update = false;
     protected $runScripts = true;
     protected $updateWhitelist = null;
+    protected $prepend = 'true';
 
     /**
      * @var array
@@ -280,7 +281,7 @@ class Installer
 
             // write autoloader
             $this->io->write('<info>Generating autoload files</info>');
-            $this->autoloadGenerator->dump($this->config, $localRepo, $this->package, $this->installationManager, 'composer', $this->optimizeAutoloader);
+            $this->autoloadGenerator->dump($this->config, $localRepo, $this->package, $this->installationManager, 'composer', $this->optimizeAutoloader, '', $this->prepend);
 
             if ($this->runScripts) {
                 // dispatch post event
@@ -1052,6 +1053,18 @@ class Installer
     {
         $this->updateWhitelist = array_flip(array_map('strtolower', $packages));
 
+        return $this;
+    }
+
+    /**
+     * Generate autoload_real with/without prepend
+     *
+     * @param  boolean     $prepend
+     * @return Installer
+     */
+    public function setPrepend($prepend = true)
+    {
+        $this->prepend = (boolean) $prepend === true ? 'true' : 'false';
         return $this;
     }
 
