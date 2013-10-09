@@ -13,7 +13,7 @@
 namespace Composer\Test\Util;
 
 use Composer\Util\Filesystem;
-use Composer\Test\TestCase;
+use Composer\TestCase;
 
 class FilesystemTest extends TestCase
 {
@@ -60,6 +60,8 @@ class FilesystemTest extends TestCase
             array('C:/Temp/../..', 'd:\Temp\..\..\test', true, "'d:/test'"),
             array('/foo/bar', '/foo/bar_vendor', true, "dirname(__DIR__).'/bar_vendor'"),
             array('/foo/bar_vendor', '/foo/bar', true, "dirname(__DIR__).'/bar'"),
+            array('/foo/bar_vendor', '/foo/bar/src', true, "dirname(__DIR__).'/bar/src'"),
+            array('/foo/bar_vendor/src2', '/foo/bar/src/lib', true, "dirname(dirname(__DIR__)).'/bar/src/lib'"),
         );
     }
 
@@ -107,6 +109,8 @@ class FilesystemTest extends TestCase
             array('/tmp', '/tmp/../../test', '/test', true),
             array('/foo/bar', '/foo/bar_vendor', '../bar_vendor', true),
             array('/foo/bar_vendor', '/foo/bar', '../bar', true),
+            array('/foo/bar_vendor', '/foo/bar/src', '../bar/src', true),
+            array('/foo/bar_vendor/src2', '/foo/bar/src/lib', '../../bar/src/lib', true),
         );
     }
 

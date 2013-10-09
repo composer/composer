@@ -328,7 +328,7 @@ EOF;
         $path = $filesystem->normalizePath($path);
 
         $baseDir = '';
-        if (strpos($path, $vendorPath) === 0) {
+        if (strpos($path.'/', $vendorPath.'/') === 0) {
             $path = substr($path, strlen($vendorPath));
             $baseDir = '$vendorDir';
 

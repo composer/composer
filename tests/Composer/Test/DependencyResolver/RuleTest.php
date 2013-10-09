@@ -15,7 +15,7 @@ namespace Composer\Test\DependencyResolver;
 use Composer\DependencyResolver\Rule;
 use Composer\DependencyResolver\Pool;
 use Composer\Repository\ArrayRepository;
-use Composer\Test\TestCase;
+use Composer\TestCase;
 
 class RuleTest extends TestCase
 {

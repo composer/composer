@@ -18,7 +18,7 @@ use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Solver;
 use Composer\DependencyResolver\SolverProblemsException;
 use Composer\Package\Link;
-use Composer\Test\TestCase;
+use Composer\TestCase;
 use Composer\Package\LinkConstraint\MultiConstraint;
 
 class SolverTest extends TestCase

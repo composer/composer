@@ -72,7 +72,7 @@ EOT
             }
 
             try {
-                chmod($tempFilename, 0777 & ~umask());
+                @chmod($tempFilename, 0777 & ~umask());
                 // test the phar validity
                 $phar = new \Phar($tempFilename);
                 // free the variable to unlock the file

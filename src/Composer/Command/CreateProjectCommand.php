@@ -68,6 +68,7 @@ class CreateProjectCommand extends Command
                 new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Whether to prevent execution of all defined scripts in the root package.'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
                 new InputOption('keep-vcs', null, InputOption::VALUE_NONE, 'Whether to prevent deletion vcs folder.'),
+                new InputOption('no-install', null, InputOption::VALUE_NONE, 'Whether to skip installation of the package dependencies.'),
             ))
             ->setHelp(<<<EOT
 The <info>create-project</info> command creates a new project from a given
@@ -137,11 +138,12 @@ EOT
             $input->getOption('no-plugins'),
             $input->getOption('no-scripts'),
             $input->getOption('keep-vcs'),
-            $input->getOption('no-progress')
+            $input->getOption('no-progress'),
+            $input->getOption('no-install')
         );
     }
 
-    public function installProject(IOInterface $io, $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositoryUrl = null, $disablePlugins = false, $noScripts = false, $keepVcs = false, $noProgress = false)
+    public function installProject(IOInterface $io, $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositoryUrl = null, $disablePlugins = false, $noScripts = false, $keepVcs = false, $noProgress = false, $noInstall = false)
     {
         $oldCwd = getcwd();
 
@@ -152,6 +154,7 @@ EOT
         }
 
         $composer = Factory::create($io, null, $disablePlugins);
+        $fs = new Filesystem();
 
         if ($noScripts === false) {
             // dispatch event
@@ -159,18 +162,20 @@ EOT
         }
 
         // install dependencies of the created project
-        $installer = Installer::create($io, $composer);
-        $installer->setPreferSource($preferSource)
-            ->setPreferDist($preferDist)
-            ->setDevMode($installDevPackages)
-            ->setRunScripts( ! $noScripts);
+        if ($noInstall === false) {
+            $installer = Installer::create($io, $composer);
+            $installer->setPreferSource($preferSource)
+                ->setPreferDist($preferDist)
+                ->setDevMode($installDevPackages)
+                ->setRunScripts( ! $noScripts);
 
-        if ($disablePlugins) {
-            $installer->disablePlugins();
-        }
+            if ($disablePlugins) {
+                $installer->disablePlugins();
+            }
 
-        if (!$installer->run()) {
-            return 1;
+            if (!$installer->run()) {
+                return 1;
+            }
         }
 
         $hasVcs = $installedFromVcs;
@@ -187,7 +192,6 @@ EOT
             }
 
             try {
-                $fs = new Filesystem();
                 $dirs = iterator_to_array($finder);
                 unset($finder);
                 foreach ($dirs as $dir) {
@@ -222,10 +226,10 @@ EOT
 
         chdir($oldCwd);
         $vendorComposerDir = $composer->getConfig()->get('vendor-dir').'/composer';
-        if (is_dir($vendorComposerDir) && glob($vendorComposerDir.'/*') === array() && count(glob($vendorComposerDir.'/.*')) === 2) {
+        if (is_dir($vendorComposerDir) && $fs->isDirEmpty($vendorComposerDir)) {
             @rmdir($vendorComposerDir);
             $vendorDir = $composer->getConfig()->get('vendor-dir');
-            if (is_dir($vendorDir) && glob($vendorDir.'/*') === array() && count(glob($vendorDir.'/.*')) === 2) {
+            if (is_dir($vendorDir) && $fs->isDirEmpty($vendorDir)) {
                 @rmdir($vendorDir);
             }
         }

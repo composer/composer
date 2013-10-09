@@ -10,7 +10,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Test;
+namespace Composer;
 
 use Composer\Package\Version\VersionParser;
 use Composer\Package\Package;

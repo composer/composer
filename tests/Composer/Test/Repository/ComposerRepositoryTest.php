@@ -15,7 +15,7 @@ namespace Composer\Test\Repository;
 use Composer\Repository\ComposerRepository;
 use Composer\IO\NullIO;
 use Composer\Test\Mock\FactoryMock;
-use Composer\Test\TestCase;
+use Composer\TestCase;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Version\VersionParser;
 

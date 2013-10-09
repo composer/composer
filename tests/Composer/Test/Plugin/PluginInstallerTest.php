@@ -20,6 +20,7 @@ use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\PackageInterface;
 use Composer\Plugin\PluginManager;
 use Composer\Autoload\AutoloadGenerator;
+use Composer\Util\Filesystem;
 
 class PluginInstallerTest extends \PHPUnit_Framework_TestCase
 {
@@ -30,13 +31,17 @@ class PluginInstallerTest extends \PHPUnit_Framework_TestCase
     protected $repository;
     protected $io;
     protected $autoloadGenerator;
+    protected $directory;
 
     protected function setUp()
     {
         $loader = new JsonLoader(new ArrayLoader());
         $this->packages = array();
+        $this->directory = sys_get_temp_dir() . '/' . uniqid();
         for ($i = 1; $i <= 4; $i++) {
-            $this->packages[] = $loader->load(__DIR__.'/Fixtures/plugin-v'.$i.'/composer.json');
+            $filename = '/Fixtures/plugin-v'.$i.'/composer.json';
+            mkdir(dirname($this->directory . $filename), 0777, TRUE);
+            $this->packages[] = $loader->load(__DIR__ . $filename);
         }
 
         $dm = $this->getMockBuilder('Composer\Downloader\DownloadManager')
@@ -77,11 +82,17 @@ class PluginInstallerTest extends \PHPUnit_Framework_TestCase
 
         $config->merge(array(
             'config' => array(
-                'vendor-dir' => __DIR__.'/Fixtures/',
-                'home' => __DIR__.'/Fixtures',
-                'bin-dir' => __DIR__.'/Fixtures/bin',
+                'vendor-dir' => $this->directory.'/Fixtures/',
+                'home' => $this->directory.'/Fixtures',
+                'bin-dir' => $this->directory.'/Fixtures/bin',
             ),
         ));
+    }
+
+    protected function tearDown()
+    {
+        $filesystem = new Filesystem();
+        $filesystem->removeDirectory($this->directory);
     }
 
     public function testInstallNewPlugin()

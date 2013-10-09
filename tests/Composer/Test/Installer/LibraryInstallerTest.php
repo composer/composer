@@ -14,7 +14,7 @@ namespace Composer\Test\Installer;
 
 use Composer\Installer\LibraryInstaller;
 use Composer\Util\Filesystem;
-use Composer\Test\TestCase;
+use Composer\TestCase;
 use Composer\Composer;
 use Composer\Config;
 
@@ -131,14 +131,30 @@ class LibraryInstallerTest extends TestCase
      */
     public function testUpdate()
     {
-        $library = new LibraryInstaller($this->io, $this->composer);
+        $filesystem = $this->getMockBuilder('Composer\Util\Filesystem')
+          ->getMock();
+        $filesystem
+          ->expects($this->once())
+          ->method('rename')
+          ->with($this->vendorDir.'/package1', $this->vendorDir.'/package1/newtarget');
+
         $initial = $this->createPackageMock();
         $target  = $this->createPackageMock();
 
         $initial
-            ->expects($this->any())
+            ->expects($this->once())
             ->method('getPrettyName')
             ->will($this->returnValue('package1'));
+
+        $target
+            ->expects($this->once())
+            ->method('getPrettyName')
+            ->will($this->returnValue('package1'));
+
+        $target
+            ->expects($this->once())
+            ->method('getTargetDir')
+            ->will($this->returnValue('newtarget'));
 
         $this->repository
             ->expects($this->exactly(3))
@@ -148,7 +164,7 @@ class LibraryInstallerTest extends TestCase
         $this->dm
             ->expects($this->once())
             ->method('update')
-            ->with($initial, $target, $this->vendorDir.'/package1');
+            ->with($initial, $target, $this->vendorDir.'/package1/newtarget');
 
         $this->repository
             ->expects($this->once())
@@ -160,6 +176,7 @@ class LibraryInstallerTest extends TestCase
             ->method('addPackage')
             ->with($target);
 
+        $library = new LibraryInstaller($this->io, $this->composer, 'library', $filesystem);
         $library->update($this->repository, $initial, $target);
         $this->assertFileExists($this->vendorDir, 'Vendor dir should be created');
         $this->assertFileExists($this->binDir, 'Bin dir should be created');
