@@ -106,6 +106,7 @@ class Installer
     protected $update = false;
     protected $runScripts = true;
     protected $updateWhitelist = null;
+    protected $updateDependencies = true;
 
     /**
      * @var array
@@ -852,6 +853,10 @@ class Installer
                 $seen[$package->getId()] = true;
                 $this->updateWhitelist[$package->getName()] = true;
 
+                if (!$this->updateDependencies) {
+                    continue;
+                }
+
                 $requires = $package->getRequires();
                 if ($devMode) {
                     $requires = array_merge($requires, $package->getDevRequires());
@@ -1051,6 +1056,19 @@ class Installer
     public function setUpdateWhitelist(array $packages)
     {
         $this->updateWhitelist = array_flip(array_map('strtolower', $packages));
+
+        return $this;
+    }
+
+    /**
+     * Should dependencies of whitelisted packages be updated recursively?
+     *
+     * @param  boolean $updateDependencies
+     * @return Installer
+     */
+    public function setUpdateDependencies($updateDependencies = true)
+    {
+        $this->updateDependencies = (boolean) $updateDependencies;
 
         return $this;
     }
