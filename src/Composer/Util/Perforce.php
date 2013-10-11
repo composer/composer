@@ -34,18 +34,6 @@ class Perforce
     protected $uniquePerforceClientName;
     protected $windowsFlag;
 
-    public static function createPerforce($repoConfig, $port, $path, ProcessExecutor $process = null)
-    {
-        if (!isset($process)) {
-            $process = new ProcessExecutor;
-        }
-        $isWindows = defined('PHP_WINDOWS_VERSION_BUILD');
-
-        $perforce = new Perforce($repoConfig, $port, $path, $process, $isWindows);
-
-        return $perforce;
-    }
-
     public function __construct($repoConfig, $port, $path, ProcessExecutor $process, $isWindows)
     {
         $this->windowsFlag = $isWindows;
@@ -55,6 +43,18 @@ class Perforce
         $fs->ensureDirectoryExists($path);
         $this->process = $process;
         $this->initialize($repoConfig);
+    }
+
+    public static function create($repoConfig, $port, $path, ProcessExecutor $process = null)
+    {
+        if (!isset($process)) {
+            $process = new ProcessExecutor;
+        }
+        $isWindows = defined('PHP_WINDOWS_VERSION_BUILD');
+
+        $perforce = new Perforce($repoConfig, $port, $path, $process, $isWindows);
+
+        return $perforce;
     }
 
     public function initialize($repoConfig)

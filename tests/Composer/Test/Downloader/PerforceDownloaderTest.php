@@ -21,7 +21,6 @@ use Composer\Repository\VcsRepository;
  */
 class PerforceDownloaderTest extends \PHPUnit_Framework_TestCase
 {
-
     private $io;
     private $config;
     private $testPath;
@@ -93,7 +92,7 @@ class PerforceDownloaderTest extends \PHPUnit_Framework_TestCase
         $perforce->expects($this->at(4))
         ->method('syncCodeBase')
         ->with($this->equalTo($label));
-        $downloader->injectPerforce($perforce);
+        $downloader->setPerforce($perforce);
         $package = $this->getMock('Composer\Package\PackageInterface');
         $package->expects($this->at(0))
         ->method('getSourceReference')
