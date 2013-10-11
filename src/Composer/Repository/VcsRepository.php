@@ -46,6 +46,7 @@ class VcsRepository extends ArrayRepository
             'git'           => 'Composer\Repository\Vcs\GitDriver',
             'hg-bitbucket'  => 'Composer\Repository\Vcs\HgBitbucketDriver',
             'hg'            => 'Composer\Repository\Vcs\HgDriver',
+            'perforce'      => 'Composer\Repository\Vcs\PerforceDriver',
             // svn must be last because identifying a subversion server for sure is practically impossible
             'svn'           => 'Composer\Repository\Vcs\SvnDriver',
         );
@@ -56,6 +57,11 @@ class VcsRepository extends ArrayRepository
         $this->verbose = $io->isVerbose();
         $this->config = $config;
         $this->repoConfig = $repoConfig;
+    }
+
+    public function getRepoConfig()
+    {
+        return $this->repoConfig;
     }
 
     public function setLoader(LoaderInterface $loader)
@@ -247,6 +253,7 @@ class VcsRepository extends ArrayRepository
                 continue;
             }
         }
+        $driver->cleanup();
 
         if (!$verbose) {
             $this->io->overwrite('', false);
