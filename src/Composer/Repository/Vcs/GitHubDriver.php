@@ -16,7 +16,6 @@ use Composer\Downloader\TransportException;
 use Composer\Json\JsonFile;
 use Composer\Cache;
 use Composer\IO\IOInterface;
-use Composer\Util\RemoteFilesystem;
 use Composer\Util\GitHub;
 
 /**

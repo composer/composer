@@ -12,7 +12,6 @@
 
 namespace Composer\Command;
 
-use Composer\Composer;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\DefaultPolicy;
 use Composer\Factory;
