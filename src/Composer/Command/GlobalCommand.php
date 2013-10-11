@@ -42,7 +42,7 @@ is to add the COMPOSER_HOME/vendor/bin dir to your PATH env var.
 COMPOSER_HOME is c:\Users\<user>\AppData\Roaming\Composer on Windows
 and /home/<user>/.composer on unix systems.
 
-Note: This path may vary depending on customizations to bin-dir in 
+Note: This path may vary depending on customizations to bin-dir in
 composer.json or the environmental variable COMPOSER_BIN_DIR.
 
 EOT

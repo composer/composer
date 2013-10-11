@@ -539,7 +539,6 @@ class Installer
         return true;
     }
 
-
     /**
      * Workaround: if your packages depend on plugins, we must be sure
      * that those are installed / updated first; else it would lead to packages
@@ -550,7 +549,7 @@ class Installer
      * it at least fixes the symptoms and makes usage of composer possible (again)
      * in such scenarios.
      *
-     * @param OperationInterface[] $operations
+     * @param  OperationInterface[] $operations
      * @return OperationInterface[] reordered operation list
      */
     private function movePluginsToFront(array $operations)
@@ -559,7 +558,7 @@ class Installer
         foreach ($operations as $idx => $op) {
             if ($op instanceof InstallOperation) {
                 $package = $op->getPackage();
-            } else if ($op instanceof UpdateOperation) {
+            } elseif ($op instanceof UpdateOperation) {
                 $package = $op->getTargetPackage();
             } else {
                 continue;

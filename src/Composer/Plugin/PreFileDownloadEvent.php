@@ -35,7 +35,7 @@ class PreFileDownloadEvent extends Event
     /**
      * Constructor.
      *
-     * @param string           $name        The event name
+     * @param string           $name         The event name
      * @param RemoteFilesystem $rfs
      * @param string           $processedUrl
      */

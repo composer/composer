@@ -165,6 +165,7 @@ class LibraryInstaller implements InstallerInterface
             if (strpos($initialDownloadPath, $targetDownloadPath) === 0) {
                 $this->removeCode($initial);
                 $this->installCode($target);
+
                 return;
             }
 

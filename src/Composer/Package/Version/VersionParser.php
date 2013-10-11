@@ -368,9 +368,9 @@ class VersionParser
      *
      * Support function for {@link parseConstraint()}
      *
-     * @param  array  $matches Array with version parts in array indexes 1,2,3,4
+     * @param  array  $matches  Array with version parts in array indexes 1,2,3,4
      * @param  int    $position 1,2,3,4 - which segment of the version to decrement
-     * @param  string $pad The string to pad version parts after $position
+     * @param  string $pad      The string to pad version parts after $position
      * @return string The new version
      */
     private function manipulateVersionString($matches, $position, $increment = 0, $pad = '0')
@@ -378,7 +378,7 @@ class VersionParser
         for ($i = 4; $i > 0; $i--) {
             if ($i > $position) {
                 $matches[$i] = $pad;
-            } else if ($i == $position && $increment) {
+            } elseif ($i == $position && $increment) {
                 $matches[$i] += $increment;
                 // If $matches[$i] was 0, carry the decrement
                 if ($matches[$i] < 0) {

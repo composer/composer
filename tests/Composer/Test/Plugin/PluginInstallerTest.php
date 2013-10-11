@@ -17,7 +17,6 @@ use Composer\Config;
 use Composer\Installer\PluginInstaller;
 use Composer\Package\Loader\JsonLoader;
 use Composer\Package\Loader\ArrayLoader;
-use Composer\Package\PackageInterface;
 use Composer\Plugin\PluginManager;
 use Composer\Autoload\AutoloadGenerator;
 use Composer\Util\Filesystem;
@@ -166,4 +165,3 @@ class PluginInstallerTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('installer-v3', $plugins[1]->version);
     }
 }
-

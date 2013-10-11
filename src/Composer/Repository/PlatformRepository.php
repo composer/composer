@@ -43,7 +43,6 @@ class PlatformRepository extends ArrayRepository
             $version = $versionParser->normalize($prettyVersion);
         }
 
-
         $php = new CompletePackage('php', $version, $prettyVersion);
         $php->setDescription('The PHP interpreter');
         parent::addPackage($php);

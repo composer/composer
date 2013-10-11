@@ -1,4 +1,5 @@
 <?php
+
 /*
  * This file is part of Composer.
  *
@@ -10,7 +11,6 @@
  */
 
 namespace Composer\Test\Repository\Vcs;
-
 
 use Composer\Repository\Vcs\PerforceDriver;
 use Composer\Util\Filesystem;

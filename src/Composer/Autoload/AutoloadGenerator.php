@@ -317,6 +317,7 @@ EOF;
 
 return array(
 $filesCode);
+
 EOF;
     }
 

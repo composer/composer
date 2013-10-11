@@ -1,4 +1,5 @@
 <?php
+
 /*
  * This file is part of Composer.
  *
@@ -8,7 +9,6 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-
 
 namespace Composer\Test\Downloader;
 
@@ -40,7 +40,6 @@ class PerforceDownloaderTest extends \PHPUnit_Framework_TestCase
         );
         $this->io = $this->getMock('Composer\IO\IOInterface');
     }
-
 
     public function testDoDownloadGetRepoConfig()
     {
