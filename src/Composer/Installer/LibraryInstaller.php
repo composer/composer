@@ -197,6 +197,12 @@ class LibraryInstaller implements InstallerInterface
                 continue;
             }
 
+            // in case a custom installer returned a relative path for the
+            // $package, we can now safely turn it into a absolute path (as we
+            // already checked the binary's existence). The following helpers
+            // will require absolute paths to work properly.
+            $binPath = realpath($binPath);
+
             $this->initializeBinDir();
             $link = $this->binDir.'/'.basename($bin);
             if (file_exists($link)) {
