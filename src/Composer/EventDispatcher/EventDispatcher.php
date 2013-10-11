@@ -202,7 +202,7 @@ class EventDispatcher
     /**
      * Retrieves all listeners for a given event
      *
-     * @param Event $event
+     * @param  Event $event
      * @return array All listeners: callables and scripts
      */
     protected function getListeners(Event $event)

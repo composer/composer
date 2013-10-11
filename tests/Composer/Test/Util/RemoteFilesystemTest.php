@@ -144,7 +144,6 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
         }
     }
 
-
     public function testCaptureAuthenticationParamsFromUrl()
     {
         $io = $this->getMock('Composer\IO\IOInterface');

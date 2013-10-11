@@ -1,4 +1,5 @@
 <?php
+
 /*
  * This file is part of Composer.
  *
@@ -8,7 +9,6 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-
 
 namespace Composer\Util;
 
@@ -20,7 +20,6 @@ use Symfony\Component\Process\Process;
  */
 class Perforce
 {
-
     protected $path;
     protected $p4Depot;
     protected $p4Client;
@@ -35,7 +34,6 @@ class Perforce
     protected $uniquePerforceClientName;
     protected $windowsFlag;
 
-
     public static function createPerforce($repoConfig, $port, $path, ProcessExecutor $process = null)
     {
         if (!isset($process)) {
@@ -44,6 +42,7 @@ class Perforce
         $isWindows = defined('PHP_WINDOWS_VERSION_BUILD');
 
         $perforce = new Perforce($repoConfig, $port, $path, $process, $isWindows);
+
         return $perforce;
     }
 
@@ -161,6 +160,7 @@ class Perforce
                 $this->p4Stream = '//' . $this->p4Depot;
             }
         }
+
         return $this->p4Stream;
     }
 
@@ -268,6 +268,7 @@ class Perforce
         if ($index === false) {
             return false;
         }
+
         return true;
     }
 
@@ -329,7 +330,6 @@ class Perforce
         fclose($spec);
     }
 
-
     protected function read($pipe, $name)
     {
         if (feof($pipe)) {
@@ -347,9 +347,9 @@ class Perforce
     {
         $command = $this->generateP4Command(' login -a');
         $process = new Process($command, null, null, $password);
+
         return $process->run();
     }
-
 
     public function p4Login(IOInterface $io)
     {
@@ -369,6 +369,7 @@ class Perforce
     {
         $result = '';
         $processExecutor->execute('p4 -p ' . $url . ' info -s', $result);
+
         return false === strpos($result, 'error');
     }
 
@@ -380,6 +381,7 @@ class Perforce
 
             return $this->getComposerInformationFromPath($composerJson);
         }
+
         return $this->getComposerInformationFromLabel($identifier, $index);
     }
 
@@ -496,6 +498,7 @@ class Perforce
         }
         $fields = explode(' ', $changes);
         $changeList = $fields[1];
+
         return $changeList;
     }
 
@@ -513,6 +516,7 @@ class Perforce
         $main = substr($fromReference, 0, $index) . '/...';
         $command = $this->generateP4Command('filelog ' . $main . '@' . $fromChangeList. ',' . $toChangeList);
         $result = $this->executeCommand($command);
+
         return $result;
     }
 }

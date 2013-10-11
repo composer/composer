@@ -105,7 +105,7 @@ class NoProxyPattern
      * http://framework.zend.com/svn/framework/extras/incubator/library/ZendX/Whois/Adapter/Cidr.php
      *
      * @param string $cidr IPv4 block in CIDR notation
-     * @param string $ip IPv4 address
+     * @param string $ip   IPv4 address
      *
      * @return boolean
      */

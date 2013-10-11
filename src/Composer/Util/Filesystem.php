@@ -44,7 +44,7 @@ class Filesystem
     /**
      * Checks if a directory is empty
      *
-     * @param string $dir
+     * @param  string $dir
      * @return bool
      */
     public function isDirEmpty($dir)

@@ -32,7 +32,7 @@ interface PluginInterface
     /**
      * Apply plugin modifications to composer
      *
-     * @param Composer $composer
+     * @param Composer    $composer
      * @param IOInterface $io
      */
     public function activate(Composer $composer, IOInterface $io);

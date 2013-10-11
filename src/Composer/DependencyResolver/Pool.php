@@ -377,6 +377,7 @@ class Pool
             if ($constraint === null) {
                 return self::MATCH;
             }
+
             return $constraint->matches(new VersionConstraint('==', $candidateVersion)) ? self::MATCH : self::MATCH_NAME;
         }
 

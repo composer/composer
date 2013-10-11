@@ -10,12 +10,10 @@
  * file that was distributed with this source code.
  */
 
-
 namespace Composer\Repository\Vcs;
 
 use Composer\IO\IOInterface;
 use Composer\Util\ProcessExecutor;
-use Composer\Util\Filesystem;
 use Composer\Util\Perforce;
 
 /**
@@ -145,6 +143,7 @@ class PerforceDriver extends VcsDriver
         if (isset($this->composerInfo)) {
             $result = count($this->composerInfo) > 0;
         }
+
         return $result;
     }
 

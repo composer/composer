@@ -1,4 +1,5 @@
 <?php
+
 /*
  * This file is part of Composer.
  *
@@ -8,7 +9,6 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-
 
 namespace Composer\Test\Util;
 
@@ -70,7 +70,6 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('//depot/branch', $stream);
     }
 
-
     public function testGetStreamWithoutLabelWithStreamWithoutLabel()
     {
         $stream = $this->perforce->getStreamWithoutLabel('//depot/branch');
@@ -123,6 +122,7 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
             $this->returnCallback(
                 function ($command, &$output) {
                     $output = 'P4USER=TEST_P4VARIABLE_USER' . PHP_EOL ;
+
                     return true;
                 }
             )
@@ -146,6 +146,7 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
             $this->returnCallback(
                 function ($command, &$output) {
                     $output = 'TEST_P4VARIABLE_USER' . PHP_EOL;
+
                     return true;
                 }
             )
@@ -237,6 +238,7 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
             $this->returnCallback(
                 function ($command, &$output) {
                     $output = 'P4PASSWD=TEST_P4VARIABLE_PASSWORD' . PHP_EOL;
+
                     return true;
                 }
             )
@@ -260,6 +262,7 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
             $this->returnCallback(
                 function ($command, &$output) {
                     $output = 'TEST_P4VARIABLE_PASSWORD' . PHP_EOL;
+
                     return true;
                 }
             )
@@ -357,6 +360,7 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
             $this->returnCallback(
                 function ($command, &$output) {
                     $output = 'Stream //depot/branch mainline none \'branch\'' . PHP_EOL;
+
                     return true;
                 }
             )
@@ -382,6 +386,7 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
             $this->returnCallback(
                 function ($command, &$output) {
                     $output = 'Label 0.0.1 2013/07/31 \'First Label!\'' . PHP_EOL . 'Label 0.0.2 2013/08/01 \'Second Label!\'' . PHP_EOL;
+
                     return true;
                 }
             )
@@ -404,6 +409,7 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
             $this->returnCallback(
                 function ($command, &$output) {
                     $output = 'Label 0.0.1 2013/07/31 \'First Label!\'' . PHP_EOL . 'Label 0.0.2 2013/08/01 \'Second Label!\'' . PHP_EOL;
+
                     return true;
                 }
             )
@@ -428,6 +434,7 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
             $this->returnCallback(
                 function ($command, &$output) {
                     $output = 'Depot depot 2013/06/25 stream /p4/1/depots/depot/... \'Created by Me\'';
+
                     return true;
                 }
             )
@@ -447,6 +454,7 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
             $this->returnCallback(
                 function ($command, &$output) {
                     $output = PerforceTest::getComposerJson();
+
                     return true;
                 }
             )
@@ -472,6 +480,7 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
             $this->returnCallback(
                 function ($command, &$output) {
                     $output = '//depot/composer.json#1 - branch change 10001 (text)';
+
                     return true;
                 }
             )
@@ -485,6 +494,7 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
             $this->returnCallback(
                 function ($command, &$output) {
                     $output = PerforceTest::getComposerJson();
+
                     return true;
                 }
             )
@@ -513,6 +523,7 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
             $this->returnCallback(
                 function ($command, &$output) {
                     $output = PerforceTest::getComposerJson();
+
                     return true;
                 }
             )
@@ -540,6 +551,7 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
             $this->returnCallback(
                 function ($command, &$output) {
                     $output = '//depot/composer.json#1 - branch change 10001 (text)';
+
                     return true;
                 }
             )
@@ -553,6 +565,7 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
             $this->returnCallback(
                 function ($command, &$output) {
                     $output = PerforceTest::getComposerJson();
+
                     return true;
                 }
             )

@@ -10,7 +10,6 @@
  * file that was distributed with this source code.
  */
 
-
 namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
@@ -75,9 +74,9 @@ class PerforceDownloader extends VcsDownloader
     public function getLocalChanges(PackageInterface $package, $path)
     {
         $this->io->write('Perforce driver does not check for local changes before overriding', true);
+
         return;
     }
-
 
     /**
      * {@inheritDoc}
@@ -85,6 +84,7 @@ class PerforceDownloader extends VcsDownloader
     protected function getCommitLogs($fromReference, $toReference, $path)
     {
         $commitLogs = $this->perforce->getCommitLogs($fromReference, $toReference);
+
         return $commitLogs;
     }
 
