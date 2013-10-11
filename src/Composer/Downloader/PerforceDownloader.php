@@ -44,15 +44,16 @@ class PerforceDownloader extends VcsDownloader
 
     private function initPerforce($package, $path, $ref)
     {
-        if ($this->perforceInjected) {
+        if ($this->perforce) {
             return;
         }
+
         $repository = $package->getRepository();
         $repoConfig = null;
         if ($repository instanceof VcsRepository) {
             $repoConfig = $this->getRepoConfig($repository);
         }
-        $this->perforce = Perforce::createPerforce($repoConfig, $package->getSourceUrl(), $path);
+        $this->perforce = Perforce::create($repoConfig, $package->getSourceUrl(), $path);
     }
 
     private function getRepoConfig(VcsRepository $repository)
@@ -88,9 +89,8 @@ class PerforceDownloader extends VcsDownloader
         return $commitLogs;
     }
 
-    public function injectPerforce($perforce)
+    public function setPerforce($perforce)
     {
         $this->perforce = $perforce;
-        $this->perforceInjected = true;
     }
 }

@@ -70,7 +70,7 @@ class PerforceDriverTest extends \PHPUnit_Framework_TestCase
             'TEST'
         );
         $perforce = $this->getMock('Composer\Util\Perforce', null, $arguments);
-        $driver->injectPerforce($perforce);
+        $driver->setPerforce($perforce);
         $driver->initialize();
         $this->assertEquals('TEST_PERFORCE_URL', $driver->getUrl());
         $this->assertEquals('TEST_DEPOT_CONFIG', $driver->getDepot());
@@ -88,17 +88,17 @@ class PerforceDriverTest extends \PHPUnit_Framework_TestCase
         $driver = new PerforceDriver($repoConfig, $this->io, $this->config, $this->process, $this->remoteFileSystem);
         $perforce = $this->getMockBuilder('Composer\Util\Perforce')->disableOriginalConstructor()->getMock();
         $perforce->expects($this->at(0))
-        ->method('p4Login')
-        ->with($this->io);
+            ->method('p4Login')
+            ->with($this->io);
         $perforce->expects($this->at(1))
-        ->method('checkStream')
-        ->with($this->equalTo('TEST_DEPOT_CONFIG'));
+            ->method('checkStream')
+            ->with($this->equalTo('TEST_DEPOT_CONFIG'));
         $perforce->expects($this->at(2))
-        ->method('writeP4ClientSpec');
+            ->method('writeP4ClientSpec');
         $perforce->expects($this->at(3))
-        ->method('connectClient');
+            ->method('connectClient');
 
-        $driver->injectPerforce($perforce);
+        $driver->setPerforce($perforce);
         $driver->initialize();
     }
 
@@ -122,10 +122,10 @@ class PerforceDriverTest extends \PHPUnit_Framework_TestCase
         );
         $perforce = $this->getMock('Composer\Util\Perforce', array('getComposerInformation'), $arguments);
         $perforce->expects($this->at(0))
-        ->method('getComposerInformation')
-        ->with($this->equalTo('//TEST_DEPOT_CONFIG/TEST_IDENTIFIER'))
-        ->will($this->returnValue('Some json stuff'));
-        $driver->injectPerforce($perforce);
+            ->method('getComposerInformation')
+            ->with($this->equalTo('//TEST_DEPOT_CONFIG/TEST_IDENTIFIER'))
+            ->will($this->returnValue('Some json stuff'));
+        $driver->setPerforce($perforce);
         $driver->initialize();
         $identifier = 'TEST_IDENTIFIER';
         $result = $driver->hasComposerFile($identifier);
