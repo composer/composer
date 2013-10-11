@@ -584,7 +584,7 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
     public function testSyncCodeBaseWithoutStream()
     {
         $expectedCommand = 'p4 -u user -c composer_perforce_TEST_depot -p port sync -f @label';
-        $this->processExecutor->expects($this->at(1))
+        $this->processExecutor->expects($this->at(0))
             ->method('execute')
             ->with($this->equalTo($expectedCommand), $this->equalTo(null))
             ->will($this->returnValue(0));
@@ -596,7 +596,7 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
     {
         $this->setPerforceToStream();
         $expectedCommand = 'p4 -u user -c composer_perforce_TEST_depot_branch -p port sync -f @label';
-        $this->processExecutor->expects($this->at(1))
+        $this->processExecutor->expects($this->at(0))
             ->method('execute')
             ->with($this->equalTo($expectedCommand))
             ->will($this->returnValue(0));
