@@ -852,9 +852,6 @@ class Installer
                 $this->updateWhitelist[$package->getName()] = true;
 
                 $requires = $package->getRequires();
-                if ($devMode) {
-                    $requires = array_merge($requires, $package->getDevRequires());
-                }
 
                 foreach ($requires as $require) {
                     $requirePackages = $pool->whatProvides($require->getTarget());
