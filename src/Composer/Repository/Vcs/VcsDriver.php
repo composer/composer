@@ -110,4 +110,12 @@ abstract class VcsDriver implements VcsDriverInterface
     {
         return (bool) preg_match('{^(file://|/|[a-z]:[\\\\/])}i', $url);
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function cleanup()
+    {
+        return;
+    }
 }
