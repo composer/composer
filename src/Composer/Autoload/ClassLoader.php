@@ -217,14 +217,25 @@ class ClassLoader
         }
 
         $classPath .= strtr($className, '_', DIRECTORY_SEPARATOR) . '.php';
+        $rootPath = dirname(dirname(__DIR__));
 
         $first = $class[0];
-        if (isset($this->prefixes[$first])) {
+        if (isset( $this->prefixes[$first] )) {
             foreach ($this->prefixes[$first] as $prefix => $dirs) {
                 if (0 === strpos($class, $prefix)) {
                     foreach ($dirs as $dir) {
                         if (file_exists($dir . DIRECTORY_SEPARATOR . $classPath)) {
                             return $dir . DIRECTORY_SEPARATOR . $classPath;
+                        }
+                            //	If target-dir used, need to check local project
+                        $dir = rtrim($dir, DIRECTORY_SEPARATOR);
+
+                        if ($dir == $rootPath) {
+                            $targetClassPath =
+                                str_replace(str_replace('\\', DIRECTORY_SEPARATOR, $prefix), null, $classPath);
+                            if (file_exists($dir . DIRECTORY_SEPARATOR . $targetClassPath)) {
+                                return $dir . DIRECTORY_SEPARATOR . $targetClassPath;
+                            }
                         }
                     }
                 }
