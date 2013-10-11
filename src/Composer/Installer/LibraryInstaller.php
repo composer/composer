@@ -14,7 +14,6 @@ namespace Composer\Installer;
 
 use Composer\Composer;
 use Composer\IO\IOInterface;
-use Composer\Downloader\DownloadManager;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
 use Composer\Util\Filesystem;

@@ -12,7 +12,6 @@
 
 namespace Composer\Json;
 
-use Composer\Composer;
 use JsonSchema\Validator;
 use Seld\JsonLint\JsonParser;
 use Seld\JsonLint\ParsingException;
