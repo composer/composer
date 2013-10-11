@@ -12,7 +12,6 @@
 
 namespace Composer\Command;
 
-use Composer\Installer;
 use Composer\Factory;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
