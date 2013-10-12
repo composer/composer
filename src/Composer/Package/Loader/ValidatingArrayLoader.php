@@ -14,6 +14,7 @@ namespace Composer\Package\Loader;
 
 use Composer\Package;
 use Composer\Package\BasePackage;
+use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Package\Version\VersionParser;
 
 /**
@@ -142,6 +143,8 @@ class ValidatingArrayLoader implements LoaderInterface
             }
         }
 
+        $unboundConstraint = new VersionConstraint('=', $this->versionParser->normalize('dev-master'));
+
         foreach (array_keys(BasePackage::$supportedLinkTypes) as $linkType) {
             if ($this->validateArray($linkType) && isset($this->config[$linkType])) {
                 foreach ($this->config[$linkType] as $package => $constraint) {
@@ -153,12 +156,26 @@ class ValidatingArrayLoader implements LoaderInterface
                         unset($this->config[$linkType][$package]);
                     } elseif ('self.version' !== $constraint) {
                         try {
-                            $this->versionParser->parseConstraints($constraint);
+                            $linkConstraint = $this->versionParser->parseConstraints($constraint);
                         } catch (\Exception $e) {
                             $this->errors[] = $linkType.'.'.$package.' : invalid version constraint ('.$e->getMessage().')';
                             unset($this->config[$linkType][$package]);
+                            continue;
+                        }
+
+                        if ('conflict' === $linkType || 'require-dev' === $linkType) {
+                            continue; // conflict can be unbound, and require-dev constraints will not impact shared libraries as they are root-only
+                        }
+
+                        if ($linkConstraint->matches($unboundConstraint)) {
+                            $this->warnings[] = $linkType.'.'.$package.' : unbound version constraint detected ('.$constraint.')';
+                            unset($this->config[$linkType][$package]);
                         }
                     }
+                }
+
+                if (empty($this->config[$linkType])) {
+                    unset($this->config[$linkType]);
                 }
             }
         }
