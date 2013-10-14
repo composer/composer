@@ -214,7 +214,8 @@ class InstallerTest extends TestCase
                 ->setDevMode($input->getOption('dev'))
                 ->setUpdate(true)
                 ->setDryRun($input->getOption('dry-run'))
-                ->setUpdateWhitelist($input->getArgument('packages'));
+                ->setUpdateWhitelist($input->getArgument('packages'))
+                ->setWhitelistDependencies($input->getOption('with-dependencies'));
 
             return $installer->run() ? 0 : 1;
         });
