@@ -370,7 +370,7 @@ class Perforce
         $result = '';
         $exitCode = $processExecutor->execute('p4 -p ' . $url . ' info -s', $result);
 
-        return false === strpos($result, 'error') && 127 != $exitCode;
+        return false === strpos($result, 'error') && 0 == $exitCode;
     }
 
     public function getComposerInformation($identifier)
