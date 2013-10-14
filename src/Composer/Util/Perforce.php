@@ -367,10 +367,7 @@ class Perforce
 
     public static function checkServerExists($url, ProcessExecutor $processExecutor)
     {
-        $result = '';
-        $exitCode = $processExecutor->execute('p4 -p ' . $url . ' info -s', $result);
-
-        return false === strpos($result, 'error') && 0 === $exitCode;
+        return 0 === $processExecutor->execute('p4 -p ' . $url . ' info -s');
     }
 
     public function getComposerInformation($identifier)
