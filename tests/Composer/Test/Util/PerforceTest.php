@@ -646,7 +646,6 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
         $expectedCommand = 'p4 -p perforce.does.exist:port info -s';
         $processExecutor->expects($this->at(0))
             ->method('execute')
-            //->with($this->equalTo($expectedCommand), $this->equalTo(null))
             ->will($this->returnValue(127));
         
         $result = $this->perforce->checkServerExists('perforce.does.exist:port', $processExecutor);
