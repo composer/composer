@@ -123,6 +123,8 @@ You can also use wildcards to update a bunch of packages at once:
   a bit of time to run so it is currently not done by default.
 * **--lock:** Only updates the lock file hash to suppress warning about the
   lock file being out of date
+* **--no-dependencies** Only updates whitelisted packages and not the dependencies
+  of whitelisted packages.
 
 ## require
 

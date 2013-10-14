@@ -43,6 +43,7 @@ class UpdateCommand extends Command
                 new InputOption('no-custom-installers', null, InputOption::VALUE_NONE, 'DEPRECATED: Use no-plugins instead.'),
                 new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Skips the execution of all scripts defined in composer.json file.'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
+                new InputOption('no-dependencies', null, InputOption::VALUE_NONE, 'Do not update dependencies of whitelisted packages.'),
                 new InputOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Shows more details including new commits pulled in when updating packages.'),
                 new InputOption('optimize-autoloader', 'o', InputOption::VALUE_NONE, 'Optimize autoloader during autoloader dump')
             ))
@@ -106,6 +107,7 @@ EOT
             ->setRunScripts(!$input->getOption('no-scripts'))
             ->setOptimizeAutoloader($input->getOption('optimize-autoloader'))
             ->setUpdate(true)
+            ->setUpdateDependencies(!$input->getOption('no-dependencies'))
             ->setUpdateWhitelist($input->getOption('lock') ? array('lock') : $input->getArgument('packages'))
         ;
 
