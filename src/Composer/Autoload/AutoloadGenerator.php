@@ -37,7 +37,7 @@ class AutoloadGenerator
         $this->eventDispatcher = $eventDispatcher;
     }
 
-    public function dump(Config $config, InstalledRepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir, $scanPsr0Packages = false, $suffix = '', $prepend = 'true')
+    public function dump(Config $config, InstalledRepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir, $scanPsr0Packages = false, $suffix = '')
     {
         $this->eventDispatcher->dispatchScript(ScriptEvents::PRE_AUTOLOAD_DUMP);
 
@@ -46,6 +46,7 @@ class AutoloadGenerator
         $basePath = $filesystem->normalizePath(getcwd());
         $vendorPath = $filesystem->normalizePath(realpath($config->get('vendor-dir')));
         $useGlobalIncludePath = (bool) $config->get('use-include-path');
+        $prependAutoloader = $config->get('prepend-autoloader') === false ? 'false' : 'true';
         $targetDir = $vendorPath.'/'.$targetDir;
         $filesystem->ensureDirectoryExists($targetDir);
 
@@ -180,7 +181,7 @@ EOF;
             file_put_contents($targetDir.'/autoload_files.php', $includeFilesFile);
         }
         file_put_contents($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, $suffix));
-        file_put_contents($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, true, (bool) $includePathFile, $targetDirLoader, (bool) $includeFilesFile, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prepend));
+        file_put_contents($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, true, (bool) $includePathFile, $targetDirLoader, (bool) $includeFilesFile, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader));
 
         // use stream_copy_to_stream instead of copy
         // to work around https://bugs.php.net/bug.php?id=64634
@@ -364,7 +365,7 @@ return ComposerAutoloaderInit$suffix::getLoader();
 AUTOLOAD;
     }
 
-    protected function getAutoloadRealFile($usePSR0, $useClassMap, $useIncludePath, $targetDirLoader, $useIncludeFiles, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prepend)
+    protected function getAutoloadRealFile($usePSR0, $useClassMap, $useIncludePath, $targetDirLoader, $useIncludeFiles, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader)
     {
         // TODO the class ComposerAutoloaderInit should be revert to a closure
         // when APC has been fixed:
@@ -395,7 +396,7 @@ class ComposerAutoloaderInit$suffix
             return self::\$loader;
         }
 
-        spl_autoload_register(array('ComposerAutoloaderInit$suffix', 'loadClassLoader'), true, $prepend);
+        spl_autoload_register(array('ComposerAutoloaderInit$suffix', 'loadClassLoader'), true, $prependAutoloader);
         self::\$loader = \$loader = new \\Composer\\Autoload\\ClassLoader();
         spl_autoload_unregister(array('ComposerAutoloaderInit$suffix', 'loadClassLoader'));
 
@@ -454,7 +455,7 @@ REGISTER_AUTOLOAD;
         }
 
         $file .= <<<REGISTER_LOADER
-        \$loader->register($prepend);
+        \$loader->register($prependAutoloader);
 
 
 REGISTER_LOADER;
