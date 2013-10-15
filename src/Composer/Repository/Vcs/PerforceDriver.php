@@ -32,7 +32,9 @@ class PerforceDriver extends VcsDriver
      */
     public function initialize()
     {
-        $this->depot = $this->repoConfig['depot'];
+        if (isset($this->repoConfig['depot'])) {
+            $this->depot = $this->repoConfig['depot'];
+        }
         $this->branch = '';
         if (isset($this->repoConfig['branch'])) {
             $this->branch = $this->repoConfig['branch'];
