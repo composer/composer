@@ -49,15 +49,6 @@ Global installation of Composer (manual)
 
 Follow instructions [in the documentation](http://getcomposer.org/doc/00-intro.md#globally)
 
-Global installation of Composer (for OSX/homebrew)
-----------------------------------------------
-
-Composer is part of the homebrew-php project.
-
-1. Tap the homebrew-php repository into your brew installation if you haven't done yet: `brew tap josegonzalez/homebrew-php`
-2. Run `brew install josegonzalez/php/composer`.
-3. Use Composer with the `composer` command.
-
 Updating Composer
 -----------------
 
