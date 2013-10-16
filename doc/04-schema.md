@@ -652,6 +652,9 @@ The following options are supported:
   dist (zip, tar, ..) packages that it downloads. When the garbage collection
   is periodically ran, this is the maximum size the cache will be able to use.
   Older (less used) files will be removed first until the cache fits.
+* **prepend-autoloader:** Defaults to `true`. If false, the composer autoloader
+  will not be prepended to existing autoloaders. This is sometimesrequired to fix
+  interoperability issues with other autoloaders.
 * **notify-on-install:** Defaults to `true`. Composer allows repositories to
   define a notification URL, so that they get notified whenever a package from
   that repository is installed. This option allows you to disable that behaviour.
