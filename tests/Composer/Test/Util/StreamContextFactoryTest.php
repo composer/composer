@@ -192,6 +192,6 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
         );
         $context = StreamContextFactory::getContext('http://example.org', $options);
         $ctxoptions = stream_context_get_options($context);
-        $this->assertEquals(join("\n", $ctxoptions['http']['header']), join("\n", $expectedOptions['http']['header']));
+        $this->assertEquals(end($ctxoptions['http']['header']), end($expectedOptions['http']['header']));
     }
 }
