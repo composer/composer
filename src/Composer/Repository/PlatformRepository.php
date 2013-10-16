@@ -144,5 +144,19 @@ class PlatformRepository extends ArrayRepository
             $lib->setDescription('The '.$name.' PHP library');
             parent::addPackage($lib);
         }
+
+        if (defined('HPHP_VERSION')) {
+            try {
+                $prettyVersion = HPHP_VERSION;
+                $version = $versionParser->normalize($prettyVersion);
+            } catch (\UnexpectedValueException $e) {
+                $prettyVersion = preg_replace('#^([^~+-]+).*$#', '$1', HPHP_VERSION);
+                $version = $versionParser->normalize($prettyVersion);
+            }
+
+            $hhvm = new CompletePackage('hhvm', $version, $prettyVersion);
+            $hhvm->setDescription('The HHVM Runtime (64bit)');
+            parent::addPackage($hhvm);
+        }
     }
 }
