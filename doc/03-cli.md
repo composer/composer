@@ -151,7 +151,7 @@ to the command.
 ## global
 
 The global command allows you to run other commands like `install`, `require`
-or `update` as if you were running them from the [COMPOSER_HOME](#COMPOSER_HOME)
+or `update` as if you were running them from the [COMPOSER_HOME](#composer-home)
 directory.
 
 This can be used to install CLI utilities globally and if you add
