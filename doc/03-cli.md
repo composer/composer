@@ -122,7 +122,9 @@ You can also use wildcards to update a bunch of packages at once:
   autoloader. This is recommended especially for production, but can take
   a bit of time to run so it is currently not done by default.
 * **--lock:** Only updates the lock file hash to suppress warning about the
-  lock file being out of date
+  lock file being out of date.
+* **--with-dependencies** Add also all dependencies of whitelisted packages to the whitelist.
+  So all packages with their dependencies are updated recursively.
 
 ## require
 
