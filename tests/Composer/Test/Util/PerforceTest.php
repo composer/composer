@@ -617,19 +617,26 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
         $result = $this->perforce->checkServerExists('perforce.does.exist:port', $processExecutor);
         $this->assertTrue($result);
     }
-
-    public function testCheckServerExistsWithFailure()
+    
+    /**
+     * Test if "p4" command is missing.
+     * 
+     * @covers \Composer\Util\Perforce::checkServerExists
+     * 
+     * @return void
+     */
+    public function testCheckServerClientError()
     {
         $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
 
-        $expectedCommand = 'p4 -p perforce.does.not.exist:port info -s';
+        $expectedCommand = 'p4 -p perforce.does.exist:port info -s';
         $processExecutor->expects($this->at(0))
             ->method('execute')
             ->with($this->equalTo($expectedCommand), $this->equalTo(null))
-            ->will($this->returnValue('Perforce client error:'));
-
-        $result = $this->perforce->checkServerExists('perforce.does.not.exist:port', $processExecutor);
-        $this->assertTrue($result);
+            ->will($this->returnValue(127));
+        
+        $result = $this->perforce->checkServerExists('perforce.does.exist:port', $processExecutor);
+        $this->assertFalse($result);
     }
 
     public static function getComposerJson()
