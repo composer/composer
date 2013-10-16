@@ -160,6 +160,10 @@ class PerforceDriver extends VcsDriver
      */
     public static function supports(IOInterface $io, $url, $deep = false)
     {
+        if (false === $deep) {
+            return false;
+        }
+        
         return Perforce::checkServerExists($url, new ProcessExecutor);
     }
 
