@@ -16,10 +16,10 @@ Installation / Usage
     $ curl -sS https://getcomposer.org/installer | php
     ```
 
-
 2. Create a composer.json defining your dependencies. Note that this example is
 a short version for applications that are not meant to be published as packages
-themselves. To create libraries/packages please read the [guidelines](https://packagist.org/about).
+themselves. To create libraries/packages please read the
+[documentation](http://getcomposer.org/doc/02-libraries.md).
 
     ``` json
     {
@@ -47,17 +47,9 @@ You can now run Composer by executing the `bin/composer` script: `php /path/to/c
 Global installation of Composer (manual)
 ----------------------------------------
 
-Since Composer works with the current working directory it is possible to install it
-in a system wide way.
+Follow instructions [in the documentation](http://getcomposer.org/doc/00-intro.md#globally)
 
-1. Change into a directory in your path like `cd /usr/local/bin`
-2. Get Composer `curl -sS https://getcomposer.org/installer | php`
-3. Make the phar executable `chmod a+x composer.phar`
-4. Change into a project directory `cd /path/to/my/project`
-5. Use Composer as you normally would `composer.phar install`
-6. Optionally you can rename the composer.phar to composer to make it easier
-
-Global installation of Composer (via homebrew)
+Global installation of Composer (for OSX/homebrew)
 ----------------------------------------------
 
 Composer is part of the homebrew-php project.
