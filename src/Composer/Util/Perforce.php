@@ -38,9 +38,7 @@ class Perforce
     {
         $this->windowsFlag = $isWindows;
         $this->p4Port = $port;
-        $this->path = $path;
-        $fs = new Filesystem();
-        $fs->ensureDirectoryExists($path);
+        $this->initializePath($path);
         $this->process = $process;
         $this->initialize($repoConfig);
     }
@@ -129,6 +127,13 @@ class Perforce
     protected function getPath()
     {
         return $this->path;
+    }
+
+    public function initializePath($path)
+    {
+        $this->path = $path;
+        $fs = new Filesystem();
+        $fs->ensureDirectoryExists($path);
     }
 
     protected function getPort()
