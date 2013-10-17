@@ -88,8 +88,7 @@ class FileDownloader implements DownloaderInterface
         $urls = $package->getDistUrls();
         while ($url = array_shift($urls)) {
             try {
-                $this->doDownload($package, $path, $url);
-                break;
+                return $this->doDownload($package, $path, $url);
             } catch (\Exception $e) {
                 if ($this->io->isDebug()) {
                     $this->io->write('');

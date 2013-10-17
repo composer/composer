@@ -13,6 +13,7 @@
 namespace Composer\Package;
 
 use Composer\Package\Version\VersionParser;
+use Composer\Util\ComposerMirror;
 
 /**
  * Core package definitions that are needed to resolve dependencies and install packages
@@ -581,14 +582,13 @@ class Package extends BasePackage
 
     protected function getUrls($url, $mirrors, $ref, $type)
     {
-        $urls = array($url);
+        $urls = array();
+        if ($url) {
+            $urls[] = $url;
+        }
         if ($mirrors) {
             foreach ($mirrors as $mirror) {
-                $mirrorUrl = str_replace(
-                    array('%package%', '%version%', '%reference%', '%type%'),
-                    array($this->name, $this->version, $ref, $type),
-                    $mirror['url']
-                );
+                $mirrorUrl = ComposerMirror::processUrl($mirror['url'], $this->name, $this->version, $ref, $type);
                 $func = $mirror['preferred'] ? 'array_unshift' : 'array_push';
                 $func($urls, $mirrorUrl);
             }
