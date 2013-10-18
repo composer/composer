@@ -124,7 +124,7 @@ class HgDriver extends VcsDriver
             $composer = JsonFile::parseJson($composer, $identifier);
 
             if (!isset($composer['time'])) {
-                $this->process->execute(sprintf('hg log --template "{date|rfc822date}" -r %s', escapeshellarg($identifier)), $output, $this->repoDir);
+                $this->process->execute(sprintf('hg log --template "{date|rfc3339date}" -r %s', escapeshellarg($identifier)), $output, $this->repoDir);
                 $date = new \DateTime(trim($output), new \DateTimeZone('UTC'));
                 $composer['time'] = $date->format('Y-m-d H:i:s');
             }
