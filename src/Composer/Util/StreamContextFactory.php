@@ -91,9 +91,9 @@ final class StreamContextFactory
                 }
 
                 if (isset($proxy['user'])) {
-                    $auth = $proxy['user'];
+                    $auth = urldecode($proxy['user']);
                     if (isset($proxy['pass'])) {
-                        $auth .= ':' . $proxy['pass'];
+                        $auth .= ':' . urldecode($proxy['pass']);
                     }
                     $auth = base64_encode($auth);
 
