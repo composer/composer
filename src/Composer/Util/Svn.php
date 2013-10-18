@@ -92,6 +92,9 @@ class Svn
             if ($type !== 'out') {
                 return;
             }
+            if ('Redirecting to URL ' === substr($buffer, 0, 19)) {
+                return;
+            }
             $output .= $buffer;
             if ($verbose) {
                 $io->write($buffer, false);
