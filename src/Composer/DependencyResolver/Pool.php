@@ -250,14 +250,6 @@ class Pool
             $candidates = array_merge($candidates, $this->packageByName[$name]);
         }
 
-        if (null === $constraint) {
-            foreach ($candidates as $key => $candidate) {
-                $candidates[$key] = $this->ensurePackageIsLoaded($candidate);
-            }
-
-            return $candidates;
-        }
-
         $matches = $provideMatches = array();
         $nameMatch = false;
 
@@ -369,7 +361,7 @@ class Pool
      * @param  LinkConstraintInterface $constraint The constraint to verify
      * @return int                     One of the MATCH* constants of this class or 0 if there is no match
      */
-    private function match($candidate, $name, LinkConstraintInterface $constraint)
+    private function match($candidate, $name, LinkConstraintInterface $constraint = null)
     {
         // handle array packages
         if (is_array($candidate)) {
@@ -382,6 +374,10 @@ class Pool
         }
 
         if ($candidateName === $name) {
+            if ($constraint === null) {
+                return self::MATCH;
+            }
+
             return $constraint->matches(new VersionConstraint('==', $candidateVersion)) ? self::MATCH : self::MATCH_NAME;
         }
 
@@ -400,13 +396,13 @@ class Pool
         // aliases create multiple replaces/provides for one target so they can not use the shortcut
         if (isset($replaces[0]) || isset($provides[0])) {
             foreach ($provides as $link) {
-                if ($link->getTarget() === $name && $constraint->matches($link->getConstraint())) {
+                if ($link->getTarget() === $name && ($constraint === null || $constraint->matches($link->getConstraint()))) {
                     return self::MATCH_PROVIDE;
                 }
             }
 
             foreach ($replaces as $link) {
-                if ($link->getTarget() === $name && $constraint->matches($link->getConstraint())) {
+                if ($link->getTarget() === $name && ($constraint === null || $constraint->matches($link->getConstraint()))) {
                     return self::MATCH_REPLACE;
                 }
             }
@@ -414,11 +410,11 @@ class Pool
             return self::MATCH_NONE;
         }
 
-        if (isset($provides[$name]) && $constraint->matches($provides[$name]->getConstraint())) {
+        if (isset($provides[$name]) && ($constraint === null || $constraint->matches($provides[$name]->getConstraint()))) {
             return self::MATCH_PROVIDE;
         }
 
-        if (isset($replaces[$name]) && $constraint->matches($replaces[$name]->getConstraint())) {
+        if (isset($replaces[$name]) && ($constraint === null || $constraint->matches($replaces[$name]->getConstraint()))) {
             return self::MATCH_REPLACE;
         }
 

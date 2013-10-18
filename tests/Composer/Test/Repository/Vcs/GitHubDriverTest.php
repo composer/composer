@@ -101,25 +101,15 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals('test_master', $gitHubDriver->getRootIdentifier());
 
-        $dist = $gitHubDriver->getDist($identifier);
-        $this->assertEquals('zip', $dist['type']);
-        $this->assertEquals('https://api.github.com/repos/composer/packagist/zipball/v0.0.0', $dist['url']);
-        $this->assertEquals('v0.0.0', $dist['reference']);
-
-        $source = $gitHubDriver->getSource($identifier);
-        $this->assertEquals('git', $source['type']);
-        $this->assertEquals($repoSshUrl, $source['url']);
-        $this->assertEquals('v0.0.0', $source['reference']);
-
         $dist = $gitHubDriver->getDist($sha);
         $this->assertEquals('zip', $dist['type']);
-        $this->assertEquals('https://api.github.com/repos/composer/packagist/zipball/v0.0.0', $dist['url']);
-        $this->assertEquals('v0.0.0', $dist['reference']);
+        $this->assertEquals('https://api.github.com/repos/composer/packagist/zipball/SOMESHA', $dist['url']);
+        $this->assertEquals('SOMESHA', $dist['reference']);
 
         $source = $gitHubDriver->getSource($sha);
         $this->assertEquals('git', $source['type']);
         $this->assertEquals($repoSshUrl, $source['url']);
-        $this->assertEquals('v0.0.0', $source['reference']);
+        $this->assertEquals('SOMESHA', $source['reference']);
     }
 
     public function testPublicRepository()
@@ -154,25 +144,15 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals('test_master', $gitHubDriver->getRootIdentifier());
 
-        $dist = $gitHubDriver->getDist($identifier);
-        $this->assertEquals('zip', $dist['type']);
-        $this->assertEquals('https://api.github.com/repos/composer/packagist/zipball/v0.0.0', $dist['url']);
-        $this->assertEquals($identifier, $dist['reference']);
-
-        $source = $gitHubDriver->getSource($identifier);
-        $this->assertEquals('git', $source['type']);
-        $this->assertEquals($repoUrl, $source['url']);
-        $this->assertEquals($identifier, $source['reference']);
-
         $dist = $gitHubDriver->getDist($sha);
         $this->assertEquals('zip', $dist['type']);
-        $this->assertEquals('https://api.github.com/repos/composer/packagist/zipball/v0.0.0', $dist['url']);
-        $this->assertEquals($identifier, $dist['reference']);
+        $this->assertEquals('https://api.github.com/repos/composer/packagist/zipball/SOMESHA', $dist['url']);
+        $this->assertEquals($sha, $dist['reference']);
 
         $source = $gitHubDriver->getSource($sha);
         $this->assertEquals('git', $source['type']);
         $this->assertEquals($repoUrl, $source['url']);
-        $this->assertEquals($identifier, $source['reference']);
+        $this->assertEquals($sha, $source['reference']);
     }
 
     public function testPublicRepository2()
@@ -217,25 +197,15 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals('test_master', $gitHubDriver->getRootIdentifier());
 
-        $dist = $gitHubDriver->getDist($identifier);
-        $this->assertEquals('zip', $dist['type']);
-        $this->assertEquals('https://api.github.com/repos/composer/packagist/zipball/feature/3.2-foo', $dist['url']);
-        $this->assertEquals($identifier, $dist['reference']);
-
-        $source = $gitHubDriver->getSource($identifier);
-        $this->assertEquals('git', $source['type']);
-        $this->assertEquals($repoUrl, $source['url']);
-        $this->assertEquals($identifier, $source['reference']);
-
         $dist = $gitHubDriver->getDist($sha);
         $this->assertEquals('zip', $dist['type']);
-        $this->assertEquals('https://api.github.com/repos/composer/packagist/zipball/feature/3.2-foo', $dist['url']);
-        $this->assertEquals($identifier, $dist['reference']);
+        $this->assertEquals('https://api.github.com/repos/composer/packagist/zipball/SOMESHA', $dist['url']);
+        $this->assertEquals($sha, $dist['reference']);
 
         $source = $gitHubDriver->getSource($sha);
         $this->assertEquals('git', $source['type']);
         $this->assertEquals($repoUrl, $source['url']);
-        $this->assertEquals($identifier, $source['reference']);
+        $this->assertEquals($sha, $source['reference']);
 
         $gitHubDriver->getComposerInformation($identifier);
     }
@@ -282,11 +252,11 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
 
         $process->expects($this->at(2))
             ->method('execute')
-            ->with($this->stringContains('git tag'));
+            ->with($this->stringContains('git show-ref --tags'));
 
         $process->expects($this->at(3))
             ->method('splitLines')
-            ->will($this->returnValue(array($identifier)));
+            ->will($this->returnValue(array($sha.' refs/tags/'.$identifier)));
 
         $process->expects($this->at(4))
             ->method('execute')

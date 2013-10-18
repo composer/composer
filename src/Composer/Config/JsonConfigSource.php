@@ -124,7 +124,7 @@ class JsonConfigSource implements ConfigSourceInterface
         }
 
         if ($newFile) {
-            chmod($this->file->getPath(), 0600);
+            @chmod($this->file->getPath(), 0600);
         }
     }
 }

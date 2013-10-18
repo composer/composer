@@ -12,12 +12,13 @@
 
 namespace Composer\Command;
 
-use Composer\Composer;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\DefaultPolicy;
 use Composer\Factory;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\Version\VersionParser;
+use Composer\Plugin\CommandEvent;
+use Composer\Plugin\PluginEvents;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -66,8 +67,9 @@ EOT
         // init repos
         $platformRepo = new PlatformRepository;
 
+        $composer = $this->getComposer(false);
         if ($input->getOption('self')) {
-            $package = $this->getComposer(false)->getPackage();
+            $package = $this->getComposer()->getPackage();
             $repos = $installedRepo = new ArrayRepository(array($package));
         } elseif ($input->getOption('platform')) {
             $repos = $installedRepo = $platformRepo;
@@ -75,15 +77,14 @@ EOT
             $repos = $installedRepo = $this->getComposer()->getRepositoryManager()->getLocalRepository();
         } elseif ($input->getOption('available')) {
             $installedRepo = $platformRepo;
-            if ($composer = $this->getComposer(false)) {
+            if ($composer) {
                 $repos = new CompositeRepository($composer->getRepositoryManager()->getRepositories());
             } else {
                 $defaultRepos = Factory::createDefaultRepositories($this->getIO());
                 $repos = new CompositeRepository($defaultRepos);
                 $output->writeln('No composer.json found in the current directory, showing available packages from ' . implode(', ', array_keys($defaultRepos)));
             }
-        } elseif ($composer = $this->getComposer(false)) {
-            $composer = $this->getComposer();
+        } elseif ($composer) {
             $localRepo = $composer->getRepositoryManager()->getLocalRepository();
             $installedRepo = new CompositeRepository(array($localRepo, $platformRepo));
             $repos = new CompositeRepository(array_merge(array($installedRepo), $composer->getRepositoryManager()->getRepositories()));
@@ -92,6 +93,11 @@ EOT
             $output->writeln('No composer.json found in the current directory, showing available packages from ' . implode(', ', array_keys($defaultRepos)));
             $installedRepo = $platformRepo;
             $repos = new CompositeRepository(array_merge(array($installedRepo), $defaultRepos));
+        }
+
+        if ($composer) {
+            $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'show', $input, $output);
+            $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
         }
 
         // show single package or single version
@@ -178,6 +184,11 @@ EOT
                     }
                 }
                 list($width) = $this->getApplication()->getTerminalDimensions();
+                if (null === $width) {
+                    // In case the width is not detected, we're probably running the command
+                    // outside of a real terminal, use space without a limit
+                    $width = PHP_INT_MAX;
+                }
                 if (defined('PHP_WINDOWS_VERSION_BUILD')) {
                     $width--;
                 }
@@ -290,7 +301,7 @@ EOT
 
                 if ($type === 'psr-0') {
                     foreach ($autoloads as $name => $path) {
-                        $output->writeln(($name ?: '*') . ' => ' . ($path ?: '.'));
+                        $output->writeln(($name ?: '*') . ' => ' . (is_array($path) ? implode(', ', $path) : ($path ?: '.')));
                     }
                 } elseif ($type === 'classmap') {
                     $output->writeln(implode(', ', $autoloads));

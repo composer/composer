@@ -13,7 +13,7 @@
 namespace Composer\Test\IO;
 
 use Composer\IO\NullIO;
-use Composer\Test\TestCase;
+use Composer\TestCase;
 
 class NullIOTest extends TestCase
 {

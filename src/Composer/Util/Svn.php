@@ -92,6 +92,9 @@ class Svn
             if ($type !== 'out') {
                 return;
             }
+            if ('Redirecting to URL ' === substr($buffer, 0, 19)) {
+                return;
+            }
             $output .= $buffer;
             if ($verbose) {
                 $io->write($buffer, false);
@@ -108,6 +111,7 @@ class Svn
 
         // the error is not auth-related
         if (false === stripos($output, 'Could not authenticate to server:')
+            && false === stripos($output, 'authorization failed')
             && false === stripos($output, 'svn: E170001:')) {
             throw new \RuntimeException($output);
         }

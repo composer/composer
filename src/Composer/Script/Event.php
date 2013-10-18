@@ -16,17 +16,13 @@ use Composer\Composer;
 use Composer\IO\IOInterface;
 
 /**
- * The base event class
+ * The script event class
  *
  * @author François Pluchino <francois.pluchino@opendisplay.com>
+ * @author Nils Adermann <naderman@naderman.de>
  */
-class Event
+class Event extends \Composer\EventDispatcher\Event
 {
-    /**
-     * @var string This event's name
-     */
-    private $name;
-
     /**
      * @var Composer The composer instance
      */
@@ -52,20 +48,10 @@ class Event
      */
     public function __construct($name, Composer $composer, IOInterface $io, $devMode = false)
     {
-        $this->name = $name;
+        parent::__construct($name);
         $this->composer = $composer;
         $this->io = $io;
         $this->devMode = $devMode;
-    }
-
-    /**
-     * Returns the event's name.
-     *
-     * @return string The event name
-     */
-    public function getName()
-    {
-        return $this->name;
     }
 
     /**

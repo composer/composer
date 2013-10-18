@@ -14,6 +14,7 @@ namespace Composer\Downloader;
 
 use Composer\Config;
 use Composer\Cache;
+use Composer\EventDispatcher\EventDispatcher;
 use Composer\Util\ProcessExecutor;
 use Composer\IO\IOInterface;
 use ZipArchive;
@@ -25,10 +26,10 @@ class ZipDownloader extends ArchiveDownloader
 {
     protected $process;
 
-    public function __construct(IOInterface $io, Config $config, Cache $cache = null, ProcessExecutor $process = null)
+    public function __construct(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, Cache $cache = null, ProcessExecutor $process = null)
     {
-        $this->process = $process ?: new ProcessExecutor;
-        parent::__construct($io, $config, $cache);
+        $this->process = $process ?: new ProcessExecutor($io);
+        parent::__construct($io, $config, $eventDispatcher, $cache);
     }
 
     protected function extract($file, $path)
@@ -37,7 +38,7 @@ class ZipDownloader extends ArchiveDownloader
 
         // try to use unzip on *nix
         if (!defined('PHP_WINDOWS_VERSION_BUILD')) {
-            $command = 'unzip '.escapeshellarg($file).' -d '.escapeshellarg($path);
+            $command = 'unzip '.escapeshellarg($file).' -d '.escapeshellarg($path) . ' && chmod -R u+w ' . escapeshellarg($path);
             if (0 === $this->process->execute($command, $ignoredOutput)) {
                 return;
             }
@@ -68,7 +69,7 @@ class ZipDownloader extends ArchiveDownloader
         $zipArchive = new ZipArchive();
 
         if (true !== ($retval = $zipArchive->open($file))) {
-            throw new \UnexpectedValueException($this->getErrorMessage($retval, $file));
+            throw new \UnexpectedValueException($this->getErrorMessage($retval, $file), $retval);
         }
 
         if (true !== $zipArchive->extractTo($path)) {

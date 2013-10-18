@@ -50,6 +50,9 @@ class ArchiveManagerTest extends ArchiverTest
         $target = $this->getTargetName($package, 'tar');
         $this->assertFileExists($target);
 
+        $tmppath = sys_get_temp_dir().'/composer_archiver/'.$this->manager->getPackageFilename($package);
+        $this->assertFileNotExists($tmppath);
+
         unlink($target);
     }
 

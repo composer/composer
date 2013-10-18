@@ -13,7 +13,7 @@
 namespace Composer\Test\Command;
 
 use Composer\Command\InitCommand;
-use Composer\Test\TestCase;
+use Composer\TestCase;
 
 class InitCommandTest extends TestCase
 {
@@ -23,6 +23,14 @@ class InitCommandTest extends TestCase
         $author = $command->parseAuthorString('John Smith <john@example.com>');
         $this->assertEquals('John Smith', $author['name']);
         $this->assertEquals('john@example.com', $author['email']);
+    }
+
+    public function testParseValidUtf8AuthorString()
+    {
+        $command = new InitCommand;
+        $author = $command->parseAuthorString('Matti Meikäläinen <matti@example.com>');
+        $this->assertEquals('Matti Meikäläinen', $author['name']);
+        $this->assertEquals('matti@example.com', $author['email']);
     }
 
     public function testParseEmptyAuthorString()

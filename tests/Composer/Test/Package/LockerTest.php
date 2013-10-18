@@ -13,13 +13,14 @@
 namespace Composer\Test\Package;
 
 use Composer\Package\Locker;
+use Composer\IO\NullIO;
 
 class LockerTest extends \PHPUnit_Framework_TestCase
 {
     public function testIsLocked()
     {
         $json   = $this->createJsonFileMock();
-        $locker = new Locker($json, $this->createRepositoryManagerMock(), $this->createInstallationManagerMock(), 'md5');
+        $locker = new Locker(new NullIO, $json, $this->createRepositoryManagerMock(), $this->createInstallationManagerMock(), 'md5');
 
         $json
             ->expects($this->any())
@@ -39,7 +40,7 @@ class LockerTest extends \PHPUnit_Framework_TestCase
         $repo = $this->createRepositoryManagerMock();
         $inst = $this->createInstallationManagerMock();
 
-        $locker = new Locker($json, $repo, $inst, 'md5');
+        $locker = new Locker(new NullIO, $json, $repo, $inst, 'md5');
 
         $json
             ->expects($this->once())
@@ -57,7 +58,7 @@ class LockerTest extends \PHPUnit_Framework_TestCase
         $repo = $this->createRepositoryManagerMock();
         $inst = $this->createInstallationManagerMock();
 
-        $locker = new Locker($json, $repo, $inst, 'md5');
+        $locker = new Locker(new NullIO, $json, $repo, $inst, 'md5');
 
         $json
             ->expects($this->once())
@@ -84,7 +85,7 @@ class LockerTest extends \PHPUnit_Framework_TestCase
         $repo = $this->createRepositoryManagerMock();
         $inst = $this->createInstallationManagerMock();
 
-        $locker = new Locker($json, $repo, $inst, 'md5');
+        $locker = new Locker(new NullIO, $json, $repo, $inst, 'md5');
 
         $package1 = $this->createPackageMock();
         $package2 = $this->createPackageMock();
@@ -142,7 +143,7 @@ class LockerTest extends \PHPUnit_Framework_TestCase
         $repo = $this->createRepositoryManagerMock();
         $inst = $this->createInstallationManagerMock();
 
-        $locker = new Locker($json, $repo, $inst, 'md5');
+        $locker = new Locker(new NullIO, $json, $repo, $inst, 'md5');
 
         $package1 = $this->createPackageMock();
         $package1
@@ -161,7 +162,7 @@ class LockerTest extends \PHPUnit_Framework_TestCase
         $repo = $this->createRepositoryManagerMock();
         $inst = $this->createInstallationManagerMock();
 
-        $locker = new Locker($json, $repo, $inst, 'md5');
+        $locker = new Locker(new NullIO, $json, $repo, $inst, 'md5');
 
         $json
             ->expects($this->once())
@@ -177,7 +178,7 @@ class LockerTest extends \PHPUnit_Framework_TestCase
         $repo = $this->createRepositoryManagerMock();
         $inst = $this->createInstallationManagerMock();
 
-        $locker = new Locker($json, $repo, $inst, 'md5');
+        $locker = new Locker(new NullIO, $json, $repo, $inst, 'md5');
 
         $json
             ->expects($this->once())

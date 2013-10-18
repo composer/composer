@@ -22,12 +22,11 @@ use Symfony\Component\Console\Helper\HelperSet;
  * @author François Pluchino <francois.pluchino@opendisplay.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class ConsoleIO implements IOInterface
+class ConsoleIO extends BaseIO
 {
     protected $input;
     protected $output;
     protected $helperSet;
-    protected $authentications = array();
     protected $lastMessage;
     private $startTime;
 
@@ -224,41 +223,5 @@ class ConsoleIO implements IOInterface
 
         // not able to hide the answer, proceed with normal question handling
         return $this->ask($question);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getAuthentications()
-    {
-        return $this->authentications;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function hasAuthentication($repositoryName)
-    {
-        $auths = $this->getAuthentications();
-
-        return isset($auths[$repositoryName]);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getAuthentication($repositoryName)
-    {
-        $auths = $this->getAuthentications();
-
-        return isset($auths[$repositoryName]) ? $auths[$repositoryName] : array('username' => null, 'password' => null);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function setAuthentication($repositoryName, $username, $password = null)
-    {
-        $this->authentications[$repositoryName] = array('username' => $username, 'password' => $password);
     }
 }

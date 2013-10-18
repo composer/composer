@@ -22,7 +22,7 @@ use Composer\Util\Filesystem;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-abstract class VcsDownloader implements DownloaderInterface
+abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterface
 {
     protected $io;
     protected $config;
@@ -86,7 +86,7 @@ abstract class VcsDownloader implements DownloaderInterface
 
         $this->io->write("  - Updating <info>" . $name . "</info> (<comment>" . $from . "</comment> => <comment>" . $to . "</comment>)");
 
-        $this->cleanChanges($path, true);
+        $this->cleanChanges($initial, $path, true);
         try {
             $this->doUpdate($initial, $target, $path);
         } catch (\Exception $e) {
@@ -126,7 +126,7 @@ abstract class VcsDownloader implements DownloaderInterface
     public function remove(PackageInterface $package, $path)
     {
         $this->io->write("  - Removing <info>" . $package->getName() . "</info> (<comment>" . $package->getPrettyVersion() . "</comment>)");
-        $this->cleanChanges($path, false);
+        $this->cleanChanges($package, $path, false);
         if (!$this->filesystem->removeDirectory($path)) {
             // retry after a bit on windows since it tends to be touchy with mass removals
             if (!defined('PHP_WINDOWS_VERSION_BUILD') || (usleep(250) && !$this->filesystem->removeDirectory($path))) {
@@ -147,15 +147,16 @@ abstract class VcsDownloader implements DownloaderInterface
     /**
      * Prompt the user to check if changes should be stashed/removed or the operation aborted
      *
-     * @param string $path
-     * @param bool   $update if true (update) the changes can be stashed and reapplied after an update,
+     * @param PackageInterface $package
+     * @param string           $path
+     * @param bool             $update  if true (update) the changes can be stashed and reapplied after an update,
      *                                  if false (remove) the changes should be assumed to be lost if the operation is not aborted
      * @throws \RuntimeException in case the operation must be aborted
      */
-    protected function cleanChanges($path, $update)
+    protected function cleanChanges(PackageInterface $package, $path, $update)
     {
         // the default implementation just fails if there are any changes, override in child classes to provide stash-ability
-        if (null !== $this->getLocalChanges($path)) {
+        if (null !== $this->getLocalChanges($package, $path)) {
             throw new \RuntimeException('Source directory ' . $path . ' has uncommitted changes.');
         }
     }
@@ -186,14 +187,6 @@ abstract class VcsDownloader implements DownloaderInterface
      * @param string           $path    download path
      */
     abstract protected function doUpdate(PackageInterface $initial, PackageInterface $target, $path);
-
-    /**
-     * Checks for changes to the local copy
-     *
-     * @param  string      $path package directory
-     * @return string|null changes or null
-     */
-    abstract public function getLocalChanges($path);
 
     /**
      * Fetches the commit logs between two commits

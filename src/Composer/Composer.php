@@ -16,17 +16,20 @@ use Composer\Package\RootPackageInterface;
 use Composer\Package\Locker;
 use Composer\Repository\RepositoryManager;
 use Composer\Installer\InstallationManager;
+use Composer\Plugin\PluginManager;
 use Composer\Downloader\DownloadManager;
-use Composer\Script\EventDispatcher;
+use Composer\EventDispatcher\EventDispatcher;
 use Composer\Autoload\AutoloadGenerator;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Konstantin Kudryashiv <ever.zet@gmail.com>
+ * @author Nils Adermann <naderman@naderman.de>
  */
 class Composer
 {
     const VERSION = '@package_version@';
+    const RELEASE_DATE = '@release_date@';
 
     /**
      * @var Package\RootPackageInterface
@@ -54,12 +57,17 @@ class Composer
     private $installationManager;
 
     /**
+     * @var Plugin\PluginManager
+     */
+    private $pluginManager;
+
+    /**
      * @var Config
      */
     private $config;
 
     /**
-     * @var Script\EventDispatcher
+     * @var EventDispatcher\EventDispatcher
      */
     private $eventDispatcher;
 
@@ -166,7 +174,23 @@ class Composer
     }
 
     /**
-     * @param Script\EventDispatcher $eventDispatcher
+     * @param Plugin\PluginManager $manager
+     */
+    public function setPluginManager(PluginManager $manager)
+    {
+        $this->pluginManager = $manager;
+    }
+
+    /**
+     * @return Plugin\PluginManager
+     */
+    public function getPluginManager()
+    {
+        return $this->pluginManager;
+    }
+
+    /**
+     * @param EventDispatcher\EventDispatcher $eventDispatcher
      */
     public function setEventDispatcher(EventDispatcher $eventDispatcher)
     {
@@ -174,7 +198,7 @@ class Composer
     }
 
     /**
-     * @return Script\EventDispatcher
+     * @return EventDispatcher\EventDispatcher
      */
     public function getEventDispatcher()
     {

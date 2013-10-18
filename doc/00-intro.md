@@ -91,6 +91,15 @@ You can run these commands to easily access `composer` from anywhere on your sys
 
 Then, just run `composer` in order to run Composer instead of `php composer.phar`.
 
+#### Globally (on OSX via homebrew)
+
+Composer is part of the homebrew-php project.
+
+1. Tap the homebrew-php repository into your brew installation if you haven't done
+   so yet: `brew tap josegonzalez/homebrew-php`
+2. Run `brew install josegonzalez/php/composer`.
+3. Use Composer with the `composer` command.
+
 ## Installation - Windows
 
 ### Using the Installer
@@ -108,7 +117,7 @@ composer.phar:
 
     C:\Users\username>cd C:\bin
     C:\bin>php -r "eval('?>'.file_get_contents('https://getcomposer.org/installer'));"
-    
+
 > **Note:** If the above fails due to file_get_contents, use the `http` url or enable php_openssl.dll in php.ini
 
 Create a new `composer.bat` file alongside `composer.phar`:

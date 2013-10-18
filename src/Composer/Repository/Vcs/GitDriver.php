@@ -17,12 +17,14 @@ use Composer\Util\ProcessExecutor;
 use Composer\Util\Filesystem;
 use Composer\Util\Git as GitUtil;
 use Composer\IO\IOInterface;
+use Composer\Cache;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 class GitDriver extends VcsDriver
 {
+    protected $cache;
     protected $tags;
     protected $branches;
     protected $rootIdentifier;
@@ -77,6 +79,8 @@ class GitDriver extends VcsDriver
 
         $this->getTags();
         $this->getBranches();
+
+        $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $this->url));
     }
 
     /**
@@ -116,9 +120,7 @@ class GitDriver extends VcsDriver
      */
     public function getSource($identifier)
     {
-        $label = array_search($identifier, (array) $this->tags) ?: $identifier;
-
-        return array('type' => 'git', 'url' => $this->getUrl(), 'reference' => $label);
+        return array('type' => 'git', 'url' => $this->getUrl(), 'reference' => $identifier);
     }
 
     /**
@@ -134,6 +136,10 @@ class GitDriver extends VcsDriver
      */
     public function getComposerInformation($identifier)
     {
+        if (preg_match('{[a-f0-9]{40}}i', $identifier) && $res = $this->cache->read($identifier)) {
+            $this->infoCache[$identifier] = JsonFile::parseJson($res);
+        }
+
         if (!isset($this->infoCache[$identifier])) {
             $resource = sprintf('%s:composer.json', escapeshellarg($identifier));
             $this->process->execute(sprintf('git show %s', $resource), $composer, $this->repoDir);
@@ -149,6 +155,11 @@ class GitDriver extends VcsDriver
                 $date = new \DateTime('@'.trim($output), new \DateTimeZone('UTC'));
                 $composer['time'] = $date->format('Y-m-d H:i:s');
             }
+
+            if (preg_match('{[a-f0-9]{40}}i', $identifier)) {
+                $this->cache->write($identifier, json_encode($composer));
+            }
+
             $this->infoCache[$identifier] = $composer;
         }
 
@@ -161,9 +172,14 @@ class GitDriver extends VcsDriver
     public function getTags()
     {
         if (null === $this->tags) {
-            $this->process->execute('git tag', $output, $this->repoDir);
-            $output = $this->process->splitLines($output);
-            $this->tags = $output ? array_combine($output, $output) : array();
+            $this->tags = array();
+
+            $this->process->execute('git show-ref --tags', $output, $this->repoDir);
+            foreach ($output = $this->process->splitLines($output) as $tag) {
+                if ($tag && preg_match('{^([a-f0-9]{40}) refs/tags/(\S+)$}', $tag, $match)) {
+                    $this->tags[$match[2]] = $match[1];
+                }
+            }
         }
 
         return $this->tags;

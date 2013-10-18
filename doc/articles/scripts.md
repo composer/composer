@@ -24,6 +24,8 @@ Composer fires the following named events during its execution process:
 - **post-install-cmd**: occurs after the `install` command is executed.
 - **pre-update-cmd**: occurs before the `update` command is executed.
 - **post-update-cmd**: occurs after the `update` command is executed.
+- **pre-status-cmd**: occurs before the `status` command is executed.
+- **post-status-cmd**: occurs after the `status` command is executed.
 - **pre-package-install**: occurs before a package is installed.
 - **post-package-install**: occurs after a package is installed.
 - **pre-package-update**: occurs before a package is updated.
@@ -38,6 +40,13 @@ Composer fires the following named events during its execution process:
   installed, during the `create-project` command.
 - **post-create-project-cmd**: occurs after the `create-project` command is
   executed.
+
+**NOTE: Composer makes no assumptions about the state of your dependencies 
+prior to `install` or `update`. Therefore, you should not specify scripts that 
+require Composer-managed dependencies in the `pre-update-cmd` or 
+`pre-install-cmd` event hooks. If you need to execute scripts prior to 
+`install` or `update` please make sure they are self-contained within your 
+root package.**
 
 ## Defining scripts
 

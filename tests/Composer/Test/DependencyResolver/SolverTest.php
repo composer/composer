@@ -18,7 +18,7 @@ use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Solver;
 use Composer\DependencyResolver\SolverProblemsException;
 use Composer\Package\Link;
-use Composer\Test\TestCase;
+use Composer\TestCase;
 use Composer\Package\LinkConstraint\MultiConstraint;
 
 class SolverTest extends TestCase
@@ -405,7 +405,7 @@ class SolverTest extends TestCase
     {
         $this->repoInstalled->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageB = $this->getPackage('B', '1.0'));
-        $packageB->setReplaces(array('a' => new Link('B', 'A', null)));
+        $packageB->setReplaces(array('a' => new Link('B', 'A', new MultiConstraint(array()))));
 
         $this->reposComplete();
 

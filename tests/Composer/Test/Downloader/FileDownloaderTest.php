@@ -17,13 +17,13 @@ use Composer\Util\Filesystem;
 
 class FileDownloaderTest extends \PHPUnit_Framework_TestCase
 {
-    protected function getDownloader($io = null, $config = null, $rfs = null)
+    protected function getDownloader($io = null, $config = null, $rfs = null, $filesystem = null)
     {
         $io = $io ?: $this->getMock('Composer\IO\IOInterface');
         $config = $config ?: $this->getMock('Composer\Config');
         $rfs = $rfs ?: $this->getMockBuilder('Composer\Util\RemoteFilesystem')->disableOriginalConstructor()->getMock();
 
-        return new FileDownloader($io, $config, null, $rfs);
+        return new FileDownloader($io, $config, null, null, $rfs, $filesystem);
     }
 
     /**
@@ -134,12 +134,13 @@ class FileDownloaderTest extends \PHPUnit_Framework_TestCase
             ->method('getDistSha1Checksum')
             ->will($this->returnValue('invalid'))
         ;
+        $filesystem = $this->getMock('Composer\Util\Filesystem');
 
         do {
             $path = sys_get_temp_dir().'/'.md5(time().mt_rand());
         } while (file_exists($path));
 
-        $downloader = $this->getDownloader();
+        $downloader = $this->getDownloader(null, null, null, $filesystem);
 
         // make sure the file expected to be downloaded is on disk already
         mkdir($path, 0777, true);

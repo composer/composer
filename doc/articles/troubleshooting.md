@@ -64,7 +64,7 @@ You can fix this by aliasing version 0.11 to 0.1:
 composer.json:
 
     {
-        require: {
+        "require": {
             "A": "0.2",
             "B": "0.11 as 0.1"
         }

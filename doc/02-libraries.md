@@ -69,8 +69,9 @@ you can just add a `version` field:
 ### Tags
 
 For every tag that looks like a version, a package version of that tag will be
-created. It should match 'X.Y.Z' or 'vX.Y.Z', with an optional suffix for RC,
-beta, alpha or patch.
+created. It should match 'X.Y.Z' or 'vX.Y.Z', with an optional suffix
+of `-patch`, `-alpha`, `-beta` or `-RC`. The suffixes can also be followed by
+a number.
 
 Here are a few examples of valid tag names:
 
@@ -97,7 +98,9 @@ Here are some examples of version branch names:
     1.0 (equals 1.0.x)
     1.1.x
 
-> **Note:** When you install a dev version, it will install it from source.
+> **Note:** When you install a development version, it will be automatically
+> pulled from its `source`. See the [`install`](03-cli.md#install) command
+> for more details.
 
 ### Aliases
 

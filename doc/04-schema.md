@@ -50,10 +50,12 @@ Required for published packages (libraries).
 
 ### version
 
-The version of the package.
+The version of the package. In most cases this is not required and should
+be omitted (see below).
 
-This must follow the format of `X.Y.Z` with an optional suffix of `-dev`,
-`-alphaN`, `-betaN` or `-RCN`.
+This must follow the format of `X.Y.Z` or `vX.Y.Z` with an optional suffix
+of `-dev`, `-patch`, `-alpha`, `-beta` or `-RC`. The patch, alpha, beta and
+RC suffixes can also be followed by a number.
 
 Examples:
 
@@ -97,7 +99,7 @@ Out of the box, composer supports three types:
   their installation, but contains no files and will not write anything to the
   filesystem. As such, it does not require a dist or source key to be
   installable.
-- **composer-installer:** A package of type `composer-installer` provides an
+- **composer-plugin:** A package of type `composer-plugin` may provide an
   installer for other packages that have a custom type. Read more in the
   [dedicated article](articles/custom-installers.md).
 
@@ -261,7 +263,7 @@ All links are optional fields.
 These allow you to further restrict or expand the stability of a package beyond
 the scope of the [minimum-stability](#minimum-stability) setting. You can apply
 them to a constraint, or just apply them to an empty constraint if you want to
-allow unstable packages of a dependency's dependency for example.
+allow unstable packages of a dependency for example.
 
 Example:
 
@@ -269,6 +271,18 @@ Example:
         "require": {
             "monolog/monolog": "1.0.*@beta",
             "acme/foo": "@dev"
+        }
+    }
+
+If one of your dependencies has a dependency on an unstable package you need to
+explicitly require it as well, along with its sufficient stability flag.
+
+Example:
+
+    {
+        "require": {
+            "doctrine/doctrine-fixtures-bundle": "dev-master",
+            "doctrine/data-fixtures": "@dev"
         }
     }
 
@@ -301,18 +315,19 @@ unless those requirements can be met.
 #### require-dev <span>(root-only)</span>
 
 Lists packages required for developing this package, or running
-tests, etc. The dev requirements of the root package only will be installed
-if `install` is run with `--dev` or if `update` is run without `--no-dev`.
+tests, etc. The dev requirements of the root package are installed by default.
+Both `install` or `update` support the `--no-dev` option that prevents dev
+dependencies from being installed.
 
 #### conflict
 
 Lists packages that conflict with this version of this package. They
 will not be allowed to be installed together with your package.
 
-Note that when specifying ranges like "<1.0, >= 1.1" in a `conflict` link,
+Note that when specifying ranges like `<1.0, >= 1.1` in a `conflict` link,
 this will state a conflict with all versions that are less than 1.0 *and* equal
 or newer than 1.1 at the same time, which is probably not what you want. You
-probably want to go for "<1.0 | >= 1.1" in this case.
+probably want to go for `<1.0 | >= 1.1` in this case.
 
 #### replace
 
@@ -637,6 +652,9 @@ The following options are supported:
   dist (zip, tar, ..) packages that it downloads. When the garbage collection
   is periodically ran, this is the maximum size the cache will be able to use.
   Older (less used) files will be removed first until the cache fits.
+* **prepend-autoloader:** Defaults to `true`. If false, the composer autoloader
+  will not be prepended to existing autoloaders. This is sometimesrequired to fix
+  interoperability issues with other autoloaders.
 * **notify-on-install:** Defaults to `true`. Composer allows repositories to
   define a notification URL, so that they get notified whenever a package from
   that repository is installed. This option allows you to disable that behaviour.

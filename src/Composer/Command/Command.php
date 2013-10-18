@@ -38,16 +38,17 @@ abstract class Command extends BaseCommand
 
     /**
      * @param  bool              $required
+     * @param  bool              $disablePlugins
      * @throws \RuntimeException
      * @return Composer
      */
-    public function getComposer($required = true)
+    public function getComposer($required = true, $disablePlugins = false)
     {
         if (null === $this->composer) {
             $application = $this->getApplication();
             if ($application instanceof Application) {
                 /* @var $application    Application */
-                $this->composer = $application->getComposer($required);
+                $this->composer = $application->getComposer($required, $disablePlugins);
             } elseif ($required) {
                 throw new \RuntimeException(
                     'Could not create a Composer\Composer instance, you must inject '.

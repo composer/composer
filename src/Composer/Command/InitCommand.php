@@ -35,7 +35,7 @@ class InitCommand extends Command
 
     public function parseAuthorString($author)
     {
-        if (preg_match('/^(?P<name>[- \.,\w\'’]+) <(?P<email>.+?)>$/u', $author, $match)) {
+        if (preg_match('/^(?P<name>[- \.,\p{L}\'’]+) <(?P<email>.+?)>$/u', $author, $match)) {
             if ($this->isValidEmail($match['email'])) {
                 return array(
                     'name'  => trim($match['name']),
@@ -208,7 +208,8 @@ EOT
         $description = $input->getOption('description') ?: false;
         $description = $dialog->ask(
             $output,
-            $dialog->getQuestion('Description', $description)
+            $dialog->getQuestion('Description', $description),
+            $description
         );
         $input->setOption('description', $description);
 
@@ -258,7 +259,8 @@ EOT
         $license = $input->getOption('license') ?: false;
         $license = $dialog->ask(
             $output,
-            $dialog->getQuestion('License', $license)
+            $dialog->getQuestion('License', $license),
+            $license
         );
         $input->setOption('license', $license);
 

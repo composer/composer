@@ -15,13 +15,16 @@ namespace Composer;
 use Composer\Autoload\AutoloadGenerator;
 use Composer\DependencyResolver\DefaultPolicy;
 use Composer\DependencyResolver\Operation\UpdateOperation;
+use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
+use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Rule;
 use Composer\DependencyResolver\Solver;
 use Composer\DependencyResolver\SolverProblemsException;
 use Composer\Downloader\DownloadManager;
+use Composer\EventDispatcher\EventDispatcher;
 use Composer\Installer\InstallationManager;
 use Composer\Config;
 use Composer\Installer\NoopInstaller;
@@ -39,13 +42,13 @@ use Composer\Repository\InstalledFilesystemRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositoryManager;
-use Composer\Script\EventDispatcher;
 use Composer\Script\ScriptEvents;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Beau Simensen <beau@dflydev.com>
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
+ * @author Nils Adermann <naderman@naderman.de>
  */
 class Installer
 {
@@ -103,6 +106,7 @@ class Installer
     protected $update = false;
     protected $runScripts = true;
     protected $updateWhitelist = null;
+    protected $whitelistDependencies = false;
 
     /**
      * @var array
@@ -459,6 +463,8 @@ class Installer
             $this->io->write('Nothing to install or update');
         }
 
+        $operations = $this->movePluginsToFront($operations);
+
         foreach ($operations as $operation) {
             // collect suggestions
             if ('install' === $operation->getJobType()) {
@@ -532,6 +538,40 @@ class Installer
         }
 
         return true;
+    }
+
+    /**
+     * Workaround: if your packages depend on plugins, we must be sure
+     * that those are installed / updated first; else it would lead to packages
+     * being installed multiple times in different folders, when running Composer
+     * twice.
+     *
+     * While this does not fix the root-causes of https://github.com/composer/composer/issues/1147,
+     * it at least fixes the symptoms and makes usage of composer possible (again)
+     * in such scenarios.
+     *
+     * @param  OperationInterface[] $operations
+     * @return OperationInterface[] reordered operation list
+     */
+    private function movePluginsToFront(array $operations)
+    {
+        $installerOps = array();
+        foreach ($operations as $idx => $op) {
+            if ($op instanceof InstallOperation) {
+                $package = $op->getPackage();
+            } elseif ($op instanceof UpdateOperation) {
+                $package = $op->getTargetPackage();
+            } else {
+                continue;
+            }
+
+            if ($package->getRequires() === array() && ($package->getType() === 'composer-plugin' || $package->getType() === 'composer-installer')) {
+                $installerOps[] = $op;
+                unset($operations[$idx]);
+            }
+        }
+
+        return array_merge($installerOps, $operations);
     }
 
     private function createPool()
@@ -812,10 +852,11 @@ class Installer
                 $seen[$package->getId()] = true;
                 $this->updateWhitelist[$package->getName()] = true;
 
-                $requires = $package->getRequires();
-                if ($devMode) {
-                    $requires = array_merge($requires, $package->getDevRequires());
+                if (!$this->whitelistDependencies) {
+                    continue;
                 }
+
+                $requires = $package->getRequires();
 
                 foreach ($requires as $require) {
                     $requirePackages = $pool->whatProvides($require->getTarget());
@@ -1016,7 +1057,20 @@ class Installer
     }
 
     /**
-     * Disables custom installers.
+     * Should dependencies of whitelisted packages be updated recursively?
+     *
+     * @param  boolean $updateDependencies
+     * @return Installer
+     */
+    public function setWhitelistDependencies($updateDependencies = true)
+    {
+        $this->whitelistDependencies = (boolean) $updateDependencies;
+
+        return $this;
+    }
+
+    /**
+     * Disables plugins.
      *
      * Call this if you want to ensure that third-party code never gets
      * executed. The default is to automatically install, and execute
@@ -1024,9 +1078,9 @@ class Installer
      *
      * @return Installer
      */
-    public function disableCustomInstallers()
+    public function disablePlugins()
     {
-        $this->installationManager->disableCustomInstallers();
+        $this->installationManager->disablePlugins();
 
         return $this;
     }
