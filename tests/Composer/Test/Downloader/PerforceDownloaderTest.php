@@ -22,7 +22,7 @@ use Composer\IO\IOInterface;
  */
 class PerforceDownloaderTest extends \PHPUnit_Framework_TestCase
 {
-    
+
     protected $config;
     protected $downloader;
     protected $io;
@@ -82,7 +82,7 @@ class PerforceDownloaderTest extends \PHPUnit_Framework_TestCase
 
     protected function getRepoConfig()
     {
-        return array('url' => 'TEST_URL', 'p4user' => 'TEST_USER');   
+        return array('url' => 'TEST_URL', 'p4user' => 'TEST_USER');
     }
 
     protected function getMockRepository(array $repoConfig, IOInterface $io, Config $config)
@@ -129,7 +129,7 @@ class PerforceDownloaderTest extends \PHPUnit_Framework_TestCase
         $perforce->expects($this->at(5))->method('syncCodeBase')->with($label);
         $perforce->expects($this->at(6))->method('cleanupClientSpec');
         $this->downloader->setPerforce($perforce);
-        $this->downloader->doDownload($this->package, $this->testPath);
+        $this->downloader->doDownload($this->package, $this->testPath, 'url');
     }
 
     /**
@@ -152,7 +152,6 @@ class PerforceDownloaderTest extends \PHPUnit_Framework_TestCase
         $perforce->expects($this->at(5))->method('syncCodeBase')->with($label);
         $perforce->expects($this->at(6))->method('cleanupClientSpec');
         $this->downloader->setPerforce($perforce);
-        $this->downloader->doDownload($this->package, $this->testPath);
+        $this->downloader->doDownload($this->package, $this->testPath, 'url');
     }
-
 }

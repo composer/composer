@@ -26,13 +26,13 @@ class PerforceDownloader extends VcsDownloader
     /**
      * {@inheritDoc}
      */
-    public function doDownload(PackageInterface $package, $path)
+    public function doDownload(PackageInterface $package, $path, $url)
     {
         $ref = $package->getSourceReference();
         $label = $this->getLabelFromSourceReference($ref);
 
         $this->io->write('    Cloning ' . $ref);
-        $this->initPerforce($package, $path);
+        $this->initPerforce($package, $path, $url);
         $this->perforce->setStream($ref);
         $this->perforce->p4Login($this->io);
         $this->perforce->writeP4ClientSpec();
@@ -51,7 +51,7 @@ class PerforceDownloader extends VcsDownloader
         return null;
     }
 
-    public function initPerforce($package, $path)
+    public function initPerforce($package, $path, $url)
     {
         if (!empty($this->perforce)) {
             $this->perforce->initializePath($path);
@@ -63,7 +63,7 @@ class PerforceDownloader extends VcsDownloader
         if ($repository instanceof VcsRepository) {
             $repoConfig = $this->getRepoConfig($repository);
         }
-        $this->perforce = Perforce::create($repoConfig, $package->getSourceUrl(), $path, $this->process, $this->io);
+        $this->perforce = Perforce::create($repoConfig, $url, $path, $this->process, $this->io);
     }
 
     private function getRepoConfig(VcsRepository $repository)
@@ -74,9 +74,9 @@ class PerforceDownloader extends VcsDownloader
     /**
      * {@inheritDoc}
      */
-    public function doUpdate(PackageInterface $initial, PackageInterface $target, $path)
+    public function doUpdate(PackageInterface $initial, PackageInterface $target, $path, $url)
     {
-        $this->doDownload($target, $path);
+        $this->doDownload($target, $path, $url);
     }
 
     /**
