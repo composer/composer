@@ -30,4 +30,26 @@ class ComposerMirror
             $mirrorUrl
         );
     }
+
+    public static function processGitUrl($mirrorUrl, $packageName, $url, $type)
+    {
+        if (preg_match('#^(?:(?:https?|git)://github\.com/|git@github\.com:)([^/]+)/(.+?)(?:\.git)?$#', $url, $match)) {
+            $url = 'gh-'.$match[1].'/'.$match[2];
+        } elseif (preg_match('#^https://bitbucket\.org/([^/]+)/(.+?)(?:\.git)?/?$#', $url, $match)) {
+            $url = 'bb-'.$match[1].'/'.$match[2];
+        } else {
+            $url = preg_replace('{[^a-z0-9_.-]}i', '-', trim($url, '/'));
+        }
+
+        return str_replace(
+            array('%package%', '%normalizedUrl%', '%type%'),
+            array($packageName, $url, $type),
+            $mirrorUrl
+        );
+    }
+
+    public static function processHgUrl($mirrorUrl, $packageName, $url, $type)
+    {
+        return self::processGitUrl($mirrorUrl, $packageName, $url, $type);
+    }
 }

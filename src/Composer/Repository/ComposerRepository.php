@@ -443,13 +443,20 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
 
         if (!empty($data['mirrors'])) {
             foreach ($data['mirrors'] as $mirror) {
-                if (!empty($mirror['source-url'])) {
-                    $this->sourceMirrors[] = array('url' => $mirror['source-url'], 'preferred' => !empty($mirror['preferred']));
+                if (!empty($mirror['git-url'])) {
+                    $this->sourceMirrors['git'][] = array('url' => $mirror['git-url'], 'preferred' => !empty($mirror['preferred']));
+                }
+                if (!empty($mirror['hg-url'])) {
+                    $this->sourceMirrors['hg'][] = array('url' => $mirror['hg-url'], 'preferred' => !empty($mirror['preferred']));
                 }
                 if (!empty($mirror['dist-url'])) {
                     $this->distMirrors[] = array('url' => $mirror['dist-url'], 'preferred' => !empty($mirror['preferred']));
                 }
             }
+        }
+
+        if (!empty($data['warning'])) {
+            $this->io->write('<warning>Warning from '.$this->url.': '.$data['warning'].'</warning>');
         }
 
         if (!empty($data['providers-lazy-url'])) {
@@ -571,7 +578,9 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
             }
 
             $package = $this->loader->load($data, 'Composer\Package\CompletePackage');
-            $package->setSourceMirrors($this->sourceMirrors);
+            if (isset($this->sourceMirrors[$package->getSourceType()])) {
+                $package->setSourceMirrors($this->sourceMirrors[$package->getSourceType()]);
+            }
             $package->setDistMirrors($this->distMirrors);
             $this->configurePackageTransportOptions($package);
 

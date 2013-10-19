@@ -241,7 +241,7 @@ class Package extends BasePackage
      */
     public function getSourceUrls()
     {
-        return $this->getUrls($this->sourceUrl, $this->sourceMirrors, $this->sourceReference, $this->sourceType);
+        return $this->getUrls($this->sourceUrl, $this->sourceMirrors, $this->sourceReference, $this->sourceType, 'source');
     }
 
     /**
@@ -329,7 +329,7 @@ class Package extends BasePackage
      */
     public function getDistUrls()
     {
-        return $this->getUrls($this->distUrl, $this->distMirrors, $this->distReference, $this->distType);
+        return $this->getUrls($this->distUrl, $this->distMirrors, $this->distReference, $this->distType, 'dist');
     }
 
     /**
@@ -580,7 +580,7 @@ class Package extends BasePackage
         $this->dev = $this->stability === 'dev';
     }
 
-    protected function getUrls($url, $mirrors, $ref, $type)
+    protected function getUrls($url, $mirrors, $ref, $type, $urlType)
     {
         if (!$url) {
             return array();
@@ -588,8 +588,14 @@ class Package extends BasePackage
         $urls = array($url);
         if ($mirrors) {
             foreach ($mirrors as $mirror) {
-                $mirrorUrl = ComposerMirror::processUrl($mirror['url'], $this->name, $this->version, $ref, $type);
-                if (!in_array($urls, $mirrorUrl)) {
+                if ($urlType === 'dist') {
+                    $mirrorUrl = ComposerMirror::processUrl($mirror['url'], $this->name, $this->version, $ref, $type);
+                } elseif ($urlType === 'source' && $type === 'git') {
+                    $mirrorUrl = ComposerMirror::processGitUrl($mirror['url'], $this->name, $url, $type);
+                } elseif ($urlType === 'source' && $type === 'hg') {
+                    $mirrorUrl = ComposerMirror::processHgUrl($mirror['url'], $this->name, $url, $type);
+                }
+                if (!in_array($mirrorUrl, $urls)) {
                     $func = $mirror['preferred'] ? 'array_unshift' : 'array_push';
                     $func($urls, $mirrorUrl);
                 }
