@@ -178,9 +178,9 @@ It is possible to make satis automatically resolve and add all dependencies for 
 with the Downloads functionality to have a complete local mirror of packages. Just add the following
 to your `satis.json`:
 
-```json
+```
 {
-    "require-dependencies": true,
+    "require-dependencies": true
 }
 ```
 
