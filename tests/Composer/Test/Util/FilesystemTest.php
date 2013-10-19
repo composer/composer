@@ -106,6 +106,7 @@ class FilesystemTest extends TestCase
             array('/tmp/test/.././vendor', '/tmp/test', '../test', true),
             array('C:/Temp', 'c:\Temp\..\..\test', "../test", true),
             array('C:/Temp/../..', 'c:\Temp\..\..\test', "./test", true),
+            array('C:/Temp/../..', 'D:\Temp\..\..\test', "d:/test", true),
             array('/tmp', '/tmp/../../test', '/test', true),
             array('/foo/bar', '/foo/bar_vendor', '../bar_vendor', true),
             array('/foo/bar_vendor', '/foo/bar', '../bar', true),
