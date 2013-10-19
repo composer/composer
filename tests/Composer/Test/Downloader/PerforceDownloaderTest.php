@@ -51,16 +51,16 @@ class PerforceDownloaderTest extends \PHPUnit_Framework_TestCase
             array($repoConfig, $this->io, $this->config)
         );
         $package->expects($this->at(0))
-        ->method('getSourceReference')
-        ->will($this->returnValue('SOURCE_REF'));
+            ->method('getSourceReference')
+            ->will($this->returnValue('SOURCE_REF'));
         $package->expects($this->at(1))
-        ->method('getPrettyVersion')
-        ->will($this->returnValue('100'));
+            ->method('getPrettyVersion')
+            ->will($this->returnValue('100'));
         $package->expects($this->at(2))
-        ->method('getRepository')
-        ->will($this->returnValue($repository));
+            ->method('getRepository')
+            ->will($this->returnValue($repository));
         $repository->expects($this->at(0))
-        ->method('getRepoConfig');
+            ->method('getRepoConfig');
         $path = $this->testPath;
         $downloader->doDownload($package, $path);
     }
@@ -80,26 +80,26 @@ class PerforceDownloaderTest extends \PHPUnit_Framework_TestCase
         $ref = 'SOURCE_REF';
         $label = 'LABEL';
         $perforce->expects($this->at(0))
-        ->method('setStream')
-        ->with($this->equalTo($ref));
+            ->method('setStream')
+            ->with($this->equalTo($ref));
         $perforce->expects($this->at(1))
-        ->method('queryP4User')
-        ->with($this->io);
+            ->method('queryP4User')
+            ->with($this->io);
         $perforce->expects($this->at(2))
-        ->method('writeP4ClientSpec');
+            ->method('writeP4ClientSpec');
         $perforce->expects($this->at(3))
-        ->method('connectClient');
+            ->method('connectClient');
         $perforce->expects($this->at(4))
-        ->method('syncCodeBase')
-        ->with($this->equalTo($label));
+            ->method('syncCodeBase')
+            ->with($this->equalTo($label));
         $downloader->setPerforce($perforce);
         $package = $this->getMock('Composer\Package\PackageInterface');
         $package->expects($this->at(0))
-        ->method('getSourceReference')
-        ->will($this->returnValue($ref));
+            ->method('getSourceReference')
+            ->will($this->returnValue($ref));
         $package->expects($this->at(1))
-        ->method('getPrettyVersion')
-        ->will($this->returnValue($label));
+            ->method('getPrettyVersion')
+            ->will($this->returnValue($label));
         $path = $this->testPath;
         $downloader->doDownload($package, $path);
     }
