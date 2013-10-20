@@ -100,7 +100,7 @@ Composer is part of the homebrew-php project.
 2. Run `brew install josegonzalez/php/composer`.
 3. Use Composer with the `composer` command.
 
-> **Note:** If you recieve an error saying PHP53 or higher is missing use this command to install php 
+> **Note:** If you receive an error saying PHP53 or higher is missing use this command to install php 
 > `brew install php53-intl`
 
 ## Installation - Windows
