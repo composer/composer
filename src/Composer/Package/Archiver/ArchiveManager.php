@@ -83,9 +83,11 @@ class ArchiveManager
             $nameParts[] = substr(sha1($package->getSourceReference()), 0, 6);
         }
 
-        return implode('-', array_filter($nameParts, function ($p) {
+        $name = implode('-', array_filter($nameParts, function ($p) {
             return !empty($p);
         }));
+
+        return str_replace('/', '-', $name);
     }
 
     /**
