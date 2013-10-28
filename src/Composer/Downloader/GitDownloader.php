@@ -394,7 +394,7 @@ class GitDownloader extends VcsDownloader
             $protocols = $this->config->get('github-protocols');
             $pushUrl = 'git@'.$match[1].':'.$match[2].'/'.$match[3].'.git';
             if ($protocols[0] !== 'git') {
-                $pushUrl = 'https://github.com/'.$match[1].'/'.$match[2].'.git';
+                $pushUrl = 'https://' . $match[1] . '/'.$match[2].'/'.$match[3].'.git';
             }
             $cmd = sprintf('git remote set-url --push origin %s', escapeshellarg($pushUrl));
             $this->process->execute($cmd, $ignoredOutput, $path);
