@@ -51,10 +51,6 @@ class GitHub
      */
     public function authorizeOAuth($originUrl)
     {
-        if ('github.com' !== $originUrl) {
-            return false;
-        }
-
         // if available use token from git config
         if (0 === $this->process->execute('git config github.accesstoken', $output)) {
             $this->io->setAuthentication($originUrl, trim($output), 'x-oauth-basic');
@@ -78,6 +74,8 @@ class GitHub
     {
         $attemptCounter = 0;
 
+        $apiUrl = ('github.com' === $originUrl) ? 'api.github.com' : $originUrl . '/api/v3';
+
         if ($message) {
             $this->io->write($message);
         }
@@ -95,7 +93,7 @@ class GitHub
                     $appName .= ' on ' . trim($output);
                 }
 
-                $contents = JsonFile::parseJson($this->remoteFilesystem->getContents($originUrl, 'https://api.github.com/authorizations', false, array(
+                $contents = JsonFile::parseJson($this->remoteFilesystem->getContents($originUrl, 'https://'. $apiUrl . '/authorizations', false, array(
                     'http' => array(
                         'method' => 'POST',
                         'follow_location' => false,
