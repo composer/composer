@@ -12,6 +12,7 @@
 
 namespace Composer\Repository\Vcs;
 
+use Composer\Config;
 use Composer\Json\JsonFile;
 use Composer\IO\IOInterface;
 
@@ -140,7 +141,7 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
     /**
      * {@inheritDoc}
      */
-    public static function supports(IOInterface $io, $url, $deep = false)
+    public static function supports(IOInterface $io, $url, Config $config, $deep = false)
     {
         if (!preg_match('#^https://bitbucket\.org/([^/]+)/(.+?)\.git$#', $url)) {
             return false;

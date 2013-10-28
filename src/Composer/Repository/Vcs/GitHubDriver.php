@@ -12,6 +12,7 @@
 
 namespace Composer\Repository\Vcs;
 
+use Composer\Config;
 use Composer\Downloader\TransportException;
 use Composer\Json\JsonFile;
 use Composer\Cache;
@@ -231,9 +232,14 @@ class GitHubDriver extends VcsDriver
     /**
      * {@inheritDoc}
      */
-    public static function supports(IOInterface $io, $url, $deep = false)
+    public static function supports(IOInterface $io, $url, Config $config, $deep = false)
     {
-        if (!preg_match('#^((?:https?|git)://([^/]+)/|git@([^:]+):)([^/]+)/(.+?)(?:\.git)?$#', $url)) {
+        if (!preg_match('#^((?:https?|git)://([^/]+)/|git@([^:]+):)([^/]+)/(.+?)(?:\.git)?$#', $url, $matches)) {
+            return false;
+        }
+
+        $originUrl = isset($matches[2]) ? $matches[2] : $matches[3];
+        if (!in_array($originUrl, $config->get('github-domains'))) {
             return false;
         }
 

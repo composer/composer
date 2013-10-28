@@ -13,6 +13,7 @@
 namespace Composer\Repository\Vcs;
 
 use Composer\Cache;
+use Composer\Config;
 use Composer\Json\JsonFile;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Filesystem;
@@ -241,7 +242,7 @@ class SvnDriver extends VcsDriver
     /**
      * {@inheritDoc}
      */
-    public static function supports(IOInterface $io, $url, $deep = false)
+    public static function supports(IOInterface $io, $url, Config $config, $deep = false)
     {
         $url = self::normalizeUrl($url);
         if (preg_match('#(^svn://|^svn\+ssh://|svn\.)#i', $url)) {

@@ -18,6 +18,7 @@ use Composer\Util\Filesystem;
 use Composer\Util\Git as GitUtil;
 use Composer\IO\IOInterface;
 use Composer\Cache;
+use Composer\Config;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -211,7 +212,7 @@ class GitDriver extends VcsDriver
     /**
      * {@inheritDoc}
      */
-    public static function supports(IOInterface $io, $url, $deep = false)
+    public static function supports(IOInterface $io, $url, Config $config, $deep = false)
     {
         if (preg_match('#(^git://|\.git$|git(?:olite)?@|//git\.|//github.com/)#i', $url)) {
             return true;
