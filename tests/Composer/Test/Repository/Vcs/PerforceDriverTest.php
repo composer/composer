@@ -104,7 +104,6 @@ class PerforceDriverTest extends \PHPUnit_Framework_TestCase
 
     public function testHasComposerFile()
     {
-        $this->setUp();
         $repoConfig = array(
             'url'    => 'TEST_PERFORCE_URL',
             'depot'  => 'TEST_DEPOT_CONFIG',
@@ -131,17 +130,17 @@ class PerforceDriverTest extends \PHPUnit_Framework_TestCase
         $result = $driver->hasComposerFile($identifier);
         $this->assertTrue($result);
     }
-    
+
     /**
      * Test that supports() simply return false.
-     * 
+     *
      * @covers \Composer\Repository\Vcs\PerforceDriver::supports
-     * 
+     *
      * @return void
      */
     public function testSupportsReturnsFalseNoDeepCheck()
     {
         $this->expectOutputString('');
-        $this->assertFalse(PerforceDriver::supports($this->io, 'existing.url'));
+        $this->assertFalse(PerforceDriver::supports($this->io, 'existing.url', $this->config));
     }
 }

@@ -12,6 +12,7 @@
 
 namespace Composer\Repository\Vcs;
 
+use Composer\Config;
 use Composer\IO\IOInterface;
 
 /**
@@ -90,10 +91,11 @@ interface VcsDriverInterface
     /**
      * Checks if this driver can handle a given url
      *
-     * @param  IOInterface $io   IO instance
-     * @param  string      $url
-     * @param  bool        $deep unless true, only shallow checks (url matching typically) should be done
+     * @param  IOInterface $io     IO instance
+     * @param  string      $url    URL to validate/check
+     * @param  Config      $config current $config
+     * @param  bool        $deep   unless true, only shallow checks (url matching typically) should be done
      * @return bool
      */
-    public static function supports(IOInterface $io, $url, $deep = false);
+    public static function supports(IOInterface $io, $url, Config $config, $deep = false);
 }
