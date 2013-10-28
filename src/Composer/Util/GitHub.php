@@ -51,6 +51,10 @@ class GitHub
      */
     public function authorizeOAuth($originUrl)
     {
+        if (!in_array($originUrl, $this->config->get('github-domains'))) {
+            return false;
+        }
+
         // if available use token from git config
         if (0 === $this->process->execute('git config github.accesstoken', $output)) {
             $this->io->setAuthentication($originUrl, trim($output), 'x-oauth-basic');
