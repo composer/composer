@@ -223,11 +223,11 @@ class Filesystem
         }
 
         $commonPath = $to;
-        while (strpos($from.'/', $commonPath.'/') !== 0 && '/' !== $commonPath && !preg_match('{^[a-z]:/?$}i', $commonPath) && '\\' !== $commonPath) {
-            $commonPath = dirname($commonPath);
+        while (strpos($from.'/', $commonPath.'/') !== 0 && '/' !== $commonPath && !preg_match('{^[a-z]:/?$}i', $commonPath)) {
+            $commonPath = strtr(dirname($commonPath), '\\', '/');
         }
 
-        if (0 !== strpos($from, $commonPath) || '/' === $commonPath || '\\' === $commonPath) {
+        if (0 !== strpos($from, $commonPath) || '/' === $commonPath) {
             return $to;
         }
 
@@ -262,7 +262,7 @@ class Filesystem
 
         $commonPath = $to;
         while (strpos($from.'/', $commonPath.'/') !== 0 && '/' !== $commonPath && !preg_match('{^[a-z]:/?$}i', $commonPath) && '.' !== $commonPath) {
-            $commonPath = dirname($commonPath);
+            $commonPath = strtr(dirname($commonPath), '\\', '/');
         }
 
         if (0 !== strpos($from, $commonPath) || '/' === $commonPath || '.' === $commonPath) {
