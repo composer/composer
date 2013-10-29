@@ -141,6 +141,6 @@ class PerforceDriverTest extends \PHPUnit_Framework_TestCase
     public function testSupportsReturnsFalseNoDeepCheck()
     {
         $this->expectOutputString('');
-        $this->assertFalse(PerforceDriver::supports($this->io, 'existing.url', $this->config));
+        $this->assertFalse(PerforceDriver::supports($this->io, $this->config, 'existing.url'));
     }
 }

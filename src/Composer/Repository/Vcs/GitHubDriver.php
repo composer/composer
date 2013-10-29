@@ -232,7 +232,7 @@ class GitHubDriver extends VcsDriver
     /**
      * {@inheritDoc}
      */
-    public static function supports(IOInterface $io, $url, Config $config, $deep = false)
+    public static function supports(IOInterface $io, Config $config, $url, $deep = false)
     {
         if (!preg_match('#^((?:https?|git)://([^/]+)/|git@([^:]+):)([^/]+)/(.+?)(?:\.git)?$#', $url, $matches)) {
             return false;
