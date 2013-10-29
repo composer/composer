@@ -242,7 +242,7 @@ class SvnDriver extends VcsDriver
     /**
      * {@inheritDoc}
      */
-    public static function supports(IOInterface $io, $url, Config $config, $deep = false)
+    public static function supports(IOInterface $io, Config $config, $url, $deep = false)
     {
         $url = self::normalizeUrl($url);
         if (preg_match('#(^svn://|^svn\+ssh://|svn\.)#i', $url)) {

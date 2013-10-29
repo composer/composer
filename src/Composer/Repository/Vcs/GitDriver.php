@@ -212,7 +212,7 @@ class GitDriver extends VcsDriver
     /**
      * {@inheritDoc}
      */
-    public static function supports(IOInterface $io, $url, Config $config, $deep = false)
+    public static function supports(IOInterface $io, Config $config, $url, $deep = false)
     {
         if (preg_match('#(^git://|\.git$|git(?:olite)?@|//git\.|//github.com/)#i', $url)) {
             return true;
