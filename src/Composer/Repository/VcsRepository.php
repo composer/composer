@@ -80,7 +80,7 @@ class VcsRepository extends ArrayRepository
         }
 
         foreach ($this->drivers as $driver) {
-            if ($driver::supports($this->io, $this->url)) {
+            if ($driver::supports($this->io, $this->config, $this->url)) {
                 $driver = new $driver($this->repoConfig, $this->io, $this->config);
                 $driver->initialize();
 
@@ -89,7 +89,7 @@ class VcsRepository extends ArrayRepository
         }
 
         foreach ($this->drivers as $driver) {
-            if ($driver::supports($this->io, $this->url, true)) {
+            if ($driver::supports($this->io, $this->config, $this->url, true)) {
                 $driver = new $driver($this->repoConfig, $this->io, $this->config);
                 $driver->initialize();
 

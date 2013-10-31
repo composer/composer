@@ -293,7 +293,7 @@ class GitDownloader extends VcsDownloader
         }
 
         // public github, autoswitch protocols
-        if (preg_match('{^(?:https?|git)(://github.com/.*)}', $url, $match)) {
+        if (preg_match('{^(?:https?|git)(://'.$this->getGitHubDomainsRegex().'/.*)}', $url, $match)) {
             $protocols = $this->config->get('github-protocols');
             if (!is_array($protocols)) {
                 throw new \RuntimeException('Config value "github-protocols" must be an array, got '.gettype($protocols));
@@ -317,7 +317,7 @@ class GitDownloader extends VcsDownloader
         $command = call_user_func($commandCallable, $url);
         if (0 !== $this->process->execute($command, $ignoredOutput, $cwd)) {
             // private github repository without git access, try https with auth
-            if (preg_match('{^git@(github.com):(.+?)\.git$}i', $url, $match)) {
+            if (preg_match('{^git@'.$this->getGitHubDomainsRegex().':(.+?)\.git$}i', $url, $match)) {
                 if (!$this->io->hasAuthentication($match[1])) {
                     $gitHubUtil = new GitHub($this->io, $this->config, $this->process);
                     $message = 'Cloning failed using an ssh key for authentication, enter your GitHub credentials to access private repos';
@@ -368,6 +368,11 @@ class GitDownloader extends VcsDownloader
         }
     }
 
+    protected function getGitHubDomainsRegex()
+    {
+        return '('.implode('|', array_map('preg_quote', $this->config->get('github-domains'))).')';
+    }
+
     protected function throwException($message, $url)
     {
         if (0 !== $this->process->execute('git --version', $ignoredOutput)) {
@@ -385,11 +390,11 @@ class GitDownloader extends VcsDownloader
     protected function setPushUrl(PackageInterface $package, $path)
     {
         // set push url for github projects
-        if (preg_match('{^(?:https?|git)://github.com/([^/]+)/([^/]+?)(?:\.git)?$}', $package->getSourceUrl(), $match)) {
+        if (preg_match('{^(?:https?|git)://'.$this->getGitHubDomainsRegex().'/([^/]+)/([^/]+?)(?:\.git)?$}', $package->getSourceUrl(), $match)) {
             $protocols = $this->config->get('github-protocols');
-            $pushUrl = 'git@github.com:'.$match[1].'/'.$match[2].'.git';
+            $pushUrl = 'git@'.$match[1].':'.$match[2].'/'.$match[3].'.git';
             if ($protocols[0] !== 'git') {
-                $pushUrl = 'https://github.com/'.$match[1].'/'.$match[2].'.git';
+                $pushUrl = 'https://' . $match[1] . '/'.$match[2].'/'.$match[3].'.git';
             }
             $cmd = sprintf('git remote set-url --push origin %s', escapeshellarg($pushUrl));
             $this->process->execute($cmd, $ignoredOutput, $path);

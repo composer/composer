@@ -51,7 +51,7 @@ class GitHub
      */
     public function authorizeOAuth($originUrl)
     {
-        if ('github.com' !== $originUrl) {
+        if (!in_array($originUrl, $this->config->get('github-domains'))) {
             return false;
         }
 
@@ -78,6 +78,8 @@ class GitHub
     {
         $attemptCounter = 0;
 
+        $apiUrl = ('github.com' === $originUrl) ? 'api.github.com' : $originUrl . '/api/v3';
+
         if ($message) {
             $this->io->write($message);
         }
@@ -95,7 +97,7 @@ class GitHub
                     $appName .= ' on ' . trim($output);
                 }
 
-                $contents = JsonFile::parseJson($this->remoteFilesystem->getContents($originUrl, 'https://api.github.com/authorizations', false, array(
+                $contents = JsonFile::parseJson($this->remoteFilesystem->getContents($originUrl, 'https://'. $apiUrl . '/authorizations', false, array(
                     'http' => array(
                         'method' => 'POST',
                         'follow_location' => false,
