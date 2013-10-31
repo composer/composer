@@ -63,7 +63,7 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
         }
 
         $urlBits = parse_url($repoConfig['url']);
-        if (empty($urlBits['scheme']) || empty($urlBits['host'])) {
+        if ($urlBits === false || empty($urlBits['scheme'])) {
             throw new \UnexpectedValueException('Invalid url given for Composer repository: '.$repoConfig['url']);
         }
 
