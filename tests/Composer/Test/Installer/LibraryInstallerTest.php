@@ -136,7 +136,7 @@ class LibraryInstallerTest extends TestCase
         $filesystem
           ->expects($this->once())
           ->method('rename')
-          ->with($this->vendorDir.'/package1', $this->vendorDir.'/package1/newtarget');
+          ->with($this->vendorDir.'/package1/oldtarget', $this->vendorDir.'/package1/newtarget');
 
         $initial = $this->createPackageMock();
         $target  = $this->createPackageMock();
@@ -145,6 +145,11 @@ class LibraryInstallerTest extends TestCase
             ->expects($this->once())
             ->method('getPrettyName')
             ->will($this->returnValue('package1'));
+
+        $initial
+            ->expects($this->once())
+            ->method('getTargetDir')
+            ->will($this->returnValue('oldtarget'));
 
         $target
             ->expects($this->once())
