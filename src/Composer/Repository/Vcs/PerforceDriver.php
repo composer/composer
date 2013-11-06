@@ -162,7 +162,7 @@ class PerforceDriver extends VcsDriver
     public static function supports(IOInterface $io, Config $config, $url, $deep = false)
     {
         if ($deep || preg_match('#\b(perforce|p4)\b#i', $url)) {
-            return Perforce::checkServerExists($url, new ProcessExecutor);
+            return Perforce::checkServerExists($url, new ProcessExecutor($io));
         }
 
         return false;
