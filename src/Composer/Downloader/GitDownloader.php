@@ -384,7 +384,7 @@ class GitDownloader extends VcsDownloader
 
     protected function sanitizeUrl($message)
     {
-        return preg_replace('{://(.+?):.+?@}', '://$1:***@', $message);
+        return preg_replace('{://([^@]+?):.+?@}', '://$1:***@', $message);
     }
 
     protected function setPushUrl(PackageInterface $package, $path)
