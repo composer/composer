@@ -54,7 +54,7 @@ EOT
 
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, $this->getName(), $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
-        $composer->getEventDispatcher()->dispatchCommandEvent(ScriptEvents::PRE_STATUS_CMD, true);
+        $composer->getEventDispatcher()->dispatchCommandEvent(ScriptEvents::PRE_DEPENDENCY_STATUS_CMD, true);
 
         $dev = $input->getOption('dev');
         $packages = $this->getRequires($dev);
@@ -125,7 +125,7 @@ EOT
         }
 
         // Dispatch post-status-command
-        $composer->getEventDispatcher()->dispatchCommandEvent(ScriptEvents::POST_STATUS_CMD, true);
+        $composer->getEventDispatcher()->dispatchCommandEvent(ScriptEvents::POST_DEPENDENCY_STATUS_CMD, true);
     }
 
     /**

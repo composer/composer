@@ -165,4 +165,22 @@ class ScriptEvents
      */
     const POST_CREATE_PROJECT_CMD = 'post-create-project-cmd';
 
+    /**
+     * The PRE_DEPENDENCY_STATUS_CMD event occurs before the dep-status command is executed.
+     *
+     * The event listener method receives a Composer\Script\CommandEvent instance.
+     *
+     * @var string
+     */
+    const PRE_DEPENDENCY_STATUS_CMD = 'pre-dep-status-cmd';
+
+    /**
+     * The POST_DEPENDENCY_STATUS_CMD event occurs after the dep-status command is executed.
+     *
+     * The event listener method receives a Composer\Script\CommandEvent instance.
+     *
+     * @var string
+     */
+    const POST_DEPENDENCY_STATUS_CMD = 'post-dep-status-cmd';
+
 }
