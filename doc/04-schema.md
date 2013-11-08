@@ -86,7 +86,7 @@ that needs some special logic, you can define a custom type. This could be a
 all be specific to certain projects, and they will need to provide an
 installer capable of installing packages of that type.
 
-Out of the box, composer supports three types:
+Out of the box, composer supports four types:
 
 - **library:** This is the default. It will simply copy the files to `vendor`.
 - **project:** This denotes a project rather than a library. For example
