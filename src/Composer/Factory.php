@@ -118,7 +118,9 @@ class Factory
                             @rename($child, $dir.'/'.basename($child));
                         }
                     }
-                    @rmdir($oldPath);
+                    if ($config->get('cache-dir') != $oldPath) {
+                        @rmdir($oldPath);
+                    }
                 }
             }
         }
