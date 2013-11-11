@@ -12,6 +12,8 @@
 
 namespace Composer\Console;
 
+use Composer\Command\Helper\FilesystemHelper;
+use Composer\Util\Filesystem;
 use Symfony\Component\Console\Application as BaseApplication;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -227,6 +229,7 @@ class Application extends BaseApplication
         $commands[] = new Command\RunScriptCommand();
         $commands[] = new Command\LicensesCommand();
         $commands[] = new Command\GlobalCommand();
+        $commands[] = new Command\PropertySetCommand();
 
         if ('phar:' === substr(__FILE__, 0, 5)) {
             $commands[] = new Command\SelfUpdateCommand();
@@ -263,6 +266,7 @@ class Application extends BaseApplication
         $helperSet = parent::getDefaultHelperSet();
 
         $helperSet->set(new DialogHelper());
+        $helperSet->set(new FilesystemHelper(new Filesystem()));
 
         return $helperSet;
     }

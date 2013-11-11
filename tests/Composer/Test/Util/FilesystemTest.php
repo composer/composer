@@ -17,6 +17,22 @@ use Composer\TestCase;
 
 class FilesystemTest extends TestCase
 {
+    private $rootDir;
+    private $testFile;
+
+    protected function setUp()
+    {
+        $this->rootDir = realpath(__DIR__ . '/../../../..');
+        $this->testFile = $this->rootDir . DIRECTORY_SEPARATOR . 'test.json';
+    }
+
+    protected function tearDown()
+    {
+        if (file_exists($this->testFile)) {
+            unlink($this->testFile);
+        }
+    }
+
     /**
      * @dataProvider providePathCouplesAsCode
      */
@@ -175,5 +191,29 @@ class FilesystemTest extends TestCase
             array('c:../b', 'c:.\\..\\a\\..\\b'),
             array('phar://c:../Foo', 'phar://c:../Foo'),
         );
+    }
+
+    public function testEnsureFileExistsCreatesFileWhenNotExisting()
+    {
+        $fs = new Filesystem();
+        $fs->ensureFileExists($this->testFile, 'foobar');
+
+        $this->assertEquals('foobar', file_get_contents($this->testFile));
+    }
+
+    /**
+     * @expectedException \RuntimeException
+     * @expectedExceptionMessage is not writable
+     */
+    public function testEnsureFileExistsThrowsExceptionWhenFileNotWritable()
+    {
+        // ouch ... somebody any idea how this could be better tested?
+        touch($this->testFile);
+        chmod($this->testFile, 0400);
+
+        $fs = new Filesystem();
+        $fs->ensureFileExists($this->testFile);
+
+        chmod($this->testFile, 0600);
     }
 }
