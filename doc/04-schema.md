@@ -289,10 +289,7 @@ Example:
 `require` and `require-dev` additionally support explicit references (i.e.
 commit) for dev versions to make sure they are locked to a given state, even
 when you run update. These only work if you explicitly require a dev version
-and append the reference with `#<ref>`. Note that while this is convenient at
-times, it should not really be how you use packages in the long term. You
-should always try to switch to tagged releases as soon as you can, especially
-if the project you work on will not be touched for a while.
+and append the reference with `#<ref>`.
 
 Example:
 
@@ -303,8 +300,15 @@ Example:
         }
     }
 
-It is possible to inline-alias a package constraint so that it matches a
-constraint that it otherwise would not. For more information [see the
+> **Note:** While this is convenient at times, it should not be how you use
+> packages in the long term because it comes with a technical limitation. The
+> composer.json metadata will still be read from the branch name you specify
+> before the hash. Because of that in some cases it will not be a practical
+> workaround, and you should always try to switch to tagged releases as soon
+> as you can.
+
+It is also possible to inline-alias a package constraint so that it matches
+a constraint that it otherwise would not. For more information [see the
 aliases article](articles/aliases.md).
 
 #### require
