@@ -171,12 +171,8 @@ class Installer
         unset($devRepo, $package);
         // end BC
 
-        if ($this->preferSource) {
-            $this->downloadManager->setPreferSource(true);
-        }
-        if ($this->preferDist) {
-            $this->downloadManager->setPreferDist(true);
-        }
+        $this->downloadManager->setPreferSource($this->preferSource);
+        $this->downloadManager->setPreferDist($this->preferDist);
 
         // clone root package to have one in the installed repo that does not require anything
         // we don't want it to be uninstallable, but its requirements should not conflict
