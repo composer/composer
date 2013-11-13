@@ -657,7 +657,7 @@ The following options are supported:
   is periodically ran, this is the maximum size the cache will be able to use.
   Older (less used) files will be removed first until the cache fits.
 * **prepend-autoloader:** Defaults to `true`. If false, the composer autoloader
-  will not be prepended to existing autoloaders. This is sometimesrequired to fix
+  will not be prepended to existing autoloaders. This is sometimes required to fix
   interoperability issues with other autoloaders.
 * **github-domains:** Defaults to `["github.com"]`. A list of domains to use in
   github mode. This is used for GitHub Enterprise setups.
