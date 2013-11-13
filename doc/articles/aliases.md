@@ -65,7 +65,7 @@ local project.
 
 You are using `symfony/monolog-bundle` which requires `monolog/monolog` version
 `1.*`. So you need your `dev-bugfix` to match that constraint.
-
+
 Just add this to your project's root `composer.json`:
 
     {
