@@ -69,6 +69,10 @@ class Filesystem
             return true;
         }
 
+        if (preg_match('{^(?:[a-z]:)?[/\\\\]+$}i', $directory)) {
+            throw new \RuntimeException('Aborting an attempted deletion of '.$directory.', this was probably not intended, if it is a real use case please report it.');
+        }
+
         if (!function_exists('proc_open')) {
             return $this->removeDirectoryPhp($directory);
         }
