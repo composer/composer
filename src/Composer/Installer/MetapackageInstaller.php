@@ -76,6 +76,6 @@ class MetapackageInstaller implements InstallerInterface
      */
     public function getInstallPath(PackageInterface $package)
     {
-        return '';
+        return null;
     }
 }

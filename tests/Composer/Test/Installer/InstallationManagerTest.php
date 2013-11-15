@@ -129,6 +129,22 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
             ->method('install')
             ->with($this->repository, $package);
 
+        $installer
+            ->expects($this->once())
+            ->method('getInstallPath')
+            ->will($this->returnValue($path = 'path/to/package'));
+
+        $this->repository
+            ->expects($this->once())
+            ->method('hasPackage')
+            ->with($package)
+            ->will($this->returnValue(true));
+
+        $this->repository
+            ->expects($this->once())
+            ->method('setInstallPath')
+            ->with($package, $path);
+
         $manager->install($this->repository, $operation);
     }
 
@@ -161,6 +177,22 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('update')
             ->with($this->repository, $initial, $target);
+
+        $installer
+            ->expects($this->once())
+            ->method('getInstallPath')
+            ->will($this->returnValue($path = 'path/to/package'));
+
+        $this->repository
+            ->expects($this->once())
+            ->method('hasPackage')
+            ->with($target)
+            ->will($this->returnValue(true));
+
+        $this->repository
+            ->expects($this->once())
+            ->method('setInstallPath')
+            ->with($target, $path);
 
         $manager->update($this->repository, $operation);
     }
@@ -208,6 +240,26 @@ class InstallationManagerTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('install')
             ->with($this->repository, $target);
+
+        $libInstaller
+            ->expects($this->never())
+            ->method('getInstallPath');
+
+        $bundleInstaller
+            ->expects($this->once())
+            ->method('getInstallPath')
+            ->will($this->returnValue($path = 'path/to/package'));
+
+        $this->repository
+            ->expects($this->once())
+            ->method('hasPackage')
+            ->with($target)
+            ->will($this->returnValue(true));
+
+        $this->repository
+            ->expects($this->once())
+            ->method('setInstallPath')
+            ->with($target, $path);
 
         $manager->update($this->repository, $operation);
     }

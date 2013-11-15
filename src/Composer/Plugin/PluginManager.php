@@ -17,6 +17,7 @@ use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\IO\IOInterface;
 use Composer\Package\Package;
 use Composer\Package\Version\VersionParser;
+use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Repository\RepositoryInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
@@ -267,7 +268,17 @@ class PluginManager
     public function getInstallPath(PackageInterface $package, $global = false)
     {
         if (!$global) {
+            $repo = $this->composer->getRepositoryManager()->getLocalRepository();
+            if ($repo instanceof InstalledRepositoryInterface && null !== ($path = $repo->getInstallPath($package))) {
+                return $path;
+            }
+
             return $this->composer->getInstallationManager()->getInstallPath($package);
+        }
+
+        $repo = $this->globalComposer->getRepositoryManager()->getLocalRepository();
+        if ($repo instanceof InstalledRepositoryInterface && null !== ($path = $repo->getInstallPath($package))) {
+            return $path;
         }
 
         return $this->globalComposer->getInstallationManager()->getInstallPath($package);

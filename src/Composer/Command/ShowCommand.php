@@ -19,6 +19,7 @@ use Composer\Package\CompletePackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
+use Composer\Repository\InstalledRepositoryInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -217,7 +218,16 @@ EOT
                         }
 
                         if ($writePath) {
-                            $path = strtok(realpath($composer->getInstallationManager()->getInstallPath($package)), "\r\n");
+                            $path = null;
+                            $repository = $composer->getRepositoryManager()->getLocalRepository();
+                            if ($repository instanceof InstalledRepositoryInterface && $repository->hasPackage($package)) {
+                                $path = $repository->getInstallPath($package);
+                            }
+
+                            if (null === $path) {
+                                $path = strtok(realpath($composer->getInstallationManager()->getInstallPath($package)), "\r\n");
+                            }
+
                             $output->write(' ' . $path);
                         }
                     } else {

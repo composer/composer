@@ -150,6 +150,9 @@ class InstallationManager
         $package = $operation->getPackage();
         $installer = $this->getInstaller($package->getType());
         $installer->install($repo, $package);
+        if ($repo instanceof InstalledRepositoryInterface && $repo->hasPackage($package)) {
+            $repo->setInstallPath($package, $installer->getInstallPath($package));
+        }
         $this->markForNotification($package);
     }
 
@@ -174,6 +177,10 @@ class InstallationManager
         } else {
             $this->getInstaller($initialType)->uninstall($repo, $initial);
             $this->getInstaller($targetType)->install($repo, $target);
+        }
+
+        if ($repo instanceof InstalledRepositoryInterface && $repo->hasPackage($target)) {
+            $repo->setInstallPath($target, $this->getInstaller($targetType)->getInstallPath($target));
         }
     }
 

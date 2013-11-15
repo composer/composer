@@ -40,6 +40,7 @@ use Composer\Package\RootPackageInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\InstalledArrayRepository;
 use Composer\Repository\InstalledFilesystemRepository;
+use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositoryManager;
@@ -609,6 +610,7 @@ class Installer
         if (!$this->dryRun) {
             // force source/dist urls to be updated for all packages
             $operations = $this->processPackageUrls($pool, $policy, $localRepo, $repositories);
+            $this->resolveInstallPaths($localRepo);
             $localRepo->write();
         }
 
@@ -1148,6 +1150,24 @@ class Installer
         $rm->setLocalRepository(
             new InstalledArrayRepository($packages)
         );
+    }
+
+    private function resolveInstallPaths($localRepo)
+    {
+        if (!$localRepo instanceof InstalledRepositoryInterface) {
+            return;
+        }
+
+        foreach ($localRepo->getPackages() as $package) {
+            if (null !== $localRepo->getInstallPath($package)) {
+                continue;
+            }
+
+            $path = $this->installationManager->getInstallPath($package);
+            if ($path) {
+                $localRepo->setInstallPath($package, $path);
+            }
+        }
     }
 
     /**
