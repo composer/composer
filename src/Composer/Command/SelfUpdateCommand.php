@@ -13,6 +13,7 @@
 namespace Composer\Command;
 
 use Composer\Composer;
+use Composer\Factory;
 use Composer\Util\RemoteFilesystem;
 use Composer\Downloader\FilesystemException;
 use Symfony\Component\Console\Input\InputInterface;
@@ -42,8 +43,11 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $config = Factory::createConfig();
+        $cacheDir = $config->get('cache-dir');
+
         $localFilename = realpath($_SERVER['argv'][0]) ?: $_SERVER['argv'][0];
-        $tempFilename = dirname($localFilename) . '/' . basename($localFilename, '.phar').'-temp.phar';
+        $tempFilename = $cacheDir . basename($localFilename, '.phar').'-temp.phar';
 
         // check for permissions in local filesystem before start connection process
         if (!is_writable($tempDirectory = dirname($tempFilename))) {
