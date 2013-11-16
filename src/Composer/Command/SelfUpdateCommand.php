@@ -49,8 +49,8 @@ EOT
         $localFilename = realpath($_SERVER['argv'][0]) ?: $_SERVER['argv'][0];
 
         // Check if current dir is writable and if not try the cache dir from settings
-        $tmpDir = is_writable(dirname($localFilename))? dirname($localFilename) . '/' : $cacheDir;
-        $tempFilename = $tmpDir . basename($localFilename, '.phar').'-temp.phar';
+        $tmpDir = is_writable(dirname($localFilename))? dirname($localFilename) : $cacheDir;
+        $tempFilename = $tmpDir . '/' . basename($localFilename, '.phar').'-temp.phar';
 
         // check for permissions in local filesystem before start connection process
         if (!is_writable($tmpDir)) {
