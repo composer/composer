@@ -47,11 +47,14 @@ EOT
         $cacheDir = $config->get('cache-dir');
 
         $localFilename = realpath($_SERVER['argv'][0]) ?: $_SERVER['argv'][0];
-        $tempFilename = $cacheDir . basename($localFilename, '.phar').'-temp.phar';
+
+        // Check if current dir is writable and if not try the cache dir from settings
+        $tmpDir = is_writable(dirname($localFilename))? dirname($localFilename) . '/' : $cacheDir;
+        $tempFilename = $tmpDir . basename($localFilename, '.phar').'-temp.phar';
 
         // check for permissions in local filesystem before start connection process
-        if (!is_writable($tempDirectory = dirname($tempFilename))) {
-            throw new FilesystemException('Composer update failed: the "'.$tempDirectory.'" directory used to download the temp file could not be written');
+        if (!is_writable($tmpDir)) {
+            throw new FilesystemException('Composer update failed: the "'.$tmpDir.'" directory used to download the temp file could not be written');
         }
 
         if (!is_writable($localFilename)) {
