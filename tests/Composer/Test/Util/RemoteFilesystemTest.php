@@ -157,7 +157,6 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
         } catch (\Exception $e) {
             $this->assertInstanceOf('Composer\Downloader\TransportException', $e);
             $this->assertEquals(404, $e->getCode());
-            $this->assertContains('404 Not Found', $e->getMessage());
         }
     }
 
