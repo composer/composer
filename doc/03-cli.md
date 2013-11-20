@@ -332,7 +332,7 @@ provide a version as third argument, otherwise the latest version is used.
 
 If the directory does not currently exist, it will be created during installation.
 
-    php composer.phar create-project doctrine/orm path 2.2.0
+    php composer.phar create-project doctrine/orm path 2.2.*
 
 It is also possible to run the command without params in a directory with an
 existing `composer.json` file to bootstrap a project.
