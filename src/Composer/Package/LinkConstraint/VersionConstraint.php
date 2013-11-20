@@ -60,12 +60,27 @@ class VersionConstraint extends SpecificConstraint
         return version_compare($a, $b, $operator);
     }
 
+    public function matchSpecific(VersionConstraint $provider, $compareBranches = false)
+    {
+        static $c = array();
+        if (isset($c[$this->operator][$this->version][$provider->operator][$provider->version][$compareBranches])) {
+            //if ($c[$this->operator][$this->version][$provider->operator][$provider->version][$compareBranches] !=
+            //    $this->_matchSpecific($provider, $compareBranches)) {
+            //    throw new \Exception('Broken cache');
+            //}
+            return $c[$this->operator][$this->version][$provider->operator][$provider->version][$compareBranches];
+        }
+
+        return $c[$this->operator][$this->version][$provider->operator][$provider->version][$compareBranches] =
+            $this->_matchSpecific($provider, $compareBranches);
+    }
+
     /**
      * @param  VersionConstraint $provider
      * @param  bool              $compareBranches
      * @return bool
      */
-    public function matchSpecific(VersionConstraint $provider, $compareBranches = false)
+    public function _matchSpecific(VersionConstraint $provider, $compareBranches = false)
     {
         $noEqualOp = str_replace('=', '', $this->operator);
         $providerNoEqualOp = str_replace('=', '', $provider->operator);
