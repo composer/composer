@@ -67,6 +67,22 @@ class VersionConstraint extends SpecificConstraint
      */
     public function matchSpecific(VersionConstraint $provider, $compareBranches = false)
     {
+        static $c = array();
+        if (isset($c[$this->operator][$this->version][$provider->operator][$provider->version][$compareBranches])) {
+            return $c[$this->operator][$this->version][$provider->operator][$provider->version][$compareBranches];
+        }
+
+        return $c[$this->operator][$this->version][$provider->operator][$provider->version][$compareBranches] =
+            $this->doMatchSpecific($provider, $compareBranches);
+    }
+
+    /**
+     * @param  VersionConstraint $provider
+     * @param  bool              $compareBranches
+     * @return bool
+     */
+    private function doMatchSpecific(VersionConstraint $provider, $compareBranches = false)
+    {
         $noEqualOp = str_replace('=', '', $this->operator);
         $providerNoEqualOp = str_replace('=', '', $provider->operator);
 
