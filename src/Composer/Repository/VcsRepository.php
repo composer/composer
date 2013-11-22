@@ -21,6 +21,7 @@ use Composer\Package\Loader\InvalidPackageException;
 use Composer\Package\Loader\LoaderInterface;
 use Composer\IO\IOInterface;
 use Composer\Config;
+use Composer\EventDispatcher\EventDispatcher;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -38,7 +39,7 @@ class VcsRepository extends ArrayRepository
     protected $repoConfig;
     protected $branchErrorOccurred = false;
 
-    public function __construct(array $repoConfig, IOInterface $io, Config $config, array $drivers = null)
+    public function __construct(array $repoConfig, IOInterface $io, Config $config, EventDispatcher $eventDispatcher, array $drivers = null)
     {
         $this->drivers = $drivers ?: array(
             'github'        => 'Composer\Repository\Vcs\GitHubDriver',
