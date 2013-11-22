@@ -17,6 +17,7 @@ use Composer\Package\Version\VersionParser;
 use Composer\Repository\Pear\ChannelReader;
 use Composer\Package\CompletePackage;
 use Composer\Repository\Pear\ChannelInfo;
+use Composer\EventDispatcher\EventDispatcher;
 use Composer\Package\Link;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Util\RemoteFilesystem;
@@ -43,7 +44,7 @@ class PearRepository extends ArrayRepository
      */
     private $vendorAlias;
 
-    public function __construct(array $repoConfig, IOInterface $io, Config $config, RemoteFilesystem $rfs = null)
+    public function __construct(array $repoConfig, IOInterface $io, Config $config, EventDispatcher $dispatcher = null, RemoteFilesystem $rfs = null)
     {
         if (!preg_match('{^https?://}', $repoConfig['url'])) {
             $repoConfig['url'] = 'http://'.$repoConfig['url'];
