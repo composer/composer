@@ -14,6 +14,7 @@ namespace Composer\Repository;
 
 use Composer\IO\IOInterface;
 use Composer\Config;
+use Composer\EventDispatcher\EventDispatcher;
 
 /**
  * Repositories manager.
@@ -29,11 +30,13 @@ class RepositoryManager
     private $repositoryClasses = array();
     private $io;
     private $config;
+    private $eventDispatcher;
 
-    public function __construct(IOInterface $io, Config $config)
+    public function __construct(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null)
     {
         $this->io = $io;
         $this->config = $config;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**
@@ -98,7 +101,7 @@ class RepositoryManager
 
         $class = $this->repositoryClasses[$type];
 
-        return new $class($config, $this->io, $this->config);
+        return new $class($config, $this->io, $this->config, $this->eventDispatcher);
     }
 
     /**
