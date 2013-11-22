@@ -73,6 +73,9 @@ class NoProxyPattern
                 if (strpos($ruleHost, '/') === false) {
                     $match = $ip === $ruleHost;
                 } else {
+                    if ($ip === $host) {
+                        throw new \RuntimeException('gethostbyname() failed to resolve "'.$host.'" to an IP, can not evaluate NO_PROXY rules');
+                    }
                     $match = self::inCIDRBlock($ruleHost, $ip);
                 }
             } else {
