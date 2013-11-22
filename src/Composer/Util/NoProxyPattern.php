@@ -77,8 +77,10 @@ class NoProxyPattern
                     // it must be proxied to let the proxy's DNS resolve it
                     if ($ip === $host) {
                         $match = false;
+                    } else {
+                        // match resolved IP against the rule
+                        $match = self::inCIDRBlock($ruleHost, $ip);
                     }
-                    $match = self::inCIDRBlock($ruleHost, $ip);
                 }
             } else {
                 // match end of domain
