@@ -73,8 +73,10 @@ class NoProxyPattern
                 if (strpos($ruleHost, '/') === false) {
                     $match = $ip === $ruleHost;
                 } else {
+                    // gethostbyname() failed to resolve $host to an ip, so we assume
+                    // it must be proxied to let the proxy's DNS resolve it
                     if ($ip === $host) {
-                        throw new \RuntimeException('gethostbyname() failed to resolve "'.$host.'" to an IP, can not evaluate NO_PROXY rules');
+                        $match = false;
                     }
                     $match = self::inCIDRBlock($ruleHost, $ip);
                 }
