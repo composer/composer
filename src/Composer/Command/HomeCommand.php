@@ -29,8 +29,9 @@ use Symfony\Component\Process\Exception\InvalidArgumentException;
  */
 class HomeCommand extends Command
 {
-    protected $versionParser;
-
+    /**
+     * {@inheritDoc}
+     */
     protected function configure()
     {
         $this
@@ -45,18 +46,20 @@ EOT
             );
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $repo = $this->initializeRepo($input, $output);
         $package = $this->getPackage($repo, $input->getArgument('package'));
 
-        /** @var CompletePackageInterface $package */
-        if ($package instanceof CompletePackageInterface && filter_var($package->getSourceUrl(), FILTER_VALIDATE_URL)) {
-            $this->openBrowser($package->getSourceUrl());
-        } elseif ($package instanceof CompletePackageInterface) {
-            $this->getIO()->write('no valid source-url given for ' . $package->getName());
-        } else {
+        if (!$package instanceof CompletePackageInterface) {
             throw new InvalidArgumentException('package not found');
+        } elseif (filter_var($package->getSourceUrl(), FILTER_VALIDATE_URL)) {
+            $this->openBrowser($package->getSourceUrl());
+        } else {
+            $output->writeln('no valid source-url given for ' . $package->getName());
         }
     }
 
@@ -92,18 +95,19 @@ EOT
      */
     private function openBrowser($url)
     {
+        if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
+            return passthru('start "web" explorer "' . $url . '"');
+        }
+
         passthru('which xdg-open', $linux);
         passthru('which open', $osx);
-        $windows = defined('PHP_WINDOWS_VERSION_MAJOR');
 
         if (0 === $linux) {
             passthru('xdg-open ' . $url);
         } elseif (0 === $osx) {
             passthru('open ' . $url);
-        } elseif (true === $windows) {
-            passthru('start "web" explorer "' . $url . '"');
         } else {
-            $this->getIO()->write('no suitable browser opening tool found, open yourself: ' . $url);
+            $this->getIO()->write('no suitable browser opening command found, open yourself: ' . $url);
         }
     }
 
