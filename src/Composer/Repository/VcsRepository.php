@@ -19,6 +19,7 @@ use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Loader\ValidatingArrayLoader;
 use Composer\Package\Loader\InvalidPackageException;
 use Composer\Package\Loader\LoaderInterface;
+use Composer\EventDispatcher\EventDispatcher;
 use Composer\IO\IOInterface;
 use Composer\Config;
 
@@ -38,7 +39,7 @@ class VcsRepository extends ArrayRepository
     protected $repoConfig;
     protected $branchErrorOccurred = false;
 
-    public function __construct(array $repoConfig, IOInterface $io, Config $config, array $drivers = null)
+    public function __construct(array $repoConfig, IOInterface $io, Config $config, EventDispatcher $dispatcher = null, array $drivers = null)
     {
         $this->drivers = $drivers ?: array(
             'github'        => 'Composer\Repository\Vcs\GitHubDriver',
