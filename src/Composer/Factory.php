@@ -220,15 +220,8 @@ class Factory
         // setup process timeout
         ProcessExecutor::setTimeout((int) $config->get('process-timeout'));
 
-        // initialize composer
-        $composer = new Composer();
-        $composer->setConfig($config);
-
-        // initialize event dispatcher
-        $dispatcher = new EventDispatcher($composer, $io);
-
         // initialize repository manager
-        $rm = $this->createRepositoryManager($io, $config, $dispatcher);
+        $rm = $this->createRepositoryManager($io, $config);
 
         // load local repository
         $this->addLocalRepository($rm, $vendorDir);
@@ -241,10 +234,15 @@ class Factory
         // initialize installation manager
         $im = $this->createInstallationManager();
 
-        // Composer composition
+        // initialize composer
+        $composer = new Composer();
+        $composer->setConfig($config);
         $composer->setPackage($package);
         $composer->setRepositoryManager($rm);
         $composer->setInstallationManager($im);
+
+        // initialize event dispatcher
+        $dispatcher = new EventDispatcher($composer, $io);
 
         // initialize download manager
         $dm = $this->createDownloadManager($io, $config, $dispatcher);
@@ -287,9 +285,9 @@ class Factory
      * @param  Config                       $config
      * @return Repository\RepositoryManager
      */
-    protected function createRepositoryManager(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null)
+    protected function createRepositoryManager(IOInterface $io, Config $config)
     {
-        $rm = new RepositoryManager($io, $config, $eventDispatcher);
+        $rm = new RepositoryManager($io, $config);
         $rm->setRepositoryClass('composer', 'Composer\Repository\ComposerRepository');
         $rm->setRepositoryClass('vcs', 'Composer\Repository\VcsRepository');
         $rm->setRepositoryClass('package', 'Composer\Repository\PackageRepository');
