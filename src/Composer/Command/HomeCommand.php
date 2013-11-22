@@ -56,8 +56,11 @@ EOT
 
         if (!$package instanceof CompletePackageInterface) {
             throw new InvalidArgumentException('package not found');
-        } elseif (filter_var($package->getSourceUrl(), FILTER_VALIDATE_URL)) {
-            $this->openBrowser($package->getSourceUrl());
+        }
+        if (filter_var($package->getSourceUrl(), FILTER_VALIDATE_URL)) {
+            $support = $package->getSupport();
+            $url = isset($support['source']) ? $support['source'] : $package->getSourceUrl();
+            $this->openBrowser($url);
         } else {
             $output->writeln('no valid source-url given for ' . $package->getName());
         }
