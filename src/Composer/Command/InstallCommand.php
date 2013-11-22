@@ -107,6 +107,6 @@ EOT
             $install->disablePlugins();
         }
 
-        return $install->run() ? 0 : 1;
+        return $install->run();
     }
 }

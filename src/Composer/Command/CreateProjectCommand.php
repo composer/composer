@@ -173,8 +173,9 @@ EOT
                 $installer->disablePlugins();
             }
 
-            if (!$installer->run()) {
-                return 1;
+            $status = $installer->run();
+            if (0 !== $status) {
+                return $status;
             }
         }
 

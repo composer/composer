@@ -72,7 +72,7 @@ class InstallerTest extends TestCase
 
         $installer = new Installer($io, $config, clone $rootPackage, $downloadManager, $repositoryManager, $locker, $installationManager, $eventDispatcher, $autoloadGenerator);
         $result = $installer->run();
-        $this->assertTrue($result);
+        $this->assertSame(0, $result);
 
         $expectedInstalled   = isset($options['install']) ? $options['install'] : array();
         $expectedUpdated     = isset($options['update']) ? $options['update'] : array();
@@ -206,7 +206,7 @@ class InstallerTest extends TestCase
                 ->setDevMode($input->getOption('dev'))
                 ->setDryRun($input->getOption('dry-run'));
 
-            return $installer->run() ? 0 : 1;
+            return $installer->run();
         });
 
         $application->get('update')->setCode(function ($input, $output) use ($installer) {
@@ -217,7 +217,7 @@ class InstallerTest extends TestCase
                 ->setUpdateWhitelist($input->getArgument('packages'))
                 ->setWhitelistDependencies($input->getOption('with-dependencies'));
 
-            return $installer->run() ? 0 : 1;
+            return $installer->run();
         });
 
         if (!preg_match('{^(install|update)\b}', $run)) {

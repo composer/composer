@@ -146,6 +146,8 @@ class Installer
 
     /**
      * Run installation (or update)
+     *
+     * @return int 0 on success or a positive error code on failure
      */
     public function run()
     {
@@ -205,8 +207,9 @@ class Installer
 
         try {
             $this->suggestedPackages = array();
-            if (!$this->doInstall($localRepo, $installedRepo, $platformRepo, $aliases, $this->devMode)) {
-                return false;
+            $res = $this->doInstall($localRepo, $installedRepo, $platformRepo, $aliases, $this->devMode);
+            if ($res !== 0) {
+                return $res;
             }
         } catch (\Exception $e) {
             $this->installationManager->notifyInstalls();
@@ -286,7 +289,7 @@ class Installer
             }
         }
 
-        return true;
+        return 0;
     }
 
     protected function doInstall($localRepo, $installedRepo, $platformRepo, $aliases, $withDevReqs)
@@ -448,7 +451,7 @@ class Installer
             $this->io->write('<error>Your requirements could not be resolved to an installable set of packages.</error>');
             $this->io->write($e->getMessage());
 
-            return false;
+            return max(1, $e->getCode());
         }
 
         // force dev packages to be updated if we update or install from a (potentially new) lock
@@ -533,7 +536,7 @@ class Installer
             }
         }
 
-        return true;
+        return 0;
     }
 
     /**
