@@ -98,6 +98,8 @@ EOT
      */
     private function openBrowser($url)
     {
+        $url = escapeshellarg($url);
+
         if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
             return passthru('start "web" explorer "' . $url . '"');
         }
