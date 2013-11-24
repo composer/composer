@@ -34,7 +34,6 @@ use Composer\Util\RemoteFilesystem;
  */
 class FileDownloader implements DownloaderInterface
 {
-    private static $cacheCollected = false;
     protected $io;
     protected $config;
     protected $rfs;
@@ -61,10 +60,10 @@ class FileDownloader implements DownloaderInterface
         $this->filesystem = $filesystem ?: new Filesystem();
         $this->cache = $cache;
 
-        if ($this->cache && !self::$cacheCollected && !mt_rand(0, 50)) {
-            $this->cache->gc($config->get('cache-ttl'), $config->get('cache-files-maxsize'));
+
+        if ($this->cache && $this->cache->gcIsNecessary()) {
+            $this->cache->gc($config->get('cache-files-ttl'), $config->get('cache-files-maxsize'));
         }
-        self::$cacheCollected = true;
     }
 
     /**

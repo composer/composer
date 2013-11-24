@@ -23,6 +23,7 @@ use Symfony\Component\Finder\Finder;
  */
 class Cache
 {
+    private static $cacheCollected = false;
     private $io;
     private $root;
     private $enabled = true;
@@ -126,6 +127,11 @@ class Cache
         return false;
     }
 
+    public function gcIsNecessary()
+    {
+       return (!self::$cacheCollected && !mt_rand(0, 50));
+    }
+
     public function remove($file)
     {
         $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
@@ -156,6 +162,8 @@ class Cache
                 $iterator->next();
             }
         }
+
+        self::$cacheCollected = true;
 
         return true;
     }
