@@ -9,6 +9,7 @@ php:
 before_script:
     - sudo apt-get install parallel
     - echo '' > ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini
+    - composer install --dev --prefer-source
     - bin/composer install --dev --prefer-source
     - git config --global user.name travis-ci
     - git config --global user.email travis@example.com
