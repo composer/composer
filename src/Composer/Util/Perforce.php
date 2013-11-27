@@ -385,7 +385,7 @@ class Perforce
     public static function checkServerExists($url, ProcessExecutor $processExecutor)
     {
         $output = null;
-        return 0 === $processExecutor->execute('p4 -p ' . $url . ' info -s', $output);
+        return  0 === $processExecutor->execute('p4 -p ' . $url . ' info -s', $output);
     }
 
     public function getComposerInformation($identifier)
