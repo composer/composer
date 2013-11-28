@@ -49,7 +49,7 @@ class GitHubDriver extends VcsDriver
         preg_match('#^(?:(?:https?|git)://([^/]+)/|git@([^:]+):)([^/]+)/(.+?)(?:\.git)?$#', $this->url, $match);
         $this->owner = $match[3];
         $this->repository = $match[4];
-        $this->originUrl = isset($match[1]) ? $match[1] : $match[2];
+        $this->originUrl = !empty($match[1]) ? $match[1] : $match[2];
         $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.$this->originUrl.'/'.$this->owner.'/'.$this->repository);
 
         $this->fetchRootIdentifier();
@@ -238,7 +238,7 @@ class GitHubDriver extends VcsDriver
             return false;
         }
 
-        $originUrl = isset($matches[2]) ? $matches[2] : $matches[3];
+        $originUrl = !empty($matches[2]) ? $matches[2] : $matches[3];
         if (!in_array($originUrl, $config->get('github-domains'))) {
             return false;
         }
