@@ -157,10 +157,10 @@ class RootPackageLoaderTest extends \PHPUnit_Framework_TestCase
     public function testConfigSettingsOverrideRootSettings()
     {
         $package = $this->loadPackage(array(
-            'config' => [
+            'config' => array(
                 'minimum-stability' => 'dev',
                 'prefer-stable' => false,
-            ],
+            ),
             'minimum-stability' => 'alpha',
             'prefer-stable' => true,
         ));
