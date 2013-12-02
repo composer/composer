@@ -70,7 +70,11 @@ class RootPackageLoader extends ArrayLoader
             $realPackage = $package->getAliasOf();
         }
 
-        if (isset($config['minimum-stability'])) {
+        if (isset($config['config']['minimum-stability'])) {
+            $realPackage->setMinimumStability(
+                VersionParser::normalizeStability($config['config']['minimum-stability'])
+            );
+        } elseif (isset($config['minimum-stability'])) {
             $realPackage->setMinimumStability(VersionParser::normalizeStability($config['minimum-stability']));
         }
 
@@ -95,7 +99,9 @@ class RootPackageLoader extends ArrayLoader
         $realPackage->setStabilityFlags($stabilityFlags);
         $realPackage->setReferences($references);
 
-        if (isset($config['prefer-stable'])) {
+        if (isset($config['config']['prefer-stable'])) {
+            $realPackage->setPreferStable((bool) $config['config']['prefer-stable']);
+        } elseif (isset($config['prefer-stable'])) {
             $realPackage->setPreferStable((bool) $config['prefer-stable']);
         }
 
