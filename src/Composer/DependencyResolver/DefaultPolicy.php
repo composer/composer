@@ -16,6 +16,7 @@ use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
 use Composer\Package\LinkConstraint\VersionConstraint;
+use Composer\Util\UserFunc;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -79,7 +80,7 @@ class DefaultPolicy implements PolicyInterface
             $literals = $this->pruneRemoteAliases($pool, $literals);
         }
 
-        $selected = call_user_func_array('array_merge', $packages);
+        $selected = UserFunc::withArray('array_merge', $packages);
 
         // now sort the result across all packages to respect replaces across packages
         usort($selected, function ($a, $b) use ($policy, $pool, $installedMap, $requiredPackage) {

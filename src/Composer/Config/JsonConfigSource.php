@@ -12,6 +12,7 @@
 
 namespace Composer\Config;
 
+use Composer\Util\UserFunc;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
 
@@ -113,13 +114,13 @@ class JsonConfigSource implements ConfigSourceInterface
         $newFile = !$this->file->exists();
 
         // try to update cleanly
-        if (call_user_func_array(array($manipulator, $method), $args)) {
+        if (UserFunc::withArray(array($manipulator, $method), $args)) {
             file_put_contents($this->file->getPath(), $manipulator->getContents());
         } else {
             // on failed clean update, call the fallback and rewrite the whole file
             $config = $this->file->read();
             array_unshift($args, $config);
-            call_user_func_array($fallback, $args);
+            UserFunc::withArray($fallback, $args);
             $this->file->write($config);
         }
 

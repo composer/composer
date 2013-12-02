@@ -12,6 +12,8 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\Util\UserFunc;
+
 /**
  * Represents a problem detected while solving dependencies
  *
@@ -71,7 +73,7 @@ class Problem
      */
     public function getPrettyString(array $installedMap = array())
     {
-        $reasons = call_user_func_array('array_merge', array_reverse($this->reasons));
+        $reasons = UserFunc::withArray('array_merge', array_reverse($this->reasons));
 
         if (count($reasons) === 1) {
             reset($reasons);
