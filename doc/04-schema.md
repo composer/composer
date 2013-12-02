@@ -527,6 +527,9 @@ a given package can be done in `require` or `require-dev` (see
 Available options (in order of stability) are `dev`, `alpha`, `beta`, `RC`,
 and `stable`.
 
+> **Note:** the **minimum-stability** option in the `config` settings, when present,
+takes precedence over this setting.
+
 ### prefer-stable <span>(root-only)</span>
 
 When this is enabled, Composer will prefer more stable packages over unstable
@@ -535,6 +538,9 @@ dev version or only alphas are available for a package, those will still be
 selected granted that the minimum-stability allows for it.
 
 Use `"prefer-stable": true` to enable.
+
+> **Note:** the **prefer-stable** option in the `config` settings, when present,
+takes precedence over this setting.
 
 ### repositories <span>(root-only)</span>
 
@@ -619,24 +625,6 @@ A set of configuration options. It is only used for projects.
 
 The following options are supported:
 
-* **process-timeout:** Defaults to `300`. The duration processes like git clones
-  can run before Composer assumes they died out. You may need to make this
-  higher if you have a slow connection or huge vendors.
-* **use-include-path:** Defaults to `false`. If true, the Composer autoloader
-  will also look for classes in the PHP include path.
-* **preferred-install:** Defaults to `auto` and can be any of `source`, `dist` or
-  `auto`. This option allows you to set the install method Composer will prefer to
-  use.
-* **github-protocols:** Defaults to `["git", "https"]`. A list of protocols to
-  use when cloning from github.com, in priority order. You can reconfigure it to
-  prioritize the https protocol if you are behind a proxy or have somehow bad
-  performances with the git protocol.
-* **github-oauth:** A list of domain names and oauth keys. For example using
-  `{"github.com": "oauthtoken"}` as the value of this option will use `oauthtoken`
-  to access private repositories on github and to circumvent the low IP-based
-  rate limiting of their API.
-* **vendor-dir:** Defaults to `vendor`. You can install dependencies into a
-  different directory if you want to.
 * **bin-dir:** Defaults to `vendor/bin`. If a project includes binaries, they
   will be symlinked into this directory.
 * **cache-dir:** Defaults to `$home/cache` on unix systems and
@@ -644,31 +632,57 @@ The following options are supported:
   used by composer. See also [COMPOSER_HOME](03-cli.md#composer-home).
 * **cache-files-dir:** Defaults to `$cache-dir/files`. Stores the zip archives
   of packages.
-* **cache-repo-dir:** Defaults to `$cache-dir/repo`. Stores repository metadata
-  for the `composer` type and the VCS repos of type `svn`, `github` and `bitbucket`.
-* **cache-vcs-dir:** Defaults to `$cache-dir/vcs`. Stores VCS clones for
-  loading VCS repository metadata for the `git`/`hg` types and to speed up installs.
-* **cache-files-ttl:** Defaults to `15552000` (6 months). Composer caches all
-  dist (zip, tar, ..) packages that it downloads. Those are purged after six
-  months of being unused by default. This option allows you to tweak this
-  duration (in seconds) or disable it completely by setting it to 0.
 * **cache-files-maxsize:** Defaults to `300MiB`. Composer caches all
   dist (zip, tar, ..) packages that it downloads. When the garbage collection
   is periodically ran, this is the maximum size the cache will be able to use.
   Older (less used) files will be removed first until the cache fits.
-* **prepend-autoloader:** Defaults to `true`. If false, the composer autoloader
-  will not be prepended to existing autoloaders. This is sometimes required to fix
-  interoperability issues with other autoloaders.
-* **github-domains:** Defaults to `["github.com"]`. A list of domains to use in
-  github mode. This is used for GitHub Enterprise setups.
-* **notify-on-install:** Defaults to `true`. Composer allows repositories to
-  define a notification URL, so that they get notified whenever a package from
-  that repository is installed. This option allows you to disable that behaviour.
+* **cache-files-ttl:** Defaults to `15552000` (6 months). Composer caches all
+  dist (zip, tar, ..) packages that it downloads. Those are purged after six
+  months of being unused by default. This option allows you to tweak this
+  duration (in seconds) or disable it completely by setting it to 0.
+* **cache-repo-dir:** Defaults to `$cache-dir/repo`. Stores repository metadata
+  for the `composer` type and the VCS repos of type `svn`, `github` and `bitbucket`.
+* **cache-vcs-dir:** Defaults to `$cache-dir/vcs`. Stores VCS clones for
+  loading VCS repository metadata for the `git`/`hg` types and to speed up installs.
 * **discard-changes:** Defaults to `false` and can be any of `true`, `false` or
   `"stash"`. This option allows you to set the default style of handling dirty
   updates when in non-interactive mode. `true` will always discard changes in
   vendors, while `"stash"` will try to stash and reapply. Use this for CI
   servers or deploy scripts if you tend to have modified vendors.
+* **github-domains:** Defaults to `["github.com"]`. A list of domains to use in
+  github mode. This is used for GitHub Enterprise setups.
+* **github-oauth:** A list of domain names and oauth keys. For example using
+  `{"github.com": "oauthtoken"}` as the value of this option will use `oauthtoken`
+  to access private repositories on github and to circumvent the low IP-based
+  rate limiting of their API.
+* **github-protocols:** Defaults to `["git", "https"]`. A list of protocols to
+  use when cloning from github.com, in priority order. You can reconfigure it to
+  prioritize the https protocol if you are behind a proxy or have somehow bad
+  performances with the git protocol.
+* **minimum-stability:** Defaults to `stable`. Available options (in order of
+  stability) are `dev`, `alpha`, `beta`, `RC`, and `stable`. See also
+  [`minimum-stability`](#minimum-stability).
+* **notify-on-install:** Defaults to `true`. Composer allows repositories to
+  define a notification URL, so that they get notified whenever a package from
+  that repository is installed. This option allows you to disable that behaviour.
+* **prefer-stable:** Defaults to `false`. When this is enabled, Composer will prefer
+  more stable packages over unstable ones when finding compatible stable packages is
+  possible. If you require a dev version or only alphas are available for a package,
+  those will still be selected granted that the minimum-stability allows for it. See
+  also [`prefer-stable`](#prefer-stable).
+* **preferred-install:** Defaults to `auto` and can be any of `source`, `dist` or
+  `auto`. This option allows you to set the install method Composer will prefer to
+  use.
+* **prepend-autoloader:** Defaults to `true`. If false, the composer autoloader
+  will not be prepended to existing autoloaders. This is sometimes required to fix
+  interoperability issues with other autoloaders.
+* **process-timeout:** Defaults to `300`. The duration processes like git clones
+  can run before Composer assumes they died out. You may need to make this
+  higher if you have a slow connection or huge vendors.
+* **use-include-path:** Defaults to `false`. If true, the Composer autoloader
+  will also look for classes in the PHP include path.
+* **vendor-dir:** Defaults to `vendor`. You can install dependencies into a
+  different directory if you want to.
 
 Example:
 

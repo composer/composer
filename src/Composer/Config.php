@@ -13,6 +13,7 @@
 namespace Composer;
 
 use Composer\Config\ConfigSourceInterface;
+use Composer\Config\Setting;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -20,23 +21,25 @@ use Composer\Config\ConfigSourceInterface;
 class Config
 {
     public static $defaultConfig = array(
-        'process-timeout' => 300,
-        'use-include-path' => false,
-        'preferred-install' => 'auto',
-        'notify-on-install' => true,
-        'github-protocols' => array('git', 'https'),
-        'vendor-dir' => 'vendor',
-        'bin-dir' => '{$vendor-dir}/bin',
-        'cache-dir' => '{$home}/cache',
-        'cache-files-dir' => '{$cache-dir}/files',
-        'cache-repo-dir' => '{$cache-dir}/repo',
-        'cache-vcs-dir' => '{$cache-dir}/vcs',
-        'cache-ttl' => 15552000, // 6 months
-        'cache-files-ttl' => null, // fallback to cache-ttl
-        'cache-files-maxsize' => '300MiB',
-        'discard-changes' => false,
-        'prepend-autoloader' => true,
-        'github-domains' => array('github.com'),
+        Setting::BIN_DIR => '{$vendor-dir}/bin',
+        Setting::CACHE_DIR => '{$home}/cache',
+        Setting::CACHE_FILES_DIR => '{$cache-dir}/files',
+        Setting::CACHE_FILES_MAXSIZE => '300MiB',
+        Setting::CACHE_FILES_TTL => null, // fallback to cache-ttl
+        Setting::CACHE_REPO_DIR => '{$cache-dir}/repo',
+        Setting::CACHE_TTL => 15552000, // 6 months
+        Setting::CACHE_VCS_DIR => '{$cache-dir}/vcs',
+        Setting::DISCARD_CHANGES => false,
+        Setting::GITHUB_DOMAINS => array('github.com'),
+        Setting::GITHUB_PROTOCOLS => array('git', 'https'),
+        Setting::MINIMUM_STABILITY => 'stable',
+        Setting::NOTIFY_ON_INSTALL => true,
+        Setting::PREFER_STABLE => false,
+        Setting::PREFERRED_INSTALL => 'auto',
+        Setting::PREPEND_AUTOLOADER => true,
+        Setting::PROCESS_TIMEOUT => 300,
+        Setting::USE_INCLUDE_PATH => false,
+        Setting::VENDOR_DIR => 'vendor',
     );
 
     public static $defaultRepositories = array(
@@ -131,25 +134,25 @@ class Config
     public function get($key)
     {
         switch ($key) {
-            case 'vendor-dir':
-            case 'bin-dir':
-            case 'process-timeout':
-            case 'cache-dir':
-            case 'cache-files-dir':
-            case 'cache-repo-dir':
-            case 'cache-vcs-dir':
+            case Setting::VENDOR_DIR:
+            case Setting::BIN_DIR:
+            case Setting::PROCESS_TIMEOUT:
+            case Setting::CACHE_DIR:
+            case Setting::CACHE_FILES_DIR:
+            case Setting::CACHE_REPO_DIR:
+            case Setting::CACHE_VCS_DIR:
                 // convert foo-bar to COMPOSER_FOO_BAR and check if it exists since it overrides the local config
                 $env = 'COMPOSER_' . strtoupper(strtr($key, '-', '_'));
 
                 return rtrim($this->process(getenv($env) ?: $this->config[$key]), '/\\');
 
-            case 'cache-ttl':
+            case Setting::CACHE_TTL:
                 return (int) $this->config[$key];
 
-            case 'cache-files-maxsize':
+            case Setting::CACHE_FILES_MAXSIZE:
                 if (!preg_match('/^\s*([0-9.]+)\s*(?:([kmg])(?:i?b)?)?\s*$/i', $this->config[$key], $matches)) {
                     throw new \RuntimeException(
-                        "Could not parse the value of 'cache-files-maxsize': {$this->config[$key]}"
+                        "Could not parse the value of '" . Setting::CACHE_FILES_MAXSIZE . "': {$this->config[$key]}"
                     );
                 }
                 $size = $matches[1];
@@ -169,17 +172,17 @@ class Config
 
                 return $size;
 
-            case 'cache-files-ttl':
+            case Setting::CACHE_FILES_TTL:
                 if (isset($this->config[$key])) {
                     return (int) $this->config[$key];
                 }
 
-                return (int) $this->config['cache-ttl'];
+                return (int) $this->config[Setting::CACHE_TTL];
 
             case 'home':
                 return rtrim($this->process($this->config[$key]), '/\\');
 
-            case 'discard-changes':
+            case Setting::DISCARD_CHANGES:
                 if ($env = getenv('COMPOSER_DISCARD_CHANGES')) {
                     if (!in_array($env, array('stash', 'true', 'false', '1', '0'), true)) {
                         throw new \RuntimeException(
@@ -196,14 +199,16 @@ class Config
 
                 if (!in_array($this->config[$key], array(true, false, 'stash'), true)) {
                     throw new \RuntimeException(
-                        "Invalid value for 'discard-changes': {$this->config[$key]}. Expected true, false or stash"
+                        "Invalid value for '"
+                        . Setting::DISCARD_CHANGES
+                        . "'}: {$this->config[$key]}. Expected true, false or stash"
                     );
                 }
 
                 return $this->config[$key];
 
-            case 'github-protocols':
-                if (reset($this->config['github-protocols']) === 'http') {
+            case Setting::GITHUB_PROTOCOLS:
+                if (reset($this->config[Setting::GITHUB_PROTOCOLS]) === 'http') {
                     throw new \RuntimeException('The http protocol for github is not available anymore, update your config\'s github-protocols to use "https" or "git"');
                 }
 

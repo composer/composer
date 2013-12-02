@@ -153,4 +153,19 @@ class RootPackageLoaderTest extends \PHPUnit_Framework_TestCase
             'qux/quux' => BasePackage::STABILITY_RC,
         ), $package->getStabilityFlags());
     }
+
+    public function testConfigSettingsOverrideRootSettings()
+    {
+        $package = $this->loadPackage(array(
+            'config' => [
+                'minimum-stability' => 'dev',
+                'prefer-stable' => false,
+            ],
+            'minimum-stability' => 'alpha',
+            'prefer-stable' => true,
+        ));
+
+        $this->assertEquals('dev', $package->getMinimumStability());
+        $this->assertEquals(false, $package->getPreferStable());
+    }
 }
