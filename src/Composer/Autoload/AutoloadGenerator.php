@@ -465,7 +465,7 @@ REGISTER_LOADER;
             $file .= <<<'INCLUDE_FILES'
         $includeFiles = require __DIR__ . '/autoload_files.php';
         foreach ($includeFiles as $file) {
-            require $file;
+            require_once $file;
         }
 
 
