@@ -150,6 +150,24 @@ to the command.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
 
+## remove
+
+The `remove` command removes packages from the `composer.json` file from
+the current directory.
+
+    $ php composer.phar remove <vendor/package>
+
+After removing the requirements, the modified requirements will be
+uninstalled.
+
+### Options
+* **--dry-run:** If you want to run through an uninstallation without actually
+  uninstalling a package, you can use `--dry-run`. This will simulate the
+  uninstallation and show you what would happen.
+* **--dev:** Add packages to `require-dev`.
+* **--no-update:** Only remove the package from the composer.json file, but
+  won't remove the files or update the composer.lock
+
 ## global
 
 The global command allows you to run other commands like `install`, `require`
