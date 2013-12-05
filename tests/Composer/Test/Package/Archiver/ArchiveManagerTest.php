@@ -79,13 +79,13 @@ class ArchiveManagerTest extends ArchiverTest
             throw new \RuntimeException('Could not init: '.$this->process->getErrorOutput());
         }
 
-        $result = file_put_contents('b', 'a');
+        $result = file_put_contents('composer.json', '{"name":"faker/faker", "description": "description", "license": "MIT"}');
         if (false === $result) {
             chdir($currentWorkDir);
             throw new \RuntimeException('Could not save file.');
         }
 
-        $result = $this->process->execute('git add b && git commit -m "commit b" -q', $output, $this->testDir);
+        $result = $this->process->execute('git add composer.json && git commit -m "commit composer.json" -q', $output, $this->testDir);
         if ($result > 0) {
             chdir($currentWorkDir);
             throw new \RuntimeException('Could not commit: '.$this->process->getErrorOutput());
