@@ -275,7 +275,14 @@ class VersionParser
         // version, to ensure that unstable instances of the current version are allowed.
         // however, if a stability suffix is added to the constraint, then a >= match on the current version is
         // used instead
-        if (preg_match('{^~(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:\.(\d+))?'.self::$modifierRegex.'?$}i', $constraint, $matches)) {
+        if (preg_match('{^~>?(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:\.(\d+))?'.self::$modifierRegex.'?$}i', $constraint, $matches)) {
+            if (substr($constraint, 0, 2) === '~>') {
+                throw new \UnexpectedValueException(
+                    'Could not parse version constraint '.$constraint.': '.
+                    'Invalid operator "~>", you probably meant to use the "~" operator'
+                );
+            }
+
             // Work out which position in the version we are operating at
             if (isset($matches[4]) && '' !== $matches[4]) {
                 $position = 4;
