@@ -110,8 +110,8 @@ class FileDownloader implements DownloaderInterface
         // in case the package provides custom context options we use them
         if (isset($extra['context-options'])) {
             $options = $extra['context-options'];
-            $oldOptions = $this->rfs->getOptions();
-            $this->rfs->setOptions(array_replace_recursive($oldOptions, $options));
+            $oldOptions = $rfs->getOptions();
+            $rfs->setOptions(array_replace_recursive($oldOptions, $options));
         }
 
         try {
@@ -181,7 +181,7 @@ class FileDownloader implements DownloaderInterface
 
         // restore the remote file system's context options
         if (isset($oldOptions)) {
-            $this->rfs->setOptions($oldOptions);
+            $rfs->setOptions($oldOptions);
         }
 
         return $fileName;
