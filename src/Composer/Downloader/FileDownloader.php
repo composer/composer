@@ -176,6 +176,9 @@ class FileDownloader implements DownloaderInterface
             // clean up
             $this->filesystem->removeDirectory($path);
             $this->clearCache($package, $path);
+            if (isset($oldOptions)) {
+                $rfs->setOptions($oldOptions);
+            }
             throw $e;
         }
 
