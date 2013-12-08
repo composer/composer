@@ -47,6 +47,24 @@ class RemoteFilesystem
     }
 
     /**
+     * @param array $options
+     */
+    public function setOptions(array $options)
+    {
+        $this->options = $options;
+    }
+
+    /**
+     * Retrieve the options set in the constructor
+     *
+     * @return array Options
+     */
+    public function getOptions()
+    {
+        return $this->options;
+    }
+
+    /**
      * Copy the remote file in local.
      *
      * @param string  $originUrl The origin URL
@@ -75,16 +93,6 @@ class RemoteFilesystem
     public function getContents($originUrl, $fileUrl, $progress = true, $options = array())
     {
         return $this->get($originUrl, $fileUrl, $options, null, $progress);
-    }
-
-    /**
-     * Retrieve the options set in the constructor
-     *
-     * @return array Options
-     */
-    public function getOptions()
-    {
-        return $this->options;
     }
 
     /**

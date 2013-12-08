@@ -104,6 +104,15 @@ class FileDownloader implements DownloaderInterface
             $hostname = 'github.com';
         }
 
+        $extra = $package->getExtra();
+
+        // in case the package provides custom context options we use them
+        if (isset($extra['context-options'])) {
+            $options = $extra['context-options'];
+            $oldOptions = $rfs->getOptions();
+            $rfs->setOptions(array_replace_recursive($oldOptions, $options));
+        }
+
         try {
             try {
                 if (!$this->cache || !$this->cache->copyTo($this->getCacheKey($package), $fileName)) {
@@ -166,7 +175,15 @@ class FileDownloader implements DownloaderInterface
             // clean up
             $this->filesystem->removeDirectory($path);
             $this->clearCache($package, $path);
+            if (isset($oldOptions)) {
+                $rfs->setOptions($oldOptions);
+            }
             throw $e;
+        }
+
+        // restore the remote file system's context options
+        if (isset($oldOptions)) {
+            $rfs->setOptions($oldOptions);
         }
 
         return $fileName;
