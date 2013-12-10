@@ -144,10 +144,12 @@ class ArchiveManager
             $this->downloadManager->download($package, $sourcePath);
 
             // Check exclude from downloaded composer.json
-            $jsonFile = new JsonFile($sourcePath.'/composer.json');
-            $jsonData = $jsonFile->read();
-            if (!empty($jsonData['archive']['exclude'])) {
-                $package->setArchiveExcludes($jsonData['archive']['exclude']);
+            if (file_exists($composerJsonPath = $sourcePath.'/composer.json')) {
+                $jsonFile = new JsonFile($composerJsonPath);
+                $jsonData = $jsonFile->read();
+                if (!empty($jsonData['archive']['exclude'])) {
+                    $package->setArchiveExcludes($jsonData['archive']['exclude']);
+                }
             }
         }
 
