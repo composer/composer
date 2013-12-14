@@ -259,6 +259,7 @@ EOF;
             if ($package instanceof AliasPackage) {
                 continue;
             }
+            $this->validatePackage($package);
 
             $packageMap[] = array(
                 $package,
@@ -267,6 +268,21 @@ EOF;
         }
 
         return $packageMap;
+    }
+
+    /**
+     * @param PackageInterface $package
+     *
+     * @throws \Exception
+     *   Throws an exception, if the package has illegal settings.
+     */
+    protected function validatePackage(PackageInterface $package) {
+        $autoload = $package->getAutoload();
+        if (!empty($autoload['psr-4']) && null !== $package->getTargetDir()) {
+            $name = $package->getName();
+            $package->getTargetDir();
+            throw new \Exception("The ['autoload']['psr-4'] setting is incompatible with the ['target-dir'] setting, in package '$name'.");
+        }
     }
 
     /**

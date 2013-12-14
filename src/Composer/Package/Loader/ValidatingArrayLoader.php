@@ -189,6 +189,13 @@ class ValidatingArrayLoader implements LoaderInterface
             }
         }
 
+        if (!empty($this->config['autoload']['psr-4']) && !empty($this->config['target-dir'])) {
+            $this->errors[] = "The ['autoload']['psr-4'] setting is incompatible with the ['target-dir'] setting.";
+            // Unset the psr-4 setting, since unsetting target-dir might
+            // interfere with other settings.
+            unset($this->config['autoload']['psr-4']);
+        }
+
         // TODO validate dist
         // TODO validate source
 
