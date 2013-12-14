@@ -310,6 +310,12 @@ EOF;
             }
         }
 
+        if (isset($autoloads['psr-4'])) {
+            foreach ($autoloads['psr-4'] as $namespace => $path) {
+                $loader->addPsr4($namespace, $path);
+            }
+        }
+
         return $loader;
     }
 
