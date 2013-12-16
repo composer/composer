@@ -70,7 +70,8 @@ class PlatformRepository extends ArrayRepository
                 $version = $versionParser->normalize($prettyVersion);
             }
 
-            $ext = new CompletePackage('ext-'.$name, $version, $prettyVersion);
+            $packageName = $this->buildPackageName($name);
+            $ext = new CompletePackage($packageName, $version, $prettyVersion);
             $ext->setDescription('The '.$name.' PHP extension');
             parent::addPackage($ext);
         }
@@ -158,5 +159,11 @@ class PlatformRepository extends ArrayRepository
             $hhvm->setDescription('The HHVM Runtime (64bit)');
             parent::addPackage($hhvm);
         }
+    }
+
+
+    private function buildPackageName($name)
+    {
+        return 'ext-' . str_replace(' ', '-', $name);
     }
 }
