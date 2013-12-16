@@ -18,6 +18,7 @@ use Composer\IO\IOInterface;
 use Composer\Package\Package;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\RepositoryInterface;
+use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\Link;
 use Composer\Package\LinkConstraint\VersionConstraint;
@@ -95,6 +96,9 @@ class PluginManager
     protected function loadRepository(RepositoryInterface $repo)
     {
         foreach ($repo->getPackages() as $package) {
+            if ($package instanceof AliasPackage) {
+                continue;
+            }
             if ('composer-plugin' === $package->getType()) {
                 $requiresComposer = null;
                 foreach ($package->getRequires() as $link) {
