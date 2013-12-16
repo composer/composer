@@ -301,4 +301,18 @@ interface PackageInterface
      * @return array
      */
     public function getArchiveExcludes();
+
+    /**
+     * Set the signature of the package (optional).
+     *
+     * @param string $signature
+     */
+    public function setSignature($signature);
+
+    /**
+     * Get the signature of the package.
+     *
+     * @return string
+     */
+    public function getSignature();
 }
