@@ -93,7 +93,16 @@ class PluginManager
         return $this->plugins;
     }
 
-    protected function loadRepository(RepositoryInterface $repo)
+    /**
+     * Load all plugins and installers from a repository
+     *
+     * Note that plugins in the specified repository that rely on events that
+     * have fired prior to loading will be missed. This means you likely want to
+     * call this method as early as possible.
+     *
+     * @param RepositoryInterface $repo Repository to scan for plugins to install
+     */
+    public function loadRepository(RepositoryInterface $repo)
     {
         foreach ($repo->getPackages() as $package) {
             if ($package instanceof AliasPackage) {
