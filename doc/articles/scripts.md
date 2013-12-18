@@ -9,7 +9,7 @@
 A script, in Composer's terms, can either be a PHP callback (defined as a
 static method) or any command-line executable command. Scripts are useful
 for executing a package's custom code or package-specific commands during
-the Composer execution process.
+the Composer execution process.r
 
 **NOTE: Only scripts defined in the root package's `composer.json` are
 executed. If a dependency of the root package specifies its own scripts,
@@ -115,3 +115,11 @@ PHP callback. This `Event` object has getters for other contextual objects:
 - `getName()`: returns the name of the event being fired as a string
 - `getIO()`: returns the current input/output stream which implements
 `Composer\IO\IOInterface` for writing to the console
+
+## Running scripts manually
+
+If you would like to run the scripts for an event manually, the syntax is:
+
+    $ composer run-script [--dev] [--no-dev] script
+
+For example `composer run-script post-install-cmd` will run any **post-install-cmd** scripts that have been defined.
