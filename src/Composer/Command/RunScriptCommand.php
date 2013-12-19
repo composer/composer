@@ -56,8 +56,6 @@ EOT
             if (defined('Composer\Script\ScriptEvents::'.str_replace('-', '_', strtoupper($script)))) {
                 throw new \InvalidArgumentException(sprintf('Script "%s" cannot be run with this command', $script));
             }
-
-            throw new \InvalidArgumentException(sprintf('Script "%s" does not exist', $script));
         }
 
         $this->getComposer()->getEventDispatcher()->dispatchCommandEvent($script, $input->getOption('dev') || !$input->getOption('no-dev'));
