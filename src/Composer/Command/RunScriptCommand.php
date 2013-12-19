@@ -58,6 +58,12 @@ EOT
             }
         }
 
+        $hasListeners = $this->getComposer()->getEventDispatcher()->hasEventListeners(new \Composer\Script\CommandEvent($script, $this->getComposer(), $this->getIO()));
+
+        if(!$hasListeners) {
+            throw new \InvalidArgumentException(sprintf('Script "%s" does not exist', $script));
+        }
+
         $this->getComposer()->getEventDispatcher()->dispatchCommandEvent($script, $input->getOption('dev') || !$input->getOption('no-dev'));
     }
 }
