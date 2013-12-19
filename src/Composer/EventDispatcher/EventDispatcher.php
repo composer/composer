@@ -118,10 +118,6 @@ class EventDispatcher
     {
         $listeners = $this->getListeners($event);
 
-        if(sizeof($listeners) === 0) {
-            throw new \InvalidArgumentException(sprintf('Script "%s" does not exist', $event->getName()));
-        }
-
         foreach ($listeners as $callable) {
             if (!is_string($callable) && is_callable($callable)) {
                 call_user_func($callable, $event);
