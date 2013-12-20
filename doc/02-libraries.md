@@ -82,6 +82,10 @@ Here are a few examples of valid tag names:
     v2.0.0-alpha
     v2.0.4-p1
 
+> **Note:** Even if your tag is prefixed with `v`, a [version constraint](01-basic-usage.md#package-versions)
+> in a `require` statement has to be specified without prefix
+> (e.g. tag `v1.0.0` will result in version `1.0.0`). 
+
 ### Branches
 
 For every branch, a package development version will be created. If the branch
