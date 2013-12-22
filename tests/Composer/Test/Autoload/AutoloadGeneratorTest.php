@@ -478,14 +478,22 @@ class AutoloadGeneratorTest extends TestCase
     public function testOverrideVendorsAutoloading()
     {
         $package = new Package('z', '1.0', '1.0');
-        $package->setAutoload(array('psr-0' => array('A\\B' => $this->workingDir.'/lib'), 'classmap' => array($this->workingDir.'/src')));
+        $package->setAutoload(array(
+            'psr-0' => array('A\\B' => $this->workingDir.'/lib'),
+            'classmap' => array($this->workingDir.'/src')
+        ));
         $package->setRequires(array(new Link('z', 'a/a')));
 
         $packages = array();
         $packages[] = $a = new Package('a/a', '1.0', '1.0');
         $packages[] = $b = new Package('b/b', '1.0', '1.0');
-        $a->setAutoload(array('psr-0' => array('A' => 'src/', 'A\\B' => 'lib/'), 'classmap' => array('classmap')));
-        $b->setAutoload(array('psr-0' => array('B\\Sub\\Name' => 'src/')));
+        $a->setAutoload(array(
+            'psr-0' => array('A' => 'src/', 'A\\B' => 'lib/'),
+            'classmap' => array('classmap'),
+        ));
+        $b->setAutoload(array(
+            'psr-0' => array('B\\Sub\\Name' => 'src/'),
+        ));
 
         $this->repository->expects($this->once())
             ->method('getCanonicalPackages')
