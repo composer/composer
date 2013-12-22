@@ -14,6 +14,7 @@ namespace Composer\Command;
 
 use Composer\Composer;
 use Composer\Factory;
+use Composer\Util\Filesystem;
 use Composer\Util\RemoteFilesystem;
 use Composer\Downloader\FilesystemException;
 use Symfony\Component\Console\Input\InputInterface;
@@ -27,6 +28,7 @@ class SelfUpdateCommand extends Command
 {
     const ROLLBACK = 'rollback';
     const HOMEPAGE = 'getcomposer.org';
+    const OLD_INSTALL_EXT = '-old.phar';
 
     protected $remoteFS;
     protected $latestVersion;
@@ -49,7 +51,7 @@ class SelfUpdateCommand extends Command
             ->setAliases(array('selfupdate'))
             ->setDescription('Updates composer.phar to the latest version.')
             ->setDefinition(array(
-                new InputOption(self::ROLLBACK, 'r', InputOption::VALUE_OPTIONAL, 'Revert to an older installation of composer'),
+                new InputOption(self::ROLLBACK, 'r', InputOption::VALUE_NONE, 'Revert to an older installation of composer')
             ))
             ->setHelp(<<<EOT
 The <info>self-update</info> command checks getcomposer.org for newer
@@ -66,7 +68,6 @@ EOT
     {
         $config = Factory::createConfig();
         $cacheDir = rtrim($config->get('cache-dir'), '/');
-        $saveDir = rtrim($config->get('home'), '/');
 
         // Check if current dir is writable and if not try the cache dir from settings
         $tmpDir = is_writable(dirname($this->localFilename))? dirname($this->localFilename) : $cacheDir;
@@ -80,24 +81,27 @@ EOT
             throw new FilesystemException('Composer update failed: the "'.$this->localFilename.'" file could not be written');
         }
 
-        $rollback = $this->getOption(self::ROLLBACK);
+        $rollbackVersion = false;
 
-        if (is_null($rollback)) {
-            $rollback = $this->getLastVersion();
-            if (!$rollback) {
+        // rollback specified, get last phar
+        if ($input->getOption(self::ROLLBACK)) {
+            $rollbackVersion = $this->getLastVersion($saveDir);
+            if (!$rollbackVersion) {
                 throw new FilesystemException('Composer rollback failed: no installation to roll back to in "'.$saveDir.'"');
 
                 return 1;
             }
         }
 
+        $saveDir = rtrim($config->get('home'), '/');
+
         // if a rollback version is specified, check for permissions and rollback installation
-        if ($rollback) {
+        if ($rollbackVersion) {
             if (!is_writable($saveDir)) {
                 throw new FilesystemException('Composer rollback failed: the "'.$saveDir.'" dir could not be written to');
             }
 
-            $old = $saveDir . "/{$rollback}.phar";
+            $old = $saveDir . '/' . $rollbackVersion . self::OLD_INSTALL_EXT;
 
             if (!is_file($old)) {
                 throw new FilesystemException('Composer rollback failed: "'.$old.'" could not be found');
@@ -107,18 +111,20 @@ EOT
             }
         }
 
-        $updateVersion = ($rollback)? $rollback : $this->getLatestVersion();
+        $updateVersion = ($rollbackVersion)? $rollbackVersion : $this->getLatestVersion();
 
         if (Composer::VERSION === $updateVersion) {
-            $output->writeln("<info>You are already using composer v%s.</info>", $updateVersion);
+            $output->writeln('<info>You are already using composer version '.$updateVersion.'.</info>');
 
             return 0;
         }
 
         $tempFilename = $tmpDir . '/' . basename($this->localFilename, '.phar').'-temp.phar';
+        $backupFile = ($rollbackVersion)? false : $saveDir . '/' . Composer::VERSION . self::OLD_INSTALL_EXT;
 
-        if ($rollback) {
-            copy($saveDir . "/{$rollback}.phar", $tempFilename);
+        if ($rollbackVersion) {
+            rename($saveDir . "/{$rollbackVersion}" . self::OLD_INSTALL_EXT, $tempFilename);
+            $output->writeln(sprintf("Rolling back to cached version <info>%s</info>.", $rollbackVersion));
         } else {
             $endpoint = ($updateVersion === $this->getLatestVersion()) ? '/composer.phar' : "/download/{$updateVersion}/composer.phar";
             $remoteFilename = $this->homepageURL . $endpoint;
@@ -133,25 +139,44 @@ EOT
 
                 return 1;
             }
+
+            // remove saved installations of composer
+            $files = $this->getOldInstallationFiles($saveDir);
+            if (!empty($files)) {
+                $fs = new Filesystem;
+                foreach ($files as $file) {
+                    $output->writeln('<info>Removing: '.$file);
+                    $fs->remove($file);
+                }
+            }
         }
 
-        if ($err = $this->setLocalPhar($tempFilename, $saveDir)) {
+        if ($err = $this->setLocalPhar($tempFilename, $backupFile)) {
             $output->writeln('<error>The file is corrupted ('.$err->getMessage().').</error>');
             $output->writeln('<error>Please re-run the self-update command to try again.</error>');
 
             return 1;
         }
+
+        if ($backupFile) {
+            $output->writeln('<info>Saved rollback snapshot '.$backupFile);
+        }
     }
 
-    protected function setLocalPhar($filename, $saveDir)
+    protected function setLocalPhar($filename, $backupFile)
     {
         try {
             @chmod($filename, 0777 & ~umask());
             // test the phar validity
             $phar = new \Phar($filename);
-            // copy current file into installations dir
-            copy($this->localFilename, $saveDir . Composer::VERSION . '.phar');
             // free the variable to unlock the file
+            unset($phar);
+
+            // copy current file into installations dir
+            if ($backupFile) {
+                copy($this->localFilename, $backupFile);
+            }
+
             unset($phar);
             rename($filename, $this->localFilename);
         } catch (\Exception $e) {
@@ -166,8 +191,7 @@ EOT
 
     protected function getLastVersion($saveDir)
     {
-        $config = Factory::createConfig();
-        $files = glob($saveDir . '/*.phar');
+        $files = $this->getOldInstallationFiles($saveDir);
 
         if (empty($files)) {
             return false;
@@ -176,7 +200,12 @@ EOT
         $fileTimes = array_map('filemtime', $files);
         $map = array_combine($fileTimes, $files);
         $latest = max($fileTimes);
-        return basename($map[$latest], '.phar');
+        return basename($map[$latest], self::OLD_INSTALL_EXT);
+    }
+
+    protected function getOldInstallationFiles($saveDir)
+    {
+        return glob($saveDir . '/*' . self::OLD_INSTALL_EXT);
     }
 
     protected function getLatestVersion()
