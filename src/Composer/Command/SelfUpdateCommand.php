@@ -91,8 +91,6 @@ EOT
             $rollbackVersion = $this->getLastVersion($rollbackDir);
             if (!$rollbackVersion) {
                 throw new FilesystemException('Composer rollback failed: no installation to roll back to in "'.$rollbackDir.'"');
-
-                return 1;
             }
         }
 
