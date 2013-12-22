@@ -19,16 +19,52 @@ use Composer\Package\AliasPackage;
 use Composer\Package\Package;
 use Composer\TestCase;
 use Composer\Script\ScriptEvents;
+use Composer\Repository\InstalledRepositoryInterface;
+use Composer\Installer\InstallationManager;
+use Composer\Config;
+use Composer\EventDispatcher\EventDispatcher;
+use PHPUnit_Framework_MockObject_MockObject as MockObject;
 
 class AutoloadGeneratorTest extends TestCase
 {
+    /**
+     * @var string
+     */
     public $vendorDir;
+
+    /**
+     * @var Config|MockObject
+     */
     private $config;
+
+    /**
+     * @var string
+     */
     private $workingDir;
+
+    /**
+     * @var InstallationManager|MockObject
+     */
     private $im;
+
+    /**
+     * @var InstalledRepositoryInterface|MockObject
+     */
     private $repository;
+
+    /**
+     * @var AutoloadGenerator
+     */
     private $generator;
+
+    /**
+     * @var Filesystem
+     */
     private $fs;
+
+    /**
+     * @var EventDispatcher|MockObject
+     */
     private $eventDispatcher;
 
     protected function setUp()
