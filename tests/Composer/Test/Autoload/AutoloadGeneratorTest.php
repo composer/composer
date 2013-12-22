@@ -513,12 +513,12 @@ class AutoloadGeneratorTest extends TestCase
 
     public function testOverrideVendorsAutoloading()
     {
-        $package = new Package('z', '1.0', '1.0');
-        $package->setAutoload(array(
+        $mainPackage = new Package('z', '1.0', '1.0');
+        $mainPackage->setAutoload(array(
             'psr-0' => array('A\\B' => $this->workingDir.'/lib'),
             'classmap' => array($this->workingDir.'/src')
         ));
-        $package->setRequires(array(new Link('z', 'a/a')));
+        $mainPackage->setRequires(array(new Link('z', 'a/a')));
 
         $packages = array();
         $packages[] = $a = new Package('a/a', '1.0', '1.0');
@@ -592,7 +592,7 @@ return array(
 
 EOF;
 
-        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', true, '_9');
+        $this->generator->dump($this->config, $this->repository, $mainPackage, $this->im, 'composer', true, '_9');
         $this->assertEquals($expectedNamespace, file_get_contents($this->vendorDir.'/composer/autoload_namespaces.php'));
         $this->assertEquals($expectedPsr4, file_get_contents($this->vendorDir.'/composer/autoload_psr4.php'));
         $this->assertEquals($expectedClassmap, file_get_contents($this->vendorDir.'/composer/autoload_classmap.php'));
