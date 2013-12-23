@@ -176,6 +176,10 @@
                     "type": ["string", "boolean"],
                     "description": "The default style of handling dirty updates, defaults to false and can be any of true, false or \"stash\"."
                 },
+                "autoloader-suffix": {
+                    "type": ["string", "boolean"],
+                    "description": "Optional string to be used as a suffix to the autoloader generator. When null a random one will be generated."
+                },
                 "prepend-autoloader": {
                     "type": "boolean",
                     "description": "If false, the composer autoloader will not be prepended to existing autoloaders, defaults to true."
