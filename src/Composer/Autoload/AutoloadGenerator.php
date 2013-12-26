@@ -169,7 +169,7 @@ EOF;
         $classmapFile .= ");\n";
 
         if (!$suffix) {
-            $suffix = md5(uniqid('', true));
+            $suffix = $config->get('autoloader-suffix') ?: md5(uniqid('', true));
         }
 
         file_put_contents($targetDir.'/autoload_namespaces.php', $namespacesFile);
