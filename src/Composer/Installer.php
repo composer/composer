@@ -835,7 +835,7 @@ class Installer
 
             $depPackages = $pool->whatProvides($packageName);
             if (count($depPackages) == 0 && !in_array($packageName, $requiredPackageNames) && !in_array($packageName, array('nothing', 'lock'))) {
-                $this->io->write('<warning>Package "' . $packageName . '" listed for update is not installed. Ignoring.<warning>');
+                $this->io->write('<warning>Package "' . $packageName . '" listed for update is not installed. Ignoring.</warning>');
             }
 
             foreach ($depPackages as $depPackage) {
