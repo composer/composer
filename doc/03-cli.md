@@ -269,10 +269,19 @@ command. It will replace your `composer.phar` with the latest version.
 
     $ php composer.phar self-update
 
+If you would like to instead update to a specific release simply specify it:
+
+    $ composer self-update 1.0.0-alpha7
+
 If you have installed composer for your entire system (see [global installation](00-intro.md#globally)),
-you have to run the command with `root` privileges
+you may have to run the command with `root` privileges
 
     $ sudo composer self-update
+
+### Options
+
+* **--rollback (-r):** Rollback to the last version you had installed.
+* **--clean-backups:** Delete old backups during an update. This makes the current version of composer the only backup available after the update.
 
 ## config
 
