@@ -254,18 +254,12 @@ EOT
         // handle config values
         $uniqueConfigValues = array(
             'process-timeout' => array('is_numeric', 'intval'),
-            'use-include-path' => array(
-                $booleanValidator,
-                $booleanNormalizer
-            ),
+            'use-include-path' => array($booleanValidator, $booleanNormalizer),
             'preferred-install' => array(
                 function ($val) { return in_array($val, array('auto', 'source', 'dist'), true); },
                 function ($val) { return $val; }
             ),
-            'notify-on-install' => array(
-                $booleanValidator,
-                $booleanNormalizer
-            ),
+            'notify-on-install' => array($booleanValidator, $booleanNormalizer),
             'vendor-dir' => array('is_string', function ($val) { return $val; }),
             'bin-dir' => array('is_string', function ($val) { return $val; }),
             'cache-dir' => array('is_string', function ($val) { return $val; }),
@@ -288,6 +282,8 @@ EOT
                     return $val !== 'false' && (bool) $val;
                 }
             ),
+            'autoloader-suffix' => array('is_string', function ($val) { return $val === 'null' ? null : $val; }),
+            'prepend-autoloader' => array($booleanValidator, $booleanNormalizer),
         );
         $multiConfigValues = array(
             'github-protocols' => array(

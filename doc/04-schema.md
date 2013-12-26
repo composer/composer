@@ -659,6 +659,8 @@ The following options are supported:
 * **prepend-autoloader:** Defaults to `true`. If false, the composer autoloader
   will not be prepended to existing autoloaders. This is sometimes required to fix
   interoperability issues with other autoloaders.
+* **autoloader-suffix:** Defaults to `null`. String to be used as a suffix for
+  the generated Composer autoloader. When null a random one will be generated.
 * **github-domains:** Defaults to `["github.com"]`. A list of domains to use in
   github mode. This is used for GitHub Enterprise setups.
 * **notify-on-install:** Defaults to `true`. Composer allows repositories to

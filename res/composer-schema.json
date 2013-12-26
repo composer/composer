@@ -178,7 +178,7 @@
                 },
                 "autoloader-suffix": {
                     "type": "string",
-                    "description": "Optional string to be used as a suffix to the autoloader generator. When null a random one will be generated."
+                    "description": "Optional string to be used as a suffix for the generated Composer autoloader. When null a random one will be generated."
                 },
                 "prepend-autoloader": {
                     "type": "boolean",
