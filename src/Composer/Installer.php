@@ -173,6 +173,12 @@ class Installer
         unset($devRepo, $package);
         // end BC
 
+        if ($this->runScripts) {
+            // dispatch pre event
+            $eventName = $this->update ? ScriptEvents::PRE_UPDATE_CMD : ScriptEvents::PRE_INSTALL_CMD;
+            $this->eventDispatcher->dispatchCommandEvent($eventName, $this->devMode);
+        }
+
         $this->downloadManager->setPreferSource($this->preferSource);
         $this->downloadManager->setPreferDist($this->preferDist);
 
@@ -198,12 +204,6 @@ class Installer
 
         $aliases = $this->getRootAliases();
         $this->aliasPlatformPackages($platformRepo, $aliases);
-
-        if ($this->runScripts) {
-            // dispatch pre event
-            $eventName = $this->update ? ScriptEvents::PRE_UPDATE_CMD : ScriptEvents::PRE_INSTALL_CMD;
-            $this->eventDispatcher->dispatchCommandEvent($eventName, $this->devMode);
-        }
 
         try {
             $this->suggestedPackages = array();
