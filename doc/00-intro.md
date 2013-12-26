@@ -35,12 +35,12 @@ which describes the project's dependencies.
 
     {
         "require": {
-            "monolog/monolog": "1.2.*"
+            "monolog/monolog": "1.7.*"
         }
     }
 
 We are simply stating that our project requires some `monolog/monolog` package,
-any version beginning with `1.2`.
+any version beginning with `1.7`.
 
 ## System Requirements
 
