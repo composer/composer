@@ -107,7 +107,7 @@ class NoProxyPattern
     }
 
     /**
-     * Check an IP adress against a CIDR
+     * Check an IP address against a CIDR
      *
      * http://framework.zend.com/svn/framework/extras/incubator/library/ZendX/Whois/Adapter/Cidr.php
      *
@@ -141,7 +141,7 @@ class NoProxyPattern
         $check = ($a << 24) + ($b << 16) + ($c << 8) + $d;
 
         // If the ip is within the range, including highest/lowest values,
-        // then it's witin the CIDR range
+        // then it's within the CIDR range
         return $check >= $low && $check <= $high;
     }
 }

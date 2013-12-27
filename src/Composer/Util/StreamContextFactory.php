@@ -120,7 +120,7 @@ final class StreamContextFactory
     }
 
     /**
-     * A bug in PHP prevents the headers from correctly beeing sent when a content-type header is present and
+     * A bug in PHP prevents the headers from correctly being sent when a content-type header is present and
      * NOT at the end of the array
      *
      * This method fixes the array by moving the content-type header to the end
