@@ -395,6 +395,20 @@ problems.
 
     $ php composer.phar diagnose
 
+## archive
+
+This command is used to generate a zip/tar archive for a given package in a
+given version. It can also be used to archive your entire project without
+excluded/ignored files.
+
+    $ php composer.phar archive vendor/package --format=zip
+
+### Options
+
+* **--format (-f):** Format of the resulting archive: tar or zip (default:
+  "tar")
+* **--dir:** Write the archive to this directory (default: ".")
+
 ## help
 
 To get more information about a certain command, just use `help`.
