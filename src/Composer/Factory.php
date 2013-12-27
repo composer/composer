@@ -285,6 +285,7 @@ class Factory
     /**
      * @param  IOInterface                  $io
      * @param  Config                       $config
+     * @param  EventDispatcher              $eventDispatcher
      * @return Repository\RepositoryManager
      */
     protected function createRepositoryManager(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null)

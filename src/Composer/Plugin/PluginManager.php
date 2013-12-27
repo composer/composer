@@ -43,7 +43,9 @@ class PluginManager
     /**
      * Initializes plugin manager
      *
-     * @param Composer $composer
+     * @param Composer            $composer
+     * @param IOInterface         $io
+     * @param RepositoryInterface $globalRepository
      */
     public function __construct(Composer $composer, IOInterface $io, RepositoryInterface $globalRepository = null)
     {
@@ -126,7 +128,7 @@ class PluginManager
 
                 $this->registerPackage($package);
             }
-            // Backward compatability
+            // Backward compatibility
             if ('composer-installer' === $package->getType()) {
                 $this->registerPackage($package);
             }
