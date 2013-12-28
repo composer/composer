@@ -13,7 +13,7 @@
 namespace Composer\Test\Util;
 
 use Composer\Util\ErrorHandler;
-use Composer\Test\TestCase;
+use Composer\TestCase;
 
 /**
  * ErrorHandler test case
@@ -38,7 +38,7 @@ class ErrorHandlerTest extends TestCase
      */
     public function testErrorHandlerCaptureWarning()
     {
-        $this->setExpectedException('\ErrorException', 'array_merge(): Argument #2 is not an array');
+        $this->setExpectedException('\ErrorException', 'array_merge');
 
         ErrorHandler::register();
 

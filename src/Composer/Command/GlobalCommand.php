@@ -12,7 +12,6 @@
 
 namespace Composer\Command;
 
-use Composer\Installer;
 use Composer\Factory;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
@@ -43,6 +42,9 @@ is to add the COMPOSER_HOME/vendor/bin dir to your PATH env var.
 COMPOSER_HOME is c:\Users\<user>\AppData\Roaming\Composer on Windows
 and /home/<user>/.composer on unix systems.
 
+Note: This path may vary depending on customizations to bin-dir in
+composer.json or the environmental variable COMPOSER_BIN_DIR.
+
 EOT
             )
         ;
@@ -70,10 +72,11 @@ EOT
         // change to global dir
         $config = Factory::createConfig();
         chdir($config->get('home'));
+        $output->writeln('<info>Changed current directory to '.$config->get('home').'</info>');
 
         // create new input without "global" command prefix
         $input = new StringInput(preg_replace('{\bg(?:l(?:o(?:b(?:a(?:l)?)?)?)?)?\b}', '', $input->__toString(), 1));
 
-        return $this->getApplication()->get($args[1])->run($input, $output);
+        return $this->getApplication()->run($input, $output);
     }
 }

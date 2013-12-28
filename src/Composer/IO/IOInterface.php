@@ -71,7 +71,7 @@ interface IOInterface
      * @param bool         $newline  Whether to add a newline or not
      * @param integer      $size     The size of line
      */
-    public function overwrite($messages, $newline = true, $size = 80);
+    public function overwrite($messages, $newline = true, $size = null);
 
     /**
      * Asks a question to the user.

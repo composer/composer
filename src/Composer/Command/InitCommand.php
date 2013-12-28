@@ -208,7 +208,8 @@ EOT
         $description = $input->getOption('description') ?: false;
         $description = $dialog->ask(
             $output,
-            $dialog->getQuestion('Description', $description)
+            $dialog->getQuestion('Description', $description),
+            $description
         );
         $input->setOption('description', $description);
 
@@ -258,7 +259,8 @@ EOT
         $license = $input->getOption('license') ?: false;
         $license = $dialog->ask(
             $output,
-            $dialog->getQuestion('License', $license)
+            $dialog->getQuestion('License', $license),
+            $license
         );
         $input->setOption('license', $license);
 

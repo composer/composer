@@ -9,7 +9,7 @@
             "required": true
         },
         "type": {
-            "description": "Package type, either 'library' for common packages, 'composer-installer' for custom installers, 'metapackage' for empty packages, or a custom type ([a-z0-9-]+) defined by whatever project this package applies to.",
+            "description": "Package type, either 'library' for common packages, 'composer-plugin' for plugins, 'metapackage' for empty packages, or a custom type ([a-z0-9-]+) defined by whatever project this package applies to.",
             "type": "string"
         },
         "target-dir": {
@@ -175,12 +175,27 @@
                 "discard-changes": {
                     "type": ["string", "boolean"],
                     "description": "The default style of handling dirty updates, defaults to false and can be any of true, false or \"stash\"."
+                },
+                "autoloader-suffix": {
+                    "type": "string",
+                    "description": "Optional string to be used as a suffix for the generated Composer autoloader. When null a random one will be generated."
+                },
+                "prepend-autoloader": {
+                    "type": "boolean",
+                    "description": "If false, the composer autoloader will not be prepended to existing autoloaders, defaults to true."
+                },
+                "github-domains": {
+                    "type": "array",
+                    "description": "A list of domains to use in github mode. This is used for GitHub Enterprise setups, defaults to [\"github.com\"].",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
         "extra": {
             "type": ["object", "array"],
-            "description": "Arbitrary extra data that can be used by custom installers, for example, package of type composer-installer must have a 'class' key defining the installer class name.",
+            "description": "Arbitrary extra data that can be used by plugins, for example, package of type composer-plugin may have a 'class' key defining an installer class name.",
             "additionalProperties": true
         },
         "autoload": {

@@ -86,7 +86,7 @@ that needs some special logic, you can define a custom type. This could be a
 all be specific to certain projects, and they will need to provide an
 installer capable of installing packages of that type.
 
-Out of the box, composer supports three types:
+Out of the box, composer supports four types:
 
 - **library:** This is the default. It will simply copy the files to `vendor`.
 - **project:** This denotes a project rather than a library. For example
@@ -99,7 +99,7 @@ Out of the box, composer supports three types:
   their installation, but contains no files and will not write anything to the
   filesystem. As such, it does not require a dist or source key to be
   installable.
-- **composer-installer:** A package of type `composer-installer` provides an
+- **composer-plugin:** A package of type `composer-plugin` may provide an
   installer for other packages that have a custom type. Read more in the
   [dedicated article](articles/custom-installers.md).
 
@@ -263,7 +263,7 @@ All links are optional fields.
 These allow you to further restrict or expand the stability of a package beyond
 the scope of the [minimum-stability](#minimum-stability) setting. You can apply
 them to a constraint, or just apply them to an empty constraint if you want to
-allow unstable packages of a dependency's dependency for example.
+allow unstable packages of a dependency for example.
 
 Example:
 
@@ -274,13 +274,22 @@ Example:
         }
     }
 
+If one of your dependencies has a dependency on an unstable package you need to
+explicitly require it as well, along with its sufficient stability flag.
+
+Example:
+
+    {
+        "require": {
+            "doctrine/doctrine-fixtures-bundle": "dev-master",
+            "doctrine/data-fixtures": "@dev"
+        }
+    }
+
 `require` and `require-dev` additionally support explicit references (i.e.
 commit) for dev versions to make sure they are locked to a given state, even
 when you run update. These only work if you explicitly require a dev version
-and append the reference with `#<ref>`. Note that while this is convenient at
-times, it should not really be how you use packages in the long term. You
-should always try to switch to tagged releases as soon as you can, especially
-if the project you work on will not be touched for a while.
+and append the reference with `#<ref>`.
 
 Example:
 
@@ -291,8 +300,15 @@ Example:
         }
     }
 
-It is possible to inline-alias a package constraint so that it matches a
-constraint that it otherwise would not. For more information [see the
+> **Note:** While this is convenient at times, it should not be how you use
+> packages in the long term because it comes with a technical limitation. The
+> composer.json metadata will still be read from the branch name you specify
+> before the hash. Because of that in some cases it will not be a practical
+> workaround, and you should always try to switch to tagged releases as soon
+> as you can.
+
+It is also possible to inline-alias a package constraint so that it matches
+a constraint that it otherwise would not. For more information [see the
 aliases article](articles/aliases.md).
 
 #### require
@@ -640,6 +656,13 @@ The following options are supported:
   dist (zip, tar, ..) packages that it downloads. When the garbage collection
   is periodically ran, this is the maximum size the cache will be able to use.
   Older (less used) files will be removed first until the cache fits.
+* **prepend-autoloader:** Defaults to `true`. If false, the composer autoloader
+  will not be prepended to existing autoloaders. This is sometimes required to fix
+  interoperability issues with other autoloaders.
+* **autoloader-suffix:** Defaults to `null`. String to be used as a suffix for
+  the generated Composer autoloader. When null a random one will be generated.
+* **github-domains:** Defaults to `["github.com"]`. A list of domains to use in
+  github mode. This is used for GitHub Enterprise setups.
 * **notify-on-install:** Defaults to `true`. Composer allows repositories to
   define a notification URL, so that they get notified whenever a package from
   that repository is installed. This option allows you to disable that behaviour.

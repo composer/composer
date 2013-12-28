@@ -91,9 +91,9 @@ final class StreamContextFactory
                 }
 
                 if (isset($proxy['user'])) {
-                    $auth = $proxy['user'];
+                    $auth = urldecode($proxy['user']);
                     if (isset($proxy['pass'])) {
-                        $auth .= ':' . $proxy['pass'];
+                        $auth .= ':' . urldecode($proxy['pass']);
                     }
                     $auth = base64_encode($auth);
 
@@ -120,7 +120,7 @@ final class StreamContextFactory
     }
 
     /**
-     * A bug in PHP prevents the headers from correctly beeing sent when a content-type header is present and
+     * A bug in PHP prevents the headers from correctly being sent when a content-type header is present and
      * NOT at the end of the array
      *
      * This method fixes the array by moving the content-type header to the end

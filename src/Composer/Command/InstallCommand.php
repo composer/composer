@@ -13,6 +13,8 @@
 namespace Composer\Command;
 
 use Composer\Installer;
+use Composer\Plugin\CommandEvent;
+use Composer\Plugin\PluginEvents;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -21,6 +23,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Ryan Weaver <ryan@knplabs.com>
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
+ * @author Nils Adermann <naderman@naderman.de>
  */
 class InstallCommand extends Command
 {
@@ -35,7 +38,8 @@ class InstallCommand extends Command
                 new InputOption('dry-run', null, InputOption::VALUE_NONE, 'Outputs the operations but will not execute anything (implicitly enables --verbose).'),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Enables installation of require-dev packages (enabled by default, only present for BC).'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables installation of require-dev packages.'),
-                new InputOption('no-custom-installers', null, InputOption::VALUE_NONE, 'Disables all custom installers.'),
+                new InputOption('no-plugins', null, InputOption::VALUE_NONE, 'Disables all plugins.'),
+                new InputOption('no-custom-installers', null, InputOption::VALUE_NONE, 'DEPRECATED: Use no-plugins instead.'),
                 new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Skips the execution of all scripts defined in composer.json file.'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
                 new InputOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Shows more details including new commits pulled in when updating packages.'),
@@ -56,9 +60,18 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $composer = $this->getComposer();
+        if ($input->getOption('no-custom-installers')) {
+            $output->writeln('<warning>You are using the deprecated option "no-custom-installers". Use "no-plugins" instead.</warning>');
+            $input->setOption('no-plugins', true);
+        }
+
+        $composer = $this->getComposer(true, $input->getOption('no-plugins'));
         $composer->getDownloadManager()->setOutputProgress(!$input->getOption('no-progress'));
         $io = $this->getIO();
+
+        $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'install', $input, $output);
+        $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
+
         $install = Installer::create($io, $composer);
 
         $preferSource = false;
@@ -90,10 +103,10 @@ EOT
             ->setOptimizeAutoloader($input->getOption('optimize-autoloader'))
         ;
 
-        if ($input->getOption('no-custom-installers')) {
-            $install->disableCustomInstallers();
+        if ($input->getOption('no-plugins')) {
+            $install->disablePlugins();
         }
 
-        return $install->run() ? 0 : 1;
+        return $install->run();
     }
 }

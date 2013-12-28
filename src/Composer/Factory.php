@@ -16,12 +16,12 @@ use Composer\Config\JsonConfigSource;
 use Composer\Json\JsonFile;
 use Composer\IO\IOInterface;
 use Composer\Package\Archiver;
-use Composer\Repository\ComposerRepository;
 use Composer\Repository\RepositoryManager;
+use Composer\Repository\RepositoryInterface;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
-use Composer\Script\EventDispatcher;
+use Composer\EventDispatcher\EventDispatcher;
 use Composer\Autoload\AutoloadGenerator;
 use Composer\Package\Version\VersionParser;
 
@@ -31,6 +31,7 @@ use Composer\Package\Version\VersionParser;
  * @author Ryan Weaver <ryan@knplabs.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Igor Wiedler <igor@wiedler.ch>
+ * @author Nils Adermann <naderman@naderman.de>
  */
 class Factory
 {
@@ -117,7 +118,9 @@ class Factory
                             @rename($child, $dir.'/'.basename($child));
                         }
                     }
-                    @rmdir($oldPath);
+                    if ($config->get('cache-dir') != $oldPath) {
+                        @rmdir($oldPath);
+                    }
                 }
             }
         }
@@ -176,11 +179,12 @@ class Factory
      * @param IOInterface       $io          IO instance
      * @param array|string|null $localConfig either a configuration array or a filename to read from, if null it will
      *                                       read from the default filename
+     * @param  bool                      $disablePlugins Whether plugins should not be loaded
      * @throws \InvalidArgumentException
      * @throws \UnexpectedValueException
      * @return Composer
      */
-    public function createComposer(IOInterface $io, $localConfig = null)
+    public function createComposer(IOInterface $io, $localConfig = null, $disablePlugins = false)
     {
         // load Composer configuration
         if (null === $localConfig) {
@@ -216,8 +220,15 @@ class Factory
         // setup process timeout
         ProcessExecutor::setTimeout((int) $config->get('process-timeout'));
 
+        // initialize composer
+        $composer = new Composer();
+        $composer->setConfig($config);
+
+        // initialize event dispatcher
+        $dispatcher = new EventDispatcher($composer, $io);
+
         // initialize repository manager
-        $rm = $this->createRepositoryManager($io, $config);
+        $rm = $this->createRepositoryManager($io, $config, $dispatcher);
 
         // load local repository
         $this->addLocalRepository($rm, $vendorDir);
@@ -227,22 +238,18 @@ class Factory
         $loader  = new Package\Loader\RootPackageLoader($rm, $config, $parser, new ProcessExecutor($io));
         $package = $loader->load($localConfig);
 
-        // initialize download manager
-        $dm = $this->createDownloadManager($io, $config);
-
         // initialize installation manager
         $im = $this->createInstallationManager();
 
-        // initialize composer
-        $composer = new Composer();
-        $composer->setConfig($config);
+        // Composer composition
         $composer->setPackage($package);
         $composer->setRepositoryManager($rm);
-        $composer->setDownloadManager($dm);
         $composer->setInstallationManager($im);
 
-        // initialize event dispatcher
-        $dispatcher = new EventDispatcher($composer, $io);
+        // initialize download manager
+        $dm = $this->createDownloadManager($io, $config, $dispatcher);
+
+        $composer->setDownloadManager($dm);
         $composer->setEventDispatcher($dispatcher);
 
         // initialize autoload generator
@@ -251,6 +258,14 @@ class Factory
 
         // add installers to the manager
         $this->createDefaultInstallers($im, $composer, $io);
+
+        $globalRepository = $this->createGlobalRepository($config, $vendorDir);
+        $pm = $this->createPluginManager($composer, $io, $globalRepository);
+        $composer->setPluginManager($pm);
+
+        if (!$disablePlugins) {
+            $pm->loadInstalledPlugins();
+        }
 
         // purge packages if they have been deleted on the filesystem
         $this->purgePackages($rm, $im);
@@ -270,17 +285,19 @@ class Factory
     /**
      * @param  IOInterface                  $io
      * @param  Config                       $config
+     * @param  EventDispatcher              $eventDispatcher
      * @return Repository\RepositoryManager
      */
-    protected function createRepositoryManager(IOInterface $io, Config $config)
+    protected function createRepositoryManager(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null)
     {
-        $rm = new RepositoryManager($io, $config);
+        $rm = new RepositoryManager($io, $config, $eventDispatcher);
         $rm->setRepositoryClass('composer', 'Composer\Repository\ComposerRepository');
         $rm->setRepositoryClass('vcs', 'Composer\Repository\VcsRepository');
         $rm->setRepositoryClass('package', 'Composer\Repository\PackageRepository');
         $rm->setRepositoryClass('pear', 'Composer\Repository\PearRepository');
         $rm->setRepositoryClass('git', 'Composer\Repository\VcsRepository');
         $rm->setRepositoryClass('svn', 'Composer\Repository\VcsRepository');
+        $rm->setRepositoryClass('perforce', 'Composer\Repository\VcsRepository');
         $rm->setRepositoryClass('hg', 'Composer\Repository\VcsRepository');
         $rm->setRepositoryClass('artifact', 'Composer\Repository\ArtifactRepository');
 
@@ -296,12 +313,31 @@ class Factory
         $rm->setLocalRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/composer/installed.json')));
     }
 
+     /**
+     * @param Config $config
+     * @param string $vendorDir
+     */
+    protected function createGlobalRepository(Config $config, $vendorDir)
+    {
+        if ($config->get('home') == $vendorDir) {
+            return null;
+        }
+
+        $path = $config->get('home').'/vendor/composer/installed.json';
+        if (!file_exists($path)) {
+            return null;
+        }
+
+        return new Repository\InstalledFilesystemRepository(new JsonFile($path));
+    }
+
     /**
      * @param  IO\IOInterface             $io
      * @param  Config                     $config
+     * @param  EventDispatcher            $eventDispatcher
      * @return Downloader\DownloadManager
      */
-    public function createDownloadManager(IOInterface $io, Config $config)
+    public function createDownloadManager(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null)
     {
         $cache = null;
         if ($config->get('cache-files-ttl') > 0) {
@@ -325,10 +361,12 @@ class Factory
         $dm->setDownloader('git', new Downloader\GitDownloader($io, $config));
         $dm->setDownloader('svn', new Downloader\SvnDownloader($io, $config));
         $dm->setDownloader('hg', new Downloader\HgDownloader($io, $config));
-        $dm->setDownloader('zip', new Downloader\ZipDownloader($io, $config, $cache));
-        $dm->setDownloader('tar', new Downloader\TarDownloader($io, $config, $cache));
-        $dm->setDownloader('phar', new Downloader\PharDownloader($io, $config, $cache));
-        $dm->setDownloader('file', new Downloader\FileDownloader($io, $config, $cache));
+        $dm->setDownloader('perforce', new Downloader\PerforceDownloader($io, $config));
+        $dm->setDownloader('zip', new Downloader\ZipDownloader($io, $config, $eventDispatcher, $cache));
+        $dm->setDownloader('rar', new Downloader\RarDownloader($io, $config, $eventDispatcher, $cache));
+        $dm->setDownloader('tar', new Downloader\TarDownloader($io, $config, $eventDispatcher, $cache));
+        $dm->setDownloader('phar', new Downloader\PharDownloader($io, $config, $eventDispatcher, $cache));
+        $dm->setDownloader('file', new Downloader\FileDownloader($io, $config, $eventDispatcher, $cache));
 
         return $dm;
     }
@@ -342,13 +380,23 @@ class Factory
     public function createArchiveManager(Config $config, Downloader\DownloadManager $dm = null)
     {
         if (null === $dm) {
-            $dm = $this->createDownloadManager(new IO\NullIO(), $config);
+            $io = new IO\NullIO();
+            $io->loadConfiguration($config);
+            $dm = $this->createDownloadManager($io, $config);
         }
 
         $am = new Archiver\ArchiveManager($dm);
         $am->addArchiver(new Archiver\PharArchiver);
 
         return $am;
+    }
+
+    /**
+     * @return Plugin\PluginManager
+     */
+    protected function createPluginManager(Composer $composer, IOInterface $io, RepositoryInterface $globalRepository = null)
+    {
+        return new Plugin\PluginManager($composer, $io, $globalRepository);
     }
 
     /**
@@ -368,7 +416,7 @@ class Factory
     {
         $im->addInstaller(new Installer\LibraryInstaller($io, $composer, null));
         $im->addInstaller(new Installer\PearInstaller($io, $composer, 'pear-library'));
-        $im->addInstaller(new Installer\InstallerInstaller($io, $composer));
+        $im->addInstaller(new Installer\PluginInstaller($io, $composer));
         $im->addInstaller(new Installer\MetapackageInstaller($io));
     }
 
@@ -390,12 +438,13 @@ class Factory
      * @param IOInterface $io     IO instance
      * @param mixed       $config either a configuration array or a filename to read from, if null it will read from
      *                             the default filename
+     * @param  bool     $disablePlugins Whether plugins should not be loaded
      * @return Composer
      */
-    public static function create(IOInterface $io, $config = null)
+    public static function create(IOInterface $io, $config = null, $disablePlugins = false)
     {
         $factory = new static();
 
-        return $factory->createComposer($io, $config);
+        return $factory->createComposer($io, $config, $disablePlugins);
     }
 }

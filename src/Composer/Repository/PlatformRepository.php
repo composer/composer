@@ -14,6 +14,7 @@ namespace Composer\Repository;
 
 use Composer\Package\CompletePackage;
 use Composer\Package\Version\VersionParser;
+use Composer\Plugin\PluginInterface;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -27,6 +28,12 @@ class PlatformRepository extends ArrayRepository
         parent::initialize();
 
         $versionParser = new VersionParser();
+
+        $prettyVersion = PluginInterface::PLUGIN_API_VERSION;
+        $version = $versionParser->normalize($prettyVersion);
+        $composerPluginApi = new CompletePackage('composer-plugin-api', $version, $prettyVersion);
+        $composerPluginApi->setDescription('The Composer Plugin API');
+        parent::addPackage($composerPluginApi);
 
         try {
             $prettyVersion = PHP_VERSION;
@@ -63,7 +70,8 @@ class PlatformRepository extends ArrayRepository
                 $version = $versionParser->normalize($prettyVersion);
             }
 
-            $ext = new CompletePackage('ext-'.$name, $version, $prettyVersion);
+            $packageName = $this->buildPackageName($name);
+            $ext = new CompletePackage($packageName, $version, $prettyVersion);
             $ext->setDescription('The '.$name.' PHP extension');
             parent::addPackage($ext);
         }
@@ -137,5 +145,25 @@ class PlatformRepository extends ArrayRepository
             $lib->setDescription('The '.$name.' PHP library');
             parent::addPackage($lib);
         }
+
+        if (defined('HPHP_VERSION')) {
+            try {
+                $prettyVersion = HPHP_VERSION;
+                $version = $versionParser->normalize($prettyVersion);
+            } catch (\UnexpectedValueException $e) {
+                $prettyVersion = preg_replace('#^([^~+-]+).*$#', '$1', HPHP_VERSION);
+                $version = $versionParser->normalize($prettyVersion);
+            }
+
+            $hhvm = new CompletePackage('hhvm', $version, $prettyVersion);
+            $hhvm->setDescription('The HHVM Runtime (64bit)');
+            parent::addPackage($hhvm);
+        }
+    }
+
+
+    private function buildPackageName($name)
+    {
+        return 'ext-' . str_replace(' ', '-', $name);
     }
 }

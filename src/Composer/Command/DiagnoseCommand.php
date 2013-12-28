@@ -15,6 +15,8 @@ namespace Composer\Command;
 use Composer\Composer;
 use Composer\Factory;
 use Composer\Downloader\TransportException;
+use Composer\Plugin\CommandEvent;
+use Composer\Plugin\PluginEvents;
 use Composer\Util\ConfigValidator;
 use Composer\Util\RemoteFilesystem;
 use Composer\Util\StreamContextFactory;
@@ -64,6 +66,9 @@ EOT
 
         $composer = $this->getComposer(false);
         if ($composer) {
+            $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'diagnose', $input, $output);
+            $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
+
             $output->write('Checking composer.json: ');
             $this->outputResult($output, $this->checkComposerSchema());
         }
@@ -295,6 +300,12 @@ EOT
             $warnings['apc_cli'] = true;
         }
 
+        if (ini_get('xdebug.profiler_enabled')) {
+            $warnings['xdebug_profile'] = true;
+        } elseif (extension_loaded('xdebug')) {
+            $warnings['xdebug_loaded'] = true;
+        }
+
         ob_start();
         phpinfo(INFO_GENERAL);
         $phpinfo = ob_get_clean();
@@ -359,6 +370,18 @@ EOT
                     case 'php':
                         $text = PHP_EOL."Your PHP ({$current}) is quite old, upgrading to PHP 5.3.4 or higher is recommended.".PHP_EOL;
                         $text .= "Composer works with 5.3.2+ for most people, but there might be edge case issues.";
+                        break;
+
+                    case 'xdebug_loaded':
+                        $text = PHP_EOL."The xdebug extension is loaded, this can slow down Composer a little.".PHP_EOL;
+                        $text .= "Disabling it when using Composer is recommended, but should not cause issues beyond slowness.";
+                        break;
+
+                    case 'xdebug_profile':
+                        $text = PHP_EOL."The xdebug.profiler_enabled setting is enabled, this can slow down Composer a lot.".PHP_EOL;
+                        $text .= "Add the following to the end of your `php.ini` to disable it:".PHP_EOL;
+                        $text .= "    xdebug.profiler_enabled = 0";
+                        $displayIniMessage = true;
                         break;
                 }
                 $out($text, 'warning');

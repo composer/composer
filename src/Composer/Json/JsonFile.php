@@ -12,7 +12,6 @@
 
 namespace Composer\Json;
 
-use Composer\Composer;
 use JsonSchema\Validator;
 use Seld\JsonLint\JsonParser;
 use Seld\JsonLint\ParsingException;
@@ -117,7 +116,21 @@ class JsonFile
                 );
             }
         }
-        file_put_contents($this->path, static::encode($hash, $options). ($options & self::JSON_PRETTY_PRINT ? "\n" : ''));
+
+        $retries = 3;
+        while ($retries--) {
+            try {
+                file_put_contents($this->path, static::encode($hash, $options). ($options & self::JSON_PRETTY_PRINT ? "\n" : ''));
+                break;
+            } catch (\Exception $e) {
+                if ($retries) {
+                    usleep(500000);
+                    continue;
+                }
+
+                throw $e;
+            }
+        }
     }
 
     /**

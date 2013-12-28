@@ -124,7 +124,7 @@ Example using HTTP over SSL using a client certificate:
                 "url": "https://example.org",
                 "options": {
                     "ssl": {
-                        "local_cert": "/home/composer/.ssl/composer.pem",
+                        "local_cert": "/home/composer/.ssl/composer.pem"
                     }
                 }
             }
@@ -170,3 +170,19 @@ bucket or on a CDN host. A CDN would drastically improve download times and ther
 
 Example: A `prefix-url` of `http://my-bucket.s3.amazonaws.com` (and `directory` set to `dist`) creates download URLs
 which look like the following: `http://my-bucket.s3.amazonaws.com/dist/vendor-package-version-ref.zip`.
+
+
+### Resolving dependencies
+
+It is possible to make satis automatically resolve and add all dependencies for your projects. This can be used
+with the Downloads functionality to have a complete local mirror of packages. Just add the following
+to your `satis.json`:
+
+```
+{
+    "require-dependencies": true
+}
+```
+
+When searching for packages, satis will attempt to resolve all the required packages from the listed repositories.
+Therefore, if you are requiring a package from Packagist, you will need to define it in your `satis.json`.

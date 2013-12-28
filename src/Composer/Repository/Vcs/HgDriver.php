@@ -12,6 +12,7 @@
 
 namespace Composer\Repository\Vcs;
 
+use Composer\Config;
 use Composer\Json\JsonFile;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Filesystem;
@@ -48,14 +49,14 @@ class HgDriver extends VcsDriver
 
             // update the repo if it is a valid hg repository
             if (is_dir($this->repoDir) && 0 === $this->process->execute('hg summary', $output, $this->repoDir)) {
-                if (0 !== $this->process->execute('hg pull -u', $output, $this->repoDir)) {
+                if (0 !== $this->process->execute('hg pull', $output, $this->repoDir)) {
                     $this->io->write('<error>Failed to update '.$this->url.', package information from this repository may be outdated ('.$this->process->getErrorOutput().')</error>');
                 }
             } else {
                 // clean up directory and do a fresh clone into it
                 $fs->removeDirectory($this->repoDir);
 
-                if (0 !== $this->process->execute(sprintf('hg clone %s %s', escapeshellarg($this->url), escapeshellarg($this->repoDir)), $output, $cacheDir)) {
+                if (0 !== $this->process->execute(sprintf('hg clone --noupdate %s %s', escapeshellarg($this->url), escapeshellarg($this->repoDir)), $output, $cacheDir)) {
                     $output = $this->process->getErrorOutput();
 
                     if (0 !== $this->process->execute('hg --version', $ignoredOutput)) {
@@ -124,7 +125,7 @@ class HgDriver extends VcsDriver
             $composer = JsonFile::parseJson($composer, $identifier);
 
             if (!isset($composer['time'])) {
-                $this->process->execute(sprintf('hg log --template "{date|rfc822date}" -r %s', escapeshellarg($identifier)), $output, $this->repoDir);
+                $this->process->execute(sprintf('hg log --template "{date|rfc3339date}" -r %s', escapeshellarg($identifier)), $output, $this->repoDir);
                 $date = new \DateTime(trim($output), new \DateTimeZone('UTC'));
                 $composer['time'] = $date->format('Y-m-d H:i:s');
             }
@@ -189,7 +190,7 @@ class HgDriver extends VcsDriver
     /**
      * {@inheritDoc}
      */
-    public static function supports(IOInterface $io, $url, $deep = false)
+    public static function supports(IOInterface $io, Config $config, $url, $deep = false)
     {
         if (preg_match('#(^(?:https?|ssh)://(?:[^@]@)?bitbucket.org|https://(?:.*?)\.kilnhg.com)#i', $url)) {
             return true;

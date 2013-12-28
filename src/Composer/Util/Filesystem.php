@@ -42,6 +42,19 @@ class Filesystem
     }
 
     /**
+     * Checks if a directory is empty
+     *
+     * @param  string $dir
+     * @return bool
+     */
+    public function isDirEmpty($dir)
+    {
+        $dir = rtrim($dir, '/\\');
+
+        return count(glob($dir.'/*') ?: array()) === 0 && count(glob($dir.'/.*') ?: array()) === 2;
+    }
+
+    /**
      * Recursively remove a directory
      *
      * Uses the process component if proc_open is enabled on the PHP
@@ -54,6 +67,10 @@ class Filesystem
     {
         if (!is_dir($directory)) {
             return true;
+        }
+
+        if (preg_match('{^(?:[a-z]:)?[/\\\\]+$}i', $directory)) {
+            throw new \RuntimeException('Aborting an attempted deletion of '.$directory.', this was probably not intended, if it is a real use case please report it.');
         }
 
         if (!function_exists('proc_open')) {
@@ -129,15 +146,12 @@ class Filesystem
     {
         $it = new RecursiveDirectoryIterator($source, RecursiveDirectoryIterator::SKIP_DOTS);
         $ri = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::SELF_FIRST);
-
-        if (!file_exists($target)) {
-            mkdir($target, 0777, true);
-        }
+        $this->ensureDirectoryExists($target);
 
         foreach ($ri as $file) {
             $targetPath = $target . DIRECTORY_SEPARATOR . $ri->getSubPathName();
             if ($file->isDir()) {
-                mkdir($targetPath);
+                $this->ensureDirectoryExists($targetPath);
             } else {
                 copy($file->getPathname(), $targetPath);
             }
@@ -212,12 +226,12 @@ class Filesystem
             return './'.basename($to);
         }
 
-        $commonPath = $to.'/';
-        while (strpos($from, $commonPath) !== 0 && '/' !== $commonPath && !preg_match('{^[a-z]:/?$}i', $commonPath) && '.' !== $commonPath) {
+        $commonPath = $to;
+        while (strpos($from.'/', $commonPath.'/') !== 0 && '/' !== $commonPath && !preg_match('{^[a-z]:/?$}i', $commonPath)) {
             $commonPath = strtr(dirname($commonPath), '\\', '/');
         }
 
-        if (0 !== strpos($from, $commonPath) || '/' === $commonPath || '.' === $commonPath) {
+        if (0 !== strpos($from, $commonPath) || '/' === $commonPath) {
             return $to;
         }
 
@@ -250,8 +264,8 @@ class Filesystem
             return $directories ? '__DIR__' : '__FILE__';
         }
 
-        $commonPath = $to.'/';
-        while (strpos($from, $commonPath) !== 0 && '/' !== $commonPath && !preg_match('{^[a-z]:/?$}i', $commonPath) && '.' !== $commonPath) {
+        $commonPath = $to;
+        while (strpos($from.'/', $commonPath.'/') !== 0 && '/' !== $commonPath && !preg_match('{^[a-z]:/?$}i', $commonPath) && '.' !== $commonPath) {
             $commonPath = strtr(dirname($commonPath), '\\', '/');
         }
 

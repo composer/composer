@@ -13,7 +13,7 @@
 namespace Composer\Repository;
 
 use Composer\Repository\FilesystemRepository;
-use Composer\Test\TestCase;
+use Composer\TestCase;
 
 class FilesystemRepositoryTest extends TestCase
 {

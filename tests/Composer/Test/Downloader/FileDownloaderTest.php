@@ -17,13 +17,13 @@ use Composer\Util\Filesystem;
 
 class FileDownloaderTest extends \PHPUnit_Framework_TestCase
 {
-    protected function getDownloader($io = null, $config = null, $rfs = null)
+    protected function getDownloader($io = null, $config = null, $eventDispatcher = null, $cache = null, $rfs = null, $filesystem = null)
     {
         $io = $io ?: $this->getMock('Composer\IO\IOInterface');
         $config = $config ?: $this->getMock('Composer\Config');
         $rfs = $rfs ?: $this->getMockBuilder('Composer\Util\RemoteFilesystem')->disableOriginalConstructor()->getMock();
 
-        return new FileDownloader($io, $config, null, $rfs);
+        return new FileDownloader($io, $config, $eventDispatcher, $cache, $rfs, $filesystem);
     }
 
     /**
@@ -127,6 +127,37 @@ class FileDownloaderTest extends \PHPUnit_Framework_TestCase
         }
     }
 
+    public function testCacheGarbageCollectionIsCalled()
+    {
+        $expectedTtl = '99999999';
+
+        $configMock = $this->getMock('Composer\Config');
+        $configMock
+            ->expects($this->at(0))
+            ->method('get')
+            ->with('cache-files-ttl')
+            ->will($this->returnValue($expectedTtl));
+        $configMock
+            ->expects($this->at(1))
+            ->method('get')
+            ->with('cache-files-maxsize')
+            ->will($this->returnValue('500M'));
+
+        $cacheMock = $this->getMockBuilder('Composer\Cache')
+                     ->disableOriginalConstructor()
+                     ->getMock();
+        $cacheMock
+            ->expects($this->any())
+            ->method('gcIsNecessary')
+            ->will($this->returnValue(true));
+        $cacheMock
+            ->expects($this->once())
+            ->method('gc')
+            ->with($expectedTtl, $this->anything());
+
+        $downloader = $this->getDownloader(null, $configMock, null, $cacheMock, null, null);
+    }
+
     public function testDownloadFileWithInvalidChecksum()
     {
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
@@ -142,12 +173,13 @@ class FileDownloaderTest extends \PHPUnit_Framework_TestCase
             ->method('getDistSha1Checksum')
             ->will($this->returnValue('invalid'))
         ;
+        $filesystem = $this->getMock('Composer\Util\Filesystem');
 
         do {
             $path = sys_get_temp_dir().'/'.md5(time().mt_rand());
         } while (file_exists($path));
 
-        $downloader = $this->getDownloader();
+        $downloader = $this->getDownloader(null, null, null, null, null, $filesystem);
 
         // make sure the file expected to be downloaded is on disk already
         mkdir($path, 0777, true);

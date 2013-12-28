@@ -756,7 +756,6 @@ class Solver
 
                 if ($lastLiteral) {
                     unset($this->branches[$lastBranchIndex][self::BRANCH_LITERALS][$lastBranchOffset]);
-                    array_values($this->branches[$lastBranchIndex][self::BRANCH_LITERALS]);
 
                     $level = $lastLevel;
                     $this->revert($level);

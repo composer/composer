@@ -215,7 +215,7 @@ class Rule
                     // handle php extensions
                     if (0 === strpos($targetName, 'ext-')) {
                         $ext = substr($targetName, 4);
-                        $error = extension_loaded($ext) ? 'has the wrong version ('.phpversion($ext).') installed' : 'is missing from your system';
+                        $error = extension_loaded($ext) ? 'has the wrong version ('.(phpversion($ext) ?: '0').') installed' : 'is missing from your system';
 
                         $text .= ' -> the requested PHP extension '.$ext.' '.$error.'.';
                     } elseif (0 === strpos($targetName, 'lib-')) {

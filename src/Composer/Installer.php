@@ -24,6 +24,7 @@ use Composer\DependencyResolver\Rule;
 use Composer\DependencyResolver\Solver;
 use Composer\DependencyResolver\SolverProblemsException;
 use Composer\Downloader\DownloadManager;
+use Composer\EventDispatcher\EventDispatcher;
 use Composer\Installer\InstallationManager;
 use Composer\Config;
 use Composer\Installer\NoopInstaller;
@@ -41,13 +42,13 @@ use Composer\Repository\InstalledFilesystemRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositoryManager;
-use Composer\Script\EventDispatcher;
 use Composer\Script\ScriptEvents;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Beau Simensen <beau@dflydev.com>
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
+ * @author Nils Adermann <naderman@naderman.de>
  */
 class Installer
 {
@@ -105,6 +106,7 @@ class Installer
     protected $update = false;
     protected $runScripts = true;
     protected $updateWhitelist = null;
+    protected $whitelistDependencies = false;
 
     /**
      * @var array
@@ -144,6 +146,8 @@ class Installer
 
     /**
      * Run installation (or update)
+     *
+     * @return int 0 on success or a positive error code on failure
      */
     public function run()
     {
@@ -169,12 +173,14 @@ class Installer
         unset($devRepo, $package);
         // end BC
 
-        if ($this->preferSource) {
-            $this->downloadManager->setPreferSource(true);
+        if ($this->runScripts) {
+            // dispatch pre event
+            $eventName = $this->update ? ScriptEvents::PRE_UPDATE_CMD : ScriptEvents::PRE_INSTALL_CMD;
+            $this->eventDispatcher->dispatchCommandEvent($eventName, $this->devMode);
         }
-        if ($this->preferDist) {
-            $this->downloadManager->setPreferDist(true);
-        }
+
+        $this->downloadManager->setPreferSource($this->preferSource);
+        $this->downloadManager->setPreferDist($this->preferDist);
 
         // clone root package to have one in the installed repo that does not require anything
         // we don't want it to be uninstallable, but its requirements should not conflict
@@ -199,16 +205,11 @@ class Installer
         $aliases = $this->getRootAliases();
         $this->aliasPlatformPackages($platformRepo, $aliases);
 
-        if ($this->runScripts) {
-            // dispatch pre event
-            $eventName = $this->update ? ScriptEvents::PRE_UPDATE_CMD : ScriptEvents::PRE_INSTALL_CMD;
-            $this->eventDispatcher->dispatchCommandEvent($eventName, $this->devMode);
-        }
-
         try {
             $this->suggestedPackages = array();
-            if (!$this->doInstall($localRepo, $installedRepo, $platformRepo, $aliases, $this->devMode)) {
-                return false;
+            $res = $this->doInstall($localRepo, $installedRepo, $platformRepo, $aliases, $this->devMode);
+            if ($res !== 0) {
+                return $res;
             }
         } catch (\Exception $e) {
             $this->installationManager->notifyInstalls();
@@ -288,7 +289,7 @@ class Installer
             }
         }
 
-        return true;
+        return 0;
     }
 
     protected function doInstall($localRepo, $installedRepo, $platformRepo, $aliases, $withDevReqs)
@@ -450,7 +451,7 @@ class Installer
             $this->io->write('<error>Your requirements could not be resolved to an installable set of packages.</error>');
             $this->io->write($e->getMessage());
 
-            return false;
+            return max(1, $e->getCode());
         }
 
         // force dev packages to be updated if we update or install from a (potentially new) lock
@@ -461,7 +462,7 @@ class Installer
             $this->io->write('Nothing to install or update');
         }
 
-        $operations = $this->moveCustomInstallersToFront($operations);
+        $operations = $this->movePluginsToFront($operations);
 
         foreach ($operations as $operation) {
             // collect suggestions
@@ -535,12 +536,11 @@ class Installer
             }
         }
 
-        return true;
+        return 0;
     }
 
-
     /**
-     * Workaround: if your packages depend on custom installers, we must be sure
+     * Workaround: if your packages depend on plugins, we must be sure
      * that those are installed / updated first; else it would lead to packages
      * being installed multiple times in different folders, when running Composer
      * twice.
@@ -549,22 +549,22 @@ class Installer
      * it at least fixes the symptoms and makes usage of composer possible (again)
      * in such scenarios.
      *
-     * @param OperationInterface[] $operations
+     * @param  OperationInterface[] $operations
      * @return OperationInterface[] reordered operation list
      */
-    private function moveCustomInstallersToFront(array $operations)
+    private function movePluginsToFront(array $operations)
     {
         $installerOps = array();
         foreach ($operations as $idx => $op) {
             if ($op instanceof InstallOperation) {
                 $package = $op->getPackage();
-            } else if ($op instanceof UpdateOperation) {
+            } elseif ($op instanceof UpdateOperation) {
                 $package = $op->getTargetPackage();
             } else {
                 continue;
             }
 
-            if ($package->getRequires() === array() && $package->getType() === 'composer-installer') {
+            if ($package->getRequires() === array() && ($package->getType() === 'composer-plugin' || $package->getType() === 'composer-installer')) {
                 $installerOps[] = $op;
                 unset($operations[$idx]);
             }
@@ -835,7 +835,7 @@ class Installer
 
             $depPackages = $pool->whatProvides($packageName);
             if (count($depPackages) == 0 && !in_array($packageName, $requiredPackageNames) && !in_array($packageName, array('nothing', 'lock'))) {
-                $this->io->write('<warning>Package "' . $packageName . '" listed for update is not installed. Ignoring.<warning>');
+                $this->io->write('<warning>Package "' . $packageName . '" listed for update is not installed. Ignoring.</warning>');
             }
 
             foreach ($depPackages as $depPackage) {
@@ -851,10 +851,11 @@ class Installer
                 $seen[$package->getId()] = true;
                 $this->updateWhitelist[$package->getName()] = true;
 
-                $requires = $package->getRequires();
-                if ($devMode) {
-                    $requires = array_merge($requires, $package->getDevRequires());
+                if (!$this->whitelistDependencies) {
+                    continue;
                 }
+
+                $requires = $package->getRequires();
 
                 foreach ($requires as $require) {
                     $requirePackages = $pool->whatProvides($require->getTarget());
@@ -1055,7 +1056,20 @@ class Installer
     }
 
     /**
-     * Disables custom installers.
+     * Should dependencies of whitelisted packages be updated recursively?
+     *
+     * @param  boolean $updateDependencies
+     * @return Installer
+     */
+    public function setWhitelistDependencies($updateDependencies = true)
+    {
+        $this->whitelistDependencies = (boolean) $updateDependencies;
+
+        return $this;
+    }
+
+    /**
+     * Disables plugins.
      *
      * Call this if you want to ensure that third-party code never gets
      * executed. The default is to automatically install, and execute
@@ -1063,9 +1077,9 @@ class Installer
      *
      * @return Installer
      */
-    public function disableCustomInstallers()
+    public function disablePlugins()
     {
-        $this->installationManager->disableCustomInstallers();
+        $this->installationManager->disablePlugins();
 
         return $this;
     }

@@ -41,6 +41,13 @@ Composer fires the following named events during its execution process:
 - **post-create-project-cmd**: occurs after the `create-project` command is
   executed.
 
+**NOTE: Composer makes no assumptions about the state of your dependencies 
+prior to `install` or `update`. Therefore, you should not specify scripts that 
+require Composer-managed dependencies in the `pre-update-cmd` or 
+`pre-install-cmd` event hooks. If you need to execute scripts prior to 
+`install` or `update` please make sure they are self-contained within your 
+root package.**
+
 ## Defining scripts
 
 The root JSON object in `composer.json` should have a property called
@@ -108,3 +115,11 @@ PHP callback. This `Event` object has getters for other contextual objects:
 - `getName()`: returns the name of the event being fired as a string
 - `getIO()`: returns the current input/output stream which implements
 `Composer\IO\IOInterface` for writing to the console
+
+## Running scripts manually
+
+If you would like to run the scripts for an event manually, the syntax is:
+
+    $ composer run-script [--dev] [--no-dev] script
+
+For example `composer run-script post-install-cmd` will run any **post-install-cmd** scripts that have been defined.

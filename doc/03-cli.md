@@ -82,7 +82,7 @@ resolution.
 * **--dev:** Install packages listed in `require-dev` (this is the default behavior).
 * **--no-dev:** Skip installing packages listed in `require-dev`.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
-* **--no-custom-installers:** Disables custom installers.
+* **--no-plugins:** Disables plugins.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
 * **--optimize-autoloader (-o):** Convert PSR-0 autoloading to classmap to get a faster
@@ -115,14 +115,16 @@ You can also use wildcards to update a bunch of packages at once:
 * **--dev:** Install packages listed in `require-dev` (this is the default behavior).
 * **--no-dev:** Skip installing packages listed in `require-dev`.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
-* **--no-custom-installers:** Disables custom installers.
+* **--no-plugins:** Disables plugins.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
 * **--optimize-autoloader (-o):** Convert PSR-0 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
   a bit of time to run so it is currently not done by default.
 * **--lock:** Only updates the lock file hash to suppress warning about the
-  lock file being out of date
+  lock file being out of date.
+* **--with-dependencies** Add also all dependencies of whitelisted packages to the whitelist.
+  So all packages with their dependencies are updated recursively.
 
 ## require
 
@@ -151,7 +153,7 @@ to the command.
 ## global
 
 The global command allows you to run other commands like `install`, `require`
-or `update` as if you were running them from the [COMPOSER_HOME](#COMPOSER_HOME)
+or `update` as if you were running them from the [COMPOSER_HOME](#composer-home)
 directory.
 
 This can be used to install CLI utilities globally and if you add
@@ -267,10 +269,19 @@ command. It will replace your `composer.phar` with the latest version.
 
     $ php composer.phar self-update
 
+If you would like to instead update to a specific release simply specify it:
+
+    $ composer self-update 1.0.0-alpha7
+
 If you have installed composer for your entire system (see [global installation](00-intro.md#globally)),
-you have to run the command with `root` privileges
+you may have to run the command with `root` privileges
 
     $ sudo composer self-update
+
+### Options
+
+* **--rollback (-r):** Rollback to the last version you had installed.
+* **--clean-backups:** Delete old backups during an update. This makes the current version of composer the only backup available after the update.
 
 ## config
 
@@ -330,7 +341,7 @@ provide a version as third argument, otherwise the latest version is used.
 
 If the directory does not currently exist, it will be created during installation.
 
-    php composer.phar create-project doctrine/orm path 2.2.0
+    php composer.phar create-project doctrine/orm path 2.2.*
 
 It is also possible to run the command without params in a directory with an
 existing `composer.json` file to bootstrap a project.
@@ -346,7 +357,8 @@ By default the command checks for the packages on packagist.org.
 * **--prefer-source:** Install packages from `source` when available.
 * **--prefer-dist:** Install packages from `dist` when available.
 * **--dev:** Install packages listed in `require-dev`.
-* **--no-custom-installers:** Disables custom installers.
+* **--no-install:** Disables installation of the vendors.
+* **--no-plugins:** Disables plugins.
 * **--no-scripts:** Disables the execution of the scripts defined in the root
   package.
 * **--no-progress:** Removes the progress display that can mess with some
@@ -391,6 +403,20 @@ want to run the `diagnose` command to perform automated checks for many common
 problems.
 
     $ php composer.phar diagnose
+
+## archive
+
+This command is used to generate a zip/tar archive for a given package in a
+given version. It can also be used to archive your entire project without
+excluded/ignored files.
+
+    $ php composer.phar archive vendor/package 2.0.21 --format=zip
+
+### Options
+
+* **--format (-f):** Format of the resulting archive: tar or zip (default:
+  "tar")
+* **--dir:** Write the archive to this directory (default: ".")
 
 ## help
 

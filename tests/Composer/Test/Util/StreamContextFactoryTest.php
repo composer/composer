@@ -59,7 +59,7 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
 
     public function testHttpProxy()
     {
-        $_SERVER['http_proxy'] = 'http://username:password@proxyserver.net:3128/';
+        $_SERVER['http_proxy'] = 'http://username:p%40ssword@proxyserver.net:3128/';
         $_SERVER['HTTP_PROXY'] = 'http://proxyserver/';
 
         $context = StreamContextFactory::getContext('http://example.org', array('http' => array('method' => 'GET')));
@@ -69,7 +69,7 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
             'proxy' => 'tcp://proxyserver.net:3128',
             'request_fulluri' => true,
             'method' => 'GET',
-            'header' => array("Proxy-Authorization: Basic " . base64_encode('username:password')),
+            'header' => array("Proxy-Authorization: Basic " . base64_encode('username:p@ssword')),
             'max_redirects' => 20,
             'follow_location' => 1,
         )), $options);
@@ -192,6 +192,6 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
         );
         $context = StreamContextFactory::getContext('http://example.org', $options);
         $ctxoptions = stream_context_get_options($context);
-        $this->assertEquals(join("\n", $ctxoptions['http']['header']), join("\n", $expectedOptions['http']['header']));
+        $this->assertEquals(end($ctxoptions['http']['header']), end($expectedOptions['http']['header']));
     }
 }

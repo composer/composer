@@ -13,6 +13,7 @@
 namespace Composer\Repository\Vcs;
 
 use Composer\Cache;
+use Composer\Config;
 use Composer\Json\JsonFile;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Filesystem;
@@ -193,7 +194,13 @@ class SvnDriver extends VcsDriver
         if (null === $this->branches) {
             $this->branches = array();
 
-            $output = $this->execute('svn ls --verbose', $this->baseUrl . '/');
+            if (false === strpos($this->trunkPath, '/')) {
+                $trunkParent = $this->baseUrl . '/';
+            } else {
+                $trunkParent = $this->baseUrl . '/' . dirname($this->trunkPath) . '/';
+            }
+
+            $output = $this->execute('svn ls --verbose', $trunkParent);
             if ($output) {
                 foreach ($this->process->splitLines($output) as $line) {
                     $line = trim($line);
@@ -235,7 +242,7 @@ class SvnDriver extends VcsDriver
     /**
      * {@inheritDoc}
      */
-    public static function supports(IOInterface $io, $url, $deep = false)
+    public static function supports(IOInterface $io, Config $config, $url, $deep = false)
     {
         $url = self::normalizeUrl($url);
         if (preg_match('#(^svn://|^svn\+ssh://|svn\.)#i', $url)) {
