@@ -55,6 +55,7 @@ EOT
 
         $versionParser = new VersionParser;
 
+        $packages = array();
         foreach ($repo->getPackages() as $package) {
             $packages[$package->getName()] = $package;
         }
