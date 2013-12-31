@@ -19,6 +19,7 @@ use Composer\Script;
 use Composer\Script\CommandEvent;
 use Composer\Script\PackageEvent;
 use Composer\Util\ProcessExecutor;
+use Composer\Util\UserFunc;
 
 /**
  * The Event Dispatcher.
@@ -217,7 +218,7 @@ class EventDispatcher
         $listeners = $this->listeners;
         $listeners[$event->getName()][0] = array_merge($listeners[$event->getName()][0], $scriptListeners);
 
-        return call_user_func_array('array_merge', $listeners[$event->getName()]);
+        return UserFunc::withArray('array_merge', $listeners[$event->getName()]);
     }
 
     /**

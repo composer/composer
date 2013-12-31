@@ -13,6 +13,7 @@
 namespace Composer\Repository;
 
 use Composer\Package\PackageInterface;
+use Composer\Util\UserFunc;
 
 /**
  * Composite repository.
@@ -91,7 +92,7 @@ class CompositeRepository implements RepositoryInterface
             $packages[] = $repository->findPackages($name, $version);
         }
 
-        return $packages ? call_user_func_array('array_merge', $packages) : array();
+        return $packages ? UserFunc::withArray('array_merge', $packages) : array();
     }
 
     /**
@@ -105,7 +106,7 @@ class CompositeRepository implements RepositoryInterface
             $matches[] = $repository->search($query, $mode);
         }
 
-        return $matches ? call_user_func_array('array_merge', $matches) : array();
+        return $matches ? UserFunc::withArray('array_merge', $matches) : array();
     }
 
     /**
@@ -133,7 +134,7 @@ class CompositeRepository implements RepositoryInterface
             $packages[] = $repository->getPackages();
         }
 
-        return $packages ? call_user_func_array('array_merge', $packages) : array();
+        return $packages ? UserFunc::withArray('array_merge', $packages) : array();
     }
 
     /**
