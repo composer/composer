@@ -101,7 +101,6 @@ class DownloadManager
      * Returns downloader for a specific installation type.
      *
      * @param string $type installation type
-     *
      * @return DownloaderInterface
      *
      * @throws \InvalidArgumentException if downloader for provided type is not registered
@@ -120,8 +119,7 @@ class DownloadManager
      * Returns downloader for already installed package.
      *
      * @param PackageInterface $package package instance
-     *
-     * @return DownloaderInterface
+     * @return DownloaderInterface|null
      *
      * @throws \InvalidArgumentException if package has no installation source specified
      * @throws \LogicException           if specific downloader used to load package with
@@ -130,6 +128,10 @@ class DownloadManager
     public function getDownloaderForInstalledPackage(PackageInterface $package)
     {
         $installationSource = $package->getInstallationSource();
+
+        if ('metapackage' === $package->getType()) {
+            return;
+        }
 
         if ('dist' === $installationSource) {
             $downloader = $this->getDownloader($package->getDistType());
