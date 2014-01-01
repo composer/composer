@@ -43,7 +43,7 @@ class ZipDownloaderTest extends \PHPUnit_Framework_TestCase
             $downloader->download($packageMock, sys_get_temp_dir().'/composer-zip-test');
             $this->fail('Download of invalid zip files should throw an exception');
         } catch (\UnexpectedValueException $e) {
-            $this->assertContains('is not a zip archive', $e->getMessage());
+            $this->assertContains('Failed to extract zip archive', $e->getMessage());
         }
     }
 }
