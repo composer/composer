@@ -43,7 +43,12 @@ class GitDownloader extends VcsDownloader
         $this->runCommand($commandCallable, $package->getSourceUrl(), $path, true);
         $this->setPushUrl($package, $path);
 
-        $this->updateToCommit($path, $ref, $package->getPrettyVersion(), $package->getReleaseDate());
+        if ($newRef = $this->updateToCommit($path, $ref, $package->getPrettyVersion(), $package->getReleaseDate())) {
+            if ($package->getDistReference() === $package->getSourceReference()) {
+                $package->setDistReference($newRef);
+            }
+            $package->setSourceReference($newRef);
+        }
     }
 
     /**
@@ -72,7 +77,12 @@ class GitDownloader extends VcsDownloader
         };
 
         $this->runCommand($commandCallable, $target->getSourceUrl(), $path);
-        $this->updateToCommit($path, $ref, $target->getPrettyVersion(), $target->getReleaseDate());
+        if ($newRef =  $this->updateToCommit($path, $ref, $target->getPrettyVersion(), $target->getReleaseDate())) {
+            if ($target->getDistReference() === $target->getSourceReference()) {
+                $target->setDistReference($newRef);
+            }
+            $target->setSourceReference($newRef);
+        }
     }
 
     /**
@@ -183,6 +193,15 @@ class GitDownloader extends VcsDownloader
         }
     }
 
+    /**
+     * Updates the given apth to the given commit ref
+     *
+     * @param string $path
+     * @param string $reference
+     * @param string $branch
+     * @param DateTime $date
+     * @return null|string if a string is returned, it is the commit reference that was checked out if the original could not be found
+     */
     protected function updateToCommit($path, $reference, $branch, $date)
     {
         $template = 'git checkout %s && git reset --hard %1$s';
@@ -264,7 +283,7 @@ class GitDownloader extends VcsDownloader
             if (0 === $this->process->execute($command, $output, $path)) {
                 $this->io->write('    '.$reference.' is gone (history was rewritten?), recovered by checking out '.$newReference);
 
-                return;
+                return $newReference;
             }
         }
 
