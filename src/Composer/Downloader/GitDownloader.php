@@ -260,7 +260,7 @@ class GitDownloader extends VcsDownloader
             }
 
             // checkout the new recovered ref
-            $command = sprintf($template, escapeshellarg($reference));
+            $command = sprintf($template, escapeshellarg($newReference));
             if (0 === $this->process->execute($command, $output, $path)) {
                 $this->io->write('    '.$reference.' is gone (history was rewritten?), recovered by checking out '.$newReference);
 
