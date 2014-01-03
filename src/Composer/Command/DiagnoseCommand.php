@@ -18,6 +18,7 @@ use Composer\Downloader\TransportException;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Util\ConfigValidator;
+use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
 use Composer\Util\StreamContextFactory;
 use Symfony\Component\Console\Input\InputInterface;
@@ -29,6 +30,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class DiagnoseCommand extends Command
 {
     protected $rfs;
+    protected $process;
     protected $failures = 0;
 
     protected function configure()
@@ -47,9 +49,13 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $this->rfs = new RemoteFilesystem($this->getIO());
+        $this->process = new ProcessExecutor($this->getIO());
 
         $output->write('Checking platform settings: ');
         $this->outputResult($output, $this->checkPlatform());
+
+        $output->write('Checking git settings: ');
+        $this->outputResult($output, $this->checkGit());
 
         $output->write('Checking http connectivity: ');
         $this->outputResult($output, $this->checkHttp());
@@ -114,6 +120,16 @@ EOT
             }
 
             return rtrim($output);
+        }
+
+        return true;
+    }
+
+    private function checkGit()
+    {
+        $this->process->execute('git config color.ui', $output);
+        if (strtolower(trim($output)) === 'always') {
+            return '<warning>Your git color.ui setting is set to always, this is known to create issues. Use "git config --global color.ui true" to set it correctly.</warning>';
         }
 
         return true;
