@@ -287,7 +287,7 @@ class Perforce
 
     public function connectClient()
     {
-        $p4CreateClientCommand = $this->generateP4Command('client -i < ' . $this->getP4ClientSpec());
+        $p4CreateClientCommand = $this->generateP4Command('client -i < ' . str_replace( " ", "\\ ", $this->getP4ClientSpec() ));
         $this->executeCommand($p4CreateClientCommand);
     }
 
