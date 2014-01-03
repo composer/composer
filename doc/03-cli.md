@@ -85,7 +85,7 @@ resolution.
 * **--no-plugins:** Disables plugins.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
-* **--optimize-autoloader (-o):** Convert PSR-0 autoloading to classmap to get a faster
+* **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
   a bit of time to run so it is currently not done by default.
 
@@ -118,7 +118,7 @@ You can also use wildcards to update a bunch of packages at once:
 * **--no-plugins:** Disables plugins.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
-* **--optimize-autoloader (-o):** Convert PSR-0 autoloading to classmap to get a faster
+* **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
   a bit of time to run so it is currently not done by default.
 * **--lock:** Only updates the lock file hash to suppress warning about the
@@ -373,16 +373,16 @@ If you need to update the autoloader because of new classes in a classmap
 package for example, you can use "dump-autoload" to do that without having to
 go through an install or update.
 
-Additionally, it can dump an optimized autoloader that converts PSR-0 packages
+Additionally, it can dump an optimized autoloader that converts PSR-0/4 packages
 into classmap ones for performance reasons. In large applications with many
 classes, the autoloader can take up a substantial portion of every request's
 time. Using classmaps for everything is less convenient in development, but
-using this option you can still use PSR-0 for convenience and classmaps for
+using this option you can still use PSR-0/4 for convenience and classmaps for
 performance.
 
 ### Options
 
-* **--optimize (-o):** Convert PSR-0 autoloading to classmap to get a faster
+* **--optimize (-o):** Convert PSR-0/4 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
   a bit of time to run so it is currently not done by default.
 

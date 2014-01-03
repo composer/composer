@@ -13,7 +13,7 @@
             "type": "string"
         },
         "target-dir": {
-            "description": "Forces the package to be installed into the given subdirectory path. This is used for autoloading PSR-0 packages that do not contain their full path. Use forward slashes for cross-platform compatibility.",
+            "description": "DEPRECATED: Forces the package to be installed into the given subdirectory path. This is used for autoloading PSR-0 packages that do not contain their full path. Use forward slashes for cross-platform compatibility.",
             "type": "string"
         },
         "description": {
