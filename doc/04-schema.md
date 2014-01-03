@@ -438,6 +438,10 @@ use an empty prefix like:
         }
     }
 
+#### PSR-4
+
+Stub: Similar to PSR-0.
+
 #### Classmap
 
 The `classmap` references are all combined, during install/update, into a single
