@@ -99,9 +99,6 @@ EOF;
 
         // Process the 'psr-4' base directories.
         foreach ($autoloads['psr-4'] as $namespace => $paths) {
-            if ('\\' !== $namespace[strlen($namespace) - 1]) {
-                throw new \Exception("PSR-4 namespaces must end with a namespace separator. '$namespace' does not.");
-            }
             $exportedPaths = array();
             foreach ($paths as $path) {
                 $exportedPaths[] = $this->getPathCode($filesystem, $basePath, $vendorPath, $path);
@@ -160,47 +157,25 @@ EOF;
         // flatten array
         $classMap = array();
         if ($scanPsr0Packages) {
-            // Scan the PSR-0 directories for class files, and add them to the
-            // class map.
-            foreach ($autoloads['psr-0'] as $namespace => $paths) {
-                foreach ($paths as $dir) {
-                    $dir = $filesystem->normalizePath($filesystem->isAbsolutePath($dir) ? $dir : $basePath.'/'.$dir);
-                    if (!is_dir($dir)) {
-                        continue;
-                    }
-                    $whitelist = sprintf(
-                        '{%s/%s.+(?<!(?<!/)Test\.php)$}',
-                        preg_quote($dir),
-                        strpos($namespace, '_') === false ? preg_quote(strtr($namespace, '\\', '/')) : ''
-                    );
-                    foreach (ClassMapGenerator::createMap($dir, $whitelist) as $class => $path) {
-                        if ('' === $namespace || 0 === strpos($class, $namespace)) {
-                            if (!isset($classMap[$class])) {
-                                $path = $this->getPathCode($filesystem, $basePath, $vendorPath, $path);
-                                $classMap[$class] = $path.",\n";
-                            }
+            // Scan the PSR-0/4 directories for class files, and add them to the class map
+            foreach (array('psr-0', 'psr-4') as $psrType) {
+                foreach ($autoloads[$psrType] as $namespace => $paths) {
+                    foreach ($paths as $dir) {
+                        $dir = $filesystem->normalizePath($filesystem->isAbsolutePath($dir) ? $dir : $basePath.'/'.$dir);
+                        if (!is_dir($dir)) {
+                            continue;
                         }
-                    }
-                }
-            }
-            // Scan the PSR-4 directories for class files, and add them to the
-            // class map.
-            foreach ($autoloads['psr-4'] as $namespace => $paths) {
-                foreach ($paths as $dir) {
-                    $dir = $filesystem->normalizePath($filesystem->isAbsolutePath($dir) ? $dir : $basePath.'/'.$dir);
-                    if (!is_dir($dir)) {
-                        continue;
-                    }
-                    $whitelist = sprintf(
-                        '{%s/%s.+(?<!(?<!/)Test\.php)$}',
-                        preg_quote($dir),
-                        strpos($namespace, '_') === false ? preg_quote(strtr($namespace, '\\', '/')) : ''
-                    );
-                    foreach (ClassMapGenerator::createMap($dir, $whitelist) as $class => $path) {
-                        if ('' === $namespace || 0 === strpos($class, $namespace)) {
-                            if (!isset($classMap[$class])) {
-                                $path = $this->getPathCode($filesystem, $basePath, $vendorPath, $path);
-                                $classMap[$class] = $path.",\n";
+                        $whitelist = sprintf(
+                            '{%s/%s.+(?<!(?<!/)Test\.php)$}',
+                            preg_quote($dir),
+                            ($psrType === 'psr-4' || strpos($namespace, '_') === false) ? preg_quote(strtr($namespace, '\\', '/')) : ''
+                        );
+                        foreach (ClassMapGenerator::createMap($dir, $whitelist) as $class => $path) {
+                            if ('' === $namespace || 0 === strpos($class, $namespace)) {
+                                if (!isset($classMap[$class])) {
+                                    $path = $this->getPathCode($filesystem, $basePath, $vendorPath, $path);
+                                    $classMap[$class] = $path.",\n";
+                                }
                             }
                         }
                     }
@@ -273,15 +248,22 @@ EOF;
     /**
      * @param PackageInterface $package
      *
-     * @throws \Exception
-     *   Throws an exception, if the package has illegal settings.
+     * @throws \InvalidArgumentException Throws an exception, if the package has illegal settings.
      */
-    protected function validatePackage(PackageInterface $package) {
+    protected function validatePackage(PackageInterface $package)
+    {
         $autoload = $package->getAutoload();
         if (!empty($autoload['psr-4']) && null !== $package->getTargetDir()) {
             $name = $package->getName();
             $package->getTargetDir();
-            throw new \Exception("The ['autoload']['psr-4'] setting is incompatible with the ['target-dir'] setting, in package '$name'.");
+            throw new \InvalidArgumentException("PSR-4 autoloading is incompatible with the target-dir property, remove the target-dir in package '$name'.");
+        }
+        if (!empty($autoload['psr-4'])) {
+            foreach ($autoload['psr-4'] as $namespace => $dirs) {
+                if ($namespace !== '' && '\\' !== substr($namespace, -1)) {
+                    throw new \InvalidArgumentException("psr-4 namespaces must end with a namespace separator, '$namespace' does not, use '$namespace\\'.");
+                }
+            }
         }
     }
 

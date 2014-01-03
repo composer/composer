@@ -209,7 +209,7 @@
                 },
                 "psr-4": {
                     "type": "object",
-                    "description": "This is a hash of namespaces (keys) and the PSR-4 directories they can be found into (values, can be arrays of paths) by the autoloader.",
+                    "description": "This is a hash of namespaces (keys) and the PSR-4 directories they can map to (values, can be arrays of paths) by the autoloader.",
                     "additionalProperties": true
                 },
                 "classmap": {
