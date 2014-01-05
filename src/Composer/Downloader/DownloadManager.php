@@ -109,7 +109,7 @@ class DownloadManager
     {
         $type = strtolower($type);
         if (!isset($this->downloaders[$type])) {
-            throw new \InvalidArgumentException('Unknown downloader type: '.$type);
+            throw new \InvalidArgumentException(sprintf('Unknown downloader type: %s. Available types: %s.', $type, implode(', ', array_keys($this->downloaders))));
         }
 
         return $this->downloaders[$type];
