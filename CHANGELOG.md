@@ -1,3 +1,34 @@
+### 1.0.0-alpha8 (2014-01-06)
+
+  * Break: The `install` command now has --dev enabled by default. --no-dev can be used to install without dev requirements
+  * Added `composer-plugin` package type to allow extensibility, and deprecated `composer-installer`
+  * Added `psr-4` autoloading support and deprecated `target-dir` since it is a better alternative
+  * Added --no-plugins flag to replace --no-custom-installers where available
+  * Added `global` command to operate Composer in a user-global directory
+  * Added `licenses` command to list the license of all your dependencies
+  * Added `pre-status-cmd` and `post-status-cmd` script events to the `status` command
+  * Added `post-root-package-install` and `post-create-project-cmd` script events to the `create-project` command
+  * Added `pre-autoload-dump` script event
+  * Added --rollback flag to self-update
+  * Added --no-install flag to create-project to skip installing the dependencies
+  * Added a `hhvm` platform package to require Facebook's HHVM implementation of PHP
+  * Added `github-domains` config option to allow using GitHub Enterprise with Composer's GitHub support
+  * Added `prepend-autoloader` config option to allow appending Composer's autoloader instead of the default prepend behavior
+  * Added Perforce support to the VCS repository
+  * Added a vendor/composer/autoload_files.php file that lists all files being included by the files autoloader
+  * Added support for the `no_proxy` env var and other proxy support improvements
+  * Added many robustness tweaks to make sure zip downloads work more consistently and corrupted caches are invalidated
+  * Added the release date to `composer -V` output
+  * Added `autoloader-suffix` config option to allow overriding the randomly generated autoloader class suffix
+  * Fixed BitBucket API usage
+  * Fixed parsing of inferred stability flags that are more stable than the minimum stability
+  * Fixed installation order of plugins/custom installers
+  * Fixed tilde and wildcard version constraints to be more intuitive regarding stabilities
+  * Fixed handling of target-dir changes when updating packages
+  * Improved performance of the class loader
+  * Improved memory usage and performance of solving dependencies
+  * Tons of minor bug fixes and improvements
+
 ### 1.0.0-alpha7 (2013-05-04)
 
   * Break: For forward compatibility, you should change your deployment scripts to run `composer install --no-dev`. The install command will install dev dependencies by default starting in the next release
