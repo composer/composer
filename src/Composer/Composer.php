@@ -28,7 +28,7 @@ use Composer\Autoload\AutoloadGenerator;
  */
 class Composer
 {
-    const VERSION = '@package_version@';
+    const VERSION = '1.0.0-alpha8';
     const RELEASE_DATE = '@release_date@';
 
     /**
