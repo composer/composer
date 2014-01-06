@@ -216,7 +216,7 @@ class GitDownloader extends VcsDownloader
         $gitRef = $reference;
         if (!preg_match('{^[a-f0-9]{40}$}', $reference)
             && $branches
-            && preg_match('{^\s+composer/'.preg_quote($reference).'$}m', $output)
+            && preg_match('{^\s+composer/'.preg_quote($reference).'$}m', $branches)
         ) {
             $command = sprintf('git checkout -B %s %s && git reset --hard %2$s', escapeshellarg($branch), escapeshellarg('composer/'.$reference));
             if (0 === $this->process->execute($command, $output, $path)) {
@@ -360,6 +360,7 @@ class GitDownloader extends VcsDownloader
                 preg_match('{(https?://)([^/]+)(.*)$}i', $url, $match) &&
                 strpos($this->process->getErrorOutput(), 'fatal: Authentication failed') !== false
             ) {
+                // TODO this should use an auth manager class that prompts and stores in the config
                 if ($this->io->hasAuthentication($match[2])) {
                     $auth = $this->io->getAuthentication($match[2]);
                 } else {
