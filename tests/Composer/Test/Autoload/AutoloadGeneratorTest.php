@@ -511,6 +511,12 @@ class AutoloadGeneratorTest extends TestCase
         $this->assertTrue(function_exists('testFilesAutoloadOrderByDependencyRoot'));
     }
 
+    /**
+     * Test that PSR-0 and PSR-4 mappings are processed in the correct order for
+     * autoloading and for classmap generation:
+     * - The main package has priority over other packages.
+     * - Longer namespaces have priority over shorter namespaces.
+     */
     public function testOverrideVendorsAutoloading()
     {
         $mainPackage = new Package('z', '1.0', '1.0');
@@ -542,8 +548,12 @@ class AutoloadGeneratorTest extends TestCase
         $this->fs->ensureDirectoryExists($this->vendorDir.'/a/a/src');
         $this->fs->ensureDirectoryExists($this->vendorDir.'/a/a/lib/A/B');
         $this->fs->ensureDirectoryExists($this->vendorDir.'/b/b/src');
+
+        // Define the classes A\B\C and Foo\Bar in the main package.
         file_put_contents($this->workingDir.'/lib/A/B/C.php', '<?php namespace A\\B; class C {}');
         file_put_contents($this->workingDir.'/src/classes.php', '<?php namespace Foo; class Bar {}');
+
+        // Define the same two classes in the package a/a.
         file_put_contents($this->vendorDir.'/a/a/lib/A/B/C.php', '<?php namespace A\\B; class C {}');
         file_put_contents($this->vendorDir.'/a/a/classmap/classes.php', '<?php namespace Foo; class Bar {}');
 
