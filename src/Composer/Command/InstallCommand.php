@@ -42,6 +42,7 @@ class InstallCommand extends Command
                 new InputOption('no-custom-installers', null, InputOption::VALUE_NONE, 'DEPRECATED: Use no-plugins instead.'),
                 new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Skips the execution of all scripts defined in composer.json file.'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
+                new InputOption('no-dump-autoload', null, InputOption::VALUE_NONE, 'Skips the generation of autoload files.'),
                 new InputOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Shows more details including new commits pulled in when updating packages.'),
                 new InputOption('optimize-autoloader', 'o', InputOption::VALUE_NONE, 'Optimize autoloader during autoloader dump')
             ))
@@ -100,6 +101,7 @@ EOT
             ->setPreferDist($preferDist)
             ->setDevMode(!$input->getOption('no-dev'))
             ->setRunScripts(!$input->getOption('no-scripts'))
+            ->setDumpAutoloader(!$input->getOption('no-dump-autoload'))
             ->setOptimizeAutoloader($input->getOption('optimize-autoloader'))
         ;
 
