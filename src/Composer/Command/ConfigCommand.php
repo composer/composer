@@ -132,7 +132,7 @@ EOT
     {
         // Open file in editor
         if ($input->getOption('editor')) {
-            $editor = getenv('EDITOR');
+            $editor = escapeshellcmd(getenv('EDITOR'));
             if (!$editor) {
                 if (defined('PHP_WINDOWS_VERSION_BUILD')) {
                     $editor = 'notepad';
