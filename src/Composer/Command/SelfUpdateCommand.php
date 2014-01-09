@@ -106,7 +106,7 @@ EOT
         $remoteFilename = $baseUrl . (preg_match('{^[0-9a-f]{40}$}', $updateVersion) ? '/composer.phar' : "/download/{$updateVersion}/composer.phar");
         $remoteFilesystem->copy(self::HOMEPAGE, $remoteFilename, $tempFilename);
         if (!file_exists($tempFilename)) {
-            $output->writeln('<error>The download of the new composer version failed for an unexpected reason');
+            $output->writeln('<error>The download of the new composer version failed for an unexpected reason</error>');
 
             return 1;
         }
@@ -119,7 +119,7 @@ EOT
                 $fs = new Filesystem;
 
                 foreach ($files as $file) {
-                    $output->writeln('<info>Removing: '.$file);
+                    $output->writeln('<info>Removing: '.$file.'</info>');
                     $fs->remove($file);
                 }
             }
