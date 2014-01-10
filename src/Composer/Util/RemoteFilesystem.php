@@ -154,7 +154,7 @@ class RemoteFilesystem
 
                 if ($key = array_search('X-GitHub-OTP', $headerNames)) {
                     $headers = $e->getHeaders();
-                    list($required, $method) = explode(';', trim(substr(strstr($headers[$key], ':'), 1)));
+                    list($required, $method) = array_map('trim', explode(';', substr(strstr($headers[$key], ':'), 1)));
 
                     if ('required' === $required) {
                         $this->io->write('Two-factor Authentication');
