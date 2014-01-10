@@ -247,6 +247,11 @@ class RemoteFilesystem
                         throw new TransportException($message, 401);
                     }
 
+                    // GitHub requests bail out early to allow 2FA to be applied if requested.
+                    if ('github.com' === $this->originUrl) {
+                        throw new TransportException('The "'.$this->fileUrl.'" file could not be downloaded ('.trim($message).')', 401);
+                    }
+
                     $this->promptAuthAndRetry();
                     break;
                 }
