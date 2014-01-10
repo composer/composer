@@ -83,7 +83,28 @@ class Cache
                 $this->io->write('Writing '.$this->root . $file.' into cache');
             }
 
-            return file_put_contents($this->root . $file, $contents);
+            try {
+                return file_put_contents($this->root . $file, $contents);
+            } catch(\ErrorException $e) {
+                if (preg_match('{^file_put_contents\(\): Only ([0-9]+) of ([0-9]+) bytes written}', $e->getMessage(), $m)) {
+                    // Remove partial file.
+                    unlink($this->root . $file);
+
+                    $message = sprintf(
+                        '<warning>Writing %1$s into cache failed after %2$u of %3$u bytes written, only %4$u bytes of free space available</warning>',
+                        $this->root . $file,
+                        $m[1],
+                        $m[2],
+                        @disk_free_space($this->root . dirname($file))
+                    );
+
+                    $this->io->write($message);
+
+                    return false;
+                }
+
+                throw $e;
+            }
         }
 
         return false;
