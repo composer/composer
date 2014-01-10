@@ -145,6 +145,42 @@ class RemoteFilesystem
             if ($e instanceof TransportException && !empty($http_response_header[0])) {
                 $e->setHeaders($http_response_header);
             }
+
+            // 401 when authentication was supplied, handle 2FA if required.
+            if ($e instanceof TransportException && 401 === $e->getCode() && $this->io->hasAuthentication($this->originUrl)) {
+                $headerNames = array_map(function($header) {
+                    return strstr($header, ':', true);
+                }, $e->getHeaders());
+
+                if ($key = array_search('X-GitHub-OTP', $headerNames)) {
+                    $headers = $e->getHeaders();
+                    list($required, $method) = explode(';', trim(substr(strstr($headers[$key], ':'), 1)));
+
+                    if ('required' === $required) {
+                        $this->io->write('Two-factor Authentication');
+
+                        if ('app' === $method) {
+                            $this->io->write('Open the two-factor authentication app on your device to view your authentication code and verify your identity.');
+                        }
+
+                        if ('sms' === $method) {
+                            // @todo
+                        }
+
+                        $this->options['github-otp'] = trim($this->io->ask('Authentication Code: '));
+
+                        $this->retry = true;
+                    }
+                } else {
+                    try {
+                        $this->promptAuthAndRetry();
+                    } catch (TransportException $e) {
+                        if ($e instanceof TransportException && !empty($http_response_header[0])) {
+                            $e->setHeaders($http_response_header);
+                        }
+                    }
+                }
+            }
         }
         if ($errorMessage && !ini_get('allow_url_fopen')) {
             $errorMessage = 'allow_url_fopen must be enabled in php.ini ('.$errorMessage.')';
