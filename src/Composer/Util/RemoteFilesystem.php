@@ -378,6 +378,13 @@ class RemoteFilesystem
             }
         }
 
+        // Handle GitHub two factor tokens.
+        if (isset($options['github-otp'])) {
+            $headers[] = 'X-GitHub-OTP: ' . $options['github-otp'];
+
+            unset($options['github-otp']);
+        }
+
         if (isset($options['http']['header']) && !is_array($options['http']['header'])) {
             $options['http']['header'] = explode("\r\n", trim($options['http']['header'], "\r\n"));
         }
