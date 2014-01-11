@@ -72,8 +72,8 @@ class EventDispatcher
     /**
      * Dispatch a script event.
      *
-     * @param string $eventName The constant in ScriptEvents
-     * @param Event  $event
+     * @param string       $eventName The constant in ScriptEvents
+     * @param Script\Event $event
      */
     public function dispatchScript($eventName, Script\Event $event = null)
     {

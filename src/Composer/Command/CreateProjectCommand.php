@@ -57,7 +57,7 @@ class CreateProjectCommand extends Command
                 new InputArgument('package', InputArgument::OPTIONAL, 'Package name to be installed'),
                 new InputArgument('directory', InputArgument::OPTIONAL, 'Directory where the files should be created'),
                 new InputArgument('version', InputArgument::OPTIONAL, 'Version, will defaults to latest'),
-                new InputOption('stability', 's', InputOption::VALUE_REQUIRED, 'Minimum-stability allowed (unless a version is specified).', 'stable'),
+                new InputOption('stability', 's', InputOption::VALUE_REQUIRED, 'Minimum-stability allowed (unless a version is specified).'),
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist even for dev versions.'),
                 new InputOption('repository-url', null, InputOption::VALUE_REQUIRED, 'Pick a different repository url to look for the package.'),
@@ -173,8 +173,9 @@ EOT
                 $installer->disablePlugins();
             }
 
-            if (!$installer->run()) {
-                return 1;
+            $status = $installer->run();
+            if (0 !== $status) {
+                return $status;
             }
         }
 
@@ -239,14 +240,6 @@ EOT
 
     protected function installRootPackage(IOInterface $io, $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositoryUrl = null, $disablePlugins = false, $noScripts = false, $keepVcs = false, $noProgress = false)
     {
-        $stability = strtolower($stability);
-        if ($stability === 'rc') {
-            $stability = 'RC';
-        }
-        if (!isset(BasePackage::$stabilities[$stability])) {
-            throw new \InvalidArgumentException('Invalid stability provided ('.$stability.'), must be one of: '.implode(', ', array_keys(BasePackage::$stabilities)));
-        }
-
         if (null === $repositoryUrl) {
             $sourceRepo = new CompositeRepository(Factory::createDefaultRepositories($io, $config));
         } elseif ("json" === pathinfo($repositoryUrl, PATHINFO_EXTENSION)) {
@@ -265,10 +258,24 @@ EOT
             $packageVersion = $requirements[0]['version'];
         }
 
-        $pool = new Pool($packageVersion ? 'dev' : $stability);
+        if (null === $stability) {
+            if (preg_match('{^[^,\s]*?@('.implode('|', array_keys(BasePackage::$stabilities)).')$}i', $packageVersion, $match)) {
+                $stability = $match[1];
+            } else {
+                $stability = VersionParser::parseStability($packageVersion);
+            }
+        }
+
+        $stability = VersionParser::normalizeStability($stability);
+
+        if (!isset(BasePackage::$stabilities[$stability])) {
+            throw new \InvalidArgumentException('Invalid stability provided ('.$stability.'), must be one of: '.implode(', ', array_keys(BasePackage::$stabilities)));
+        }
+
+        $pool = new Pool($stability);
         $pool->addRepository($sourceRepo);
 
-        $constraint = $packageVersion ? new VersionConstraint('=', $parser->normalize($packageVersion)) : null;
+        $constraint = $packageVersion ? $parser->parseConstraints($packageVersion) : null;
         $candidates = $pool->whatProvides($name, $constraint);
         foreach ($candidates as $key => $candidate) {
             if ($candidate->getName() !== $name) {

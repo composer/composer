@@ -40,7 +40,7 @@ class PerforceDownloaderTest extends \PHPUnit_Framework_TestCase
         $this->io = $this->getMock('Composer\IO\IOInterface');
     }
 
-    public function testDoDownloadGetRepoConfig()
+    public function testInitPerforceGetRepoConfig()
     {
         $downloader = new PerforceDownloader($this->io, $this->config);
         $package = $this->getMock('Composer\Package\PackageInterface');
@@ -51,18 +51,12 @@ class PerforceDownloaderTest extends \PHPUnit_Framework_TestCase
             array($repoConfig, $this->io, $this->config)
         );
         $package->expects($this->at(0))
-            ->method('getSourceReference')
-            ->will($this->returnValue('SOURCE_REF'));
-        $package->expects($this->at(1))
-            ->method('getPrettyVersion')
-            ->will($this->returnValue('100'));
-        $package->expects($this->at(2))
             ->method('getRepository')
             ->will($this->returnValue($repository));
         $repository->expects($this->at(0))
             ->method('getRepoConfig');
         $path = $this->testPath;
-        $downloader->doDownload($package, $path);
+        $downloader->initPerforce($package, $path, 'SOURCE_REF');
     }
 
     public function testDoDownload()

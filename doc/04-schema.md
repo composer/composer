@@ -380,10 +380,55 @@ Example:
 
 Autoload mapping for a PHP autoloader.
 
-Currently [`PSR-0`](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-0.md)
-autoloading, `classmap` generation and `files` are supported. PSR-0 is the recommended way though
-since it offers greater flexibility (no need to regenerate the autoloader when you add
-classes).
+Currently [`PSR-0`](http://www.php-fig.org/psr/psr-0/) autoloading,
+[`PSR-4`](http://www.php-fig.org/psr/psr-4/) autoloading, `classmap` generation and
+`files` includes are supported. PSR-4 is the recommended way though since it offers
+greater ease of use (no need to regenerate the autoloader when you add classes).
+
+#### PSR-4
+
+Under the `psr-4` key you define a mapping from namespaces to paths, relative to the
+package root. When autoloading a class like `Foo\\Bar\\Baz` a namespace prefix
+`Foo\\` pointing to a directory `src/` means that the autoloader will look for a
+file named `src/Bar/Baz.php` and include it if present. Note that as opposed to
+the older PSR-0 style, the prefix (`Foo\\`) is **not** present in the file path.
+
+Namespace prefixes must end in `\\` to avoid conflicts between similar prefixes.
+For example `Foo` would match classes in the `FooBar` namespace so the trailing
+backslashes solve the problem: `Foo\\` and `FooBar\\` are distinct.
+
+The PSR-4 references are all combined, during install/update, into a single
+key => value array which may be found in the generated file
+`vendor/composer/autoload_psr4.php`.
+
+Example:
+
+    {
+        "autoload": {
+            "psr-4": {
+                "Monolog\\": "src/",
+                "Vendor\\Namespace\\": "",
+            }
+        }
+    }
+
+If you need to search for a same prefix in multiple directories,
+you can specify them as an array as such:
+
+    {
+        "autoload": {
+            "psr-4": { "Monolog\\": ["src/", "lib/"] }
+        }
+    }
+
+If you want to have a fallback directory where any namespace will be looked for,
+you can use an empty prefix like:
+
+    {
+        "autoload": {
+            "psr-4": { "": "src/" }
+        }
+    }
 
 #### PSR-0
 
@@ -446,7 +491,7 @@ key => value array which may be found in the generated file
 classes in all `.php` and `.inc` files in the given directories/files.
 
 You can use the classmap generation support to define autoloading for all libraries
-that do not follow PSR-0. To configure this you specify all directories or files
+that do not follow PSR-0/4. To configure this you specify all directories or files
 to search for classes.
 
 Example:
@@ -488,6 +533,10 @@ Example:
 Optional.
 
 ### target-dir
+
+> **DEPRECATED**: This is only present to support legacy PSR-0 style autoloading,
+> and all new code should preferably use PSR-4 without target-dir and projects
+> using PSR-0 with PHP namespaces are encouraged to migrate to PSR-4 instead.
 
 Defines the installation target.
 
@@ -659,6 +708,8 @@ The following options are supported:
 * **prepend-autoloader:** Defaults to `true`. If false, the composer autoloader
   will not be prepended to existing autoloaders. This is sometimes required to fix
   interoperability issues with other autoloaders.
+* **autoloader-suffix:** Defaults to `null`. String to be used as a suffix for
+  the generated Composer autoloader. When null a random one will be generated.
 * **github-domains:** Defaults to `["github.com"]`. A list of domains to use in
   github mode. This is used for GitHub Enterprise setups.
 * **notify-on-install:** Defaults to `true`. Composer allows repositories to

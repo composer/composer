@@ -34,7 +34,6 @@ use Composer\Util\RemoteFilesystem;
  */
 class FileDownloader implements DownloaderInterface
 {
-    private static $cacheCollected = false;
     protected $io;
     protected $config;
     protected $rfs;
@@ -61,10 +60,10 @@ class FileDownloader implements DownloaderInterface
         $this->filesystem = $filesystem ?: new Filesystem();
         $this->cache = $cache;
 
-        if ($this->cache && !self::$cacheCollected && !mt_rand(0, 50)) {
-            $this->cache->gc($config->get('cache-ttl'), $config->get('cache-files-maxsize'));
+
+        if ($this->cache && $this->cache->gcIsNecessary()) {
+            $this->cache->gc($config->get('cache-files-ttl'), $config->get('cache-files-maxsize'));
         }
-        self::$cacheCollected = true;
     }
 
     /**
@@ -106,8 +105,12 @@ class FileDownloader implements DownloaderInterface
         }
 
         try {
+            $checksum = $package->getDistSha1Checksum();
+            $cacheKey = $this->getCacheKey($package);
+
             try {
-                if (!$this->cache || !$this->cache->copyTo($this->getCacheKey($package), $fileName)) {
+                // download if we don't have it in cache or the cache is invalidated
+                if (!$this->cache || ($checksum && $checksum !== $this->cache->sha1($cacheKey)) || !$this->cache->copyTo($cacheKey, $fileName)) {
                     if (!$this->outputProgress) {
                         $this->io->write('    Downloading');
                     }
@@ -131,7 +134,7 @@ class FileDownloader implements DownloaderInterface
                     }
 
                     if ($this->cache) {
-                        $this->cache->copyFrom($this->getCacheKey($package), $fileName);
+                        $this->cache->copyFrom($cacheKey, $fileName);
                     }
                 } else {
                     $this->io->write('    Loading from cache');
@@ -159,7 +162,6 @@ class FileDownloader implements DownloaderInterface
                     .' directory is writable and you have internet connectivity');
             }
 
-            $checksum = $package->getDistSha1Checksum();
             if ($checksum && hash_file('sha1', $fileName) !== $checksum) {
                 throw new \UnexpectedValueException('The checksum verification of the file failed (downloaded from '.$url.')');
             }

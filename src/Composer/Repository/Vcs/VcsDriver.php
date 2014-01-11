@@ -104,6 +104,7 @@ abstract class VcsDriver implements VcsDriverInterface
     /**
      * Return if current repository url is local
      *
+     * @param  string  $url
      * @return boolean Repository url is local
      */
     protected static function isLocalUrl($url)

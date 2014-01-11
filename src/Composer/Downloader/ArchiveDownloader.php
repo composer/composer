@@ -69,7 +69,7 @@ abstract class ArchiveDownloader extends FileDownloader
                 $this->filesystem->removeDirectory($temporaryDir);
 
                 // retry downloading if we have an invalid zip file
-                if ($retries && $e instanceof \UnexpectedValueException && $e->getCode() === \ZipArchive::ER_NOZIP) {
+                if ($retries && $e instanceof \UnexpectedValueException && class_exists('ZipArchive') && $e->getCode() === \ZipArchive::ER_NOZIP) {
                     $this->io->write('    Invalid zip file, retrying...');
                     usleep(500000);
                     continue;

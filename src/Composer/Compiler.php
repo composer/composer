@@ -103,6 +103,7 @@ class Compiler
 
         $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/autoload.php'));
         $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/composer/autoload_namespaces.php'));
+        $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/composer/autoload_psr4.php'));
         $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/composer/autoload_classmap.php'));
         $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/composer/autoload_real.php'));
         if (file_exists(__DIR__.'/../../vendor/composer/include_paths.php')) {
@@ -126,7 +127,7 @@ class Compiler
 
     private function addFile($phar, $file, $strip = true)
     {
-        $path = str_replace(dirname(dirname(__DIR__)).DIRECTORY_SEPARATOR, '', $file->getRealPath());
+        $path = strtr(str_replace(dirname(dirname(__DIR__)).DIRECTORY_SEPARATOR, '', $file->getRealPath()), '\\', '/');
 
         $content = file_get_contents($file);
         if ($strip) {
@@ -135,8 +136,10 @@ class Compiler
             $content = "\n".$content."\n";
         }
 
-        $content = str_replace('@package_version@', $this->version, $content);
-        $content = str_replace('@release_date@', $this->versionDate, $content);
+        if ($path === 'src/Composer/Composer.php') {
+            $content = str_replace('@package_version@', $this->version, $content);
+            $content = str_replace('@release_date@', $this->versionDate, $content);
+        }
 
         $phar->addFromString($path, $content);
     }

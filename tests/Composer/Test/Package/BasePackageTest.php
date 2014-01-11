@@ -25,7 +25,7 @@ class BasePackageTest extends \PHPUnit_Framework_TestCase
         try {
             $package->setRepository($repository);
         } catch (\Exception $e) {
-            $this->fail('Set againt the same repository is allowed.');
+            $this->fail('Set against the same repository is allowed.');
         }
     }
 

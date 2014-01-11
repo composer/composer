@@ -303,6 +303,10 @@ EOT
                     foreach ($autoloads as $name => $path) {
                         $output->writeln(($name ?: '*') . ' => ' . (is_array($path) ? implode(', ', $path) : ($path ?: '.')));
                     }
+                } elseif ($type === 'psr-4') {
+                    foreach ($autoloads as $name => $path) {
+                        $output->writeln(($name ?: '*') . ' => ' . (is_array($path) ? implode(', ', $path) : ($path ?: '.')));
+                    }
                 } elseif ($type === 'classmap') {
                     $output->writeln(implode(', ', $autoloads));
                 }

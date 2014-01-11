@@ -33,7 +33,7 @@ class PerforceDownloader extends VcsDownloader
         $label = $package->getPrettyVersion();
 
         $this->io->write('    Cloning ' . $ref);
-        $this->initPerforce($package, $path, $ref);
+        $this->initPerforce($package, $path);
         $this->perforce->setStream($ref);
         $this->perforce->p4Login($this->io);
         $this->perforce->writeP4ClientSpec();
@@ -42,7 +42,7 @@ class PerforceDownloader extends VcsDownloader
         $this->perforce->cleanupClientSpec();
     }
 
-    private function initPerforce($package, $path, $ref)
+    public function initPerforce($package, $path)
     {
         if ($this->perforce) {
             $this->perforce->initializePath($path);

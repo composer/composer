@@ -123,14 +123,13 @@ EOT
             ->setUpdateWhitelist(array_keys($requirements));
         ;
 
-        if (!$install->run()) {
+        $status = $install->run();
+        if ($status !== 0) {
             $output->writeln("\n".'<error>Installation failed, reverting '.$file.' to its original content.</error>');
             file_put_contents($json->getPath(), $composerBackup);
-
-            return 1;
         }
 
-        return 0;
+        return $status;
     }
 
     private function updateFileCleanly($json, array $base, array $new, $requireKey)

@@ -16,6 +16,7 @@ use Composer\Downloader\DownloadManager;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackage;
 use Composer\Util\Filesystem;
+use Composer\Json\JsonFile;
 
 /**
  * @author Matthieu Moquet <matthieu@moquet.net>
@@ -141,6 +142,15 @@ class ArchiveManager
 
             // Download sources
             $this->downloadManager->download($package, $sourcePath);
+
+            // Check exclude from downloaded composer.json
+            if (file_exists($composerJsonPath = $sourcePath.'/composer.json')) {
+                $jsonFile = new JsonFile($composerJsonPath);
+                $jsonData = $jsonFile->read();
+                if (!empty($jsonData['archive']['exclude'])) {
+                    $package->setArchiveExcludes($jsonData['archive']['exclude']);
+                }
+            }
         }
 
         // Create the archive

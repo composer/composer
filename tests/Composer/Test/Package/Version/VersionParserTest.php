@@ -182,6 +182,16 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @expectedException UnexpectedValueException
+     * @expectedExceptionMessage Invalid operator "~>", you probably meant to use the "~" operator
+     */
+    public function testParseConstraintsNudgesRubyDevsTowardsThePathOfRighteousness()
+    {
+        $parser = new VersionParser;
+        $parser->parseConstraints('~>1.2');
+    }
+
+    /**
      * @dataProvider simpleConstraints
      */
     public function testParseConstraintsSimple($input, $expected)

@@ -84,6 +84,8 @@ The events available for plugins are:
   you to manipulate the `RemoteFilesystem` object prior to downloading files
   based on the URL to be downloaded.
 
+> A plugin can also subscribe to [script events][7].
+
 Example:
 
     namespace Naderman\Composer\AWS;
@@ -145,3 +147,4 @@ local project plugins are loaded.
 [4]: https://github.com/composer/composer/blob/master/src/Composer/Composer.php
 [5]: https://github.com/composer/composer/blob/master/src/Composer/IO/IOInterface.php
 [6]: https://github.com/composer/composer/blob/master/src/Composer/EventDispatcher/EventSubscriberInterface.php
+[7]: ./scripts.md#event-names

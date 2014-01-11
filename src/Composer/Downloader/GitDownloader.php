@@ -43,7 +43,12 @@ class GitDownloader extends VcsDownloader
         $this->runCommand($commandCallable, $package->getSourceUrl(), $path, true);
         $this->setPushUrl($package, $path);
 
-        $this->updateToCommit($path, $ref, $package->getPrettyVersion(), $package->getReleaseDate());
+        if ($newRef = $this->updateToCommit($path, $ref, $package->getPrettyVersion(), $package->getReleaseDate())) {
+            if ($package->getDistReference() === $package->getSourceReference()) {
+                $package->setDistReference($newRef);
+            }
+            $package->setSourceReference($newRef);
+        }
     }
 
     /**
@@ -72,7 +77,12 @@ class GitDownloader extends VcsDownloader
         };
 
         $this->runCommand($commandCallable, $target->getSourceUrl(), $path);
-        $this->updateToCommit($path, $ref, $target->getPrettyVersion(), $target->getReleaseDate());
+        if ($newRef =  $this->updateToCommit($path, $ref, $target->getPrettyVersion(), $target->getReleaseDate())) {
+            if ($target->getDistReference() === $target->getSourceReference()) {
+                $target->setDistReference($newRef);
+            }
+            $target->setSourceReference($newRef);
+        }
     }
 
     /**
@@ -183,6 +193,15 @@ class GitDownloader extends VcsDownloader
         }
     }
 
+    /**
+     * Updates the given apth to the given commit ref
+     *
+     * @param string $path
+     * @param string $reference
+     * @param string $branch
+     * @param DateTime $date
+     * @return null|string if a string is returned, it is the commit reference that was checked out if the original could not be found
+     */
     protected function updateToCommit($path, $reference, $branch, $date)
     {
         $template = 'git checkout %s && git reset --hard %1$s';
@@ -197,7 +216,7 @@ class GitDownloader extends VcsDownloader
         $gitRef = $reference;
         if (!preg_match('{^[a-f0-9]{40}$}', $reference)
             && $branches
-            && preg_match('{^\s+composer/'.preg_quote($reference).'$}m', $output)
+            && preg_match('{^\s+composer/'.preg_quote($reference).'$}m', $branches)
         ) {
             $command = sprintf('git checkout -B %s %s && git reset --hard %2$s', escapeshellarg($branch), escapeshellarg('composer/'.$reference));
             if (0 === $this->process->execute($command, $output, $path)) {
@@ -260,11 +279,11 @@ class GitDownloader extends VcsDownloader
             }
 
             // checkout the new recovered ref
-            $command = sprintf($template, escapeshellarg($reference));
+            $command = sprintf($template, escapeshellarg($newReference));
             if (0 === $this->process->execute($command, $output, $path)) {
                 $this->io->write('    '.$reference.' is gone (history was rewritten?), recovered by checking out '.$newReference);
 
-                return;
+                return $newReference;
             }
         }
 
@@ -341,6 +360,7 @@ class GitDownloader extends VcsDownloader
                 preg_match('{(https?://)([^/]+)(.*)$}i', $url, $match) &&
                 strpos($this->process->getErrorOutput(), 'fatal: Authentication failed') !== false
             ) {
+                // TODO this should use an auth manager class that prompts and stores in the config
                 if ($this->io->hasAuthentication($match[2])) {
                     $auth = $this->io->getAuthentication($match[2]);
                 } else {

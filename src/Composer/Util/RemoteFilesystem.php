@@ -247,13 +247,7 @@ class RemoteFilesystem
                         throw new TransportException($message, 401);
                     }
 
-                    $this->io->overwrite('    Authentication required (<info>'.parse_url($this->fileUrl, PHP_URL_HOST).'</info>):');
-                    $username = $this->io->ask('      Username: ');
-                    $password = $this->io->askAndHideAnswer('      Password: ');
-                    $this->io->setAuthentication($this->originUrl, $username, $password);
-
-                    $this->retry = true;
-                    throw new TransportException('RETRY');
+                    $this->promptAuthAndRetry();
                     break;
                 }
 
@@ -265,9 +259,14 @@ class RemoteFilesystem
 
             case STREAM_NOTIFY_AUTH_RESULT:
                 if (403 === $messageCode) {
-                    $message = "The '" . $this->fileUrl . "' URL could not be accessed: " . $message;
+                    if (!$this->io->isInteractive() || $this->io->hasAuthentication($this->originUrl)) {
+                        $message = "The '" . $this->fileUrl . "' URL could not be accessed: " . $message;
 
-                    throw new TransportException($message, 403);
+                        throw new TransportException($message, 403);
+                    }
+
+                    $this->promptAuthAndRetry();
+                    break;
                 }
                 break;
 
@@ -295,6 +294,17 @@ class RemoteFilesystem
             default:
                 break;
         }
+    }
+
+    protected function promptAuthAndRetry()
+    {
+        $this->io->overwrite('    Authentication required (<info>'.parse_url($this->fileUrl, PHP_URL_HOST).'</info>):');
+        $username = $this->io->ask('      Username: ');
+        $password = $this->io->askAndHideAnswer('      Password: ');
+        $this->io->setAuthentication($this->originUrl, $username, $password);
+
+        $this->retry = true;
+        throw new TransportException('RETRY');
     }
 
     protected function getOptionsForUrl($originUrl, $additionalOptions)

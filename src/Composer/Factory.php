@@ -220,8 +220,15 @@ class Factory
         // setup process timeout
         ProcessExecutor::setTimeout((int) $config->get('process-timeout'));
 
+        // initialize composer
+        $composer = new Composer();
+        $composer->setConfig($config);
+
+        // initialize event dispatcher
+        $dispatcher = new EventDispatcher($composer, $io);
+
         // initialize repository manager
-        $rm = $this->createRepositoryManager($io, $config);
+        $rm = $this->createRepositoryManager($io, $config, $dispatcher);
 
         // load local repository
         $this->addLocalRepository($rm, $vendorDir);
@@ -234,15 +241,10 @@ class Factory
         // initialize installation manager
         $im = $this->createInstallationManager();
 
-        // initialize composer
-        $composer = new Composer();
-        $composer->setConfig($config);
+        // Composer composition
         $composer->setPackage($package);
         $composer->setRepositoryManager($rm);
         $composer->setInstallationManager($im);
-
-        // initialize event dispatcher
-        $dispatcher = new EventDispatcher($composer, $io);
 
         // initialize download manager
         $dm = $this->createDownloadManager($io, $config, $dispatcher);
@@ -283,11 +285,12 @@ class Factory
     /**
      * @param  IOInterface                  $io
      * @param  Config                       $config
+     * @param  EventDispatcher              $eventDispatcher
      * @return Repository\RepositoryManager
      */
-    protected function createRepositoryManager(IOInterface $io, Config $config)
+    protected function createRepositoryManager(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null)
     {
-        $rm = new RepositoryManager($io, $config);
+        $rm = new RepositoryManager($io, $config, $eventDispatcher);
         $rm->setRepositoryClass('composer', 'Composer\Repository\ComposerRepository');
         $rm->setRepositoryClass('vcs', 'Composer\Repository\VcsRepository');
         $rm->setRepositoryClass('package', 'Composer\Repository\PackageRepository');

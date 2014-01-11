@@ -108,6 +108,16 @@ class ConfigValidator
             $warnings[] = "The package type 'composer-installer' is deprecated. Please distribute your custom installers as plugins from now on. See http://getcomposer.org/doc/articles/plugins.md for plugin documentation.";
         }
 
+        // check for require-dev overrides
+        if (isset($manifest['require']) && isset($manifest['require-dev'])) {
+            $requireOverrides = array_intersect_key($manifest['require'], $manifest['require-dev']);
+
+            if (!empty($requireOverrides)) {
+                $plural = (count($requireOverrides) > 1) ? 'are' : 'is';
+                $warnings[] = implode(', ', array_keys($requireOverrides)). " {$plural} required both in require and require-dev, this can lead to unexpected behavior";
+            }
+        }
+
         try {
             $loader = new ValidatingArrayLoader(new ArrayLoader());
             if (!isset($manifest['version'])) {

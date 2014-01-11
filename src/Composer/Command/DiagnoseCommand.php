@@ -18,6 +18,7 @@ use Composer\Downloader\TransportException;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Util\ConfigValidator;
+use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
 use Composer\Util\StreamContextFactory;
 use Symfony\Component\Console\Input\InputInterface;
@@ -29,6 +30,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class DiagnoseCommand extends Command
 {
     protected $rfs;
+    protected $process;
     protected $failures = 0;
 
     protected function configure()
@@ -47,9 +49,13 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $this->rfs = new RemoteFilesystem($this->getIO());
+        $this->process = new ProcessExecutor($this->getIO());
 
         $output->write('Checking platform settings: ');
         $this->outputResult($output, $this->checkPlatform());
+
+        $output->write('Checking git settings: ');
+        $this->outputResult($output, $this->checkGit());
 
         $output->write('Checking http connectivity: ');
         $this->outputResult($output, $this->checkHttp());
@@ -114,6 +120,16 @@ EOT
             }
 
             return rtrim($output);
+        }
+
+        return true;
+    }
+
+    private function checkGit()
+    {
+        $this->process->execute('git config color.ui', $output);
+        if (strtolower(trim($output)) === 'always') {
+            return '<warning>Your git color.ui setting is set to always, this is known to create issues. Use "git config --global color.ui true" to set it correctly.</warning>';
         }
 
         return true;
@@ -300,6 +316,12 @@ EOT
             $warnings['apc_cli'] = true;
         }
 
+        if (ini_get('xdebug.profiler_enabled')) {
+            $warnings['xdebug_profile'] = true;
+        } elseif (extension_loaded('xdebug')) {
+            $warnings['xdebug_loaded'] = true;
+        }
+
         ob_start();
         phpinfo(INFO_GENERAL);
         $phpinfo = ob_get_clean();
@@ -364,6 +386,18 @@ EOT
                     case 'php':
                         $text = PHP_EOL."Your PHP ({$current}) is quite old, upgrading to PHP 5.3.4 or higher is recommended.".PHP_EOL;
                         $text .= "Composer works with 5.3.2+ for most people, but there might be edge case issues.";
+                        break;
+
+                    case 'xdebug_loaded':
+                        $text = PHP_EOL."The xdebug extension is loaded, this can slow down Composer a little.".PHP_EOL;
+                        $text .= "Disabling it when using Composer is recommended, but should not cause issues beyond slowness.";
+                        break;
+
+                    case 'xdebug_profile':
+                        $text = PHP_EOL."The xdebug.profiler_enabled setting is enabled, this can slow down Composer a lot.".PHP_EOL;
+                        $text .= "Add the following to the end of your `php.ini` to disable it:".PHP_EOL;
+                        $text .= "    xdebug.profiler_enabled = 0";
+                        $displayIniMessage = true;
                         break;
                 }
                 $out($text, 'warning');
