@@ -151,7 +151,7 @@ class PlatformRepository extends ArrayRepository
 				$prettyVersion = HPHP_VERSION;
                 echo "HPHP version string is $prettyVersion\n";
 				// Force nightly version to latest dev version
-				if (strpod('nightly', HPHP_VERSION) === 0)
+				if (strpos('nightly', HPHP_VERSION) === 0)
 				{
 					$prettyVersion = '2.4.0-dev';
 				}
