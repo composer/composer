@@ -149,10 +149,10 @@ class PlatformRepository extends ArrayRepository
         if (defined('HPHP_VERSION')) {
             try {
 				$prettyVersion = HPHP_VERSION;
-                echo "HPHP version string is $prettyVersion\n";
 				// Force nightly version to latest dev version
 				if (strpos(HPHP_VERSION, 'nightly') === 0)
 				{
+                    //TODO: hardcoding version string is bad, can this be retrieved dynamically?
 					$prettyVersion = '2.4.0-dev';
 				}
                 $version = $versionParser->normalize($prettyVersion);
