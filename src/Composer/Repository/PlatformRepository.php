@@ -148,7 +148,12 @@ class PlatformRepository extends ArrayRepository
 
         if (defined('HPHP_VERSION')) {
             try {
-                $prettyVersion = HPHP_VERSION;
+				$prettyVersion = HPHP_VERSION;
+				// Force nightly version to latest dev version
+				if (strpod('nightly', HPHP_VERSION) === 0)
+				{
+					$prettyVersion = '2.4.0-dev';
+				}
                 $version = $versionParser->normalize($prettyVersion);
             } catch (\UnexpectedValueException $e) {
                 $prettyVersion = preg_replace('#^([^~+-]+).*$#', '$1', HPHP_VERSION);
