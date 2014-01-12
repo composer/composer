@@ -34,7 +34,7 @@ class JsonManipulator
         }
 
         $contents = trim($contents);
-        if (!preg_match('#^\{(.*)\}$#s', $contents)) {
+        if (!$this->pregMatch('#^\{(.*)\}$#s', $contents)) {
             throw new \InvalidArgumentException('The json file must be an object ({})');
         }
         $this->newline = false !== strpos($contents, "\r\n") ? "\r\n": "\n";
@@ -49,33 +49,28 @@ class JsonManipulator
 
     public function addLink($type, $package, $constraint)
     {
-        $data = @json_decode($this->contents, true);
-
-        // abort if the file is not parseable
-        if (null === $data) {
-            return false;
-        }
+        $decoded = JsonFile::parseJson($this->contents);
 
         // no link of that type yet
-        if (!isset($data[$type])) {
+        if (!isset($decoded[$type])) {
             return $this->addMainKey($type, array($package => $constraint));
         }
 
         $regex = '{^(\s*\{\s*(?:'.self::$JSON_STRING.'\s*:\s*'.self::$JSON_VALUE.'\s*,\s*)*?)'.
             '('.preg_quote(JsonFile::encode($type)).'\s*:\s*)('.self::$JSON_VALUE.')(.*)}s';
-        if (!preg_match($regex, $this->contents, $matches)) {
+        if (!$this->pregMatch($regex, $this->contents, $matches)) {
             return false;
         }
 
         $links = $matches[3];
 
-        if (isset($data[$type][$package])) {
+        if (isset($decoded[$type][$package])) {
             // update existing link
             $packageRegex = str_replace('/', '\\\\?/', preg_quote($package));
             // addcslashes is used to double up backslashes since preg_replace resolves them as back references otherwise, see #1588
             $links = preg_replace('{"'.$packageRegex.'"(\s*:\s*)'.self::$JSON_STRING.'}i', addcslashes(JsonFile::encode($package).'${1}"'.$constraint.'"', '\\'), $links);
         } else {
-            if (preg_match('#^\s*\{\s*\S+.*?(\s*\}\s*)$#s', $links, $match)) {
+            if ($this->pregMatch('#^\s*\{\s*\S+.*?(\s*\}\s*)$#s', $links, $match)) {
                 // link missing but non empty links
                 $links = preg_replace(
                     '{'.preg_quote($match[1]).'$}',
@@ -117,9 +112,11 @@ class JsonManipulator
 
     public function addSubNode($mainNode, $name, $value)
     {
+        $decoded = JsonFile::parseJson($this->contents);
+
         // no main node yet
-        if (!preg_match('#"'.$mainNode.'":\s*\{#', $this->contents)) {
-            $this->addMainKey(''.$mainNode.'', array($name => $value));
+        if (!isset($decoded[$mainNode])) {
+            $this->addMainKey($mainNode, array($name => $value));
 
             return true;
         }
@@ -131,7 +128,7 @@ class JsonManipulator
 
         // main node content not match-able
         $nodeRegex = '#("'.$mainNode.'":\s*\{)('.self::$RECURSE_BLOCKS.')(\})#s';
-        if (!preg_match($nodeRegex, $this->contents, $match)) {
+        if (!$this->pregMatch($nodeRegex, $this->contents, $match)) {
             return false;
         }
 
@@ -145,7 +142,7 @@ class JsonManipulator
         $that = $this;
 
         // child exists
-        if (preg_match('{("'.preg_quote($name).'"\s*:\s*)('.self::$JSON_VALUE.')(,?)}', $children, $matches)) {
+        if ($this->pregMatch('{("'.preg_quote($name).'"\s*:\s*)('.self::$JSON_VALUE.')(,?)}', $children, $matches)) {
             $children = preg_replace_callback('{("'.preg_quote($name).'"\s*:\s*)('.self::$JSON_VALUE.')(,?)}', function ($matches) use ($name, $subName, $value, $that) {
                 if ($subName !== null) {
                     $curVal = json_decode($matches[2], true);
@@ -155,7 +152,7 @@ class JsonManipulator
 
                 return $matches[1] . $that->format($value, 1) . $matches[3];
             }, $children);
-        } elseif (preg_match('#[^\s](\s*)$#', $children, $match)) {
+        } elseif ($this->pregMatch('#[^\s](\s*)$#', $children, $match)) {
             if ($subName !== null) {
                 $value = array($subName => $value);
             }
@@ -182,19 +179,16 @@ class JsonManipulator
 
     public function removeSubNode($mainNode, $name)
     {
-        // no node
-        if (!preg_match('#"'.$mainNode.'":\s*\{#', $this->contents)) {
-            return true;
-        }
+        $decoded = JsonFile::parseJson($this->contents);
 
-        // empty node
-        if (preg_match('#"'.$mainNode.'":\s*\{\s*\}#s', $this->contents)) {
+        // no node or empty node
+        if (empty($decoded[$mainNode])) {
             return true;
         }
 
         // no node content match-able
         $nodeRegex = '#("'.$mainNode.'":\s*\{)('.self::$RECURSE_BLOCKS.')(\})#s';
-        if (!preg_match($nodeRegex, $this->contents, $match)) {
+        if (!$this->pregMatch($nodeRegex, $this->contents, $match)) {
             return false;
         }
 
@@ -211,7 +205,7 @@ class JsonManipulator
         }
 
         // try and find a match for the subkey
-        if (preg_match('{"'.preg_quote($name).'"\s*:}i', $children)) {
+        if ($this->pregMatch('{"'.preg_quote($name).'"\s*:}i', $children)) {
             // find best match for the value of "name"
             if (preg_match_all('{"'.preg_quote($name).'"\s*:\s*(?:'.self::$JSON_VALUE.')}', $children, $matches)) {
                 $bestMatch = '';
@@ -260,12 +254,13 @@ class JsonManipulator
 
     public function addMainKey($key, $content)
     {
+        $decoded = JsonFile::parseJson($this->contents);
         $content = $this->format($content);
 
         // key exists already
         $regex = '{^(\s*\{\s*(?:'.self::$JSON_STRING.'\s*:\s*'.self::$JSON_VALUE.'\s*,\s*)*?)'.
             '('.preg_quote(JsonFile::encode($key)).'\s*:\s*'.self::$JSON_VALUE.')(.*)}s';
-        if (preg_match($regex, $this->contents, $matches)) {
+        if (isset($decoded[$key]) && $this->pregMatch($regex, $this->contents, $matches)) {
             // invalid match due to un-regexable content, abort
             if (!@json_decode('{'.$matches[2].'}')) {
                 return false;
@@ -277,7 +272,7 @@ class JsonManipulator
         }
 
         // append at the end of the file and keep whitespace
-        if (preg_match('#[^{\s](\s*)\}$#', $this->contents, $match)) {
+        if ($this->pregMatch('#[^{\s](\s*)\}$#', $this->contents, $match)) {
             $this->contents = preg_replace(
                 '#'.$match[1].'\}$#',
                 addcslashes(',' . $this->newline . $this->indent . JsonFile::encode($key). ': '. $content . $this->newline . '}', '\\'),
@@ -324,10 +319,36 @@ class JsonManipulator
 
     protected function detectIndenting()
     {
-        if (preg_match('{^(\s+)"}m', $this->contents, $match)) {
+        if ($this->pregMatch('{^(\s+)"}m', $this->contents, $match)) {
             $this->indent = $match[1];
         } else {
             $this->indent = '    ';
         }
+    }
+
+    protected function pregMatch($re, $str, &$matches = array())
+    {
+        $count = preg_match($re, $str, $matches);
+
+        if ($count === false) {
+            switch (preg_last_error()) {
+                case PREG_NO_ERROR:
+                    throw new \RuntimeException('Failed to execute regex: PREG_NO_ERROR');
+                case PREG_INTERNAL_ERROR:
+                    throw new \RuntimeException('Failed to execute regex: PREG_INTERNAL_ERROR');
+                case PREG_BACKTRACK_LIMIT_ERROR:
+                    throw new \RuntimeException('Failed to execute regex: PREG_BACKTRACK_LIMIT_ERROR');
+                case PREG_RECURSION_LIMIT_ERROR:
+                    throw new \RuntimeException('Failed to execute regex: PREG_RECURSION_LIMIT_ERROR');
+                case PREG_BAD_UTF8_ERROR:
+                    throw new \RuntimeException('Failed to execute regex: PREG_BAD_UTF8_ERROR');
+                case PREG_BAD_UTF8_OFFSET_ERROR:
+                    throw new \RuntimeException('Failed to execute regex: PREG_BAD_UTF8_OFFSET_ERROR');
+                default:
+                    throw new \RuntimeException('Failed to execute regex: Unknown error');
+            }
+        }
+
+        return $count;
     }
 }
