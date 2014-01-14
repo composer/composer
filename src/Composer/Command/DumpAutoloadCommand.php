@@ -41,7 +41,11 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $output->writeln('<info>Generating autoload files</info>');
+        if ($input->getOption('optimize')) {
+            $output->writeln('<info>Generating optimized autoload files</info>');
+        } else {
+            $output->writeln('<info>Generating autoload files</info>');
+        }
 
         $composer = $this->getComposer();
 
