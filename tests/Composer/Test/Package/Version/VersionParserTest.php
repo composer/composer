@@ -221,6 +221,8 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'completes version' => array('=1.0',        new VersionConstraint('=', '1.0.0.0')),
             'shorthand beta'    => array('1.2.3b5',     new VersionConstraint('=', '1.2.3.0-beta5')),
             'accepts spaces'    => array('>= 1.2.3',    new VersionConstraint('>=', '1.2.3.0')),
+            'accepts spaces/2'  => array('< 1.2.3',     new VersionConstraint('<', '1.2.3.0-dev')),
+            'accepts spaces/3'  => array('> 1.2.3',     new VersionConstraint('>', '1.2.3.0')),
             'accepts master'    => array('>=dev-master',    new VersionConstraint('>=', '9999999-dev')),
             'accepts master/2'  => array('dev-master',      new VersionConstraint('=', '9999999-dev')),
             'accepts arbitrary' => array('dev-feature-a',   new VersionConstraint('=', 'dev-feature-a')),
@@ -291,13 +293,27 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function testParseConstraintsMulti()
+    /**
+     * @dataProvider multiConstraintProvider
+     */
+    public function testParseConstraintsMulti($constraint)
     {
         $parser = new VersionParser;
         $first = new VersionConstraint('>', '2.0.0.0');
         $second = new VersionConstraint('<=', '3.0.0.0');
         $multi = new MultiConstraint(array($first, $second));
-        $this->assertSame((string) $multi, (string) $parser->parseConstraints('>2.0,<=3.0'));
+        $this->assertSame((string) $multi, (string) $parser->parseConstraints($constraint));
+    }
+
+    public function multiConstraintProvider()
+    {
+        return array(
+            array('>2.0,<=3.0'),
+            array('>2.0 <=3.0'),
+            array('>2.0, <=3.0'),
+            array('>2.0 ,<=3.0'),
+            array('>2.0 , <=3.0'),
+        );
     }
 
     public function testParseConstraintsMultiWithStabilitySuffix()
