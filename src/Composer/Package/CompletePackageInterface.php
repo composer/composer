@@ -78,4 +78,11 @@ interface CompletePackageInterface extends PackageInterface
      * @return array
      */
     public function getSupport();
+
+    /**
+     * Set the repositories
+     *
+     * @param string $repositories
+     */
+    public function setRepositories($repositories);
 }

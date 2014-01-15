@@ -43,4 +43,25 @@ interface RootPackageInterface extends CompletePackageInterface
      * @return array
      */
     public function getReferences();
+
+    /**
+     * Set the stabilityFlags
+     *
+     * @param array $stabilityFlags
+     */
+    public function setStabilityFlags(array $stabilityFlags);
+
+    /**
+     * Set the references
+     *
+     * @param array $references
+     */
+    public function setReferences(array $references);
+
+    /**
+     * Set the minimumStability
+     *
+     * @param string $minimumStability
+     */
+    public function setMinimumStability($minimumStability);
 }

@@ -24,9 +24,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     protected $references = array();
 
     /**
-     * Set the minimumStability
-     *
-     * @param string $minimumStability
+     * {@inheritDoc}
      */
     public function setMinimumStability($minimumStability)
     {
@@ -42,9 +40,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     }
 
     /**
-     * Set the stabilityFlags
-     *
-     * @param array $stabilityFlags
+     * {@inheritDoc}
      */
     public function setStabilityFlags(array $stabilityFlags)
     {
@@ -60,9 +56,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     }
 
     /**
-     * Set the references
-     *
-     * @param array $references
+     * {@inheritDoc}
      */
     public function setReferences(array $references)
     {

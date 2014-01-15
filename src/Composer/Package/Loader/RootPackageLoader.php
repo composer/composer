@@ -15,6 +15,8 @@ namespace Composer\Package\Loader;
 use Composer\Package\BasePackage;
 use Composer\Config;
 use Composer\Factory;
+use Composer\Package\Link;
+use Composer\Package\RootPackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\Vcs\HgDriver;
@@ -60,10 +62,9 @@ class RootPackageLoader extends ArrayLoader
             }
 
             $config['version'] = $version;
-        } else {
-            $version = $config['version'];
         }
 
+        /** @var RootPackageInterface $package */
         $package = parent::load($config, $class);
 
         $aliases = array();
@@ -75,6 +76,7 @@ class RootPackageLoader extends ArrayLoader
                 $method = 'get'.ucfirst($linkInfo['method']);
                 $links = array();
                 foreach ($package->$method() as $link) {
+                    /** @var Link $link */
                     $links[$link->getTarget()] = $link->getConstraint()->getPrettyString();
                 }
                 $aliases = $this->extractAliases($links, $aliases);
@@ -169,8 +171,15 @@ class RootPackageLoader extends ArrayLoader
                 return $version;
             }
 
-            return $this->guessHgVersion($config);
+            $version = $this->guessHgVersion($config);
+            if (null !== $version) {
+                return $version;
+            }
+
+            return $this->guessSvnVersion($config);
         }
+
+        return null;
     }
 
     private function guessGitVersion(array $config)
@@ -212,6 +221,8 @@ class RootPackageLoader extends ArrayLoader
 
             return $version;
         }
+
+        return null;
     }
 
     private function guessHgVersion(array $config)
@@ -240,6 +251,8 @@ class RootPackageLoader extends ArrayLoader
 
             return $version;
         }
+
+        return null;
     }
 
     private function guessFeatureVersion(array $config, $version, array $branches, $scmCmdline)
@@ -273,5 +286,33 @@ class RootPackageLoader extends ArrayLoader
         }
 
         return $version;
+    }
+
+    private function guessSvnVersion(array $config)
+    {
+        // try to fetch current version from svn
+        if (0 === $this->process->execute('svn info --xml', $output)) {
+            $trunkPath    = isset($config['trunk-path']) ? $config['trunk-path'] : 'trunk';
+            $branchesPath = isset($config['branches-path']) ? $config['branches-path'] : 'branches';
+            $tagsPath     = isset($config['tags-path']) ? $config['tags-path'] : 'tags';
+
+            try {
+                if(preg_match('#<url>.*/(' . $trunkPath . '|(' . $branchesPath . '|' . $tagsPath .')/(.*))</url>#', $output, $matches)) {
+                    if(isset($matches[2]) && isset($matches[3]) && $branchesPath === $matches[2]) {
+                        // we are in a branches path
+                        $version = $this->versionParser->normalizeBranch($matches[3]);
+                        if ('9999999-dev' === $version) {
+                            $version = 'dev-' . $matches[3];
+                        }
+                        return $version;
+                    }
+
+                    return $this->versionParser->normalize(trim($matches[1]));
+                }
+
+            } catch (\Exception $e) {}
+        }
+
+        return null;
     }
 }

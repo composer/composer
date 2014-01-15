@@ -308,4 +308,9 @@ interface PackageInterface
      * @return string
      */
     public function getPrettyString();
+
+    /**
+     * @param array $aliases
+     */
+    public function setAliases(array $aliases);
 }

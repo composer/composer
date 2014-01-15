@@ -116,7 +116,7 @@ class Package extends BasePackage
     public function getTargetDir()
     {
         if (null === $this->targetDir) {
-            return;
+            return '';
         }
 
         return ltrim(preg_replace('{ (?:^|[\\\\/]+) \.\.? (?:[\\\\/]+|$) (?:\.\.? (?:[\\\\/]+|$) )*}x', '/', $this->targetDir), '/');
@@ -171,7 +171,7 @@ class Package extends BasePackage
     }
 
     /**
-     * @param string $alias
+     * {@inheritDoc}
      */
     public function setAlias($alias)
     {
@@ -349,7 +349,7 @@ class Package extends BasePackage
     /**
      * Set the releaseDate
      *
-     * @param DateTime $releaseDate
+     * @param \DateTime $releaseDate
      */
     public function setReleaseDate(\DateTime $releaseDate)
     {

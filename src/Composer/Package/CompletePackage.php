@@ -45,9 +45,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * Set the repositories
-     *
-     * @param string $repositories
+     * {@inheritDoc}
      */
     public function setRepositories($repositories)
     {
