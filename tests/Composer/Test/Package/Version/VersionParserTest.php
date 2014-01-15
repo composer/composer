@@ -313,6 +313,10 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             array('>2.0, <=3.0'),
             array('>2.0 ,<=3.0'),
             array('>2.0 , <=3.0'),
+            array('>2.0   , <=3.0'),
+            array('> 2.0   <=  3.0'),
+            array('> 2.0  ,  <=  3.0'),
+            array('  > 2.0  ,  <=  3.0 '),
         );
     }
 
@@ -365,6 +369,9 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
         return array(
             'empty '            => array(''),
             'invalid version'   => array('1.0.0-meh'),
+            'operator abuse'    => array('>2.0,,<=3.0'),
+            'operator abuse/2'  => array('>2.0 ,, <=3.0'),
+            'operator abuse/3'  => array('>2.0 || <=3.0'),
         );
     }
 

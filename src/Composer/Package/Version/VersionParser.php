@@ -233,7 +233,7 @@ class VersionParser
         $orConstraints = preg_split('{\s*\|\s*}', trim($constraints));
         $orGroups = array();
         foreach ($orConstraints as $constraints) {
-            $andConstraints = preg_split('{(?<!as|[=><])\s*[, ]+\s*(?!as)}', $constraints);
+            $andConstraints = preg_split('{(?<!^|as|[=>< ,]) *[, ] *(?!,|as|$)}', $constraints);
 
             if (count($andConstraints) > 1) {
                 $constraintObjects = array();
