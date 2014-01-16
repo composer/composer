@@ -179,8 +179,15 @@ class RootPackageLoader extends ArrayLoader
                 return $version;
             }
 
-            return $this->guessHgVersion($config);
+            $version = $this->guessHgVersion($config);
+            if (null !== $version) {
+                return $version;
+            }
+
+            return $this->guessSvnVersion($config);
         }
+
+        return null;
     }
 
     private function guessGitVersion(array $config)
@@ -294,5 +301,46 @@ class RootPackageLoader extends ArrayLoader
         }
 
         return $version;
+    }
+
+    private function guessSvnVersion(array $config)
+    {
+        // try to fetch current version from svn
+        if (0 === $this->process->execute('svn info --xml', $output)) {
+
+            $regexDelimiter = '#';
+            
+            $trunkPath =
+                isset($config['trunk-path'])
+                ? preg_quote($config['trunk-path'], $regexDelimiter)
+                : 'trunk';
+
+            $branchesPath =
+                isset($config['branches-path'])
+                ? preg_quote($config['branches-path'], $regexDelimiter)
+                : 'branches';
+
+            $tagsPath =
+                isset($config['tags-path'])
+                ? preg_quote($config['tags-path'], $regexDelimiter)
+                : 'tags';
+
+            $urlPattern = $regexDelimiter
+                        . '<url>.*/(' . $trunkPath . '|(' . $branchesPath . '|' . $tagsPath .')/(.*))</url>'
+                        . $regexDelimiter;
+
+            if(preg_match($urlPattern, $output, $matches)) {
+                if(isset($matches[2]) && isset($matches[3]) && $branchesPath === $matches[2]) {
+                    // we are in a branches path
+                    $version = $this->versionParser->normalizeBranch($matches[3]);
+                    if ('9999999-dev' === $version) {
+                        $version = 'dev-' . $matches[3];
+                    }
+                    return $version;
+                }
+
+                return $this->versionParser->normalize(trim($matches[1]));
+            }
+        }
     }
 }
