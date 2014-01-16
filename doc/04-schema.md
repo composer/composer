@@ -710,6 +710,8 @@ The following options are supported:
   interoperability issues with other autoloaders.
 * **autoloader-suffix:** Defaults to `null`. String to be used as a suffix for
   the generated Composer autoloader. When null a random one will be generated.
+* **autoloader-optimize-always** Defaults to `false`. Always optimize when dumping
+  the autoloader.
 * **github-domains:** Defaults to `["github.com"]`. A list of domains to use in
   github mode. This is used for GitHub Enterprise setups.
 * **notify-on-install:** Defaults to `true`. Composer allows repositories to
