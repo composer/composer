@@ -180,6 +180,10 @@
                     "type": "string",
                     "description": "Optional string to be used as a suffix for the generated Composer autoloader. When null a random one will be generated."
                 },
+                "autoloader-optimize-always": {
+                    "type": "boolean",
+                    "description": "Always optimize when dumping the autoloader"
+                },
                 "prepend-autoloader": {
                     "type": "boolean",
                     "description": "If false, the composer autoloader will not be prepended to existing autoloaders, defaults to true."
