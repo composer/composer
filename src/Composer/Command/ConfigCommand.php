@@ -283,7 +283,7 @@ EOT
                 }
             ),
             'autoloader-suffix' => array('is_string', function ($val) { return $val === 'null' ? null : $val; }),
-            'autoloader-optimize-always' => array($booleanValidator, $booleanNormalizer),
+            'optimize-autoloader' => array($booleanValidator, $booleanNormalizer),
             'prepend-autoloader' => array($booleanValidator, $booleanNormalizer),
         );
         $multiConfigValues = array(

@@ -51,7 +51,7 @@ EOT
         $package = $composer->getPackage();
         $config = $composer->getConfig();
 
-        $optimize = $input->getOption('optimize') || $config->get('autoloader-optimize-always');
+        $optimize = $input->getOption('optimize') || $config->get('optimize-autoloader');
 
         if ($optimize) {
             $output->writeln('<info>Generating optimized autoload files</info>');

@@ -36,7 +36,7 @@ class Config
         'cache-files-maxsize' => '300MiB',
         'discard-changes' => false,
         'autoloader-suffix' => null,
-        'autoloader-optimize-always' => false,
+        'optimize-autoloader' => false,
         'prepend-autoloader' => true,
         'github-domains' => array('github.com'),
     );
