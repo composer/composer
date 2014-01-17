@@ -108,6 +108,7 @@ class GitHub
                 }
 
                 $contents = JsonFile::parseJson($this->remoteFilesystem->getContents($originUrl, 'https://'. $apiUrl . '/authorizations', false, array(
+                    'retry-auth-failure' => false,
                     'http' => array(
                         'method' => 'POST',
                         'follow_location' => false,
