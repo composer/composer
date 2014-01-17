@@ -101,11 +101,17 @@ class GitHub
                     $appName .= ' on ' . trim($output);
                 }
 
+                $headers = array('Content-Type: application/json');
+
+                if ($otp) {
+                    $headers[] = 'X-GitHub-OTP: ' . $otp;
+                }
+
                 $contents = JsonFile::parseJson($this->remoteFilesystem->getContents($originUrl, 'https://'. $apiUrl . '/authorizations', false, array(
                     'http' => array(
                         'method' => 'POST',
                         'follow_location' => false,
-                        'header' => "Content-Type: application/json\r\n",
+                        'header' => $headers,
                         'content' => json_encode(array(
                             'scopes' => array('repo'),
                             'note' => $appName,
