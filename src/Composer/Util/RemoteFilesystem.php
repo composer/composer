@@ -33,6 +33,7 @@ class RemoteFilesystem
     private $progress;
     private $lastProgress;
     private $options;
+    private $retryAuthFailure;
 
     /**
      * Constructor.
@@ -109,10 +110,17 @@ class RemoteFilesystem
         $this->fileName = $fileName;
         $this->progress = $progress;
         $this->lastProgress = null;
+        $this->retryAuthFailure = true;
 
         // capture username/password from URL if there is one
         if (preg_match('{^https?://(.+):(.+)@([^/]+)}i', $fileUrl, $match)) {
             $this->io->setAuthentication($originUrl, urldecode($match[1]), urldecode($match[2]));
+        }
+
+        if (isset($additionalOptions['retry-auth-failure'])) {
+            $this->retryAuthFailure = (bool) $additionalOptions['retry-auth-failure'];
+
+            unset($additionalOptions['retry-auth-failure']);
         }
 
         $options = $this->getOptionsForUrl($originUrl, $additionalOptions);
@@ -245,6 +253,11 @@ class RemoteFilesystem
                         $message = "The '" . $this->fileUrl . "' URL required authentication.\nYou must be using the interactive console";
 
                         throw new TransportException($message, 401);
+                    }
+
+                    // Bail if the caller is going to handle authentication failures itself.
+                    if (!$this->retryAuthFailure) {
+                        throw new TransportException('The "'.$this->fileUrl.'" file could not be downloaded ('.trim($message).')', 401);
                     }
 
                     $this->promptAuthAndRetry();
