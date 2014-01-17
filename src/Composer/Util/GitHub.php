@@ -111,6 +111,34 @@ class GitHub
                 )));
             } catch (TransportException $e) {
                 if (in_array($e->getCode(), array(403, 401))) {
+                    // 401 when authentication was supplied, handle 2FA if required.
+                    if ($this->io->hasAuthentication($originUrl)) {
+                        $headerNames = array_map(function($header) {
+                            return strstr($header, ':', true);
+                        }, $e->getHeaders());
+
+                        if ($key = array_search('X-GitHub-OTP', $headerNames)) {
+                            $headers = $e->getHeaders();
+                            list($required, $method) = array_map('trim', explode(';', substr(strstr($headers[$key], ':'), 1)));
+
+                            if ('required' === $required) {
+                                $this->io->write('Two-factor Authentication');
+
+                                if ('app' === $method) {
+                                    $this->io->write('Open the two-factor authentication app on your device to view your authentication code and verify your identity.');
+                                }
+
+                                if ('sms' === $method) {
+                                    // @todo
+                                }
+
+                                $otp = $this->io->ask('Authentication Code: ');
+
+                                continue;
+                            }
+                        }
+                    }
+
                     $this->io->write('Invalid credentials.');
                     continue;
                 }
