@@ -87,9 +87,13 @@ class GitHub
         $this->io->write('To revoke access to this token you can visit https://github.com/settings/applications');
         while ($attemptCounter++ < 5) {
             try {
-                $username = $this->io->ask('Username: ');
-                $password = $this->io->askAndHideAnswer('Password: ');
-                $this->io->setAuthentication($originUrl, $username, $password);
+                if (empty($otp) || !$this->io->hasAuthentication($originUrl)) {
+                    $username = $this->io->ask('Username: ');
+                    $password = $this->io->askAndHideAnswer('Password: ');
+                    $otp      = null;
+
+                    $this->io->setAuthentication($originUrl, $username, $password);
+                }
 
                 // build up OAuth app name
                 $appName = 'Composer';
