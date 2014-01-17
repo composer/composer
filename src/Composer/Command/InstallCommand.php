@@ -76,7 +76,10 @@ EOT
 
         $preferSource = false;
         $preferDist = false;
-        switch ($composer->getConfig()->get('preferred-install')) {
+
+        $config = $composer->getConfig();
+
+        switch ($config->get('preferred-install')) {
             case 'source':
                 $preferSource = true;
                 break;
@@ -93,6 +96,8 @@ EOT
             $preferDist = $input->getOption('prefer-dist');
         }
 
+        $optimize = $input->getOption('optimize-autoloader') || $config->get('optimize-autoloader');
+
         $install
             ->setDryRun($input->getOption('dry-run'))
             ->setVerbose($input->getOption('verbose'))
@@ -100,7 +105,7 @@ EOT
             ->setPreferDist($preferDist)
             ->setDevMode(!$input->getOption('no-dev'))
             ->setRunScripts(!$input->getOption('no-scripts'))
-            ->setOptimizeAutoloader($input->getOption('optimize-autoloader'))
+            ->setOptimizeAutoloader($optimize)
         ;
 
         if ($input->getOption('no-plugins')) {
