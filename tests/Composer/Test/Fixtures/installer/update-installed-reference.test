@@ -1,0 +1,30 @@
+--TEST--
+Updating a dev package forcing it's reference should not do anything if the referenced version is the installed one
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "a/a", "version": "dev-master",
+                    "source": { "reference": "abc123", "url": "", "type": "git" }
+                }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "dev-master#def000"
+    }
+}
+--INSTALLED--
+[
+    {
+        "name": "a/a", "version": "dev-master",
+        "source": { "reference": "def000", "url": "", "type": "git" },
+        "dist": { "reference": "def000", "url": "", "type": "zip", "shasum": "" }
+    }
+]
+--RUN--
+update
+--EXPECT--
