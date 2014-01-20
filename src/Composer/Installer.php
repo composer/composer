@@ -279,7 +279,12 @@ class Installer
             }
 
             // write autoloader
-            $this->io->write('<info>Generating autoload files</info>');
+            if ($this->optimizeAutoloader) {
+                $this->io->write('<info>Generating optimized autoload files</info>');
+            } else {
+                $this->io->write('<info>Generating autoload files</info>');
+            }
+
             $this->autoloadGenerator->dump($this->config, $localRepo, $this->package, $this->installationManager, 'composer', $this->optimizeAutoloader);
 
             if ($this->runScripts) {

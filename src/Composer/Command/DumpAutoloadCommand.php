@@ -41,12 +41,6 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        if ($input->getOption('optimize')) {
-            $output->writeln('<info>Generating optimized autoload files</info>');
-        } else {
-            $output->writeln('<info>Generating autoload files</info>');
-        }
-
         $composer = $this->getComposer();
 
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'dump-autoload', $input, $output);
@@ -57,6 +51,14 @@ EOT
         $package = $composer->getPackage();
         $config = $composer->getConfig();
 
-        $composer->getAutoloadGenerator()->dump($config, $localRepo, $package, $installationManager, 'composer', $input->getOption('optimize'));
+        $optimize = $input->getOption('optimize') || $config->get('optimize-autoloader');
+
+        if ($optimize) {
+            $output->writeln('<info>Generating optimized autoload files</info>');
+        } else {
+            $output->writeln('<info>Generating autoload files</info>');
+        }
+
+        $composer->getAutoloadGenerator()->dump($config, $localRepo, $package, $installationManager, 'composer', $optimize);
     }
 }
