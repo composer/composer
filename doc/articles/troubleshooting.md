@@ -104,3 +104,17 @@ Or, you can increase the limit with a command-line argument:
 2. Search for an ```AutoRun``` key inside ```HKEY_LOCAL_MACHINE\Software\Microsoft\Command Processor```
    or ```HKEY_CURRENT_USER\Software\Microsoft\Command Processor```.
 3. Check if it contains any path to non-existent file, if it's the case, just remove them.
+
+## API rate limit and two factor authentication
+
+Because of GitHub's rate limits on their API it can happen that Composer prompts
+for authentication asking your username and password so it can go ahead with its work.
+Unfortunately this will not work if you enabled two factor authentication on
+your GitHub account and to solve this issue you need to:
+
+1. [Create](https://github.com/settings/applications) an oauthtoken on GitHub.
+[Read more](https://github.com/blog/1509-personal-api-tokens) on this.
+
+2. Add it to the configuration running `composer config -g github-oauth.github.com <oauthtoken>`
+
+Now Composer should install/update without asking for authentication.
