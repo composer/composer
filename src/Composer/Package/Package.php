@@ -498,9 +498,8 @@ class Package extends BasePackage
      * Replaces current version and pretty version with passed values.
      * It also sets stability.
      *
-     * @param string $version
-     *
-     * @param string $prettyVersion
+     * @param string $version       The package's normalized version
+     * @param string $prettyVersion The package's non-normalized version
      */
     public function replaceVersion($version, $prettyVersion)
     {
