@@ -493,4 +493,21 @@ class Package extends BasePackage
     {
         return $this->archiveExcludes;
     }
+
+    /**
+     * Replaces current version and pretty version with passed values.
+     * It also sets stability.
+     *
+     * @param string $version
+     *
+     * @param string $prettyVersion
+     */
+    public function replaceVersion($version, $prettyVersion)
+    {
+        $this->version = $version;
+        $this->prettyVersion = $prettyVersion;
+
+        $this->stability = VersionParser::parseStability($version);
+        $this->dev = $this->stability === 'dev';
+    }
 }
