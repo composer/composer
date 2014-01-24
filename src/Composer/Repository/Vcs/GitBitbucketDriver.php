@@ -88,7 +88,7 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
             $resource = $this->getScheme() . '://bitbucket.org/'.$this->owner.'/'.$this->repository.'/raw/'.$identifier.'/composer.json';
             $composer = $this->getContents($resource);
             if (!$composer) {
-                return;
+                return null;
             }
 
             $composer = JsonFile::parseJson($composer, $resource);

@@ -13,6 +13,7 @@
 namespace Composer\Command;
 
 use Composer\Composer;
+use Composer\Config;
 use Composer\Factory;
 use Composer\Downloader\TransportException;
 use Composer\Plugin\CommandEvent;
@@ -29,7 +30,14 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class DiagnoseCommand extends Command
 {
+    /**
+     * @var RemoteFilesystem
+     */
     protected $rfs;
+
+    /**
+     * @var ProcessExecutor
+     */
     protected $process;
     protected $failures = 0;
 
@@ -139,7 +147,7 @@ EOT
     {
         $protocol = extension_loaded('openssl') ? 'https' : 'http';
         try {
-            $json = $this->rfs->getContents('packagist.org', $protocol . '://packagist.org/packages.json', false);
+            $this->rfs->getContents('packagist.org', $protocol . '://packagist.org/packages.json', false);
         } catch (\Exception $e) {
             return $e;
         }
@@ -207,7 +215,7 @@ EOT
 
         $url = 'https://api.github.com/repos/Seldaek/jsonlint/zipball/1.0.0';
         try {
-            $rfcResult = $this->rfs->getContents('api.github.com', $url, false);
+            $this->rfs->getContents('api.github.com', $url, false);
         } catch (TransportException $e) {
             try {
                 $this->rfs->getContents('api.github.com', $url, false, array('http' => array('request_fulluri' => false)));
@@ -237,7 +245,7 @@ EOT
         }
     }
 
-    private function checkDiskSpace($config)
+    private function checkDiskSpace(Config $config)
     {
         $minSpaceFree = 1024*1024;
         if ((($df = @disk_free_space($dir = $config->get('home'))) !== false && $df < $minSpaceFree)
@@ -338,6 +346,7 @@ EOT
         }
 
         if (!empty($errors)) {
+            $text = '';
             foreach ($errors as $error => $current) {
                 switch ($error) {
                     case 'php':
@@ -358,6 +367,7 @@ EOT
         }
 
         if (!empty($warnings)) {
+            $text = '';
             foreach ($warnings as $warning => $current) {
                 switch ($warning) {
                     case 'apc_cli':

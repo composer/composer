@@ -33,12 +33,12 @@ class ConfigCommand extends Command
     protected $config;
 
     /**
-     * @var Composer\Json\JsonFile
+     * @var \Composer\Json\JsonFile
      */
     protected $configFile;
 
     /**
-     * @var Composer\Config\JsonConfigSource
+     * @var \Composer\Config\JsonConfigSource
      */
     protected $configSource;
 
@@ -222,30 +222,34 @@ EOT
         // handle repositories
         if (preg_match('/^repos?(?:itories)?\.(.+)/', $settingKey, $matches)) {
             if ($input->getOption('unset')) {
-                return $this->configSource->removeRepository($matches[1]);
+                $this->configSource->removeRepository($matches[1]);
+                return null;
             }
 
             if (2 !== count($values)) {
                 throw new \RuntimeException('You must pass the type and a url. Example: php composer.phar config repositories.foo vcs http://bar.com');
             }
 
-            return $this->configSource->addRepository($matches[1], array(
+            $this->configSource->addRepository($matches[1], array(
                 'type' => $values[0],
                 'url'  => $values[1],
             ));
+            return null;
         }
 
         // handle github-oauth
         if (preg_match('/^github-oauth\.(.+)/', $settingKey, $matches)) {
             if ($input->getOption('unset')) {
-                return $this->configSource->removeConfigSetting('github-oauth.'.$matches[1]);
+                $this->configSource->removeConfigSetting('github-oauth.'.$matches[1]);
+                return null;
             }
 
             if (1 !== count($values)) {
                 throw new \RuntimeException('Too many arguments, expected only one token');
             }
 
-            return $this->configSource->addConfigSetting('github-oauth.'.$matches[1], $values[0]);
+            $this->configSource->addConfigSetting('github-oauth.'.$matches[1], $values[0]);
+            return null;
         }
 
         $booleanValidator = function ($val) { return in_array($val, array('true', 'false', '1', '0'), true); };
@@ -322,7 +326,8 @@ EOT
         foreach ($uniqueConfigValues as $name => $callbacks) {
              if ($settingKey === $name) {
                 if ($input->getOption('unset')) {
-                    return $this->configSource->removeConfigSetting($settingKey);
+                    $this->configSource->removeConfigSetting($settingKey);
+                    return null;
                 }
 
                 list($validator, $normalizer) = $callbacks;
@@ -337,14 +342,16 @@ EOT
                     ));
                 }
 
-                return $this->configSource->addConfigSetting($settingKey, $normalizer($values[0]));
+                $this->configSource->addConfigSetting($settingKey, $normalizer($values[0]));
+                return null;
             }
         }
 
         foreach ($multiConfigValues as $name => $callbacks) {
             if ($settingKey === $name) {
                 if ($input->getOption('unset')) {
-                    return $this->configSource->removeConfigSetting($settingKey);
+                    $this->configSource->removeConfigSetting($settingKey);
+                    return null;
                 }
 
                 list($validator, $normalizer) = $callbacks;
@@ -355,7 +362,8 @@ EOT
                     ));
                 }
 
-                return $this->configSource->addConfigSetting($settingKey, $normalizer($values));
+                $this->configSource->addConfigSetting($settingKey, $normalizer($values));
+                return null;
             }
         }
 

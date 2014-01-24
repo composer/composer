@@ -12,6 +12,7 @@
 
 namespace Composer\DependencyResolver\Operation;
 
+use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
 
 /**

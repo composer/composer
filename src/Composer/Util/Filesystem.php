@@ -61,6 +61,9 @@ class Filesystem
      * installation.
      *
      * @param  string $directory
+     *
+     * @throws \RuntimeException
+     *
      * @return bool
      */
     public function removeDirectory($directory)
@@ -107,6 +110,7 @@ class Filesystem
         $ri = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::CHILD_FIRST);
 
         foreach ($ri as $file) {
+            /** @var \SplFileInfo $file */
             if ($file->isDir()) {
                 rmdir($file->getPathname());
             } else {
@@ -149,7 +153,9 @@ class Filesystem
         $this->ensureDirectoryExists($target);
 
         foreach ($ri as $file) {
+            /** @var \Symfony\Component\Finder\Iterator\RecursiveDirectoryIterator $ri */
             $targetPath = $target . DIRECTORY_SEPARATOR . $ri->getSubPathName();
+            /** @var \SplFileInfo $file */
             if ($file->isDir()) {
                 $this->ensureDirectoryExists($targetPath);
             } else {
@@ -163,11 +169,12 @@ class Filesystem
     public function rename($source, $target)
     {
         if (true === @rename($source, $target)) {
-            return;
+            return null;
         }
 
         if (!function_exists('proc_open')) {
-            return $this->copyThenRemove($source, $target);
+            $this->copyThenRemove($source, $target);
+            return null;
         }
 
         if (defined('PHP_WINDOWS_VERSION_BUILD')) {
@@ -181,7 +188,7 @@ class Filesystem
             if (0 === $result) {
                 $this->remove($source);
 
-                return;
+                return null;
             }
         } else {
             // We do not use PHP's "rename" function here since it does not support
@@ -193,11 +200,12 @@ class Filesystem
             clearstatcache();
 
             if (0 === $result) {
-                return;
+                return null;
             }
         }
 
-        return $this->copyThenRemove($source, $target);
+        $this->copyThenRemove($source, $target);
+        return null;
     }
 
     /**
@@ -360,6 +368,7 @@ class Filesystem
 
         $size = 0;
         foreach ($ri as $file) {
+            /** @var \SplFileInfo $file */
             if ($file->isFile()) {
                 $size += $file->getSize();
             }

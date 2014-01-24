@@ -23,7 +23,7 @@ class CompositeRepository implements RepositoryInterface
 {
     /**
      * List of repositories
-     * @var array
+     * @var WritableRepositoryInterface[]
      */
     private $repositories;
 
@@ -109,20 +109,6 @@ class CompositeRepository implements RepositoryInterface
     }
 
     /**
-     * {@inheritDoc}
-     */
-    public function filterPackages($callback, $class = 'Composer\Package\Package')
-    {
-        foreach ($this->repositories as $repository) {
-            if (false === $repository->filterPackages($callback, $class)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
      * {@inheritdoc}
      */
     public function getPackages()
@@ -139,10 +125,10 @@ class CompositeRepository implements RepositoryInterface
     /**
      * {@inheritdoc}
      */
-    public function removePackage(PackageInterface $package)
+    public function removePackage(RepositoryInterface $package)
     {
         foreach ($this->repositories as $repository) {
-            /* @var $repository RepositoryInterface */
+            /* @var $repository WritableRepositoryInterface */
             $repository->removePackage($package);
         }
     }

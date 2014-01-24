@@ -13,9 +13,11 @@
 namespace Composer;
 
 use Composer\Config\JsonConfigSource;
+use Composer\Installer\InstallationManager;
 use Composer\Json\JsonFile;
 use Composer\IO\IOInterface;
 use Composer\Package\Archiver;
+use Composer\Plugin\PluginManager;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\RepositoryInterface;
 use Composer\Util\ProcessExecutor;
@@ -152,6 +154,7 @@ class Factory
             if (!$io) {
                 throw new \InvalidArgumentException('This function requires either an IOInterface or a RepositoryManager');
             }
+            /** @var Factory $factory */
             $factory = new static;
             $rm = $factory->createRepositoryManager($io, $config);
         }
@@ -215,7 +218,6 @@ class Factory
         $io->loadConfiguration($config);
 
         $vendorDir = $config->get('vendor-dir');
-        $binDir = $config->get('bin-dir');
 
         // setup process timeout
         ProcessExecutor::setTimeout((int) $config->get('process-timeout'));
@@ -236,6 +238,7 @@ class Factory
         // load package
         $parser = new VersionParser;
         $loader  = new Package\Loader\RootPackageLoader($rm, $config, $parser, new ProcessExecutor($io));
+
         $package = $loader->load($localConfig);
 
         // initialize installation manager
@@ -316,7 +319,9 @@ class Factory
      /**
      * @param Config $config
      * @param string $vendorDir
-     */
+      *
+      * @return \Composer\Repository\InstalledFilesystemRepository|null
+      */
     protected function createGlobalRepository(Config $config, $vendorDir)
     {
         if ($config->get('home') == $vendorDir) {
@@ -392,11 +397,15 @@ class Factory
     }
 
     /**
-     * @return Plugin\PluginManager
+     * @param Composer $composer
+     * @param IOInterface $io
+     * @param RepositoryInterface $globalRepository
+     *
+     * @return PluginManager
      */
     protected function createPluginManager(Composer $composer, IOInterface $io, RepositoryInterface $globalRepository = null)
     {
-        return new Plugin\PluginManager($composer, $io, $globalRepository);
+        return new PluginManager($composer, $io, $globalRepository);
     }
 
     /**
@@ -421,10 +430,10 @@ class Factory
     }
 
     /**
-     * @param Repository\RepositoryManager  $rm
-     * @param Installer\InstallationManager $im
+     * @param RepositoryManager  $rm
+     * @param InstallationManager $im
      */
-    protected function purgePackages(Repository\RepositoryManager $rm, Installer\InstallationManager $im)
+    protected function purgePackages(RepositoryManager $rm, InstallationManager $im)
     {
         $repo = $rm->getLocalRepository();
         foreach ($repo->getPackages() as $package) {
@@ -443,6 +452,7 @@ class Factory
      */
     public static function create(IOInterface $io, $config = null, $disablePlugins = false)
     {
+        /** @var Factory $factory */
         $factory = new static();
 
         return $factory->createComposer($io, $config, $disablePlugins);

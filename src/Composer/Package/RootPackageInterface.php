@@ -59,16 +59,51 @@ interface RootPackageInterface extends CompletePackageInterface
     public function getPreferStable();
 
     /**
-     * Set the required packages
-     *
-     * @param array $requires A set of package links
-     */
-    public function setRequires(array $requires);
-
-    /**
      * Set the recommended packages
      *
      * @param array $devRequires A set of package links
      */
     public function setDevRequires(array $devRequires);
+
+    /**
+     * Set the minimumStability
+     *
+     * @param string $minimumStability
+     */
+    public function setMinimumStability($minimumStability);
+
+    /**
+     * Set the aliases
+     *
+     * @param array $aliases
+     */
+    public function setAliases(array $aliases);
+
+    /**
+     * Set the stabilityFlags
+     *
+     * @param array $stabilityFlags
+     */
+    public function setStabilityFlags(array $stabilityFlags);
+
+    /**
+     * Set the references
+     *
+     * @param array $references
+     */
+    public function setReferences(array $references);
+
+    /**
+     * Set the preferStable
+     *
+     * @param bool $preferStable
+     */
+    public function setPreferStable($preferStable);
+
+    /**
+     * Set the repositories
+     *
+     * @param string $repositories
+     */
+    public function setRepositories($repositories);
 }

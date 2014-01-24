@@ -16,6 +16,7 @@ use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\DependencyResolver\Pool;
 use Composer\Package\LinkConstraint\VersionConstraint;
+use Composer\Package\PackageInterface;
 use Composer\Repository\CompositeRepository;
 
 use Symfony\Component\Console\Input\InputArgument;
@@ -109,7 +110,7 @@ EOT
         if (count($packages) > 1) {
             $package = $packages[0];
             $io->write('<info>Found multiple matches, selected '.$package->getPrettyString().'.</info>');
-            $io->write('Alternatives were '.implode(', ', array_map(function ($p) { return $p->getPrettyString(); }, $packages)).'.');
+            $io->write('Alternatives were '.implode(', ', array_map(function (PackageInterface $p) { return $p->getPrettyString(); }, $packages)).'.');
             $io->write('<comment>Please use a more specific constraint to pick a different package.</comment>');
         } elseif ($packages) {
             $package = $packages[0];

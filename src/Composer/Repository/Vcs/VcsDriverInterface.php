@@ -29,7 +29,7 @@ interface VcsDriverInterface
      * Return the composer.json file information
      *
      * @param  string $identifier Any identifier to a specific branch/tag/commit
-     * @return array  containing all infos from the composer.json file
+     * @return array|null  containing all infos from the composer.json file
      */
     public function getComposerInformation($identifier);
 

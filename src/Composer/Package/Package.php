@@ -114,7 +114,7 @@ class Package extends BasePackage
     public function getTargetDir()
     {
         if (null === $this->targetDir) {
-            return;
+            return null;
         }
 
         return ltrim(preg_replace('{ (?:^|[\\\\/]+) \.\.? (?:[\\\\/]+|$) (?:\.\.? (?:[\\\\/]+|$) )*}x', '/', $this->targetDir), '/');
@@ -201,7 +201,7 @@ class Package extends BasePackage
     }
 
     /**
-     * @param string $reference
+     * {@inheritDoc}
      */
     public function setSourceReference($reference)
     {
@@ -249,7 +249,7 @@ class Package extends BasePackage
     }
 
     /**
-     * @param string $reference
+     * {@inheritDoc}
      */
     public function setDistReference($reference)
     {
@@ -333,9 +333,7 @@ class Package extends BasePackage
     }
 
     /**
-     * Set the conflicting packages
-     *
-     * @param array $conflicts A set of package links
+     * {@inheritDoc}
      */
     public function setConflicts(array $conflicts)
     {
@@ -351,9 +349,7 @@ class Package extends BasePackage
     }
 
     /**
-     * Set the provided virtual packages
-     *
-     * @param array $provides A set of package links
+     * {@inheritDoc}
      */
     public function setProvides(array $provides)
     {
@@ -369,9 +365,7 @@ class Package extends BasePackage
     }
 
     /**
-     * Set the packages this one replaces
-     *
-     * @param array $replaces A set of package links
+     * {@inheritDoc}
      */
     public function setReplaces(array $replaces)
     {

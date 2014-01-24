@@ -24,6 +24,9 @@ use Composer\Util\GitHub;
  */
 class GitHubDriver extends VcsDriver
 {
+    /**
+     * @var Cache
+     */
     protected $cache;
     protected $owner;
     protected $repository;
@@ -139,6 +142,8 @@ class GitHubDriver extends VcsDriver
             $this->infoCache[$identifier] = JsonFile::parseJson($res);
         }
 
+        $resource = null;
+        $composer = null;
         if (!isset($this->infoCache[$identifier])) {
             $notFoundRetries = 2;
             while ($notFoundRetries) {
@@ -161,7 +166,7 @@ class GitHubDriver extends VcsDriver
                 }
             }
 
-            if ($composer) {
+            if (null !== $composer) {
                 $composer = JsonFile::parseJson($composer, $resource);
 
                 if (!isset($composer['time'])) {
@@ -287,7 +292,8 @@ class GitHubDriver extends VcsDriver
                     }
 
                     if (!$this->io->isInteractive()) {
-                        return $this->attemptCloneFallback();
+                        $this->attemptCloneFallback();
+                        return null;
                     }
 
                     $gitHubUtil->authorizeOAuthInteractively($this->originUrl, 'Your GitHub credentials are required to fetch private repository metadata (<info>'.$this->url.'</info>)');
@@ -300,7 +306,8 @@ class GitHubDriver extends VcsDriver
                     }
 
                     if (!$this->io->isInteractive() && $fetchingRepoData) {
-                        return $this->attemptCloneFallback();
+                        $this->attemptCloneFallback();
+                        return null;
                     }
 
                     $rateLimited = false;

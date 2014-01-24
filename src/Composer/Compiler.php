@@ -125,7 +125,7 @@ class Compiler
         unset($phar);
     }
 
-    private function addFile($phar, $file, $strip = true)
+    private function addFile(\Phar $phar, \SplFileInfo $file, $strip = true)
     {
         $path = strtr(str_replace(dirname(dirname(__DIR__)).DIRECTORY_SEPARATOR, '', $file->getRealPath()), '\\', '/');
 
@@ -144,7 +144,7 @@ class Compiler
         $phar->addFromString($path, $content);
     }
 
-    private function addComposerBin($phar)
+    private function addComposerBin(\Phar $phar)
     {
         $content = file_get_contents(__DIR__.'/../../bin/composer');
         $content = preg_replace('{^#!/usr/bin/env php\s*}', '', $content);

@@ -13,6 +13,7 @@
 namespace Composer\Command;
 
 use Composer\Json\JsonFile;
+use Composer\Package\CompletePackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
@@ -69,10 +70,12 @@ EOT
                 $output->writeln('Licenses: <comment>'.(implode(', ', $root->getLicense()) ?: 'none').'</comment>');
                 $output->writeln('Dependencies:');
 
+                /** @var TableHelper $table */
                 $table = $this->getHelperSet()->get('table');
                 $table->setLayout(TableHelper::LAYOUT_BORDERLESS);
                 $table->setHorizontalBorderChar('');
                 foreach ($packages as $package) {
+                    /** @var CompletePackageInterface $package */
                     $table->addRow(array(
                         $package->getPrettyName(),
                         $versionParser->formatVersion($package),
@@ -83,7 +86,9 @@ EOT
                 break;
 
             case 'json':
+                $dependencies = array();
                 foreach ($packages as $package) {
+                    /** @var CompletePackageInterface $package */
                     $dependencies[$package->getPrettyName()] = array(
                         'version' => $versionParser->formatVersion($package),
                         'license' => $package->getLicense(),

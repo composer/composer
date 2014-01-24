@@ -15,6 +15,7 @@ namespace Composer\Repository;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\Loader\LoaderInterface;
 
 /**
  * @author Serge Smertin <serg.smertin@gmail.com>

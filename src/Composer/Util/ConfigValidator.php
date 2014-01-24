@@ -118,8 +118,8 @@ class ConfigValidator
             }
         }
 
+        $loader = new ValidatingArrayLoader(new ArrayLoader());
         try {
-            $loader = new ValidatingArrayLoader(new ArrayLoader());
             if (!isset($manifest['version'])) {
                 $manifest['version'] = '1.0.0';
             }

@@ -291,8 +291,9 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
                     // skip if already assigned
                     if (!isset($this->providers[$name][$version['uid']])) {
                         // expand alias in two packages
-                        if ($this->providersByUid[$version['uid']] instanceof AliasPackage) {
-                            $this->providers[$name][$version['uid']] = $this->providersByUid[$version['uid']]->getAliasOf();
+                        $aliasPackage = $this->providersByUid[$version['uid']];
+                        if ($aliasPackage instanceof AliasPackage) {
+                            $this->providers[$name][$version['uid']] = $aliasPackage->getAliasOf();
                             $this->providers[$name][$version['uid'].'-alias'] = $this->providersByUid[$version['uid']];
                         } else {
                             $this->providers[$name][$version['uid']] = $this->providersByUid[$version['uid']];
@@ -303,25 +304,6 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
                         }
                     }
                 } else {
-                    if (isset($version['provide']) || isset($version['replace'])) {
-                        // collect names
-                        $names = array(
-                            strtolower($version['name']) => true,
-                        );
-                        if (isset($version['provide'])) {
-                            foreach ($version['provide'] as $target => $constraint) {
-                                $names[strtolower($target)] = true;
-                            }
-                        }
-                        if (isset($version['replace'])) {
-                            foreach ($version['replace'] as $target => $constraint) {
-                                $names[strtolower($target)] = true;
-                            }
-                        }
-                        $names = array_keys($names);
-                    } else {
-                        $names = array(strtolower($version['name']));
-                    }
                     if (!$pool->isPackageAcceptable(strtolower($version['name']), VersionParser::parseStability($version['version']))) {
                         continue;
                     }
@@ -499,8 +481,8 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
         }
 
         if (isset($data['packages'])) {
-            foreach ($data['packages'] as $package => $versions) {
-                foreach ($versions as $version => $metadata) {
+            foreach ($data['packages'] as $versions) {
+                foreach ($versions as $metadata) {
                     $packages[] = $metadata;
                 }
             }
@@ -520,14 +502,14 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
         return $packages;
     }
 
-    protected function createPackage(array $data, $class)
+    protected function createPackage(array $data, $class = 'Composer\Package\CompletePackage')
     {
         try {
             if (!isset($data['notification-url'])) {
                 $data['notification-url'] = $this->notifyUrl;
             }
 
-            return $this->loader->load($data, 'Composer\Package\CompletePackage');
+            return $this->loader->load($data, $class);
         } catch (\Exception $e) {
             throw new \RuntimeException('Could not load package '.(isset($data['name']) ? $data['name'] : json_encode($data)).' in '.$this->url.': ['.get_class($e).'] '.$e->getMessage(), 0, $e);
         }
@@ -541,6 +523,7 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
         }
 
         $retries = 3;
+        $data = null;
         while ($retries--) {
             try {
                 $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->rfs, $filename);

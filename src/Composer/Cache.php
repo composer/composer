@@ -149,6 +149,7 @@ class Cache
 
         $finder = $this->getFinder()->date('until '.$expire->format('Y-m-d H:i:s'));
         foreach ($finder as $file) {
+            /** @var \SplFileInfo $file */
             unlink($file->getRealPath());
         }
 

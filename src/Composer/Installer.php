@@ -18,6 +18,7 @@ use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\OperationInterface;
+use Composer\DependencyResolver\PolicyInterface;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Rule;
@@ -39,6 +40,7 @@ use Composer\Package\RootPackageInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\InstalledArrayRepository;
 use Composer\Repository\InstalledFilesystemRepository;
+use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositoryManager;
@@ -147,6 +149,8 @@ class Installer
     /**
      * Run installation (or update)
      *
+     * @throws \Exception
+     *
      * @return int 0 on success or a positive error code on failure
      */
     public function run()
@@ -222,6 +226,7 @@ class Installer
         foreach ($this->suggestedPackages as $suggestion) {
             $target = $suggestion['target'];
             foreach ($installedRepo->getPackages() as $package) {
+                /** @var PackageInterface $package */
                 if (in_array($target, $package->getNames())) {
                     continue 2;
                 }
@@ -253,9 +258,11 @@ class Installer
                     }
 
                     $solver = new Solver($policy, $pool, $installedRepo);
+                    /** @var OperationInterface[] $ops */
                     $ops = $solver->solve($request);
                     foreach ($ops as $op) {
                         if ($op->getJobType() === 'uninstall') {
+                            /** @var UninstallOperation $op */
                             $devPackages[] = $op->getPackage();
                         }
                     }
@@ -297,7 +304,7 @@ class Installer
         return 0;
     }
 
-    protected function doInstall($localRepo, $installedRepo, $platformRepo, $aliases, $withDevReqs)
+    protected function doInstall(InstalledRepositoryInterface $localRepo, RepositoryInterface $installedRepo, $platformRepo, $aliases, $withDevReqs)
     {
         // init vars
         $lockedRepository = null;
@@ -472,6 +479,7 @@ class Installer
         foreach ($operations as $operation) {
             // collect suggestions
             if ('install' === $operation->getJobType()) {
+                /** @var InstallOperation $operation */
                 foreach ($operation->getPackage()->getSuggests() as $target => $reason) {
                     $this->suggestedPackages[] = array(
                         'source' => $operation->getPackage()->getPrettyName(),
@@ -490,8 +498,10 @@ class Installer
             if (!$installFromLock) {
                 $package = null;
                 if ('update' === $operation->getJobType()) {
+                    /** @var UpdateOperation $operation */
                     $package = $operation->getTargetPackage();
                 } elseif ('install' === $operation->getJobType()) {
+                    /** @var InstallOperation $operation */
                     $package = $operation->getPackage();
                 }
                 if ($package && $package->isDev()) {
@@ -613,6 +623,7 @@ class Installer
         $constraint->setPrettyString($rootPackage->getPrettyVersion());
         $request->install($rootPackage->getName(), $constraint);
 
+        /** @var PackageInterface[] $fixedPackages */
         $fixedPackages = $platformRepo->getPackages();
         if ($this->additionalInstalledRepository) {
             $additionalFixedPackages = $this->additionalInstalledRepository->getPackages();
@@ -638,7 +649,15 @@ class Installer
         return $request;
     }
 
-    private function processDevPackages($localRepo, $pool, $policy, $repositories, $lockedRepository, $installFromLock, $task, array $operations = null)
+    private function processDevPackages(
+        InstalledRepositoryInterface $localRepo,
+        Pool $pool,
+        PolicyInterface $policy,
+        $repositories,
+        RepositoryInterface $lockedRepository = null,
+        $installFromLock,
+        $task,
+        array $operations = null)
     {
         if ($task === 'force-updates' && null === $operations) {
             throw new \InvalidArgumentException('Missing operations argument');
@@ -655,6 +674,7 @@ class Installer
 
             // skip packages that will be updated/uninstalled
             foreach ($operations as $operation) {
+                /** @var UpdateOperation|UninstallOperation $operation */
                 if (('update' === $operation->getJobType() && $operation->getInitialPackage()->equals($package))
                     || ('uninstall' === $operation->getJobType() && $operation->getPackage()->equals($package))
                 ) {
@@ -795,7 +815,11 @@ class Installer
         return false;
     }
 
-    private function extractPlatformRequirements($links)
+    /**
+     * @param Link[] $links
+     * @return array
+     */
+    private function extractPlatformRequirements(array $links)
     {
         $platformReqs = array();
         foreach ($links as $link) {
@@ -816,8 +840,8 @@ class Installer
      *
      * @param RepositoryInterface $localRepo
      * @param boolean             $devMode
-     * @param array               $rootRequires    An array of links to packages in require of the root package
-     * @param array               $rootDevRequires An array of links to packages in require-dev of the root package
+     * @param Link[]  $rootRequires    An array of links to packages in require of the root package
+     * @param Link[]  $rootDevRequires An array of links to packages in require-dev of the root package
      */
     private function whitelistUpdateDependencies($localRepo, $devMode, array $rootRequires, array $rootDevRequires)
     {
@@ -827,6 +851,7 @@ class Installer
 
         $requiredPackageNames = array();
         foreach (array_merge($rootRequires, $rootDevRequires) as $require) {
+            /** @var Link $require */
             $requiredPackageNames[] = $require->getTarget();
         }
 

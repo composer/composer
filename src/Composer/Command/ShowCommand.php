@@ -16,6 +16,8 @@ use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\DefaultPolicy;
 use Composer\Factory;
 use Composer\Package\CompletePackageInterface;
+use Composer\Package\Link;
+use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
@@ -35,6 +37,7 @@ use Composer\Repository\RepositoryInterface;
  */
 class ShowCommand extends Command
 {
+    /** @var  VersionParser */
     protected $versionParser;
 
     protected function configure()
@@ -102,7 +105,6 @@ EOT
 
         // show single package or single version
         if ($input->getArgument('package') || !empty($package)) {
-            $versions = array();
             if (empty($package)) {
                 list($package, $versions) = $this->getPackage($installedRepo, $repos, $input->getArgument('package'), $input->getArgument('version'));
 
@@ -114,22 +116,22 @@ EOT
             }
 
             $this->printMeta($input, $output, $package, $versions, $installedRepo, $repos);
-            $this->printLinks($input, $output, $package, 'requires');
-            $this->printLinks($input, $output, $package, 'devRequires', 'requires (dev)');
+            $this->printLinks($output, $package, 'requires');
+            $this->printLinks($output, $package, 'devRequires', 'requires (dev)');
             if ($package->getSuggests()) {
                 $output->writeln("\n<info>suggests</info>");
                 foreach ($package->getSuggests() as $suggested => $reason) {
                     $output->writeln($suggested . ' <comment>' . $reason . '</comment>');
                 }
             }
-            $this->printLinks($input, $output, $package, 'provides');
-            $this->printLinks($input, $output, $package, 'conflicts');
-            $this->printLinks($input, $output, $package, 'replaces');
+            $this->printLinks($output, $package, 'provides');
+            $this->printLinks($output, $package, 'conflicts');
+            $this->printLinks($output, $package, 'replaces');
 
             return;
         }
 
-        // list packages
+        /** @var PackageInterface[] $packages */
         $packages = array();
 
         if ($repos instanceof CompositeRepository) {
@@ -154,6 +156,7 @@ EOT
                     $packages[$type][$name] = $name;
                 }
             } else {
+                /** @var RepositoryInterface $repo */
                 foreach ($repo->getPackages() as $package) {
                     if (!isset($packages[$type][$package->getName()])
                         || !is_object($packages[$type][$package->getName()])
@@ -167,7 +170,8 @@ EOT
 
         $tree = !$input->getOption('platform') && !$input->getOption('installed') && !$input->getOption('available');
         $indent = $tree ? '  ' : '';
-        foreach (array('<info>platform</info>:' => true, '<comment>available</comment>:' => false, '<info>installed</info>:' => true) as $type => $showVersion) {
+        $typeMap = array('<info>platform</info>:' => true, '<comment>available</comment>:' => false, '<info>installed</info>:' => true);
+        foreach ($typeMap as $type => $showVersion) {
             if (isset($packages[$type])) {
                 if ($tree) {
                     $output->writeln($type);
@@ -177,6 +181,7 @@ EOT
                 $nameLength = $versionLength = 0;
                 foreach ($packages[$type] as $package) {
                     if (is_object($package)) {
+                        /** @var CompletePackageInterface $package */
                         $nameLength = max($nameLength, strlen($package->getPrettyName()));
                         $versionLength = max($versionLength, strlen($this->versionParser->formatVersion($package)));
                     } else {
@@ -196,6 +201,7 @@ EOT
                 $writeVersion = !$input->getOption('name-only') && $showVersion && ($nameLength + $versionLength + 3 <= $width);
                 $writeDescription = !$input->getOption('name-only') && ($nameLength + ($showVersion ? $versionLength : 0) + 24 <= $width);
                 foreach ($packages[$type] as $package) {
+                    /** @var CompletePackageInterface $package */
                     if (is_object($package)) {
                         $output->write($indent . str_pad($package->getPrettyName(), $nameLength, ' '), false);
 
@@ -280,7 +286,7 @@ EOT
         $output->writeln('<info>name</info>     : ' . $package->getPrettyName());
         $output->writeln('<info>descrip.</info> : ' . $package->getDescription());
         $output->writeln('<info>keywords</info> : ' . join(', ', $package->getKeywords() ?: array()));
-        $this->printVersions($input, $output, $package, $versions, $installedRepo, $repos);
+        $this->printVersions($output, $package, $versions, $installedRepo);
         $output->writeln('<info>type</info>     : ' . $package->getType());
         $output->writeln('<info>license</info>  : ' . implode(', ', $package->getLicense()));
         $output->writeln('<info>source</info>   : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getSourceType(), $package->getSourceUrl(), $package->getSourceReference()));
@@ -321,7 +327,7 @@ EOT
     /**
      * prints all available versions of this package and highlights the installed one if any
      */
-    protected function printVersions(InputInterface $input, OutputInterface $output, CompletePackageInterface $package, array $versions, RepositoryInterface $installedRepo, RepositoryInterface $repos)
+    protected function printVersions(OutputInterface $output, CompletePackageInterface $package, array $versions, RepositoryInterface $installedRepo)
     {
         uasort($versions, 'version_compare');
         $versions = array_keys(array_reverse($versions));
@@ -349,13 +355,14 @@ EOT
      * @param string                   $linkType
      * @param string                   $title
      */
-    protected function printLinks(InputInterface $input, OutputInterface $output, CompletePackageInterface $package, $linkType, $title = null)
+    protected function printLinks(OutputInterface $output, CompletePackageInterface $package, $linkType, $title = null)
     {
         $title = $title ?: $linkType;
         if ($links = $package->{'get'.ucfirst($linkType)}()) {
             $output->writeln("\n<info>" . $title . "</info>");
 
             foreach ($links as $link) {
+                /** @var Link $link */
                 $output->writeln($link->getTarget() . ' <comment>' . $link->getPrettyConstraint() . '</comment>');
             }
         }

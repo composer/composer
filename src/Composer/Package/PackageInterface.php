@@ -76,7 +76,7 @@ interface PackageInterface
     /**
      * Returns the package targetDir property
      *
-     * @return string The package targetDir
+     * @return string|null The package targetDir
      */
     public function getTargetDir();
 
@@ -90,7 +90,7 @@ interface PackageInterface
     /**
      * Sets source from which this package was installed (source/dist).
      *
-     * @param string $type source/dist
+     * @param string $type
      */
     public function setInstallationSource($type);
 
@@ -182,7 +182,7 @@ interface PackageInterface
      * Returns a set of links to packages which need to be installed before
      * this package can be installed
      *
-     * @return array An array of package links defining required packages
+     * @return Link[] An array of package links defining required packages
      */
     public function getRequires();
 
@@ -198,7 +198,7 @@ interface PackageInterface
      * Returns a set of links to virtual packages that are provided through
      * this package
      *
-     * @return array An array of package links defining provided packages
+     * @return Link[] An array of package links defining provided packages
      */
     public function getProvides();
 
@@ -206,7 +206,7 @@ interface PackageInterface
      * Returns a set of links to packages which can alternatively be
      * satisfied by installing this package
      *
-     * @return array An array of package links defining replaced packages
+     * @return Link[] An array of package links defining replaced packages
      */
     public function getReplaces();
 
@@ -301,4 +301,49 @@ interface PackageInterface
      * @return array
      */
     public function getArchiveExcludes();
+
+    /**
+     * @param string $reference
+     */
+    public function setSourceReference($reference);
+
+    /**
+     * @param string $reference
+     */
+    public function setDistReference($reference);
+
+    /**
+     * @param PackageInterface $package
+     *
+     * @return bool
+     */
+    public function equals(PackageInterface $package);
+
+    /**
+     * Set the required packages
+     *
+     * @param array $requires A set of package links
+     */
+    public function setRequires(array $requires);
+
+    /**
+     * Set the conflicting packages
+     *
+     * @param array $conflicts A set of package links
+     */
+    public function setConflicts(array $conflicts);
+
+    /**
+     * Set the provided virtual packages
+     *
+     * @param array $provides A set of package links
+     */
+    public function setProvides(array $provides);
+
+    /**
+     * Set the packages this one replaces
+     *
+     * @param array $replaces A set of package links
+     */
+    public function setReplaces(array $replaces);
 }

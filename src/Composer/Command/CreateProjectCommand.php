@@ -19,7 +19,7 @@ use Composer\Installer\ProjectInstaller;
 use Composer\Installer\InstallationManager;
 use Composer\IO\IOInterface;
 use Composer\Package\BasePackage;
-use Composer\Package\LinkConstraint\VersionConstraint;
+use Composer\Package\Link;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\Repository\ComposerRepository;
@@ -148,7 +148,7 @@ EOT
         $oldCwd = getcwd();
 
         if ($packageName !== null) {
-            $installedFromVcs = $this->installRootPackage($io, $config, $packageName, $directory, $packageVersion, $stability, $preferSource, $preferDist, $installDevPackages, $repositoryUrl, $disablePlugins, $noScripts, $keepVcs, $noProgress);
+            $installedFromVcs = $this->installRootPackage($io, $config, $packageName, $directory, $packageVersion, $stability, $preferSource, $preferDist, $repositoryUrl, $disablePlugins, $noProgress);
         } else {
             $installedFromVcs = false;
         }
@@ -213,6 +213,7 @@ EOT
             $configSource = new JsonConfigSource(new JsonFile('composer.json'));
             foreach (BasePackage::$supportedLinkTypes as $type => $meta) {
                 foreach ($package->{'get'.$meta['method']}() as $link) {
+                    /** @var Link $link */
                     if ($link->getPrettyConstraint() === 'self.version') {
                         $configSource->addLink($type, $link->getTarget(), $package->getPrettyVersion());
                     }
@@ -238,7 +239,7 @@ EOT
         return 0;
     }
 
-    protected function installRootPackage(IOInterface $io, $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositoryUrl = null, $disablePlugins = false, $noScripts = false, $keepVcs = false, $noProgress = false)
+    protected function installRootPackage(IOInterface $io, $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $repositoryUrl = null, $disablePlugins = false, $noProgress = false)
     {
         if (null === $repositoryUrl) {
             $sourceRepo = new CompositeRepository(Factory::createDefaultRepositories($io, $config));
@@ -251,7 +252,6 @@ EOT
         }
 
         $parser = new VersionParser();
-        $candidates = array();
         $requirements = $parser->parseNameVersionPairs(array($packageName));
         $name = strtolower($requirements[0]['name']);
         if (!$packageVersion && isset($requirements[0]['version'])) {
