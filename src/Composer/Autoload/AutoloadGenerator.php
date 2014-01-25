@@ -597,15 +597,14 @@ FOOTER;
                         $path = $package->getTargetDir() . '/' . $path;
                     }
 
-                    if (is_numeric($namespace)) {
-                        $namespace = 0;
+                    $relativePath = empty($installPath) ? (empty($path) ? '.' : $path) : $installPath.'/'.$path;
+
+                    if ($type === 'files' || $type === 'classmap') {
+                        $autoloads[0][] = $relativePath;
+                        continue;
                     }
 
-                    if (empty($installPath)) {
-                        $autoloads[$namespace][] = empty($path) ? '.' : $path;
-                    } else {
-                        $autoloads[$namespace][] = $installPath.'/'.$path;
-                    }
+                    $autoloads[$namespace][] = $relativePath;
                 }
             }
         }
