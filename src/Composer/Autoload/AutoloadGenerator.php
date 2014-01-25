@@ -183,7 +183,6 @@ EOF;
             }
         }
 
-        $autoloads['classmap'] = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($autoloads['classmap']));
         foreach ($autoloads['classmap'] as $dir) {
             foreach (ClassMapGenerator::createMap($dir) as $class => $path) {
                 $path = $this->getPathCode($filesystem, $basePath, $vendorPath, $path);
@@ -360,7 +359,6 @@ EOF;
     protected function getIncludeFilesFile(array $files, Filesystem $filesystem, $basePath, $vendorPath, $vendorPathCode, $appBaseDirCode)
     {
         $filesCode = '';
-        $files = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($files));
         foreach ($files as $functionFile) {
             $filesCode .= '    '.$this->getPathCode($filesystem, $basePath, $vendorPath, $functionFile).",\n";
         }
@@ -600,7 +598,7 @@ FOOTER;
                     $relativePath = empty($installPath) ? (empty($path) ? '.' : $path) : $installPath.'/'.$path;
 
                     if ($type === 'files' || $type === 'classmap') {
-                        $autoloads[0][] = $relativePath;
+                        $autoloads[] = $relativePath;
                         continue;
                     }
 
