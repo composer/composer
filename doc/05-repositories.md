@@ -192,7 +192,7 @@ integrity, for example:
 
 The file above declares that acme/foo and acme/bar can be found in this
 repository, by loading the file referenced by `providers-url`, replacing
-`%name%` by the package name and `%hash%` by the sha256 field. Those files
+`%package%` by the package name and `%hash%` by the sha256 field. Those files
 themselves just contain package definitions as described [above](#packages).
 
 This field is optional. You probably don't need it for your own custom
