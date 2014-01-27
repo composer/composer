@@ -112,7 +112,7 @@ for authentication asking your username and password so it can go ahead with its
 Unfortunately this will not work if you enabled two factor authentication on
 your GitHub account and to solve this issue you need to:
 
-1. [Create](https://github.com/settings/applications) an oauthtoken on GitHub.
+1. [Create](https://github.com/settings/applications) an oauth token on GitHub.
 [Read more](https://github.com/blog/1509-personal-api-tokens) on this.
 
 2. Add it to the configuration running `composer config -g github-oauth.github.com <oauthtoken>`
