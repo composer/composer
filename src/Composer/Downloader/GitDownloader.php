@@ -194,7 +194,7 @@ class GitDownloader extends VcsDownloader
     }
 
     /**
-     * Updates the given apth to the given commit ref
+     * Updates the given path to the given commit ref
      *
      * @param string $path
      * @param string $reference
