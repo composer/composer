@@ -27,6 +27,8 @@ use Composer\Script\ScriptEvents;
  */
 class AutoloadGenerator
 {
+    const EXCLUDE_PATTERN = '.*%s';
+
     /**
      * @var EventDispatcher
      */
@@ -154,6 +156,11 @@ EOF;
 EOF;
         }
 
+        $blacklist = '';
+        if(!empty($autoloads['exclude-from-classmap'])) {
+            $blacklist = '{(' . implode('|', $autoloads['exclude-from-classmap']) . ')}';
+        }
+
         // flatten array
         $classMap = array();
         if ($scanPsr0Packages) {
@@ -165,12 +172,7 @@ EOF;
                         if (!is_dir($dir)) {
                             continue;
                         }
-                        $whitelist = sprintf(
-                            '{%s/%s.+(?<!(?<!/)Test\.php)$}',
-                            preg_quote($dir),
-                            ($psrType === 'psr-4' || strpos($namespace, '_') === false) ? preg_quote(strtr($namespace, '\\', '/')) : ''
-                        );
-                        foreach (ClassMapGenerator::createMap($dir, $whitelist) as $class => $path) {
+                        foreach (ClassMapGenerator::createMap($dir, $blacklist) as $class => $path) {
                             if ('' === $namespace || 0 === strpos($class, $namespace)) {
                                 if (!isset($classMap[$class])) {
                                     $path = $this->getPathCode($filesystem, $basePath, $vendorPath, $path);
@@ -185,7 +187,7 @@ EOF;
 
         $autoloads['classmap'] = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($autoloads['classmap']));
         foreach ($autoloads['classmap'] as $dir) {
-            foreach (ClassMapGenerator::createMap($dir) as $class => $path) {
+            foreach (ClassMapGenerator::createMap($dir, $blacklist) as $class => $path) {
                 $path = $this->getPathCode($filesystem, $basePath, $vendorPath, $path);
                 $classMap[$class] = $path.",\n";
             }
@@ -285,11 +287,19 @@ EOF;
         $psr4 = $this->parseAutoloadsType($packageMap, 'psr-4', $mainPackage);
         $classmap = $this->parseAutoloadsType($sortedPackageMap, 'classmap', $mainPackage);
         $files = $this->parseAutoloadsType($sortedPackageMap, 'files', $mainPackage);
+        $exclude = $this->parseAutoloadsType($sortedPackageMap, 'exclude-from-classmap', $mainPackage);
 
         krsort($psr0);
         krsort($psr4);
 
-        return array('psr-0' => $psr0, 'psr-4' => $psr4, 'classmap' => $classmap, 'files' => $files);
+        return
+            array(
+             'psr-0' => $psr0,
+             'psr-4' => $psr4,
+             'classmap' => $classmap,
+             'files' => $files,
+             'exclude-from-classmap' => $exclude
+            );
     }
 
     /**
@@ -595,6 +605,23 @@ FOOTER;
                     // add target-dir to classmap entries that don't have it
                     if ($type === 'classmap' && $package !== $mainPackage && $package->getTargetDir() && !is_readable($installPath.'/'.$path)) {
                         $path = $package->getTargetDir() . '/' . $path;
+                    }
+
+                    if ($type === 'exclude-from-classmap') {
+                        // first escape user input
+                        $path = sprintf(self::EXCLUDE_PATTERN, preg_quote($path));
+
+                        if ($package === $mainPackage && $package->getTargetDir() && !is_readable($installPath.'/'.$path)) {
+                            // remove target-dir from classmap entries of the root package
+                            $targetDir = str_replace('\\<dirsep\\>', '[\\\\/]', preg_quote(str_replace(array('/', '\\'), '<dirsep>', $package->getTargetDir())));
+                            $path = ltrim(preg_replace('{^'.$targetDir.'}', '', ltrim($path, '\\/')), '\\/');
+                        }
+                        elseif($package !== $mainPackage && $package->getTargetDir() && !is_readable($installPath.'/'.$path)) {
+                            // add target-dir to exclude entries that don't have it
+                            $path = preg_quote($package->getTargetDir()) . '/' . $path;
+                        }
+                        $autoloads[] = empty($installPath) ? $path : preg_quote($installPath) . '/' . $path;
+                        continue;
                     }
 
                     if (empty($installPath)) {

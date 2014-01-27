@@ -1016,6 +1016,36 @@ EOF;
         $this->assertEquals($expectedPsr4, file_get_contents($this->vendorDir.'/composer/autoload_psr4.php'));
     }
 
+    public function testExcludeFromClassmap()
+    {
+        $package = new Package('a', '1.0', '1.0');
+        $package->setAutoload(array(
+            'psr-0' => array(
+                'Main' => 'src/',
+            ),
+            'classmap' => array('composersrc/'),
+            'exclude-from-classmap' => array('/tests/'),
+        ));
+
+        $this->repository->expects($this->once())
+            ->method('getCanonicalPackages')
+            ->will($this->returnValue(array()));
+
+        $this->fs->ensureDirectoryExists($this->workingDir.'/composer');
+        $this->fs->ensureDirectoryExists($this->workingDir.'/src');
+
+        $this->fs->ensureDirectoryExists($this->workingDir.'/composersrc');
+        file_put_contents($this->workingDir.'/composersrc/foo.php', '<?php class ClassMapFoo {}');
+
+        $this->fs->ensureDirectoryExists($this->workingDir.'/composersrc/tests');
+        file_put_contents($this->workingDir.'/composersrc/tests/bar.php', '<?php class ClassExcludeMapFoo {}');
+
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, '_1');
+
+                // Assert that autoload_classmap.php was correctly generated.
+        $this->assertAutoloadFiles('classmap', $this->vendorDir.'/composer', 'classmap');
+    }
+
     private function assertAutoloadFiles($name, $dir, $type = 'namespaces')
     {
         $a = __DIR__.'/Fixtures/autoload_'.$name.'.php';
