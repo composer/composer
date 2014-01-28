@@ -40,6 +40,8 @@ Composer fires the following named events during its execution process:
   installed, during the `create-project` command.
 - **post-create-project-cmd**: occurs after the `create-project` command is
   executed.
+- **pre-archive-cmd**: occurs before the `archive` command is executed.
+- **post-archive-cmd**: occurs after the `archive` command is executed.
 
 **NOTE: Composer makes no assumptions about the state of your dependencies 
 prior to `install` or `update`. Therefore, you should not specify scripts that 
