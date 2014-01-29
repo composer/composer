@@ -629,13 +629,13 @@ FOOTER;
 
         $computing = array();
         $computed = array();
-        $compute_importance = function($name) use(&$compute_importance, &$computing, &$computed, $usageList) {
-            # reusing computed importance
+        $computeImportance = function($name) use(&$computeImportance, &$computing, &$computed, $usageList) {
+            // reusing computed importance
             if (isset($computed[$name])) {
                 return $computed[$name];
             }
 
-            # canceling circular dependency
+            // canceling circular dependency
             if (isset($computing[$name])) {
                 return 0;
             }
@@ -645,7 +645,7 @@ FOOTER;
 
             if (isset($usageList[$name])) {
                 foreach ($usageList[$name] as $user) {
-                    $weight -= 1 - $compute_importance($user);
+                    $weight -= 1 - $computeImportance($user);
                 }
             }
 
@@ -658,7 +658,7 @@ FOOTER;
         $weightList = array();
 
         foreach ($packages as $name => $package) {
-            $weight = $compute_importance($name);
+            $weight = $computeImportance($name);
             $weightList[$name] = $weight;
         }
 
