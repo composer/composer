@@ -407,7 +407,7 @@ Example:
         "autoload": {
             "psr-4": {
                 "Monolog\\": "src/",
-                "Vendor\\Namespace\\": "",
+                "Vendor\\Namespace\\": ""
             }
         }
     }
