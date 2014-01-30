@@ -140,7 +140,7 @@ abstract class BaseExcludeFilter
             $pattern .= '/';
         }
 
-        $pattern .= substr(Finder\Glob::toRegex($rule), 2, -2);
+        $pattern .= substr(Finder\Glob::toRegex($rule), 2, -1);
 
         return array($pattern . '#', $negate, false);
     }
