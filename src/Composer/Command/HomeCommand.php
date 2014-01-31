@@ -15,8 +15,7 @@ namespace Composer\Command;
 use Composer\DependencyResolver\Pool;
 use Composer\Factory;
 use Composer\Package\CompletePackageInterface;
-use Composer\Plugin\CommandEvent;
-use Composer\Plugin\PluginEvents;
+use Composer\Package\Loader\InvalidPackageException;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\RepositoryInterface;
 use Symfony\Component\Console\Input\InputArgument;
@@ -63,7 +62,7 @@ EOT
             $url = isset($support['source']) ? $support['source'] : $package->getSourceUrl();
             $this->openBrowser($url);
         } else {
-            $output->writeln('no valid source-url given for ' . $package->getName());
+            throw new InvalidPackageException(array($package->getName() => 'invalid source-url'));
         }
     }
 
@@ -133,13 +132,6 @@ EOT
         } else {
             $defaultRepos = Factory::createDefaultRepositories($this->getIO());
             $repo = new CompositeRepository($defaultRepos);
-        }
-
-        if ($composer) {
-            $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'home', $input, $output);
-            $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
-
-            return $repo;
         }
 
         return $repo;
