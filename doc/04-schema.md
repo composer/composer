@@ -685,7 +685,7 @@ The following options are supported:
   to access private repositories on github and to circumvent the low IP-based
   rate limiting of their API.
   [Read more](articles/troubleshooting.md#api-rate-limit-and-oauth-tokens)
-  on how to get an oauth token for GitHub.
+  on how to get an OAuth token for GitHub.
 * **vendor-dir:** Defaults to `vendor`. You can install dependencies into a
   different directory if you want to.
 * **bin-dir:** Defaults to `vendor/bin`. If a project includes binaries, they

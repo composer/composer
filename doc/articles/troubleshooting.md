@@ -105,7 +105,7 @@ Or, you can increase the limit with a command-line argument:
    or ```HKEY_CURRENT_USER\Software\Microsoft\Command Processor```.
 3. Check if it contains any path to non-existent file, if it's the case, just remove them.
 
-## API rate limit and oauth tokens
+## API rate limit and OAuth tokens
 
 Because of GitHub's rate limits on their API it can happen that Composer prompts
 for authentication asking your username and password so it can go ahead with its work.
@@ -113,7 +113,7 @@ for authentication asking your username and password so it can go ahead with its
 If you would rather than provide your GitHub credentials to Composer you can
 manually create a token using the following procedure:
 
-1. [Create](https://github.com/settings/applications) an oauth token on GitHub.
+1. [Create](https://github.com/settings/applications) an OAuth token on GitHub.
 [Read more](https://github.com/blog/1509-personal-api-tokens) on this.
 
 2. Add it to the configuration running `composer config -g github-oauth.github.com <oauthtoken>`
