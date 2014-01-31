@@ -35,7 +35,8 @@ class HomeCommand extends Command
     protected function configure()
     {
         $this
-            ->setName('home')
+            ->setName('browse')
+            ->setAliases(array('home'))
             ->setDescription('opens the package in your browser')
             ->setDefinition(array(
                 new InputArgument('package', InputArgument::REQUIRED, 'Package to goto'),
