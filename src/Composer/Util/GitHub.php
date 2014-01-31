@@ -125,10 +125,10 @@ class GitHub
                     // 401 when authentication was supplied, handle 2FA if required.
                     if ($this->io->hasAuthentication($originUrl)) {
                         $headerNames = array_map(function($header) {
-                            return strstr($header, ':', true);
+                            return strtolower(strstr($header, ':', true));
                         }, $e->getHeaders());
 
-                        if ($key = array_search('X-GitHub-OTP', $headerNames)) {
+                        if ($key = array_search('x-github-otp', $headerNames)) {
                             $headers = $e->getHeaders();
                             list($required, $method) = array_map('trim', explode(';', substr(strstr($headers[$key], ':'), 1)));
 
