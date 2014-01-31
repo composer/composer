@@ -140,7 +140,7 @@ class GitHub
                                 }
 
                                 if ('sms' === $method) {
-                                    // @todo
+                                    $this->io->write('You have been sent an SMS message with an authentication code to verify your identity.');
                                 }
 
                                 $otp = $this->io->ask('Authentication Code: ');
