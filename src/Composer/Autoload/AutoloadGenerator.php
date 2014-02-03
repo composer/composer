@@ -166,9 +166,8 @@ EOF;
                             continue;
                         }
                         $whitelist = sprintf(
-                            '{%s/%s.+(?<!(?<!/)Test\.php)$}',
-                            preg_quote($dir),
-                            ($psrType === 'psr-4' || strpos($namespace, '_') === false) ? preg_quote(strtr($namespace, '\\', '/')) : ''
+                            '{%s/.+(?<!(?<!/)Test\.php)$}',
+                            preg_quote($dir)
                         );
                         foreach (ClassMapGenerator::createMap($dir, $whitelist) as $class => $path) {
                             if ('' === $namespace || 0 === strpos($class, $namespace)) {
