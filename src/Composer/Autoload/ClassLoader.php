@@ -266,7 +266,7 @@ class ClassLoader
     public function loadClass($class)
     {
         if ($file = $this->findFile($class)) {
-            include $file;
+            includeFile($file);
 
             return true;
         }
@@ -351,4 +351,14 @@ class ClassLoader
         // Remember that this class does not exist.
         return $this->classMap[$class] = false;
     }
+}
+
+/**
+ * Scope isolated include.
+ *
+ * Prevents access to $this/self from included files.
+ */
+function includeFile()
+{
+    include func_get_arg(0);
 }
