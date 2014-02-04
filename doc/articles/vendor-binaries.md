@@ -2,7 +2,7 @@
     tagline: Expose command-line scripts from packages
 -->
 
-# Vendor binaries and the `vendor/bin` directory
+# Vendor binaries and the `bin/` directory
 
 ## What is a vendor binary?
 
@@ -27,7 +27,7 @@ for any given project.
 
 ## What does defining a vendor binary in composer.json do?
 
-It instructs Composer to install the package's binaries to `vendor/bin`
+It instructs Composer to install the package's binaries to `bin/`
 for any project that **depends** on that project.
 
 This is a convenient way to expose useful scripts that would
@@ -42,7 +42,7 @@ For the binaries that a package defines directly, nothing happens.
 ## What happens when Composer is run on a composer.json that has dependencies with vendor binaries listed?
 
 Composer looks for the binaries defined in all of the dependencies. A
-symlink is created from each dependency's binaries to `vendor/bin`.
+symlink is created from each dependency's binaries to `bin/`.
 
 Say package `my-vendor/project-a` has binaries setup like this:
 
@@ -64,10 +64,10 @@ Say project `my-vendor/project-b` has requirements setup like this:
     }
 
 Running `composer install` for this `composer.json` will look at
-all of project-b's dependencies and install them to `vendor/bin`.
+all of project-b's dependencies and install them to `bin/`.
 
 In this case, Composer will make `vendor/my-vendor/project-a/bin/project-a-bin`
-available as `vendor/bin/project-a-bin`. On a Unix-like platform
+available as `bin/project-a-bin`. On a Unix-like platform
 this is accomplished by creating a symlink.
 
 
@@ -86,7 +86,7 @@ are welcome to maintain custom `.bat` files. In this case, the package
 should **not** list the `.bat` file as a binary as it is not needed.
 
 
-## Can vendor binaries be installed somewhere other than vendor/bin?
+## Can vendor binaries be installed somewhere other than bin?
 
 Yes, there are two ways an alternate vendor binary location can be specified:
 
@@ -103,4 +103,4 @@ An example of the former looks like this:
 
 Running `composer install` for this `composer.json` will result in
 all of the vendor binaries being installed in `scripts/` instead of
-`vendor/bin/`.
+`bin/`.
