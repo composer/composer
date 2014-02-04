@@ -198,10 +198,6 @@ class AutoloadGeneratorTest extends TestCase
         $package = new Package('a', '1.0', '1.0');
         $package->setAutoload(array(
             'psr-0' => array('Main\\Foo' => '', 'Main\\Bar' => ''),
-            'psr-4' => array(
-                'Acme\Fruit\\' => 'src-fruit/',
-                'Acme\Cake\\' => array('src-cake/', 'lib-cake/'),
-            ),
             'classmap' => array('Main/Foo/src', 'lib'),
             'files' => array('foo.php', 'Main/Foo/bar.php'),
         ));
