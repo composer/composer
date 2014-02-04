@@ -12,6 +12,7 @@
 
 namespace Composer\Command;
 
+use Composer\Package\PackageMap;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Symfony\Component\Console\Input\InputInterface;
@@ -59,6 +60,9 @@ EOT
             $output->writeln('<info>Generating autoload files</info>');
         }
 
-        $composer->getAutoloadGenerator()->dump($config, $localRepo, $package, $installationManager, 'composer', $optimize);
+        $packages = $localRepo->getCanonicalPackages();
+        $packageMap = new PackageMap($installationManager, $packages, $package);
+
+        $composer->getAutoloadGenerator()->dumpPackageMap($config, $packageMap, 'composer', $optimize);
     }
 }

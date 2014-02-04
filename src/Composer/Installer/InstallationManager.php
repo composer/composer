@@ -12,6 +12,7 @@
 
 namespace Composer\Installer;
 
+use Composer\Package\PackagePathFinderInterface;
 use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Plugin\PluginInstaller;
@@ -32,7 +33,7 @@ use Composer\Util\StreamContextFactory;
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Nils Adermann <naderman@naderman.de>
  */
-class InstallationManager
+class InstallationManager implements PackagePathFinderInterface
 {
     private $installers = array();
     private $cache = array();

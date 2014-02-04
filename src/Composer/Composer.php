@@ -67,7 +67,7 @@ class Composer
     private $config;
 
     /**
-     * @var EventDispatcher\EventDispatcher
+     * @var \Composer\EventDispatcher\EventDispatcher
      */
     private $eventDispatcher;
 
@@ -190,7 +190,7 @@ class Composer
     }
 
     /**
-     * @param EventDispatcher\EventDispatcher $eventDispatcher
+     * @param \Composer\EventDispatcher\EventDispatcher $eventDispatcher
      */
     public function setEventDispatcher(EventDispatcher $eventDispatcher)
     {
@@ -198,7 +198,7 @@ class Composer
     }
 
     /**
-     * @return EventDispatcher\EventDispatcher
+     * @return \Composer\EventDispatcher\EventDispatcher
      */
     public function getEventDispatcher()
     {

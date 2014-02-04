@@ -35,6 +35,7 @@ use Composer\Package\Link;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Package\Locker;
 use Composer\Package\PackageInterface;
+use Composer\Package\PackageMap;
 use Composer\Package\RootPackageInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\InstalledArrayRepository;
@@ -285,7 +286,10 @@ class Installer
                 $this->io->write('<info>Generating autoload files</info>');
             }
 
-            $this->autoloadGenerator->dump($this->config, $localRepo, $this->package, $this->installationManager, 'composer', $this->optimizeAutoloader);
+            $packages = $localRepo->getCanonicalPackages();
+            $packageMap = new PackageMap($this->installationManager, $packages, $this->package);
+
+            $this->autoloadGenerator->dumpPackageMap($this->config, $packageMap, 'composer', $this->optimizeAutoloader);
 
             if ($this->runScripts) {
                 // dispatch post event

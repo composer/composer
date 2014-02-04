@@ -15,6 +15,7 @@ namespace Composer\EventDispatcher;
 use Composer\IO\IOInterface;
 use Composer\Composer;
 use Composer\DependencyResolver\Operation\OperationInterface;
+use Composer\Package\PackageMap;
 use Composer\Script;
 use Composer\Script\CommandEvent;
 use Composer\Script\PackageEvent;
@@ -37,7 +38,12 @@ class EventDispatcher
 {
     protected $composer;
     protected $io;
+
+    /**
+     * @var \Composer\Autoload\ClassLoader
+     */
     protected $loader;
+
     protected $process;
 
     /**
@@ -239,12 +245,12 @@ class EventDispatcher
             $this->loader->unregister();
         }
 
-        $generator = $this->composer->getAutoloadGenerator();
         $packages = $this->composer->getRepositoryManager()->getLocalRepository()->getCanonicalPackages();
-        $packageMap = $generator->buildPackageMap($this->composer->getInstallationManager(), $package, $packages);
-        $map = $generator->parseAutoloads($packageMap, $package);
-        $this->loader = $generator->createLoader($map);
-        $this->loader->register();
+        $installationManager = $this->composer->getInstallationManager();
+
+        $packageMap = new PackageMap($installationManager, $packages);
+        $generator = $this->composer->getAutoloadGenerator();
+        $this->loader = $generator->createLoader($packageMap);
 
         return $scripts[$event->getName()];
     }

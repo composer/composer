@@ -16,6 +16,8 @@ use Composer\Composer;
 use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\IO\IOInterface;
 use Composer\Package\Package;
+use Composer\Package\PackageMap;
+use Composer\Package\PackagePathFinderInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\RepositoryInterface;
 use Composer\Package\AliasPackage;
@@ -29,7 +31,7 @@ use Composer\DependencyResolver\Pool;
  *
  * @author Nils Adermann <naderman@naderman.de>
  */
-class PluginManager
+class PluginManager implements PackagePathFinderInterface
 {
     protected $composer;
     protected $io;
@@ -186,6 +188,8 @@ class PluginManager
      * instead for BC
      *
      * @param PackageInterface $package
+     *
+     * @throws \UnexpectedValueException
      */
     public function registerPackage(PackageInterface $package)
     {
@@ -208,15 +212,8 @@ class PluginManager
         $autoloadPackages = $this->collectDependencies($pool, $autoloadPackages, $package);
 
         $generator = $this->composer->getAutoloadGenerator();
-        $autoloads = array();
-        foreach ($autoloadPackages as $autoloadPackage) {
-            $downloadPath = $this->getInstallPath($autoloadPackage, ($this->globalRepository && $this->globalRepository->hasPackage($autoloadPackage)));
-            $autoloads[] = array($autoloadPackage, $downloadPath);
-        }
-
-        $map = $generator->parseAutoloads($autoloads, new Package('dummy', '1.0.0.0', '1.0.0'));
-        $classLoader = $generator->createLoader($map);
-        $classLoader->register();
+        $packageMap = new PackageMap($this, $autoloadPackages, $package);
+        $classLoader = $generator->createLoader($packageMap);
 
         foreach ($classes as $class) {
             if (class_exists($class, false)) {
