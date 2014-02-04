@@ -72,7 +72,7 @@ class ArchiveManager
      */
     public function getPackageFilename(PackageInterface $package)
     {
-        $nameParts = array(preg_replace('#[^a-z0-9-_.]#i', '-', $package->getName()));
+        $nameParts = array(preg_replace('#[^a-z0-9-_]#i', '-', $package->getName()));
 
         if (preg_match('{^[a-f0-9]{40}$}', $package->getDistReference())) {
             $nameParts = array_merge($nameParts, array($package->getDistReference(), $package->getDistType()));
