@@ -178,7 +178,7 @@ class LibraryInstaller implements InstallerInterface
 
     protected function removeCode(PackageInterface $package)
     {
-        $downloadPath = $this->getInstallPath($package);
+        $downloadPath = $this->getPackageBasePath($package);
         $this->downloadManager->remove($package, $downloadPath);
     }
 
