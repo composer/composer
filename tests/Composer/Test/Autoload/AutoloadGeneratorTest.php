@@ -147,17 +147,19 @@ class AutoloadGeneratorTest extends TestCase
             ->will($this->returnValue(array()));
 
         $this->fs->ensureDirectoryExists($this->workingDir.'/composer');
-        $this->fs->ensureDirectoryExists($this->workingDir.'/src');
+        $this->fs->ensureDirectoryExists($this->workingDir.'/src/Lala');
         $this->fs->ensureDirectoryExists($this->workingDir.'/lib');
+        file_put_contents($this->workingDir.'/src/Lala/ClassMapMain.php', '<?php namespace Lala; class ClassMapMain {}');
 
         $this->fs->ensureDirectoryExists($this->workingDir.'/src-fruit');
         $this->fs->ensureDirectoryExists($this->workingDir.'/src-cake');
         $this->fs->ensureDirectoryExists($this->workingDir.'/lib-cake');
+        file_put_contents($this->workingDir.'/src-cake/ClassMapBar.php', '<?php namespace Acme\Cake; class ClassMapBar {}');
 
         $this->fs->ensureDirectoryExists($this->workingDir.'/composersrc');
         file_put_contents($this->workingDir.'/composersrc/foo.php', '<?php class ClassMapFoo {}');
 
-        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, '_1');
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', true, '_1');
 
         // Assert that autoload_namespaces.php was correctly generated.
         $this->assertAutoloadFiles('main', $this->vendorDir.'/composer');
