@@ -45,7 +45,7 @@ class ComposerAutoloaderInitFilesAutoloadOrder
 
         $includeFiles = require __DIR__ . '/autoload_files.php';
         foreach ($includeFiles as $file) {
-            require $file;
+            \Composer\Autoload\includeFile($file);
         }
 
         return $loader;
