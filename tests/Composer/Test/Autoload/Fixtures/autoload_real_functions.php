@@ -45,9 +45,14 @@ class ComposerAutoloaderInitFilesAutoload
 
         $includeFiles = require __DIR__ . '/autoload_files.php';
         foreach ($includeFiles as $file) {
-            \Composer\Autoload\includeFile($file);
+            composerRequireFilesAutoload($file);
         }
 
         return $loader;
     }
+}
+
+function composerRequireFilesAutoload($file)
+{
+    require $file;
 }

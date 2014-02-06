@@ -67,3 +67,8 @@ class ComposerAutoloaderInitIncludePath
         }
     }
 }
+
+function composerRequireIncludePath($file)
+{
+    require $file;
+}
