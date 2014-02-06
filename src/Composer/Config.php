@@ -65,6 +65,9 @@ class Config
         $this->configSource = $source;
     }
 
+    /**
+     * @return ConfigSourceInterface
+     */
     public function getConfigSource()
     {
         return $this->configSource;
@@ -254,7 +257,7 @@ class Config
     /**
      * Replaces {$refs} inside a config string
      *
-     * @param string a config string that can contain {$refs-to-other-config}
+     * @param string config string that can contain {$refs-to-other-config}
      * @return string
      */
     private function process($value)

@@ -119,7 +119,7 @@ class HgDriver extends VcsDriver
             $this->process->execute(sprintf('hg cat -r %s composer.json', escapeshellarg($identifier)), $composer, $this->repoDir);
 
             if (!trim($composer)) {
-                return;
+                return null;
             }
 
             $composer = JsonFile::parseJson($composer, $identifier);

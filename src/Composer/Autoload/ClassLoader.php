@@ -140,9 +140,10 @@ class ClassLoader
      * Registers a set of PSR-4 directories for a given namespace, either
      * appending or prepending to the ones previously set for this namespace.
      *
-     * @param string       $prefix  The prefix/namespace, with trailing '\\'
+     * @param string $prefix  The prefix/namespace, with trailing '\\'
      * @param array|string $paths   The PSR-0 base directories
-     * @param bool         $prepend Whether to prepend the directories
+     * @param bool $prepend Whether to prepend the directories
+     * @throws \InvalidArgumentException
      */
     public function addPsr4($prefix, $paths, $prepend = false)
     {
@@ -202,8 +203,9 @@ class ClassLoader
      * Registers a set of PSR-4 directories for a given namespace,
      * replacing any others previously set for this namespace.
      *
-     * @param string       $prefix  The prefix/namespace, with trailing '\\'
+     * @param string $prefix  The prefix/namespace, with trailing '\\'
      * @param array|string $paths   The PSR-4 base directories
+     * @throws \InvalidArgumentException
      */
     public function setPsr4($prefix, $paths) {
         if (!$prefix) {
@@ -270,6 +272,8 @@ class ClassLoader
 
             return true;
         }
+
+        return false;
     }
 
     /**
@@ -277,7 +281,7 @@ class ClassLoader
      *
      * @param string $class The name of the class
      *
-     * @return string|false The path if found, false otherwise
+     * @return string|bool The path if found, false otherwise
      */
     public function findFile($class)
     {

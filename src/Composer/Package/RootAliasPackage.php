@@ -17,6 +17,11 @@ namespace Composer\Package;
  */
 class RootAliasPackage extends AliasPackage implements RootPackageInterface
 {
+    /**
+     * @var RootPackageInterface
+     */
+    protected $aliasOf;
+
     public function __construct(RootPackageInterface $aliasOf, $version, $prettyVersion)
     {
         parent::__construct($aliasOf, $version, $prettyVersion);
@@ -82,5 +87,53 @@ class RootAliasPackage extends AliasPackage implements RootPackageInterface
     {
         parent::__clone();
         $this->aliasOf = clone $this->aliasOf;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setReferences(array $references)
+    {
+        $this->aliasOf->setReferences($references);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setAliases(array $aliases)
+    {
+        $this->aliasOf->setAliases($aliases);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setRepositories($repositories)
+    {
+        $this->aliasOf->setRepositories($repositories);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setMinimumStability($minimumStability)
+    {
+        $this->aliasOf->setMinimumStability($minimumStability);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setStabilityFlags(array $stabilityFlags)
+    {
+        $this->aliasOf->setStabilityFlags($stabilityFlags);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setPreferStable($preferStable)
+    {
+        $this->aliasOf->setPreferStable($preferStable);
     }
 }

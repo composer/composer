@@ -51,14 +51,14 @@ interface RepositoryInterface extends \Countable
      * @param string $name    package name
      * @param string $version package version
      *
-     * @return array
+     * @return PackageInterface[]
      */
     public function findPackages($name, $version = null);
 
     /**
      * Returns list of registered packages.
      *
-     * @return array
+     * @return PackageInterface[]
      */
     public function getPackages();
 

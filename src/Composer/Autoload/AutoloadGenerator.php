@@ -16,6 +16,7 @@ use Composer\Config;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Installer\InstallationManager;
 use Composer\Package\AliasPackage;
+use Composer\Package\Link;
 use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Util\Filesystem;
@@ -323,7 +324,7 @@ EOF;
 
         foreach ($packageMap as $item) {
             list($package, $installPath) = $item;
-
+            /** @var PackageInterface $package */
             if (null !== $package->getTargetDir() && strlen($package->getTargetDir()) > 0) {
                 $installPath = substr($installPath, 0, -strlen('/'.$package->getTargetDir()));
             }
@@ -335,7 +336,7 @@ EOF;
         }
 
         if (!$includePaths) {
-            return;
+            return null;
         }
 
         $includePathsCode = '';
@@ -562,13 +563,14 @@ FOOTER;
 
         foreach ($packageMap as $item) {
             list($package, $installPath) = $item;
-
+            /** @var PackageInterface $package */
             $autoload = $package->getAutoload();
 
             // skip misconfigured packages
             if (!isset($autoload[$type]) || !is_array($autoload[$type])) {
                 continue;
             }
+            /** @var PackageInterface $package */
             if (null !== $package->getTargetDir() && $package !== $mainPackage) {
                 $installPath = substr($installPath, 0, -strlen('/'.$package->getTargetDir()));
             }
@@ -616,6 +618,7 @@ FOOTER;
         $indexes = array();
 
         foreach ($packageMap as $position => $item) {
+            /** @var PackageInterface[] $item */
             $mainName = $item[0]->getName();
             $names = array_merge(array_fill_keys($item[0]->getNames(), $mainName), $names);
             $names[$mainName] = $mainName;
@@ -625,6 +628,7 @@ FOOTER;
         foreach ($packageMap as $item) {
             $position = $positions[$item[0]->getName()];
             foreach (array_merge($item[0]->getRequires(), $item[0]->getDevRequires()) as $link) {
+                /** @var Link $link */
                 $target = $link->getTarget();
                 if (!isset($names[$target])) {
                     continue;

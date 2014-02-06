@@ -103,6 +103,8 @@ class PluginManager
      * call this method as early as possible.
      *
      * @param RepositoryInterface $repo Repository to scan for plugins to install
+     *
+     * @throws \RuntimeException
      */
     public function loadRepository(RepositoryInterface $repo)
     {
@@ -110,6 +112,7 @@ class PluginManager
             if ($package instanceof AliasPackage) {
                 continue;
             }
+            /** @var PackageInterface $package */
             if ('composer-plugin' === $package->getType()) {
                 $requiresComposer = null;
                 foreach ($package->getRequires() as $link) {
@@ -186,6 +189,8 @@ class PluginManager
      * instead for BC
      *
      * @param PackageInterface $package
+     *
+     * @throws \UnexpectedValueException
      */
     public function registerPackage(PackageInterface $package)
     {

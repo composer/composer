@@ -26,9 +26,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     protected $aliases = array();
 
     /**
-     * Set the minimumStability
-     *
-     * @param string $minimumStability
+     * {@inheritdoc}
      */
     public function setMinimumStability($minimumStability)
     {
@@ -44,9 +42,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     }
 
     /**
-     * Set the stabilityFlags
-     *
-     * @param array $stabilityFlags
+     * {@inheritDoc}
      */
     public function setStabilityFlags(array $stabilityFlags)
     {
@@ -62,9 +58,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     }
 
     /**
-     * Set the preferStable
-     *
-     * @param bool $preferStable
+     * {@inheritDoc}
      */
     public function setPreferStable($preferStable)
     {
@@ -80,9 +74,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     }
 
     /**
-     * Set the references
-     *
-     * @param array $references
+     * {@inheritDoc}
      */
     public function setReferences(array $references)
     {
@@ -98,9 +90,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     }
 
     /**
-     * Set the aliases
-     *
-     * @param array $aliases
+     * {@inheritDoc}
      */
     public function setAliases(array $aliases)
     {
@@ -113,5 +103,13 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     public function getAliases()
     {
         return $this->aliases;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setRepositories($repositories)
+    {
+        $this->repositories = $repositories;
     }
 }

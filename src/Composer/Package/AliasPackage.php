@@ -18,11 +18,15 @@ use Composer\Package\Version\VersionParser;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class AliasPackage extends BasePackage implements CompletePackageInterface
+class AliasPackage extends CompletePackage implements CompletePackageInterface
 {
     protected $version;
     protected $prettyVersion;
     protected $dev;
+
+    /**
+     * @var CompletePackageInterface
+     */
     protected $aliasOf;
     protected $rootPackageAlias = false;
     protected $stability;
@@ -37,24 +41,21 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     /**
      * All descendants' constructors should call this parent constructor
      *
-     * @param PackageInterface $aliasOf       The package this package is an alias of
-     * @param string           $version       The version the alias must report
-     * @param string           $prettyVersion The alias's non-normalized version
+     * @param \Composer\Package\PackageInterface $aliasOf The package this package is an alias of
+     * @param string $version       The version the alias must report
+     * @param string $prettyVersion The alias's non-normalized version
      */
     public function __construct(PackageInterface $aliasOf, $version, $prettyVersion)
     {
-        parent::__construct($aliasOf->getName());
+        parent::__construct($aliasOf->getName(), $version, $prettyVersion);
 
-        $this->version = $version;
-        $this->prettyVersion = $prettyVersion;
         $this->aliasOf = $aliasOf;
-        $this->stability = VersionParser::parseStability($version);
-        $this->dev = $this->stability === 'dev';
 
         // replace self.version dependencies
         foreach (array('requires', 'devRequires') as $type) {
             $links = $aliasOf->{'get'.ucfirst($type)}();
             foreach ($links as $index => $link) {
+                /** @var Link $link */
                 // link is self.version, but must be replacing also the replaced version
                 if ('self.version' === $link->getPrettyConstraint()) {
                     $links[$index] = new Link($link->getSource(), $link->getTarget(), new VersionConstraint('=', $this->version), $type, $prettyVersion);
@@ -77,6 +78,9 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getAliasOf()
     {
         return $this->aliasOf;
@@ -185,114 +189,226 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     {
         return $this->aliasOf->getType();
     }
+
+    /**
+      * {@inheritDoc}
+      */
     public function getTargetDir()
     {
         return $this->aliasOf->getTargetDir();
     }
+
+    /**
+      * {@inheritDoc}
+      */
     public function getExtra()
     {
         return $this->aliasOf->getExtra();
     }
+
+    /**
+      * {@inheritDoc}
+      */
     public function setInstallationSource($type)
     {
         $this->aliasOf->setInstallationSource($type);
     }
+
+    /**
+      * {@inheritDoc}
+      */
     public function getInstallationSource()
     {
         return $this->aliasOf->getInstallationSource();
     }
+
+    /**
+      * {@inheritDoc}
+      */
     public function getSourceType()
     {
         return $this->aliasOf->getSourceType();
     }
+
+    /**
+      * {@inheritDoc}
+      */
     public function getSourceUrl()
     {
         return $this->aliasOf->getSourceUrl();
     }
+
+    /**
+      * {@inheritDoc}
+      */
     public function getSourceReference()
     {
         return $this->aliasOf->getSourceReference();
     }
+
+    /**
+     * {@inheritDoc}
+     */
     public function setSourceReference($reference)
     {
         return $this->aliasOf->setSourceReference($reference);
     }
+
+    /**
+     * {@inheritDoc}
+     */
     public function getDistType()
     {
         return $this->aliasOf->getDistType();
     }
+
+    /**
+     * {@inheritDoc}
+     */
     public function getDistUrl()
     {
         return $this->aliasOf->getDistUrl();
     }
+
+    /**
+     * {@inheritDoc}
+     */
     public function getDistReference()
     {
         return $this->aliasOf->getDistReference();
     }
+
+    /**
+     * {@inheritDoc}
+     */
     public function getDistSha1Checksum()
     {
         return $this->aliasOf->getDistSha1Checksum();
     }
+
+    /**
+     * {@inheritDoc}
+     */
     public function getScripts()
     {
         return $this->aliasOf->getScripts();
     }
+
+    /**
+     * {@inheritDoc}
+     */
     public function getLicense()
     {
         return $this->aliasOf->getLicense();
     }
+
+    /**
+     * {@inheritDoc}
+     */
     public function getAutoload()
     {
         return $this->aliasOf->getAutoload();
     }
+
+    /**
+     * {@inheritDoc}
+     */
     public function getIncludePaths()
     {
         return $this->aliasOf->getIncludePaths();
     }
+
+    /**
+     * {@inheritDoc}
+     */
     public function getRepositories()
     {
         return $this->aliasOf->getRepositories();
     }
+
+    /**
+     * {@inheritDoc}
+     */
     public function getReleaseDate()
     {
         return $this->aliasOf->getReleaseDate();
     }
+
+    /**
+     * {@inheritDoc}
+     */
     public function getBinaries()
     {
         return $this->aliasOf->getBinaries();
     }
+
+    /**
+     * {@inheritDoc}
+     */
     public function getKeywords()
     {
         return $this->aliasOf->getKeywords();
     }
+
+    /**
+      * {@inheritDoc}
+      */
     public function getDescription()
     {
         return $this->aliasOf->getDescription();
     }
+
+    /**
+      * {@inheritDoc}
+      */
     public function getHomepage()
     {
         return $this->aliasOf->getHomepage();
     }
+
+    /**
+      * {@inheritDoc}
+      */
     public function getSuggests()
     {
         return $this->aliasOf->getSuggests();
     }
+
+    /**
+      * {@inheritDoc}
+      */
     public function getAuthors()
     {
         return $this->aliasOf->getAuthors();
     }
+
+    /**
+      * {@inheritDoc}
+      */
     public function getSupport()
     {
         return $this->aliasOf->getSupport();
     }
+
+    /**
+      * {@inheritDoc}
+      */
     public function getNotificationUrl()
     {
         return $this->aliasOf->getNotificationUrl();
     }
+
+    /**
+      * {@inheritDoc}
+      */
     public function getArchiveExcludes()
     {
         return $this->aliasOf->getArchiveExcludes();
     }
+
+    /**
+      * {@inheritDoc}
+      */
     public function __toString()
     {
         return parent::__toString().' (alias of '.$this->aliasOf->getVersion().')';

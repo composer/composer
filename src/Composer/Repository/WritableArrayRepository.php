@@ -13,6 +13,7 @@
 namespace Composer\Repository;
 
 use Composer\Package\AliasPackage;
+use Composer\Package\PackageInterface;
 
 /**
  * Writable array repository.
@@ -40,6 +41,7 @@ class WritableArrayRepository extends ArrayRepository implements WritableReposit
      */
     public function getCanonicalPackages()
     {
+        /** @var PackageInterface[] $packages */
         $packages = $this->getPackages();
 
         // get at most one package of each name, prefering non-aliased ones

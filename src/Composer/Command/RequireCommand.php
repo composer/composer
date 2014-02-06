@@ -89,7 +89,7 @@ EOT
             $versionParser->parseConstraints($constraint);
         }
 
-        if (!$this->updateFileCleanly($json, $baseRequirements, $requirements, $requireKey)) {
+        if (!$this->updateFileCleanly($json, $requirements, $requireKey)) {
             foreach ($requirements as $package => $version) {
                 $baseRequirements[$package] = $version;
             }
@@ -132,7 +132,7 @@ EOT
         return $status;
     }
 
-    private function updateFileCleanly($json, array $base, array $new, $requireKey)
+    private function updateFileCleanly(JsonFile $json, array $new, $requireKey)
     {
         $contents = file_get_contents($json->getPath());
 

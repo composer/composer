@@ -129,6 +129,7 @@ class Application extends BaseApplication
 
     /**
      * @param  InputInterface    $input
+     * @return string
      * @throws \RuntimeException
      */
     private function getNewWorkingDir(InputInterface $input)
@@ -160,7 +161,8 @@ class Application extends BaseApplication
             }
         } catch (\Exception $e) {}
 
-        return parent::renderException($exception, $output);
+        parent::renderException($exception, $output);
+        return null;
     }
 
     /**

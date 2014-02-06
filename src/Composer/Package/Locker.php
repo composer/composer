@@ -256,6 +256,11 @@ class Locker
         return false;
     }
 
+    /**
+     * @param PackageInterface[] $packages
+     * @return array
+     * @throws \LogicException
+     */
     private function lockPackages(array $packages)
     {
         $locked = array();

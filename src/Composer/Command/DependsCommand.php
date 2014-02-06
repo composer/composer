@@ -13,6 +13,7 @@
 namespace Composer\Command;
 
 use Composer\DependencyResolver\Pool;
+use Composer\Package\Link;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Symfony\Component\Console\Input\InputInterface;
@@ -84,6 +85,7 @@ EOT
         foreach ($repo->getPackages() as $package) {
             foreach ($types as $type) {
                 foreach ($package->{'get'.$linkTypes[$type][0]}() as $link) {
+                    /** @var Link $link */
                     if ($link->getTarget() === $needle) {
                         if (!isset($outputPackages[$package->getName()])) {
                             $messages[] = '<info>'.$package->getPrettyName() . '</info> ' . $linkTypes[$type][1] . ' ' . $needle .' (<info>' . $link->getPrettyConstraint() . '</info>)';

@@ -20,6 +20,7 @@ use Composer\Repository\Pear\ChannelInfo;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Package\Link;
 use Composer\Package\LinkConstraint\VersionConstraint;
+use Composer\Repository\Pear\DependencyConstraint;
 use Composer\Util\RemoteFilesystem;
 use Composer\Config;
 
@@ -151,6 +152,7 @@ class PearRepository extends ArrayRepository
                 }
 
                 foreach ($releaseInfo->getDependencyInfo()->getOptionals() as $group => $dependencyConstraints) {
+                    /** @var DependencyConstraint[] $dependencyConstraints */
                     foreach ($dependencyConstraints as $dependencyConstraint) {
                         $dependencyPackageName = $this->buildComposerPackageName($dependencyConstraint->getChannelName(), $dependencyConstraint->getPackageName());
                         $suggests[$group.'-'.$dependencyPackageName] = $dependencyConstraint->getConstraint();

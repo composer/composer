@@ -23,7 +23,7 @@ use Composer\Util\RemoteFilesystem;
  */
 class ChannelReader extends BaseChannelReader
 {
-    /** @var array of ('xpath test' => 'rest implementation') */
+    /** @var ChannelReader[] of ('xpath test' => 'rest implementation') */
     private $readerMap;
 
     public function __construct(RemoteFilesystem $rfs)
@@ -53,7 +53,6 @@ class ChannelReader extends BaseChannelReader
         $xml = $this->requestXml($url, "/channel.xml");
 
         $channelName = (string) $xml->name;
-        $channelSummary = (string) $xml->summary;
         $channelAlias = (string) $xml->suggestedalias;
 
         $supportedVersions = array_keys($this->readerMap);

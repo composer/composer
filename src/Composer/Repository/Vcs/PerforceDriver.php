@@ -24,6 +24,7 @@ class PerforceDriver extends VcsDriver
 {
     protected $depot;
     protected $branch;
+    /** @var Perforce */
     protected $perforce;
     protected $composerInfo;
     protected $composerInfoIdentifier;

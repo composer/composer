@@ -14,8 +14,9 @@ namespace Composer\DependencyResolver;
 
 use Composer\Package\BasePackage;
 use Composer\Package\AliasPackage;
+use Composer\Package\CompletePackageInterface;
+use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
-use Composer\Package\Link;
 use Composer\Package\LinkConstraint\LinkConstraintInterface;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Package\LinkConstraint\EmptyConstraint;
@@ -42,6 +43,10 @@ class Pool
     const MATCH_FILTERED = 4;
 
     protected $repositories = array();
+
+    /**
+     * @var ComposerRepository[]
+     */
     protected $providerRepos = array();
     protected $packages = array();
     protected $packageByName = array();
@@ -54,7 +59,6 @@ class Pool
 
     public function __construct($minimumStability = 'stable', array $stabilityFlags = array(), array $filterRequires = array())
     {
-        $stabilities = BasePackage::$stabilities;
         $this->versionParser = new VersionParser;
         $this->acceptableStabilities = array();
         foreach (BasePackage::$stabilities as $stability => $value) {
@@ -161,6 +165,7 @@ class Pool
                 }
             } else {
                 foreach ($repo->getPackages() as $package) {
+                    /** @var CompletePackageInterface $package */
                     $names = $package->getNames();
                     $stability = $package->getStability();
                     if ($exempt || $this->isPackageAcceptable($names, $stability)) {
@@ -176,12 +181,14 @@ class Pool
                         if (isset($rootAliases[$name][$package->getVersion()])) {
                             $alias = $rootAliases[$name][$package->getVersion()];
                             if ($package instanceof AliasPackage) {
+                                /** @var AliasPackage $package */
                                 $package = $package->getAliasOf();
                             }
                             $aliasPackage = new AliasPackage($package, $alias['alias_normalized'], $alias['alias']);
                             $aliasPackage->setRootPackageAlias(true);
                             $aliasPackage->setId($this->id++);
 
+                            /** @var */
                             $package->getRepository()->addPackage($aliasPackage);
                             $this->packages[] = $aliasPackage;
 
@@ -223,7 +230,7 @@ class Pool
      * @param string                  $name       The package name to be searched for
      * @param LinkConstraintInterface $constraint A constraint that all returned
      *                                            packages must match or null to return all
-     * @return array A set of packages
+     * @return PackageInterface[]
      */
     public function whatProvides($name, LinkConstraintInterface $constraint = null)
     {

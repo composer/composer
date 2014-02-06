@@ -137,6 +137,8 @@ EOT
         } else {
             $output->writeln('<warning>A backup of the current version could not be written to '.$backupFile.', no rollback possible</warning>');
         }
+
+        return null;
     }
 
     protected function rollback(OutputInterface $output, $rollbackDir, $localFilename)
@@ -196,6 +198,8 @@ EOT
 
             return $e;
         }
+
+        return null;
     }
 
     protected function getLastBackupVersion($rollbackDir)

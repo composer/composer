@@ -25,6 +25,9 @@ use Composer\Config;
  */
 class GitDriver extends VcsDriver
 {
+    /**
+     * @var Cache
+     */
     protected $cache;
     protected $tags;
     protected $branches;
@@ -146,7 +149,7 @@ class GitDriver extends VcsDriver
             $this->process->execute(sprintf('git show %s', $resource), $composer, $this->repoDir);
 
             if (!trim($composer)) {
-                return;
+                return null;
             }
 
             $composer = JsonFile::parseJson($composer, $resource);

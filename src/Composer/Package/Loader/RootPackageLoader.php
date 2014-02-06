@@ -16,6 +16,8 @@ use Composer\Package\BasePackage;
 use Composer\Package\AliasPackage;
 use Composer\Config;
 use Composer\Factory;
+use Composer\Package\Link;
+use Composer\Package\RootPackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\Vcs\HgDriver;
@@ -44,6 +46,11 @@ class RootPackageLoader extends ArrayLoader
         parent::__construct($parser);
     }
 
+    /**
+     * @param array $config
+     * @param string $class
+     * @return AliasPackage|\Composer\Package\CompletePackageInterface|\Composer\Package\RootAliasPackage|RootPackageInterface
+     */
     public function load(array $config, $class = 'Composer\Package\RootPackage')
     {
         if (!isset($config['name'])) {
@@ -64,6 +71,7 @@ class RootPackageLoader extends ArrayLoader
             $config['version'] = $version;
         }
 
+        /** @var RootPackageInterface $realPackage */
         $realPackage = $package = parent::load($config, $class);
 
         if ($realPackage instanceof AliasPackage) {
@@ -83,6 +91,7 @@ class RootPackageLoader extends ArrayLoader
                 $method = 'get'.ucfirst($linkInfo['method']);
                 $links = array();
                 foreach ($realPackage->$method() as $link) {
+                    /** @var Link $link */
                     $links[$link->getTarget()] = $link->getConstraint()->getPrettyString();
                 }
                 $aliases = $this->extractAliases($links, $aliases);
@@ -171,6 +180,10 @@ class RootPackageLoader extends ArrayLoader
         return $references;
     }
 
+    /**
+     * @param array $config
+     * @return null|string
+     */
     private function guessVersion(array $config)
     {
         if (function_exists('proc_open')) {
@@ -179,10 +192,16 @@ class RootPackageLoader extends ArrayLoader
                 return $version;
             }
 
-            return $this->guessHgVersion($config);
+            return $this->guessHgVersion();
         }
+
+        return null;
     }
 
+    /**
+     * @param array $config
+     * @return null|string
+     */
     private function guessGitVersion(array $config)
     {
         $util = new GitUtil;
@@ -233,9 +252,11 @@ class RootPackageLoader extends ArrayLoader
 
             return $version;
         }
+
+        return null;
     }
 
-    private function guessHgVersion(array $config)
+    private function guessHgVersion()
     {
         // try to fetch current version from hg branch
         if (0 === $this->process->execute('hg branch', $output)) {
@@ -261,6 +282,8 @@ class RootPackageLoader extends ArrayLoader
 
             return $version;
         }
+
+        return null;
     }
 
     private function guessFeatureVersion(array $config, $version, array $branches, $scmCmdline)

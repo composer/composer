@@ -13,6 +13,8 @@
 
 namespace Composer\Autoload;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\Finder\SplFileInfo;
+use Symfony\Component\Finder\Tests\Iterator\Iterator;
 
 /**
  * ClassMapGenerator
@@ -24,10 +26,10 @@ class ClassMapGenerator
     /**
      * Generate a class map file
      *
-     * @param Traversable $dirs Directories or a single path to search in
+     * @param \Traversable $dirs Directories or a single path to search in
      * @param string      $file The name of the class map file
      */
-    public static function dump($dirs, $file)
+    public static function dump(\Traversable $dirs, $file)
     {
         $maps = array();
 
@@ -66,6 +68,7 @@ class ClassMapGenerator
         $map = array();
 
         foreach ($path as $file) {
+            /** @var SplFileInfo $file */
             $filePath = $file->getRealPath();
 
             if (!in_array(pathinfo($filePath, PATHINFO_EXTENSION), array('php', 'inc'))) {

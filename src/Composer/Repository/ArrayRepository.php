@@ -48,6 +48,8 @@ class ArrayRepository implements RepositoryInterface
                 return $package;
             }
         }
+
+        return null;
     }
 
     /**

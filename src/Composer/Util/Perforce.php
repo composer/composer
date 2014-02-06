@@ -99,7 +99,6 @@ class Perforce
 
     public function cleanupClientSpec()
     {
-        $client = $this->getClient();
         $command = 'p4 client -d $client';
         $this->executeCommand($command);
         $clientSpec = $this->getP4ClientSpec();
@@ -237,6 +236,7 @@ class Perforce
             $result = trim($this->commandResult);
             return $result;
         }
+        return null;
     }
 
     public function queryP4Password(IOInterface $io)

@@ -24,7 +24,6 @@ use Composer\Downloader\TransportException;
 class RemoteFilesystem
 {
     private $io;
-    private $firstCall;
     private $bytesMax;
     private $originUrl;
     private $fileUrl;

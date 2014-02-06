@@ -12,12 +12,14 @@
 
 namespace Composer\Command;
 
+use Composer\Command\Helper\DialogHelper;
 use Composer\Json\JsonFile;
 use Composer\Factory;
 use Composer\Package\BasePackage;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Package\Version\VersionParser;
+use Symfony\Component\Console\Helper\FormatterHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -79,6 +81,7 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        /** @var DialogHelper $dialog */
         $dialog = $this->getHelperSet()->get('dialog');
 
         $whitelist = array('name', 'description', 'author', 'homepage', 'require', 'require-dev', 'stability', 'license');
@@ -141,13 +144,15 @@ EOT
                 }
             }
         }
+        return null;
     }
 
     protected function interact(InputInterface $input, OutputInterface $output)
     {
         $git = $this->getGitConfig();
-
+        /** @var DialogHelper $dialog */
         $dialog = $this->getHelperSet()->get('dialog');
+        /** @var FormatterHelper $formatter */
         $formatter = $this->getHelperSet()->get('formatter');
         $output->writeln(array(
             '',
@@ -284,8 +289,6 @@ EOT
 
     protected function findPackages($name)
     {
-        $packages = array();
-
         // init repos
         if (!$this->repos) {
             $this->repos = new CompositeRepository(array_merge(
@@ -299,6 +302,7 @@ EOT
 
     protected function determineRequirements(InputInterface $input, OutputInterface $output, $requires = array())
     {
+        /** @var DialogHelper $dialog */
         $dialog = $this->getHelperSet()->get('dialog');
         $prompt = $dialog->getQuestion('Search for a package', false, ':');
 
@@ -306,7 +310,7 @@ EOT
             $requires = $this->normalizeRequirements($requires);
             $result = array();
 
-            foreach ($requires as $key => $requirement) {
+            foreach ($requires as $requirement) {
                 if (!isset($requirement['version']) && $input->isInteractive()) {
                     $question = $dialog->getQuestion('Please provide a version constraint for the '.$requirement['name'].' requirement');
                     if ($constraint = $dialog->ask($output, $question)) {
