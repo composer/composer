@@ -611,45 +611,83 @@ FOOTER;
 
     protected function sortPackageMap(array $packageMap)
     {
-        $positions = array();
-        $names = array();
-        $indexes = array();
-
-        foreach ($packageMap as $position => $item) {
-            $mainName = $item[0]->getName();
-            $names = array_merge(array_fill_keys($item[0]->getNames(), $mainName), $names);
-            $names[$mainName] = $mainName;
-            $indexes[$mainName] = $positions[$mainName] = $position;
-        }
+        $packages = array();
+        $paths = array();
+        $usageList = array();
 
         foreach ($packageMap as $item) {
-            $position = $positions[$item[0]->getName()];
-            foreach (array_merge($item[0]->getRequires(), $item[0]->getDevRequires()) as $link) {
+            list($package, $path) = $item;
+            $name = $package->getName();
+            $packages[$name] = $package;
+            $paths[$name] = $path;
+
+            foreach (array_merge($package->getRequires(), $package->getDevRequires()) as $link) {
                 $target = $link->getTarget();
-                if (!isset($names[$target])) {
-                    continue;
-                }
-
-                $target = $names[$target];
-                if ($positions[$target] <= $position) {
-                    continue;
-                }
-
-                foreach ($positions as $key => $value) {
-                    if ($value >= $position) {
-                        break;
-                    }
-                    $positions[$key]--;
-                }
-
-                $positions[$target] = $position - 1;
+                $usageList[$target][] = $name;
             }
-            asort($positions);
         }
 
+        $computing = array();
+        $computed = array();
+        $computeImportance = function($name) use(&$computeImportance, &$computing, &$computed, $usageList) {
+            // reusing computed importance
+            if (isset($computed[$name])) {
+                return $computed[$name];
+            }
+
+            // canceling circular dependency
+            if (isset($computing[$name])) {
+                return 0;
+            }
+
+            $computing[$name] = true;
+            $weight = 0;
+
+            if (isset($usageList[$name])) {
+                foreach ($usageList[$name] as $user) {
+                    $weight -= 1 - $computeImportance($user);
+                }
+            }
+
+            unset($computing[$name]);
+            $computed[$name] = $weight;
+
+            return $weight;
+        };
+
+        $weightList = array();
+
+        foreach ($packages as $name => $package) {
+            $weight = $computeImportance($name);
+            $weightList[$name] = $weight;
+        }
+
+        $stable_sort = function(&$array) {
+            static $transform, $restore;
+
+            $i = 0;
+
+            if (!$transform) {
+                $transform = function(&$v, $k) use(&$i) {
+                    $v = array($v, ++$i, $k, $v);
+                };
+
+                $restore = function(&$v, $k) {
+                    $v = $v[3];
+                };
+            }
+
+            array_walk($array, $transform);
+            asort($array);
+            array_walk($array, $restore);
+        };
+
+        $stable_sort($weightList);
+
         $sortedPackageMap = array();
-        foreach (array_keys($positions) as $packageName) {
-            $sortedPackageMap[] = $packageMap[$indexes[$packageName]];
+
+        foreach (array_keys($weightList) as $name) {
+            $sortedPackageMap[] = array($packages[$name], $paths[$name]);
         }
 
         return $sortedPackageMap;
