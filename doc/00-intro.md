@@ -121,7 +121,7 @@ composer.phar:
     C:\Users\username>cd C:\bin
     C:\bin>php -r "readfile('https://getcomposer.org/installer');" | php
 
-> **Note:** If the above fails due to file_get_contents, use the `http` url or enable php_openssl.dll in php.ini
+> **Note:** If the above fails due to readfile, use the `http` url or enable php_openssl.dll in php.ini
 
 Create a new `composer.bat` file alongside `composer.phar`:
 
