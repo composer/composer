@@ -609,6 +609,14 @@ FOOTER;
         return $autoloads;
     }
 
+    /**
+     * Sorts packages by dependency weight
+     *
+     * Packages of equal weight retain the original order
+     *
+     * @param array $packageMap
+     * @return array
+     */
     protected function sortPackageMap(array $packageMap)
     {
         $packages = array();
