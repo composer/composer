@@ -47,7 +47,7 @@ class ComposerAutoloaderInitTargetDir
 
         $includeFiles = require __DIR__ . '/autoload_files.php';
         foreach ($includeFiles as $file) {
-            \Composer\Autoload\includeFile($file);
+            composerRequireTargetDir($file);
         }
 
         return $loader;
@@ -70,4 +70,9 @@ class ComposerAutoloaderInitTargetDir
             return true;
         }
     }
+}
+
+function composerRequireTargetDir($file)
+{
+    require $file;
 }

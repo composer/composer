@@ -530,10 +530,10 @@ REGISTER_AUTOLOAD;
 REGISTER_LOADER;
 
         if ($useIncludeFiles) {
-            $file .= <<<'INCLUDE_FILES'
-        $includeFiles = require __DIR__ . '/autoload_files.php';
-        foreach ($includeFiles as $file) {
-            \Composer\Autoload\includeFile($file);
+            $file .= <<<INCLUDE_FILES
+        \$includeFiles = require __DIR__ . '/autoload_files.php';
+        foreach (\$includeFiles as \$file) {
+            composerRequire$suffix(\$file);
         }
 
 
@@ -550,6 +550,11 @@ METHOD_FOOTER;
         $file .= $targetDirLoader;
 
         return $file . <<<FOOTER
+}
+
+function composerRequire$suffix(\$file)
+{
+    require \$file;
 }
 
 FOOTER;
