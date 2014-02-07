@@ -312,7 +312,7 @@ class RootPackageLoader extends ArrayLoader
             $urlPattern = '#<url>.*/('.$trunkPath.'|('.$branchesPath.'|'. $tagsPath .')/(.*))</url>#';
 
             if (preg_match($urlPattern, $output, $matches)) {
-                if (isset($matches[2]) && $branchesPath === $matches[2]) {
+                if (isset($matches[2]) && ($branchesPath === $matches[2] || $tagsPath === $matches[2])) {
                     // we are in a branches path
                     $version = $this->versionParser->normalizeBranch($matches[3]);
                     if ('9999999-dev' === $version) {
