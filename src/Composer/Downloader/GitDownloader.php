@@ -312,14 +312,19 @@ class GitDownloader extends VcsDownloader
         }
 
         // public github, autoswitch protocols
-        if (preg_match('{^(?:https?|git)(://'.$this->getGitHubDomainsRegex().'/.*)}', $url, $match)) {
+        if (preg_match('{^(?:https?|git)://'.$this->getGitHubDomainsRegex().'/(.*)}', $url, $match)) {
             $protocols = $this->config->get('github-protocols');
             if (!is_array($protocols)) {
                 throw new \RuntimeException('Config value "github-protocols" must be an array, got '.gettype($protocols));
             }
             $messages = array();
             foreach ($protocols as $protocol) {
-                $url = $protocol . $match[1];
+                if ('ssh' === $protocol) {
+                    $url = "git@" . $match[1] . ":" . $match[2];
+                } else {
+                    $url = $protocol ."://" . $match[1] . "/" . $match[2];
+                }
+
                 if (0 === $this->process->execute(call_user_func($commandCallable, $url), $ignoredOutput, $cwd)) {
                     return;
                 }
