@@ -59,6 +59,10 @@ class RemoteFilesystem
      */
     public function copy($originUrl, $fileUrl, $fileName, $progress = true, $options = array())
     {
+        if (!ini_get('allow_url_fopen') && extension_loaded('curl')) {
+            return $this->getCurl($originUrl, $fileUrl, $options, $fileName, $progress);
+        }
+
         return $this->get($originUrl, $fileUrl, $options, $fileName, $progress);
     }
 
@@ -74,6 +78,10 @@ class RemoteFilesystem
      */
     public function getContents($originUrl, $fileUrl, $progress = true, $options = array())
     {
+        if (!ini_get('allow_url_fopen') && extension_loaded('curl')) {
+            return $this->getCurl($originUrl, $fileUrl, $options, null, $progress);
+        }
+
         return $this->get($originUrl, $fileUrl, $options, null, $progress);
     }
 
@@ -85,6 +93,172 @@ class RemoteFilesystem
     public function getOptions()
     {
         return $this->options;
+    }
+
+    /**
+     * Get file content or copy action.
+     *
+     * @param string  $originUrl         The origin URL
+     * @param string  $fileUrl           The file URL
+     * @param array   $additionalOptions context options
+     * @param string  $fileName          the local filename
+     * @param boolean $progress          Display the progression
+     *
+     * @throws \Composer\Downloader\TransportException
+     * @throws \Exception
+     * @return bool|string
+     */
+    protected function getCurl($originUrl, $fileUrl, $additionalOptions = array(), $fileName = null, $progress = true)
+    {
+        $this->bytesMax     = 0;
+        $this->originUrl    = $originUrl;
+        $this->fileUrl      = $fileUrl;
+        $this->fileName     = $fileName;
+        $this->progress     = $progress;
+        $this->lastProgress = null;
+
+        // capture username/password from URL if there is one
+        if (preg_match('{^https?://(.+):(.+)@([^/]+)}i', $fileUrl, $match)) {
+            $this->io->setAuthentication($originUrl, urldecode($match[1]), urldecode($match[2]));
+        }
+
+        $options = $this->getOptionsForUrl($originUrl, $additionalOptions);
+
+        if ($this->io->isDebug()) {
+            $this->io->write((substr($fileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $fileUrl);
+        }
+        if (isset($options['github-token'])) {
+            $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'access_token='.$options['github-token'];
+            unset($options['github-token']);
+        }
+
+        if ($this->progress) {
+            $this->io->write("    Downloading: <comment>connection...</comment>", false);
+        }
+
+        $errorMessage = '';
+        $errorCode = 0;
+        $result = false;
+
+        try {
+            $curlResult = $this->curlDownload($fileUrl);
+
+            $result = $curlResult['content'];
+
+            $http_response_header = $curlResult['headers'];
+        } catch (\Exception $e) {
+
+            if (isset($e) && !$this->retry) {
+                throw $e;
+            }
+        }
+
+        // decode gzip
+        if ($result && extension_loaded('zlib') && substr($fileUrl, 0, 4) === 'http') {
+            $decode = false;
+            foreach ($http_response_header as $header) {
+                if (preg_match('{^content-encoding: *gzip *$}i', $header)) {
+                    $decode = true;
+                    continue;
+                } elseif (preg_match('{^HTTP/}i', $header)) {
+                    $decode = false;
+                }
+            }
+
+            if ($decode) {
+                if (version_compare(PHP_VERSION, '5.4.0', '>=')) {
+                    $result = zlib_decode($result);
+                } else {
+                    // work around issue with gzuncompress & co that do not work with all gzip checksums
+                    $result = file_get_contents('compress.zlib://data:application/octet-stream;base64,'.base64_encode($result));
+                }
+            }
+        }
+
+        if ($this->progress) {
+            $this->io->overwrite("    Downloading: <comment>100%</comment>");
+        }
+
+        // handle copy command if download was successful
+        if (false !== $result && null !== $fileName) {
+            if ('' === $result) {
+                throw new TransportException('"'.$this->fileUrl.'" appears broken, and returned an empty 200 response');
+            }
+
+            $errorMessage = '';
+            set_error_handler(function ($code, $msg) use (&$errorMessage) {
+                    if ($errorMessage) {
+                        $errorMessage .= "\n";
+                    }
+                    $errorMessage .= preg_replace('{^file_put_contents\(.*?\): }', '', $msg);
+                });
+            $result = (bool) file_put_contents($fileName, $result);
+            restore_error_handler();
+            if (false === $result) {
+                throw new TransportException('The "'.$this->fileUrl.'" file could not be written to '.$fileName.': '.$errorMessage);
+            }
+        }
+
+        if ($this->retry) {
+            $this->retry = false;
+
+            return $this->getCurl($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress);
+        }
+
+        if (false === $result) {
+            $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded: '.$errorMessage, $errorCode);
+
+            throw $e;
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param $fileUrl
+     *
+     * @return array
+     */
+    public function curlDownload($fileUrl)
+    {
+        $result = [
+            'content' => '',
+            'headers' => []
+        ];
+
+        if (strpos($fileUrl, '//')===false) {
+            $result['content'] = file_get_contents($fileUrl);
+        } else {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $fileUrl);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+            // TODO: Finish functionality
+            if (false && $this->progress) {
+                $io = $this->io;
+                $progress = function ($downloadSize, $downloaded) use ($io) {
+                    $percent =  $downloadSize ? round($downloaded / $downloadSize  * 100, 2) . '%' : 'progress...';
+
+                    $io->overwrite("    Downloading: <comment>$percent</comment>");
+                };
+
+                curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, $progress);
+                curl_setopt($ch, CURLOPT_NOPROGRESS, false);
+            }
+
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($ch, CURLOPT_HEADER, 1);
+            curl_setopt($ch, CURLOPT_USERAGENT, $this->getUserAgent());
+            $response = curl_exec($ch);
+
+            $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+            $result['headers'] = explode("\r\n", substr($response, 0, $headerSize - 4));
+            $result['content'] = substr($response, $headerSize);
+
+            curl_close($ch);
+        }
+
+        return $result;
     }
 
     /**
@@ -310,15 +484,7 @@ class RemoteFilesystem
     protected function getOptionsForUrl($originUrl, $additionalOptions)
     {
         $headers = array(
-            sprintf(
-                'User-Agent: Composer/%s (%s; %s; PHP %s.%s.%s)',
-                Composer::VERSION === '@package_version@' ? 'source' : Composer::VERSION,
-                php_uname('s'),
-                php_uname('r'),
-                PHP_MAJOR_VERSION,
-                PHP_MINOR_VERSION,
-                PHP_RELEASE_VERSION
-            )
+            'User-Agent: ' . $this->getUserAgent(),
         );
 
         if (extension_loaded('zlib')) {
@@ -345,5 +511,18 @@ class RemoteFilesystem
         }
 
         return $options;
+    }
+
+    protected function getUserAgent()
+    {
+        return sprintf(
+            'User-Agent: Composer/%s (%s; %s; PHP %s.%s.%s)',
+            Composer::VERSION === '@package_version@' ? 'source' : Composer::VERSION,
+            php_uname('s'),
+            php_uname('r'),
+            PHP_MAJOR_VERSION,
+            PHP_MINOR_VERSION,
+            PHP_RELEASE_VERSION
+        );
     }
 }

@@ -60,19 +60,25 @@ EOT
         $output->write('Checking http connectivity: ');
         $this->outputResult($output, $this->checkHttp());
 
-        $opts = stream_context_get_options(StreamContextFactory::getContext('http://example.org'));
-        if (!empty($opts['http']['proxy'])) {
-            $output->write('Checking HTTP proxy: ');
-            $this->outputResult($output, $this->checkHttpProxy());
-            $output->write('Checking HTTP proxy support for request_fulluri: ');
-            $this->outputResult($output, $this->checkHttpProxyFullUriRequestParam());
-            $output->write('Checking HTTPS proxy support for request_fulluri: ');
-            $this->outputResult($output, $this->checkHttpsProxyFullUriRequestParam());
+        if (ini_get('allow_url_fopen') || !extension_loaded('curl')) {
+            $opts = stream_context_get_options(StreamContextFactory::getContext('http://example.org'));
+            if (!empty($opts['http']['proxy'])) {
+                $output->write('Checking HTTP proxy: ');
+                $this->outputResult($output, $this->checkHttpProxy());
+                $output->write('Checking HTTP proxy support for request_fulluri: ');
+                $this->outputResult($output, $this->checkHttpProxyFullUriRequestParam());
+                $output->write('Checking HTTPS proxy support for request_fulluri: ');
+                $this->outputResult($output, $this->checkHttpsProxyFullUriRequestParam());
+            }
+        } else {
+            // TODO: Curl checks
         }
 
         $composer = $this->getComposer(false);
+
         if ($composer) {
             $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'diagnose', $input, $output);
+
             $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
 
             $output->write('Checking composer.json: ');
@@ -296,7 +302,7 @@ EOT
         }
         $iniMessage .= PHP_EOL.'If you can not modify the ini file, you can also run `php -d option=value` to modify ini values on the fly. You can use -d multiple times.';
 
-        if (!ini_get('allow_url_fopen')) {
+        if (!ini_get('allow_url_fopen') && !extension_loaded('curl')) {
             $errors['allow_url_fopen'] = true;
         }
 
