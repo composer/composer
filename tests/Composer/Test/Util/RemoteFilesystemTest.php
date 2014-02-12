@@ -12,6 +12,8 @@
 
 namespace Composer\Test\Util;
 
+use Composer\Transfer\CurlTransfer;
+use Composer\Transfer\StreamContextTransfer;
 use Composer\Util\RemoteFilesystem;
 use Installer\Exception;
 
@@ -160,16 +162,42 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
         }
     }
 
-    public function testGetContents()
+    public function testGetContentsStreamContext()
     {
-        $fs = new RemoteFilesystem($this->getMock('Composer\IO\IOInterface'));
+        $transfer = new StreamContextTransfer();
+
+        $fs = new RemoteFilesystem($this->getMock('Composer\IO\IOInterface'), array(), $transfer);
 
         $this->assertContains('testGetContents', $fs->getContents('http://example.org', 'file://'.__FILE__));
     }
 
-    public function testCopy()
+    public function testCopyStreamContext()
     {
-        $fs = new RemoteFilesystem($this->getMock('Composer\IO\IOInterface'));
+        $transfer = new StreamContextTransfer();
+
+        $fs = new RemoteFilesystem($this->getMock('Composer\IO\IOInterface'), array(), $transfer);
+
+        $file = tempnam(sys_get_temp_dir(), 'c');
+        $this->assertTrue($fs->copy('http://example.org', 'file://'.__FILE__, $file));
+        $this->assertFileExists($file);
+        $this->assertContains('testCopy', file_get_contents($file));
+        unlink($file);
+    }
+
+    public function testGetContentsCurl()
+    {
+        $transfer = new CurlTransfer();
+
+        $fs = new RemoteFilesystem($this->getMock('Composer\IO\IOInterface'), array(), $transfer);
+
+        $this->assertContains('testGetContents', $fs->getContents('http://example.org', 'file://'.__FILE__));
+    }
+
+    public function testCopyCurl()
+    {
+        $transfer = new CurlTransfer();
+
+        $fs = new RemoteFilesystem($this->getMock('Composer\IO\IOInterface'), array(), $transfer);
 
         $file = tempnam(sys_get_temp_dir(), 'c');
         $this->assertTrue($fs->copy('http://example.org', 'file://'.__FILE__, $file));
