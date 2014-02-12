@@ -57,16 +57,32 @@ class RemoteFilesystem
     protected function getTransfer()
     {
         if (null === $this->transfer) {
-            if (!ini_get('allow_url_fopen') && extension_loaded('curl')) {
-                $this->transfer = new \Composer\Transfer\CurlTransfer();
-            } else {
+            if ($this->isStreamContextUsed()) {
                 $this->transfer = new \Composer\Transfer\StreamContextTransfer();
 
                 $this->transfer->setDefaultParams(array('notification' => array($this, 'callbackGet')));
+            } else {
+                $this->transfer = new \Composer\Transfer\CurlTransfer();
             }
         }
 
         return $this->transfer;
+    }
+
+    /**
+     * @return bool
+     */
+    private function isStreamContextUsed()
+    {
+        if (ini_get('allow_url_fopen')) {
+            return true;
+        }
+
+        if (!extension_loaded('curl')) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
