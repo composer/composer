@@ -25,7 +25,6 @@ use Composer\Transfer\TransferInterface;
 class RemoteFilesystem
 {
     private $io;
-    private $firstCall;
     private $bytesMax;
     private $originUrl;
     private $fileUrl;
