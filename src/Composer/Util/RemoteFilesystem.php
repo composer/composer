@@ -141,7 +141,8 @@ class RemoteFilesystem
         $result = false;
 
         try {
-            $curlResult = $this->curlDownload($fileUrl);
+            $curlTransfer = new \Composer\Transfer\Curl;
+            $curlResult = $curlTransfer->download($fileUrl, $this->io, $this->progress, $this->getUserAgent());
 
             $result = $curlResult['content'];
 
@@ -214,53 +215,6 @@ class RemoteFilesystem
         return $result;
     }
 
-    /**
-     * @param $fileUrl
-     *
-     * @return array
-     */
-    public function curlDownload($fileUrl)
-    {
-        $result = [
-            'content' => '',
-            'headers' => []
-        ];
-
-        if (strpos($fileUrl, '//')===false) {
-            $result['content'] = file_get_contents($fileUrl);
-        } else {
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $fileUrl);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-            // TODO: Finish functionality
-            if (false && $this->progress) {
-                $io = $this->io;
-                $progress = function ($downloadSize, $downloaded) use ($io) {
-                    $percent =  $downloadSize ? round($downloaded / $downloadSize  * 100, 2) . '%' : 'progress...';
-
-                    $io->overwrite("    Downloading: <comment>$percent</comment>");
-                };
-
-                curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, $progress);
-                curl_setopt($ch, CURLOPT_NOPROGRESS, false);
-            }
-
-            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-            curl_setopt($ch, CURLOPT_MAXREDIRS, 20);
-            curl_setopt($ch, CURLOPT_HEADER, 1);
-            curl_setopt($ch, CURLOPT_USERAGENT, $this->getUserAgent());
-            $response = curl_exec($ch);
-
-            $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
-            $result['headers'] = explode("\r\n", substr($response, 0, $headerSize - 4));
-            $result['content'] = substr($response, $headerSize);
-
-            curl_close($ch);
-        }
-
-        return $result;
-    }
 
     /**
      * Get file content or copy action.
