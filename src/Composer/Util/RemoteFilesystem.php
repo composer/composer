@@ -247,6 +247,7 @@ class RemoteFilesystem
             }
 
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($ch, CURLOPT_MAXREDIRS, 20);
             curl_setopt($ch, CURLOPT_HEADER, 1);
             curl_setopt($ch, CURLOPT_USERAGENT, $this->getUserAgent());
             $response = curl_exec($ch);
