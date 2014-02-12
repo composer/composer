@@ -40,21 +40,33 @@ class RemoteFilesystem
     /**
      * Constructor.
      *
-     * @param IOInterface $io      The IO instance
-     * @param array       $options The options
+     * @param IOInterface       $io       The IO instance
+     * @param array             $options  The options
+     * @param TransferInterface $transfer The Transfer instance
      */
-    public function __construct(IOInterface $io, $options = array())
+    public function __construct(IOInterface $io, $options = array(), TransferInterface $transfer = null)
     {
         $this->io = $io;
+        $this->transfer = $transfer;
         $this->options = $options;
+    }
 
-        if (!ini_get('allow_url_fopen') && extension_loaded('curl')) {
-            $this->transfer = new \Composer\Transfer\Curl();
-        } else {
-            $this->transfer = new \Composer\Transfer\StreamContext();
+    /**
+     * @return TransferInterface
+     */
+    protected function getTransfer()
+    {
+        if (null === $this->transfer) {
+            if (!ini_get('allow_url_fopen') && extension_loaded('curl')) {
+                $this->transfer = new \Composer\Transfer\Curl();
+            } else {
+                $this->transfer = new \Composer\Transfer\StreamContext();
 
-            $this->transfer->setDefaultParams(array('notification' => array($this, 'callbackGet')));
+                $this->transfer->setDefaultParams(array('notification' => array($this, 'callbackGet')));
+            }
         }
+
+        return $this->transfer;
     }
 
     /**
@@ -150,9 +162,9 @@ class RemoteFilesystem
             $errorMessage .= preg_replace('{^file_get_contents\(.*?\): }', '', $msg);
         });
         try {
-            $result = $this->transfer->download($fileUrl, $options, $this->io, $this->progress, $this->getUserAgent());
+            $result = $this->getTransfer()->download($fileUrl, $options, $this->io, $this->progress, $this->getUserAgent());
 
-            $headers = $this->transfer->getHeaders();
+            $headers = $this->getTransfer()->getHeaders();
         } catch (\Exception $e) {
             if ($e instanceof TransportException && !empty($headers[0])) {
                 $e->setHeaders($headers);
