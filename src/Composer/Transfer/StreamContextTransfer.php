@@ -18,7 +18,7 @@ use Composer\Util\StreamContextFactory;
 /**
  * @author Peter Aba <p.aba@mysportgroup.de>
  */
-class StreamContext implements TransferInterface
+class StreamContextTransfer implements TransferInterface
 {
     /** @var array */
     protected $headers;

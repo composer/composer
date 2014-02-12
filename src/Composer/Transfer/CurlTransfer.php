@@ -17,7 +17,7 @@ use Composer\IO\IOInterface;
 /**
  * @author Peter Aba <p.aba@mysportgroup.de>
  */
-class Curl implements TransferInterface
+class CurlTransfer implements TransferInterface
 {
     /** @var array */
     protected $headers;

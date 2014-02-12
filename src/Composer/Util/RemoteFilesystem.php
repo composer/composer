@@ -58,9 +58,9 @@ class RemoteFilesystem
     {
         if (null === $this->transfer) {
             if (!ini_get('allow_url_fopen') && extension_loaded('curl')) {
-                $this->transfer = new \Composer\Transfer\Curl();
+                $this->transfer = new \Composer\Transfer\CurlTransfer();
             } else {
-                $this->transfer = new \Composer\Transfer\StreamContext();
+                $this->transfer = new \Composer\Transfer\StreamContextTransfer();
 
                 $this->transfer->setDefaultParams(array('notification' => array($this, 'callbackGet')));
             }
