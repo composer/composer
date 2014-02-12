@@ -46,6 +46,22 @@ EOT
         ;
     }
 
+    /**
+     * @return bool
+     */
+    private function isStreamContextUsed()
+    {
+        if (ini_get('allow_url_fopen')) {
+            return true;
+        }
+
+        if (!extension_loaded('curl')) {
+            return true;
+        }
+
+        return false;
+    }
+
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $this->rfs = new RemoteFilesystem($this->getIO());
@@ -60,7 +76,7 @@ EOT
         $output->write('Checking http connectivity: ');
         $this->outputResult($output, $this->checkHttp());
 
-        if (ini_get('allow_url_fopen') || !extension_loaded('curl')) {
+        if ($this->isStreamContextUsed()) {
             $opts = stream_context_get_options(StreamContextFactory::getContext('http://example.org'));
             if (!empty($opts['http']['proxy'])) {
                 $output->write('Checking HTTP proxy: ');
@@ -70,8 +86,6 @@ EOT
                 $output->write('Checking HTTPS proxy support for request_fulluri: ');
                 $this->outputResult($output, $this->checkHttpsProxyFullUriRequestParam());
             }
-        } else {
-            // TODO: Curl checks
         }
 
         $composer = $this->getComposer(false);
