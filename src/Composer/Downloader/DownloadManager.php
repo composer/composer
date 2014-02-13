@@ -179,7 +179,7 @@ class DownloadManager
         $this->filesystem->ensureDirectoryExists($targetDir);
 
         $downloader = $this->getDownloaderForInstalledPackage($package);
-        if($downloader) {
+        if ($downloader) {
             $downloader->download($package, $targetDir);
         }
     }
@@ -196,8 +196,7 @@ class DownloadManager
     public function update(PackageInterface $initial, PackageInterface $target, $targetDir)
     {
         $downloader = $this->getDownloaderForInstalledPackage($initial);
-        if(!$downloader) {
-
+        if (!$downloader) {
             return;
         }
 
@@ -237,7 +236,7 @@ class DownloadManager
     public function remove(PackageInterface $package, $targetDir)
     {
         $downloader = $this->getDownloaderForInstalledPackage($package);
-        if($downloader) {
+        if ($downloader) {
             $downloader->remove($package, $targetDir);
         }
     }
