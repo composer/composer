@@ -149,6 +149,8 @@ to the command.
 * **--no-update:** Disables the automatic update of the dependencies.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
+* **--update-with-dependencies** Also update dependencies of the newly
+  required packages.
 
 ## global
 
