@@ -189,7 +189,7 @@ class RemoteFilesystem
         if ($errorMessage && !ini_get('allow_url_fopen')) {
             $errorMessage = 'allow_url_fopen must be enabled in php.ini ('.$errorMessage.')';
         }
-        //restore_error_handler();
+        restore_error_handler();
         if (isset($e) && !$this->retry) {
             throw $e;
         }
