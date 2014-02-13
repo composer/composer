@@ -182,6 +182,19 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
         $manager->getDownloaderForInstalledPackage($package);
     }
 
+    public function testGetDownloaderForMetapackage()
+    {
+        $package = $this->createPackageMock();
+        $package
+          ->expects($this->once())
+          ->method('getType')
+          ->will($this->returnValue('metapackage'));
+
+        $manager = new DownloadManager(false, $this->filesystem);
+
+        $this->assertNull($manager->getDownloaderForInstalledPackage($package));
+    }
+
     public function testFullPackageDownload()
     {
         $package = $this->createPackageMock();
@@ -304,6 +317,36 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
             ->method('getDownloaderForInstalledPackage')
             ->with($package)
             ->will($this->returnValue($downloader));
+
+        $manager->download($package, 'target_dir');
+    }
+
+    public function testMetapackagePackageDownload()
+    {
+        $package = $this->createPackageMock();
+        $package
+          ->expects($this->once())
+          ->method('getSourceType')
+          ->will($this->returnValue('git'));
+        $package
+          ->expects($this->once())
+          ->method('getDistType')
+          ->will($this->returnValue(null));
+
+        $package
+          ->expects($this->once())
+          ->method('setInstallationSource')
+          ->with('source');
+
+        $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
+          ->setConstructorArgs(array(false, $this->filesystem))
+          ->setMethods(array('getDownloaderForInstalledPackage'))
+          ->getMock();
+        $manager
+          ->expects($this->once())
+          ->method('getDownloaderForInstalledPackage')
+          ->with($package)
+          ->will($this->returnValue(null)); // There is no downloader for Metapackages.
 
         $manager->download($package, 'target_dir');
     }
@@ -598,6 +641,24 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
         $manager->update($initial, $target, 'vendor/pkg');
     }
 
+    public function testUpdateMetapackage()
+    {
+        $initial = $this->createPackageMock();
+        $target = $this->createPackageMock();
+
+        $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
+          ->setConstructorArgs(array(false, $this->filesystem))
+          ->setMethods(array('getDownloaderForInstalledPackage'))
+          ->getMock();
+        $manager
+          ->expects($this->once())
+          ->method('getDownloaderForInstalledPackage')
+          ->with($initial)
+          ->will($this->returnValue(null)); // There is no downloader for metapackages.
+
+        $manager->update($initial, $target, 'vendor/pkg');
+    }
+
     public function testRemove()
     {
         $package = $this->createPackageMock();
@@ -617,6 +678,23 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
             ->method('getDownloaderForInstalledPackage')
             ->with($package)
             ->will($this->returnValue($pearDownloader));
+
+        $manager->remove($package, 'vendor/bundles/FOS/UserBundle');
+    }
+
+    public function testMetapackageRemove()
+    {
+        $package = $this->createPackageMock();
+
+        $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
+          ->setConstructorArgs(array(false, $this->filesystem))
+          ->setMethods(array('getDownloaderForInstalledPackage'))
+          ->getMock();
+        $manager
+          ->expects($this->once())
+          ->method('getDownloaderForInstalledPackage')
+          ->with($package)
+          ->will($this->returnValue(null)); // There is no downloader for metapackages.
 
         $manager->remove($package, 'vendor/bundles/FOS/UserBundle');
     }
