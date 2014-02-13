@@ -294,8 +294,8 @@ EOT
                     }
 
                     foreach ($vals as $val) {
-                        if (!in_array($val, array('git', 'https'))) {
-                            return 'valid protocols include: git, https';
+                        if (!in_array($val, array('git', 'https', 'ssh'))) {
+                            return 'valid protocols include: git, https, ssh';
                         }
                     }
 

@@ -24,7 +24,7 @@ class Config
         'use-include-path' => false,
         'preferred-install' => 'auto',
         'notify-on-install' => true,
-        'github-protocols' => array('git', 'https'),
+        'github-protocols' => array('git', 'https', 'ssh'),
         'vendor-dir' => 'vendor',
         'bin-dir' => '{$vendor-dir}/bin',
         'cache-dir' => '{$home}/cache',
@@ -206,7 +206,7 @@ class Config
 
             case 'github-protocols':
                 if (reset($this->config['github-protocols']) === 'http') {
-                    throw new \RuntimeException('The http protocol for github is not available anymore, update your config\'s github-protocols to use "https" or "git"');
+                    throw new \RuntimeException('The http protocol for github is not available anymore, update your config\'s github-protocols to use "https" or "git" or "ssh"');
                 }
 
                 return $this->config[$key];
