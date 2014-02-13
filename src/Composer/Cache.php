@@ -144,28 +144,33 @@ class Cache
 
     public function gc($ttl, $maxSize)
     {
-        $expire = new \DateTime();
-        $expire->modify('-'.$ttl.' seconds');
+        if ($this->enabled)
+        {
+            $expire = new \DateTime();
+            $expire->modify('-'.$ttl.' seconds');
 
-        $finder = $this->getFinder()->date('until '.$expire->format('Y-m-d H:i:s'));
-        foreach ($finder as $file) {
-            unlink($file->getRealPath());
-        }
-
-        $totalSize = $this->filesystem->size($this->root);
-        if ($totalSize > $maxSize) {
-            $iterator = $this->getFinder()->sortByAccessedTime()->getIterator();
-            while ($totalSize > $maxSize && $iterator->valid()) {
-                $filepath = $iterator->current()->getRealPath();
-                $totalSize -= $this->filesystem->size($filepath);
-                unlink($filepath);
-                $iterator->next();
+            $finder = $this->getFinder()->date('until '.$expire->format('Y-m-d H:i:s'));
+            foreach ($finder as $file) {
+                unlink($file->getRealPath());
             }
+
+            $totalSize = $this->filesystem->size($this->root);
+            if ($totalSize > $maxSize) {
+                $iterator = $this->getFinder()->sortByAccessedTime()->getIterator();
+                while ($totalSize > $maxSize && $iterator->valid()) {
+                    $filepath = $iterator->current()->getRealPath();
+                    $totalSize -= $this->filesystem->size($filepath);
+                    unlink($filepath);
+                    $iterator->next();
+                }
+            }
+
+            self::$cacheCollected = true;
+
+            return true;
         }
 
-        self::$cacheCollected = true;
-
-        return true;
+        return false;
     }
 
     public function sha1($file)
