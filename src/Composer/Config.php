@@ -206,7 +206,7 @@ class Config
 
             case 'github-protocols':
                 if (reset($this->config['github-protocols']) === 'http') {
-                    throw new \RuntimeException('The http protocol for github is not available anymore, update your config\'s github-protocols to use "https" or "git" or "ssh"');
+                    throw new \RuntimeException('The http protocol for github is not available anymore, update your config\'s github-protocols to use "https", "git" or "ssh"');
                 }
 
                 return $this->config[$key];
