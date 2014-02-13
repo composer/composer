@@ -1,7 +1,7 @@
 Composer - Dependency Management for PHP
 ========================================
 
-Composer is a dependency manager tracking local dependencies of your projects and libraries.
+Composer helps you declare, manage and install dependencies of PHP projects, ensuring you have the right stack everywhere.
 
 See [https://getcomposer.org/](https://getcomposer.org/) for more information and documentation.
 
