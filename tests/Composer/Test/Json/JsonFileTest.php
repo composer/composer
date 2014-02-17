@@ -198,6 +198,13 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
         $this->assertJsonFormat('"\\u018c"', $data, 0);
     }
 
+    public function testDoubleEscapedUnicode()
+    {
+        $data = "Zdj\\u0119ciahl\\\\u0119kkjk";
+
+        $this->assertJsonFormat('"Zdj\\\\u0119ciahl\\\\\\\\u0119kkjk"', $data);
+    }
+
     private function expectParseException($text, $json)
     {
         try {
