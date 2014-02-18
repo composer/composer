@@ -96,7 +96,7 @@ class ArtifactRepository extends ArrayRepository
         $package = JsonFile::parseJson($json, $composerFile);
         $package['dist'] = array(
             'type' => 'zip',
-            'url' => $file->getRealPath(),
+            'url' => $file->getPathname(),
             'reference' => $file->getBasename(),
             'shasum' => sha1_file($file->getRealPath())
         );
