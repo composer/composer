@@ -53,6 +53,8 @@ class Application extends BaseApplication
 \____/\____/_/ /_/ /_/ .___/\____/____/\___/_/
                     /_/
 ';
+    private $configLocal = null;
+
 
     public function __construct()
     {
@@ -114,6 +116,10 @@ class Application extends BaseApplication
             chdir($newWorkDir);
         }
 
+        if ($newConfigFile = $this->getNewConfigFile($input)) {
+            $this->configLocal = $newConfigFile;
+        }
+
         $result = parent::doRun($input, $output);
 
         if (isset($oldWorkingDir)) {
@@ -125,6 +131,26 @@ class Application extends BaseApplication
         }
 
         return $result;
+    }
+
+
+    /**
+     * @param  InputInterface $input
+     * @throws \RuntimeException
+     * @return boolean|string
+     */
+    private function getNewConfigFile(InputInterface $input)
+    {
+        $configFile = $input->getParameterOption(array('--json-file', '-j'));
+        $cwd = realpath(getcwd());
+        if (false !== $configFile && !is_file($configFile)) {
+            if (strpos(realpath($configFile), $cwd) === 0) {
+                throw new \RuntimeException("The '$configFile' file in not within current working directory.");
+            }
+            throw new \RuntimeException("Cannot find file '$configFile', so it cannot be used instead of composer.json.");
+        }
+
+        return $configFile;
     }
 
     /**
@@ -173,7 +199,7 @@ class Application extends BaseApplication
     {
         if (null === $this->composer) {
             try {
-                $this->composer = Factory::create($this->io, null, $disablePlugins);
+                $this->composer = Factory::create($this->io, $this->configLocal, $disablePlugins);
             } catch (\InvalidArgumentException $e) {
                 if ($required) {
                     $this->io->write($e->getMessage());
@@ -251,6 +277,7 @@ class Application extends BaseApplication
         $definition = parent::getDefaultInputDefinition();
         $definition->addOption(new InputOption('--profile', null, InputOption::VALUE_NONE, 'Display timing and memory usage information'));
         $definition->addOption(new InputOption('--working-dir', '-d', InputOption::VALUE_REQUIRED, 'If specified, use the given directory as working directory.'));
+        $definition->addOption(new InputOption('--json-file', '-j', InputOption::VALUE_REQUIRED, 'If specified, use the file instead of composer.json.'));
 
         return $definition;
     }
