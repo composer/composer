@@ -52,6 +52,12 @@ EOT
             ScriptEvents::POST_UPDATE_CMD,
             ScriptEvents::PRE_STATUS_CMD,
             ScriptEvents::POST_STATUS_CMD,
+            ScriptEvents::POST_ROOT_PACKAGE_INSTALL,
+            ScriptEvents::POST_CREATE_PROJECT_CMD,
+            ScriptEvents::PRE_ARCHIVE_CMD,
+            ScriptEvents::POST_ARCHIVE_CMD,
+            ScriptEvents::PRE_AUTOLOAD_DUMP,
+            ScriptEvents::POST_AUTOLOAD_DUMP
         ))) {
             if (defined('Composer\Script\ScriptEvents::'.str_replace('-', '_', strtoupper($script)))) {
                 throw new \InvalidArgumentException(sprintf('Script "%s" cannot be run with this command', $script));
