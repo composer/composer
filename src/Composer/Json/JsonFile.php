@@ -231,7 +231,7 @@ class JsonFile
 
                 if ($unescapeUnicode && function_exists('mb_convert_encoding')) {
                     // http://stackoverflow.com/questions/2934563/how-to-decode-unicode-escape-sequences-like-u00ed-to-proper-utf-8-encoded-cha
-                    $buffer = preg_replace_callback('/(?<!\\\)\\\\u([0-9a-f]{4})/i', function($match) {
+                    $buffer = preg_replace_callback('/\\\\u([0-9a-f]{4})/i', function($match) {
                         return mb_convert_encoding(pack('H*', $match[1]), 'UTF-8', 'UCS-2BE');
                     }, $buffer);
                 }
