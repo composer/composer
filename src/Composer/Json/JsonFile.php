@@ -13,6 +13,7 @@
 namespace Composer\Json;
 
 use JsonSchema\Validator;
+use JsonSchema\Uri\UriRetriever;
 use Seld\JsonLint\JsonParser;
 use Seld\JsonLint\ParsingException;
 use Composer\Util\RemoteFilesystem;
@@ -153,7 +154,8 @@ class JsonFile
         $schemaData = json_decode(file_get_contents($schemaFile));
 
         if ($schema === self::LAX_SCHEMA) {
-            $schemaData->additionalProperties = true;
+            // TODO this should just be set to true, but this is a workaround for https://github.com/justinrainbow/json-schema/pull/94
+            $schemaData->additionalProperties = (object) array('type' => array('object', 'string', 'array', 'number', 'null', 'boolean'));
             $schemaData->properties->name->required = false;
             $schemaData->properties->description->required = false;
         }
