@@ -69,9 +69,13 @@ class JsonFormatter
                     $buffer = preg_replace_callback('/(\\\\+)u([0-9a-f]{4})/i', function($match) {
                         $l = strlen($match[1]);
 
-                        if ($l%2)
-                            return str_repeat ('\\', $l-1).mb_convert_encoding(pack('H*', $match[2]), 'UTF-8', 'UCS-2BE');
-
+                        if ($l % 2) {
+                            return str_repeat('\\', $l - 1) . mb_convert_encoding(
+                                pack('H*', $match[2]),
+                                'UTF-8',
+                                'UCS-2BE'
+                            );
+                        }
                         return $match[0];
                     }, $buffer);
                 }
