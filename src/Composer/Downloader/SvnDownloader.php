@@ -26,8 +26,9 @@ class SvnDownloader extends VcsDownloader
      */
     public function doDownload(PackageInterface $package, $path)
     {
-        $url =  $package->getSourceUrl();
-        $ref =  $package->getSourceReference();
+        SvnUtil::cleanEnv();
+        $url = $package->getSourceUrl();
+        $ref = $package->getSourceReference();
 
         $this->io->write("    Checking out ".$package->getSourceReference());
         $this->execute($url, "svn co", sprintf("%s/%s", $url, $ref), null, $path);
@@ -38,6 +39,7 @@ class SvnDownloader extends VcsDownloader
      */
     public function doUpdate(PackageInterface $initial, PackageInterface $target, $path)
     {
+        SvnUtil::cleanEnv();
         $url = $target->getSourceUrl();
         $ref = $target->getSourceReference();
 

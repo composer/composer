@@ -22,6 +22,7 @@ use Composer\Repository\Vcs\HgDriver;
 use Composer\IO\NullIO;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Git as GitUtil;
+use Composer\Util\Svn as SvnUtil;
 
 /**
  * ArrayLoader built for the sole purpose of loading the root package
@@ -303,6 +304,8 @@ class RootPackageLoader extends ArrayLoader
 
     private function guessSvnVersion(array $config)
     {
+        SvnUtil::cleanEnv();
+
         // try to fetch current version from svn
         if (0 === $this->process->execute('svn info --xml', $output)) {
             $trunkPath = isset($config['trunk-path']) ? preg_quote($config['trunk-path'], '#') : 'trunk';

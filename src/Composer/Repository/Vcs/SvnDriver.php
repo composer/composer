@@ -51,6 +51,8 @@ class SvnDriver extends VcsDriver
     {
         $this->url = $this->baseUrl = rtrim(self::normalizeUrl($this->url), '/');
 
+        SvnUtil::cleanEnv();
+
         if (isset($this->repoConfig['trunk-path'])) {
             $this->trunkPath = $this->repoConfig['trunk-path'];
         }
