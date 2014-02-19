@@ -23,6 +23,30 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class RunScriptCommand extends Command
 {
+    /**
+     * @var array Array with command events
+     */
+    protected $commandEvents = array(
+        ScriptEvents::PRE_INSTALL_CMD,
+        ScriptEvents::POST_INSTALL_CMD,
+        ScriptEvents::PRE_UPDATE_CMD,
+        ScriptEvents::POST_UPDATE_CMD,
+        ScriptEvents::PRE_STATUS_CMD,
+        ScriptEvents::POST_STATUS_CMD,
+        ScriptEvents::POST_ROOT_PACKAGE_INSTALL,
+        ScriptEvents::POST_CREATE_PROJECT_CMD
+    );
+
+    /**
+     * @var array Array with script events
+     */
+    protected $scriptEvents = array(
+        ScriptEvents::PRE_ARCHIVE_CMD,
+        ScriptEvents::POST_ARCHIVE_CMD,
+        ScriptEvents::PRE_AUTOLOAD_DUMP,
+        ScriptEvents::POST_AUTOLOAD_DUMP
+    );
+
     protected function configure()
     {
         $this
@@ -45,14 +69,7 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $script = $input->getArgument('script');
-        if (!in_array($script, array(
-            ScriptEvents::PRE_INSTALL_CMD,
-            ScriptEvents::POST_INSTALL_CMD,
-            ScriptEvents::PRE_UPDATE_CMD,
-            ScriptEvents::POST_UPDATE_CMD,
-            ScriptEvents::PRE_STATUS_CMD,
-            ScriptEvents::POST_STATUS_CMD,
-        ))) {
+        if (!in_array($script, $this->commandEvents) || !in_array($script, $this->scriptEvents)) {
             if (defined('Composer\Script\ScriptEvents::'.str_replace('-', '_', strtoupper($script)))) {
                 throw new \InvalidArgumentException(sprintf('Script "%s" cannot be run with this command', $script));
             }
@@ -60,6 +77,10 @@ EOT
             throw new \InvalidArgumentException(sprintf('Script "%s" does not exist', $script));
         }
 
-        $this->getComposer()->getEventDispatcher()->dispatchCommandEvent($script, $input->getOption('dev') || !$input->getOption('no-dev'));
+        if (in_array($script, $this->commandEvents)) {
+            $this->getComposer()->getEventDispatcher()->dispatchCommandEvent($script, $input->getOption('dev') || !$input->getOption('no-dev'));
+        } else {
+            $this->getComposer()->getEventDispatcher()->dispatchScript($script);
+        }
     }
 }
