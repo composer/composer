@@ -144,14 +144,20 @@ class SvnDownloader extends VcsDownloader
      */
     protected function getCommitLogs($fromReference, $toReference, $path)
     {
-        // strip paths from references and only keep the actual revision
-        $fromRevision = preg_replace('{.*@(\d+)$}', '$1', $fromReference);
-        $toRevision = preg_replace('{.*@(\d+)$}', '$1', $toReference);
+        if (preg_match('{.*@(\d+)$}', $fromReference) && preg_match('{.*@(\d+)$}', $toReference) ) {
+            // strip paths from references and only keep the actual revision
+            $fromRevision = preg_replace('{.*@(\d+)$}', '$1', $fromReference);
+            $toRevision = preg_replace('{.*@(\d+)$}', '$1', $toReference);
 
-        $command = sprintf('svn log -r%s:%s --incremental', $fromRevision, $toRevision);
+            $command = sprintf('svn log -r%s:%s --incremental', $fromRevision, $toRevision);
 
-        if (0 !== $this->process->execute($command, $output, $path)) {
-            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+            if (0 !== $this->process->execute($command, $output, $path)) {
+                throw new \RuntimeException(
+                    'Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput()
+                );
+            }
+        } else {
+            $output = "Couldn't retrieve changes with reference $fromReference:$toReference";
         }
 
         return $output;
