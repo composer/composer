@@ -159,7 +159,7 @@ class SvnDownloader extends VcsDownloader
                 );
             }
         } else {
-            $output = "Couldn't retrieve changes with reference $fromReference:$toReference";
+            $output = "Could not retrieve changes between $fromReference and $toReference due to missing revision information";
         }
 
         return $output;
