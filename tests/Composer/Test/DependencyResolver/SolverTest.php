@@ -464,7 +464,7 @@ class SolverTest extends TestCase
         ));
     }
 
-    public function testInstallReplacerOfMissingPackage()
+    public function testNoInstallReplacerOfMissingPackage()
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageQ = $this->getPackage('Q', '1.0'));
@@ -475,10 +475,8 @@ class SolverTest extends TestCase
 
         $this->request->install('A');
 
-        $this->checkSolverResult(array(
-            array('job' => 'install', 'package' => $packageQ),
-            array('job' => 'install', 'package' => $packageA),
-        ));
+        $this->setExpectedException('Composer\DependencyResolver\SolverProblemsException');
+        $this->solver->solve($this->request);
     }
 
     public function testSkipReplacedPackageIfReplacerIsSelected()
@@ -611,6 +609,7 @@ class SolverTest extends TestCase
         $this->reposComplete();
 
         $this->request->install('A');
+        $this->request->install('D');
 
         $this->checkSolverResult(array(
             array('job' => 'install', 'package' => $packageD2),

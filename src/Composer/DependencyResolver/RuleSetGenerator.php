@@ -287,10 +287,9 @@ class RuleSetGenerator
         foreach ($this->jobs as $job) {
             switch ($job['cmd']) {
                 case 'install':
-                    if ($job['packages']) {
-                        foreach ($job['packages'] as $package) {
-                            $this->whitelistFromPackage($package);
-                        }
+                    $packages = $this->pool->whatProvides($job['packageName'], $job['constraint'], true);
+                    foreach ($packages as $package) {
+                        $this->whitelistFromPackage($package);
                     }
                     break;
             }
@@ -302,21 +301,23 @@ class RuleSetGenerator
         foreach ($this->jobs as $job) {
             switch ($job['cmd']) {
                 case 'install':
-                    if ($job['packages']) {
-                        foreach ($job['packages'] as $package) {
+                    $packages = $this->pool->whatProvides($job['packageName'], $job['constraint']);
+                    if ($packages) {
+                        foreach ($packages as $package) {
                             if (!isset($this->installedMap[$package->getId()])) {
                                 $this->addRulesForPackage($package);
                             }
                         }
 
-                        $rule = $this->createInstallOneOfRule($job['packages'], Rule::RULE_JOB_INSTALL, $job);
+                        $rule = $this->createInstallOneOfRule($packages, Rule::RULE_JOB_INSTALL, $job);
                         $this->addRule(RuleSet::TYPE_JOB, $rule);
                     }
                     break;
                 case 'remove':
                     // remove all packages with this name including uninstalled
                     // ones to make sure none of them are picked as replacements
-                    foreach ($job['packages'] as $package) {
+                    $packages = $this->pool->whatProvides($job['packageName'], $job['constraint']);
+                    foreach ($packages as $package) {
                         $rule = $this->createRemoveRule($package, Rule::RULE_JOB_REMOVE, $job);
                         $this->addRule(RuleSet::TYPE_JOB, $rule);
                     }

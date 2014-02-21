@@ -250,7 +250,7 @@ class InstallerTest extends TestCase
         $tests = array();
 
         foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($fixturesDir), \RecursiveIteratorIterator::LEAVES_ONLY) as $file) {
-            if (!preg_match('/replace-root-require\.test$/', $file)) {
+            if (!preg_match('/\.test$/', $file)) {
                 continue;
             }
 
@@ -296,7 +296,7 @@ class InstallerTest extends TestCase
                     }
                     $expectOutput = $match['expectOutput'];
                     $expect = $match['expect'];
-                    $expectExitCode = $match['expectExitCode'];
+                    $expectExitCode = (int) $match['expectExitCode'];
                 } catch (\Exception $e) {
                     die(sprintf('Test "%s" is not valid: '.$e->getMessage(), str_replace($fixturesDir.'/', '', $file)));
                 }

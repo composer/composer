@@ -131,7 +131,8 @@ class Solver
         foreach ($this->jobs as $job) {
             switch ($job['cmd']) {
                 case 'update':
-                    foreach ($job['packages'] as $package) {
+                    $packages = $this->pool->whatProvides($job['packageName'], $job['constraint']);
+                    foreach ($packages as $package) {
                         if (isset($this->installedMap[$package->getId()])) {
                             $this->updateMap[$package->getId()] = true;
                         }
@@ -145,7 +146,7 @@ class Solver
                     break;
 
                 case 'install':
-                    if (!$job['packages']) {
+                    if (!$this->pool->whatProvides($job['packageName'], $job['constraint'])) {
                         $problem = new Problem($this->pool);
                         $problem->addRule(new Rule($this->pool, array(), null, null, $job));
                         $this->problems[] = $problem;
