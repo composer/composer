@@ -46,6 +46,8 @@ class ArtifactRepositoryTest extends TestCase
     }
 }
 
+//Files jsonInFirstLevel.zip, jsonInRoot.zip and jsonInSecondLevel.zip were generated with:
+//
 //$archivesToCreate = array(
 //    'jsonInRoot' => array(
 //        "extra.txt"     => "Testing testing testing",
