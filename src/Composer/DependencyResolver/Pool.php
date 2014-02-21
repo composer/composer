@@ -268,7 +268,10 @@ class Pool
         $nameMatch = false;
 
         foreach ($candidates as $candidate) {
-            if ($this->whitelist !== null && !isset($this->whitelist[$candidate->getId()])) {
+            if ($this->whitelist !== null && (
+                (is_array($candidate) && isset($candidate['id']) && !isset($this->whitelist[$candidate['id']])) ||
+                (is_object($candidate) && !isset($this->whitelist[$candidate->getId()]))
+            )) {
                 continue;
             }
             switch ($this->match($candidate, $name, $constraint)) {
