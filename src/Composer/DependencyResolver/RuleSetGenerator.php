@@ -25,6 +25,8 @@ class RuleSetGenerator
     protected $rules;
     protected $jobs;
     protected $installedMap;
+    protected $whitelistedMap;
+    protected $addedMap;
 
     public function __construct(PolicyInterface $policy, Pool $pool)
     {
@@ -141,6 +143,41 @@ class RuleSetGenerator
         $this->rules->add($newRule, $type);
     }
 
+    protected function whitelistFromPackage(PackageInterface $package)
+    {
+        $workQueue = new \SplQueue;
+        $workQueue->enqueue($package);
+
+        while (!$workQueue->isEmpty()) {
+            $package = $workQueue->dequeue();
+            if (isset($this->whitelistedMap[$package->getId()])) {
+                continue;
+            }
+
+            $this->whitelistedMap[$package->getId()] = true;
+
+            foreach ($package->getRequires() as $link) {
+                $possibleRequires = $this->pool->whatProvides($link->getTarget(), $link->getConstraint(), true);
+
+                foreach ($possibleRequires as $require) {
+                    $workQueue->enqueue($require);
+                }
+            }
+
+            $obsoleteProviders = $this->pool->whatProvides($package->getName(), null, true);
+
+            foreach ($obsoleteProviders as $provider) {
+                if ($provider === $package) {
+                    continue;
+                }
+
+                if (($package instanceof AliasPackage) && $package->getAliasOf() === $provider) {
+                    $workQueue->enqueue($provider);
+                }
+            }
+        }
+    }
+
     protected function addRulesForPackage(PackageInterface $package)
     {
         $workQueue = new \SplQueue;
@@ -236,26 +273,51 @@ class RuleSetGenerator
         }
     }
 
+    private function whitelistFromUpdatePackages(PackageInterface $package)
+    {
+        $updates = $this->policy->findUpdatePackages($this->pool, $this->installedMap, $package, true);
+
+        foreach ($updates as $update) {
+            $this->whitelistFromPackage($update);
+        }
+    }
+
+    protected function whitelistFromJobs()
+    {
+        foreach ($this->jobs as $job) {
+            switch ($job['cmd']) {
+                case 'install':
+                    $packages = $this->pool->whatProvides($job['packageName'], $job['constraint'], true);
+                    foreach ($packages as $package) {
+                        $this->whitelistFromPackage($package);
+                    }
+                    break;
+            }
+        }
+    }
+
     protected function addRulesForJobs()
     {
         foreach ($this->jobs as $job) {
             switch ($job['cmd']) {
                 case 'install':
-                    if ($job['packages']) {
-                        foreach ($job['packages'] as $package) {
+                    $packages = $this->pool->whatProvides($job['packageName'], $job['constraint']);
+                    if ($packages) {
+                        foreach ($packages as $package) {
                             if (!isset($this->installedMap[$package->getId()])) {
                                 $this->addRulesForPackage($package);
                             }
                         }
 
-                        $rule = $this->createInstallOneOfRule($job['packages'], Rule::RULE_JOB_INSTALL, $job);
+                        $rule = $this->createInstallOneOfRule($packages, Rule::RULE_JOB_INSTALL, $job);
                         $this->addRule(RuleSet::TYPE_JOB, $rule);
                     }
                     break;
                 case 'remove':
                     // remove all packages with this name including uninstalled
                     // ones to make sure none of them are picked as replacements
-                    foreach ($job['packages'] as $package) {
+                    $packages = $this->pool->whatProvides($job['packageName'], $job['constraint']);
+                    foreach ($packages as $package) {
                         $rule = $this->createRemoveRule($package, Rule::RULE_JOB_REMOVE, $job);
                         $this->addRule(RuleSet::TYPE_JOB, $rule);
                     }
@@ -270,6 +332,16 @@ class RuleSetGenerator
         $this->rules = new RuleSet;
         $this->installedMap = $installedMap;
 
+        $this->whitelistedNames = array();
+        foreach ($this->installedMap as $package) {
+            $this->whitelistFromPackage($package);
+            $this->whitelistFromUpdatePackages($package);
+        }
+        $this->whitelistFromJobs();
+
+        $this->pool->setWhitelist($this->whitelistedMap);
+
+        $this->addedMap = array();
         foreach ($this->installedMap as $package) {
             $this->addRulesForPackage($package);
             $this->addRulesForUpdatePackages($package);

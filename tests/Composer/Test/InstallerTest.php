@@ -138,7 +138,7 @@ class InstallerTest extends TestCase
     /**
      * @dataProvider getIntegrationTests
      */
-    public function testIntegration($file, $message, $condition, $composerConfig, $lock, $installed, $run, $expectLock, $expectOutput, $expect)
+    public function testIntegration($file, $message, $condition, $composerConfig, $lock, $installed, $run, $expectLock, $expectOutput, $expect, $expectExitCode)
     {
         if ($condition) {
             eval('$res = '.$condition.';');
@@ -228,7 +228,7 @@ class InstallerTest extends TestCase
         $appOutput = fopen('php://memory', 'w+');
         $result = $application->run(new StringInput($run), new StreamOutput($appOutput));
         fseek($appOutput, 0);
-        $this->assertEquals(0, $result, $output . stream_get_contents($appOutput));
+        $this->assertEquals($expectExitCode, $result, $output . stream_get_contents($appOutput));
 
         if ($expectLock) {
             unset($actualLock['hash']);
@@ -266,6 +266,7 @@ class InstallerTest extends TestCase
                 --RUN--\s*(?P<run>.*?)\s*
                 (?:--EXPECT-LOCK--\s*(?P<expectLock>'.$content.'))?\s*
                 (?:--EXPECT-OUTPUT--\s*(?P<expectOutput>'.$content.'))?\s*
+                (?:--EXPECT-EXIT-CODE--\s*(?P<expectExitCode>\d+))?\s*
                 --EXPECT--\s*(?P<expect>.*?)\s*
             $}xs';
 
@@ -273,6 +274,7 @@ class InstallerTest extends TestCase
             $installedDev = array();
             $lock = array();
             $expectLock = array();
+            $expectExitCode = 0;
 
             if (preg_match($pattern, $test, $match)) {
                 try {
@@ -294,6 +296,7 @@ class InstallerTest extends TestCase
                     }
                     $expectOutput = $match['expectOutput'];
                     $expect = $match['expect'];
+                    $expectExitCode = (int) $match['expectExitCode'];
                 } catch (\Exception $e) {
                     die(sprintf('Test "%s" is not valid: '.$e->getMessage(), str_replace($fixturesDir.'/', '', $file)));
                 }
@@ -301,7 +304,7 @@ class InstallerTest extends TestCase
                 die(sprintf('Test "%s" is not valid, did not match the expected format.', str_replace($fixturesDir.'/', '', $file)));
             }
 
-            $tests[] = array(str_replace($fixturesDir.'/', '', $file), $message, $condition, $composer, $lock, $installed, $run, $expectLock, $expectOutput, $expect);
+            $tests[] = array(str_replace($fixturesDir.'/', '', $file), $message, $condition, $composer, $lock, $installed, $run, $expectLock, $expectOutput, $expect, $expectExitCode);
         }
 
         return $tests;

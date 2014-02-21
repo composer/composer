@@ -1,0 +1,24 @@
+--TEST--
+Ensure a transiently required replacer can replace root requirements
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.0" },
+                { "name": "b/b", "version": "1.0.0", "require": {"c/c": "1.*"} },
+                { "name": "c/c", "version": "1.0.0", "replace": {"a/a": "1.0.0" }}
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.*",
+        "b/b": "1.*"
+    }
+}
+--RUN--
+install
+--EXPECT--
+Installing c/c (1.0.0)
+Installing b/b (1.0.0)

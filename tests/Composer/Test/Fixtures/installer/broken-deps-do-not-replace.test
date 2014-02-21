@@ -1,0 +1,25 @@
+--TEST--
+Broken dependencies should not lead to a replacer being installed which is not mentioned by name
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.0" },
+                { "name": "b/b", "version": "1.0.0", "require": {"c/c": "1.*"} },
+                { "name": "c/c", "version": "1.0.0", "replace": {"a/a": "1.0.0" },"require":{"x/x": "1.0"}},
+                { "name": "d/d", "version": "1.0.0", "replace": {"a/a": "1.0.0", "c/c":"1.0.0" }}
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.*",
+        "b/b": "1.*"
+    }
+}
+--RUN--
+install
+--EXPECT-EXIT-CODE--
+2
+--EXPECT--
