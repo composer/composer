@@ -50,6 +50,7 @@ class Pool
     protected $versionParser;
     protected $providerCache = array();
     protected $filterRequires;
+    protected $whitelist = null;
     protected $id = 1;
 
     public function __construct($minimumStability = 'stable', array $stabilityFlags = array(), array $filterRequires = array())
@@ -64,6 +65,11 @@ class Pool
         }
         $this->stabilityFlags = $stabilityFlags;
         $this->filterRequires = $filterRequires;
+    }
+
+    public function setWhitelist($whitelist)
+    {
+        $this->whitelist = $whitelist;
     }
 
     /**
@@ -223,21 +229,24 @@ class Pool
      * @param string                  $name       The package name to be searched for
      * @param LinkConstraintInterface $constraint A constraint that all returned
      *                                            packages must match or null to return all
+     * @param bool                    $mustMatchName Whether the name of returned packages
+     *                                            must match the given name
      * @return array A set of packages
      */
-    public function whatProvides($name, LinkConstraintInterface $constraint = null)
+    public function whatProvides($name, LinkConstraintInterface $constraint = null, $mustMatchName = false)
     {
-        if (isset($this->providerCache[$name][(string) $constraint])) {
-            return $this->providerCache[$name][(string) $constraint];
+        $key = ((string) (int) $mustMatchName).((string) $constraint);
+        if (isset($this->providerCache[$name][$key])) {
+            return $this->providerCache[$name][$key];
         }
 
-        return $this->providerCache[$name][(string) $constraint] = $this->computeWhatProvides($name, $constraint);
+        return $this->providerCache[$name][$key] = $this->computeWhatProvides($name, $constraint, $mustMatchName);
     }
 
     /**
      * @see whatProvides
      */
-    private function computeWhatProvides($name, $constraint)
+    private function computeWhatProvides($name, $constraint, $mustMatchName = false)
     {
         $candidates = array();
 
@@ -259,6 +268,9 @@ class Pool
         $nameMatch = false;
 
         foreach ($candidates as $candidate) {
+            if ($this->whitelist !== null && !isset($this->whitelist[$candidate->getId()])) {
+                continue;
+            }
             switch ($this->match($candidate, $name, $constraint)) {
                 case self::MATCH_NONE:
                     break;
@@ -289,7 +301,7 @@ class Pool
         }
 
         // if a package with the required name exists, we ignore providers
-        if ($nameMatch) {
+        if ($nameMatch || $mustMatchName) {
             return $matches;
         }
 

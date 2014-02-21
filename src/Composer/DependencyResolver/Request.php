@@ -46,7 +46,7 @@ class Request
     protected function addJob($packageName, $cmd, LinkConstraintInterface $constraint = null)
     {
         $packageName = strtolower($packageName);
-        $packages = $this->pool->whatProvides($packageName, $constraint);
+        $packages = $this->pool->whatProvides($packageName, $constraint, true);
 
         $this->jobs[] = array(
             'packages' => $packages,

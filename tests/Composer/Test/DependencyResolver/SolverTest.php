@@ -441,10 +441,9 @@ class SolverTest extends TestCase
 
         $this->request->install('A');
 
-        $this->checkSolverResult(array(
-            array('job' => 'install', 'package' => $packageQ),
-            array('job' => 'install', 'package' => $packageA),
-        ));
+        // must explicitly pick the provider, so error in this case
+        $this->setExpectedException('Composer\DependencyResolver\SolverProblemsException');
+        $this->solver->solve($this->request);
     }
 
     public function testSkipReplacerOfExistingPackage()
@@ -574,11 +573,12 @@ class SolverTest extends TestCase
         $this->reposComplete();
 
         $this->request->install('A');
+        $this->request->install('C');
 
         $this->checkSolverResult(array(
-            array('job' => 'install', 'package' => $packageB),
             array('job' => 'install', 'package' => $packageA),
             array('job' => 'install', 'package' => $packageC),
+            array('job' => 'install', 'package' => $packageB),
         ));
     }
 
