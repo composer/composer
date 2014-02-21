@@ -235,7 +235,7 @@ class Pool
      */
     public function whatProvides($name, LinkConstraintInterface $constraint = null, $mustMatchName = false)
     {
-        $key = ((string) (int) $mustMatchName).((string) $constraint);
+        $key = ((int) $mustMatchName).$constraint;
         if (isset($this->providerCache[$name][$key])) {
             return $this->providerCache[$name][$key];
         }
