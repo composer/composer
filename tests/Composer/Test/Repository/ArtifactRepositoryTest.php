@@ -27,10 +27,12 @@ class ArtifactRepositoryTest extends TestCase
             'vendor1/package2-4.3.2',
             'vendor3/package1-5.4.3',
             'test/jsonInRoot-1.0.0',
-            'test/jsonInFirstLevel-1.0.0'
+            'test/jsonInFirstLevel-1.0.0',
+            //The files not-an-artifact.zip and jsonSecondLevel are not valid 
+            //artifacts and do not get detected.
         );
 
-        $coordinates = array('type' => 'artifact', 'url' => __DIR__ . '/Fixtures/artifacts/correct');
+        $coordinates = array('type' => 'artifact', 'url' => __DIR__ . '/Fixtures/artifacts');
         $repo = new ArtifactRepository($coordinates, new NullIO(), new Config());
 
         $foundPackages = array_map(function(BasePackage $package) {
@@ -41,14 +43,6 @@ class ArtifactRepositoryTest extends TestCase
         sort($foundPackages);
 
         $this->assertSame($expectedPackages, $foundPackages);
-    }
-
-    public function testExtractConfigFails()
-    {
-        $this->setExpectedException('RuntimeException', "Shouldn't have picked up composer.json from a location other than root or first level directory.");
-
-        $coordinates = array('type' => 'artifact', 'url' => __DIR__ . '/Fixtures/artifacts/error/jsonWrongDirectory');
-        new ArtifactRepository($coordinates, new NullIO(), new Config());
     }
 }
 
