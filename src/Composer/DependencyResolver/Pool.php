@@ -300,8 +300,14 @@ class Pool
             }
         }
 
+        if ($mustMatchName) {
+            return array_filter($matches, function ($match) use ($name) {
+                return $match->getName() == $name;
+            });
+        }
+
         // if a package with the required name exists, we ignore providers
-        if ($nameMatch || $mustMatchName) {
+        if ($nameMatch) {
             return $matches;
         }
 
