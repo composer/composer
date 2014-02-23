@@ -39,6 +39,7 @@ class Config
         'optimize-autoloader' => false,
         'prepend-autoloader' => true,
         'github-domains' => array('github.com'),
+        'disable-tls' => false
     );
 
     public static $defaultRepositories = array(
@@ -210,6 +211,9 @@ class Config
                 }
 
                 return $this->config[$key];
+                
+            case 'disable-tls':
+                return $this->config[$key]!== 'false' && (bool) $this->config[$key];
 
             default:
                 if (!isset($this->config[$key])) {
