@@ -357,6 +357,11 @@ class RemoteFilesystem
             $options['http']['header'][] = $header;
         }
 
+        // Setup remaining TLS options - the matching may need monitoring, esp. www vs none in CN
+        $host = parse_url($originUrl, PHP_URL_HOST);
+        $this->options['ssl']['CN_match'] = $host;
+        $this->options['ssl']['SNI_server_name'] = $host;
+
         /**
          * Setup TLS options CN_match and SNI_server_name based on URL given
          */
