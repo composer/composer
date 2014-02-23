@@ -342,7 +342,11 @@ class RemoteFilesystem
 
         // Setup remaining TLS options - the matching may need monitoring, esp. www vs none in CN
         if ($disableTls === false) {
-            $host = parse_url($originUrl, PHP_URL_HOST);
+            if (!preg_match("|^https?://|", $originUrl)) {
+                $host = $originUrl;
+            } else {
+                $host = parse_url($originUrl, PHP_URL_HOST);
+            }
             $this->options['ssl']['CN_match'] = $host;
             $this->options['ssl']['SNI_server_name'] = $host;
         }

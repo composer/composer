@@ -50,7 +50,6 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
 
-        $this->rfs = new RemoteFilesystem($this->getIO());
         $this->process = new ProcessExecutor($this->getIO());
 
         $output->write('Checking platform settings: ');
@@ -157,7 +156,7 @@ EOT
             $remoteFilesystemOptions = array('ssl'=>array('cafile'=>$config->get('cafile')));
         }
         try {
-            $remoteFilesystem = new RemoteFilesystem($this->getIO(), $remoteFilesystemOptions, $disableTls);
+            $this->rfs = new RemoteFilesystem($this->getIO(), $remoteFilesystemOptions, $disableTls);
         } catch (TransportException $e) {
             if (preg_match('|cafile|', $e->getMessage())) {
                 $result[] = '<error>[' . get_class($e) . '] ' . $e->getMessage() . '</error>';
@@ -169,7 +168,7 @@ EOT
         }
 
         try {
-            $json = $remoteFilesystem->getContents('packagist.org', $protocol . '://packagist.org/packages.json', false, array(), $disableTls);
+            $json = $this->rfs->getContents('packagist.org', $protocol . '://packagist.org/packages.json', false, array(), $disableTls);
         } catch (\Exception $e) {
             array_unshift($result, '[' . get_class($e) . '] ' . $e->getMessage());
         }
