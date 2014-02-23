@@ -178,6 +178,28 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
         unlink($file);
     }
 
+    /**
+     * @group TLS
+     */
+    public function testGetOptionsForUrlCreatesSecureTlsDefaults()
+    {
+        $io = $this->getMock('Composer\IO\IOInterface');
+
+        $res = $this->callGetOptionsForUrl($io, array('http://example.org', array('ssl'=>array('cafile'=>'/some/path/file.crt'))));
+
+        $this->assertTrue(isset($res['ssl']['ciphers']));
+        $this->assertRegExp("|!aNULL:!eNULL:!EXPORT:!DES:!3DES:!MD5:!PSK|", $res['ssl']['ciphers']);
+        $this->assertTrue($res['ssl']['verify_peer']);
+        $this->assertTrue($res['ssl']['SNI_enabled']);
+        $this->assertEquals(7, $res['ssl']['verify_depth']);
+        $this->assertEquals('example.org', $res['ssl']['CN_match']);
+        $this->assertEquals('example.org', $res['ssl']['SNI_server_name']);
+        $this->assertEquals('/some/path/file.crt', $res['ssl']['cafile']);
+        if (version_compare(PHP_VERSION, '5.4.13') >= 0) {
+            $this->assertTrue($res['ssl']['disable_compression']);
+        }
+    }
+
     protected function callGetOptionsForUrl($io, array $args = array(), array $options = array())
     {
         $fs = new RemoteFilesystem($io, $options);

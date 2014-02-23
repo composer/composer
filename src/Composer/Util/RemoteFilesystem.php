@@ -52,7 +52,7 @@ class RemoteFilesystem
         if (isset($options['ssl']['cafile'])
         && (!is_readable($options['ssl']['cafile'])
         || !openssl_x509_parse(file_get_contents($options['ssl']['cafile'])))) { //check return value and test (it's subject to change)
-            throw new TransportException('The configured cafile could was not valid or could not be read.');
+            throw new TransportException('The configured cafile was not valid or could not be read.');
         }
 
         // handle the other externally set options normally.
