@@ -63,7 +63,7 @@ EOT
 
         $disableTls = false;
         if($config->get('disable-tls') === true || $input->getOption('disable-tls')) {
-            $output->writeln('<comment>You are running Composer with SSL/TLS protection disabled.</comment>');
+            $output->writeln('<warning>You are running Composer with SSL/TLS protection disabled.</warning>');
             $baseUrl = 'http://' . self::HOMEPAGE;
             $disableTls = true;
         } elseif (!extension_loaded('openssl')) {
@@ -74,13 +74,14 @@ EOT
             $baseUrl = 'https://' . self::HOMEPAGE;
         }
 
+        $remoteFilesystemOptions = array();
+        if (!is_null($config->get('cafile'))) {
+            $remoteFilesystemOptions = array('ssl'=>array('cafile'=>$config->get('cafile')));
+        }
+        if (!is_null($input->get('cafile'))) {
+            $remoteFilesystemOptions = array('ssl'=>array('cafile'=>$input->get('cafile')));
+        }
         try {
-            if (!is_null($config->get('cafile'))) {
-                $remoteFilesystemOptions = array('ssl'=>array('cafile'=>$config->get('cafile')));
-            }
-            if (!is_null($input->get('cafile'))) {
-                $remoteFilesystemOptions = array('ssl'=>array('cafile'=>$input->get('cafile')));
-            }
             $remoteFilesystem = new RemoteFilesystem($this->getIO(), $remoteFilesystemOptions, $disableTls);
         } catch (TransportException $e) {
             if (preg_match('|cafile|', $e->getMessage())) {

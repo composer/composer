@@ -72,7 +72,7 @@ class RemoteFilesystem
      *
      * @return bool true
      */
-    public function copy($originUrl, $fileUrl, $fileName, $progress = true, $options = array(), $disableTls = false)
+    public function copy($originUrl, $fileUrl, $fileName, $progress = true, $options = array(), $disableTls = false) //REFACTOR: to constructor for TLS opt
     {
         return $this->get($originUrl, $fileUrl, $options, $fileName, $progress, $disableTls);
     }

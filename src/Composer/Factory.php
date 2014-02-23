@@ -163,7 +163,7 @@ class Factory
             if (!isset($repo['type'])) {
                 throw new \UnexpectedValueException('Repository '.$index.' ('.json_encode($repo).') must have a type defined');
             }
-            $name = is_int($index) && isset($repo['url']) ? preg_replace('{^https?://}i', '', $repo['url']) : $index;
+            $name = is_int($index) && isset($repo['url']) ? preg_replace('{^https?://}i', '', $repo['url']) : $index; //CHECK: Why is scheme stripped?
             while (isset($repos[$name])) {
                 $name .= '2';
             }

@@ -14,6 +14,7 @@ namespace Composer\Command;
 
 use Composer\Composer;
 use Composer\Factory;
+use Composer\Config;
 use Composer\Downloader\TransportException;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
@@ -48,6 +49,7 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+
         $this->rfs = new RemoteFilesystem($this->getIO());
         $this->process = new ProcessExecutor($this->getIO());
 
@@ -56,19 +58,6 @@ EOT
 
         $output->write('Checking git settings: ');
         $this->outputResult($output, $this->checkGit());
-
-        $output->write('Checking http connectivity: ');
-        $this->outputResult($output, $this->checkHttp());
-
-        $opts = stream_context_get_options(StreamContextFactory::getContext('http://example.org'));
-        if (!empty($opts['http']['proxy'])) {
-            $output->write('Checking HTTP proxy: ');
-            $this->outputResult($output, $this->checkHttpProxy());
-            $output->write('Checking HTTP proxy support for request_fulluri: ');
-            $this->outputResult($output, $this->checkHttpProxyFullUriRequestParam());
-            $output->write('Checking HTTPS proxy support for request_fulluri: ');
-            $this->outputResult($output, $this->checkHttpsProxyFullUriRequestParam());
-        }
 
         $composer = $this->getComposer(false);
         if ($composer) {
@@ -83,6 +72,19 @@ EOT
             $config = $composer->getConfig();
         } else {
             $config = Factory::createConfig();
+        }
+
+        $output->write('Checking http connectivity: ');
+        $this->outputResult($output, $this->checkHttp($config));
+
+        $opts = stream_context_get_options(StreamContextFactory::getContext('http://example.org'));
+        if (!empty($opts['http']['proxy'])) {
+            $output->write('Checking HTTP proxy: ');
+            $this->outputResult($output, $this->checkHttpProxy());
+            $output->write('Checking HTTP proxy support for request_fulluri: ');
+            $this->outputResult($output, $this->checkHttpProxyFullUriRequestParam());
+            $output->write('Checking HTTPS proxy support for request_fulluri: ');
+            $this->outputResult($output, $this->checkHttpsProxyFullUriRequestParam());
         }
 
         if ($oauth = $config->get('github-oauth')) {
@@ -135,13 +137,45 @@ EOT
         return true;
     }
 
-    private function checkHttp()
+    private function checkHttp(Config $config)
     {
-        $protocol = extension_loaded('openssl') ? 'https' : 'http';
+        $disableTls = false;
+        $result = array();
+        if($config->get('disable-tls') === true) {
+            $protocol = 'http';
+            $disableTls = true;
+            $result[] = '<warning>Composer is configured to disable SSL/TLS protection. This will leave remote HTTPS requests vulnerable to Man-In-The-Middle attacks.</warning>';
+        } else {
+            $protocol = 'https';
+        }
+        if (!extension_loaded('openssl') && !$disableTls) {
+            $result[] = '<error>Composer is configured to use SSL/TLS protection but the openssl extension is not available.</error>';
+        }
+
+        $remoteFilesystemOptions = array();
+        if (!is_null($config->get('cafile'))) {
+            $remoteFilesystemOptions = array('ssl'=>array('cafile'=>$config->get('cafile')));
+        }
         try {
-            $json = $this->rfs->getContents('packagist.org', $protocol . '://packagist.org/packages.json', false);
+            $remoteFilesystem = new RemoteFilesystem($this->getIO(), $remoteFilesystemOptions, $disableTls);
+        } catch (TransportException $e) {
+            if (preg_match('|cafile|', $e->getMessage())) {
+                $result[] = '<error>[' . get_class($e) . '] ' . $e->getMessage() . '</error>';
+                $result[] = '<error>Unable to locate a valid CA certificate file. You must set a valid \'cafile\' option.</error>';
+                $result[] = '<error>You can alternatively disable this error, at your own risk, by enabling the \'disable-tls\' option.</error>';
+            } else {
+                throw $e;
+            }
+        }
+
+        try {
+            $json = $remoteFilesystem->getContents('packagist.org', $protocol . '://packagist.org/packages.json', false, array(), $disableTls);
         } catch (\Exception $e) {
-            return $e;
+            array_unshift($result, '[' . get_class($e) . '] ' . $e->getMessage());
+        }
+
+        if (count($result) > 0) {
+            return $result;
         }
 
         return true;
@@ -271,7 +305,13 @@ EOT
             if ($result instanceof \Exception) {
                 $output->writeln('['.get_class($result).'] '.$result->getMessage());
             } elseif ($result) {
-                $output->writeln($result);
+                if (is_array($result)) {
+                    foreach ($result as $message) {
+                        $output->writeln($message);
+                    }
+                } else {
+                    $output->writeln($result);
+                }
             }
         }
     }
