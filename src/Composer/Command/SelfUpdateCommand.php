@@ -56,9 +56,18 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $baseUrl = (extension_loaded('openssl') ? 'https' : 'http') . '://' . self::HOMEPAGE;
-        $remoteFilesystem = new RemoteFilesystem($this->getIO());
         $config = Factory::createConfig();
+        if (!extension_loaded('openssl')) {
+            $output->writeln('<error>The openssl extension is required for SSL/TLS protection.</error>');
+            $output->writeln('<error>You can disable this error, at your own risk, by setting the \'disable-tls\' option to "false".</error>');
+            return 1;
+        } elseif($config->get('disable-tls') === true) {
+            $output->writeln('<info>You are running Composer with SSL/TLS protection disabled.</info>');
+            $baseUrl = 'http://' . self::HOMEPAGE;
+        } else {
+            $baseUrl = 'https://' . self::HOMEPAGE;
+        }
+        $remoteFilesystem = new RemoteFilesystem($this->getIO());
         $cacheDir = $config->get('cache-dir');
         $rollbackDir = $config->get('home');
         $localFilename = realpath($_SERVER['argv'][0]) ?: $_SERVER['argv'][0];
