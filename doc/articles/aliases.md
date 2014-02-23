@@ -7,7 +7,7 @@
 ## Why aliases?
 
 When you are using a VCS repository, you will only get comparable versions for
-branches that look like versions, such as `2.0`. For your `master` branch, you
+branches that look like versions, such as `2.0` or `2.0.x`. For your `master` branch, you
 will get a `dev-master` version. For your `bugfix` branch, you will get a
 `dev-bugfix` version.
 
