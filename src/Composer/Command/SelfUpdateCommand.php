@@ -43,6 +43,7 @@ class SelfUpdateCommand extends Command
                 new InputOption('rollback', 'r', InputOption::VALUE_NONE, 'Revert to an older installation of composer'),
                 new InputOption('clean-backups', null, InputOption::VALUE_NONE, 'Delete old backups during an update. This makes the current version of composer the only backup available after the update'),
                 new InputArgument('version', InputArgument::OPTIONAL, 'The version to update to'),
+                new InputOption('disable-tls', null, InputArgument::VALUE_NONE, 'Disable SSL/TLS protection for HTTPS requests'),
             ))
             ->setHelp(<<<EOT
 The <info>self-update</info> command checks getcomposer.org for newer
