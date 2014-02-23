@@ -52,7 +52,7 @@ class RemoteFilesystem
             $this->options = $this->getTlsDefaults();
             if (isset($options['ssl']['cafile'])
             && (!is_readable($options['ssl']['cafile'])
-            || !openssl_x509_parse(file_get_contents($options['ssl']['cafile'])))) { //check return value and test (it's subject to change)
+            || !\openssl_x509_parse(file_get_contents($options['ssl']['cafile'])))) { //check return value and test (it's subject to change)
                 throw new TransportException('The configured cafile was not valid or could not be read.');
             }
         }
@@ -486,7 +486,7 @@ class RemoteFilesystem
         // If SSL_CERT_FILE env variable points to a valid certificate/bundle, use that.
         // This mimics how OpenSSL uses the SSL_CERT_FILE env variable.
         $envCertFile = getenv('SSL_CERT_FILE');
-        if ($envCertFile && is_readable($envCertFile) && openssl_x509_parse(file_get_contents($envCertFile))) {
+        if ($envCertFile && is_readable($envCertFile) && \openssl_x509_parse(file_get_contents($envCertFile))) {
             // Possibly throw exception instead of ignoring SSL_CERT_FILE if it's invalid?
             return $envCertFile;
         }
@@ -504,7 +504,7 @@ class RemoteFilesystem
 
         static $found = false;
         foreach ($caBundlePaths as $caBundle) {
-            if (is_readable($caBundle) && openssl_x509_parse(file_get_contents($caBundle))) {
+            if (is_readable($caBundle) && \openssl_x509_parse(file_get_contents($caBundle))) {
                 $found = true;
                 break;
             }
