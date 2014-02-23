@@ -40,7 +40,7 @@ class RemoteFilesystem
      * @param IOInterface $io      The IO instance
      * @param array       $options The options
      */
-    public function __construct(IOInterface $io, $options = array())
+    public function __construct(IOInterface $io, $options = array(), $disableTls = false)
     {
         $this->io = $io;
 
@@ -48,11 +48,13 @@ class RemoteFilesystem
          * Setup TLS options
          * The cafile option can be set via config.json
          */
-        $this->options = $this->getTlsDefaults();
-        if (isset($options['ssl']['cafile'])
-        && (!is_readable($options['ssl']['cafile'])
-        || !openssl_x509_parse(file_get_contents($options['ssl']['cafile'])))) { //check return value and test (it's subject to change)
-            throw new TransportException('The configured cafile was not valid or could not be read.');
+        if ($disableTls === false) {
+            $this->options = $this->getTlsDefaults();
+            if (isset($options['ssl']['cafile'])
+            && (!is_readable($options['ssl']['cafile'])
+            || !openssl_x509_parse(file_get_contents($options['ssl']['cafile'])))) { //check return value and test (it's subject to change)
+                throw new TransportException('The configured cafile was not valid or could not be read.');
+            }
         }
 
         // handle the other externally set options normally.
@@ -70,9 +72,9 @@ class RemoteFilesystem
      *
      * @return bool true
      */
-    public function copy($originUrl, $fileUrl, $fileName, $progress = true, $options = array())
+    public function copy($originUrl, $fileUrl, $fileName, $progress = true, $options = array(), $disableTls = false)
     {
-        return $this->get($originUrl, $fileUrl, $options, $fileName, $progress);
+        return $this->get($originUrl, $fileUrl, $options, $fileName, $progress, $disableTls);
     }
 
     /**
@@ -85,9 +87,9 @@ class RemoteFilesystem
      *
      * @return string The content
      */
-    public function getContents($originUrl, $fileUrl, $progress = true, $options = array())
+    public function getContents($originUrl, $fileUrl, $progress = true, $options = array(), $disableTls = false)
     {
-        return $this->get($originUrl, $fileUrl, $options, null, $progress);
+        return $this->get($originUrl, $fileUrl, $options, null, $progress, $disableTls);
     }
 
     /**
@@ -114,7 +116,7 @@ class RemoteFilesystem
      *
      * @return bool|string
      */
-    protected function get($originUrl, $fileUrl, $additionalOptions = array(), $fileName = null, $progress = true)
+    protected function get($originUrl, $fileUrl, $additionalOptions = array(), $fileName = null, $progress = true, $disableTls = false)
     {
         $this->bytesMax = 0;
         $this->originUrl = $originUrl;
@@ -128,7 +130,7 @@ class RemoteFilesystem
             $this->io->setAuthentication($originUrl, urldecode($match[1]), urldecode($match[2]));
         }
 
-        $options = $this->getOptionsForUrl($originUrl, $additionalOptions);
+        $options = $this->getOptionsForUrl($originUrl, $additionalOptions, $disableTls);
 
         if ($this->io->isDebug()) {
             $this->io->write((substr($fileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $fileUrl);
@@ -320,7 +322,7 @@ class RemoteFilesystem
         throw new TransportException('RETRY');
     }
 
-    protected function getOptionsForUrl($originUrl, $additionalOptions)
+    protected function getOptionsForUrl($originUrl, $additionalOptions, $disableTls = false)
     {
         $headers = array(
             sprintf(
@@ -339,9 +341,11 @@ class RemoteFilesystem
         }
 
         // Setup remaining TLS options - the matching may need monitoring, esp. www vs none in CN
-        $host = parse_url($originUrl, PHP_URL_HOST);
-        $this->options['ssl']['CN_match'] = $host;
-        $this->options['ssl']['SNI_server_name'] = $host;
+        if ($disableTls === false) {
+            $host = parse_url($originUrl, PHP_URL_HOST);
+            $this->options['ssl']['CN_match'] = $host;
+            $this->options['ssl']['SNI_server_name'] = $host;
+        }
 
         $options = array_replace_recursive($this->options, $additionalOptions);
 

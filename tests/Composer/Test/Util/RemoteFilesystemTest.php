@@ -197,6 +197,8 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('/some/path/file.crt', $res['ssl']['cafile']);
         if (version_compare(PHP_VERSION, '5.4.13') >= 0) {
             $this->assertTrue($res['ssl']['disable_compression']);
+        } else {
+            $this->assertFalse(isset($res['ssl']['disable_compression']));
         }
     }
 

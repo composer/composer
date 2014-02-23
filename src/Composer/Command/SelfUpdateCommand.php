@@ -61,9 +61,11 @@ EOT
     {
         $config = Factory::createConfig();
 
+        $disableTls = false;
         if($config->get('disable-tls') === true || $input->getOption('disable-tls')) {
-            $output->writeln('<info>You are running Composer with SSL/TLS protection disabled.</info>');
+            $output->writeln('<comment>You are running Composer with SSL/TLS protection disabled.</comment>');
             $baseUrl = 'http://' . self::HOMEPAGE;
+            $disableTls = true;
         } elseif (!extension_loaded('openssl')) {
             $output->writeln('<error>The openssl extension is required for SSL/TLS protection.</error>');
             $output->writeln('<error>You can disable this error, at your own risk, by enabling the \'disable-tls\' option.</error>');
@@ -79,12 +81,12 @@ EOT
             if (!is_null($input->get('cafile'))) {
                 $remoteFilesystemOptions = array('ssl'=>array('cafile'=>$input->get('cafile')));
             }
-            $remoteFilesystem = new RemoteFilesystem($this->getIO(), $remoteFilesystemOptions);
+            $remoteFilesystem = new RemoteFilesystem($this->getIO(), $remoteFilesystemOptions, $disableTls);
         } catch (TransportException $e) {
             if (preg_match('|cafile|', $e->getMessage())) {
                 $output->writeln('<error>' . $e->getMessage() . '</error>');
                 $output->writeln('<error>Unable to locate a valid CA certificate file. You must set a valid \'cafile\' option.</error>');
-                $output->writeln('<error>You can disable this error, at your own risk, by enabling the \'disable-tls\' option.</error>');
+                $output->writeln('<error>You can alternatively disable this error, at your own risk, by enabling the \'disable-tls\' option.</error>');
                 return 1;
             } else {
                 throw $e;
