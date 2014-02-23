@@ -17,6 +17,7 @@ use Composer\Factory;
 use Composer\Util\Filesystem;
 use Composer\Util\RemoteFilesystem;
 use Composer\Downloader\FilesystemException;
+use Composer\Downloader\TransportException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
@@ -57,17 +58,34 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $config = Factory::createConfig();
-        if (!extension_loaded('openssl')) {
-            $output->writeln('<error>The openssl extension is required for SSL/TLS protection.</error>');
-            $output->writeln('<error>You can disable this error, at your own risk, by setting the \'disable-tls\' option to "false".</error>');
-            return 1;
-        } elseif($config->get('disable-tls') === true) {
+
+        if($config->get('disable-tls') === true || $input->getOption('disable-tls')) {
             $output->writeln('<info>You are running Composer with SSL/TLS protection disabled.</info>');
             $baseUrl = 'http://' . self::HOMEPAGE;
+        } elseif (!extension_loaded('openssl')) {
+            $output->writeln('<error>The openssl extension is required for SSL/TLS protection.</error>');
+            $output->writeln('<error>You can disable this error, at your own risk, by enabling the \'disable-tls\' option.</error>');
+            return 1;
         } else {
             $baseUrl = 'https://' . self::HOMEPAGE;
         }
-        $remoteFilesystem = new RemoteFilesystem($this->getIO());
+
+        try {
+            if (!is_null($config->get('cafile'))) {
+                $remoteFilesystemOptions = array('ssl'=>array('cafile'=>$config->get('cafile')));
+            }
+            $remoteFilesystem = new RemoteFilesystem($this->getIO(), $remoteFilesystemOptions);
+        } catch (TransportException $e) {
+            if (preg_match('|cafile|', $e->getMessage())) {
+                $output->writeln('<error>' . $e->getMessage() . '</error>');
+                $output->writeln('<error>Unable to locate a valid CA certificate file. You must set a valid \'cafile\' option.</error>');
+                $output->writeln('<error>You can disable this error, at your own risk, by enabling the \'disable-tls\' option.</error>');
+                return 1;
+            } else {
+                throw $e;
+            }
+        }
+
         $cacheDir = $config->get('cache-dir');
         $rollbackDir = $config->get('home');
         $localFilename = realpath($_SERVER['argv'][0]) ?: $_SERVER['argv'][0];
