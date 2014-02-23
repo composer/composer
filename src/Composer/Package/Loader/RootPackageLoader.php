@@ -210,7 +210,7 @@ class RootPackageLoader extends ArrayLoader
 
             // find current branch and collect all branch names
             foreach ($this->process->splitLines($output) as $branch) {
-                if ($branch && preg_match('{^(?:\* ) *(\(no branch\)|\(detached from [a-f0-9]+\)|\S+) *([a-f0-9]+) .*$}', $branch, $match)) {
+                if ($branch && preg_match('{^(?:\* ) *(\(no branch\)|\(detached from \S+\)|\S+) *([a-f0-9]+) .*$}', $branch, $match)) {
                     if ($match[1] === '(no branch)' || substr($match[1], 0, 10) === '(detached ') {
                         $version = 'dev-'.$match[2];
                         $isFeatureBranch = true;
