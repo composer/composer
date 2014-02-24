@@ -161,6 +161,24 @@ EOT
             $composer->getEventDispatcher()->dispatchCommandEvent(ScriptEvents::POST_ROOT_PACKAGE_INSTALL, $installDevPackages);
         }
 
+        // Update preferSource / preferDist with preferred-install from the root package if both vars still
+        // have their default initial value (false)
+        $config = $composer->getConfig();
+        if ($config->has('preferred-install') && $preferDist === false && $preferSource === false) {
+            switch ($config->get('preferred-install')) {
+                case 'source':
+                    $preferSource = true;
+                    break;
+                case 'dist':
+                    $preferDist = true;
+                    break;
+                case 'auto':
+                default:
+                    // noop
+                    break;
+            }
+        }
+
         // install dependencies of the created project
         if ($noInstall === false) {
             $installer = Installer::create($io, $composer);
