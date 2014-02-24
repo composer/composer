@@ -24,6 +24,7 @@ use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Autoload\AutoloadGenerator;
 use Composer\Package\Version\VersionParser;
+use Symfony\Component\Console\Input\InputInterface;
 
 /**
  * Creates a configured instance of composer.
@@ -184,7 +185,7 @@ class Factory
      * @throws \UnexpectedValueException
      * @return Composer
      */
-    public function createComposer(IOInterface $io, $localConfig = null, $disablePlugins = false)
+    public function createComposer(IOInterface $io, $localConfig = null, $disablePlugins = false, InputInterface $input = null)
     {
         // load Composer configuration
         if (null === $localConfig) {
@@ -193,7 +194,28 @@ class Factory
 
         if (is_string($localConfig)) {
             $composerFile = $localConfig;
-            $file = new JsonFile($localConfig, new RemoteFilesystem($io));
+
+            $rfs = null;
+            if (preg_match("|^https?://|i", $localConfig)) {
+                $disableTls = false;
+                if($input->getOption('disable-tls')) {
+                    //$output->writeln('<warning>You are running Composer with SSL/TLS protection disabled.</warning>'); //TODO
+                    $disableTls = true;
+                } elseif (!extension_loaded('openssl')) {
+                    throw new \RuntimeException('The openssl extension is required for SSL/TLS protection but is not available. '
+                        . 'You can disable this error, at your own risk, by passing the \'--disable-tls\' option to this command.');
+                }
+
+                $rfsOptions = array();
+                if ($disableTls === false) {
+                    if (!is_null($input->get('cafile'))) {
+                        $rfsOptions = array('ssl'=>array('cafile'=>$input->get('cafile')));
+                    }
+                }
+                $rfs = new RemoteFilesystem($io, $rfsOptions, $disableTls);
+            }
+
+            $file = new JsonFile($localConfig, $rfs);
 
             if (!$file->exists()) {
                 if ($localConfig === './composer.json' || $localConfig === 'composer.json') {
@@ -275,7 +297,7 @@ class Factory
             $lockFile = "json" === pathinfo($composerFile, PATHINFO_EXTENSION)
                 ? substr($composerFile, 0, -4).'lock'
                 : $composerFile . '.lock';
-            $locker = new Package\Locker($io, new JsonFile($lockFile, new RemoteFilesystem($io)), $rm, $im, md5_file($composerFile));
+            $locker = new Package\Locker($io, new JsonFile($lockFile, $rfs), $rm, $im, md5_file($composerFile)); // can we reuse same object?
             $composer->setLocker($locker);
         }
 
@@ -441,10 +463,10 @@ class Factory
      * @param  bool     $disablePlugins Whether plugins should not be loaded
      * @return Composer
      */
-    public static function create(IOInterface $io, $config = null, $disablePlugins = false)
+    public static function create(IOInterface $io, $config = null, $disablePlugins = false, InputInterface $input = null)
     {
         $factory = new static();
 
-        return $factory->createComposer($io, $config, $disablePlugins);
+        return $factory->createComposer($io, $config, $disablePlugins, $input);
     }
 }

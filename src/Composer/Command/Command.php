@@ -17,6 +17,7 @@ use Composer\Console\Application;
 use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
 use Symfony\Component\Console\Command\Command as BaseCommand;
+use Symfony\Component\Console\Input\InputInterface;
 
 /**
  * Base class for Composer commands
@@ -42,13 +43,13 @@ abstract class Command extends BaseCommand
      * @throws \RuntimeException
      * @return Composer
      */
-    public function getComposer($required = true, $disablePlugins = false)
+    public function getComposer($required = true, $disablePlugins = false, InputInterface $input = null)
     {
         if (null === $this->composer) {
             $application = $this->getApplication();
             if ($application instanceof Application) {
                 /* @var $application    Application */
-                $this->composer = $application->getComposer($required, $disablePlugins);
+                $this->composer = $application->getComposer($required, $disablePlugins, $input);
             } elseif ($required) {
                 throw new \RuntimeException(
                     'Could not create a Composer\Composer instance, you must inject '.
