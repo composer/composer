@@ -147,8 +147,6 @@ EOT
             $composer->getEventDispatcher()->dispatchCommandEvent(ScriptEvents::POST_ROOT_PACKAGE_INSTALL, $installDevPackages);
         }
 
-        // Update preferSource / preferDist with preferred-install from the root package if both vars still
-        // have their default initial value (false)
         $rootPackageConfig = $composer->getConfig();
         $this->updatePreferredOptions($rootPackageConfig, $input, $preferSource, $preferDist);
 
