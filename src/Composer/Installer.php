@@ -802,14 +802,14 @@ class Installer
     /**
      * Build a regexp from a package name, expanding * globs as required
      *
-     * @param $whiteListedPattern
+     * @param string $whiteListedPattern
      * @return string
      */
     private function packageNameToRegexp($whiteListedPattern)
     {
         $cleanedWhiteListedPattern = str_replace('\\*', '.*', preg_quote($whiteListedPattern));
-        $patternRegexp = "{^" . $cleanedWhiteListedPattern . "$}i";
-        return $patternRegexp;
+
+        return "{^" . $cleanedWhiteListedPattern . "$}i";
     }
 
     private function extractPlatformRequirements($links)
@@ -868,10 +868,10 @@ class Installer
 
             $depPackages = $pool->whatProvides($packageName);
 
-            $nameMatchesRequiredPackage = in_array($packageName, $requiredPackageNames);
+            $nameMatchesRequiredPackage = in_array($packageName, $requiredPackageNames, true);
 
+            // check if the name is a glob pattern that did not match directly
             if (!$nameMatchesRequiredPackage) {
-                //maybe the name is a glob or similar that won't match directly
                 $whitelistPatternRegexp = $this->packageNameToRegexp($packageName);
                 foreach ($rootRequiredPackageNames as $rootRequiredPackageName) {
                     if (preg_match($whitelistPatternRegexp, $rootRequiredPackageName)) {
