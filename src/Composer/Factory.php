@@ -208,8 +208,8 @@ class Factory
 
                 $rfsOptions = array();
                 if ($disableTls === false) {
-                    if (!is_null($input->get('cafile'))) {
-                        $rfsOptions = array('ssl'=>array('cafile'=>$input->get('cafile')));
+                    if (!is_null($input->getOption('cafile'))) {
+                        $rfsOptions = array('ssl'=>array('cafile'=>$input->getOption('cafile')));
                     }
                 }
                 $rfs = new RemoteFilesystem($io, $rfsOptions, $disableTls);

@@ -67,7 +67,7 @@ EOT
             $baseUrl = 'http://' . self::HOMEPAGE;
             $disableTls = true;
         } elseif (!extension_loaded('openssl')) {
-            $output->writeln('<error>The openssl extension is required for SSL/TLS protection.</error>');
+            $output->writeln('<error>The openssl extension is required for SSL/TLS protection but is not available.</error>');
             $output->writeln('<error>You can disable this error, at your own risk, by enabling the \'disable-tls\' option.</error>');
             return 1;
         } else {
@@ -79,8 +79,8 @@ EOT
             if (!is_null($config->get('cafile'))) {
             $remoteFilesystemOptions = array('ssl'=>array('cafile'=>$config->get('cafile')));
             }
-            if (!is_null($input->get('cafile'))) {
-                $remoteFilesystemOptions = array('ssl'=>array('cafile'=>$input->get('cafile')));
+            if (!is_null($input->getOption('cafile'))) {
+                $remoteFilesystemOptions = array('ssl'=>array('cafile'=>$input->getOption('cafile')));
             }
         }
         try {
