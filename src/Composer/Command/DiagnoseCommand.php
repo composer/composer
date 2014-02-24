@@ -151,12 +151,14 @@ EOT
             $result[] = '<error>Composer is configured to use SSL/TLS protection but the openssl extension is not available.</error>';
         }
 
-        $remoteFilesystemOptions = array();
-        if (!is_null($config->get('cafile'))) {
-            $remoteFilesystemOptions = array('ssl'=>array('cafile'=>$config->get('cafile')));
+        $rfsOptions = array();
+        if ($disableTls) {
+            if (!is_null($config->get('cafile'))) {
+                $rfsOptions = array('ssl'=>array('cafile'=>$config->get('cafile')));
+            }
         }
         try {
-            $this->rfs = new RemoteFilesystem($this->getIO(), $remoteFilesystemOptions, $disableTls);
+            $this->rfs = new RemoteFilesystem($this->getIO(), $rfsOptions, $disableTls);
         } catch (TransportException $e) {
             if (preg_match('|cafile|', $e->getMessage())) {
                 $result[] = '<error>[' . get_class($e) . '] ' . $e->getMessage() . '</error>';
@@ -168,7 +170,7 @@ EOT
         }
 
         try {
-            $json = $this->rfs->getContents('packagist.org', $protocol . '://packagist.org/packages.json', false, array(), $disableTls);
+            $json = $this->rfs->getContents('packagist.org', $protocol . '://packagist.org/packages.json', false);
         } catch (\Exception $e) {
             array_unshift($result, '[' . get_class($e) . '] ' . $e->getMessage());
         }

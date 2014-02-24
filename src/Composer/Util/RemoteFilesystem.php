@@ -33,6 +33,7 @@ class RemoteFilesystem
     private $progress;
     private $lastProgress;
     private $options;
+    private $disableTls = false;
 
     /**
      * Constructor.
@@ -52,9 +53,11 @@ class RemoteFilesystem
             $this->options = $this->getTlsDefaults();
             if (isset($options['ssl']['cafile'])
             && (!is_readable($options['ssl']['cafile'])
-            || !\openssl_x509_parse(file_get_contents($options['ssl']['cafile'])))) { //check return value and test (it's subject to change)
+            || !\openssl_x509_parse(file_get_contents($options['ssl']['cafile'])))) {
                 throw new TransportException('The configured cafile was not valid or could not be read.');
             }
+        } else {
+            $this->disableTls = true;
         }
 
         // handle the other externally set options normally.
@@ -72,9 +75,9 @@ class RemoteFilesystem
      *
      * @return bool true
      */
-    public function copy($originUrl, $fileUrl, $fileName, $progress = true, $options = array(), $disableTls = false) //REFACTOR: to constructor for TLS opt
+    public function copy($originUrl, $fileUrl, $fileName, $progress = true, $options = array())
     {
-        return $this->get($originUrl, $fileUrl, $options, $fileName, $progress, $disableTls);
+        return $this->get($originUrl, $fileUrl, $options, $fileName, $progress);
     }
 
     /**
@@ -87,9 +90,9 @@ class RemoteFilesystem
      *
      * @return string The content
      */
-    public function getContents($originUrl, $fileUrl, $progress = true, $options = array(), $disableTls = false)
+    public function getContents($originUrl, $fileUrl, $progress = true, $options = array())
     {
-        return $this->get($originUrl, $fileUrl, $options, null, $progress, $disableTls);
+        return $this->get($originUrl, $fileUrl, $options, null, $progress);
     }
 
     /**
@@ -116,7 +119,7 @@ class RemoteFilesystem
      *
      * @return bool|string
      */
-    protected function get($originUrl, $fileUrl, $additionalOptions = array(), $fileName = null, $progress = true, $disableTls = false)
+    protected function get($originUrl, $fileUrl, $additionalOptions = array(), $fileName = null, $progress = true)
     {
         $this->bytesMax = 0;
         $this->originUrl = $originUrl;
@@ -130,7 +133,7 @@ class RemoteFilesystem
             $this->io->setAuthentication($originUrl, urldecode($match[1]), urldecode($match[2]));
         }
 
-        $options = $this->getOptionsForUrl($originUrl, $additionalOptions, $disableTls);
+        $options = $this->getOptionsForUrl($originUrl, $additionalOptions);
 
         if ($this->io->isDebug()) {
             $this->io->write((substr($fileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $fileUrl);
@@ -341,7 +344,7 @@ class RemoteFilesystem
         }
 
         // Setup remaining TLS options - the matching may need monitoring, esp. www vs none in CN
-        if ($disableTls === false) {
+        if ($this->disableTls === false) {
             if (!preg_match("|^https?://|", $originUrl)) {
                 $host = $originUrl;
             } else {
