@@ -105,6 +105,11 @@ class Installer
     protected $verbose = false;
     protected $update = false;
     protected $runScripts = true;
+    /**
+     * Array of package names/globs flagged for update
+     *
+     * @var array|null
+     */
     protected $updateWhitelist = null;
     protected $whitelistDependencies = false;
 
@@ -785,14 +790,26 @@ class Installer
         }
 
         foreach ($this->updateWhitelist as $whiteListedPattern => $void) {
-            $cleanedWhiteListedPattern = str_replace('\\*', '.*', preg_quote($whiteListedPattern));
-
-            if (preg_match("{^".$cleanedWhiteListedPattern."$}i", $package->getName())) {
+            $patternRegexp = $this->packageNameToRegexp($whiteListedPattern);
+            if (preg_match($patternRegexp, $package->getName())) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    /**
+     * Build a regexp from a package name, expanding * globs as required
+     *
+     * @param $whiteListedPattern
+     * @return string
+     */
+    private function packageNameToRegexp($whiteListedPattern)
+    {
+        $cleanedWhiteListedPattern = str_replace('\\*', '.*', preg_quote($whiteListedPattern));
+        $patternRegexp = "{^" . $cleanedWhiteListedPattern . "$}i";
+        return $patternRegexp;
     }
 
     private function extractPlatformRequirements($links)
@@ -844,11 +861,27 @@ class Installer
 
         $seen = array();
 
+        $rootRequiredPackageNames = array_keys($rootRequires);
+
         foreach ($this->updateWhitelist as $packageName => $void) {
             $packageQueue = new \SplQueue;
 
             $depPackages = $pool->whatProvides($packageName);
-            if (count($depPackages) == 0 && !in_array($packageName, $requiredPackageNames) && !in_array($packageName, array('nothing', 'lock'))) {
+
+            $nameMatchesRequiredPackage = in_array($packageName, $requiredPackageNames);
+
+            if (!$nameMatchesRequiredPackage) {
+                //maybe the name is a glob or similar that won't match directly
+                $whitelistPatternRegexp = $this->packageNameToRegexp($packageName);
+                foreach ($rootRequiredPackageNames as $rootRequiredPackageName) {
+                    if (preg_match($whitelistPatternRegexp, $rootRequiredPackageName)) {
+                        $nameMatchesRequiredPackage = true;
+                        break;
+                    }
+                }
+            }
+
+            if (count($depPackages) == 0 && !$nameMatchesRequiredPackage && !in_array($packageName, array('nothing', 'lock'))) {
                 $this->io->write('<warning>Package "' . $packageName . '" listed for update is not installed. Ignoring.</warning>');
             }
 
