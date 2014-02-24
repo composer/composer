@@ -118,3 +118,22 @@ your GitHub account and to solve this issue you need to:
 2. Add it to the configuration running `composer config -g github-oauth.github.com <oauthtoken>`
 
 Now Composer should install/update without asking for authentication.
+
+## proc_open(): fork failed errors
+If composer shows proc_open() fork failed on some commands:
+
+    PHP Fatal error: Uncaught exception 'ErrorException' with message 'proc_open(): fork failed - Cannot allocate memory' in phar
+
+This could be happening because the VPS runs out of memory and has no Swap space enabled.
+
+    [root@my_tiny_vps htdocs]# free -m
+    total used free shared buffers cached
+    Mem: 2048 357 1690 0 0 237
+    -/+ buffers/cache: 119 1928
+    Swap: 0 0 0
+
+To enable the swap you can use for example:
+
+    /bin/dd if=/dev/zero of=/var/swap.1 bs=1M count=1024
+    /sbin/mkswap /var/swap.1
+    /sbin/swapon /var/swap.1
