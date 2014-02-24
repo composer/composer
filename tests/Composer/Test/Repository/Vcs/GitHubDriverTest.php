@@ -283,18 +283,15 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals('test_master', $gitHubDriver->getRootIdentifier());
 
-        // Dist is not available for GitDriver
-        $dist = $gitHubDriver->getDist($identifier);
-        $this->assertNull($dist);
+        $dist = $gitHubDriver->getDist($sha);
+        $this->assertEquals('zip', $dist['type']);
+        $this->assertEquals('https://api.github.com/repos/composer/packagist/zipball/SOMESHA', $dist['url']);
+        $this->assertEquals($sha, $dist['reference']);
 
         $source = $gitHubDriver->getSource($identifier);
         $this->assertEquals('git', $source['type']);
         $this->assertEquals($repoSshUrl, $source['url']);
         $this->assertEquals($identifier, $source['reference']);
-
-        // Dist is not available for GitDriver
-        $dist = $gitHubDriver->getDist($sha);
-        $this->assertNull($dist);
 
         $source = $gitHubDriver->getSource($sha);
         $this->assertEquals('git', $source['type']);
