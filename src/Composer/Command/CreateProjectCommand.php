@@ -102,12 +102,7 @@ EOT
 
         $preferSource = false;
         $preferDist = false;
-        $this->updatePreferredOptions($config, $preferSource, $preferDist);
-
-        if ($input->getOption('prefer-source') || $input->getOption('prefer-dist')) {
-            $preferSource = $input->getOption('prefer-source');
-            $preferDist = $input->getOption('prefer-dist');
-        }
+        $this->updatePreferredOptions($config, $input, $preferSource, $preferDist);
 
         if ($input->getOption('no-custom-installers')) {
             $output->writeln('<warning>You are using the deprecated option "no-custom-installers". Use "no-plugins" instead.</warning>');
@@ -129,11 +124,12 @@ EOT
             $input->getOption('no-scripts'),
             $input->getOption('keep-vcs'),
             $input->getOption('no-progress'),
-            $input->getOption('no-install')
+            $input->getOption('no-install'),
+            $input
         );
     }
 
-    public function installProject(IOInterface $io, Config $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositoryUrl = null, $disablePlugins = false, $noScripts = false, $keepVcs = false, $noProgress = false, $noInstall = false)
+    public function installProject(IOInterface $io, Config $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositoryUrl = null, $disablePlugins = false, $noScripts = false, $keepVcs = false, $noProgress = false, $noInstall = false, InputInterface $input)
     {
         $oldCwd = getcwd();
 
@@ -154,9 +150,7 @@ EOT
         // Update preferSource / preferDist with preferred-install from the root package if both vars still
         // have their default initial value (false)
         $rootPackageConfig = $composer->getConfig();
-        if ($rootPackageConfig->has('preferred-install') && $preferDist === false && $preferSource === false) {
-            $this->updatePreferredOptions($rootPackageConfig, $preferSource, $preferDist);
-        }
+        $this->updatePreferredOptions($rootPackageConfig, $input, $preferSource, $preferDist);
 
         // install dependencies of the created project
         if ($noInstall === false) {
@@ -345,16 +339,19 @@ EOT
     /**
      * Updated preferSource or preferDist based on the preferredInstall config option
      * @param Config $config
+     * @param InputInterface $input
      * @param boolean $preferSource
      * @param boolean $preferDist
      */
-    protected function updatePreferredOptions(Config $config, &$preferSource, &$preferDist)
+    protected function updatePreferredOptions(Config $config, InputInterface $input, &$preferSource, &$preferDist)
     {
         switch ($config->get('preferred-install')) {
             case 'source':
                 $preferSource = true;
+                $preferDist = false;
                 break;
             case 'dist':
+                $preferSource = false;
                 $preferDist = true;
                 break;
             case 'auto':
@@ -363,5 +360,9 @@ EOT
                 break;
         }
 
+        if ($input->getOption('prefer-source') || $input->getOption('prefer-dist')) {
+            $preferSource = $input->getOption('prefer-source');
+            $preferDist = $input->getOption('prefer-dist');
+        }
     }
 }
