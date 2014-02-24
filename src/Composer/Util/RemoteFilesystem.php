@@ -15,6 +15,7 @@ namespace Composer\Util;
 use Composer\Composer;
 use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
+use Composer\Transfer\TransferInterface;
 
 /**
  * @author François Pluchino <francois.pluchino@opendisplay.com>
@@ -24,7 +25,6 @@ use Composer\Downloader\TransportException;
 class RemoteFilesystem
 {
     private $io;
-    private $firstCall;
     private $bytesMax;
     private $originUrl;
     private $fileUrl;
@@ -34,16 +34,55 @@ class RemoteFilesystem
     private $lastProgress;
     private $options;
 
+    /** @var TransferInterface */
+    private $transfer;
+
     /**
      * Constructor.
      *
-     * @param IOInterface $io      The IO instance
-     * @param array       $options The options
+     * @param IOInterface       $io       The IO instance
+     * @param array             $options  The options
+     * @param TransferInterface $transfer The Transfer instance
      */
-    public function __construct(IOInterface $io, $options = array())
+    public function __construct(IOInterface $io, $options = array(), TransferInterface $transfer = null)
     {
         $this->io = $io;
+        $this->transfer = $transfer;
         $this->options = $options;
+    }
+
+    /**
+     * @return TransferInterface
+     */
+    protected function getTransfer()
+    {
+        if (null === $this->transfer) {
+            if ($this->isStreamContextUsed()) {
+                $this->transfer = new \Composer\Transfer\StreamContextTransfer();
+
+                $this->transfer->setDefaultParams(array('notification' => array($this, 'callbackGet')));
+            } else {
+                $this->transfer = new \Composer\Transfer\CurlTransfer();
+            }
+        }
+
+        return $this->transfer;
+    }
+
+    /**
+     * @return bool
+     */
+    private function isStreamContextUsed()
+    {
+        if (ini_get('allow_url_fopen')) {
+            return true;
+        }
+
+        if (!extension_loaded('curl')) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -109,6 +148,7 @@ class RemoteFilesystem
         $this->fileName = $fileName;
         $this->progress = $progress;
         $this->lastProgress = null;
+        $headers = array();
 
         // capture username/password from URL if there is one
         if (preg_match('{^https?://(.+):(.+)@([^/]+)}i', $fileUrl, $match)) {
@@ -124,14 +164,12 @@ class RemoteFilesystem
             $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'access_token='.$options['github-token'];
             unset($options['github-token']);
         }
-        $ctx = StreamContextFactory::getContext($fileUrl, $options, array('notification' => array($this, 'callbackGet')));
 
         if ($this->progress) {
             $this->io->write("    Downloading: <comment>connection...</comment>", false);
         }
 
         $errorMessage = '';
-        $errorCode = 0;
         $result = false;
         set_error_handler(function ($code, $msg) use (&$errorMessage) {
             if ($errorMessage) {
@@ -140,10 +178,12 @@ class RemoteFilesystem
             $errorMessage .= preg_replace('{^file_get_contents\(.*?\): }', '', $msg);
         });
         try {
-            $result = file_get_contents($fileUrl, false, $ctx);
+            $result = $this->getTransfer()->download($fileUrl, $options, $this->io, $this->progress, $this->getUserAgent());
+
+            $headers = $this->getTransfer()->getHeaders();
         } catch (\Exception $e) {
-            if ($e instanceof TransportException && !empty($http_response_header[0])) {
-                $e->setHeaders($http_response_header);
+            if ($e instanceof TransportException && !empty($headers[0])) {
+                $e->setHeaders($headers);
             }
         }
         if ($errorMessage && !ini_get('allow_url_fopen')) {
@@ -154,16 +194,10 @@ class RemoteFilesystem
             throw $e;
         }
 
-        // fix for 5.4.0 https://bugs.php.net/bug.php?id=61336
-        if (!empty($http_response_header[0]) && preg_match('{^HTTP/\S+ ([45]\d\d)}i', $http_response_header[0], $match)) {
-            $result = false;
-            $errorCode = $match[1];
-        }
-
         // decode gzip
         if ($result && extension_loaded('zlib') && substr($fileUrl, 0, 4) === 'http') {
             $decode = false;
-            foreach ($http_response_header as $header) {
+            foreach ($headers as $header) {
                 if (preg_match('{^content-encoding: *gzip *$}i', $header)) {
                     $decode = true;
                     continue;
@@ -213,9 +247,9 @@ class RemoteFilesystem
         }
 
         if (false === $result) {
-            $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded: '.$errorMessage, $errorCode);
-            if (!empty($http_response_header[0])) {
-                $e->setHeaders($http_response_header);
+            $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded: '.$errorMessage, $this->transfer->getErrorCode());
+            if (!empty($headers[0])) {
+                $e->setHeaders($headers);
             }
 
             throw $e;
@@ -310,15 +344,7 @@ class RemoteFilesystem
     protected function getOptionsForUrl($originUrl, $additionalOptions)
     {
         $headers = array(
-            sprintf(
-                'User-Agent: Composer/%s (%s; %s; PHP %s.%s.%s)',
-                Composer::VERSION === '@package_version@' ? 'source' : Composer::VERSION,
-                php_uname('s'),
-                php_uname('r'),
-                PHP_MAJOR_VERSION,
-                PHP_MINOR_VERSION,
-                PHP_RELEASE_VERSION
-            )
+            'User-Agent: ' . $this->getUserAgent(),
         );
 
         if (extension_loaded('zlib')) {
@@ -345,5 +371,18 @@ class RemoteFilesystem
         }
 
         return $options;
+    }
+
+    protected function getUserAgent()
+    {
+        return sprintf(
+            'User-Agent: Composer/%s (%s; %s; PHP %s.%s.%s)',
+            Composer::VERSION === '@package_version@' ? 'source' : Composer::VERSION,
+            php_uname('s'),
+            php_uname('r'),
+            PHP_MAJOR_VERSION,
+            PHP_MINOR_VERSION,
+            PHP_RELEASE_VERSION
+        );
     }
 }
