@@ -172,28 +172,25 @@ class DownloadManager
         $sourceType   = $package->getSourceType();
         $distType     = $package->getDistType();
 
-        $wantDist = !$package->isDev() || $this->preferDist || !$sourceType;
-        $wantSource = $preferSource && $sourceType;
-
-        $types = array();
+        $sources = array();
         if ($sourceType) {
-            $types[] = 'source';
+            $sources[] = 'source';
         }
         if ($distType) {
-            $types[] = 'dist';
+            $sources[] = 'dist';
         }
 
-        if (empty($types)) {
+        if (empty($sources)) {
             throw new \InvalidArgumentException('Package '.$package.' must have a source or dist specified');
         }
 
-        if ($wantDist && !$wantSource) {
-            $types = array_reverse($types);
+        if ((!$package->isDev() || $this->preferDist) && !$preferSource) {
+            $sources = array_reverse($sources);
         }
 
         $this->filesystem->ensureDirectoryExists($targetDir);
 
-        foreach ($types as $source) {
+        foreach ($sources as $i => $source) {
             $package->setInstallationSource($source);
             try {
                 $downloader = $this->getDownloaderForInstalledPackage($package);
@@ -202,13 +199,16 @@ class DownloadManager
                 }
                 break;
             } catch (\RuntimeException $e) {
+                if ($i == count($sources) - 1) {
+                    throw $e;
+                }
+
                 $this->io->write(
                     '<warning>Caught an exception while trying to download '.
                     $package->getPrettyString().
                     ': '.
                     $e->getMessage().'</warning>'
                 );
-                continue;
             }
         }
     }
