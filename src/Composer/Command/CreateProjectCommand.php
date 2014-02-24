@@ -102,18 +102,8 @@ EOT
 
         $preferSource = false;
         $preferDist = false;
-        switch ($config->get('preferred-install')) {
-            case 'source':
-                $preferSource = true;
-                break;
-            case 'dist':
-                $preferDist = true;
-                break;
-            case 'auto':
-            default:
-                // noop
-                break;
-        }
+        $this->updatePreferredOptions($config, $preferSource, $preferDist);
+
         if ($input->getOption('prefer-source') || $input->getOption('prefer-dist')) {
             $preferSource = $input->getOption('prefer-source');
             $preferDist = $input->getOption('prefer-dist');
@@ -143,7 +133,7 @@ EOT
         );
     }
 
-    public function installProject(IOInterface $io, $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositoryUrl = null, $disablePlugins = false, $noScripts = false, $keepVcs = false, $noProgress = false, $noInstall = false)
+    public function installProject(IOInterface $io, Config $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositoryUrl = null, $disablePlugins = false, $noScripts = false, $keepVcs = false, $noProgress = false, $noInstall = false)
     {
         $oldCwd = getcwd();
 
@@ -163,20 +153,9 @@ EOT
 
         // Update preferSource / preferDist with preferred-install from the root package if both vars still
         // have their default initial value (false)
-        $config = $composer->getConfig();
-        if ($config->has('preferred-install') && $preferDist === false && $preferSource === false) {
-            switch ($config->get('preferred-install')) {
-                case 'source':
-                    $preferSource = true;
-                    break;
-                case 'dist':
-                    $preferDist = true;
-                    break;
-                case 'auto':
-                default:
-                    // noop
-                    break;
-            }
+        $rootPackageConfig = $composer->getConfig();
+        if ($rootPackageConfig->has('preferred-install') && $preferDist === false && $preferSource === false) {
+            $this->updatePreferredOptions($rootPackageConfig, $preferSource, $preferDist);
         }
 
         // install dependencies of the created project
@@ -256,7 +235,7 @@ EOT
         return 0;
     }
 
-    protected function installRootPackage(IOInterface $io, $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositoryUrl = null, $disablePlugins = false, $noScripts = false, $keepVcs = false, $noProgress = false)
+    protected function installRootPackage(IOInterface $io, Config $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositoryUrl = null, $disablePlugins = false, $noScripts = false, $keepVcs = false, $noProgress = false)
     {
         if (null === $repositoryUrl) {
             $sourceRepo = new CompositeRepository(Factory::createDefaultRepositories($io, $config));
@@ -360,5 +339,29 @@ EOT
     protected function createInstallationManager()
     {
         return new InstallationManager();
+    }
+
+
+    /**
+     * Updated preferSource or preferDist based on the preferredInstall config option
+     * @param Config $config
+     * @param boolean $preferSource
+     * @param boolean $preferDist
+     */
+    protected function updatePreferredOptions(Config $config, &$preferSource, &$preferDist)
+    {
+        switch ($config->get('preferred-install')) {
+            case 'source':
+                $preferSource = true;
+                break;
+            case 'dist':
+                $preferDist = true;
+                break;
+            case 'auto':
+            default:
+                // noop
+                break;
+        }
+
     }
 }
