@@ -292,6 +292,11 @@ The VCS driver to be used is detected automatically based on the URL. However,
 should you need to specify one for whatever reason, you can use `git`, `svn` or
 `hg` as the repository type instead of `vcs`.
 
+If you set the `no-api` key to `true` on a github repository it will clone the
+repository as it would with any other git repository instead of using the
+GitHub API. But unlike using the `git` driver directly, composer will still
+attempt to use github's zip files.
+
 #### Subversion Options
 
 Since Subversion has no native concept of branches and tags, Composer assumes
