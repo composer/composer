@@ -15,7 +15,7 @@ namespace Composer\Downloader;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class TransportException extends \Exception
+class TransportException extends \RuntimeException
 {
     protected $headers;
 
