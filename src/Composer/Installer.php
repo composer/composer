@@ -285,7 +285,7 @@ class Installer
                 $this->io->write('<info>Generating autoload files</info>');
             }
 
-            $this->autoloadGenerator->dump($this->config, $localRepo, $this->package, $this->installationManager, 'composer', $this->optimizeAutoloader);
+            $this->autoloadGenerator->dump(getcwd(), $this->config, $localRepo, $this->package, $this->installationManager, 'composer', $this->optimizeAutoloader);
 
             if ($this->runScripts) {
                 // dispatch post event

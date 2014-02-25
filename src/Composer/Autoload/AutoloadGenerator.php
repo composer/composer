@@ -37,17 +37,21 @@ class AutoloadGenerator
         $this->eventDispatcher = $eventDispatcher;
     }
 
-    public function dump(Config $config, InstalledRepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir, $scanPsr0Packages = false, $suffix = '')
+    public function dump($basePath, Config $config, InstalledRepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir, $scanPsr0Packages = false, $suffix = '')
     {
         $this->eventDispatcher->dispatchScript(ScriptEvents::PRE_AUTOLOAD_DUMP);
 
         $filesystem = new Filesystem();
-        $filesystem->ensureDirectoryExists($config->get('vendor-dir'));
-        $basePath = $filesystem->normalizePath(realpath(getcwd()));
-        $vendorPath = $filesystem->normalizePath(realpath($config->get('vendor-dir')));
+        $basePath = $filesystem->normalizePath(realpath($basePath));
+		$vendorPath  = $config->get('vendor-dir');
+		if (!$filesystem->isAbsolutePath($vendorPath)) {
+			$vendorPath = $basePath . '/' . $vendorPath;
+		}
+		$vendorPath = $filesystem->normalizePath(realpath($vendorPath));
+		$filesystem->ensureDirectoryExists($vendorPath);
         $useGlobalIncludePath = (bool) $config->get('use-include-path');
         $prependAutoloader = $config->get('prepend-autoloader') === false ? 'false' : 'true';
-        $targetDir = $vendorPath.'/'.$targetDir;
+        $targetDir = $vendorPath . '/' . $targetDir;
         $filesystem->ensureDirectoryExists($targetDir);
 
         $vendorPathCode = $filesystem->findShortestPathCode(realpath($targetDir), $vendorPath, true);
