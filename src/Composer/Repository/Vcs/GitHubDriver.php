@@ -53,7 +53,7 @@ class GitHubDriver extends VcsDriver
         $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.$this->originUrl.'/'.$this->owner.'/'.$this->repository);
 
         if (isset($this->repoConfig['no-api']) && $this->repoConfig['no-api']) {
-            $this->setupGitDriver($this->getUrl());
+            $this->setupGitDriver($this->url);
             return;
         }
 
