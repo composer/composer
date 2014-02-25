@@ -185,6 +185,7 @@ EOF;
 
         $autoloads['classmap'] = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($autoloads['classmap']));
         foreach ($autoloads['classmap'] as $dir) {
+			$dir = $filesystem->expandPath($dir, $basePath);
             foreach (ClassMapGenerator::createMap($dir) as $class => $path) {
                 $path = $this->getPathCode($filesystem, $basePath, $vendorPath, $path);
                 $classMap[$class] = $path.",\n";
