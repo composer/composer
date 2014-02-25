@@ -14,6 +14,7 @@ namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
 use Composer\Downloader\DownloaderInterface;
+use Composer\IO\IOInterface;
 use Composer\Util\Filesystem;
 
 /**
@@ -23,6 +24,7 @@ use Composer\Util\Filesystem;
  */
 class DownloadManager
 {
+    private $io;
     private $preferDist = false;
     private $preferSource = false;
     private $filesystem;
@@ -31,11 +33,13 @@ class DownloadManager
     /**
      * Initializes download manager.
      *
+     * @param IOInterface     $io           The Input Output Interface
      * @param bool            $preferSource prefer downloading from source
      * @param Filesystem|null $filesystem   custom Filesystem object
      */
-    public function __construct($preferSource = false, Filesystem $filesystem = null)
+    public function __construct(IOInterface $io, $preferSource = false, Filesystem $filesystem = null)
     {
+        $this->io = $io;
         $this->preferSource = $preferSource;
         $this->filesystem = $filesystem ?: new Filesystem();
     }
@@ -168,19 +172,44 @@ class DownloadManager
         $sourceType   = $package->getSourceType();
         $distType     = $package->getDistType();
 
-        if ((!$package->isDev() || $this->preferDist || !$sourceType) && !($preferSource && $sourceType) && $distType) {
-            $package->setInstallationSource('dist');
-        } elseif ($sourceType) {
-            $package->setInstallationSource('source');
-        } else {
+        $sources = array();
+        if ($sourceType) {
+            $sources[] = 'source';
+        }
+        if ($distType) {
+            $sources[] = 'dist';
+        }
+
+        if (empty($sources)) {
             throw new \InvalidArgumentException('Package '.$package.' must have a source or dist specified');
+        }
+
+        if ((!$package->isDev() || $this->preferDist) && !$preferSource) {
+            $sources = array_reverse($sources);
         }
 
         $this->filesystem->ensureDirectoryExists($targetDir);
 
-        $downloader = $this->getDownloaderForInstalledPackage($package);
-        if ($downloader) {
-            $downloader->download($package, $targetDir);
+        foreach ($sources as $i => $source) {
+            $package->setInstallationSource($source);
+            try {
+                $downloader = $this->getDownloaderForInstalledPackage($package);
+                if ($downloader) {
+                    $downloader->download($package, $targetDir);
+                }
+                break;
+            } catch (\RuntimeException $e) {
+                if ($i == count($sources) - 1) {
+                    throw $e;
+                }
+
+                $this->io->write(
+                    '<warning>Caught an exception while trying to download '.
+                    $package->getPrettyString().
+                    ': '.
+                    $e->getMessage().'</warning>'
+                );
+            }
         }
     }
 

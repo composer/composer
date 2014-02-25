@@ -51,7 +51,7 @@ class InstallerTest extends TestCase
     {
         $io = $this->getMock('Composer\IO\IOInterface');
 
-        $downloadManager = $this->getMock('Composer\Downloader\DownloadManager');
+        $downloadManager = $this->getMock('Composer\Downloader\DownloadManager', array(), array($io));
         $config = $this->getMock('Composer\Config');
 
         $repositoryManager = new RepositoryManager($io, $config);

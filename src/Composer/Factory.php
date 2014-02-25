@@ -344,7 +344,7 @@ class Factory
             $cache = new Cache($io, $config->get('cache-files-dir'), 'a-z0-9_./');
         }
 
-        $dm = new Downloader\DownloadManager();
+        $dm = new Downloader\DownloadManager($io);
         switch ($config->get('preferred-install')) {
             case 'dist':
                 $dm->setPreferDist(true);
