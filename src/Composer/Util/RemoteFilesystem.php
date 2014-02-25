@@ -34,6 +34,7 @@ class RemoteFilesystem
     private $lastProgress;
     private $options;
     private $disableTls = false;
+    private $retryTls = true;
 
     /**
      * Constructor.
@@ -119,7 +120,7 @@ class RemoteFilesystem
      *
      * @return bool|string
      */
-    protected function get($originUrl, $fileUrl, $additionalOptions = array(), $fileName = null, $progress = true)
+    protected function get($originUrl, $fileUrl, $additionalOptions = array(), $fileName = null, $progress = true, $expectedCommonName = '')
     {
         $this->bytesMax = 0;
         $this->originUrl = $originUrl;
@@ -133,7 +134,7 @@ class RemoteFilesystem
             $this->io->setAuthentication($originUrl, urldecode($match[1]), urldecode($match[2]));
         }
 
-        $options = $this->getOptionsForUrl($originUrl, $additionalOptions);
+        $options = $this->getOptionsForUrl($originUrl, $additionalOptions, $expectedCommonName);
 
         if ($this->io->isDebug()) {
             $this->io->write((substr($fileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $fileUrl);
@@ -224,14 +225,25 @@ class RemoteFilesystem
             }
         }
 
+        // Check if the failure was due to a Common Name mismatch with remote SSL cert and retry once (excl normal retry)
+        if (false === $result) {
+            if ($this->retryTls === true
+            && preg_match("|did not match expected CN|i", $errorMessage)
+            && preg_match("|Peer certificate CN=`(.*)' did not match|i", $errorMessage, $matches)) {
+                $this->retryTls = false;
+                $expectedCommonName = $matches[1];
+                return $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress, $expectedCommonName);
+            }
+        }
+
         if ($this->retry) {
             $this->retry = false;
 
-            return $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress);
+            return $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress, $expectedCommonName);
         }
 
         if (false === $result) {
-            $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded: '.$errorMessage, $errorCode);
+            $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded: '.$errorMessage.' using CN='.$expectedCommonName, $errorCode);
             if (!empty($http_response_header[0])) {
                 $e->setHeaders($http_response_header);
             }
@@ -325,8 +337,33 @@ class RemoteFilesystem
         throw new TransportException('RETRY');
     }
 
-    protected function getOptionsForUrl($originUrl, $additionalOptions, $disableTls = false)
+    protected function getOptionsForUrl($originUrl, $additionalOptions, $validCommonName = '')
     {
+
+        // Setup remaining TLS options - the matching may need monitoring, esp. www vs none in CN
+        if ($this->disableTls === false) {
+            if (!preg_match("|^https?://|", $originUrl)) {
+                $host = $originUrl;
+            } else {
+                $host = parse_url($originUrl, PHP_URL_HOST);
+            }
+            /**
+             * This is sheer painful, but hopefully it'll be a footnote once SAN support
+             * reaches PHP 5.4 and 5.5...
+             * Side-effect: We're betting on the CN being either a wildcard or www, e.g. *.github.com or www.example.com.
+             * TODO: Consider something more explicitly user based.
+             */
+            if (strlen($validCommonName) > 0) {
+                if (!preg_match("|".$host."$|i", $validCommonName)
+                || (count(explode('.', $validCommonName)) - count(explode('.', $host))) > 1) {
+                    throw new TransportException('Unable to read or match the Common Name (CN) from the remote SSL certificate.');
+                }
+                $host = $validCommonName;
+            }
+            $this->options['ssl']['CN_match'] = $host;
+            $this->options['ssl']['SNI_server_name'] = $host;
+        }
+
         $headers = array(
             sprintf(
                 'User-Agent: Composer/%s (%s; %s; PHP %s.%s.%s)',
@@ -341,17 +378,6 @@ class RemoteFilesystem
 
         if (extension_loaded('zlib')) {
             $headers[] = 'Accept-Encoding: gzip';
-        }
-
-        // Setup remaining TLS options - the matching may need monitoring, esp. www vs none in CN
-        if ($this->disableTls === false) {
-            if (!preg_match("|^https?://|", $originUrl)) {
-                $host = $originUrl;
-            } else {
-                $host = parse_url($originUrl, PHP_URL_HOST);
-            }
-            $this->options['ssl']['CN_match'] = $host;
-            $this->options['ssl']['SNI_server_name'] = $host;
         }
 
         $options = array_replace_recursive($this->options, $additionalOptions);
