@@ -108,10 +108,10 @@ class AutoloadGeneratorTest extends TestCase
     protected function tearDown()
     {
         if (is_dir($this->workingDir)) {
-//            $this->fs->removeDirectory($this->workingDir);
+            $this->fs->removeDirectory($this->workingDir);
         }
         if (is_dir($this->vendorDir)) {
-//            $this->fs->removeDirectory($this->vendorDir);
+            $this->fs->removeDirectory($this->vendorDir);
         }
     }
 
