@@ -17,16 +17,18 @@ use Composer\Downloader\DownloadManager;
 class DownloadManagerTest extends \PHPUnit_Framework_TestCase
 {
     protected $filesystem;
+    protected $io;
 
     public function setUp()
     {
         $this->filesystem = $this->getMock('Composer\Util\Filesystem');
+        $this->io = $this->getMock('Composer\IO\IOInterface');
     }
 
     public function testSetGetDownloader()
     {
         $downloader = $this->createDownloaderMock();
-        $manager    = new DownloadManager(false, $this->filesystem);
+        $manager    = new DownloadManager($this->io, false, $this->filesystem);
 
         $manager->setDownloader('test', $downloader);
         $this->assertSame($downloader, $manager->getDownloader('test'));
@@ -43,7 +45,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
             ->method('getInstallationSource')
             ->will($this->returnValue(null));
 
-        $manager = new DownloadManager(false, $this->filesystem);
+        $manager = new DownloadManager($this->io, false, $this->filesystem);
 
         $this->setExpectedException('InvalidArgumentException');
 
@@ -69,7 +71,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue('dist'));
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-            ->setConstructorArgs(array(false, $this->filesystem))
+            ->setConstructorArgs(array($this->io, false, $this->filesystem))
             ->setMethods(array('getDownloader'))
             ->getMock();
 
@@ -101,7 +103,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue('source'));
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-            ->setConstructorArgs(array(false, $this->filesystem))
+            ->setConstructorArgs(array($this->io, false, $this->filesystem))
             ->setMethods(array('getDownloader'))
             ->getMock();
 
@@ -135,7 +137,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue('source'));
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-            ->setConstructorArgs(array(false, $this->filesystem))
+            ->setConstructorArgs(array($this->io, false, $this->filesystem))
             ->setMethods(array('getDownloader'))
             ->getMock();
 
@@ -167,7 +169,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue('dist'));
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-            ->setConstructorArgs(array(false, $this->filesystem))
+            ->setConstructorArgs(array($this->io, false, $this->filesystem))
             ->setMethods(array('getDownloader'))
             ->getMock();
 
@@ -190,7 +192,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
           ->method('getType')
           ->will($this->returnValue('metapackage'));
 
-        $manager = new DownloadManager(false, $this->filesystem);
+        $manager = new DownloadManager($this->io, false, $this->filesystem);
 
         $this->assertNull($manager->getDownloaderForInstalledPackage($package));
     }
@@ -219,7 +221,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
             ->with($package, 'target_dir');
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-            ->setConstructorArgs(array(false, $this->filesystem))
+            ->setConstructorArgs(array($this->io, false, $this->filesystem))
             ->setMethods(array('getDownloaderForInstalledPackage'))
             ->getMock();
         $manager
@@ -227,6 +229,62 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
             ->method('getDownloaderForInstalledPackage')
             ->with($package)
             ->will($this->returnValue($downloader));
+
+        $manager->download($package, 'target_dir');
+    }
+
+    public function testFullPackageDownloadFailover()
+    {
+        $package = $this->createPackageMock();
+        $package
+            ->expects($this->once())
+            ->method('getSourceType')
+            ->will($this->returnValue('git'));
+        $package
+            ->expects($this->once())
+            ->method('getDistType')
+            ->will($this->returnValue('pear'));
+        $package
+            ->expects($this->any())
+            ->method('getPrettyString')
+            ->will($this->returnValue('prettyPackage'));
+
+        $package
+            ->expects($this->at(3))
+            ->method('setInstallationSource')
+            ->with('dist');
+        $package
+            ->expects($this->at(5))
+            ->method('setInstallationSource')
+            ->with('source');
+
+        $downloaderFail = $this->createDownloaderMock();
+        $downloaderFail
+            ->expects($this->once())
+            ->method('download')
+            ->with($package, 'target_dir')
+            ->will($this->throwException(new \RuntimeException("Foo")));
+
+        $downloaderSuccess = $this->createDownloaderMock();
+        $downloaderSuccess
+            ->expects($this->once())
+            ->method('download')
+            ->with($package, 'target_dir');
+
+        $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
+            ->setConstructorArgs(array($this->io, false, $this->filesystem))
+            ->setMethods(array('getDownloaderForInstalledPackage'))
+            ->getMock();
+        $manager
+            ->expects($this->at(0))
+            ->method('getDownloaderForInstalledPackage')
+            ->with($package)
+            ->will($this->returnValue($downloaderFail));
+        $manager
+            ->expects($this->at(1))
+            ->method('getDownloaderForInstalledPackage')
+            ->with($package)
+            ->will($this->returnValue($downloaderSuccess));
 
         $manager->download($package, 'target_dir');
     }
@@ -243,7 +301,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
             ->method('getDistType')
             ->will($this->returnValue(null));
 
-        $manager = new DownloadManager(false, $this->filesystem);
+        $manager = new DownloadManager($this->io, false, $this->filesystem);
 
         $this->setExpectedException('InvalidArgumentException');
         $manager->download($package, 'target_dir');
@@ -273,7 +331,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
             ->with($package, 'target_dir');
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-            ->setConstructorArgs(array(false, $this->filesystem))
+            ->setConstructorArgs(array($this->io, false, $this->filesystem))
             ->setMethods(array('getDownloaderForInstalledPackage'))
             ->getMock();
         $manager
@@ -309,7 +367,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
             ->with($package, 'target_dir');
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-            ->setConstructorArgs(array(false, $this->filesystem))
+            ->setConstructorArgs(array($this->io, false, $this->filesystem))
             ->setMethods(array('getDownloaderForInstalledPackage'))
             ->getMock();
         $manager
@@ -339,7 +397,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
           ->with('source');
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-          ->setConstructorArgs(array(false, $this->filesystem))
+          ->setConstructorArgs(array($this->io, false, $this->filesystem))
           ->setMethods(array('getDownloaderForInstalledPackage'))
           ->getMock();
         $manager
@@ -375,7 +433,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
             ->with($package, 'target_dir');
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-            ->setConstructorArgs(array(false, $this->filesystem))
+            ->setConstructorArgs(array($this->io, false, $this->filesystem))
             ->setMethods(array('getDownloaderForInstalledPackage'))
             ->getMock();
         $manager
@@ -412,7 +470,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
             ->with($package, 'target_dir');
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-            ->setConstructorArgs(array(false, $this->filesystem))
+            ->setConstructorArgs(array($this->io, false, $this->filesystem))
             ->setMethods(array('getDownloaderForInstalledPackage'))
             ->getMock();
         $manager
@@ -449,7 +507,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
             ->with($package, 'target_dir');
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-            ->setConstructorArgs(array(false, $this->filesystem))
+            ->setConstructorArgs(array($this->io, false, $this->filesystem))
             ->setMethods(array('getDownloaderForInstalledPackage'))
             ->getMock();
         $manager
@@ -474,7 +532,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
             ->method('getDistType')
             ->will($this->returnValue(null));
 
-        $manager = new DownloadManager(false, $this->filesystem);
+        $manager = new DownloadManager($this->io, false, $this->filesystem);
         $manager->setPreferSource(true);
 
         $this->setExpectedException('InvalidArgumentException');
@@ -510,7 +568,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
             ->with($initial, $target, 'vendor/bundles/FOS/UserBundle');
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-            ->setConstructorArgs(array(false, $this->filesystem))
+            ->setConstructorArgs(array($this->io, false, $this->filesystem))
             ->setMethods(array('getDownloaderForInstalledPackage'))
             ->getMock();
         $manager
@@ -547,7 +605,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
             ->with($initial, 'vendor/bundles/FOS/UserBundle');
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-            ->setConstructorArgs(array(false, $this->filesystem))
+            ->setConstructorArgs(array($this->io, false, $this->filesystem))
             ->setMethods(array('getDownloaderForInstalledPackage', 'download'))
             ->getMock();
         $manager
@@ -588,7 +646,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
             ->with($initial, $target, 'vendor/pkg');
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-            ->setConstructorArgs(array(false, $this->filesystem))
+            ->setConstructorArgs(array($this->io, false, $this->filesystem))
             ->setMethods(array('getDownloaderForInstalledPackage', 'download'))
             ->getMock();
         $manager
@@ -625,7 +683,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
             ->with($initial, 'vendor/pkg');
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-            ->setConstructorArgs(array(false, $this->filesystem))
+            ->setConstructorArgs(array($this->io, false, $this->filesystem))
             ->setMethods(array('getDownloaderForInstalledPackage', 'download'))
             ->getMock();
         $manager
@@ -647,7 +705,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
         $target = $this->createPackageMock();
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-          ->setConstructorArgs(array(false, $this->filesystem))
+          ->setConstructorArgs(array($this->io, false, $this->filesystem))
           ->setMethods(array('getDownloaderForInstalledPackage'))
           ->getMock();
         $manager
@@ -670,7 +728,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
             ->with($package, 'vendor/bundles/FOS/UserBundle');
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-            ->setConstructorArgs(array(false, $this->filesystem))
+            ->setConstructorArgs(array($this->io, false, $this->filesystem))
             ->setMethods(array('getDownloaderForInstalledPackage'))
             ->getMock();
         $manager
@@ -687,7 +745,7 @@ class DownloadManagerTest extends \PHPUnit_Framework_TestCase
         $package = $this->createPackageMock();
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-          ->setConstructorArgs(array(false, $this->filesystem))
+          ->setConstructorArgs(array($this->io, false, $this->filesystem))
           ->setMethods(array('getDownloaderForInstalledPackage'))
           ->getMock();
         $manager
