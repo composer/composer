@@ -53,7 +53,7 @@ class GitHubDriver extends VcsDriver
         $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.$this->originUrl.'/'.$this->owner.'/'.$this->repository);
 
         if (isset($this->repoConfig['no-api']) && $this->repoConfig['no-api']) {
-            $this->setupGitDriver();
+            $this->setupGitDriver($this->getUrl());
             return;
         }
 
@@ -406,7 +406,7 @@ class GitHubDriver extends VcsDriver
             // GitHub returns 404 for private repositories) and we
             // cannot ask for authentication credentials (because we
             // are not interactive) then we fallback to GitDriver.
-            $this->setupGitDriver();
+            $this->setupGitDriver($this->generateSshUrl());
 
             return;
         } catch (\RuntimeException $e) {
@@ -417,10 +417,10 @@ class GitHubDriver extends VcsDriver
         }
     }
 
-    protected function setupGitDriver()
+    protected function setupGitDriver($url)
     {
         $this->gitDriver = new GitDriver(
-            array('url' => $this->generateSshUrl()),
+            array('url' => $url),
             $this->io,
             $this->config,
             $this->process,
