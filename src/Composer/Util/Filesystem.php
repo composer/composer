@@ -323,9 +323,9 @@ class Filesystem
 	public function expandPath($path, $dirPath)
 	{
 		if (!$this->isAbsolutePath($path)) {
-			$path = $this->normalizePath(realpath($dirPath)) . '/' . $path;
+			$path = $this->normalizePath($dirPath) . '/' . $path;
 		}
-		return $this->normalizePath(realpath($path));
+		return $this->normalizePath($path);
 	}
 
     /**
