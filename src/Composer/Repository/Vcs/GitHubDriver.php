@@ -52,6 +52,11 @@ class GitHubDriver extends VcsDriver
         $this->originUrl = !empty($match[1]) ? $match[1] : $match[2];
         $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.$this->originUrl.'/'.$this->owner.'/'.$this->repository);
 
+        if (isset($this->repoConfig['no-api']) && $this->repoConfig['no-api']) {
+            $this->setupGitDriver($this->url);
+            return;
+        }
+
         $this->fetchRootIdentifier();
     }
 
@@ -117,10 +122,6 @@ class GitHubDriver extends VcsDriver
      */
     public function getDist($identifier)
     {
-        if ($this->gitDriver) {
-            return $this->gitDriver->getDist($identifier);
-        }
-
         $url = $this->getApiUrl() . '/repos/'.$this->owner.'/'.$this->repository.'/zipball/'.$identifier;
 
         return array('type' => 'zip', 'url' => $url, 'reference' => $identifier, 'shasum' => '');
@@ -405,14 +406,7 @@ class GitHubDriver extends VcsDriver
             // GitHub returns 404 for private repositories) and we
             // cannot ask for authentication credentials (because we
             // are not interactive) then we fallback to GitDriver.
-            $this->gitDriver = new GitDriver(
-                array('url' => $this->generateSshUrl()),
-                $this->io,
-                $this->config,
-                $this->process,
-                $this->remoteFilesystem
-            );
-            $this->gitDriver->initialize();
+            $this->setupGitDriver($this->generateSshUrl());
 
             return;
         } catch (\RuntimeException $e) {
@@ -421,5 +415,17 @@ class GitHubDriver extends VcsDriver
             $this->io->write('<error>Failed to clone the '.$this->generateSshUrl().' repository, try running in interactive mode so that you can enter your GitHub credentials</error>');
             throw $e;
         }
+    }
+
+    protected function setupGitDriver($url)
+    {
+        $this->gitDriver = new GitDriver(
+            array('url' => $url),
+            $this->io,
+            $this->config,
+            $this->process,
+            $this->remoteFilesystem
+        );
+        $this->gitDriver->initialize();
     }
 }
