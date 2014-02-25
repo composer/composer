@@ -102,22 +102,7 @@ EOT
 
         $preferSource = false;
         $preferDist = false;
-        switch ($config->get('preferred-install')) {
-            case 'source':
-                $preferSource = true;
-                break;
-            case 'dist':
-                $preferDist = true;
-                break;
-            case 'auto':
-            default:
-                // noop
-                break;
-        }
-        if ($input->getOption('prefer-source') || $input->getOption('prefer-dist')) {
-            $preferSource = $input->getOption('prefer-source');
-            $preferDist = $input->getOption('prefer-dist');
-        }
+        $this->updatePreferredOptions($config, $input, $preferSource, $preferDist);
 
         if ($input->getOption('no-custom-installers')) {
             $output->writeln('<warning>You are using the deprecated option "no-custom-installers". Use "no-plugins" instead.</warning>');
@@ -139,11 +124,12 @@ EOT
             $input->getOption('no-scripts'),
             $input->getOption('keep-vcs'),
             $input->getOption('no-progress'),
-            $input->getOption('no-install')
+            $input->getOption('no-install'),
+            $input
         );
     }
 
-    public function installProject(IOInterface $io, $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositoryUrl = null, $disablePlugins = false, $noScripts = false, $keepVcs = false, $noProgress = false, $noInstall = false)
+    public function installProject(IOInterface $io, Config $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositoryUrl = null, $disablePlugins = false, $noScripts = false, $keepVcs = false, $noProgress = false, $noInstall = false, InputInterface $input)
     {
         $oldCwd = getcwd();
 
@@ -160,6 +146,9 @@ EOT
             // dispatch event
             $composer->getEventDispatcher()->dispatchCommandEvent(ScriptEvents::POST_ROOT_PACKAGE_INSTALL, $installDevPackages);
         }
+
+        $rootPackageConfig = $composer->getConfig();
+        $this->updatePreferredOptions($rootPackageConfig, $input, $preferSource, $preferDist);
 
         // install dependencies of the created project
         if ($noInstall === false) {
@@ -238,7 +227,7 @@ EOT
         return 0;
     }
 
-    protected function installRootPackage(IOInterface $io, $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositoryUrl = null, $disablePlugins = false, $noScripts = false, $keepVcs = false, $noProgress = false)
+    protected function installRootPackage(IOInterface $io, Config $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositoryUrl = null, $disablePlugins = false, $noScripts = false, $keepVcs = false, $noProgress = false)
     {
         if (null === $repositoryUrl) {
             $sourceRepo = new CompositeRepository(Factory::createDefaultRepositories($io, $config));
@@ -342,5 +331,36 @@ EOT
     protected function createInstallationManager()
     {
         return new InstallationManager();
+    }
+
+
+    /**
+     * Updated preferSource or preferDist based on the preferredInstall config option
+     * @param Config $config
+     * @param InputInterface $input
+     * @param boolean $preferSource
+     * @param boolean $preferDist
+     */
+    protected function updatePreferredOptions(Config $config, InputInterface $input, &$preferSource, &$preferDist)
+    {
+        switch ($config->get('preferred-install')) {
+            case 'source':
+                $preferSource = true;
+                $preferDist = false;
+                break;
+            case 'dist':
+                $preferSource = false;
+                $preferDist = true;
+                break;
+            case 'auto':
+            default:
+                // noop
+                break;
+        }
+
+        if ($input->getOption('prefer-source') || $input->getOption('prefer-dist')) {
+            $preferSource = $input->getOption('prefer-source');
+            $preferDist = $input->getOption('prefer-dist');
+        }
     }
 }
