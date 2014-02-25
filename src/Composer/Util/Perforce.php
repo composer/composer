@@ -110,7 +110,7 @@ class Perforce
     protected function executeCommand($command)
     {
         $this->commandResult = "";
-        $exit_code = $this->process->execute($command, $this->commandResult);
+        $exit_code = $this->process->execute($command, $this->commandResult, $this->getPath());
         return $exit_code;
     }
 
@@ -293,9 +293,6 @@ class Perforce
 
     public function syncCodeBase($label)
     {
-        $prevDir = getcwd();
-        chdir($this->path);
-
         $p4SyncCommand = $this->generateP4Command('sync -f ');
         if (isset($label)) {
             if (strcmp($label, 'dev-master') != 0) {
@@ -303,8 +300,6 @@ class Perforce
             }
         }
         $this->executeCommand($p4SyncCommand);
-
-        chdir($prevDir);
     }
 
     public function writeClientSpecToFile($spec)

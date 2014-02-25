@@ -12,6 +12,7 @@
 
 namespace Composer\Command;
 
+use Composer\Console\Application;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Symfony\Component\Console\Input\InputInterface;
@@ -41,7 +42,10 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $composer = $this->getComposer();
+		/** @var Application $application */
+		$application = $this->getApplication(true);
+        $composer = $application->getComposer();
+		$workingDir = $application->getWorkingDir($input);
 
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'dump-autoload', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
@@ -58,7 +62,6 @@ EOT
         } else {
             $output->writeln('<info>Generating autoload files</info>');
         }
-
-        $composer->getAutoloadGenerator()->dump($config, $localRepo, $package, $installationManager, 'composer', $optimize);
+        $composer->getAutoloadGenerator()->dump($workingDir, $config, $localRepo, $package, $installationManager, 'composer', $optimize);
     }
 }

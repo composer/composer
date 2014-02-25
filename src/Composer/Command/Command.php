@@ -45,20 +45,30 @@ abstract class Command extends BaseCommand
     public function getComposer($required = true, $disablePlugins = false)
     {
         if (null === $this->composer) {
-            $application = $this->getApplication();
-            if ($application instanceof Application) {
-                /* @var $application    Application */
-                $this->composer = $application->getComposer($required, $disablePlugins);
-            } elseif ($required) {
-                throw new \RuntimeException(
-                    'Could not create a Composer\Composer instance, you must inject '.
-                    'one if this command is not used with a Composer\Console\Application instance'
-                );
-            }
+            $application = $this->getApplication(true);
+			/* @var $application    Application */
+			$this->composer = $application->getComposer($required, $disablePlugins);
         }
 
         return $this->composer;
     }
+
+	/**
+	 * @param bool $required
+	 * @return \Symfony\Component\Console\Application
+	 * @throws \RuntimeException
+	 */
+	public function getApplication($required = null)
+	{
+		$application = parent::getApplication();
+		if (!$application instanceof Application && $required) {
+			throw new \RuntimeException(
+					'Could not create a Composer\Composer instance, you must inject '.
+					'one if this command is not used with a Composer\Console\Application instance'
+			);
+		}
+		return $application;
+	}
 
     /**
      * @param Composer $composer
