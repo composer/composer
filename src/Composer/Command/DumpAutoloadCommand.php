@@ -42,10 +42,10 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-		/** @var Application $application */
-		$application = $this->getApplication(true);
+        /** @var Application $application */
+        $application = $this->getApplication(true);
         $composer = $application->getComposer();
-		$workingDir = $application->getWorkingDir($input);
+        $workingDir = $application->getWorkingDir($input);
 
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'dump-autoload', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);

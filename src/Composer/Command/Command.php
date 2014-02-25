@@ -37,8 +37,8 @@ abstract class Command extends BaseCommand
     private $io;
 
     /**
-     * @param  bool              $required
-     * @param  bool              $disablePlugins
+     * @param  bool $required
+     * @param  bool $disablePlugins
      * @throws \RuntimeException
      * @return Composer
      */
@@ -46,29 +46,29 @@ abstract class Command extends BaseCommand
     {
         if (null === $this->composer) {
             $application = $this->getApplication(true);
-			/* @var $application    Application */
-			$this->composer = $application->getComposer($required, $disablePlugins);
+            /* @var $application    Application */
+            $this->composer = $application->getComposer($required, $disablePlugins);
         }
 
         return $this->composer;
     }
 
-	/**
-	 * @param bool $required
-	 * @return \Symfony\Component\Console\Application
-	 * @throws \RuntimeException
-	 */
-	public function getApplication($required = null)
-	{
-		$application = parent::getApplication();
-		if (!$application instanceof Application && $required) {
-			throw new \RuntimeException(
-					'Could not create a Composer\Composer instance, you must inject '.
-					'one if this command is not used with a Composer\Console\Application instance'
-			);
-		}
-		return $application;
-	}
+    /**
+     * @param bool $required
+     * @return \Symfony\Component\Console\Application
+     * @throws \RuntimeException
+     */
+    public function getApplication($required = null)
+    {
+        $application = parent::getApplication();
+        if (!$application instanceof Application && $required) {
+            throw new \RuntimeException(
+                    'Could not create a Composer\Composer instance, you must inject ' .
+                    'one if this command is not used with a Composer\Console\Application instance'
+            );
+        }
+        return $application;
+    }
 
     /**
      * @param Composer $composer

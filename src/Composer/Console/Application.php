@@ -127,17 +127,17 @@ class Application extends BaseApplication
         return $result;
     }
 
-	/**
-	 * @param  InputInterface $input
-	 * @return string
-	 * @throws \RuntimeException
-	 */
+    /**
+     * @param  InputInterface $input
+     * @return string
+     * @throws \RuntimeException
+     */
     public function getWorkingDir(InputInterface $input)
     {
         $workingDir = $input->getParameterOption(array('--working-dir', '-d'));
-		if (false === $workingDir) {
-			$workingDir = getcwd();
-		} elseif (!is_dir($workingDir)) {
+        if (false === $workingDir) {
+            $workingDir = getcwd();
+        } elseif (!is_dir($workingDir)) {
             throw new \RuntimeException('Invalid working directory specified.');
         }
 

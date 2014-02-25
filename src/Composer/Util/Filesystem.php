@@ -315,18 +315,18 @@ class Filesystem
         return filesize($path);
     }
 
-	/**
-	 * @param string $path
-	 * @param string $dirPath
-	 * @return string
-	 */
-	public function expandPath($path, $dirPath)
-	{
-		if (!$this->isAbsolutePath($path)) {
-			$path = $this->normalizePath($dirPath) . '/' . $path;
-		}
-		return $this->normalizePath($path);
-	}
+    /**
+     * @param string $path
+     * @param string $dirPath
+     * @return string
+     */
+    public function expandPath($path, $dirPath)
+    {
+        if (!$this->isAbsolutePath($path)) {
+            $path = $this->normalizePath($dirPath) . '/' . $path;
+        }
+        return $this->normalizePath($path);
+    }
 
     /**
      * Normalize a path. This replaces backslashes with slashes, removes ending
