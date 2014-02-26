@@ -101,25 +101,51 @@ class GitHub
                     $appName .= ' on ' . trim($output);
                 }
 
-                $headers = array('Content-Type: application/json');
-
+                $headers = array();
                 if ($otp) {
-                    $headers[] = 'X-GitHub-OTP: ' . $otp;
+                    $headers = array('X-GitHub-OTP: ' . $otp);
                 }
 
-                $contents = JsonFile::parseJson($this->remoteFilesystem->getContents($originUrl, 'https://'. $apiUrl . '/authorizations', false, array(
+                // try retrieving an existing token with the same name
+                $contents = null;
+                $auths = JsonFile::parseJson($this->remoteFilesystem->getContents($originUrl, 'https://'. $apiUrl . '/authorizations', false, array(
                     'retry-auth-failure' => false,
                     'http' => array(
-                        'method' => 'POST',
-                        'follow_location' => false,
-                        'header' => $headers,
-                        'content' => json_encode(array(
-                            'scopes' => array('repo'),
-                            'note' => $appName,
-                            'note_url' => 'https://getcomposer.org/',
-                        )),
+                        'header' => $headers
                     )
                 )));
+                foreach ($auths as $auth) {
+                    if (
+                        isset($auth['app']['name'])
+                        && 0 === strpos($auth['app']['name'], $appName)
+                        && $auth['app']['url'] === 'https://getcomposer.org/'
+                    ) {
+                        $this->io->write('An existing OAuth token for Composer is present and will be reused');
+
+                        $contents['token'] = $auth['token'];
+                        break;
+                    }
+                }
+
+                // no existing token, create one
+                if (empty($contents['token'])) {
+                    $headers[] = array('Content-Type: application/json');
+
+                    $contents = JsonFile::parseJson($this->remoteFilesystem->getContents($originUrl, 'https://'. $apiUrl . '/authorizations', false, array(
+                        'retry-auth-failure' => false,
+                        'http' => array(
+                            'method' => 'POST',
+                            'follow_location' => false,
+                            'header' => $headers,
+                            'content' => json_encode(array(
+                                'scopes' => array('repo'),
+                                'note' => $appName,
+                                'note_url' => 'https://getcomposer.org/',
+                            )),
+                        )
+                    )));
+                    $this->io->write('Token successfully created');
+                }
             } catch (TransportException $e) {
                 if (in_array($e->getCode(), array(403, 401))) {
                     // 401 when authentication was supplied, handle 2FA if required.
