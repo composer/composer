@@ -232,6 +232,7 @@ class RemoteFilesystem
             && preg_match("|Peer certificate CN=`(.*)' did not match|i", $errorMessage, $matches)) {
                 $this->retryTls = false;
                 $expectedCommonName = $matches[1];
+                $this->io->write("    <warning>Retrying download from ".$originUrl." with SSL Cert Common Name (CN): ".$expectedCommonName."</warning>");
                 return $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress, $expectedCommonName);
             }
         }
