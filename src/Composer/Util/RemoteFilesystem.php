@@ -124,6 +124,9 @@ class RemoteFilesystem
             $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'access_token='.$options['github-token'];
             unset($options['github-token']);
         }
+        if (isset($options['http'])) {
+            $options['http']['ignore_errors'] = true;
+        }
         $ctx = StreamContextFactory::getContext($fileUrl, $options, array('notification' => array($this, 'callbackGet')));
 
         if ($this->progress) {
@@ -145,6 +148,10 @@ class RemoteFilesystem
             if ($e instanceof TransportException && !empty($http_response_header[0])) {
                 $e->setHeaders($http_response_header);
             }
+            if ($e instanceof TransportException && $result !== false) {
+                $e->setResponse($result);
+            }
+            $result = false;
         }
         if ($errorMessage && !ini_get('allow_url_fopen')) {
             $errorMessage = 'allow_url_fopen must be enabled in php.ini ('.$errorMessage.')';
@@ -154,10 +161,16 @@ class RemoteFilesystem
             throw $e;
         }
 
-        // fix for 5.4.0 https://bugs.php.net/bug.php?id=61336
+        // fail 4xx and 5xx responses and capture the response
         if (!empty($http_response_header[0]) && preg_match('{^HTTP/\S+ ([45]\d\d)}i', $http_response_header[0], $match)) {
-            $result = false;
             $errorCode = $match[1];
+            if (!$this->retry) {
+                $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded ('.$http_response_header[0].')', $errorCode);
+                $e->setHeaders($http_response_header);
+                $e->setResponse($result);
+                throw $e;
+            }
+            $result = false;
         }
 
         // decode gzip
@@ -250,12 +263,7 @@ class RemoteFilesystem
                     $this->promptAuthAndRetry();
                     break;
                 }
-
-                if ($notificationCode === STREAM_NOTIFY_AUTH_REQUIRED) {
-                    break;
-                }
-
-                throw new TransportException('The "'.$this->fileUrl.'" file could not be downloaded ('.trim($message).')', $messageCode);
+                break;
 
             case STREAM_NOTIFY_AUTH_RESULT:
                 if (403 === $messageCode) {
