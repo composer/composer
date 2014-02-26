@@ -262,15 +262,15 @@ class RemoteFilesystem
             case STREAM_NOTIFY_FAILURE:
             case STREAM_NOTIFY_AUTH_REQUIRED:
                 if (401 === $messageCode) {
+                    // Bail if the caller is going to handle authentication failures itself.
+                    if (!$this->retryAuthFailure) {
+                        break;
+                    }
+
                     if (!$this->io->isInteractive()) {
                         $message = "The '" . $this->fileUrl . "' URL required authentication.\nYou must be using the interactive console";
 
                         throw new TransportException($message, 401);
-                    }
-
-                    // Bail if the caller is going to handle authentication failures itself.
-                    if (!$this->retryAuthFailure) {
-                        throw new TransportException('The "'.$this->fileUrl.'" file could not be downloaded ('.trim($message).')', 401);
                     }
 
                     $this->promptAuthAndRetry();
