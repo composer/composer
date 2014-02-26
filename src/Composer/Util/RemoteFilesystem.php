@@ -343,10 +343,10 @@ class RemoteFilesystem
 
         // Setup remaining TLS options - the matching may need monitoring, esp. www vs none in CN
         if ($this->disableTls === false) {
-            if (!preg_match("|^https?://|", $originUrl)) {
+            if (!preg_match("|^https?://|", $this->fileUrl)) {
                 $host = $originUrl;
             } else {
-                $host = parse_url($originUrl, PHP_URL_HOST);
+                $host = parse_url($this->fileUrl, PHP_URL_HOST);
             }
             /**
              * This is sheer painful, but hopefully it'll be a footnote once SAN support
