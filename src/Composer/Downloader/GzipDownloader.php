@@ -15,6 +15,7 @@ namespace Composer\Downloader;
 use Composer\Config;
 use Composer\Cache;
 use Composer\EventDispatcher\EventDispatcher;
+use Composer\Package\PackageInterface;
 use Composer\Util\ProcessExecutor;
 use Composer\IO\IOInterface;
 
@@ -39,15 +40,24 @@ class GzipDownloader extends ArchiveDownloader
 
         // Try to use gunzip on *nix
         if (!defined('PHP_WINDOWS_VERSION_BUILD')) {
-            $targetDirectory = $path . '/' . basename($file);
-            $command = 'gzip -d < ' . escapeshellarg($file) . ' > ' . escapeshellarg($targetDirectory);
+            $targetFile = $path . '/' . basename(substr($file, 0, -3));
+            $command = 'gzip -cd ' . escapeshellarg($file) . ' > ' . escapeshellarg($targetFile);
 
             if (0 === $this->process->execute($command, $ignoredOutput)) {
                 return;
             }
 
             $processError = 'Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput();
+            throw new \RuntimeException($processError);
         }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getFileName(PackageInterface $package, $path)
+    {
+        return $path.'/'.pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_BASENAME);
     }
 }
 
