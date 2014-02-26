@@ -87,9 +87,13 @@ class GitHub
         $this->io->write('To revoke access to this token you can visit https://github.com/settings/applications');
         while ($attemptCounter++ < 5) {
             try {
-                $username = $this->io->ask('Username: ');
-                $password = $this->io->askAndHideAnswer('Password: ');
-                $this->io->setAuthentication($originUrl, $username, $password);
+                if (empty($otp) || !$this->io->hasAuthentication($originUrl)) {
+                    $username = $this->io->ask('Username: ');
+                    $password = $this->io->askAndHideAnswer('Password: ');
+                    $otp      = null;
+
+                    $this->io->setAuthentication($originUrl, $username, $password);
+                }
 
                 // build up OAuth app name
                 $appName = 'Composer';
@@ -97,11 +101,18 @@ class GitHub
                     $appName .= ' on ' . trim($output);
                 }
 
+                $headers = array('Content-Type: application/json');
+
+                if ($otp) {
+                    $headers[] = 'X-GitHub-OTP: ' . $otp;
+                }
+
                 $contents = JsonFile::parseJson($this->remoteFilesystem->getContents($originUrl, 'https://'. $apiUrl . '/authorizations', false, array(
+                    'retry-auth-failure' => false,
                     'http' => array(
                         'method' => 'POST',
                         'follow_location' => false,
-                        'header' => "Content-Type: application/json\r\n",
+                        'header' => $headers,
                         'content' => json_encode(array(
                             'scopes' => array('repo'),
                             'note' => $appName,
@@ -111,6 +122,34 @@ class GitHub
                 )));
             } catch (TransportException $e) {
                 if (in_array($e->getCode(), array(403, 401))) {
+                    // 401 when authentication was supplied, handle 2FA if required.
+                    if ($this->io->hasAuthentication($originUrl)) {
+                        $headerNames = array_map(function($header) {
+                            return strtolower(strstr($header, ':', true));
+                        }, $e->getHeaders());
+
+                        if ($key = array_search('x-github-otp', $headerNames)) {
+                            $headers = $e->getHeaders();
+                            list($required, $method) = array_map('trim', explode(';', substr(strstr($headers[$key], ':'), 1)));
+
+                            if ('required' === $required) {
+                                $this->io->write('Two-factor Authentication');
+
+                                if ('app' === $method) {
+                                    $this->io->write('Open the two-factor authentication app on your device to view your authentication code and verify your identity.');
+                                }
+
+                                if ('sms' === $method) {
+                                    $this->io->write('You have been sent an SMS message with an authentication code to verify your identity.');
+                                }
+
+                                $otp = $this->io->ask('Authentication Code: ');
+
+                                continue;
+                            }
+                        }
+                    }
+
                     $this->io->write('Invalid credentials.');
                     continue;
                 }
