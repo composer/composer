@@ -39,7 +39,7 @@ class GzipDownloader extends ArchiveDownloader
 
         // Try to use gunzip on *nix
         if (!defined('PHP_WINDOWS_VERSION_BUILD')) {
-            $targetDirectory = $path . DIRECTORY_SEPARATOR . basename($file);
+            $targetDirectory = $path . '/' . basename($file);
             $command = 'gzip -d < ' . escapeshellarg($file) . ' > ' . escapeshellarg($targetDirectory);
 
             if (0 === $this->process->execute($command, $ignoredOutput)) {
