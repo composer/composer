@@ -36,20 +36,15 @@ class GzipDownloader extends ArchiveDownloader
 
     protected function extract($file, $path)
     {
-        $processError = null;
+        $targetFile = $path . '/' . basename(substr($file, 0, -3));
+        $command = 'gzip -cd ' . escapeshellarg($file) . ' > ' . escapeshellarg($targetFile);
 
-        // Try to use gunzip on *nix
-        if (!defined('PHP_WINDOWS_VERSION_BUILD')) {
-            $targetFile = $path . '/' . basename(substr($file, 0, -3));
-            $command = 'gzip -cd ' . escapeshellarg($file) . ' > ' . escapeshellarg($targetFile);
-
-            if (0 === $this->process->execute($command, $ignoredOutput)) {
-                return;
-            }
-
-            $processError = 'Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput();
-            throw new \RuntimeException($processError);
+        if (0 === $this->process->execute($command, $ignoredOutput)) {
+            return;
         }
+
+        $processError = 'Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput();
+        throw new \RuntimeException($processError);
     }
 
     /**
