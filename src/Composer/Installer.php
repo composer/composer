@@ -297,6 +297,11 @@ class Installer
                 $eventName = $this->update ? ScriptEvents::POST_UPDATE_CMD : ScriptEvents::POST_INSTALL_CMD;
                 $this->eventDispatcher->dispatchCommandEvent($eventName, $this->devMode);
             }
+
+            $vendorDir = $this->config->get('vendor-dir');
+            if (is_dir($vendorDir)) {
+                touch($vendorDir);
+            }
         }
 
         return 0;

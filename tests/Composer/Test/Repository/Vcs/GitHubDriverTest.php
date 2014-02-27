@@ -81,9 +81,14 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
         $remoteFilesystem->expects($this->at(1))
             ->method('getContents')
             ->with($this->equalTo('github.com'), $this->equalTo('https://api.github.com/authorizations'), $this->equalTo(false))
-            ->will($this->returnValue('{"token": "abcdef"}'));
+            ->will($this->returnValue('[]'));
 
         $remoteFilesystem->expects($this->at(2))
+            ->method('getContents')
+            ->with($this->equalTo('github.com'), $this->equalTo('https://api.github.com/authorizations'), $this->equalTo(false))
+            ->will($this->returnValue('{"token": "abcdef"}'));
+
+        $remoteFilesystem->expects($this->at(3))
             ->method('getContents')
             ->with($this->equalTo('github.com'), $this->equalTo($repoApiUrl), $this->equalTo(false))
             ->will($this->returnValue('{"master_branch": "test_master", "private": true}'));

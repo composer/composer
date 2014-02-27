@@ -684,8 +684,8 @@ The following options are supported:
   `{"github.com": "oauthtoken"}` as the value of this option will use `oauthtoken`
   to access private repositories on github and to circumvent the low IP-based
   rate limiting of their API.
-  [Read more](articles/troubleshooting.md#api-rate-limit-and-two-factor-authentication)
-  on how to get an oauth token for GitHub.
+  [Read more](articles/troubleshooting.md#api-rate-limit-and-oauth-tokens)
+  on how to get an OAuth token for GitHub.
 * **vendor-dir:** Defaults to `vendor`. You can install dependencies into a
   different directory if you want to.
 * **bin-dir:** Defaults to `vendor/bin`. If a project includes binaries, they
