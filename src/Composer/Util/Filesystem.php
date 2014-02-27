@@ -316,6 +316,19 @@ class Filesystem
     }
 
     /**
+     * @param string $path
+     * @param string $dirPath
+     * @return string
+     */
+    public function expandPath($path, $dirPath)
+    {
+        if (!$this->isAbsolutePath($path)) {
+            $path = $this->normalizePath($dirPath) . '/' . $path;
+        }
+        return $this->normalizePath($path);
+    }
+
+    /**
      * Normalize a path. This replaces backslashes with slashes, removes ending
      * slash and collapses redundant separators and up-level references.
      *

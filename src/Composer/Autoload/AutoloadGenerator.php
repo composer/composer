@@ -37,17 +37,17 @@ class AutoloadGenerator
         $this->eventDispatcher = $eventDispatcher;
     }
 
-    public function dump(Config $config, InstalledRepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir, $scanPsr0Packages = false, $suffix = '')
+    public function dump($basePath, Config $config, InstalledRepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir, $scanPsr0Packages = false, $suffix = '')
     {
         $this->eventDispatcher->dispatchScript(ScriptEvents::PRE_AUTOLOAD_DUMP);
 
         $filesystem = new Filesystem();
-        $filesystem->ensureDirectoryExists($config->get('vendor-dir'));
-        $basePath = $filesystem->normalizePath(realpath(getcwd()));
-        $vendorPath = $filesystem->normalizePath(realpath($config->get('vendor-dir')));
+        $basePath = $filesystem->normalizePath(realpath($basePath));
+        $vendorPath = realpath($filesystem->expandPath($config->get('vendor-dir'), $basePath));
+        $filesystem->ensureDirectoryExists($vendorPath);
         $useGlobalIncludePath = (bool) $config->get('use-include-path');
         $prependAutoloader = $config->get('prepend-autoloader') === false ? 'false' : 'true';
-        $targetDir = $vendorPath.'/'.$targetDir;
+        $targetDir = $vendorPath . '/' . $targetDir;
         $filesystem->ensureDirectoryExists($targetDir);
 
         $vendorPathCode = $filesystem->findShortestPathCode(realpath($targetDir), $vendorPath, true);
@@ -185,6 +185,7 @@ EOF;
 
         $autoloads['classmap'] = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($autoloads['classmap']));
         foreach ($autoloads['classmap'] as $dir) {
+            $dir = $filesystem->expandPath($dir, $basePath);
             foreach (ClassMapGenerator::createMap($dir) as $class => $path) {
                 $path = $this->getPathCode($filesystem, $basePath, $vendorPath, $path);
                 $classMap[$class] = $path.",\n";

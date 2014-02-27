@@ -109,7 +109,7 @@ class Application extends BaseApplication
             $this->io->enableDebugging($startTime);
         }
 
-        if ($newWorkDir = $this->getNewWorkingDir($input)) {
+        if ($newWorkDir = $this->getWorkingDir($input)) {
             $oldWorkingDir = getcwd();
             chdir($newWorkDir);
         }
@@ -128,13 +128,16 @@ class Application extends BaseApplication
     }
 
     /**
-     * @param  InputInterface    $input
+     * @param  InputInterface $input
+     * @return string
      * @throws \RuntimeException
      */
-    private function getNewWorkingDir(InputInterface $input)
+    public function getWorkingDir(InputInterface $input)
     {
         $workingDir = $input->getParameterOption(array('--working-dir', '-d'));
-        if (false !== $workingDir && !is_dir($workingDir)) {
+        if (false === $workingDir) {
+            $workingDir = getcwd();
+        } elseif (!is_dir($workingDir)) {
             throw new \RuntimeException('Invalid working directory specified.');
         }
 
