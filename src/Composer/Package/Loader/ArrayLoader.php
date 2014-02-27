@@ -130,6 +130,10 @@ class ArrayLoader implements LoaderInterface
             $package->setAutoload($config['autoload']);
         }
 
+        if (isset($config['autoload-dev'])) {
+            $package->setDevAutoload($config['autoload-dev']);
+        }
+
         if (isset($config['include-path'])) {
             $package->setIncludePaths($config['include-path']);
         }

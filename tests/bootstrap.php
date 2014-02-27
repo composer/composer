@@ -13,6 +13,8 @@
 error_reporting(E_ALL);
 
 $loader = require __DIR__.'/../src/bootstrap.php';
+
+// to be removed
 $loader->add('Composer\Test', __DIR__);
 
 require __DIR__.'/Composer/TestCase.php';

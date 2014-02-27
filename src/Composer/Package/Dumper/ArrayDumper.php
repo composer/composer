@@ -31,6 +31,7 @@ class ArrayDumper
             'extra',
             'installationSource' => 'installation-source',
             'autoload',
+            'devAutoload' => 'autoload-dev',
             'notificationUrl' => 'notification-url',
             'includePaths' => 'include-path',
         );
