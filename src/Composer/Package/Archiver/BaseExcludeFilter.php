@@ -140,8 +140,8 @@ abstract class BaseExcludeFilter
             $pattern .= '/';
         }
 
-        // remove delimiters as well as caret (^) from the regex
-        $pattern .= substr(Finder\Glob::toRegex($rule), 2, -1);
+        // remove delimiters as well as caret (^) and dollar sign ($) from the regex
+        $pattern .= substr(Finder\Glob::toRegex($rule), 2, -2) . '/*.*$';
 
         return array($pattern . '#', $negate, false);
     }
