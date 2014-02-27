@@ -36,15 +36,28 @@ class GzipDownloader extends ArchiveDownloader
 
     protected function extract($file, $path)
     {
-        $targetFile = $path . '/' . basename(substr($file, 0, -3));
-        $command = 'gzip -cd ' . escapeshellarg($file) . ' > ' . escapeshellarg($targetFile);
+        $targetFilepath = $path . DIRECTORY_SEPARATOR . basename(substr($file, 0, -3));
 
-        if (0 === $this->process->execute($command, $ignoredOutput)) {
-            return;
+        // Try to use gunzip on *nix
+        if (!defined('PHP_WINDOWS_VERSION_BUILD')) {
+            $command = 'gzip -cd ' . escapeshellarg($file) . ' > ' . escapeshellarg($targetFilepath);
+
+            if (0 === $this->process->execute($command, $ignoredOutput)) {
+                return;
+            }
+
+            $processError = 'Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput();
+            throw new \RuntimeException($processError);
         }
 
-        $processError = 'Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput();
-        throw new \RuntimeException($processError);
+        // Gzip version of PHP has built-in support of gzip functions
+        $archiveFile = gzopen($file, 'rb');
+        $targetFile = fopen($targetFilepath, 'wb');
+        while ($string = gzread($archiveFile, 4096)) {
+            fwrite($targetFile, $string, strlen($string));
+        }
+        gzclose($archiveFile);
+        fclose($targetFile);
     }
 
     /**
