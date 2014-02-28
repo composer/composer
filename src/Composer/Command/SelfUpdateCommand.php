@@ -77,7 +77,7 @@ EOT
         $remoteFilesystemOptions = array();
         if ($disableTls === false) {
             if (!is_null($config->get('cafile'))) {
-            $remoteFilesystemOptions = array('ssl'=>array('cafile'=>$config->get('cafile')));
+                $remoteFilesystemOptions = array('ssl'=>array('cafile'=>$config->get('cafile')));
             }
             if (!is_null($input->getOption('cafile'))) {
                 $remoteFilesystemOptions = array('ssl'=>array('cafile'=>$input->getOption('cafile')));

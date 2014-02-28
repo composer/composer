@@ -152,10 +152,8 @@ EOT
         }
 
         $rfsOptions = array();
-        if ($disableTls) {
-            if (!is_null($config->get('cafile'))) {
+        if (!$disableTls && !is_null($config->get('cafile'))) {
                 $rfsOptions = array('ssl'=>array('cafile'=>$config->get('cafile')));
-            }
         }
         try {
             $this->rfs = new RemoteFilesystem($this->getIO(), $rfsOptions, $disableTls);
