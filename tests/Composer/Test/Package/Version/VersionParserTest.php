@@ -107,6 +107,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'parses arbitrary2' => array('DEV-FOOBAR',          'dev-FOOBAR'),
             'parses arbitrary3' => array('dev-feature/foo',     'dev-feature/foo'),
             'ignores aliases'   => array('dev-master as 1.0.0', '9999999-dev'),
+            'parses dates y-z'  => array('v2014.001.123456789', '2014-001-123456789'),
         );
     }
 
