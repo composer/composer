@@ -285,6 +285,11 @@ EOT
             'autoloader-suffix' => array('is_string', function ($val) { return $val === 'null' ? null : $val; }),
             'optimize-autoloader' => array($booleanValidator, $booleanNormalizer),
             'prepend-autoloader' => array($booleanValidator, $booleanNormalizer),
+            'disable-tls' => array($booleanValidator, $booleanNormalizer),
+            'cafile' => array(
+                function ($val) { return file_exists($val) && is_readable($val); }
+                function ($val) { return $val; }
+            )
         );
         $multiConfigValues = array(
             'github-protocols' => array(

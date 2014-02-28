@@ -39,7 +39,8 @@ class Config
         'optimize-autoloader' => false,
         'prepend-autoloader' => true,
         'github-domains' => array('github.com'),
-        'disable-tls' => false
+        'disable-tls' => false,
+        'cafile' => null,
     );
 
     public static $defaultRepositories = array(
