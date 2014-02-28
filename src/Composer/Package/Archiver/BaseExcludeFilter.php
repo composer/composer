@@ -137,7 +137,7 @@ abstract class BaseExcludeFilter
             $pattern .= '^/';
             $rule = substr($rule, 1);
         } elseif (strlen($rule) - 1 === strpos($rule, '/')) {
-            $pattern .= '^/';
+            $pattern .= '/';
             $rule = substr($rule, 0, -1);
         } elseif (false === strpos($rule, '/')) {
             $pattern .= '/';
