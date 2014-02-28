@@ -136,12 +136,15 @@ abstract class BaseExcludeFilter
         if (strlen($rule) && $rule[0] === '/') {
             $pattern .= '^/';
             $rule = substr($rule, 1);
-        } elseif (false === strpos($rule, '/') || strlen($rule) - 1 === strpos($rule, '/')) {
+        } elseif (strlen($rule) - 1 === strpos($rule, '/')) {
+            $pattern .= '^/';
+            $rule = substr($rule, 0, -1);
+        } elseif (false === strpos($rule, '/')) {
             $pattern .= '/';
         }
 
         // remove delimiters as well as caret (^) and dollar sign ($) from the regex
-        $pattern .= substr(Finder\Glob::toRegex($rule), 2, -2) . '/*.*$';
+        $pattern .= substr(Finder\Glob::toRegex($rule), 2, -2) . '(?=$|/)';
 
         return array($pattern . '#', $negate, false);
     }
