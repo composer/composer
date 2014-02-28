@@ -288,7 +288,7 @@ EOT
             'disable-tls' => array($booleanValidator, $booleanNormalizer),
             'cafile' => array(
                 function ($val) { return file_exists($val) && is_readable($val); }
-                function ($val) { return $val; }
+                function ($val) { return $val === 'null' ? null : $val; }
             )
         );
         $multiConfigValues = array(
