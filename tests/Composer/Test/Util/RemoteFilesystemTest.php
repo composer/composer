@@ -178,15 +178,15 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
     {
         $io = $this->getMock('Composer\IO\IOInterface');
 
-        $res = $this->callGetOptionsForUrl($io, array('http://example.org', array('ssl'=>array('cafile'=>'/some/path/file.crt'))));
+        $res = $this->callGetOptionsForUrl($io, array('example.org', array('ssl'=>array('cafile'=>'/some/path/file.crt'))), array(), 'http://www.example.org');
 
         $this->assertTrue(isset($res['ssl']['ciphers']));
         $this->assertRegExp("|!aNULL:!eNULL:!EXPORT:!DES:!3DES:!MD5:!PSK|", $res['ssl']['ciphers']);
         $this->assertTrue($res['ssl']['verify_peer']);
         $this->assertTrue($res['ssl']['SNI_enabled']);
         $this->assertEquals(7, $res['ssl']['verify_depth']);
-        $this->assertEquals('example.org', $res['ssl']['CN_match']);
-        $this->assertEquals('example.org', $res['ssl']['SNI_server_name']);
+        $this->assertEquals('www.example.org', $res['ssl']['CN_match']);
+        $this->assertEquals('www.example.org', $res['ssl']['SNI_server_name']);
         $this->assertEquals('/some/path/file.crt', $res['ssl']['cafile']);
         if (version_compare(PHP_VERSION, '5.4.13') >= 0) {
             $this->assertTrue($res['ssl']['disable_compression']);
@@ -195,11 +195,31 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
         }
     }
 
-    protected function callGetOptionsForUrl($io, array $args = array(), array $options = array())
+    /**
+     * @group TLS
+     *
+     * Also illustrates a shortcoming with using originUrl (which is not a url but an ID)
+     * TLS would fail under this scenario if Common Name was www.example.org (i.e. doesn't apply to base example.org)
+     */
+    public function testGetOptionsForUrlSelectsOriginIfNoHttpFileUrlAvailable()
+    {
+        $io = $this->getMock('Composer\IO\IOInterface');
+
+        $res = $this->callGetOptionsForUrl($io, array('example.org', array('ssl'=>array('cafile'=>'/some/path/file.crt'))), array(), 'www.example.org');
+
+        $this->assertEquals('example.org', $res['ssl']['CN_match']);
+        $this->assertEquals('example.org', $res['ssl']['SNI_server_name']);
+    }
+
+    protected function callGetOptionsForUrl($io, array $args = array(), array $options = array(), $fileUrl = '')
     {
         $fs = new RemoteFilesystem($io, $options);
         $ref = new \ReflectionMethod($fs, 'getOptionsForUrl');
+        $prop = new \ReflectionProperty($fs, 'fileUrl');
         $ref->setAccessible(true);
+        $prop->setAccessible(true);
+
+        $prop->setValue($fs, $fileUrl);
 
         return $ref->invokeArgs($fs, $args);
     }
