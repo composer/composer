@@ -578,15 +578,13 @@ FOOTER;
 
             foreach ($autoload[$type] as $namespace => $paths) {
                 foreach ((array) $paths as $path) {
-                    if (($type === 'files' || $type === 'classmap') && $package->getTargetDir() && !is_readable($installPath.'/'.$path))
-                    {
+                    if (($type === 'files' || $type === 'classmap') && $package->getTargetDir() && !is_readable($installPath.'/'.$path)) {
                         // remove target-dir from file paths of the root package
                         if ($package === $mainPackage) {
                             $targetDir = str_replace('\\<dirsep\\>', '[\\\\/]', preg_quote(str_replace(array('/', '\\'), '<dirsep>', $package->getTargetDir())));
                             $path = ltrim(preg_replace('{^'.$targetDir.'}', '', ltrim($path, '\\/')), '\\/');
-                        }
-                        // add target-dir from file paths that don't have it
-                        else {
+                        } else {
+                            // add target-dir from file paths that don't have it
                             $path = $package->getTargetDir() . '/' . $path;
                         }
                     }
