@@ -183,7 +183,6 @@ EOF;
             }
         }
 
-        $autoloads['classmap'] = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($autoloads['classmap']));
         foreach ($autoloads['classmap'] as $dir) {
             foreach (ClassMapGenerator::createMap($dir) as $class => $path) {
                 $path = $this->getPathCode($filesystem, $basePath, $vendorPath, $path);
@@ -360,7 +359,6 @@ EOF;
     protected function getIncludeFilesFile(array $files, Filesystem $filesystem, $basePath, $vendorPath, $vendorPathCode, $appBaseDirCode)
     {
         $filesCode = '';
-        $files = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($files));
         foreach ($files as $functionFile) {
             $filesCode .= '    '.$this->getPathCode($filesystem, $basePath, $vendorPath, $functionFile).",\n";
         }
@@ -580,33 +578,27 @@ FOOTER;
 
             foreach ($autoload[$type] as $namespace => $paths) {
                 foreach ((array) $paths as $path) {
-                    // remove target-dir from file paths of the root package
-                    if ($type === 'files' && $package === $mainPackage && $package->getTargetDir() && !is_readable($installPath.'/'.$path)) {
-                        $targetDir = str_replace('\\<dirsep\\>', '[\\\\/]', preg_quote(str_replace(array('/', '\\'), '<dirsep>', $package->getTargetDir())));
-                        $path = ltrim(preg_replace('{^'.$targetDir.'}', '', ltrim($path, '\\/')), '\\/');
+                    if (($type === 'files' || $type === 'classmap') && $package->getTargetDir() && !is_readable($installPath.'/'.$path))
+                    {
+                        // remove target-dir from file paths of the root package
+                        if ($package === $mainPackage) {
+                            $targetDir = str_replace('\\<dirsep\\>', '[\\\\/]', preg_quote(str_replace(array('/', '\\'), '<dirsep>', $package->getTargetDir())));
+                            $path = ltrim(preg_replace('{^'.$targetDir.'}', '', ltrim($path, '\\/')), '\\/');
+                        }
+                        // add target-dir from file paths that don't have it
+                        else {
+                            $path = $package->getTargetDir() . '/' . $path;
+                        }
                     }
 
-                    // add target-dir from file paths that don't have it
-                    if ($type === 'files' && $package !== $mainPackage && $package->getTargetDir() && !is_readable($installPath.'/'.$path)) {
-                        $path = $package->getTargetDir() . '/' . $path;
+                    $relativePath = empty($installPath) ? (empty($path) ? '.' : $path) : $installPath.'/'.$path;
+
+                    if ($type === 'files' || $type === 'classmap') {
+                        $autoloads[] = $relativePath;
+                        continue;
                     }
 
-                    // remove target-dir from classmap entries of the root package
-                    if ($type === 'classmap' && $package === $mainPackage && $package->getTargetDir() && !is_readable($installPath.'/'.$path)) {
-                        $targetDir = str_replace('\\<dirsep\\>', '[\\\\/]', preg_quote(str_replace(array('/', '\\'), '<dirsep>', $package->getTargetDir())));
-                        $path = ltrim(preg_replace('{^'.$targetDir.'}', '', ltrim($path, '\\/')), '\\/');
-                    }
-
-                    // add target-dir to classmap entries that don't have it
-                    if ($type === 'classmap' && $package !== $mainPackage && $package->getTargetDir() && !is_readable($installPath.'/'.$path)) {
-                        $path = $package->getTargetDir() . '/' . $path;
-                    }
-
-                    if (empty($installPath)) {
-                        $autoloads[$namespace][] = empty($path) ? '.' : $path;
-                    } else {
-                        $autoloads[$namespace][] = $installPath.'/'.$path;
-                    }
+                    $autoloads[$namespace][] = $relativePath;
                 }
             }
         }
