@@ -46,7 +46,7 @@ class AutoloadGenerator
 
     public function dump(Config $config, InstalledRepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir, $scanPsr0Packages = false, $suffix = '')
     {
-        $this->eventDispatcher->dispatchScript(ScriptEvents::PRE_AUTOLOAD_DUMP);
+        $this->eventDispatcher->dispatchScript(ScriptEvents::PRE_AUTOLOAD_DUMP, $this->devMode);
 
         $filesystem = new Filesystem();
         $filesystem->ensureDirectoryExists($config->get('vendor-dir'));
@@ -228,7 +228,7 @@ EOF;
         fclose($targetLoader);
         unset($sourceLoader, $targetLoader);
 
-        $this->eventDispatcher->dispatchScript(ScriptEvents::POST_AUTOLOAD_DUMP);
+        $this->eventDispatcher->dispatchScript(ScriptEvents::POST_AUTOLOAD_DUMP, $this->devMode);
     }
 
     public function buildPackageMap(InstallationManager $installationManager, PackageInterface $mainPackage, array $packages)
