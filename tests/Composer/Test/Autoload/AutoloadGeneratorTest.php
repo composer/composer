@@ -170,7 +170,75 @@ class AutoloadGeneratorTest extends TestCase
         // Assert that autoload_classmap.php was correctly generated.
         $this->assertAutoloadFiles('classmap', $this->vendorDir.'/composer', 'classmap');
     }
+    
+    public function testMainPackageDevAutoloading()
+    {
+        $package = new Package('a', '1.0', '1.0');
+        $package->setAutoload(array(
+            'psr-0' => array(
+                'Main' => 'src/',
+            ),
+        ));
+        $package->setDevAutoload(array(
+            'files' => array('devfiles/foo.php'),
+        ));
 
+        $this->repository->expects($this->once())
+            ->method('getCanonicalPackages')
+            ->will($this->returnValue(array()));
+
+        $this->fs->ensureDirectoryExists($this->workingDir.'/composer');
+        $this->fs->ensureDirectoryExists($this->workingDir.'/src/Main');
+        file_put_contents($this->workingDir.'/src/Main/ClassMain.php', '<?php namespace Main; class ClassMain {}');
+
+        $this->fs->ensureDirectoryExists($this->workingDir.'/devfiles');
+        file_put_contents($this->workingDir.'/devfiles/foo.php', '<?php function foo() { echo "foo"; }');
+
+        // generate autoload files with the dev mode set to true
+        $this->generator->setDevMode(true);
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', true, '_1');
+        
+        // check standard autoload
+        $this->assertAutoloadFiles('main4', $this->vendorDir.'/composer');
+        $this->assertAutoloadFiles('classmap7', $this->vendorDir.'/composer', 'classmap');
+        
+        // make sure dev autoload is correctly dumped
+        $this->assertAutoloadFiles('files2', $this->vendorDir.'/composer', 'files');
+    }
+
+    public function testMainPackageDevAutoloadingDisabledByDefault()
+    {
+        $package = new Package('a', '1.0', '1.0');
+        $package->setAutoload(array(
+            'psr-0' => array(
+                'Main' => 'src/',
+            ),
+        ));
+        $package->setDevAutoload(array(
+            'files' => array('devfiles/foo.php'),
+        ));
+
+        $this->repository->expects($this->once())
+            ->method('getCanonicalPackages')
+            ->will($this->returnValue(array()));
+
+        $this->fs->ensureDirectoryExists($this->workingDir.'/composer');
+        $this->fs->ensureDirectoryExists($this->workingDir.'/src/Main');
+        file_put_contents($this->workingDir.'/src/Main/ClassMain.php', '<?php namespace Main; class ClassMain {}');
+
+        $this->fs->ensureDirectoryExists($this->workingDir.'/devfiles');
+        file_put_contents($this->workingDir.'/devfiles/foo.php', '<?php function foo() { echo "foo"; }');
+
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', true, '_1');
+
+        // check standard autoload
+        $this->assertAutoloadFiles('main4', $this->vendorDir.'/composer');
+        $this->assertAutoloadFiles('classmap7', $this->vendorDir.'/composer', 'classmap');
+
+        // make sure dev autoload is disabled when dev mode is set to false
+        $this->assertFalse(is_file($this->vendorDir.'/composer/autoload_files.php'));
+    }
+    
     public function testVendorDirSameAsWorkingDir()
     {
         $this->vendorDir = $this->workingDir;

@@ -32,9 +32,16 @@ class AutoloadGenerator
      */
     private $eventDispatcher;
 
+    private $devMode = false;
+
     public function __construct(EventDispatcher $eventDispatcher)
     {
         $this->eventDispatcher = $eventDispatcher;
+    }
+
+    public function setDevMode($devMode = true)
+    {
+        $this->devMode = (boolean) $devMode;
     }
 
     public function dump(Config $config, InstalledRepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir, $scanPsr0Packages = false, $suffix = '')
@@ -567,6 +574,9 @@ FOOTER;
             list($package, $installPath) = $item;
 
             $autoload = $package->getAutoload();
+            if ($this->devMode && $package === $mainPackage) {
+                $autoload = array_merge_recursive($autoload, $package->getDevAutoload());
+            }
 
             // skip misconfigured packages
             if (!isset($autoload[$type]) || !is_array($autoload[$type])) {
