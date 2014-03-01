@@ -195,24 +195,7 @@ class Factory
         if (is_string($localConfig)) {
             $composerFile = $localConfig;
 
-            $rfs = null;
-            if (preg_match("|^https?://|i", $localConfig)) {
-                $disableTls = false;
-                if($input->getOption('disable-tls')) {
-                    //$output->writeln('<warning>You are running Composer with SSL/TLS protection disabled.</warning>'); //TODO
-                    $disableTls = true;
-                } elseif (!extension_loaded('openssl')) {
-                    throw new \RuntimeException('The openssl extension is required for SSL/TLS protection but is not available. '
-                        . 'You can disable this error, at your own risk, by passing the \'--disable-tls\' option to this command.');
-                }
-
-                $rfsOptions = array();
-                if ($disableTls === false && !is_null($input->getOption('cafile'))) {
-                        $rfsOptions = array('ssl'=>array('cafile'=>$input->getOption('cafile')));
-                }
-                $rfs = new RemoteFilesystem($io, $rfsOptions, $disableTls);
-            }
-
+            $rfs = Factory::createRemoteFilesystem($io);
             $file = new JsonFile($localConfig, $rfs);
 
             if (!$file->exists()) {
@@ -468,10 +451,16 @@ class Factory
         return $factory->createComposer($io, $config, $disablePlugins, $input);
     }
 
-    public static function createRemoteFilesystem(IOInterface $io, Config $config, $options = array())
+    /**
+     * @param IOInterface   $io         IO instance
+     * @param Config        $config     Config instance
+     * @param array         $options    Array of options passed directly to RemoteFilesystem constructor
+     * @return RemoteFilesystem
+     */
+    public static function createRemoteFilesystem(IOInterface $io, Config $config = null, $options = array())
     {
         $disableTls = false;
-        if($config->get('disable-tls') === true || $io->getInputOption('disable-tls')) {
+        if((isset($config) && $config->get('disable-tls') === true) || $io->getInputOption('disable-tls')) {
             $io->write('<warning>You are running Composer with SSL/TLS protection disabled.</warning>');
             $disableTls = true;
         } elseif (!extension_loaded('openssl')) {
@@ -480,7 +469,7 @@ class Factory
         }
         $remoteFilesystemOptions = array();
         if ($disableTls === false) {
-            if (!empty($config->get('cafile'))) {
+            if (isset($config) && !empty($config->get('cafile'))) {
                 $remoteFilesystemOptions = array('ssl'=>array('cafile'=>$config->get('cafile')));
             }
             if (!empty($io->getInputOption('cafile'))) {

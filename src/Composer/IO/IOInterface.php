@@ -164,4 +164,22 @@ interface IOInterface
      * @param Config $config
      */
     public function loadConfiguration(Config $config);
+
+    /**
+     * Get the value of an input option
+     *
+     * @param string $optionName    The name of the option whose value is to be retrieved
+     *
+     * @return mixed
+     */
+    public function getInputOption($optionName);
+
+    /**
+     * Get the value of an input argument
+     *
+     * @param string $argumentName  The name of the argument whose value is to be retrieved
+     *
+     * @return mixed
+     */
+    public function getInputArgument($argumentName);
 }
