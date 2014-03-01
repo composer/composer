@@ -39,6 +39,9 @@
     "autoload": {
         "psr-0": { "Composer": "src/" }
     },
+    "autoload-dev": {
+        "psr-0": { "Composer\\Test": "tests/" }
+    },
     "bin": ["bin/composer"],
     "extra": {
         "branch-alias": {

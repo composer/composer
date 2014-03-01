@@ -231,12 +231,24 @@ interface PackageInterface
      *
      * {"<type>": {"<namespace": "<directory>"}}
      *
-     * Type is either "psr-0" or "pear". Namespaces are mapped to directories
-     * for autoloading using the type specified.
+     * Type is either "psr-4", "psr-0", "classmap" or "files". Namespaces are mapped to
+     * directories for autoloading using the type specified.
      *
      * @return array Mapping of autoloading rules
      */
     public function getAutoload();
+
+    /**
+     * Returns an associative array of dev autoloading rules
+     *
+     * {"<type>": {"<namespace": "<directory>"}}
+     *
+     * Type is either "psr-4", "psr-0", "classmap" or "files". Namespaces are mapped to
+     * directories for autoloading using the type specified.
+     *
+     * @return array Mapping of dev autoloading rules
+     */
+    public function getDevAutoload();
 
     /**
      * Returns a list of directories which should get added to PHP's

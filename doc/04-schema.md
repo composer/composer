@@ -516,6 +516,27 @@ Example:
         }
     }
 
+### autoload-dev <span>(root-only)</span>
+
+This section allows to define autoload rules for development purpose.
+
+If you're generating classmaps from your PSR-0 namespaces, you're probably concerned
+about performance, if so, you'll also don't want your test classes to be mixed up
+with your regular classes in those classmaps.
+
+Therefore, it is a good idea to rely on a dedicated path for your unit tests.
+
+Example:
+
+    {
+        "autoload": {
+            "psr-0": { "MyLibrary": "src/" }
+        },
+        "autoload-dev": {
+            "psr-0": { "MyLibrary\\Tests": "tests/" }
+        }
+    }
+
 ### include-path
 
 > **DEPRECATED**: This is only present to support legacy projects, and all new code
