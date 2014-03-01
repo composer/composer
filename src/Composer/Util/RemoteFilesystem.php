@@ -32,7 +32,7 @@ class RemoteFilesystem
     private $retry;
     private $progress;
     private $lastProgress;
-    private $options;
+    private $options = array();
     private $disableTls = false;
     private $retryTls = true;
     private $retryAuthFailure;
@@ -105,6 +105,11 @@ class RemoteFilesystem
     public function getOptions()
     {
         return $this->options;
+    }
+
+    public function isTlsDisabled()
+    {
+        return $this->disableTls === true;
     }
 
     /**

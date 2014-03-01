@@ -142,6 +142,7 @@ class Config
             case 'cache-files-dir':
             case 'cache-repo-dir':
             case 'cache-vcs-dir':
+            case 'cafile':
                 // convert foo-bar to COMPOSER_FOO_BAR and check if it exists since it overrides the local config
                 $env = 'COMPOSER_' . strtoupper(strtr($key, '-', '_'));
 
@@ -214,7 +215,7 @@ class Config
                 return $this->config[$key];
                 
             case 'disable-tls':
-                return $this->config[$key]!== 'false' && (bool) $this->config[$key];
+                return $this->config[$key] !== 'false' && (bool) $this->config[$key];
 
             default:
                 if (!isset($this->config[$key])) {

@@ -467,4 +467,37 @@ class Factory
 
         return $factory->createComposer($io, $config, $disablePlugins, $input);
     }
+
+    public static function createRemoteFilesystem(IOInterface $io, Config $config, $options = array())
+    {
+        $disableTls = false;
+        if($config->get('disable-tls') === true || $io->getInputOption('disable-tls')) {
+            $io->write('<warning>You are running Composer with SSL/TLS protection disabled.</warning>');
+            $disableTls = true;
+        } elseif (!extension_loaded('openssl')) {
+            throw new \RuntimeException('The openssl extension is required for SSL/TLS protection but is not available. '
+                . 'You can disable this error, at your own risk, by passing the \'--disable-tls\' option to this command.');
+        }
+        $remoteFilesystemOptions = array();
+        if ($disableTls === false) {
+            if (!empty($config->get('cafile'))) {
+                $remoteFilesystemOptions = array('ssl'=>array('cafile'=>$config->get('cafile')));
+            }
+            if (!empty($io->getInputOption('cafile'))) {
+                $remoteFilesystemOptions = array('ssl'=>array('cafile'=>$io->getInputOption('cafile')));
+            }
+            $remoteFilesystemOptions = array_merge_recursive($remoteFilesystemOptions, $options);
+        }
+        try {
+            $remoteFilesystem = new RemoteFilesystem($io, $remoteFilesystemOptions, $disableTls);
+        } catch (TransportException $e) {
+            if (preg_match('|cafile|', $e->getMessage())) {
+                $io->write('<error>Unable to locate a valid CA certificate file. You must set a valid \'cafile\' option.</error>');
+                $io->write('<error>A valid CA certificate file is required for SSL/TLS protection.</error>');
+                $io->write('<error>You can disable this error, at your own risk, by passing the \'--disable-tls\' option to this command.</error>');
+            }
+            throw $e;
+        }
+        return $remoteFilesystem;
+    }
 }

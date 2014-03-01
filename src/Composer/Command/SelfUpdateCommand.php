@@ -61,40 +61,12 @@ EOT
     {
         $config = Factory::createConfig();
 
-        $disableTls = false;
         if($config->get('disable-tls') === true || $input->getOption('disable-tls')) {
-            $output->writeln('<warning>You are running Composer with SSL/TLS protection disabled.</warning>');
             $baseUrl = 'http://' . self::HOMEPAGE;
-            $disableTls = true;
-        } elseif (!extension_loaded('openssl')) {
-            $output->writeln('<error>The openssl extension is required for SSL/TLS protection but is not available.</error>');
-            $output->writeln('<error>You can disable this error, at your own risk, by enabling the \'disable-tls\' option.</error>');
-            return 1;
         } else {
             $baseUrl = 'https://' . self::HOMEPAGE;
         }
-
-        $remoteFilesystemOptions = array();
-        if ($disableTls === false) {
-            if (!is_null($config->get('cafile'))) {
-                $remoteFilesystemOptions = array('ssl'=>array('cafile'=>$config->get('cafile')));
-            }
-            if (!is_null($input->getOption('cafile'))) {
-                $remoteFilesystemOptions = array('ssl'=>array('cafile'=>$input->getOption('cafile')));
-            }
-        }
-        try {
-            $remoteFilesystem = new RemoteFilesystem($this->getIO(), $remoteFilesystemOptions, $disableTls);
-        } catch (TransportException $e) {
-            if (preg_match('|cafile|', $e->getMessage())) {
-                $output->writeln('<error>' . $e->getMessage() . '</error>');
-                $output->writeln('<error>Unable to locate a valid CA certificate file. You must set a valid \'cafile\' option.</error>');
-                $output->writeln('<error>You can alternatively disable this error, at your own risk, by enabling the \'disable-tls\' option.</error>');
-                return 1;
-            } else {
-                throw $e;
-            }
-        }
+        $remoteFilesystem = Factory::createRemoteFilesystem($this->getIO(), $config);
 
         $cacheDir = $config->get('cache-dir');
         $rollbackDir = $config->get('home');
