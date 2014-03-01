@@ -170,7 +170,7 @@ class AutoloadGeneratorTest extends TestCase
         // Assert that autoload_classmap.php was correctly generated.
         $this->assertAutoloadFiles('classmap', $this->vendorDir.'/composer', 'classmap');
     }
-    
+
     public function testMainPackageDevAutoloading()
     {
         $package = new Package('a', '1.0', '1.0');
@@ -181,6 +181,9 @@ class AutoloadGeneratorTest extends TestCase
         ));
         $package->setDevAutoload(array(
             'files' => array('devfiles/foo.php'),
+            'psr-0' => array(
+                'Main' => 'tests/'
+            ),
         ));
 
         $this->repository->expects($this->once())
@@ -197,11 +200,11 @@ class AutoloadGeneratorTest extends TestCase
         // generate autoload files with the dev mode set to true
         $this->generator->setDevMode(true);
         $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', true, '_1');
-        
+
         // check standard autoload
-        $this->assertAutoloadFiles('main4', $this->vendorDir.'/composer');
+        $this->assertAutoloadFiles('main5', $this->vendorDir.'/composer');
         $this->assertAutoloadFiles('classmap7', $this->vendorDir.'/composer', 'classmap');
-        
+
         // make sure dev autoload is correctly dumped
         $this->assertAutoloadFiles('files2', $this->vendorDir.'/composer', 'files');
     }
@@ -238,7 +241,7 @@ class AutoloadGeneratorTest extends TestCase
         // make sure dev autoload is disabled when dev mode is set to false
         $this->assertFalse(is_file($this->vendorDir.'/composer/autoload_files.php'));
     }
-    
+
     public function testVendorDirSameAsWorkingDir()
     {
         $this->vendorDir = $this->workingDir;

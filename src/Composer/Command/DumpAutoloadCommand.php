@@ -31,7 +31,7 @@ class DumpAutoloadCommand extends Command
             ->setDescription('Dumps the autoloader')
             ->setDefinition(array(
                 new InputOption('optimize', 'o', InputOption::VALUE_NONE, 'Optimizes PSR0 packages to be loaded with classmaps too, good for production.'),
-                new InputOption('dev', null, InputOption::VALUE_NONE, 'Enables dev autoload.'),
+                new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables autoload-dev rules.'),
             ))
             ->setHelp(<<<EOT
 <info>php composer.phar dump-autoload</info>
@@ -61,7 +61,7 @@ EOT
         }
 
         $generator = $composer->getAutoloadGenerator();
-        $generator->setDevMode($input->getOption('dev'));
+        $generator->setDevMode(!$input->getOption('no-dev'));
         $generator->dump($config, $localRepo, $package, $installationManager, 'composer', $optimize);
     }
 }
