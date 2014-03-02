@@ -122,6 +122,19 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
         $branch = trim($output);
 
+        // If HEAD gets returned, it means we're not on a branch, so we can't
+        // compare our branch to composer/BRANCH, so can't detect unpushed.
+        if ($branch == 'HEAD') {
+            return;
+        }
+
+        // Check that composer remote has a mirror of this branch, otherwise
+        // we can't detect unpushed. Just return if this is the case.
+        $command = sprintf('git rev-parse composer/%s', $branch);
+        if (0 !== $this->process->execute($command, $output, $path)) {
+            return;
+        }
+
         $command = sprintf('git diff --name-status %s..composer/%s', $branch, $branch);
         if (0 !== $this->process->execute($command, $output, $path)) {
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
