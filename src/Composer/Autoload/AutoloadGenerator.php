@@ -32,14 +32,21 @@ class AutoloadGenerator
      */
     private $eventDispatcher;
 
+    private $devMode = false;
+
     public function __construct(EventDispatcher $eventDispatcher)
     {
         $this->eventDispatcher = $eventDispatcher;
     }
 
+    public function setDevMode($devMode = true)
+    {
+        $this->devMode = (boolean) $devMode;
+    }
+
     public function dump(Config $config, InstalledRepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir, $scanPsr0Packages = false, $suffix = '')
     {
-        $this->eventDispatcher->dispatchScript(ScriptEvents::PRE_AUTOLOAD_DUMP);
+        $this->eventDispatcher->dispatchScript(ScriptEvents::PRE_AUTOLOAD_DUMP, $this->devMode);
 
         $filesystem = new Filesystem();
         $filesystem->ensureDirectoryExists($config->get('vendor-dir'));
@@ -183,7 +190,6 @@ EOF;
             }
         }
 
-        $autoloads['classmap'] = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($autoloads['classmap']));
         foreach ($autoloads['classmap'] as $dir) {
             foreach (ClassMapGenerator::createMap($dir) as $class => $path) {
                 $path = $this->getPathCode($filesystem, $basePath, $vendorPath, $path);
@@ -222,7 +228,7 @@ EOF;
         fclose($targetLoader);
         unset($sourceLoader, $targetLoader);
 
-        $this->eventDispatcher->dispatchScript(ScriptEvents::POST_AUTOLOAD_DUMP);
+        $this->eventDispatcher->dispatchScript(ScriptEvents::POST_AUTOLOAD_DUMP, $this->devMode);
     }
 
     public function buildPackageMap(InstallationManager $installationManager, PackageInterface $mainPackage, array $packages)
@@ -360,7 +366,6 @@ EOF;
     protected function getIncludeFilesFile(array $files, Filesystem $filesystem, $basePath, $vendorPath, $vendorPathCode, $appBaseDirCode)
     {
         $filesCode = '';
-        $files = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($files));
         foreach ($files as $functionFile) {
             $filesCode .= '    '.$this->getPathCode($filesystem, $basePath, $vendorPath, $functionFile).",\n";
         }
@@ -569,6 +574,9 @@ FOOTER;
             list($package, $installPath) = $item;
 
             $autoload = $package->getAutoload();
+            if ($this->devMode && $package === $mainPackage) {
+                $autoload = array_merge_recursive($autoload, $package->getDevAutoload());
+            }
 
             // skip misconfigured packages
             if (!isset($autoload[$type]) || !is_array($autoload[$type])) {
@@ -580,33 +588,25 @@ FOOTER;
 
             foreach ($autoload[$type] as $namespace => $paths) {
                 foreach ((array) $paths as $path) {
-                    // remove target-dir from file paths of the root package
-                    if ($type === 'files' && $package === $mainPackage && $package->getTargetDir() && !is_readable($installPath.'/'.$path)) {
-                        $targetDir = str_replace('\\<dirsep\\>', '[\\\\/]', preg_quote(str_replace(array('/', '\\'), '<dirsep>', $package->getTargetDir())));
-                        $path = ltrim(preg_replace('{^'.$targetDir.'}', '', ltrim($path, '\\/')), '\\/');
+                    if (($type === 'files' || $type === 'classmap') && $package->getTargetDir() && !is_readable($installPath.'/'.$path)) {
+                        // remove target-dir from file paths of the root package
+                        if ($package === $mainPackage) {
+                            $targetDir = str_replace('\\<dirsep\\>', '[\\\\/]', preg_quote(str_replace(array('/', '\\'), '<dirsep>', $package->getTargetDir())));
+                            $path = ltrim(preg_replace('{^'.$targetDir.'}', '', ltrim($path, '\\/')), '\\/');
+                        } else {
+                            // add target-dir from file paths that don't have it
+                            $path = $package->getTargetDir() . '/' . $path;
+                        }
                     }
 
-                    // add target-dir from file paths that don't have it
-                    if ($type === 'files' && $package !== $mainPackage && $package->getTargetDir() && !is_readable($installPath.'/'.$path)) {
-                        $path = $package->getTargetDir() . '/' . $path;
+                    $relativePath = empty($installPath) ? (empty($path) ? '.' : $path) : $installPath.'/'.$path;
+
+                    if ($type === 'files' || $type === 'classmap') {
+                        $autoloads[] = $relativePath;
+                        continue;
                     }
 
-                    // remove target-dir from classmap entries of the root package
-                    if ($type === 'classmap' && $package === $mainPackage && $package->getTargetDir() && !is_readable($installPath.'/'.$path)) {
-                        $targetDir = str_replace('\\<dirsep\\>', '[\\\\/]', preg_quote(str_replace(array('/', '\\'), '<dirsep>', $package->getTargetDir())));
-                        $path = ltrim(preg_replace('{^'.$targetDir.'}', '', ltrim($path, '\\/')), '\\/');
-                    }
-
-                    // add target-dir to classmap entries that don't have it
-                    if ($type === 'classmap' && $package !== $mainPackage && $package->getTargetDir() && !is_readable($installPath.'/'.$path)) {
-                        $path = $package->getTargetDir() . '/' . $path;
-                    }
-
-                    if (empty($installPath)) {
-                        $autoloads[$namespace][] = empty($path) ? '.' : $path;
-                    } else {
-                        $autoloads[$namespace][] = $installPath.'/'.$path;
-                    }
+                    $autoloads[$namespace][] = $relativePath;
                 }
             }
         }
