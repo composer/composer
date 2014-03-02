@@ -69,6 +69,12 @@ class Svn
         $this->process = $process ?: new ProcessExecutor;
     }
 
+    public static function cleanEnv()
+    {
+        // clean up env for OSX, see https://github.com/composer/composer/issues/2146#issuecomment-35478940
+        putenv("DYLD_LIBRARY_PATH");
+    }
+
     /**
      * Execute an SVN command and try to fix up the process with credentials
      * if necessary.
@@ -112,7 +118,8 @@ class Svn
         // the error is not auth-related
         if (false === stripos($output, 'Could not authenticate to server:')
             && false === stripos($output, 'authorization failed')
-            && false === stripos($output, 'svn: E170001:')) {
+            && false === stripos($output, 'svn: E170001:')
+            && false === stripos($output, 'svn: E215004:')) {
             throw new \RuntimeException($output);
         }
 

@@ -26,8 +26,9 @@ class SvnDownloader extends VcsDownloader
      */
     public function doDownload(PackageInterface $package, $path)
     {
-        $url =  $package->getSourceUrl();
-        $ref =  $package->getSourceReference();
+        SvnUtil::cleanEnv();
+        $url = $package->getSourceUrl();
+        $ref = $package->getSourceReference();
 
         $this->io->write("    Checking out ".$package->getSourceReference());
         $this->execute($url, "svn co", sprintf("%s/%s", $url, $ref), null, $path);
@@ -38,6 +39,7 @@ class SvnDownloader extends VcsDownloader
      */
     public function doUpdate(PackageInterface $initial, PackageInterface $target, $path)
     {
+        SvnUtil::cleanEnv();
         $url = $target->getSourceUrl();
         $ref = $target->getSourceReference();
 
@@ -144,14 +146,20 @@ class SvnDownloader extends VcsDownloader
      */
     protected function getCommitLogs($fromReference, $toReference, $path)
     {
-        // strip paths from references and only keep the actual revision
-        $fromRevision = preg_replace('{.*@(\d+)$}', '$1', $fromReference);
-        $toRevision = preg_replace('{.*@(\d+)$}', '$1', $toReference);
+        if (preg_match('{.*@(\d+)$}', $fromReference) && preg_match('{.*@(\d+)$}', $toReference) ) {
+            // strip paths from references and only keep the actual revision
+            $fromRevision = preg_replace('{.*@(\d+)$}', '$1', $fromReference);
+            $toRevision = preg_replace('{.*@(\d+)$}', '$1', $toReference);
 
-        $command = sprintf('svn log -r%s:%s --incremental', $fromRevision, $toRevision);
+            $command = sprintf('svn log -r%s:%s --incremental', $fromRevision, $toRevision);
 
-        if (0 !== $this->process->execute($command, $output, $path)) {
-            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+            if (0 !== $this->process->execute($command, $output, $path)) {
+                throw new \RuntimeException(
+                    'Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput()
+                );
+            }
+        } else {
+            $output = "Could not retrieve changes between $fromReference and $toReference due to missing revision information";
         }
 
         return $output;

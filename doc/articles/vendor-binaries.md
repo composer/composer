@@ -58,7 +58,7 @@ Say project `my-vendor/project-b` has requirements setup like this:
 
     {
         "name": "my-vendor/project-b",
-        "requires": {
+        "require": {
             "my-vendor/project-a": "*"
         }
     }

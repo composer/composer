@@ -22,6 +22,9 @@ use Composer\Cache;
 use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Util\RemoteFilesystem;
+use Composer\Plugin\PluginEvents;
+use Composer\Plugin\PreFileDownloadEvent;
+use Composer\EventDispatcher\EventDispatcher;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -45,12 +48,13 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
     protected $loader;
     protected $rootAliases;
     protected $allowSslDowngrade = false;
+    protected $eventDispatcher;
     private $rawData;
     private $minimalPackages;
     private $degradedMode = false;
     private $rootData;
 
-    public function __construct(array $repoConfig, IOInterface $io, Config $config)
+    public function __construct(array $repoConfig, IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null)
     {
         if (!preg_match('{^[\w.]+\??://}', $repoConfig['url'])) {
             // assume http as the default protocol
@@ -63,7 +67,7 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
         }
 
         $urlBits = parse_url($repoConfig['url']);
-        if (empty($urlBits['scheme']) || empty($urlBits['host'])) {
+        if ($urlBits === false || empty($urlBits['scheme'])) {
             throw new \UnexpectedValueException('Invalid url given for Composer repository: '.$repoConfig['url']);
         }
 
@@ -82,6 +86,7 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
         $this->cache = new Cache($io, $config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $this->url), 'a-z0-9.$');
         $this->loader = new ArrayLoader();
         $this->rfs = new RemoteFilesystem($this->io, $this->options);
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     public function setRootAliases(array $rootAliases)
@@ -538,7 +543,11 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
         $retries = 3;
         while ($retries--) {
             try {
-                $json = $this->rfs->getContents($filename, $filename, false);
+                $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->rfs, $filename);
+                if ($this->eventDispatcher) {
+                    $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
+                }
+                $json = $preFileDownloadEvent->getRemoteFilesystem()->getContents($filename, $filename, false);
                 if ($sha256 && $sha256 !== hash('sha256', $json)) {
                     if ($retries) {
                         usleep(100000);

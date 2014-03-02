@@ -18,6 +18,7 @@ use Composer\Package\Version\VersionParser;
 use Composer\Package\Link;
 use Composer\Package\LinkConstraint\LinkConstraintInterface;
 use Composer\Package\LinkConstraint\VersionConstraint;
+use Composer\Package\LinkConstraint\EmptyConstraint;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\ComposerRepository;
@@ -38,6 +39,7 @@ class Pool
     const MATCH = 1;
     const MATCH_PROVIDE = 2;
     const MATCH_REPLACE = 3;
+    const MATCH_FILTERED = 4;
 
     protected $repositories = array();
     protected $providerRepos = array();
@@ -47,9 +49,11 @@ class Pool
     protected $stabilityFlags;
     protected $versionParser;
     protected $providerCache = array();
+    protected $filterRequires;
+    protected $whitelist = null;
     protected $id = 1;
 
-    public function __construct($minimumStability = 'stable', array $stabilityFlags = array())
+    public function __construct($minimumStability = 'stable', array $stabilityFlags = array(), array $filterRequires = array())
     {
         $stabilities = BasePackage::$stabilities;
         $this->versionParser = new VersionParser;
@@ -60,6 +64,12 @@ class Pool
             }
         }
         $this->stabilityFlags = $stabilityFlags;
+        $this->filterRequires = $filterRequires;
+    }
+
+    public function setWhitelist($whitelist)
+    {
+        $this->whitelist = $whitelist;
     }
 
     /**
@@ -109,6 +119,7 @@ class Pool
 
                     if ($exempt || $this->isPackageAcceptable($names, $stability)) {
                         $package['id'] = $this->id++;
+                        $package['stability'] = $stability;
                         $this->packages[] = $package;
 
                         foreach ($names as $provided) {
@@ -218,21 +229,24 @@ class Pool
      * @param string                  $name       The package name to be searched for
      * @param LinkConstraintInterface $constraint A constraint that all returned
      *                                            packages must match or null to return all
+     * @param bool                    $mustMatchName Whether the name of returned packages
+     *                                            must match the given name
      * @return array A set of packages
      */
-    public function whatProvides($name, LinkConstraintInterface $constraint = null)
+    public function whatProvides($name, LinkConstraintInterface $constraint = null, $mustMatchName = false)
     {
-        if (isset($this->providerCache[$name][(string) $constraint])) {
-            return $this->providerCache[$name][(string) $constraint];
+        $key = ((int) $mustMatchName).$constraint;
+        if (isset($this->providerCache[$name][$key])) {
+            return $this->providerCache[$name][$key];
         }
 
-        return $this->providerCache[$name][(string) $constraint] = $this->computeWhatProvides($name, $constraint);
+        return $this->providerCache[$name][$key] = $this->computeWhatProvides($name, $constraint, $mustMatchName);
     }
 
     /**
      * @see whatProvides
      */
-    private function computeWhatProvides($name, $constraint)
+    private function computeWhatProvides($name, $constraint, $mustMatchName = false)
     {
         $candidates = array();
 
@@ -254,6 +268,12 @@ class Pool
         $nameMatch = false;
 
         foreach ($candidates as $candidate) {
+            if ($this->whitelist !== null && (
+                (is_array($candidate) && isset($candidate['id']) && !isset($this->whitelist[$candidate['id']])) ||
+                (is_object($candidate) && !isset($this->whitelist[$candidate->getId()]))
+            )) {
+                continue;
+            }
             switch ($this->match($candidate, $name, $constraint)) {
                 case self::MATCH_NONE:
                     break;
@@ -275,9 +295,18 @@ class Pool
                     $matches[] = $this->ensurePackageIsLoaded($candidate);
                     break;
 
+                case self::MATCH_FILTERED:
+                    break;
+
                 default:
                     throw new \UnexpectedValueException('Unexpected match type');
             }
+        }
+
+        if ($mustMatchName) {
+            return array_filter($matches, function ($match) use ($name) {
+                return $match->getName() == $name;
+            });
         }
 
         // if a package with the required name exists, we ignore providers
@@ -367,18 +396,30 @@ class Pool
         if (is_array($candidate)) {
             $candidateName = $candidate['name'];
             $candidateVersion = $candidate['version'];
+            $isDev = $candidate['stability'] === 'dev';
+            $isAlias = isset($candidate['alias_of']);
         } else {
             // handle object packages
             $candidateName = $candidate->getName();
             $candidateVersion = $candidate->getVersion();
+            $isDev = $candidate->getStability() === 'dev';
+            $isAlias = $candidate instanceof AliasPackage;
+        }
+
+        if (!$isDev && !$isAlias && isset($this->filterRequires[$name])) {
+            $requireFilter = $this->filterRequires[$name];
+        } else {
+            $requireFilter = new EmptyConstraint;
         }
 
         if ($candidateName === $name) {
-            if ($constraint === null) {
-                return self::MATCH;
+            $pkgConstraint = new VersionConstraint('==', $candidateVersion);
+
+            if ($constraint === null || $constraint->matches($pkgConstraint)) {
+                return $requireFilter->matches($pkgConstraint) ? self::MATCH : self::MATCH_FILTERED;
             }
 
-            return $constraint->matches(new VersionConstraint('==', $candidateVersion)) ? self::MATCH : self::MATCH_NAME;
+            return self::MATCH_NAME;
         }
 
         if (is_array($candidate)) {
@@ -393,17 +434,17 @@ class Pool
             $replaces = $candidate->getReplaces();
         }
 
-        // aliases create multiple replaces/provides for one target so they can not use the shortcut
+        // aliases create multiple replaces/provides for one target so they can not use the shortcut below
         if (isset($replaces[0]) || isset($provides[0])) {
             foreach ($provides as $link) {
                 if ($link->getTarget() === $name && ($constraint === null || $constraint->matches($link->getConstraint()))) {
-                    return self::MATCH_PROVIDE;
+                    return $requireFilter->matches($link->getConstraint()) ? self::MATCH_PROVIDE : self::MATCH_FILTERED;
                 }
             }
 
             foreach ($replaces as $link) {
                 if ($link->getTarget() === $name && ($constraint === null || $constraint->matches($link->getConstraint()))) {
-                    return self::MATCH_REPLACE;
+                    return $requireFilter->matches($link->getConstraint()) ? self::MATCH_REPLACE : self::MATCH_FILTERED;
                 }
             }
 
@@ -411,11 +452,11 @@ class Pool
         }
 
         if (isset($provides[$name]) && ($constraint === null || $constraint->matches($provides[$name]->getConstraint()))) {
-            return self::MATCH_PROVIDE;
+            return $requireFilter->matches($provides[$name]->getConstraint()) ? self::MATCH_PROVIDE : self::MATCH_FILTERED;
         }
 
         if (isset($replaces[$name]) && ($constraint === null || $constraint->matches($replaces[$name]->getConstraint()))) {
-            return self::MATCH_REPLACE;
+            return $requireFilter->matches($replaces[$name]->getConstraint()) ? self::MATCH_REPLACE : self::MATCH_FILTERED;
         }
 
         return self::MATCH_NONE;

@@ -33,7 +33,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
         $ref = $package->getSourceReference();
         $flag = defined('PHP_WINDOWS_VERSION_MAJOR') ? '/D ' : '';
-        $command = 'git clone %s %s && cd '.$flag.'%2$s && git remote add composer %1$s && git fetch composer';
+        $command = 'git clone --no-checkout %s %s && cd '.$flag.'%2$s && git remote add composer %1$s && git fetch composer';
         $this->io->write("    Cloning ".$ref);
 
         $commandCallable = function($url) use ($ref, $path, $command) {
@@ -43,7 +43,12 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         $this->runCommand($commandCallable, $package->getSourceUrl(), $path, true);
         $this->setPushUrl($package, $path);
 
-        $this->updateToCommit($path, $ref, $package->getPrettyVersion(), $package->getReleaseDate());
+        if ($newRef = $this->updateToCommit($path, $ref, $package->getPrettyVersion(), $package->getReleaseDate())) {
+            if ($package->getDistReference() === $package->getSourceReference()) {
+                $package->setDistReference($newRef);
+            }
+            $package->setSourceReference($newRef);
+        }
     }
 
     /**
@@ -72,7 +77,12 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         };
 
         $this->runCommand($commandCallable, $target->getSourceUrl(), $path);
-        $this->updateToCommit($path, $ref, $target->getPrettyVersion(), $target->getReleaseDate());
+        if ($newRef =  $this->updateToCommit($path, $ref, $target->getPrettyVersion(), $target->getReleaseDate())) {
+            if ($target->getDistReference() === $target->getSourceReference()) {
+                $target->setDistReference($newRef);
+            }
+            $target->setSourceReference($newRef);
+        }
     }
 
     /**
@@ -216,6 +226,15 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         }
     }
 
+    /**
+     * Updates the given path to the given commit ref
+     *
+     * @param string $path
+     * @param string $reference
+     * @param string $branch
+     * @param DateTime $date
+     * @return null|string if a string is returned, it is the commit reference that was checked out if the original could not be found
+     */
     protected function updateToCommit($path, $reference, $branch, $date)
     {
         $template = 'git checkout %s && git reset --hard %1$s';
@@ -230,7 +249,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         $gitRef = $reference;
         if (!preg_match('{^[a-f0-9]{40}$}', $reference)
             && $branches
-            && preg_match('{^\s+composer/'.preg_quote($reference).'$}m', $output)
+            && preg_match('{^\s+composer/'.preg_quote($reference).'$}m', $branches)
         ) {
             $command = sprintf('git checkout -B %s %s && git reset --hard %2$s', escapeshellarg($branch), escapeshellarg('composer/'.$reference));
             if (0 === $this->process->execute($command, $output, $path)) {
@@ -293,11 +312,11 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             }
 
             // checkout the new recovered ref
-            $command = sprintf($template, escapeshellarg($reference));
+            $command = sprintf($template, escapeshellarg($newReference));
             if (0 === $this->process->execute($command, $output, $path)) {
                 $this->io->write('    '.$reference.' is gone (history was rewritten?), recovered by checking out '.$newReference);
 
-                return;
+                return $newReference;
             }
         }
 
@@ -326,14 +345,19 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         }
 
         // public github, autoswitch protocols
-        if (preg_match('{^(?:https?|git)(://github.com/.*)}', $url, $match)) {
+        if (preg_match('{^(?:https?|git)://'.$this->getGitHubDomainsRegex().'/(.*)}', $url, $match)) {
             $protocols = $this->config->get('github-protocols');
             if (!is_array($protocols)) {
                 throw new \RuntimeException('Config value "github-protocols" must be an array, got '.gettype($protocols));
             }
             $messages = array();
             foreach ($protocols as $protocol) {
-                $url = $protocol . $match[1];
+                if ('ssh' === $protocol) {
+                    $url = "git@" . $match[1] . ":" . $match[2];
+                } else {
+                    $url = $protocol ."://" . $match[1] . "/" . $match[2];
+                }
+
                 if (0 === $this->process->execute(call_user_func($commandCallable, $url), $ignoredOutput, $cwd)) {
                     return;
                 }
@@ -350,7 +374,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         $command = call_user_func($commandCallable, $url);
         if (0 !== $this->process->execute($command, $ignoredOutput, $cwd)) {
             // private github repository without git access, try https with auth
-            if (preg_match('{^git@(github.com):(.+?)\.git$}i', $url, $match)) {
+            if (preg_match('{^git@'.$this->getGitHubDomainsRegex().':(.+?)\.git$}i', $url, $match)) {
                 if (!$this->io->hasAuthentication($match[1])) {
                     $gitHubUtil = new GitHub($this->io, $this->config, $this->process);
                     $message = 'Cloning failed using an ssh key for authentication, enter your GitHub credentials to access private repos';
@@ -374,6 +398,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
                 preg_match('{(https?://)([^/]+)(.*)$}i', $url, $match) &&
                 strpos($this->process->getErrorOutput(), 'fatal: Authentication failed') !== false
             ) {
+                // TODO this should use an auth manager class that prompts and stores in the config
                 if ($this->io->hasAuthentication($match[2])) {
                     $auth = $this->io->getAuthentication($match[2]);
                 } else {
@@ -401,6 +426,11 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         }
     }
 
+    protected function getGitHubDomainsRegex()
+    {
+        return '('.implode('|', array_map('preg_quote', $this->config->get('github-domains'))).')';
+    }
+
     protected function throwException($message, $url)
     {
         if (0 !== $this->process->execute('git --version', $ignoredOutput)) {
@@ -412,17 +442,17 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
     protected function sanitizeUrl($message)
     {
-        return preg_replace('{://(.+?):.+?@}', '://$1:***@', $message);
+        return preg_replace('{://([^@]+?):.+?@}', '://$1:***@', $message);
     }
 
     protected function setPushUrl(PackageInterface $package, $path)
     {
         // set push url for github projects
-        if (preg_match('{^(?:https?|git)://github.com/([^/]+)/([^/]+?)(?:\.git)?$}', $package->getSourceUrl(), $match)) {
+        if (preg_match('{^(?:https?|git)://'.$this->getGitHubDomainsRegex().'/([^/]+)/([^/]+?)(?:\.git)?$}', $package->getSourceUrl(), $match)) {
             $protocols = $this->config->get('github-protocols');
-            $pushUrl = 'git@github.com:'.$match[1].'/'.$match[2].'.git';
+            $pushUrl = 'git@'.$match[1].':'.$match[2].'/'.$match[3].'.git';
             if ($protocols[0] !== 'git') {
-                $pushUrl = 'https://github.com/'.$match[1].'/'.$match[2].'.git';
+                $pushUrl = 'https://' . $match[1] . '/'.$match[2].'/'.$match[3].'.git';
             }
             $cmd = sprintf('git remote set-url --push origin %s', escapeshellarg($pushUrl));
             $this->process->execute($cmd, $ignoredOutput, $path);

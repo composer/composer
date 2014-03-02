@@ -7,7 +7,7 @@
 ## Why aliases?
 
 When you are using a VCS repository, you will only get comparable versions for
-branches that look like versions, such as `2.0`. For your `master` branch, you
+branches that look like versions, such as `2.0` or `2.0.x`. For your `master` branch, you
 will get a `dev-master` version. For your `bugfix` branch, you will get a
 `dev-bugfix` version.
 
@@ -65,7 +65,7 @@ local project.
 
 You are using `symfony/monolog-bundle` which requires `monolog/monolog` version
 `1.*`. So you need your `dev-bugfix` to match that constraint.
-
+
 Just add this to your project's root `composer.json`:
 
     {

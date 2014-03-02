@@ -198,6 +198,18 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
         $this->assertJsonFormat('"\\u018c"', $data, 0);
     }
 
+    public function testDoubleEscapedUnicode()
+    {
+        $jsonFile = new JsonFile('composer.json');
+        $data = array("Zdjęcia","hjkjhl\\u0119kkjk");
+        $encodedData = $jsonFile->encode($data);
+        $doubleEncodedData = $jsonFile->encode(array('t' => $encodedData));
+
+        $decodedData = json_decode($doubleEncodedData, true);
+        $doubleData = json_decode($decodedData['t'], true);
+        $this->assertEquals($data, $doubleData);
+    }
+
     private function expectParseException($text, $json)
     {
         try {

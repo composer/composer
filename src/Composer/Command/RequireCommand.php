@@ -42,6 +42,7 @@ class RequireCommand extends InitCommand
                 new InputOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist even for dev versions.'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
                 new InputOption('no-update', null, InputOption::VALUE_NONE, 'Disables the automatic update of the dependencies.'),
+                new InputOption('update-with-dependencies', null, InputOption::VALUE_NONE, 'Allows inherited dependencies to be updated with explicit dependencies.'),
             ))
             ->setHelp(<<<EOT
 The require command adds required packages to your composer.json and installs them
@@ -120,17 +121,17 @@ EOT
             ->setPreferDist($input->getOption('prefer-dist'))
             ->setDevMode(true)
             ->setUpdate(true)
-            ->setUpdateWhitelist(array_keys($requirements));
+            ->setUpdateWhitelist(array_keys($requirements))
+            ->setWhitelistDependencies($input->getOption('update-with-dependencies'));
         ;
 
-        if (!$install->run()) {
+        $status = $install->run();
+        if ($status !== 0) {
             $output->writeln("\n".'<error>Installation failed, reverting '.$file.' to its original content.</error>');
             file_put_contents($json->getPath(), $composerBackup);
-
-            return 1;
         }
 
-        return 0;
+        return $status;
     }
 
     private function updateFileCleanly($json, array $base, array $new, $requireKey)

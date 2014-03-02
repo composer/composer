@@ -81,9 +81,14 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
         $remoteFilesystem->expects($this->at(1))
             ->method('getContents')
             ->with($this->equalTo('github.com'), $this->equalTo('https://api.github.com/authorizations'), $this->equalTo(false))
-            ->will($this->returnValue('{"token": "abcdef"}'));
+            ->will($this->returnValue('[]'));
 
         $remoteFilesystem->expects($this->at(2))
+            ->method('getContents')
+            ->with($this->equalTo('github.com'), $this->equalTo('https://api.github.com/authorizations'), $this->equalTo(false))
+            ->will($this->returnValue('{"token": "abcdef"}'));
+
+        $remoteFilesystem->expects($this->at(3))
             ->method('getContents')
             ->with($this->equalTo('github.com'), $this->equalTo($repoApiUrl), $this->equalTo(false))
             ->will($this->returnValue('{"master_branch": "test_master", "private": true}'));
@@ -283,18 +288,15 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals('test_master', $gitHubDriver->getRootIdentifier());
 
-        // Dist is not available for GitDriver
-        $dist = $gitHubDriver->getDist($identifier);
-        $this->assertNull($dist);
+        $dist = $gitHubDriver->getDist($sha);
+        $this->assertEquals('zip', $dist['type']);
+        $this->assertEquals('https://api.github.com/repos/composer/packagist/zipball/SOMESHA', $dist['url']);
+        $this->assertEquals($sha, $dist['reference']);
 
         $source = $gitHubDriver->getSource($identifier);
         $this->assertEquals('git', $source['type']);
         $this->assertEquals($repoSshUrl, $source['url']);
         $this->assertEquals($identifier, $source['reference']);
-
-        // Dist is not available for GitDriver
-        $dist = $gitHubDriver->getDist($sha);
-        $this->assertNull($dist);
 
         $source = $gitHubDriver->getSource($sha);
         $this->assertEquals('git', $source['type']);

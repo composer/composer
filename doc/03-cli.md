@@ -85,7 +85,7 @@ resolution.
 * **--no-plugins:** Disables plugins.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
-* **--optimize-autoloader (-o):** Convert PSR-0 autoloading to classmap to get a faster
+* **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
   a bit of time to run so it is currently not done by default.
 
@@ -118,7 +118,7 @@ You can also use wildcards to update a bunch of packages at once:
 * **--no-plugins:** Disables plugins.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
-* **--optimize-autoloader (-o):** Convert PSR-0 autoloading to classmap to get a faster
+* **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
   a bit of time to run so it is currently not done by default.
 * **--lock:** Only updates the lock file hash to suppress warning about the
@@ -149,6 +149,8 @@ to the command.
 * **--no-update:** Disables the automatic update of the dependencies.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
+* **--update-with-dependencies** Also update dependencies of the newly
+  required packages.
 
 ## global
 
@@ -269,10 +271,19 @@ command. It will replace your `composer.phar` with the latest version.
 
     $ php composer.phar self-update
 
+If you would like to instead update to a specific release simply specify it:
+
+    $ composer self-update 1.0.0-alpha7
+
 If you have installed composer for your entire system (see [global installation](00-intro.md#globally)),
-you have to run the command with `root` privileges
+you may have to run the command with `root` privileges
 
     $ sudo composer self-update
+
+### Options
+
+* **--rollback (-r):** Rollback to the last version you had installed.
+* **--clean-backups:** Delete old backups during an update. This makes the current version of composer the only backup available after the update.
 
 ## config
 
@@ -332,7 +343,7 @@ provide a version as third argument, otherwise the latest version is used.
 
 If the directory does not currently exist, it will be created during installation.
 
-    php composer.phar create-project doctrine/orm path 2.2.0
+    php composer.phar create-project doctrine/orm path 2.2.*
 
 It is also possible to run the command without params in a directory with an
 existing `composer.json` file to bootstrap a project.
@@ -364,18 +375,19 @@ If you need to update the autoloader because of new classes in a classmap
 package for example, you can use "dump-autoload" to do that without having to
 go through an install or update.
 
-Additionally, it can dump an optimized autoloader that converts PSR-0 packages
+Additionally, it can dump an optimized autoloader that converts PSR-0/4 packages
 into classmap ones for performance reasons. In large applications with many
 classes, the autoloader can take up a substantial portion of every request's
 time. Using classmaps for everything is less convenient in development, but
-using this option you can still use PSR-0 for convenience and classmaps for
+using this option you can still use PSR-0/4 for convenience and classmaps for
 performance.
 
 ### Options
 
-* **--optimize (-o):** Convert PSR-0 autoloading to classmap to get a faster
+* **--optimize (-o):** Convert PSR-0/4 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
   a bit of time to run so it is currently not done by default.
+* **--no-dev:** Disables autoload-dev rules.
 
 ## licenses
 
@@ -394,6 +406,20 @@ want to run the `diagnose` command to perform automated checks for many common
 problems.
 
     $ php composer.phar diagnose
+
+## archive
+
+This command is used to generate a zip/tar archive for a given package in a
+given version. It can also be used to archive your entire project without
+excluded/ignored files.
+
+    $ php composer.phar archive vendor/package 2.0.21 --format=zip
+
+### Options
+
+* **--format (-f):** Format of the resulting archive: tar or zip (default:
+  "tar")
+* **--dir:** Write the archive to this directory (default: ".")
 
 ## help
 

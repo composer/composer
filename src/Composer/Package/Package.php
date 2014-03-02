@@ -47,6 +47,7 @@ class Package extends BasePackage
     protected $devRequires = array();
     protected $suggests = array();
     protected $autoload = array();
+    protected $devAutoload = array();
     protected $includePaths = array();
     protected $archiveExcludes = array();
 
@@ -441,6 +442,24 @@ class Package extends BasePackage
     }
 
     /**
+     * Set the dev autoload mapping
+     *
+     * @param array $autoload Mapping of dev autoloading rules
+     */
+    public function setDevAutoload(array $devAutoload)
+    {
+        $this->devAutoload = $devAutoload;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getDevAutoload()
+    {
+        return $this->devAutoload;
+    }
+
+    /**
      * Sets the list of paths added to PHP's include path.
      *
      * @param array $includePaths List of directories.
@@ -492,5 +511,21 @@ class Package extends BasePackage
     public function getArchiveExcludes()
     {
         return $this->archiveExcludes;
+    }
+
+    /**
+     * Replaces current version and pretty version with passed values.
+     * It also sets stability.
+     *
+     * @param string $version       The package's normalized version
+     * @param string $prettyVersion The package's non-normalized version
+     */
+    public function replaceVersion($version, $prettyVersion)
+    {
+        $this->version = $version;
+        $this->prettyVersion = $prettyVersion;
+
+        $this->stability = VersionParser::parseStability($version);
+        $this->dev = $this->stability === 'dev';
     }
 }

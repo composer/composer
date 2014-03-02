@@ -180,13 +180,27 @@ class ValidatingArrayLoader implements LoaderInterface
         }
 
         if ($this->validateArray('autoload') && !empty($this->config['autoload'])) {
-            $types = array('psr-0', 'classmap', 'files');
+            $types = array('psr-0', 'psr-4', 'classmap', 'files');
             foreach ($this->config['autoload'] as $type => $typeConfig) {
                 if (!in_array($type, $types)) {
                     $this->errors[] = 'autoload : invalid value ('.$type.'), must be one of '.implode(', ', $types);
                     unset($this->config['autoload'][$type]);
                 }
+                if ($type === 'psr-4') {
+                    foreach ($typeConfig as $namespace => $dirs) {
+                        if ($namespace !== '' && '\\' !== substr($namespace, -1)) {
+                            $this->errors[] = 'autoload.psr-4 : invalid value ('.$namespace.'), namespaces must end with a namespace separator, should be '.$namespace.'\\';
+                        }
+                    }
+                }
             }
+        }
+
+        if (!empty($this->config['autoload']['psr-4']) && !empty($this->config['target-dir'])) {
+            $this->errors[] = 'target-dir : this can not be used together with the autoload.psr-4 setting, remove target-dir to upgrade to psr-4';
+            // Unset the psr-4 setting, since unsetting target-dir might
+            // interfere with other settings.
+            unset($this->config['autoload']['psr-4']);
         }
 
         // TODO validate dist

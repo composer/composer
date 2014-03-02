@@ -24,7 +24,7 @@ class Config
         'use-include-path' => false,
         'preferred-install' => 'auto',
         'notify-on-install' => true,
-        'github-protocols' => array('git', 'https'),
+        'github-protocols' => array('git', 'https', 'ssh'),
         'vendor-dir' => 'vendor',
         'bin-dir' => '{$vendor-dir}/bin',
         'cache-dir' => '{$home}/cache',
@@ -35,7 +35,10 @@ class Config
         'cache-files-ttl' => null, // fallback to cache-ttl
         'cache-files-maxsize' => '300MiB',
         'discard-changes' => false,
+        'autoloader-suffix' => null,
+        'optimize-autoloader' => false,
         'prepend-autoloader' => true,
+        'github-domains' => array('github.com'),
     );
 
     public static $defaultRepositories = array(
@@ -203,7 +206,7 @@ class Config
 
             case 'github-protocols':
                 if (reset($this->config['github-protocols']) === 'http') {
-                    throw new \RuntimeException('The http protocol for github is not available anymore, update your config\'s github-protocols to use "https" or "git"');
+                    throw new \RuntimeException('The http protocol for github is not available anymore, update your config\'s github-protocols to use "https", "git" or "ssh"');
                 }
 
                 return $this->config[$key];
@@ -251,7 +254,7 @@ class Config
     /**
      * Replaces {$refs} inside a config string
      *
-     * @param string a config string that can contain {$refs-to-other-config}
+     * @param string $value a config string that can contain {$refs-to-other-config}
      * @return string
      */
     private function process($value)

@@ -189,6 +189,47 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
 }
 '
             ),
+            array(
+                '{
+    "require": {
+        "php": "5.*"
+    }
+}',
+                'require-dev',
+                'foo',
+                'qux',
+                '{
+    "require": {
+        "php": "5.*"
+    },
+    "require-dev": {
+        "foo": "qux"
+    }
+}
+'
+            ),
+            array(
+                '{
+    "require": {
+        "php": "5.*"
+    },
+    "require-dev": {
+        "foo": "bar"
+    }
+}',
+                'require-dev',
+                'foo',
+                'qux',
+                '{
+    "require": {
+        "php": "5.*"
+    },
+    "require-dev": {
+        "foo": "qux"
+    }
+}
+'
+            ),
         );
     }
 
@@ -722,6 +763,29 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
     },
     "foo": "baz",
     "baz": "quux"
+}
+', $manipulator->getContents());
+    }
+
+    public function testUpdateMainKey3()
+    {
+        $manipulator = new JsonManipulator('{
+    "require": {
+        "php": "5.*"
+    },
+    "require-dev": {
+        "foo": "bar"
+    }
+}');
+
+        $this->assertTrue($manipulator->addMainKey('require-dev', array('foo' => 'qux')));
+        $this->assertEquals('{
+    "require": {
+        "php": "5.*"
+    },
+    "require-dev": {
+        "foo": "qux"
+    }
 }
 ', $manipulator->getContents());
     }

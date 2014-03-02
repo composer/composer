@@ -441,10 +441,9 @@ class SolverTest extends TestCase
 
         $this->request->install('A');
 
-        $this->checkSolverResult(array(
-            array('job' => 'install', 'package' => $packageQ),
-            array('job' => 'install', 'package' => $packageA),
-        ));
+        // must explicitly pick the provider, so error in this case
+        $this->setExpectedException('Composer\DependencyResolver\SolverProblemsException');
+        $this->solver->solve($this->request);
     }
 
     public function testSkipReplacerOfExistingPackage()
@@ -465,7 +464,7 @@ class SolverTest extends TestCase
         ));
     }
 
-    public function testInstallReplacerOfMissingPackage()
+    public function testNoInstallReplacerOfMissingPackage()
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageQ = $this->getPackage('Q', '1.0'));
@@ -476,10 +475,8 @@ class SolverTest extends TestCase
 
         $this->request->install('A');
 
-        $this->checkSolverResult(array(
-            array('job' => 'install', 'package' => $packageQ),
-            array('job' => 'install', 'package' => $packageA),
-        ));
+        $this->setExpectedException('Composer\DependencyResolver\SolverProblemsException');
+        $this->solver->solve($this->request);
     }
 
     public function testSkipReplacedPackageIfReplacerIsSelected()
@@ -574,11 +571,12 @@ class SolverTest extends TestCase
         $this->reposComplete();
 
         $this->request->install('A');
+        $this->request->install('C');
 
         $this->checkSolverResult(array(
-            array('job' => 'install', 'package' => $packageB),
             array('job' => 'install', 'package' => $packageA),
             array('job' => 'install', 'package' => $packageC),
+            array('job' => 'install', 'package' => $packageB),
         ));
     }
 
@@ -611,6 +609,7 @@ class SolverTest extends TestCase
         $this->reposComplete();
 
         $this->request->install('A');
+        $this->request->install('D');
 
         $this->checkSolverResult(array(
             array('job' => 'install', 'package' => $packageD2),

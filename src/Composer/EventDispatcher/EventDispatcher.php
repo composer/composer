@@ -72,16 +72,12 @@ class EventDispatcher
     /**
      * Dispatch a script event.
      *
-     * @param string $eventName The constant in ScriptEvents
-     * @param Event  $event
+     * @param string       $eventName The constant in ScriptEvents
+     * @param Script\Event $event
      */
-    public function dispatchScript($eventName, Script\Event $event = null)
+    public function dispatchScript($eventName, $devMode = false)
     {
-        if (null == $event) {
-            $event = new Script\Event($eventName, $this->composer, $this->io);
-        }
-
-        $this->doDispatch($event);
+        $this->doDispatch(new Script\Event($eventName, $this->composer, $this->io, $devMode));
     }
 
     /**

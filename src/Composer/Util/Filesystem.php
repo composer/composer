@@ -69,6 +69,10 @@ class Filesystem
             return true;
         }
 
+        if (preg_match('{^(?:[a-z]:)?[/\\\\]+$}i', $directory)) {
+            throw new \RuntimeException('Aborting an attempted deletion of '.$directory.', this was probably not intended, if it is a real use case please report it.');
+        }
+
         if (!function_exists('proc_open')) {
             return $this->removeDirectoryPhp($directory);
         }
@@ -224,7 +228,7 @@ class Filesystem
 
         $commonPath = $to;
         while (strpos($from.'/', $commonPath.'/') !== 0 && '/' !== $commonPath && !preg_match('{^[a-z]:/?$}i', $commonPath)) {
-            $commonPath = dirname($commonPath);
+            $commonPath = strtr(dirname($commonPath), '\\', '/');
         }
 
         if (0 !== strpos($from, $commonPath) || '/' === $commonPath) {
@@ -261,11 +265,11 @@ class Filesystem
         }
 
         $commonPath = $to;
-        while (strpos($from.'/', $commonPath.'/') !== 0 && '/' !== $commonPath && !preg_match('{^[a-z]:/?$}i', $commonPath)) {
-            $commonPath = dirname($commonPath);
+        while (strpos($from.'/', $commonPath.'/') !== 0 && '/' !== $commonPath && !preg_match('{^[a-z]:/?$}i', $commonPath) && '.' !== $commonPath) {
+            $commonPath = strtr(dirname($commonPath), '\\', '/');
         }
 
-        if (0 !== strpos($from, $commonPath) || '/' === $commonPath) {
+        if (0 !== strpos($from, $commonPath) || '/' === $commonPath || '.' === $commonPath) {
             return var_export($to, true);
         }
 

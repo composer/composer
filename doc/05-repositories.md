@@ -192,7 +192,7 @@ integrity, for example:
 
 The file above declares that acme/foo and acme/bar can be found in this
 repository, by loading the file referenced by `providers-url`, replacing
-`%name%` by the package name and `%hash%` by the sha256 field. Those files
+`%package%` by the package name and `%hash%` by the sha256 field. Those files
 themselves just contain package definitions as described [above](#packages).
 
 This field is optional. You probably don't need it for your own custom
@@ -291,6 +291,11 @@ VCS repository provides `dist`s for them that fetch the packages as zips.
 The VCS driver to be used is detected automatically based on the URL. However,
 should you need to specify one for whatever reason, you can use `git`, `svn` or
 `hg` as the repository type instead of `vcs`.
+
+If you set the `no-api` key to `true` on a github repository it will clone the
+repository as it would with any other git repository instead of using the
+GitHub API. But unlike using the `git` driver directly, composer will still
+attempt to use github's zip files.
 
 #### Subversion Options
 
@@ -463,8 +468,8 @@ there are some use cases for hosting your own repository.
   might want to keep them separate to packagist. An example of this would be
   wordpress plugins.
 
-When hosting your own package repository it is recommended to use a `composer`
-one. This is type that is native to composer and yields the best performance.
+For hosting your own packages, a native `composer` type of repository is 
+recommended, which provides the best performance.
 
 There are a few tools that can help you create a `composer` repository.
 

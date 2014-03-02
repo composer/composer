@@ -13,6 +13,7 @@
 namespace Composer\Repository\Vcs;
 
 use Composer\Cache;
+use Composer\Config;
 use Composer\Json\JsonFile;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Filesystem;
@@ -49,6 +50,8 @@ class SvnDriver extends VcsDriver
     public function initialize()
     {
         $this->url = $this->baseUrl = rtrim(self::normalizeUrl($this->url), '/');
+
+        SvnUtil::cleanEnv();
 
         if (isset($this->repoConfig['trunk-path'])) {
             $this->trunkPath = $this->repoConfig['trunk-path'];
@@ -241,7 +244,7 @@ class SvnDriver extends VcsDriver
     /**
      * {@inheritDoc}
      */
-    public static function supports(IOInterface $io, $url, $deep = false)
+    public static function supports(IOInterface $io, Config $config, $url, $deep = false)
     {
         $url = self::normalizeUrl($url);
         if (preg_match('#(^svn://|^svn\+ssh://|svn\.)#i', $url)) {

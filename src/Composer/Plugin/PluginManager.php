@@ -18,6 +18,7 @@ use Composer\IO\IOInterface;
 use Composer\Package\Package;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\RepositoryInterface;
+use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\Link;
 use Composer\Package\LinkConstraint\VersionConstraint;
@@ -42,7 +43,9 @@ class PluginManager
     /**
      * Initializes plugin manager
      *
-     * @param Composer $composer
+     * @param Composer            $composer
+     * @param IOInterface         $io
+     * @param RepositoryInterface $globalRepository
      */
     public function __construct(Composer $composer, IOInterface $io, RepositoryInterface $globalRepository = null)
     {
@@ -92,9 +95,21 @@ class PluginManager
         return $this->plugins;
     }
 
-    protected function loadRepository(RepositoryInterface $repo)
+    /**
+     * Load all plugins and installers from a repository
+     *
+     * Note that plugins in the specified repository that rely on events that
+     * have fired prior to loading will be missed. This means you likely want to
+     * call this method as early as possible.
+     *
+     * @param RepositoryInterface $repo Repository to scan for plugins to install
+     */
+    public function loadRepository(RepositoryInterface $repo)
     {
         foreach ($repo->getPackages() as $package) {
+            if ($package instanceof AliasPackage) {
+                continue;
+            }
             if ('composer-plugin' === $package->getType()) {
                 $requiresComposer = null;
                 foreach ($package->getRequires() as $link) {
@@ -113,7 +128,7 @@ class PluginManager
 
                 $this->registerPackage($package);
             }
-            // Backward compatability
+            // Backward compatibility
             if ('composer-installer' === $package->getType()) {
                 $this->registerPackage($package);
             }

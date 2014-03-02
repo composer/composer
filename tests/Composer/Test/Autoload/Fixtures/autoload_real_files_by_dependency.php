@@ -31,6 +31,11 @@ class ComposerAutoloaderInitFilesAutoloadOrder
             $loader->set($namespace, $path);
         }
 
+        $map = require __DIR__ . '/autoload_psr4.php';
+        foreach ($map as $namespace => $path) {
+            $loader->setPsr4($namespace, $path);
+        }
+
         $classMap = require __DIR__ . '/autoload_classmap.php';
         if ($classMap) {
             $loader->addClassMap($classMap);
@@ -40,9 +45,14 @@ class ComposerAutoloaderInitFilesAutoloadOrder
 
         $includeFiles = require __DIR__ . '/autoload_files.php';
         foreach ($includeFiles as $file) {
-            require $file;
+            composerRequireFilesAutoloadOrder($file);
         }
 
         return $loader;
     }
+}
+
+function composerRequireFilesAutoloadOrder($file)
+{
+    require $file;
 }

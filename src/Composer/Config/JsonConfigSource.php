@@ -23,8 +23,10 @@ use Composer\Json\JsonManipulator;
  */
 class JsonConfigSource implements ConfigSourceInterface
 {
+    /**
+     * @var \Composer\Json\JsonFile
+     */
     private $file;
-    private $manipulator;
 
     /**
      * Constructor
@@ -118,7 +120,7 @@ class JsonConfigSource implements ConfigSourceInterface
         } else {
             // on failed clean update, call the fallback and rewrite the whole file
             $config = $this->file->read();
-            array_unshift($args, $config);
+            $this->array_unshift_ref($args, $config);
             call_user_func_array($fallback, $args);
             $this->file->write($config);
         }
@@ -126,5 +128,19 @@ class JsonConfigSource implements ConfigSourceInterface
         if ($newFile) {
             @chmod($this->file->getPath(), 0600);
         }
+    }
+
+    /**
+     * Prepend a reference to an element to the beginning of an array.
+     *
+     * @param array $array
+     * @param mixed $value
+     * @return array
+     */
+    function array_unshift_ref(&$array, &$value)
+    {
+        $return = array_unshift($array, '');
+        $array[0] =& $value;
+        return $return;
     }
 }

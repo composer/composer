@@ -105,6 +105,11 @@ class Installer
     protected $verbose = false;
     protected $update = false;
     protected $runScripts = true;
+    /**
+     * Array of package names/globs flagged for update
+     *
+     * @var array|null
+     */
     protected $updateWhitelist = null;
     protected $whitelistDependencies = false;
 
@@ -146,6 +151,8 @@ class Installer
 
     /**
      * Run installation (or update)
+     *
+     * @return int 0 on success or a positive error code on failure
      */
     public function run()
     {
@@ -171,12 +178,14 @@ class Installer
         unset($devRepo, $package);
         // end BC
 
-        if ($this->preferSource) {
-            $this->downloadManager->setPreferSource(true);
+        if ($this->runScripts) {
+            // dispatch pre event
+            $eventName = $this->update ? ScriptEvents::PRE_UPDATE_CMD : ScriptEvents::PRE_INSTALL_CMD;
+            $this->eventDispatcher->dispatchCommandEvent($eventName, $this->devMode);
         }
-        if ($this->preferDist) {
-            $this->downloadManager->setPreferDist(true);
-        }
+
+        $this->downloadManager->setPreferSource($this->preferSource);
+        $this->downloadManager->setPreferDist($this->preferDist);
 
         // clone root package to have one in the installed repo that does not require anything
         // we don't want it to be uninstallable, but its requirements should not conflict
@@ -201,16 +210,11 @@ class Installer
         $aliases = $this->getRootAliases();
         $this->aliasPlatformPackages($platformRepo, $aliases);
 
-        if ($this->runScripts) {
-            // dispatch pre event
-            $eventName = $this->update ? ScriptEvents::PRE_UPDATE_CMD : ScriptEvents::PRE_INSTALL_CMD;
-            $this->eventDispatcher->dispatchCommandEvent($eventName, $this->devMode);
-        }
-
         try {
             $this->suggestedPackages = array();
-            if (!$this->doInstall($localRepo, $installedRepo, $platformRepo, $aliases, $this->devMode)) {
-                return false;
+            $res = $this->doInstall($localRepo, $installedRepo, $platformRepo, $aliases, $this->devMode);
+            if ($res !== 0) {
+                return $res;
             }
         } catch (\Exception $e) {
             $this->installationManager->notifyInstalls();
@@ -243,7 +247,7 @@ class Installer
                 // split dev and non-dev requirements by checking what would be removed if we update without the dev requirements
                 if ($this->devMode && $this->package->getDevRequires()) {
                     $policy = $this->createPolicy();
-                    $pool = $this->createPool();
+                    $pool = $this->createPool(true);
                     $pool->addRepository($installedRepo, $aliases);
 
                     // creating requirements request
@@ -280,7 +284,13 @@ class Installer
             }
 
             // write autoloader
-            $this->io->write('<info>Generating autoload files</info>');
+            if ($this->optimizeAutoloader) {
+                $this->io->write('<info>Generating optimized autoload files</info>');
+            } else {
+                $this->io->write('<info>Generating autoload files</info>');
+            }
+
+            $this->autoloadGenerator->setDevMode($this->devMode);
             $this->autoloadGenerator->dump($this->config, $localRepo, $this->package, $this->installationManager, 'composer', $this->optimizeAutoloader);
 
             if ($this->runScripts) {
@@ -288,9 +298,14 @@ class Installer
                 $eventName = $this->update ? ScriptEvents::POST_UPDATE_CMD : ScriptEvents::POST_INSTALL_CMD;
                 $this->eventDispatcher->dispatchCommandEvent($eventName, $this->devMode);
             }
+
+            $vendorDir = $this->config->get('vendor-dir');
+            if (is_dir($vendorDir)) {
+                touch($vendorDir);
+            }
         }
 
-        return true;
+        return 0;
     }
 
     protected function doInstall($localRepo, $installedRepo, $platformRepo, $aliases, $withDevReqs)
@@ -326,7 +341,7 @@ class Installer
 
         // creating repository pool
         $policy = $this->createPolicy();
-        $pool = $this->createPool();
+        $pool = $this->createPool($withDevReqs);
         $pool->addRepository($installedRepo, $aliases);
         if ($installFromLock) {
             $pool->addRepository($lockedRepository, $aliases);
@@ -452,7 +467,7 @@ class Installer
             $this->io->write('<error>Your requirements could not be resolved to an installable set of packages.</error>');
             $this->io->write($e->getMessage());
 
-            return false;
+            return max(1, $e->getCode());
         }
 
         // force dev packages to be updated if we update or install from a (potentially new) lock
@@ -537,7 +552,7 @@ class Installer
             }
         }
 
-        return true;
+        return 0;
     }
 
     /**
@@ -574,7 +589,7 @@ class Installer
         return array_merge($installerOps, $operations);
     }
 
-    private function createPool()
+    private function createPool($withDevReqs)
     {
         $minimumStability = $this->package->getMinimumStability();
         $stabilityFlags = $this->package->getStabilityFlags();
@@ -584,7 +599,16 @@ class Installer
             $stabilityFlags = $this->locker->getStabilityFlags();
         }
 
-        return new Pool($minimumStability, $stabilityFlags);
+        $requires = $this->package->getRequires();
+        if ($withDevReqs) {
+            $requires = array_merge($requires, $this->package->getDevRequires());
+        }
+        $rootConstraints = array();
+        foreach ($requires as $req => $constraint) {
+            $rootConstraints[$req] = $constraint->getConstraint();
+        }
+
+        return new Pool($minimumStability, $stabilityFlags, $rootConstraints);
     }
 
     private function createPolicy()
@@ -772,14 +796,26 @@ class Installer
         }
 
         foreach ($this->updateWhitelist as $whiteListedPattern => $void) {
-            $cleanedWhiteListedPattern = str_replace('\\*', '.*', preg_quote($whiteListedPattern));
-
-            if (preg_match("{^".$cleanedWhiteListedPattern."$}i", $package->getName())) {
+            $patternRegexp = $this->packageNameToRegexp($whiteListedPattern);
+            if (preg_match($patternRegexp, $package->getName())) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    /**
+     * Build a regexp from a package name, expanding * globs as required
+     *
+     * @param string $whiteListedPattern
+     * @return string
+     */
+    private function packageNameToRegexp($whiteListedPattern)
+    {
+        $cleanedWhiteListedPattern = str_replace('\\*', '.*', preg_quote($whiteListedPattern));
+
+        return "{^" . $cleanedWhiteListedPattern . "$}i";
     }
 
     private function extractPlatformRequirements($links)
@@ -831,12 +867,28 @@ class Installer
 
         $seen = array();
 
+        $rootRequiredPackageNames = array_keys($rootRequires);
+
         foreach ($this->updateWhitelist as $packageName => $void) {
             $packageQueue = new \SplQueue;
 
             $depPackages = $pool->whatProvides($packageName);
-            if (count($depPackages) == 0 && !in_array($packageName, $requiredPackageNames) && !in_array($packageName, array('nothing', 'lock'))) {
-                $this->io->write('<warning>Package "' . $packageName . '" listed for update is not installed. Ignoring.<warning>');
+
+            $nameMatchesRequiredPackage = in_array($packageName, $requiredPackageNames, true);
+
+            // check if the name is a glob pattern that did not match directly
+            if (!$nameMatchesRequiredPackage) {
+                $whitelistPatternRegexp = $this->packageNameToRegexp($packageName);
+                foreach ($rootRequiredPackageNames as $rootRequiredPackageName) {
+                    if (preg_match($whitelistPatternRegexp, $rootRequiredPackageName)) {
+                        $nameMatchesRequiredPackage = true;
+                        break;
+                    }
+                }
+            }
+
+            if (count($depPackages) == 0 && !$nameMatchesRequiredPackage && !in_array($packageName, array('nothing', 'lock'))) {
+                $this->io->write('<warning>Package "' . $packageName . '" listed for update is not installed. Ignoring.</warning>');
             }
 
             foreach ($depPackages as $depPackage) {

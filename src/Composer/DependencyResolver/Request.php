@@ -46,10 +46,8 @@ class Request
     protected function addJob($packageName, $cmd, LinkConstraintInterface $constraint = null)
     {
         $packageName = strtolower($packageName);
-        $packages = $this->pool->whatProvides($packageName, $constraint);
 
         $this->jobs[] = array(
-            'packages' => $packages,
             'cmd' => $cmd,
             'packageName' => $packageName,
             'constraint' => $constraint,
@@ -58,7 +56,7 @@ class Request
 
     public function updateAll()
     {
-        $this->jobs[] = array('cmd' => 'update-all', 'packages' => array());
+        $this->jobs[] = array('cmd' => 'update-all');
     }
 
     public function getJobs()
