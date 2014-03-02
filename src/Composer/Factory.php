@@ -185,7 +185,7 @@ class Factory
      * @throws \UnexpectedValueException
      * @return Composer
      */
-    public function createComposer(IOInterface $io, $localConfig = null, $disablePlugins = false, InputInterface $input = null)
+    public function createComposer(IOInterface $io, $localConfig = null, $disablePlugins = false)
     {
         // load Composer configuration
         if (null === $localConfig) {
@@ -444,11 +444,11 @@ class Factory
      * @param  bool     $disablePlugins Whether plugins should not be loaded
      * @return Composer
      */
-    public static function create(IOInterface $io, $config = null, $disablePlugins = false, InputInterface $input = null)
+    public static function create(IOInterface $io, $config = null, $disablePlugins = false)
     {
         $factory = new static();
 
-        return $factory->createComposer($io, $config, $disablePlugins, $input);
+        return $factory->createComposer($io, $config, $disablePlugins);
     }
 
     /**
