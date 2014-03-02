@@ -486,14 +486,27 @@ class RemoteFilesystem
         );
         
         /**
-         * Attempt to find a local cafile or throw an exception.
+         * Attempt to find a local cafile or throw an exception if none pre-set
          * The user may go download one if this occurs.
          */
-        $result = $this->getSystemCaRootBundlePath();
-        if ($result) {
-            $options['ssl']['cafile'] = $result;
-        } else {
-            throw new TransportException('A valid cafile could not be located automatically.');
+        if (!isset($this->options['ssl']['cafile'])) {
+            $result = $this->getSystemCaRootBundlePath();
+            if ($result) {
+                if (preg_match("|^phar://|", $result)) {
+                    $tmp = rtrim(sys_get_temp_dir(), '\\/');
+                    $target = $tmp . DIRECTORY_SEPARATOR . 'composer-cacert.pem';
+                    $cacert = file_get_contents($result);
+                    $write = file_put_contents($target, $cacert, LOCK_EX);
+                    if (!$write) {
+                        throw new TransportException('Unable to write bundled cacert.pem to: '.$target);
+                    }
+                    $options['ssl']['cafile'] = $target;
+                } else {
+                    $options['ssl']['cafile'] = $result;
+                }
+            } else {
+                throw new TransportException('A valid cafile could not be located automatically.');
+            }
         }
 
         /**
@@ -560,13 +573,20 @@ class RemoteFilesystem
             '/opt/local/share/curl/curl-ca-bundle.crt', // OS X macports, curl-ca-bundle package
             '/usr/local/share/curl/curl-ca-bundle.crt', // Default cURL CA bunde path (without --with-ca-bundle option)
             '/usr/share/ssl/certs/ca-bundle.crt', // Really old RedHat?
+            __DIR__.'/../../../res/cacert.pem', // Bundled with Composer
         );
 
         static $found = false;
-        foreach ($caBundlePaths as $caBundle) {
-            if (is_readable($caBundle) && \openssl_x509_parse(file_get_contents($caBundle))) {
-                $found = true;
-                break;
+        $configured = ini_get('openssl.cafile');
+        if ($configured && strlen($configured) > 0 && is_readable($caBundle) && \openssl_x509_parse(file_get_contents($caBundle))) {
+            $found = true;
+            $caBundle = $configured;
+        } else {
+            foreach ($caBundlePaths as $caBundle) {
+                if (is_readable($caBundle) && \openssl_x509_parse(file_get_contents($caBundle))) {
+                    $found = true;
+                    break;
+                }
             }
         }
         if ($found) {
