@@ -88,6 +88,8 @@ resolution.
 * **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
   a bit of time to run so it is currently not done by default.
+* **--disable-tls:** Display SSL/TLS peer verification.
+* **--cafile:** If specified, use the given certificate file for SSL/TLS peer verification.
 
 ## update
 
@@ -125,6 +127,8 @@ You can also use wildcards to update a bunch of packages at once:
   lock file being out of date.
 * **--with-dependencies** Add also all dependencies of whitelisted packages to the whitelist.
   So all packages with their dependencies are updated recursively.
+* **--disable-tls:** Display SSL/TLS peer verification.
+* **--cafile:** If specified, use the given certificate file for SSL/TLS peer verification.
 
 ## require
 
@@ -151,6 +155,8 @@ to the command.
   terminals or scripts which don't handle backspace characters.
 * **--update-with-dependencies** Also update dependencies of the newly
   required packages.
+* **--disable-tls:** Display SSL/TLS peer verification.
+* **--cafile:** If specified, use the given certificate file for SSL/TLS peer verification.
 
 ## global
 
@@ -183,6 +189,8 @@ You can also search for more than one term by passing multiple arguments.
 ### Options
 
 * **--only-name (-N):** Search only in name.
+* **--disable-tls:** Display SSL/TLS peer verification.
+* **--cafile:** If specified, use the given certificate file for SSL/TLS peer verification.
 
 ## show
 
@@ -220,6 +228,8 @@ specific version.
 * **--installed (-i):** List the packages that are installed.
 * **--platform (-p):** List only platform packages (php & extensions).
 * **--self (-s):** List the root package info.
+* **--disable-tls:** Display SSL/TLS peer verification.
+* **--cafile:** If specified, use the given certificate file for SSL/TLS peer verification.
 
 ## depends
 
@@ -284,6 +294,8 @@ you may have to run the command with `root` privileges
 
 * **--rollback (-r):** Rollback to the last version you had installed.
 * **--clean-backups:** Delete old backups during an update. This makes the current version of composer the only backup available after the update.
+* **--disable-tls:** Display SSL/TLS peer verification.
+* **--cafile:** If specified, use the given certificate file for SSL/TLS peer verification.
 
 ## config
 
@@ -368,6 +380,8 @@ By default the command checks for the packages on packagist.org.
 * **--keep-vcs:** Skip the deletion of the VCS metadata for the created
   project. This is mostly useful if you run the command in non-interactive
   mode.
+* **--disable-tls:** Display SSL/TLS peer verification.
+* **--cafile:** If specified, use the given certificate file for SSL/TLS peer verification.
 
 ## dump-autoload
 
@@ -405,6 +419,11 @@ want to run the `diagnose` command to perform automated checks for many common
 problems.
 
     $ php composer.phar diagnose
+
+### Options
+
+* **--disable-tls:** Display SSL/TLS peer verification.
+* **--cafile:** If specified, use the given certificate file for SSL/TLS peer verification.
 
 ## archive
 
@@ -524,6 +543,11 @@ By default it points to $COMPOSER_HOME/cache on \*nix and OSX, and
 
 This env var controls the time composer waits for commands (such as git
 commands) to finish executing. The default value is 300 seconds (5 minutes).
+
+### COMPOSER_CAFILE
+
+By setting this environmental value, you can set a path to a certificate bundle
+file to be used during SSL/TLS peer verification.
 
 ### COMPOSER_DISCARD_CHANGES
 
