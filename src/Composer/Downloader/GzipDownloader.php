@@ -50,7 +50,7 @@ class GzipDownloader extends ArchiveDownloader
             throw new \RuntimeException($processError);
         }
 
-        // Gzip version of PHP has built-in support of gzip functions
+        // Windows version of PHP has built-in support of gzip functions
         $archiveFile = gzopen($file, 'rb');
         $targetFile = fopen($targetFilepath, 'wb');
         while ($string = gzread($archiveFile, 4096)) {
