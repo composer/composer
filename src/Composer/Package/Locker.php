@@ -210,7 +210,9 @@ class Locker
     public function setLockData(array $packages, $devPackages, array $platformReqs, $platformDevReqs, array $aliases, $minimumStability, array $stabilityFlags)
     {
         $lock = array(
-            '_readme' => array('This file locks the dependencies of your project to a known state', 'Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file'),
+            '_readme' => array('This file locks the dependencies of your project to a known state',
+                               'Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file',
+                               'This file is @gener'.'ated automatically'),
             'hash' => $this->hash,
             'packages' => null,
             'packages-dev' => null,
