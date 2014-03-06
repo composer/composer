@@ -480,6 +480,15 @@ class Installer
 
         $operations = $this->movePluginsToFront($operations);
 
+        // add root package suggestions
+        foreach($this->package->getSuggests() as $target => $reason) {
+            $this->suggestedPackages[] = array(
+                'source' => $this->package->getPrettyName(),
+                'target' => $target,
+                'reason' => $reason,
+            );
+        }
+
         foreach ($operations as $operation) {
             // collect suggestions
             if ('install' === $operation->getJobType()) {
