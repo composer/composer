@@ -22,6 +22,10 @@ class JsonFormatterTest extends \PHPUnit_Framework_TestCase
      */
     public function testUnicodeWithPrependedSlash()
     {
+	if (!extension_loaded('mbstring')) {
+		$this->markTestSkipped('Test requires the mbstring extension');
+	}
+
         $data = '"' . chr(92) . chr(92) . chr(92) . 'u0119"';
         $encodedData = JsonFormatter::format($data, true, true);
         $expected = '34+92+92+196+153+34';
