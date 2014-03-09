@@ -50,6 +50,7 @@ class ShowCommand extends Command
                 new InputOption('available', 'a', InputOption::VALUE_NONE, 'List available packages only'),
                 new InputOption('self', 's', InputOption::VALUE_NONE, 'Show the root package information'),
                 new InputOption('name-only', 'N', InputOption::VALUE_NONE, 'List package names only'),
+                new InputOption('path', 'P', InputOption::VALUE_NONE, 'Show package paths'),
             ))
             ->setHelp(<<<EOT
 The show command displays detailed information about a package, or
@@ -193,8 +194,9 @@ EOT
                     $width--;
                 }
 
-                $writeVersion = !$input->getOption('name-only') && $showVersion && ($nameLength + $versionLength + 3 <= $width);
-                $writeDescription = !$input->getOption('name-only') && ($nameLength + ($showVersion ? $versionLength : 0) + 24 <= $width);
+                $writePath = !$input->getOption('name-only') && $input->getOption('path');
+                $writeVersion = !$input->getOption('name-only') && !$input->getOption('path') && $showVersion && ($nameLength + $versionLength + 3 <= $width);
+                $writeDescription = !$input->getOption('name-only') && !$input->getOption('path') && ($nameLength + ($showVersion ? $versionLength : 0) + 24 <= $width);
                 foreach ($packages[$type] as $package) {
                     if (is_object($package)) {
                         $output->write($indent . str_pad($package->getPrettyName(), $nameLength, ' '), false);
@@ -210,6 +212,11 @@ EOT
                                 $description = substr($description, 0, $remaining - 3) . '...';
                             }
                             $output->write(' ' . $description);
+                        }
+
+                        if ($writePath) {
+                            $path = strtok(realpath($composer->getInstallationManager()->getInstallPath($package)), "\r\n");
+                            $output->write(' ' . $path);
                         }
                     } else {
                         $output->write($indent . $package);
