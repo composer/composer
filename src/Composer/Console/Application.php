@@ -26,6 +26,9 @@ use Composer\IO\IOInterface;
 use Composer\IO\ConsoleIO;
 use Composer\Json\JsonValidationException;
 use Composer\Util\ErrorHandler;
+use Composer\Plugin\PluginEvents;
+use Composer\Plugin\CommandEvent;
+use Composer\EventDispatcher\EventDispatcher;
 
 /**
  * The console application that handles the commands
@@ -113,6 +116,16 @@ class Application extends BaseApplication
             $oldWorkingDir = getcwd();
             chdir($newWorkDir);
         }
+
+	    // Run event dispatcher for all commands
+	    $name = $this->getCommandName($input);
+	    if (!$name) {
+		    $name = 'list';
+	    }
+	    $composer = $this->getComposer(true);
+	    $commandEvent = new CommandEvent(PluginEvents::COMMAND, $name, $input, $output);
+	    $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
+
 
         $result = parent::doRun($input, $output);
 

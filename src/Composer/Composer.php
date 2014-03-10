@@ -198,7 +198,7 @@ class Composer
     }
 
     /**
-     * @return EventDispatcher\EventDispatcher
+     * @return EventDispatcher
      */
     public function getEventDispatcher()
     {
