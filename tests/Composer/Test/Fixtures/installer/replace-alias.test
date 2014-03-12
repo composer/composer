@@ -21,4 +21,5 @@ Ensure a replacer package deals with branch aliases
 install
 --EXPECT--
 Installing a/a (dev-master)
+Marking a/a (1.0.x-dev) as installed, alias of a/a (dev-master)
 Installing b/b (1.0.0)
