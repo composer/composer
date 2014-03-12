@@ -1,0 +1,40 @@
+<?php
+
+namespace Composer\Util;
+
+/**
+ * @author Pádraic Brady <padraic.brady@gmail.com>
+ */
+class Bencode
+{
+
+    public function encode($data)
+    {
+        $buffer = null;
+        if (is_array($data)) {
+            if (array_values($data) !== $data) {
+                ksort($data, SORT_STRING);
+                $buffer = 'd';
+                foreach ($data as $key => $value) {
+                    $buffer .= $this->encode((string) $key) . $this->encode($value);
+                }
+                $buffer .= 'e';
+            } else {
+                ksort($data, SORT_NUMERIC);
+                $buffer = 'l';
+                foreach ($data as $value) {
+                    $buffer .= $this->encode($value);
+                }
+                $buffer .= 'e';
+            }
+        } elseif (is_string($data)) {
+            $buffer = sprintf('%d:%s', strlen($data), $data);
+        } elseif (is_int($data) || is_float($data)) {
+            $buffer = sprintf('i%.0fe', round($data));
+        } elseif (is_null($data)) {
+            $buffer = '0:';
+        }
+        return $buffer;
+    }
+
+}
