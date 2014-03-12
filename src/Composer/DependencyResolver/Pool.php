@@ -268,9 +268,18 @@ class Pool
         $nameMatch = false;
 
         foreach ($candidates as $candidate) {
+            $aliasOfCandidate = null;
+
+            // alias packages are not white listed, make sure that the package
+            // being aliased is white listed
+            if ($candidate instanceof AliasPackage) {
+                $aliasOfCandidate = $candidate->getAliasOf();
+            }
+
             if ($this->whitelist !== null && (
                 (is_array($candidate) && isset($candidate['id']) && !isset($this->whitelist[$candidate['id']])) ||
-                (is_object($candidate) && !isset($this->whitelist[$candidate->getId()]))
+                (is_object($candidate) && !($candidate instanceof AliasPackage) && !isset($this->whitelist[$candidate->getId()])) ||
+                (is_object($candidate) && $candidate instanceof AliasPackage && !isset($this->whitelist[$aliasOfCandidate->getId()]))
             )) {
                 continue;
             }
