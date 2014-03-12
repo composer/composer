@@ -37,4 +37,9 @@ class Bencode
         return $buffer;
     }
 
+    public function encodeJson($json)
+    {
+        return $this->encode(json_decode($json, true));
+    }
+
 }

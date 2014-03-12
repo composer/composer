@@ -81,10 +81,20 @@ EXPECTED;
     /**
      * @group signing
      */
-    public function testDecodingOfComposerJson()
+    public function testEncodingOfComposerJsonAsArray()
     {
         $bencode = new Bencode;
         $actual = $bencode->encode(json_decode($this->json, true));
+        $this->assertEquals($this->expected, $actual);
+    }
+
+    /**
+     * @group signing
+     */
+    public function testEncodingOfComposerJson()
+    {
+        $bencode = new Bencode;
+        $actual = $bencode->encodeJson($this->json);
         $this->assertEquals($this->expected, $actual);
     }
 
