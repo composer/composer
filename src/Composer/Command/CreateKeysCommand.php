@@ -18,8 +18,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Util\Openssl;
 
 /**
- * @author Tiago Ribeiro <tiago.ribeiro@seegno.com>
- * @author Rui Marinho <rui.marinho@seegno.com>
+ * @author Pádraic Brady <padraic.brady@gmail.com>
  */
 class CreateKeysCommand extends Command
 {
