@@ -14,6 +14,8 @@ class Openssl
         'private_key_type' => OPENSSL_KEYTYPE_RSA,
     );
 
+    private $privateKeyResource = null;
+
     private $privateKey = null;
 
     private $publicKey = null;
