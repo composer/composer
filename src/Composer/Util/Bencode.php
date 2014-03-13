@@ -3,6 +3,10 @@
 namespace Composer\Util;
 
 /**
+ * BitTorrent Bencoding is used as a means of canonicalising JSON data into a
+ * format which can be cryptographically signed. JSON itself has no standard
+ * canonicalisation algorithm so bencode is a simple cross-platform alternative.
+ *
  * @author Pádraic Brady <padraic.brady@gmail.com>
  */
 class Bencode
