@@ -35,25 +35,34 @@ class Perforce
     protected $windowsFlag;
     protected $commandResult;
 
-    public function __construct($repoConfig, $port, $path, ProcessExecutor $process, $isWindows)
+    protected $io;
+
+    public function __construct($repoConfig, $port, $path, ProcessExecutor $process, $isWindows, IOInterface $io)
     {
         $this->windowsFlag = $isWindows;
         $this->p4Port = $port;
         $this->initializePath($path);
         $this->process = $process;
         $this->initialize($repoConfig);
+        $this->io = $io;
     }
 
-    public static function create($repoConfig, $port, $path, ProcessExecutor $process = null)
+    public static function create($repoConfig, $port, $path, ProcessExecutor $process = null, IOInterface $io)
     {
         if (!isset($process)) {
             $process = new ProcessExecutor;
         }
         $isWindows = defined('PHP_WINDOWS_VERSION_BUILD');
 
-        $perforce = new Perforce($repoConfig, $port, $path, $process, $isWindows);
+        $perforce = new Perforce($repoConfig, $port, $path, $process, $isWindows, $io);
 
         return $perforce;
+    }
+
+    public static function checkServerExists($url, ProcessExecutor $processExecutor)
+    {
+        $output = null;
+        return  0 === $processExecutor->execute('p4 -p ' . $url . ' info -s', $output);
     }
 
     public function initialize($repoConfig)
@@ -380,12 +389,6 @@ class Perforce
                 }
             }
         }
-    }
-
-    public static function checkServerExists($url, ProcessExecutor $processExecutor)
-    {
-        $output = null;
-        return  0 === $processExecutor->execute('p4 -p ' . $url . ' info -s', $output);
     }
 
     public function getComposerInformation($identifier)
