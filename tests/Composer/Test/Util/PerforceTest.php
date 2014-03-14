@@ -22,6 +22,7 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
 {
     protected $perforce;
     protected $processExecutor;
+    protected $io;
 
     public function setUp()
     {
@@ -32,7 +33,15 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
             'p4user'                      => 'user',
             'unique_perforce_client_name' => 'TEST'
         );
-        $this->perforce = new Perforce($repoConfig, 'port', 'path', $this->processExecutor, true);
+        $io = $this->getMock('Composer\IO\IOInterface');
+        $this->perforce = new Perforce($repoConfig, 'port', 'path', $this->processExecutor, true, $io);
+    }
+
+    public function tearDown()
+    {
+        $this->perforce = null;
+        $this->io = null;
+        $this->processExecutor = null;
     }
 
     public function testGetClientWithoutStream()

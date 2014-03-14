@@ -56,7 +56,7 @@ class PerforceDriver extends VcsDriver
         }
 
         $repoDir = $this->config->get('cache-vcs-dir') . '/' . $this->depot;
-        $this->perforce = Perforce::create($repoConfig, $this->getUrl(), $repoDir, $this->process);
+        $this->perforce = Perforce::create($repoConfig, $this->getUrl(), $repoDir, $this->process, $this->io);
     }
 
     /**
