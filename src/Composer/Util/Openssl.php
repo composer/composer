@@ -47,7 +47,7 @@ class Openssl
         $this->publicKey = $this->extractPublicKey($this->privateKeyResource);
     }
 
-    public function exportPrivateKey($file, $password = null)
+    public function exportPrivateKey($file)
     {
         if (!isset($this->privateKey)) {
             throw new \RuntimeException(
@@ -59,13 +59,18 @@ class Openssl
 
     public function importPrivateKey($file, $password = null)
     {
+        if (!file_exists($file) || !is_readable($file)) {
+            throw new \RuntimeException(
+                'The private key file cannot be found/read: ' . $file
+            );
+        }
         $key = file_get_contents($file);
         $this->privateKeyResource = openssl_pkey_get_private($key, $password);
         $this->privateKey = $key;
         $this->publicKey = $this->extractPublicKey($this->privateKeyResource);
     }
 
-    public function exportPublicKey()
+    public function exportPublicKey($file)
     {
         if (!isset($this->publicKey)) {
             throw new \RuntimeException(
@@ -77,7 +82,27 @@ class Openssl
 
     public function importPublicKey($file)
     {
+        if (!file_exists($file) || !is_readable($file)) {
+            throw new \RuntimeException(
+                'The public key file cannot be found/read: ' . $file
+            );
+        }
         $this->publicKey = file_get_contents($file);
+    }
+
+    public function getPrivateKeyResource()
+    {
+        return $this->privateKeyResource;
+    }
+
+    public function getPrivateKey()
+    {
+        return $this->privateKey;
+    }
+
+    public function getPublicKey()
+    {
+        return $this->publicKey;
     }
 
     public function sign($data, $algorithm = OPENSSL_ALGO_SHA1)
@@ -85,7 +110,7 @@ class Openssl
         openssl_sign(
             $data,
             $signature,
-            $this->privateKeyResource
+            $this->privateKeyResource,
             $algorithm
         );
         return base64_encode($signature);

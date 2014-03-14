@@ -50,7 +50,7 @@ class Manifest
                 $patterns[] = $item;
             }
         }
-        $this->getFiles($patterns);
+        $this->setPatterns($patterns);
         $files = array();
         foreach ($this->finder->in($this->directory) as $file) {
             $files[$file->getRelativePath()] = array(
@@ -63,7 +63,7 @@ class Manifest
         return $files;
     }
 
-    private function getFiles(array $patterns)
+    private function setPatterns(array $patterns)
     {
         $finder = $this->finder->files()->ignoreVCS(true);
         foreach ($patterns as $pattern) {
