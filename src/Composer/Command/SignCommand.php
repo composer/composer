@@ -14,6 +14,7 @@ namespace Composer\Command;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Util\Bencode;
 use Composer\Util\Openssl;
@@ -25,7 +26,7 @@ use Composer\Package\Manifest;
 class SignCommand extends Command
 {
 
-    const MANIFEST_FILE = 'metadata.json';
+    const MANIFEST_FILE = 'manifest.json';
 
     protected function configure()
     {
@@ -58,20 +59,20 @@ EOT
         $bencode = new Bencode;
         $openssl = new Openssl;
         try {
-            $openssl->importPrivateKey($input->getOption('private-key'), $input->getOption('passphrase'));
+            $openssl->importPrivateKey($input->getArgument('private-key'), $input->getOption('passphrase'));
             $publicKeyId = hash('sha256', trim($openssl->getPublicKey(), ' '));
         } catch (\Exception $e) {
-            $this->writeln('<error>Invalid private key or passphrase.</error>');
+            $output->writeln('<error>Invalid private key or passphrase.</error>');
             throw $e;
         }
         try {
             $manifest = $manifestAssembler->assemble();
         } catch (\Exception $e) {
-            $this->writeln('<error>Manifest assembly has failed.</error>');
+            $output->writeln('<error>Manifest assembly has failed.</error>');
             throw $e;
         }
         
-        // TODO: split keys out separately to enable independent key management
+        // TODO: split threshold/keys out separately to enable independent key management
         $signable = array(
             'threshold' => 1,
             'public-keys' => array(
@@ -86,15 +87,15 @@ EOT
         $signature = $openssl->sign($canonical);
 
         $otherValidSigs = array();
-        if (file_exists(MANIFEST_FILE)) {
-            if (!is_readable(MANIFEST_FILE)) {
-                $this->writeln('<error>A '.MANIFEST_FILE.' file already exists but is not readable by this process.</error>');
+        if (file_exists(self::MANIFEST_FILE)) {
+            if (!is_readable(self::MANIFEST_FILE)) {
+                $output->writeln('<error>A '.self::MANIFEST_FILE.' file already exists but is not readable by this process.</error>');
                 return 1;
             }
-            $existing = json_decode(file_get_contents(MANIFEST_FILE), true);
+            $existing = json_decode(file_get_contents(self::MANIFEST_FILE), true);
             if (!$existing) {
-                unlink(MANIFEST_FILE);
-                $this->writeln('<warning>The existing '.MANIFEST_FILE.' file was invalid and will be replaced</warning>');
+                unlink(self::MANIFEST_FILE);
+                $output->writeln('<warning>The existing '.self::MANIFEST_FILE.' file was invalid and will be replaced</warning>');
             }
             if (isset($existing['signatures'])
             && count($existing['signatures']) > 0
@@ -104,7 +105,7 @@ EOT
                         $canonical2 = $bencode->encode($existing['signed']);
                         if ($canonical2 == $canonical
                         && $sig['signature'] == $this->openssl->sign($canonical2)) {
-                            $this->writeln('<info>The '.MANIFEST_FILE.' has not changed and has already been correctly signed with this private key.</info>');
+                            $output->writeln('<info>The '.self::MANIFEST_FILE.' has not changed and has already been correctly signed with this private key.</info>');
                             return; //0?
                         }
                     } else {
@@ -127,14 +128,18 @@ EOT
         );
         $signedManifest['signatures'] += $otherValidSigs;
 
-        $this->writeln('<info>Signature calculated. '.count($otherValidSigs).' other valid signatures are currently present.</info>');
-        $this->writeln('<info>'.count($signedManifest['signatures']).' signatures exist for '.MANIFEST_FILE.', with a required threshold of '.$signable['threshold'].'</info>')
+        $output->writeln('<info>Signature calculated. '.count($otherValidSigs).' other valid signatures are currently present.</info>');
+        $output->writeln('<info>'.count($signedManifest['signatures']).' signatures exist for '.self::MANIFEST_FILE.', with a required threshold of '.$signable['threshold'].'</info>');
         if (count($signedManifest['signatures']) < $signable['threshold']) {
-            $this->writeln('<warning>Ensure that the threshold number of signatures is reached before tagging a release!</warning>')
+            $output->writeln('<warning>Ensure that the threshold number of signatures is reached before tagging a release!</warning>');
         }
-        $res = file_put_contents(MANIFEST_FILE, json_encode($signedManifest), LOCK_EX);
+        $flags = 0;
+        if (version_compare(PHP_VERSION, '5.4.0', '>=')) {
+            $flags = JSON_PRETTY_PRINT;
+        }
+        $res = file_put_contents(self::MANIFEST_FILE, json_encode($signedManifest, $flags), LOCK_EX);
         if (!$res) {
-            $this->writeln('<error>Failed to write signed manifest to '.realpath(MANIFEST_FILE).'.</error>');
+            $output->writeln('<error>Failed to write signed manifest to '.realpath(self::MANIFEST_FILE).'.</error>');
             return 1;
         }
     }
