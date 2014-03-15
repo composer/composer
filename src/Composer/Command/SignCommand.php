@@ -57,7 +57,7 @@ EOT
     {
 
         if (!file_exists(self::KEYS_FILE) || !is_readable(self::KEYS_FILE)) {
-            $output->writeln('<error>You must first use the add-package-key command to generate a '.self::KEYS_FILE.' file.</error>');
+            $output->writeln('<error>You must first use the add-dev-key command to generate a '.self::KEYS_FILE.' file.</error>');
             return 1;
         }
 
@@ -79,12 +79,8 @@ EOT
          * Verify that this private key is allowed to sign manifests, i.e.
          * its public key's ID should have been registered to keys.json
          */
-        if (!file_exists(self::KEYS_FILE) || !is_readable(self::KEYS_FILE)) {
-                $output->writeln('<error>The '.self::KEYS_FILE.' file does not exist or is not readable.</error>');
-                return 1;
-        }
-        $data = json_decode(file_get_contents(self::KEYS_FILE), true);
-        if (!in_array($publicKeyId, $keys['signed']['roles']['manifest']['keyids'])) {
+        $keysData = json_decode(file_get_contents(self::KEYS_FILE), true);
+        if (!in_array($publicKeyId, $keysData['signed']['roles']['manifest']['keyids'])) {
             $output->writeln('<error>The provided private key is not authorised to sign manifests in '.self::KEYS_FILE.'.</error>');
             return 1;
         }
@@ -152,10 +148,11 @@ EOT
             'signed' => $signable
         );
         $signedManifest['signatures'] += $otherValidSigs;
-
+        $threshold = $keysData['signed']['roles']['manifest']['threshold'];
         $output->writeln('<info>Signature calculated. '.count($otherValidSigs).' other valid signatures are currently present.</info>');
-        $output->writeln('<info>'.count($signedManifest['signatures']).' signatures exist for '.self::MANIFEST_FILE.', with a required threshold of '.$signable['threshold'].'</info>');
-        if (count($signedManifest['signatures']) < $signable['threshold']) {
+        $output->writeln('<info>'.count($signedManifest['signatures']).' signatures exist for '.self::MANIFEST_FILE
+            .', with a required threshold of '.$threshold.'</info>');
+        if (count($signedManifest['signatures']) < $threshold) {
             $output->writeln('<warning>Ensure that the threshold number of signatures is reached before tagging a release!</warning>');
         }
         $flags = 0;
