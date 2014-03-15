@@ -56,4 +56,9 @@ class Bencode
         return $this->encode(json_decode($json, true));
     }
 
+    public function encodeArray(array $array)
+    {
+        return $this->encode($array);
+    }
+
 }

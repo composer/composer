@@ -30,8 +30,11 @@ class Manifest
 
     private $fs = null;
 
-    public function __construct($directory, $excludes = array(), ArchivableFilesFinder $finder = null)
+    public function __construct($directory = null, $excludes = array(), ArchivableFilesFinder $finder = null)
     {
+        if (null === $directory) {
+            $directory = getcwd();
+        }
         if (!file_exists($directory) || !is_readable($directory)) {
             throw new \InvalidArgumentException(
                 'The directory does not exist or is not readable: ' . $directory
