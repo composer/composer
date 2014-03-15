@@ -61,6 +61,9 @@ EOT
             return 1;
         }
 
+        /**
+         * Initialise helper classes
+         */
         $manifestAssembler = new Manifest;
         $bencode = new Bencode;
         $openssl = new Openssl;
@@ -71,6 +74,24 @@ EOT
             $output->writeln('<error>Invalid private key or passphrase.</error>');
             throw $e;
         }
+
+        /**
+         * Verify that this private key is allowed to sign manifests, i.e.
+         * its public key's ID should have been registered to keys.json
+         */
+        if (!file_exists(self::KEYS_FILE) || !is_readable(self::KEYS_FILE)) {
+                $output->writeln('<error>The '.self::KEYS_FILE.' file does not exist or is not readable.</error>');
+                return 1;
+        }
+        $data = json_decode(file_get_contents(self::KEYS_FILE), true);
+        if (!in_array($publicKeyId, $keys['signed']['roles']['manifest']['keyids'])) {
+            $output->writeln('<error>The provided private key is not authorised to sign manifests in '.self::KEYS_FILE.'.</error>');
+            return 1;
+        }
+
+        /**
+         * Assemble the manifest and sign it
+         */
         try {
             $manifest = $manifestAssembler->assemble();
         } catch (\Exception $e) {
@@ -84,6 +105,9 @@ EOT
         $canonical = $bencode->encode($signable);
         $signature = $openssl->sign($canonical);
 
+        /**
+         * Process any pre-existing manifest.json
+         */
         $otherValidSigs = array();
         if (file_exists(self::MANIFEST_FILE)) {
             if (!is_readable(self::MANIFEST_FILE)) {
@@ -114,6 +138,9 @@ EOT
             }
         }
 
+        /**
+         * Create/Update the manifest.json file
+         */
         $signedManifest = array(
             'signatures' => array(
                 array(

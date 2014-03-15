@@ -76,7 +76,7 @@ EOT
          */
         if (file_exists(self::KEYS_FILE)) {
             if (!is_readable(self::KEYS_FILE)) {
-                $output->writeln('<error>The existing'.self::KEYS_FILE.' file is not readable');
+                $output->writeln('<error>The existing '.self::KEYS_FILE.' file is not readable</error>');
                 return 1;
             }
             $data = json_decode(file_get_contents(self::KEYS_FILE), true);
