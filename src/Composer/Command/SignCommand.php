@@ -61,10 +61,15 @@ EOT
             $openssl->importPrivateKey($input->getOption('private-key'), $input->getOption('passphrase'));
             $publicKeyId = hash('sha256', trim($openssl->getPublicKey(), ' '));
         } catch (\Exception $e) {
-            $this->writeln('<error>Invalid private key or passphrase</error>');
+            $this->writeln('<error>Invalid private key or passphrase.</error>');
             throw $e;
         }
-        $manifest = $manifestAssembler->assemble();
+        try {
+            $manifest = $manifestAssembler->assemble();
+        } catch (\Exception $e) {
+            $this->writeln('<error>Manifest assembly has failed.</error>');
+            throw $e;
+        }
         
         // TODO: split keys out separately to enable independent key management
         $signable = array(
@@ -89,7 +94,7 @@ EOT
             $existing = json_decode(file_get_contents(MANIFEST_FILE), true);
             if (!$existing) {
                 unlink(MANIFEST_FILE);
-                $this->writeln('<info>The existing '.MANIFEST_FILE.' file was invalid and will be replaced</info>');
+                $this->writeln('<warning>The existing '.MANIFEST_FILE.' file was invalid and will be replaced</warning>');
             }
             if (isset($existing['signatures'])
             && count($existing['signatures']) > 0
