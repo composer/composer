@@ -67,7 +67,7 @@ EOT
         $openssl->exportPrivateKey($path . DIRECTORY_SEPARATOR . $privateName);
         $openssl->exportPublicKey($path . DIRECTORY_SEPARATOR . $publicName);
 
-        $output->writeln('Private key created at: '. $path . DIRECTORY_SEPARATOR . $privateName);
-        $output->writeln('Public key created at: '. $path . DIRECTORY_SEPARATOR . $publicName);
+        $output->writeln('<info>Private key created at: '. $path . DIRECTORY_SEPARATOR . $privateName.'</info>');
+        $output->writeln('<info>Public key created at: '. $path . DIRECTORY_SEPARATOR . $publicName.'</info>');
     }
 }

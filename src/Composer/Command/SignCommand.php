@@ -27,6 +27,7 @@ class SignCommand extends Command
 {
 
     const MANIFEST_FILE = 'manifest.json';
+    const KEYS_FILE = 'keys.json';
 
     protected function configure()
     {
@@ -55,6 +56,11 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
 
+        if (!file_exists(self::KEYS_FILE) || !is_readable(self::KEYS_FILE)) {
+            $output->writeln('<error>You must first use the add-package-key command to generate a '.self::KEYS_FILE.' file.</error>');
+            return 1;
+        }
+
         $manifestAssembler = new Manifest;
         $bencode = new Bencode;
         $openssl = new Openssl;
@@ -72,15 +78,7 @@ EOT
             throw $e;
         }
         
-        // TODO: split threshold/keys out separately to enable independent key management
         $signable = array(
-            'threshold' => 1,
-            'public-keys' => array(
-                array(
-                    'keyid' => $publicKeyId,
-                    'key' => $openssl->getPublicKey()
-                )
-            ),
             'files' => $manifest
         );
         $canonical = $bencode->encode($signable);
