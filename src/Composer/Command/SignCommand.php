@@ -57,8 +57,18 @@ EOT
         $openssl = new Openssl;
         $openssl->importPrivateKey($input->getOption('private-key'), $input->getOption('passphrase'));
         $manifest = $manifestAssembler->assemble();
-        $canonicalList = $bencode->encode($manifest);
-        $signature = $openssl->sign($canonicalList);
+        $signable = array(
+            'threshold' => 1,
+            'public-keys' => array(
+                array(
+                    'keyid' => hash('sha256', $openssl->getPublicKey()),
+                    'key' => $openssl->getPublicKey()
+                )
+            ),
+            'files' => $manifest
+        );
+        $canonical = $bencode->encode($signable);
+        $signature = $openssl->sign($canonical);
         $signedManifest = array(
             'signatures' => array(
                 array(
@@ -66,9 +76,7 @@ EOT
                     'sig' => $signature
                 )
             ),
-            'signed' => array(
-                'files' => $manifest
-            )
+            'signed' => $signable
         );
         file_put_contents('manifest.json', json_encode($signedManifest));
     }
