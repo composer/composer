@@ -131,7 +131,7 @@ EOT
                             return; //0?
                         }
                     } else {
-                        // TODO: Check if the other sigs are valid!
+                        // TODO: Check if the other sigs are valid otherwise remove them!
                         $otherValidSigs[] = $sig;
                     }
                 }
@@ -151,7 +151,7 @@ EOT
             ),
             'signed' => $signable
         );
-        $signedManifest['signatures'] += $otherValidSigs;
+        $signedManifest['signatures'] = array_merge($otherValidSigs, $signedManifest['signatures']);
         $threshold = $keysData['signed']['roles']['manifest']['threshold'];
         $output->writeln('<info>Signature calculated. '.count($otherValidSigs).' other valid signatures are currently present.</info>');
         $output->writeln('<info>'.count($signedManifest['signatures']).' signatures exist for '.self::MANIFEST_FILE

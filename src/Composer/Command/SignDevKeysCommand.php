@@ -26,7 +26,7 @@ class SignDevKeysCommand extends Command
 {
 
     const KEYS_FILE = 'keys.json';
-    
+
     protected function configure()
     {
         $this
@@ -112,10 +112,9 @@ EOT
         /**
          * Remove any old signatures for this private key
          */
-        foreach ($data['signatures'] as $index => $sig) {
-            if ($publicKeyId == $sig['key-id']) {
+        foreach ($data['signatures'] as $index => $origSig) {
+            if ($publicKeyId == $origSig['keyid']) {
                 unset($data['signatures'][$index]);
-                continue;
             }
         }
 
