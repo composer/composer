@@ -35,7 +35,6 @@ class SignCommand extends Command
             ->setName('sign')
             ->setDescription('Sign a package using a developer private key')
             ->setDefinition(array(
-                new InputOption('passphrase', 'p', InputOption::VALUE_REQUIRED, 'Set a passphrase to allow encrypted private keys to be used', null),
                 new InputArgument('private-key', InputArgument::REQUIRED, 'Path to the private key which will be used to sign the package'),
             ))
             ->setHelp(<<<EOT
@@ -60,6 +59,11 @@ EOT
             $output->writeln('<error>You must first use the add-dev-key command to generate a '.self::KEYS_FILE.' file.</error>');
             return 1;
         }
+        $passphrase = null;
+        $answer = $this->getIO()->askAndHideAnswer('Enter a passphrase if the private key is encrypted:');
+        if (strlen($answer) > 0) {
+            $passphrase = $answer;
+        }
 
         /**
          * Initialise helper classes
@@ -68,8 +72,8 @@ EOT
         $bencode = new Bencode;
         $openssl = new Openssl;
         try {
-            $openssl->importPrivateKey($input->getArgument('private-key'), $input->getOption('passphrase'));
-            $publicKeyId = hash('sha256', trim($openssl->getPublicKey(), ' '));
+            $openssl->importPrivateKey($input->getArgument('private-key'), $passphrase);
+            $publicKeyId = hash('sha256', trim($openssl->getPublicKey()));
         } catch (\Exception $e) {
             $output->writeln('<error>Invalid private key or passphrase.</error>');
             throw $e;

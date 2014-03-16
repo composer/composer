@@ -29,8 +29,7 @@ class CreateKeysCommand extends Command
             ->setName('create-keys')
             ->setDescription('Create and export a set of developer private and public keys for signing packages')
             ->setDefinition(array(
-                new InputOption('prefix', 'x', InputOption::VALUE_REQUIRED, 'Include a custom file prefix, e.g. foo for foo-private.pem', 'composer'),
-                new InputOption('passphrase', 'p', InputOption::VALUE_REQUIRED, 'Set a passphrase for the exported private key', null),
+                new InputOption('prefix', 'p', InputOption::VALUE_REQUIRED, 'Include a custom file prefix, e.g. foo for foo-private.pem', 'composer'),
                 new InputArgument('directory', InputArgument::REQUIRED, 'Directory in which to save the exported keys'),
             ))
             ->setHelp(<<<EOT
@@ -54,13 +53,17 @@ EOT
             return 1;
         }
 
-        if (empty($input->getOption('passphrase')) || strlen($input->getOption('passphrase')) == 0) {
+        $passphrase = null;
+        $answer = $this->getIO()->askAndHideAnswer('Enter a passphrase to encrypt the private key:');
+        if (strlen($answer) > 0) {
+            $passphrase = $answer;
+        } else {
             $output->writeln('<warning>You have not specified a passphrase so that the private key can be encrypted!</warning>');
         }
 
         $prefix = rtrim($input->getOption('prefix'), '-') . '-';
         $openssl = new Openssl;
-        $openssl->createKeys($input->getOption('passphrase'));
+        $openssl->createKeys($passphrase);
 
         $privateName = $prefix . 'private.pem';
         $publicName = $prefix . 'public.pem';

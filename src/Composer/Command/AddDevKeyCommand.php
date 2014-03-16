@@ -35,7 +35,6 @@ class AddDevKeyCommand extends Command
             ->setName('add-dev-key')
             ->setDescription('Add a developer public key to the keys.json register for a package')
             ->setDefinition(array(
-                new InputOption('passphrase', 'p', InputOption::VALUE_REQUIRED, 'Set a passphrase if using an encrypted private key', null),
                 new InputOption('threshold', 't', InputOption::VALUE_REQUIRED, 'Sets the threshold number of signatures required to verify this file (Default: 1)', 1),
                 new InputOption('expires', 'e', InputOption::VALUE_REQUIRED, 'Set an expiry date beyond which the keys.json file will be deemed untrusted', null),
                 new InputArgument('private-key', InputArgument::REQUIRED, 'Path to the private key which will be used to sign the package'),
@@ -60,12 +59,17 @@ EOT
          * Validate inputs
          */
         // TODO
+        $passphrase = null;
+        $answer = $this->getIO()->askAndHideAnswer('Enter a passphrase if the private key is encrypted:');
+        if (strlen($answer) > 0) {
+            $passphrase = $answer;
+        }
 
         $bencode = new Bencode;
         $openssl = new Openssl;
         try {
-            $openssl->importPrivateKey($input->getArgument('private-key'), $input->getOption('passphrase'));
-            $publicKeyId = hash('sha256', trim($openssl->getPublicKey(), ' '));
+            $openssl->importPrivateKey($input->getArgument('private-key'), $passphrase);
+            $publicKeyId = hash('sha256', trim($openssl->getPublicKey()));
         } catch (\Exception $e) {
             $output->writeln('<error>Invalid private key or passphrase.</error>');
             throw $e;
@@ -96,21 +100,53 @@ EOT
 
         /**
          * Check if the current key has already been added
+         * If it has, we'll switch to re-signing keys.json for any changes or abort.
          */
         if (count($keys['keys']) > 0) {
             $keyIds = array_keys($keys['keys']);
             foreach ($keyIds as $id) {
                 if ($publicKeyId == $id) {
                     $output->writeln('<warning>This key has previously been added to '.self::KEYS_FILE.'</warning>');
-                    $output->writeln('<info>Checking if '.self::KEYS_FILE.' should be re-signed for other added keys...</info>');
-                    // TODO: check if the signature no longer matches, if we have others keys, and re-sign.
+                    $output->writeln('<info>Checking if '.self::KEYS_FILE.' should be re-signed...</info>');
+                    $canonical = $bencode->encode($keys);
+                    $signature = $openssl->sign($canonical);
+                    $needle = array(
+                        'keyid' => $publicKeyId,
+                        'method' => 'OPENSSL_ALGO_SHA1',
+                        'signature' => $signature
+                    );
+                    if (in_array($needle, $data['signatures'])) {
+                        $output->writeln('<warning>You have already correctly signed '.self::KEYS_FILE.' with this key</warning>');
+                        $output->writeln('<warning>Aborting...</warning>');
+                        return;
+                    } else {
+                        $output->writeln('<info>The '.self::KEYS_FILE.' file will be re-signed with this key as it has been changed.</info>');
+                        $output->writeln('<warning>Remember to review all changes when this command completes!</warning>');
+                        foreach ($data['signatures'] as $key => $sig) {
+                            if ($sig['keyid'] == $publicKeyId) {
+                                unset($data['signatures'][$key]);
+                            }
+                            $data['signatures'][] = $needle;
+                            continue;
+                        }
+                        $flags = 0;
+                        if (version_compare(PHP_VERSION, '5.4.0', '>=')) {
+                            $flags = JSON_PRETTY_PRINT;
+                        }
+                        $res = file_put_contents(self::KEYS_FILE, json_encode($data, $flags), LOCK_EX);
+                        if (!$res) {
+                            $output->writeln('<error>Failed to write signed '.self::KEYS_FILE.' to '.realpath(self::KEYS_FILE).'.</error>');
+                            return 1;
+                        }
+                        $output->writeln('<info>The '.self::KEYS_FILE.' file has been re-signed successfully.</info>');
+                        return;
+                    }
                 }
             }
         }
 
         /**
-         * If we have not already added a key, or need to re-sign for new keys...
-         * Create the file for the first time.
+         * If we have not already added a key, or need to re-sign for new keys..
          */
         $keys['keys'][$publicKeyId] = array(
             'keytype' => 'OPENSSL_KEYTYPE_RSA', // RSA is the only one we support right now.
@@ -118,7 +154,7 @@ EOT
                 'public' => $openssl->getPublicKey()
             )
         );
-        $keys['roles']['manifest']['threshold'] = (int) $input->getOption('threshold');
+        $keys['roles']['manifest']['threshold'] = (int) $input->getOption('threshold'); // TODO: do not override existing value!
         $keys['roles']['manifest']['keyids'][] = $publicKeyId;
         $canonical = $bencode->encode($keys);
         $signature = $openssl->sign($canonical);
