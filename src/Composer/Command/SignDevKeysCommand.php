@@ -21,7 +21,7 @@ use Composer\Util\Openssl;
 /**
  * @author Pádraic Brady <padraic.brady@gmail.com>
  */
-class CreateKeysCommand extends Command
+class SignDevKeysCommand extends Command
 {
     protected function configure()
     {
@@ -35,7 +35,8 @@ class CreateKeysCommand extends Command
 The sign-dev-keys command is used to sign a keys.json file which contains
 a list of the public keys authorised to sign a package. Any change in public
 keys for this file (e.g. after using add-dev-key) will require that it be
-signed by the threshold number of private keys.
+signed by the threshold number of private keys so that clients can verify the
+changes.
 
 EOT
             )
@@ -80,8 +81,57 @@ EOT
          * as an authorised key - otherwise it can't sign anything!
          */
         $keyIds = array_keys($keys['keys']);
-        
+        if (!in_array($publicKeyId, $keyIds)) {
+            $output->writeln('<error>The matching public key to this private key is not registed in the '.self::KEYS_FILE.' file.</error>');
+            return 1;
+        }
 
+        /**
+         * Create the signature
+         */
+        $canonical = $bencode->encode($keys);
+        $signature = $openssl->sign($canonical);
+        $sig = array(
+            'keyid' => $publicKeyId,
+            'method' => 'OPENSSL_ALGO_SHA1',
+            'signature' => $signature
+        );
+
+        /**
+         * Verify that we have not already correctly signed keys.json with this
+         * private key
+         */
+        if (in_array($sig, $data['signatures'])) {
+            $output->writeln('<warning>You have already correctly signed '.self::KEYS_FILE.' with this key</warning>');
+            $output->writeln('<warning>Aborting...</warning>');
+            return;
+        }
+
+        /**
+         * Remove any old signatures for this private key
+         */
+        foreach ($data['signatures'] as $index => $sig) {
+            if ($publicKeyId == $sig['key-id']) {
+                unset($data['signatures'][$index]);
+                continue;
+            }
+        }
+
+        /**
+         * Add the private key's signature and write the file
+         */
+        $data['signatures'][] = $sig;
+        $flags = 0;
+        if (version_compare(PHP_VERSION, '5.4.0', '>=')) {
+            $flags = JSON_PRETTY_PRINT;
+        }
+        $res = file_put_contents(self::KEYS_FILE, json_encode($data, $flags), LOCK_EX);
+        if (!$res) {
+            $output->writeln('<error>Failed to write signed '.self::KEYS_FILE.' to '.realpath(self::KEYS_FILE).'.</error>');
+            return 1;
+        }
+        $output->writeln('<info>The '.self::KEYS_FILE.' file has been successfully signed.</info>');
+        return;
 
     }
 }
