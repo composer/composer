@@ -16,6 +16,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
+use Composer\Util\Bencode;
 use Composer\Util\Openssl;
 
 /**
@@ -23,6 +24,9 @@ use Composer\Util\Openssl;
  */
 class SignDevKeysCommand extends Command
 {
+
+    const KEYS_FILE = 'keys.json';
+    
     protected function configure()
     {
         $this
@@ -67,14 +71,12 @@ EOT
         /**
          * Initialise the keys array to be signed
          */
-        if (file_exists(self::KEYS_FILE)) {
-            if (!is_readable(self::KEYS_FILE)) {
-                $output->writeln('<error>The existing '.self::KEYS_FILE.' file is not readable</error>');
-                return 1;
-            }
-            $data = json_decode(file_get_contents(self::KEYS_FILE), true);
-            $keys = $data['signed'];
+        if (!file_exists(self::KEYS_FILE) || !is_readable(self::KEYS_FILE)) {
+            $output->writeln('<error>The '.self::KEYS_FILE.' file does not exist or is not readable</error>');
+            return 1;
         }
+        $data = json_decode(file_get_contents(self::KEYS_FILE), true);
+        $keys = $data['signed'];
 
         /**
          * Verify that this private key's public key is actually listed

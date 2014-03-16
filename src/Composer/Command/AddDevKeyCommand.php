@@ -41,10 +41,9 @@ class AddDevKeyCommand extends Command
             ))
             ->setHelp(<<<EOT
 The add-dev-key command, imports a developer's private key, adds their
-public key to the keys.json file, registers it as being authorised to
-sign manifests, and then signs the keys.json file. Only the creator of
-the keys.json file may add a second key if delegating releases to other
-maintainers.
+public key to the keys.json file, and registers it as being authorised to
+sign manifests. You will also need to sign the file after any changes
+using the sign-dev-keys command.
 
 EOT
             )
@@ -53,18 +52,16 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $keys = array();
-
-        /**
-         * Validate inputs
-         */
-        // TODO
+        
         $passphrase = null;
         $answer = $this->getIO()->askAndHideAnswer('Enter a passphrase if the private key is encrypted:');
         if (strlen($answer) > 0) {
             $passphrase = $answer;
         }
 
+        /**
+         * Initialise helper classes
+         */
         $bencode = new Bencode;
         $openssl = new Openssl;
         try {
@@ -76,17 +73,20 @@ EOT
         }
 
         /**
-         * Initialise the keys array to be signed
+         * Initialise the keys array
          */
+        $keys = array();
+        $data = array();
         if (file_exists(self::KEYS_FILE)) {
             if (!is_readable(self::KEYS_FILE)) {
-                $output->writeln('<error>The existing '.self::KEYS_FILE.' file is not readable</error>');
+                $output->writeln('<error>The existing '.self::KEYS_FILE.' file is not readable.</error>');
                 return 1;
             }
             $data = json_decode(file_get_contents(self::KEYS_FILE), true);
             $keys = $data['signed'];
         } else {
-            $keys = array(
+            $data['signatures'] = array();
+            $data['signed'] = $keys = array(
                 'expires' => '',
                 'keys' => array(),
                 'roles' => array(
@@ -99,86 +99,41 @@ EOT
         }
 
         /**
-         * Check if the current key has already been added
-         * If it has, we'll switch to re-signing keys.json for any changes or abort.
+         * Abort if the key has already been added
          */
-        if (count($keys['keys']) > 0) {
-            $keyIds = array_keys($keys['keys']);
-            foreach ($keyIds as $id) {
-                if ($publicKeyId == $id) {
-                    $output->writeln('<warning>This key has previously been added to '.self::KEYS_FILE.'</warning>');
-                    $output->writeln('<info>Checking if '.self::KEYS_FILE.' should be re-signed...</info>');
-                    $canonical = $bencode->encode($keys);
-                    $signature = $openssl->sign($canonical);
-                    $needle = array(
-                        'keyid' => $publicKeyId,
-                        'method' => 'OPENSSL_ALGO_SHA1',
-                        'signature' => $signature
-                    );
-                    if (in_array($needle, $data['signatures'])) {
-                        $output->writeln('<warning>You have already correctly signed '.self::KEYS_FILE.' with this key</warning>');
-                        $output->writeln('<warning>Aborting...</warning>');
-                        return;
-                    } else {
-                        $output->writeln('<info>The '.self::KEYS_FILE.' file will be re-signed with this key as it has been changed.</info>');
-                        $output->writeln('<warning>Remember to review all changes when this command completes!</warning>');
-                        foreach ($data['signatures'] as $key => $sig) {
-                            if ($sig['keyid'] == $publicKeyId) {
-                                unset($data['signatures'][$key]);
-                            }
-                            $data['signatures'][] = $needle;
-                            continue;
-                        }
-                        $flags = 0;
-                        if (version_compare(PHP_VERSION, '5.4.0', '>=')) {
-                            $flags = JSON_PRETTY_PRINT;
-                        }
-                        $res = file_put_contents(self::KEYS_FILE, json_encode($data, $flags), LOCK_EX);
-                        if (!$res) {
-                            $output->writeln('<error>Failed to write signed '.self::KEYS_FILE.' to '.realpath(self::KEYS_FILE).'.</error>');
-                            return 1;
-                        }
-                        $output->writeln('<info>The '.self::KEYS_FILE.' file has been re-signed successfully.</info>');
-                        return;
-                    }
-                }
-            }
+        $keyIds = array_keys($keys['keys']);
+        if (in_array($publicKeyId, $keyIds)) {
+            $output->writeln('<warning>The matching public key to this private key is already registed in the '.self::KEYS_FILE.' file.</warning>');
+            $output->writeln('<warning>Aborting...</warning>');
+            return;
         }
 
         /**
-         * If we have not already added a key, or need to re-sign for new keys..
+         * Assemble the key data & delete all signatures.
+         * The file needs to be re-signed for any change.
          */
+        $data['signatures'] = array();
         $keys['keys'][$publicKeyId] = array(
-            'keytype' => 'OPENSSL_KEYTYPE_RSA', // RSA is the only one we support right now.
+            'keytype' => 'OPENSSL_KEYTYPE_RSA',
             'keyval' => array(
-                'public' => $openssl->getPublicKey()
+                'public' => trim($openssl->getPublicKey())
             )
         );
-        $keys['roles']['manifest']['threshold'] = (int) $input->getOption('threshold'); // TODO: do not override existing value!
+        $keys['roles']['manifest']['threshold'] = (int) $input->getOption('threshold');
         $keys['roles']['manifest']['keyids'][] = $publicKeyId;
-        $canonical = $bencode->encode($keys);
-        $signature = $openssl->sign($canonical);
+        $data['signed'] = $keys;
 
-        $signedKeys = array(
-            'signatures' => array(
-                array(
-                    'key-id' => $publicKeyId,
-                    'method' => 'OPENSSL_ALGO_SHA1',
-                    'signature' => $signature
-                )
-            ),
-            'signed' => $keys
-        );
         $flags = 0;
         if (version_compare(PHP_VERSION, '5.4.0', '>=')) {
             $flags = JSON_PRETTY_PRINT;
         }
-        $res = file_put_contents(self::KEYS_FILE, json_encode($signedKeys, $flags), LOCK_EX);
+        $res = file_put_contents(self::KEYS_FILE, json_encode($data, $flags), LOCK_EX);
         if (!$res) {
-            $output->writeln('<error>Failed to write signed '.self::KEYS_FILE.' to '.realpath(self::KEYS_FILE).'.</error>');
+            $output->writeln('<error>Failed to write data '.self::KEYS_FILE.' to '.realpath(self::KEYS_FILE).'.</error>');
             return 1;
         }
         $output->writeln('<info>'.self::KEYS_FILE.' has been created and populated with your key.</info>');
+        $output->writeln('<info>Don\'t forget to sign it!</info>');
            
     }
 }
