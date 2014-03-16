@@ -55,7 +55,11 @@ EOT
 
         $passphrase = null;
         $answer = $this->getIO()->askAndHideAnswer('Enter a passphrase to encrypt the private key:');
-        if (strlen($answer) > 0) {
+        $answer2 = $this->getIO()->askAndHideAnswer('Re-enter the passphrase:');
+        if ($answer !== $answer2) {
+            $output->writeln('<error>The passphrases you entered did not match.</error>');
+            return 1;
+        } elseif (strlen($answer) > 0) {
             $passphrase = $answer;
         } else {
             $output->writeln('<warning>You have not specified a passphrase so that the private key can be encrypted!</warning>');

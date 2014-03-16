@@ -56,7 +56,7 @@ EOT
     {
 
         if (!file_exists(self::KEYS_FILE) || !is_readable(self::KEYS_FILE)) {
-            $output->writeln('<error>You must first use the add-dev-key command to generate a '.self::KEYS_FILE.' file.</error>');
+            $output->writeln('<error>You must first use the add-dev-key/sign-dev-keys commands to generate a '.self::KEYS_FILE.' file.</error>');
             return 1;
         }
         $passphrase = null;
@@ -88,6 +88,22 @@ EOT
             $output->writeln('<error>The provided private key is not authorised to sign manifests in '.self::KEYS_FILE.'.</error>');
             return 1;
         }
+
+        /**
+         * Validate the keys.json file signatures (before it's added to the manifest!)
+         */
+        $openssl2 = new Openssl;
+        $canonical = $bencode->encode($keysData['signed']);
+        foreach ($keysData['signatures'] as $keysSig) {
+            $pubkey = $keysData['signed']['keys'][$keysSig['keyid']]['keyval']['public'];
+            $openssl2->setPublicKey($pubkey);
+            if (!$openssl2->verify($canonical, $keysSig['signature'])) {
+                $output->writeln('<error>The signature in '.self::KEYS_FILE.' from public key '.$keysSig['keyid'].' is incorrect.</error>');
+                $output->writeln('<error>Verify that '.self::KEYS_FILE.' is correctly signed before proceeding.</error>');
+                return 1;
+            }
+        }
+        // TODO: check that keys.json threshold signatures is met
 
         /**
          * Assemble the manifest and sign it
@@ -127,6 +143,7 @@ EOT
                         $canonical2 = $bencode->encode($existing['signed']);
                         if ($canonical2 == $canonical
                         && $sig['signature'] == $this->openssl->sign($canonical2)) {
+                            // TODO: Fix duplicate sig detection
                             $output->writeln('<info>The '.self::MANIFEST_FILE.' has not changed and has already been correctly signed with this private key.</info>');
                             return; //0?
                         }
@@ -154,7 +171,7 @@ EOT
         $signedManifest['signatures'] = array_merge($otherValidSigs, $signedManifest['signatures']);
         $threshold = $keysData['signed']['roles']['manifest']['threshold'];
         $output->writeln('<info>Signature calculated. '.count($otherValidSigs).' other valid signatures are currently present.</info>');
-        $output->writeln('<info>'.count($signedManifest['signatures']).' signatures exist for '.self::MANIFEST_FILE
+        $output->writeln('<info>'.count($signedManifest['signatures']).' signatures now exist for '.self::MANIFEST_FILE
             .', with a required threshold of '.$threshold.'</info>');
         if (count($signedManifest['signatures']) < $threshold) {
             $output->writeln('<warning>Ensure that the threshold number of signatures is reached before tagging a release!</warning>');

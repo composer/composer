@@ -65,9 +65,7 @@ class Openssl
             );
         }
         $key = file_get_contents($file);
-        $this->privateKeyResource = openssl_pkey_get_private($key, $password);
-        $this->privateKey = $key;
-        $this->publicKey = $this->extractPublicKey($this->privateKeyResource);
+        $this->setPrivateKey($key, $password);
     }
 
     public function exportPublicKey($file)
@@ -95,9 +93,20 @@ class Openssl
         return $this->privateKeyResource;
     }
 
+    public function setPrivateKey($key, $password = null)
+    {
+        $this->privateKeyResource = openssl_pkey_get_private($key, $password);
+        $this->privateKey = $key;
+        $this->publicKey = $this->extractPublicKey($this->privateKeyResource);
+    }
+
     public function getPrivateKey()
     {
         return $this->privateKey;
+    }
+
+    public function setPublicKey($key) {
+        $this->publicKey = $key;
     }
 
     public function getPublicKey()
