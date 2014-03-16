@@ -230,6 +230,7 @@ class Application extends BaseApplication
         $commands[] = new Command\CreateKeysCommand();
         $commands[] = new Command\SignCommand();
         $commands[] = new Command\AddDevKeyCommand();
+        $commands[] = new Command\SignDevKeysCommand();
 
         if ('phar:' === substr(__FILE__, 0, 5)) {
             $commands[] = new Command\SelfUpdateCommand();
