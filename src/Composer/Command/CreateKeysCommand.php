@@ -63,6 +63,7 @@ EOT
             $passphrase = $answer;
         } else {
             $output->writeln('<warning>You have not specified a passphrase so that the private key can be encrypted!</warning>');
+            $output->writeln('<warning>It is strongly recommended that you encrypt and backup all private keys.</warning>');
         }
 
         $prefix = rtrim($input->getOption('prefix'), '-') . '-';

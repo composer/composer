@@ -97,7 +97,7 @@ EOT
         foreach ($keysData['signatures'] as $keysSig) {
             $pubkey = $keysData['signed']['keys'][$keysSig['keyid']]['keyval']['public'];
             $openssl2->setPublicKey($pubkey);
-            if (!$openssl2->verify($canonical, $keysSig['signature'])) {
+            if (!$openssl2->verify($canonical, $keysSig['sig'])) {
                 $output->writeln('<error>The signature in '.self::KEYS_FILE.' from public key '.$keysSig['keyid'].' is incorrect.</error>');
                 $output->writeln('<error>Verify that '.self::KEYS_FILE.' is correctly signed before proceeding.</error>');
                 return 1;
@@ -139,10 +139,10 @@ EOT
             && count($existing['signatures']) > 0
             && isset($existing['signed'])) {
                 foreach ($existing['signatures'] as $sig) {
-                    if ($sig['key-id'] == $publicKeyId) {
+                    if ($sig['keyid'] == $publicKeyId) {
                         $canonical2 = $bencode->encode($existing['signed']);
                         if ($canonical2 == $canonical
-                        && $sig['signature'] == $this->openssl->sign($canonical2)) {
+                        && $sig['sig'] == $this->openssl->sign($canonical2)) {
                             // TODO: Fix duplicate sig detection
                             $output->writeln('<info>The '.self::MANIFEST_FILE.' has not changed and has already been correctly signed with this private key.</info>');
                             return; //0?
@@ -161,9 +161,9 @@ EOT
         $signedManifest = array(
             'signatures' => array(
                 array(
-                    'key-id' => $publicKeyId,
+                    'keyid' => $publicKeyId,
                     'method' => 'OPENSSL_ALGO_SHA1',
-                    'signature' => $signature
+                    'sig' => $signature
                 )
             ),
             'signed' => $signable

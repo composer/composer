@@ -96,7 +96,7 @@ EOT
         $sig = array(
             'keyid' => $publicKeyId,
             'method' => 'OPENSSL_ALGO_SHA1',
-            'signature' => $signature
+            'sig' => $signature
         );
 
         /**
