@@ -44,7 +44,7 @@ class PerforceDownloader extends VcsDownloader
 
     public function initPerforce($package, $path)
     {
-        if ($this->perforce) {
+        if (!empty($this->perforce)) {
             $this->perforce->initializePath($path);
             return;
         }

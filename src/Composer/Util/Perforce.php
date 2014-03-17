@@ -200,7 +200,12 @@ class Perforce
         return $this->p4User;
     }
 
-    public function queryP4User(IOInterface $io)
+    public function setUser($user)
+    {
+        $this->p4User = $user;
+    }
+
+    public function queryP4User()
     {
         $this->getUser();
         if (strlen($this->p4User) > 0) {
@@ -210,7 +215,7 @@ class Perforce
         if (strlen($this->p4User) > 0) {
             return;
         }
-        $this->p4User = $io->ask('Enter P4 User:');
+        $this->p4User = $this->io->ask('Enter P4 User:');
         if ($this->windowsFlag) {
             $command = 'p4 set P4USER=' . $this->p4User;
         } else {
@@ -248,14 +253,14 @@ class Perforce
         }
     }
 
-    public function queryP4Password(IOInterface $io)
+    public function queryP4Password()
     {
         if (isset($this->p4Password)) {
             return $this->p4Password;
         }
         $password = $this->getP4variable('P4PASSWD');
         if (strlen($password) <= 0) {
-            $password = $io->askAndHideAnswer('Enter password for Perforce user ' . $this->getUser() . ': ');
+            $password = $this->io->askAndHideAnswer('Enter password for Perforce user ' . $this->getUser() . ': ');
         }
         $this->p4Password = $password;
 
@@ -365,6 +370,16 @@ class Perforce
         return;
     }
 
+    public function getWindowsFlag()
+    {
+        return $this->windowsFlag;
+    }
+
+    public function setWindowsFlag($flag)
+    {
+        $this->windowsFlag = $flag;
+    }
+
     public function windowsLogin($password)
     {
         $command = $this->generateP4Command(' login -a');
@@ -373,11 +388,11 @@ class Perforce
         return $process->run();
     }
 
-    public function p4Login(IOInterface $io)
+    public function p4Login()
     {
-        $this->queryP4User($io);
+        $this->queryP4User();
         if (!$this->isLoggedIn()) {
-            $password = $this->queryP4Password($io);
+            $password = $this->queryP4Password();
             if ($this->windowsFlag) {
                 $this->windowsLogin($password);
             } else {
