@@ -278,6 +278,17 @@ in your browser.
 * **--homepage (-H):** Open the homepage instead of the repository URL.
   times.
 
+## suggests
+
+To list all of vendors suggesting to install packages, you can use the `suggests` command.
+
+    $ php composer.phar suggests
+
+
+### Options
+
+* **--dev:** Show dev suggests.
+
 ## depends
 
 The `depends` command tells you which other packages depend on a certain

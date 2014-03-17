@@ -235,6 +235,7 @@ class Application extends BaseApplication
         $commands[] = new Command\SearchCommand();
         $commands[] = new Command\ValidateCommand();
         $commands[] = new Command\ShowCommand();
+        $commands[] = new Command\SuggestsCommand();
         $commands[] = new Command\RequireCommand();
         $commands[] = new Command\DumpAutoloadCommand();
         $commands[] = new Command\StatusCommand();
