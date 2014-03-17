@@ -68,7 +68,7 @@ EOT
         /**
          * Initialise helper classes
          */
-        $manifestAssembler = new Manifest;
+        $manifestAssembler = new Manifest(null, array(self::MANIFEST_FILE));
         $bencode = new Bencode;
         $openssl = new Openssl;
         try {
@@ -142,10 +142,9 @@ EOT
                     if ($sig['keyid'] == $publicKeyId) {
                         $canonical2 = $bencode->encode($existing['signed']);
                         if ($canonical2 == $canonical
-                        && $sig['sig'] == $this->openssl->sign($canonical2)) {
-                            // TODO: Fix duplicate sig detection
+                        && $sig['sig'] == $openssl->sign($canonical2)) {
                             $output->writeln('<info>The '.self::MANIFEST_FILE.' has not changed and has already been correctly signed with this private key.</info>');
-                            return; //0?
+                            return;
                         }
                     } else {
                         // TODO: Check if the other sigs are valid otherwise remove them!
