@@ -35,7 +35,7 @@ class PerforceDriver extends VcsDriver
     {
         $this->depot = $this->repoConfig['depot'];
         $this->branch = '';
-        if (isset($this->repoConfig['branch'])) {
+        if (!empty($this->repoConfig['branch'])) {
             $this->branch = $this->repoConfig['branch'];
         }
 
@@ -51,7 +51,7 @@ class PerforceDriver extends VcsDriver
 
     private function initPerforce($repoConfig)
     {
-        if (isset($this->perforce)) {
+        if (!empty($this->perforce)) {
             return;
         }
 
@@ -64,7 +64,7 @@ class PerforceDriver extends VcsDriver
      */
     public function getComposerInformation($identifier)
     {
-        if (isset($this->composerInfoIdentifier)) {
+        if (!empty($this->composerInfoIdentifier)) {
             if (strcmp($identifier, $this->composerInfoIdentifier) === 0) {
                 return $this->composerInfo;
             }
@@ -141,7 +141,7 @@ class PerforceDriver extends VcsDriver
         $this->composerInfo = $this->perforce->getComposerInformation('//' . $this->depot . '/' . $identifier);
         $this->composerInfoIdentifier = $identifier;
         $result = false;
-        if (isset($this->composerInfo)) {
+        if (!empty($this->composerInfo)) {
             $result = count($this->composerInfo) > 0;
         }
 
