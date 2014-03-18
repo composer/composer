@@ -292,7 +292,7 @@ class ClassLoader
         }
 
         $file = $this->findFileWithExtension($class, '.php');
-        if ($file === null) {
+        if ($file === null && defined('HHVM_VERSION')) {
           // Indicates a Hack file (hacklang.org)
           $file = $this->findFileWithExtension($class, '.hh');
         }
