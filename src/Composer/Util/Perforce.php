@@ -37,6 +37,8 @@ class Perforce
 
     protected $io;
 
+    protected $filesystem;
+
     public function __construct($repoConfig, $port, $path, ProcessExecutor $process, $isWindows, IOInterface $io)
     {
         $this->windowsFlag = $isWindows;
@@ -109,10 +111,10 @@ class Perforce
     public function cleanupClientSpec()
     {
         $client = $this->getClient();
-        $command = 'p4 client -d $client';
+        $command = 'p4 client -d ' . $client;
         $this->executeCommand($command);
         $clientSpec = $this->getP4ClientSpec();
-        $fileSystem = new FileSystem($this->process);
+        $fileSystem = $this->getFilesystem();
         $fileSystem->remove($clientSpec);
     }
 
@@ -141,7 +143,7 @@ class Perforce
     public function initializePath($path)
     {
         $this->path = $path;
-        $fs = new Filesystem();
+        $fs = $this->getFilesystem();
         $fs->ensureDirectoryExists($path);
     }
 
@@ -559,4 +561,20 @@ class Perforce
 
         return $result;
     }
+
+    public function getFilesystem()
+    {
+        if (empty($this->filesystem))
+        {
+            $this->filesystem = new Filesystem($this->process);
+        }
+        return $this->filesystem;
+    }
+
+
+    public function setFilesystem(Filesystem $fs)
+    {
+        $this->filesystem = $fs;
+    }
+
 }

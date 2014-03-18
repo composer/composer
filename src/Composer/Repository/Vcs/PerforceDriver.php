@@ -193,4 +193,10 @@ class PerforceDriver extends VcsDriver
     {
         $this->perforce = $perforce;
     }
+
+    public function getPerforce()
+    {
+        return $this->perforce;
+    }
+
 }

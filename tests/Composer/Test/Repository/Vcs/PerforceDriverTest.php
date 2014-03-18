@@ -93,7 +93,7 @@ class PerforceDriverTest extends \PHPUnit_Framework_TestCase
 
     protected function getMockPerforce()
     {
-        $methods = array('p4login', 'checkStream', 'writeP4ClientSpec', 'connectClient', 'getComposerInformation');
+        $methods = array('p4login', 'checkStream', 'writeP4ClientSpec', 'connectClient', 'getComposerInformation', 'cleanupClientSpec');
         return $this->getMockBuilder('Composer\Util\Perforce', $methods)->disableOriginalConstructor()->getMock();
     }
 
@@ -159,4 +159,13 @@ class PerforceDriverTest extends \PHPUnit_Framework_TestCase
         $this->expectOutputString('');
         $this->assertFalse(PerforceDriver::supports($this->io, $this->config, 'existing.url'));
     }
+
+    public function testCleanup()
+    {
+        $this->perforce->expects($this->once())->method('cleanupClientSpec');
+        $this->driver->setPerforce($this->perforce);
+        $this->driver->cleanup();
+        $this->assertNull($this->driver->getPerforce());
+    }
+
 }
