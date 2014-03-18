@@ -37,13 +37,16 @@ class AddDevKeyCommand extends Command
             ->setDefinition(array(
                 new InputOption('threshold', 't', InputOption::VALUE_REQUIRED, 'Sets the threshold number of signatures required to verify this file (Default: 1)', 1),
                 new InputOption('expires', 'e', InputOption::VALUE_REQUIRED, 'Set an expiry date beyond which the keys.json file will be deemed untrusted', null),
+                new InputOption('root', 'r', InputOption::VALUE_NONE, 'Include the given key as a root signer, i.e. it may sign off on future key changes.'),
                 new InputArgument('private-key', InputArgument::REQUIRED, 'Path to the private key which will be used to sign the package'),
             ))
             ->setHelp(<<<EOT
 The add-dev-key command, imports a developer's private key, adds their
 public key to the keys.json file, and registers it as being authorised to
 sign manifests. You will also need to sign the file after any changes
-using the sign-dev-keys command.
+using the sign-dev-keys command. If you want to allow the key to sign
+off on future key changes, pass the --root option to include it as a root
+key.
 
 EOT
             )
@@ -93,34 +96,59 @@ EOT
                     'manifest' => array(
                         'keyids' => array(),
                         'threshold' => 1
+                    ),
+                    'root' => array(
+                        'keyids' => array(),
+                        'threshold' => 1
                     )
                 )
             );
         }
 
         /**
-         * Abort if the key has already been added
+         * Abort if the key has already been added.
+         * If it was added, but we now want to add it to the root role, do so.
          */
+        $skipKeyAddition = false;
         $keyIds = array_keys($keys['keys']);
-        if (in_array($publicKeyId, $keyIds)) {
+        $rootIds = $keys['roles']['root']['keyids'];
+        if (in_array($publicKeyId, $keyIds) && in_array($publicKeyId, $rootIds)) {
             $output->writeln('<warning>The matching public key to this private key is already registed in the '.self::KEYS_FILE.' file.</warning>');
             $output->writeln('<warning>Aborting...</warning>');
             return;
+        } elseif (in_array($publicKeyId, $keyIds) && !in_array($publicKeyId, $rootIds) && $input->getOption('root')) {
+            $keys['roles']['root']['threshold'] = (int) $input->getOption('threshold');
+            $keys['roles']['root']['keyids'][] = $publicKeyId;
+            $skipKeyAddition = true;
         }
 
         /**
          * Assemble the key data & delete all signatures.
          * The file needs to be re-signed for any change.
+         * No need to add the key if it existed already and we wanted to assign it to the root role.
          */
         $data['signatures'] = array();
-        $keys['keys'][$publicKeyId] = array(
-            'keytype' => 'OPENSSL_KEYTYPE_RSA',
-            'keyval' => array(
-                'public' => trim($openssl->getPublicKey())
-            )
-        );
-        $keys['roles']['manifest']['threshold'] = (int) $input->getOption('threshold');
-        $keys['roles']['manifest']['keyids'][] = $publicKeyId;
+        if (false === $skipKeyAddition) {
+            $keys['keys'][$publicKeyId] = array(
+                'keytype' => 'OPENSSL_KEYTYPE_RSA',
+                'keyval' => array(
+                    'public' => trim($openssl->getPublicKey())
+                )
+            );
+            $keys['roles']['manifest']['threshold'] = (int) $input->getOption('threshold');
+            $keys['roles']['manifest']['keyids'][] = $publicKeyId;
+        }
+        
+        /**
+         * Check if we also wanted this key to become a root key. We add it
+         * automatically if it's the first key being registered. We'd have
+         * added it above already to root if it was registered previously
+         * to the manifest role only and --root was set.
+         */
+        if ($input->getOption('root') && count($keys['roles']['root']['keyids']) == 0) {
+            $keys['roles']['root']['threshold'] = (int) $input->getOption('threshold');
+            $keys['roles']['root']['keyids'][] = $publicKeyId;
+        }
         $data['signed'] = $keys;
 
         $flags = 0;

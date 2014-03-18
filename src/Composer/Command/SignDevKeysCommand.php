@@ -80,11 +80,16 @@ EOT
 
         /**
          * Verify that this private key's public key is actually listed
-         * as an authorised key - otherwise it can't sign anything!
+         * as a root authorised key - otherwise it can't sign for key changes!
          */
         $keyIds = array_keys($keys['keys']);
+        $rootIds = $keys['roles']['root']['keyids'];
         if (!in_array($publicKeyId, $keyIds)) {
-            $output->writeln('<error>The matching public key to this private key is not registed in the '.self::KEYS_FILE.' file.</error>');
+            $output->writeln('<error>The matching public key to this private key is not registered in the '.self::KEYS_FILE.' file.</error>');
+            return 1;
+        } elseif (!in_array($publicKeyId, $rootIds)) {
+            $output->writeln('<error>The matching public key to this private key is not assigned to the root role in the '.self::KEYS_FILE.' file.</error>');
+            $output->writeln('<error>Only keys added to the root role may sign the '.self::KEYS_FILE.' file.</error>');
             return 1;
         }
 
