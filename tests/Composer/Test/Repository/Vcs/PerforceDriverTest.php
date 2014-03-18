@@ -126,7 +126,7 @@ class PerforceDriverTest extends \PHPUnit_Framework_TestCase
         $identifier = 'TEST_IDENTIFIER';
         $formatted_depot_path = '//' . self::TEST_DEPOT . '/' . $identifier;
         $this->driver->setPerforce($this->perforce);
-        $this->perforce->expects($this->at(0))->method('getComposerInformation')->with($this->equalTo($formatted_depot_path))->will($this->returnValue(array()));
+        $this->perforce->expects($this->any())->method('getComposerInformation')->with($this->equalTo($formatted_depot_path))->will($this->returnValue(array()));
         $this->driver->initialize();
         $result = $this->driver->hasComposerFile($identifier);
         $this->assertFalse($result);
@@ -141,7 +141,7 @@ class PerforceDriverTest extends \PHPUnit_Framework_TestCase
         $identifier = 'TEST_IDENTIFIER';
         $formatted_depot_path = '//' . self::TEST_DEPOT . '/' . $identifier;
         $this->driver->setPerforce($this->perforce);
-        $this->perforce->expects($this->at(0))->method('getComposerInformation')->with($this->equalTo($formatted_depot_path))->will($this->returnValue(array('')));
+        $this->perforce->expects($this->any())->method('getComposerInformation')->with($this->equalTo($formatted_depot_path))->will($this->returnValue(array('')));
         $this->driver->initialize();
         $result = $this->driver->hasComposerFile($identifier);
         $this->assertTrue($result);

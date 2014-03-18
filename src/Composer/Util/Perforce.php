@@ -47,7 +47,7 @@ class Perforce
         $this->io = $io;
     }
 
-    public static function create($repoConfig, $port, $path, ProcessExecutor $process = null, IOInterface $io)
+    public static function create($repoConfig, $port, $path, ProcessExecutor $process, IOInterface $io)
     {
         if (!isset($process)) {
             $process = new ProcessExecutor;
