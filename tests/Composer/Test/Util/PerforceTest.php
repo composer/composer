@@ -686,7 +686,7 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
         $this->perforce->setFilesystem($fs);
 
         $testClient = $this->perforce->getClient();
-        $expectedCommand = 'p4 client -d ' . $testClient;
+        $expectedCommand = 'p4 -u ' . self::TEST_P4USER . ' -p ' . self::TEST_PORT . ' client -d ' . $testClient;
         $this->processExecutor->expects($this->once())->method('execute')->with($this->equalTo($expectedCommand));
 
         $fs->expects($this->once())->method('remove')->with($this->perforce->getP4ClientSpec());

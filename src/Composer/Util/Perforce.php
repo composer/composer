@@ -111,7 +111,9 @@ class Perforce
     public function cleanupClientSpec()
     {
         $client = $this->getClient();
-        $command = 'p4 client -d ' . $client;
+        $task = 'client -d ' . $client;
+        $useP4Client = false;
+        $command = $this->generateP4Command($task, $useP4Client);
         $this->executeCommand($command);
         $clientSpec = $this->getP4ClientSpec();
         $fileSystem = $this->getFilesystem();
