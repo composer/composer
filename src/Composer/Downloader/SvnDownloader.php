@@ -48,7 +48,7 @@ class SvnDownloader extends VcsDownloader
         }
 
         $this->io->write("    Checking out " . $ref);
-        $this->execute($url, "svn switch", sprintf("%s/%s", $url, $ref), $path);
+        $this->execute($url, "svn switch --ignore-ancestry", sprintf("%s/%s", $url, $ref), $path);
     }
 
     /**
