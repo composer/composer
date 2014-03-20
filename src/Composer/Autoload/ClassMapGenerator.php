@@ -79,6 +79,10 @@ class ClassMapGenerator
             $classes = self::findClasses($filePath);
 
             foreach ($classes as $class) {
+                if (array_key_exists($class, $map)) {
+                    throw new \RuntimeException('Ambiguous reference to class "'.$class.'" was found.');
+                }
+
                 $map[$class] = $filePath;
             }
         }

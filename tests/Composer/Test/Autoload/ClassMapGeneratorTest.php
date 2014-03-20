@@ -106,6 +106,22 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @expectedException \RuntimeException
+     * @expectedExceptionMessage Ambiguous reference to class "A" was found.
+     */
+    public function testAmbiguousReference()
+    {
+        if (!class_exists('Symfony\\Component\\Finder\\Finder')) {
+            $this->markTestSkipped('Finder component is not available');
+        }
+
+        $finder = new \Symfony\Component\Finder\Finder();
+        $finder->files()->in(__DIR__ . '/Fixtures/Ambiguous');
+
+        ClassMapGenerator::createMap($finder);
+    }
+
+    /**
+     * @expectedException \RuntimeException
      * @expectedExceptionMessage Could not scan for classes inside
      */
     public function testCreateMapThrowsWhenDirectoryDoesNotExist()
