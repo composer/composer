@@ -106,7 +106,6 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @expectedException \RuntimeException
-     * @expectedExceptionMessage Ambiguous reference to class "A" was found.
      */
     public function testAmbiguousReference()
     {

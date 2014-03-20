@@ -80,7 +80,7 @@ class ClassMapGenerator
 
             foreach ($classes as $class) {
                 if (array_key_exists($class, $map)) {
-                    throw new \RuntimeException('Ambiguous reference to class "'.$class.'" was found.');
+                    throw new \RuntimeException('Ambiguous class "'.$class.'" resolution; defined in "'.$map[$class].'" and in "'.$filePath.'" file.');
                 }
 
                 $map[$class] = $filePath;
