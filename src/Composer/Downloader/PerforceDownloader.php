@@ -22,7 +22,7 @@ use Composer\Util\Perforce;
 class PerforceDownloader extends VcsDownloader
 {
     protected $perforce;
-    protected $perforceInjected = false;
+//    protected $perforceInjected = false;
 
     /**
      * {@inheritDoc}
@@ -44,7 +44,7 @@ class PerforceDownloader extends VcsDownloader
 
     public function initPerforce($package, $path)
     {
-        if ($this->perforce) {
+        if (!empty($this->perforce)) {
             $this->perforce->initializePath($path);
             return;
         }
@@ -54,7 +54,7 @@ class PerforceDownloader extends VcsDownloader
         if ($repository instanceof VcsRepository) {
             $repoConfig = $this->getRepoConfig($repository);
         }
-        $this->perforce = Perforce::create($repoConfig, $package->getSourceUrl(), $path);
+        $this->perforce = Perforce::create($repoConfig, $package->getSourceUrl(), $path, $this->process, $this->io);
     }
 
     private function getRepoConfig(VcsRepository $repository)
