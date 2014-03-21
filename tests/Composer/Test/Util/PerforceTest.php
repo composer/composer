@@ -351,15 +351,35 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
                     }
                 )
             );
+        $expectedCommand2 = 'p4 -u user -p port changes //depot/branch/...';
+        $expectedCallback = function($command, &$output)
+            {
+                $output = 'Change 1234 on 2014/03/19 by Clark.Stuth@Clark.Stuth_test_client \'test changelist\'';
+                return true;
+            };
+        $this->processExecutor->expects($this->at(1))
+                              ->method('execute')
+                              ->with($this->equalTo($expectedCommand2))
+                              ->will($this->returnCallback($expectedCallback));
 
         $branches = $this->perforce->getBranches();
-        $this->assertEquals('//depot/branch', $branches['master']);
+        $this->assertEquals('//depot/branch@1234', $branches['master']);
     }
 
     public function testGetBranchesWithoutStream()
     {
+        $expectedCommand = 'p4 -u user -p port changes //depot/...';
+        $expectedCallback = function($command, &$output)
+            {
+                $output = 'Change 5678 on 2014/03/19 by Clark.Stuth@Clark.Stuth_test_client \'test changelist\'';
+                return true;
+            };
+        $this->processExecutor->expects($this->once())
+            ->method('execute')
+            ->with($this->equalTo($expectedCommand))
+            ->will($this->returnCallback($expectedCallback));
         $branches = $this->perforce->getBranches();
-        $this->assertEquals('//depot', $branches['master']);
+        $this->assertEquals('//depot@5678', $branches['master']);
     }
 
     public function testGetTagsWithoutStream()
