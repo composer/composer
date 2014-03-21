@@ -315,11 +315,7 @@ class Perforce
         chdir($this->path);
 
         $p4SyncCommand = $this->generateP4Command('sync -f ');
-        if (isset($label)) {
-            if (strcmp($label, 'dev-master') != 0) {
-                $p4SyncCommand = $p4SyncCommand . '@' . $label;
-            }
-        }
+        $p4SyncCommand = $p4SyncCommand . '@' . $label;
         $this->executeCommand($p4SyncCommand);
 
         chdir($prevDir);
@@ -481,9 +477,15 @@ class Perforce
                 }
             }
         }
-        $branches = array();
-        $branches['master'] = $possibleBranches[$this->p4Branch];
+        $command = $this->generateP4Command('changes '. $this->getStream() . '/...', false);
+        $this->executeCommand($command);
+        $result = $this->commandResult;
+        $resArray = explode(PHP_EOL, $result);
+        $lastCommit = $resArray[0];
+        $lastCommitArr = explode(' ', $lastCommit);
+        $lastCommitNum = $lastCommitArr[1];
 
+        $branches = array('master' => $possibleBranches[$this->p4Branch] . '@'. $lastCommitNum);
         return $branches;
     }
 
@@ -501,7 +503,6 @@ class Perforce
                 $tags[$fields[1]] = $this->getStream() . '@' . $fields[1];
             }
         }
-
         return $tags;
     }
 
