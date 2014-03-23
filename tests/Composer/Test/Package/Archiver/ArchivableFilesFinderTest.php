@@ -46,6 +46,24 @@ class ArchivableFilesFinderTest extends \PHPUnit_Framework_TestCase
             'B/sub/prefixD.foo',
             'B/sub/prefixE.foo',
             'B/sub/prefixF.foo',
+            'C/prefixA.foo',
+            'C/prefixB.foo',
+            'C/prefixC.foo',
+            'C/prefixD.foo',
+            'C/prefixE.foo',
+            'C/prefixF.foo',
+            'D/prefixA',
+            'D/prefixB',
+            'D/prefixC',
+            'D/prefixD',
+            'D/prefixE',
+            'D/prefixF',
+            'E/subtestA.foo',
+            'F/subtestA.foo',
+            'G/subtestA.foo',
+            'H/subtestA.foo',
+            'I/J/subtestA.foo',
+            'K/dirJ/subtestA.foo',
             'toplevelA.foo',
             'toplevelB.foo',
             'prefixA.foo',
@@ -54,6 +72,10 @@ class ArchivableFilesFinderTest extends \PHPUnit_Framework_TestCase
             'prefixD.foo',
             'prefixE.foo',
             'prefixF.foo',
+            'parameters.yml',
+            'parameters.yml.dist',
+            '!important!.txt',
+            '!important_too!.txt'
         );
 
         foreach ($fileTree as $relativePath) {
@@ -82,6 +104,8 @@ class ArchivableFilesFinderTest extends \PHPUnit_Framework_TestCase
         $this->finder = new ArchivableFilesFinder($this->sources, $excludes);
 
         $this->assertArchivableFiles(array(
+            '/!important!.txt',
+            '/!important_too!.txt',
             '/A/prefixA.foo',
             '/A/prefixD.foo',
             '/A/prefixE.foo',
@@ -91,6 +115,24 @@ class ArchivableFilesFinderTest extends \PHPUnit_Framework_TestCase
             '/B/sub/prefixD.foo',
             '/B/sub/prefixE.foo',
             '/B/sub/prefixF.foo',
+            '/C/prefixA.foo',
+            '/C/prefixD.foo',
+            '/C/prefixE.foo',
+            '/C/prefixF.foo',
+            '/D/prefixA',
+            '/D/prefixB',
+            '/D/prefixC',
+            '/D/prefixD',
+            '/D/prefixE',
+            '/D/prefixF',
+            '/E/subtestA.foo',
+            '/F/subtestA.foo',
+            '/G/subtestA.foo',
+            '/H/subtestA.foo',
+            '/I/J/subtestA.foo',
+            '/K/dirJ/subtestA.foo',
+            '/parameters.yml',
+            '/parameters.yml.dist',
             '/prefixB.foo',
             '/prefixD.foo',
             '/prefixE.foo',
@@ -120,6 +162,15 @@ class ArchivableFilesFinderTest extends \PHPUnit_Framework_TestCase
             '!/*/*/prefixF.foo',
             '',
             'refixD.foo',
+            '/C',
+            'D/prefixA',
+            'E',
+            'F/',
+            'G/*',
+            'H/**',
+            'J/',
+            'parameters.yml',
+            '\!important!.txt'
         )));
 
         // git does not currently support negative git attributes
@@ -160,9 +211,15 @@ class ArchivableFilesFinderTest extends \PHPUnit_Framework_TestCase
             '# comments',
             '',
             '^prefixD.foo',
+            'D/prefixA',
+            'parameters.yml',
+            '\!important!.txt',
+            'E',
+            'F/',
             'syntax: glob',
             'prefixF.*',
             'B/*',
+            'H/**',
         )));
 
         $this->finder = new ArchivableFilesFinder($this->sources, array());
@@ -173,7 +230,9 @@ class ArchivableFilesFinderTest extends \PHPUnit_Framework_TestCase
             'hg archive archive.zip'
         );
 
-        array_shift($expectedFiles); // remove .hg_archival.txt
+        // Remove .hg_archival.txt from the expectedFiles
+        $archiveKey = array_search('/.hg_archival.txt', $expectedFiles);
+        array_splice($expectedFiles, $archiveKey, 1);
 
         $this->assertArchivableFiles($expectedFiles);
     }
