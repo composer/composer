@@ -80,7 +80,7 @@ EOT
         if (in_array($script, $this->commandEvents)) {
             $this->getComposer()->getEventDispatcher()->dispatchCommandEvent($script, $input->getOption('dev') || !$input->getOption('no-dev'));
         } else {
-            $this->getComposer()->getEventDispatcher()->dispatchScript($script);
+            $this->getComposer()->getEventDispatcher()->dispatchScript($script, $input->getOption('dev') || !$input->getOption('no-dev'));
         }
     }
 }
