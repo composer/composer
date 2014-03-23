@@ -292,19 +292,22 @@ class ClassLoader
         }
 
         $file = $this->findFileWithExtension($class, '.php');
+
+        // Search for Hack files if we are running on HHVM
         if ($file === null && defined('HHVM_VERSION')) {
-          // Indicates a Hack file (hacklang.org)
-          $file = $this->findFileWithExtension($class, '.hh');
+            $file = $this->findFileWithExtension($class, '.hh');
         }
 
         if ($file === null) {
             // Remember that this class does not exist.
             return $this->classMap[$class] = false;
         }
+
         return $file;
     }
 
-    private function findFileWithExtension($class, $ext) {
+    private function findFileWithExtension($class, $ext)
+    {
         // PSR-4 lookup
         $logicalPathPsr4 = strtr($class, '\\', DIRECTORY_SEPARATOR) . $ext;
 
@@ -361,8 +364,6 @@ class ClassLoader
         if ($this->useIncludePath && $file = stream_resolve_include_path($logicalPathPsr0)) {
             return $file;
         }
-
-        return null;
     }
 }
 
