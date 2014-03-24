@@ -69,7 +69,7 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $script = $input->getArgument('script');
-        if (!in_array($script, $this->commandEvents) || !in_array($script, $this->scriptEvents)) {
+        if (!in_array($script, $this->commandEvents) && !in_array($script, $this->scriptEvents)) {
             if (defined('Composer\Script\ScriptEvents::'.str_replace('-', '_', strtoupper($script)))) {
                 throw new \InvalidArgumentException(sprintf('Script "%s" cannot be run with this command', $script));
             }
