@@ -29,7 +29,7 @@ class PerforceDownloader extends VcsDownloader
     public function doDownload(PackageInterface $package, $path)
     {
         $ref = $package->getSourceReference();
-        $label = $package->getPrettyVersion();
+        $label = $this->getLabelFromSourceReference($ref);
 
         $this->io->write('    Cloning ' . $ref);
         $this->initPerforce($package, $path);
@@ -39,6 +39,16 @@ class PerforceDownloader extends VcsDownloader
         $this->perforce->connectClient();
         $this->perforce->syncCodeBase($label);
         $this->perforce->cleanupClientSpec();
+    }
+
+    private function getLabelFromSourceReference($ref)
+    {
+        $pos = strpos($ref,'@');
+        if (false !== $pos)
+        {
+            return substr($ref, $pos + 1);
+        }
+        return null;
     }
 
     public function initPerforce($package, $path)
