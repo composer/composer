@@ -102,10 +102,6 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
 
         $find->invoke(null, __DIR__.'/no-file');
     }
-
-    /**
-     * @expectedException \RuntimeException
-     */
     public function testAmbiguousReference()
     {
         $this->checkIfFinderIsAvailable();
@@ -114,6 +110,9 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
         $finder->files()->in(__DIR__ . '/Fixtures/Ambiguous');
 
         ClassMapGenerator::createMap($finder);
+
+        $this->assertEquals(1, count(ClassMapGenerator::$ambiguousReferences));
+        $this->assertEquals('A', ClassMapGenerator::$ambiguousReferences[0]['class']);
     }
 
     /**
