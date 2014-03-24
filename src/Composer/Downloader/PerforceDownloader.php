@@ -22,7 +22,6 @@ use Composer\Util\Perforce;
 class PerforceDownloader extends VcsDownloader
 {
     protected $perforce;
-//    protected $perforceInjected = false;
 
     /**
      * {@inheritDoc}
