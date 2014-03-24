@@ -12,6 +12,7 @@
 namespace Composer\Test\Autoload;
 
 use Composer\Autoload\ClassMapGenerator;
+use Symfony\Component\Finder\Finder;
 
 class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
 {
@@ -82,7 +83,7 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
             $this->markTestSkipped('Finder component is not available');
         }
 
-        $finder = new \Symfony\Component\Finder\Finder();
+        $finder = new Finder();
         $finder->files()->in(__DIR__ . '/Fixtures/beta/NamespaceCollision');
 
         $this->assertEqualsNormalized(array(
@@ -113,7 +114,7 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
             $this->markTestSkipped('Finder component is not available');
         }
 
-        $finder = new \Symfony\Component\Finder\Finder();
+        $finder = new Finder();
         $finder->files()->in(__DIR__ . '/Fixtures/Ambiguous');
 
         ClassMapGenerator::createMap($finder);
