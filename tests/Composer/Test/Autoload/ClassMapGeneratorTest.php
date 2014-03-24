@@ -79,9 +79,7 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
 
     public function testCreateMapFinderSupport()
     {
-        if (!class_exists('Symfony\\Component\\Finder\\Finder')) {
-            $this->markTestSkipped('Finder component is not available');
-        }
+        $this->checkIfFinderIsAvailable();
 
         $finder = new Finder();
         $finder->files()->in(__DIR__ . '/Fixtures/beta/NamespaceCollision');
@@ -110,9 +108,7 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
      */
     public function testAmbiguousReference()
     {
-        if (!class_exists('Symfony\\Component\\Finder\\Finder')) {
-            $this->markTestSkipped('Finder component is not available');
-        }
+        $this->checkIfFinderIsAvailable();
 
         $finder = new Finder();
         $finder->files()->in(__DIR__ . '/Fixtures/Ambiguous');
@@ -138,5 +134,12 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
             $actual[$ns] = strtr($path, '\\', '/');
         }
         $this->assertEquals($expected, $actual, $message);
+    }
+
+    private function checkIfFinderIsAvailable()
+    {
+        if (!class_exists('Symfony\\Component\\Finder\\Finder')) {
+            $this->markTestSkipped('Finder component is not available');
+        }
     }
 }
