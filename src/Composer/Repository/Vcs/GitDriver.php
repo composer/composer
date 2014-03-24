@@ -71,7 +71,9 @@ class GitDriver extends VcsDriver
 
                     if (0 !== $this->process->execute('git --version', $ignoredOutput)) {
                         throw new \RuntimeException('Failed to clone '.$this->url.', git was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput());
-                    } elseif (
+                    }
+
+                    if (
                         $this->io->isInteractive() &&
                         preg_match('{(https?://)([^/]+)(.*)$}i', $this->url, $match) &&
                         strpos($output, 'fatal: Authentication failed') !== false
