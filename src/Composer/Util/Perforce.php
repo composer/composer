@@ -51,13 +51,8 @@ class Perforce
 
     public static function create($repoConfig, $port, $path, ProcessExecutor $process, IOInterface $io)
     {
-        if (!isset($process)) {
-            $process = new ProcessExecutor;
-        }
         $isWindows = defined('PHP_WINDOWS_VERSION_BUILD');
-
         $perforce = new Perforce($repoConfig, $port, $path, $process, $isWindows, $io);
-
         return $perforce;
     }
 
