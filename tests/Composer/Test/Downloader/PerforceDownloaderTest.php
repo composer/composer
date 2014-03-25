@@ -32,7 +32,7 @@ class PerforceDownloaderTest extends \PHPUnit_Framework_TestCase
     protected $repository;
     protected $testPath;
 
-    public function setUp()
+    protected function setUp()
     {
         $this->testPath        = sys_get_temp_dir() . '/composer-test';
         $this->repoConfig      = $this->getRepoConfig();
@@ -44,7 +44,7 @@ class PerforceDownloaderTest extends \PHPUnit_Framework_TestCase
         $this->downloader      = new PerforceDownloader($this->io, $this->config, $this->processExecutor);
     }
 
-    public function tearDown()
+    protected function tearDown()
     {
         $this->downloader = null;
         $this->package    = null;
@@ -112,13 +112,12 @@ class PerforceDownloaderTest extends \PHPUnit_Framework_TestCase
      * @depends testInitPerforceInstantiatesANewPerforceObject
      * @depends testInitPerforceDoesNothingIfPerforceAlreadySet
      */
-    public function testDoDownload()
+    public function testDoDownloadWithTag()
     {
         //I really don't like this test but the logic of each Perforce method is tested in the Perforce class.  Really I am just enforcing workflow.
-        $ref = 'SOURCE_REF';
-        $label = 'LABEL';
+        $ref = 'SOURCE_REF@123';
+        $label = 123;
         $this->package->expects($this->once())->method('getSourceReference')->will($this->returnValue($ref));
-        $this->package->expects($this->once())->method('getPrettyVersion')->will($this->returnValue($label));
         $this->io->expects($this->once())->method('write')->with($this->stringContains('Cloning '.$ref));
         $perforceMethods = array('setStream', 'p4Login', 'writeP4ClientSpec', 'connectClient', 'syncCodeBase', 'cleanupClientSpec');
         $perforce = $this->getMockBuilder('Composer\Util\Perforce', $perforceMethods)->disableOriginalConstructor()->getMock();
@@ -127,9 +126,33 @@ class PerforceDownloaderTest extends \PHPUnit_Framework_TestCase
         $perforce->expects($this->at(2))->method('p4Login')->with($this->identicalTo($this->io));
         $perforce->expects($this->at(3))->method('writeP4ClientSpec');
         $perforce->expects($this->at(4))->method('connectClient');
-        $perforce->expects($this->at(5))->method('syncCodeBase');
+        $perforce->expects($this->at(5))->method('syncCodeBase')->with($label);
         $perforce->expects($this->at(6))->method('cleanupClientSpec');
         $this->downloader->setPerforce($perforce);
         $this->downloader->doDownload($this->package, $this->testPath);
     }
+
+    /**
+     * @depends testInitPerforceInstantiatesANewPerforceObject
+     * @depends testInitPerforceDoesNothingIfPerforceAlreadySet
+     */
+    public function testDoDownloadWithNoTag()
+    {
+        $ref = 'SOURCE_REF';
+        $label = null;
+        $this->package->expects($this->once())->method('getSourceReference')->will($this->returnValue($ref));
+        $this->io->expects($this->once())->method('write')->with($this->stringContains('Cloning '.$ref));
+        $perforceMethods = array('setStream', 'p4Login', 'writeP4ClientSpec', 'connectClient', 'syncCodeBase', 'cleanupClientSpec');
+        $perforce = $this->getMockBuilder('Composer\Util\Perforce', $perforceMethods)->disableOriginalConstructor()->getMock();
+        $perforce->expects($this->at(0))->method('initializePath')->with($this->equalTo($this->testPath));
+        $perforce->expects($this->at(1))->method('setStream')->with($this->equalTo($ref));
+        $perforce->expects($this->at(2))->method('p4Login')->with($this->identicalTo($this->io));
+        $perforce->expects($this->at(3))->method('writeP4ClientSpec');
+        $perforce->expects($this->at(4))->method('connectClient');
+        $perforce->expects($this->at(5))->method('syncCodeBase')->with($label);
+        $perforce->expects($this->at(6))->method('cleanupClientSpec');
+        $this->downloader->setPerforce($perforce);
+        $this->downloader->doDownload($this->package, $this->testPath);
+    }
+
 }

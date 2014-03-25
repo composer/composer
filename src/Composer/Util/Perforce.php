@@ -309,15 +309,15 @@ class Perforce
         $this->executeCommand($p4CreateClientCommand);
     }
 
-    public function syncCodeBase($label)
+    public function syncCodeBase($sourceReference)
     {
         $prevDir = getcwd();
         chdir($this->path);
-
         $p4SyncCommand = $this->generateP4Command('sync -f ');
-        $p4SyncCommand = $p4SyncCommand . '@' . $label;
+        if (null != $sourceReference) {
+            $p4SyncCommand = $p4SyncCommand . '@' . $sourceReference;
+        }
         $this->executeCommand($p4SyncCommand);
-
         chdir($prevDir);
     }
 
@@ -368,16 +368,6 @@ class Perforce
         }
 
         return;
-    }
-
-    public function getWindowsFlag()
-    {
-        return $this->windowsFlag;
-    }
-
-    public function setWindowsFlag($flag)
-    {
-        $this->windowsFlag = $flag;
     }
 
     public function windowsLogin($password)

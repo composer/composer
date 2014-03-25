@@ -140,7 +140,6 @@ class PerforceDriver extends VcsDriver
     {
         $this->composerInfo = $this->perforce->getComposerInformation('//' . $this->depot . '/' . $identifier);
         $this->composerInfoIdentifier = $identifier;
-        $result = false;
         return !empty($this->composerInfo);
     }
 
@@ -181,16 +180,6 @@ class PerforceDriver extends VcsDriver
     public function getBranch()
     {
         return $this->branch;
-    }
-
-    public function setPerforce(Perforce $perforce)
-    {
-        $this->perforce = $perforce;
-    }
-
-    public function getPerforce()
-    {
-        return $this->perforce;
     }
 
 }

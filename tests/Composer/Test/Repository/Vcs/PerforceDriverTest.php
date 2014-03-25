@@ -15,6 +15,7 @@ namespace Composer\Test\Repository\Vcs;
 use Composer\Repository\Vcs\PerforceDriver;
 use Composer\Util\Filesystem;
 use Composer\Config;
+use Composer\Util\Perforce;
 
 /**
  * @author Matt Whittom <Matt.Whittom@veteransunited.com>
@@ -33,7 +34,7 @@ class PerforceDriverTest extends \PHPUnit_Framework_TestCase
     const TEST_DEPOT  = 'TEST_DEPOT_CONFIG';
     const TEST_BRANCH = 'TEST_BRANCH_CONFIG';
 
-    public function setUp()
+    protected function setUp()
     {
         $this->testPath         = sys_get_temp_dir() . '/composer-test';
         $this->config           = $this->getTestConfig($this->testPath);
@@ -43,9 +44,10 @@ class PerforceDriverTest extends \PHPUnit_Framework_TestCase
         $this->remoteFileSystem = $this->getMockRemoteFilesystem();
         $this->perforce         = $this->getMockPerforce();
         $this->driver = new PerforceDriver($this->repoConfig, $this->io, $this->config, $this->process, $this->remoteFileSystem);
+        $this->overrideDriverInternalPerforce($this->perforce);
     }
 
-    public function tearDown()
+    protected function tearDown()
     {
         //cleanup directory under test path
         $fs = new Filesystem;
@@ -58,6 +60,14 @@ class PerforceDriverTest extends \PHPUnit_Framework_TestCase
         $this->repoConfig       = null;
         $this->config           = null;
         $this->testPath         = null;
+    }
+
+    protected function overrideDriverInternalPerforce(Perforce $perforce)
+    {
+        $reflectionClass = new \ReflectionClass($this->driver);
+        $property = $reflectionClass->getProperty('perforce');
+        $property->setAccessible(true);
+        $property->setValue($this->driver, $perforce);
     }
 
     protected function getTestConfig($testPath)
@@ -100,7 +110,6 @@ class PerforceDriverTest extends \PHPUnit_Framework_TestCase
     public function testInitializeCapturesVariablesFromRepoConfig()
     {
         $driver = new PerforceDriver($this->repoConfig, $this->io, $this->config, $this->process, $this->remoteFileSystem);
-        $driver->setPerforce($this->perforce);
         $driver->initialize();
         $this->assertEquals(self::TEST_URL, $driver->getUrl());
         $this->assertEquals(self::TEST_DEPOT, $driver->getDepot());
@@ -109,7 +118,6 @@ class PerforceDriverTest extends \PHPUnit_Framework_TestCase
 
     public function testInitializeLogsInAndConnectsClient()
     {
-        $this->driver->setPerforce($this->perforce);
         $this->perforce->expects($this->at(0))->method('p4Login')->with($this->identicalTo($this->io));
         $this->perforce->expects($this->at(1))->method('checkStream')->with($this->equalTo(self::TEST_DEPOT));
         $this->perforce->expects($this->at(2))->method('writeP4ClientSpec');
@@ -125,7 +133,6 @@ class PerforceDriverTest extends \PHPUnit_Framework_TestCase
     {
         $identifier = 'TEST_IDENTIFIER';
         $formatted_depot_path = '//' . self::TEST_DEPOT . '/' . $identifier;
-        $this->driver->setPerforce($this->perforce);
         $this->perforce->expects($this->any())->method('getComposerInformation')->with($this->equalTo($formatted_depot_path))->will($this->returnValue(array()));
         $this->driver->initialize();
         $result = $this->driver->hasComposerFile($identifier);
@@ -140,7 +147,6 @@ class PerforceDriverTest extends \PHPUnit_Framework_TestCase
     {
         $identifier = 'TEST_IDENTIFIER';
         $formatted_depot_path = '//' . self::TEST_DEPOT . '/' . $identifier;
-        $this->driver->setPerforce($this->perforce);
         $this->perforce->expects($this->any())->method('getComposerInformation')->with($this->equalTo($formatted_depot_path))->will($this->returnValue(array('')));
         $this->driver->initialize();
         $result = $this->driver->hasComposerFile($identifier);
@@ -163,9 +169,7 @@ class PerforceDriverTest extends \PHPUnit_Framework_TestCase
     public function testCleanup()
     {
         $this->perforce->expects($this->once())->method('cleanupClientSpec');
-        $this->driver->setPerforce($this->perforce);
         $this->driver->cleanup();
-        $this->assertNull($this->driver->getPerforce());
     }
 
 }
