@@ -370,16 +370,6 @@ class Perforce
         return;
     }
 
-    public function getWindowsFlag()
-    {
-        return $this->windowsFlag;
-    }
-
-    public function setWindowsFlag($flag)
-    {
-        $this->windowsFlag = $flag;
-    }
-
     public function windowsLogin($password)
     {
         $command = $this->generateP4Command(' login -a');

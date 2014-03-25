@@ -32,7 +32,7 @@ class PerforceDownloaderTest extends \PHPUnit_Framework_TestCase
     protected $repository;
     protected $testPath;
 
-    public function setUp()
+    protected function setUp()
     {
         $this->testPath        = sys_get_temp_dir() . '/composer-test';
         $this->repoConfig      = $this->getRepoConfig();
@@ -44,7 +44,7 @@ class PerforceDownloaderTest extends \PHPUnit_Framework_TestCase
         $this->downloader      = new PerforceDownloader($this->io, $this->config, $this->processExecutor);
     }
 
-    public function tearDown()
+    protected function tearDown()
     {
         $this->downloader = null;
         $this->package    = null;

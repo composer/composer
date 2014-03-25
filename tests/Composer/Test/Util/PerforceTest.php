@@ -31,15 +31,15 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
     const TEST_PORT        = 'port';
     const TEST_PATH        = 'path';
 
-    public function setUp()
+    protected function setUp()
     {
         $this->processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
         $this->repoConfig = $this->getTestRepoConfig();
         $this->io = $this->getMockIOInterface();
-        $this->perforce = new Perforce($this->repoConfig, self::TEST_PORT, self::TEST_PATH, $this->processExecutor, true, $this->io);
+        $this->createNewPerforceWithWindowsFlag(true);
     }
 
-    public function tearDown()
+    protected function tearDown()
     {
         $this->perforce        = null;
         $this->io              = null;
@@ -60,6 +60,11 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
     public function getMockIOInterface()
     {
         return $this->getMock('Composer\IO\IOInterface');
+    }
+
+    protected function createNewPerforceWithWindowsFlag($flag)
+    {
+        $this->perforce = new Perforce($this->repoConfig, self::TEST_PORT, self::TEST_PATH, $this->processExecutor, $flag, $this->io);
     }
 
     public function testGetClientWithoutStream()
@@ -131,8 +136,8 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
 
     public function testQueryP4UserWithUserSetInP4VariablesWithWindowsOS()
     {
+        $this->createNewPerforceWithWindowsFlag(true);
         $this->perforce->setUser(null);
-        $this->perforce->setWindowsFlag(true);
         $expectedCommand = 'p4 set';
         $callback = function($command, &$output)
             {
@@ -149,8 +154,8 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
 
     public function testQueryP4UserWithUserSetInP4VariablesNotWindowsOS()
     {
+        $this->createNewPerforceWithWindowsFlag(false);
         $this->perforce->setUser(null);
-        $this->perforce->setWindowsFlag(false);
         $expectedCommand = 'echo $P4USER';
         $callback = function($command, &$output)
             {
@@ -179,8 +184,8 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
 
     public function testQueryP4UserStoresResponseToQueryForUserWithWindows()
     {
+        $this->createNewPerforceWithWindowsFlag(true);
         $this->perforce->setUser(null);
-        $this->perforce->setWindowsFlag(true);
         $expectedQuestion = 'Enter P4 User:';
         $expectedCommand  = 'p4 set P4USER=TEST_QUERY_USER';
         $this->io->expects($this->at(0))
@@ -196,8 +201,8 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
 
     public function testQueryP4UserStoresResponseToQueryForUserWithoutWindows()
     {
+        $this->createNewPerforceWithWindowsFlag(false);
         $this->perforce->setUser(null);
-        $this->perforce->setWindowsFlag(false);
         $expectedQuestion = 'Enter P4 User:';
         $expectedCommand  = 'export P4USER=TEST_QUERY_USER';
         $this->io->expects($this->at(0))
@@ -226,7 +231,7 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
 
     public function testQueryP4PasswordWithPasswordSetInP4VariablesWithWindowsOS()
     {
-        $this->perforce->setWindowsFlag(true);
+        $this->createNewPerforceWithWindowsFlag(true);
         $expectedCommand = 'p4 set';
         $callback = function($command, &$output)
             {
@@ -243,7 +248,7 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
 
     public function testQueryP4PasswordWithPasswordSetInP4VariablesNotWindowsOS()
     {
-        $this->perforce->setWindowsFlag(false);
+        $this->createNewPerforceWithWindowsFlag(false);
         $expectedCommand = 'echo $P4PASSWD';
         $callback = function($command, &$output) 
             {
