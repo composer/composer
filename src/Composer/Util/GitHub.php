@@ -129,7 +129,7 @@ class GitHub
 
                 // no existing token, create one
                 if (empty($contents['token'])) {
-                    $headers[] = array('Content-Type: application/json');
+                    $headers[] = 'Content-Type: application/json';
 
                     $contents = JsonFile::parseJson($this->remoteFilesystem->getContents($originUrl, 'https://'. $apiUrl . '/authorizations', false, array(
                         'retry-auth-failure' => false,
