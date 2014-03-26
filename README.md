@@ -39,8 +39,9 @@ To run tests, or develop Composer itself, you must use the sources and not the p
 file as described above.
 
 1. Run `git clone https://github.com/composer/composer.git`
-2. Download the [`composer.phar`](https://getcomposer.org/composer.phar) executable
-3. Run Composer to get the dependencies: `cd composer && php ../composer.phar install`
+2 run git submodule update
+3. Run Composer to get the dependencies: `php5 bin/composer install`
+this uses the bootstrap includes.
 
 You can now run Composer by executing the `bin/composer` script: `php /path/to/composer/bin/composer`
 
@@ -92,6 +93,10 @@ Authors
 
 Nils Adermann - <naderman@naderman.de> - <http://twitter.com/naderman> - <http://www.naderman.de><br />
 Jordi Boggiano - <j.boggiano@seld.be> - <http://twitter.com/seldaek> - <http://seld.be><br />
+
+Contributions
+-------------
+James Michael DuPont - jamesmikedupont@gmail.com
 
 See also the list of [contributors](https://github.com/composer/composer/contributors) who participated in this project.
 

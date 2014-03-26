@@ -1,0 +1,6 @@
+[submodule "vendor_libs/symfony"]
+	path = vendor_libs/symfony
+	url = https://github.com/symfony/symfony.git
+[submodule "vendor_libs/json_schema"]
+	path = vendor_libs/json_schema
+	url = git@github.com:h4ck3rm1k3/json-schema.git
