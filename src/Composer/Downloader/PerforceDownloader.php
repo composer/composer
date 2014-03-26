@@ -22,7 +22,6 @@ use Composer\Util\Perforce;
 class PerforceDownloader extends VcsDownloader
 {
     protected $perforce;
-    protected $perforceInjected = false;
 
     /**
      * {@inheritDoc}
@@ -30,7 +29,7 @@ class PerforceDownloader extends VcsDownloader
     public function doDownload(PackageInterface $package, $path)
     {
         $ref = $package->getSourceReference();
-        $label = $package->getPrettyVersion();
+        $label = $this->getLabelFromSourceReference($ref);
 
         $this->io->write('    Cloning ' . $ref);
         $this->initPerforce($package, $path);
@@ -42,9 +41,19 @@ class PerforceDownloader extends VcsDownloader
         $this->perforce->cleanupClientSpec();
     }
 
+    private function getLabelFromSourceReference($ref)
+    {
+        $pos = strpos($ref,'@');
+        if (false !== $pos)
+        {
+            return substr($ref, $pos + 1);
+        }
+        return null;
+    }
+
     public function initPerforce($package, $path)
     {
-        if ($this->perforce) {
+        if (!empty($this->perforce)) {
             $this->perforce->initializePath($path);
             return;
         }
@@ -54,7 +63,7 @@ class PerforceDownloader extends VcsDownloader
         if ($repository instanceof VcsRepository) {
             $repoConfig = $this->getRepoConfig($repository);
         }
-        $this->perforce = Perforce::create($repoConfig, $package->getSourceUrl(), $path);
+        $this->perforce = Perforce::create($repoConfig, $package->getSourceUrl(), $path, $this->process, $this->io);
     }
 
     private function getRepoConfig(VcsRepository $repository)
