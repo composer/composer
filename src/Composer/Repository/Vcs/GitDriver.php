@@ -73,7 +73,34 @@ class GitDriver extends VcsDriver
                         throw new \RuntimeException('Failed to clone '.$this->url.', git was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput());
                     }
 
-                    throw new \RuntimeException('Failed to clone '.$this->url.', could not read packages from it' . "\n\n" .$output);
+                    if (
+                        $this->io->isInteractive() &&
+                        preg_match('{(https?://)([^/]+)(.*)$}i', $this->url, $match) &&
+                        strpos($output, 'fatal: Authentication failed') !== false
+                    ) {
+                        if ($this->io->hasAuthentication($match[2])) {
+                            $auth = $this->io->getAuthentication($match[2]);
+                        } else {
+                            $this->io->write($this->url.' requires Authentication');
+                            $auth = array(
+                                'username'  => $this->io->ask('Username: '),
+                                'password'  => $this->io->askAndHideAnswer('Password: '),
+                            );
+                        }
+
+                        $url = $match[1].urlencode($auth['username']).':'.urlencode($auth['password']).'@'.$match[2].$match[3];
+
+                        $command = sprintf('git clone --mirror %s %s', escapeshellarg($url), escapeshellarg($this->repoDir));
+
+                        if (0 === $this->process->execute($command, $output)) {
+                            $this->io->setAuthentication($match[2], $auth['username'], $auth['password']);
+                        } else {
+                            $output = $this->process->getErrorOutput();
+                            throw new \RuntimeException('Failed to clone '.$this->url.', could not read packages from it' . "\n\n" .$output);
+                        }
+                    } else {
+                        throw new \RuntimeException('Failed to clone '.$this->url.', could not read packages from it' . "\n\n" .$output);
+                    }
                 }
             }
         }
