@@ -151,7 +151,9 @@ class Cache
 
             $finder = $this->getFinder()->date('until '.$expire->format('Y-m-d H:i:s'));
             foreach ($finder as $file) {
-                unlink($file->getRealPath());
+                if (file_exists($file->getRealPath())) {
+                    unlink($file->getRealPath());
+                }
             }
 
             $totalSize = $this->filesystem->size($this->root);
@@ -159,8 +161,10 @@ class Cache
                 $iterator = $this->getFinder()->sortByAccessedTime()->getIterator();
                 while ($totalSize > $maxSize && $iterator->valid()) {
                     $filepath = $iterator->current()->getRealPath();
-                    $totalSize -= $this->filesystem->size($filepath);
-                    unlink($filepath);
+                    if (file_exists($filepath)) {
+                        $totalSize -= $this->filesystem->size($filepath);
+                        unlink($filepath);
+                    }
                     $iterator->next();
                 }
             }
