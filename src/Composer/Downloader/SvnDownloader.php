@@ -47,8 +47,13 @@ class SvnDownloader extends VcsDownloader
             throw new \RuntimeException('The .svn directory is missing from '.$path.', see http://getcomposer.org/commit-deps for more information');
         }
 
+        $ignoreAncestryCommand = "";
+        if ((int)$this->process->execute("svn --version | egrep 'version [0-9\.]+' -o | tr -d 'version .'") >= 170) {
+            $ignoreAncestryCommand = " --ignore-ancestry";
+        }
+
         $this->io->write("    Checking out " . $ref);
-        $this->execute($url, "svn switch --ignore-ancestry", sprintf("%s/%s", $url, $ref), $path);
+        $this->execute($url, "svn switch" . $ignoreAncestry, sprintf("%s/%s", $url, $ref), $path);
     }
 
     /**
