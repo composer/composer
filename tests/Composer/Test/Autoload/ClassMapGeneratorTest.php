@@ -109,10 +109,18 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
         $finder = new Finder();
         $finder->files()->in(__DIR__ . '/Fixtures/Ambiguous');
 
-        ClassMapGenerator::createMap($finder);
+        $io = $this->getMockBuilder('Composer\IO\ConsoleIO')
+            ->disableOriginalConstructor()
+            ->getMock();
 
-        $this->assertEquals(1, count(ClassMapGenerator::$ambiguousReferences));
-        $this->assertEquals('A', ClassMapGenerator::$ambiguousReferences[0]['class']);
+        $a = realpath(__DIR__.'/Fixtures/Ambiguous/A.php');
+        $b = realpath(__DIR__.'/Fixtures/Ambiguous/other/A.php');
+
+        $io->expects($this->once())
+            ->method('write')
+            ->with('<warning>Warning: Ambiguous class resolution, "A" was found in both "'.$a.'" and "'.$b.'", the first will be used.</warning>');
+
+        ClassMapGenerator::createMap($finder, null, $io);
     }
 
     /**

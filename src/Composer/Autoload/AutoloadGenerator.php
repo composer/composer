@@ -40,7 +40,7 @@ class AutoloadGenerator
 
     private $devMode = false;
 
-    public function __construct(EventDispatcher $eventDispatcher, IOInterface $io=null)
+    public function __construct(EventDispatcher $eventDispatcher, IOInterface $io = null)
     {
         $this->eventDispatcher = $eventDispatcher;
         $this->io = $io;
@@ -184,7 +184,7 @@ EOF;
                             preg_quote($dir),
                             ($psrType === 'psr-0' && strpos($namespace, '_') === false) ? preg_quote(strtr($namespace, '\\', '/')) : ''
                         );
-                        foreach (ClassMapGenerator::createMap($dir, $whitelist) as $class => $path) {
+                        foreach (ClassMapGenerator::createMap($dir, $whitelist, $this->io) as $class => $path) {
                             if ('' === $namespace || 0 === strpos($class, $namespace)) {
                                 if (!isset($classMap[$class])) {
                                     $path = $this->getPathCode($filesystem, $basePath, $vendorPath, $path);
@@ -198,15 +198,9 @@ EOF;
         }
 
         foreach ($autoloads['classmap'] as $dir) {
-            foreach (ClassMapGenerator::createMap($dir) as $class => $path) {
+            foreach (ClassMapGenerator::createMap($dir, null, $this->io) as $class => $path) {
                 $path = $this->getPathCode($filesystem, $basePath, $vendorPath, $path);
                 $classMap[$class] = $path.",\n";
-            }
-        }
-
-        if ($this->io && count(ClassMapGenerator::$ambiguousReferences) > 0) {
-            foreach (ClassMapGenerator::$ambiguousReferences as $ambiguousReference) {
-                $this->io->write('<info>Warning: Ambiguous class "'.$ambiguousReference['class'].'" resolution; defined in "'.$ambiguousReference[0].'" and in "'.$ambiguousReference[1].'" files.</info>');
             }
         }
 

@@ -12,21 +12,18 @@
  */
 
 namespace Composer\Autoload;
+
 use Symfony\Component\Finder\Finder;
+use Composer\IO\IOInterface;
 
 /**
  * ClassMapGenerator
  *
  * @author Gyula Sallai <salla016@gmail.com>
+ * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 class ClassMapGenerator
 {
-
-    /**
-     * @var array
-     */
-    public static $ambiguousReferences = array();
-
     /**
      * Generate a class map file
      *
@@ -54,7 +51,7 @@ class ClassMapGenerator
      *
      * @throws \RuntimeException When the path is neither an existing file nor directory
      */
-    public static function createMap($path, $whitelist = null)
+    public static function createMap($path, $whitelist = null, IOInterface $io = null)
     {
         if (is_string($path)) {
             if (is_file($path)) {
@@ -85,15 +82,14 @@ class ClassMapGenerator
             $classes = self::findClasses($filePath);
 
             foreach ($classes as $class) {
-                if (array_key_exists($class, $map)) {
-                    self::$ambiguousReferences[] = array(
-                        'class' => $class,
-                        '0' => $map[$class],
-                        '1' => $filePath
+                if (!isset($map[$class])) {
+                    $map[$class] = $filePath;
+                } elseif ($io) {
+                    $io->write(
+                        '<warning>Warning: Ambiguous class resolution, "'.$class.'"'.
+                        ' was found in both "'.$map[$class].'" and "'.$filePath.'", the first will be used.</warning>'
                     );
                 }
-
-                $map[$class] = $filePath;
             }
         }
 
