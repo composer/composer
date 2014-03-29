@@ -15,6 +15,7 @@ namespace Composer\Autoload;
 use Composer\Config;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Installer\InstallationManager;
+use Composer\IO\IOInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
@@ -32,11 +33,17 @@ class AutoloadGenerator
      */
     private $eventDispatcher;
 
+    /**
+     * @var IOInterface
+     */
+    private $io;
+
     private $devMode = false;
 
-    public function __construct(EventDispatcher $eventDispatcher)
+    public function __construct(EventDispatcher $eventDispatcher, IOInterface $io=null)
     {
         $this->eventDispatcher = $eventDispatcher;
+        $this->io = $io;
     }
 
     public function setDevMode($devMode = true)
@@ -194,6 +201,12 @@ EOF;
             foreach (ClassMapGenerator::createMap($dir) as $class => $path) {
                 $path = $this->getPathCode($filesystem, $basePath, $vendorPath, $path);
                 $classMap[$class] = $path.",\n";
+            }
+        }
+
+        if ($this->io && count(ClassMapGenerator::$ambiguousReferences) > 0) {
+            foreach (ClassMapGenerator::$ambiguousReferences as $ambiguousReference) {
+                $this->io->write('<info>Warning: Ambiguous class "'.$ambiguousReference['class'].'" resolution; defined in "'.$ambiguousReference[0].'" and in "'.$ambiguousReference[1].'" files.</info>');
             }
         }
 
