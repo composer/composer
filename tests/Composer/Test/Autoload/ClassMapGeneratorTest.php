@@ -115,12 +115,22 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
 
         $a = realpath(__DIR__.'/Fixtures/Ambiguous/A.php');
         $b = realpath(__DIR__.'/Fixtures/Ambiguous/other/A.php');
+        $msg = '';
 
         $io->expects($this->once())
             ->method('write')
-            ->with('<warning>Warning: Ambiguous class resolution, "A" was found in both "'.$a.'" and "'.$b.'", the first will be used.</warning>');
+            ->will($this->returnCallback(function ($text) use (&$msg) {
+                $msg = $text;
+            }));
+
+        $messages = array(
+            '<warning>Warning: Ambiguous class resolution, "A" was found in both "'.$a.'" and "'.$b.'", the first will be used.</warning>',
+            '<warning>Warning: Ambiguous class resolution, "A" was found in both "'.$b.'" and "'.$a.'", the first will be used.</warning>',
+        );
 
         ClassMapGenerator::createMap($finder, null, $io);
+
+        $this->assertTrue(in_array($msg, $messages, true), $msg.' not found in expected messages ('.var_export($messages, true).')');
     }
 
     /**
