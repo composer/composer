@@ -107,10 +107,11 @@ class Filesystem
         $ri = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::CHILD_FIRST);
 
         foreach ($ri as $file) {
+            $filePath = $file->getPathname();
             if ($file->isDir()) {
-                rmdir($file->getPathname());
-            } else {
-                unlink($file->getPathname());
+                rmdir($filePath);
+            } elseif (file_exists($filePath)) {
+                unlink($filePath);
             }
         }
 

@@ -194,7 +194,9 @@ class ConsoleIO extends BaseIO
             $this->write('');
 
             // clean up
-            if (isset($tmpExe)) {
+            if (isset($tmpExe)
+            &&  file_exists($tmpExe)
+            ) {
                 unlink($tmpExe);
             }
 

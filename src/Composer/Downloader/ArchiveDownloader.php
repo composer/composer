@@ -47,7 +47,9 @@ abstract class ArchiveDownloader extends FileDownloader
                     throw $e;
                 }
 
-                unlink($fileName);
+                if (file_exists($fileName)) {
+                    unlink($fileName);
+                }
 
                 // get file list
                 $contentDir = $this->listFiles($temporaryDir);

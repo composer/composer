@@ -187,7 +187,9 @@ EOT
             unset($phar);
             rename($newFilename, $localFilename);
         } catch (\Exception $e) {
-            if ($backupTarget) {
+            if ($backupTarget
+            &&  file_exists($newFilename)
+            ) {
                 @unlink($newFilename);
             }
             if (!$e instanceof \UnexpectedValueException && !$e instanceof \PharException) {
