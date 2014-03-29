@@ -12,6 +12,7 @@
 namespace Composer\Test\Autoload;
 
 use Composer\Autoload\ClassMapGenerator;
+use Symfony\Component\Finder\Finder;
 
 class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
 {
@@ -78,11 +79,9 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
 
     public function testCreateMapFinderSupport()
     {
-        if (!class_exists('Symfony\\Component\\Finder\\Finder')) {
-            $this->markTestSkipped('Finder component is not available');
-        }
+        $this->checkIfFinderIsAvailable();
 
-        $finder = new \Symfony\Component\Finder\Finder();
+        $finder = new Finder();
         $finder->files()->in(__DIR__ . '/Fixtures/beta/NamespaceCollision');
 
         $this->assertEqualsNormalized(array(
@@ -103,6 +102,18 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
 
         $find->invoke(null, __DIR__.'/no-file');
     }
+    public function testAmbiguousReference()
+    {
+        $this->checkIfFinderIsAvailable();
+
+        $finder = new Finder();
+        $finder->files()->in(__DIR__ . '/Fixtures/Ambiguous');
+
+        ClassMapGenerator::createMap($finder);
+
+        $this->assertEquals(1, count(ClassMapGenerator::$ambiguousReferences));
+        $this->assertEquals('A', ClassMapGenerator::$ambiguousReferences[0]['class']);
+    }
 
     /**
      * @expectedException \RuntimeException
@@ -122,5 +133,12 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
             $actual[$ns] = strtr($path, '\\', '/');
         }
         $this->assertEquals($expected, $actual, $message);
+    }
+
+    private function checkIfFinderIsAvailable()
+    {
+        if (!class_exists('Symfony\\Component\\Finder\\Finder')) {
+            $this->markTestSkipped('Finder component is not available');
+        }
     }
 }

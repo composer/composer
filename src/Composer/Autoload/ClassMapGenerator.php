@@ -21,6 +21,12 @@ use Symfony\Component\Finder\Finder;
  */
 class ClassMapGenerator
 {
+
+    /**
+     * @var array
+     */
+    public static $ambiguousReferences = array();
+
     /**
      * Generate a class map file
      *
@@ -79,6 +85,14 @@ class ClassMapGenerator
             $classes = self::findClasses($filePath);
 
             foreach ($classes as $class) {
+                if (array_key_exists($class, $map)) {
+                    self::$ambiguousReferences[] = array(
+                        'class' => $class,
+                        '0' => $map[$class],
+                        '1' => $filePath
+                    );
+                }
+
                 $map[$class] = $filePath;
             }
         }

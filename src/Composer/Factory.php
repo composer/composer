@@ -253,7 +253,7 @@ class Factory
         $composer->setEventDispatcher($dispatcher);
 
         // initialize autoload generator
-        $generator = new AutoloadGenerator($dispatcher);
+        $generator = new AutoloadGenerator($dispatcher, $io);
         $composer->setAutoloadGenerator($generator);
 
         // add installers to the manager
