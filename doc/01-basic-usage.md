@@ -82,6 +82,10 @@ including, 2.0). Since in theory there should be no backwards compatibility
 breaks until 2.0, that works well. Another way of looking at it is that using
 `~` specifies a minimum version, but allows the last digit specified to go up.
 
+> **Note:** Though `2.0-beta.1` is considered before `2.0`, a version constraint
+> like `~1.2` would not install it. So it will install every release in the same
+> *namespace* and not in the `2.0` namespace.
+
 ### Stability
 
 By default only stable releases are taken into consideration. If you would like
