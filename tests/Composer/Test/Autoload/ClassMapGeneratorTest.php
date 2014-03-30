@@ -134,6 +134,27 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * If one file has a class or interface defined more than once,
+     * an ambiguous reference warning should not be produced
+     */
+    public function testUnambiguousReference()
+    {
+        $this->checkIfFinderIsAvailable();
+
+        $finder = new Finder();
+        $finder->files()->in(__DIR__ . '/Fixtures/Unambiguous');
+
+        $io = $this->getMockBuilder('Composer\IO\ConsoleIO')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $io->expects($this->never())
+            ->method('write');
+
+        ClassMapGenerator::createMap($finder, null, $io);
+    }
+
+    /**
      * @expectedException \RuntimeException
      * @expectedExceptionMessage Could not scan for classes inside
      */
