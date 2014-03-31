@@ -15,7 +15,7 @@ namespace Composer\IO;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Helper\HelperSet;
-use Composer\Util\ProcessExecutor;
+use Symfony\Component\Process\ExecutableFinder;
 
 /**
  * The Input/Output helper.
@@ -170,12 +170,12 @@ class ConsoleIO extends BaseIO
      */
     public function askAndHideAnswer($question)
     {
-        $process = new ProcessExecutor($this);
-
         // handle windows
         if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+            $finder = new ExecutableFinder();
+
             // use bash if it's present
-            if (0 === $process->execute("bash -c 'echo OK'", $output) && 'OK' === rtrim($output)) {
+            if ($finder->find('bash') && $finder->find('stty')) {
                 $this->write($question, false);
                 $value = rtrim(shell_exec('bash -c "stty -echo; read -r mypassword; stty echo; echo $mypassword"'));
                 $this->write('');
