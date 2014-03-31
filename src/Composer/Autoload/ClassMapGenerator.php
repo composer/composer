@@ -84,7 +84,7 @@ class ClassMapGenerator
             foreach ($classes as $class) {
                 if (!isset($map[$class])) {
                     $map[$class] = $filePath;
-                } elseif ($io && $map[$class] !== $filePath) {
+                } elseif ($io && $map[$class] !== $filePath && preg_match('{/(test|fixture)s?/}i', strtr($map[$class].' '.$filePath, '\\', '/'))) {
                     $io->write(
                         '<warning>Warning: Ambiguous class resolution, "'.$class.'"'.
                         ' was found in both "'.$map[$class].'" and "'.$filePath.'", the first will be used.</warning>'

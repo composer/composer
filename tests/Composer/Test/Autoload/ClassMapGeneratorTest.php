@@ -102,6 +102,7 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
 
         $find->invoke(null, __DIR__.'/no-file');
     }
+
     public function testAmbiguousReference()
     {
         $this->checkIfFinderIsAvailable();
