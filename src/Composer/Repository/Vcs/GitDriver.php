@@ -88,7 +88,7 @@ class GitDriver extends VcsDriver
                             );
                         }
 
-                        $url = $match[1].urlencode($auth['username']).':'.urlencode($auth['password']).'@'.$match[2].$match[3];
+                        $url = $match[1].rawurlencode($auth['username']).':'.rawurlencode($auth['password']).'@'.$match[2].$match[3];
 
                         $command = sprintf('git clone --mirror %s %s', escapeshellarg($url), escapeshellarg($this->repoDir));
 
