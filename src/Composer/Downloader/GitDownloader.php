@@ -353,7 +353,7 @@ class GitDownloader extends VcsDownloader
 
                 if ($this->io->hasAuthentication($match[1])) {
                     $auth = $this->io->getAuthentication($match[1]);
-                    $url = 'https://'.urlencode($auth['username']) . ':' . urlencode($auth['password']) . '@'.$match[1].'/'.$match[2].'.git';
+                    $url = 'https://'.rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@'.$match[1].'/'.$match[2].'.git';
 
                     $command = call_user_func($commandCallable, $url);
                     if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
@@ -376,7 +376,7 @@ class GitDownloader extends VcsDownloader
                     );
                 }
 
-                $url = $match[1].urlencode($auth['username']).':'.urlencode($auth['password']).'@'.$match[2].$match[3];
+                $url = $match[1].rawurlencode($auth['username']).':'.rawurlencode($auth['password']).'@'.$match[2].$match[3];
 
                 $command = call_user_func($commandCallable, $url);
                 if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
