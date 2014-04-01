@@ -98,7 +98,8 @@ Composer is part of the homebrew-php project.
 ```sh
 brew update
 brew tap josegonzalez/homebrew-php
-brew install php53-intl # if you don't already have new-ish php
+brew tap homebrew/versions
+brew install php53-intl
 brew install josegonzalez/php/composer
 ```
 
