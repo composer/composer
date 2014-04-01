@@ -13,6 +13,7 @@ namespace Composer\Test\Autoload;
 
 use Composer\Autoload\ClassMapGenerator;
 use Symfony\Component\Finder\Finder;
+use Composer\Util\Filesystem;
 
 class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
 {
@@ -107,15 +108,23 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
     {
         $this->checkIfFinderIsAvailable();
 
+        $tempDir = sys_get_temp_dir().'/ComposerTestAmbiguousRefs';
+        if (!is_dir($tempDir.'/other')) {
+            mkdir($tempDir.'/other', 0777, true);
+        }
+
         $finder = new Finder();
-        $finder->files()->in(__DIR__ . '/Fixtures/Ambiguous');
+        $finder->files()->in($tempDir);
 
         $io = $this->getMockBuilder('Composer\IO\ConsoleIO')
             ->disableOriginalConstructor()
             ->getMock();
 
-        $a = realpath(__DIR__.'/Fixtures/Ambiguous/A.php');
-        $b = realpath(__DIR__.'/Fixtures/Ambiguous/other/A.php');
+        file_put_contents($tempDir.'/A.php', "<?php\nclass A {}");
+        file_put_contents($tempDir.'/other/A.php', "<?php\nclass A {}");
+
+        $a = realpath($tempDir.'/A.php');
+        $b = realpath($tempDir.'/other/A.php');
         $msg = '';
 
         $io->expects($this->once())
@@ -132,6 +141,9 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
         ClassMapGenerator::createMap($finder, null, $io);
 
         $this->assertTrue(in_array($msg, $messages, true), $msg.' not found in expected messages ('.var_export($messages, true).')');
+
+        $fs = new Filesystem();
+        $fs->removeDirectory($tempDir);
     }
 
     /**
