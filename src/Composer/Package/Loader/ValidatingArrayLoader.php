@@ -210,6 +210,7 @@ class ValidatingArrayLoader implements LoaderInterface
         // TODO validate package repositories' packages using this recursively
 
         $this->validateFlatArray('include-path');
+        $this->validateArray('options');
 
         // branch alias validation
         if (isset($this->config['extra']['branch-alias'])) {
