@@ -99,7 +99,7 @@ Composer is part of the homebrew-php project.
 brew update
 brew tap josegonzalez/homebrew-php
 brew tap homebrew/versions
-brew install php53-intl
+brew install php55-intl
 brew install josegonzalez/php/composer
 ```
 
