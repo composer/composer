@@ -56,7 +56,7 @@ class CreateProjectCommand extends Command
             ->setDefinition(array(
                 new InputArgument('package', InputArgument::OPTIONAL, 'Package name to be installed'),
                 new InputArgument('directory', InputArgument::OPTIONAL, 'Directory where the files should be created'),
-                new InputArgument('version', InputArgument::OPTIONAL, 'Version, will defaults to latest'),
+                new InputArgument('version', InputArgument::OPTIONAL, 'Version, will default to latest'),
                 new InputOption('stability', 's', InputOption::VALUE_REQUIRED, 'Minimum-stability allowed (unless a version is specified).'),
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist even for dev versions.'),
