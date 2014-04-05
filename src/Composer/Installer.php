@@ -223,16 +223,18 @@ class Installer
         }
         $this->installationManager->notifyInstalls();
 
-        // output suggestions
-        foreach ($this->suggestedPackages as $suggestion) {
-            $target = $suggestion['target'];
-            foreach ($installedRepo->getPackages() as $package) {
-                if (in_array($target, $package->getNames())) {
-                    continue 2;
+        // output suggestions if we're in dev mode
+        if (!$this->devMode) {
+            foreach ($this->suggestedPackages as $suggestion) {
+                $target = $suggestion['target'];
+                foreach ($installedRepo->getPackages() as $package) {
+                    if (in_array($target, $package->getNames())) {
+                        continue 2;
+                    }
                 }
-            }
 
-            $this->io->write($suggestion['source'].' suggests installing '.$suggestion['target'].' ('.$suggestion['reason'].')');
+                $this->io->write($suggestion['source'].' suggests installing '.$suggestion['target'].' ('.$suggestion['reason'].')');
+            }
         }
 
         if (!$this->dryRun) {
