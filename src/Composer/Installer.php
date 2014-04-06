@@ -224,7 +224,7 @@ class Installer
         $this->installationManager->notifyInstalls();
 
         // output suggestions if we're in dev mode
-        if (!$this->devMode) {
+        if ($this->devMode) {
             foreach ($this->suggestedPackages as $suggestion) {
                 $target = $suggestion['target'];
                 foreach ($installedRepo->getPackages() as $package) {
