@@ -19,7 +19,7 @@ Installs a package in dev env
     }
 }
 --RUN--
-install --dev
+install
 --EXPECT--
 Installing a/a (1.0.0)
 Installing a/b (1.0.0)

@@ -34,7 +34,7 @@ Updates updateable packages in dry-run mode
     { "name": "a/b", "version": "1.0.0" }
 ]
 --RUN--
-update --dev --dry-run
+update --dry-run
 --EXPECT--
 Updating a/a (1.0.0) to a/a (1.0.1)
 Updating a/b (1.0.0) to a/b (2.0.0)

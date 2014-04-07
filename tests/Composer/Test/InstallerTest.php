@@ -203,7 +203,7 @@ class InstallerTest extends TestCase
         $application = new Application;
         $application->get('install')->setCode(function ($input, $output) use ($installer) {
             $installer
-                ->setDevMode($input->getOption('dev'))
+                ->setDevMode(!$input->getOption('no-dev'))
                 ->setDryRun($input->getOption('dry-run'));
 
             return $installer->run();
@@ -211,7 +211,7 @@ class InstallerTest extends TestCase
 
         $application->get('update')->setCode(function ($input, $output) use ($installer) {
             $installer
-                ->setDevMode($input->getOption('dev'))
+                ->setDevMode(!$input->getOption('no-dev'))
                 ->setUpdate(true)
                 ->setDryRun($input->getOption('dry-run'))
                 ->setUpdateWhitelist($input->getArgument('packages'))
