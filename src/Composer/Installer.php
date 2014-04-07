@@ -481,6 +481,7 @@ class Installer
         }
 
         $operations = $this->movePluginsToFront($operations);
+        $operations = $this->moveUninstallsToFront($operations);
 
         foreach ($operations as $operation) {
             // collect suggestions
@@ -589,6 +590,26 @@ class Installer
         }
 
         return array_merge($installerOps, $operations);
+    }
+
+    /**
+     * Removals of packages should be executed before installations in
+     * case two packages resolve to the same path (due to custom installers)
+     *
+     * @param  OperationInterface[] $operations
+     * @return OperationInterface[] reordered operation list
+     */
+    private function moveUninstallsToFront(array $operations)
+    {
+        $uninstOps = array();
+        foreach ($operations as $idx => $op) {
+            if ($op instanceof UninstallOperation) {
+                $uninstOps[] = $op;
+                unset($operations[$idx]);
+            }
+        }
+
+        return array_merge($uninstOps, $operations);
     }
 
     private function createPool($withDevReqs)
