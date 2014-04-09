@@ -16,24 +16,30 @@ use Composer\Package;
 use Composer\Package\BasePackage;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Package\Version\VersionParser;
+use Composer\Repository\PlatformRepository;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 class ValidatingArrayLoader implements LoaderInterface
 {
+    const CHECK_ALL = 1;
+    const CHECK_UNBOUND_CONSTRAINTS = 1;
+
     private $loader;
     private $versionParser;
     private $errors;
     private $warnings;
     private $config;
     private $strictName;
+    private $flags;
 
-    public function __construct(LoaderInterface $loader, $strictName = true, VersionParser $parser = null)
+    public function __construct(LoaderInterface $loader, $strictName = true, VersionParser $parser = null, $flags = 0)
     {
         $this->loader = $loader;
         $this->versionParser = $parser ?: new VersionParser();
         $this->strictName = $strictName;
+        $this->flags = $flags;
     }
 
     public function load(array $config, $class = 'Composer\Package\CompletePackage')
@@ -163,19 +169,16 @@ class ValidatingArrayLoader implements LoaderInterface
                             continue;
                         }
 
-                        if ('conflict' === $linkType || 'require-dev' === $linkType) {
-                            continue; // conflict can be unbound, and require-dev constraints will not impact shared libraries as they are root-only
-                        }
-
-                        if ($linkConstraint->matches($unboundConstraint)) {
-                            $this->warnings[] = $linkType.'.'.$package.' : unbound version constraint detected ('.$constraint.')';
-                            unset($this->config[$linkType][$package]);
+                        // check requires for unbound constraints on non-platform packages
+                        if (
+                            ($this->flags & self::CHECK_UNBOUND_CONSTRAINTS)
+                            && 'require' === $linkType
+                            && $linkConstraint->matches($unboundConstraint)
+                            && !preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $package)
+                        ) {
+                            $this->warnings[] = $linkType.'.'.$package.' : unbound version constraints ('.$constraint.') should be avoided';
                         }
                     }
-                }
-
-                if (empty($this->config[$linkType])) {
-                    unset($this->config[$linkType]);
                 }
             }
         }

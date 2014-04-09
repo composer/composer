@@ -119,7 +119,7 @@ class ConfigValidator
         }
 
         try {
-            $loader = new ValidatingArrayLoader(new ArrayLoader());
+            $loader = new ValidatingArrayLoader(new ArrayLoader(), true, null, ValidatingArrayLoader::CHECK_ALL);
             if (!isset($manifest['version'])) {
                 $manifest['version'] = '1.0.0';
             }

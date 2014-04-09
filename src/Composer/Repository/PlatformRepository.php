@@ -21,7 +21,7 @@ use Composer\Plugin\PluginInterface;
  */
 class PlatformRepository extends ArrayRepository
 {
-    const PLATFORM_PACKAGE_REGEX = '{^(?:php(?:-64bit)?|(?:ext|lib)-[^/]+)$}i';
+    const PLATFORM_PACKAGE_REGEX = '{^(?:php(?:-64bit)?|hhvm|(?:ext|lib)-[^/]+)$}i';
 
     protected function initialize()
     {

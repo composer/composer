@@ -29,7 +29,7 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
             ->method('load')
             ->with($config);
 
-        $loader = new ValidatingArrayLoader($internalLoader);
+        $loader = new ValidatingArrayLoader($internalLoader, true, null, ValidatingArrayLoader::CHECK_ALL);
         $loader->load($config);
     }
 
@@ -163,7 +163,7 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
     public function testLoadFailureThrowsException($config, $expectedErrors)
     {
         $internalLoader = $this->getMock('Composer\Package\Loader\LoaderInterface');
-        $loader = new ValidatingArrayLoader($internalLoader);
+        $loader = new ValidatingArrayLoader($internalLoader, true, null, ValidatingArrayLoader::CHECK_ALL);
         try {
             $loader->load($config);
             $this->fail('Expected exception to be thrown');
@@ -181,7 +181,7 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
     public function testLoadWarnings($config, $expectedWarnings)
     {
         $internalLoader = $this->getMock('Composer\Package\Loader\LoaderInterface');
-        $loader = new ValidatingArrayLoader($internalLoader);
+        $loader = new ValidatingArrayLoader($internalLoader, true, null, ValidatingArrayLoader::CHECK_ALL);
 
         $loader->load($config);
         $warnings = $loader->getWarnings();
@@ -193,15 +193,19 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider warningProvider
      */
-    public function testLoadSkipsWarningDataWhenIgnoringErrors($config)
+    public function testLoadSkipsWarningDataWhenIgnoringErrors($config, $expectedWarnings, $mustCheck = true)
     {
+        if (!$mustCheck) {
+            $this->assertTrue(true);
+            return;
+        }
         $internalLoader = $this->getMock('Composer\Package\Loader\LoaderInterface');
         $internalLoader
             ->expects($this->once())
             ->method('load')
             ->with(array('name' => 'a/b'));
 
-        $loader = new ValidatingArrayLoader($internalLoader);
+        $loader = new ValidatingArrayLoader($internalLoader, true, null, ValidatingArrayLoader::CHECK_ALL);
         $config['name'] = 'a/b';
         $loader->load($config);
     }
@@ -297,20 +301,17 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                     'require' => array(
                         'foo/baz' => '*',
                         'bar/baz' => '>=1.0',
-                    ),
-                    'provide' => array(
                         'bar/foo' => 'dev-master',
-                    ),
-                    'replace' => array(
                         'bar/hacked' => '@stable',
-                    )
+                    ),
                 ),
                 array(
-                    'require.foo/baz : unbound version constraint detected (*)',
-                    'require.bar/baz : unbound version constraint detected (>=1.0)',
-                    'provide.bar/foo : unbound version constraint detected (dev-master)',
-                    'replace.bar/hacked : unbound version constraint detected (@stable)',
-                )
+                    'require.foo/baz : unbound version constraints (*) should be avoided',
+                    'require.bar/baz : unbound version constraints (>=1.0) should be avoided',
+                    'require.bar/foo : unbound version constraints (dev-master) should be avoided',
+                    'require.bar/hacked : unbound version constraints (@stable) should be avoided',
+                ),
+                false
             ),
         );
     }
