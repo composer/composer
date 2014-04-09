@@ -1,8 +1,8 @@
 # Why are unbound version constraints a bad idea?
 
-A version constraint without an upper bound such as `*` or `>=3.4` will allow
-updates to any future version of the dependency. This includes major versions
-breaking backward compatibility.
+A version constraint without an upper bound such as `*`, `>=3.4` or
+`dev-master` will allow updates to any future version of the dependency.
+This includes major versions breaking backward compatibility.
 
 Once a release of your package is tagged, you cannot tweak its dependencies
 anymore in case a dependency breaks BC - you have to do a new release but the
