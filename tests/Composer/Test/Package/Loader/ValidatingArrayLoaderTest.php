@@ -73,14 +73,17 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                     ),
                     'require' => array(
                         'a/b' => '1.*',
+                        'b/c' => '~2',
                         'example' => '>2.0-dev,<2.4-dev',
                     ),
                     'require-dev' => array(
                         'a/b' => '1.*',
+                        'b/c' => '*',
                         'example' => '>2.0-dev,<2.4-dev',
                     ),
                     'conflict' => array(
                         'a/b' => '1.*',
+                        'b/c' => '>2.7',
                         'example' => '>2.0-dev,<2.4-dev',
                     ),
                     'replace' => array(
@@ -286,6 +289,27 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                     'support.forum : invalid value (foo:bar), must be an http/https URL',
                     'support.issues : invalid value (foo:bar), must be an http/https URL',
                     'support.wiki : invalid value (foo:bar), must be an http/https URL',
+                )
+            ),
+            array(
+                array(
+                    'name' => 'foo/bar',
+                    'require' => array(
+                        'foo/baz' => '*',
+                        'bar/baz' => '>=1.0',
+                    ),
+                    'provide' => array(
+                        'bar/foo' => 'dev-master',
+                    ),
+                    'replace' => array(
+                        'bar/hacked' => '@stable',
+                    )
+                ),
+                array(
+                    'require.foo/baz : unbound version constraint detected (*)',
+                    'require.bar/baz : unbound version constraint detected (>=1.0)',
+                    'provide.bar/foo : unbound version constraint detected (dev-master)',
+                    'replace.bar/hacked : unbound version constraint detected (@stable)',
                 )
             ),
         );
