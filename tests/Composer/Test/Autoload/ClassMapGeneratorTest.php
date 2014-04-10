@@ -152,10 +152,30 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
      */
     public function testUnambiguousReference()
     {
-        $this->checkIfFinderIsAvailable();
+        $tempDir = sys_get_temp_dir().'/ComposerTestUnambiguousRefs';
+        if (!is_dir($tempDir)) {
+            mkdir($tempDir, 0777, true);
+        }
 
-        $finder = new Finder();
-        $finder->files()->in(__DIR__ . '/Fixtures/Unambiguous');
+        file_put_contents($tempDir.'/A.php', "<?php\nclass A {}");
+
+        file_put_contents(
+            $tempDir.'/B.php',
+            "<?php
+                if (true) {
+                    interface B {}
+                } else {
+                    interface B extends Iterator {}
+                }
+            "
+        );
+
+        foreach (array('test', 'fixture') as $keyword) {
+            if (!is_dir($tempDir.'/'.$keyword)) {
+                mkdir($tempDir.'/'.$keyword, 0777, true);
+            }
+            file_put_contents($tempDir.'/'.$keyword.'/A.php', "<?php\nclass A {}");
+        }
 
         $io = $this->getMockBuilder('Composer\IO\ConsoleIO')
             ->disableOriginalConstructor()
@@ -164,7 +184,10 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
         $io->expects($this->never())
             ->method('write');
 
-        ClassMapGenerator::createMap($finder, null, $io);
+        ClassMapGenerator::createMap($tempDir, null, $io);
+
+        $fs = new Filesystem();
+        $fs->removeDirectory($tempDir);
     }
 
     /**
