@@ -110,7 +110,7 @@ EOT
         if ($input->getOption('no-update')) {
             return 0;
         }
-        $updateDevMode = $input->getOption('update-no-dev') ? false : true;
+        $updateDevMode = !$input->getOption('update-no-dev');
 
         // Update packages
         $composer = $this->getComposer();
