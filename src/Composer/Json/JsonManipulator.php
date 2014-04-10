@@ -204,6 +204,11 @@ class JsonManipulator
             list($name, $subName) = explode('.', $name, 2);
         }
 
+        // no node to remove
+        if (!isset($decoded[$mainNode][$name]) || ($subName && !isset($decoded[$mainNode][$name][$subName]))) {
+            return true;
+        }
+
         // try and find a match for the subkey
         if ($this->pregMatch('{"'.preg_quote($name).'"\s*:}i', $children)) {
             // find best match for the value of "name"

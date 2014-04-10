@@ -370,6 +370,50 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
 }
 '
             ),
+            'works on child having unmatched name' => array(
+                '{
+    "repositories": {
+        "baz": {
+            "foo": "bar",
+            "bar": "baz"
+        }
+    }
+}',
+                'bar',
+                true,
+                '{
+    "repositories": {
+        "baz": {
+            "foo": "bar",
+            "bar": "baz"
+        }
+    }
+}
+'
+            ),
+            'works on child having duplicate name' => array(
+                '{
+    "repositories": {
+        "foo": {
+            "baz": "qux"
+        },
+        "baz": {
+            "foo": "bar",
+            "bar": "baz"
+        }
+    }
+}',
+                'baz',
+                true,
+                '{
+    "repositories": {
+        "foo": {
+            "baz": "qux"
+        }
+    }
+}
+'
+            ),
             'works on empty repos' => array(
                 '{
     "repositories": {
