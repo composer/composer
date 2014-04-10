@@ -170,7 +170,7 @@ class ClassMapGeneratorTest extends \PHPUnit_Framework_TestCase
             "
         );
 
-        foreach (array('test', 'fixture') as $keyword) {
+        foreach (array('test', 'fixture', 'example') as $keyword) {
             if (!is_dir($tempDir.'/'.$keyword)) {
                 mkdir($tempDir.'/'.$keyword, 0777, true);
             }
