@@ -146,12 +146,12 @@ class PlatformRepository extends ArrayRepository
             parent::addPackage($lib);
         }
 
-        if (defined('HPHP_VERSION')) {
+        if (defined('HHVM_VERSION')) {
             try {
-                $prettyVersion = HPHP_VERSION;
+                $prettyVersion = HHVM_VERSION;
                 $version = $versionParser->normalize($prettyVersion);
             } catch (\UnexpectedValueException $e) {
-                $prettyVersion = preg_replace('#^([^~+-]+).*$#', '$1', HPHP_VERSION);
+                $prettyVersion = preg_replace('#^([^~+-]+).*$#', '$1', HHVM_VERSION);
                 $version = $versionParser->normalize($prettyVersion);
             }
 
