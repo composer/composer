@@ -349,6 +349,27 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
 }
 '
             ),
+            'works on undefined ones' => array(
+                '{
+    "repositories": {
+        "main": {
+            "foo": "bar",
+            "bar": "baz"
+        }
+    }
+}',
+                'removenotthere',
+                true,
+                '{
+    "repositories": {
+        "main": {
+            "foo": "bar",
+            "bar": "baz"
+        }
+    }
+}
+'
+            ),
             'works on empty repos' => array(
                 '{
     "repositories": {

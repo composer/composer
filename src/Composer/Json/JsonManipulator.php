@@ -222,6 +222,8 @@ class JsonManipulator
                     }
                 }
             }
+        } else {
+            $childrenClean = $children;
         }
 
         // no child data left, $name was the only key in
