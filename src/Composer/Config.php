@@ -40,6 +40,7 @@ class Config
         'optimize-autoloader' => false,
         'prepend-autoloader' => true,
         'github-domains' => array('github.com'),
+        'ext-options' => array(),
     );
 
     public static $defaultRepositories = array(
