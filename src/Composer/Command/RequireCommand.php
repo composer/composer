@@ -81,6 +81,7 @@ EOT
         $requirements = $this->determineRequirements($input, $output, $input->getArgument('packages'));
 
         $requireKey = $input->getOption('dev') ? 'require-dev' : 'require';
+        $removeKey = $input->getOption('dev') ? 'require' : 'require-dev';
         $baseRequirements = array_key_exists($requireKey, $composer) ? $composer[$requireKey] : array();
         $requirements = $this->formatRequirements($requirements);
 
@@ -90,9 +91,13 @@ EOT
             $versionParser->parseConstraints($constraint);
         }
 
-        if (!$this->updateFileCleanly($json, $baseRequirements, $requirements, $requireKey)) {
+        if (!$this->updateFileCleanly($json, $baseRequirements, $requirements, $requireKey, $removeKey)) {
             foreach ($requirements as $package => $version) {
                 $baseRequirements[$package] = $version;
+
+                if (isset($composer[$removeKey][$package])) {
+                    unset($composer[$removeKey][$package]);
+                }
             }
 
             $composer[$requireKey] = $baseRequirements;
@@ -134,7 +139,7 @@ EOT
         return $status;
     }
 
-    private function updateFileCleanly($json, array $base, array $new, $requireKey)
+    private function updateFileCleanly($json, array $base, array $new, $requireKey, $removeKey)
     {
         $contents = file_get_contents($json->getPath());
 
@@ -142,6 +147,9 @@ EOT
 
         foreach ($new as $package => $constraint) {
             if (!$manipulator->addLink($requireKey, $package, $constraint)) {
+                return false;
+            }
+            if (!$manipulator->removeSubNode($removeKey, $package)) {
                 return false;
             }
         }
