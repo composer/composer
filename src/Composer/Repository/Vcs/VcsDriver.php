@@ -57,7 +57,7 @@ abstract class VcsDriver implements VcsDriverInterface
         $this->io = $io;
         $this->config = $config;
         $this->process = $process ?: new ProcessExecutor($io);
-        $this->remoteFilesystem = $remoteFilesystem ?: new RemoteFilesystem($io);
+        $this->remoteFilesystem = $remoteFilesystem ?: new RemoteFilesystem($io, $config);
     }
 
     /**

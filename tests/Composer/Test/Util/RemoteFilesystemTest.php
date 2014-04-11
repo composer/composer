@@ -173,7 +173,7 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
 
     protected function callGetOptionsForUrl($io, array $args = array(), array $options = array())
     {
-        $fs = new RemoteFilesystem($io, $options);
+        $fs = new RemoteFilesystem($io, null, $options);
         $ref = new \ReflectionMethod($fs, 'getOptionsForUrl');
         $ref->setAccessible(true);
 

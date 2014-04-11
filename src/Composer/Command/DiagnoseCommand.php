@@ -48,7 +48,22 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->rfs = new RemoteFilesystem($this->getIO());
+        $composer = $this->getComposer(false);
+        if ($composer) {
+            $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'diagnose', $input, $output);
+            $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
+
+            $output->write('Checking composer.json: ');
+            $this->outputResult($output, $this->checkComposerSchema());
+        }
+
+        if ($composer) {
+            $config = $composer->getConfig();
+        } else {
+            $config = Factory::createConfig();
+        }
+
+        $this->rfs = new RemoteFilesystem($this->getIO(), $config);
         $this->process = new ProcessExecutor($this->getIO());
 
         $output->write('Checking platform settings: ');
@@ -68,21 +83,6 @@ EOT
             $this->outputResult($output, $this->checkHttpProxyFullUriRequestParam());
             $output->write('Checking HTTPS proxy support for request_fulluri: ');
             $this->outputResult($output, $this->checkHttpsProxyFullUriRequestParam());
-        }
-
-        $composer = $this->getComposer(false);
-        if ($composer) {
-            $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'diagnose', $input, $output);
-            $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
-
-            $output->write('Checking composer.json: ');
-            $this->outputResult($output, $this->checkComposerSchema());
-        }
-
-        if ($composer) {
-            $config = $composer->getConfig();
-        } else {
-            $config = Factory::createConfig();
         }
 
         if ($oauth = $config->get('github-oauth')) {

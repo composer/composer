@@ -57,7 +57,7 @@ class PearRepository extends ArrayRepository
 
         $this->url = rtrim($repoConfig['url'], '/');
         $this->io = $io;
-        $this->rfs = $rfs ?: new RemoteFilesystem($this->io);
+        $this->rfs = $rfs ?: new RemoteFilesystem($this->io, $config);
         $this->vendorAlias = isset($repoConfig['vendor-alias']) ? $repoConfig['vendor-alias'] : null;
         $this->versionParser = new VersionParser();
     }

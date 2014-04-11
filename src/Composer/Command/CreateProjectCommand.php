@@ -232,7 +232,7 @@ EOT
         if (null === $repositoryUrl) {
             $sourceRepo = new CompositeRepository(Factory::createDefaultRepositories($io, $config));
         } elseif ("json" === pathinfo($repositoryUrl, PATHINFO_EXTENSION)) {
-            $sourceRepo = new FilesystemRepository(new JsonFile($repositoryUrl, new RemoteFilesystem($io)));
+            $sourceRepo = new FilesystemRepository(new JsonFile($repositoryUrl, new RemoteFilesystem($io, $config)));
         } elseif (0 === strpos($repositoryUrl, 'http')) {
             $sourceRepo = new ComposerRepository(array('url' => $repositoryUrl), $io, $config);
         } else {

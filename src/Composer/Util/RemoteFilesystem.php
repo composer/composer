@@ -13,6 +13,7 @@
 namespace Composer\Util;
 
 use Composer\Composer;
+use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
 
@@ -24,6 +25,7 @@ use Composer\Downloader\TransportException;
 class RemoteFilesystem
 {
     private $io;
+    private $config;
     private $firstCall;
     private $bytesMax;
     private $originUrl;
@@ -41,9 +43,10 @@ class RemoteFilesystem
      * @param IOInterface $io      The IO instance
      * @param array       $options The options
      */
-    public function __construct(IOInterface $io, $options = array())
+    public function __construct(IOInterface $io, Config $config = null, array $options = array())
     {
         $this->io = $io;
+        $this->config = $config;
         $this->options = $options;
     }
 
@@ -267,26 +270,14 @@ class RemoteFilesystem
                         break;
                     }
 
-                    if (!$this->io->isInteractive()) {
-                        $message = "The '" . $this->fileUrl . "' URL required authentication.\nYou must be using the interactive console";
-
-                        throw new TransportException($message, 401);
-                    }
-
-                    $this->promptAuthAndRetry();
+                    $this->promptAuthAndRetry($messageCode);
                     break;
                 }
                 break;
 
             case STREAM_NOTIFY_AUTH_RESULT:
                 if (403 === $messageCode) {
-                    if (!$this->io->isInteractive() || $this->io->hasAuthentication($this->originUrl)) {
-                        $message = "The '" . $this->fileUrl . "' URL could not be accessed: " . $message;
-
-                        throw new TransportException($message, 403);
-                    }
-
-                    $this->promptAuthAndRetry();
+                    $this->promptAuthAndRetry($messageCode, $message);
                     break;
                 }
                 break;
@@ -317,12 +308,39 @@ class RemoteFilesystem
         }
     }
 
-    protected function promptAuthAndRetry()
+    protected function promptAuthAndRetry($httpStatus, $reason)
     {
-        $this->io->overwrite('    Authentication required (<info>'.parse_url($this->fileUrl, PHP_URL_HOST).'</info>):');
-        $username = $this->io->ask('      Username: ');
-        $password = $this->io->askAndHideAnswer('      Password: ');
-        $this->io->setAuthentication($this->originUrl, $username, $password);
+        if ($this->config && in_array($this->originUrl, $this->config->get('github-domains'), true)) {
+            $message = "\n".'Could not fetch '.$this->fileUrl.', enter your GitHub credentials '.($httpStatus === 404 ? 'to access private repos' : 'to go over the API rate limit');
+            $gitHubUtil = new GitHub($this->io, $this->config, null, $this);
+            if (!$gitHubUtil->authorizeOAuth($this->originUrl)
+                && (!$this->io->isInteractive() || !$gitHubUtil->authorizeOAuthInteractively($this->originUrl, $message))
+            ) {
+                throw new TransportException('Could not authenticate against '.$this->originUrl);
+            }
+        } else {
+            // 404s are only handled for github
+            if ($httpStatus === 404) {
+                return;
+            }
+
+            // fail if we already have auth or the console is not interactive
+            if (!$this->io->isInteractive() || $this->io->hasAuthentication($this->originUrl)) {
+                if ($httpStatus === 401) {
+                    $message = "The '" . $this->fileUrl . "' URL required authentication.\nYou must be using the interactive console to authenticate";
+                }
+                if ($httpStatus === 403) {
+                    $message = "The '" . $this->fileUrl . "' URL could not be accessed: " . $reason;
+                }
+
+                throw new TransportException($message, $httpStatus);
+            }
+
+            $this->io->overwrite('    Authentication required (<info>'.parse_url($this->fileUrl, PHP_URL_HOST).'</info>):');
+            $username = $this->io->ask('      Username: ');
+            $password = $this->io->askAndHideAnswer('      Password: ');
+            $this->io->setAuthentication($this->originUrl, $username, $password);
+        }
 
         $this->retry = true;
         throw new TransportException('RETRY');

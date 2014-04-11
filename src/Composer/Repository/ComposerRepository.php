@@ -85,7 +85,7 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
         $this->io = $io;
         $this->cache = new Cache($io, $config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $this->url), 'a-z0-9.$');
         $this->loader = new ArrayLoader();
-        $this->rfs = new RemoteFilesystem($this->io, $this->options);
+        $this->rfs = new RemoteFilesystem($this->io, $this->config, $this->options);
         $this->eventDispatcher = $eventDispatcher;
     }
 

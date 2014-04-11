@@ -56,7 +56,7 @@ class FileDownloader implements DownloaderInterface
         $this->io = $io;
         $this->config = $config;
         $this->eventDispatcher = $eventDispatcher;
-        $this->rfs = $rfs ?: new RemoteFilesystem($io);
+        $this->rfs = $rfs ?: new RemoteFilesystem($io, $config);
         $this->filesystem = $filesystem ?: new Filesystem();
         $this->cache = $cache;
 
@@ -108,53 +108,35 @@ class FileDownloader implements DownloaderInterface
             $checksum = $package->getDistSha1Checksum();
             $cacheKey = $this->getCacheKey($package);
 
-            try {
-                // download if we don't have it in cache or the cache is invalidated
-                if (!$this->cache || ($checksum && $checksum !== $this->cache->sha1($cacheKey)) || !$this->cache->copyTo($cacheKey, $fileName)) {
-                    if (!$this->outputProgress) {
-                        $this->io->write('    Downloading');
-                    }
+            // download if we don't have it in cache or the cache is invalidated
+            if (!$this->cache || ($checksum && $checksum !== $this->cache->sha1($cacheKey)) || !$this->cache->copyTo($cacheKey, $fileName)) {
+                if (!$this->outputProgress) {
+                    $this->io->write('    Downloading');
+                }
 
-                    // try to download 3 times then fail hard
-                    $retries = 3;
-                    while ($retries--) {
-                        try {
-                            $rfs->copy($hostname, $processedUrl, $fileName, $this->outputProgress);
-                            break;
-                        } catch (TransportException $e) {
-                            // if we got an http response with a proper code, then requesting again will probably not help, abort
-                            if ((0 !== $e->getCode() && !in_array($e->getCode(),array(500, 502, 503, 504))) || !$retries) {
-                                throw $e;
-                            }
-                            if ($this->io->isVerbose()) {
-                                $this->io->write('    Download failed, retrying...');
-                            }
-                            usleep(500000);
+                // try to download 3 times then fail hard
+                $retries = 3;
+                while ($retries--) {
+                    try {
+                        $rfs->copy($hostname, $processedUrl, $fileName, $this->outputProgress);
+                        break;
+                    } catch (TransportException $e) {
+                        // if we got an http response with a proper code, then requesting again will probably not help, abort
+                        if ((0 !== $e->getCode() && !in_array($e->getCode(),array(500, 502, 503, 504))) || !$retries) {
+                            throw $e;
                         }
+                        if ($this->io->isVerbose()) {
+                            $this->io->write('    Download failed, retrying...');
+                        }
+                        usleep(500000);
                     }
+                }
 
-                    if ($this->cache) {
-                        $this->cache->copyFrom($cacheKey, $fileName);
-                    }
-                } else {
-                    $this->io->write('    Loading from cache');
+                if ($this->cache) {
+                    $this->cache->copyFrom($cacheKey, $fileName);
                 }
-            } catch (TransportException $e) {
-                if (!in_array($e->getCode(), array(404, 403, 412))) {
-                    throw $e;
-                }
-                if ('github.com' === $hostname && !$this->io->hasAuthentication($hostname)) {
-                    $message = "\n".'Could not fetch '.$processedUrl.', enter your GitHub credentials '.($e->getCode() === 404 ? 'to access private repos' : 'to go over the API rate limit');
-                    $gitHubUtil = new GitHub($this->io, $this->config, null, $rfs);
-                    if (!$gitHubUtil->authorizeOAuth($hostname)
-                        && (!$this->io->isInteractive() || !$gitHubUtil->authorizeOAuthInteractively($hostname, $message))
-                    ) {
-                        throw $e;
-                    }
-                    $rfs->copy($hostname, $processedUrl, $fileName, $this->outputProgress);
-                } else {
-                    throw $e;
-                }
+            } else {
+                $this->io->write('    Loading from cache');
             }
 
             if (!file_exists($fileName)) {
