@@ -139,7 +139,6 @@ class ArtifactRepository extends ArrayRepository
         $package['dist'] = array(
             'type' => 'zip',
             'url' => $file->getRealPath(),
-            'reference' => $file->getBasename(),
             'shasum' => sha1_file($file->getRealPath())
         );
 
