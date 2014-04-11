@@ -324,8 +324,8 @@ class RemoteFilesystem
                 return;
             }
 
-            // fail if we already have auth or the console is not interactive
-            if (!$this->io->isInteractive() || $this->io->hasAuthentication($this->originUrl)) {
+            // fail if the console is not interactive
+            if (!$this->io->isInteractive()) {
                 if ($httpStatus === 401) {
                     $message = "The '" . $this->fileUrl . "' URL required authentication.\nYou must be using the interactive console to authenticate";
                 }
@@ -334,6 +334,10 @@ class RemoteFilesystem
                 }
 
                 throw new TransportException($message, $httpStatus);
+            }
+            // fail if we already have auth
+            if ($this->io->hasAuthentication($this->originUrl)) {
+                throw new TransportException("Invalid credentials for '" . $this->fileUrl . "', aborting.", $httpStatus);
             }
 
             $this->io->overwrite('    Authentication required (<info>'.parse_url($this->fileUrl, PHP_URL_HOST).'</info>):');
