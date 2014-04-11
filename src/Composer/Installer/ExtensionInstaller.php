@@ -90,7 +90,7 @@ class ExtensionInstaller extends LibraryInstaller
             throw new \RuntimeException("Could not compile extension ".$package->getName());
         }
 
-        $extensions = [];
+        $extensions = array();
 
         if (defined('HHVM_VERSION')) {
             foreach (new \FilesystemIterator($this->getInstallPath($package)) as $file) {
