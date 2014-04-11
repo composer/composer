@@ -21,7 +21,9 @@ class ComposerMirror
 {
     public static function processUrl($mirrorUrl, $packageName, $version, $reference, $type)
     {
-        $reference = preg_match('{^([a-f0-9]*|%reference%)$}', $reference) ? $reference : md5($reference);
+        if ($reference) {
+            $reference = preg_match('{^([a-f0-9]*|%reference%)$}', $reference) ? $reference : md5($reference);
+        }
         $version = strpos($version, '/') === false ? $version : md5($version);
 
         return str_replace(
