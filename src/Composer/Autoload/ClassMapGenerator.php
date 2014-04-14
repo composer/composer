@@ -139,7 +139,7 @@ class ClassMapGenerator
 
         preg_match_all('{
             (?:
-                 \b(?<![\$:>])(?P<type>class|interface'.$traits.') \s+ (?P<name>[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)
+                 \b(?<![\$:>])(?P<type>class|interface'.$traits.') \s+ (?P<name>[a-zA-Z_\x7f-\xff:][a-zA-Z0-9_\x7f-\xff:]*)
                | \b(?<![\$:>])(?P<ns>namespace) (?P<nsname>\s+[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\s*\\\\\s*[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)? \s*[\{;]
             )
         }ix', $contents, $matches);
@@ -151,7 +151,12 @@ class ClassMapGenerator
             if (!empty($matches['ns'][$i])) {
                 $namespace = str_replace(array(' ', "\t", "\r", "\n"), '', $matches['nsname'][$i]) . '\\';
             } else {
-                $classes[] = ltrim($namespace . $matches['name'][$i], '\\');
+                $name = $matches['name'][$i];
+                if ($name[0] === ':') {
+                  // This is an XHP class, https://github.com/facebook/xhp
+                  $name = 'xhp'.substr(str_replace(array('-', ':'), array('_', '__'), $name), 1);
+                }
+                $classes[] = ltrim($namespace . $name, '\\');
             }
         }
 
