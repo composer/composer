@@ -124,7 +124,10 @@ class ClassMapGenerator
         $contents = preg_replace('{"[^"\\\\]*(\\\\.[^"\\\\]*)*"|\'[^\'\\\\]*(\\\\.[^\'\\\\]*)*\'}s', 'null', $contents);
         // strip leading non-php code if needed
         if (substr($contents, 0, 2) !== '<?') {
-            $contents = preg_replace('{^.+?<\?}s', '<?', $contents);
+            $contents = preg_replace('{^.+?<\?}s', '<?', $contents, 1, $replacements);
+            if ($replacements === 0) {
+                return array();
+            }
         }
         // strip non-php blocks in the file
         $contents = preg_replace('{\?>.+<\?}s', '?><?', $contents);
