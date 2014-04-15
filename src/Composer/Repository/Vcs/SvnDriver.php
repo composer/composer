@@ -207,7 +207,7 @@ class SvnDriver extends VcsDriver
                 foreach ($this->process->splitLines($output) as $line) {
                     $line = trim($line);
                     if ($line && preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match)) {
-                        if (isset($match[1]) && isset($match[2]) && $match[2] === 'composer.json') {
+                        if (isset($match[1]) && isset($match[2]) && $match[2] === './') {
                             $this->branches['trunk'] = $this->buildIdentifier(
                                 '/' . $this->trunkPath,
                                 $match[1]
