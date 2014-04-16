@@ -174,17 +174,18 @@ EOT
     {
         try {
             @chmod($newFilename, 0777 & ~umask());
-            // test the phar validity
-            $phar = new \Phar($newFilename);
-            // free the variable to unlock the file
-            unset($phar);
+            if (!ini_get('phar.readonly')) {
+                // test the phar validity
+                $phar = new \Phar($newFilename);
+                // free the variable to unlock the file
+                unset($phar);
+            }
 
             // copy current file into installations dir
             if ($backupTarget && file_exists($localFilename)) {
                 @copy($localFilename, $backupTarget);
             }
 
-            unset($phar);
             rename($newFilename, $localFilename);
         } catch (\Exception $e) {
             if ($backupTarget) {
