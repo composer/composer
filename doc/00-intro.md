@@ -64,6 +64,11 @@ To actually get Composer, we need to do two things. The first one is installing
 Composer (again, this means downloading it into your project):
 
     $ curl -sS https://getcomposer.org/installer | php
+    
+> **Note:** If the above fails for some reason, you can download the installer
+> with `php` instead:
+
+    $ php -r "readfile('https://getcomposer.org/installer');" | php
 
 This will just check a few PHP settings and then download `composer.phar` to
 your working directory. This file is the Composer binary. It is a PHAR (PHP
