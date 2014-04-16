@@ -95,9 +95,12 @@ Then, just run `composer` in order to run Composer instead of `php composer.phar
 
 Composer is part of the homebrew-php project.
 
-    brew update
-    brew install composer
-
+    $ brew update
+    $ brew tap josegonzalez/homebrew-php
+    $ brew tap homebrew/versions
+    $ brew install php55-intl
+    $ brew install josegonzalez/php/composer
+ 
 ## Installation - Windows
 
 ### Using the Installer
