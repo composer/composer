@@ -42,6 +42,23 @@ class Filesystem
     }
 
     /**
+     * Force the results of a glob to be realpaths.
+     *
+     * @param  string $pattern
+     * @param  int    $flags   
+     * @return array
+     */
+    public function realpathGlob($pattern, $flags = 0)
+    {
+        $matches = glob($pattern, $flags);
+        if (!$matches) {
+            return false;
+        }
+        var_dump($matches);
+        return array_map('realpath', $matches);
+    }
+
+    /**
      * Checks if a directory is empty
      *
      * @param  string $dir
@@ -51,7 +68,7 @@ class Filesystem
     {
         $dir = rtrim($dir, '/\\');
 
-        return count(glob($dir.'/*') ?: array()) === 0 && count(glob($dir.'/.*') ?: array()) === 2;
+        return count($this->realpathGlob($dir.'/*') ?: array()) === 0 && count($this->realpathGlob($dir.'/.*') ?: array()) === 2;
     }
 
     /**
