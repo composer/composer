@@ -126,7 +126,7 @@ class LibraryInstaller implements InstallerInterface
         $downloadPath = $this->getPackageBasePath($package);
         if (strpos($package->getName(), '/')) {
             $packageVendorDir = dirname($downloadPath);
-            if (is_dir($packageVendorDir) && !glob($packageVendorDir.'/*')) {
+            if (is_dir($packageVendorDir) && !$this->filesystem->realpathGlob($packageVendorDir.'/*')) {
                 @rmdir($packageVendorDir);
             }
         }

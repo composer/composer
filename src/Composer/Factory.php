@@ -20,6 +20,7 @@ use Composer\Repository\RepositoryManager;
 use Composer\Repository\RepositoryInterface;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\RemoteFilesystem;
+use Composer\Util\Filesystem;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Autoload\AutoloadGenerator;
@@ -132,6 +133,7 @@ class Factory
             'cache-vcs-dir' => array('/cache.git' => '/*', '/cache.hg' => '/*'),
             'cache-files-dir' => array('/cache.files' => '/*'),
         );
+        $fs = new Filesystem;
         foreach ($legacyPaths as $key => $oldPaths) {
             foreach ($oldPaths as $oldPath => $match) {
                 $dir = $config->get($key);
@@ -146,7 +148,7 @@ class Factory
                             continue;
                         }
                     }
-                    if (is_array($children = glob($oldPathMatch))) {
+                    if (is_array($children = $fs->realpathGlob($oldPathMatch))) {
                         foreach ($children as $child) {
                             @rename($child, $dir.'/'.basename($child));
                         }
