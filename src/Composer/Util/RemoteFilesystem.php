@@ -36,6 +36,7 @@ class RemoteFilesystem
     private $lastProgress;
     private $options;
     private $retryAuthFailure;
+    private $lastHeaders;
 
     /**
      * Constructor.
@@ -92,6 +93,16 @@ class RemoteFilesystem
     }
 
     /**
+     * Returns the headers of the last request
+     *
+     * @return array
+     */
+    public function getLastHeaders()
+    {
+        return $this->lastHeaders;
+    }
+
+    /**
      * Get file content or copy action.
      *
      * @param string  $originUrl         The origin URL
@@ -114,6 +125,7 @@ class RemoteFilesystem
         $this->progress = $progress;
         $this->lastProgress = null;
         $this->retryAuthFailure = true;
+        $this->lastHeaders = array();
 
         // capture username/password from URL if there is one
         if (preg_match('{^https?://(.+):(.+)@([^/]+)}i', $fileUrl, $match)) {
@@ -243,6 +255,10 @@ class RemoteFilesystem
             }
 
             throw $e;
+        }
+
+        if (!empty($http_response_header[0])) {
+            $this->lastHeaders = $http_response_header;
         }
 
         return $result;
