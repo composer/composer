@@ -46,7 +46,7 @@ class Filesystem
      *
      * @param  string $pattern
      * @param  int    $flags   
-     * @return array
+     * @return array|bool
      */
     public function realpathGlob($pattern, $flags = 0)
     {
@@ -54,7 +54,6 @@ class Filesystem
         if (!$matches) {
             return false;
         }
-        var_dump($matches);
         return array_map('realpath', $matches);
     }
 
