@@ -534,7 +534,7 @@ Example:
             "psr-4": { "MyLibrary\\": "src/" }
         },
         "autoload-dev": {
-            "psr-4": { "MyLibrary\\Tests": "tests/" }
+            "psr-4": { "MyLibrary\\Tests\\": "tests/" }
         }
     }
 
