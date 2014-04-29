@@ -45,13 +45,15 @@ class ClassMapGenerator
      * Iterate over all files in the given directory searching for classes
      *
      * @param \Iterator|string $path      The path to search in or an iterator
-     * @param string          $whitelist Regex that matches against the file path
+     * @param string           $whitelist Regex that matches against the file path
+     * @param IOInterface      $io        IO object
+     * @param string           $namespace Optional namespace prefix to filter by
      *
      * @return array A class map array
      *
      * @throws \RuntimeException When the path is neither an existing file nor directory
      */
-    public static function createMap($path, $whitelist = null, IOInterface $io = null)
+    public static function createMap($path, $whitelist = null, IOInterface $io = null, $namespace = null)
     {
         if (is_string($path)) {
             if (is_file($path)) {
@@ -82,6 +84,11 @@ class ClassMapGenerator
             $classes = self::findClasses($filePath);
 
             foreach ($classes as $class) {
+                // skip classes not within the given namespace prefix
+                if (null !== $namespace && 0 !== strpos($class, $namespace)) {
+                    continue;
+                }
+
                 if (!isset($map[$class])) {
                     $map[$class] = $filePath;
                 } elseif ($io && $map[$class] !== $filePath && !preg_match('{/(test|fixture|example)s?/}i', strtr($map[$class].' '.$filePath, '\\', '/'))) {

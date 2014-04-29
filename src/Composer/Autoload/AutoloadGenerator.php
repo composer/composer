@@ -184,12 +184,12 @@ EOF;
                             preg_quote($dir),
                             ($psrType === 'psr-0' && strpos($namespace, '_') === false) ? preg_quote(strtr($namespace, '\\', '/')) : ''
                         );
-                        foreach (ClassMapGenerator::createMap($dir, $whitelist, $this->io) as $class => $path) {
-                            if ('' === $namespace || 0 === strpos($class, $namespace)) {
-                                if (!isset($classMap[$class])) {
-                                    $path = $this->getPathCode($filesystem, $basePath, $vendorPath, $path);
-                                    $classMap[$class] = $path.",\n";
-                                }
+
+                        $namespaceFilter = $namespace === '' ? null : $namespace;
+                        foreach (ClassMapGenerator::createMap($dir, $whitelist, $this->io, $namespaceFilter) as $class => $path) {
+                            if (!isset($classMap[$class])) {
+                                $path = $this->getPathCode($filesystem, $basePath, $vendorPath, $path);
+                                $classMap[$class] = $path.",\n";
                             }
                         }
                     }
