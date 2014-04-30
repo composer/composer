@@ -38,10 +38,11 @@ class ConfigValidator
      * Validates the config, and returns the result.
      *
      * @param string $file The path to the file
+     * @param integer $arrayLoaderValidationFlags Flags for ArrayLoader validation
      *
      * @return array a triple containing the errors, publishable errors, and warnings
      */
-    public function validate($file)
+    public function validate($file, $arrayLoaderValidationFlags = ValidatingArrayLoader::CHECK_ALL)
     {
         $errors = array();
         $publishErrors = array();
@@ -119,7 +120,7 @@ class ConfigValidator
         }
 
         try {
-            $loader = new ValidatingArrayLoader(new ArrayLoader(), true, null, ValidatingArrayLoader::CHECK_ALL);
+            $loader = new ValidatingArrayLoader(new ArrayLoader(), true, null, $arrayLoaderValidationFlags);
             if (!isset($manifest['version'])) {
                 $manifest['version'] = '1.0.0';
             }
