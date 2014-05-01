@@ -248,6 +248,10 @@ You should always run the `validate` command before you commit your
 
     $ php composer.phar validate
 
+### Options
+
+* **--no-check-all:** Wether or not composer do a complete validation.
+
 ## status
 
 If you often need to modify the code of your dependencies and they are
