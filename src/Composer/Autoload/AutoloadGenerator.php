@@ -474,9 +474,6 @@ class ComposerAutoloaderInit$suffix
         self::\$loader = \$loader = new \\Composer\\Autoload\\ClassLoader();
         spl_autoload_unregister(array('ComposerAutoloaderInit$suffix', 'loadClassLoader'));
 
-        \$vendorDir = $vendorPathCode;
-        \$baseDir = $appBaseDirCode;
-
 
 HEADER;
 
