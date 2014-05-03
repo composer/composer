@@ -417,6 +417,12 @@ This command is used to generate a zip/tar archive for a given package in a
 given version. It can also be used to archive your entire project without
 excluded/ignored files.
 
+To archive the latest stable version of a package as a tar-archive:
+
+    $ php composer.phar archive vendor/package
+
+To archive a specific version of a package as a zip-archive:
+
     $ php composer.phar archive vendor/package 2.0.21 --format=zip
 
 ### Options
