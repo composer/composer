@@ -115,7 +115,8 @@ EOT
         $packages = $pool->whatProvides($packageName, $constraint);
 
         if (count($packages) > 1) {
-            $package = $packages[0];
+            // if multiple packages are found, select the last package (latest stable version)
+            $package = array_pop($packages);
             $io->write('<info>Found multiple matches, selected '.$package->getPrettyString().'.</info>');
             $io->write('Alternatives were '.implode(', ', array_map(function ($p) { return $p->getPrettyString(); }, $packages)).'.');
             $io->write('<comment>Please use a more specific constraint to pick a different package.</comment>');
