@@ -115,7 +115,7 @@ class ClassMapGenerator
         $traits = version_compare(PHP_VERSION, '5.4', '<') ? '' : '|trait';
 
         try {
-            $contents = php_strip_whitespace($path);
+            $contents = file_get_contents($path);
         } catch (\Exception $e) {
             throw new \RuntimeException('Could not scan for classes inside '.$path.": \n".$e->getMessage(), 0, $e);
         }
@@ -124,7 +124,12 @@ class ClassMapGenerator
         if (!preg_match('{\b(?:class|interface'.$traits.')\s}i', $contents)) {
             return array();
         }
-
+        
+        // strip (multiline) comments
+        $contents = preg_replace('{/\*.*?\*/}s', '', $contents);
+        $contents = preg_replace('{\n\s*\n}', "\n", $contents);
+        // strip useless whitespace
+        $contents = preg_replace('{(\s)\s+}s', '$1', $contents);
         // strip heredocs/nowdocs
         $contents = preg_replace('{<<<\s*(\'?)(\w+)\\1(?:\r\n|\n|\r)(?:.*?)(?:\r\n|\n|\r)\\2(?=\r\n|\n|\r|;)}s', 'null', $contents);
         // strip strings
