@@ -196,8 +196,9 @@ class ArrayDumperTest extends \PHPUnit_Framework_TestCase
                 array('bar/baz' => '1.0.0', 'foo/bar' => '1.0.0')
             ),
             array(
-                'options',
-                array('ssl' => array('local_cert' => '/opt/certs/test.pem'))
+                'transport-options',
+                array('ssl' => array('local_cert' => '/opt/certs/test.pem')),
+                'transportOptions'
             )
         );
     }

@@ -31,7 +31,7 @@ class ZipDownloaderTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue('file://'.__FILE__))
         ;
         $packageMock->expects($this->atLeastOnce())
-            ->method('getOptions')
+            ->method('getTransportOptions')
             ->will($this->returnValue(array()))
         ;
 

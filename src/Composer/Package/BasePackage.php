@@ -49,7 +49,7 @@ abstract class BasePackage implements PackageInterface
 
     protected $repository;
     protected $id;
-    protected $options;
+    protected $transportOptions;
 
     /**
      * All descendants' constructors should call this parent constructor
@@ -61,7 +61,7 @@ abstract class BasePackage implements PackageInterface
         $this->prettyName = $name;
         $this->name = strtolower($name);
         $this->id = -1;
-        $this->options = array();
+        $this->transportOptions = array();
     }
 
     /**
@@ -138,17 +138,19 @@ abstract class BasePackage implements PackageInterface
     /**
      * {@inheritDoc}
      */
-    public function getOptions()
+    public function getTransportOptions()
     {
-        return $this->options;
+        return $this->transportOptions;
     }
 
     /**
-     * {@inheritDoc}
+     * Configures the list of options to download package dist files
+     *
+     * @param array $options
      */
-    public function setOptions(array $options)
+    public function setTransportOptions(array $options)
     {
-        $this->options = $options;
+        $this->transportOptions = $options;
     }
 
     /**

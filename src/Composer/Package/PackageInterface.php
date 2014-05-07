@@ -315,16 +315,9 @@ interface PackageInterface
     public function getArchiveExcludes();
 
     /**
-     * Configures the list of options to download package dist files
-     *
-     * @param array $options
-     */
-    public function setOptions(array $options);
-
-    /**
      * Returns a list of options to download package dist files
      *
      * @return array
      */
-    public function getOptions();
+    public function getTransportOptions();
 }

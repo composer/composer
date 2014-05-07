@@ -199,8 +199,8 @@ class ArrayLoader implements LoaderInterface
             }
         }
 
-        if ($this->loadOptions && isset($config['options'])) {
-            $package->setOptions($config['options']);
+        if ($this->loadOptions && isset($config['transport-options'])) {
+            $package->setTransportOptions($config['transport-options']);
         }
 
         return $package;

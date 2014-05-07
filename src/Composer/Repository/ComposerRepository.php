@@ -219,7 +219,7 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
     {
         if ($package instanceof Package
             && strpos($package->getDistUrl(), $this->baseUrl) === 0) {
-            $package->setOptions($this->options);
+            $package->setTransportOptions($this->options);
         }
     }
 

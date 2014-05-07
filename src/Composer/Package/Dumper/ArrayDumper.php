@@ -108,8 +108,8 @@ class ArrayDumper
             }
         }
 
-        if (count($package->getOptions()) > 0) {
-            $data['options'] = $package->getOptions();
+        if (count($package->getTransportOptions()) > 0) {
+            $data['transport-options'] = $package->getTransportOptions();
         }
 
         return $data;

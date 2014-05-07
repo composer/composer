@@ -90,7 +90,7 @@ class FileDownloaderTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue('http://example.com/script.js'))
         ;
         $packageMock->expects($this->atLeastOnce())
-            ->method('getOptions')
+            ->method('getTransportOptions')
             ->will($this->returnValue(array()))
         ;
 
@@ -166,7 +166,7 @@ class FileDownloaderTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue('http://example.com/script.js'))
         ;
         $packageMock->expects($this->atLeastOnce())
-            ->method('getOptions')
+            ->method('getTransportOptions')
             ->will($this->returnValue(array()))
         ;
         $packageMock->expects($this->any())

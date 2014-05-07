@@ -146,7 +146,7 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                         'bin/foo',
                         'bin/bar',
                     ),
-                    'options' => array('ssl' => array('local_cert' => '/opt/certs/test.pem'))
+                    'transport-options' => array('ssl' => array('local_cert' => '/opt/certs/test.pem'))
                 ),
             ),
             array( // test as array
@@ -267,10 +267,10 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
             array(
                 array(
                     'name' => 'foo/bar',
-                    'options' => 'test',
+                    'transport-options' => 'test',
                 ),
                 array(
-                    'options : should be an array, string given'
+                    'transport-options : should be an array, string given'
                 )
             ),
         );

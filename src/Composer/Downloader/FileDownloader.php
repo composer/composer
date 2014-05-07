@@ -118,7 +118,7 @@ class FileDownloader implements DownloaderInterface
                 $retries = 3;
                 while ($retries--) {
                     try {
-                        $rfs->copy($hostname, $processedUrl, $fileName, $this->outputProgress, $package->getOptions());
+                        $rfs->copy($hostname, $processedUrl, $fileName, $this->outputProgress, $package->getTransportOptions());
                         break;
                     } catch (TransportException $e) {
                         // if we got an http response with a proper code, then requesting again will probably not help, abort
