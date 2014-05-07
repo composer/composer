@@ -210,16 +210,15 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
             $package = $package->getAliasOf();
         }
         $package->setRepository($this);
-        $this->configurePackageOptions($package);
 
         return $package;
     }
 
-    protected function configurePackageOptions(PackageInterface $package)
+    protected function configurePackageTransportOptions(PackageInterface $package)
     {
-        if ($package instanceof Package
-            && strpos($package->getDistUrl(), $this->baseUrl) === 0) {
+        if (strpos($package->getDistUrl(), $this->baseUrl) === 0) {
             $package->setTransportOptions($this->options);
+            return;
         }
     }
 
@@ -399,7 +398,7 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
     public function addPackage(PackageInterface $package)
     {
         parent::addPackage($package);
-        $this->configurePackageOptions($package);
+        $this->configurePackageTransportOptions($package);
     }
 
     protected function loadRootServerFile()
@@ -548,7 +547,10 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
                 $data['notification-url'] = $this->notifyUrl;
             }
 
-            return $this->loader->load($data, 'Composer\Package\CompletePackage');
+            $package = $this->loader->load($data, 'Composer\Package\CompletePackage');
+            $this->configurePackageTransportOptions($package);
+
+            return $package;
         } catch (\Exception $e) {
             throw new \RuntimeException('Could not load package '.(isset($data['name']) ? $data['name'] : json_encode($data)).' in '.$this->url.': ['.get_class($e).'] '.$e->getMessage(), 0, $e);
         }

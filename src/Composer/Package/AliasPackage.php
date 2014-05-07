@@ -233,6 +233,14 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     {
         return $this->aliasOf->getDistSha1Checksum();
     }
+    public function setTransportOptions(array $options)
+    {
+        return $this->aliasOf->setTransportOptions($options);
+    }
+    public function getTransportOptions()
+    {
+        return $this->aliasOf->getTransportOptions();
+    }
     public function getScripts()
     {
         return $this->aliasOf->getScripts();
