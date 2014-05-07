@@ -220,9 +220,11 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
 
     protected function configurePackageTransportOptions(PackageInterface $package)
     {
-        if (strpos($package->getDistUrl(), $this->baseUrl) === 0) {
-            $package->setTransportOptions($this->options);
-            return;
+        foreach ($package->getDistUrls() as $url) {
+            if (strpos($url, $this->baseUrl) === 0) {
+                $package->setTransportOptions($this->options);
+                return;
+            }
         }
     }
 
