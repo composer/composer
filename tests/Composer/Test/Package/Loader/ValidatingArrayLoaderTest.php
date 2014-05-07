@@ -146,6 +146,7 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                         'bin/foo',
                         'bin/bar',
                     ),
+                    'options' => array('ssl' => array('local_cert' => '/opt/certs/test.pem'))
                 ),
             ),
             array( // test as array
@@ -261,6 +262,15 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                 ),
                 array(
                     'autoload : invalid value (psr0), must be one of psr-0, psr-4, classmap, files'
+                )
+            ),
+            array(
+                array(
+                    'name' => 'foo/bar',
+                    'options' => 'test',
+                ),
+                array(
+                    'options : should be an array, string given'
                 )
             ),
         );

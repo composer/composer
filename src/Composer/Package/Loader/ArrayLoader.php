@@ -197,6 +197,10 @@ class ArrayLoader implements LoaderInterface
             }
         }
 
+        if (isset($config['options'])) {
+            $package->setOptions($config['options']);
+        }
+
         return $package;
     }
 

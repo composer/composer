@@ -89,6 +89,10 @@ class FileDownloaderTest extends \PHPUnit_Framework_TestCase
             ->method('getDistUrl')
             ->will($this->returnValue('http://example.com/script.js'))
         ;
+        $packageMock->expects($this->atLeastOnce())
+            ->method('getOptions')
+            ->will($this->returnValue(array()))
+        ;
 
         do {
             $path = sys_get_temp_dir().'/'.md5(time().mt_rand());
@@ -160,6 +164,10 @@ class FileDownloaderTest extends \PHPUnit_Framework_TestCase
         $packageMock->expects($this->any())
             ->method('getDistUrl')
             ->will($this->returnValue('http://example.com/script.js'))
+        ;
+        $packageMock->expects($this->atLeastOnce())
+            ->method('getOptions')
+            ->will($this->returnValue(array()))
         ;
         $packageMock->expects($this->any())
             ->method('getDistSha1Checksum')
