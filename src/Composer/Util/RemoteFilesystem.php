@@ -222,7 +222,7 @@ class RemoteFilesystem
             }
         }
 
-        if ($this->progress) {
+        if ($this->progress && !$this->retry) {
             $this->io->overwrite("    Downloading: <comment>100%</comment>");
         }
 
