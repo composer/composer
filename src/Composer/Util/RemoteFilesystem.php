@@ -118,6 +118,10 @@ class RemoteFilesystem
      */
     protected function get($originUrl, $fileUrl, $additionalOptions = array(), $fileName = null, $progress = true)
     {
+        if (strpos($originUrl, '.github.com') === (strlen($originUrl) - 11)) {
+            $originUrl = 'github.com';
+        }
+
         $this->bytesMax = 0;
         $this->originUrl = $originUrl;
         $this->fileUrl = $fileUrl;

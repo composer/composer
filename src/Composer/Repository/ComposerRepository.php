@@ -160,7 +160,8 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
         if ($this->searchUrl && $mode === self::SEARCH_FULLTEXT) {
             $url = str_replace('%query%', $query, $this->searchUrl);
 
-            $json = $this->rfs->getContents($url, $url, false);
+            $hostname = parse_url($url, PHP_URL_HOST) ?: $url;
+            $json = $this->rfs->getContents($hostname, $url, false);
             $results = JsonFile::parseJson($json, $url);
 
             return $results['results'];
@@ -604,7 +605,9 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
                 if ($this->eventDispatcher) {
                     $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
                 }
-                $json = $preFileDownloadEvent->getRemoteFilesystem()->getContents($filename, $filename, false);
+
+                $hostname = parse_url($filename, PHP_URL_HOST) ?: $filename;
+                $json = $preFileDownloadEvent->getRemoteFilesystem()->getContents($hostname, $filename, false);
                 if ($sha256 && $sha256 !== hash('sha256', $json)) {
                     if ($retries) {
                         usleep(100000);

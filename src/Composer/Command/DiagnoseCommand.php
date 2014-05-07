@@ -207,10 +207,10 @@ EOT
 
         $url = 'https://api.github.com/repos/Seldaek/jsonlint/zipball/1.0.0';
         try {
-            $rfcResult = $this->rfs->getContents('api.github.com', $url, false);
+            $rfcResult = $this->rfs->getContents('github.com', $url, false);
         } catch (TransportException $e) {
             try {
-                $this->rfs->getContents('api.github.com', $url, false, array('http' => array('request_fulluri' => false)));
+                $this->rfs->getContents('github.com', $url, false, array('http' => array('request_fulluri' => false)));
             } catch (TransportException $e) {
                 return 'Unable to assert the situation, maybe github is down ('.$e->getMessage().')';
             }

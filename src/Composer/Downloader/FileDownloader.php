@@ -121,10 +121,6 @@ class FileDownloader implements DownloaderInterface
         }
         $rfs = $preFileDownloadEvent->getRemoteFilesystem();
 
-        if (strpos($hostname, '.github.com') === (strlen($hostname) - 11)) {
-            $hostname = 'github.com';
-        }
-
         try {
             $checksum = $package->getDistSha1Checksum();
             $cacheKey = $this->getCacheKey($package);
