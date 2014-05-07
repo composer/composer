@@ -25,13 +25,15 @@ use Composer\Package\Version\VersionParser;
 class ArrayLoader implements LoaderInterface
 {
     protected $versionParser;
+    protected $loadOptions;
 
-    public function __construct(VersionParser $parser = null)
+    public function __construct(VersionParser $parser = null, $loadOptions = false)
     {
         if (!$parser) {
             $parser = new VersionParser;
         }
         $this->versionParser = $parser;
+        $this->loadOptions = $loadOptions;
     }
 
     public function load(array $config, $class = 'Composer\Package\CompletePackage')
@@ -197,7 +199,7 @@ class ArrayLoader implements LoaderInterface
             }
         }
 
-        if (isset($config['options'])) {
+        if ($this->loadOptions && isset($config['options'])) {
             $package->setOptions($config['options']);
         }
 

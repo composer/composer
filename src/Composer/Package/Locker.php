@@ -56,7 +56,7 @@ class Locker
         $this->repositoryManager = $repositoryManager;
         $this->installationManager = $installationManager;
         $this->hash = $hash;
-        $this->loader = new ArrayLoader();
+        $this->loader = new ArrayLoader(null, true);
         $this->dumper = new ArrayDumper();
         $this->process = new ProcessExecutor($io);
     }
