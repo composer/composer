@@ -94,6 +94,58 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
         $this->rootAliases = $rootAliases;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public function findPackage($name, $version)
+    {
+        // normalize version & name
+        $versionParser = new VersionParser();
+        $version = $versionParser->normalize($version);
+        $name = strtolower($name);
+
+        foreach ($this->getProviderNames() as $providerName) {
+            if ($name === $providerName) {
+                $packages = $this->whatProvides(new Pool('dev'), $providerName);
+                foreach ($packages as $package) {
+                    if ($name == $package->getName() && $version === $package->getVersion()) {
+                        return $package;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function findPackages($name, $version = null)
+    {
+        // normalize name
+        $name = strtolower($name);
+
+        // normalize version
+        if (null !== $version) {
+            $versionParser = new VersionParser();
+            $version = $versionParser->normalize($version);
+        }
+
+        $packages = array();
+
+        foreach ($this->getProviderNames() as $providerName) {
+            if ($name === $providerName) {
+                $packages = $this->whatProvides(new Pool('dev'), $providerName);
+                foreach ($packages as $package) {
+                    if ($name == $package->getName() && (null === $version || $version === $package->getVersion())) {
+                        $packages[] = $package;
+                    }
+                }
+            }
+        }
+
+        return $packages;
+    }
+
     public function getPackages()
     {
         if ($this->hasProviders()) {
