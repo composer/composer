@@ -272,7 +272,7 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
         }
 
         if ($this->lazyProvidersUrl && !isset($this->providerListing[$name])) {
-            $hash = $this->providerListing[$name]['sha256'];
+            $hash = null;
             $url = str_replace('%package%', $name, $this->lazyProvidersUrl);
             $cacheKey = false;
         } elseif ($this->providersUrl) {
