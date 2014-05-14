@@ -41,10 +41,16 @@ class PlatformRepository extends ArrayRepository
         // Add each of the override versions as options.
         // Later we might even replace the extensions instead.
         foreach( $this->overrides as $name => $prettyVersion ) {
-            $version = $versionParser->normalize($prettyVersion);
-            $package = new CompletePackage($name, $version, $prettyVersion);
-            $package->setDescription("Overridden virtual platform package $name.");
-            parent::addPackage($package);
+            // Check that it's a platform package.
+            if( preg_match(self::PLATFORM_PACKAGE_REGEX, $name) ) {
+                $version = $versionParser->normalize($prettyVersion);
+                $package = new CompletePackage($name, $version, $prettyVersion);
+                $package->setDescription("Overridden virtual platform package $name.");
+                parent::addPackage($package);
+            }
+            else {
+                throw new \UnexpectedValueException('Invalid platform package "'.$name);
+            }
         }
 
 
