@@ -39,6 +39,7 @@ class Config
         'optimize-autoloader' => false,
         'prepend-autoloader' => true,
         'github-domains' => array('github.com'),
+        'platform' => array(),
     );
 
     public static $defaultRepositories = array(

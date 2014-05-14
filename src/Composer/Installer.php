@@ -196,7 +196,7 @@ class Installer
 
         // create installed repo, this contains all local packages + platform packages (php & extensions)
         $localRepo = $this->repositoryManager->getLocalRepository();
-        $platformRepo = new PlatformRepository();
+        $platformRepo = new PlatformRepository($this->config->get('platform'));
         $repos = array(
             $localRepo,
             new InstalledArrayRepository(array($installedRootPackage)),
