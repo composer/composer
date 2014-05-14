@@ -12,6 +12,7 @@
 
 namespace Composer\Repository;
 
+use Composer\Package\PackageInterface;
 use Composer\Package\CompletePackage;
 use Composer\Package\Version\VersionParser;
 use Composer\Plugin\PluginInterface;
@@ -23,17 +24,35 @@ class PlatformRepository extends ArrayRepository
 {
     const PLATFORM_PACKAGE_REGEX = '{^(?:php(?:-64bit)?|hhvm|(?:ext|lib)-[^/]+)$}i';
 
+    private $overrides;
+
+    public function __construct(array $overrides = array())
+    {
+        parent::__construct(array());
+        $this->overrides = $overrides;
+    }
+
     protected function initialize()
     {
         parent::initialize();
 
         $versionParser = new VersionParser();
 
+        // Add each of the override versions as options.
+        // Later we might even replace the extensions instead.
+        foreach( $this->overrides as $name => $prettyVersion ) {
+            $version = $versionParser->normalize($prettyVersion);
+            $package = new CompletePackage($name, $version, $prettyVersion);
+            $package->setDescription("Overridden virtual platform package $name.");
+            parent::addPackage($package);
+        }
+
+
         $prettyVersion = PluginInterface::PLUGIN_API_VERSION;
         $version = $versionParser->normalize($prettyVersion);
         $composerPluginApi = new CompletePackage('composer-plugin-api', $version, $prettyVersion);
         $composerPluginApi->setDescription('The Composer Plugin API');
-        parent::addPackage($composerPluginApi);
+        $this->addPackage($composerPluginApi);
 
         try {
             $prettyVersion = PHP_VERSION;
@@ -45,12 +64,12 @@ class PlatformRepository extends ArrayRepository
 
         $php = new CompletePackage('php', $version, $prettyVersion);
         $php->setDescription('The PHP interpreter');
-        parent::addPackage($php);
+        $this->addPackage($php);
 
         if (PHP_INT_SIZE === 8) {
             $php64 = new CompletePackage('php-64bit', $version, $prettyVersion);
             $php64->setDescription('The PHP interpreter (64bit)');
-            parent::addPackage($php64);
+            $this->addPackage($php64);
         }
 
         $loadedExtensions = get_loaded_extensions();
@@ -73,7 +92,7 @@ class PlatformRepository extends ArrayRepository
             $packageName = $this->buildPackageName($name);
             $ext = new CompletePackage($packageName, $version, $prettyVersion);
             $ext->setDescription('The '.$name.' PHP extension');
-            parent::addPackage($ext);
+            $this->addPackage($ext);
         }
 
         // Another quick loop, just for possible libraries
@@ -143,7 +162,7 @@ class PlatformRepository extends ArrayRepository
 
             $lib = new CompletePackage('lib-'.$name, $version, $prettyVersion);
             $lib->setDescription('The '.$name.' PHP library');
-            parent::addPackage($lib);
+            $this->addPackage($lib);
         }
 
         if (defined('HHVM_VERSION')) {
@@ -157,10 +176,29 @@ class PlatformRepository extends ArrayRepository
 
             $hhvm = new CompletePackage('hhvm', $version, $prettyVersion);
             $hhvm->setDescription('The HHVM Runtime (64bit)');
-            parent::addPackage($hhvm);
+            $this->addPackage($hhvm);
         }
     }
 
+    // TODO: Is it a good thing to redefine the public interface
+    // like this, or is it better to make the "only-add-if-no-in-platform"
+    // feature in a
+    // protected function addOverriddenPackage()
+    // instead?
+    public function addPackage(PackageInterface $package)
+    {
+        /*
+           If we can find the package in this repository,
+           in any version, it can only mean that it has been
+           added by the config key 'platform' and should
+           the real package (i.e. this one) should not be added.
+        */
+        if( count($this->findPackages($package->getName())) > 0 ) {
+            // Log a warning that we're ignoring existing package?
+            return;
+        }
+        parent::addPackage($package);
+    }
 
     private function buildPackageName($name)
     {
