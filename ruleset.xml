@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ruleset name="composer">
+    <exclude-pattern>/src/bootstrap.php</exclude-pattern>
+
+    <rule ref="PSR2">
+        <!-- lines longer than 120 chars warning -->
+        <exclude name="Generic.Files.LineLength.TooLong" />
+    </rule>
+</ruleset>
