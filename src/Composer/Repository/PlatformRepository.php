@@ -49,7 +49,7 @@ class PlatformRepository extends ArrayRepository
                 parent::addPackage($package);
             }
             else {
-                throw new \UnexpectedValueException('Invalid platform package "'.$name);
+                throw new \InvalidArgumentException('Invalid platform package '.$name);
             }
         }
 
