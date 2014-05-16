@@ -118,7 +118,7 @@ EOT
         if (count($packages) > 1) {
             $package = $packages[0];
             $io->write('<info>Found multiple matches, selected '.$package->getPrettyString().'.</info>');
-            $io->write('Alternatives were '.implode(', ', array_map(function ($p) { return $p->getPrettyString(); }, $packages)).'.');
+            $io->write('Alternatives were '.$this->packagesPrettyString($packages).'.');
             $io->write('<comment>Please use a more specific constraint to pick a different package.</comment>');
         } elseif ($packages) {
             $package = $packages[0];
@@ -130,5 +130,21 @@ EOT
         }
 
         return $package;
+    }
+
+    /**
+     * @param  array $packages
+     * @return string
+     */
+    private function packagesPrettyString(array $packages)
+    {
+        $packageStrings = array_map(
+            function ($package) {
+                return $package->getPrettyString();
+            },
+            $packages
+        );
+
+        return implode(', ', $packageStrings);
     }
 }
