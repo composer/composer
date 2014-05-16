@@ -123,6 +123,7 @@ class LibraryInstallerTest extends TestCase
         $library->install($this->repository, $package);
         $this->assertFileExists($this->vendorDir, 'Vendor dir should be created');
         $this->assertFileExists($this->binDir, 'Bin dir should be created');
+        $this->assertFileExists($this->vendorDir . '/some/package/vendor/autoload.php', 'Package should contain vendor/autoload.php');
     }
 
     /**
