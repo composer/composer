@@ -94,14 +94,10 @@ class LibraryInstaller implements InstallerInterface
     protected function linkAutoload(PackageInterface $package)
     {
         $this->filesystem->ensureDirectoryExists($this->getInstallPath($package) . '/vendor');
-        $linkCreated = symlink(
+        symlink(
             $this->vendorDir . '/autoload.php',
             $this->getInstallPath($package) . '/vendor/autoload.php'
         );
-
-        if (!$linkCreated) {
-            throw new \ErrorException();
-        }
     }
 
     /**
