@@ -68,4 +68,3 @@ class GzipDownloader extends ArchiveDownloader
         return $path.'/'.pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_BASENAME);
     }
 }
-

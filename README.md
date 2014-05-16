@@ -68,6 +68,14 @@ To ensure a consistent code base, you should make sure the code follows
 the [Coding Standards](http://symfony.com/doc/2.0/contributing/code/standards.html)
 which we borrowed from Symfony.
 
+During development, you might want to run the test suite:
+
+`vendor/bin/phpunit`
+
+and check the code style:
+
+`vendor/bin/phpcs --standard=ruleset.xml src`
+
 If you would like to help take a look at the [list of issues](http://github.com/composer/composer/issues).
 
 Community

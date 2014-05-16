@@ -51,7 +51,7 @@ class PackageDependencyParser
      */
     private function buildDependency10Info($depArray)
     {
-        static $dep10toOperatorMap = array('has'=>'==', 'eq' => '==', 'ge' => '>=', 'gt' => '>', 'le' => '<=', 'lt' => '<', 'not' => '!=');
+        static $dep10toOperatorMap = array('has' => '==', 'eq' => '==', 'ge' => '>=', 'gt' => '>', 'le' => '<=', 'lt' => '<', 'not' => '!=');
 
         $result = array();
 
@@ -92,7 +92,7 @@ class PackageDependencyParser
                 case 'sapi':
                     $depChannelName = '';
                     $depPackageName = '';
-                break;
+                    break;
                 default:
                     $depChannelName = '';
                     $depPackageName = '';

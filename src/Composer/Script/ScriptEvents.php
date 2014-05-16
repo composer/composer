@@ -182,5 +182,4 @@ class ScriptEvents
      * @var string
      */
     const POST_ARCHIVE_CMD = 'post-archive-cmd';
-
 }

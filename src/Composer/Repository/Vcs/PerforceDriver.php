@@ -181,5 +181,4 @@ class PerforceDriver extends VcsDriver
     {
         return $this->branch;
     }
-
 }

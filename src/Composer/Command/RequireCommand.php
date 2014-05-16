@@ -45,7 +45,8 @@ class RequireCommand extends InitCommand
                 new InputOption('update-no-dev', null, InputOption::VALUE_NONE, 'Run the dependency update with the --no-dev option.'),
                 new InputOption('update-with-dependencies', null, InputOption::VALUE_NONE, 'Allows inherited dependencies to be updated with explicit dependencies.'),
             ))
-            ->setHelp(<<<EOT
+            ->setHelp(
+<<<EOT
 The require command adds required packages to your composer.json and installs them
 
 If you do not want to install the new dependencies immediately you can call it with --no-update

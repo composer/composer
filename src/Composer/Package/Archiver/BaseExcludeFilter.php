@@ -92,7 +92,9 @@ abstract class BaseExcludeFilter
                     }
 
                     return null;
-                }, $lines),
+                },
+                $lines
+            ),
             function ($pattern) {
                 return $pattern !== null;
             }

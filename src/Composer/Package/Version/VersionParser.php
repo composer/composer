@@ -144,7 +144,8 @@ class VersionParser
         if (preg_match('{(.*?)[.-]?dev$}i', $version, $match)) {
             try {
                 return $this->normalizeBranch($match[1]);
-            } catch (\Exception $e) {}
+            } catch (\Exception $e) {
+            }
         }
 
         $extraMessage = '';
@@ -359,7 +360,8 @@ class VersionParser
                 }
 
                 return array(new VersionConstraint($matches[1] ?: '=', $version));
-            } catch (\Exception $e) { }
+            } catch (\Exception $e) {
+            }
         }
 
         $message = 'Could not parse version constraint '.$constraint;

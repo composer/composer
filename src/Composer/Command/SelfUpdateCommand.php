@@ -43,7 +43,8 @@ class SelfUpdateCommand extends Command
                 new InputOption('clean-backups', null, InputOption::VALUE_NONE, 'Delete old backups during an update. This makes the current version of composer the only backup available after the update'),
                 new InputArgument('version', InputArgument::OPTIONAL, 'The version to update to'),
             ))
-            ->setHelp(<<<EOT
+            ->setHelp(
+<<<EOT
 The <info>self-update</info> command checks getcomposer.org for newer
 versions of composer and if found, installs the latest.
 

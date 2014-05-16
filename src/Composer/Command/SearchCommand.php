@@ -43,7 +43,8 @@ class SearchCommand extends Command
                 new InputOption('only-name', 'N', InputOption::VALUE_NONE, 'Search only in name'),
                 new InputArgument('tokens', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'tokens to search for'),
             ))
-            ->setHelp(<<<EOT
+            ->setHelp(
+<<<EOT
 The search command searches for packages by its name
 <info>php composer.phar search symfony composer</info>
 

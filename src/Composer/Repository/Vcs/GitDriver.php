@@ -225,7 +225,7 @@ class GitDriver extends VcsDriver
             foreach ($this->process->splitLines($output) as $branch) {
                 if ($branch && !preg_match('{^ *[^/]+/HEAD }', $branch)) {
                     if (preg_match('{^(?:\* )? *(\S+) *([a-f0-9]+) .*$}', $branch, $match)) {
-                       $branches[$match[1]] = $match[2];
+                        $branches[$match[1]] = $match[2];
                     }
                 }
             }

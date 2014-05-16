@@ -43,9 +43,8 @@ class PerforceDownloader extends VcsDownloader
 
     private function getLabelFromSourceReference($ref)
     {
-        $pos = strpos($ref,'@');
-        if (false !== $pos)
-        {
+        $pos = strpos($ref, '@');
+        if (false !== $pos) {
             return substr($ref, $pos + 1);
         }
         return null;

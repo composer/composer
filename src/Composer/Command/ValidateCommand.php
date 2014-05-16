@@ -39,7 +39,8 @@ class ValidateCommand extends Command
                 new InputOption('no-check-all', null, InputOption::VALUE_NONE, 'Do not make a complete validation'),
                 new InputArgument('file', InputArgument::OPTIONAL, 'path to composer.json file', './composer.json')
             ))
-            ->setHelp(<<<EOT
+            ->setHelp(
+<<<EOT
 The validate command validates a given composer.json
 
 EOT

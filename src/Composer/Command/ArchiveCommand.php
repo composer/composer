@@ -42,7 +42,8 @@ class ArchiveCommand extends Command
                 new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the resulting archive: tar or zip', 'tar'),
                 new InputOption('dir', false, InputOption::VALUE_REQUIRED, 'Write the archive to this directory', '.'),
             ))
-            ->setHelp(<<<EOT
+            ->setHelp(
+<<<EOT
 The <info>archive</info> command creates an archive of the specified format
 containing the files and directories of the Composer project or the specified
 package in the specified version and writes it to the specified directory.
@@ -117,7 +118,7 @@ EOT
         if (count($packages) > 1) {
             $package = $packages[0];
             $io->write('<info>Found multiple matches, selected '.$package->getPrettyString().'.</info>');
-            $io->write('Alternatives were '.implode(', ', array_map(function ($p) { return $p->getPrettyString(); }, $packages)).'.');
+            $io->write('Alternatives were '.$this->packagesPrettyString($packages).'.');
             $io->write('<comment>Please use a more specific constraint to pick a different package.</comment>');
         } elseif ($packages) {
             $package = $packages[0];
@@ -129,5 +130,21 @@ EOT
         }
 
         return $package;
+    }
+
+    /**
+     * @param  array $packages
+     * @return string
+     */
+    private function packagesPrettyString(array $packages)
+    {
+        $packageStrings = array_map(
+            function ($package) {
+                return $package->getPrettyString();
+            },
+            $packages
+        );
+
+        return implode(', ', $packageStrings);
     }
 }

@@ -138,8 +138,9 @@ class PearPackageExtractor
     {
         /** @var $package \SimpleXmlElement */
         $package = simplexml_load_file($this->combine($source, 'package.xml'));
-        if(false === $package)
+        if (false === $package) {
             throw new \RuntimeException('Package definition file is not valid.');
+        }
 
         $packageSchemaVersion = $package['version'];
         if ('1.0' == $packageSchemaVersion) {

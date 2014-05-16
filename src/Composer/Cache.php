@@ -129,7 +129,7 @@ class Cache
 
     public function gcIsNecessary()
     {
-       return (!self::$cacheCollected && !mt_rand(0, 50));
+        return !self::$cacheCollected && !mt_rand(0, 50);
     }
 
     public function remove($file)
@@ -144,8 +144,7 @@ class Cache
 
     public function gc($ttl, $maxSize)
     {
-        if ($this->enabled)
-        {
+        if ($this->enabled) {
             $expire = new \DateTime();
             $expire->modify('-'.$ttl.' seconds');
 
