@@ -139,7 +139,7 @@ class FileDownloader implements DownloaderInterface
                         break;
                     } catch (TransportException $e) {
                         // if we got an http response with a proper code, then requesting again will probably not help, abort
-                        if ((0 !== $e->getCode() && !in_array($e->getCode(),array(500, 502, 503, 504))) || !$retries) {
+                        if ((0 !== $e->getCode() && !in_array($e->getCode(), array(500, 502, 503, 504))) || !$retries) {
                             throw $e;
                         }
                         if ($this->io->isVerbose()) {
@@ -157,12 +157,18 @@ class FileDownloader implements DownloaderInterface
             }
 
             if (!file_exists($fileName)) {
-                throw new \UnexpectedValueException($url.' could not be saved to '.$fileName.', make sure the'
-                    .' directory is writable and you have internet connectivity');
+                throw new \UnexpectedValueException(sprintf(
+                    '%s could not be saved to %s, make sure the directory is writable and you have internet connectivity',
+                    $url,
+                    $fileName
+                ));
             }
 
             if ($checksum && hash_file('sha1', $fileName) !== $checksum) {
-                throw new \UnexpectedValueException('The checksum verification of the file failed (downloaded from '.$url.')');
+                throw new \UnexpectedValueException(sprintf(
+                    'The checksum verification of the file failed (downloaded from %s)',
+                    $url
+                ));
             }
         } catch (\Exception $e) {
             // clean up

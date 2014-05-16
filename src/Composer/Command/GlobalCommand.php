@@ -32,7 +32,8 @@ class GlobalCommand extends Command
                 new InputArgument('command-name', InputArgument::REQUIRED, ''),
                 new InputArgument('args', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, ''),
             ))
-            ->setHelp(<<<EOT
+            ->setHelp(
+<<<EOT
 Use this command as a wrapper to run other Composer commands
 within the global context of COMPOSER_HOME.
 

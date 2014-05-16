@@ -172,7 +172,8 @@ class Svn
      */
     protected function getCommand($cmd, $url, $path = null)
     {
-        $cmd = sprintf('%s %s%s %s',
+        $cmd = sprintf(
+            '%s %s%s %s',
             $cmd,
             '--non-interactive ',
             $this->getCredentialString(),

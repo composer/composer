@@ -33,7 +33,8 @@ class DumpAutoloadCommand extends Command
                 new InputOption('optimize', 'o', InputOption::VALUE_NONE, 'Optimizes PSR0 and PSR4 packages to be loaded with classmaps too, good for production.'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables autoload-dev rules.'),
             ))
-            ->setHelp(<<<EOT
+            ->setHelp(
+<<<EOT
 <info>php composer.phar dump-autoload</info>
 EOT
             )

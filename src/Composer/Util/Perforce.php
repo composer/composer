@@ -282,25 +282,25 @@ class Perforce
     public function isLoggedIn()
     {
         $command = $this->generateP4Command('login -s', false);
-        $exitCode  = $this->executeCommand($command);
-        if ($exitCode){
+        $exitCode = $this->executeCommand($command);
+        if ($exitCode) {
             $errorOutput = $this->process->getErrorOutput();
             $index = strpos($errorOutput, $this->getUser());
-            if ($index === false){
+            if ($index === false) {
                 $index = strpos($errorOutput, 'p4');
-                if ($index===false){
+                if ($index === false) {
                     return false;
                 }
                 throw new \Exception('p4 command not found in path: ' . $errorOutput);
             }
-            throw new \Exception('Invalid user name: ' . $this->getUser() );
+            throw new \Exception('Invalid user name: ' . $this->getUser());
         }
         return true;
     }
 
     public function connectClient()
     {
-        $p4CreateClientCommand = $this->generateP4Command('client -i < ' . str_replace( " ", "\\ ", $this->getP4ClientSpec() ));
+        $p4CreateClientCommand = $this->generateP4Command('client -i < ' . str_replace(" ", "\\ ", $this->getP4ClientSpec()));
         $this->executeCommand($p4CreateClientCommand);
     }
 
@@ -384,7 +384,7 @@ class Perforce
                 $command = 'echo ' . $password  . ' | ' . $this->generateP4Command(' login -a', false);
                 $exitCode = $this->executeCommand($command);
                 $result = trim($this->commandResult);
-                if ($exitCode){
+                if ($exitCode) {
                     throw new \Exception("Error logging in:" . $this->process->getErrorOutput());
                 }
             }
@@ -552,17 +552,14 @@ class Perforce
 
     public function getFilesystem()
     {
-        if (empty($this->filesystem))
-        {
+        if (empty($this->filesystem)) {
             $this->filesystem = new Filesystem($this->process);
         }
         return $this->filesystem;
     }
 
-
     public function setFilesystem(Filesystem $fs)
     {
         $this->filesystem = $fs;
     }
-
 }

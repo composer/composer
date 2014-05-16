@@ -36,7 +36,7 @@ class GitDownloader extends VcsDownloader
         $command = 'git clone --no-checkout %s %s && cd '.$flag.'%2$s && git remote add composer %1$s && git fetch composer';
         $this->io->write("    Cloning ".$ref);
 
-        $commandCallable = function($url) use ($ref, $path, $command) {
+        $commandCallable = function ($url) use ($ref, $path, $command) {
             return sprintf($command, escapeshellarg($url), escapeshellarg($path), escapeshellarg($ref));
         };
 
@@ -72,7 +72,7 @@ class GitDownloader extends VcsDownloader
             $this->io->setAuthentication($match[3], urldecode($match[1]), urldecode($match[2]));
         }
 
-        $commandCallable = function($url) use ($command) {
+        $commandCallable = function ($url) use ($command) {
             return sprintf($command, escapeshellarg($url));
         };
 
@@ -360,7 +360,8 @@ class GitDownloader extends VcsDownloader
                         return;
                     }
                 }
-            } elseif ( // private non-github repo that failed to authenticate
+            } elseif (
+                // private non-github repo that failed to authenticate
                 $this->io->isInteractive() &&
                 preg_match('{(https?://)([^/]+)(.*)$}i', $url, $match) &&
                 strpos($this->process->getErrorOutput(), 'fatal: Authentication failed') !== false

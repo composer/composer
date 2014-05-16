@@ -52,7 +52,8 @@ class ShowCommand extends Command
                 new InputOption('name-only', 'N', InputOption::VALUE_NONE, 'List package names only'),
                 new InputOption('path', 'P', InputOption::VALUE_NONE, 'Show package paths'),
             ))
-            ->setHelp(<<<EOT
+            ->setHelp(
+<<<EOT
 The show command displays detailed information about a package, or
 lists all packages available.
 

@@ -47,7 +47,8 @@ class UpdateCommand extends Command
                 new InputOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Shows more details including new commits pulled in when updating packages.'),
                 new InputOption('optimize-autoloader', 'o', InputOption::VALUE_NONE, 'Optimize autoloader during autoloader dump.')
             ))
-            ->setHelp(<<<EOT
+            ->setHelp(
+<<<EOT
 The <info>update</info> command reads the composer.json file from the
 current directory, processes it, and updates, removes or installs all the
 dependencies.

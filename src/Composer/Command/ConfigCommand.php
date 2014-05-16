@@ -59,7 +59,8 @@ class ConfigCommand extends Command
                 new InputArgument('setting-key', null, 'Setting key'),
                 new InputArgument('setting-value', InputArgument::IS_ARRAY, 'Setting value'),
             ))
-            ->setHelp(<<<EOT
+            ->setHelp(
+<<<EOT
 This command allows you to edit some basic composer settings in either the
 local composer.json file or the global config.json file.
 
@@ -248,15 +249,21 @@ EOT
             return $this->configSource->addConfigSetting('github-oauth.'.$matches[1], $values[0]);
         }
 
-        $booleanValidator = function ($val) { return in_array($val, array('true', 'false', '1', '0'), true); };
-        $booleanNormalizer = function ($val) { return $val !== 'false' && (bool) $val; };
+        $booleanValidator = function ($val) {
+            return in_array($val, array('true', 'false', '1', '0'), true);
+        };
+        $booleanNormalizer = function ($val) {
+            return $val !== 'false' && (bool) $val;
+        };
 
         // handle config values
         $uniqueConfigValues = array(
             'process-timeout' => array('is_numeric', 'intval'),
             'use-include-path' => array($booleanValidator, $booleanNormalizer),
             'preferred-install' => array(
-                function ($val) { return in_array($val, array('auto', 'source', 'dist'), true); },
+                function ($val) {
+                    return in_array($val, array('auto', 'source', 'dist'), true);
+                },
                 function ($val) { return $val; }
             ),
             'notify-on-install' => array($booleanValidator, $booleanNormalizer),
@@ -269,11 +276,15 @@ EOT
             'cache-ttl' => array('is_numeric', 'intval'),
             'cache-files-ttl' => array('is_numeric', 'intval'),
             'cache-files-maxsize' => array(
-                function ($val) { return preg_match('/^\s*([0-9.]+)\s*(?:([kmg])(?:i?b)?)?\s*$/i', $val) > 0; },
+                function ($val) {
+                    return preg_match('/^\s*([0-9.]+)\s*(?:([kmg])(?:i?b)?)?\s*$/i', $val) > 0;
+                },
                 function ($val) { return $val; }
             ),
             'discard-changes' => array(
-                function ($val) { return in_array($val, array('stash', 'true', 'false', '1', '0'), true); },
+                function ($val) {
+                    return in_array($val, array('stash', 'true', 'false', '1', '0'), true);
+                },
                 function ($val) {
                     if ('stash' === $val) {
                         return 'stash';
@@ -282,7 +293,9 @@ EOT
                     return $val !== 'false' && (bool) $val;
                 }
             ),
-            'autoloader-suffix' => array('is_string', function ($val) { return $val === 'null' ? null : $val; }),
+            'autoloader-suffix' => array('is_string', function ($val) {
+                return $val === 'null' ? null : $val;
+            }),
             'optimize-autoloader' => array($booleanValidator, $booleanNormalizer),
             'prepend-autoloader' => array($booleanValidator, $booleanNormalizer),
         );
@@ -320,7 +333,7 @@ EOT
         );
 
         foreach ($uniqueConfigValues as $name => $callbacks) {
-             if ($settingKey === $name) {
+            if ($settingKey === $name) {
                 if ($input->getOption('unset')) {
                     return $this->configSource->removeConfigSetting($settingKey);
                 }

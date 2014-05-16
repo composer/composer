@@ -34,7 +34,8 @@ class StatusCommand extends Command
             ->setDefinition(array(
                 new InputOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Show modified files for each directory that contains changes.'),
             ))
-            ->setHelp(<<<EOT
+            ->setHelp(
+<<<EOT
 The status command displays a list of dependencies that have
 been modified locally.
 

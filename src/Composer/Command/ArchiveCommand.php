@@ -42,7 +42,8 @@ class ArchiveCommand extends Command
                 new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the resulting archive: tar or zip', 'tar'),
                 new InputOption('dir', false, InputOption::VALUE_REQUIRED, 'Write the archive to this directory', '.'),
             ))
-            ->setHelp(<<<EOT
+            ->setHelp(
+<<<EOT
 The <info>archive</info> command creates an archive of the specified format
 containing the files and directories of the Composer project or the specified
 package in the specified version and writes it to the specified directory.

@@ -49,7 +49,8 @@ class SpdxLicenseIdentifier
         }
         if (!is_string($license)) {
             throw new \InvalidArgumentException(sprintf(
-                'Array or String expected, %s given.', gettype($license)
+                'Array or String expected, %s given.',
+                gettype($license)
             ));
         }
 
@@ -152,6 +153,7 @@ class SpdxLicenseIdentifier
                         return false;
                     }
                     goto lir;
+                    // No real fall-through (goto)
                 case 'lic':
                     if (!$this->isValidLicenseIdentifier($string)) {
                         return false;

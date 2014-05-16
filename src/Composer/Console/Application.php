@@ -158,7 +158,8 @@ class Application extends BaseApplication
                     $output->writeln('<error>The disk hosting '.$dir.' is full, this may be the cause of the following exception</error>');
                 }
             }
-        } catch (\Exception $e) {}
+        } catch (\Exception $e) {
+        }
 
         return parent::renderException($exception, $output);
     }

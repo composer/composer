@@ -32,7 +32,9 @@ class RuleWatchChain extends \SplDoublyLinkedList
     public function seek($offset)
     {
         $this->rewind();
-        for ($i = 0; $i < $offset; $i++, $this->next());
+        for ($i = 0; $i < $offset; $i++) {
+            $this->next();
+        }
     }
 
     /**

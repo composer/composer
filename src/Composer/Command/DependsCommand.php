@@ -40,7 +40,8 @@ class DependsCommand extends Command
                 new InputArgument('package', InputArgument::REQUIRED, 'Package to inspect'),
                 new InputOption('link-type', '', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Link types to show (require, require-dev)', array_keys($this->linkTypes)),
             ))
-            ->setHelp(<<<EOT
+            ->setHelp(
+<<<EOT
 Displays detailed information about where a package is referenced.
 
 <info>php composer.phar depends composer/composer</info>
