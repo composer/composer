@@ -120,7 +120,7 @@ class JsonConfigSource implements ConfigSourceInterface
         } else {
             // on failed clean update, call the fallback and rewrite the whole file
             $config = $this->file->read();
-            $this->array_unshift_ref($args, $config);
+            $this->arrayUnshiftRef($args, $config);
             call_user_func_array($fallback, $args);
             $this->file->write($config);
         }
@@ -137,7 +137,7 @@ class JsonConfigSource implements ConfigSourceInterface
      * @param mixed $value
      * @return array
      */
-    function array_unshift_ref(&$array, &$value)
+    private function arrayUnshiftRef(&$array, &$value)
     {
         $return = array_unshift($array, '');
         $array[0] =& $value;
