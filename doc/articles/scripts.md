@@ -67,47 +67,51 @@ autoload functionality.
 
 Script definition example:
 
-    {
-        "scripts": {
-            "post-update-cmd": "MyVendor\\MyClass::postUpdate",
-            "post-package-install": [
-                "MyVendor\\MyClass::postPackageInstall"
-            ],
-            "post-install-cmd": [
-                "MyVendor\\MyClass::warmCache",
-                "phpunit -c app/"
-            ]
-        }
+```json
+{
+    "scripts": {
+        "post-update-cmd": "MyVendor\\MyClass::postUpdate",
+        "post-package-install": [
+            "MyVendor\\MyClass::postPackageInstall"
+        ],
+        "post-install-cmd": [
+            "MyVendor\\MyClass::warmCache",
+            "phpunit -c app/"
+        ]
     }
+}
+```
 
 Using the previous definition example, here's the class `MyVendor\MyClass`
 that might be used to execute the PHP callbacks:
 
-    <?php
+```php
+<?php
 
-    namespace MyVendor;
+namespace MyVendor;
 
-    use Composer\Script\Event;
+use Composer\Script\Event;
 
-    class MyClass
+class MyClass
+{
+    public static function postUpdate(Event $event)
     {
-        public static function postUpdate(Event $event)
-        {
-            $composer = $event->getComposer();
-            // do stuff
-        }
-
-        public static function postPackageInstall(Event $event)
-        {
-            $installedPackage = $event->getOperation()->getPackage();
-            // do stuff
-        }
-
-        public static function warmCache(Event $event)
-        {
-            // make cache toasty
-        }
+        $composer = $event->getComposer();
+        // do stuff
     }
+
+    public static function postPackageInstall(Event $event)
+    {
+        $installedPackage = $event->getOperation()->getPackage();
+        // do stuff
+    }
+
+    public static function warmCache(Event $event)
+    {
+        // make cache toasty
+    }
+}
+```
 
 When an event is fired, Composer's internal event handler receives a
 `Composer\Script\Event` object, which is passed as the first argument to your
@@ -122,6 +126,8 @@ PHP callback. This `Event` object has getters for other contextual objects:
 
 If you would like to run the scripts for an event manually, the syntax is:
 
-    $ composer run-script [--dev] [--no-dev] script
+```sh
+composer run-script [--dev] [--no-dev] script
+```
 
 For example `composer run-script post-install-cmd` will run any **post-install-cmd** scripts that have been defined.

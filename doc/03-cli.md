@@ -36,7 +36,9 @@ it a bit easier to do this.
 When you run the command it will interactively ask you to fill in the fields,
 while using some smart defaults.
 
-    $ php composer.phar init
+```sh
+php composer.phar init
+```
 
 ### Options
 
@@ -54,7 +56,9 @@ while using some smart defaults.
 The `install` command reads the `composer.json` file from the current
 directory, resolves the dependencies, and installs them into `vendor`.
 
-    $ php composer.phar install
+```sh
+php composer.phar install
+```
 
 If there is a `composer.lock` file in the current directory, it will use the
 exact versions from there instead of resolving them. This ensures that
@@ -94,18 +98,24 @@ resolution.
 In order to get the latest versions of the dependencies and to update the
 `composer.lock` file, you should use the `update` command.
 
-    $ php composer.phar update
+```sh
+php composer.phar update
+```
 
 This will resolve all dependencies of the project and write the exact versions
 into `composer.lock`.
 
 If you just want to update a few packages and not all, you can list them as such:
 
-    $ php composer.phar update vendor/package vendor/package2
+```sh
+php composer.phar update vendor/package vendor/package2
+```
 
 You can also use wildcards to update a bunch of packages at once:
 
-    $ php composer.phar update vendor/*
+```sh
+php composer.phar update vendor/*
+```
 
 ### Options
 
@@ -131,7 +141,9 @@ You can also use wildcards to update a bunch of packages at once:
 The `require` command adds new packages to the `composer.json` file from
 the current directory.
 
-    $ php composer.phar require
+```sh
+php composer.phar require
+```
 
 After adding/changing the requirements, the modified requirements will be
 installed or updated.
@@ -139,7 +151,9 @@ installed or updated.
 If you do not want to choose requirements interactively, you can just pass them
 to the command.
 
-    $ php composer.phar require vendor/package:2.* vendor/package2:dev-master
+```sh
+php composer.phar require vendor/package:2.* vendor/package2:dev-master
+```
 
 ### Options
 
@@ -162,13 +176,17 @@ This can be used to install CLI utilities globally and if you add
 `$COMPOSER_HOME/vendor/bin` to your `$PATH` environment variable. Here is an
 example:
 
-    $ php composer.phar global require fabpot/php-cs-fixer:dev-master
+```sh
+php composer.phar global require fabpot/php-cs-fixer:dev-master
+```
 
 Now the `php-cs-fixer` binary is available globally (assuming you adjusted
 your PATH). If you wish to update the binary later on you can just run a
 global update:
 
-    $ php composer.phar global update
+```sh
+php composer.phar global update
+```
 
 ## search
 
@@ -176,7 +194,9 @@ The search command allows you to search through the current project's package
 repositories. Usually this will be just packagist. You simply pass it the
 terms you want to search for.
 
-    $ php composer.phar search monolog
+```sh
+php composer.phar search monolog
+```
 
 You can also search for more than one term by passing multiple arguments.
 
@@ -188,32 +208,38 @@ You can also search for more than one term by passing multiple arguments.
 
 To list all of the available packages, you can use the `show` command.
 
-    $ php composer.phar show
+```sh
+php composer.phar show
+```
 
 If you want to see the details of a certain package, you can pass the package
 name.
 
-    $ php composer.phar show monolog/monolog
+```sh
+php composer.phar show monolog/monolog
 
-    name     : monolog/monolog
-    versions : master-dev, 1.0.2, 1.0.1, 1.0.0, 1.0.0-RC1
-    type     : library
-    names    : monolog/monolog
-    source   : [git] http://github.com/Seldaek/monolog.git 3d4e60d0cbc4b888fe5ad223d77964428b1978da
-    dist     : [zip] http://github.com/Seldaek/monolog/zipball/3d4e60d0cbc4b888fe5ad223d77964428b1978da 3d4e60d0cbc4b888fe5ad223d77964428b1978da
-    license  : MIT
+name     : monolog/monolog
+versions : master-dev, 1.0.2, 1.0.1, 1.0.0, 1.0.0-RC1
+type     : library
+names    : monolog/monolog
+source   : [git] http://github.com/Seldaek/monolog.git 3d4e60d0cbc4b888fe5ad223d77964428b1978da
+dist     : [zip] http://github.com/Seldaek/monolog/zipball/3d4e60d0cbc4b888fe5ad223d77964428b1978da 3d4e60d0cbc4b888fe5ad223d77964428b1978da
+license  : MIT
 
-    autoload
-    psr-0
-    Monolog : src/
+autoload
+psr-0
+Monolog : src/
 
-    requires
-    php >=5.3.0
+requires
+php >=5.3.0
+```
 
 You can even pass the package version, which will tell you the details of that
 specific version.
 
-    $ php composer.phar show monolog/monolog 1.0.2
+```sh
+php composer.phar show monolog/monolog 1.0.2
+```
 
 ### Options
 
@@ -227,13 +253,15 @@ The `depends` command tells you which other packages depend on a certain
 package. You can specify which link types (`require`, `require-dev`)
 should be included in the listing. By default both are used.
 
-    $ php composer.phar depends --link-type=require monolog/monolog
+```sh
+php composer.phar depends --link-type=require monolog/monolog
 
-    nrk/monolog-fluent
-    poc/poc
-    propel/propel
-    symfony/monolog-bridge
-    symfony/symfony
+nrk/monolog-fluent
+poc/poc
+propel/propel
+symfony/monolog-bridge
+symfony/symfony
+```
 
 ### Options
 
@@ -246,7 +274,9 @@ You should always run the `validate` command before you commit your
 `composer.json` file, and before you tag a release. It will check if your
 `composer.json` is valid.
 
-    $ php composer.phar validate
+```sh
+php composer.phar validate
+```
 
 ### Options
 
@@ -258,31 +288,42 @@ If you often need to modify the code of your dependencies and they are
 installed from source, the `status` command allows you to check if you have
 local changes in any of them.
 
-    $ php composer.phar status
+```sh
+php composer.phar status
+```
 
 With the `--verbose` option you get some more information about what was
 changed:
 
-    $ php composer.phar status -v
-    You have changes in the following dependencies:
-    vendor/seld/jsonlint:
-        M README.mdown
+```sh
+php composer.phar status -v
+
+You have changes in the following dependencies:
+vendor/seld/jsonlint:
+    M README.mdown
+```
 
 ## self-update
 
 To update composer itself to the latest version, just run the `self-update`
 command. It will replace your `composer.phar` with the latest version.
 
-    $ php composer.phar self-update
+```sh
+php composer.phar self-update
+```
 
 If you would like to instead update to a specific release simply specify it:
 
-    $ composer self-update 1.0.0-alpha7
+```sh
+php composer.phar self-update 1.0.0-alpha7
+```
 
 If you have installed composer for your entire system (see [global installation](00-intro.md#globally)),
 you may have to run the command with `root` privileges
 
-    $ sudo composer self-update
+```sh
+sudo composer self-update
+```
 
 ### Options
 
@@ -294,7 +335,9 @@ you may have to run the command with `root` privileges
 The `config` command allows you to edit some basic composer settings in either
 the local composer.json file or the global config.json file.
 
-    $ php composer.phar config --list
+```sh
+php composer.phar config --list
+```
 
 ### Usage
 
@@ -326,7 +369,9 @@ the global config file.
 In addition to modifying the config section, the `config` command also supports making
 changes to the repositories section by using it the following way:
 
-    $ php composer.phar config repositories.foo vcs http://github.com/foo/bar
+```sh
+php composer.phar config repositories.foo vcs http://github.com/foo/bar
+```
 
 ## create-project
 
@@ -347,7 +392,9 @@ provide a version as third argument, otherwise the latest version is used.
 
 If the directory does not currently exist, it will be created during installation.
 
-    php composer.phar create-project doctrine/orm path 2.2.*
+```sh
+php composer.phar create-project doctrine/orm path 2.2.*
+```
 
 It is also possible to run the command without params in a directory with an
 existing `composer.json` file to bootstrap a project.
@@ -409,7 +456,9 @@ If you think you found a bug, or something is behaving strangely, you might
 want to run the `diagnose` command to perform automated checks for many common
 problems.
 
-    $ php composer.phar diagnose
+```sh
+php composer.phar diagnose
+```
 
 ## archive
 
@@ -417,7 +466,9 @@ This command is used to generate a zip/tar archive for a given package in a
 given version. It can also be used to archive your entire project without
 excluded/ignored files.
 
-    $ php composer.phar archive vendor/package 2.0.21 --format=zip
+```sh
+php composer.phar archive vendor/package 2.0.21 --format=zip
+```
 
 ### Options
 
@@ -429,7 +480,9 @@ excluded/ignored files.
 
 To get more information about a certain command, just use `help`.
 
-    $ php composer.phar help install
+```sh
+php composer.phar help install
+```
 
 ## Environment variables
 
@@ -445,7 +498,9 @@ By setting the `COMPOSER` env variable it is possible to set the filename of
 
 For example:
 
-    $ COMPOSER=composer-other.json php composer.phar install
+```sh
+COMPOSER=composer-other.json php composer.phar install
+```
 
 ### COMPOSER_ROOT_VERSION
 

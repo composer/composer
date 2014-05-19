@@ -28,13 +28,15 @@ someone will want the latest master dev version. Thus, Composer allows you to
 alias your `dev-master` branch to a `1.0.x-dev` version. It is done by
 specifying a `branch-alias` field under `extra` in `composer.json`:
 
-    {
-        "extra": {
-            "branch-alias": {
-                "dev-master": "1.0.x-dev"
-            }
+```json
+{
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0.x-dev"
         }
     }
+}
+```
 
 The branch version must begin with `dev-` (non-comparable version), the alias
 must be a comparable dev version (i.e. start with numbers, and end with
@@ -68,18 +70,20 @@ You are using `symfony/monolog-bundle` which requires `monolog/monolog` version
 
 Just add this to your project's root `composer.json`:
 
-    {
-        "repositories": [
-            {
-                "type": "vcs",
-                "url": "https://github.com/you/monolog"
-            }
-        ],
-        "require": {
-            "symfony/monolog-bundle": "2.0",
-            "monolog/monolog": "dev-bugfix as 1.0.x-dev"
+```json
+{
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/you/monolog"
         }
+    ],
+    "require": {
+        "symfony/monolog-bundle": "2.0",
+        "monolog/monolog": "dev-bugfix as 1.0.x-dev"
     }
+}
+```
 
 That will fetch the `dev-bugfix` version of `monolog/monolog` from your GitHub
 and alias it to `1.0.x-dev`.

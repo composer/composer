@@ -4,20 +4,26 @@
 
 To install Composer, you just need to download the `composer.phar` executable.
 
-    $ curl -sS https://getcomposer.org/installer | php
+```sh
+curl -sS https://getcomposer.org/installer | php
+```
 
 For the details, see the [Introduction](00-intro.md) chapter.
 
 To check if Composer is working, just run the PHAR through `php`:
 
-    $ php composer.phar
+```sh
+php composer.phar
+```
 
 This should give you a list of available commands.
 
 > **Note:** You can also perform the checks only without downloading Composer
 > by using the `--check` option. For more information, just use `--help`.
 >
->     $ curl -sS https://getcomposer.org/installer | php -- --help
+> ```sh
+> curl -sS https://getcomposer.org/installer | php -- --help
+> ```
 
 ## `composer.json`: Project Setup
 
@@ -34,11 +40,13 @@ The first (and often only) thing you specify in `composer.json` is the
 `require` key. You're simply telling Composer which packages your project
 depends on.
 
-    {
-        "require": {
-            "monolog/monolog": "1.0.*"
-        }
+```json
+{
+    "require": {
+        "monolog/monolog": "1.0.*"
     }
+}
+```
 
 As you can see, `require` takes an object that maps **package names** (e.g. `monolog/monolog`)
 to **package versions** (e.g. `1.0.*`).
@@ -99,7 +107,9 @@ packages instead of doing per dependency you can also use the
 To fetch the defined dependencies into your local project, just run the
 `install` command of `composer.phar`.
 
-    $ php composer.phar install
+```sh
+php composer.phar install
+```
 
 This will find the latest version of `monolog/monolog` that matches the
 supplied version constraint and download it into the `vendor` directory.
@@ -141,11 +151,15 @@ automatically. To update to the new version, use `update` command. This will fet
 the latest matching versions (according to your `composer.json` file) and also update
 the lock file with the new version.
 
-    $ php composer.phar update
+```sh
+php composer.phar update
+```
 
 If you only want to install or update one dependency, you can whitelist them:
 
-    $ php composer.phar update monolog/monolog [...]
+```sh
+php composer.phar update monolog/monolog [...]
+```
 
 > **Note:** For libraries it is not necessarily recommended to commit the lock file,
 > see also: [Libraries - Lock file](02-libraries.md#lock-file).
@@ -171,25 +185,31 @@ For libraries that specify autoload information, Composer generates a
 `vendor/autoload.php` file. You can simply include this file and you
 will get autoloading for free.
 
-    require 'vendor/autoload.php';
+```php
+require 'vendor/autoload.php';
+```
 
 This makes it really easy to use third party code. For example: If your
 project depends on monolog, you can just start using classes from it, and they
 will be autoloaded.
 
-    $log = new Monolog\Logger('name');
-    $log->pushHandler(new Monolog\Handler\StreamHandler('app.log', Monolog\Logger::WARNING));
+```php
+$log = new Monolog\Logger('name');
+$log->pushHandler(new Monolog\Handler\StreamHandler('app.log', Monolog\Logger::WARNING));
 
-    $log->addWarning('Foo');
+$log->addWarning('Foo');
+```
 
 You can even add your own code to the autoloader by adding an `autoload` field
 to `composer.json`.
 
-    {
-        "autoload": {
-            "psr-4": {"Acme\\": "src/"}
-        }
+```json
+{
+    "autoload": {
+        "psr-4": {"Acme\\": "src/"}
     }
+}
+```
 
 Composer will register a [PSR-4](http://www.php-fig.org/psr/psr-4/) autoloader
 for the `Acme` namespace.
@@ -205,8 +225,10 @@ Including that file will also return the autoloader instance, so you can store
 the return value of the include call in a variable and add more namespaces.
 This can be useful for autoloading classes in a test suite, for example.
 
-    $loader = require 'vendor/autoload.php';
-    $loader->add('Acme\\Test\\', __DIR__);
+```php
+$loader = require 'vendor/autoload.php';
+$loader->add('Acme\\Test\\', __DIR__);
+```
 
 In addition to PSR-4 autoloading, classmap is also supported. This allows
 classes to be autoloaded even if they do not conform to PSR-4. See the

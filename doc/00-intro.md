@@ -33,11 +33,13 @@ You decide to use [monolog](https://github.com/Seldaek/monolog). In order to
 add it to your project, all you need to do is create a `composer.json` file
 which describes the project's dependencies.
 
-    {
-        "require": {
-            "monolog/monolog": "1.2.*"
-        }
+```json
+{
+    "require": {
+        "monolog/monolog": "1.2.*"
     }
+}
+```
 
 We are simply stating that our project requires some `monolog/monolog` package,
 any version beginning with `1.2`.
@@ -63,12 +65,16 @@ Linux and OSX.
 To actually get Composer, we need to do two things. The first one is installing
 Composer (again, this means downloading it into your project):
 
-    $ curl -sS https://getcomposer.org/installer | php
-    
+```sh
+curl -sS https://getcomposer.org/installer | php
+```
+
 > **Note:** If the above fails for some reason, you can download the installer
 > with `php` instead:
 
-    $ php -r "readfile('https://getcomposer.org/installer');" | php
+```sh
+php -r "readfile('https://getcomposer.org/installer');" | php
+```
 
 This will just check a few PHP settings and then download `composer.phar` to
 your working directory. This file is the Composer binary. It is a PHAR (PHP
@@ -78,7 +84,9 @@ line, amongst other things.
 You can install Composer to a specific directory by using the `--install-dir`
 option and providing a target directory (it can be an absolute or relative path):
 
-    $ curl -sS https://getcomposer.org/installer | php -- --install-dir=bin
+```sh
+curl -sS https://getcomposer.org/installer | php -- --install-dir=bin
+```
 
 #### Globally
 
@@ -88,8 +96,10 @@ executable and invoke it without `php`.
 
 You can run these commands to easily access `composer` from anywhere on your system:
 
-    $ curl -sS https://getcomposer.org/installer | php
-    $ mv composer.phar /usr/local/bin/composer
+```sh
+curl -sS https://getcomposer.org/installer | php
+mv composer.phar /usr/local/bin/composer
+```
 
 > **Note:** If the above fails due to permissions, run the `mv` line
 > again with sudo.
@@ -123,21 +133,25 @@ just call `composer` from any directory in your command line.
 Change to a directory on your `PATH` and run the install snippet to download
 composer.phar:
 
-    C:\Users\username>cd C:\bin
-    C:\bin>php -r "readfile('https://getcomposer.org/installer');" | php
+```sh
+C:\Users\username>cd C:\bin
+C:\bin>php -r "readfile('https://getcomposer.org/installer');" | php
+```
 
 > **Note:** If the above fails due to readfile, use the `http` url or enable php_openssl.dll in php.ini
 
 Create a new `composer.bat` file alongside `composer.phar`:
 
-    C:\bin>echo @php "%~dp0composer.phar" %*>composer.bat
+```sh
+C:\bin>echo @php "%~dp0composer.phar" %*>composer.bat
+```
 
 Close your current terminal. Test usage with a new terminal:
 
-    C:\Users\username>composer -V
-    Composer version 27d8904
-
-    C:\Users\username>
+```sh
+C:\Users\username>composer -V
+Composer version 27d8904
+```
 
 ## Using Composer
 
@@ -147,12 +161,16 @@ don't have a `composer.json` file in the current directory please skip to the
 
 To resolve and download dependencies, run the `install` command:
 
-    $ php composer.phar install
+```sh
+php composer.phar install
+```
 
 If you did a global install and do not have the phar in that directory
 run this instead:
 
-    $ composer install
+```sh
+composer install
+```
 
 Following the [example above](#declaring-dependencies), this will download
 monolog into the `vendor/monolog/monolog` directory.
@@ -164,7 +182,9 @@ capable of autoloading all of the classes in any of the libraries that it
 downloads. To use it, just add the following line to your code's bootstrap
 process:
 
-    require 'vendor/autoload.php';
+```php
+require 'vendor/autoload.php';
+```
 
 Woah! Now start using monolog! To keep learning more about Composer, keep
 reading the "Basic Usage" chapter.

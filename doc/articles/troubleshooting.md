@@ -63,12 +63,14 @@ You can fix this by aliasing version 0.11 to 0.1:
 
 composer.json:
 
-    {
-        "require": {
-            "A": "0.2",
-            "B": "0.11 as 0.1"
-        }
+```json
+{
+    "require": {
+        "A": "0.2",
+        "B": "0.11 as 0.1"
     }
+}
+```
 
 See [aliases](aliases.md) for more information.
 
@@ -76,7 +78,7 @@ See [aliases](aliases.md) for more information.
 
 If composer shows memory errors on some commands:
 
-    PHP Fatal error:  Allowed memory size of XXXXXX bytes exhausted <...>
+`PHP Fatal error:  Allowed memory size of XXXXXX bytes exhausted <...>`
 
 The PHP `memory_limit` should be increased.
 
@@ -86,17 +88,23 @@ The PHP `memory_limit` should be increased.
 
 To get the current `memory_limit` value, run:
 
-    php -r "echo ini_get('memory_limit').PHP_EOL;"
+```sh
+php -r "echo ini_get('memory_limit').PHP_EOL;"
+```
 
 Try increasing the limit in your `php.ini` file (ex. `/etc/php5/cli/php.ini` for
 Debian-like systems):
 
-    ; Use -1 for unlimited or define an explicit value like 512M
-    memory_limit = -1
+```ini
+; Use -1 for unlimited or define an explicit value like 512M
+memory_limit = -1
+```
 
 Or, you can increase the limit with a command-line argument:
 
-    php -d memory_limit=-1 composer.phar <...>
+```sh
+php -d memory_limit=-1 composer.phar <...>
+```
 
 ## "The system cannot find the path specified" (Windows)
 
@@ -123,18 +131,23 @@ Now Composer should install/update without asking for authentication.
 ## proc_open(): fork failed errors
 If composer shows proc_open() fork failed on some commands:
 
-    PHP Fatal error: Uncaught exception 'ErrorException' with message 'proc_open(): fork failed - Cannot allocate memory' in phar
+`PHP Fatal error: Uncaught exception 'ErrorException' with message 'proc_open(): fork failed - Cannot allocate memory' in phar`
 
 This could be happening because the VPS runs out of memory and has no Swap space enabled.
 
-    [root@my_tiny_vps htdocs]# free -m
-    total used free shared buffers cached
-    Mem: 2048 357 1690 0 0 237
-    -/+ buffers/cache: 119 1928
-    Swap: 0 0 0
+```sh
+free -m
+
+total used free shared buffers cached
+Mem: 2048 357 1690 0 0 237
+-/+ buffers/cache: 119 1928
+Swap: 0 0 0
+```
 
 To enable the swap you can use for example:
 
-    /bin/dd if=/dev/zero of=/var/swap.1 bs=1M count=1024
-    /sbin/mkswap /var/swap.1
-    /sbin/swapon /var/swap.1
+```sh
+/bin/dd if=/dev/zero of=/var/swap.1 bs=1M count=1024
+/sbin/mkswap /var/swap.1
+/sbin/swapon /var/swap.1
+```
