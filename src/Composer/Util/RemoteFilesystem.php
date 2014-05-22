@@ -336,7 +336,7 @@ class RemoteFilesystem
             if (!$gitHubUtil->authorizeOAuth($this->originUrl)
                 && (!$this->io->isInteractive() || !$gitHubUtil->authorizeOAuthInteractively($this->originUrl, $message))
             ) {
-                throw new TransportException('Could not authenticate against '.$this->originUrl);
+                throw new TransportException('Could not authenticate against '.$this->originUrl, 401);
             }
         } else {
             // 404s are only handled for github
