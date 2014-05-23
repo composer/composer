@@ -6,7 +6,7 @@ Suggestions are not displayed for packages if they are replaced
         {
             "type": "package",
             "package": [
-                { "name": "a/a", "version": "1.0.0", "suggest": { "b/b": "an obscure reason" } },
+                { "name": "a/a", "version": "1.0.0", "suggest": { "b/b": "an obscure reason" }, "require": { "c/c": "*" } },
                 { "name": "c/c", "version": "1.0.0", "replace": { "b/b": "1.0.0" } }
             ]
         }
@@ -25,5 +25,5 @@ install
 <info>Generating autoload files</info>
 
 --EXPECT--
-Installing a/a (1.0.0)
 Installing c/c (1.0.0)
+Installing a/a (1.0.0)

@@ -332,7 +332,7 @@ class RuleSetGenerator
         $this->rules = new RuleSet;
         $this->installedMap = $installedMap;
 
-        $this->whitelistedNames = array();
+        $this->whitelistedMap = array();
         foreach ($this->installedMap as $package) {
             $this->whitelistFromPackage($package);
             $this->whitelistFromUpdatePackages($package);

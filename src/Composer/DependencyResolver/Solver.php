@@ -127,7 +127,10 @@ class Solver
         foreach ($this->installed->getPackages() as $package) {
             $this->installedMap[$package->getId()] = $package;
         }
+    }
 
+    protected function checkForRootRequireProblems()
+    {
         foreach ($this->jobs as $job) {
             switch ($job['cmd']) {
                 case 'update':
@@ -161,10 +164,9 @@ class Solver
         $this->jobs = $request->getJobs();
 
         $this->setupInstalledMap();
-
-        $this->decisions = new Decisions($this->pool);
-
         $this->rules = $this->ruleSetGenerator->getRulesFor($this->jobs, $this->installedMap);
+        $this->checkForRootRequireProblems();
+        $this->decisions = new Decisions($this->pool);
         $this->watchGraph = new RuleWatchGraph;
 
         foreach ($this->rules as $rule) {

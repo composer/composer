@@ -70,6 +70,7 @@ class Pool
     public function setWhitelist($whitelist)
     {
         $this->whitelist = $whitelist;
+        $this->providerCache = array();
     }
 
     /**
