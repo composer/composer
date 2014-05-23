@@ -15,6 +15,10 @@ namespace Composer\Downloader;
 use Composer\Package\PackageInterface;
 use Composer\Util\GitHub;
 use Composer\Util\Git as GitUtil;
+use Composer\Util\ProcessExecutor;
+use Composer\IO\IOInterface;
+use Composer\Util\Filesystem;
+use Composer\Config;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -22,6 +26,13 @@ use Composer\Util\Git as GitUtil;
 class GitDownloader extends VcsDownloader
 {
     private $hasStashedChanges = false;
+    private $gitUtil;
+
+    public function __construct(IOInterface $io, Config $config, ProcessExecutor $process = null, Filesystem $fs = null)
+    {
+        parent::__construct($io, $config, $process, $fs);
+        $this->gitUtil = new GitUtil($this->io, $this->config, $this->process, $this->filesystem);
+    }
 
     /**
      * {@inheritDoc}
@@ -40,7 +51,7 @@ class GitDownloader extends VcsDownloader
             return sprintf($command, escapeshellarg($url), escapeshellarg($path), escapeshellarg($ref));
         };
 
-        $this->runCommand($commandCallable, $url, $path, true);
+        $this->gitUtil->runCommand($commandCallable, $url, $path, true);
         $this->setPushUrl($path, $url);
 
         if ($newRef = $this->updateToCommit($path, $ref, $package->getPrettyVersion(), $package->getReleaseDate())) {
@@ -66,17 +77,11 @@ class GitDownloader extends VcsDownloader
         $this->io->write("    Checking out ".$ref);
         $command = 'git remote set-url composer %s && git fetch composer && git fetch --tags composer';
 
-        // capture username/password from URL if there is one
-        $this->process->execute('git remote -v', $output, $path);
-        if (preg_match('{^(?:composer|origin)\s+https?://(.+):(.+)@([^/]+)}im', $output, $match)) {
-            $this->io->setAuthentication($match[3], urldecode($match[1]), urldecode($match[2]));
-        }
-
         $commandCallable = function($url) use ($command) {
             return sprintf($command, escapeshellarg($url));
         };
 
-        $this->runCommand($commandCallable, $url, $path);
+        $this->gitUtil->runCommand($commandCallable, $url, $path);
         if ($newRef =  $this->updateToCommit($path, $ref, $target->getPrettyVersion(), $target->getReleaseDate())) {
             if ($target->getDistReference() === $target->getSourceReference()) {
                 $target->setDistReference($newRef);
@@ -273,7 +278,7 @@ class GitDownloader extends VcsDownloader
             if (empty($newReference)) {
                 // no matching branch found, find the previous commit by date in all commits
                 if (0 !== $this->process->execute(sprintf($guessTemplate, $date, '--all'), $output, $path)) {
-                    throw new \RuntimeException('Failed to execute ' . $this->sanitizeUrl($command) . "\n\n" . $this->process->getErrorOutput());
+                    throw new \RuntimeException('Failed to execute ' . GitUtil::sanitizeUrl($command) . "\n\n" . $this->process->getErrorOutput());
                 }
                 $newReference = trim($output);
             }
@@ -287,135 +292,13 @@ class GitDownloader extends VcsDownloader
             }
         }
 
-        throw new \RuntimeException('Failed to execute ' . $this->sanitizeUrl($command) . "\n\n" . $this->process->getErrorOutput());
-    }
-
-    /**
-     * Runs a command doing attempts for each protocol supported by github.
-     *
-     * @param  callable                  $commandCallable A callable building the command for the given url
-     * @param  string                    $url
-     * @param  string                    $cwd
-     * @param  bool                      $initialClone    If true, the directory if cleared between every attempt
-     * @throws \InvalidArgumentException
-     * @throws \RuntimeException
-     */
-    protected function runCommand($commandCallable, $url, $cwd, $initialClone = false)
-    {
-        if ($initialClone) {
-            $origCwd = $cwd;
-            $cwd = null;
-        }
-
-        if (preg_match('{^ssh://[^@]+@[^:]+:[^0-9]+}', $url)) {
-            throw new \InvalidArgumentException('The source URL '.$url.' is invalid, ssh URLs should have a port number after ":".'."\n".'Use ssh://git@example.com:22/path or just git@example.com:path if you do not want to provide a password or custom port.');
-        }
-
-        // public github, autoswitch protocols
-        if (preg_match('{^(?:https?|git)://'.$this->getGitHubDomainsRegex().'/(.*)}', $url, $match)) {
-            $protocols = $this->config->get('github-protocols');
-            if (!is_array($protocols)) {
-                throw new \RuntimeException('Config value "github-protocols" must be an array, got '.gettype($protocols));
-            }
-            $messages = array();
-            foreach ($protocols as $protocol) {
-                if ('ssh' === $protocol) {
-                    $url = "git@" . $match[1] . ":" . $match[2];
-                } else {
-                    $url = $protocol ."://" . $match[1] . "/" . $match[2];
-                }
-
-                if (0 === $this->process->execute(call_user_func($commandCallable, $url), $ignoredOutput, $cwd)) {
-                    return;
-                }
-                $messages[] = '- ' . $url . "\n" . preg_replace('#^#m', '  ', $this->process->getErrorOutput());
-                if ($initialClone) {
-                    $this->filesystem->removeDirectory($origCwd);
-                }
-            }
-
-            // failed to checkout, first check git accessibility
-            $this->throwException('Failed to clone ' . $this->sanitizeUrl($url) .' via '.implode(', ', $protocols).' protocols, aborting.' . "\n\n" . implode("\n", $messages), $url);
-        }
-
-        $command = call_user_func($commandCallable, $url);
-        if (0 !== $this->process->execute($command, $ignoredOutput, $cwd)) {
-            // private github repository without git access, try https with auth
-            if (preg_match('{^git@'.$this->getGitHubDomainsRegex().':(.+?)\.git$}i', $url, $match)) {
-                if (!$this->io->hasAuthentication($match[1])) {
-                    $gitHubUtil = new GitHub($this->io, $this->config, $this->process);
-                    $message = 'Cloning failed using an ssh key for authentication, enter your GitHub credentials to access private repos';
-
-                    if (!$gitHubUtil->authorizeOAuth($match[1]) && $this->io->isInteractive()) {
-                        $gitHubUtil->authorizeOAuthInteractively($match[1], $message);
-                    }
-                }
-
-                if ($this->io->hasAuthentication($match[1])) {
-                    $auth = $this->io->getAuthentication($match[1]);
-                    $url = 'https://'.rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@'.$match[1].'/'.$match[2].'.git';
-
-                    $command = call_user_func($commandCallable, $url);
-                    if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
-                        return;
-                    }
-                }
-            } elseif ( // private non-github repo that failed to authenticate
-                $this->io->isInteractive() &&
-                preg_match('{(https?://)([^/]+)(.*)$}i', $url, $match) &&
-                strpos($this->process->getErrorOutput(), 'fatal: Authentication failed') !== false
-            ) {
-                // TODO this should use an auth manager class that prompts and stores in the config
-                if ($this->io->hasAuthentication($match[2])) {
-                    $auth = $this->io->getAuthentication($match[2]);
-                } else {
-                    $this->io->write($url.' requires Authentication');
-                    $auth = array(
-                        'username'  => $this->io->ask('Username: '),
-                        'password'  => $this->io->askAndHideAnswer('Password: '),
-                    );
-                }
-
-                $url = $match[1].rawurlencode($auth['username']).':'.rawurlencode($auth['password']).'@'.$match[2].$match[3];
-
-                $command = call_user_func($commandCallable, $url);
-                if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
-                    $this->io->setAuthentication($match[2], $auth['username'], $auth['password']);
-
-                    return;
-                }
-            }
-
-            if ($initialClone) {
-                $this->filesystem->removeDirectory($origCwd);
-            }
-            $this->throwException('Failed to execute ' . $this->sanitizeUrl($command) . "\n\n" . $this->process->getErrorOutput(), $url);
-        }
-    }
-
-    protected function getGitHubDomainsRegex()
-    {
-        return '('.implode('|', array_map('preg_quote', $this->config->get('github-domains'))).')';
-    }
-
-    protected function throwException($message, $url)
-    {
-        if (0 !== $this->process->execute('git --version', $ignoredOutput)) {
-            throw new \RuntimeException('Failed to clone '.$this->sanitizeUrl($url).', git was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput());
-        }
-
-        throw new \RuntimeException($message);
-    }
-
-    protected function sanitizeUrl($message)
-    {
-        return preg_replace('{://([^@]+?):.+?@}', '://$1:***@', $message);
+        throw new \RuntimeException('Failed to execute ' . GitUtil::sanitizeUrl($command) . "\n\n" . $this->process->getErrorOutput());
     }
 
     protected function setPushUrl($path, $url)
     {
         // set push url for github projects
-        if (preg_match('{^(?:https?|git)://'.$this->getGitHubDomainsRegex().'/([^/]+)/([^/]+?)(?:\.git)?$}', $url, $match)) {
+        if (preg_match('{^(?:https?|git)://'.GitUtil::getGitHubDomainsRegex($this->config).'/([^/]+)/([^/]+?)(?:\.git)?$}', $url, $match)) {
             $protocols = $this->config->get('github-protocols');
             $pushUrl = 'git@'.$match[1].':'.$match[2].'/'.$match[3].'.git';
             if ($protocols[0] !== 'git') {

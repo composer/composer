@@ -56,7 +56,7 @@ class GitDriver extends VcsDriver
             }
 
             // update the repo if it is a valid git repository
-            if (is_dir($this->repoDir) && 0 === $this->process->execute('git remote', $output, $this->repoDir)) {
+            if (is_dir($this->repoDir) && 0 === $this->process->execute('git rev-parse --git-dir', $output, $this->repoDir) && trim($output) === '.') {
                 if (0 !== $this->process->execute('git remote update --prune origin', $output, $this->repoDir)) {
                     $this->io->write('<error>Failed to update '.$this->url.', package information from this repository may be outdated ('.$this->process->getErrorOutput().')</error>');
                 }
@@ -64,43 +64,13 @@ class GitDriver extends VcsDriver
                 // clean up directory and do a fresh clone into it
                 $fs->removeDirectory($this->repoDir);
 
-                $command = sprintf('git clone --mirror %s %s', escapeshellarg($this->url), escapeshellarg($this->repoDir));
-                if (0 !== $this->process->execute($command, $output)) {
-                    $output = $this->process->getErrorOutput();
+                $gitUtil = new GitUtil($this->io, $this->config, $this->process, $fs);
+                $repoDir = $this->repoDir;
+                $commandCallable = function($url) use ($repoDir) {
+                    return sprintf('git clone --mirror %s %s', escapeshellarg($url), escapeshellarg($repoDir));
+                };
 
-                    if (0 !== $this->process->execute('git --version', $ignoredOutput)) {
-                        throw new \RuntimeException('Failed to clone '.$this->url.', git was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput());
-                    }
-
-                    if (
-                        $this->io->isInteractive() &&
-                        preg_match('{(https?://)([^/]+)(.*)$}i', $this->url, $match) &&
-                        strpos($output, 'fatal: Authentication failed') !== false
-                    ) {
-                        if ($this->io->hasAuthentication($match[2])) {
-                            $auth = $this->io->getAuthentication($match[2]);
-                        } else {
-                            $this->io->write($this->url.' requires Authentication');
-                            $auth = array(
-                                'username'  => $this->io->ask('Username: '),
-                                'password'  => $this->io->askAndHideAnswer('Password: '),
-                            );
-                        }
-
-                        $url = $match[1].rawurlencode($auth['username']).':'.rawurlencode($auth['password']).'@'.$match[2].$match[3];
-
-                        $command = sprintf('git clone --mirror %s %s', escapeshellarg($url), escapeshellarg($this->repoDir));
-
-                        if (0 === $this->process->execute($command, $output)) {
-                            $this->io->setAuthentication($match[2], $auth['username'], $auth['password']);
-                        } else {
-                            $output = $this->process->getErrorOutput();
-                            throw new \RuntimeException('Failed to clone '.$this->url.', could not read packages from it' . "\n\n" .$output);
-                        }
-                    } else {
-                        throw new \RuntimeException('Failed to clone '.$this->url.', could not read packages from it' . "\n\n" .$output);
-                    }
-                }
+                $gitUtil->runCommand($commandCallable, $this->url, $this->repoDir, true);
             }
         }
 
