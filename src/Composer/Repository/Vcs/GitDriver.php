@@ -42,8 +42,7 @@ class GitDriver extends VcsDriver
         } else {
             $this->repoDir = $this->config->get('cache-vcs-dir') . '/' . preg_replace('{[^a-z0-9.]}i', '-', $this->url) . '/';
 
-            $util = new GitUtil;
-            $util->cleanEnv();
+            GitUtil::cleanEnv();
 
             $fs = new Filesystem();
             $fs->ensureDirectoryExists(dirname($this->repoDir));

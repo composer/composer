@@ -327,8 +327,7 @@ class Locker
             $sourceRef = $package->getSourceReference() ?: $package->getDistReference();
             switch ($sourceType) {
                 case 'git':
-                    $util = new GitUtil;
-                    $util->cleanEnv();
+                    GitUtil::cleanEnv();
 
                     if (0 === $this->process->execute('git log -n1 --pretty=%ct '.escapeshellarg($sourceRef), $output, $path) && preg_match('{^\s*\d+\s*$}', $output)) {
                         $datetime = new \DateTime('@'.trim($output), new \DateTimeZone('UTC'));

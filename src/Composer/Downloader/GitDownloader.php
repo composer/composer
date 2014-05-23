@@ -28,7 +28,7 @@ class GitDownloader extends VcsDownloader
      */
     public function doDownload(PackageInterface $package, $path, $url)
     {
-        $this->cleanEnv();
+        GitUtil::cleanEnv();
         $path = $this->normalizePath($path);
 
         $ref = $package->getSourceReference();
@@ -56,7 +56,7 @@ class GitDownloader extends VcsDownloader
      */
     public function doUpdate(PackageInterface $initial, PackageInterface $target, $path, $url)
     {
-        $this->cleanEnv();
+        GitUtil::cleanEnv();
         $path = $this->normalizePath($path);
         if (!is_dir($path.'/.git')) {
             throw new \RuntimeException('The .git directory is missing from '.$path.', see http://getcomposer.org/commit-deps for more information');
@@ -90,7 +90,7 @@ class GitDownloader extends VcsDownloader
      */
     public function getLocalChanges(PackageInterface $package, $path)
     {
-        $this->cleanEnv();
+        GitUtil::cleanEnv();
         $path = $this->normalizePath($path);
         if (!is_dir($path.'/.git')) {
             return;
@@ -109,7 +109,7 @@ class GitDownloader extends VcsDownloader
      */
     protected function cleanChanges(PackageInterface $package, $path, $update)
     {
-        $this->cleanEnv();
+        GitUtil::cleanEnv();
         $path = $this->normalizePath($path);
         if (!$changes = $this->getLocalChanges($package, $path)) {
             return;
@@ -465,12 +465,6 @@ class GitDownloader extends VcsDownloader
         }
 
         $this->hasStashedChanges = true;
-    }
-
-    protected function cleanEnv()
-    {
-        $util = new GitUtil;
-        $util->cleanEnv();
     }
 
     protected function normalizePath($path)
