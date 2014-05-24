@@ -85,10 +85,14 @@ class Filesystem
 
         $result = $this->getProcess()->execute($cmd, $output) === 0;
 
-        // clear stat cache because external processes aren't tracked by the php stat cache
-        clearstatcache();
+        if ($result) {
+            // clear stat cache because external processes aren't tracked by the php stat cache
+            clearstatcache();
 
-        return $result && !is_dir($directory);
+            return !is_dir($directory);
+        }
+
+        return $this->removeDirectoryPhp($directory);
     }
 
     /**
