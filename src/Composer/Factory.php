@@ -36,14 +36,11 @@ use Composer\Package\Version\VersionParser;
 class Factory
 {
     /**
-     * @throws \RuntimeException
-     * @return Config
+     * @return string
      */
-    public static function createConfig()
+    protected static function getHomeDir()
     {
-        // determine home and cache dirs
         $home = getenv('COMPOSER_HOME');
-        $cacheDir = getenv('COMPOSER_CACHE_DIR');
         if (!$home) {
             if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
                 if (!getenv('APPDATA')) {
@@ -57,6 +54,16 @@ class Factory
                 $home = rtrim(getenv('HOME'), '/') . '/.composer';
             }
         }
+
+        return $home;
+    }
+
+    /**
+     * @return string
+     */
+    protected static function getCacheDir($home)
+    {
+        $cacheDir = getenv('COMPOSER_CACHE_DIR');
         if (!$cacheDir) {
             if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
                 if ($cacheDir = getenv('LOCALAPPDATA')) {
@@ -69,6 +76,18 @@ class Factory
                 $cacheDir = $home.'/cache';
             }
         }
+
+        return $cacheDir;
+    }
+
+    /**
+     * @return Config
+     */
+    public static function createConfig()
+    {
+        // determine home and cache dirs
+        $home     = self::getHomeDir();
+        $cacheDir = self::getCacheDir($home);
 
         // Protect directory against web access. Since HOME could be
         // the www-data's user home and be web-accessible it is a
@@ -124,6 +143,26 @@ class Factory
                 }
             }
         }
+
+        return $config;
+    }
+
+    /**
+     * @return Config
+     */
+    protected static function createAuthConfig()
+    {
+        $home = self::getHomeDir();
+
+        $config = new Config();
+        // add dirs to the config
+        $config->merge(array('config' => array('home' => $home)));
+
+        $file = new JsonFile($home.'/auth.json');
+        if ($file->exists()) {
+            $config->merge($file->read());
+        }
+        $config->setConfigSource(new JsonConfigSource($file));
 
         return $config;
     }
@@ -213,6 +252,20 @@ class Factory
         $config = static::createConfig();
         $config->merge($localConfig);
         $io->loadConfiguration($config);
+
+        // load separate auth config
+        $authConfig = static::createAuthConfig();
+        if ($basicauth = $authConfig->get('basic-auth')) {
+            foreach ($basicauth as $domain => $credentials) {
+                if(!isset($credentials['username'])) {
+                    continue;
+                }
+                if(!isset($credentials['password'])) {
+                    $credentials['password'] = null;
+                }
+                $io->setAuthentication($domain, $credentials['username'], $credentials['password']);
+            }
+        }
 
         $vendorDir = $config->get('vendor-dir');
         $binDir = $config->get('bin-dir');
