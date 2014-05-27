@@ -743,6 +743,9 @@ The following options are supported:
 * **preferred-install:** Defaults to `auto` and can be any of `source`, `dist` or
   `auto`. This option allows you to set the install method Composer will prefer to
   use.
+* **store-auths:** What to do after prompting for authentication, one of:
+  `true` (always store), `false` (do not store) and `"prompt"` (ask every
+  time), defaults to `"prompt"`.
 * **github-protocols:** Defaults to `["git", "https", "ssh"]`. A list of protocols to
   use when cloning from github.com, in priority order. You can reconfigure it to
   for example prioritize the https protocol if you are behind a proxy or have somehow
@@ -753,6 +756,9 @@ The following options are supported:
   rate limiting of their API.
   [Read more](articles/troubleshooting.md#api-rate-limit-and-oauth-tokens)
   on how to get an OAuth token for GitHub.
+* **http-basic:** A list of domain names and username/passwords to authenticate
+  against them. For example using
+  `{"example.org": {"username": "alice", "password": "foo"}` as the value of this option will let composer authenticate against example.org.
 * **vendor-dir:** Defaults to `vendor`. You can install dependencies into a
   different directory if you want to.
 * **bin-dir:** Defaults to `vendor/bin`. If a project includes binaries, they
@@ -801,6 +807,11 @@ Example:
     }
 }
 ```
+
+> **Note:** Authentication-related config options like `http-basic` and
+> `github-oauth` can also be specified inside a `auth.json` file that goes
+> besides your `composer.json`. That way you can gitignore it and every
+> developer can place their own credentials in there.
 
 ### scripts <span>(root-only)</span>
 

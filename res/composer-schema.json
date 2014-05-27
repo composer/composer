@@ -136,6 +136,15 @@
                     "description": "A hash of domain name => github API oauth tokens, typically {\"github.com\":\"<token>\"}.",
                     "additionalProperties": true
                 },
+                "http-basic": {
+                    "type": "object",
+                    "description": "A hash of domain name => {\"username\": \"...\", \"password\": \"...\"}.",
+                    "additionalProperties": true
+                },
+                "store-auths": {
+                    "type": ["string", "boolean"],
+                    "description": "What to do after prompting for authentication, one of: true (store), false (do not store) or \"prompt\" (ask every time), defaults to prompt."
+                },
                 "vendor-dir": {
                     "type": "string",
                     "description": "The location where all packages are installed, defaults to \"vendor\"."
@@ -182,7 +191,7 @@
                 },
                 "optimize-autoloader": {
                     "type": "boolean",
-                    "description": "Always optimize when dumping the autoloader"
+                    "description": "Always optimize when dumping the autoloader."
                 },
                 "prepend-autoloader": {
                     "type": "boolean",

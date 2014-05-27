@@ -106,11 +106,19 @@ class Factory
         // add dirs to the config
         $config->merge(array('config' => array('home' => $home, 'cache-dir' => $cacheDir)));
 
+        // load global config
         $file = new JsonFile($home.'/config.json');
         if ($file->exists()) {
             $config->merge($file->read());
         }
         $config->setConfigSource(new JsonConfigSource($file));
+
+        // load global auth file
+        $file = new JsonFile($config->get('home').'/auth.json');
+        if ($file->exists()) {
+            $config->merge(array('config' => $file->read()));
+        }
+        $config->setAuthConfigSource(new JsonConfigSource($file, true));
 
         // move old cache dirs to the new locations
         $legacyPaths = array(
@@ -143,26 +151,6 @@ class Factory
                 }
             }
         }
-
-        return $config;
-    }
-
-    /**
-     * @return Config
-     */
-    protected static function createAuthConfig()
-    {
-        $home = self::getHomeDir();
-
-        $config = new Config();
-        // add dirs to the config
-        $config->merge(array('config' => array('home' => $home)));
-
-        $file = new JsonFile($home.'/auth.json');
-        if ($file->exists()) {
-            $config->merge($file->read());
-        }
-        $config->setConfigSource(new JsonConfigSource($file));
 
         return $config;
     }
@@ -248,24 +236,19 @@ class Factory
             $localConfig = $file->read();
         }
 
-        // Configuration defaults
+        // Load config and override with local config/auth config
         $config = static::createConfig();
         $config->merge($localConfig);
-        $io->loadConfiguration($config);
-
-        // load separate auth config
-        $authConfig = static::createAuthConfig();
-        if ($basicauth = $authConfig->get('basic-auth')) {
-            foreach ($basicauth as $domain => $credentials) {
-                if(!isset($credentials['username'])) {
-                    continue;
-                }
-                if(!isset($credentials['password'])) {
-                    $credentials['password'] = null;
-                }
-                $io->setAuthentication($domain, $credentials['username'], $credentials['password']);
+        if (isset($composerFile)) {
+            $localAuthFile = new JsonFile(dirname(realpath($composerFile)) . '/auth.json');
+            if ($localAuthFile->exists()) {
+                $config->merge(array('config' => $localAuthFile->read()));
+                $config->setAuthConfigSource(new JsonConfigSource($localAuthFile, true));
             }
         }
+
+        // load auth configs into the IO instance
+        $io->loadConfiguration($config);
 
         $vendorDir = $config->get('vendor-dir');
         $binDir = $config->get('bin-dir');

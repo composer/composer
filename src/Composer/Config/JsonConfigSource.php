@@ -29,13 +29,27 @@ class JsonConfigSource implements ConfigSourceInterface
     private $file;
 
     /**
+     * @var bool
+     */
+    private $authConfig;
+
+    /**
      * Constructor
      *
      * @param JsonFile $file
      */
-    public function __construct(JsonFile $file)
+    public function __construct(JsonFile $file, $authConfig = false)
     {
         $this->file = $file;
+        $this->authConfig = $authConfig;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getName()
+    {
+        return $this->file->getPath();
     }
 
     /**
@@ -64,7 +78,16 @@ class JsonConfigSource implements ConfigSourceInterface
     public function addConfigSetting($name, $value)
     {
         $this->manipulateJson('addConfigSetting', $name, $value, function (&$config, $key, $val) {
-            $config['config'][$key] = $val;
+            if ($key === 'github-oauth' || $key === 'http-basic') {
+                list($key, $host) = explode('.', $key, 2);
+                if ($this->authConfig) {
+                    $config[$key][$host] = $val;
+                } else {
+                    $config['config'][$key][$host] = $val;
+                }
+            } else {
+                $config['config'][$key] = $val;
+            }
         });
     }
 
@@ -74,7 +97,16 @@ class JsonConfigSource implements ConfigSourceInterface
     public function removeConfigSetting($name)
     {
         $this->manipulateJson('removeConfigSetting', $name, function (&$config, $key) {
-            unset($config['config'][$key]);
+            if ($key === 'github-oauth' || $key === 'http-basic') {
+                list($key, $host) = explode('.', $key, 2);
+                if ($this->authConfig) {
+                    unset($config[$key][$host]);
+                } else {
+                    unset($config['config'][$key][$host]);
+                }
+            } else {
+                unset($config['config'][$key]);
+            }
         });
     }
 
@@ -107,12 +139,26 @@ class JsonConfigSource implements ConfigSourceInterface
 
         if ($this->file->exists()) {
             $contents = file_get_contents($this->file->getPath());
+        } elseif ($this->authConfig) {
+            $contents = "{\n}\n";
         } else {
             $contents = "{\n    \"config\": {\n    }\n}\n";
         }
+
         $manipulator = new JsonManipulator($contents);
 
         $newFile = !$this->file->exists();
+
+        // override manipulator method for auth config files
+        if ($this->authConfig && $method === 'addConfigSetting') {
+            $method = 'addSubNode';
+            list($mainNode, $name) = explode('.', $args[0], 2);
+            $args = array($mainNode, $name, $args[1]);
+        } elseif ($this->authConfig && $method === 'removeConfigSetting') {
+            $method = 'removeSubNode';
+            list($mainNode, $name) = explode('.', $args[0], 2);
+            $args = array($mainNode, $name);
+        }
 
         // try to update cleanly
         if (call_user_func_array(array($manipulator, $method), $args)) {

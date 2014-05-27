@@ -94,7 +94,9 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue('{"master_branch": "test_master", "private": true}'));
 
         $configSource = $this->getMock('Composer\Config\ConfigSourceInterface');
+        $authConfigSource = $this->getMock('Composer\Config\ConfigSourceInterface');
         $this->config->setConfigSource($configSource);
+        $this->config->setAuthConfigSource($authConfigSource);
 
         $repoConfig = array(
             'url' => $repoUrl,

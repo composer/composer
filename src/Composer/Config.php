@@ -39,6 +39,10 @@ class Config
         'optimize-autoloader' => false,
         'prepend-autoloader' => true,
         'github-domains' => array('github.com'),
+        'store-auths' => 'prompt',
+        // valid keys without defaults (auth config stuff):
+        // github-oauth
+        // http-basic
     );
 
     public static $defaultRepositories = array(
@@ -52,6 +56,7 @@ class Config
     private $config;
     private $repositories;
     private $configSource;
+    private $authConfigSource;
 
     public function __construct()
     {
@@ -70,6 +75,16 @@ class Config
         return $this->configSource;
     }
 
+    public function setAuthConfigSource(ConfigSourceInterface $source)
+    {
+        $this->authConfigSource = $source;
+    }
+
+    public function getAuthConfigSource()
+    {
+        return $this->authConfigSource;
+    }
+
     /**
      * Merges new config values with the existing ones (overriding)
      *
@@ -80,7 +95,7 @@ class Config
         // override defaults with given config
         if (!empty($config['config']) && is_array($config['config'])) {
             foreach ($config['config'] as $key => $val) {
-                if (in_array($key, array('github-oauth')) && isset($this->config[$key])) {
+                if (in_array($key, array('github-oauth', 'http-basic')) && isset($this->config[$key])) {
                     $this->config[$key] = array_merge($this->config[$key], $val);
                 } else {
                     $this->config[$key] = $val;

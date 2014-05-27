@@ -83,7 +83,7 @@ class GitHub
         if ($message) {
             $this->io->write($message);
         }
-        $this->io->write('The credentials will be swapped for an OAuth token stored in '.$this->config->get('home').'/config.json, your password will not be stored');
+        $this->io->write('The credentials will be swapped for an OAuth token stored in '.$this->config->getAuthConfigSource()->getName().', your password will not be stored');
         $this->io->write('To revoke access to this token you can visit https://github.com/settings/applications');
         while ($attemptCounter++ < 5) {
             try {
@@ -186,9 +186,8 @@ class GitHub
             $this->io->setAuthentication($originUrl, $contents['token'], 'x-oauth-basic');
 
             // store value in user config
-            $githubTokens = $this->config->get('github-oauth') ?: array();
-            $githubTokens[$originUrl] = $contents['token'];
-            $this->config->getConfigSource()->addConfigSetting('github-oauth', $githubTokens);
+            $this->config->getConfigSource()->removeConfigSetting('github-oauth.'.$originUrl);
+            $this->config->getAuthConfigSource()->addConfigSetting('github-oauth.'.$originUrl, $contents['token']);
 
             return true;
         }

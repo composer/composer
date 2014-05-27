@@ -37,6 +37,7 @@ class RemoteFilesystem
     private $options;
     private $retryAuthFailure;
     private $lastHeaders;
+    private $storeAuth;
 
     /**
      * Constructor.
@@ -249,7 +250,40 @@ class RemoteFilesystem
         if ($this->retry) {
             $this->retry = false;
 
-            return $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress);
+            $result = $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress);
+
+            $store = false;
+            $configSource = $this->config->getAuthConfigSource();
+            if ($this->storeAuth === true) {
+                $store = $configSource;
+            } elseif ($this->storeAuth === 'prompt') {
+                $answer = $this->io->askAndValidate(
+                    'Do you want to store credentials for '.$this->originUrl.' in '.$configSource->getName().' ? [Yn] ',
+                    function ($value) {
+                        $input = strtolower(substr(trim($value), 0, 1));
+                        if (in_array($input, array('y','n'))) {
+                            return $input;
+                        }
+                        throw new \RuntimeException('Please answer (y)es or (n)o');
+                    },
+                    false,
+                    'y'
+                );
+
+                if ($answer === 'y') {
+                    $store = $configSource;
+                }
+            }
+            if ($store) {
+                $store->addConfigSetting(
+                    'http-basic.'.$this->originUrl,
+                    $this->io->getAuthentication($this->originUrl)
+                );
+            }
+
+            $this->storeAuth = false;
+
+            return $result;
         }
 
         if (false === $result) {
@@ -364,6 +398,7 @@ class RemoteFilesystem
             $username = $this->io->ask('      Username: ');
             $password = $this->io->askAndHideAnswer('      Password: ');
             $this->io->setAuthentication($this->originUrl, $username, $password);
+            $this->storeAuth = $this->config->get('store-auths');
         }
 
         $this->retry = true;
