@@ -735,6 +735,24 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
 ', $manipulator->getContents());
     }
 
+    public function testAddRootSettingDoesNotBreakDots()
+    {
+        $manipulator = new JsonManipulator('{
+    "github-oauth": {
+        "github.com": "foo"
+    }
+}');
+
+        $this->assertTrue($manipulator->addSubNode('github-oauth', 'bar', 'baz'));
+        $this->assertEquals('{
+    "github-oauth": {
+        "github.com": "foo",
+        "bar": "baz"
+    }
+}
+', $manipulator->getContents());
+    }
+
     public function testRemoveConfigSettingCanRemoveSubKeyInHash()
     {
         $manipulator = new JsonManipulator('{

@@ -125,7 +125,7 @@ class JsonManipulator
         }
 
         $subName = null;
-        if (false !== strpos($name, '.')) {
+        if (in_array($mainNode, array('config', 'repositories')) && false !== strpos($name, '.')) {
             list($name, $subName) = explode('.', $name, 2);
         }
 
@@ -203,7 +203,7 @@ class JsonManipulator
         }
 
         $subName = null;
-        if (false !== strpos($name, '.')) {
+        if (in_array($mainNode, array('config', 'repositories')) && false !== strpos($name, '.')) {
             list($name, $subName) = explode('.', $name, 2);
         }
 
