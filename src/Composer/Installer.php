@@ -708,6 +708,8 @@ class Installer
                 }
             }
 
+            $packageHash = spl_object_hash($package);
+
             // force update to locked version if it does not match the installed version
             if ($installFromLock) {
                 foreach ($lockedRepository->findPackages($package->getName()) as $lockedPackage) {
@@ -721,7 +723,7 @@ class Installer
                             if (($lockedPackage->getSourceReference() && $lockedPackage->getSourceReference() !== $package->getSourceReference())
                                 || ($lockedPackage->getDistReference() && $lockedPackage->getDistReference() !== $package->getDistReference())
                             ) {
-                                $operations[] = new UpdateOperation($package, $lockedPackage);
+                                $operations[$packageHash] = new UpdateOperation($package, $lockedPackage);
                             }
                         }
 
@@ -730,6 +732,7 @@ class Installer
                 }
             } else {
                 // force update to latest on update
+                $references = $this->package->getReferences();
                 if ($this->update) {
                     // skip package if the whitelist is enabled and it is not in it
                     if ($this->updateWhitelist && !$this->isUpdateable($package)) {
@@ -758,6 +761,11 @@ class Installer
                     if ($matches && $matches = $policy->selectPreferedPackages($pool, array(), $matches)) {
                         $newPackage = $pool->literalToPackage($matches[0]);
 
+                        if (isset($references[$newPackage->getName()])) {
+                            $newPackage->setSourceReference($references[$newPackage->getName()]);
+                            $newPackage->setDistReference($references[$newPackage->getName()]);
+                        }
+
                         if ($task === 'force-links' && $newPackage) {
                             $package->setRequires($newPackage->getRequires());
                             $package->setConflicts($newPackage->getConflicts());
@@ -770,18 +778,16 @@ class Installer
                                 || ($newPackage->getDistReference() && $newPackage->getDistReference() !== $package->getDistReference())
                             )
                         )) {
-                            $operations[] = new UpdateOperation($package, $newPackage);
+                            $operations[$packageHash] = new UpdateOperation($package, $newPackage);
                         }
                     }
                 }
 
                 if ($task === 'force-updates') {
                     // force installed package to update to referenced version if it does not match the installed version
-                    $references = $this->package->getReferences();
-
                     if (isset($references[$package->getName()]) && $references[$package->getName()] !== $package->getSourceReference()) {
                         // changing the source ref to update to will be handled in the operations loop below
-                        $operations[] = new UpdateOperation($package, clone $package);
+                        $operations[$packageHash] = new UpdateOperation($package, clone $package);
                     }
                 }
             }
