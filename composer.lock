@@ -1,22 +1,23 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
+        "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "This file is @generated automatically"
     ],
     "hash": "e68bf60f228ca192b8b492cb95a80fa7",
     "packages": [
         {
             "name": "justinrainbow/json-schema",
-            "version": "1.3.5",
+            "version": "1.3.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/justinrainbow/json-schema.git",
-                "reference": "01949f6d2130e9737ffae5d3952909a8de70d114"
+                "reference": "d97cf3ce890fe80f247fc08594a1c8a1029fc7ed"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/justinrainbow/json-schema/zipball/01949f6d2130e9737ffae5d3952909a8de70d114",
-                "reference": "01949f6d2130e9737ffae5d3952909a8de70d114",
+                "url": "https://api.github.com/repos/justinrainbow/json-schema/zipball/d97cf3ce890fe80f247fc08594a1c8a1029fc7ed",
+                "reference": "d97cf3ce890fe80f247fc08594a1c8a1029fc7ed",
                 "shasum": ""
             },
             "require": {
@@ -71,7 +72,7 @@
                 "json",
                 "schema"
             ],
-            "time": "2013-12-13 15:21:04"
+            "time": "2014-03-05 15:03:52"
         },
         {
             "name": "seld/jsonlint",
