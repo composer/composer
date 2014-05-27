@@ -495,11 +495,6 @@ class Installer
                 }
             }
 
-            $event = 'Composer\Script\ScriptEvents::PRE_PACKAGE_'.strtoupper($operation->getJobType());
-            if (defined($event) && $this->runScripts) {
-                $this->eventDispatcher->dispatchPackageEvent(constant($event), $this->devMode, $operation);
-            }
-
             // not installing from lock, force dev packages' references if they're in root package refs
             if (!$installFromLock) {
                 $package = null;
@@ -515,6 +510,23 @@ class Installer
                         $package->setDistReference($references[$package->getName()]);
                     }
                 }
+                if ('update' === $operation->getJobType()
+                    && $operation->getTargetPackage()->isDev()
+                    && $operation->getTargetPackage()->getVersion() === $operation->getInitialPackage()->getVersion()
+                    && $operation->getTargetPackage()->getSourceReference() === $operation->getInitialPackage()->getSourceReference()
+                ) {
+                    if ($this->io->isDebug()) {
+                        $this->io->write('  - Skipping update of '. $operation->getTargetPackage()->getPrettyName().' to the same reference-locked version');
+                        $this->io->write('');
+                    }
+
+                    continue;
+                }
+            }
+
+            $event = 'Composer\Script\ScriptEvents::PRE_PACKAGE_'.strtoupper($operation->getJobType());
+            if (defined($event) && $this->runScripts) {
+                $this->eventDispatcher->dispatchPackageEvent(constant($event), $this->devMode, $operation);
             }
 
             // output non-alias ops in dry run, output alias ops in debug verbosity
