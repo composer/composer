@@ -34,6 +34,9 @@ class JsonManipulator
         }
 
         $contents = trim($contents);
+        if ($contents === '') {
+            $contents = '{}';
+        }
         if (!$this->pregMatch('#^\{(.*)\}$#s', $contents)) {
             throw new \InvalidArgumentException('The json file must be an object ({})');
         }
