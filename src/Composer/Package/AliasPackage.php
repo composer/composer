@@ -245,6 +245,10 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     {
         return $this->aliasOf->getDistReference();
     }
+    public function setDistReference($reference)
+    {
+        return $this->aliasOf->setDistReference($reference);
+    }
     public function getDistSha1Checksum()
     {
         return $this->aliasOf->getDistSha1Checksum();
