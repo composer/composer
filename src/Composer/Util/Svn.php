@@ -12,6 +12,7 @@
 
 namespace Composer\Util;
 
+use Composer\Config;
 use Composer\IO\IOInterface;
 
 /**
@@ -58,14 +59,20 @@ class Svn
     protected $qtyAuthTries = 0;
 
     /**
+     * @var \Composer\Config
+     */
+    protected $config;
+
+    /**
      * @param string                   $url
      * @param \Composer\IO\IOInterface $io
      * @param ProcessExecutor          $process
      */
-    public function __construct($url, IOInterface $io, ProcessExecutor $process = null)
+    public function __construct($url, IOInterface $io, Config $config, ProcessExecutor $process = null)
     {
         $this->url = $url;
         $this->io  = $io;
+        $this->config = $config;
         $this->process = $process ?: new ProcessExecutor;
     }
 
@@ -123,16 +130,12 @@ class Svn
             throw new \RuntimeException($output);
         }
 
-        // no auth supported for non interactive calls
-        if (!$this->io->isInteractive()) {
-            throw new \RuntimeException(
-                'can not ask for authentication in non interactive mode ('.$output.')'
-            );
+        if (!$this->hasAuth()) {
+            $this->doAuthDance();
         }
 
         // try to authenticate if maximum quantity of tries not reached
-        if ($this->qtyAuthTries++ < self::MAX_QTY_AUTH_TRIES || !$this->hasAuth()) {
-            $this->doAuthDance();
+        if ($this->qtyAuthTries++ < self::MAX_QTY_AUTH_TRIES) {
 
             // restart the process
             return $this->execute($command, $url, $cwd, $path, $verbose);
@@ -147,9 +150,17 @@ class Svn
      * Repositories requests credentials, let's put them in.
      *
      * @return \Composer\Util\Svn
+     * @throws \RuntimeException
      */
     protected function doAuthDance()
     {
+        // cannot ask for credentials in non interactive mode
+        if (!$this->io->isInteractive()) {
+            throw new \RuntimeException(
+                'can not ask for authentication in non interactive mode'
+            );
+        }
+
         $this->io->write("The Subversion server ({$this->url}) requested credentials:");
 
         $this->hasAuth = true;
@@ -248,6 +259,53 @@ class Svn
             return $this->hasAuth;
         }
 
+        if (false === $this->createAuthFromConfig()) {
+            $this->createAuthFromUrl();
+        }
+
+        return $this->hasAuth;
+    }
+
+    /**
+     * Return the no-auth-cache switch.
+     *
+     * @return string
+     */
+    protected function getAuthCache()
+    {
+        return $this->cacheCredentials ? '' : '--no-auth-cache ';
+    }
+
+    /**
+     * Create the auth params from the configuration file.
+     *
+     * @return bool
+     */
+    protected function createAuthFromConfig()
+    {
+        if (!$this->config->has('http-basic')) {
+            return $this->hasAuth = false;
+        }
+
+        $authConfig = $this->config->get('http-basic');
+
+        if (array_key_exists($this->url, $authConfig)) {
+            $this->credentials['username'] = $authConfig[$this->url]['username'];
+            $this->credentials['password'] = $authConfig[$this->url]['password'];
+
+            return $this->hasAuth = true;
+        }
+
+        return $this->hasAuth = false;
+    }
+
+    /**
+     * Create the auth params from the url
+     *
+     * @return bool
+     */
+    protected function createAuthFromUrl()
+    {
         $uri = parse_url($this->url);
         if (empty($uri['user'])) {
             return $this->hasAuth = false;
@@ -259,15 +317,5 @@ class Svn
         }
 
         return $this->hasAuth = true;
-    }
-
-    /**
-     * Return the no-auth-cache switch.
-     *
-     * @return string
-     */
-    protected function getAuthCache()
-    {
-        return $this->cacheCredentials ? '' : '--no-auth-cache ';
     }
 }

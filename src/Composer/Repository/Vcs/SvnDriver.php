@@ -306,7 +306,7 @@ class SvnDriver extends VcsDriver
     protected function execute($command, $url)
     {
         if (null === $this->util) {
-            $this->util = new SvnUtil($this->baseUrl, $this->io, $this->process);
+            $this->util = new SvnUtil($this->baseUrl, $this->io, $this->config, $this->process);
         }
 
         try {
