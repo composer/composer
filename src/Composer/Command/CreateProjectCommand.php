@@ -133,6 +133,9 @@ EOT
     {
         $oldCwd = getcwd();
 
+        // we need to manually load the configuration to pass the auth credentials to the io interface!
+        $io->loadConfiguration($config);
+
         if ($packageName !== null) {
             $installedFromVcs = $this->installRootPackage($io, $config, $packageName, $directory, $packageVersion, $stability, $preferSource, $preferDist, $installDevPackages, $repositoryUrl, $disablePlugins, $noScripts, $keepVcs, $noProgress);
         } else {
