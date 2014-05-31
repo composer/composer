@@ -83,7 +83,7 @@ class Factory
     /**
      * @return Config
      */
-    public static function createConfig()
+    public static function createConfig(IOInterface $io = null)
     {
         // determine home and cache dirs
         $home     = self::getHomeDir();
@@ -109,6 +109,9 @@ class Factory
         // load global config
         $file = new JsonFile($home.'/config.json');
         if ($file->exists()) {
+            if ($io && $io->isDebug()) {
+                $io->write('Loading config file ' . $file->getPath());
+            }
             $config->merge($file->read());
         }
         $config->setConfigSource(new JsonConfigSource($file));
@@ -116,6 +119,9 @@ class Factory
         // load global auth file
         $file = new JsonFile($config->get('home').'/auth.json');
         if ($file->exists()) {
+            if ($io && $io->isDebug()) {
+                $io->write('Loading config file ' . $file->getPath());
+            }
             $config->merge(array('config' => $file->read()));
         }
         $config->setAuthConfigSource(new JsonConfigSource($file, true));
@@ -173,7 +179,7 @@ class Factory
         $repos = array();
 
         if (!$config) {
-            $config = static::createConfig();
+            $config = static::createConfig($io);
         }
         if (!$rm) {
             if (!$io) {
@@ -237,11 +243,17 @@ class Factory
         }
 
         // Load config and override with local config/auth config
-        $config = static::createConfig();
+        $config = static::createConfig($io);
         $config->merge($localConfig);
         if (isset($composerFile)) {
+            if ($io && $io->isDebug()) {
+                $io->write('Loading config file ' . $composerFile);
+            }
             $localAuthFile = new JsonFile(dirname(realpath($composerFile)) . '/auth.json');
             if ($localAuthFile->exists()) {
+                if ($io && $io->isDebug()) {
+                    $io->write('Loading config file ' . $localAuthFile->getPath());
+                }
                 $config->merge(array('config' => $localAuthFile->read()));
                 $config->setAuthConfigSource(new JsonConfigSource($localAuthFile, true));
             }

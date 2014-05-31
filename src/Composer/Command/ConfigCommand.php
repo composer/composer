@@ -103,7 +103,7 @@ EOT
             throw new \RuntimeException('--file and --global can not be combined');
         }
 
-        $this->config = Factory::createConfig();
+        $this->config = Factory::createConfig($this->getIO());
 
         // Get the local composer.json, global config.json, or if the user
         // passed in a file to use
