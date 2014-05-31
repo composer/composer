@@ -60,6 +60,9 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
         $urls = $package->getSourceUrls();
         while ($url = array_shift($urls)) {
             try {
+                if (Filesystem::isLocalPath($url)) {
+                    $url = realpath($url);
+                }
                 $this->doDownload($package, $path, $url);
                 break;
             } catch (\Exception $e) {
@@ -107,6 +110,9 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
         $urls = $target->getSourceUrls();
         while ($url = array_shift($urls)) {
             try {
+                if (Filesystem::isLocalPath($url)) {
+                    $url = realpath($url);
+                }
                 $this->doUpdate($initial, $target, $path, $url);
                 break;
             } catch (\Exception $e) {

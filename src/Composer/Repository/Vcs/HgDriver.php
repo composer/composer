@@ -34,8 +34,8 @@ class HgDriver extends VcsDriver
      */
     public function initialize()
     {
-        if (static::isLocalUrl($this->url)) {
-            $this->repoDir = str_replace('file://', '', $this->url);
+        if (Filesystem::isLocalPath($this->url)) {
+            $this->repoDir = $this->url;
         } else {
             $cacheDir = $this->config->get('cache-vcs-dir');
             $this->repoDir = $cacheDir . '/' . preg_replace('{[^a-z0-9]}i', '-', $this->url) . '/';
@@ -197,7 +197,7 @@ class HgDriver extends VcsDriver
         }
 
         // local filesystem
-        if (static::isLocalUrl($url)) {
+        if (Filesystem::isLocalPath($url)) {
             if (!is_dir($url)) {
                 throw new \RuntimeException('Directory does not exist: '.$url);
             }

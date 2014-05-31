@@ -357,6 +357,17 @@ class Filesystem
         return $prefix.($absolute ? '/' : '').implode('/', $parts);
     }
 
+    /**
+     * Return if the given path is local
+     *
+     * @param  string  $path
+     * @return bool
+     */
+    public static function isLocalPath($path)
+    {
+        return (bool) preg_match('{^(file://|/|[a-z]:[\\\\/]|\.\.[\\\\/]|[a-z0-9_.-]+[\\\\/])}i', $path);
+    }
+
     protected function directorySize($directory)
     {
         $it = new RecursiveDirectoryIterator($directory, RecursiveDirectoryIterator::SKIP_DOTS);

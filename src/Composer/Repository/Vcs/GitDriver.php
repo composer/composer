@@ -37,8 +37,9 @@ class GitDriver extends VcsDriver
      */
     public function initialize()
     {
-        if (static::isLocalUrl($this->url)) {
-            $this->repoDir = str_replace('file://', '', $this->url);
+        if (Filesystem::isLocalPath($this->url)) {
+            $this->repoDir = $this->url;
+            $cacheUrl = realpath($this->url);
         } else {
             $this->repoDir = $this->config->get('cache-vcs-dir') . '/' . preg_replace('{[^a-z0-9.]}i', '-', $this->url) . '/';
 
@@ -72,12 +73,14 @@ class GitDriver extends VcsDriver
 
                 $gitUtil->runCommand($commandCallable, $this->url, $this->repoDir, true);
             }
+
+            $cacheUrl = $this->url;
         }
 
         $this->getTags();
         $this->getBranches();
 
-        $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $this->url));
+        $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $cacheUrl));
     }
 
     /**
@@ -215,7 +218,7 @@ class GitDriver extends VcsDriver
         }
 
         // local filesystem
-        if (static::isLocalUrl($url)) {
+        if (Filesystem::isLocalPath($url)) {
             if (!is_dir($url)) {
                 throw new \RuntimeException('Directory does not exist: '.$url);
             }

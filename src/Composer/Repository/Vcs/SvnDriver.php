@@ -252,7 +252,7 @@ class SvnDriver extends VcsDriver
         }
 
         // proceed with deep check for local urls since they are fast to process
-        if (!$deep && !static::isLocalUrl($url)) {
+        if (!$deep && !Filesystem::isLocalPath($url)) {
             return false;
         }
 
