@@ -49,12 +49,11 @@ abstract class ArchiveDownloader extends FileDownloader
 
                 unlink($fileName);
 
-                // get file list
-                $contentDir = $this->listFiles($temporaryDir);
+                $contentDir = $this->getFolderContent($temporaryDir);
 
                 // only one dir in the archive, extract its contents out of it
-                if (1 === count($contentDir) && !is_file($contentDir[0])) {
-                    $contentDir = $this->listFiles($contentDir[0]);
+                if (1 === count($contentDir) && is_dir($contentDir[0])) {
+                    $contentDir = $this->getFolderContent($contentDir[0]);
                 }
 
                 // move files back out of the temp dir
@@ -128,9 +127,11 @@ abstract class ArchiveDownloader extends FileDownloader
     abstract protected function extract($file, $path);
 
     /**
-     * Returns the list of files in a directory including dotfiles
+     * Returns the folder content, excluding dotfiles
+     *
+     * @param string $dir Directory
      */
-    private function listFiles($dir)
+    private function getFolderContent($dir)
     {
         $files = array_merge($this->filesystem->realpathGlob($dir . '/.*'), $this->filesystem->realpathGlob($dir . '/*'));
 
