@@ -52,9 +52,9 @@ class Filesystem
     {
         $matches = glob($pattern, $flags);
         if (!$matches) {
-            return false;
+            return array();
         }
-        var_dump($matches);
+
         return array_map('realpath', $matches);
     }
 

@@ -132,7 +132,7 @@ abstract class ArchiveDownloader extends FileDownloader
      */
     private function listFiles($dir)
     {
-        $files = array_merge($this->filesystem->realpathGlob($dir . '/.*') ?: array(), $this->filesystem->realpathGlob($dir . '/*') ?: array());
+        $files = array_merge($this->filesystem->realpathGlob($dir . '/.*'), $this->filesystem->realpathGlob($dir . '/*'));
 
         return array_values(array_filter($files, function ($el) {
             return basename($el) !== '.' && basename($el) !== '..';
