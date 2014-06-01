@@ -213,6 +213,7 @@ EOT
 
     protected function getOldInstallationFiles($rollbackDir)
     {
-        return glob($rollbackDir . '/*' . self::OLD_INSTALL_EXT) ?: array();
+        $fs = new Filesystem;
+        return $fs->realpathGlob($rollbackDir . '/*' . self::OLD_INSTALL_EXT) ?: array();
     }
 }
