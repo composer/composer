@@ -55,7 +55,13 @@ class Filesystem
             return array();
         }
 
-        return array_map('realpath', $matches);
+        return array_map(function ($path) {
+            if (basename($path) === '.' || basename($path) === '..') {
+                return $path;
+            }
+
+            return realpath($path);
+        }, $matches);
     }
 
     /**
