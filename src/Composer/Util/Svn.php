@@ -281,7 +281,7 @@ class Svn
      *
      * @return bool
      */
-    protected function createAuthFromConfig()
+    private function createAuthFromConfig()
     {
         if (!$this->config->has('http-basic')) {
             return $this->hasAuth = false;
@@ -304,7 +304,7 @@ class Svn
      *
      * @return bool
      */
-    protected function createAuthFromUrl()
+    private function createAuthFromUrl()
     {
         $uri = parse_url($this->url);
         if (empty($uri['user'])) {
