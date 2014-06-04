@@ -32,7 +32,7 @@ class ClearCacheCommand extends Command
         $this
             ->setName('clear-cache')
             ->setAliases(array('clearcache'))
-            ->setDescription('Clears composer\'s interal package cache.')
+            ->setDescription('Clears composer\'s internal package cache.')
             ->setHelp(<<<EOT
 The <info>clear-cache</info> deletes all cached packages from composer's
 cache directory.
