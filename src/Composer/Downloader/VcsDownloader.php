@@ -55,7 +55,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
         }
 
         $this->io->write("  - Installing <info>" . $package->getName() . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
-        $this->filesystem->removeDirectory($path);
+        $this->filesystem->emptyDirectory($path);
 
         $urls = $package->getSourceUrls();
         while ($url = array_shift($urls)) {

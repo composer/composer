@@ -107,8 +107,7 @@ class FileDownloader implements DownloaderInterface
 
     protected function doDownload(PackageInterface $package, $path, $url)
     {
-        $this->filesystem->removeDirectory($path);
-        $this->filesystem->ensureDirectoryExists($path);
+        $this->filesystem->emptyDirectory($path);
 
         $fileName = $this->getFileName($package, $path);
 

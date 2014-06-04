@@ -74,7 +74,25 @@ class Filesystem
     {
         $dir = rtrim($dir, '/\\');
 
-        return count($this->realpathGlob($dir.'/*') ?: array()) === 0 && count($this->realpathGlob($dir.'/.*') ?: array()) === 2;
+        return count($this->realpathGlob($dir.'/*')) === 0 && count($this->realpathGlob($dir.'/.*')) === 2;
+    }
+
+    public function emptyDirectory($dir, $ensureDirectoryExists = true)
+    {
+        if ($ensureDirectoryExists) {
+            $this->ensureDirectoryExists($dir);
+        }
+
+        if (is_dir($dir)) {
+            foreach ($this->realpathGlob(rtrim($dir, '\\/').'/*') as $path) {
+                $this->remove($path);
+            }
+            foreach ($this->realpathGlob(rtrim($dir, '\\/').'/.*') as $path) {
+                if (basename($path) !== '..' && basename($path) !== '.') {
+                    $this->remove($path);
+                }
+            }
+        }
     }
 
     /**
