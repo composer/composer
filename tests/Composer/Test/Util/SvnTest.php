@@ -1,6 +1,7 @@
 <?php
 namespace Composer\Test\Util;
 
+use Composer\Config;
 use Composer\IO\NullIO;
 use Composer\Util\Svn;
 
@@ -16,7 +17,7 @@ class SvnTest extends \PHPUnit_Framework_TestCase
      */
     public function testCredentials($url, $expect)
     {
-        $svn = new Svn($url, new NullIO);
+        $svn = new Svn($url, new NullIO, new Config());
         $reflMethod = new \ReflectionMethod('Composer\\Util\\Svn', 'getCredentialString');
         $reflMethod->setAccessible(true);
 
@@ -41,7 +42,7 @@ class SvnTest extends \PHPUnit_Framework_TestCase
     {
         $url = 'http://svn.example.org';
 
-        $svn = new Svn($url, new NullIO());
+        $svn = new Svn($url, new NullIO(), new Config());
         $reflMethod = new \ReflectionMethod('Composer\\Util\\Svn', 'getCommand');
         $reflMethod->setAccessible(true);
 
@@ -49,6 +50,26 @@ class SvnTest extends \PHPUnit_Framework_TestCase
             $this->getCmd("svn ls --non-interactive  'http://svn.example.org'"),
             $reflMethod->invokeArgs($svn, array('svn ls', $url))
         );
+    }
+
+    public function testCredentialsFromConfig()
+    {
+        $url = 'http://svn.apache.org';
+
+        $config = new Config();
+        $config->merge(array(
+            'config' => array(
+                'http-basic' => array(
+                    $url => array('username' => 'foo', 'password' => 'bar')
+                )
+            )
+        ));
+
+        $svn = new Svn($url, new NullIO, $config);
+        $reflMethod = new \ReflectionMethod('Composer\\Util\\Svn', 'getCredentialString');
+        $reflMethod->setAccessible(true);
+
+        $this->assertEquals($this->getCmd(" --username 'foo' --password 'bar' "), $reflMethod->invoke($svn));
     }
 
     private function getCmd($cmd)

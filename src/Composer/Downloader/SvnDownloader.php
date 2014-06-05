@@ -84,7 +84,7 @@ class SvnDownloader extends VcsDownloader
      */
     protected function execute($baseUrl, $command, $url, $cwd = null, $path = null)
     {
-        $util = new SvnUtil($baseUrl, $this->io);
+        $util = new SvnUtil($baseUrl, $this->io, $this->config);
         try {
             return $util->execute($command, $url, $cwd, $path, $this->io->isVerbose());
         } catch (\RuntimeException $e) {
