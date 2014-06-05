@@ -85,9 +85,19 @@ class LibraryInstaller implements InstallerInterface
 
         $this->installCode($package);
         $this->installBinaries($package);
+        $this->linkAutoload($package);
         if (!$repo->hasPackage($package)) {
             $repo->addPackage(clone $package);
         }
+    }
+
+    protected function linkAutoload(PackageInterface $package)
+    {
+        $this->filesystem->ensureDirectoryExists($this->getInstallPath($package) . '/vendor');
+        symlink(
+            $this->vendorDir . '/autoload.php',
+            $this->getInstallPath($package) . '/vendor/autoload.php'
+        );
     }
 
     /**
@@ -271,6 +281,8 @@ class LibraryInstaller implements InstallerInterface
     {
         $this->filesystem->ensureDirectoryExists($this->vendorDir);
         $this->vendorDir = realpath($this->vendorDir);
+
+        touch($this->vendorDir . '/autoload.php');
     }
 
     protected function initializeBinDir()
