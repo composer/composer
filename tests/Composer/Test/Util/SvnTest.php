@@ -60,7 +60,7 @@ class SvnTest extends \PHPUnit_Framework_TestCase
         $config->merge(array(
             'config' => array(
                 'http-basic' => array(
-                    $url => array('username' => 'foo', 'password' => 'bar')
+                    'svn.apache.org' => array('username' => 'foo', 'password' => 'bar')
                 )
             )
         ));
