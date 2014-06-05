@@ -192,9 +192,12 @@ to your `satis.json`:
 
 ```json
 {
-    "require-dependencies": true
+    "require-dependencies": true,
+    "require-dev-dependencies": true
 }
 ```
 
 When searching for packages, satis will attempt to resolve all the required packages from the listed repositories.
 Therefore, if you are requiring a package from Packagist, you will need to define it in your `satis.json`.
+
+Dev dependencies are packaged only if the `require-dev-dependencies` parameter is set to true.
