@@ -435,7 +435,7 @@ EOF;
 require_once $vendorPathToTargetDirCode . '/autoload_real.php';
 
 if (!defined('COMPOSER_BIN_DIR')) {
-    define('COMPOSER_BIN_DIR', $binDir);
+    define('COMPOSER_BIN_DIR', '$binDir');
 }
 
 return ComposerAutoloaderInit$suffix::getLoader();
