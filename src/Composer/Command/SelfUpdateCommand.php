@@ -217,7 +217,7 @@ EOT
             ->depth(0)
             ->files()
             ->name('*' . self::OLD_INSTALL_EXT)
-            ->in($dir);
+            ->in($rollbackDir);
 
         return $finder;
     }
