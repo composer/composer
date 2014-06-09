@@ -418,10 +418,10 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
                     // handle root package aliases
                     unset($rootAliasData);
 
-                    if (isset($this->rootAliases[$name][$package->getVersion()])) {
-                        $rootAliasData = $this->rootAliases[$name][$package->getVersion()];
-                    } elseif ($package instanceof AliasPackage && isset($this->rootAliases[$name][$package->getAliasOf()->getVersion()])) {
-                        $rootAliasData = $this->rootAliases[$name][$package->getAliasOf()->getVersion()];
+                    if (isset($this->rootAliases[$package->getName()][$package->getVersion()])) {
+                        $rootAliasData = $this->rootAliases[$package->getName()][$package->getVersion()];
+                    } elseif ($package instanceof AliasPackage && isset($this->rootAliases[$package->getName()][$package->getAliasOf()->getVersion()])) {
+                        $rootAliasData = $this->rootAliases[$package->getName()][$package->getAliasOf()->getVersion()];
                     }
 
                     if (isset($rootAliasData)) {
