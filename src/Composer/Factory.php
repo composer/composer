@@ -127,39 +127,6 @@ class Factory
         }
         $config->setAuthConfigSource(new JsonConfigSource($file, true));
 
-        // move old cache dirs to the new locations
-        $legacyPaths = array(
-            'cache-repo-dir' => array('/cache' => '/http*', '/cache.svn' => '/*', '/cache.github' => '/*'),
-            'cache-vcs-dir' => array('/cache.git' => '/*', '/cache.hg' => '/*'),
-            'cache-files-dir' => array('/cache.files' => '/*'),
-        );
-        $fs = new Filesystem;
-        foreach ($legacyPaths as $key => $oldPaths) {
-            foreach ($oldPaths as $oldPath => $match) {
-                $dir = $config->get($key);
-                if ('/cache.github' === $oldPath) {
-                    $dir .= '/github.com';
-                }
-                $oldPath = $config->get('home').$oldPath;
-                $oldPathMatch = $oldPath . $match;
-                if (is_dir($oldPath) && $dir !== $oldPath) {
-                    if (!is_dir($dir)) {
-                        if (!@mkdir($dir, 0777, true)) {
-                            continue;
-                        }
-                    }
-                    if (is_array($children = $fs->realpathGlob($oldPathMatch))) {
-                        foreach ($children as $child) {
-                            @rename($child, $dir.'/'.basename($child));
-                        }
-                    }
-                    if ($config->get('cache-dir') != $oldPath) {
-                        @rmdir($oldPath);
-                    }
-                }
-            }
-        }
-
         return $config;
     }
 
