@@ -21,6 +21,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Finder\Finder;
 
 /**
  * @author Igor Wiedler <igor@wiedler.ch>
@@ -113,15 +114,13 @@ EOT
 
         // remove saved installations of composer
         if ($input->getOption('clean-backups')) {
-            $files = $this->getOldInstallationFiles($rollbackDir);
+            $finder = $this->getOldInstallationFinder($rollbackDir);
 
-            if (!empty($files)) {
-                $fs = new Filesystem;
-
-                foreach ($files as $file) {
-                    $output->writeln('<info>Removing: '.$file.'</info>');
-                    $fs->remove($file);
-                }
+            $fs = new Filesystem;
+            foreach ($finder as $file) {
+                $file = (string) $file;
+                $output->writeln('<info>Removing: '.$file.'</info>');
+                $fs->remove($file);
             }
         }
 
@@ -201,19 +200,25 @@ EOT
 
     protected function getLastBackupVersion($rollbackDir)
     {
-        $files = $this->getOldInstallationFiles($rollbackDir);
-        if (empty($files)) {
-            return false;
+        $finder = $this->getOldInstallationFinder($rollbackDir);
+        $finder->sortByName();
+        $files = iterator_to_array($finder);
+
+        if (count($files)) {
+            return basename(end($files), self::OLD_INSTALL_EXT);
         }
 
-        sort($files);
-
-        return basename(end($files), self::OLD_INSTALL_EXT);
+        return false;
     }
 
-    protected function getOldInstallationFiles($rollbackDir)
+    protected function getOldInstallationFinder($rollbackDir)
     {
-        $fs = new Filesystem;
-        return $fs->realpathGlob($rollbackDir . '/*' . self::OLD_INSTALL_EXT);
+        $finder = Finder::create()
+            ->depth(0)
+            ->files()
+            ->name('*' . self::OLD_INSTALL_EXT)
+            ->in($dir);
+
+        return $finder;
     }
 }

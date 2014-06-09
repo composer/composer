@@ -14,6 +14,7 @@ namespace Composer\Util;
 
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use Symfony\Component\Finder\Finder;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -42,29 +43,6 @@ class Filesystem
     }
 
     /**
-     * Force the results of a glob to be realpaths.
-     *
-     * @param  string $pattern
-     * @param  int    $flags   
-     * @return array
-     */
-    public function realpathGlob($pattern, $flags = 0)
-    {
-        $matches = glob($pattern, $flags);
-        if (!$matches) {
-            return array();
-        }
-
-        return array_map(function ($path) {
-            if (basename($path) === '.' || basename($path) === '..') {
-                return $path;
-            }
-
-            return realpath($path);
-        }, $matches);
-    }
-
-    /**
      * Checks if a directory is empty
      *
      * @param  string $dir
@@ -72,9 +50,13 @@ class Filesystem
      */
     public function isDirEmpty($dir)
     {
-        $dir = rtrim($dir, '/\\');
+        $finder = Finder::create()
+            ->ignoreVCS(false)
+            ->ignoreDotFiles(false)
+            ->depth(0)
+            ->in($dir);
 
-        return count($this->realpathGlob($dir.'/*')) === 0 && count($this->realpathGlob($dir.'/.*')) === 2;
+        return count($finder) === 0;
     }
 
     public function emptyDirectory($dir, $ensureDirectoryExists = true)
@@ -84,13 +66,14 @@ class Filesystem
         }
 
         if (is_dir($dir)) {
-            foreach ($this->realpathGlob(rtrim($dir, '\\/').'/*') as $path) {
-                $this->remove($path);
-            }
-            foreach ($this->realpathGlob(rtrim($dir, '\\/').'/.*') as $path) {
-                if (basename($path) !== '..' && basename($path) !== '.') {
-                    $this->remove($path);
-                }
+            $finder = Finder::create()
+                ->ignoreVCS(false)
+                ->ignoreDotFiles(false)
+                ->depth(0)
+                ->in($dir);
+
+            foreach ($finder as $path) {
+                $this->remove((string) $path);
             }
         }
     }

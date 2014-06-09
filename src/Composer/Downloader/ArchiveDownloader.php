@@ -13,6 +13,7 @@
 namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
+use Symfony\Component\Finder\Finder;
 
 /**
  * Base downloader for archives
@@ -52,12 +53,13 @@ abstract class ArchiveDownloader extends FileDownloader
                 $contentDir = $this->getFolderContent($temporaryDir);
 
                 // only one dir in the archive, extract its contents out of it
-                if (1 === count($contentDir) && is_dir($contentDir[0])) {
-                    $contentDir = $this->getFolderContent($contentDir[0]);
+                if (1 === count($contentDir) && is_dir(reset($contentDir))) {
+                    $contentDir = $this->getFolderContent((string) reset($contentDir));
                 }
 
                 // move files back out of the temp dir
                 foreach ($contentDir as $file) {
+                    $file = (string) $file;
                     $this->filesystem->rename($file, $path . '/' . basename($file));
                 }
 
@@ -133,10 +135,12 @@ abstract class ArchiveDownloader extends FileDownloader
      */
     private function getFolderContent($dir)
     {
-        $files = array_merge($this->filesystem->realpathGlob($dir . '/.*'), $this->filesystem->realpathGlob($dir . '/*'));
+        $finder = Finder::create()
+            ->ignoreVCS(false)
+            ->ignoreDotFiles(false)
+            ->depth(0)
+            ->in($dir);
 
-        return array_values(array_filter($files, function ($el) {
-            return basename($el) !== '.' && basename($el) !== '..';
-        }));
+        return iterator_to_array($finder);
     }
 }
