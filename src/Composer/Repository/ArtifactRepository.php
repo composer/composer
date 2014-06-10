@@ -75,22 +75,23 @@ class ArtifactRepository extends ArrayRepository
     }
 
     /**
-     * Find a file by name, returning the one that has the shortest path. 
-     * 
-     * @param \ZipArchive $zip
+     * Find a file by name, returning the one that has the shortest path.
+     *
+     * @param  \ZipArchive $zip
      * @param $filename
      * @return bool|int
      */
-    private function locateFile(\ZipArchive $zip, $filename) {
+    private function locateFile(\ZipArchive $zip, $filename)
+    {
         $indexOfShortestMatch = false;
         $lengthOfShortestMatch = -1;
 
-        for ($i = 0; $i < $zip->numFiles; $i++ ){
+        for ($i = 0; $i < $zip->numFiles; $i++) {
             $stat = $zip->statIndex($i);
-            if (strcmp(basename($stat['name']), $filename) === 0){
+            if (strcmp(basename($stat['name']), $filename) === 0) {
                 $directoryName = dirname($stat['name']);
                 if ($directoryName == '.') {
-                    //if composer.json is in root directory 
+                    //if composer.json is in root directory
                     //it has to be the one to use.
                     return $i;
                 }
@@ -100,7 +101,7 @@ class ArtifactRepository extends ArrayRepository
                     //composer.json files below first directory are rejected
                     continue;
                 }
-                
+
                 $length = strlen($stat['name']);
                 if ($indexOfShortestMatch == false || $length < $lengthOfShortestMatch) {
                     //Check it's not a directory.
@@ -115,7 +116,7 @@ class ArtifactRepository extends ArrayRepository
 
         return $indexOfShortestMatch;
     }
-    
+
     private function getComposerInformation(\SplFileInfo $file)
     {
         $zip = new \ZipArchive();

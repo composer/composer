@@ -109,7 +109,7 @@ class FileDownloaderTest extends \PHPUnit_Framework_TestCase
         $ioMock = $this->getMock('Composer\IO\IOInterface');
         $ioMock->expects($this->any())
             ->method('write')
-            ->will($this->returnCallback(function($messages, $newline = true) use ($path) {
+            ->will($this->returnCallback(function ($messages, $newline = true) use ($path) {
                 if (is_file($path.'/script.js')) {
                     unlink($path.'/script.js');
                 }

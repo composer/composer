@@ -34,7 +34,7 @@ class JsonFormatterTest extends \PHPUnit_Framework_TestCase
 
     /**
      * Convert string to character codes split by a plus sign
-     * @param string $string
+     * @param  string $string
      * @return string
      */
     protected function getCharacterCodes($string)
@@ -43,6 +43,7 @@ class JsonFormatterTest extends \PHPUnit_Framework_TestCase
         for ($i = 0; $i < strlen($string); $i++) {
             $codes[] = ord($string[$i]);
         }
+
         return implode('+', $codes);
     }
 

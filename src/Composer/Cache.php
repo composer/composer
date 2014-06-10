@@ -144,8 +144,7 @@ class Cache
 
     public function gc($ttl, $maxSize)
     {
-        if ($this->enabled)
-        {
+        if ($this->enabled) {
             $expire = new \DateTime();
             $expire->modify('-'.$ttl.' seconds');
 

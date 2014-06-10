@@ -54,6 +54,7 @@ class GitHubDriver extends VcsDriver
 
         if (isset($this->repoConfig['no-api']) && $this->repoConfig['no-api']) {
             $this->setupGitDriver($this->url);
+
             return;
         }
 

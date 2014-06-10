@@ -13,7 +13,6 @@
 namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
-use Composer\Downloader\DownloaderInterface;
 use Composer\IO\IOInterface;
 use Composer\Util\Filesystem;
 
@@ -104,7 +103,7 @@ class DownloadManager
     /**
      * Returns downloader for a specific installation type.
      *
-     * @param string $type installation type
+     * @param  string              $type installation type
      * @return DownloaderInterface
      *
      * @throws \InvalidArgumentException if downloader for provided type is not registered
@@ -122,12 +121,12 @@ class DownloadManager
     /**
      * Returns downloader for already installed package.
      *
-     * @param PackageInterface $package package instance
+     * @param  PackageInterface         $package package instance
      * @return DownloaderInterface|null
      *
      * @throws \InvalidArgumentException if package has no installation source specified
      * @throws \LogicException           if specific downloader used to load package with
-     *                                          wrong type
+     *                                   wrong type
      */
     public function getDownloaderForInstalledPackage(PackageInterface $package)
     {

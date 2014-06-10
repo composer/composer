@@ -47,7 +47,7 @@ class GitDownloader extends VcsDownloader
         $command = 'git clone --no-checkout %s %s && cd '.$flag.'%2$s && git remote add composer %1$s && git fetch composer';
         $this->io->write("    Cloning ".$ref);
 
-        $commandCallable = function($url) use ($ref, $path, $command) {
+        $commandCallable = function ($url) use ($ref, $path, $command) {
             return sprintf($command, escapeshellarg($url), escapeshellarg($path), escapeshellarg($ref));
         };
 
@@ -77,7 +77,7 @@ class GitDownloader extends VcsDownloader
         $this->io->write("    Checking out ".$ref);
         $command = 'git remote set-url composer %s && git fetch composer && git fetch --tags composer';
 
-        $commandCallable = function($url) use ($command) {
+        $commandCallable = function ($url) use ($command) {
             return sprintf($command, escapeshellarg($url));
         };
 
@@ -201,10 +201,10 @@ class GitDownloader extends VcsDownloader
     /**
      * Updates the given path to the given commit ref
      *
-     * @param string $path
-     * @param string $reference
-     * @param string $branch
-     * @param DateTime $date
+     * @param  string      $path
+     * @param  string      $reference
+     * @param  string      $branch
+     * @param  DateTime    $date
      * @return null|string if a string is returned, it is the commit reference that was checked out if the original could not be found
      */
     protected function updateToCommit($path, $reference, $branch, $date)

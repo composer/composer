@@ -69,6 +69,7 @@ EOT
         if (0 === $returnCode) {
             $this->getComposer()->getEventDispatcher()->dispatchScript(ScriptEvents::POST_ARCHIVE_CMD);
         }
+
         return $returnCode;
     }
 

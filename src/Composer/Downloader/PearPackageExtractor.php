@@ -127,11 +127,11 @@ class PearPackageExtractor
     /**
      * Builds list of copy and list of remove actions that would transform extracted PEAR tarball into installed package.
      *
-     * @param  string $source string path to extracted files
-     * @param  array  $roles  array [role => roleRoot] relative root for files having that role
-     * @param  array  $vars   list of values can be used for replacement tasks
-     * @return array  array of 'source' => 'target', where source is location of file in the tarball (relative to source
-     *  path, and target is destination of file (also relative to $source path)
+     * @param  string            $source string path to extracted files
+     * @param  array             $roles  array [role => roleRoot] relative root for files having that role
+     * @param  array             $vars   list of values can be used for replacement tasks
+     * @return array             array of 'source' => 'target', where source is location of file in the tarball (relative to source
+     *                                  path, and target is destination of file (also relative to $source path)
      * @throws \RuntimeException
      */
     private function buildCopyActions($source, array $roles, $vars)

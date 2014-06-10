@@ -16,7 +16,6 @@ use Composer\Json\JsonFile;
 use Composer\Installer\InstallationManager;
 use Composer\Repository\RepositoryManager;
 use Composer\Util\ProcessExecutor;
-use Composer\Package\AliasPackage;
 use Composer\Repository\ArrayRepository;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Loader\ArrayLoader;

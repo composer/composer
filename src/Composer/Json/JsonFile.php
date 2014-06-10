@@ -13,7 +13,6 @@
 namespace Composer\Json;
 
 use JsonSchema\Validator;
-use JsonSchema\Uri\UriRetriever;
 use Seld\JsonLint\JsonParser;
 use Seld\JsonLint\ParsingException;
 use Composer\Util\RemoteFilesystem;

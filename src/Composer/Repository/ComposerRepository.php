@@ -275,6 +275,7 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
         foreach ($package->getDistUrls() as $url) {
             if (strpos($url, $this->baseUrl) === 0) {
                 $package->setTransportOptions($this->options);
+
                 return;
             }
         }

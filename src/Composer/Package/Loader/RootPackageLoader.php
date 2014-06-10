@@ -320,6 +320,7 @@ class RootPackageLoader extends ArrayLoader
                     if ('9999999-dev' === $version) {
                         $version = 'dev-'.$matches[3];
                     }
+
                     return $version;
                 }
 

@@ -181,10 +181,10 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     /**
      * Prompt the user to check if changes should be stashed/removed or the operation aborted
      *
-     * @param PackageInterface $package
-     * @param string           $path
-     * @param bool             $update  if true (update) the changes can be stashed and reapplied after an update,
-     *                                  if false (remove) the changes should be assumed to be lost if the operation is not aborted
+     * @param  PackageInterface  $package
+     * @param  string            $path
+     * @param  bool              $update  if true (update) the changes can be stashed and reapplied after an update,
+     *                                    if false (remove) the changes should be assumed to be lost if the operation is not aborted
      * @throws \RuntimeException in case the operation must be aborted
      */
     protected function cleanChanges(PackageInterface $package, $path, $update)

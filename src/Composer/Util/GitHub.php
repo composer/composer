@@ -150,7 +150,7 @@ class GitHub
                 if (in_array($e->getCode(), array(403, 401))) {
                     // 401 when authentication was supplied, handle 2FA if required.
                     if ($this->io->hasAuthentication($originUrl)) {
-                        $headerNames = array_map(function($header) {
+                        $headerNames = array_map(function ($header) {
                             return strtolower(strstr($header, ':', true));
                         }, $e->getHeaders());
 

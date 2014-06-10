@@ -45,7 +45,7 @@ class ZipDownloader extends ArchiveDownloader
                 }
 
                 $processError = 'Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput();
-            } catch(\Exception $e) {
+            } catch (\Exception $e) {
                 $processError = 'Failed to execute ' . $command . "\n\n" . $e->getMessage();
             }
         }

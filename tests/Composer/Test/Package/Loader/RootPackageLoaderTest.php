@@ -35,7 +35,7 @@ class RootPackageLoaderTest extends \PHPUnit_Framework_TestCase
         $self = $this;
 
         /* Can do away with this mock object when https://github.com/sebastianbergmann/phpunit-mock-objects/issues/81 is fixed */
-        $processExecutor = new ProcessExecutorMock(function($command, &$output = null, $cwd = null) use ($self, $commitHash) {
+        $processExecutor = new ProcessExecutorMock(function ($command, &$output = null, $cwd = null) use ($self, $commitHash) {
             if (0 === strpos($command, 'git describe')) {
                 // simulate not being on a tag
                 return 1;
@@ -69,7 +69,7 @@ class RootPackageLoaderTest extends \PHPUnit_Framework_TestCase
         $self = $this;
 
         /* Can do away with this mock object when https://github.com/sebastianbergmann/phpunit-mock-objects/issues/81 is fixed */
-        $processExecutor = new ProcessExecutorMock(function($command, &$output = null, $cwd = null) use ($self) {
+        $processExecutor = new ProcessExecutorMock(function ($command, &$output = null, $cwd = null) use ($self) {
             $self->assertEquals('git describe --exact-match --tags', $command);
 
             $output = "v2.0.5-alpha2";
@@ -98,7 +98,7 @@ class RootPackageLoaderTest extends \PHPUnit_Framework_TestCase
         $self = $this;
 
         /* Can do away with this mock object when https://github.com/sebastianbergmann/phpunit-mock-objects/issues/81 is fixed */
-        $processExecutor = new ProcessExecutorMock(function($command, &$output = null, $cwd = null) use ($self) {
+        $processExecutor = new ProcessExecutorMock(function ($command, &$output = null, $cwd = null) use ($self) {
             if ('git describe --exact-match --tags' === $command) {
                 $output = "foo-bar";
 
@@ -124,7 +124,7 @@ class RootPackageLoaderTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $processExecutor = new ProcessExecutorMock(function($command, &$output = null, $cwd = null) {
+        $processExecutor = new ProcessExecutorMock(function ($command, &$output = null, $cwd = null) {
             return 1;
         });
 

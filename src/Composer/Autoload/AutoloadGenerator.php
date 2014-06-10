@@ -623,7 +623,7 @@ FOOTER;
      *
      * Packages of equal weight retain the original order
      *
-     * @param array $packageMap
+     * @param  array $packageMap
      * @return array
      */
     protected function sortPackageMap(array $packageMap)
@@ -646,7 +646,7 @@ FOOTER;
 
         $computing = array();
         $computed = array();
-        $computeImportance = function($name) use(&$computeImportance, &$computing, &$computed, $usageList) {
+        $computeImportance = function ($name) use (&$computeImportance, &$computing, &$computed, $usageList) {
             // reusing computed importance
             if (isset($computed[$name])) {
                 return $computed[$name];
@@ -679,17 +679,17 @@ FOOTER;
             $weightList[$name] = $weight;
         }
 
-        $stable_sort = function(&$array) {
+        $stable_sort = function (&$array) {
             static $transform, $restore;
 
             $i = 0;
 
             if (!$transform) {
-                $transform = function(&$v, $k) use(&$i) {
+                $transform = function (&$v, $k) use (&$i) {
                     $v = array($v, ++$i, $k, $v);
                 };
 
-                $restore = function(&$v, $k) {
+                $restore = function (&$v, $k) {
                     $v = $v[3];
                 };
             }

@@ -139,9 +139,9 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
         $this->createNewPerforceWithWindowsFlag(true);
         $this->perforce->setUser(null);
         $expectedCommand = 'p4 set';
-        $callback = function($command, &$output)
-            {
+        $callback = function ($command, &$output) {
                 $output = 'P4USER=TEST_P4VARIABLE_USER' . PHP_EOL;
+
                 return true;
             };
         $this->processExecutor->expects($this->at(0))
@@ -157,9 +157,9 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
         $this->createNewPerforceWithWindowsFlag(false);
         $this->perforce->setUser(null);
         $expectedCommand = 'echo $P4USER';
-        $callback = function($command, &$output)
-            {
+        $callback = function ($command, &$output) {
                 $output = 'TEST_P4VARIABLE_USER' . PHP_EOL;
+
                 return true;
             };
         $this->processExecutor->expects($this->at(0))
@@ -233,9 +233,9 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
     {
         $this->createNewPerforceWithWindowsFlag(true);
         $expectedCommand = 'p4 set';
-        $callback = function($command, &$output)
-            {
+        $callback = function ($command, &$output) {
                 $output = 'P4PASSWD=TEST_P4VARIABLE_PASSWORD' . PHP_EOL;
+
                 return true;
             };
         $this->processExecutor->expects($this->at(0))
@@ -250,9 +250,9 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
     {
         $this->createNewPerforceWithWindowsFlag(false);
         $expectedCommand = 'echo $P4PASSWD';
-        $callback = function($command, &$output) 
-            {
+        $callback = function ($command, &$output) {
                 $output = 'TEST_P4VARIABLE_PASSWORD' . PHP_EOL;
+
                 return true;
             };
         $this->processExecutor->expects($this->at(0))
@@ -357,9 +357,9 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
                 )
             );
         $expectedCommand2 = 'p4 -u user -p port changes //depot/branch/...';
-        $expectedCallback = function($command, &$output)
-            {
+        $expectedCallback = function ($command, &$output) {
                 $output = 'Change 1234 on 2014/03/19 by Clark.Stuth@Clark.Stuth_test_client \'test changelist\'';
+
                 return true;
             };
         $this->processExecutor->expects($this->at(1))
@@ -374,9 +374,9 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
     public function testGetBranchesWithoutStream()
     {
         $expectedCommand = 'p4 -u user -p port changes //depot/...';
-        $expectedCallback = function($command, &$output)
-            {
+        $expectedCallback = function ($command, &$output) {
                 $output = 'Change 5678 on 2014/03/19 by Clark.Stuth@Clark.Stuth_test_client \'test changelist\'';
+
                 return true;
             };
         $this->processExecutor->expects($this->once())
@@ -629,12 +629,12 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
         $result = $this->perforce->checkServerExists('perforce.does.exist:port', $processExecutor);
         $this->assertTrue($result);
     }
-    
+
     /**
      * Test if "p4" command is missing.
-     * 
+     *
      * @covers \Composer\Util\Perforce::checkServerExists
-     * 
+     *
      * @return void
      */
     public function testCheckServerClientError()
@@ -646,7 +646,7 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
             ->method('execute')
             ->with($this->equalTo($expectedCommand), $this->equalTo(null))
             ->will($this->returnValue(127));
-        
+
         $result = $this->perforce->checkServerExists('perforce.does.exist:port', $processExecutor);
         $this->assertFalse($result);
     }

@@ -198,6 +198,7 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
     {
         if (!$mustCheck) {
             $this->assertTrue(true);
+
             return;
         }
         $internalLoader = $this->getMock('Composer\Package\Loader\LoaderInterface');

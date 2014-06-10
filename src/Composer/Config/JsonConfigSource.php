@@ -179,14 +179,15 @@ class JsonConfigSource implements ConfigSourceInterface
     /**
      * Prepend a reference to an element to the beginning of an array.
      *
-     * @param array $array
-     * @param mixed $value
+     * @param  array $array
+     * @param  mixed $value
      * @return array
      */
     private function arrayUnshiftRef(&$array, &$value)
     {
         $return = array_unshift($array, '');
         $array[0] =& $value;
+
         return $return;
     }
 }

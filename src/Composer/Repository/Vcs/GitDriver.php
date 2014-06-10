@@ -67,7 +67,7 @@ class GitDriver extends VcsDriver
 
                 $gitUtil = new GitUtil($this->io, $this->config, $this->process, $fs);
                 $repoDir = $this->repoDir;
-                $commandCallable = function($url) use ($repoDir) {
+                $commandCallable = function ($url) use ($repoDir) {
                     return sprintf('git clone --mirror %s %s', escapeshellarg($url), escapeshellarg($repoDir));
                 };
 

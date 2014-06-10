@@ -74,6 +74,7 @@ class PerforceDriverTest extends \PHPUnit_Framework_TestCase
     {
         $config = new Config();
         $config->merge(array('config'=>array('home'=>$testPath)));
+
         return $config;
     }
 
@@ -104,6 +105,7 @@ class PerforceDriverTest extends \PHPUnit_Framework_TestCase
     protected function getMockPerforce()
     {
         $methods = array('p4login', 'checkStream', 'writeP4ClientSpec', 'connectClient', 'getComposerInformation', 'cleanupClientSpec');
+
         return $this->getMockBuilder('Composer\Util\Perforce', $methods)->disableOriginalConstructor()->getMock();
     }
 

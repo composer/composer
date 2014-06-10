@@ -26,7 +26,6 @@ use Composer\DependencyResolver\SolverProblemsException;
 use Composer\Downloader\DownloadManager;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Installer\InstallationManager;
-use Composer\Config;
 use Composer\Installer\NoopInstaller;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
@@ -843,7 +842,7 @@ class Installer
     /**
      * Build a regexp from a package name, expanding * globs as required
      *
-     * @param string $whiteListedPattern
+     * @param  string $whiteListedPattern
      * @return string
      */
     private function packageNameToRegexp($whiteListedPattern)
@@ -1146,7 +1145,7 @@ class Installer
     /**
      * Should dependencies of whitelisted packages be updated recursively?
      *
-     * @param  boolean $updateDependencies
+     * @param  boolean   $updateDependencies
      * @return Installer
      */
     public function setWhitelistDependencies($updateDependencies = true)

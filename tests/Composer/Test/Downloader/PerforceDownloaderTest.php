@@ -65,6 +65,7 @@ class PerforceDownloaderTest extends \PHPUnit_Framework_TestCase
         $config = new Config();
         $settings = array('config' => array('home' => $this->testPath));
         $config->merge($settings);
+
         return $config;
     }
 
@@ -77,6 +78,7 @@ class PerforceDownloaderTest extends \PHPUnit_Framework_TestCase
     {
         $package = $this->getMock('Composer\Package\PackageInterface');
         $package->expects($this->any())->method('getRepository')->will($this->returnValue($repository));
+
         return $package;
     }
 
@@ -92,6 +94,7 @@ class PerforceDownloaderTest extends \PHPUnit_Framework_TestCase
         $args = array($repoConfig, $io, $config);
         $repository = $this->getMock($class, $methods, $args);
         $repository->expects($this->any())->method('getRepoConfig')->will($this->returnValue($repoConfig));
+
         return $repository;
     }
 

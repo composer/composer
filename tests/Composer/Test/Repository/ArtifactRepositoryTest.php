@@ -28,14 +28,14 @@ class ArtifactRepositoryTest extends TestCase
             'vendor3/package1-5.4.3',
             'test/jsonInRoot-1.0.0',
             'test/jsonInFirstLevel-1.0.0',
-            //The files not-an-artifact.zip and jsonSecondLevel are not valid 
+            //The files not-an-artifact.zip and jsonSecondLevel are not valid
             //artifacts and do not get detected.
         );
 
         $coordinates = array('type' => 'artifact', 'url' => __DIR__ . '/Fixtures/artifacts');
         $repo = new ArtifactRepository($coordinates, new NullIO(), new Config());
 
-        $foundPackages = array_map(function(BasePackage $package) {
+        $foundPackages = array_map(function (BasePackage $package) {
             return "{$package->getPrettyName()}-{$package->getPrettyVersion()}";
         }, $repo->getPackages());
 
@@ -73,7 +73,7 @@ class ArtifactRepositoryTest extends TestCase
 //    ),
 //);
 //
-//foreach($archivesToCreate as $archiveName => $fileDetails) {
+//foreach ($archivesToCreate as $archiveName => $fileDetails) {
 //    $zipFile = new ZipArchive();
 //    $zipFile->open("$archiveName.zip", ZIPARCHIVE::CREATE);
 //
@@ -83,4 +83,3 @@ class ArtifactRepositoryTest extends TestCase
 //
 //    $zipFile->close();
 //}
-

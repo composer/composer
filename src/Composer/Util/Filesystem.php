@@ -384,7 +384,7 @@ class Filesystem
     /**
      * Return if the given path is local
      *
-     * @param  string  $path
+     * @param  string $path
      * @return bool
      */
     public static function isLocalPath($path)

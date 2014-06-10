@@ -140,6 +140,7 @@ class PerforceDriver extends VcsDriver
     {
         $this->composerInfo = $this->perforce->getComposerInformation('//' . $this->depot . '/' . $identifier);
         $this->composerInfoIdentifier = $identifier;
+
         return !empty($this->composerInfo);
     }
 

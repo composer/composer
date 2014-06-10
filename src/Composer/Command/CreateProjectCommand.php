@@ -19,7 +19,6 @@ use Composer\Installer\ProjectInstaller;
 use Composer\Installer\InstallationManager;
 use Composer\IO\IOInterface;
 use Composer\Package\BasePackage;
-use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\Repository\ComposerRepository;
@@ -339,10 +338,10 @@ EOT
 
     /**
      * Updated preferSource or preferDist based on the preferredInstall config option
-     * @param Config $config
+     * @param Config         $config
      * @param InputInterface $input
-     * @param boolean $preferSource
-     * @param boolean $preferDist
+     * @param boolean        $preferSource
+     * @param boolean        $preferDist
      */
     protected function updatePreferredOptions(Config $config, InputInterface $input, &$preferSource, &$preferDist)
     {

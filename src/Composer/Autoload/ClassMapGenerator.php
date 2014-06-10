@@ -28,7 +28,7 @@ class ClassMapGenerator
      * Generate a class map file
      *
      * @param \Traversable $dirs Directories or a single path to search in
-     * @param string      $file The name of the class map file
+     * @param string       $file The name of the class map file
      */
     public static function dump($dirs, $file)
     {

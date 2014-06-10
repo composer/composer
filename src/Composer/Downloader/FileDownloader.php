@@ -21,7 +21,6 @@ use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PreFileDownloadEvent;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Util\Filesystem;
-use Composer\Util\GitHub;
 use Composer\Util\RemoteFilesystem;
 
 /**
@@ -59,7 +58,6 @@ class FileDownloader implements DownloaderInterface
         $this->rfs = $rfs ?: new RemoteFilesystem($io, $config);
         $this->filesystem = $filesystem ?: new Filesystem();
         $this->cache = $cache;
-
 
         if ($this->cache && $this->cache->gcIsNecessary()) {
             $this->cache->gc($config->get('cache-files-ttl'), $config->get('cache-files-maxsize'));

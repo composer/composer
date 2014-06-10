@@ -227,12 +227,12 @@ class Pool
     /**
      * Searches all packages providing the given package name and match the constraint
      *
-     * @param string                  $name       The package name to be searched for
-     * @param LinkConstraintInterface $constraint A constraint that all returned
-     *                                            packages must match or null to return all
-     * @param bool                    $mustMatchName Whether the name of returned packages
-     *                                            must match the given name
-     * @return array A set of packages
+     * @param  string                  $name          The package name to be searched for
+     * @param  LinkConstraintInterface $constraint    A constraint that all returned
+     *                                                packages must match or null to return all
+     * @param  bool                    $mustMatchName Whether the name of returned packages
+     *                                                must match the given name
+     * @return array                   A set of packages
      */
     public function whatProvides($name, LinkConstraintInterface $constraint = null, $mustMatchName = false)
     {

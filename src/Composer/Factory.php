@@ -178,9 +178,9 @@ class Factory
     /**
      * Creates a Composer instance
      *
-     * @param IOInterface       $io          IO instance
-     * @param array|string|null $localConfig either a configuration array or a filename to read from, if null it will
-     *                                       read from the default filename
+     * @param  IOInterface               $io             IO instance
+     * @param  array|string|null         $localConfig    either a configuration array or a filename to read from, if null it will
+     *                                                   read from the default filename
      * @param  bool                      $disablePlugins Whether plugins should not be loaded
      * @throws \InvalidArgumentException
      * @throws \UnexpectedValueException
@@ -453,10 +453,10 @@ class Factory
     }
 
     /**
-     * @param IOInterface $io     IO instance
-     * @param mixed       $config either a configuration array or a filename to read from, if null it will read from
-     *                             the default filename
-     * @param  bool     $disablePlugins Whether plugins should not be loaded
+     * @param  IOInterface $io             IO instance
+     * @param  mixed       $config         either a configuration array or a filename to read from, if null it will read from
+     *                                     the default filename
+     * @param  bool        $disablePlugins Whether plugins should not be loaded
      * @return Composer
      */
     public static function create(IOInterface $io, $config = null, $disablePlugins = false)

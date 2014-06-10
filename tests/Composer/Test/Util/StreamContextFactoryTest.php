@@ -52,7 +52,7 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
             ),
             array(
                 $a = array('http' => array('method' => 'GET', 'max_redirects' => 20, 'follow_location' => 1)), array('http' => array('method' => 'GET')),
-                array('options' => $a, 'notification' => $f = function() {}), array('notification' => $f)
+                array('options' => $a, 'notification' => $f = function () {}), array('notification' => $f)
             ),
         );
     }

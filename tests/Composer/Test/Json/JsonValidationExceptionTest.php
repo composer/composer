@@ -25,13 +25,13 @@ class JsonValidationExceptionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($message, $object->getMessage());
         $this->assertEquals($errors, $object->getErrors());
     }
-    
+
     public function testGetErrorsWhenNoErrorsProvided()
     {
         $object = new JsonValidationException('test message');
         $this->assertEquals(array(), $object->getErrors());
     }
-    
+
     public function errorProvider()
     {
         return array(

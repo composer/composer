@@ -53,12 +53,14 @@ class Perforce
     {
         $isWindows = defined('PHP_WINDOWS_VERSION_BUILD');
         $perforce = new Perforce($repoConfig, $port, $path, $process, $isWindows, $io);
+
         return $perforce;
     }
 
     public static function checkServerExists($url, ProcessExecutor $processExecutor)
     {
         $output = null;
+
         return  0 === $processExecutor->execute('p4 -p ' . $url . ' info -s', $output);
     }
 
@@ -119,6 +121,7 @@ class Perforce
     {
         $this->commandResult = "";
         $exit_code = $this->process->execute($command, $this->commandResult);
+
         return $exit_code;
     }
 
@@ -248,6 +251,7 @@ class Perforce
             $command = 'echo $' . $name;
             $this->executeCommand($command);
             $result = trim($this->commandResult);
+
             return $result;
         }
     }
@@ -283,18 +287,19 @@ class Perforce
     {
         $command = $this->generateP4Command('login -s', false);
         $exitCode  = $this->executeCommand($command);
-        if ($exitCode){
+        if ($exitCode) {
             $errorOutput = $this->process->getErrorOutput();
             $index = strpos($errorOutput, $this->getUser());
-            if ($index === false){
+            if ($index === false) {
                 $index = strpos($errorOutput, 'p4');
-                if ($index===false){
+                if ($index === false) {
                     return false;
                 }
                 throw new \Exception('p4 command not found in path: ' . $errorOutput);
             }
             throw new \Exception('Invalid user name: ' . $this->getUser() );
         }
+
         return true;
     }
 
@@ -384,7 +389,7 @@ class Perforce
                 $command = 'echo ' . $password  . ' | ' . $this->generateP4Command(' login -a', false);
                 $exitCode = $this->executeCommand($command);
                 $result = trim($this->commandResult);
-                if ($exitCode){
+                if ($exitCode) {
                     throw new \Exception("Error logging in:" . $this->process->getErrorOutput());
                 }
             }
@@ -471,6 +476,7 @@ class Perforce
         $lastCommitNum = $lastCommitArr[1];
 
         $branches = array('master' => $possibleBranches[$this->p4Branch] . '@'. $lastCommitNum);
+
         return $branches;
     }
 
@@ -488,6 +494,7 @@ class Perforce
                 $tags[$fields[1]] = $this->getStream() . '@' . $fields[1];
             }
         }
+
         return $tags;
     }
 
@@ -552,13 +559,12 @@ class Perforce
 
     public function getFilesystem()
     {
-        if (empty($this->filesystem))
-        {
+        if (empty($this->filesystem)) {
             $this->filesystem = new Filesystem($this->process);
         }
+
         return $this->filesystem;
     }
-
 
     public function setFilesystem(Filesystem $fs)
     {

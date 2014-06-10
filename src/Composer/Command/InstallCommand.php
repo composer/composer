@@ -64,6 +64,7 @@ EOT
     {
         if ($args = $input->getArgument('packages')) {
             $output->writeln('<error>Invalid argument '.implode(' ', $args).'. Use "composer require '.implode(' ', $args).'" instead to add packages to your composer.json.</error>');
+
             return 1;
         }
 
