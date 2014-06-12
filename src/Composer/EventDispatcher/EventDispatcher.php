@@ -178,7 +178,14 @@ class EventDispatcher
                 }
             } else {
                 $args = implode(' ', array_map(array('Composer\Util\ProcessExecutor','escape'), $event->getArguments()));
-                if (0 !== ($exitCode = $this->process->execute($callable . ($args === '' ? '' : ' '.$args)))) {
+                if ($event instanceof FolderEventInterface) {
+                    $output = null;
+                    $exitCode = $this->process->execute($callable . ($args === '' ? '' : ' '.$args), $output, $event->getCurrentWorkingDirectory());
+                } else {
+                    $exitCode = $this->process->execute($callable . ($args === '' ? '' : ' '.$args));
+                }
+
+                if (0 !== $exitCode) {
                     $event->getIO()->write(sprintf('<error>Script %s handling the %s event returned with an error</error>', $callable, $event->getName()));
 
                     throw new \RuntimeException('Error Output: '.$this->process->getErrorOutput(), $exitCode);
