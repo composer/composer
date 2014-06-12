@@ -58,6 +58,11 @@ To limit the update operation to a few packages, you can list the package(s)
 you want to update as such:
 
 <info>php composer.phar update vendor/package1 foo/mypackage [...]</info>
+
+You may also use an asterisk (*) pattern to limit the update operation to package(s)
+from a specific vendor:
+
+<info>php composer.phar update vendor/package1 foo/* [...]</info>
 EOT
             )
         ;
