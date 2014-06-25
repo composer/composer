@@ -128,55 +128,71 @@ class BowerRepository extends ArrayRepository
 
         $this->providers[$name] = array();
         foreach ($tags as $tag) {
-            $cacheKey = "bowerjson/$repoUser/$repoName/".$tag['commit']['sha'];
-            $contents = $this->cache->read($cacheKey);
-            if ($contents === false) {
-                $url = sprintf('https://github.com/%s/%s/raw/%s/bower.json', $repoUser, $repoName, $tag['name']);
-                $this->io->write("Loading bower.json data for $repoUser/$repoName $tag[name]");
-                try {
-                    $contents = $this->rfs->getContents('api.github.com', $url, false);
-                } catch (TransportException $e) {
-                    if ($e->getCode() != 404) {
-                        throw $e;
-                    }
-                    $contents = '';
-                }
-                $this->cache->write($cacheKey, $contents);
-            }
-            if ($contents !== '') {
-                $contents = json_decode($contents, true);
-                if (!$contents) {
-                    $this->io->write("<warning>Invalid bower.json: $repoUser/$repoName $tag[name]</warning>");
-                    continue;
-                }
-                $data = array(
-                    'name' => $name,
-                    'version' => $contents['version'],
-                    'require' => array(),
-                    'dist' => array(
-                        'type' => 'zip',
-                        'url' => $tag['zipball_url'],
-                        'reference' => $tag['commit']['sha'],
-                    ),
-                    'source' => array(
-                        'type' => 'git',
-                        'url' => sprintf('https://github.com/%s/%s.git', $repoUser, $repoName),
-                        'reference' => $tag['commit']['sha'],
-                    )
-                );
-                if (isset($contents['dependencies'])) {
-                    foreach ($contents['dependencies'] as $package=>$version) {
-                        if ($version == 'latest') $version = '*';
-                        $data['require']['bower/'.$package] = $version;
-                    }
-                }
-                //ignore devDependencies for now
-                $package = $this->loader->load($data, 'Composer\Package\CompletePackage');
-                $package->setRepository($this);
-                $this->providers[$name][] = $package;
-            }
+            $data = array(
+                'name' => $name,
+                'version' => $tag['name'],
+                'repo' => $this,
+                'stability' => $this->versionParser->parseStability($tag['name']),
+                'repoUser' => $repoUser,
+                'repoName' => $repoName,
+                'sha' => $tag['commit']['sha'],
+                'zipball_url' => $tag['zipball_url']
+            );
+            $this->providers[$name][] = $data;
         }
         return $this->providers[$name];
     }
 
+    public function loadPackage(array $data)
+    {
+        $cacheKey = "bowerjson/$data[repoUser]/$data[repoName]/".$data['sha'];
+        $contents = $this->cache->read($cacheKey);
+        if ($contents === false) {
+            $url = sprintf('https://github.com/%s/%s/raw/%s/bower.json', $data['repoUser'], $data['repoName'], $data['version']);
+            $this->io->write("Loading bower.json data for $data[repoUser]/$data[repoName] $data[version]");
+            try {
+                $contents = $this->rfs->getContents('api.github.com', $url, false);
+            } catch (TransportException $e) {
+                if ($e->getCode() != 404) {
+                    throw $e;
+                }
+                $contents = '';
+            }
+            $this->cache->write($cacheKey, $contents);
+        }
+        if ($contents == '') {
+            $contents = array();
+        } else {
+            $contents = json_decode($contents, true);
+            if (!$contents) {
+                $this->io->write("<warning>Invalid bower.json: $data[repoUser]/$data[repoName] $data[version]</warning>");
+                $contents = array();
+            }
+        }
+        $data = array(
+            'name' => $data['name'],
+            'version' => $data['version'],
+            'require' => array(),
+            'dist' => array(
+                'type' => 'zip',
+                'url' => $data['zipball_url'],
+                'reference' => $data['sha'],
+            ),
+            'source' => array(
+                'type' => 'git',
+                'url' => sprintf('https://github.com/%s/%s.git', $data['repoUser'], $data['repoName']),
+                'reference' => $data['sha'],
+            )
+        );
+        if (isset($contents['dependencies'])) {
+            foreach ($contents['dependencies'] as $package=>$version) {
+                if ($version == 'latest') $version = '*';
+                $data['require']['bower/'.$package] = $version;
+            }
+        }
+        //ignore devDependencies for now
+        $package = $this->loader->load($data, 'Composer\Package\CompletePackage');
+        $package->setRepository($this);
+        return $package;
+    }
 }

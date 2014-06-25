@@ -253,11 +253,17 @@ class Pool
 
         foreach ($this->providerRepos as $repo) {
             foreach ($repo->whatProvides($this, $name) as $candidate) {
-                $candidates[] = $candidate;
-                if ($candidate->getId() < 1) {
-                    $candidate->setId($this->id++);
-                    $this->packages[$this->id - 2] = $candidate;
+                if (is_array($candidate)) {
+                    if (!isset($candidate['id']) || $candidate['id'] < 1) {
+                        $candidate['id'] = $this->id++;
+                    }
+                } else {
+                    if ($candidate->getId() < 1) {
+                        $candidate->setId($this->id++);
+                        $this->packages[$this->id - 2] = $candidate;
+                    }
                 }
+                $candidates[] = $candidate;
             }
         }
 
