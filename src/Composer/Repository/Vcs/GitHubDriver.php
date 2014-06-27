@@ -231,7 +231,9 @@ class GitHubDriver extends VcsDriver
                 $branchData = JsonFile::parseJson($this->getContents($resource), $resource);
                 foreach ($branchData as $branch) {
                     $name = substr($branch['ref'], 11);
-                    $this->branches[$name] = $branch['object']['sha'];
+                    if ($name != 'gh-pages') {
+                        $this->branches[$name] = $branch['object']['sha'];
+                    }
                 }
 
                 $resource = $this->getNextPage();
