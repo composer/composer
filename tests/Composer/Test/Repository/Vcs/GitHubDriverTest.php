@@ -162,6 +162,29 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($sha, $source['reference']);
     }
 
+    public function testIgnoreGHPages()
+    {
+        $repoUrl = 'http://github.com/composer/installers';
+        $repoApiUrl = 'https://api.github.com/repos/composer/installers';
+        $sha = 'SOMESHA';
+
+        $io = $this->getMock('Composer\IO\IOInterface');
+        $io->expects($this->any())
+            ->method('isInteractive')
+            ->will($this->returnValue(true));
+
+        $repoConfig = array(
+            'url' => $repoUrl,
+        );
+        $repoUrl = 'https://github.com/composer/installers.git';
+
+        $gitHubDriver = new GitHubDriver($repoConfig, $io, $this->config, null);
+        $gitHubDriver->initialize();
+
+        $branches = $gitHubDriver->getBranches();
+        $this->assertArrayNotHasKey('gh-pages', $branches);
+    }
+
     public function testPublicRepository2()
     {
         $repoUrl = 'http://github.com/composer/packagist';
