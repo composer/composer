@@ -227,11 +227,15 @@ class GitHubDriver extends VcsDriver
             $this->branches = array();
             $resource = $this->getApiUrl() . '/repos/'.$this->owner.'/'.$this->repository.'/git/refs/heads?per_page=100';
 
+            $branchBlacklist = array('gh-pages');
+
             do {
                 $branchData = JsonFile::parseJson($this->getContents($resource), $resource);
                 foreach ($branchData as $branch) {
                     $name = substr($branch['ref'], 11);
-                    $this->branches[$name] = $branch['object']['sha'];
+                    if (!in_array($name, $branchBlacklist)) {
+                        $this->branches[$name] = $branch['object']['sha'];
+                    }
                 }
 
                 $resource = $this->getNextPage();
