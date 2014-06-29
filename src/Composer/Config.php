@@ -90,7 +90,7 @@ class Config
      *
      * @param array $config
      */
-    public function merge(array $config)
+    public function merge($config)
     {
         // override defaults with given config
         if (!empty($config['config']) && is_array($config['config'])) {
