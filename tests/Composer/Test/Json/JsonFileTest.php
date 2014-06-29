@@ -131,16 +131,7 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
     public function testFormatEmptyArray()
     {
         $data = array('test' => array(), 'test2' => new \stdClass);
-        if (
-            (PHP_VERSION_ID < 50500 && PHP_VERSION_ID >= 50429)
-            || (PHP_VERSION_ID < 50600 && PHP_VERSION_ID >= 50513)
-            || (PHP_VERSION_ID >= 50600)
-        ) {
-            $json = '{
-    "test": [],
-    "test2": {}
-}';
-        } else {
+        if (PHP_VERSION_ID < 50429 || (PHP_VERSION_ID >= 50500 && PHP_VERSION_ID < 50513)) {
             $json = '{
     "test": [
 
@@ -149,7 +140,11 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
 
     }
 }';
-
+        } else {
+            $json = '{
+    "test": [],
+    "test2": {}
+}';
         }
         $this->assertJsonFormat($json, $data);
     }
