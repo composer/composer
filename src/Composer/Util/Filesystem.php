@@ -61,6 +61,10 @@ class Filesystem
 
     public function emptyDirectory($dir, $ensureDirectoryExists = true)
     {
+        if (file_exists($dir) && is_link($dir)) {
+            unlink($dir);
+        }
+
         if ($ensureDirectoryExists) {
             $this->ensureDirectoryExists($dir);
         }
@@ -89,6 +93,10 @@ class Filesystem
      */
     public function removeDirectory($directory)
     {
+        if (file_exists($dir) && is_link($directory)) {
+            return unlink($directory);
+        }
+
         if (!is_dir($directory)) {
             return true;
         }
