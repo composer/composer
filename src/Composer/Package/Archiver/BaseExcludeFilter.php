@@ -82,17 +82,14 @@ abstract class BaseExcludeFilter
                 function ($line) use ($lineParser) {
                     $line = trim($line);
 
-                    $commentHash = strpos($line, '#');
-                    if ($commentHash !== false) {
-                        $line = substr($line, 0, $commentHash);
+                    if (!$line || 0 === strpos($line, '#')) {
+                        return;
                     }
 
-                    if ($line) {
-                        return call_user_func($lineParser, $line);
-                    }
-
-                    return null;
-                }, $lines),
+                    return call_user_func($lineParser, $line);
+                },
+                $lines
+            ),
             function ($pattern) {
                 return $pattern !== null;
             }
