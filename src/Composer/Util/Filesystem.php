@@ -93,7 +93,7 @@ class Filesystem
      */
     public function removeDirectory($directory)
     {
-        if (file_exists($dir) && is_link($directory)) {
+        if (file_exists($directory) && is_link($directory)) {
             return unlink($directory);
         }
 
