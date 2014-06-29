@@ -1,0 +1,9 @@
+{
+    "name": "foo/bar",
+
+    "description": "Dependency Manager",
+    "keywords": ["package", "dependency", "autoload"],
+    "homepage": "http://getcomposer.org/",
+    "type": "library",
+    "license": "MIT"
+}

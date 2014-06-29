@@ -1,0 +1,10 @@
+{
+    "name": "composer/composer-test",
+
+    "description": "Dependency Manager",
+    "keywords": ["package", "dependency", "autoload"],
+    "homepage": "http://getcomposer.org/",
+    "type": "library",
+    "license": "MIT",
+    "minimum-stability": "beta"
+}

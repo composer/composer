@@ -170,6 +170,30 @@ class Filesystem
     }
 
     /**
+     * Checks if a given file exists and if it is writable.
+     * When the file does not exist, it will be created with assigned content.
+     *
+     * @param string $file absolute file path
+     *
+     * @throws \RuntimeException if the file is not readable or writable
+     */
+    public function ensureFileExists($file, $content = '')
+    {
+        if (is_dir($file)) {
+            throw new \RuntimeException($file . ' is a directory not a file.');
+        }
+        if (!file_exists($file) && !file_put_contents($file, $content)) {
+            throw new \RuntimeException($file . ' could not be created.');
+        }
+        if (!is_readable($file)) {
+            throw new \RuntimeException($file . ' is not readable.');
+        }
+        if (!is_writable($file)) {
+            throw new \RuntimeException($file . ' is not writable.');
+        }
+    }
+
+    /**
      * Copy then delete is a non-atomic version of {@link rename}.
      *
      * Some systems can't rename and also don't have proc_open,
