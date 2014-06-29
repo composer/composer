@@ -14,7 +14,6 @@ namespace Composer\Installer;
 
 use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
-use Composer\Plugin\PluginInstaller;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\DependencyResolver\Operation\OperationInterface;
