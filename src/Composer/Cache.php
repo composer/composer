@@ -136,7 +136,7 @@ class Cache
     {
         $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
         if ($this->enabled && file_exists($this->root . $file)) {
-            return unlink($this->root . $file);
+            return $this->filesystem->unlink($this->root . $file);
         }
 
         return false;
@@ -150,7 +150,7 @@ class Cache
 
             $finder = $this->getFinder()->date('until '.$expire->format('Y-m-d H:i:s'));
             foreach ($finder as $file) {
-                unlink($file->getPathname());
+                $this->filesystem->unlink($file->getPathname());
             }
 
             $totalSize = $this->filesystem->size($this->root);
@@ -159,7 +159,7 @@ class Cache
                 while ($totalSize > $maxSize && $iterator->valid()) {
                     $filepath = $iterator->current()->getPathname();
                     $totalSize -= $this->filesystem->size($filepath);
-                    unlink($filepath);
+                    $this->filesystem->unlink($filepath);
                     $iterator->next();
                 }
             }

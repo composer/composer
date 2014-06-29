@@ -162,10 +162,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
         $this->io->write("  - Removing <info>" . $package->getName() . "</info> (<comment>" . $package->getPrettyVersion() . "</comment>)");
         $this->cleanChanges($package, $path, false);
         if (!$this->filesystem->removeDirectory($path)) {
-            // retry after a bit on windows since it tends to be touchy with mass removals
-            if (!defined('PHP_WINDOWS_VERSION_BUILD') || (usleep(250) && !$this->filesystem->removeDirectory($path))) {
-                throw new \RuntimeException('Could not completely delete '.$path.', aborting.');
-            }
+            throw new \RuntimeException('Could not completely delete '.$path.', aborting.');
         }
     }
 

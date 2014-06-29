@@ -36,7 +36,7 @@ class Filesystem
         }
 
         if (file_exists($file)) {
-            return unlink($file);
+            return $this->unlink($file);
         }
 
         return false;
@@ -62,7 +62,7 @@ class Filesystem
     public function emptyDirectory($dir, $ensureDirectoryExists = true)
     {
         if (file_exists($dir) && is_link($dir)) {
-            unlink($dir);
+            $this->unlink($dir);
         }
 
         if ($ensureDirectoryExists) {
@@ -94,10 +94,10 @@ class Filesystem
     public function removeDirectory($directory)
     {
         if (file_exists($directory) && is_link($directory)) {
-            return unlink($directory);
+            return $this->unlink($directory);
         }
 
-        if (!is_dir($directory)) {
+        if (!file_exists($directory) || !is_dir($directory)) {
             return true;
         }
 
@@ -117,11 +117,11 @@ class Filesystem
 
         $result = $this->getProcess()->execute($cmd, $output) === 0;
 
-        if ($result) {
-            // clear stat cache because external processes aren't tracked by the php stat cache
-            clearstatcache();
+        // clear stat cache because external processes aren't tracked by the php stat cache
+        clearstatcache();
 
-            return !is_dir($directory);
+        if ($result && !file_exists($directory)) {
+            return true;
         }
 
         return $this->removeDirectoryPhp($directory);
@@ -144,13 +144,13 @@ class Filesystem
 
         foreach ($ri as $file) {
             if ($file->isDir()) {
-                rmdir($file->getPathname());
+                $this->rmdir($file->getPathname());
             } else {
-                unlink($file->getPathname());
+                $this->unlink($file->getPathname());
             }
         }
 
-        return rmdir($directory);
+        return $this->rmdir($directory);
     }
 
     public function ensureDirectoryExists($directory)
@@ -167,6 +167,54 @@ class Filesystem
                 );
             }
         }
+    }
+
+    /**
+     * Attempts to unlink a file and in case of failure retries after 350ms on windows
+     *
+     * @param  string $path
+     * @return bool
+     */
+    public function unlink($path)
+    {
+        if (!@unlink($path)) {
+            // retry after a bit on windows since it tends to be touchy with mass removals
+            if (!defined('PHP_WINDOWS_VERSION_BUILD') || (usleep(350000) && !@unlink($path))) {
+                $error = error_get_last();
+                $message = 'Could not delete '.$path.': ' . @$error['message'];
+                if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+                    $message .= "\nThis can be due to an antivirus or the Windows Search Indexer locking the file while they are analyzed";
+                }
+
+                throw new \RuntimeException($message);
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Attempts to rmdir a file and in case of failure retries after 350ms on windows
+     *
+     * @param  string $path
+     * @return bool
+     */
+    public function rmdir($path)
+    {
+        if (!@rmdir($path)) {
+            // retry after a bit on windows since it tends to be touchy with mass removals
+            if (!defined('PHP_WINDOWS_VERSION_BUILD') || (usleep(350000) && !@rmdir($path))) {
+                $error = error_get_last();
+                $message = 'Could not delete '.$path.': ' . @$error['message'];
+                if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+                    $message .= "\nThis can be due to an antivirus or the Windows Search Indexer locking the file while they are analyzed";
+                }
+
+                throw new \RuntimeException($message);
+            }
+        }
+
+        return true;
     }
 
     /**

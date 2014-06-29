@@ -48,7 +48,7 @@ abstract class ArchiveDownloader extends FileDownloader
                     throw $e;
                 }
 
-                unlink($fileName);
+                $this->filesystem->unlink($fileName);
 
                 $contentDir = $this->getFolderContent($temporaryDir);
 

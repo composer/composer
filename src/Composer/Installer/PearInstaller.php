@@ -77,7 +77,7 @@ class PearInstaller extends LibraryInstaller
         if ($this->io->isVerbose()) {
             $this->io->write('    Cleaning up');
         }
-        unlink($packageArchive);
+        $this->filesystem->unlink($packageArchive);
     }
 
     protected function getBinaries(PackageInterface $package)
