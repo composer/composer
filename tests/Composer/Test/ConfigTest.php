@@ -109,6 +109,18 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array('foo' => 'bar', 'bar' => 'baz'), $config->get('github-oauth'));
     }
 
+    public function testVarReplacement()
+    {
+        $config = new Config();
+        $config->merge(array('config' => array('a' => 'b', 'c' => '{$a}')));
+        $config->merge(array('config' => array('bin-dir' => '$HOME', 'cache-dir' => '~/foo/')));
+
+        $home = rtrim(getenv('HOME'), '\\/');
+        $this->assertEquals('b', $config->get('c'));
+        $this->assertEquals($home.'/', $config->get('bin-dir'));
+        $this->assertEquals($home.'/foo', $config->get('cache-dir'));
+    }
+
     public function testOverrideGithubProtocols()
     {
         $config = new Config();

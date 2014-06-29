@@ -760,7 +760,8 @@ The following options are supported:
   against them. For example using
   `{"example.org": {"username": "alice", "password": "foo"}` as the value of this option will let composer authenticate against example.org.
 * **vendor-dir:** Defaults to `vendor`. You can install dependencies into a
-  different directory if you want to.
+  different directory if you want to. `$HOME` and `~` will be replaced by your
+  home directory's path in vendor-dir and all `*-dir` options below.
 * **bin-dir:** Defaults to `vendor/bin`. If a project includes binaries, they
   will be symlinked into this directory.
 * **cache-dir:** Defaults to `$home/cache` on unix systems and

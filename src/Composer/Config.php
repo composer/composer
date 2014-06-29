@@ -158,7 +158,10 @@ class Config
                 // convert foo-bar to COMPOSER_FOO_BAR and check if it exists since it overrides the local config
                 $env = 'COMPOSER_' . strtoupper(strtr($key, '-', '_'));
 
-                return rtrim($this->process(getenv($env) ?: $this->config[$key]), '/\\');
+                $val = rtrim($this->process(getenv($env) ?: $this->config[$key]), '/\\');
+                $val = preg_replace('#^(\$HOME|~)(/|$)#', rtrim(getenv('HOME') ?: getenv('USERPROFILE'), '/\\') . '/', $val);
+
+                return $val;
 
             case 'cache-ttl':
                 return (int) $this->config[$key];
