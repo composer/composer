@@ -312,7 +312,7 @@ EOT
             $warnings['openssl'] = true;
         }
 
-        if (ini_get('apc.enable_cli')) {
+        if (!defined('HHVM_VERSION') && ini_get('apc.enable_cli')) {
             $warnings['apc_cli'] = true;
         }
 
