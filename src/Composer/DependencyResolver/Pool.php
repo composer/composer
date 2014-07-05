@@ -15,7 +15,6 @@ namespace Composer\DependencyResolver;
 use Composer\Package\BasePackage;
 use Composer\Package\AliasPackage;
 use Composer\Package\Version\VersionParser;
-use Composer\Package\Link;
 use Composer\Package\LinkConstraint\LinkConstraintInterface;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Package\LinkConstraint\EmptyConstraint;
@@ -25,6 +24,7 @@ use Composer\Repository\ComposerRepository;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Repository\StreamableRepositoryInterface;
 use Composer\Repository\PlatformRepository;
+use Composer\Package\PackageInterface;
 
 /**
  * A package pool contains repositories that provide packages.
@@ -232,7 +232,7 @@ class Pool
      *                                                packages must match or null to return all
      * @param  bool                    $mustMatchName Whether the name of returned packages
      *                                                must match the given name
-     * @return array                   A set of packages
+     * @return PackageInterface[]                    A set of packages
      */
     public function whatProvides($name, LinkConstraintInterface $constraint = null, $mustMatchName = false)
     {

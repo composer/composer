@@ -242,7 +242,6 @@ EOT
         }
 
         $parser = new VersionParser();
-        $candidates = array();
         $requirements = $parser->parseNameVersionPairs(array($packageName));
         $name = strtolower($requirements[0]['name']);
         if (!$packageVersion && isset($requirements[0]['version'])) {
