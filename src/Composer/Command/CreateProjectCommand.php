@@ -266,23 +266,14 @@ EOT
         $pool->addRepository($sourceRepo);
 
         $constraint = $packageVersion ? $parser->parseConstraints($packageVersion) : null;
-        $candidates = $pool->whatProvides($name, $constraint);
-        foreach ($candidates as $key => $candidate) {
-            if ($candidate->getName() !== $name) {
-                unset($candidates[$key]);
-            }
-        }
+        $candidates = $pool->whatProvides($name, $constraint, true);
 
         if (!$candidates) {
             throw new \InvalidArgumentException("Could not find package $name" . ($packageVersion ? " with version $packageVersion." : " with stability $stability."));
         }
 
-        if (null === $directory) {
-            $parts = explode("/", $name, 2);
-            $directory = getcwd() . DIRECTORY_SEPARATOR . array_pop($parts);
-        }
-
         // select highest version if we have many
+        // logic is repeated in InitCommand
         $package = reset($candidates);
         foreach ($candidates as $candidate) {
             if (version_compare($package->getVersion(), $candidate->getVersion(), '<')) {
@@ -290,6 +281,11 @@ EOT
             }
         }
         unset($candidates);
+
+        if (null === $directory) {
+            $parts = explode("/", $name, 2);
+            $directory = getcwd() . DIRECTORY_SEPARATOR . array_pop($parts);
+        }
 
         $io->write('<info>Installing ' . $package->getName() . ' (' . VersionParser::formatVersion($package, false) . ')</info>');
 

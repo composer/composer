@@ -12,6 +12,7 @@
 
 namespace Composer\Command;
 
+use Composer\DependencyResolver\Pool;
 use Composer\Json\JsonFile;
 use Composer\Factory;
 use Composer\Package\BasePackage;
@@ -32,6 +33,7 @@ class InitCommand extends Command
 {
     private $gitConfig;
     private $repos;
+    private $pool;
 
     public function parseAuthorString($author)
     {
@@ -284,9 +286,11 @@ EOT
 
     protected function findPackages($name)
     {
-        $packages = array();
+        return $this->getRepos()->search($name);
+    }
 
-        // init repos
+    protected function getRepos()
+    {
         if (!$this->repos) {
             $this->repos = new CompositeRepository(array_merge(
                 array(new PlatformRepository),
@@ -294,7 +298,17 @@ EOT
             ));
         }
 
-        return $this->repos->search($name);
+        return $this->repos;
+    }
+
+    protected function getPool()
+    {
+        if (!$this->pool) {
+            $this->pool = new Pool($this->getComposer()->getPackage()->getMinimumStability());
+            $this->pool->addRepository($this->getRepos());
+        }
+
+        return $this->pool;
     }
 
     protected function determineRequirements(InputInterface $input, OutputInterface $output, $requires = array())
@@ -306,15 +320,42 @@ EOT
             $requires = $this->normalizeRequirements($requires);
             $result = array();
 
-            foreach ($requires as $key => $requirement) {
-                if (!isset($requirement['version']) && $input->isInteractive()) {
-                    $question = $dialog->getQuestion('Please provide a version constraint for the '.$requirement['name'].' requirement');
-                    if ($constraint = $dialog->ask($output, $question)) {
-                        $requirement['version'] = $constraint;
-                    }
-                }
+            foreach ($requires as $requirement) {
                 if (!isset($requirement['version'])) {
-                    throw new \InvalidArgumentException('The requirement '.$requirement['name'].' must contain a version constraint');
+
+                    $candidates = $this->getPool()->whatProvides($requirement['name'], null, true);
+
+                    if (!$candidates) {
+                        throw new \InvalidArgumentException(sprintf(
+                            'Could not find any versions for package "%s". Perhaps the name is wrong?',
+                            $requirement['name']
+                        ));
+                    }
+
+                    // select highest version if we have many
+                    // logic is repeated in CreateProjectCommand
+                    $package = reset($candidates);
+                    foreach ($candidates as $candidate) {
+                        if (version_compare($package->getVersion(), $candidate->getVersion(), '<')) {
+                            $package = $candidate;
+                        }
+                    }
+
+                    if (!$package) {
+                        throw new \Exception(sprintf(
+                            'No version of the package "%s" could be found that meets your minimum stability requirements of "%s"',
+                            $requirement['name'],
+                            $this->getComposer()->getPackage()->getMinimumStability()
+                        ));
+                    }
+
+                    $requirement['version'] = $package->getPrettyVersion();
+
+                    $output->writeln(sprintf(
+                        'Using version <info>%s</info> for <info>%s</info>',
+                        $requirement['version'],
+                        $requirement['name']
+                    ));
                 }
 
                 $result[] = $requirement['name'] . ' ' . $requirement['version'];
