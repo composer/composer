@@ -729,6 +729,16 @@ will look from the first to the last repository, and pick the first match.
 By default Packagist is added last which means that custom repositories can
 override packages from it.
 
+### notification-url</span>
+
+A URL that is notified whenever a package from that repository is installed. 
+
+```
+{
+    "notification-url" : "https://packagist.org/downloads/"
+}
+```
+
 ### config <span>(root-only)</span>
 
 A set of configuration options. It is only used for projects.
