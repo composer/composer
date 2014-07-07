@@ -173,6 +173,13 @@ class Locker
         return isset($lockData['stability-flags']) ? $lockData['stability-flags'] : array();
     }
 
+    public function getPreferStable()
+    {
+        $lockData = $this->getLockData();
+
+        return isset($lockData['prefer-stable']) ? $lockData['prefer-stable'] : false;
+    }
+
     public function getAliases()
     {
         $lockData = $this->getLockData();
@@ -206,7 +213,7 @@ class Locker
      *
      * @return bool
      */
-    public function setLockData(array $packages, $devPackages, array $platformReqs, $platformDevReqs, array $aliases, $minimumStability, array $stabilityFlags)
+    public function setLockData(array $packages, $devPackages, array $platformReqs, $platformDevReqs, array $aliases, $minimumStability, array $stabilityFlags, $preferStable)
     {
         $lock = array(
             '_readme' => array('This file locks the dependencies of your project to a known state',
@@ -218,6 +225,7 @@ class Locker
             'aliases' => array(),
             'minimum-stability' => $minimumStability,
             'stability-flags' => $stabilityFlags,
+            'prefer-stable' => $preferStable,
         );
 
         foreach ($aliases as $package => $versions) {
