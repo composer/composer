@@ -354,6 +354,7 @@ class Installer
         if (!$installFromLock) {
             $repositories = $this->repositoryManager->getRepositories();
             foreach ($repositories as $repository) {
+                $this->io->write(' - Adding repository ' . get_class($repository));
                 $pool->addRepository($repository, $aliases);
             }
         }
@@ -466,6 +467,7 @@ class Installer
         // solve dependencies
         $solver = new Solver($policy, $pool, $installedRepo);
         try {
+            $this->io->write('<info>Solving dependencies</info>');
             $operations = $solver->solve($request);
         } catch (SolverProblemsException $e) {
             $this->io->write('<error>Your requirements could not be resolved to an installable set of packages.</error>');
