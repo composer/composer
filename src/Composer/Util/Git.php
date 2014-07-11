@@ -106,13 +106,26 @@ class Git
                 preg_match('{(https?://)([^/]+)(.*)$}i', $url, $match) &&
                 strpos($this->process->getErrorOutput(), 'fatal: Authentication failed') !== false
             ) {
+                if (strpos($match[2], '@')) {
+                    list($authParts, $match[2]) = explode('@', $match[2], 2);
+                }
+
                 // TODO this should use an auth manager class that prompts and stores in the config
                 if ($this->io->hasAuthentication($match[2])) {
                     $auth = $this->io->getAuthentication($match[2]);
                 } else {
+                    $defaultUsername = null;
+                    if (isset($authParts) && $authParts) {
+                        if (strpos($authParts, ':')) {
+                            list($defaultUsername,) = explode(':', $authParts);
+                        } else {
+                            $defaultUsername = $authParts;
+                        }
+                    }
+
                     $this->io->write($url.' requires Authentication');
                     $auth = array(
-                        'username'  => $this->io->ask('Username: '),
+                        'username'  => $this->io->ask('Username: ', $defaultUsername),
                         'password'  => $this->io->askAndHideAnswer('Password: '),
                     );
                 }
