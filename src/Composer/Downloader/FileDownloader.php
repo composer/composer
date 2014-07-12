@@ -101,6 +101,8 @@ class FileDownloader implements DownloaderInterface
                 }
             }
         }
+        
+        $this->io->write('');
     }
 
     protected function doDownload(PackageInterface $package, $path, $url)
