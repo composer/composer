@@ -22,6 +22,7 @@ use Composer\Package\LinkConstraint\EmptyConstraint;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\ComposerRepository;
+use Composer\Repository\BowerRepository;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Repository\StreamableRepositoryInterface;
 use Composer\Repository\PlatformRepository;
@@ -92,7 +93,7 @@ class Pool
 
             $exempt = $repo instanceof PlatformRepository || $repo instanceof InstalledRepositoryInterface;
 
-            if ($repo instanceof ComposerRepository && $repo->hasProviders()) {
+            if (($repo instanceof ComposerRepository || $repo instanceof BowerRepository) && $repo->hasProviders()) {
                 $this->providerRepos[] = $repo;
                 $repo->setRootAliases($rootAliases);
                 $repo->resetPackageIds();
@@ -253,11 +254,17 @@ class Pool
 
         foreach ($this->providerRepos as $repo) {
             foreach ($repo->whatProvides($this, $name) as $candidate) {
-                $candidates[] = $candidate;
-                if ($candidate->getId() < 1) {
-                    $candidate->setId($this->id++);
-                    $this->packages[$this->id - 2] = $candidate;
+                if (is_array($candidate)) {
+                    if (!isset($candidate['id']) || $candidate['id'] < 1) {
+                        $candidate['id'] = $this->id++;
+                    }
+                } else {
+                    if ($candidate->getId() < 1) {
+                        $candidate->setId($this->id++);
+                        $this->packages[$this->id - 2] = $candidate;
+                    }
                 }
+                $candidates[] = $candidate;
             }
         }
 
