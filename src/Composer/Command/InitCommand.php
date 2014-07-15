@@ -16,6 +16,7 @@ use Composer\DependencyResolver\Pool;
 use Composer\Json\JsonFile;
 use Composer\Factory;
 use Composer\Package\BasePackage;
+use Composer\Package\Version\VersionSelector;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Package\Version\VersionParser;
@@ -323,42 +324,8 @@ EOT
             foreach ($requires as $requirement) {
                 if (!isset($requirement['version'])) {
 
-                    $candidates = $this->getPool()->whatProvides($requirement['name'], null, true);
-
-                    if (!$candidates) {
-                        throw new \InvalidArgumentException(sprintf(
-                            'Could not find any versions for package "%s". Perhaps the name is wrong?',
-                            $requirement['name']
-                        ));
-                    }
-
-                    // select highest version if we have many
-                    // logic is repeated in CreateProjectCommand
-                    $package = reset($candidates);
-                    foreach ($candidates as $candidate) {
-                        if (version_compare($package->getVersion(), $candidate->getVersion(), '<')) {
-                            $package = $candidate;
-                        }
-                    }
-
-                    if (!$package) {
-                        throw new \Exception(sprintf(
-                            'No version of the package "%s" could be found that meets your minimum stability requirements of "%s"',
-                            $requirement['name'],
-                            $this->getComposer()->getPackage()->getMinimumStability()
-                        ));
-                    }
-
-                    $version = $package->getPrettyVersion();
-                    if (!$package->isDev()) {
-                        // remove the v prefix if there is one
-                        if (substr($version, 0, 1) == 'v') {
-                            $version = substr($version, 1);
-                        }
-
-                        // 2.1.0 -> ~2.1.0, 2.0-beta.1 -> ~2.0-beta.1
-                        $version = '~'.$version;
-                    }
+                    // determine the best version automatically
+                    $version = $this->findBestVersionForPackage($requirement['name']);
                     $requirement['version'] = $version;
 
                     $output->writeln(sprintf(
@@ -420,7 +387,7 @@ EOT
                     $package = $dialog->askAndValidate($output, $dialog->getQuestion('Enter package # to add, or the complete package name if it is not listed', false, ':'), $validator, 3);
                 }
 
-                // no constraint yet, prompt user
+                // no constraint yet, determine the best version automatically
                 if (false !== $package && false === strpos($package, ' ')) {
                     $validator = function ($input) {
                         $input = trim($input);
@@ -428,9 +395,20 @@ EOT
                         return $input ?: false;
                     };
 
-                    $constraint = $dialog->askAndValidate($output, $dialog->getQuestion('Enter the version constraint to require', false, ':'), $validator, 3);
+                    $constraint = $dialog->askAndValidate(
+                        $output,
+                        $dialog->getQuestion('Enter the version constraint to require (or leave blank to use the latest version)', false, ':'),
+                        $validator,
+                        3)
+                    ;
                     if (false === $constraint) {
-                        continue;
+                        $constraint = $this->findBestVersionForPackage($package);
+
+                        $output->writeln(sprintf(
+                            'Using version <info>%s</info> for <info>%s</info>',
+                            $constraint,
+                            $package
+                        ));
                     }
 
                     $package .= ' '.$constraint;
@@ -554,5 +532,42 @@ EOT
         }
 
         return false !== filter_var($email, FILTER_VALIDATE_EMAIL);
+    }
+
+    /**
+     * Given a package name, this determines the best version to use in the require key.
+     *
+     * This returns a version with the ~ operator prefixed when possible.
+     *
+     * @param string $name
+     * @return string
+     * @throws \InvalidArgumentException
+     */
+    protected function findBestVersionForPackage($name)
+    {
+        // find the latest version allowed in this pool
+        $versionSelector = new VersionSelector($this->getPool());
+        $package = $versionSelector->findBestCandidate($name);
+
+        if (!$package) {
+            throw new \InvalidArgumentException(sprintf(
+                'Could not find package %s at any version for your minimum-stability (%s). Check the package spelling or your minimum-stability',
+                $name,
+                $this->getComposer()->getPackage()->getMinimumStability()
+            ));
+        }
+
+        $version = $package->getPrettyVersion();
+        if (!$package->isDev()) {
+            // remove the v prefix if there is one
+            if (substr($version, 0, 1) == 'v') {
+                $version = substr($version, 1);
+            }
+
+            // 2.1.0 -> ~2.1.0, 2.0-beta.1 -> ~2.0-beta.1
+            $version = '~'.$version;
+        }
+
+        return $version;
     }
 }

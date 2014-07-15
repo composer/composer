@@ -21,6 +21,7 @@ use Composer\IO\IOInterface;
 use Composer\Package\BasePackage;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Operation\InstallOperation;
+use Composer\Package\Version\VersionSelector;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\FilesystemRepository;
@@ -265,22 +266,13 @@ EOT
         $pool = new Pool($stability);
         $pool->addRepository($sourceRepo);
 
-        $constraint = $packageVersion ? $parser->parseConstraints($packageVersion) : null;
-        $candidates = $pool->whatProvides($name, $constraint, true);
+        // find the latest version if there are multiple
+        $versionSelector = new VersionSelector($pool);
+        $package = $versionSelector->findBestCandidate($name, $packageVersion);
 
-        if (!$candidates) {
+        if (!$package) {
             throw new \InvalidArgumentException("Could not find package $name" . ($packageVersion ? " with version $packageVersion." : " with stability $stability."));
         }
-
-        // select highest version if we have many
-        // logic is repeated in InitCommand
-        $package = reset($candidates);
-        foreach ($candidates as $candidate) {
-            if (version_compare($package->getVersion(), $candidate->getVersion(), '<')) {
-                $package = $candidate;
-            }
-        }
-        unset($candidates);
 
         if (null === $directory) {
             $parts = explode("/", $name, 2);
