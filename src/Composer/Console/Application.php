@@ -129,6 +129,7 @@ class Application extends BaseApplication
 
     /**
      * @param  InputInterface    $input
+     * @return string
      * @throws \RuntimeException
      */
     private function getNewWorkingDir(InputInterface $input)

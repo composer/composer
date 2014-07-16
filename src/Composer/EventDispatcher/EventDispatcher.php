@@ -73,7 +73,7 @@ class EventDispatcher
      * Dispatch a script event.
      *
      * @param string       $eventName The constant in ScriptEvents
-     * @param Script\Event $event
+     * @param bool         $devMode
      */
     public function dispatchScript($eventName, $devMode = false)
     {

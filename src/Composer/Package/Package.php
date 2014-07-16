@@ -495,7 +495,7 @@ class Package extends BasePackage
     /**
      * Set the dev autoload mapping
      *
-     * @param array $autoload Mapping of dev autoloading rules
+     * @param array $devAutoload Mapping of dev autoloading rules
      */
     public function setDevAutoload(array $devAutoload)
     {

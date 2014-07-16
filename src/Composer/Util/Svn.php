@@ -66,6 +66,7 @@ class Svn
     /**
      * @param string                   $url
      * @param \Composer\IO\IOInterface $io
+     * @param Config                   $config
      * @param ProcessExecutor          $process
      */
     public function __construct($url, IOInterface $io, Config $config, ProcessExecutor $process = null)

@@ -90,6 +90,8 @@ class Filesystem
      *
      * @param  string $directory
      * @return bool
+     *
+     * @throws \RuntimeException
      */
     public function removeDirectory($directory)
     {
@@ -174,6 +176,8 @@ class Filesystem
      *
      * @param  string $path
      * @return bool
+     *
+     * @throws \RuntimeException
      */
     public function unlink($path)
     {
@@ -198,6 +202,8 @@ class Filesystem
      *
      * @param  string $path
      * @return bool
+     *
+     * @throws \RuntimeException
      */
     public function rmdir($path)
     {

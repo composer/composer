@@ -103,6 +103,8 @@ class PluginManager
      * call this method as early as possible.
      *
      * @param RepositoryInterface $repo Repository to scan for plugins to install
+     *
+     * @throws \RuntimeException
      */
     public function loadRepository(RepositoryInterface $repo)
     {
@@ -186,6 +188,8 @@ class PluginManager
      * instead for BC
      *
      * @param PackageInterface $package
+     *
+     * @throws \UnexpectedValueException
      */
     public function registerPackage(PackageInterface $package)
     {

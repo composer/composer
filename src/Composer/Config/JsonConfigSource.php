@@ -37,6 +37,7 @@ class JsonConfigSource implements ConfigSourceInterface
      * Constructor
      *
      * @param JsonFile $file
+     * @param bool     $authConfig
      */
     public function __construct(JsonFile $file, $authConfig = false)
     {

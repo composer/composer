@@ -38,6 +38,7 @@ class Factory
 {
     /**
      * @return string
+     * @throws \RuntimeException
      */
     protected static function getHomeDir()
     {
@@ -60,6 +61,8 @@ class Factory
     }
 
     /**
+     * @param string $home
+     *
      * @return string
      */
     protected static function getCacheDir($home)
@@ -82,6 +85,7 @@ class Factory
     }
 
     /**
+     * @param IOInterface|null $io
      * @return Config
      */
     public static function createConfig(IOInterface $io = null)
@@ -333,6 +337,7 @@ class Factory
      /**
      * @param Config $config
      * @param string $vendorDir
+     * @return Repository\InstalledFilesystemRepository|null
      */
     protected function createGlobalRepository(Config $config, $vendorDir)
     {
@@ -410,6 +415,9 @@ class Factory
     }
 
     /**
+     * @param Composer            $composer
+     * @param IOInterface         $io
+     * @param RepositoryInterface $globalRepository
      * @return Plugin\PluginManager
      */
     protected function createPluginManager(Composer $composer, IOInterface $io, RepositoryInterface $globalRepository = null)
