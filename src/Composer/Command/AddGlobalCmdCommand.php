@@ -176,7 +176,7 @@ EOT
     {
         // if we're already executable, no need to change permissions
         if (is_executable($targetPath)) {
-            return;
+            return true;
         }
 
         $process = new Process(sprintf('sudo chmod +x %s', $targetPath));
