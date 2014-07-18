@@ -38,11 +38,11 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        // only run on Linux!
+        // todo - try to get this to work on Windows too
         if (defined('PHP_WINDOWS_VERSION_BUILD')) {
             $output->writeln('This command cannot be run on Windows. Use the Windows installer.');
 
-            return;
+            return 1;
         }
 
         $installMode = $input->getOption('install-mode');
@@ -52,7 +52,7 @@ EOT
             /** @var \Symfony\Component\Console\Helper\DialogHelper $dialogHelper */
             $dialogHelper = $this->getHelper('dialog');
 
-            if (!$dialogHelper->askConfirmation(
+            if ($input->isInteractive() && !$dialogHelper->askConfirmation(
                 $output,
                 "Do you want to install a global executable?\nThis will let you type <info>composer</info> anywhere to use it (requires root access). [Y/n] "
             )) {
@@ -71,14 +71,14 @@ EOT
                 $output->writeln('<error>Could not determine a valid bin directory</error>');
             }
 
-            return;
+            return 1;
         }
 
         $sourcePhar = \Phar::running(false);
         if (!$sourcePhar) {
             $output->writeln('<error>This command can only be run from a PHAR file</error>');
 
-            return;
+            return 1;
         }
 
         // try to copy the composer file
@@ -89,7 +89,7 @@ EOT
                 $this->printErrorMessage($output);
             }
 
-            return;
+            return 1;
         }
 
         // set the executable permissions
@@ -99,7 +99,7 @@ EOT
                 $this->printErrorMessage($output);
             }
 
-            return;
+            return 1;
         }
 
         $output->writeln(sprintf('Composer successfully copied to <info>%s</info>', $targetPath));
@@ -114,6 +114,8 @@ EOT
                 $output->writeln('<error>Global executable command failed</error>');
                 $this->printErrorMessage($output);
             }
+
+            return 1;
         }
     }
 
@@ -127,24 +129,21 @@ EOT
         $process = new Process('which composer');
         $process->run();
 
-        // if there is no exectuable, the output is empty
-        return (bool) $process->getOutput();
+        // which returns an error code if no command is found
+        return $process->isSuccessful();
     }
 
     /**
      * Returns the path to the directory where the PHP binary exists
      *
-     * @return bool|string
+     * @return string|null
      */
     protected function findTargetBinDir()
     {
         $phpExecutableFinder = new PhpExecutableFinder();
         $phpBinPath = $phpExecutableFinder->find();
-        if (!$phpBinPath) {
-            return false;
-        }
 
-        return dirname($phpBinPath);
+        return $phpBinPath ? dirname($phpBinPath) : null;
     }
 
     /**
@@ -175,6 +174,11 @@ EOT
      */
     protected function setExecutablePermissions($targetPath)
     {
+        // if we're already executable, no need to change permissions
+        if (is_executable($targetPath)) {
+            return;
+        }
+
         $process = new Process(sprintf('sudo chmod +x %s', $targetPath));
         $process->run();
 
