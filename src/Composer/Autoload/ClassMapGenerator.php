@@ -115,7 +115,7 @@ class ClassMapGenerator
         $traits = version_compare(PHP_VERSION, '5.4', '<') ? '' : '|trait';
 
         try {
-            $contents = php_strip_whitespace($path);
+            $contents = @php_strip_whitespace($path);
         } catch (\Exception $e) {
             throw new \RuntimeException('Could not scan for classes inside '.$path.": \n".$e->getMessage(), 0, $e);
         }
@@ -160,8 +160,8 @@ class ClassMapGenerator
             } else {
                 $name = $matches['name'][$i];
                 if ($name[0] === ':') {
-                  // This is an XHP class, https://github.com/facebook/xhp
-                  $name = 'xhp'.substr(str_replace(array('-', ':'), array('_', '__'), $name), 1);
+                    // This is an XHP class, https://github.com/facebook/xhp
+                    $name = 'xhp'.substr(str_replace(array('-', ':'), array('_', '__'), $name), 1);
                 }
                 $classes[] = ltrim($namespace . $name, '\\');
             }
