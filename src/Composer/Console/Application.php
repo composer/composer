@@ -228,6 +228,7 @@ class Application extends BaseApplication
         $commands[] = new Command\LicensesCommand();
         $commands[] = new Command\GlobalCommand();
         $commands[] = new Command\ClearCacheCommand();
+        $commands[] = new Command\RemoveCommand();
 
         if ('phar:' === substr(__FILE__, 0, 5)) {
             $commands[] = new Command\SelfUpdateCommand();
