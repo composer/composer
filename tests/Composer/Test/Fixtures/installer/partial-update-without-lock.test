@@ -42,6 +42,7 @@ update b/unstable
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": [],
+    "prefer-stable": false,
     "platform": [],
     "platform-dev": []
 }

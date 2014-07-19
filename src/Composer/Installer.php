@@ -277,7 +277,8 @@ class Installer
                     $platformDevReqs,
                     $aliases,
                     $this->package->getMinimumStability(),
-                    $this->package->getStabilityFlags()
+                    $this->package->getStabilityFlags(),
+                    $this->package->getPreferStable()
                 );
                 if ($updatedLock) {
                     $this->io->write('<info>Writing lock file</info>');
@@ -647,7 +648,7 @@ class Installer
 
     private function createPolicy()
     {
-        return new DefaultPolicy($this->package->getPreferStable());
+        return new DefaultPolicy((!$this->update && $this->locker->isLocked()) ? $this->locker->getPreferStable() : $this->package->getPreferStable());
     }
 
     private function createRequest(Pool $pool, RootPackageInterface $rootPackage, PlatformRepository $platformRepo)
