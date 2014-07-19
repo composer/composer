@@ -91,7 +91,7 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
         $remoteFilesystem->expects($this->at(3))
             ->method('getContents')
             ->with($this->equalTo('github.com'), $this->equalTo($repoApiUrl), $this->equalTo(false))
-            ->will($this->returnValue('{"master_branch": "test_master", "private": true}'));
+            ->will($this->returnValue('{"master_branch": "test_master", "private": true, "owner": {"login": "composer"}, "name": "packagist"}'));
 
         $configSource = $this->getMock('Composer\Config\ConfigSourceInterface');
         $authConfigSource = $this->getMock('Composer\Config\ConfigSourceInterface');
@@ -138,7 +138,7 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
         $remoteFilesystem->expects($this->at(0))
             ->method('getContents')
             ->with($this->equalTo('github.com'), $this->equalTo($repoApiUrl), $this->equalTo(false))
-            ->will($this->returnValue('{"master_branch": "test_master"}'));
+            ->will($this->returnValue('{"master_branch": "test_master", "owner": {"login": "composer"}, "name": "packagist"}'));
 
         $repoConfig = array(
             'url' => $repoUrl,
@@ -181,7 +181,7 @@ class GitHubDriverTest extends \PHPUnit_Framework_TestCase
         $remoteFilesystem->expects($this->at(0))
             ->method('getContents')
             ->with($this->equalTo('github.com'), $this->equalTo($repoApiUrl), $this->equalTo(false))
-            ->will($this->returnValue('{"master_branch": "test_master"}'));
+            ->will($this->returnValue('{"master_branch": "test_master", "owner": {"login": "composer"}, "name": "packagist"}'));
 
         $remoteFilesystem->expects($this->at(1))
             ->method('getContents')

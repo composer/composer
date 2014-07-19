@@ -46,7 +46,7 @@ class GitHubDriver extends VcsDriver
      */
     public function initialize()
     {
-        preg_match('#^(?:(?:https?|git)://([^/]+)/|git@([^:]+):)([^/]+)/(.+?)(?:\.git)?$#', $this->url, $match);
+        preg_match('#^(?:(?:https?|git)://([^/]+)/|git@([^:]+):)([^/]+)/(.+?)(?:\.git|/)?$#', $this->url, $match);
         $this->owner = $match[3];
         $this->repository = $match[4];
         $this->originUrl = !empty($match[1]) ? $match[1] : $match[2];
@@ -59,6 +59,11 @@ class GitHubDriver extends VcsDriver
         }
 
         $this->fetchRootIdentifier();
+    }
+
+    public function getRepositoryUrl()
+    {
+        return 'https://'.$this->originUrl.'/'.$this->owner.'/'.$this->repository;
     }
 
     /**
@@ -250,7 +255,7 @@ class GitHubDriver extends VcsDriver
      */
     public static function supports(IOInterface $io, Config $config, $url, $deep = false)
     {
-        if (!preg_match('#^((?:https?|git)://([^/]+)/|git@([^:]+):)([^/]+)/(.+?)(?:\.git)?$#', $url, $matches)) {
+        if (!preg_match('#^((?:https?|git)://([^/]+)/|git@([^:]+):)([^/]+)/(.+?)(?:\.git|/)?$#', $url, $matches)) {
             return false;
         }
 
@@ -400,6 +405,9 @@ class GitHubDriver extends VcsDriver
         if (null === $repoData && null !== $this->gitDriver) {
             return;
         }
+
+        $this->owner = $repoData['owner']['login'];
+        $this->repository = $repoData['name'];
 
         $this->isPrivate = !empty($repoData['private']);
         if (isset($repoData['default_branch'])) {
