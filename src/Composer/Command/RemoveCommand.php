@@ -25,6 +25,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * @author Pierre du Plessis <pdples@gmail.com>
+ * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 class RemoveCommand extends Command
 {
@@ -34,11 +35,12 @@ class RemoveCommand extends Command
             ->setName('remove')
             ->setDescription('Removes a package from the require or require-dev')
             ->setDefinition(array(
-                new InputArgument('packages', InputArgument::IS_ARRAY, 'Packages that should be removed, if not provided all packages are.'),
-                new InputOption('dry-run', null, InputOption::VALUE_NONE, 'Outputs the operations but will not execute anything (implicitly enables --verbose).'),
-                new InputOption('dev', null, InputOption::VALUE_NONE, 'Removes a package from the require-dev section'),
-                new InputOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Shows more details including new commits pulled in when updating packages.'),
-                new InputOption('no-update', null, InputOption::VALUE_NONE, 'Disables the automatic update of the dependencies.')
+                new InputArgument('packages', InputArgument::IS_ARRAY, 'Packages that should be removed.'),
+                new InputOption('dev', null, InputOption::VALUE_NONE, 'Removes a package from the require-dev section.'),
+                new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
+                new InputOption('no-update', null, InputOption::VALUE_NONE, 'Disables the automatic update of the dependencies.'),
+                new InputOption('update-no-dev', null, InputOption::VALUE_NONE, 'Run the dependency update with the --no-dev option.'),
+                new InputOption('update-with-dependencies', null, InputOption::VALUE_NONE, 'Allows inherited dependencies to be updated with explicit dependencies.'),
             ))
             ->setHelp(<<<EOT
 The <info>remove</info> command removes a package from the current
@@ -53,54 +55,64 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $composer = $this->getComposer();
         $packages = $input->getArgument('packages');
-
-        $io = $this->getIO();
-
-        $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'remove', $input, $output);
-        $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
 
         $file = Factory::getComposerFile();
 
         $json = new JsonFile($file);
+        $composer = $json->read();
         $composerBackup = file_get_contents($json->getPath());
 
         $json = new JsonConfigSource($json);
 
         $type = $input->getOption('dev') ? 'require-dev' : 'require';
+        $altType = !$input->getOption('dev') ? 'require-dev' : 'require';
 
         foreach ($packages as $package) {
-            $json->removeLink($type, $package);
+            if (isset($composer[$type][$package])) {
+                $json->removeLink($type, $package);
+            } elseif (isset($composer[$altType][$package])) {
+                $output->writeln('<warning>'.$package.' could not be found in '.$type.' but it is present in '.$altType.'</warning>');
+                $dialog = $this->getHelperSet()->get('dialog');
+                if ($this->getIO()->isInteractive()) {
+                    if ($dialog->askConfirmation($output, $dialog->getQuestion('Do you want to remove it from '.$altType, 'yes', '?'), true)) {
+                        $json->removeLink($altType, $package);
+                    }
+                }
+            } else {
+                $output->writeln('<warning>'.$package.' is not required in your composer.json and has not been removed</warning>');
+            }
         }
 
         if ($input->getOption('no-update')) {
-            if ($input->getOption('dry-run')) {
-                file_put_contents($json->getPath(), $composerBackup);
-            }
-
             return 0;
         }
 
-        $composer = Factory::create($io);
+        // Update packages
+        $composer = $this->getComposer();
+        $composer->getDownloadManager()->setOutputProgress(!$input->getOption('no-progress'));
+        $io = $this->getIO();
+
+        $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'remove', $input, $output);
+        $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
 
         $install = Installer::create($io, $composer);
 
+        $updateDevMode = !$input->getOption('update-no-dev');
         $install
-            ->setDryRun($input->getOption('dry-run'))
             ->setVerbose($input->getOption('verbose'))
-            ->setDevMode($input->getOption('dev'))
+            ->setDevMode($updateDevMode)
             ->setUpdate(true)
             ->setUpdateWhitelist($packages)
+            ->setWhitelistDependencies($input->getOption('update-with-dependencies'));
         ;
 
-        if (!$install->run()) {
-            $output->writeln("\n".'<error>Remove failed, reverting '.$file.' to its original content.</error>');
+        $status = $install->run();
+        if ($status !== 0) {
+            $output->writeln("\n".'<error>Removal failed, reverting '.$file.' to its original content.</error>');
             file_put_contents($json->getPath(), $composerBackup);
-
-            return 1;
         }
 
-        return 0;
+        return $status;
     }
 }
