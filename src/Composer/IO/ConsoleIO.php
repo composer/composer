@@ -177,7 +177,7 @@ class ConsoleIO extends BaseIO
             // use bash if it's present
             if ($finder->find('bash') && $finder->find('stty')) {
                 $this->write($question, false);
-                $value = rtrim(shell_exec('bash -c "stty -echo; read -r mypassword; stty echo; echo $mypassword"'));
+                $value = rtrim(shell_exec('bash -c "stty -echo; read -n0 discard; read -r mypassword; stty echo; echo $mypassword"'));
                 $this->write('');
 
                 return $value;
