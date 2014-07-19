@@ -16,6 +16,7 @@ use Composer\TestCase;
 use Composer\IO\NullIO;
 use Composer\Config;
 use Composer\Package\BasePackage;
+use Composer\Util\Filesystem;
 
 class ArtifactRepositoryTest extends TestCase
 {
@@ -44,6 +45,29 @@ class ArtifactRepositoryTest extends TestCase
 
         $this->assertSame($expectedPackages, $foundPackages);
     }
+
+    public function testAbsoluteRepoUrlCreatesAbsoluteUrlPackages()
+    {
+        $absolutePath = __DIR__ . '/Fixtures/artifacts';
+        $coordinates = array('type' => 'artifact', 'url' => $absolutePath);
+        $repo = new ArtifactRepository($coordinates, new NullIO(), new Config());
+
+        foreach ($repo->getPackages() as $package) {
+            $this->assertTrue(strpos($package->getDistUrl(), $absolutePath) === 0);
+        }
+    }
+
+    public function testRelativeRepoUrlCreatesRelativeUrlPackages()
+    {
+        $relativePath = 'tests/Composer/Test/Repository/Fixtures/artifacts';
+        $coordinates = array('type' => 'artifact', 'url' => $relativePath);
+        $repo = new ArtifactRepository($coordinates, new NullIO(), new Config());
+
+        foreach ($repo->getPackages() as $package) {
+            $this->assertTrue(strpos($package->getDistUrl(), $relativePath) === 0);
+        }
+    }
+
 }
 
 //Files jsonInFirstLevel.zip, jsonInRoot.zip and jsonInSecondLevel.zip were generated with:
