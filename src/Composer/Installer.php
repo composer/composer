@@ -648,7 +648,17 @@ class Installer
 
     private function createPolicy()
     {
-        return new DefaultPolicy((!$this->update && $this->locker->isLocked()) ? $this->locker->getPreferStable() : $this->package->getPreferStable());
+        $preferStable = null;
+        if (!$this->update && $this->locker->isLocked()) {
+            $preferStable = $this->locker->getPreferStable();
+        }
+        // old lock file without prefer stable will return null
+        // so in this case we use the composer.json info
+        if (null === $preferStable) {
+            $preferStable = $this->package->getPreferStable();
+        }
+
+        return new DefaultPolicy($preferStable);
     }
 
     private function createRequest(Pool $pool, RootPackageInterface $rootPackage, PlatformRepository $platformRepo)

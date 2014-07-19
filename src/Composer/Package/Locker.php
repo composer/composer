@@ -177,7 +177,7 @@ class Locker
     {
         $lockData = $this->getLockData();
 
-        return isset($lockData['prefer-stable']) ? $lockData['prefer-stable'] : false;
+        return isset($lockData['prefer-stable']) ? $lockData['prefer-stable'] : null;
     }
 
     public function getAliases()
@@ -210,6 +210,7 @@ class Locker
      * @param array  $aliases          array of aliases
      * @param string $minimumStability
      * @param array  $stabilityFlags
+     * @param bool   $preferStable
      *
      * @return bool
      */
