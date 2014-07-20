@@ -73,7 +73,11 @@ EOT
             if (defined('Composer\Script\ScriptEvents::'.str_replace('-', '_', strtoupper($script)))) {
                 throw new \InvalidArgumentException(sprintf('Script "%s" cannot be run with this command', $script));
             }
+        }
 
+        $hasListeners = $this->getComposer()->getEventDispatcher()->hasEventListeners(new \Composer\Script\CommandEvent($script, $this->getComposer(), $this->getIO()));
+
+        if(!$hasListeners) {
             throw new \InvalidArgumentException(sprintf('Script "%s" does not exist', $script));
         }
 

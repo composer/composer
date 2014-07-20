@@ -217,6 +217,19 @@ class EventDispatcher
     }
 
     /**
+     * Checks if an event has listeners registered
+     *
+     * @param Event $event
+     * @return boolean
+     */
+    public function hasEventListeners(Event $event)
+    {
+        $listeners = $this->getListeners($event);
+
+        return (sizeof($listeners) > 0);
+    }
+
+    /**
      * Finds all listeners defined as scripts in the package
      *
      * @param  Event $event Event object
