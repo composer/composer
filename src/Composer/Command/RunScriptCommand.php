@@ -12,6 +12,7 @@
 
 namespace Composer\Command;
 
+use Composer\Script\CommandEvent;
 use Composer\Script\ScriptEvents;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -75,16 +76,22 @@ EOT
             }
         }
 
-        $hasListeners = $this->getComposer()->getEventDispatcher()->hasEventListeners(new \Composer\Script\CommandEvent($script, $this->getComposer(), $this->getIO()));
+        $composer = $this->getComposer();
+        $hasListeners = $composer->getEventDispatcher()->hasEventListeners(new CommandEvent($script, $composer, $this->getIO()));
+        if (!$hasListeners) {
+            throw new \InvalidArgumentException(sprintf('Script "%s" is not defined in this package', $script));
+        }
 
-        if(!$hasListeners) {
-            throw new \InvalidArgumentException(sprintf('Script "%s" does not exist', $script));
+        // add the bin dir to the PATH to make local binaries of deps usable in scripts
+        $binDir = $composer->getConfig()->get('bin-dir');
+        if (is_dir($binDir)) {
+            putenv('PATH='.realpath($binDir).PATH_SEPARATOR.getenv('PATH'));
         }
 
         if (in_array($script, $this->commandEvents)) {
-            $this->getComposer()->getEventDispatcher()->dispatchCommandEvent($script, $input->getOption('dev') || !$input->getOption('no-dev'));
-        } else {
-            $this->getComposer()->getEventDispatcher()->dispatchScript($script, $input->getOption('dev') || !$input->getOption('no-dev'));
+            return $composer->getEventDispatcher()->dispatchCommandEvent($script, $input->getOption('dev') || !$input->getOption('no-dev'));
         }
+
+        return $composer->getEventDispatcher()->dispatchScript($script, $input->getOption('dev') || !$input->getOption('no-dev'));
     }
 }
