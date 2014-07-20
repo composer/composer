@@ -30,7 +30,7 @@
         "symfony/process": "~2.1"
     },
     "require-dev": {
-        "phpunit/phpunit": "~3.7.10"
+        "phpunit/phpunit": "~3.7"
     },
     "suggest": {
         "ext-zip": "Enabling the zip extension allows you to unzip archives, and allows gzip compression of all internet traffic",
