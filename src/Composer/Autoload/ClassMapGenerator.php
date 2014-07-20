@@ -116,6 +116,14 @@ class ClassMapGenerator
 
         try {
             $contents = @php_strip_whitespace($path);
+            if (!$contents) {
+                if (!file_exists($path)) {
+                    throw new \Exception('File does not exist');
+                }
+                if (!is_readable($path)) {
+                    throw new \Exception('File is not readable');
+                }
+            }
         } catch (\Exception $e) {
             throw new \RuntimeException('Could not scan for classes inside '.$path.": \n".$e->getMessage(), 0, $e);
         }
