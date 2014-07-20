@@ -229,6 +229,7 @@ class Application extends BaseApplication
         $commands[] = new Command\GlobalCommand();
         $commands[] = new Command\ClearCacheCommand();
         $commands[] = new Command\RemoveCommand();
+        $commands[] = new Command\HomeCommand();
 
         if ('phar:' === substr(__FILE__, 0, 5)) {
             $commands[] = new Command\SelfUpdateCommand();
