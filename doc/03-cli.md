@@ -1,4 +1,4 @@
-# Command-line interface
+# Command-line interface / Commands
 
 You've already learned how to use the command-line interface to do some
 things. This chapter documents all the available commands.
