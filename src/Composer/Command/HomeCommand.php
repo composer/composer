@@ -19,6 +19,7 @@ use Composer\Package\Loader\InvalidPackageException;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\RepositoryInterface;
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\Exception\InvalidArgumentException;
@@ -36,12 +37,16 @@ class HomeCommand extends Command
         $this
             ->setName('browse')
             ->setAliases(array('home'))
-            ->setDescription('opens the package in your browser')
+            ->setDescription('Opens the package\'s repository URL or homepage in your browser.')
             ->setDefinition(array(
-                new InputArgument('package', InputArgument::REQUIRED, 'Package to goto'),
+                new InputArgument('package', InputArgument::REQUIRED, 'Package to browse to.'),
+                new InputOption('homepage', 'H', InputOption::VALUE_NONE, 'Open the homepage instead of the repository URL.'),
             ))
             ->setHelp(<<<EOT
-The home command opens the package in your preferred browser
+The home command opens a package's repository URL or
+homepage in your default browser.
+
+To open the homepage by default, use -H or --homepage.
 EOT
             );
     }
@@ -55,15 +60,20 @@ EOT
         $package = $this->getPackage($repo, $input->getArgument('package'));
 
         if (!$package instanceof CompletePackageInterface) {
-            throw new InvalidArgumentException('package not found');
+            throw new InvalidArgumentException('Package not found');
         }
-        if (filter_var($package->getSourceUrl(), FILTER_VALIDATE_URL)) {
-            $support = $package->getSupport();
-            $url = isset($support['source']) ? $support['source'] : $package->getSourceUrl();
-            $this->openBrowser($url);
-        } else {
-            throw new InvalidPackageException(array($package->getName() => 'invalid source-url'));
+
+        $support = $package->getSupport();
+        $url = isset($support['source']) ? $support['source'] : $package->getSourceUrl();
+        if (!$url || $input->getOption('home')) {
+            $url = $package->getHomepage();
         }
+
+        if (!filter_var($url, FILTER_VALIDATE_URL)) {
+            throw new InvalidPackageException(array($package->getName() => $input->getOption('home') ? 'Invalid or missing homepage' : 'Invalid or missing repository URL'));
+        }
+
+        $this->openBrowser($url);
     }
 
     /**

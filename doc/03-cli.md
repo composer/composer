@@ -268,6 +268,16 @@ php composer.phar show monolog/monolog 1.0.2
 * **--platform (-p):** List only platform packages (php & extensions).
 * **--self (-s):** List the root package info.
 
+## browse / home
+
+The `browse` (aliased to `home`) opens a package's repository URL or homepage
+in your browser.
+
+### Options
+
+* **--homepage (-H):** Open the homepage instead of the repository URL.
+  times.
+
 ## depends
 
 The `depends` command tells you which other packages depend on a certain
