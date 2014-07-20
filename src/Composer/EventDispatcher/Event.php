@@ -25,6 +25,11 @@ class Event
     protected $name;
 
     /**
+     * @var array Arguments passed by the user
+     */
+    protected $args;
+
+    /**
      * @var boolean Whether the event should not be passed to more listeners
      */
     private $propagationStopped = false;
@@ -32,11 +37,13 @@ class Event
     /**
      * Constructor.
      *
-     * @param string $name The event name
+     * @param string $name   The event name
+     * @param array  $events Arguments passed by the user
      */
-    public function __construct($name)
+    public function __construct($name, array $args = array())
     {
         $this->name = $name;
+        $this->args = $args;
     }
 
     /**
@@ -47,6 +54,16 @@ class Event
     public function getName()
     {
         return $this->name;
+    }
+
+    /**
+     * Returns the event's arguments.
+     *
+     * @return array The event arguments
+     */
+    public function getArguments()
+    {
+        return $this->args;
     }
 
     /**

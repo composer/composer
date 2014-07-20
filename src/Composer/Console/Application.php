@@ -104,6 +104,15 @@ class Application extends BaseApplication
             $input->setInteractive(false);
         }
 
+        // add non-standard scripts as own commands
+        if ($composer = $this->getComposer(false)) {
+            foreach ($composer->getPackage()->getScripts() as $script => $dummy) {
+                if (!defined('Composer\Script\ScriptEvents::'.str_replace('-', '_', strtoupper($script)))) {
+                    $this->add(new Command\ScriptAliasCommand($script));
+                }
+            }
+        }
+
         if ($input->hasParameterOption('--profile')) {
             $startTime = microtime(true);
             $this->io->enableDebugging($startTime);

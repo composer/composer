@@ -55,6 +55,7 @@ class RunScriptCommand extends Command
             ->setDescription('Run the scripts defined in composer.json.')
             ->setDefinition(array(
                 new InputArgument('script', InputArgument::REQUIRED, 'Script name to run.'),
+                new InputArgument('args', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, ''),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Sets the dev mode.'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables the dev mode.'),
             ))
@@ -88,10 +89,12 @@ EOT
             putenv('PATH='.realpath($binDir).PATH_SEPARATOR.getenv('PATH'));
         }
 
+        $args = $input->getArguments();
+
         if (in_array($script, $this->commandEvents)) {
-            return $composer->getEventDispatcher()->dispatchCommandEvent($script, $input->getOption('dev') || !$input->getOption('no-dev'));
+            return $composer->getEventDispatcher()->dispatchCommandEvent($script, $input->getOption('dev') || !$input->getOption('no-dev'), $args['args']);
         }
 
-        return $composer->getEventDispatcher()->dispatchScript($script, $input->getOption('dev') || !$input->getOption('no-dev'));
+        return $composer->getEventDispatcher()->dispatchScript($script, $input->getOption('dev') || !$input->getOption('no-dev'), $args['args']);
     }
 }

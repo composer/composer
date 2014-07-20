@@ -76,12 +76,13 @@ class EventDispatcher
      *
      * @param  string       $eventName The constant in ScriptEvents
      * @param  Script\Event $event
+     * @param  array        $additionalArgs
      * @return int          return code of the executed script if any, for php scripts a false return
      *                                value is changed to 1, anything else to 0
      */
-    public function dispatchScript($eventName, $devMode = false)
+    public function dispatchScript($eventName, $devMode = false, $additionalArgs = array())
     {
-        return $this->doDispatch(new Script\Event($eventName, $this->composer, $this->io, $devMode));
+        return $this->doDispatch(new Script\Event($eventName, $this->composer, $this->io, $devMode, $additionalArgs));
     }
 
     /**
@@ -103,18 +104,20 @@ class EventDispatcher
      *
      * @param  string  $eventName The constant in ScriptEvents
      * @param  boolean $devMode   Whether or not we are in dev mode
+     * @param  array   $additionalArgs
      * @return int     return code of the executed script if any, for php scripts a false return
      *                           value is changed to 1, anything else to 0
      */
-    public function dispatchCommandEvent($eventName, $devMode)
+    public function dispatchCommandEvent($eventName, $devMode, $additionalArgs = array())
     {
-        return $this->doDispatch(new CommandEvent($eventName, $this->composer, $this->io, $devMode));
+        return $this->doDispatch(new CommandEvent($eventName, $this->composer, $this->io, $devMode, $additionalArgs));
     }
 
     /**
      * Triggers the listeners of an event.
      *
      * @param  Event             $event The event object to pass to the event handlers/listeners.
+     * @param  string            $additionalArgs
      * @return int               return code of the executed script if any, for php scripts a false return
      *                                 value is changed to 1, anything else to 0
      * @throws \RuntimeException
@@ -149,7 +152,8 @@ class EventDispatcher
                     throw $e;
                 }
             } else {
-                if (0 !== ($exitCode = $this->process->execute($callable))) {
+                $args = implode(' ', array_map('escapeshellarg', $event->getArguments()));
+                if (0 !== ($exitCode = $this->process->execute($callable . ($args === '' ? '' : ' '.$args)))) {
                     $event->getIO()->write(sprintf('<error>Script %s handling the %s event returned with an error</error>', $callable, $event->getName()));
 
                     throw new \RuntimeException('Error Output: '.$this->process->getErrorOutput(), $exitCode);
