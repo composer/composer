@@ -164,4 +164,21 @@ class PluginInstallerTest extends \PHPUnit_Framework_TestCase
         $plugins = $this->pm->getPlugins();
         $this->assertEquals('installer-v3', $plugins[1]->version);
     }
+
+    public function testRegisterPluginOnlyOneTime()
+    {
+        $this->repository
+            ->expects($this->exactly(2))
+            ->method('getPackages')
+            ->will($this->returnValue(array()));
+        $installer = new PluginInstaller($this->io, $this->composer);
+        $this->pm->loadInstalledPlugins();
+
+        $installer->install($this->repository, $this->packages[0]);
+        $installer->install($this->repository, clone $this->packages[0]);
+
+        $plugins = $this->pm->getPlugins();
+        $this->assertCount(1, $plugins);
+        $this->assertEquals('installer-v1', $plugins[0]->version);
+    }
 }
