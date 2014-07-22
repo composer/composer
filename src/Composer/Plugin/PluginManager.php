@@ -198,11 +198,11 @@ class PluginManager
         $classes = is_array($extra['class']) ? $extra['class'] : array($extra['class']);
 
         $pool = new Pool('dev');
-        $localRepo = $this->composer->getRepositoryManager()->getLocalRepository();
-        $pool->addRepository($localRepo);
         if ($this->globalRepository) {
             $pool->addRepository($this->globalRepository);
         }
+        $localRepo = $this->composer->getRepositoryManager()->getLocalRepository();
+        $pool->addRepository($localRepo);
 
         $autoloadPackages = array($package->getName() => $package);
         $autoloadPackages = $this->collectDependencies($pool, $autoloadPackages, $package);
