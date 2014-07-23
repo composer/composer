@@ -75,7 +75,7 @@ class EventDispatcher
      * Dispatch a script event.
      *
      * @param  string       $eventName The constant in ScriptEvents
-     * @param  Script\Event $event
+     * @param  bool         $devMode
      * @param  array        $additionalArgs
      * @return int          return code of the executed script if any, for php scripts a false return
      *                                value is changed to 1, anything else to 0

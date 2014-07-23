@@ -204,8 +204,10 @@ class GitDownloader extends VcsDownloader
      * @param  string      $path
      * @param  string      $reference
      * @param  string      $branch
-     * @param  DateTime    $date
+     * @param  \DateTime   $date
      * @return null|string if a string is returned, it is the commit reference that was checked out if the original could not be found
+     *
+     * @throws \RuntimeException
      */
     protected function updateToCommit($path, $reference, $branch, $date)
     {

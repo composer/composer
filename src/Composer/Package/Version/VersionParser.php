@@ -89,7 +89,7 @@ class VersionParser
      * @param  string                    $version
      * @param  string                    $fullVersion optional complete version string to give more context
      * @throws \UnexpectedValueException
-     * @return array
+     * @return string
      */
     public function normalize($version, $fullVersion = null)
     {
@@ -161,7 +161,7 @@ class VersionParser
      * Normalizes a branch name to be able to perform comparisons on it
      *
      * @param  string $name
-     * @return array
+     * @return string
      */
     public function normalizeBranch($name)
     {

@@ -152,6 +152,8 @@ class Installer
      * Run installation (or update)
      *
      * @return int 0 on success or a positive error code on failure
+     *
+     * @throws \Exception
      */
     public function run()
     {

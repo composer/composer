@@ -164,6 +164,7 @@ class DownloadManager
      * @param bool             $preferSource prefer installation from source
      *
      * @throws \InvalidArgumentException if package have no urls to download from
+     * @throws \RuntimeException
      */
     public function download(PackageInterface $package, $targetDir, $preferSource = null)
     {

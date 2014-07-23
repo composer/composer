@@ -138,6 +138,7 @@ abstract class ArchiveDownloader extends FileDownloader
      * Returns the folder content, excluding dotfiles
      *
      * @param string $dir Directory
+     * @return \SplFileInfo[]
      */
     private function getFolderContent($dir)
     {

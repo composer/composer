@@ -43,6 +43,7 @@ class RemoteFilesystem
      * Constructor.
      *
      * @param IOInterface $io      The IO instance
+     * @param Config      $config  The config
      * @param array       $options The options
      */
     public function __construct(IOInterface $io, Config $config = null, array $options = array())
@@ -76,7 +77,7 @@ class RemoteFilesystem
      * @param boolean $progress  Display the progression
      * @param array   $options   Additional context options
      *
-     * @return string The content
+     * @return bool|string The content
      */
     public function getContents($originUrl, $fileUrl, $progress = true, $options = array())
     {
