@@ -104,6 +104,12 @@ class Application extends BaseApplication
             $input->setInteractive(false);
         }
 
+        // switch working dir
+        if ($newWorkDir = $this->getNewWorkingDir($input)) {
+            $oldWorkingDir = getcwd();
+            chdir($newWorkDir);
+        }
+
         // add non-standard scripts as own commands
         if ($composer = $this->getComposer(false)) {
             foreach ($composer->getPackage()->getScripts() as $script => $dummy) {
@@ -116,11 +122,6 @@ class Application extends BaseApplication
         if ($input->hasParameterOption('--profile')) {
             $startTime = microtime(true);
             $this->io->enableDebugging($startTime);
-        }
-
-        if ($newWorkDir = $this->getNewWorkingDir($input)) {
-            $oldWorkingDir = getcwd();
-            chdir($newWorkDir);
         }
 
         $result = parent::doRun($input, $output);
