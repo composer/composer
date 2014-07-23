@@ -11,9 +11,9 @@ static method) or any command-line executable command. Scripts are useful
 for executing a package's custom code or package-specific commands during
 the Composer execution process.
 
-**NOTE: Only scripts defined in the root package's `composer.json` are
-executed. If a dependency of the root package specifies its own scripts,
-Composer does not execute those additional scripts.**
+> **Note:** Only scripts defined in the root package's `composer.json` are
+> executed. If a dependency of the root package specifies its own scripts,
+> Composer does not execute those additional scripts.
 
 
 ## Event names
