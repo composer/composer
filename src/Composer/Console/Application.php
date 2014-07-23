@@ -230,6 +230,7 @@ class Application extends BaseApplication
         $commands[] = new Command\ValidateCommand();
         $commands[] = new Command\ShowCommand();
         $commands[] = new Command\RequireCommand();
+        $commands[] = new Command\UnrequireCommand();
         $commands[] = new Command\DumpAutoloadCommand();
         $commands[] = new Command\StatusCommand();
         $commands[] = new Command\ArchiveCommand();
