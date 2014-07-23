@@ -43,12 +43,12 @@ Composer fires the following named events during its execution process:
 - **pre-archive-cmd**: occurs before the `archive` command is executed.
 - **post-archive-cmd**: occurs after the `archive` command is executed.
 
-**NOTE: Composer makes no assumptions about the state of your dependencies 
-prior to `install` or `update`. Therefore, you should not specify scripts that 
-require Composer-managed dependencies in the `pre-update-cmd` or 
-`pre-install-cmd` event hooks. If you need to execute scripts prior to 
-`install` or `update` please make sure they are self-contained within your 
-root package.**
+> **Note:** Composer makes no assumptions about the state of your dependencies
+> prior to `install` or `update`. Therefore, you should not specify scripts
+> that require Composer-managed dependencies in the `pre-update-cmd` or
+> `pre-install-cmd` event hooks. If you need to execute scripts prior to
+> `install` or `update` please make sure they are self-contained within your
+> root package.
 
 ## Defining scripts
 
@@ -130,4 +130,29 @@ If you would like to run the scripts for an event manually, the syntax is:
 composer run-script [--dev] [--no-dev] script
 ```
 
-For example `composer run-script post-install-cmd` will run any **post-install-cmd** scripts that have been defined.
+For example `composer run-script post-install-cmd` will run any
+**post-install-cmd** scripts that have been defined.
+
+You can also give additional arguments to the script handler by appending `--`
+followed by the handler arguments. e.g.
+`composer run-script post-install-cmd -- --check` will pass`--check` along to
+the script handler. Those arguments are received as CLI arg by CLI handlers,
+and can be retrieved as an array via `$event->getArguments()` by PHP handlers.
+
+## Writing custom commands
+
+If you add custom scripts that do not fit one of the predefined event name
+above, you can either run them with run-script or also run them as native
+Composer commands. For example the handler defined below is executable by
+simply running `composer test`:
+
+```json
+{
+    "scripts": {
+        "test": "phpunit"
+    }
+}
+```
+
+> **Note:** Composer's bin-dir is pushed on top of the PATH so that binaries
+> of dependencies are easily accessible as CLI commands when writing scripts.
