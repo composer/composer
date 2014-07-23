@@ -64,6 +64,12 @@ abstract class ArchiveDownloader extends FileDownloader
                 }
 
                 $this->filesystem->removeDirectory($temporaryDir);
+                if ($this->filesystem->isDirEmpty($this->config->get('vendor-dir').'/composer/')) {
+                    $this->filesystem->removeDirectory($this->config->get('vendor-dir').'/composer/');
+                }
+                if ($this->filesystem->isDirEmpty($this->config->get('vendor-dir'))) {
+                    $this->filesystem->removeDirectory($this->config->get('vendor-dir'));
+                }
             } catch (\Exception $e) {
                 // clean up
                 $this->filesystem->removeDirectory($path);
