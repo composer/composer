@@ -176,4 +176,31 @@ class FilesystemTest extends TestCase
             array('phar://c:../Foo', 'phar://c:../Foo'),
         );
     }
+
+    /**
+     * @link https://github.com/composer/composer/issues/3157
+     */
+    public function testUnlinkSymlinkedDirectory()
+    {
+        $tmp       = sys_get_temp_dir();
+        $basepath  = $tmp . "/composer_testdir";
+        $symlinked = $basepath . "/linked";
+        @mkdir($basepath . "/real", 0777, true);
+        touch($basepath . "/real/FILE");
+
+        $result = @symlink($basepath . "/real", $symlinked);
+
+        if (!$result) {
+            $this->markTestSkipped('Symbolic links for directories not supported on this platform');
+        }
+
+        if (!is_dir($symlinked)) {
+            $this->fail('Precondition assertion failed (is_dir is false on symbolic link to directory).');
+        }
+
+        $fs     = new Filesystem();
+        $result = $fs->unlink($symlinked);
+        $this->assertTrue($result);
+        $this->assertFalse(file_exists($symlinked));
+    }
 }
