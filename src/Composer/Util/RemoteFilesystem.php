@@ -253,35 +253,8 @@ class RemoteFilesystem
 
             $result = $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress);
 
-            $store = false;
-            $configSource = $this->config->getAuthConfigSource();
-            if ($this->storeAuth === true) {
-                $store = $configSource;
-            } elseif ($this->storeAuth === 'prompt') {
-                $answer = $this->io->askAndValidate(
-                    'Do you want to store credentials for '.$this->originUrl.' in '.$configSource->getName().' ? [Yn] ',
-                    function ($value) {
-                        $input = strtolower(substr(trim($value), 0, 1));
-                        if (in_array($input, array('y','n'))) {
-                            return $input;
-                        }
-                        throw new \RuntimeException('Please answer (y)es or (n)o');
-                    },
-                    false,
-                    'y'
-                );
-
-                if ($answer === 'y') {
-                    $store = $configSource;
-                }
-            }
-            if ($store) {
-                $store->addConfigSetting(
-                    'http-basic.'.$this->originUrl,
-                    $this->io->getAuthentication($this->originUrl)
-                );
-            }
-
+            $authHelper = new AuthHelper($this->io, $this->config);
+            $authHelper->storeAuth($this->originUrl, $this->storeAuth);
             $this->storeAuth = false;
 
             return $result;

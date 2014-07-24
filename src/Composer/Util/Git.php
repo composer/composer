@@ -102,28 +102,32 @@ class Git
                     }
                 }
             } elseif ( // private non-github repo that failed to authenticate
-                $this->io->isInteractive() &&
                 preg_match('{(https?://)([^/]+)(.*)$}i', $url, $match) &&
                 strpos($this->process->getErrorOutput(), 'fatal: Authentication failed') !== false
             ) {
-                // TODO this should use an auth manager class that prompts and stores in the config
+                $storeAuth = false;
                 if ($this->io->hasAuthentication($match[2])) {
                     $auth = $this->io->getAuthentication($match[2]);
-                } else {
-                    $this->io->write($url.' requires Authentication');
+                } elseif ($this->io->isInteractive()) {
+                    $this->io->write('    Authentication required (<info>'.parse_url($url, PHP_URL_HOST).'</info>):');
                     $auth = array(
-                        'username'  => $this->io->ask('Username: '),
-                        'password'  => $this->io->askAndHideAnswer('Password: '),
+                        'username'  => $this->io->ask('      Username: '),
+                        'password'  => $this->io->askAndHideAnswer('      Password: '),
                     );
+                    $storeAuth = $this->config->get('store-auths');
                 }
 
-                $url = $match[1].rawurlencode($auth['username']).':'.rawurlencode($auth['password']).'@'.$match[2].$match[3];
+                if ($auth) {
+                    $url = $match[1].rawurlencode($auth['username']).':'.rawurlencode($auth['password']).'@'.$match[2].$match[3];
 
-                $command = call_user_func($commandCallable, $url);
-                if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
-                    $this->io->setAuthentication($match[2], $auth['username'], $auth['password']);
+                    $command = call_user_func($commandCallable, $url);
+                    if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
+                        $this->io->setAuthentication($match[2], $auth['username'], $auth['password']);
+                        $authHelper = new AuthHelper($this->io, $this->config);
+                        $authHelper->storeAuth($match[2], $storeAuth);
 
-                    return;
+                        return;
+                    }
                 }
             }
 
