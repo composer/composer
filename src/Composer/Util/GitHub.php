@@ -97,8 +97,10 @@ class GitHub
 
                 // build up OAuth app name
                 $appName = 'Composer';
-                if (0 === $this->process->execute('hostname', $output)) {
+                if ($this->config->get('github-expose-hostname') === true && 0 === $this->process->execute('hostname', $output)) {
                     $appName .= ' on ' . trim($output);
+                } else {
+                    $appName .= ' [' . date('YmdHis') . ']';
                 }
 
                 $headers = array();

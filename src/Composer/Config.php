@@ -39,6 +39,7 @@ class Config
         'optimize-autoloader' => false,
         'prepend-autoloader' => true,
         'github-domains' => array('github.com'),
+        'github-expose-hostname' => true,
         'store-auths' => 'prompt',
         // valid keys without defaults (auth config stuff):
         // github-oauth
