@@ -25,6 +25,7 @@ use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\IO\ConsoleIO;
 use Composer\Json\JsonValidationException;
+use Composer\Json\JsonFile;
 use Composer\Util\ErrorHandler;
 
 /**
@@ -111,10 +112,14 @@ class Application extends BaseApplication
         }
 
         // add non-standard scripts as own commands
-        if ($composer = $this->getComposer(false)) {
-            foreach ($composer->getPackage()->getScripts() as $script => $dummy) {
-                if (!defined('Composer\Script\ScriptEvents::'.str_replace('-', '_', strtoupper($script)))) {
-                    $this->add(new Command\ScriptAliasCommand($script));
+        $file = Factory::getComposerFile();
+        $json = new JsonFile($file);
+        if ($json->exists() && is_readable($file) && ($composer = $json->read())) {
+            if (isset($composer['scripts']) && is_array($composer['scripts'])) {
+                foreach ($composer['scripts'] as $script => $dummy) {
+                    if (!defined('Composer\Script\ScriptEvents::'.str_replace('-', '_', strtoupper($script)))) {
+                        $this->add(new Command\ScriptAliasCommand($script));
+                    }
                 }
             }
         }
