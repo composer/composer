@@ -181,9 +181,9 @@ class Filesystem
      */
     public function unlink($path)
     {
-        if (!@unlink($path)) {
+        if (!@$this->unlinkImplementation($path)) {
             // retry after a bit on windows since it tends to be touchy with mass removals
-            if (!defined('PHP_WINDOWS_VERSION_BUILD') || (usleep(350000) && !@unlink($path))) {
+            if (!defined('PHP_WINDOWS_VERSION_BUILD') || (usleep(350000) && !@$this->unlinkImplementation($path))) {
                 $error = error_get_last();
                 $message = 'Could not delete '.$path.': ' . @$error['message'];
                 if (defined('PHP_WINDOWS_VERSION_BUILD')) {
@@ -472,5 +472,23 @@ class Filesystem
     protected function getProcess()
     {
         return new ProcessExecutor;
+    }
+
+    /**
+     * delete symbolic link implementation (commonly known as "unlink()")
+     *
+     * symbolic links on windows which link to directories need rmdir instead of unlink
+     *
+     * @param string $path
+     *
+     * @return bool
+     */
+    private function unlinkImplementation($path)
+    {
+        if (defined('PHP_WINDOWS_VERSION_BUILD') && is_dir($path) && is_link($path)) {
+            return rmdir($path);
+        }
+
+        return unlink($path);
     }
 }
