@@ -26,6 +26,7 @@ use Composer\DependencyResolver\SolverProblemsException;
 use Composer\Downloader\DownloadManager;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Installer\InstallationManager;
+use Composer\Installer\InstallerEvents;
 use Composer\Installer\NoopInstaller;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
@@ -260,8 +261,10 @@ class Installer
                         $request->install($link->getTarget(), $link->getConstraint());
                     }
 
+                    $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_SOLVE_DEPENDENCIES, $policy, $pool, $installedRepo, $request);
                     $solver = new Solver($policy, $pool, $installedRepo);
                     $ops = $solver->solve($request);
+                    $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_SOLVE_DEPENDENCIES, $policy, $pool, $installedRepo, $request, $ops);
                     foreach ($ops as $op) {
                         if ($op->getJobType() === 'uninstall') {
                             $devPackages[] = $op->getPackage();
@@ -464,9 +467,11 @@ class Installer
         $this->processDevPackages($localRepo, $pool, $policy, $repositories, $lockedRepository, $installFromLock, 'force-links');
 
         // solve dependencies
+        $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_SOLVE_DEPENDENCIES, $policy, $pool, $installedRepo, $request);
         $solver = new Solver($policy, $pool, $installedRepo);
         try {
             $operations = $solver->solve($request);
+            $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_SOLVE_DEPENDENCIES, $policy, $pool, $installedRepo, $request, $operations);
         } catch (SolverProblemsException $e) {
             $this->io->write('<error>Your requirements could not be resolved to an installable set of packages.</error>');
             $this->io->write($e->getMessage());

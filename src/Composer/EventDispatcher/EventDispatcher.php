@@ -12,9 +12,14 @@
 
 namespace Composer\EventDispatcher;
 
+use Composer\DependencyResolver\PolicyInterface;
+use Composer\DependencyResolver\Pool;
+use Composer\DependencyResolver\Request;
+use Composer\Installer\InstallerEvent;
 use Composer\IO\IOInterface;
 use Composer\Composer;
 use Composer\DependencyResolver\Operation\OperationInterface;
+use Composer\Repository\CompositeRepository;
 use Composer\Script;
 use Composer\Script\CommandEvent;
 use Composer\Script\PackageEvent;
@@ -111,6 +116,25 @@ class EventDispatcher
     public function dispatchCommandEvent($eventName, $devMode, $additionalArgs = array())
     {
         return $this->doDispatch(new CommandEvent($eventName, $this->composer, $this->io, $devMode, $additionalArgs));
+    }
+
+
+    /**
+     * Dispatch a installer event.
+     *
+     * @param string              $eventName     The constant in InstallerEvents
+     * @param PolicyInterface     $policy        The policy
+     * @param Pool                $pool          The pool
+     * @param CompositeRepository $installedRepo The installed repository
+     * @param Request             $request       The request
+     * @param array               $operations    The list of operations
+     *
+     * @return int return code of the executed script if any, for php scripts a false return
+     *                            value is changed to 1, anything else to 0
+     */
+    public function dispatchInstallerEvent($eventName, PolicyInterface $policy, Pool $pool, CompositeRepository $installedRepo, Request $request, array $operations = array())
+    {
+        return $this->doDispatch(new InstallerEvent($eventName, $this->composer, $this->io, $policy, $pool, $installedRepo, $request, $operations));
     }
 
     /**
