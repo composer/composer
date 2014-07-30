@@ -40,21 +40,30 @@ EOT
     {
         $config = Factory::createConfig();
         $io = $this->getIO();
-        
-        $cachePath = realpath($config->get('cache-repo-dir'));
-        if (!$cachePath) {
-            $io->write('<info>Cache directory does not exist.</info>');
-            return;
+
+        $cachePaths = array(
+            $config->get('cache-dir'),
+            $config->get('cache-files-dir'),
+            $config->get('cache-repo-dir'),
+            $config->get('cache-vcs-dir'),
+        );
+
+        foreach ($cachePaths as $cachePath) {
+            $cachePath = realpath($cachePath);
+            if (!$cachePath) {
+                $io->write('<info>Cache directory does not exist.</info>');
+                return;
+            }
+            $cache = new Cache($io, $cachePath);
+            if (!$cache->isEnabled()) {
+                $io->write('<info>Cache is not enabled.</info>');
+                return;
+            }
+
+            $io->write('<info>Clearing cache in: '.$cachePath.'</info>');
+            $cache->gc(0, 0);
         }
 
-        $cache = new Cache($io, $cachePath);
-        if (!$cache->isEnabled()) {
-            $io->write('<info>Cache is not enabled.</info>');
-            return;
-        }
-
-        $io->write('<info>Clearing cache in: '.$cachePath.'</info>');
-        $cache->gc(0, 0);
         $io->write('<info>Cache cleared.</info>');
     }
 }
