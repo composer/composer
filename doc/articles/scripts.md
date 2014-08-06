@@ -77,6 +77,9 @@ Script definition example:
         "post-install-cmd": [
             "MyVendor\\MyClass::warmCache",
             "phpunit -c app/"
+        ],
+        "post-create-project-cmd" : [
+            "php -r \"copy('config/local-example.php', 'config/local.php');\""
         ]
     }
 }
