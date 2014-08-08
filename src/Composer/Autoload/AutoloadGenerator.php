@@ -40,6 +40,8 @@ class AutoloadGenerator
 
     private $devMode = false;
 
+    private $scriptMode = false;
+
     public function __construct(EventDispatcher $eventDispatcher, IOInterface $io = null)
     {
         $this->eventDispatcher = $eventDispatcher;
@@ -51,9 +53,14 @@ class AutoloadGenerator
         $this->devMode = (boolean) $devMode;
     }
 
+    public function setRunScripts($scriptMode = true)
+    {
+        $this->scriptMode = (boolean) $scriptMode;
+    }
+
     public function dump(Config $config, InstalledRepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir, $scanPsr0Packages = false, $suffix = '')
     {
-        $this->eventDispatcher->dispatchScript(ScriptEvents::PRE_AUTOLOAD_DUMP, $this->devMode);
+        $this->scriptMode && $this->eventDispatcher->dispatchScript(ScriptEvents::PRE_AUTOLOAD_DUMP, $this->devMode);
 
         $filesystem = new Filesystem();
         $filesystem->ensureDirectoryExists($config->get('vendor-dir'));
@@ -235,7 +242,7 @@ EOF;
         fclose($targetLoader);
         unset($sourceLoader, $targetLoader);
 
-        $this->eventDispatcher->dispatchScript(ScriptEvents::POST_AUTOLOAD_DUMP, $this->devMode);
+        $this->scriptMode && $this->eventDispatcher->dispatchScript(ScriptEvents::POST_AUTOLOAD_DUMP, $this->devMode);
     }
 
     public function buildPackageMap(InstallationManager $installationManager, PackageInterface $mainPackage, array $packages)

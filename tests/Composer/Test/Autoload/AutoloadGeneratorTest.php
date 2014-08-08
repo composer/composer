@@ -814,6 +814,7 @@ EOF;
             ->method('getCanonicalPackages')
             ->will($this->returnValue(array()));
 
+        $this->generator->setRunScripts(true);
         $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', true, '_8');
     }
 
