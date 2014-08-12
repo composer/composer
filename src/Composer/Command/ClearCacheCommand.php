@@ -42,28 +42,28 @@ EOT
         $io = $this->getIO();
 
         $cachePaths = array(
-            $config->get('cache-dir'),
-            $config->get('cache-files-dir'),
-            $config->get('cache-repo-dir'),
-            $config->get('cache-vcs-dir'),
+            'cache-dir' => $config->get('cache-dir'),
+            'cache-files-dir' => $config->get('cache-files-dir'),
+            'cache-repo-dir' => $config->get('cache-repo-dir'),
+            'cache-vcs-dir' => $config->get('cache-vcs-dir'),
         );
 
-        foreach ($cachePaths as $cachePath) {
+        foreach ($cachePaths as $key => $cachePath) {
             $cachePath = realpath($cachePath);
             if (!$cachePath) {
-                $io->write('<info>Cache directory does not exist.</info>');
+                $io->write("<info>Cache directory does not exist ($key): $cachePath</info>");
                 return;
             }
             $cache = new Cache($io, $cachePath);
             if (!$cache->isEnabled()) {
-                $io->write('<info>Cache is not enabled.</info>');
+                $io->write("<info>Cache is not enabled ($key): $cachePath</info>");
                 return;
             }
 
-            $io->write('<info>Clearing cache in: '.$cachePath.'</info>');
+            $io->write("<info>Clearing cache ($key): $cachePath</info>");
             $cache->gc(0, 0);
         }
 
-        $io->write('<info>Cache cleared.</info>');
+        $io->write('<info>All caches cleared.</info>');
     }
 }
