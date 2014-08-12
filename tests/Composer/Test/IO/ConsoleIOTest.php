@@ -149,6 +149,31 @@ class ConsoleIOTest extends TestCase
         $consoleIO->askAndValidate('Why?', 'validator', 10, 'default');
     }
 
+    public function testSelect()
+    {
+        $inputMock = $this->getMock('Symfony\Component\Console\Input\InputInterface');
+        $outputMock = $this->getMock('Symfony\Component\Console\Output\OutputInterface');
+        $dialogMock = $this->getMock('Symfony\Component\Console\Helper\DialogHelper');
+        $helperMock = $this->getMock('Symfony\Component\Console\Helper\HelperSet');
+
+        $dialogMock->expects($this->once())
+            ->method('select')
+            ->with($this->isInstanceOf('Symfony\Component\Console\Output\OutputInterface'),
+                $this->equalTo('Select item'),
+                $this->equalTo(array("item1", "item2")),
+                $this->equalTo(null),
+                $this->equalTo(false),
+                $this->equalTo("Error message"),
+                $this->equalTo(true));
+        $helperMock->expects($this->once())
+            ->method('get')
+            ->with($this->equalTo('dialog'))
+            ->will($this->returnValue($dialogMock));
+
+        $consoleIO = new ConsoleIO($inputMock, $outputMock, $helperMock);
+        $consoleIO->select('Select item', array("item1", "item2"), null, false, "Error message", true);
+    }
+
     public function testSetAndgetAuthentication()
     {
         $inputMock = $this->getMock('Symfony\Component\Console\Input\InputInterface');
