@@ -72,13 +72,13 @@ if [ "$key_exists" -eq 0 ]; then
     # Composer team GPG Key
 fi
 # First, let's download the PHAR
-wget https://getcomposer.org/composer.phar
+curl -sS https://getcomposer.org/installer > composer_installer.php
 # Next, get the GPG signature
-wget https://getcomposer.org/composer.phar.asc
-gpg --verify composer.phar.asc composer.phar
+wget https://getcomposer.org/installer.asc
+gpg --verify installer.asc composer_installer.php
 if [ $? -eq 0 ]; then
     # Success!
-    php composer.phar
+    php composer_installer.php
 else
     echo -e "\033[31mSignature did not match! Check /tmp/bad-phpunit.phar for trojans\033[0m"
     exit 1
