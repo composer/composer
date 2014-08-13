@@ -80,7 +80,7 @@ if [ $? -eq 0 ]; then
     # Success!
     php composer_installer.php
 else
-    echo -e "\033[31mSignature did not match! Check /tmp/bad-phpunit.phar for trojans\033[0m"
+    echo -e "\033[31mSignature did not match!\033[0m"
     exit 1
 fi
 ```
