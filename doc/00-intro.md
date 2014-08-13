@@ -66,6 +66,28 @@ To actually get Composer, we need to do two things. The first one is installing
 Composer (again, this means downloading it into your project):
 
 ```sh
+key_exists=`gpg --list-keys | grep "key_id_goes_here"| wc -l`
+if [ "$key_exists" -eq 0 ]; then
+    gpg --recv-keys key_id_goes_here
+    # Composer team GPG Key
+fi
+# First, let's download the PHAR
+wget https://getcomposer.org/composer.phar
+# Next, get the GPG signature
+wget https://getcomposer.org/composer.phar.asc
+gpg --verify composer.phar.asc composer.phar
+if [ $? -eq 0 ]; then
+    # Success!
+    php composer.phar
+else
+    echo -e "\033[31mSignature did not match! Check /tmp/bad-phpunit.phar for trojans\033[0m"
+    exit 1
+fi
+```
+
+##### Alternatvely, if you don't care about package integrity
+
+```sh
 curl -sS https://getcomposer.org/installer | php
 ```
 
