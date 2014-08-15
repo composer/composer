@@ -191,7 +191,7 @@ class GitDownloader extends VcsDownloader
         $path = $this->normalizePath($path);
         if ($this->hasStashedChanges) {
             $this->hasStashedChanges = false;
-            $this->io->write('    <info>Re-applying stashed changes');
+            $this->io->write('    <info>Re-applying stashed changes</info>');
             if (0 !== $this->process->execute('git stash pop', $output, $path)) {
                 throw new \RuntimeException("Failed to apply stashed changes:\n\n".$this->process->getErrorOutput());
             }
