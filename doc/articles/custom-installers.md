@@ -69,6 +69,7 @@ requirements:
 2. the [extra][2] attribute must contain an element `class` defining the
    class name of the plugin (including namespace). If a package contains
    multiple plugins this can be array of class names.
+3. the [require][6] attribute must reference the `composer-plugin-api`
 
 Example:
 
@@ -130,10 +131,11 @@ recognized by packages that will use this installer in the `supports()` method.
 > the format: `vendor-type`_. For example: `phpdocumentor-template`.
 
 The InstallerInterface class defines the following methods (please see the
-source for the exact signature):
+source for the exact signatures):
 
-* **supports()**, here you test whether the passed [type][1] matches the name
-  that you declared for this installer (see the example).
+* **supports()**, here you test whether the passed [type][1] matches the package type(s)
+  that this installer will operate on (see the example).  Note that only packages being required will 
+  be evaluated; the root package's type is not evaluated.
 * **isInstalled()**, determines whether a supported package is installed or not.
 * **install()**, here you can determine the actions that need to be executed
   upon installation.
@@ -144,6 +146,8 @@ source for the exact signature):
 * **getInstallPath()**, this method should return the location where the
   package is to be installed, _relative from the location of composer.json._
 
+Note that some methods accept different class instances as inputs, so you can omit or add the necessary `use` statements accordingly.
+
 Example:
 
 ```php
@@ -153,6 +157,7 @@ namespace phpDocumentor\Composer;
 
 use Composer\Package\PackageInterface;
 use Composer\Installer\LibraryInstaller;
+use Composer\Repository\InstalledRepositoryInterface;
 
 class TemplateInstaller extends LibraryInstaller
 {
@@ -196,3 +201,4 @@ different installation path.
 [3]: https://github.com/composer/composer/blob/master/src/Composer/Plugin/PluginInterface.php
 [4]: https://github.com/composer/composer/blob/master/src/Composer/Installer/InstallerInterface.php
 [5]: https://github.com/composer/composer/blob/master/src/Composer/Installer/LibraryInstaller.php
+[6]: ../04-schema.md#require
