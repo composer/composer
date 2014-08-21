@@ -38,13 +38,7 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        // todo - try to get this to work on Windows too
-        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
-            $output->writeln('This command cannot be run on Windows. Use the Windows installer.');
-
-            return 1;
-        }
-
+        $isWindows = defined('PHP_WINDOWS_VERSION_BUILD');
         $installMode = $input->getOption('install-mode');
 
         // if we're being called by the installer, ask for confirmation first
@@ -83,6 +77,11 @@ EOT
 
         // try to copy the composer file
         $targetPath = $targetDir.'/composer';
+        if ($isWindows) {
+            // windows will have a composer.phar AND a composer.bat that will call it
+            $targetPath .= '.phar';
+        }
+
         if (!$this->copyComposerExec($sourcePhar, $targetPath)) {
             if (!$installMode) {
                 $output->writeln(sprintf('<error>Failed copying composer into %s</error>', $targetDir));
@@ -92,17 +91,32 @@ EOT
             return 1;
         }
 
-        // set the executable permissions
-        if (!$this->setExecutablePermissions($targetPath)) {
-            if (!$installMode) {
-                $output->writeln(sprintf('<error>Failed giving %s executable permissions</error>', $targetDir));
-                $this->printErrorMessage($output);
+        $output->writeln(sprintf('Composer successfully copied to <info>%s</info>', $targetPath));
+
+        if ($isWindows) {
+            // create a .bat file for Windows that executes composer
+            $batPath = $targetDir.'/composer.bat';
+            if (!$this->createWindowsBatFile($batPath)) {
+                if (!$installMode) {
+                    $output->writeln(sprintf('<error>Failed copying Windows bat file into %s</error>', $targetDir));
+                    $this->printErrorMessage($output);
+                }
+
+                return 1;
             }
 
-            return 1;
-        }
+            $output->writeln(sprintf('A .bat file was also created at <info>%s</info>', $batPath));
+        } else {
+            // for Unix, make sure the file is executable
+            if (!$this->setExecutablePermissions($targetPath)) {
+                if (!$installMode) {
+                    $output->writeln(sprintf('<error>Failed giving %s executable permissions</error>', $targetDir));
+                    $this->printErrorMessage($output);
+                }
 
-        $output->writeln(sprintf('Composer successfully copied to <info>%s</info>', $targetPath));
+                return 1;
+            }
+        }
 
         // check to see if we now have a composer command or not (PATH problem?)
         if ($this->doesComposerGlobalExist()) {
@@ -183,6 +197,24 @@ EOT
         $process->run();
 
         return $process->isSuccessful();
+    }
+
+    /**
+     * Writes a Windows .bat file that executes the composer.phar file next to it
+     *
+     * @param string $targetPath The path where the .bat file should live
+     * @return bool
+     */
+    protected function createWindowsBatFile($targetPath)
+    {
+        // create a .bat file that executes composer
+        $batFile = <<<EOT
+@echo off
+:: Composer CLI Shortcut
+"%~dp0php" "%~dp0composer.phar" %*
+EOT;
+
+        return (bool) file_put_contents($targetPath, $batFile);
     }
 
     protected function printErrorMessage(OutputInterface $output)
