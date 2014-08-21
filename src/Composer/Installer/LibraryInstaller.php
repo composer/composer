@@ -306,7 +306,7 @@ class LibraryInstaller implements InstallerInterface
 
         return "#!/usr/bin/env sh\n".
             'SRC_DIR="`pwd`"'."\n".
-            'cd "`dirname "$0"`"'."\n".
+            'cd "${0%[/\\\\]*}"'."\n".
             'cd '.escapeshellarg(dirname($binPath))."\n".
             'BIN_TARGET="`pwd`/'.basename($binPath)."\"\n".
             'cd "$SRC_DIR"'."\n".
