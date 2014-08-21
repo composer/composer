@@ -307,7 +307,7 @@ class LibraryInstaller implements InstallerInterface
         $binFile = basename($binPath);
 
         $proxyCode = <<<PROXY
-#!/bin/sh
+#!/usr/bin/env sh
 
 dir=$(d=$(dirname "$0"); cd "\$d"; cd $binDir && pwd)
 
