@@ -88,10 +88,10 @@ option and providing a target directory (it can be an absolute or relative path)
 curl -sS https://getcomposer.org/installer | php -- --install-dir=bin
 ```
 
-#### Globally
+#### mac
 
 You can place this file anywhere you wish. If you put it in your `PATH`,
-you can access it globally. On unixy systems you can even make it
+you can access it brew install. On unixy systems you can even make it
 executable and invoke it without `php`.
 
 You can run these commands to easily access `composer` from anywhere on your system:
@@ -115,7 +115,7 @@ brew update
 brew tap homebrew/homebrew-php
 brew tap homebrew/dupes
 brew tap homebrew/versions
-brew install php55-intl
+brew install php55
 brew install homebrew/php/composer
 ```
 
