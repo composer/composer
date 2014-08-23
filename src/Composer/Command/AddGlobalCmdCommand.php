@@ -76,7 +76,7 @@ EOT
         }
 
         // try to copy the composer file
-        $targetPath = $targetDir.'/composer';
+        $targetPath = $targetDir.DIRECTORY_SEPARATOR.'composer';
         if ($isWindows) {
             // windows will have a composer.phar AND a composer.bat that will call it
             $targetPath .= '.phar';
@@ -95,7 +95,7 @@ EOT
 
         if ($isWindows) {
             // create a .bat file for Windows that executes composer
-            $batPath = $targetDir.'/composer.bat';
+            $batPath = $targetDir.DIRECTORY_SEPARATOR.'composer.bat';
             if (!$this->createWindowsBatFile($batPath)) {
                 if (!$installMode) {
                     $output->writeln(sprintf('<error>Failed copying Windows bat file into %s</error>', $targetDir));
