@@ -91,7 +91,7 @@ EOT
             return 1;
         }
 
-        $output->writeln(sprintf('Composer successfully copied to <info>%s</info>', $targetPath));
+        $output->writeln(sprintf('Composer copied to <info>%s</info>', $targetPath));
 
         if ($isWindows) {
             // create a .bat file for Windows that executes composer
