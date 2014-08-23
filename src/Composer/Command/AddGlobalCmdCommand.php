@@ -123,6 +123,8 @@ EOT
             if (!$installMode) {
                 $output->writeln('Success! Run <info>composer</info> to use the global executable.');
             }
+
+            return 0;
         } else {
             if (!$installMode) {
                 $output->writeln('<error>Global executable command failed</error>');
