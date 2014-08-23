@@ -82,7 +82,7 @@ EOT
             $targetPath .= '.phar';
         }
 
-        if (!$this->copyComposerExec($sourcePhar, $targetPath)) {
+        if (!$this->copyComposerExec($sourcePhar, $targetPath, $isWindows)) {
             if (!$installMode) {
                 $output->writeln(sprintf('<error>Failed copying composer into %s</error>', $targetDir));
                 $this->printErrorMessage($output);
@@ -140,7 +140,7 @@ EOT
      */
     protected function doesComposerGlobalExist()
     {
-        $process = new Process('which composer');
+        $process = new Process('composer');
         $process->run();
 
         // which returns an error code if no command is found
@@ -165,19 +165,22 @@ EOT
      *
      * @param string $sourcePhar
      * @param string $targetPath
+     * @param bool   $isWindows
      * @return bool
      */
-    protected function copyComposerExec($sourcePhar, $targetPath)
+    protected function copyComposerExec($sourcePhar, $targetPath, $isWindows)
     {
-        // this might not be a phar. In that case, we can't copy it
-        if (!$sourcePhar) {
-            return false;
+        if ($isWindows) {
+            // use a normal copy for Windows
+            return copy($sourcePhar, $targetPath);
+        } else {
+            // use a command with "sudo", which is likely needed
+            $cmd = sprintf('sudo cp %s %s', $sourcePhar, $targetPath);
+            $process = new Process($cmd);
+            $process->run();
+
+            return $process->isSuccessful();
         }
-
-        $process = new Process(sprintf('sudo cp %s %s', $sourcePhar, $targetPath));
-        $process->run();
-
-        return $process->isSuccessful();
     }
 
     /**
@@ -219,6 +222,10 @@ EOT;
 
     protected function printErrorMessage(OutputInterface $output)
     {
-        $output->writeln('If you want a global composer command, manually copy <info>composer.phar</info> into a bin directory and rename it to composer');
+        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+            $output->writeln('If you want a global composer command, try using the windows installer: https://getcomposer.org/doc/00-intro.md#using-the-installer');
+        } else {
+            $output->writeln('If you want a global composer command, manually copy <info>composer.phar</info> into a bin directory and rename it to composer');
+        }
     }
 }
