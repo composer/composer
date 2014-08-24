@@ -13,6 +13,7 @@
 namespace Composer\DependencyResolver;
 
 use Composer\Repository\RepositoryInterface;
+use Composer\IO\ProgressLogger;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -39,13 +40,15 @@ class Solver
     protected $branches = array();
     protected $problems = array();
     protected $learnedPool = array();
+    protected $progressLogger = array();
 
-    public function __construct(PolicyInterface $policy, Pool $pool, RepositoryInterface $installed)
+    public function __construct(PolicyInterface $policy, Pool $pool, RepositoryInterface $installed, ProgressLogger $progressLogger)
     {
         $this->policy = $policy;
         $this->pool = $pool;
         $this->installed = $installed;
-        $this->ruleSetGenerator = new RuleSetGenerator($policy, $pool);
+        $this->ruleSetGenerator = new RuleSetGenerator($policy, $pool, $progressLogger);
+        $this->progressLogger = $progressLogger;
     }
 
     // aka solver_makeruledecisions
@@ -163,11 +166,8 @@ class Solver
     {
         $this->jobs = $request->getJobs();
 
-        echo " - Setting up installed map\n";
         $this->setupInstalledMap();
-        echo " - Getting rules from rule set generator\n";
         $this->rules = $this->ruleSetGenerator->getRulesFor($this->jobs, $this->installedMap);
-        echo " - Checking for root require problems\n";
         $this->checkForRootRequireProblems();
         $this->decisions = new Decisions($this->pool);
         $this->watchGraph = new RuleWatchGraph;
@@ -176,11 +176,9 @@ class Solver
             $this->watchGraph->insert(new RuleWatchNode($rule));
         }
 
-        echo " - Making assertion rule decisions\n";
         /* make decisions based on job/update assertions */
         $this->makeAssertionRuleDecisions();
 
-        echo " - Running SAT\n";
         $this->runSat(true);
 
         // decide to remove everything that's installed and undecided

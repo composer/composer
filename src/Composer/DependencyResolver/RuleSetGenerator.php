@@ -14,6 +14,7 @@ namespace Composer\DependencyResolver;
 
 use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
+use Composer\IO\ProgressLogger;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -27,11 +28,13 @@ class RuleSetGenerator
     protected $installedMap;
     protected $whitelistedMap;
     protected $addedMap;
+    protected $progressLogger;
 
-    public function __construct(PolicyInterface $policy, Pool $pool)
+    public function __construct(PolicyInterface $policy, Pool $pool, ProgressLogger $progressLogger)
     {
         $this->policy = $policy;
         $this->pool = $pool;
+        $this->progressLogger = $progressLogger;
     }
 
     /**
@@ -148,7 +151,11 @@ class RuleSetGenerator
         $workQueue = new \SplQueue;
         $workQueue->enqueue($package);
 
+        $progress = $this->progressLogger->pushNoMax('Whitelist from package');
+
         while (!$workQueue->isEmpty()) {
+            $progress->advance();
+
             $package = $workQueue->dequeue();
             if (isset($this->whitelistedMap[$package->getId()])) {
                 continue;
@@ -332,10 +339,16 @@ class RuleSetGenerator
         $this->rules = new RuleSet;
         $this->installedMap = $installedMap;
 
+        $progress = $this->progressLogger->push(
+            sprintf('Getting rules for "%s" packages', count($this->installedMap)),
+            count($this->installedMap) * 2
+        );
+
         $this->whitelistedMap = array();
         foreach ($this->installedMap as $package) {
             $this->whitelistFromPackage($package);
             $this->whitelistFromUpdatePackages($package);
+            $progress->advance();
         }
         $this->whitelistFromJobs();
 
@@ -343,9 +356,12 @@ class RuleSetGenerator
 
         $this->addedMap = array();
         foreach ($this->installedMap as $package) {
+            $progress->advance();
             $this->addRulesForPackage($package);
             $this->addRulesForUpdatePackages($package);
         }
+
+        $progress->stop();
 
         $this->addRulesForJobs();
 

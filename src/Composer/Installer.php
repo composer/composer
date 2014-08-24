@@ -42,6 +42,8 @@ use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositoryManager;
 use Composer\Script\ScriptEvents;
+use Composer\IO\ProgressLogger;
+use Symfony\Component\Console\Helper\ProgressHelper;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -123,6 +125,11 @@ class Installer
     protected $additionalInstalledRepository;
 
     /**
+     * @var ProgressLogger
+     */
+    protected $progressLogger;
+
+    /**
      * Constructor
      *
      * @param IOInterface          $io
@@ -135,9 +142,10 @@ class Installer
      * @param EventDispatcher      $eventDispatcher
      * @param AutoloadGenerator    $autoloadGenerator
      */
-    public function __construct(IOInterface $io, Config $config, RootPackageInterface $package, DownloadManager $downloadManager, RepositoryManager $repositoryManager, Locker $locker, InstallationManager $installationManager, EventDispatcher $eventDispatcher, AutoloadGenerator $autoloadGenerator)
+    public function __construct(IOInterface $io, Config $config, RootPackageInterface $package, DownloadManager $downloadManager, RepositoryManager $repositoryManager, Locker $locker, InstallationManager $installationManager, EventDispatcher $eventDispatcher, AutoloadGenerator $autoloadGenerator, ProgressLogger $progressLogger)
     {
         $this->io = $io;
+        $this->progressLogger = $progressLogger;
         $this->config = $config;
         $this->package = $package;
         $this->downloadManager = $downloadManager;
@@ -260,7 +268,7 @@ class Installer
                         $request->install($link->getTarget(), $link->getConstraint());
                     }
 
-                    $solver = new Solver($policy, $pool, $installedRepo);
+                    $solver = new Solver($policy, $pool, $installedRepo, $this->progressLogger);
                     $ops = $solver->solve($request);
                     foreach ($ops as $op) {
                         if ($op->getJobType() === 'uninstall') {
@@ -341,7 +349,7 @@ class Installer
             $this->package->getDevRequires()
         );
 
-        $this->io->write('<info>Loading composer repositories with package information</info>');
+        $this->progressLogger->write('<info>Loading composer repositories with package information</info>');
 
         // creating repository pool
         $policy = $this->createPolicy();
@@ -354,7 +362,6 @@ class Installer
         if (!$installFromLock) {
             $repositories = $this->repositoryManager->getRepositories();
             foreach ($repositories as $repository) {
-                $this->io->write(' - Adding repository ' . get_class($repository));
                 $pool->addRepository($repository, $aliases);
             }
         }
@@ -377,7 +384,7 @@ class Installer
         }
 
         if ($this->update) {
-            $this->io->write('<info>Updating dependencies'.($withDevReqs?' (including require-dev)':'').'</info>');
+            $this->progressLogger->write('<info>Updating dependencies'.($withDevReqs?' (including require-dev)':'').'</info>');
 
             $request->updateAll();
 
@@ -465,7 +472,7 @@ class Installer
         $this->processDevPackages($localRepo, $pool, $policy, $repositories, $lockedRepository, $installFromLock, 'force-links');
 
         // solve dependencies
-        $solver = new Solver($policy, $pool, $installedRepo);
+        $solver = new Solver($policy, $pool, $installedRepo, $this->progressLogger);
         try {
             $this->io->write('<info>Solving dependencies</info>');
             $operations = $solver->solve($request);
@@ -1004,7 +1011,7 @@ class Installer
      * @param  Composer    $composer
      * @return Installer
      */
-    public static function create(IOInterface $io, Composer $composer)
+    public static function create(IOInterface $io, Composer $composer, ProgressLogger $progressLogger)
     {
         return new static(
             $io,
@@ -1015,7 +1022,8 @@ class Installer
             $composer->getLocker(),
             $composer->getInstallationManager(),
             $composer->getEventDispatcher(),
-            $composer->getAutoloadGenerator()
+            $composer->getAutoloadGenerator(),
+            $progressLogger
         );
     }
 

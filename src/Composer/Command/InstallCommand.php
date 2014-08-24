@@ -19,6 +19,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
+use Composer\IO\ProgressLogger;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -80,7 +81,8 @@ EOT
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'install', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
 
-        $install = Installer::create($io, $composer);
+        $progressLogger = new ProgressLogger($output);
+        $install = Installer::create($io, $composer, $progressLogger);
 
         $preferSource = false;
         $preferDist = false;
