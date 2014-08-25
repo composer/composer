@@ -66,9 +66,11 @@ To actually get Composer, we need to do two things. The first one is installing
 Composer (again, this means downloading it into your project):
 
 ```sh
-key_exists=`gpg --list-keys | grep "key_id_goes_here"| wc -l`
-if [ "$key_exists" -eq 0 ]; then
-    gpg --recv-keys key_id_goes_here
+gpg --fingerprint YourFingerprintHere
+if [ $? -ne 0 ]; then
+   gpg --keyserver pgp.mit.edu --recv-keys YourFingerprintHere
+   gpg --fingerprint YourFingerprintHere
+   if [ $? -ne 0 ]; then exit ;fi
     # Composer team GPG Key
 fi
 # First, let's download the PHAR
