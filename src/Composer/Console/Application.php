@@ -113,8 +113,7 @@ class Application extends BaseApplication
 
         // add non-standard scripts as own commands
         $file = Factory::getComposerFile();
-        $json = new JsonFile($file);
-        if ($json->exists() && is_readable($file) && ($composer = $json->read())) {
+        if (is_file($file) && is_readable($file) && is_array($composer = json_decode(file_get_contents($file), true))) {
             if (isset($composer['scripts']) && is_array($composer['scripts'])) {
                 foreach ($composer['scripts'] as $script => $dummy) {
                     if (!defined('Composer\Script\ScriptEvents::'.str_replace('-', '_', strtoupper($script)))) {
