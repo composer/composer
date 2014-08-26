@@ -82,6 +82,7 @@ if [ $? -eq 0 ]; then
     # Success!
     php composer_installer.php
 else
+    rm -f composer_installer.php
     echo -e "\033[31mSignature did not match!\033[0m"
     exit 1
 fi
