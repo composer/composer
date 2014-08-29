@@ -23,7 +23,8 @@ If you really feel like you must do this, you have a few options:
 2. Use --prefer-dist or set `preferred-install` to `dist` in your
    [config](../04-schema.md#config).
 3. Remove the `.git` directory of every dependency after the installation, then
-   you can add them to your git repo. You can do that with `rm -rf vendor/*/*/.git`
+   you can add them to your git repo. You can do that with `rm -rf vendor/**/.git`
+   in ZSH or `find vendor/ -type d -name ".git" -exec rm -rf {} \;` in Bash.
    but this means you will have to delete those dependencies from disk before
    running composer update.
 4. Add a .gitignore rule (`vendor/.git`) to ignore all the vendor `.git` folders.
