@@ -90,6 +90,8 @@ fi
 
 ##### Alternatvely, if you don't care about package integrity
 
+Feel free to use this clever one-liner. However, if someone manages to hack getcomposer.org and replace our installer with a trojan, you're on your own.
+
 ```sh
 curl -sS https://getcomposer.org/installer | php
 ```
