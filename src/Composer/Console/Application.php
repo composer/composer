@@ -117,7 +117,11 @@ class Application extends BaseApplication
             if (isset($composer['scripts']) && is_array($composer['scripts'])) {
                 foreach ($composer['scripts'] as $script => $dummy) {
                     if (!defined('Composer\Script\ScriptEvents::'.str_replace('-', '_', strtoupper($script)))) {
-                        $this->add(new Command\ScriptAliasCommand($script));
+                        if ($this->has($script)) {
+                            $output->writeln('<warning>A script named '.$script.' would override a native Composer function and has been skipped</warning>');
+                        } else {
+                            $this->add(new Command\ScriptAliasCommand($script));
+                        }
                     }
                 }
             }

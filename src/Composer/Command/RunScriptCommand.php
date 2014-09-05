@@ -89,12 +89,12 @@ EOT
             putenv('PATH='.realpath($binDir).PATH_SEPARATOR.getenv('PATH'));
         }
 
-        $args = $input->getArguments();
+        $args = $input->getArgument('args');
 
         if (in_array($script, $this->commandEvents)) {
-            return $composer->getEventDispatcher()->dispatchCommandEvent($script, $input->getOption('dev') || !$input->getOption('no-dev'), $args['args']);
+            return $composer->getEventDispatcher()->dispatchCommandEvent($script, $input->getOption('dev') || !$input->getOption('no-dev'), $args);
         }
 
-        return $composer->getEventDispatcher()->dispatchScript($script, $input->getOption('dev') || !$input->getOption('no-dev'), $args['args']);
+        return $composer->getEventDispatcher()->dispatchScript($script, $input->getOption('dev') || !$input->getOption('no-dev'), $args);
     }
 }
