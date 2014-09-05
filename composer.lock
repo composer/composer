@@ -76,16 +76,16 @@
         },
         {
             "name": "seld/jsonlint",
-            "version": "1.2.0",
+            "version": "1.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Seldaek/jsonlint.git",
-                "reference": "9cae56dbe34f4392e7d0f559474df33749a39f8d"
+                "reference": "a7bc2ec9520ad15382292591b617c43bdb1fec35"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Seldaek/jsonlint/zipball/9cae56dbe34f4392e7d0f559474df33749a39f8d",
-                "reference": "9cae56dbe34f4392e7d0f559474df33749a39f8d",
+                "url": "https://api.github.com/repos/Seldaek/jsonlint/zipball/a7bc2ec9520ad15382292591b617c43bdb1fec35",
+                "reference": "a7bc2ec9520ad15382292591b617c43bdb1fec35",
                 "shasum": ""
             },
             "require": {
@@ -118,7 +118,7 @@
                 "parser",
                 "validator"
             ],
-            "time": "2014-07-20 17:36:11"
+            "time": "2014-09-05 15:36:20"
         },
         {
             "name": "symfony/console",
