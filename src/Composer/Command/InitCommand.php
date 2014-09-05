@@ -335,9 +335,9 @@ EOT
 
                 $exactMatch = null;
                 $choices = array();
-                foreach ($matches as $position => $package) {
-                    $choices[] = sprintf(' <info>%5s</info> %s', "[$position]", $package['name']);
-                    if ($package['name'] === $package) {
+                foreach ($matches as $position => $foundPackage) {
+                    $choices[] = sprintf(' <info>%5s</info> %s', "[$position]", $foundPackage['name']);
+                    if ($foundPackage['name'] === $package) {
                         $exactMatch = true;
                         break;
                     }
