@@ -61,7 +61,7 @@ For any given event:
 
 - Scripts execute in the order defined when their corresponding event is fired.
 - An array of scripts wired to a single event can contain both PHP callbacks
-and command-line executables commands.
+and command-line executable commands.
 - PHP classes containing defined callbacks must be autoloadable via Composer's
 autoload functionality.
 
