@@ -58,8 +58,8 @@ class ValidatingArrayLoader implements LoaderInterface
             try {
                 $this->versionParser->normalize($this->config['version']);
             } catch (\Exception $e) {
-                unset($this->config['version']);
                 $this->errors[] = 'version : invalid value ('.$this->config['version'].'): '.$e->getMessage();
+                unset($this->config['version']);
             }
         }
 
