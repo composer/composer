@@ -102,8 +102,13 @@ class HgDownloaderTest extends \PHPUnit_Framework_TestCase
             ->method('execute')
             ->with($this->equalTo($expectedHgCommand))
             ->will($this->returnValue(0));
-        $expectedHgCommand = $this->getCmd("hg pull 'https://github.com/l3l0/composer' && hg up 'ref'");
+        $expectedHgCommand = $this->getCmd("hg parent --template '{node}'");
         $processExecutor->expects($this->at(1))
+            ->method('execute')
+            ->with($this->equalTo($expectedHgCommand))
+            ->will($this->returnValue(0));
+        $expectedHgCommand = $this->getCmd("hg pull 'https://github.com/l3l0/composer' && hg up 'ref'");
+        $processExecutor->expects($this->at(2))
             ->method('execute')
             ->with($this->equalTo($expectedHgCommand))
             ->will($this->returnValue(0));

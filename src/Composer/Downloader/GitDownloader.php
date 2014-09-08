@@ -106,7 +106,20 @@ class GitDownloader extends VcsDownloader
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
         }
 
-        return trim($output) ?: null;
+        if (trim($output)) {
+            return trim($output);
+        }
+
+        $path = $this->normalizePath($path);
+        if (0 !== $this->process->execute('git rev-parse --verify HEAD', $refOutput, $path)) {
+            throw new \RuntimeException("Could not determine reference\n\n:".$this->process->getErrorOutput());
+        }
+
+        if (!trim($refOutput)) {
+            return null;
+        }
+
+        return trim($refOutput) !== $package->getSourceReference() ? 'Reference differs' : null;
     }
 
     /**
