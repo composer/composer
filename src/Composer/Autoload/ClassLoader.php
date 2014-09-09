@@ -377,7 +377,10 @@ class ClassLoader
  *
  * Prevents access to $this/self from included files.
  */
-function includeFile($file)
-{
-    include $file;
-}
+ if(!function_exists('includeFile')) {
+    function includeFile($file)
+    {
+        include $file;
+    }
+ }
+
