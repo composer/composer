@@ -94,6 +94,10 @@ class ConfigValidator
             $warnings[] = 'No license specified, it is recommended to do so. For closed-source software you may use "proprietary" as license.';
         }
 
+        if (isset($manifest['version'])) {
+            $warnings[] = 'The version field is present, it is recommended to leave it out if the package is published on Packagist.';
+        }
+
         if (!empty($manifest['name']) && preg_match('{[A-Z]}', $manifest['name'])) {
             $suggestName = preg_replace('{(?:([a-z])([A-Z])|([A-Z])([A-Z][a-z]))}', '\\1\\3-\\2\\4', $manifest['name']);
             $suggestName = strtolower($suggestName);
