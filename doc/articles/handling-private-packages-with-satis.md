@@ -2,13 +2,21 @@
     tagline: Host your own composer repository
 -->
 
-# Handling private packages with Satis
+# Handling private packages with Satis or Toran Proxy
 
-Satis is a static `composer` repository generator. It is a bit like an ultra-
-lightweight, static file-based version of packagist and can be used to host the
-metadata of your company's private packages, or your own. It basically acts as
-a micro-packagist. You can get it from
-[GitHub](http://github.com/composer/satis) or install via CLI:
+# Toran Proxy
+
+[Toran Proxy](https://toranproxy.com/) is a commercial alternative to Satis offering professional support as well as a web UI to manage everything and a better integration with Composer.
+
+Toran's revenue is also used to pay for Composer and Packagist development and hosting so using it is a good way to support open source financially. You can find more information about how to set it up and use it on the [Toran Proxy](https://toranproxy.com/) website.
+
+# Satis
+
+Satis on the other hand is open source but only a a static `composer`
+repository generator. It is a bit like an ultra-lightweight, static file-based
+version of packagist and can be used to host the metadata of your company's
+private packages, or your own. You can get it from [GitHub](http://github.com/composer/satis)
+or install via CLI:
 `php composer.phar create-project composer/satis --stability=dev --keep-vcs`.
 
 ## Setup
