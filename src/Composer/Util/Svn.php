@@ -295,6 +295,10 @@ class Svn
             $this->credentials['username'] = $authConfig[$host]['username'];
             $this->credentials['password'] = $authConfig[$host]['password'];
 
+            if (array_key_exists('cacheCredentials', $authConfig[$host])) {
+                $this->cacheCredentials = (bool) $authConfig[$host]['cacheCredentials'];
+            }
+
             return $this->hasAuth = true;
         }
 
