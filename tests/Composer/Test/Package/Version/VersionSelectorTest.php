@@ -54,6 +54,50 @@ class VersionSelectorTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($best, 'No versions are available returns false');
     }
 
+    /**
+     * @dataProvider getRecommendedRequireVersionPackages
+     */
+    public function testFindRecommendedRequireVersion($prettyVersion, $isDev, $stability, $expectedVersion)
+    {
+        $pool = $this->createMockPool();
+        $versionSelector = new VersionSelector($pool);
+
+        $package = $this->getMock('\Composer\Package\PackageInterface');
+        $package->expects($this->any())
+            ->method('getPrettyVersion')
+            ->will($this->returnValue($prettyVersion));
+        $package->expects($this->any())
+            ->method('isDev')
+            ->will($this->returnValue($isDev));
+        $package->expects($this->any())
+            ->method('getStability')
+            ->will($this->returnValue($stability));
+
+        $recommended = $versionSelector->findRecommendedRequireVersion($package);
+
+        // assert that the recommended version is what we expect
+        $this->assertEquals($expectedVersion, $recommended);
+    }
+
+    public function getRecommendedRequireVersionPackages()
+    {
+        return array(
+            // real version, is dev package, stability, expected recommendation
+            array('1.2.1', false, 'stable', '~1.2'),
+            array('1.2', false, 'stable', '~1.2'),
+            array('v1.2.1', false, 'stable', '~1.2'),
+            array('3.1.2-pl2', false, 'stable', '~3.1'),
+            array('3.1.2-patch', false, 'stable', '~3.1'),
+            // for non-stable versions, we add ~, but don't try the (1.2.1 -> 1.2) transformation
+            array('2.0-beta.1', false, 'beta', '~2.0-beta.1'),
+            array('3.1.2-alpha5', false, 'alpha', '~3.1.2-alpha5'),
+            array('3.0-RC2', false, 'RC', '~3.0-RC2'),
+            // dev packages are not touched at all
+            array('dev-master', true, 'dev', 'dev-master'),
+            array('3.1.2-dev', true, 'dev', '3.1.2-dev'),
+        );
+    }
+
     private function createMockPackage($version)
     {
         $package = $this->getMock('\Composer\Package\PackageInterface');

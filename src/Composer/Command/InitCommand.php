@@ -557,17 +557,6 @@ EOT
             ));
         }
 
-        $version = $package->getPrettyVersion();
-        if (!$package->isDev()) {
-            // remove the v prefix if there is one
-            if (substr($version, 0, 1) == 'v') {
-                $version = substr($version, 1);
-            }
-
-            // 2.1.0 -> ~2.1.0, 2.0-beta.1 -> ~2.0-beta.1
-            $version = '~'.$version;
-        }
-
-        return $version;
+        return $versionSelector->findRecommendedRequireVersion($package);
     }
 }

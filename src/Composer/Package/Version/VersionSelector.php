@@ -60,6 +60,48 @@ class VersionSelector
         return $package;
     }
 
+    /**
+     * Given a concrete version, this returns a ~ constraint (when possible)
+     * that should be used, for example, in composer.json.
+     *
+     * For example:
+     *  * 1.2.1         -> ~1.2
+     *  * 1.2           -> ~1.2
+     *  * v3.2.1        -> ~3.2
+     *  * 2.0-beta.1    -> ~2.0-beta.1
+     *  * dev-master    -> dev-master    (dev versions are untouched)
+     *
+     * @param PackageInterface $package
+     * @return string
+     */
+    public function findRecommendedRequireVersion(PackageInterface $package)
+    {
+        $version = $package->getPrettyVersion();
+        if (!$package->isDev()) {
+            // remove the v prefix if there is one
+            if (substr($version, 0, 1) == 'v') {
+                $version = substr($version, 1);
+            }
+
+            // for stable packages only, we try to transform 2.1.1 to 2.1
+            // this allows you to upgrade through minor versions
+            if ($package->getStability() == 'stable') {
+                $semanticVersionParts = explode('.', $version);
+                // check to see if we have a normal 1.2.6 semantic version
+                if (count($semanticVersionParts) == 3) {
+                    // remove the last part (i.e. the patch version number)
+                    unset($semanticVersionParts[2]);
+                    $version = implode('.', $semanticVersionParts);
+                }
+            }
+
+            // 2.1 -> ~2.1
+            $version = '~'.$version;
+        }
+
+        return $version;
+    }
+
     private function getParser()
     {
         if ($this->parser === null) {
