@@ -14,7 +14,7 @@ namespace Composer\DependencyResolver;
 
 use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
-use Composer\IO\ProgressLogger;
+use Composer\IO\WorkTracker\WorkTrackerInterface;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -28,13 +28,13 @@ class RuleSetGenerator
     protected $installedMap;
     protected $whitelistedMap;
     protected $addedMap;
-    protected $progressLogger;
+    protected $workTracker;
 
-    public function __construct(PolicyInterface $policy, Pool $pool, ProgressLogger $progressLogger)
+    public function __construct(PolicyInterface $policy, Pool $pool, WorkTrackerInterface $workTracker)
     {
         $this->policy = $policy;
         $this->pool = $pool;
-        $this->progressLogger = $progressLogger;
+        $this->workTracker = $workTracker;
     }
 
     /**
@@ -151,10 +151,10 @@ class RuleSetGenerator
         $workQueue = new \SplQueue;
         $workQueue->enqueue($package);
 
-        $progress = $this->progressLogger->pushNoMax('Whitelist from package');
+        $this->workTracker->createUnbound('Whitelist from package');
 
         while (!$workQueue->isEmpty()) {
-            $progress->advance();
+            $this->workTracker->ping();
 
             $package = $workQueue->dequeue();
             if (isset($this->whitelistedMap[$package->getId()])) {
@@ -183,12 +183,16 @@ class RuleSetGenerator
                 }
             }
         }
+
+        $this->workTracker->complete();
     }
 
     protected function addRulesForPackage(PackageInterface $package)
     {
         $workQueue = new \SplQueue;
         $workQueue->enqueue($package);
+
+        $this->workTracker->createUnbound('Add rules for package ' . $package->getName());
 
         while (!$workQueue->isEmpty()) {
             $package = $workQueue->dequeue();
@@ -248,7 +252,11 @@ class RuleSetGenerator
                     $this->addRule(RuleSet::TYPE_PACKAGE, $rule = $this->createConflictRule($package, $provider, $reason, $package));
                 }
             }
+
+            $this->workTracker->ping();
         }
+
+        $this->workTracker->complete();
     }
 
     protected function obsoleteImpossibleForAlias($package, $provider)
@@ -283,14 +291,19 @@ class RuleSetGenerator
     private function whitelistFromUpdatePackages(PackageInterface $package)
     {
         $updates = $this->policy->findUpdatePackages($this->pool, $this->installedMap, $package, true);
+        $this->workTracker->createBound('Whitelist from update packages', count($updates));
 
         foreach ($updates as $update) {
             $this->whitelistFromPackage($update);
+            $this->workTracker->ping();
         }
+
+        $this->workTracker->complete();
     }
 
     protected function whitelistFromJobs()
     {
+        $this->workTracker->createBound('Whitelist from jobs', count($this->jobs));
         foreach ($this->jobs as $job) {
             switch ($job['cmd']) {
                 case 'install':
@@ -300,11 +313,15 @@ class RuleSetGenerator
                     }
                     break;
             }
+            $this->workTracker->ping();
         }
+
+        $this->workTracker->complete();
     }
 
     protected function addRulesForJobs()
     {
+        $this->workTracker->createBound('Add rules for jobs', count($this->jobs));
         foreach ($this->jobs as $job) {
             switch ($job['cmd']) {
                 case 'install':
@@ -330,7 +347,10 @@ class RuleSetGenerator
                     }
                     break;
             }
+            $this->workTracker->ping();
         }
+
+        $this->workTracker->complete();
     }
 
     public function getRulesFor($jobs, $installedMap)
@@ -339,16 +359,16 @@ class RuleSetGenerator
         $this->rules = new RuleSet;
         $this->installedMap = $installedMap;
 
-        $progress = $this->progressLogger->push(
-            sprintf('Getting rules for "%s" packages', count($this->installedMap)),
+        $this->workTracker = $this->workTracker->createBound(
+            sprintf('Getting rules for "%s" jobs with "%s" installed packages', count($jobs), count($installedMap)),
             count($this->installedMap) * 2
         );
 
         $this->whitelistedMap = array();
         foreach ($this->installedMap as $package) {
-            $this->whitelistFromPackage($package);
-            $this->whitelistFromUpdatePackages($package);
-            $progress->advance();
+            $this->whitelistFromPackage($package, $this->workTracker);
+            $this->whitelistFromUpdatePackages($package, $this->workTracker);
+            $this->workTracker->ping();
         }
         $this->whitelistFromJobs();
 
@@ -356,14 +376,15 @@ class RuleSetGenerator
 
         $this->addedMap = array();
         foreach ($this->installedMap as $package) {
-            $progress->advance();
+            $this->workTracker->ping();
             $this->addRulesForPackage($package);
             $this->addRulesForUpdatePackages($package);
         }
 
-        $progress->stop();
 
         $this->addRulesForJobs();
+
+        $this->workTracker->complete();
 
         return $this->rules;
     }

@@ -20,6 +20,9 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\IO\ProgressLogger;
+use Composer\IO\WorkTracker\ContextWorkTracker;
+use Composer\IO\WorkTracker\UnboundWorkTracker;
+use Composer\IO\WorkTracker\Formatter\DebugFormatter;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -81,8 +84,11 @@ EOT
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'install', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
 
-        $progressLogger = new ProgressLogger($output);
-        $install = Installer::create($io, $composer, $progressLogger);
+        $workTrackerFormatter = new DebugFormatter();
+        $masterWorkTracker = new UnboundWorkTracker('Composer Install', null, $workTrackerFormatter);
+        $workTracker = new ContextWorkTracker($masterWorkTracker, $workTrackerFormatter);
+
+        $install = Installer::create($io, $composer, $workTracker);
 
         $preferSource = false;
         $preferDist = false;

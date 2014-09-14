@@ -13,7 +13,7 @@
 namespace Composer\DependencyResolver;
 
 use Composer\Repository\RepositoryInterface;
-use Composer\IO\ProgressLogger;
+use Composer\IO\WorkTracker\WorkTrackerInterface;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -40,15 +40,15 @@ class Solver
     protected $branches = array();
     protected $problems = array();
     protected $learnedPool = array();
-    protected $progressLogger = array();
+    protected $workTracker = array();
 
-    public function __construct(PolicyInterface $policy, Pool $pool, RepositoryInterface $installed, ProgressLogger $progressLogger)
+    public function __construct(PolicyInterface $policy, Pool $pool, RepositoryInterface $installed, WorkTrackerInterface $workTracker)
     {
         $this->policy = $policy;
         $this->pool = $pool;
         $this->installed = $installed;
-        $this->ruleSetGenerator = new RuleSetGenerator($policy, $pool, $progressLogger);
-        $this->progressLogger = $progressLogger;
+        $this->ruleSetGenerator = new RuleSetGenerator($policy, $pool, $workTracker);
+        $this->workTracker = $workTracker;
     }
 
     // aka solver_makeruledecisions
@@ -57,7 +57,9 @@ class Solver
         $decisionStart = count($this->decisions) - 1;
 
         $rulesCount = count($this->rules);
+        $this->workTracker->createBound('Make assertion rule decisions', $rulesCount);
         for ($ruleIndex = 0; $ruleIndex < $rulesCount; $ruleIndex++) {
+            $this->workTracker->ping();
             $rule = $this->rules->ruleById($ruleIndex);
 
             if (!$rule->isAssertion() || $rule->isDisabled()) {
@@ -122,6 +124,8 @@ class Solver
             $this->decisions->resetToOffset($decisionStart);
             $ruleIndex = -1;
         }
+
+        $this->workTracker->complete();
     }
 
     protected function setupInstalledMap()
@@ -172,21 +176,31 @@ class Solver
         $this->decisions = new Decisions($this->pool);
         $this->watchGraph = new RuleWatchGraph;
 
+        $this->workTracker->createUnbound('Adding rules', count($this->rules));
+
         foreach ($this->rules as $rule) {
+            $this->workTracker->ping();
             $this->watchGraph->insert(new RuleWatchNode($rule));
         }
+
+        $this->workTracker->complete();
 
         /* make decisions based on job/update assertions */
         $this->makeAssertionRuleDecisions();
 
+        $this->workTracker->createUnbound('Running SAT');
         $this->runSat(true);
+        $this->workTracker->complete();
 
-        // decide to remove everything that's installed and undecided
+        $this->workTracker->createBound('Deciding to remove everything that\'s installed and undecided', count($this->installedMap));
         foreach ($this->installedMap as $packageId => $void) {
             if ($this->decisions->undecided($packageId)) {
                 $this->decisions->decide(-$packageId, 1, null);
             }
+            $this->workTracker->ping();
         }
+
+        $this->workTracker->complete();
 
         if ($this->problems) {
             throw new SolverProblemsException($this->problems, $this->installedMap);
@@ -607,6 +621,7 @@ class Solver
         $installedPos = 0;
 
         while (true) {
+            $this->workTracker->ping();
             if (1 === $level) {
                 $conflictRule = $this->propagate($level);
                 if (null !== $conflictRule) {
