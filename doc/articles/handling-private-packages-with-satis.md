@@ -12,7 +12,7 @@ Toran's revenue is also used to pay for Composer and Packagist development and h
 
 # Satis
 
-Satis on the other hand is open source but only a a static `composer`
+Satis on the other hand is open source but only a static `composer`
 repository generator. It is a bit like an ultra-lightweight, static file-based
 version of packagist and can be used to host the metadata of your company's
 private packages, or your own. You can get it from [GitHub](http://github.com/composer/satis)
