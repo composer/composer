@@ -11,4 +11,10 @@ class BoundWorkTracker extends AbstractWorkTracker
         parent::__construct($title, $parent, $formatter);
         $this->max = $max;
     }
+
+    public function getMax() 
+    {
+        return $this->max;
+    }
+    
 }

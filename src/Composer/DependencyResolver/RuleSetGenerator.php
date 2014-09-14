@@ -154,7 +154,6 @@ class RuleSetGenerator
         $this->workTracker->createUnbound('Whitelist from package');
 
         while (!$workQueue->isEmpty()) {
-            $this->workTracker->ping();
 
             $package = $workQueue->dequeue();
             if (isset($this->whitelistedMap[$package->getId()])) {
@@ -182,6 +181,7 @@ class RuleSetGenerator
                     $workQueue->enqueue($provider);
                 }
             }
+            $this->workTracker->ping();
         }
 
         $this->workTracker->complete();
@@ -359,7 +359,7 @@ class RuleSetGenerator
         $this->rules = new RuleSet;
         $this->installedMap = $installedMap;
 
-        $this->workTracker = $this->workTracker->createBound(
+        $this->workTracker->createBound(
             sprintf('Getting rules for "%s" jobs with "%s" installed packages', count($jobs), count($installedMap)),
             count($this->installedMap) * 2
         );
@@ -370,6 +370,7 @@ class RuleSetGenerator
             $this->whitelistFromUpdatePackages($package, $this->workTracker);
             $this->workTracker->ping();
         }
+
         $this->whitelistFromJobs();
 
         $this->pool->setWhitelist($this->whitelistedMap);
@@ -381,10 +382,10 @@ class RuleSetGenerator
             $this->addRulesForUpdatePackages($package);
         }
 
+        $this->workTracker->complete();
+
 
         $this->addRulesForJobs();
-
-        $this->workTracker->complete();
 
         return $this->rules;
     }

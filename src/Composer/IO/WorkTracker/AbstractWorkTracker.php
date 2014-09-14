@@ -14,6 +14,7 @@ abstract class AbstractWorkTracker implements WorkTrackerInterface
     protected $pingCount = 0;
     protected $lastPingTime;
     protected $formatter;
+    protected $isComplete = false;
 
     public function __construct($title, $parent = null, $formatter)
     {
@@ -61,6 +62,13 @@ abstract class AbstractWorkTracker implements WorkTrackerInterface
 
     public function complete()
     {
+        $this->isComplete = true;
+        $this->formatter->complete($this);
+    }
+
+    public function isComplete()
+    {
+        return $this->isComplete;
     }
 
     public function ping()
