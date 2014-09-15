@@ -72,7 +72,8 @@ class SvnTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($this->getCmd(" --username 'foo' --password 'bar' "), $reflMethod->invoke($svn));
     }
 
-    public function testCredentialsFromConfigWithCacheCredentialsTrue() {
+    public function testCredentialsFromConfigWithCacheCredentialsTrue()
+    {
         $url = 'http://svn.apache.org';
 
         $config = new Config();
@@ -93,7 +94,8 @@ class SvnTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($this->getCmd(" --username 'foo' --password 'bar' "), $reflMethod->invoke($svn));
     }
 
-    public function testCredentialsFromConfigWithCacheCredentialsFalse() {
+    public function testCredentialsFromConfigWithCacheCredentialsFalse()
+    {
         $url = 'http://svn.apache.org';
 
         $config = new Config();
