@@ -81,13 +81,14 @@ class SvnTest extends \PHPUnit_Framework_TestCase
             array(
                 'config' => array(
                     'http-basic' => array(
-                        'svn.apache.org' => array('username' => 'foo', 'password' => 'bar', 'cacheCredentials' => true)
+                        'svn.apache.org' => array('username' => 'foo', 'password' => 'bar')
                     )
                 )
             )
         );
 
         $svn = new Svn($url, new NullIO, $config);
+        $svn->setCacheCredentials(true);
         $reflMethod = new \ReflectionMethod('Composer\\Util\\Svn', 'getCredentialString');
         $reflMethod->setAccessible(true);
 
@@ -103,13 +104,14 @@ class SvnTest extends \PHPUnit_Framework_TestCase
             array(
                 'config' => array(
                     'http-basic' => array(
-                        'svn.apache.org' => array('username' => 'foo', 'password' => 'bar', 'cacheCredentials' => false)
+                        'svn.apache.org' => array('username' => 'foo', 'password' => 'bar')
                     )
                 )
             )
         );
 
         $svn = new Svn($url, new NullIO, $config);
+        $svn->setCacheCredentials(false);
         $reflMethod = new \ReflectionMethod('Composer\\Util\\Svn', 'getCredentialString');
         $reflMethod->setAccessible(true);
 

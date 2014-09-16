@@ -148,6 +148,14 @@ class Svn
     }
 
     /**
+     * @param boolean $cacheCredentials
+     */
+    public function setCacheCredentials($cacheCredentials)
+    {
+        $this->cacheCredentials = $cacheCredentials;
+    }
+
+    /**
      * Repositories requests credentials, let's put them in.
      *
      * @return \Composer\Util\Svn
@@ -294,10 +302,6 @@ class Svn
         if (isset($authConfig[$host])) {
             $this->credentials['username'] = $authConfig[$host]['username'];
             $this->credentials['password'] = $authConfig[$host]['password'];
-
-            if (array_key_exists('cacheCredentials', $authConfig[$host])) {
-                $this->cacheCredentials = (bool) $authConfig[$host]['cacheCredentials'];
-            }
 
             return $this->hasAuth = true;
         }
