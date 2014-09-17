@@ -3,35 +3,51 @@
 namespace Composer\IO\WorkTracker\Formatter;
 
 use Composer\IO\WorkTracker\FormatterInterface;
-use Composer\IO\WorkTracker\WorkTrackerInterface;
+use Composer\IO\WorkTracker\AbstractWorkTracker;
 use Symfony\Component\Console\Helper\ProgressHelper;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\IO\WorkTracker\BoundWorkTracker;
 
+/**
+ * Progress output formatter which shows a hierarchy of progress
+ * bars.
+ *
+ * @author Daniel Leech <daniel@dantleech.com>
+ */
 class MultiProgressFormatter implements FormatterInterface
 {
     protected $output;
     protected $progress = array();
     protected $lastMessagesLength = array();
     protected $lastMessageCount = 0;
-    protected $depth = 4;
+    protected $depth = 3;
 
+    /**
+     * @param OutputInterface $output
+     */
     public function __construct(OutputInterface $output)
     {
         $this->output = $output;
     }
 
-    public function create(WorkTrackerInterface $workTracker)
+    /**
+     * {@inheritdoc}
+     */
+    public function create(AbstractWorkTracker $workTracker)
     {
-        // $this->output->writeln(sprintf('<info>Starting: %s</info>', $workTracker->getTitle()));
     }
 
-    public function complete(WorkTrackerInterface $workTracker)
+    /**
+     * {@inheritdoc}
+     */
+    public function complete(AbstractWorkTracker $workTracker)
     {
-        // $this->output->writeln(sprintf('<comment>Finished: %s</comment>', $workTracker->getTitle()));
     }
 
-    public function ping(WorkTrackerInterface $workTracker)
+    /**
+     * {@inheritdoc}
+     */
+    public function ping(AbstractWorkTracker $workTracker)
     {
         $out = array();
         while ($parent = $workTracker->getParent()) {
@@ -50,11 +66,12 @@ class MultiProgressFormatter implements FormatterInterface
         $this->overwrite($out);
     }
 
-    public function log($message)
-    {
-        $this->output->writeln($message);
-    }
-
+    /**
+     * Overwrite the current output in order to display
+     * "static" progress.
+     *
+     * @param array $messages
+     */
     private function overwrite($messages)
     {
         if ($this->lastMessageCount) {

@@ -2,6 +2,9 @@
 
 namespace Composer\IO\WorkTracker;
 
+use Composer\IO\WorkTracker\FormatterInterface;
+use Composer\IO\WorkTracker\WorkTrackerInterface;
+
 /**
  * Class which monitors the progress
  *
@@ -16,19 +19,113 @@ abstract class AbstractWorkTracker implements WorkTrackerInterface
     protected $formatter;
     protected $isComplete = false;
 
-    public function __construct($title, $parent = null, $formatter)
+    /**
+     * @param string $title Title of the piece of work which should be tracked
+     * @param FormatterInterface Output formatter to use
+     * @param WorkTrackerInterface $parent Parent of the tracker, unless this is the root tracker
+     */
+    public function __construct($title, FormatterInterface $formatter, WorkTrackerInterface $parent = null)
     {
         $this->title = $title;
         $this->parent = $parent;
-        $this->lastPingTime = microtime(true);
         $this->formatter = $formatter;
+
+        // record the time that this work tracker was created
+        $this->lastPingTime = microtime(true);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getParent() 
     {
         return $this->parent;
     }
-    
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getTitle()
+    {
+        return $this->title;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function createUnbound($title)
+    {
+        $child = new UnboundWorkTracker($title, $this->formatter, $this);
+        $this->formatter->create($child);
+        return $child;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function createBound($title, $max)
+    {
+        $child = new BoundWorkTracker($title, $this->formatter, $this, $max);
+        $this->formatter->create($child);
+        return $child;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function complete()
+    {
+        $this->isComplete = true;
+        $this->formatter->complete($this);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function ping()
+    {
+        $this->pingCount++;
+        $this->formatter->ping($this);
+        $this->lastPingTime = microtime(true);
+    }
+
+    /**
+     * Return true if the work has been completed
+     *
+     * @return boolean
+     */
+    public function isComplete()
+    {
+        return $this->isComplete;
+    }
+
+    /**
+     * Return the time elapsed (in microseconds) since the
+     * tracker was instantiated
+     *
+     * @return float
+     */
+    public function getElapsedPingTime()
+    {
+        $elapsed = microtime(true) - $this->lastPingTime;
+        return $elapsed;
+    }
+
+    /**
+     * Return the number of times this tracker has been "pinged"
+     *
+     * @return integer
+     */
+    public function getPingCount()
+    {
+        return $this->pingCount;
+    }
+
+    /**
+     * Return the nested depth of this work tracker
+     *
+     * @return integer
+     */
     public function getDepth()
     {
         $current = $this;
@@ -39,53 +136,5 @@ abstract class AbstractWorkTracker implements WorkTrackerInterface
         }
 
         return $depth;
-    }
-
-    public function getTitle()
-    {
-        return $this->title;
-    }
-
-    public function createUnbound($title)
-    {
-        $child = new UnboundWorkTracker($title, $this, $this->formatter);
-        $this->formatter->create($child);
-        return $child;
-    }
-
-    public function createBound($title, $max)
-    {
-        $child = new BoundWorkTracker($title, $this, $this->formatter, $max);
-        $this->formatter->create($child);
-        return $child;
-    }
-
-    public function complete()
-    {
-        $this->isComplete = true;
-        $this->formatter->complete($this);
-    }
-
-    public function isComplete()
-    {
-        return $this->isComplete;
-    }
-
-    public function ping()
-    {
-        $this->pingCount++;
-        $this->formatter->ping($this);
-        $this->lastPingTime = microtime(true);
-    }
-
-    public function getElapsedPingTime()
-    {
-        $elapsed = microtime(true) - $this->lastPingTime;
-        return $elapsed;
-    }
-
-    public function getPingCount()
-    {
-        return $this->pingCount;
     }
 }

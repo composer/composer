@@ -366,8 +366,8 @@ class RuleSetGenerator
 
         $this->whitelistedMap = array();
         foreach ($this->installedMap as $package) {
-            $this->whitelistFromPackage($package, $this->workTracker);
-            $this->whitelistFromUpdatePackages($package, $this->workTracker);
+            $this->whitelistFromPackage($package);
+            $this->whitelistFromUpdatePackages($package);
             $this->workTracker->ping();
         }
 
@@ -383,7 +383,6 @@ class RuleSetGenerator
         }
 
         $this->workTracker->complete();
-
 
         $this->addRulesForJobs();
 

@@ -192,7 +192,8 @@ class Solver
         $this->runSat(true);
         $this->workTracker->complete();
 
-        $this->workTracker->createBound('Deciding to remove everything that\'s installed and undecided', count($this->installedMap));
+        $this->workTracker->createBound('Making decisions for undecided packages', count($this->installedMap));
+
         foreach ($this->installedMap as $packageId => $void) {
             if ($this->decisions->undecided($packageId)) {
                 $this->decisions->decide(-$packageId, 1, null);

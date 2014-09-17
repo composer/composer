@@ -309,9 +309,8 @@ class Installer
                 );
 
                 if ($updatedLock) {
-                    $this->workTracker->log('<info>Writing lock file</info>');
+                    $this->io->write('<info>Writing lock file</info>');
                 }
-
 
                 $this->workTracker->complete();
             }
@@ -469,7 +468,7 @@ class Installer
 
             $packages = $lockedRepository->getPackages();
 
-            $this->workTracker->createBound('Installing dependencies'.($withDevReqs?' (including require-dev)':'').' from lock file');
+            $this->workTracker->createBound('Installing dependencies'.($withDevReqs?' (including require-dev)':'').' from lock file', count($packages));
 
             foreach ($packages as $package) {
                 $version = $package->getVersion();
@@ -500,6 +499,7 @@ class Installer
             $this->workTracker->createBound('Installing dependencies'.($withDevReqs?' (including require-dev)':''), count($links));
 
             foreach ($links as $link) {
+
                 $request->install($link->getTarget(), $link->getConstraint());
                 $this->workTracker->ping();
             }
@@ -513,8 +513,9 @@ class Installer
         // solve dependencies
         $solver = new Solver($policy, $pool, $installedRepo, $this->workTracker);
         try {
-            $this->io->write('<info>Solving dependencies</info>');
+            $this->workTracker->createUnbound('<info>Solving dependencies</info>');
             $operations = $solver->solve($request);
+            $this->workTracker->complete();
         } catch (SolverProblemsException $e) {
             $this->io->write('<error>Your requirements could not be resolved to an installable set of packages.</error>');
             $this->io->write($e->getMessage());

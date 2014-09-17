@@ -3,27 +3,40 @@
 namespace Composer\IO\WorkTracker\Formatter;
 
 use Composer\IO\WorkTracker\FormatterInterface;
-use Composer\IO\WorkTracker\WorkTrackerInterface;
+use Composer\IO\WorkTracker\AbstractWorkTracker;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class DebugFormatter implements FormatterInterface
 {
-    public function create(WorkTrackerInterface $workTracker)
+    protected $output;
+
+    public function __construct(OutputInterface $output)
     {
-        echo str_repeat('  ', $workTracker->getDepth()) . "BEGIN: " . $workTracker->getTitle(). "\n";
+        $this->output = $output;
     }
 
-    public function complete(WorkTrackerInterface $workTracker)
+    public function create(AbstractWorkTracker $workTracker)
     {
-        echo str_repeat('  ', $workTracker->getDepth()) . "DONE: " . $workTracker->getTitle() . "\n";
+        $this->formatMessage($workTracker, 'BEGIN', $workTracker->getTitle());
     }
 
-    public function ping(WorkTrackerInterface $workTracker)
+    public function complete(AbstractWorkTracker $workTracker)
     {
-        echo str_repeat('  ', $workTracker->getDepth()) . "PING: [#" . sprintf('%1$06d', $workTracker->getPingCount()) . "] [" . number_format($workTracker->getElapsedPingTime(), 4) . "s] " . $workTracker->getTitle()."\n";
+        $this->formatMessage($workTracker, 'DONE', $workTracker->getTitle());
     }
 
-    public function log($message)
+    public function ping(AbstractWorkTracker $workTracker)
     {
-        echo str_repeat('  ', $workTracker->getDepth()) . "LOG: " . $message . "\n";
+        $this->formatMessage($workTracker, 'PING', sprintf(
+            '[#%1$06d] [%ss] %s',
+            $workTracker->getPingCount(),
+            $workTracker->getElapsedPingTime(),
+            $workTracker->getTitle()
+        ));
+    }
+
+    private function formatMessage(AbstractWorkTracker $workTracker, $subject, $message)
+    {
+        $this->output->writeln(sprintf('%s%s: %s', str_repeat('  ', $workTracker->getDepth()), $subject, $message));
     }
 }

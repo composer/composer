@@ -89,12 +89,12 @@ EOT
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
 
         if ($pretty == 'debug') {
-            $workTrackerFormatter = new DebugFormatter();
+            $workTrackerFormatter = new DebugFormatter($output);
         } else {
             $workTrackerFormatter = new MultiProgressFormatter($output);
         }
-        $masterWorkTracker = new UnboundWorkTracker('Composer Install', null, $workTrackerFormatter);
-        $workTracker = new ContextWorkTracker($masterWorkTracker, $workTrackerFormatter);
+        $masterWorkTracker = new UnboundWorkTracker('Composer Install', $workTrackerFormatter);
+        $workTracker = new ContextWorkTracker($masterWorkTracker);
 
         $install = Installer::create($io, $composer, $workTracker);
 
