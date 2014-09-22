@@ -240,7 +240,7 @@ EOT
      * @return array                     array(CompletePackageInterface, array of versions)
      * @throws \InvalidArgumentException
      */
-    protected function getPackage(RepositoryInterface $installedRepo, RepositoryInterface $repos, $name, $version = null)
+    public function getPackage(RepositoryInterface $installedRepo, RepositoryInterface $repos, $name, $version = null)
     {
         $name = strtolower($name);
         $constraint = null;

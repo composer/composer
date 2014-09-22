@@ -297,6 +297,26 @@ EOT
         return $this->repos->search($name);
     }
 
+    protected function printAvailablePackageVersions($requirement, OutputInterface $output)
+    {
+        $platformRepo = new PlatformRepository;
+        $installedRepo = $platformRepo;
+        $composer = $this->getComposer(false);
+        if ($composer) {
+            $repos = new CompositeRepository($composer->getRepositoryManager()->getRepositories());
+        } else {
+            $defaultRepos = Factory::createDefaultRepositories($this->getIO());
+            $repos = new CompositeRepository($defaultRepos);
+        }
+
+        $showCommand = $this->getApplication()->find('show');
+        list($package, $versions) = $showCommand->getPackage($installedRepo, $repos, $requirement);
+
+        if ($versions) {
+            $output->writeln("Available versions: " . implode(", ", array_keys($versions)));
+        }
+    }
+
     protected function determineRequirements(InputInterface $input, OutputInterface $output, $requires = array())
     {
         $dialog = $this->getHelperSet()->get('dialog');
@@ -308,6 +328,8 @@ EOT
 
             foreach ($requires as $key => $requirement) {
                 if (!isset($requirement['version']) && $input->isInteractive()) {
+                    $this->printAvailablePackageVersions($requirement['name'], $output);
+
                     $question = $dialog->getQuestion('Please provide a version constraint for the '.$requirement['name'].' requirement');
                     if ($constraint = $dialog->ask($output, $question)) {
                         $requirement['version'] = $constraint;
@@ -377,6 +399,7 @@ EOT
                         return $input ?: false;
                     };
 
+                    $this->printAvailablePackageVersions($package, $output);
                     $constraint = $dialog->askAndValidate($output, $dialog->getQuestion('Enter the version constraint to require', false, ':'), $validator, 3);
                     if (false === $constraint) {
                         continue;
