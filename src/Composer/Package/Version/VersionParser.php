@@ -122,6 +122,12 @@ class VersionParser
         } elseif (preg_match('{^v?(\d{4}(?:[.:-]?\d{2}){1,6}(?:[.:-]?\d{1,3})?)'.self::$modifierRegex.'$}i', $version, $matches)) { // match date-based versioning
             $version = preg_replace('{\D}', '-', $matches[1]);
             $index = 2;
+        } elseif (preg_match('{^v?(\d{4,})(\.\d+)?(\.\d+)?(\.\d+)?'.self::$modifierRegex.'$}i', $version, $matches)) {
+            $version = $matches[1]
+                .(!empty($matches[2]) ? $matches[2] : '.0')
+                .(!empty($matches[3]) ? $matches[3] : '.0')
+                .(!empty($matches[4]) ? $matches[4] : '.0');
+            $index = 5;
         }
 
         // add version modifiers if a version was matched
