@@ -235,7 +235,7 @@ EOT
         $values = $input->getArgument('setting-value'); // what the user is trying to add/change
 
         // handle repositories
-        if (preg_match('/^repos?(?:itories)?\.(.+)/', $settingKey, $matches)) {
+        if (preg_match('/^repos(?:itories)?\.(.+)/', $settingKey, $matches)) {
             if ($input->getOption('unset')) {
                 return $this->configSource->removeRepository($matches[1]);
             }
