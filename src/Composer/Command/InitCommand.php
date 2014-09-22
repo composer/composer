@@ -12,9 +12,11 @@
 
 namespace Composer\Command;
 
+use Composer\DependencyResolver\Pool;
 use Composer\Json\JsonFile;
 use Composer\Factory;
 use Composer\Package\BasePackage;
+use Composer\Package\Version\VersionSelector;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Package\Version\VersionParser;
@@ -32,6 +34,7 @@ class InitCommand extends Command
 {
     private $gitConfig;
     private $repos;
+    private $pool;
 
     public function parseAuthorString($author)
     {
@@ -284,9 +287,11 @@ EOT
 
     protected function findPackages($name)
     {
-        $packages = array();
+        return $this->getRepos()->search($name);
+    }
 
-        // init repos
+    protected function getRepos()
+    {
         if (!$this->repos) {
             $this->repos = new CompositeRepository(array_merge(
                 array(new PlatformRepository),
@@ -294,7 +299,17 @@ EOT
             ));
         }
 
-        return $this->repos->search($name);
+        return $this->repos;
+    }
+
+    protected function getPool()
+    {
+        if (!$this->pool) {
+            $this->pool = new Pool($this->getComposer()->getPackage()->getMinimumStability());
+            $this->pool->addRepository($this->getRepos());
+        }
+
+        return $this->pool;
     }
 
     protected function determineRequirements(InputInterface $input, OutputInterface $output, $requires = array())
@@ -306,15 +321,18 @@ EOT
             $requires = $this->normalizeRequirements($requires);
             $result = array();
 
-            foreach ($requires as $key => $requirement) {
-                if (!isset($requirement['version']) && $input->isInteractive()) {
-                    $question = $dialog->getQuestion('Please provide a version constraint for the '.$requirement['name'].' requirement');
-                    if ($constraint = $dialog->ask($output, $question)) {
-                        $requirement['version'] = $constraint;
-                    }
-                }
+            foreach ($requires as $requirement) {
                 if (!isset($requirement['version'])) {
-                    throw new \InvalidArgumentException('The requirement '.$requirement['name'].' must contain a version constraint');
+
+                    // determine the best version automatically
+                    $version = $this->findBestVersionForPackage($requirement['name']);
+                    $requirement['version'] = $version;
+
+                    $output->writeln(sprintf(
+                        'Using version <info>%s</info> for <info>%s</info>',
+                        $requirement['version'],
+                        $requirement['name']
+                    ));
                 }
 
                 $result[] = $requirement['name'] . ' ' . $requirement['version'];
@@ -369,7 +387,7 @@ EOT
                     $package = $dialog->askAndValidate($output, $dialog->getQuestion('Enter package # to add, or the complete package name if it is not listed', false, ':'), $validator, 3);
                 }
 
-                // no constraint yet, prompt user
+                // no constraint yet, determine the best version automatically
                 if (false !== $package && false === strpos($package, ' ')) {
                     $validator = function ($input) {
                         $input = trim($input);
@@ -377,9 +395,20 @@ EOT
                         return $input ?: false;
                     };
 
-                    $constraint = $dialog->askAndValidate($output, $dialog->getQuestion('Enter the version constraint to require', false, ':'), $validator, 3);
+                    $constraint = $dialog->askAndValidate(
+                        $output,
+                        $dialog->getQuestion('Enter the version constraint to require (or leave blank to use the latest version)', false, ':'),
+                        $validator,
+                        3)
+                    ;
                     if (false === $constraint) {
-                        continue;
+                        $constraint = $this->findBestVersionForPackage($package);
+
+                        $output->writeln(sprintf(
+                            'Using version <info>%s</info> for <info>%s</info>',
+                            $constraint,
+                            $package
+                        ));
                     }
 
                     $package .= ' '.$constraint;
@@ -503,5 +532,31 @@ EOT
         }
 
         return false !== filter_var($email, FILTER_VALIDATE_EMAIL);
+    }
+
+    /**
+     * Given a package name, this determines the best version to use in the require key.
+     *
+     * This returns a version with the ~ operator prefixed when possible.
+     *
+     * @param string $name
+     * @return string
+     * @throws \InvalidArgumentException
+     */
+    protected function findBestVersionForPackage($name)
+    {
+        // find the latest version allowed in this pool
+        $versionSelector = new VersionSelector($this->getPool());
+        $package = $versionSelector->findBestCandidate($name);
+
+        if (!$package) {
+            throw new \InvalidArgumentException(sprintf(
+                'Could not find package %s at any version for your minimum-stability (%s). Check the package spelling or your minimum-stability',
+                $name,
+                $this->getComposer()->getPackage()->getMinimumStability()
+            ));
+        }
+
+        return $versionSelector->findRecommendedRequireVersion($package);
     }
 }

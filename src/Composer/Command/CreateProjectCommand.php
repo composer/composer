@@ -21,6 +21,7 @@ use Composer\IO\IOInterface;
 use Composer\Package\BasePackage;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Operation\InstallOperation;
+use Composer\Package\Version\VersionSelector;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\FilesystemRepository;
@@ -242,7 +243,6 @@ EOT
         }
 
         $parser = new VersionParser();
-        $candidates = array();
         $requirements = $parser->parseNameVersionPairs(array($packageName));
         $name = strtolower($requirements[0]['name']);
         if (!$packageVersion && isset($requirements[0]['version'])) {
@@ -266,15 +266,11 @@ EOT
         $pool = new Pool($stability);
         $pool->addRepository($sourceRepo);
 
-        $constraint = $packageVersion ? $parser->parseConstraints($packageVersion) : null;
-        $candidates = $pool->whatProvides($name, $constraint);
-        foreach ($candidates as $key => $candidate) {
-            if ($candidate->getName() !== $name) {
-                unset($candidates[$key]);
-            }
-        }
+        // find the latest version if there are multiple
+        $versionSelector = new VersionSelector($pool);
+        $package = $versionSelector->findBestCandidate($name, $packageVersion);
 
-        if (!$candidates) {
+        if (!$package) {
             throw new \InvalidArgumentException("Could not find package $name" . ($packageVersion ? " with version $packageVersion." : " with stability $stability."));
         }
 
@@ -282,15 +278,6 @@ EOT
             $parts = explode("/", $name, 2);
             $directory = getcwd() . DIRECTORY_SEPARATOR . array_pop($parts);
         }
-
-        // select highest version if we have many
-        $package = reset($candidates);
-        foreach ($candidates as $candidate) {
-            if (version_compare($package->getVersion(), $candidate->getVersion(), '<')) {
-                $package = $candidate;
-            }
-        }
-        unset($candidates);
 
         $io->write('<info>Installing ' . $package->getName() . ' (' . VersionParser::formatVersion($package, false) . ')</info>');
 
