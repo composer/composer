@@ -234,6 +234,13 @@ class Filesystem
      */
     public function copyThenRemove($source, $target)
     {
+        if (!is_dir($source)) {
+            copy($source, $target);
+            $this->unlink($source);
+
+            return;
+        }
+
         $it = new RecursiveDirectoryIterator($source, RecursiveDirectoryIterator::SKIP_DOTS);
         $ri = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::SELF_FIRST);
         $this->ensureDirectoryExists($target);
