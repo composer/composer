@@ -302,16 +302,6 @@ EOT
         return $this->repos;
     }
 
-    protected function getPool()
-    {
-        if (!$this->pool) {
-            $this->pool = new Pool($this->getComposer()->getPackage()->getMinimumStability());
-            $this->pool->addRepository($this->getRepos());
-        }
-
-        return $this->pool;
-    }
-
     protected function determineRequirements(InputInterface $input, OutputInterface $output, $requires = array())
     {
         $dialog = $this->getHelperSet()->get('dialog');
@@ -325,7 +315,7 @@ EOT
                 if (!isset($requirement['version'])) {
 
                     // determine the best version automatically
-                    $version = $this->findBestVersionForPackage($requirement['name']);
+                    $version = $this->findBestVersionForPackage($input, $requirement['name']);
                     $requirement['version'] = $version;
 
                     $output->writeln(sprintf(
@@ -402,7 +392,7 @@ EOT
                         3)
                     ;
                     if (false === $constraint) {
-                        $constraint = $this->findBestVersionForPackage($package);
+                        $constraint = $this->findBestVersionForPackage($input, $package);
 
                         $output->writeln(sprintf(
                             'Using version <info>%s</info> for <info>%s</info>',
@@ -534,26 +524,53 @@ EOT
         return false !== filter_var($email, FILTER_VALIDATE_EMAIL);
     }
 
+    private function getPool(InputInterface $input)
+    {
+        if (!$this->pool) {
+            $this->pool = new Pool($this->getMinimumStability($input));
+            $this->pool->addRepository($this->getRepos());
+        }
+
+        return $this->pool;
+    }
+
+    private function getMinimumStability(InputInterface $input)
+    {
+        if ($input->hasOption('stability')) {
+            return $input->getOption('stability') ?: 'stable';
+        }
+
+        $file = Factory::getComposerFile();
+        if (is_file($file) && is_readable($file) && is_array($composer = json_decode(file_get_contents($file), true))) {
+            if (!empty($composer['minimum-stability'])) {
+                return $composer['minimum-stability'];
+            }
+        }
+
+        return 'stable';
+    }
+
     /**
      * Given a package name, this determines the best version to use in the require key.
      *
      * This returns a version with the ~ operator prefixed when possible.
      *
-     * @param string $name
+     * @param  InputInterface $input
+     * @param  string         $name
      * @return string
      * @throws \InvalidArgumentException
      */
-    protected function findBestVersionForPackage($name)
+    private function findBestVersionForPackage(InputInterface $input, $name)
     {
         // find the latest version allowed in this pool
-        $versionSelector = new VersionSelector($this->getPool());
+        $versionSelector = new VersionSelector($this->getPool($input));
         $package = $versionSelector->findBestCandidate($name);
 
         if (!$package) {
             throw new \InvalidArgumentException(sprintf(
                 'Could not find package %s at any version for your minimum-stability (%s). Check the package spelling or your minimum-stability',
                 $name,
-                $this->getComposer()->getPackage()->getMinimumStability()
+                $this->getMinimumStability($input)
             ));
         }
 
