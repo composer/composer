@@ -263,6 +263,26 @@ custom repository has priority over packagist. If you want to rename the
 package, you should do so in the default (often master) branch and not in a
 feature branch, since the package name is taken from the default branch.
 
+.. note::
+
+    Windows: Even when you would clone a custom repository with the `file://`
+    protocol by `git clone file:///X/example-dir/example.git` inside your
+    git bash, you need to add a windows alike path for the repository definition:
+
+```json
+{
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "file://X:\example-dir\example.git"
+        }
+    ],
+    "require": {
+        "my-vendor/example": "1.*"
+    }
+}
+```
+
 If other dependencies rely on the package you forked, it is possible to
 inline-alias it so that it matches a constraint that it otherwise would not.
 For more information [see the aliases article](articles/aliases.md).
