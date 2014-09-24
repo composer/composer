@@ -19,7 +19,6 @@ use Composer\Util\Git as GitUtil;
 use Composer\IO\IOInterface;
 use Composer\Cache;
 use Composer\Config;
-use Composer\Util\ProcessUtil;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -63,7 +62,7 @@ class GitDriver extends VcsDriver
             if (is_dir($this->repoDir) && 0 === $this->process->execute('git rev-parse --git-dir', $output, $this->repoDir) && trim($output) === '.') {
                 try {
                     $commandCallable = function ($url) {
-                        return sprintf('git remote set-url origin %s && git remote update --prune origin', ProcessUtil::escapeArgument($url));
+                        return sprintf('git remote set-url origin %s && git remote update --prune origin', ProcessExecutor::escape($url));
                     };
                     $gitUtil->runCommand($commandCallable, $this->url, $this->repoDir);
                 } catch (\Exception $e) {
@@ -75,7 +74,7 @@ class GitDriver extends VcsDriver
 
                 $repoDir = $this->repoDir;
                 $commandCallable = function ($url) use ($repoDir) {
-                    return sprintf('git clone --mirror %s %s', ProcessUtil::escapeArgument($url), ProcessUtil::escapeArgument($repoDir));
+                    return sprintf('git clone --mirror %s %s', ProcessExecutor::escape($url), ProcessExecutor::escape($repoDir));
                 };
 
                 $gitUtil->runCommand($commandCallable, $this->url, $this->repoDir, true);
@@ -148,7 +147,7 @@ class GitDriver extends VcsDriver
         }
 
         if (!isset($this->infoCache[$identifier])) {
-            $resource = sprintf('%s:composer.json', ProcessUtil::escapeArgument($identifier));
+            $resource = sprintf('%s:composer.json', ProcessExecutor::escape($identifier));
             $this->process->execute(sprintf('git show %s', $resource), $composer, $this->repoDir);
 
             if (!trim($composer)) {
@@ -158,7 +157,7 @@ class GitDriver extends VcsDriver
             $composer = JsonFile::parseJson($composer, $resource);
 
             if (!isset($composer['time'])) {
-                $this->process->execute(sprintf('git log -1 --format=%%at %s', ProcessUtil::escapeArgument($identifier)), $output, $this->repoDir);
+                $this->process->execute(sprintf('git log -1 --format=%%at %s', ProcessExecutor::escape($identifier)), $output, $this->repoDir);
                 $date = new \DateTime('@'.trim($output), new \DateTimeZone('UTC'));
                 $composer['time'] = $date->format('Y-m-d H:i:s');
             }

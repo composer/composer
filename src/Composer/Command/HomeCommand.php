@@ -18,12 +18,12 @@ use Composer\Package\CompletePackageInterface;
 use Composer\Package\Loader\InvalidPackageException;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\RepositoryInterface;
+use Composer\Util\ProcessExecutor;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\Exception\InvalidArgumentException;
-use Composer\Util\ProcessUtil;
 
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>
@@ -121,7 +121,7 @@ EOT
      */
     private function openBrowser($url)
     {
-        $url = ProcessUtil::escapeArgument($url);
+        $url = ProcessExecutor::escape($url);
 
         if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
             return passthru('start "web" explorer "' . $url . '"');

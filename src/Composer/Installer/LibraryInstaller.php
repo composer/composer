@@ -17,7 +17,7 @@ use Composer\IO\IOInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
 use Composer\Util\Filesystem;
-use Composer\Util\ProcessUtil;
+use Composer\Util\ProcessExecutor;
 
 /**
  * Package installation manager.
@@ -297,7 +297,7 @@ class LibraryInstaller implements InstallerInterface
         }
 
         return "@ECHO OFF\r\n".
-            "SET BIN_TARGET=%~dp0/".trim(ProcessUtil::escapeArgument($binPath), '"')."\r\n".
+            "SET BIN_TARGET=%~dp0/".trim(ProcessExecutor::escape($binPath), '"')."\r\n".
             "{$caller} \"%BIN_TARGET%\" %*\r\n";
     }
 
@@ -308,7 +308,7 @@ class LibraryInstaller implements InstallerInterface
         return "#!/usr/bin/env sh\n".
             'SRC_DIR="`pwd`"'."\n".
             'cd "`dirname "$0"`"'."\n".
-            'cd '.ProcessUtil::escapeArgument(dirname($binPath))."\n".
+            'cd '.ProcessExecutor::escape(dirname($binPath))."\n".
             'BIN_TARGET="`pwd`/'.basename($binPath)."\"\n".
             'cd "$SRC_DIR"'."\n".
             '"$BIN_TARGET" "$@"'."\n";

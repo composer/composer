@@ -13,7 +13,7 @@
 namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
-use Composer\Util\ProcessUtil;
+use Composer\Util\ProcessExecutor;
 
 /**
  * @author Per Bernhardt <plb@webfactory.de>
@@ -25,10 +25,10 @@ class HgDownloader extends VcsDownloader
      */
     public function doDownload(PackageInterface $package, $path, $url)
     {
-        $url = ProcessUtil::escapeArgument($url);
-        $ref = ProcessUtil::escapeArgument($package->getSourceReference());
+        $url = ProcessExecutor::escape($url);
+        $ref = ProcessExecutor::escape($package->getSourceReference());
         $this->io->write("    Cloning ".$package->getSourceReference());
-        $command = sprintf('hg clone %s %s', $url, ProcessUtil::escapeArgument($path));
+        $command = sprintf('hg clone %s %s', $url, ProcessExecutor::escape($path));
         if (0 !== $this->process->execute($command, $ignoredOutput)) {
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
         }
@@ -43,8 +43,8 @@ class HgDownloader extends VcsDownloader
      */
     public function doUpdate(PackageInterface $initial, PackageInterface $target, $path, $url)
     {
-        $url = ProcessUtil::escapeArgument($url);
-        $ref = ProcessUtil::escapeArgument($target->getSourceReference());
+        $url = ProcessExecutor::escape($url);
+        $ref = ProcessExecutor::escape($target->getSourceReference());
         $this->io->write("    Updating to ".$target->getSourceReference());
 
         if (!is_dir($path.'/.hg')) {

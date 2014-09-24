@@ -20,7 +20,7 @@ use Composer\Package\Version\VersionSelector;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Package\Version\VersionParser;
-use Composer\Util\ProcessUtil;
+use Composer\Util\ProcessExecutor;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -439,7 +439,7 @@ EOT
         $finder = new ExecutableFinder();
         $gitBin = $finder->find('git');
 
-        $cmd = new Process(sprintf('%s config -l', ProcessUtil::escapeArgument($gitBin)));
+        $cmd = new Process(sprintf('%s config -l', ProcessExecutor::escape($gitBin)));
         $cmd->run();
 
         if ($cmd->isSuccessful()) {

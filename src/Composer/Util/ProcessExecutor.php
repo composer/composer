@@ -13,6 +13,7 @@
 namespace Composer\Util;
 
 use Symfony\Component\Process\Process;
+use Symfony\Component\Process\ProcessUtils;
 use Composer\IO\IOInterface;
 
 /**
@@ -103,5 +104,18 @@ class ProcessExecutor
     public static function setTimeout($timeout)
     {
         static::$timeout = $timeout;
+    }
+    
+    /**
+     * Escapes a string to be used as a shell argument.
+     *
+     * @param string $argument The argument that will be escaped
+     *
+     * @return string The escaped argument
+     */
+    
+    public static function escape ($argument)
+    {
+    	return ProcessUtils::escapeArgument($argument);
     }
 }
