@@ -46,9 +46,10 @@ class GitDownloader extends VcsDownloader
         $flag = defined('PHP_WINDOWS_VERSION_MAJOR') ? '/D ' : '';
         $command = 'git clone --no-checkout %s %s && cd '.$flag.'%2$s && git remote add composer %1$s && git fetch composer';
         $this->io->write("    Cloning ".$ref);
-
-        $commandCallable = function ($url) use ($ref, $path, $command) {
-            return sprintf($command, $this->shellEscapeUrl ($url), escapeshellarg($path), escapeshellarg($ref));
+        
+        $downloader = $this;
+        $commandCallable = function ($url) use ($ref, $path, $command, $downloader) {
+            return sprintf($command, $downloader->shellEscapeUrl ($url), escapeshellarg($path), escapeshellarg($ref));
         };
 
         $this->gitUtil->runCommand($commandCallable, $url, $path, true);
@@ -94,8 +95,9 @@ class GitDownloader extends VcsDownloader
         $this->io->write("    Checking out ".$ref);
         $command = 'git remote set-url composer %s && git fetch composer && git fetch --tags composer';
 
-        $commandCallable = function ($url) use ($command) {
-            return sprintf($command, $this->shellEscapeUrl ($url));
+        $downloader = $this;
+        $commandCallable = function ($url) use ($command, $downloader) {
+            return sprintf($command, $downloader->shellEscapeUrl ($url));
         };
 
         $this->gitUtil->runCommand($commandCallable, $url, $path);
