@@ -112,9 +112,9 @@ class Filesystem
         }
 
         if (defined('PHP_WINDOWS_VERSION_BUILD')) {
-            $cmd = sprintf('rmdir /S /Q %s', escapeshellarg(realpath($directory)));
+            $cmd = sprintf('rmdir /S /Q %s', ProcessExecutor::escape(realpath($directory)));
         } else {
-            $cmd = sprintf('rm -rf %s', escapeshellarg($directory));
+            $cmd = sprintf('rm -rf %s', ProcessExecutor::escape($directory));
         }
 
         $result = $this->getProcess()->execute($cmd, $output) === 0;
@@ -269,7 +269,7 @@ class Filesystem
 
         if (defined('PHP_WINDOWS_VERSION_BUILD')) {
             // Try to copy & delete - this is a workaround for random "Access denied" errors.
-            $command = sprintf('xcopy %s %s /E /I /Q', escapeshellarg($source), escapeshellarg($target));
+            $command = sprintf('xcopy %s %s /E /I /Q', ProcessExecutor::escape($source), ProcessExecutor::escape($target));
             $result = $this->processExecutor->execute($command, $output);
 
             // clear stat cache because external processes aren't tracked by the php stat cache
@@ -283,7 +283,7 @@ class Filesystem
         } else {
             // We do not use PHP's "rename" function here since it does not support
             // the case where $source, and $target are located on different partitions.
-            $command = sprintf('mv %s %s', escapeshellarg($source), escapeshellarg($target));
+            $command = sprintf('mv %s %s', ProcessExecutor::escape($source), ProcessExecutor::escape($target));
             $result = $this->processExecutor->execute($command, $output);
 
             // clear stat cache because external processes aren't tracked by the php stat cache

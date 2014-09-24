@@ -341,13 +341,13 @@ class Locker
                 case 'git':
                     GitUtil::cleanEnv();
 
-                    if (0 === $this->process->execute('git log -n1 --pretty=%ct '.escapeshellarg($sourceRef), $output, $path) && preg_match('{^\s*\d+\s*$}', $output)) {
+                    if (0 === $this->process->execute('git log -n1 --pretty=%ct '.ProcessExecutor::escape($sourceRef), $output, $path) && preg_match('{^\s*\d+\s*$}', $output)) {
                         $datetime = new \DateTime('@'.trim($output), new \DateTimeZone('UTC'));
                     }
                     break;
 
                 case 'hg':
-                    if (0 === $this->process->execute('hg log --template "{date|hgdate}" -r '.escapeshellarg($sourceRef), $output, $path) && preg_match('{^\s*(\d+)\s*}', $output, $match)) {
+                    if (0 === $this->process->execute('hg log --template "{date|hgdate}" -r '.ProcessExecutor::escape($sourceRef), $output, $path) && preg_match('{^\s*(\d+)\s*}', $output, $match)) {
                         $datetime = new \DateTime('@'.$match[1], new \DateTimeZone('UTC'));
                     }
                     break;

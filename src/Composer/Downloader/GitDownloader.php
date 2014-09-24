@@ -46,9 +46,13 @@ class GitDownloader extends VcsDownloader
         $flag = defined('PHP_WINDOWS_VERSION_MAJOR') ? '/D ' : '';
         $command = 'git clone --no-checkout %s %s && cd '.$flag.'%2$s && git remote add composer %1$s && git fetch composer';
         $this->io->write("    Cloning ".$ref);
-
+        
         $commandCallable = function ($url) use ($ref, $path, $command) {
-            return sprintf($command, escapeshellarg($url), escapeshellarg($path), escapeshellarg($ref));
+            return sprintf(
+            		$command,
+            		ProcessExecutor::escape($url),
+            		ProcessExecutor::escape($path),
+            		ProcessExecutor::escape($ref));
         };
 
         $this->gitUtil->runCommand($commandCallable, $url, $path, true);
@@ -78,7 +82,7 @@ class GitDownloader extends VcsDownloader
         $command = 'git remote set-url composer %s && git fetch composer && git fetch --tags composer';
 
         $commandCallable = function ($url) use ($command) {
-            return sprintf($command, escapeshellarg($url));
+            return sprintf($command, ProcessExecutor::escape ($url));
         };
 
         $this->gitUtil->runCommand($commandCallable, $url, $path);
@@ -225,7 +229,7 @@ class GitDownloader extends VcsDownloader
             && $branches
             && preg_match('{^\s+composer/'.preg_quote($reference).'$}m', $branches)
         ) {
-            $command = sprintf('git checkout -B %s %s && git reset --hard %2$s', escapeshellarg($branch), escapeshellarg('composer/'.$reference));
+            $command = sprintf('git checkout -B %s %s && git reset --hard %2$s', ProcessExecutor::escape($branch), ProcessExecutor::escape('composer/'.$reference));
             if (0 === $this->process->execute($command, $output, $path)) {
                 return;
             }
@@ -238,19 +242,19 @@ class GitDownloader extends VcsDownloader
                 $branch = 'v' . $branch;
             }
 
-            $command = sprintf('git checkout %s', escapeshellarg($branch));
-            $fallbackCommand = sprintf('git checkout -B %s %s', escapeshellarg($branch), escapeshellarg('composer/'.$branch));
+            $command = sprintf('git checkout %s', ProcessExecutor::escape($branch));
+            $fallbackCommand = sprintf('git checkout -B %s %s', ProcessExecutor::escape($branch), ProcessExecutor::escape('composer/'.$branch));
             if (0 === $this->process->execute($command, $output, $path)
                 || 0 === $this->process->execute($fallbackCommand, $output, $path)
             ) {
-                $command = sprintf('git reset --hard %s', escapeshellarg($reference));
+                $command = sprintf('git reset --hard %s', ProcessExecutor::escape($reference));
                 if (0 === $this->process->execute($command, $output, $path)) {
                     return;
                 }
             }
         }
 
-        $command = sprintf($template, escapeshellarg($gitRef));
+        $command = sprintf($template, ProcessExecutor::escape($gitRef));
         if (0 === $this->process->execute($command, $output, $path)) {
             return;
         }
@@ -269,7 +273,7 @@ class GitDownloader extends VcsDownloader
             foreach ($this->process->splitLines($output) as $line) {
                 if (preg_match('{^composer/'.preg_quote($branch).'(?:\.x)?$}i', trim($line))) {
                     // find the previous commit by date in the given branch
-                    if (0 === $this->process->execute(sprintf($guessTemplate, $date, escapeshellarg(trim($line))), $output, $path)) {
+                    if (0 === $this->process->execute(sprintf($guessTemplate, $date, ProcessExecutor::escape(trim($line))), $output, $path)) {
                         $newReference = trim($output);
                     }
 
@@ -286,7 +290,7 @@ class GitDownloader extends VcsDownloader
             }
 
             // checkout the new recovered ref
-            $command = sprintf($template, escapeshellarg($newReference));
+            $command = sprintf($template, ProcessExecutor::escape($newReference));
             if (0 === $this->process->execute($command, $output, $path)) {
                 $this->io->write('    '.$reference.' is gone (history was rewritten?), recovered by checking out '.$newReference);
 
@@ -306,7 +310,7 @@ class GitDownloader extends VcsDownloader
             if ($protocols[0] !== 'git') {
                 $pushUrl = 'https://' . $match[1] . '/'.$match[2].'/'.$match[3].'.git';
             }
-            $cmd = sprintf('git remote set-url --push origin %s', escapeshellarg($pushUrl));
+            $cmd = sprintf('git remote set-url --push origin %s', ProcessExecutor::escape($pushUrl));
             $this->process->execute($cmd, $ignoredOutput, $path);
         }
     }

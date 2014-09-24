@@ -152,7 +152,7 @@ class EventDispatcher
                     throw $e;
                 }
             } else {
-                $args = implode(' ', array_map('escapeshellarg', $event->getArguments()));
+                $args = implode(' ', array_map(array('Composer\Util\ProcessExecutor','escape'), $event->getArguments()));
                 if (0 !== ($exitCode = $this->process->execute($callable . ($args === '' ? '' : ' '.$args)))) {
                     $event->getIO()->write(sprintf('<error>Script %s handling the %s event returned with an error</error>', $callable, $event->getName()));
 
