@@ -71,7 +71,7 @@ class GitDownloader extends VcsDownloader
      * http://windowsitpro.com/windows-server/how-can-i-pass-percent-sign-value-regexe
      */
     
-    private function shellEscapeUrl ($url) {
+    public function shellEscapeUrl ($url) {
         $escapedUrl = escapeshellarg($url);
         if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
             $escapedUrl = str_replace('%','^%', $escapedUrl);
