@@ -230,6 +230,54 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
 }
 '
             ),
+            array(
+                '{
+    "repositories": [{
+        "type": "package",
+        "package": {
+            "bar": "ba[z",
+            "dist": {
+                "url": "http...",
+                "type": "zip"
+            },
+            "autoload": {
+                "classmap": [ "foo/bar" ]
+            }
+        }
+    }],
+    "require": {
+        "php": "5.*"
+    },
+    "require-dev": {
+        "foo": "bar"
+    }
+}',
+                'require-dev',
+                'foo',
+                'qux',
+                '{
+    "repositories": [{
+        "type": "package",
+        "package": {
+            "bar": "ba[z",
+            "dist": {
+                "url": "http...",
+                "type": "zip"
+            },
+            "autoload": {
+                "classmap": [ "foo/bar" ]
+            }
+        }
+    }],
+    "require": {
+        "php": "5.*"
+    },
+    "require-dev": {
+        "foo": "qux"
+    }
+}
+'
+            ),
         );
     }
 
@@ -468,6 +516,24 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
             "package": { "bar": "ba}z" }
         }
     }
+}',
+                'bar',
+                false
+            ),
+            'fails on deep arrays with borked texts' => array(
+                '{
+    "repositories": [{
+        "package": { "bar": "ba[z" }
+    }]
+}',
+                'bar',
+                false
+            ),
+            'fails on deep arrays with borked texts2' => array(
+                '{
+    "repositories": [{
+        "package": { "bar": "ba]z" }
+    }]
 }',
                 'bar',
                 false

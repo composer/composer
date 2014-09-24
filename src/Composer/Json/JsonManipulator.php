@@ -18,6 +18,7 @@ namespace Composer\Json;
 class JsonManipulator
 {
     private static $RECURSE_BLOCKS;
+    private static $RECURSE_ARRAYS;
     private static $JSON_VALUE;
     private static $JSON_STRING;
 
@@ -29,8 +30,9 @@ class JsonManipulator
     {
         if (!self::$RECURSE_BLOCKS) {
             self::$RECURSE_BLOCKS = '(?:[^{}]*|\{(?:[^{}]*|\{(?:[^{}]*|\{(?:[^{}]*|\{[^{}]*\})*\})*\})*\})*';
-            self::$JSON_STRING = '"(?:\\\\["bfnrt/\\\\]|\\\\u[a-fA-F0-9]{4}|[^\0-\x09\x0a-\x1f\\\\"])*"';
-            self::$JSON_VALUE = '(?:[0-9.]+|null|true|false|'.self::$JSON_STRING.'|\[[^\]]*\]|\{'.self::$RECURSE_BLOCKS.'\})';
+            self::$RECURSE_ARRAYS = '(?:[^\]]*|\[(?:[^\]]*|\[(?:[^\]]*|\[(?:[^\]]*|\[[^\]]*\])*\])*\])*\])*';
+            self::$JSON_STRING = '"(?:\\\\["bfnrt/\\\\]|\\\\u[a-fA-F0-9]{4}|[^\0-\x09\x0a-\x1f\\\\"])+"';
+            self::$JSON_VALUE = '(?:[0-9.]+|null|true|false|'.self::$JSON_STRING.'|\['.self::$RECURSE_ARRAYS.'\]|\{'.self::$RECURSE_BLOCKS.'\})';
         }
 
         $contents = trim($contents);
