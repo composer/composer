@@ -461,6 +461,15 @@ class Filesystem
         return (bool) preg_match('{^(file://|/|[a-z]:[\\\\/]|\.\.[\\\\/]|[a-z0-9_.-]+[\\\\/])}i', $path);
     }
 
+    public static function getPlatformPath($path)
+    {
+        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+            $path = preg_replace('{^(?:file:///([a-z])/)}i', 'file://$1:/', $path);
+        }
+
+        return preg_replace('{^file://}i', '', $path);
+    }
+
     protected function directorySize($directory)
     {
         $it = new RecursiveDirectoryIterator($directory, RecursiveDirectoryIterator::SKIP_DOTS);

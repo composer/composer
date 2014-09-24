@@ -46,7 +46,7 @@ abstract class VcsDriver implements VcsDriverInterface
     final public function __construct(array $repoConfig, IOInterface $io, Config $config, ProcessExecutor $process = null, RemoteFilesystem $remoteFilesystem = null)
     {
         if (Filesystem::isLocalPath($repoConfig['url'])) {
-            $repoConfig['url'] = preg_replace('{^file://}', '', $repoConfig['url']);
+            $repoConfig['url'] = Filesystem::getPlatformPath($repoConfig['url']);
         }
 
         $this->url = $repoConfig['url'];

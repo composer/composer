@@ -225,12 +225,12 @@ class GitDriver extends VcsDriver
 
         // local filesystem
         if (Filesystem::isLocalPath($url)) {
+            $url = Filesystem::getPlatformPath($url);
             if (!is_dir($url)) {
                 throw new \RuntimeException('Directory does not exist: '.$url);
             }
 
-            $process = new ProcessExecutor();
-            $url = str_replace('file://', '', $url);
+            $process = new ProcessExecutor($io);
             // check whether there is a git repo in that path
             if ($process->execute('git tag', $output, $url) === 0) {
                 return true;

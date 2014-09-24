@@ -198,12 +198,12 @@ class HgDriver extends VcsDriver
 
         // local filesystem
         if (Filesystem::isLocalPath($url)) {
+            $url = Filesystem::getPlatformPath($url);
             if (!is_dir($url)) {
                 throw new \RuntimeException('Directory does not exist: '.$url);
             }
 
             $process = new ProcessExecutor();
-            $url = str_replace('file://', '', $url);
             // check whether there is a hg repo in that path
             if ($process->execute('hg summary', $output, $url) === 0) {
                 return true;
