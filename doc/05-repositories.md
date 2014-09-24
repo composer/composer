@@ -362,7 +362,7 @@ http-basic section of your config (See [Schema](04-schema.md)):
 If your Subversion client is configured to store credentials by default these
 credentials will be saved for the current user and existing saved credentials
 for this server will be overwritten. To change this behavior by setting the
-`"cache-credentials"` option in your repository configuration:
+`"svn-cache-credentials"` option in your repository configuration:
 
 ```json
 {
@@ -370,7 +370,7 @@ for this server will be overwritten. To change this behavior by setting the
         {
             "type": "vcs",
             "url": "http://svn.example.org/projectA/",
-            "cache-credentials": false
+            "svn-cache-credentials": false
         }
     ]
 }
