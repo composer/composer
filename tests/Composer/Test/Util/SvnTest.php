@@ -72,6 +72,52 @@ class SvnTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($this->getCmd(" --username 'foo' --password 'bar' "), $reflMethod->invoke($svn));
     }
 
+    public function testCredentialsFromConfigWithCacheCredentialsTrue()
+    {
+        $url = 'http://svn.apache.org';
+
+        $config = new Config();
+        $config->merge(
+            array(
+                'config' => array(
+                    'http-basic' => array(
+                        'svn.apache.org' => array('username' => 'foo', 'password' => 'bar')
+                    )
+                )
+            )
+        );
+
+        $svn = new Svn($url, new NullIO, $config);
+        $svn->setCacheCredentials(true);
+        $reflMethod = new \ReflectionMethod('Composer\\Util\\Svn', 'getCredentialString');
+        $reflMethod->setAccessible(true);
+
+        $this->assertEquals($this->getCmd(" --username 'foo' --password 'bar' "), $reflMethod->invoke($svn));
+    }
+
+    public function testCredentialsFromConfigWithCacheCredentialsFalse()
+    {
+        $url = 'http://svn.apache.org';
+
+        $config = new Config();
+        $config->merge(
+            array(
+                'config' => array(
+                    'http-basic' => array(
+                        'svn.apache.org' => array('username' => 'foo', 'password' => 'bar')
+                    )
+                )
+            )
+        );
+
+        $svn = new Svn($url, new NullIO, $config);
+        $svn->setCacheCredentials(false);
+        $reflMethod = new \ReflectionMethod('Composer\\Util\\Svn', 'getCredentialString');
+        $reflMethod->setAccessible(true);
+
+        $this->assertEquals($this->getCmd(" --no-auth-cache --username 'foo' --password 'bar' "), $reflMethod->invoke($svn));
+    }
+
     private function getCmd($cmd)
     {
         if (defined('PHP_WINDOWS_VERSION_BUILD')) {

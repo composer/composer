@@ -148,6 +148,14 @@ class Svn
     }
 
     /**
+     * @param boolean $cacheCredentials
+     */
+    public function setCacheCredentials($cacheCredentials)
+    {
+        $this->cacheCredentials = $cacheCredentials;
+    }
+
+    /**
      * Repositories requests credentials, let's put them in.
      *
      * @return \Composer\Util\Svn

@@ -345,6 +345,37 @@ If the package is in a sub-directory, e.g. `/trunk/foo/bar/composer.json` and
 setting the `"package-path"` option to the sub-directory, in this example it
 would be `"package-path": "foo/bar/"`.
 
+If you have a private Subversion repository you can save credentials in the
+http-basic section of your config (See [Schema](04-schema.md)):
+
+```json
+{
+    "http-basic": {
+        "svn.example.org": {
+            "username": "username",
+            "password": "password"
+        }
+    }
+}
+```
+
+If your Subversion client is configured to store credentials by default these
+credentials will be saved for the current user and existing saved credentials
+for this server will be overwritten. To change this behavior by setting the
+`"svn-cache-credentials"` option in your repository configuration:
+
+```json
+{
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "http://svn.example.org/projectA/",
+            "svn-cache-credentials": false
+        }
+    ]
+}
+```
+
 ### PEAR
 
 It is possible to install packages from any PEAR channel by using the `pear`
@@ -494,7 +525,7 @@ there are some use cases for hosting your own repository.
   might want to keep them separate to packagist. An example of this would be
   wordpress plugins.
 
-For hosting your own packages, a native `composer` type of repository is 
+For hosting your own packages, a native `composer` type of repository is
 recommended, which provides the best performance.
 
 There are a few tools that can help you create a `composer` repository.
