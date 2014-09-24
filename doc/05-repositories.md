@@ -345,7 +345,7 @@ If the package is in a sub-directory, e.g. `/trunk/foo/bar/composer.json` and
 setting the `"package-path"` option to the sub-directory, in this example it
 would be `"package-path": "foo/bar/"`.
 
-If you have a private Subversion repository you can safe credentials in the
+If you have a private Subversion repository you can save credentials in the
 http-basic section of your config (See [Schema](04-schema.md)):
 
 ```json
