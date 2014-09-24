@@ -46,13 +46,9 @@ class GitDownloader extends VcsDownloader
         $flag = defined('PHP_WINDOWS_VERSION_MAJOR') ? '/D ' : '';
         $command = 'git clone --no-checkout %s %s && cd '.$flag.'%2$s && git remote add composer %1$s && git fetch composer';
         $this->io->write("    Cloning ".$ref);
-        
+
         $commandCallable = function ($url) use ($ref, $path, $command) {
-            return sprintf(
-            		$command,
-            		ProcessExecutor::escape($url),
-            		ProcessExecutor::escape($path),
-            		ProcessExecutor::escape($ref));
+            return sprintf($command, ProcessExecutor::escape($url), ProcessExecutor::escape($path), ProcessExecutor::escape($ref));
         };
 
         $this->gitUtil->runCommand($commandCallable, $url, $path, true);
