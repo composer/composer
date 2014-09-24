@@ -48,7 +48,7 @@ class GitDownloader extends VcsDownloader
         $this->io->write("    Cloning ".$ref);
 
         $commandCallable = function ($url) use ($ref, $path, $command) {
-            return sprintf($command, escapeshellarg($url), escapeshellarg($path), escapeshellarg($ref));
+            return sprintf($command, $this->shellEscapeUrl ($url), escapeshellarg($path), escapeshellarg($ref));
         };
 
         $this->gitUtil->runCommand($commandCallable, $url, $path, true);
@@ -60,6 +60,23 @@ class GitDownloader extends VcsDownloader
             }
             $package->setSourceReference($newRef);
         }
+    }
+    
+    /**
+     * Escape url. Usernames and password are rawurlencoded earlier in the process. So when the username contains a @ sign,
+     * it is escaped to %40. Windows replaces a % with a space., because the % sign is used for variables like %appdata%. To
+     * escape the % sign, one has to escape the % sign with a carat.
+     * 
+     * http://windowsitpro.com/windows-server/how-can-i-pass-percent-sign-value-regexe
+     */
+    
+    private function shellEscapeUrl ($url) {
+        $escapedUrl = escapeshellarg($url);
+        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            $escapedUrl = str_replace('%','^%', $escapedUrl);
+        }
+        
+        return $escapedUrl;
     }
 
     /**
@@ -78,7 +95,7 @@ class GitDownloader extends VcsDownloader
         $command = 'git remote set-url composer %s && git fetch composer && git fetch --tags composer';
 
         $commandCallable = function ($url) use ($command) {
-            return sprintf($command, escapeshellarg($url));
+            return sprintf($command, $this->shellEscapeUrl ($url));
         };
 
         $this->gitUtil->runCommand($commandCallable, $url, $path);
