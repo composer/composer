@@ -18,6 +18,7 @@ use Composer\EventDispatcher\EventDispatcher;
 use Composer\Util\ProcessExecutor;
 use Composer\IO\IOInterface;
 use RarArchive;
+use Composer\Util\ProcessUtil;
 
 /**
  * RAR archive downloader.
@@ -42,7 +43,7 @@ class RarDownloader extends ArchiveDownloader
 
         // Try to use unrar on *nix
         if (!defined('PHP_WINDOWS_VERSION_BUILD')) {
-            $command = 'unrar x ' . escapeshellarg($file) . ' ' . escapeshellarg($path) . ' && chmod -R u+w ' . escapeshellarg($path);
+            $command = 'unrar x ' . ProcessUtil::escapeArgument($file) . ' ' . ProcessUtil::escapeArgument($path) . ' && chmod -R u+w ' . ProcessUtil::escapeArgument($path);
 
             if (0 === $this->process->execute($command, $ignoredOutput)) {
                 return;

@@ -19,6 +19,7 @@ use Composer\Script;
 use Composer\Script\CommandEvent;
 use Composer\Script\PackageEvent;
 use Composer\Util\ProcessExecutor;
+use Composer\Util\ProcessUtil;
 
 /**
  * The Event Dispatcher.
@@ -152,7 +153,7 @@ class EventDispatcher
                     throw $e;
                 }
             } else {
-                $args = implode(' ', array_map('escapeshellarg', $event->getArguments()));
+                $args = implode(' ', array_map(array('Composer\Util\ProcessUtil','escapeArgument'), $event->getArguments()));
                 if (0 !== ($exitCode = $this->process->execute($callable . ($args === '' ? '' : ' '.$args)))) {
                     $event->getIO()->write(sprintf('<error>Script %s handling the %s event returned with an error</error>', $callable, $event->getName()));
 

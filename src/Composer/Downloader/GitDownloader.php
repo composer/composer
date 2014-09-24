@@ -19,6 +19,7 @@ use Composer\Util\ProcessExecutor;
 use Composer\IO\IOInterface;
 use Composer\Util\Filesystem;
 use Composer\Config;
+use Composer\Util\ProcessUtil;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -47,9 +48,12 @@ class GitDownloader extends VcsDownloader
         $command = 'git clone --no-checkout %s %s && cd '.$flag.'%2$s && git remote add composer %1$s && git fetch composer';
         $this->io->write("    Cloning ".$ref);
         
-        $downloader = $this;
-        $commandCallable = function ($url) use ($ref, $path, $command, $downloader) {
-            return sprintf($command, $downloader->shellEscapeUrl ($url), escapeshellarg($path), escapeshellarg($ref));
+        $commandCallable = function ($url) use ($ref, $path, $command) {
+            return sprintf(
+            		$command,
+            		ProcessUtil::escapeArgument($url),
+            		ProcessUtil::escapeArgument($path),
+            		ProcessUtil::escapeArgument($ref));
         };
 
         $this->gitUtil->runCommand($commandCallable, $url, $path, true);
@@ -61,23 +65,6 @@ class GitDownloader extends VcsDownloader
             }
             $package->setSourceReference($newRef);
         }
-    }
-    
-    /**
-     * Escape url. Usernames and password are rawurlencoded earlier in the process. So when the username contains a @ sign,
-     * it is escaped to %40. Windows replaces a % with a space., because the % sign is used for variables like %appdata%. To
-     * escape the % sign, one has to escape the % sign with a carat.
-     * 
-     * http://windowsitpro.com/windows-server/how-can-i-pass-percent-sign-value-regexe
-     */
-    
-    public function shellEscapeUrl ($url) {
-        $escapedUrl = escapeshellarg($url);
-        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-            $escapedUrl = str_replace('%','^%', $escapedUrl);
-        }
-        
-        return $escapedUrl;
     }
 
     /**
@@ -95,9 +82,8 @@ class GitDownloader extends VcsDownloader
         $this->io->write("    Checking out ".$ref);
         $command = 'git remote set-url composer %s && git fetch composer && git fetch --tags composer';
 
-        $downloader = $this;
-        $commandCallable = function ($url) use ($command, $downloader) {
-            return sprintf($command, $downloader->shellEscapeUrl ($url));
+        $commandCallable = function ($url) use ($command) {
+            return sprintf($command, ProcessUtil::escapeArgument ($url));
         };
 
         $this->gitUtil->runCommand($commandCallable, $url, $path);
@@ -244,7 +230,7 @@ class GitDownloader extends VcsDownloader
             && $branches
             && preg_match('{^\s+composer/'.preg_quote($reference).'$}m', $branches)
         ) {
-            $command = sprintf('git checkout -B %s %s && git reset --hard %2$s', escapeshellarg($branch), escapeshellarg('composer/'.$reference));
+            $command = sprintf('git checkout -B %s %s && git reset --hard %2$s', ProcessUtil::escapeArgument($branch), ProcessUtil::escapeArgument('composer/'.$reference));
             if (0 === $this->process->execute($command, $output, $path)) {
                 return;
             }
@@ -257,19 +243,19 @@ class GitDownloader extends VcsDownloader
                 $branch = 'v' . $branch;
             }
 
-            $command = sprintf('git checkout %s', escapeshellarg($branch));
-            $fallbackCommand = sprintf('git checkout -B %s %s', escapeshellarg($branch), escapeshellarg('composer/'.$branch));
+            $command = sprintf('git checkout %s', ProcessUtil::escapeArgument($branch));
+            $fallbackCommand = sprintf('git checkout -B %s %s', ProcessUtil::escapeArgument($branch), ProcessUtil::escapeArgument('composer/'.$branch));
             if (0 === $this->process->execute($command, $output, $path)
                 || 0 === $this->process->execute($fallbackCommand, $output, $path)
             ) {
-                $command = sprintf('git reset --hard %s', escapeshellarg($reference));
+                $command = sprintf('git reset --hard %s', ProcessUtil::escapeArgument($reference));
                 if (0 === $this->process->execute($command, $output, $path)) {
                     return;
                 }
             }
         }
 
-        $command = sprintf($template, escapeshellarg($gitRef));
+        $command = sprintf($template, ProcessUtil::escapeArgument($gitRef));
         if (0 === $this->process->execute($command, $output, $path)) {
             return;
         }
@@ -288,7 +274,7 @@ class GitDownloader extends VcsDownloader
             foreach ($this->process->splitLines($output) as $line) {
                 if (preg_match('{^composer/'.preg_quote($branch).'(?:\.x)?$}i', trim($line))) {
                     // find the previous commit by date in the given branch
-                    if (0 === $this->process->execute(sprintf($guessTemplate, $date, escapeshellarg(trim($line))), $output, $path)) {
+                    if (0 === $this->process->execute(sprintf($guessTemplate, $date, ProcessUtil::escapeArgument(trim($line))), $output, $path)) {
                         $newReference = trim($output);
                     }
 
@@ -305,7 +291,7 @@ class GitDownloader extends VcsDownloader
             }
 
             // checkout the new recovered ref
-            $command = sprintf($template, escapeshellarg($newReference));
+            $command = sprintf($template, ProcessUtil::escapeArgument($newReference));
             if (0 === $this->process->execute($command, $output, $path)) {
                 $this->io->write('    '.$reference.' is gone (history was rewritten?), recovered by checking out '.$newReference);
 
@@ -325,7 +311,7 @@ class GitDownloader extends VcsDownloader
             if ($protocols[0] !== 'git') {
                 $pushUrl = 'https://' . $match[1] . '/'.$match[2].'/'.$match[3].'.git';
             }
-            $cmd = sprintf('git remote set-url --push origin %s', escapeshellarg($pushUrl));
+            $cmd = sprintf('git remote set-url --push origin %s', ProcessUtil::escapeArgument($pushUrl));
             $this->process->execute($cmd, $ignoredOutput, $path);
         }
     }

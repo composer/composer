@@ -23,6 +23,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\Exception\InvalidArgumentException;
+use Composer\Util\ProcessUtil;
 
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>
@@ -120,7 +121,7 @@ EOT
      */
     private function openBrowser($url)
     {
-        $url = escapeshellarg($url);
+        $url = ProcessUtil::escapeArgument($url);
 
         if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
             return passthru('start "web" explorer "' . $url . '"');

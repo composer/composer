@@ -188,11 +188,11 @@ class Svn
             $cmd,
             '--non-interactive ',
             $this->getCredentialString(),
-            escapeshellarg($url)
+            ProcessUtil::escapeArgument($url)
         );
 
         if ($path) {
-            $cmd .= ' ' . escapeshellarg($path);
+            $cmd .= ' ' . ProcessUtil::escapeArgument($path);
         }
 
         return $cmd;
@@ -214,8 +214,8 @@ class Svn
         return sprintf(
             ' %s--username %s --password %s ',
             $this->getAuthCache(),
-            escapeshellarg($this->getUsername()),
-            escapeshellarg($this->getPassword())
+            ProcessUtil::escapeArgument($this->getUsername()),
+            ProcessUtil::escapeArgument($this->getPassword())
         );
     }
 

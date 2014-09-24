@@ -18,6 +18,7 @@ use Composer\EventDispatcher\EventDispatcher;
 use Composer\Util\ProcessExecutor;
 use Composer\IO\IOInterface;
 use ZipArchive;
+use Composer\Util\ProcessUtil;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -38,7 +39,7 @@ class ZipDownloader extends ArchiveDownloader
 
         // try to use unzip on *nix
         if (!defined('PHP_WINDOWS_VERSION_BUILD')) {
-            $command = 'unzip '.escapeshellarg($file).' -d '.escapeshellarg($path) . ' && chmod -R u+w ' . escapeshellarg($path);
+            $command = 'unzip '.ProcessUtil::escapeArgument($file).' -d '.ProcessUtil::escapeArgument($path) . ' && chmod -R u+w ' . ProcessUtil::escapeArgument($path);
             try {
                 if (0 === $this->process->execute($command, $ignoredOutput)) {
                     return;

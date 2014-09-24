@@ -18,6 +18,7 @@ use Composer\EventDispatcher\EventDispatcher;
 use Composer\Package\PackageInterface;
 use Composer\Util\ProcessExecutor;
 use Composer\IO\IOInterface;
+use Composer\Util\ProcessUtil;
 
 /**
  * GZip archive downloader.
@@ -40,7 +41,7 @@ class GzipDownloader extends ArchiveDownloader
 
         // Try to use gunzip on *nix
         if (!defined('PHP_WINDOWS_VERSION_BUILD')) {
-            $command = 'gzip -cd ' . escapeshellarg($file) . ' > ' . escapeshellarg($targetFilepath);
+            $command = 'gzip -cd ' . ProcessUtil::escapeArgument($file) . ' > ' . ProcessUtil::escapeArgument($targetFilepath);
 
             if (0 === $this->process->execute($command, $ignoredOutput)) {
                 return;
