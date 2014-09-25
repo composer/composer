@@ -94,6 +94,11 @@ breaks until 2.0, that works well. Another way of looking at it is that using
 > like `~1.2` would not install it. As said above `~1.2` only means the `.2`
 > can change but the `1.` part is fixed.
 
+> **Note:** The `~` operator has an exception on its behavior for the major
+> release number. This means for example that `~1` is the same as `~1.0` as
+> it will not allow the major number to increase trying to keep backwards
+> compatibility.
+
 ### Stability
 
 By default only stable releases are taken into consideration. If you would like
