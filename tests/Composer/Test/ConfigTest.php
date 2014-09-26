@@ -115,10 +115,10 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         $config->merge(array('config' => array('a' => 'b', 'c' => '{$a}')));
         $config->merge(array('config' => array('bin-dir' => '$HOME', 'cache-dir' => '~/foo/')));
 
-        $home = rtrim(getenv('HOME'), '\\/');
+        $home = rtrim(getenv('HOME') ?: getenv('USERPROFILE'), '/\\');
         $this->assertEquals('b', $config->get('c'));
-        $this->assertEquals($home.'/', $config->get('bin-dir'));
-        $this->assertEquals($home.'/foo', $config->get('cache-dir'));
+        $this->assertEquals($home . DIRECTORY_SEPARATOR, $config->get('bin-dir'));
+        $this->assertEquals($home . DIRECTORY_SEPARATOR . 'foo', $config->get('cache-dir'));
     }
 
     public function testOverrideGithubProtocols()

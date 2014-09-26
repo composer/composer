@@ -159,7 +159,8 @@ class Config
                 $env = 'COMPOSER_' . strtoupper(strtr($key, '-', '_'));
 
                 $val = rtrim($this->process(getenv($env) ?: $this->config[$key]), '/\\');
-                $val = preg_replace('#^(\$HOME|~)(/|$)#', rtrim(getenv('HOME') ?: getenv('USERPROFILE'), '/\\') . '/', $val);
+                $home = rtrim(getenv('HOME') ?: getenv('USERPROFILE'), '/\\') . DIRECTORY_SEPARATOR;
+                $val = preg_replace('#^(\$HOME|~)(/|$)#', $home, $val);
 
                 return $val;
 
