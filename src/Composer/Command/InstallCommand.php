@@ -19,6 +19,11 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
+use Composer\IO\ProgressLogger;
+use Composer\IO\WorkTracker\ContextWorkTracker;
+use Composer\IO\WorkTracker\UnboundWorkTracker;
+use Composer\IO\WorkTracker\Formatter\DebugFormatter;
+use Composer\IO\WorkTracker\Formatter\MultiProgressFormatter;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -45,6 +50,7 @@ class InstallCommand extends Command
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
                 new InputOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Shows more details including new commits pulled in when updating packages.'),
                 new InputOption('optimize-autoloader', 'o', InputOption::VALUE_NONE, 'Optimize autoloader during autoloader dump'),
+                new InputOption('pretty', null, InputOption::VALUE_REQUIRED, 'Format for progress, values <info>multi</info>, <info>debug</info>', 'multi'),
                 new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Should not be provided, use composer require instead to add a given package to composer.json.'),
             ))
             ->setHelp(<<<EOT
@@ -73,6 +79,8 @@ EOT
             $input->setOption('no-plugins', true);
         }
 
+        $pretty = $input->getOption('pretty');
+
         $composer = $this->getComposer(true, $input->getOption('no-plugins'));
         $composer->getDownloadManager()->setOutputProgress(!$input->getOption('no-progress'));
         $io = $this->getIO();
@@ -80,7 +88,15 @@ EOT
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'install', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
 
-        $install = Installer::create($io, $composer);
+        if ($pretty == 'debug') {
+            $workTrackerFormatter = new DebugFormatter($output);
+        } else {
+            $workTrackerFormatter = new MultiProgressFormatter($output);
+        }
+        $masterWorkTracker = new UnboundWorkTracker('Composer Install', $workTrackerFormatter);
+        $workTracker = new ContextWorkTracker($masterWorkTracker);
+
+        $install = Installer::create($io, $composer, $workTracker);
 
         $preferSource = false;
         $preferDist = false;
