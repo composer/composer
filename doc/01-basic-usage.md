@@ -159,7 +159,9 @@ the lock file with the new version.
 ```sh
 php composer.phar update
 ```
-
+> **Note:** Composer will display a Warning when executing an `install` command if 
+ `composer.lock` and `composer.json` are not synchronized.
+ 
 If you only want to install or update one dependency, you can whitelist them:
 
 ```sh
