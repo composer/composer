@@ -149,7 +149,8 @@ dependencies installed are still working even if your dependencies released
 many new versions since then.
 
 If no `composer.lock` file exists, Composer will read the dependencies and
-versions from `composer.json` and  create the lock file.
+versions from `composer.json` and  create the lock file after executing the `update` or the `install`
+command.
 
 This means that if any of the dependencies get a new version, you won't get the updates
 automatically. To update to the new version, use `update` command. This will fetch
