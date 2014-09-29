@@ -183,7 +183,7 @@ EOT
             try {
                 $this->rfs->getContents('packagist.org', $url, false, array('http' => array('request_fulluri' => false)));
             } catch (TransportException $e) {
-                return 'Unable to assert the situation, maybe packagist.org is down ('.$e->getMessage().')';
+                return 'Unable to assess the situation, maybe packagist.org is down ('.$e->getMessage().')';
             }
 
             return 'It seems there is a problem with your proxy server, try setting the "HTTP_PROXY_REQUEST_FULLURI" and "HTTPS_PROXY_REQUEST_FULLURI" environment variables to "false"';
@@ -212,7 +212,7 @@ EOT
             try {
                 $this->rfs->getContents('github.com', $url, false, array('http' => array('request_fulluri' => false)));
             } catch (TransportException $e) {
-                return 'Unable to assert the situation, maybe github is down ('.$e->getMessage().')';
+                return 'Unable to assess the situation, maybe github is down ('.$e->getMessage().')';
             }
 
             return 'It seems there is a problem with your proxy server, try setting the "HTTPS_PROXY_REQUEST_FULLURI" environment variable to "false"';
