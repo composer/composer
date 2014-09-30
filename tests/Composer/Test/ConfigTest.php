@@ -116,6 +116,11 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         $config->merge(array('config' => array('bin-dir' => '$HOME', 'cache-dir' => '~/foo/')));
 
         $home = rtrim(getenv('HOME'), '\\/');
+
+        if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
+            $home = rtrim(getenv('HOMEDRIVE') . getenv('HOMEPATH'), '\\/');
+        }
+
         $this->assertEquals('b', $config->get('c'));
         $this->assertEquals($home.'/', $config->get('bin-dir'));
         $this->assertEquals($home.'/foo', $config->get('cache-dir'));
