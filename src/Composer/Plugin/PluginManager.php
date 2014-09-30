@@ -37,6 +37,7 @@ class PluginManager
     protected $versionParser;
 
     protected $plugins = array();
+    protected $registeredPlugins = array();
 
     private static $classCounter = 0;
 
@@ -195,6 +196,10 @@ class PluginManager
     {
         $oldInstallerPlugin = ($package->getType() === 'composer-installer');
 
+        if (in_array($package->getName(), $this->registeredPlugins)) {
+            return;
+        }
+
         $extra = $package->getExtra();
         if (empty($extra['class'])) {
             throw new \UnexpectedValueException('Error while installing '.$package->getPrettyName().', composer-plugin packages should have a class defined in their extra key to be usable.');
@@ -237,6 +242,7 @@ class PluginManager
             } else {
                 $plugin = new $class();
                 $this->addPlugin($plugin);
+                $this->registeredPlugins[] = $package->getName();
             }
         }
     }
