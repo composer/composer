@@ -20,7 +20,7 @@ namespace Composer\Installer;
 class InstallerEvents
 {
     /**
-     * The PRE_SOLVE_DEPENDENCIES event occurs as a installer begins
+     * The PRE_DEPENDENCIES_SOLVING event occurs as a installer begins
      * resolve operations.
      *
      * The event listener method receives a
@@ -28,10 +28,10 @@ class InstallerEvents
      *
      * @var string
      */
-    const PRE_SOLVE_DEPENDENCIES = 'pre-solve-dependencies';
+    const PRE_DEPENDENCIES_SOLVING = 'pre-dependencies-solving';
 
     /**
-     * The POST_SOLVE_DEPENDENCIES event occurs as a installer after
+     * The POST_DEPENDENCIES_SOLVING event occurs as a installer after
      * resolve operations.
      *
      * The event listener method receives a
@@ -39,5 +39,5 @@ class InstallerEvents
      *
      * @var string
      */
-    const POST_SOLVE_DEPENDENCIES = 'post-solve-dependencies';
+    const POST_DEPENDENCIES_SOLVING = 'post-dependencies-solving';
 }

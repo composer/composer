@@ -26,6 +26,8 @@ Composer fires the following named events during its execution process:
 - **post-update-cmd**: occurs after the `update` command is executed.
 - **pre-status-cmd**: occurs before the `status` command is executed.
 - **post-status-cmd**: occurs after the `status` command is executed.
+- **pre-dependencies-solving**: occurs before the dependencies are resolved.
+- **post-dependencies-solving**: occurs after the dependencies are resolved.
 - **pre-package-install**: occurs before a package is installed.
 - **post-package-install**: occurs after a package is installed.
 - **pre-package-update**: occurs before a package is updated.

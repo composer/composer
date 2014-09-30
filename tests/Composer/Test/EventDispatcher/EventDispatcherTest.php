@@ -14,8 +14,9 @@ namespace Composer\Test\EventDispatcher;
 
 use Composer\EventDispatcher\Event;
 use Composer\EventDispatcher\EventDispatcher;
+use Composer\Installer\InstallerEvents;
 use Composer\TestCase;
-use Composer\Script;
+use Composer\Script\ScriptEvents;
 use Composer\Util\ProcessExecutor;
 
 class EventDispatcherTest extends TestCase
@@ -34,7 +35,7 @@ class EventDispatcherTest extends TestCase
             ->method('write')
             ->with('<error>Script Composer\Test\EventDispatcher\EventDispatcherTest::call handling the post-install-cmd event terminated with an exception</error>');
 
-        $dispatcher->dispatchCommandEvent("post-install-cmd", false);
+        $dispatcher->dispatchCommandEvent(ScriptEvents::POST_INSTALL_CMD, false);
     }
 
     /**
@@ -63,7 +64,7 @@ class EventDispatcherTest extends TestCase
             ->with($command)
             ->will($this->returnValue(0));
 
-        $dispatcher->dispatchCommandEvent("post-install-cmd", false);
+        $dispatcher->dispatchCommandEvent(ScriptEvents::POST_INSTALL_CMD, false);
     }
 
     public function testDispatcherCanExecuteCliAndPhpInSameEventScriptStack()
@@ -99,7 +100,7 @@ class EventDispatcherTest extends TestCase
             ->with('Composer\Test\EventDispatcher\EventDispatcherTest', 'someMethod')
             ->will($this->returnValue(true));
 
-        $dispatcher->dispatchCommandEvent("post-install-cmd", false);
+        $dispatcher->dispatchCommandEvent(ScriptEvents::POST_INSTALL_CMD, false);
     }
 
     private function getDispatcherStubForListenersTest($listeners, $io)
@@ -145,7 +146,7 @@ class EventDispatcherTest extends TestCase
             ->will($this->returnValue($listener));
 
         ob_start();
-        $dispatcher->dispatchCommandEvent("post-install-cmd", false);
+        $dispatcher->dispatchCommandEvent(ScriptEvents::POST_INSTALL_CMD, false);
         $this->assertEquals('foo', trim(ob_get_clean()));
     }
 
@@ -171,7 +172,7 @@ class EventDispatcherTest extends TestCase
             ->with($this->equalTo('<error>Script '.$code.' handling the post-install-cmd event returned with an error</error>'));
 
         $this->setExpectedException('RuntimeException');
-        $dispatcher->dispatchCommandEvent("post-install-cmd", false);
+        $dispatcher->dispatchCommandEvent(ScriptEvents::POST_INSTALL_CMD, false);
     }
 
     public function testDispatcherInstallerEvents()
@@ -195,8 +196,8 @@ class EventDispatcherTest extends TestCase
         $installedRepo = $this->getMockBuilder('Composer\Repository\CompositeRepository')->disableOriginalConstructor()->getMock();
         $request = $this->getMockBuilder('Composer\DependencyResolver\Request')->disableOriginalConstructor()->getMock();
 
-        $dispatcher->dispatchInstallerEvent("pre-solve-dependencies", $policy, $pool, $installedRepo, $request);
-        $dispatcher->dispatchInstallerEvent("post-solve-dependencies", $policy, $pool, $installedRepo, $request, array());
+        $dispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, $policy, $pool, $installedRepo, $request);
+        $dispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, $policy, $pool, $installedRepo, $request, array());
     }
 
     public static function call()
