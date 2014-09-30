@@ -15,6 +15,7 @@ namespace Composer\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Composer\Downloader\DvcsDownloaderInterface;
 use Composer\Downloader\ChangeReportInterface;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
@@ -60,6 +61,7 @@ EOT
         $composer->getEventDispatcher()->dispatchCommandEvent(ScriptEvents::PRE_STATUS_CMD, true);
 
         $errors = array();
+        $unpushedChanges = array();
 
         // list packages
         foreach ($installedRepo->getPackages() as $package) {
@@ -71,35 +73,60 @@ EOT
                 if ($changes = $downloader->getLocalChanges($package, $targetDir)) {
                     $errors[$targetDir] = $changes;
                 }
+
+                if ($downloader instanceof DvcsDownloaderInterface) {
+                    if ($unpushed = $downloader->getUnpushedChanges($targetDir)) {
+                        $unpushedChanges[$targetDir] = $unpushed;
+                    }
+                }
             }
         }
 
         // output errors/warnings
-        if (!$errors) {
+        if (!$errors && !$unpushed) {
             $output->writeln('<info>No local changes</info>');
         } else {
-            $output->writeln('<error>You have changes in the following dependencies:</error>');
-        }
 
-        foreach ($errors as $path => $changes) {
-            if ($input->getOption('verbose')) {
-                $indentedChanges = implode("\n", array_map(function ($line) {
-                    return '    ' . $line;
-                }, explode("\n", $changes)));
-                $output->writeln('<info>'.$path.'</info>:');
-                $output->writeln($indentedChanges);
-            } else {
-                $output->writeln($path);
+            if ($errors) {
+                $output->writeln('<error>You have changes in the following dependencies:</error>');
+
+                foreach ($errors as $path => $changes) {
+                    if ($input->getOption('verbose')) {
+                        $indentedChanges = implode("\n", array_map(function ($line) {
+                            return '    ' . $line;
+                        }, explode("\n", $changes)));
+                        $output->writeln('<info>'.$path.'</info>:');
+                        $output->writeln($indentedChanges);
+                    } else {
+                        $output->writeln($path);
+                    }
+                }
             }
-        }
 
-        if ($errors && !$input->getOption('verbose')) {
-            $output->writeln('Use --verbose (-v) to see modified files');
+            if ($unpushedChanges) {
+                $output->writeln('<warning>You have unpushed changes on the current branch in the following dependencies:</warning>');
+
+                foreach ($unpushedChanges as $path => $changes) {
+                    if ($input->getOption('verbose')) {
+                        $indentedChanges = implode("\n", array_map(function ($line) {
+                            return '    ' . $line;
+                        }, explode("\n", $changes)));
+                        $output->writeln('<info>'.$path.'</info>:');
+                        $output->writeln($indentedChanges);
+                    } else {
+                        $output->writeln($path);
+                    }
+                }
+            }
+
+            if (!$input->getOption('verbose')) {
+                $output->writeln('Use --verbose (-v) to see modified files');
+            }
         }
 
         // Dispatch post-status-command
         $composer->getEventDispatcher()->dispatchCommandEvent(ScriptEvents::POST_STATUS_CMD, true);
 
-        return $errors ? 1 : 0;
+        return ($errors ? 1 : 0) + ($unpushedChanges ? 2 : 0);
     }
 }
