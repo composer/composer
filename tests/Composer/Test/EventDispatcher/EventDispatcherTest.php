@@ -174,6 +174,31 @@ class EventDispatcherTest extends TestCase
         $dispatcher->dispatchCommandEvent("post-install-cmd", false);
     }
 
+    public function testDispatcherInstallerEvents()
+    {
+        $process = $this->getMock('Composer\Util\ProcessExecutor');
+        $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
+            ->setConstructorArgs(array(
+                    $this->getMock('Composer\Composer'),
+                    $this->getMock('Composer\IO\IOInterface'),
+                    $process,
+                ))
+            ->setMethods(array('getListeners'))
+            ->getMock();
+
+        $dispatcher->expects($this->atLeastOnce())
+            ->method('getListeners')
+            ->will($this->returnValue(array()));
+
+        $policy = $this->getMock('Composer\DependencyResolver\PolicyInterface');
+        $pool = $this->getMockBuilder('Composer\DependencyResolver\Pool')->disableOriginalConstructor()->getMock();
+        $installedRepo = $this->getMockBuilder('Composer\Repository\CompositeRepository')->disableOriginalConstructor()->getMock();
+        $request = $this->getMockBuilder('Composer\DependencyResolver\Request')->disableOriginalConstructor()->getMock();
+
+        $dispatcher->dispatchInstallerEvent("pre-solve-dependencies", $policy, $pool, $installedRepo, $request);
+        $dispatcher->dispatchInstallerEvent("post-solve-dependencies", $policy, $pool, $installedRepo, $request, array());
+    }
+
     public static function call()
     {
         throw new \RuntimeException();
