@@ -45,7 +45,8 @@ class UpdateCommand extends Command
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
                 new InputOption('with-dependencies', null, InputOption::VALUE_NONE, 'Add also all dependencies of whitelisted packages to the whitelist.'),
                 new InputOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Shows more details including new commits pulled in when updating packages.'),
-                new InputOption('optimize-autoloader', 'o', InputOption::VALUE_NONE, 'Optimize autoloader during autoloader dump.')
+                new InputOption('optimize-autoloader', 'o', InputOption::VALUE_NONE, 'Optimize autoloader during autoloader dump.'),
+                new InputOption('ignore-platform-package-requirements', null, InputOption::VALUE_NONE, 'Ignore PHP Extention requirements.'),
             ))
             ->setHelp(<<<EOT
 The <info>update</info> command reads the composer.json file from the
@@ -119,6 +120,7 @@ EOT
             ->setUpdate(true)
             ->setUpdateWhitelist($input->getOption('lock') ? array('lock') : $input->getArgument('packages'))
             ->setWhitelistDependencies($input->getOption('with-dependencies'))
+            ->setIgnorePlatformPackage($input->getOption('ignore-platform-package-requirements'));
         ;
 
         if ($input->getOption('no-plugins')) {

@@ -13,6 +13,7 @@
 namespace Composer\DependencyResolver;
 
 use Composer\Repository\RepositoryInterface;
+use Composer\Repository\PlatformRepository;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -129,7 +130,7 @@ class Solver
         }
     }
 
-    protected function checkForRootRequireProblems()
+    protected function checkForRootRequireProblems($ignorePlatformPackageRequirements)
     {
         foreach ($this->jobs as $job) {
             switch ($job['cmd']) {
@@ -149,6 +150,10 @@ class Solver
                     break;
 
                 case 'install':
+                    if ($ignorePlatformPackageRequirements && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $job['packageName'])) {
+                        break;
+                    }
+
                     if (!$this->pool->whatProvides($job['packageName'], $job['constraint'])) {
                         $problem = new Problem($this->pool);
                         $problem->addRule(new Rule($this->pool, array(), null, null, $job));
@@ -159,15 +164,23 @@ class Solver
         }
     }
 
-    public function solve(Request $request)
+    public function solve(Request $request, $ignorePlatformPackage = false)
     {
         $this->jobs = $request->getJobs();
 
         $this->setupInstalledMap();
         $this->rules = $this->ruleSetGenerator->getRulesFor($this->jobs, $this->installedMap);
-        $this->checkForRootRequireProblems();
+        $this->checkForRootRequireProblems($ignorePlatformPackage);
         $this->decisions = new Decisions($this->pool);
         $this->watchGraph = new RuleWatchGraph;
+
+        if ($ignorePlatformPackage) {
+            foreach ($this->rules as $rule) {
+                if ($rule->getReason() === Rule::RULE_PACKAGE_REQUIRES && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $rule->getRequiredPackage())) {
+                    $rule->disable();
+                }
+            }
+        }
 
         foreach ($this->rules as $rule) {
             $this->watchGraph->insert(new RuleWatchNode($rule));

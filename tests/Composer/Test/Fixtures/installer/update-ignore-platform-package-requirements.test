@@ -1,0 +1,24 @@
+--TEST--
+Update in ignore-platform-package-requirements mode
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.1", "require": { "ext-testdummy": "*" } }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.0.*"
+    }
+}
+--INSTALLED--
+[
+    { "name": "a/a", "version": "1.0.0" }
+]
+--RUN--
+update --ignore-platform-package-requirements
+--EXPECT--
+Updating a/a (1.0.0) to a/a (1.0.1)
