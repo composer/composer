@@ -237,9 +237,9 @@ EOF;
         fclose($targetLoader);
         unset($sourceLoader, $targetLoader);
 
-        $this->eventDispatcher->dispatchScript(ScriptEvents::POST_AUTOLOAD_DUMP, $this->devMode, [
+        $this->eventDispatcher->dispatchScript(ScriptEvents::POST_AUTOLOAD_DUMP, $this->devMode, array(
             'optimize' => (bool) $scanPsr0Packages,
-        ]);
+        ));
     }
 
     public function buildPackageMap(InstallationManager $installationManager, PackageInterface $mainPackage, array $packages)
