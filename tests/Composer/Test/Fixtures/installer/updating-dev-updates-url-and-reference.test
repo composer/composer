@@ -51,7 +51,8 @@ update
             "name": "a/a", "version": "dev-master",
             "type": "library",
             "source": { "reference": "newref", "url": "newurl", "type": "git" },
-            "dist": { "reference": "newref", "url": "newurl", "type": "zip", "shasum": "" }
+            "dist": { "reference": "newref", "url": "newurl", "type": "zip", "shasum": "" },
+            "abandoned": false
         }
     ],
     "packages-dev": [],

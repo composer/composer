@@ -38,7 +38,8 @@ install --prefer-dist
                 "reference": "459720ff3b74ee0c0d159277c6f2f5df89d8a4f6",
                 "shasum": null
             },
-            "type": "library"
+            "type": "library",
+            "abandoned": false
         }
     ],
     "packages-dev": [],

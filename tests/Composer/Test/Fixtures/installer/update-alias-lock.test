@@ -58,7 +58,8 @@ update
             "name": "a/a", "version": "dev-master",
             "extra": { "branch-alias": { "dev-master": "1.0.x-dev" } },
             "source": { "reference": "master", "type": "git", "url": "" },
-            "type": "library"
+            "type": "library",
+            "abandoned": false
         }
     ],
     "packages-dev": [],
