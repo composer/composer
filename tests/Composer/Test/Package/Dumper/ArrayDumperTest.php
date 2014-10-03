@@ -45,8 +45,7 @@ class ArrayDumperTest extends \PHPUnit_Framework_TestCase
             array(
                 'name' => 'foo',
                 'version' => '1.0',
-                'version_normalized' => '1.0.0.0',
-                'abandoned' => false
+                'version_normalized' => '1.0.0.0'
             ),
             $config
         );
@@ -65,6 +64,7 @@ class ArrayDumperTest extends \PHPUnit_Framework_TestCase
 
     public function testDumpAbandoned()
     {
+        $this->packageExpects('isAbandoned', true);
         $this->packageExpects('getReplacementPackage', true);
 
         $config = $this->dumper->dump($this->package);
@@ -74,6 +74,7 @@ class ArrayDumperTest extends \PHPUnit_Framework_TestCase
 
     public function testDumpAbandonedReplacement()
     {
+        $this->packageExpects('isAbandoned', true);
         $this->packageExpects('getReplacementPackage', 'foo/bar');
 
         $config = $this->dumper->dump($this->package);

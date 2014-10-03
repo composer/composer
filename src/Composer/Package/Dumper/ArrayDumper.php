@@ -97,7 +97,7 @@ class ArrayDumper
                 'homepage',
                 'keywords',
                 'repositories',
-                'support'
+                'support',
             );
 
             $data = $this->dumpValues($package, $keys, $data);
@@ -106,7 +106,9 @@ class ArrayDumper
                 sort($data['keywords']);
             }
 
-            $data['abandoned'] = $package->getReplacementPackage() ?: false;
+            if ($package->isAbandoned()) {
+                $data['abandoned'] = $package->getReplacementPackage() ?: true;
+            }
         }
 
         if ($package instanceof RootPackageInterface) {

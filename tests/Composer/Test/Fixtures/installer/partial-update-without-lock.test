@@ -33,10 +33,10 @@ update b/unstable
 --EXPECT-LOCK--
 {
     "packages": [
-        { "name": "a/old", "version": "1.0.0", "type": "library", "abandoned": false },
-        { "name": "b/unstable", "version": "1.0.0", "type": "library", "abandoned": false },
-        { "name": "c/uptodate", "version": "1.0.0", "type": "library", "abandoned": false },
-        { "name": "d/removed", "version": "1.0.0", "type": "library", "abandoned": false }
+        { "name": "a/old", "version": "1.0.0", "type": "library" },
+        { "name": "b/unstable", "version": "1.0.0", "type": "library" },
+        { "name": "c/uptodate", "version": "1.0.0", "type": "library" },
+        { "name": "d/removed", "version": "1.0.0", "type": "library" }
     ],
     "packages-dev": [],
     "aliases": [],
