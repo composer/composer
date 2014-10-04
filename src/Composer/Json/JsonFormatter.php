@@ -102,7 +102,7 @@ class JsonFormatter
                     }
                 } else {
                     // Collapse empty {} and []
-                    $result = rtrim($result)."\n\n".$indentStr;
+                    $result = rtrim($result);
                 }
             }
 

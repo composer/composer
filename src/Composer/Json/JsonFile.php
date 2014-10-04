@@ -184,7 +184,15 @@ class JsonFile
     public static function encode($data, $options = 448)
     {
         if (version_compare(PHP_VERSION, '5.4', '>=')) {
-            return json_encode($data, $options);
+            $json = json_encode($data, $options);
+
+            //  compact brackets to follow recent php versions
+            if (PHP_VERSION_ID < 50428 || (PHP_VERSION_ID >= 50500 && PHP_VERSION_ID < 50512)) {
+               $json = preg_replace('/\[\s+\]/', '[]', $json);
+               $json = preg_replace('/\{\s+\}/', '{}', $json);
+            }
+
+            return $json;
         }
 
         $json = json_encode($data);
