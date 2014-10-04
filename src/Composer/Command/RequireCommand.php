@@ -59,6 +59,7 @@ EOT
     {
         $file = Factory::getComposerFile();
 
+        $newlyCreated = !file_exists($file);
         if (!file_exists($file) && !file_put_contents($file, "{\n}\n")) {
             $output->writeln('<error>'.$file.' could not be created.</error>');
 
@@ -105,7 +106,7 @@ EOT
             $json->write($composer);
         }
 
-        $output->writeln('<info>'.$file.' has been updated</info>');
+        $output->writeln('<info>'.$file.' has been '.($newlyCreated ? 'created' : 'updated').'</info>');
 
         if ($input->getOption('no-update')) {
             return 0;
@@ -134,8 +135,13 @@ EOT
 
         $status = $install->run();
         if ($status !== 0) {
-            $output->writeln("\n".'<error>Installation failed, reverting '.$file.' to its original content.</error>');
-            file_put_contents($json->getPath(), $composerBackup);
+            if ($newlyCreated) {
+                $output->writeln("\n".'<error>Installation failed, deleting '.$file.'.</error>');
+                unlink($json->getPath());
+            } else {
+                $output->writeln("\n".'<error>Installation failed, reverting '.$file.' to its original content.</error>');
+                file_put_contents($json->getPath(), $composerBackup);
+            }
         }
 
         return $status;

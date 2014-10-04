@@ -139,7 +139,7 @@ php composer.phar update vendor/*
 ## require
 
 The `require` command adds new packages to the `composer.json` file from
-the current directory.
+the current directory. If no file exists one will be created on the fly.
 
 ```sh
 php composer.phar require
