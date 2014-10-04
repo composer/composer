@@ -276,7 +276,6 @@ in your browser.
 ### Options
 
 * **--homepage (-H):** Open the homepage instead of the repository URL.
-  times.
 
 ## depends
 
