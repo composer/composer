@@ -85,7 +85,7 @@ Here are a few examples of valid tag names:
 - 1.0.0
 - v1.0.0
 - 1.10.5-RC1
-- v4.4.4beta2
+- v4.4.4-beta2
 - v2.0.0-alpha
 - v2.0.4-p1
 
