@@ -59,11 +59,11 @@ EOT
 
         $file = Factory::getComposerFile();
 
-        $json = new JsonFile($file);
-        $composer = $json->read();
-        $composerBackup = file_get_contents($json->getPath());
+        $jsonFile = new JsonFile($file);
+        $composer = $jsonFile->read();
+        $composerBackup = file_get_contents($jsonFile->getPath());
 
-        $json = new JsonConfigSource($json);
+        $json = new JsonConfigSource($jsonFile);
 
         $type = $input->getOption('dev') ? 'require-dev' : 'require';
         $altType = !$input->getOption('dev') ? 'require-dev' : 'require';
@@ -110,7 +110,7 @@ EOT
         $status = $install->run();
         if ($status !== 0) {
             $output->writeln("\n".'<error>Removal failed, reverting '.$file.' to its original content.</error>');
-            file_put_contents($json->getPath(), $composerBackup);
+            file_put_contents($jsonFile->getPath(), $composerBackup);
         }
 
         return $status;
