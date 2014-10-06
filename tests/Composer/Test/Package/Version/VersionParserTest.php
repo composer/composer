@@ -89,6 +89,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'forces w.x.y.z'     => array('1.0-dev',             '1.0.0.0-dev'),
             'forces w.x.y.z/2'   => array('0',                   '0.0.0.0'),
             'parses long'        => array('10.4.13-beta',        '10.4.13.0-beta'),
+            'parses long/2'      => array('10.4.13beta2',        '10.4.13.0-beta2'),
             'expand shorthand'   => array('10.4.13-b',           '10.4.13.0-beta'),
             'expand shorthand2'  => array('10.4.13-b5',          '10.4.13.0-beta5'),
             'strips leading v'   => array('v1.0.0',              '1.0.0.0'),
