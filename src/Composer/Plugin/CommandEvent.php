@@ -45,11 +45,12 @@ class CommandEvent extends Event
      * @param string          $commandName The command name
      * @param InputInterface  $input
      * @param OutputInterface $output
-     * @param array           $events      Arguments passed by the user
+     * @param array           $args        Arguments passed by the user
+     * @param array           $flags       Optional flags to pass data not as argument
      */
-    public function __construct($name, $commandName, $input, $output, array $args = array())
+    public function __construct($name, $commandName, $input, $output, array $args = array(), array $flags = array())
     {
-        parent::__construct($name, $args);
+        parent::__construct($name, $args, $flags);
         $this->commandName = $commandName;
         $this->input = $input;
         $this->output = $output;

@@ -81,13 +81,14 @@ class EventDispatcher
      *
      * @param  string       $eventName The constant in ScriptEvents
      * @param  bool         $devMode
-     * @param  array        $additionalArgs
+     * @param  array        $additionalArgs Arguments passed by the user
+     * @param  array        $flags          Optional flags to pass data not as argument
      * @return int          return code of the executed script if any, for php scripts a false return
      *                                value is changed to 1, anything else to 0
      */
-    public function dispatchScript($eventName, $devMode = false, $additionalArgs = array())
+    public function dispatchScript($eventName, $devMode = false, $additionalArgs = array(), $flags = array())
     {
-        return $this->doDispatch(new Script\Event($eventName, $this->composer, $this->io, $devMode, $additionalArgs));
+        return $this->doDispatch(new Script\Event($eventName, $this->composer, $this->io, $devMode, $additionalArgs, $flags));
     }
 
     /**
@@ -109,13 +110,14 @@ class EventDispatcher
      *
      * @param  string  $eventName The constant in ScriptEvents
      * @param  boolean $devMode   Whether or not we are in dev mode
-     * @param  array   $additionalArgs
+     * @param  array   $additionalArgs Arguments passed by the user
+     * @param  array   $flags          Optional flags to pass data not as argument
      * @return int     return code of the executed script if any, for php scripts a false return
      *                           value is changed to 1, anything else to 0
      */
-    public function dispatchCommandEvent($eventName, $devMode, $additionalArgs = array())
+    public function dispatchCommandEvent($eventName, $devMode, $additionalArgs = array(), $flags = array())
     {
-        return $this->doDispatch(new CommandEvent($eventName, $this->composer, $this->io, $devMode, $additionalArgs));
+        return $this->doDispatch(new CommandEvent($eventName, $this->composer, $this->io, $devMode, $additionalArgs, $flags));
     }
 
 

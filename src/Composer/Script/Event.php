@@ -46,11 +46,12 @@ class Event extends BaseEvent
      * @param Composer    $composer The composer object
      * @param IOInterface $io       The IOInterface object
      * @param boolean     $devMode  Whether or not we are in dev mode
-     * @param array       $events   Arguments passed by the user
+     * @param array       $args     Arguments passed by the user
+     * @param array       $flags    Optional flags to pass data not as argument
      */
-    public function __construct($name, Composer $composer, IOInterface $io, $devMode = false, array $args = array())
+    public function __construct($name, Composer $composer, IOInterface $io, $devMode = false, array $args = array(), array $flags = array())
     {
-        parent::__construct($name, $args);
+        parent::__construct($name, $args, $flags);
         $this->composer = $composer;
         $this->io = $io;
         $this->devMode = $devMode;
