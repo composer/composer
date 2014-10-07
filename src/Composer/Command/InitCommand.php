@@ -336,12 +336,6 @@ EOT
             $matches = $this->findPackages($package);
 
             if (count($matches)) {
-                $output->writeln(array(
-                    '',
-                    sprintf('Found <info>%s</info> packages matching <info>%s</info>', count($matches), $package),
-                    ''
-                ));
-
                 $exactMatch = null;
                 $choices = array();
                 foreach ($matches as $position => $foundPackage) {
@@ -354,6 +348,12 @@ EOT
 
                 // no match, prompt which to pick
                 if (!$exactMatch) {
+                    $output->writeln(array(
+                        '',
+                        sprintf('Found <info>%s</info> packages matching <info>%s</info>', count($matches), $package),
+                        ''
+                    ));
+
                     $output->writeln($choices);
                     $output->writeln('');
 
