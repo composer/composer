@@ -95,8 +95,8 @@ class Filesystem
      */
     public function removeDirectory($directory)
     {
-        if (file_exists($directory) && is_link($directory)) {
-            return $this->unlink($directory);
+        if ($this->isSymlinkedDirectory($directory)) {
+            return $this->unlinkSymlinkedDirectory($directory);
         }
 
         if (!file_exists($directory) || !is_dir($directory)) {
@@ -506,5 +506,50 @@ class Filesystem
         }
 
         return unlink($path);
+    }
+
+    private function isSymlinkedDirectory($directory)
+    {
+        if (!is_dir($directory)) {
+            return false;
+        }
+
+        $resolved = $this->resolveSymlinkedDirectorySymlink($directory);
+
+        return is_link($resolved);
+    }
+
+    /**
+     * @param string $directory
+     *
+     * @return bool
+     */
+    private function unlinkSymlinkedDirectory($directory)
+    {
+        $resolved = $this->resolveSymlinkedDirectorySymlink($directory);
+
+        return $this->unlink($resolved);
+    }
+
+    /**
+     * resolve pathname to symbolic link of a directory
+     *
+     * @param string $pathname directory path to resolve
+     *
+     * @return string resolved path to symbolic link or original pathname (unresolved)
+     */
+    private function resolveSymlinkedDirectorySymlink($pathname)
+    {
+        if (!is_dir($pathname)) {
+            return $pathname;
+        }
+
+        $resolved = rtrim($pathname, '/');
+
+        if (!strlen($resolved)) {
+            return $pathname;
+        }
+
+        return $resolved;
     }
 }
