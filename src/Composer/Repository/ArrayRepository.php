@@ -98,7 +98,7 @@ class ArrayRepository implements RepositoryInterface
             }
         }
 
-        return $matches;
+        return array_values($matches);
     }
 
     /**

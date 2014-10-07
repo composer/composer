@@ -333,7 +333,8 @@ EOT
         }
 
         while (null !== $package = $dialog->ask($output, $prompt)) {
-            $matches = array_values($this->findPackages($package));
+            $matches = $this->findPackages($package);
+
             if (count($matches)) {
                 $exactMatch = null;
                 $choices = array();
