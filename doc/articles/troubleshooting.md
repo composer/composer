@@ -21,7 +21,7 @@ This is a list of common pitfalls on using Composer, and how to avoid them.
    possible interferences with existing vendor installations or `composer.lock`
    entries.
 
-5. Try clearing Composer's cache - `rm -r ~/.composer/cache`.
+5. Try clearing Composer's cache by running `composer clear-cache`.
 
 ## Package not found
 
@@ -41,8 +41,7 @@ This is a list of common pitfalls on using Composer, and how to avoid them.
    `replace`.
 
 5. If you are updating to a recently published version of a package, be aware that
-   Packagist has a delay of up to 10 minutes before new packages are added to it's
-   index.
+   Packagist has a delay of up to 1 minute before new packages are visible to Composer.
 
 ## Package not found on travis-ci.org
 
