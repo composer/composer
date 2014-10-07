@@ -21,6 +21,8 @@ This is a list of common pitfalls on using Composer, and how to avoid them.
    possible interferences with existing vendor installations or `composer.lock`
    entries.
 
+5. Try clearing Composer's cache - `rm -r ~/.composer/cache`.
+
 ## Package not found
 
 1. Double-check you **don't have typos** in your `composer.json` or repository
@@ -37,6 +39,10 @@ This is a list of common pitfalls on using Composer, and how to avoid them.
 4. Use the **same vendor and package name** throughout all branches and tags of
    your repository, especially when maintaining a third party fork and using
    `replace`.
+
+5. If you are updating to a recently published version of a package, be aware that
+   Packagist has a delay of up to 10 minutes before new packages are added to it's
+   index.
 
 ## Package not found on travis-ci.org
 
