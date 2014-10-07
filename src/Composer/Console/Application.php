@@ -109,6 +109,9 @@ class Application extends BaseApplication
         if ($newWorkDir = $this->getNewWorkingDir($input)) {
             $oldWorkingDir = getcwd();
             chdir($newWorkDir);
+            if ($output->getVerbosity() >= 4) {
+                $output->writeln('Changed CWD to ' . getcwd());
+            }
         }
 
         // add non-standard scripts as own commands
