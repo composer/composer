@@ -105,13 +105,26 @@ class Git
                 preg_match('{(https?://)([^/]+)(.*)$}i', $url, $match) &&
                 strpos($this->process->getErrorOutput(), 'fatal: Authentication failed') !== false
             ) {
+                if (strpos($match[2], '@')) {
+                    list($authParts, $match[2]) = explode('@', $match[2], 2);
+                }
+
                 $storeAuth = false;
                 if ($this->io->hasAuthentication($match[2])) {
                     $auth = $this->io->getAuthentication($match[2]);
                 } elseif ($this->io->isInteractive()) {
+                    $defaultUsername = null;
+                    if (isset($authParts) && $authParts) {
+                        if (false !== strpos($authParts, ':')) {
+                            list($defaultUsername,) = explode(':', $authParts, 2);
+                        } else {
+                            $defaultUsername = $authParts;
+                        }
+                    }
+
                     $this->io->write('    Authentication required (<info>'.parse_url($url, PHP_URL_HOST).'</info>):');
                     $auth = array(
-                        'username'  => $this->io->ask('      Username: '),
+                        'username'  => $this->io->ask('      Username: ', $defaultUsername),
                         'password'  => $this->io->askAndHideAnswer('      Password: '),
                     );
                     $storeAuth = $this->config->get('store-auths');
