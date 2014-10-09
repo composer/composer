@@ -105,6 +105,27 @@ class RemoteFilesystem
     }
 
     /**
+     * This method checks if the internet connection or network is up/down.
+     *
+     * @param string $url URL to check the connection.
+     *
+     * @return bool
+     */
+    protected function checkIfNetworkAvailable($url)
+    {
+        $connected = @fsockopen($url, 80);
+
+        if ($connected) {
+            $isConnection = true;
+            fclose($connected);
+        } else {
+            $isConnection = false;
+        }
+
+        return $isConnection;
+    }
+
+    /**
      * Get file content or copy action.
      *
      * @param string  $originUrl         The origin URL
@@ -122,6 +143,11 @@ class RemoteFilesystem
     {
         if (strpos($originUrl, '.github.com') === (strlen($originUrl) - 11)) {
             $originUrl = 'github.com';
+        }
+
+        // check if network connection is available before downloading a file
+        if (!$this->checkIfNetworkAvailable($originUrl)) {
+            throw new TransportException('Your internet connection or network is down. Please confirm.');
         }
 
         $this->bytesMax = 0;
