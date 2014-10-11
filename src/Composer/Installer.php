@@ -1167,6 +1167,16 @@ class Installer
     }
 
     /**
+     * Checks, if running in verbose mode.
+     *
+     * @return bool
+     */
+    public function isVerbose()
+    {
+        return $this->verbose;
+    }
+
+    /**
      * restrict the update operation to a few packages, all other packages
      * that are already installed will be kept at their current version
      *
