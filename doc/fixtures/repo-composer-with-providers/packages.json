@@ -2,8 +2,8 @@
     "packages": [],
     "providers-url": "\/p\/%package%$%hash%.json",
     "provider-includes": {
-        "p\/provider-active$d0a9908f6006b833fa0b654dc47b23711c60833672056925a868fe5c6af9c9c2.json": {
-            "sha256": "d0a9908f6006b833fa0b654dc47b23711c60833672056925a868fe5c6af9c9c2"
+        "p\/provider-active$1893a061e579543822389ecd12d791c612db0c05e22d90e9286e233cacd86ed8.json": {
+            "sha256": "1893a061e579543822389ecd12d791c612db0c05e22d90e9286e233cacd86ed8"
         }
     }
 }
