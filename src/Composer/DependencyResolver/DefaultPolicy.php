@@ -14,26 +14,39 @@ namespace Composer\DependencyResolver;
 
 use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
+use Composer\Package\BasePackage;
 use Composer\Package\LinkConstraint\VersionConstraint;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
+ * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 class DefaultPolicy implements PolicyInterface
 {
+    private $preferStable;
+
+    public function __construct($preferStable = false)
+    {
+        $this->preferStable = $preferStable;
+    }
+
     public function versionCompare(PackageInterface $a, PackageInterface $b, $operator)
     {
+        if ($this->preferStable && ($stabA = $a->getStability()) !== ($stabB = $b->getStability())) {
+            return BasePackage::$stabilities[$stabA] < BasePackage::$stabilities[$stabB];
+        }
+
         $constraint = new VersionConstraint($operator, $b->getVersion());
         $version = new VersionConstraint('==', $a->getVersion());
 
-        return $constraint->matchSpecific($version);
+        return $constraint->matchSpecific($version, true);
     }
 
-    public function findUpdatePackages(Pool $pool, array $installedMap, PackageInterface $package)
+    public function findUpdatePackages(Pool $pool, array $installedMap, PackageInterface $package, $mustMatchName = false)
     {
         $packages = array();
 
-        foreach ($pool->whatProvides($package->getName()) as $candidate) {
+        foreach ($pool->whatProvides($package->getName(), null, $mustMatchName) as $candidate) {
             if ($candidate !== $package) {
                 $packages[] = $candidate;
             }
@@ -47,14 +60,14 @@ class DefaultPolicy implements PolicyInterface
         return $pool->getPriority($package->getRepository());
     }
 
-    public function selectPreferedPackages(Pool $pool, array $installedMap, array $literals)
+    public function selectPreferedPackages(Pool $pool, array $installedMap, array $literals, $requiredPackage = null)
     {
         $packages = $this->groupLiteralsByNamePreferInstalled($pool, $installedMap, $literals);
 
         foreach ($packages as &$literals) {
             $policy = $this;
-            usort($literals, function ($a, $b) use ($policy, $pool, $installedMap) {
-                return $policy->compareByPriorityPreferInstalled($pool, $installedMap, $pool->literalToPackage($a), $pool->literalToPackage($b), true);
+            usort($literals, function ($a, $b) use ($policy, $pool, $installedMap, $requiredPackage) {
+                return $policy->compareByPriorityPreferInstalled($pool, $installedMap, $pool->literalToPackage($a), $pool->literalToPackage($b), $requiredPackage, true);
             });
         }
 
@@ -69,8 +82,8 @@ class DefaultPolicy implements PolicyInterface
         $selected = call_user_func_array('array_merge', $packages);
 
         // now sort the result across all packages to respect replaces across packages
-        usort($selected, function ($a, $b) use ($policy, $pool, $installedMap) {
-            return $policy->compareByPriorityPreferInstalled($pool, $installedMap, $pool->literalToPackage($a), $pool->literalToPackage($b));
+        usort($selected, function ($a, $b) use ($policy, $pool, $installedMap, $requiredPackage) {
+            return $policy->compareByPriorityPreferInstalled($pool, $installedMap, $pool->literalToPackage($a), $pool->literalToPackage($b), $requiredPackage);
         });
 
         return $selected;
@@ -96,7 +109,10 @@ class DefaultPolicy implements PolicyInterface
         return $packages;
     }
 
-    public function compareByPriorityPreferInstalled(Pool $pool, array $installedMap, PackageInterface $a, PackageInterface $b, $ignoreReplace = false)
+    /**
+     * @protected
+     */
+    public function compareByPriorityPreferInstalled(Pool $pool, array $installedMap, PackageInterface $a, PackageInterface $b, $requiredPackage = null, $ignoreReplace = false)
     {
         if ($a->getRepository() === $b->getRepository()) {
             // prefer aliases to the original package
@@ -118,6 +134,19 @@ class DefaultPolicy implements PolicyInterface
                 }
                 if ($this->replaces($b, $a)) {
                     return -1; // use a
+                }
+
+                // for replacers not replacing each other, put a higher prio on replacing
+                // packages with the same vendor as the required package
+                if ($requiredPackage && false !== ($pos = strpos($requiredPackage, '/'))) {
+                    $requiredVendor = substr($requiredPackage, 0, $pos);
+
+                    $aIsSameVendor = substr($a->getName(), 0, $pos) === $requiredVendor;
+                    $bIsSameVendor = substr($b->getName(), 0, $pos) === $requiredVendor;
+
+                    if ($bIsSameVendor !== $aIsSameVendor) {
+                        return $aIsSameVendor ? -1 : 1;
+                    }
                 }
             }
 

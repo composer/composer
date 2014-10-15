@@ -12,14 +12,15 @@
 
 namespace Composer\Repository\Pear;
 
-use Composer\Test\TestCase;
+use Composer\TestCase;
 
 class PackageDependencyParserTest extends TestCase
 {
     /**
      * @dataProvider dataProvider10
      * @param $expected
-     * @param $data
+     * @param $data10
+     * @param $data20
      */
     public function testShouldParseDependencies($expected, $data10, $data20)
     {

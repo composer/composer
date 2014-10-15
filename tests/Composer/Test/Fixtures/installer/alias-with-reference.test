@@ -1,0 +1,31 @@
+--TEST--
+Aliases of referenced packages work
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "a/aliased", "version": "dev-master",
+                    "source": { "reference": "orig", "type": "git", "url": "" }
+                },
+                {
+                    "name": "b/requirer", "version": "1.0.0",
+                    "require": { "a/aliased": "1.0.0" },
+                    "source": { "reference": "1.0.0", "type": "git", "url": "" }
+                }
+            ]
+        }
+    ],
+    "require": {
+        "a/aliased": "dev-master#abcd as 1.0.0",
+        "b/requirer": "*"
+    }
+}
+--RUN--
+install
+--EXPECT--
+Installing a/aliased (dev-master abcd)
+Marking a/aliased (1.0.0) as installed, alias of a/aliased (dev-master abcd)
+Installing b/requirer (1.0.0)

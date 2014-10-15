@@ -41,6 +41,13 @@ interface WritableRepositoryInterface extends RepositoryInterface
     public function removePackage(PackageInterface $package);
 
     /**
+     * Get unique packages, with aliases resolved and removed
+     *
+     * @return PackageInterface[]
+     */
+    public function getCanonicalPackages();
+
+    /**
      * Forces a reload of all packages
      */
     public function reload();

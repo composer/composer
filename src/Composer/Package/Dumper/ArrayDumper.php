@@ -31,6 +31,7 @@ class ArrayDumper
             'extra',
             'installationSource' => 'installation-source',
             'autoload',
+            'devAutoload' => 'autoload-dev',
             'notificationUrl' => 'notification-url',
             'includePaths' => 'include-path',
         );
@@ -48,6 +49,9 @@ class ArrayDumper
             $data['source']['type'] = $package->getSourceType();
             $data['source']['url'] = $package->getSourceUrl();
             $data['source']['reference'] = $package->getSourceReference();
+            if ($mirrors = $package->getSourceMirrors()) {
+                $data['source']['mirrors'] = $mirrors;
+            }
         }
 
         if ($package->getDistType()) {
@@ -55,6 +59,13 @@ class ArrayDumper
             $data['dist']['url'] = $package->getDistUrl();
             $data['dist']['reference'] = $package->getDistReference();
             $data['dist']['shasum'] = $package->getDistSha1Checksum();
+            if ($mirrors = $package->getDistMirrors()) {
+                $data['dist']['mirrors'] = $mirrors;
+            }
+        }
+
+        if ($package->getArchiveExcludes()) {
+            $data['archive']['exclude'] = $package->getArchiveExcludes();
         }
 
         foreach (BasePackage::$supportedLinkTypes as $type => $opts) {
@@ -62,10 +73,12 @@ class ArrayDumper
                 foreach ($links as $link) {
                     $data[$type][$link->getTarget()] = $link->getPrettyConstraint();
                 }
+                ksort($data[$type]);
             }
         }
 
         if ($packages = $package->getSuggests()) {
+            ksort($packages);
             $data['suggest'] = $packages;
         }
 
@@ -88,6 +101,10 @@ class ArrayDumper
             );
 
             $data = $this->dumpValues($package, $keys, $data);
+
+            if (isset($data['keywords']) && is_array($data['keywords'])) {
+                sort($data['keywords']);
+            }
         }
 
         if ($package instanceof RootPackageInterface) {
@@ -95,6 +112,10 @@ class ArrayDumper
             if ($minimumStability) {
                 $data['minimum-stability'] = $minimumStability;
             }
+        }
+
+        if (count($package->getTransportOptions()) > 0) {
+            $data['transport-options'] = $package->getTransportOptions();
         }
 
         return $data;

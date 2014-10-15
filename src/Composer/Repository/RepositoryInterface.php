@@ -19,9 +19,13 @@ use Composer\Package\PackageInterface;
  *
  * @author Nils Adermann <naderman@naderman.de>
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
+ * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 interface RepositoryInterface extends \Countable
 {
+    const SEARCH_FULLTEXT = 0;
+    const SEARCH_NAME = 1;
+
     /**
      * Checks if specified package registered (installed).
      *
@@ -52,23 +56,18 @@ interface RepositoryInterface extends \Countable
     public function findPackages($name, $version = null);
 
     /**
-     * Filters all the packages through a callback
-     *
-     * The packages are not guaranteed to be instances in the repository
-     * and this can only be used for streaming through a list of packages.
-     *
-     * If the callback returns false, the process stops
-     *
-     * @param  callable $callback
-     * @param  string   $class
-     * @return bool     false if the process was interrupted, true otherwise
-     */
-    public function filterPackages($callback, $class = 'Composer\Package\Package');
-
-    /**
      * Returns list of registered packages.
      *
      * @return array
      */
     public function getPackages();
+
+    /**
+     * Searches the repository for packages containing the query
+     *
+     * @param  string  $query search query
+     * @param  int     $mode  a set of SEARCH_* constants to search on, implementations should do a best effort only
+     * @return array[] an array of array('name' => '...', 'description' => '...')
+     */
+    public function search($query, $mode = 0);
 }

@@ -1,0 +1,31 @@
+--TEST--
+Composer installers are installed first if they have no meaningful requirements
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "pkg", "version": "1.0.0" },
+                { "name": "pkg2", "version": "1.0.0" },
+                { "name": "inst", "version": "1.0.0", "type": "composer-plugin" },
+                { "name": "inst-with-req", "version": "1.0.0", "type": "composer-plugin", "require": { "php": ">=5", "ext-json": "*", "composer-plugin-api": "*" } },
+                { "name": "inst-with-req2", "version": "1.0.0", "type": "composer-plugin", "require": { "pkg2": "*" } }
+            ]
+        }
+    ],
+    "require": {
+        "pkg": "1.0.0",
+        "inst": "1.0.0",
+        "inst-with-req2": "1.0.0",
+        "inst-with-req": "1.0.0"
+    }
+}
+--RUN--
+install
+--EXPECT--
+Installing inst (1.0.0)
+Installing inst-with-req (1.0.0)
+Installing pkg (1.0.0)
+Installing pkg2 (1.0.0)
+Installing inst-with-req2 (1.0.0)

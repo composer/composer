@@ -38,7 +38,8 @@ Update aliased package does not mess up the lock file
     "packages-dev": null,
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": []
+    "stability-flags": [],
+    "prefer-stable": false
 }
 --INSTALLED--
 [
@@ -60,10 +61,13 @@ update
             "type": "library"
         }
     ],
-    "packages-dev": null,
+    "packages-dev": [],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": []
+    "stability-flags": [],
+    "prefer-stable": false,
+    "platform": [],
+    "platform-dev": []
 }
 --EXPECT--
 Updating a/a (dev-master 1234) to a/a (dev-master master)

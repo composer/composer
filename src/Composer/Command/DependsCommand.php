@@ -13,6 +13,8 @@
 namespace Composer\Command;
 
 use Composer\DependencyResolver\Pool;
+use Composer\Plugin\CommandEvent;
+use Composer\Plugin\PluginEvents;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -25,8 +27,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 class DependsCommand extends Command
 {
     protected $linkTypes = array(
-        'require' => 'requires',
-        'require-dev' => 'devRequires',
+        'require' => array('requires', 'requires'),
+        'require-dev' => array('devRequires', 'requires (dev)'),
     );
 
     protected function configure()
@@ -50,13 +52,16 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $repos = $this->getComposer()->getRepositoryManager()->getLocalRepositories();
+        $composer = $this->getComposer();
+
+        $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'depends', $input, $output);
+        $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
+
+        $repo = $composer->getRepositoryManager()->getLocalRepository();
         $needle = $input->getArgument('package');
 
         $pool = new Pool();
-        foreach ($repos as $repo) {
-            $pool->addRepository($repo);
-        }
+        $pool->addRepository($repo);
 
         $packages = $pool->whatProvides($needle);
         if (empty($packages)) {
@@ -65,7 +70,6 @@ EOT
 
         $linkTypes = $this->linkTypes;
 
-        $verbose = (bool) $input->getOption('verbose');
         $types = array_map(function ($type) use ($linkTypes) {
             $type = rtrim($type, 's');
             if (!isset($linkTypes[$type])) {
@@ -75,28 +79,25 @@ EOT
             return $type;
         }, $input->getOption('link-type'));
 
-        $dependsOnPackages = false;
-        foreach ($repos as $repo) {
-            $repo->filterPackages(function ($package) use ($needle, $types, $linkTypes, $output, $verbose, &$dependsOnPackages) {
-                static $outputPackages = array();
-
-                foreach ($types as $type) {
-                    foreach ($package->{'get'.$linkTypes[$type]}() as $link) {
-                        if ($link->getTarget() === $needle) {
-                            $dependsOnPackages = true;
-                            if ($verbose) {
-                                $output->writeln($package->getPrettyName() . ' ' . $package->getPrettyVersion() . ' <info>' . $type . '</info> ' . $link->getPrettyConstraint());
-                            } elseif (!isset($outputPackages[$package->getName()])) {
-                                $output->writeln($package->getPrettyName());
-                                $outputPackages[$package->getName()] = true;
-                            }
+        $messages = array();
+        $outputPackages = array();
+        foreach ($repo->getPackages() as $package) {
+            foreach ($types as $type) {
+                foreach ($package->{'get'.$linkTypes[$type][0]}() as $link) {
+                    if ($link->getTarget() === $needle) {
+                        if (!isset($outputPackages[$package->getName()])) {
+                            $messages[] = '<info>'.$package->getPrettyName() . '</info> ' . $linkTypes[$type][1] . ' ' . $needle .' (<info>' . $link->getPrettyConstraint() . '</info>)';
+                            $outputPackages[$package->getName()] = true;
                         }
                     }
                 }
-            });
+            }
         }
 
-        if (!$dependsOnPackages) {
+        if ($messages) {
+            sort($messages);
+            $output->writeln($messages);
+        } else {
             $output->writeln('<info>There is no installed package depending on "'.$needle.'".</info>');
         }
     }

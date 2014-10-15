@@ -21,27 +21,42 @@ class Config
 {
     public static $defaultConfig = array(
         'process-timeout' => 300,
-        'cache-ttl' => 15552000, // 6 months
+        'use-include-path' => false,
+        'preferred-install' => 'auto',
+        'notify-on-install' => true,
+        'github-protocols' => array('git', 'https', 'ssh'),
         'vendor-dir' => 'vendor',
         'bin-dir' => '{$vendor-dir}/bin',
-        'notify-on-install' => true,
-        'github-protocols' => array('git', 'https', 'http'),
         'cache-dir' => '{$home}/cache',
         'cache-files-dir' => '{$cache-dir}/files',
         'cache-repo-dir' => '{$cache-dir}/repo',
         'cache-vcs-dir' => '{$cache-dir}/vcs',
+        'cache-ttl' => 15552000, // 6 months
+        'cache-files-ttl' => null, // fallback to cache-ttl
+        'cache-files-maxsize' => '300MiB',
+        'discard-changes' => false,
+        'autoloader-suffix' => null,
+        'optimize-autoloader' => false,
+        'prepend-autoloader' => true,
+        'github-domains' => array('github.com'),
+        'store-auths' => 'prompt',
+        // valid keys without defaults (auth config stuff):
+        // github-oauth
+        // http-basic
     );
 
     public static $defaultRepositories = array(
         'packagist' => array(
             'type' => 'composer',
             'url' => 'https?://packagist.org',
+            'allow_ssl_downgrade' => true,
         )
     );
 
     private $config;
     private $repositories;
     private $configSource;
+    private $authConfigSource;
 
     public function __construct()
     {
@@ -60,17 +75,27 @@ class Config
         return $this->configSource;
     }
 
+    public function setAuthConfigSource(ConfigSourceInterface $source)
+    {
+        $this->authConfigSource = $source;
+    }
+
+    public function getAuthConfigSource()
+    {
+        return $this->authConfigSource;
+    }
+
     /**
      * Merges new config values with the existing ones (overriding)
      *
      * @param array $config
      */
-    public function merge(array $config)
+    public function merge($config)
     {
         // override defaults with given config
         if (!empty($config['config']) && is_array($config['config'])) {
             foreach ($config['config'] as $key => $val) {
-                if (in_array($key, array('github-oauth')) && isset($this->config[$key])) {
+                if (in_array($key, array('github-oauth', 'http-basic')) && isset($this->config[$key])) {
                     $this->config[$key] = array_merge($this->config[$key], $val);
                 } else {
                     $this->config[$key] = $val;
@@ -116,7 +141,8 @@ class Config
     /**
      * Returns a setting
      *
-     * @param  string $key
+     * @param  string            $key
+     * @throws \RuntimeException
      * @return mixed
      */
     public function get($key)
@@ -132,10 +158,36 @@ class Config
                 // convert foo-bar to COMPOSER_FOO_BAR and check if it exists since it overrides the local config
                 $env = 'COMPOSER_' . strtoupper(strtr($key, '-', '_'));
 
-                return rtrim($this->process(getenv($env) ?: $this->config[$key]), '/\\');
+                $val = rtrim($this->process(getenv($env) ?: $this->config[$key]), '/\\');
+                $val = preg_replace('#^(\$HOME|~)(/|$)#', rtrim(getenv('HOME') ?: getenv('USERPROFILE'), '/\\') . '/', $val);
+
+                return $val;
 
             case 'cache-ttl':
                 return (int) $this->config[$key];
+
+            case 'cache-files-maxsize':
+                if (!preg_match('/^\s*([0-9.]+)\s*(?:([kmg])(?:i?b)?)?\s*$/i', $this->config[$key], $matches)) {
+                    throw new \RuntimeException(
+                        "Could not parse the value of 'cache-files-maxsize': {$this->config[$key]}"
+                    );
+                }
+                $size = $matches[1];
+                if (isset($matches[2])) {
+                    switch (strtolower($matches[2])) {
+                        case 'g':
+                            $size *= 1024;
+                            // intentional fallthrough
+                        case 'm':
+                            $size *= 1024;
+                            // intentional fallthrough
+                        case 'k':
+                            $size *= 1024;
+                            break;
+                    }
+                }
+
+                return $size;
 
             case 'cache-files-ttl':
                 if (isset($this->config[$key])) {
@@ -146,6 +198,36 @@ class Config
 
             case 'home':
                 return rtrim($this->process($this->config[$key]), '/\\');
+
+            case 'discard-changes':
+                if ($env = getenv('COMPOSER_DISCARD_CHANGES')) {
+                    if (!in_array($env, array('stash', 'true', 'false', '1', '0'), true)) {
+                        throw new \RuntimeException(
+                            "Invalid value for COMPOSER_DISCARD_CHANGES: {$env}. Expected 1, 0, true, false or stash"
+                        );
+                    }
+                    if ('stash' === $env) {
+                        return 'stash';
+                    }
+
+                    // convert string value to bool
+                    return $env !== 'false' && (bool) $env;
+                }
+
+                if (!in_array($this->config[$key], array(true, false, 'stash'), true)) {
+                    throw new \RuntimeException(
+                        "Invalid value for 'discard-changes': {$this->config[$key]}. Expected true, false or stash"
+                    );
+                }
+
+                return $this->config[$key];
+
+            case 'github-protocols':
+                if (reset($this->config['github-protocols']) === 'http') {
+                    throw new \RuntimeException('The http protocol for github is not available anymore, update your config\'s github-protocols to use "https", "git" or "ssh"');
+                }
+
+                return $this->config[$key];
 
             default:
                 if (!isset($this->config[$key])) {
@@ -168,6 +250,14 @@ class Config
         return $all;
     }
 
+    public function raw()
+    {
+        return array(
+            'repositories' => $this->getRepositories(),
+            'config' => $this->config,
+        );
+    }
+
     /**
      * Checks whether a setting exists
      *
@@ -182,7 +272,7 @@ class Config
     /**
      * Replaces {$refs} inside a config string
      *
-     * @param string a config string that can contain {$refs-to-other-config}
+     * @param  string $value a config string that can contain {$refs-to-other-config}
      * @return string
      */
     private function process($value)

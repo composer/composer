@@ -56,7 +56,7 @@ interface InstallerInterface
      * @param PackageInterface             $initial already installed package version
      * @param PackageInterface             $target  updated version
      *
-     * @throws InvalidArgumentException if $from package is not installed
+     * @throws InvalidArgumentException if $initial package is not installed
      */
     public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target);
 

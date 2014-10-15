@@ -14,7 +14,7 @@ namespace Composer\Test\Repository;
 
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\ArrayRepository;
-use Composer\Test\TestCase;
+use Composer\TestCase;
 
 class CompositeRepositoryTest extends TestCase
 {
@@ -124,5 +124,23 @@ class CompositeRepositoryTest extends TestCase
         $repo = new CompositeRepository(array($arrayRepoOne, $arrayRepoTwo));
 
         $this->assertEquals(2, count($repo), "Should return '2' for count(\$repo)");
+    }
+
+    /**
+     * @dataProvider provideMethodCalls
+     */
+    public function testNoRepositories($method, $args)
+    {
+        $repo = new CompositeRepository(array());
+        $this->assertEquals(array(), call_user_func_array(array($repo, $method), $args));
+    }
+
+    public function provideMethodCalls()
+    {
+        return array(
+            array('findPackages', array('foo')),
+            array('search', array('foo')),
+            array('getPackages', array()),
+        );
     }
 }

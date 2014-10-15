@@ -160,6 +160,8 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
      * Use by the policy for sorting manually aliased packages first, see #576
      *
      * @param bool $value
+     *
+     * @return mixed
      */
     public function setRootPackageAlias($value)
     {
@@ -173,22 +175,6 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     public function isRootPackageAlias()
     {
         return $this->rootPackageAlias;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getAlias()
-    {
-        return '';
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getPrettyAlias()
-    {
-        return '';
     }
 
     /***************************************
@@ -223,6 +209,10 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     {
         return $this->aliasOf->getSourceUrl();
     }
+    public function getSourceUrls()
+    {
+        return $this->aliasOf->getSourceUrls();
+    }
     public function getSourceReference()
     {
         return $this->aliasOf->getSourceReference();
@@ -230,6 +220,14 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     public function setSourceReference($reference)
     {
         return $this->aliasOf->setSourceReference($reference);
+    }
+    public function setSourceMirrors($mirrors)
+    {
+        return $this->aliasOf->setSourceMirrors($mirrors);
+    }
+    public function getSourceMirrors()
+    {
+        return $this->aliasOf->getSourceMirrors();
     }
     public function getDistType()
     {
@@ -239,25 +237,41 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     {
         return $this->aliasOf->getDistUrl();
     }
+    public function getDistUrls()
+    {
+        return $this->aliasOf->getDistUrls();
+    }
     public function getDistReference()
     {
         return $this->aliasOf->getDistReference();
+    }
+    public function setDistReference($reference)
+    {
+        return $this->aliasOf->setDistReference($reference);
     }
     public function getDistSha1Checksum()
     {
         return $this->aliasOf->getDistSha1Checksum();
     }
+    public function setTransportOptions(array $options)
+    {
+        return $this->aliasOf->setTransportOptions($options);
+    }
+    public function getTransportOptions()
+    {
+        return $this->aliasOf->getTransportOptions();
+    }
+    public function setDistMirrors($mirrors)
+    {
+        return $this->aliasOf->setDistMirrors($mirrors);
+    }
+    public function getDistMirrors()
+    {
+        return $this->aliasOf->getDistMirrors();
+    }
     public function getScripts()
     {
         return $this->aliasOf->getScripts();
-    }
-    public function setAliases(array $aliases)
-    {
-        return $this->aliasOf->setAliases($aliases);
-    }
-    public function getAliases()
-    {
-        return $this->aliasOf->getAliases();
     }
     public function getLicense()
     {
@@ -266,6 +280,10 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     public function getAutoload()
     {
         return $this->aliasOf->getAutoload();
+    }
+    public function getDevAutoload()
+    {
+        return $this->aliasOf->getDevAutoload();
     }
     public function getIncludePaths()
     {
@@ -310,6 +328,10 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     public function getNotificationUrl()
     {
         return $this->aliasOf->getNotificationUrl();
+    }
+    public function getArchiveExcludes()
+    {
+        return $this->aliasOf->getArchiveExcludes();
     }
     public function __toString()
     {

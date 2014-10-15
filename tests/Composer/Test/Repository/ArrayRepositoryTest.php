@@ -13,7 +13,7 @@
 namespace Composer\Test\Repository;
 
 use Composer\Repository\ArrayRepository;
-use Composer\Test\TestCase;
+use Composer\TestCase;
 
 class ArrayRepositoryTest extends TestCase
 {
@@ -65,5 +65,19 @@ class ArrayRepositoryTest extends TestCase
         $bar = $repo->findPackages('bar');
         $this->assertCount(2, $bar);
         $this->assertEquals('bar', $bar[0]->getName());
+    }
+
+    public function testAutomaticallyAddAliasedPackage()
+    {
+        $repo = new ArrayRepository();
+
+        $package = $this->getPackage('foo', '1');
+        $alias = $this->getAliasPackage($package, '2');
+
+        $repo->addPackage($alias);
+
+        $this->assertEquals(2, count($repo));
+        $this->assertTrue($repo->hasPackage($this->getPackage('foo', '1')));
+        $this->assertTrue($repo->hasPackage($this->getPackage('foo', '2')));
     }
 }

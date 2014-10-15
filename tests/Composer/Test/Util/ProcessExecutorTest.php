@@ -13,7 +13,7 @@
 namespace Composer\Test\Util;
 
 use Composer\Util\ProcessExecutor;
-use Composer\Test\TestCase;
+use Composer\TestCase;
 
 class ProcessExecutorTest extends TestCase
 {
@@ -56,6 +56,6 @@ class ProcessExecutorTest extends TestCase
         $this->assertEquals(array('foo'), $process->splitLines('foo'));
         $this->assertEquals(array('foo', 'bar'), $process->splitLines("foo\nbar"));
         $this->assertEquals(array('foo', 'bar'), $process->splitLines("foo\r\nbar"));
-        $this->assertEquals(array('foo', 'bar', ''), $process->splitLines("foo\r\nbar\n"));
+        $this->assertEquals(array('foo', 'bar'), $process->splitLines("foo\r\nbar\n"));
     }
 }

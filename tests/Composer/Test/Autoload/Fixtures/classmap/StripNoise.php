@@ -15,12 +15,30 @@ class Fail2
 
 }
 A
-. <<<'TEST'
+. <<<  AB
 class Fail3
 {
 
 }
-TEST;
+AB
+. <<<'TEST'
+class Fail4
+{
+
+}
+TEST
+. <<< 'ANOTHER'
+class Fail5
+{
+
+}
+ANOTHER
+. <<<	'ONEMORE'
+class Fail6
+{
+
+}
+ONEMORE;
     }
 
     public function test2()

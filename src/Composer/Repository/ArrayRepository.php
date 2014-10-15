@@ -14,6 +14,7 @@ namespace Composer\Repository;
 
 use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
+use Composer\Package\CompletePackageInterface;
 use Composer\Package\Version\VersionParser;
 
 /**
@@ -77,6 +78,32 @@ class ArrayRepository implements RepositoryInterface
     /**
      * {@inheritDoc}
      */
+    public function search($query, $mode = 0)
+    {
+        $regex = '{(?:'.implode('|', preg_split('{\s+}', $query)).')}i';
+
+        $matches = array();
+        foreach ($this->getPackages() as $package) {
+            $name = $package->getName();
+            if (isset($matches[$name])) {
+                continue;
+            }
+            if (preg_match($regex, $name)
+                || ($mode === self::SEARCH_FULLTEXT && $package instanceof CompletePackageInterface && preg_match($regex, implode(' ', (array) $package->getKeywords()) . ' ' . $package->getDescription()))
+            ) {
+                $matches[$name] = array(
+                    'name' => $package->getPrettyName(),
+                    'description' => $package->getDescription(),
+                );
+            }
+        }
+
+        return array_values($matches);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function hasPackage(PackageInterface $package)
     {
         $packageId = $package->getUniqueName();
@@ -103,32 +130,17 @@ class ArrayRepository implements RepositoryInterface
         $package->setRepository($this);
         $this->packages[] = $package;
 
-        // create alias package on the fly if needed
-        if ($package->getAlias()) {
-            $alias = $this->createAliasPackage($package);
-            if (!$this->hasPackage($alias)) {
-                $this->addPackage($alias);
+        if ($package instanceof AliasPackage) {
+            $aliasedPackage = $package->getAliasOf();
+            if (null === $aliasedPackage->getRepository()) {
+                $this->addPackage($aliasedPackage);
             }
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function filterPackages($callback, $class = 'Composer\Package\Package')
+    protected function createAliasPackage(PackageInterface $package, $alias, $prettyAlias)
     {
-        foreach ($this->getPackages() as $package) {
-            if (false === call_user_func($callback, $package)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    protected function createAliasPackage(PackageInterface $package, $alias = null, $prettyAlias = null)
-    {
-        return new AliasPackage($package, $alias ?: $package->getAlias(), $prettyAlias ?: $package->getPrettyAlias());
+        return new AliasPackage($package instanceof AliasPackage ? $package->getAliasOf() : $package, $alias, $prettyAlias);
     }
 
     /**

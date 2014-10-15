@@ -13,7 +13,6 @@
 namespace Composer\DependencyResolver;
 
 use Composer\Package\AliasPackage;
-use Composer\DependencyResolver\Operation;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -79,6 +78,7 @@ class Transaction
 
         foreach ($this->decisions as $i => $decision) {
             $literal = $decision[Decisions::DECISION_LITERAL];
+            $reason = $decision[Decisions::DECISION_REASON];
             $package = $this->pool->literalToPackage($literal);
 
             if ($literal <= 0 &&

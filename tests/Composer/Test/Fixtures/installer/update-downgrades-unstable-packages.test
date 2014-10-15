@@ -1,0 +1,49 @@
+--TEST--
+Downgrading from unstable to more stable package should work even if already installed
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "a/a", "version": "dev-master",
+                    "source": { "reference": "abcd", "url": "", "type": "git" }
+                },
+                {
+                    "name": "a/a", "version": "1.0.0",
+                    "source": { "reference": "1.0.0", "url": "", "type": "git" },
+                    "dist": { "reference": "1.0.0", "url": "", "type": "zip", "shasum": "" }
+                },
+                {
+                    "name": "b/b", "version": "dev-master",
+                    "source": { "reference": "abcd", "url": "", "type": "git" }
+                },
+                {
+                    "name": "b/b", "version": "1.0.0",
+                    "source": { "reference": "1.0.0", "url": "", "type": "git" },
+                    "dist": { "reference": "1.0.0", "url": "", "type": "zip", "shasum": "" }
+                }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "*",
+        "b/b": "*@dev"
+    }
+}
+--INSTALLED--
+[
+    {
+        "name": "a/a", "version": "dev-master",
+        "source": { "reference": "abcd", "url": "", "type": "git" }
+    },
+    {
+        "name": "b/b", "version": "dev-master",
+        "source": { "reference": "abcd", "url": "", "type": "git" }
+    }
+]
+--RUN--
+update
+--EXPECT--
+Updating a/a (dev-master abcd) to a/a (1.0.0)

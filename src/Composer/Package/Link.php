@@ -13,7 +13,6 @@
 namespace Composer\Package;
 
 use Composer\Package\LinkConstraint\LinkConstraintInterface;
-use Composer\Package\PackageInterface;
 
 /**
  * Represents a link between two packages, represented by their names

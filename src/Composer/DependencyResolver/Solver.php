@@ -127,11 +127,15 @@ class Solver
         foreach ($this->installed->getPackages() as $package) {
             $this->installedMap[$package->getId()] = $package;
         }
+    }
 
+    protected function checkForRootRequireProblems()
+    {
         foreach ($this->jobs as $job) {
             switch ($job['cmd']) {
                 case 'update':
-                    foreach ($job['packages'] as $package) {
+                    $packages = $this->pool->whatProvides($job['packageName'], $job['constraint']);
+                    foreach ($packages as $package) {
                         if (isset($this->installedMap[$package->getId()])) {
                             $this->updateMap[$package->getId()] = true;
                         }
@@ -145,7 +149,7 @@ class Solver
                     break;
 
                 case 'install':
-                    if (!$job['packages']) {
+                    if (!$this->pool->whatProvides($job['packageName'], $job['constraint'])) {
                         $problem = new Problem($this->pool);
                         $problem->addRule(new Rule($this->pool, array(), null, null, $job));
                         $this->problems[] = $problem;
@@ -160,10 +164,9 @@ class Solver
         $this->jobs = $request->getJobs();
 
         $this->setupInstalledMap();
-
-        $this->decisions = new Decisions($this->pool);
-
         $this->rules = $this->ruleSetGenerator->getRulesFor($this->jobs, $this->installedMap);
+        $this->checkForRootRequireProblems();
+        $this->decisions = new Decisions($this->pool);
         $this->watchGraph = new RuleWatchGraph;
 
         foreach ($this->rules as $rule) {
@@ -204,7 +207,7 @@ class Solver
      * Evaluates each term affected by the decision (linked through watches)
      * If we find unit rules we make new decisions based on them
      *
-     * @param integer $level
+     * @param  integer   $level
      * @return Rule|null A rule on conflict, otherwise null.
      */
     protected function propagate($level)
@@ -321,7 +324,7 @@ class Solver
     private function selectAndInstall($level, array $decisionQueue, $disableRules, Rule $rule)
     {
         // choose best package to install from decisionQueue
-        $literals = $this->policy->selectPreferedPackages($this->pool, $this->installedMap, $decisionQueue);
+        $literals = $this->policy->selectPreferedPackages($this->pool, $this->installedMap, $decisionQueue, $rule->getRequiredPackage());
 
         $selectedLiteral = array_shift($literals);
 
@@ -756,7 +759,6 @@ class Solver
 
                 if ($lastLiteral) {
                     unset($this->branches[$lastBranchIndex][self::BRANCH_LITERALS][$lastBranchOffset]);
-                    array_values($this->branches[$lastBranchIndex][self::BRANCH_LITERALS]);
 
                     $level = $lastLevel;
                     $this->revert($level);

@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * This file is part of Composer.
+ *
+ * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Composer\Test;
 
 use Symfony\Component\Process\Process;
@@ -55,10 +65,11 @@ class AllFunctionalTest extends \PHPUnit_Framework_TestCase
         $fs->ensureDirectoryExists(dirname(self::$pharPath));
         chdir(dirname(self::$pharPath));
 
-        $proc = new Process('php '.escapeshellarg(__DIR__.'/../../../bin/compile'));
+        $proc = new Process('php '.escapeshellarg(__DIR__.'/../../../bin/compile'), dirname(self::$pharPath));
         $exitcode = $proc->run();
-
-        $this->assertSame(0, $exitcode);
+        if ($exitcode !== 0 || trim($proc->getOutput())) {
+            $this->fail($proc->getOutput());
+        }
         $this->assertTrue(file_exists(self::$pharPath));
     }
 
@@ -74,7 +85,7 @@ class AllFunctionalTest extends \PHPUnit_Framework_TestCase
         putenv('COMPOSER_HOME='.$this->testDir.'home');
 
         $cmd = 'php '.escapeshellarg(self::$pharPath).' --no-ansi '.$testData['RUN'];
-        $proc = new Process($cmd);
+        $proc = new Process($cmd, __DIR__.'/Fixtures/functional');
         $exitcode = $proc->run();
 
         if (isset($testData['EXPECT'])) {
@@ -113,7 +124,7 @@ class AllFunctionalTest extends \PHPUnit_Framework_TestCase
         $testDir = sys_get_temp_dir().'/composer_functional_test'.uniqid(mt_rand(), true);
         $this->testDir = $testDir;
         $varRegex = '#%([a-zA-Z_-]+)%#';
-        $variableReplacer = function($match) use (&$data, $testDir) {
+        $variableReplacer = function ($match) use (&$data, $testDir) {
             list(, $var) = $match;
 
             switch ($var) {

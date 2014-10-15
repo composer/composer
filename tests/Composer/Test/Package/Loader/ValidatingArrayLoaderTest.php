@@ -29,7 +29,7 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
             ->method('load')
             ->with($config);
 
-        $loader = new ValidatingArrayLoader($internalLoader);
+        $loader = new ValidatingArrayLoader($internalLoader, true, null, ValidatingArrayLoader::CHECK_ALL);
         $loader->load($config);
     }
 
@@ -73,14 +73,17 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                     ),
                     'require' => array(
                         'a/b' => '1.*',
+                        'b/c' => '~2',
                         'example' => '>2.0-dev,<2.4-dev',
                     ),
                     'require-dev' => array(
                         'a/b' => '1.*',
+                        'b/c' => '*',
                         'example' => '>2.0-dev,<2.4-dev',
                     ),
                     'conflict' => array(
                         'a/b' => '1.*',
+                        'b/c' => '>2.7',
                         'example' => '>2.0-dev,<2.4-dev',
                     ),
                     'replace' => array(
@@ -123,6 +126,9 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                         'vendor-dir' => 'vendor',
                         'process-timeout' => 10000,
                     ),
+                    'archive' => array(
+                        'exclude' => array('/foo/bar', 'baz', '!/foo/bar/baz'),
+                    ),
                     'scripts' => array(
                         'post-update-cmd' => 'Foo\\Bar\\Baz::doSomething',
                         'post-install-cmd' => array(
@@ -140,6 +146,7 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                         'bin/foo',
                         'bin/bar',
                     ),
+                    'transport-options' => array('ssl' => array('local_cert' => '/opt/certs/test.pem'))
                 ),
             ),
             array( // test as array
@@ -157,7 +164,7 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
     public function testLoadFailureThrowsException($config, $expectedErrors)
     {
         $internalLoader = $this->getMock('Composer\Package\Loader\LoaderInterface');
-        $loader = new ValidatingArrayLoader($internalLoader);
+        $loader = new ValidatingArrayLoader($internalLoader, true, null, ValidatingArrayLoader::CHECK_ALL);
         try {
             $loader->load($config);
             $this->fail('Expected exception to be thrown');
@@ -175,7 +182,7 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
     public function testLoadWarnings($config, $expectedWarnings)
     {
         $internalLoader = $this->getMock('Composer\Package\Loader\LoaderInterface');
-        $loader = new ValidatingArrayLoader($internalLoader);
+        $loader = new ValidatingArrayLoader($internalLoader, true, null, ValidatingArrayLoader::CHECK_ALL);
 
         $loader->load($config);
         $warnings = $loader->getWarnings();
@@ -187,15 +194,20 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider warningProvider
      */
-    public function testLoadSkipsWarningDataWhenIgnoringErrors($config)
+    public function testLoadSkipsWarningDataWhenIgnoringErrors($config, $expectedWarnings, $mustCheck = true)
     {
+        if (!$mustCheck) {
+            $this->assertTrue(true);
+
+            return;
+        }
         $internalLoader = $this->getMock('Composer\Package\Loader\LoaderInterface');
         $internalLoader
             ->expects($this->once())
             ->method('load')
             ->with(array('name' => 'a/b'));
 
-        $loader = new ValidatingArrayLoader($internalLoader);
+        $loader = new ValidatingArrayLoader($internalLoader, true, null, ValidatingArrayLoader::CHECK_ALL);
         $config['name'] = 'a/b';
         $loader->load($config);
     }
@@ -231,6 +243,37 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                     'support.source : invalid value, must be a string',
                 )
             ),
+            array(
+                array(
+                    'name' => 'foo/bar',
+                    'autoload' => 'strings',
+                ),
+                array(
+                    'autoload : should be an array, string given'
+                )
+            ),
+            array(
+                array(
+                    'name' => 'foo/bar',
+                    'autoload' => array(
+                        'psr0' => array(
+                            'foo' => 'src',
+                        ),
+                    ),
+                ),
+                array(
+                    'autoload : invalid value (psr0), must be one of psr-0, psr-4, classmap, files'
+                )
+            ),
+            array(
+                array(
+                    'name' => 'foo/bar',
+                    'transport-options' => 'test',
+                ),
+                array(
+                    'transport-options : should be an array, string given'
+                )
+            ),
         );
     }
 
@@ -262,6 +305,24 @@ class ValidatingArrayLoaderTest extends \PHPUnit_Framework_TestCase
                     'support.issues : invalid value (foo:bar), must be an http/https URL',
                     'support.wiki : invalid value (foo:bar), must be an http/https URL',
                 )
+            ),
+            array(
+                array(
+                    'name' => 'foo/bar',
+                    'require' => array(
+                        'foo/baz' => '*',
+                        'bar/baz' => '>=1.0',
+                        'bar/foo' => 'dev-master',
+                        'bar/hacked' => '@stable',
+                    ),
+                ),
+                array(
+                    'require.foo/baz : unbound version constraints (*) should be avoided',
+                    'require.bar/baz : unbound version constraints (>=1.0) should be avoided',
+                    'require.bar/foo : unbound version constraints (dev-master) should be avoided',
+                    'require.bar/hacked : unbound version constraints (@stable) should be avoided',
+                ),
+                false
             ),
         );
     }

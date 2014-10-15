@@ -66,4 +66,11 @@ interface ConfigSourceInterface
      * @param string $name Name
      */
     public function removeLink($type, $name);
+
+    /**
+     * Gives a user-friendly name to this source (file path or so)
+     *
+     * @return string
+     */
+    public function getName();
 }

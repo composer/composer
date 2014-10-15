@@ -35,7 +35,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         $data = array();
         $data['local config inherits system defaults'] = array(
             array(
-                'packagist' => array('type' => 'composer', 'url' => 'https?://packagist.org')
+                'packagist' => array('type' => 'composer', 'url' => 'https?://packagist.org', 'allow_ssl_downgrade' => true)
             ),
             array(),
         );
@@ -51,7 +51,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
             array(
                 1 => array('type' => 'vcs', 'url' => 'git://github.com/composer/composer.git'),
                 0 => array('type' => 'pear', 'url' => 'http://pear.composer.org'),
-                'packagist' => array('type' => 'composer', 'url' => 'https?://packagist.org'),
+                'packagist' => array('type' => 'composer', 'url' => 'https?://packagist.org', 'allow_ssl_downgrade' => true),
             ),
             array(
                 array('type' => 'vcs', 'url' => 'git://github.com/composer/composer.git'),
@@ -62,7 +62,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         $data['system config adds above core defaults'] = array(
             array(
                 'example.com' => array('type' => 'composer', 'url' => 'http://example.com'),
-                'packagist' => array('type' => 'composer', 'url' => 'https?://packagist.org')
+                'packagist' => array('type' => 'composer', 'url' => 'https?://packagist.org', 'allow_ssl_downgrade' => true)
             ),
             array(),
             array(
@@ -109,12 +109,24 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array('foo' => 'bar', 'bar' => 'baz'), $config->get('github-oauth'));
     }
 
+    public function testVarReplacement()
+    {
+        $config = new Config();
+        $config->merge(array('config' => array('a' => 'b', 'c' => '{$a}')));
+        $config->merge(array('config' => array('bin-dir' => '$HOME', 'cache-dir' => '~/foo/')));
+
+        $home = rtrim(getenv('HOME') ?: getenv('USERPROFILE'), '\\/');
+        $this->assertEquals('b', $config->get('c'));
+        $this->assertEquals($home.'/', $config->get('bin-dir'));
+        $this->assertEquals($home.'/foo', $config->get('cache-dir'));
+    }
+
     public function testOverrideGithubProtocols()
     {
         $config = new Config();
-        $config->merge(array('config' => array('github-protocols' => array('https', 'http'))));
-        $config->merge(array('config' => array('github-protocols' => array('http'))));
+        $config->merge(array('config' => array('github-protocols' => array('https', 'git'))));
+        $config->merge(array('config' => array('github-protocols' => array('https'))));
 
-        $this->assertEquals(array('http'), $config->get('github-protocols'));
+        $this->assertEquals(array('https'), $config->get('github-protocols'));
     }
 }

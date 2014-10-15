@@ -28,11 +28,23 @@ class ZipDownloaderTest extends \PHPUnit_Framework_TestCase
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $packageMock->expects($this->any())
             ->method('getDistUrl')
-            ->will($this->returnValue('file://'.__FILE__))
+            ->will($this->returnValue($distUrl = 'file://'.__FILE__))
+        ;
+        $packageMock->expects($this->any())
+            ->method('getDistUrls')
+            ->will($this->returnValue(array($distUrl)))
+        ;
+        $packageMock->expects($this->atLeastOnce())
+            ->method('getTransportOptions')
+            ->will($this->returnValue(array()))
         ;
 
         $io = $this->getMock('Composer\IO\IOInterface');
         $config = $this->getMock('Composer\Config');
+        $config->expects($this->any())
+            ->method('get')
+            ->with('vendor-dir')
+            ->will($this->returnValue(sys_get_temp_dir().'/composer-zip-test-vendor'));
         $downloader = new ZipDownloader($io, $config);
 
         try {

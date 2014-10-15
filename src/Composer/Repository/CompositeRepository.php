@@ -91,7 +91,21 @@ class CompositeRepository implements RepositoryInterface
             $packages[] = $repository->findPackages($name, $version);
         }
 
-        return call_user_func_array('array_merge', $packages);
+        return $packages ? call_user_func_array('array_merge', $packages) : array();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function search($query, $mode = 0)
+    {
+        $matches = array();
+        foreach ($this->repositories as $repository) {
+            /* @var $repository RepositoryInterface */
+            $matches[] = $repository->search($query, $mode);
+        }
+
+        return $matches ? call_user_func_array('array_merge', $matches) : array();
     }
 
     /**
@@ -119,7 +133,7 @@ class CompositeRepository implements RepositoryInterface
             $packages[] = $repository->getPackages();
         }
 
-        return call_user_func_array('array_merge', $packages);
+        return $packages ? call_user_func_array('array_merge', $packages) : array();
     }
 
     /**

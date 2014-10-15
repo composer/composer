@@ -13,6 +13,7 @@
 namespace Composer\Repository;
 
 use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\Package;
 use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\Version\VersionParser;
@@ -22,6 +23,9 @@ use Composer\Cache;
 use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Util\RemoteFilesystem;
+use Composer\Plugin\PluginEvents;
+use Composer\Plugin\PreFileDownloadEvent;
+use Composer\EventDispatcher\EventDispatcher;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -33,20 +37,28 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
     protected $url;
     protected $baseUrl;
     protected $io;
+    protected $rfs;
     protected $cache;
     protected $notifyUrl;
+    protected $searchUrl;
     protected $hasProviders = false;
+    protected $providersUrl;
+    protected $lazyProvidersUrl;
     protected $providerListing;
     protected $providers = array();
     protected $providersByUid = array();
     protected $loader;
     protected $rootAliases;
+    protected $allowSslDowngrade = false;
+    protected $eventDispatcher;
+    protected $sourceMirrors;
+    protected $distMirrors;
     private $rawData;
     private $minimalPackages;
     private $degradedMode = false;
     private $rootData;
 
-    public function __construct(array $repoConfig, IOInterface $io, Config $config)
+    public function __construct(array $repoConfig, IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null)
     {
         if (!preg_match('{^[\w.]+\??://}', $repoConfig['url'])) {
             // assume http as the default protocol
@@ -59,12 +71,15 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
         }
 
         $urlBits = parse_url($repoConfig['url']);
-        if (empty($urlBits['scheme']) || empty($urlBits['host'])) {
+        if ($urlBits === false || empty($urlBits['scheme'])) {
             throw new \UnexpectedValueException('Invalid url given for Composer repository: '.$repoConfig['url']);
         }
 
         if (!isset($repoConfig['options'])) {
             $repoConfig['options'] = array();
+        }
+        if (isset($repoConfig['allow_ssl_downgrade']) && true === $repoConfig['allow_ssl_downgrade']) {
+            $this->allowSslDowngrade = true;
         }
 
         $this->config = $config;
@@ -72,13 +87,76 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
         $this->url = $repoConfig['url'];
         $this->baseUrl = rtrim(preg_replace('{^(.*)(?:/packages.json)?(?:[?#].*)?$}', '$1', $this->url), '/');
         $this->io = $io;
-        $this->cache = new Cache($io, $config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $this->url));
+        $this->cache = new Cache($io, $config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $this->url), 'a-z0-9.$');
         $this->loader = new ArrayLoader();
+        $this->rfs = new RemoteFilesystem($this->io, $this->config, $this->options);
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     public function setRootAliases(array $rootAliases)
     {
         $this->rootAliases = $rootAliases;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function findPackage($name, $version)
+    {
+        // normalize version & name
+        $versionParser = new VersionParser();
+        $version = $versionParser->normalize($version);
+        $name = strtolower($name);
+
+        foreach ($this->getProviderNames() as $providerName) {
+            if ($name === $providerName) {
+                $packages = $this->whatProvides(new Pool('dev'), $providerName);
+                foreach ($packages as $package) {
+                    if ($name == $package->getName() && $version === $package->getVersion()) {
+                        return $package;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function findPackages($name, $version = null)
+    {
+        // normalize name
+        $name = strtolower($name);
+
+        // normalize version
+        if (null !== $version) {
+            $versionParser = new VersionParser();
+            $version = $versionParser->normalize($version);
+        }
+
+        $packages = array();
+
+        foreach ($this->getProviderNames() as $providerName) {
+            if ($name === $providerName) {
+                $packages = $this->whatProvides(new Pool('dev'), $providerName);
+                foreach ($packages as $package) {
+                    if ($name == $package->getName() && (null === $version || $version === $package->getVersion())) {
+                        $packages[] = $package;
+                    }
+                }
+            }
+        }
+
+        return $packages;
+    }
+
+    public function getPackages()
+    {
+        if ($this->hasProviders()) {
+            throw new \LogicException('Composer repositories that have providers can not load the complete list of packages, use getProviderNames instead.');
+        }
+
+        return parent::getPackages();
     }
 
     /**
@@ -127,24 +205,55 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
     /**
      * {@inheritDoc}
      */
-    public function filterPackages($callback, $class = 'Composer\Package\Package')
+    public function search($query, $mode = 0)
     {
-        if (null === $this->rawData) {
-            $this->rawData = $this->loadDataFromServer();
+        $this->loadRootServerFile();
+
+        if ($this->searchUrl && $mode === self::SEARCH_FULLTEXT) {
+            $url = str_replace('%query%', $query, $this->searchUrl);
+
+            $hostname = parse_url($url, PHP_URL_HOST) ?: $url;
+            $json = $this->rfs->getContents($hostname, $url, false);
+            $results = JsonFile::parseJson($json, $url);
+
+            return $results['results'];
         }
 
-        foreach ($this->rawData as $package) {
-            if (false === call_user_func($callback, $package = $this->createPackage($package, $class))) {
-                return false;
-            }
-            if ($package->getAlias()) {
-                if (false === call_user_func($callback, $this->createAliasPackage($package))) {
-                    return false;
+        if ($this->hasProviders()) {
+            $results = array();
+            $regex = '{(?:'.implode('|', preg_split('{\s+}', $query)).')}i';
+
+            foreach ($this->getProviderNames() as $name) {
+                if (preg_match($regex, $name)) {
+                    $results[] = array('name' => $name);
                 }
             }
+
+            return $results;
         }
 
-        return true;
+        return parent::search($query, $mode);
+    }
+
+    public function getProviderNames()
+    {
+        $this->loadRootServerFile();
+
+        if (null === $this->providerListing) {
+            $this->loadProviderListings($this->loadRootServerFile());
+        }
+
+        if ($this->providersUrl) {
+            return array_keys($this->providerListing);
+        }
+
+        // BC handling for old providers-includes
+        $providers = array();
+        foreach (array_keys($this->providerListing) as $provider) {
+            $providers[] = substr($provider, 2, -5);
+        }
+
+        return $providers;
     }
 
     /**
@@ -153,9 +262,23 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
     public function loadPackage(array $data)
     {
         $package = $this->createPackage($data['raw'], 'Composer\Package\Package');
+        if ($package instanceof AliasPackage) {
+            $package = $package->getAliasOf();
+        }
         $package->setRepository($this);
 
         return $package;
+    }
+
+    protected function configurePackageTransportOptions(PackageInterface $package)
+    {
+        foreach ($package->getDistUrls() as $url) {
+            if (strpos($url, $this->baseUrl) === 0) {
+                $package->setTransportOptions($this->options);
+
+                return;
+            }
+        }
     }
 
     /**
@@ -188,30 +311,48 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
 
     public function whatProvides(Pool $pool, $name)
     {
-        // skip platform packages
-        if ($name === 'php' || in_array(substr($name, 0, 4), array('ext-', 'lib-'), true) || $name === '__root__') {
-            return array();
-        }
-
         if (isset($this->providers[$name])) {
             return $this->providers[$name];
+        }
+
+        // skip platform packages
+        if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name) || '__root__' === $name) {
+            return array();
         }
 
         if (null === $this->providerListing) {
             $this->loadProviderListings($this->loadRootServerFile());
         }
 
-        $url = 'p/'.$name.'.json';
+        if ($this->lazyProvidersUrl && !isset($this->providerListing[$name])) {
+            $hash = null;
+            $url = str_replace('%package%', $name, $this->lazyProvidersUrl);
+            $cacheKey = false;
+        } elseif ($this->providersUrl) {
+            // package does not exist in this repo
+            if (!isset($this->providerListing[$name])) {
+                return array();
+            }
 
-        // package does not exist in this repo
-        if (!isset($this->providerListing[$url])) {
-            return array();
+            $hash = $this->providerListing[$name]['sha256'];
+            $url = str_replace(array('%package%', '%hash%'), array($name, $hash), $this->providersUrl);
+            $cacheKey = 'provider-'.strtr($name, '/', '$').'.json';
+        } else {
+            // BC handling for old providers-includes
+            $url = 'p/'.$name.'.json';
+
+            // package does not exist in this repo
+            if (!isset($this->providerListing[$url])) {
+                return array();
+            }
+            $hash = $this->providerListing[$url]['sha256'];
+            $cacheKey = null;
         }
 
-        if ($this->cache->sha256($url) === $this->providerListing[$url]['sha256']) {
-            $packages = json_decode($this->cache->read($url), true);
+        if ($cacheKey && $this->cache->sha256($cacheKey) === $hash) {
+            $packages = json_decode($this->cache->read($cacheKey), true);
         } else {
-            $packages = $this->fetchFile($url, null, $this->providerListing[$url]['sha256']);
+            $packages = $this->fetchFile($url, $cacheKey, $hash);
         }
 
         $this->providers[$name] = array();
@@ -234,6 +375,25 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
                         }
                     }
                 } else {
+                    if (isset($version['provide']) || isset($version['replace'])) {
+                        // collect names
+                        $names = array(
+                            strtolower($version['name']) => true,
+                        );
+                        if (isset($version['provide'])) {
+                            foreach ($version['provide'] as $target => $constraint) {
+                                $names[strtolower($target)] = true;
+                            }
+                        }
+                        if (isset($version['replace'])) {
+                            foreach ($version['replace'] as $target => $constraint) {
+                                $names[strtolower($target)] = true;
+                            }
+                        }
+                        $names = array_keys($names);
+                    } else {
+                        $names = array(strtolower($version['name']));
+                    }
                     if (!$pool->isPackageAcceptable(strtolower($version['name']), VersionParser::parseStability($version['version']))) {
                         continue;
                     }
@@ -242,25 +402,27 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
                     $package = $this->createPackage($version, 'Composer\Package\Package');
                     $package->setRepository($this);
 
-                    $this->providers[$name][$version['uid']] = $package;
-                    $this->providersByUid[$version['uid']] = $package;
+                    if ($package instanceof AliasPackage) {
+                        $aliased = $package->getAliasOf();
+                        $aliased->setRepository($this);
 
-                    if ($package->getAlias()) {
-                        $alias = $this->createAliasPackage($package);
-                        $alias->setRepository($this);
+                        $this->providers[$name][$version['uid']] = $aliased;
+                        $this->providers[$name][$version['uid'].'-alias'] = $package;
 
-                        $this->providers[$name][$version['uid'].'-alias'] = $alias;
                         // override provider with its alias so it can be expanded in the if block above
-                        $this->providersByUid[$version['uid']] = $alias;
+                        $this->providersByUid[$version['uid']] = $package;
+                    } else {
+                        $this->providers[$name][$version['uid']] = $package;
+                        $this->providersByUid[$version['uid']] = $package;
                     }
 
                     // handle root package aliases
                     unset($rootAliasData);
 
-                    if (isset($this->rootAliases[$name][$package->getVersion()])) {
-                        $rootAliasData = $this->rootAliases[$name][$package->getVersion()];
-                    } elseif (($aliasNormalized = $package->getAlias()) && isset($this->rootAliases[$name][$aliasNormalized])) {
-                        $rootAliasData = $this->rootAliases[$name][$aliasNormalized];
+                    if (isset($this->rootAliases[$package->getName()][$package->getVersion()])) {
+                        $rootAliasData = $this->rootAliases[$package->getName()][$package->getVersion()];
+                    } elseif ($package instanceof AliasPackage && isset($this->rootAliases[$package->getName()][$package->getAliasOf()->getVersion()])) {
+                        $rootAliasData = $this->rootAliases[$package->getName()][$package->getAliasOf()->getVersion()];
                     }
 
                     if (isset($rootAliasData)) {
@@ -291,6 +453,17 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
         }
     }
 
+    /**
+     * Adds a new package to the repository
+     *
+     * @param PackageInterface $package
+     */
+    public function addPackage(PackageInterface $package)
+    {
+        parent::addPackage($package);
+        $this->configurePackageTransportOptions($package);
+    }
+
     protected function loadRootServerFile()
     {
         if (null !== $this->rootData) {
@@ -311,20 +484,49 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
 
         $data = $this->fetchFile($jsonUrl, 'packages.json');
 
-        if (!empty($data['notify_batch'])) {
-            if ('/' === $data['notify_batch'][0]) {
-                $this->notifyUrl = preg_replace('{(https?://[^/]+).*}i', '$1' . $data['notify_batch'], $this->url);
-            } else {
-                $this->notifyUrl = $data['notify_batch'];
+        if (!empty($data['notify-batch'])) {
+            $this->notifyUrl = $this->canonicalizeUrl($data['notify-batch']);
+        } elseif (!empty($data['notify_batch'])) {
+            // TODO remove this BC notify_batch support
+            $this->notifyUrl = $this->canonicalizeUrl($data['notify_batch']);
+        } elseif (!empty($data['notify'])) {
+            $this->notifyUrl = $this->canonicalizeUrl($data['notify']);
+        }
+
+        if (!empty($data['search'])) {
+            $this->searchUrl = $this->canonicalizeUrl($data['search']);
+        }
+
+        if (!empty($data['mirrors'])) {
+            foreach ($data['mirrors'] as $mirror) {
+                if (!empty($mirror['git-url'])) {
+                    $this->sourceMirrors['git'][] = array('url' => $mirror['git-url'], 'preferred' => !empty($mirror['preferred']));
+                }
+                if (!empty($mirror['hg-url'])) {
+                    $this->sourceMirrors['hg'][] = array('url' => $mirror['hg-url'], 'preferred' => !empty($mirror['preferred']));
+                }
+                if (!empty($mirror['dist-url'])) {
+                    $this->distMirrors[] = array('url' => $mirror['dist-url'], 'preferred' => !empty($mirror['preferred']));
+                }
             }
         }
 
-        if (!$this->notifyUrl && !empty($data['notify'])) {
-            if ('/' === $data['notify'][0]) {
-                $this->notifyUrl = preg_replace('{(https?://[^/]+).*}i', '$1' . $data['notify'], $this->url);
-            } else {
-                $this->notifyUrl = $data['notify'];
-            }
+        if (!empty($data['warning'])) {
+            $this->io->write('<warning>Warning from '.$this->url.': '.$data['warning'].'</warning>');
+        }
+
+        if (!empty($data['providers-lazy-url'])) {
+            $this->lazyProvidersUrl = $this->canonicalizeUrl($data['providers-lazy-url']);
+            $this->hasProviders = true;
+        }
+
+        if ($this->allowSslDowngrade) {
+            $this->url = str_replace('https://', 'http://', $this->url);
+        }
+
+        if (!empty($data['providers-url'])) {
+            $this->providersUrl = $this->canonicalizeUrl($data['providers-url']);
+            $this->hasProviders = true;
         }
 
         if (!empty($data['providers']) || !empty($data['providers-includes'])) {
@@ -332,6 +534,15 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
         }
 
         return $this->rootData = $data;
+    }
+
+    protected function canonicalizeUrl($url)
+    {
+        if ('/' === $url[0]) {
+            return preg_replace('{(https?://[^/]+).*}i', '$1' . $url, $this->url);
+        }
+
+        return $url;
     }
 
     protected function loadDataFromServer()
@@ -350,8 +561,23 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
             $this->providerListing = array_merge($this->providerListing, $data['providers']);
         }
 
-        if (isset($data['providers-includes'])) {
-            foreach ($data['providers-includes'] as $include => $metadata) {
+        if ($this->providersUrl && isset($data['provider-includes'])) {
+            $includes = $data['provider-includes'];
+            foreach ($includes as $include => $metadata) {
+                $url = $this->baseUrl . '/' . str_replace('%hash%', $metadata['sha256'], $include);
+                $cacheKey = str_replace(array('%hash%','$'), '', $include);
+                if ($this->cache->sha256($cacheKey) === $metadata['sha256']) {
+                    $includedData = json_decode($this->cache->read($cacheKey), true);
+                } else {
+                    $includedData = $this->fetchFile($url, $cacheKey, $metadata['sha256']);
+                }
+
+                $this->loadProviderListings($includedData);
+            }
+        } elseif (isset($data['providers-includes'])) {
+            // BC layer for old-style providers-includes
+            $includes = $data['providers-includes'];
+            foreach ($includes as $include => $metadata) {
                 if ($this->cache->sha256($include) === $metadata['sha256']) {
                     $includedData = json_decode($this->cache->read($include), true);
                 } else {
@@ -403,9 +629,18 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
     protected function createPackage(array $data, $class)
     {
         try {
-            $data['notification-url'] = $this->notifyUrl;
+            if (!isset($data['notification-url'])) {
+                $data['notification-url'] = $this->notifyUrl;
+            }
 
-            return $this->loader->load($data, 'Composer\Package\CompletePackage');
+            $package = $this->loader->load($data, 'Composer\Package\CompletePackage');
+            if (isset($this->sourceMirrors[$package->getSourceType()])) {
+                $package->setSourceMirrors($this->sourceMirrors[$package->getSourceType()]);
+            }
+            $package->setDistMirrors($this->distMirrors);
+            $this->configurePackageTransportOptions($package);
+
+            return $package;
         } catch (\Exception $e) {
             throw new \RuntimeException('Could not load package '.(isset($data['name']) ? $data['name'] : json_encode($data)).' in '.$this->url.': ['.get_class($e).'] '.$e->getMessage(), 0, $e);
         }
@@ -413,7 +648,7 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
 
     protected function fetchFile($filename, $cacheKey = null, $sha256 = null)
     {
-        if (!$cacheKey) {
+        if (null === $cacheKey) {
             $cacheKey = $filename;
             $filename = $this->baseUrl.'/'.$filename;
         }
@@ -421,39 +656,51 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
         $retries = 3;
         while ($retries--) {
             try {
-                $json = new JsonFile($filename, new RemoteFilesystem($this->io, $this->options));
-                $data = $json->read();
-                $encoded = json_encode($data);
-                if ($sha256 && $sha256 !== hash('sha256', $encoded)) {
+                $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->rfs, $filename);
+                if ($this->eventDispatcher) {
+                    $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
+                }
+
+                $hostname = parse_url($filename, PHP_URL_HOST) ?: $filename;
+                $json = $preFileDownloadEvent->getRemoteFilesystem()->getContents($hostname, $filename, false);
+                if ($sha256 && $sha256 !== hash('sha256', $json)) {
                     if ($retries) {
-                        usleep(100);
+                        usleep(100000);
 
                         continue;
                     }
 
-                    // TODO throw SecurityException and abort once we are sure this can not happen accidentally
-                    $this->io->write('<warning>The contents of '.$filename.' do not match its signature, this is most likely due to a temporary glitch but could indicate a man-in-the-middle attack. Try running composer again and please report it if it still persists.</warning>');
+                    // TODO use scarier wording once we know for sure it doesn't do false positives anymore
+                    throw new RepositorySecurityException('The contents of '.$filename.' do not match its signature. This should indicate a man-in-the-middle attack. Try running composer again and report this if you think it is a mistake.');
                 }
-                $this->cache->write($cacheKey, $encoded);
+                $data = JsonFile::parseJson($json, $filename);
+                if ($cacheKey) {
+                    $this->cache->write($cacheKey, $json);
+                }
 
                 break;
             } catch (\Exception $e) {
-                if (!$retries) {
-                    if ($contents = $this->cache->read($cacheKey)) {
-                        if (!$this->degradedMode) {
-                            $this->io->write('<warning>'.$e->getMessage().'</warning>');
-                            $this->io->write('<warning>'.$this->url.' could not be fully loaded, package information was loaded from the local cache and may be out of date</warning>');
-                        }
-                        $this->degradedMode = true;
-                        $data = JsonFile::parseJson($contents, $this->cache->getRoot().$cacheKey);
+                if ($retries) {
+                    usleep(100000);
+                    continue;
+                }
 
-                        break;
-                    }
-
+                if ($e instanceof RepositorySecurityException) {
                     throw $e;
                 }
 
-                usleep(100);
+                if ($cacheKey && ($contents = $this->cache->read($cacheKey))) {
+                    if (!$this->degradedMode) {
+                        $this->io->write('<warning>'.$e->getMessage().'</warning>');
+                        $this->io->write('<warning>'.$this->url.' could not be fully loaded, package information was loaded from the local cache and may be out of date</warning>');
+                    }
+                    $this->degradedMode = true;
+                    $data = JsonFile::parseJson($contents, $this->cache->getRoot().$cacheKey);
+
+                    break;
+                }
+
+                throw $e;
             }
         }
 

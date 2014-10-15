@@ -30,8 +30,7 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
     {
         return array(
             array(
-                '{
-}',
+                '{}',
                 'require',
                 'vendor/baz',
                 'qux',
@@ -125,6 +124,156 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
     {
         "foo": "bar",
         "vendor/baz": "qux"
+    }
+}
+'
+            ),
+            array(
+                '{
+    "require": {
+        "foo": "bar"
+    },
+    "repositories": [{
+        "type": "package",
+        "package": {
+            "require": {
+                "foo": "bar"
+            }
+        }
+    }]
+}',
+                'require',
+                'foo',
+                'qux',
+                '{
+    "require": {
+        "foo": "qux"
+    },
+    "repositories": [{
+        "type": "package",
+        "package": {
+            "require": {
+                "foo": "bar"
+            }
+        }
+    }]
+}
+'
+            ),
+            array(
+                '{
+    "repositories": [{
+        "type": "package",
+        "package": {
+            "require": {
+                "foo": "bar"
+            }
+        }
+    }]
+}',
+                'require',
+                'foo',
+                'qux',
+                '{
+    "repositories": [{
+        "type": "package",
+        "package": {
+            "require": {
+                "foo": "bar"
+            }
+        }
+    }],
+    "require": {
+        "foo": "qux"
+    }
+}
+'
+            ),
+            array(
+                '{
+    "require": {
+        "php": "5.*"
+    }
+}',
+                'require-dev',
+                'foo',
+                'qux',
+                '{
+    "require": {
+        "php": "5.*"
+    },
+    "require-dev": {
+        "foo": "qux"
+    }
+}
+'
+            ),
+            array(
+                '{
+    "require": {
+        "php": "5.*"
+    },
+    "require-dev": {
+        "foo": "bar"
+    }
+}',
+                'require-dev',
+                'foo',
+                'qux',
+                '{
+    "require": {
+        "php": "5.*"
+    },
+    "require-dev": {
+        "foo": "qux"
+    }
+}
+'
+            ),
+            array(
+                '{
+    "repositories": [{
+        "type": "package",
+        "package": {
+            "bar": "ba[z",
+            "dist": {
+                "url": "http...",
+                "type": "zip"
+            },
+            "autoload": {
+                "classmap": [ "foo/bar" ]
+            }
+        }
+    }],
+    "require": {
+        "php": "5.*"
+    },
+    "require-dev": {
+        "foo": "bar"
+    }
+}',
+                'require-dev',
+                'foo',
+                'qux',
+                '{
+    "repositories": [{
+        "type": "package",
+        "package": {
+            "bar": "ba[z",
+            "dist": {
+                "url": "http...",
+                "type": "zip"
+            },
+            "autoload": {
+                "classmap": [ "foo/bar" ]
+            }
+        }
+    }],
+    "require": {
+        "php": "5.*"
+    },
+    "require-dev": {
+        "foo": "qux"
     }
 }
 '
@@ -248,6 +397,71 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
 }
 '
             ),
+            'works on undefined ones' => array(
+                '{
+    "repositories": {
+        "main": {
+            "foo": "bar",
+            "bar": "baz"
+        }
+    }
+}',
+                'removenotthere',
+                true,
+                '{
+    "repositories": {
+        "main": {
+            "foo": "bar",
+            "bar": "baz"
+        }
+    }
+}
+'
+            ),
+            'works on child having unmatched name' => array(
+                '{
+    "repositories": {
+        "baz": {
+            "foo": "bar",
+            "bar": "baz"
+        }
+    }
+}',
+                'bar',
+                true,
+                '{
+    "repositories": {
+        "baz": {
+            "foo": "bar",
+            "bar": "baz"
+        }
+    }
+}
+'
+            ),
+            'works on child having duplicate name' => array(
+                '{
+    "repositories": {
+        "foo": {
+            "baz": "qux"
+        },
+        "baz": {
+            "foo": "bar",
+            "bar": "baz"
+        }
+    }
+}',
+                'baz',
+                true,
+                '{
+    "repositories": {
+        "foo": {
+            "baz": "qux"
+        }
+    }
+}
+'
+            ),
             'works on empty repos' => array(
                 '{
     "repositories": {
@@ -306,43 +520,61 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
                 'bar',
                 false
             ),
+            'fails on deep arrays with borked texts' => array(
+                '{
+    "repositories": [{
+        "package": { "bar": "ba[z" }
+    }]
+}',
+                'bar',
+                false
+            ),
+            'fails on deep arrays with borked texts2' => array(
+                '{
+    "repositories": [{
+        "package": { "bar": "ba]z" }
+    }]
+}',
+                'bar',
+                false
+            ),
         );
     }
 
     public function testAddRepositoryCanInitializeEmptyRepositories()
     {
         $manipulator = new JsonManipulator('{
-    "repositories": {
-    }
+  "repositories": {
+  }
 }');
 
         $this->assertTrue($manipulator->addRepository('bar', array('type' => 'composer')));
         $this->assertEquals('{
-    "repositories": {
-        "bar": {
-            "type": "composer"
-        }
+  "repositories": {
+    "bar": {
+      "type": "composer"
     }
+  }
 }
 ', $manipulator->getContents());
     }
 
     public function testAddRepositoryCanInitializeFromScratch()
     {
-        $manipulator = new JsonManipulator('{
-    "a": "b"
-}');
+        $manipulator = new JsonManipulator("{
+\t\"a\": \"b\"
+}");
 
         $this->assertTrue($manipulator->addRepository('bar2', array('type' => 'composer')));
-        $this->assertEquals('{
-    "a": "b",
-    "repositories": {
-        "bar2": {
-            "type": "composer"
-        }
-    }
+        $this->assertEquals("{
+\t\"a\": \"b\",
+\t\"repositories\": {
+\t\t\"bar2\": {
+\t\t\t\"type\": \"composer\"
+\t\t}
+\t}
 }
-', $manipulator->getContents());
+", $manipulator->getContents());
     }
 
     public function testAddRepositoryCanAdd()
@@ -388,6 +620,24 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
         "baz": {
             "type": "composer"
         }
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testAddConfigSettingEscapes()
+    {
+        $manipulator = new JsonManipulator('{
+    "config": {
+    }
+}');
+
+        $this->assertTrue($manipulator->addConfigSetting('test', 'a\b'));
+        $this->assertTrue($manipulator->addConfigSetting('test2', "a\nb\fa"));
+        $this->assertEquals('{
+    "config": {
+        "test": "a\\\\b",
+        "test2": "a\nb\fa"
     }
 }
 ', $manipulator->getContents());
@@ -477,6 +727,213 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
             "alt.example.org": "baz"
         },
         "github-protocols": ["https", "http"]
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testAddConfigSettingCanAddSubKeyInEmptyConfig()
+    {
+        $manipulator = new JsonManipulator('{
+    "config": {
+    }
+}');
+
+        $this->assertTrue($manipulator->addConfigSetting('github-oauth.bar', 'baz'));
+        $this->assertEquals('{
+    "config": {
+        "github-oauth": {
+            "bar": "baz"
+        }
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testAddConfigSettingCanAddSubKeyInEmptyVal()
+    {
+        $manipulator = new JsonManipulator('{
+    "config": {
+        "github-oauth": {},
+        "github-oauth2": {
+        }
+    }
+}');
+
+        $this->assertTrue($manipulator->addConfigSetting('github-oauth.bar', 'baz'));
+        $this->assertTrue($manipulator->addConfigSetting('github-oauth2.a.bar', 'baz2'));
+        $this->assertTrue($manipulator->addConfigSetting('github-oauth3.b', 'c'));
+        $this->assertEquals('{
+    "config": {
+        "github-oauth": {
+            "bar": "baz"
+        },
+        "github-oauth2": {
+            "a.bar": "baz2"
+        },
+        "github-oauth3": {
+            "b": "c"
+        }
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testAddConfigSettingCanAddSubKeyInHash()
+    {
+        $manipulator = new JsonManipulator('{
+    "config": {
+        "github-oauth": {
+            "github.com": "foo"
+        }
+    }
+}');
+
+        $this->assertTrue($manipulator->addConfigSetting('github-oauth.bar', 'baz'));
+        $this->assertEquals('{
+    "config": {
+        "github-oauth": {
+            "github.com": "foo",
+            "bar": "baz"
+        }
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testAddRootSettingDoesNotBreakDots()
+    {
+        $manipulator = new JsonManipulator('{
+    "github-oauth": {
+        "github.com": "foo"
+    }
+}');
+
+        $this->assertTrue($manipulator->addSubNode('github-oauth', 'bar', 'baz'));
+        $this->assertEquals('{
+    "github-oauth": {
+        "github.com": "foo",
+        "bar": "baz"
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testRemoveConfigSettingCanRemoveSubKeyInHash()
+    {
+        $manipulator = new JsonManipulator('{
+    "config": {
+        "github-oauth": {
+            "github.com": "foo",
+            "bar": "baz"
+        }
+    }
+}');
+
+        $this->assertTrue($manipulator->removeConfigSetting('github-oauth.bar'));
+        $this->assertEquals('{
+    "config": {
+        "github-oauth": {
+            "github.com": "foo"
+        }
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testRemoveConfigSettingCanRemoveSubKeyInHashWithSiblings()
+    {
+        $manipulator = new JsonManipulator('{
+    "config": {
+        "foo": "bar",
+        "github-oauth": {
+            "github.com": "foo",
+            "bar": "baz"
+        }
+    }
+}');
+
+        $this->assertTrue($manipulator->removeConfigSetting('github-oauth.bar'));
+        $this->assertEquals('{
+    "config": {
+        "foo": "bar",
+        "github-oauth": {
+            "github.com": "foo"
+        }
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testAddMainKey()
+    {
+        $manipulator = new JsonManipulator('{
+    "foo": "bar"
+}');
+
+        $this->assertTrue($manipulator->addMainKey('bar', 'baz'));
+        $this->assertEquals('{
+    "foo": "bar",
+    "bar": "baz"
+}
+', $manipulator->getContents());
+    }
+
+    public function testUpdateMainKey()
+    {
+        $manipulator = new JsonManipulator('{
+    "foo": "bar"
+}');
+
+        $this->assertTrue($manipulator->addMainKey('foo', 'baz'));
+        $this->assertEquals('{
+    "foo": "baz"
+}
+', $manipulator->getContents());
+    }
+
+    public function testUpdateMainKey2()
+    {
+        $manipulator = new JsonManipulator('{
+    "a": {
+        "foo": "bar",
+        "baz": "qux"
+    },
+    "foo": "bar",
+    "baz": "bar"
+}');
+
+        $this->assertTrue($manipulator->addMainKey('foo', 'baz'));
+        $this->assertTrue($manipulator->addMainKey('baz', 'quux'));
+        $this->assertEquals('{
+    "a": {
+        "foo": "bar",
+        "baz": "qux"
+    },
+    "foo": "baz",
+    "baz": "quux"
+}
+', $manipulator->getContents());
+    }
+
+    public function testUpdateMainKey3()
+    {
+        $manipulator = new JsonManipulator('{
+    "require": {
+        "php": "5.*"
+    },
+    "require-dev": {
+        "foo": "bar"
+    }
+}');
+
+        $this->assertTrue($manipulator->addMainKey('require-dev', array('foo' => 'qux')));
+        $this->assertEquals('{
+    "require": {
+        "php": "5.*"
+    },
+    "require-dev": {
+        "foo": "qux"
     }
 }
 ', $manipulator->getContents());

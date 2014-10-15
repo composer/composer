@@ -13,6 +13,7 @@
 namespace Composer\Test\Util;
 
 use Composer\Util\RemoteFilesystem;
+use Installer\Exception;
 
 class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
 {
@@ -129,17 +130,26 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
         $this->assertAttributeEquals(50, 'lastProgress', $fs);
     }
 
-    public function testCallbackGetNotifyFailure404()
+    public function testCallbackGetPassesThrough404()
     {
         $fs = new RemoteFilesystem($this->getMock('Composer\IO\IOInterface'));
 
+        $this->assertNull($this->callCallbackGet($fs, STREAM_NOTIFY_FAILURE, 0, 'HTTP/1.1 404 Not Found', 404, 0, 0));
+    }
+
+    public function testCaptureAuthenticationParamsFromUrl()
+    {
+        $io = $this->getMock('Composer\IO\IOInterface');
+        $io->expects($this->once())
+            ->method('setAuthentication')
+            ->with($this->equalTo('example.com'), $this->equalTo('user'), $this->equalTo('pass'));
+
+        $fs = new RemoteFilesystem($io);
         try {
-            $this->callCallbackGet($fs, STREAM_NOTIFY_FAILURE, 0, 'HTTP/1.1 404 Not Found', 404, 0, 0);
-            $this->fail();
+            $fs->getContents('example.com', 'http://user:pass@www.example.com/something');
         } catch (\Exception $e) {
             $this->assertInstanceOf('Composer\Downloader\TransportException', $e);
             $this->assertEquals(404, $e->getCode());
-            $this->assertContains('HTTP/1.1 404 Not Found', $e->getMessage());
         }
     }
 
@@ -163,7 +173,7 @@ class RemoteFilesystemTest extends \PHPUnit_Framework_TestCase
 
     protected function callGetOptionsForUrl($io, array $args = array(), array $options = array())
     {
-        $fs = new RemoteFilesystem($io, $options);
+        $fs = new RemoteFilesystem($io, null, $options);
         $ref = new \ReflectionMethod($fs, 'getOptionsForUrl');
         $ref->setAccessible(true);
 

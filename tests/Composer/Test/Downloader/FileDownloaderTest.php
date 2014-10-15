@@ -17,13 +17,13 @@ use Composer\Util\Filesystem;
 
 class FileDownloaderTest extends \PHPUnit_Framework_TestCase
 {
-    protected function getDownloader($io = null, $config = null, $rfs = null)
+    protected function getDownloader($io = null, $config = null, $eventDispatcher = null, $cache = null, $rfs = null, $filesystem = null)
     {
         $io = $io ?: $this->getMock('Composer\IO\IOInterface');
         $config = $config ?: $this->getMock('Composer\Config');
         $rfs = $rfs ?: $this->getMockBuilder('Composer\Util\RemoteFilesystem')->disableOriginalConstructor()->getMock();
 
-        return new FileDownloader($io, $config, null, $rfs);
+        return new FileDownloader($io, $config, $eventDispatcher, $cache, $rfs, $filesystem);
     }
 
     /**
@@ -47,6 +47,10 @@ class FileDownloaderTest extends \PHPUnit_Framework_TestCase
         $packageMock->expects($this->once())
             ->method('getDistUrl')
             ->will($this->returnValue('url'))
+        ;
+        $packageMock->expects($this->once())
+            ->method('getDistUrls')
+            ->will($this->returnValue(array('url')))
         ;
 
         $path = tempnam(sys_get_temp_dir(), 'c');
@@ -87,17 +91,25 @@ class FileDownloaderTest extends \PHPUnit_Framework_TestCase
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $packageMock->expects($this->any())
             ->method('getDistUrl')
-            ->will($this->returnValue('http://example.com/script.js'))
+            ->will($this->returnValue($distUrl = 'http://example.com/script.js'))
+        ;
+        $packageMock->expects($this->once())
+            ->method('getDistUrls')
+            ->will($this->returnValue(array($distUrl)))
+        ;
+        $packageMock->expects($this->atLeastOnce())
+            ->method('getTransportOptions')
+            ->will($this->returnValue(array()))
         ;
 
         do {
-            $path = sys_get_temp_dir().'/'.md5(time().rand());
+            $path = sys_get_temp_dir().'/'.md5(time().mt_rand());
         } while (file_exists($path));
 
         $ioMock = $this->getMock('Composer\IO\IOInterface');
         $ioMock->expects($this->any())
             ->method('write')
-            ->will($this->returnCallback(function($messages, $newline = true) use ($path) {
+            ->will($this->returnCallback(function ($messages, $newline = true) use ($path) {
                 if (is_file($path.'/script.js')) {
                     unlink($path.'/script.js');
                 }
@@ -123,23 +135,63 @@ class FileDownloaderTest extends \PHPUnit_Framework_TestCase
         }
     }
 
+    public function testCacheGarbageCollectionIsCalled()
+    {
+        $expectedTtl = '99999999';
+
+        $configMock = $this->getMock('Composer\Config');
+        $configMock
+            ->expects($this->at(0))
+            ->method('get')
+            ->with('cache-files-ttl')
+            ->will($this->returnValue($expectedTtl));
+        $configMock
+            ->expects($this->at(1))
+            ->method('get')
+            ->with('cache-files-maxsize')
+            ->will($this->returnValue('500M'));
+
+        $cacheMock = $this->getMockBuilder('Composer\Cache')
+                     ->disableOriginalConstructor()
+                     ->getMock();
+        $cacheMock
+            ->expects($this->any())
+            ->method('gcIsNecessary')
+            ->will($this->returnValue(true));
+        $cacheMock
+            ->expects($this->once())
+            ->method('gc')
+            ->with($expectedTtl, $this->anything());
+
+        $downloader = $this->getDownloader(null, $configMock, null, $cacheMock, null, null);
+    }
+
     public function testDownloadFileWithInvalidChecksum()
     {
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $packageMock->expects($this->any())
             ->method('getDistUrl')
-            ->will($this->returnValue('http://example.com/script.js'))
+            ->will($this->returnValue($distUrl = 'http://example.com/script.js'))
+        ;
+        $packageMock->expects($this->atLeastOnce())
+            ->method('getTransportOptions')
+            ->will($this->returnValue(array()))
         ;
         $packageMock->expects($this->any())
             ->method('getDistSha1Checksum')
             ->will($this->returnValue('invalid'))
         ;
+        $packageMock->expects($this->once())
+            ->method('getDistUrls')
+            ->will($this->returnValue(array($distUrl)))
+        ;
+        $filesystem = $this->getMock('Composer\Util\Filesystem');
 
         do {
-            $path = sys_get_temp_dir().'/'.md5(time().rand());
+            $path = sys_get_temp_dir().'/'.md5(time().mt_rand());
         } while (file_exists($path));
 
-        $downloader = $this->getDownloader();
+        $downloader = $this->getDownloader(null, null, null, null, null, $filesystem);
 
         // make sure the file expected to be downloaded is on disk already
         mkdir($path, 0777, true);

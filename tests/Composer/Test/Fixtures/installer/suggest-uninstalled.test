@@ -18,7 +18,7 @@ Suggestions are displayed
 install
 --EXPECT-OUTPUT--
 <info>Loading composer repositories with package information</info>
-<info>Installing dependencies</info>
+<info>Installing dependencies (including require-dev)</info>
 a/a suggests installing b/b (an obscure reason)
 <info>Writing lock file</info>
 <info>Generating autoload files</info>

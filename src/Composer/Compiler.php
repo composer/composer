@@ -23,6 +23,9 @@ use Symfony\Component\Process\Process;
  */
 class Compiler
 {
+    private $version;
+    private $versionDate;
+
     /**
      * Compiles composer into a single phar file
      *
@@ -35,11 +38,19 @@ class Compiler
             unlink($pharFile);
         }
 
-        $process = new Process('git log --pretty="%h" -n1 HEAD', __DIR__);
+        $process = new Process('git log --pretty="%H" -n1 HEAD', __DIR__);
         if ($process->run() != 0) {
             throw new \RuntimeException('Can\'t run git log. You must ensure to run compile from composer git repository clone and that git binary is available.');
         }
         $this->version = trim($process->getOutput());
+
+        $process = new Process('git log -n1 --pretty=%ci HEAD', __DIR__);
+        if ($process->run() != 0) {
+            throw new \RuntimeException('Can\'t run git log. You must ensure to run compile from composer git repository clone and that git binary is available.');
+        }
+        $date = new \DateTime(trim($process->getOutput()));
+        $date->setTimezone(new \DateTimeZone('UTC'));
+        $this->versionDate = $date->format('Y-m-d H:i:s');
 
         $process = new Process('git describe --tags HEAD');
         if ($process->run() == 0) {
@@ -92,8 +103,12 @@ class Compiler
 
         $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/autoload.php'));
         $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/composer/autoload_namespaces.php'));
+        $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/composer/autoload_psr4.php'));
         $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/composer/autoload_classmap.php'));
         $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/composer/autoload_real.php'));
+        if (file_exists(__DIR__.'/../../vendor/composer/include_paths.php')) {
+            $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/composer/include_paths.php'));
+        }
         $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/composer/ClassLoader.php'));
         $this->addComposerBin($phar);
 
@@ -112,7 +127,7 @@ class Compiler
 
     private function addFile($phar, $file, $strip = true)
     {
-        $path = str_replace(dirname(dirname(__DIR__)).DIRECTORY_SEPARATOR, '', $file->getRealPath());
+        $path = strtr(str_replace(dirname(dirname(__DIR__)).DIRECTORY_SEPARATOR, '', $file->getRealPath()), '\\', '/');
 
         $content = file_get_contents($file);
         if ($strip) {
@@ -121,7 +136,10 @@ class Compiler
             $content = "\n".$content."\n";
         }
 
-        $content = str_replace('@package_version@', $this->version, $content);
+        if ($path === 'src/Composer/Composer.php') {
+            $content = str_replace('@package_version@', $this->version, $content);
+            $content = str_replace('@release_date@', $this->versionDate, $content);
+        }
 
         $phar->addFromString($path, $content);
     }

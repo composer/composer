@@ -1,4 +1,5 @@
 <?php
+
 /*
  * This file is part of Composer.
  *
@@ -17,18 +18,32 @@ use Composer\Config;
 use Composer\Json\JsonFile;
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\RepositoryManager;
+use Composer\Repository\InstalledArrayRepository;
 use Composer\Package\RootPackageInterface;
 use Composer\Package\Link;
 use Composer\Package\Locker;
 use Composer\Test\Mock\FactoryMock;
 use Composer\Test\Mock\InstalledFilesystemRepositoryMock;
 use Composer\Test\Mock\InstallationManagerMock;
-use Composer\Test\Mock\WritableRepositoryMock;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\StreamOutput;
+use Composer\TestCase;
 
 class InstallerTest extends TestCase
 {
+    protected $prevCwd;
+
+    public function setUp()
+    {
+        $this->prevCwd = getcwd();
+        chdir(__DIR__);
+    }
+
+    public function tearDown()
+    {
+        chdir($this->prevCwd);
+    }
+
     /**
      * @dataProvider provideInstaller
      */
@@ -36,12 +51,11 @@ class InstallerTest extends TestCase
     {
         $io = $this->getMock('Composer\IO\IOInterface');
 
-        $downloadManager = $this->getMock('Composer\Downloader\DownloadManager');
+        $downloadManager = $this->getMock('Composer\Downloader\DownloadManager', array(), array($io));
         $config = $this->getMock('Composer\Config');
 
         $repositoryManager = new RepositoryManager($io, $config);
-        $repositoryManager->setLocalRepository(new WritableRepositoryMock());
-        $repositoryManager->setLocalDevRepository(new WritableRepositoryMock());
+        $repositoryManager->setLocalRepository(new InstalledArrayRepository());
 
         if (!is_array($repositories)) {
             $repositories = array($repositories);
@@ -52,12 +66,13 @@ class InstallerTest extends TestCase
 
         $locker = $this->getMockBuilder('Composer\Package\Locker')->disableOriginalConstructor()->getMock();
         $installationManager = new InstallationManagerMock();
-        $eventDispatcher = $this->getMockBuilder('Composer\Script\EventDispatcher')->disableOriginalConstructor()->getMock();
-        $autoloadGenerator = $this->getMock('Composer\Autoload\AutoloadGenerator');
+
+        $eventDispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock();
+        $autoloadGenerator = $this->getMockBuilder('Composer\Autoload\AutoloadGenerator')->disableOriginalConstructor()->getMock();
 
         $installer = new Installer($io, $config, clone $rootPackage, $downloadManager, $repositoryManager, $locker, $installationManager, $eventDispatcher, $autoloadGenerator);
         $result = $installer->run();
-        $this->assertTrue($result);
+        $this->assertSame(0, $result);
 
         $expectedInstalled   = isset($options['install']) ? $options['install'] : array();
         $expectedUpdated     = isset($options['update']) ? $options['update'] : array();
@@ -123,7 +138,7 @@ class InstallerTest extends TestCase
     /**
      * @dataProvider getIntegrationTests
      */
-    public function testIntegration($file, $message, $condition, $composerConfig, $lock, $installed, $installedDev, $run, $expectLock, $expectOutput, $expect)
+    public function testIntegration($file, $message, $condition, $composerConfig, $lock, $installed, $run, $expectLock, $expectOutput, $expect, $expectExitCode)
     {
         if ($condition) {
             eval('$res = '.$condition.';');
@@ -150,17 +165,8 @@ class InstallerTest extends TestCase
             ->method('exists')
             ->will($this->returnValue(true));
 
-        $devJsonMock = $this->getMockBuilder('Composer\Json\JsonFile')->disableOriginalConstructor()->getMock();
-        $devJsonMock->expects($this->any())
-            ->method('read')
-            ->will($this->returnValue($installedDev));
-        $devJsonMock->expects($this->any())
-            ->method('exists')
-            ->will($this->returnValue(true));
-
         $repositoryManager = $composer->getRepositoryManager();
         $repositoryManager->setLocalRepository(new InstalledFilesystemRepositoryMock($jsonMock));
-        $repositoryManager->setLocalDevRepository(new InstalledFilesystemRepositoryMock($devJsonMock));
 
         $lockJsonMock = $this->getMockBuilder('Composer\Json\JsonFile')->disableOriginalConstructor()->getMock();
         $lockJsonMock->expects($this->any())
@@ -181,32 +187,37 @@ class InstallerTest extends TestCase
                 }));
         }
 
-        $locker = new Locker($lockJsonMock, $repositoryManager, $composer->getInstallationManager(), md5(json_encode($composerConfig)));
+        $locker = new Locker($io, $lockJsonMock, $repositoryManager, $composer->getInstallationManager(), md5(json_encode($composerConfig)));
         $composer->setLocker($locker);
 
-        $autoloadGenerator = $this->getMock('Composer\Autoload\AutoloadGenerator');
+        $eventDispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock();
+        $autoloadGenerator = $this->getMock('Composer\Autoload\AutoloadGenerator', array(), array($eventDispatcher));
+        $composer->setAutoloadGenerator($autoloadGenerator);
+        $composer->setEventDispatcher($eventDispatcher);
 
         $installer = Installer::create(
             $io,
-            $composer,
-            null,
-            $autoloadGenerator
+            $composer
         );
 
         $application = new Application;
         $application->get('install')->setCode(function ($input, $output) use ($installer) {
-            $installer->setDevMode($input->getOption('dev'));
+            $installer
+                ->setDevMode(!$input->getOption('no-dev'))
+                ->setDryRun($input->getOption('dry-run'));
 
-            return $installer->run() ? 0 : 1;
+            return $installer->run();
         });
 
         $application->get('update')->setCode(function ($input, $output) use ($installer) {
             $installer
-                ->setDevMode($input->getOption('dev'))
+                ->setDevMode(!$input->getOption('no-dev'))
                 ->setUpdate(true)
-                ->setUpdateWhitelist($input->getArgument('packages'));
+                ->setDryRun($input->getOption('dry-run'))
+                ->setUpdateWhitelist($input->getArgument('packages'))
+                ->setWhitelistDependencies($input->getOption('with-dependencies'));
 
-            return $installer->run() ? 0 : 1;
+            return $installer->run();
         });
 
         if (!preg_match('{^(install|update)\b}', $run)) {
@@ -217,10 +228,11 @@ class InstallerTest extends TestCase
         $appOutput = fopen('php://memory', 'w+');
         $result = $application->run(new StringInput($run), new StreamOutput($appOutput));
         fseek($appOutput, 0);
-        $this->assertEquals(0, $result, $output . stream_get_contents($appOutput));
+        $this->assertEquals($expectExitCode, $result, $output . stream_get_contents($appOutput));
 
         if ($expectLock) {
             unset($actualLock['hash']);
+            unset($actualLock['_readme']);
             $this->assertEquals($expectLock, $actualLock);
         }
 
@@ -251,10 +263,10 @@ class InstallerTest extends TestCase
                 --COMPOSER--\s*(?P<composer>'.$content.')\s*
                 (?:--LOCK--\s*(?P<lock>'.$content.'))?\s*
                 (?:--INSTALLED--\s*(?P<installed>'.$content.'))?\s*
-                (?:--INSTALLED-DEV--\s*(?P<installedDev>'.$content.'))?\s*
                 --RUN--\s*(?P<run>.*?)\s*
                 (?:--EXPECT-LOCK--\s*(?P<expectLock>'.$content.'))?\s*
                 (?:--EXPECT-OUTPUT--\s*(?P<expectOutput>'.$content.'))?\s*
+                (?:--EXPECT-EXIT-CODE--\s*(?P<expectExitCode>\d+))?\s*
                 --EXPECT--\s*(?P<expect>.*?)\s*
             $}xs';
 
@@ -262,6 +274,7 @@ class InstallerTest extends TestCase
             $installedDev = array();
             $lock = array();
             $expectLock = array();
+            $expectExitCode = 0;
 
             if (preg_match($pattern, $test, $match)) {
                 try {
@@ -277,15 +290,13 @@ class InstallerTest extends TestCase
                     if (!empty($match['installed'])) {
                         $installed = JsonFile::parseJson($match['installed']);
                     }
-                    if (!empty($match['installedDev'])) {
-                        $installedDev = JsonFile::parseJson($match['installedDev']);
-                    }
                     $run = $match['run'];
                     if (!empty($match['expectLock'])) {
                         $expectLock = JsonFile::parseJson($match['expectLock']);
                     }
                     $expectOutput = $match['expectOutput'];
                     $expect = $match['expect'];
+                    $expectExitCode = (int) $match['expectExitCode'];
                 } catch (\Exception $e) {
                     die(sprintf('Test "%s" is not valid: '.$e->getMessage(), str_replace($fixturesDir.'/', '', $file)));
                 }
@@ -293,7 +304,7 @@ class InstallerTest extends TestCase
                 die(sprintf('Test "%s" is not valid, did not match the expected format.', str_replace($fixturesDir.'/', '', $file)));
             }
 
-            $tests[] = array(str_replace($fixturesDir.'/', '', $file), $message, $condition, $composer, $lock, $installed, $installedDev, $run, $expectLock, $expectOutput, $expect);
+            $tests[] = array(str_replace($fixturesDir.'/', '', $file), $message, $condition, $composer, $lock, $installed, $run, $expectLock, $expectOutput, $expect, $expectExitCode);
         }
 
         return $tests;

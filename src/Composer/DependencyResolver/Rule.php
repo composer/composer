@@ -35,6 +35,8 @@ class Rule
     protected $literals;
     protected $type;
     protected $id;
+    protected $reason;
+    protected $reasonData;
 
     protected $job;
 
@@ -78,6 +80,27 @@ class Rule
     public function getJob()
     {
         return $this->job;
+    }
+
+    public function getReason()
+    {
+        return $this->reason;
+    }
+
+    public function getReasonData()
+    {
+        return $this->reasonData;
+    }
+
+    public function getRequiredPackage()
+    {
+        if ($this->reason === self::RULE_JOB_INSTALL) {
+            return $this->reasonData;
+        }
+
+        if ($this->reason === self::RULE_PACKAGE_REQUIRES) {
+            return $this->reasonData->getTarget();
+        }
     }
 
     /**
@@ -171,7 +194,7 @@ class Rule
                 $package1 = $this->pool->literalToPackage($this->literals[0]);
                 $package2 = $this->pool->literalToPackage($this->literals[1]);
 
-                return $package1->getPrettyString().' conflicts with '.$package2->getPrettyString().'.';
+                return $package1->getPrettyString().' conflicts with '.$this->formatPackagesUnique(array($package2)).'.';
 
             case self::RULE_PACKAGE_REQUIRES:
                 $literals = $this->literals;
@@ -185,18 +208,14 @@ class Rule
 
                 $text = $this->reasonData->getPrettyString($sourcePackage);
                 if ($requires) {
-                    $requireText = array();
-                    foreach ($requires as $require) {
-                        $requireText[] = $require->getPrettyString();
-                    }
-                    $text .= ' -> satisfiable by '.implode(', ', $requireText).'.';
+                    $text .= ' -> satisfiable by ' . $this->formatPackagesUnique($requires) . '.';
                 } else {
                     $targetName = $this->reasonData->getTarget();
 
                     // handle php extensions
                     if (0 === strpos($targetName, 'ext-')) {
                         $ext = substr($targetName, 4);
-                        $error = extension_loaded($ext) ? 'has the wrong version ('.phpversion($ext).') installed' : 'is missing from your system';
+                        $error = extension_loaded($ext) ? 'has the wrong version ('.(phpversion($ext) ?: '0').') installed' : 'is missing from your system';
 
                         $text .= ' -> the requested PHP extension '.$ext.' '.$error.'.';
                     } elseif (0 === strpos($targetName, 'lib-')) {
@@ -216,14 +235,7 @@ class Rule
             case self::RULE_INSTALLED_PACKAGE_OBSOLETES:
                 return $ruleText;
             case self::RULE_PACKAGE_SAME_NAME:
-                $text = "Can only install one of: ";
-
-                $packages = array();
-                foreach ($this->literals as $i => $literal) {
-                    $packages[] = $this->pool->literalToPackage($literal)->getPrettyString();
-                }
-
-                return $text.implode(', ', $packages).'.';
+                return 'Can only install one of: ' . $this->formatPackagesUnique($this->literals) . '.';
             case self::RULE_PACKAGE_IMPLICIT_OBSOLETES:
                 return $ruleText;
             case self::RULE_LEARNED:
@@ -231,6 +243,23 @@ class Rule
             case self::RULE_PACKAGE_ALIAS:
                 return $ruleText;
         }
+    }
+
+    protected function formatPackagesUnique(array $packages)
+    {
+        $prepared = array();
+        foreach ($packages as $package) {
+            if (!is_object($package)) {
+                $package = $this->pool->literalToPackage($package);
+            }
+            $prepared[$package->getName()]['name'] = $package->getPrettyName();
+            $prepared[$package->getName()]['versions'][$package->getVersion()] = $package->getPrettyVersion();
+        }
+        foreach ($prepared as $name => $package) {
+            $prepared[$name] = $package['name'].'['.implode(', ', $package['versions']).']';
+        }
+
+        return implode(', ', $prepared);
     }
 
     /**

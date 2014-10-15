@@ -46,6 +46,7 @@ abstract class BaseChannelReader
      *
      * @param $origin string server
      * @param $path   string relative path to content
+     * @throws \UnexpectedValueException
      * @return \SimpleXMLElement
      */
     protected function requestContent($origin, $path)
@@ -64,6 +65,7 @@ abstract class BaseChannelReader
      *
      * @param $origin string server
      * @param $path   string relative path to content
+     * @throws \UnexpectedValueException
      * @return \SimpleXMLElement
      */
     protected function requestXml($origin, $path)

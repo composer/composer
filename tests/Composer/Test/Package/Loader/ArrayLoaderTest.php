@@ -19,7 +19,7 @@ class ArrayLoaderTest extends \PHPUnit_Framework_TestCase
 {
     public function setUp()
     {
-        $this->loader = new ArrayLoader();
+        $this->loader = new ArrayLoader(null, true);
     }
 
     public function testSelfVersion()
@@ -114,10 +114,28 @@ class ArrayLoaderTest extends \PHPUnit_Framework_TestCase
             'target-dir' => 'some/prefix',
             'extra' => array('random' => array('things' => 'of', 'any' => 'shape')),
             'bin' => array('bin1', 'bin/foo'),
+            'archive' => array(
+                'exclude' => array('/foo/bar', 'baz', '!/foo/bar/baz'),
+            ),
+            'transport-options' => array('ssl' => array('local_cert' => '/opt/certs/test.pem'))
         );
 
         $package = $this->loader->load($config);
         $dumper = new ArrayDumper;
         $this->assertEquals($config, $dumper->dump($package));
+    }
+
+    public function testPackageWithBranchAlias()
+    {
+        $config = array(
+            'name' => 'A',
+            'version' => 'dev-master',
+            'extra' => array('branch-alias' => array('dev-master' => '1.0.x-dev')),
+        );
+
+        $package = $this->loader->load($config);
+
+        $this->assertInstanceOf('Composer\Package\AliasPackage', $package);
+        $this->assertEquals('1.0.x-dev', $package->getPrettyVersion());
     }
 }

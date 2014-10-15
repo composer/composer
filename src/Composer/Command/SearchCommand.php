@@ -18,9 +18,10 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
-use Composer\Package\CompletePackageInterface;
-use Composer\Package\AliasPackage;
+use Composer\Repository\RepositoryInterface;
 use Composer\Factory;
+use Composer\Plugin\CommandEvent;
+use Composer\Plugin\PluginEvents;
 
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>
@@ -66,79 +67,18 @@ EOT
             $repos = new CompositeRepository(array_merge(array($installedRepo), $defaultRepos));
         }
 
-        $this->onlyName = $input->getOption('only-name');
-        $this->tokens = $input->getArgument('tokens');
-        $this->output = $output;
-        $repos->filterPackages(array($this, 'processPackage'), 'Composer\Package\CompletePackage');
-
-        foreach ($this->lowMatches as $details) {
-            $output->writeln($details['name'] . '<comment>:</comment> '. $details['description']);
-        }
-    }
-
-    public function processPackage($package)
-    {
-        if ($package instanceof AliasPackage || isset($this->matches[$package->getName()])) {
-            return;
+        if ($composer) {
+            $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'search', $input, $output);
+            $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
         }
 
-        foreach ($this->tokens as $token) {
-            if (!$score = $this->matchPackage($package, $token)) {
-                continue;
-            }
+        $onlyName = $input->getOption('only-name');
 
-            if (false !== ($pos = stripos($package->getName(), $token))) {
-                $name = substr($package->getPrettyName(), 0, $pos)
-                    . '<highlight>' . substr($package->getPrettyName(), $pos, strlen($token)) . '</highlight>'
-                    . substr($package->getPrettyName(), $pos + strlen($token));
-            } else {
-                $name = $package->getPrettyName();
-            }
+        $flags = $onlyName ? RepositoryInterface::SEARCH_NAME : RepositoryInterface::SEARCH_FULLTEXT;
+        $results = $repos->search(implode(' ', $input->getArgument('tokens')), $flags);
 
-            $description = strtok($package->getDescription(), "\r\n");
-            if (false !== ($pos = stripos($description, $token))) {
-                $description = substr($description, 0, $pos)
-                    . '<highlight>' . substr($description, $pos, strlen($token)) . '</highlight>'
-                    . substr($description, $pos + strlen($token));
-            }
-
-            if ($score >= 3) {
-                $this->output->writeln($name . '<comment>:</comment> '. $description);
-                $this->matches[$package->getName()] = true;
-            } else {
-                $this->lowMatches[$package->getName()] = array(
-                    'name' => $name,
-                    'description' => $description,
-                );
-            }
-
-            return;
+        foreach ($results as $result) {
+            $output->writeln($result['name'] . (isset($result['description']) ? ' '. $result['description'] : ''));
         }
-    }
-
-    /**
-     * tries to find a token within the name/keywords/description
-     *
-     * @param  CompletePackageInterface $package
-     * @param  string                   $token
-     * @return boolean
-     */
-    private function matchPackage(CompletePackageInterface $package, $token)
-    {
-        $score = 0;
-
-        if (false !== stripos($package->getName(), $token)) {
-            $score += 5;
-        }
-
-        if (!$this->onlyName && false !== stripos(join(',', $package->getKeywords() ?: array()), $token)) {
-            $score += 3;
-        }
-
-        if (!$this->onlyName && false !== stripos($package->getDescription(), $token)) {
-            $score += 1;
-        }
-
-        return $score;
     }
 }

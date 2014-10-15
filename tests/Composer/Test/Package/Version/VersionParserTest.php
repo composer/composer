@@ -15,6 +15,7 @@ namespace Composer\Test\Package\Version;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\LinkConstraint\MultiConstraint;
 use Composer\Package\LinkConstraint\VersionConstraint;
+use Composer\Package\LinkConstraint\EmptyConstraint;
 use Composer\Package\PackageInterface;
 
 class VersionParserTest extends \PHPUnit_Framework_TestCase
@@ -53,7 +54,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
         );
 
         $self = $this;
-        $createPackage = function($arr) use ($self) {
+        $createPackage = function ($arr) use ($self) {
             $package = $self->getMock('\Composer\Package\PackageInterface');
             $package->expects($self->once())->method('isDev')->will($self->returnValue(true));
             $package->expects($self->once())->method('getSourceType')->will($self->returnValue('git'));
@@ -78,32 +79,36 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
     public function successfulNormalizedVersions()
     {
         return array(
-            'none'              => array('1.0.0',               '1.0.0.0'),
-            'none/2'            => array('1.2.3.4',             '1.2.3.4'),
-            'parses state'      => array('1.0.0RC1dev',         '1.0.0.0-RC1-dev'),
-            'CI parsing'        => array('1.0.0-rC15-dev',      '1.0.0.0-RC15-dev'),
-            'delimiters'        => array('1.0.0.RC.15-dev',     '1.0.0.0-RC15-dev'),
-            'RC uppercase'      => array('1.0.0-rc1',           '1.0.0.0-RC1'),
-            'patch replace'     => array('1.0.0.pl3-dev',       '1.0.0.0-patch3-dev'),
-            'forces w.x.y.z'    => array('1.0-dev',             '1.0.0.0-dev'),
-            'forces w.x.y.z/2'  => array('0',                   '0.0.0.0'),
-            'parses long'       => array('10.4.13-beta',        '10.4.13.0-beta'),
-            'strips leading v'  => array('v1.0.0',              '1.0.0.0'),
-            'strips v/datetime' => array('v20100102',           '20100102'),
-            'parses dates y-m'  => array('2010.01',             '2010-01'),
-            'parses dates w/ .' => array('2010.01.02',          '2010-01-02'),
-            'parses dates w/ -' => array('2010-01-02',          '2010-01-02'),
-            'parses numbers'    => array('2010-01-02.5',        '2010-01-02-5'),
-            'parses datetime'   => array('20100102-203040',     '20100102-203040'),
-            'parses dt+number'  => array('20100102203040-10',   '20100102203040-10'),
-            'parses dt+patch'   => array('20100102-203040-p1',  '20100102-203040-patch1'),
-            'parses master'     => array('dev-master',          '9999999-dev'),
-            'parses trunk'      => array('dev-trunk',           '9999999-dev'),
-            'parses branches'   => array('1.x-dev',             '1.9999999.9999999.9999999-dev'),
-            'parses arbitrary'  => array('dev-feature-foo',     'dev-feature-foo'),
-            'parses arbitrary2' => array('DEV-FOOBAR',          'dev-FOOBAR'),
-            'parses arbitrary3' => array('dev-feature/foo',     'dev-feature/foo'),
-            'ignores aliases'   => array('dev-master as 1.0.0', '9999999-dev'),
+            'none'               => array('1.0.0',               '1.0.0.0'),
+            'none/2'             => array('1.2.3.4',             '1.2.3.4'),
+            'parses state'       => array('1.0.0RC1dev',         '1.0.0.0-RC1-dev'),
+            'CI parsing'         => array('1.0.0-rC15-dev',      '1.0.0.0-RC15-dev'),
+            'delimiters'         => array('1.0.0.RC.15-dev',     '1.0.0.0-RC15-dev'),
+            'RC uppercase'       => array('1.0.0-rc1',           '1.0.0.0-RC1'),
+            'patch replace'      => array('1.0.0.pl3-dev',       '1.0.0.0-patch3-dev'),
+            'forces w.x.y.z'     => array('1.0-dev',             '1.0.0.0-dev'),
+            'forces w.x.y.z/2'   => array('0',                   '0.0.0.0'),
+            'parses long'        => array('10.4.13-beta',        '10.4.13.0-beta'),
+            'parses long/2'      => array('10.4.13beta2',        '10.4.13.0-beta2'),
+            'expand shorthand'   => array('10.4.13-b',           '10.4.13.0-beta'),
+            'expand shorthand2'  => array('10.4.13-b5',          '10.4.13.0-beta5'),
+            'strips leading v'   => array('v1.0.0',              '1.0.0.0'),
+            'strips v/datetime'  => array('v20100102',           '20100102'),
+            'parses dates y-m'   => array('2010.01',             '2010-01'),
+            'parses dates w/ .'  => array('2010.01.02',          '2010-01-02'),
+            'parses dates w/ -'  => array('2010-01-02',          '2010-01-02'),
+            'parses numbers'     => array('2010-01-02.5',        '2010-01-02-5'),
+            'parses dates y.m.Y' => array('2010.1.555',          '2010.1.555.0'),
+            'parses datetime'    => array('20100102-203040',     '20100102-203040'),
+            'parses dt+number'   => array('20100102203040-10',   '20100102203040-10'),
+            'parses dt+patch'    => array('20100102-203040-p1',  '20100102-203040-patch1'),
+            'parses master'      => array('dev-master',          '9999999-dev'),
+            'parses trunk'       => array('dev-trunk',           '9999999-dev'),
+            'parses branches'    => array('1.x-dev',             '1.9999999.9999999.9999999-dev'),
+            'parses arbitrary'   => array('dev-feature-foo',     'dev-feature-foo'),
+            'parses arbitrary2'  => array('DEV-FOOBAR',          'dev-FOOBAR'),
+            'parses arbitrary3'  => array('dev-feature/foo',     'dev-feature/foo'),
+            'ignores aliases'    => array('dev-master as 1.0.0', '9999999-dev'),
         );
     }
 
@@ -165,6 +170,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
     {
         $parser = new VersionParser;
         $this->assertSame((string) new VersionConstraint('=', '1.0.9999999.9999999-dev'), (string) $parser->parseConstraints('1.0.x-dev#abcd123'));
+        $this->assertSame((string) new VersionConstraint('=', '1.0.9999999.9999999-dev'), (string) $parser->parseConstraints('1.0.x-dev#trunk/@123'));
     }
 
     /**
@@ -174,6 +180,17 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
     {
         $parser = new VersionParser;
         $this->assertSame((string) new VersionConstraint('=', '1.0.0.0'), (string) $parser->parseConstraints('1.0#abcd123'));
+        $this->assertSame((string) new VersionConstraint('=', '1.0.0.0'), (string) $parser->parseConstraints('1.0#trunk/@123'));
+    }
+
+    /**
+     * @expectedException UnexpectedValueException
+     * @expectedExceptionMessage Invalid operator "~>", you probably meant to use the "~" operator
+     */
+    public function testParseConstraintsNudgesRubyDevsTowardsThePathOfRighteousness()
+    {
+        $parser = new VersionParser;
+        $parser->parseConstraints('~>1.2');
     }
 
     /**
@@ -188,10 +205,10 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
     public function simpleConstraints()
     {
         return array(
-            'match any'         => array('*',           new MultiConstraint(array())),
-            'match any/2'       => array('*.*',         new MultiConstraint(array())),
-            'match any/3'       => array('*.x.*',       new MultiConstraint(array())),
-            'match any/4'       => array('x.x.x.*',     new MultiConstraint(array())),
+            'match any'         => array('*',           new EmptyConstraint()),
+            'match any/2'       => array('*.*',         new EmptyConstraint()),
+            'match any/3'       => array('*.x.*',       new EmptyConstraint()),
+            'match any/4'       => array('x.x.x.*',     new EmptyConstraint()),
             'not equal'         => array('<>1.0.0',     new VersionConstraint('<>', '1.0.0.0')),
             'not equal/2'       => array('!=1.0.0',     new VersionConstraint('!=', '1.0.0.0')),
             'greater than'      => array('>1.0.0',      new VersionConstraint('>', '1.0.0.0')),
@@ -202,6 +219,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'double equals'     => array('==1.2.3',     new VersionConstraint('=', '1.2.3.0')),
             'no op means eq'    => array('1.2.3',       new VersionConstraint('=', '1.2.3.0')),
             'completes version' => array('=1.0',        new VersionConstraint('=', '1.0.0.0')),
+            'shorthand beta'    => array('1.2.3b5',     new VersionConstraint('=', '1.2.3.0-beta5')),
             'accepts spaces'    => array('>= 1.2.3',    new VersionConstraint('>=', '1.2.3.0')),
             'accepts master'    => array('>=dev-master',    new VersionConstraint('>=', '9999999-dev')),
             'accepts master/2'  => array('dev-master',      new VersionConstraint('=', '9999999-dev')),
@@ -231,13 +249,13 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
     public function wildcardConstraints()
     {
         return array(
-            array('2.*',     new VersionConstraint('>', '1.9999999.9999999.9999999'), new VersionConstraint('<', '2.9999999.9999999.9999999')),
-            array('20.*',    new VersionConstraint('>', '19.9999999.9999999.9999999'), new VersionConstraint('<', '20.9999999.9999999.9999999')),
-            array('2.0.*',   new VersionConstraint('>', '1.9999999.9999999.9999999'), new VersionConstraint('<', '2.0.9999999.9999999')),
-            array('2.2.x',   new VersionConstraint('>', '2.1.9999999.9999999'), new VersionConstraint('<', '2.2.9999999.9999999')),
-            array('2.10.x',  new VersionConstraint('>', '2.9.9999999.9999999'), new VersionConstraint('<', '2.10.9999999.9999999')),
-            array('2.1.3.*', new VersionConstraint('>', '2.1.2.9999999'), new VersionConstraint('<', '2.1.3.9999999')),
-            array('0.*',     null, new VersionConstraint('<', '0.9999999.9999999.9999999')),
+            array('2.*',     new VersionConstraint('>=', '2.0.0.0-dev'), new VersionConstraint('<', '3.0.0.0-dev')),
+            array('20.*',    new VersionConstraint('>=', '20.0.0.0-dev'), new VersionConstraint('<', '21.0.0.0-dev')),
+            array('2.0.*',   new VersionConstraint('>=', '2.0.0.0-dev'), new VersionConstraint('<', '2.1.0.0-dev')),
+            array('2.2.x',   new VersionConstraint('>=', '2.2.0.0-dev'), new VersionConstraint('<', '2.3.0.0-dev')),
+            array('2.10.x',  new VersionConstraint('>=', '2.10.0.0-dev'), new VersionConstraint('<', '2.11.0.0-dev')),
+            array('2.1.3.*', new VersionConstraint('>=', '2.1.3.0-dev'), new VersionConstraint('<', '2.1.4.0-dev')),
+            array('0.*',     null, new VersionConstraint('<', '1.0.0.0-dev')),
         );
     }
 
@@ -259,10 +277,17 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
     public function tildeConstraints()
     {
         return array(
-            array('~1',       new VersionConstraint('>=', '1.0.0.0'), new VersionConstraint('<', '2.0.0.0-dev')),
-            array('~1.2',     new VersionConstraint('>=', '1.2.0.0'), new VersionConstraint('<', '2.0.0.0-dev')),
-            array('~1.2.3',   new VersionConstraint('>=', '1.2.3.0'), new VersionConstraint('<', '1.3.0.0-dev')),
-            array('~1.2.3.4', new VersionConstraint('>=', '1.2.3.4'), new VersionConstraint('<', '1.2.4.0-dev')),
+            array('~1',       new VersionConstraint('>=', '1.0.0.0-dev'), new VersionConstraint('<', '2.0.0.0-dev')),
+            array('~1.0',     new VersionConstraint('>=', '1.0.0.0-dev'), new VersionConstraint('<', '2.0.0.0-dev')),
+            array('~1.0.0',     new VersionConstraint('>=', '1.0.0.0-dev'), new VersionConstraint('<', '1.1.0.0-dev')),
+            array('~1.2',     new VersionConstraint('>=', '1.2.0.0-dev'), new VersionConstraint('<', '2.0.0.0-dev')),
+            array('~1.2.3',   new VersionConstraint('>=', '1.2.3.0-dev'), new VersionConstraint('<', '1.3.0.0-dev')),
+            array('~1.2.3.4', new VersionConstraint('>=', '1.2.3.4-dev'), new VersionConstraint('<', '1.2.4.0-dev')),
+            array('~1.2-beta',new VersionConstraint('>=', '1.2.0.0-beta'), new VersionConstraint('<', '2.0.0.0-dev')),
+            array('~1.2-b2',  new VersionConstraint('>=', '1.2.0.0-beta2'), new VersionConstraint('<', '2.0.0.0-dev')),
+            array('~1.2-BETA2', new VersionConstraint('>=', '1.2.0.0-beta2'), new VersionConstraint('<', '2.0.0.0-dev')),
+            array('~1.2.2-dev', new VersionConstraint('>=', '1.2.2.0-dev'), new VersionConstraint('<', '1.3.0.0-dev')),
+            array('~1.2.2-stable', new VersionConstraint('>=', '1.2.2.0-stable'), new VersionConstraint('<', '1.3.0.0-dev')),
         );
     }
 
@@ -273,6 +298,17 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
         $second = new VersionConstraint('<=', '3.0.0.0');
         $multi = new MultiConstraint(array($first, $second));
         $this->assertSame((string) $multi, (string) $parser->parseConstraints('>2.0,<=3.0'));
+    }
+
+    public function testParseConstraintsMultiDisjunctiveHasPrioOverConjuctive()
+    {
+        $parser = new VersionParser;
+        $first = new VersionConstraint('>', '2.0.0.0');
+        $second = new VersionConstraint('<', '2.0.5.0-dev');
+        $third = new VersionConstraint('>', '2.0.6.0');
+        $multi1 = new MultiConstraint(array($first, $second));
+        $multi2 = new MultiConstraint(array($multi1, $third), false);
+        $this->assertSame((string) $multi2, (string) $parser->parseConstraints('>2.0,<2.0.5 | >2.0.6'));
     }
 
     public function testParseConstraintsMultiWithStabilities()
@@ -313,9 +349,13 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
     public function stabilityProvider()
     {
         return array(
+            array('stable', '1'),
             array('stable', '1.0'),
+            array('stable', '3.2.1'),
+            array('stable', 'v3.2.1'),
             array('dev',    'v2.0.x-dev'),
             array('dev',    'v2.0.x-dev#abc123'),
+            array('dev',    'v2.0.x-dev#trunk/@123'),
             array('RC',     '3.0-RC2'),
             array('dev',    'dev-master'),
             array('dev',    '3.1.2-dev'),

@@ -23,6 +23,7 @@ use Symfony\Component\Finder\Finder;
  */
 class Cache
 {
+    private static $cacheCollected = false;
     private $io;
     private $root;
     private $enabled = true;
@@ -31,8 +32,8 @@ class Cache
 
     /**
      * @param IOInterface $io
-     * @param string      $cacheDir location of the cache
-     * @param string      $whitelist List of characters that are allowed in path names (used in a regex character class)
+     * @param string      $cacheDir   location of the cache
+     * @param string      $whitelist  List of characters that are allowed in path names (used in a regex character class)
      * @param Filesystem  $filesystem optional filesystem instance
      */
     public function __construct(IOInterface $io, $cacheDir, $whitelist = 'a-z0-9.', Filesystem $filesystem = null)
@@ -63,6 +64,10 @@ class Cache
     {
         $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
         if ($this->enabled && file_exists($this->root . $file)) {
+            if ($this->io->isDebug()) {
+                $this->io->write('Reading '.$this->root . $file.' from cache');
+            }
+
             return file_get_contents($this->root . $file);
         }
 
@@ -74,17 +79,28 @@ class Cache
         if ($this->enabled) {
             $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
 
+            if ($this->io->isDebug()) {
+                $this->io->write('Writing '.$this->root . $file.' into cache');
+            }
+
             return file_put_contents($this->root . $file, $contents);
         }
 
         return false;
     }
 
+    /**
+     * Copy a file into the cache
+     */
     public function copyFrom($file, $source)
     {
         if ($this->enabled) {
             $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
             $this->filesystem->ensureDirectoryExists(dirname($this->root . $file));
+
+            if ($this->io->isDebug()) {
+                $this->io->write('Writing '.$this->root . $file.' into cache');
+            }
 
             return copy($source, $this->root . $file);
         }
@@ -92,11 +108,18 @@ class Cache
         return false;
     }
 
+    /**
+     * Copy a file out of the cache
+     */
     public function copyTo($file, $target)
     {
         $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
         if ($this->enabled && file_exists($this->root . $file)) {
             touch($this->root . $file);
+
+            if ($this->io->isDebug()) {
+                $this->io->write('Reading '.$this->root . $file.' from cache');
+            }
 
             return copy($this->root . $file, $target);
         }
@@ -104,27 +127,49 @@ class Cache
         return false;
     }
 
+    public function gcIsNecessary()
+    {
+       return (!self::$cacheCollected && !mt_rand(0, 50));
+    }
+
     public function remove($file)
     {
         $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
         if ($this->enabled && file_exists($this->root . $file)) {
-            return unlink($this->root . $file);
+            return $this->filesystem->unlink($this->root . $file);
         }
 
         return false;
     }
 
-    public function gc($ttl)
+    public function gc($ttl, $maxSize)
     {
-        $expire = new \DateTime();
-        $expire->modify('-'.$ttl.' seconds');
+        if ($this->enabled) {
+            $expire = new \DateTime();
+            $expire->modify('-'.$ttl.' seconds');
 
-        $finder = Finder::create()->files()->in($this->root)->date('until '.$expire->format('Y-m-d H:i:s'));
-        foreach ($finder as $file) {
-            unlink($file->getRealPath());
+            $finder = $this->getFinder()->date('until '.$expire->format('Y-m-d H:i:s'));
+            foreach ($finder as $file) {
+                $this->filesystem->unlink($file->getPathname());
+            }
+
+            $totalSize = $this->filesystem->size($this->root);
+            if ($totalSize > $maxSize) {
+                $iterator = $this->getFinder()->sortByAccessedTime()->getIterator();
+                while ($totalSize > $maxSize && $iterator->valid()) {
+                    $filepath = $iterator->current()->getPathname();
+                    $totalSize -= $this->filesystem->size($filepath);
+                    $this->filesystem->unlink($filepath);
+                    $iterator->next();
+                }
+            }
+
+            self::$cacheCollected = true;
+
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     public function sha1($file)
@@ -145,5 +190,10 @@ class Cache
         }
 
         return false;
+    }
+
+    protected function getFinder()
+    {
+        return Finder::create()->in($this->root)->files();
     }
 }

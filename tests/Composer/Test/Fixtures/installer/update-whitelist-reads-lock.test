@@ -24,14 +24,15 @@ Limited update takes rules from lock if available, and not from the installed re
 --LOCK--
 {
     "packages": [
-        { "package": "old/installed", "version": "1.0.0" },
-        { "package": "toupdate/installed", "version": "1.0.0" },
-        { "package": "toupdate/notinstalled", "version": "1.0.0" }
+        { "name": "old/installed", "version": "1.0.0" },
+        { "name": "toupdate/installed", "version": "1.0.0" },
+        { "name": "toupdate/notinstalled", "version": "1.0.0" }
     ],
     "packages-dev": null,
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": []
+    "stability-flags": [],
+    "prefer-stable": false
 }
 --INSTALLED--
 [

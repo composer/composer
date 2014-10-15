@@ -101,7 +101,9 @@ class ArrayDumperTest extends \PHPUnit_Framework_TestCase
             ),
             array(
                 'keywords',
-                array('package', 'dependency', 'autoload')
+                array('package', 'dependency', 'autoload'),
+                null,
+                array('autoload', 'dependency', 'package')
             ),
             array(
                 'bin',
@@ -129,6 +131,14 @@ class ArrayDumperTest extends \PHPUnit_Framework_TestCase
                 array('class' => 'MyVendor\\Installer')
             ),
             array(
+                'archive',
+                array('/foo/bar', 'baz', '!/foo/bar/baz'),
+                'archiveExcludes',
+                array(
+                    'exclude' => array('/foo/bar', 'baz', '!/foo/bar/baz'),
+                ),
+            ),
+            array(
                 'require',
                 array(new Link('foo', 'foo/bar', new VersionConstraint('=', '1.0.0.0'), 'requires', '1.0.0')),
                 'requires',
@@ -148,6 +158,47 @@ class ArrayDumperTest extends \PHPUnit_Framework_TestCase
             array(
                 'support',
                 array('foo' => 'bar'),
+            ),
+            array(
+                'require',
+                array(new Link('foo', 'foo/bar', new VersionConstraint('=', '1.0.0.0'), 'requires', '1.0.0'), new Link('bar', 'bar/baz', new VersionConstraint('=', '1.0.0.0'), 'requires', '1.0.0')),
+                'requires',
+                array('bar/baz' => '1.0.0', 'foo/bar' => '1.0.0')
+            ),
+            array(
+                'require-dev',
+                array(new Link('foo', 'foo/bar', new VersionConstraint('=', '1.0.0.0'), 'requires', '1.0.0'), new Link('bar', 'bar/baz', new VersionConstraint('=', '1.0.0.0'), 'requires', '1.0.0')),
+                'devRequires',
+                array('bar/baz' => '1.0.0', 'foo/bar' => '1.0.0')
+            ),
+            array(
+                'suggest',
+                array('foo/bar' => 'very useful package', 'bar/baz' => 'another useful package'),
+                'suggests',
+                array('bar/baz' => 'another useful package', 'foo/bar' => 'very useful package')
+            ),
+            array(
+                'provide',
+                array(new Link('foo', 'foo/bar', new VersionConstraint('=', '1.0.0.0'), 'requires', '1.0.0'), new Link('bar', 'bar/baz', new VersionConstraint('=', '1.0.0.0'), 'requires', '1.0.0')),
+                'provides',
+                array('bar/baz' => '1.0.0', 'foo/bar' => '1.0.0')
+            ),
+            array(
+                'replace',
+                array(new Link('foo', 'foo/bar', new VersionConstraint('=', '1.0.0.0'), 'requires', '1.0.0'), new Link('bar', 'bar/baz', new VersionConstraint('=', '1.0.0.0'), 'requires', '1.0.0')),
+                'replaces',
+                array('bar/baz' => '1.0.0', 'foo/bar' => '1.0.0')
+            ),
+            array(
+                'conflict',
+                array(new Link('foo', 'foo/bar', new VersionConstraint('=', '1.0.0.0'), 'requires', '1.0.0'), new Link('bar', 'bar/baz', new VersionConstraint('=', '1.0.0.0'), 'requires', '1.0.0')),
+                'conflicts',
+                array('bar/baz' => '1.0.0', 'foo/bar' => '1.0.0')
+            ),
+            array(
+                'transport-options',
+                array('ssl' => array('local_cert' => '/opt/certs/test.pem')),
+                'transportOptions'
             )
         );
     }

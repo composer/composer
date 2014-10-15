@@ -19,7 +19,7 @@ use Composer\DependencyResolver\Pool;
 use Composer\Package\Link;
 use Composer\Package\AliasPackage;
 use Composer\Package\LinkConstraint\VersionConstraint;
-use Composer\Test\TestCase;
+use Composer\TestCase;
 
 class DefaultPolicyTest extends TestCase
 {
@@ -55,6 +55,49 @@ class DefaultPolicyTest extends TestCase
     {
         $this->repo->addPackage($packageA1 = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageA2 = $this->getPackage('A', '2.0'));
+        $this->pool->addRepository($this->repo);
+
+        $literals = array($packageA1->getId(), $packageA2->getId());
+        $expected = array($packageA2->getId());
+
+        $selected = $this->policy->selectPreferedPackages($this->pool, array(), $literals);
+
+        $this->assertEquals($expected, $selected);
+    }
+
+    public function testSelectNewestPicksLatest()
+    {
+        $this->repo->addPackage($packageA1 = $this->getPackage('A', '1.0.0'));
+        $this->repo->addPackage($packageA2 = $this->getPackage('A', '1.0.1-alpha'));
+        $this->pool->addRepository($this->repo);
+
+        $literals = array($packageA1->getId(), $packageA2->getId());
+        $expected = array($packageA2->getId());
+
+        $selected = $this->policy->selectPreferedPackages($this->pool, array(), $literals);
+
+        $this->assertEquals($expected, $selected);
+    }
+
+    public function testSelectNewestPicksLatestStableWithPreferStable()
+    {
+        $this->repo->addPackage($packageA1 = $this->getPackage('A', '1.0.0'));
+        $this->repo->addPackage($packageA2 = $this->getPackage('A', '1.0.1-alpha'));
+        $this->pool->addRepository($this->repo);
+
+        $literals = array($packageA1->getId(), $packageA2->getId());
+        $expected = array($packageA1->getId());
+
+        $policy = new DefaultPolicy(true);
+        $selected = $policy->selectPreferedPackages($this->pool, array(), $literals);
+
+        $this->assertEquals($expected, $selected);
+    }
+
+    public function testSelectNewestWithDevPicksNonDev()
+    {
+        $this->repo->addPackage($packageA1 = $this->getPackage('A', 'dev-foo'));
+        $this->repo->addPackage($packageA2 = $this->getPackage('A', '1.0.0'));
         $this->pool->addRepository($this->repo);
 
         $literals = array($packageA1->getId(), $packageA2->getId());
@@ -148,7 +191,6 @@ class DefaultPolicyTest extends TestCase
 
     public function testPreferNonReplacingFromSameRepo()
     {
-
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageB = $this->getPackage('B', '2.0'));
 
@@ -161,6 +203,38 @@ class DefaultPolicyTest extends TestCase
 
         $selected = $this->policy->selectPreferedPackages($this->pool, array(), $literals);
 
+        $this->assertEquals($expected, $selected);
+    }
+
+    public function testPreferReplacingPackageFromSameVendor()
+    {
+        // test with default order
+        $this->repo->addPackage($packageB = $this->getPackage('vendor-b/replacer', '1.0'));
+        $this->repo->addPackage($packageA = $this->getPackage('vendor-a/replacer', '1.0'));
+
+        $packageA->setReplaces(array(new Link('vendor-a/replacer', 'vendor-a/package', new VersionConstraint('==', '1.0'), 'replaces')));
+        $packageB->setReplaces(array(new Link('vendor-b/replacer', 'vendor-a/package', new VersionConstraint('==', '1.0'), 'replaces')));
+
+        $this->pool->addRepository($this->repo);
+
+        $literals = array($packageA->getId(), $packageB->getId());
+        $expected = $literals;
+
+        $selected = $this->policy->selectPreferedPackages($this->pool, array(), $literals, 'vendor-a/package');
+        $this->assertEquals($expected, $selected);
+
+        // test with reversed order in repo
+        $repo = new ArrayRepository;
+        $repo->addPackage($packageA = clone $packageA);
+        $repo->addPackage($packageB = clone $packageB);
+
+        $pool = new Pool('dev');
+        $pool->addRepository($this->repo);
+
+        $literals = array($packageA->getId(), $packageB->getId());
+        $expected = $literals;
+
+        $selected = $this->policy->selectPreferedPackages($this->pool, array(), $literals, 'vendor-a/package');
         $this->assertEquals($expected, $selected);
     }
 

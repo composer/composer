@@ -15,6 +15,7 @@ namespace Composer\IO;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Helper\HelperSet;
+use Symfony\Component\Process\ExecutableFinder;
 
 /**
  * The Input/Output helper.
@@ -22,13 +23,13 @@ use Symfony\Component\Console\Helper\HelperSet;
  * @author François Pluchino <francois.pluchino@opendisplay.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class ConsoleIO implements IOInterface
+class ConsoleIO extends BaseIO
 {
     protected $input;
     protected $output;
     protected $helperSet;
-    protected $authentications = array();
     protected $lastMessage;
+    private $startTime;
 
     /**
      * Constructor.
@@ -42,6 +43,11 @@ class ConsoleIO implements IOInterface
         $this->input = $input;
         $this->output = $output;
         $this->helperSet = $helperSet;
+    }
+
+    public function enableDebugging($startTime)
+    {
+        $this->startTime = $startTime;
     }
 
     /**
@@ -65,7 +71,23 @@ class ConsoleIO implements IOInterface
      */
     public function isVerbose()
     {
-        return $this->output->getVerbosity() === OutputInterface::VERBOSITY_VERBOSE;
+        return $this->output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function isVeryVerbose()
+    {
+        return $this->output->getVerbosity() >= 3; // OutputInterface::VERSOBITY_VERY_VERBOSE
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function isDebug()
+    {
+        return $this->output->getVerbosity() >= 4; // OutputInterface::VERBOSITY_DEBUG
     }
 
     /**
@@ -73,6 +95,15 @@ class ConsoleIO implements IOInterface
      */
     public function write($messages, $newline = true)
     {
+        if (null !== $this->startTime) {
+            $messages = (array) $messages;
+            $messages[0] = sprintf(
+                '[%.1fMB/%.2fs] %s',
+                memory_get_usage() / 1024 / 1024,
+                microtime(true) - $this->startTime,
+                $messages[0]
+            );
+        }
         $this->output->write($messages, $newline);
         $this->lastMessage = join($newline ? "\n" : '', (array) $messages);
     }
@@ -141,12 +172,33 @@ class ConsoleIO implements IOInterface
     {
         // handle windows
         if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+            $finder = new ExecutableFinder();
+
+            // use bash if it's present
+            if ($finder->find('bash') && $finder->find('stty')) {
+                $this->write($question, false);
+                $value = rtrim(shell_exec('bash -c "stty -echo; read -n0 discard; read -r mypassword; stty echo; echo $mypassword"'));
+                $this->write('');
+
+                return $value;
+            }
+
+            // fallback to hiddeninput executable
             $exe = __DIR__.'\\hiddeninput.exe';
 
             // handle code running from a phar
             if ('phar:' === substr(__FILE__, 0, 5)) {
                 $tmpExe = sys_get_temp_dir().'/hiddeninput.exe';
-                copy($exe, $tmpExe);
+
+                // use stream_copy_to_stream instead of copy
+                // to work around https://bugs.php.net/bug.php?id=64634
+                $source = fopen(__DIR__.'\\hiddeninput.exe', 'r');
+                $target = fopen($tmpExe, 'w+');
+                stream_copy_to_stream($source, $target);
+                fclose($source);
+                fclose($target);
+                unset($source, $target);
+
                 $exe = $tmpExe;
             }
 
@@ -184,41 +236,5 @@ class ConsoleIO implements IOInterface
 
         // not able to hide the answer, proceed with normal question handling
         return $this->ask($question);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getAuthentications()
-    {
-        return $this->authentications;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function hasAuthentication($repositoryName)
-    {
-        $auths = $this->getAuthentications();
-
-        return isset($auths[$repositoryName]);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getAuthentication($repositoryName)
-    {
-        $auths = $this->getAuthentications();
-
-        return isset($auths[$repositoryName]) ? $auths[$repositoryName] : array('username' => null, 'password' => null);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function setAuthentication($repositoryName, $username, $password = null)
-    {
-        $this->authentications[$repositoryName] = array('username' => $username, 'password' => $password);
     }
 }

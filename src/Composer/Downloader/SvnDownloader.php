@@ -24,10 +24,10 @@ class SvnDownloader extends VcsDownloader
     /**
      * {@inheritDoc}
      */
-    public function doDownload(PackageInterface $package, $path)
+    public function doDownload(PackageInterface $package, $path, $url)
     {
-        $url =  $package->getSourceUrl();
-        $ref =  $package->getSourceReference();
+        SvnUtil::cleanEnv();
+        $ref = $package->getSourceReference();
 
         $this->io->write("    Checking out ".$package->getSourceReference());
         $this->execute($url, "svn co", sprintf("%s/%s", $url, $ref), null, $path);
@@ -36,19 +36,30 @@ class SvnDownloader extends VcsDownloader
     /**
      * {@inheritDoc}
      */
-    public function doUpdate(PackageInterface $initial, PackageInterface $target, $path)
+    public function doUpdate(PackageInterface $initial, PackageInterface $target, $path, $url)
     {
-        $url = $target->getSourceUrl();
+        SvnUtil::cleanEnv();
         $ref = $target->getSourceReference();
 
+        if (!is_dir($path.'/.svn')) {
+            throw new \RuntimeException('The .svn directory is missing from '.$path.', see http://getcomposer.org/commit-deps for more information');
+        }
+
+        $flags = "";
+        if (0 === $this->process->execute('svn --version', $output)) {
+            if (preg_match('{(\d+(?:\.\d+)+)}', $output, $match) && version_compare($match[1], '1.7.0', '>=')) {
+                $flags .= ' --ignore-ancestry';
+            }
+        }
+
         $this->io->write("    Checking out " . $ref);
-        $this->execute($url, "svn switch", sprintf("%s/%s", $url, $ref), $path);
+        $this->execute($url, "svn switch" . $flags, sprintf("%s/%s", $url, $ref), $path);
     }
 
     /**
      * {@inheritDoc}
      */
-    public function getLocalChanges($path)
+    public function getLocalChanges(PackageInterface $package, $path)
     {
         if (!is_dir($path.'/.svn')) {
             return;
@@ -63,17 +74,17 @@ class SvnDownloader extends VcsDownloader
      * Execute an SVN command and try to fix up the process with credentials
      * if necessary.
      *
-     * @param string $baseUrl Base URL of the repository
-     * @param string $command SVN command to run
-     * @param string $url     SVN url
-     * @param string $cwd     Working directory
-     * @param string $path    Target for a checkout
-     *
+     * @param  string            $baseUrl Base URL of the repository
+     * @param  string            $command SVN command to run
+     * @param  string            $url     SVN url
+     * @param  string            $cwd     Working directory
+     * @param  string            $path    Target for a checkout
+     * @throws \RuntimeException
      * @return string
      */
     protected function execute($baseUrl, $command, $url, $cwd = null, $path = null)
     {
-        $util = new SvnUtil($baseUrl, $this->io);
+        $util = new SvnUtil($baseUrl, $this->io, $this->config);
         try {
             return $util->execute($command, $url, $cwd, $path, $this->io->isVerbose());
         } catch (\RuntimeException $e) {
@@ -86,14 +97,18 @@ class SvnDownloader extends VcsDownloader
     /**
      * {@inheritDoc}
      */
-    protected function cleanChanges($path, $update)
+    protected function cleanChanges(PackageInterface $package, $path, $update)
     {
-        if (!$this->io->isInteractive()) {
-            return parent::cleanChanges($path, $update);
+        if (!$changes = $this->getLocalChanges($package, $path)) {
+            return;
         }
 
-        if (!$changes = $this->getLocalChanges($path)) {
-            return;
+        if (!$this->io->isInteractive()) {
+            if (true === $this->config->get('discard-changes')) {
+                return $this->discardChanges($path);
+            }
+
+            return parent::cleanChanges($package, $path, $update);
         }
 
         $changes = array_map(function ($elem) {
@@ -108,9 +123,7 @@ class SvnDownloader extends VcsDownloader
         while (true) {
             switch ($this->io->ask('    <info>Discard changes [y,n,v,?]?</info> ', '?')) {
                 case 'y':
-                    if (0 !== $this->process->execute('svn revert -R .', $output, $path)) {
-                        throw new \RuntimeException("Could not reset changes\n\n:".$this->process->getErrorOutput());
-                    }
+                    $this->discardChanges($path);
                     break 2;
 
                 case 'n':
@@ -138,16 +151,29 @@ class SvnDownloader extends VcsDownloader
      */
     protected function getCommitLogs($fromReference, $toReference, $path)
     {
-        // strip paths from references and only keep the actual revision
-        $fromRevision = preg_replace('{.*@(\d+)$}', '$1', $fromReference);
-        $toRevision = preg_replace('{.*@(\d+)$}', '$1', $toReference);
+        if (preg_match('{.*@(\d+)$}', $fromReference) && preg_match('{.*@(\d+)$}', $toReference) ) {
+            // strip paths from references and only keep the actual revision
+            $fromRevision = preg_replace('{.*@(\d+)$}', '$1', $fromReference);
+            $toRevision = preg_replace('{.*@(\d+)$}', '$1', $toReference);
 
-        $command = sprintf('cd %s && svn log -r%s:%s --incremental', escapeshellarg($path), $fromRevision, $toRevision);
+            $command = sprintf('svn log -r%s:%s --incremental', $fromRevision, $toRevision);
 
-        if (0 !== $this->process->execute($command, $output)) {
-            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+            if (0 !== $this->process->execute($command, $output, $path)) {
+                throw new \RuntimeException(
+                    'Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput()
+                );
+            }
+        } else {
+            $output = "Could not retrieve changes between $fromReference and $toReference due to missing revision information";
         }
 
         return $output;
+    }
+
+    protected function discardChanges($path)
+    {
+        if (0 !== $this->process->execute('svn revert -R .', $output, $path)) {
+            throw new \RuntimeException("Could not reset changes\n\n:".$this->process->getErrorOutput());
+        }
     }
 }

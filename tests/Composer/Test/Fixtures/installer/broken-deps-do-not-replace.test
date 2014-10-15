@@ -1,0 +1,42 @@
+--TEST--
+Broken dependencies should not lead to a replacer being installed which is not mentioned by name
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.0" },
+                { "name": "b/b", "version": "1.0.0", "require": {"c/c": "1.*"} },
+                { "name": "c/c", "version": "1.0.0", "replace": {"a/a": "1.0.0" },"require":{"x/x": "1.0"}},
+                { "name": "d/d", "version": "1.0.0", "replace": {"a/a": "1.0.0", "c/c":"1.0.0" }}
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.*",
+        "b/b": "1.*"
+    }
+}
+--RUN--
+install
+--EXPECT-OUTPUT--
+<info>Loading composer repositories with package information</info>
+<info>Installing dependencies (including require-dev)</info>
+<error>Your requirements could not be resolved to an installable set of packages.</error>
+
+  Problem 1
+    - c/c 1.0.0 requires x/x 1.0 -> no matching package found.
+    - b/b 1.0.0 requires c/c 1.* -> satisfiable by c/c[1.0.0].
+    - Installation request for b/b 1.* -> satisfiable by b/b[1.0.0].
+
+Potential causes:
+ - A typo in the package name
+ - The package is not available in a stable-enough version according to your minimum-stability setting
+   see <https://groups.google.com/d/topic/composer-dev/_g3ASeIFlrc/discussion> for more details.
+
+Read <http://getcomposer.org/doc/articles/troubleshooting.md> for further common problems.
+
+--EXPECT-EXIT-CODE--
+2
+--EXPECT--

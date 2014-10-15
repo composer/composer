@@ -1,5 +1,5 @@
 --TEST--
-Replace takes precedence only in higher priority repositories
+Replace takes precedence only in higher priority repositories and if explicitly required
 --COMPOSER--
 {
     "repositories": [
@@ -14,13 +14,15 @@ Replace takes precedence only in higher priority repositories
             "package": [
                 { "name": "package", "version": "1.0.0" },
                 { "name": "package2", "version": "1.0.0" },
+                { "name": "package3", "version": "1.0.0", "require": { "forked": "*" } },
                 { "name": "hijacker", "version": "1.1.0", "replace": { "package": "1.1.0" } }
             ]
         }
     ],
     "require": {
         "package": "1.*",
-        "package2": "1.*"
+        "package2": "1.*",
+        "package3": "1.*"
     }
 }
 --RUN--
@@ -28,3 +30,4 @@ install
 --EXPECT--
 Installing package (1.0.0)
 Installing forked (1.1.0)
+Installing package3 (1.0.0)

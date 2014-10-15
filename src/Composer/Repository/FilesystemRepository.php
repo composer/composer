@@ -13,7 +13,6 @@
 namespace Composer\Repository;
 
 use Composer\Json\JsonFile;
-use Composer\Package\AliasPackage;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
 
@@ -23,7 +22,7 @@ use Composer\Package\Dumper\ArrayDumper;
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class FilesystemRepository extends ArrayRepository implements WritableRepositoryInterface
+class FilesystemRepository extends WritableArrayRepository
 {
     private $file;
 
@@ -58,7 +57,7 @@ class FilesystemRepository extends ArrayRepository implements WritableRepository
             throw new InvalidRepositoryException('Invalid repository data in '.$this->file->getPath().', packages could not be loaded: ['.get_class($e).'] '.$e->getMessage());
         }
 
-        $loader = new ArrayLoader();
+        $loader = new ArrayLoader(null, true);
         foreach ($packages as $packageData) {
             $package = $loader->load($packageData);
             $this->addPackage($package);
@@ -76,15 +75,13 @@ class FilesystemRepository extends ArrayRepository implements WritableRepository
      */
     public function write()
     {
-        $packages = array();
-        $dumper   = new ArrayDumper();
-        foreach ($this->getPackages() as $package) {
-            if (!$package instanceof AliasPackage) {
-                $data = $dumper->dump($package);
-                $packages[] = $data;
-            }
+        $data = array();
+        $dumper = new ArrayDumper();
+
+        foreach ($this->getCanonicalPackages() as $package) {
+            $data[] = $dumper->dump($package);
         }
 
-        $this->file->write($packages);
+        $this->file->write($data);
     }
 }

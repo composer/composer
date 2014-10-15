@@ -53,6 +53,7 @@ class ConfigCommand extends Command
             ->setDefinition(array(
                 new InputOption('global', 'g', InputOption::VALUE_NONE, 'Apply command to the global config file'),
                 new InputOption('editor', 'e', InputOption::VALUE_NONE, 'Open editor'),
+                new InputOption('auth', 'a', InputOption::VALUE_NONE, 'Affect auth config file (only used for --editor)'),
                 new InputOption('unset', null, InputOption::VALUE_NONE, 'Unset the given setting-key'),
                 new InputOption('list', 'l', InputOption::VALUE_NONE, 'List configuration settings'),
                 new InputOption('file', 'f', InputOption::VALUE_REQUIRED, 'If you want to choose a different composer.json or config.json', 'composer.json'),
@@ -76,7 +77,7 @@ You can add a repository to the global config.json file by passing in the
 
 To edit the file in an external editor:
 
-    <comment>%command.full_name% --edit</comment>
+    <comment>%command.full_name% --editor</comment>
 
 To choose your editor you can set the "EDITOR" env variable.
 
@@ -87,7 +88,7 @@ To get a list of configuration values in the file:
 You can always pass more than one option. As an example, if you want to edit the
 global config.json file.
 
-    <comment>%command.full_name% --edit --global</comment>
+    <comment>%command.full_name% --editor --global</comment>
 EOT
             )
         ;
@@ -102,7 +103,7 @@ EOT
             throw new \RuntimeException('--file and --global can not be combined');
         }
 
-        $this->config = Factory::createConfig();
+        $this->config = Factory::createConfig($this->getIO());
 
         // Get the local composer.json, global config.json, or if the user
         // passed in a file to use
@@ -113,11 +114,23 @@ EOT
         $this->configFile = new JsonFile($configFile);
         $this->configSource = new JsonConfigSource($this->configFile);
 
+        $authConfigFile = $input->getOption('global')
+            ? ($this->config->get('home') . '/auth.json')
+            : dirname(realpath($input->getOption('file'))) . '/auth.json';
+
+        $this->authConfigFile = new JsonFile($authConfigFile);
+        $this->authConfigSource = new JsonConfigSource($this->authConfigFile, true);
+
         // initialize the global file if it's not there
         if ($input->getOption('global') && !$this->configFile->exists()) {
             touch($this->configFile->getPath());
             $this->configFile->write(array('config' => new \ArrayObject));
-            chmod($this->configFile->getPath(), 0600);
+            @chmod($this->configFile->getPath(), 0600);
+        }
+        if ($input->getOption('global') && !$this->authConfigFile->exists()) {
+            touch($this->authConfigFile->getPath());
+            $this->authConfigFile->write(array('http-basic' => new \ArrayObject, 'github-oauth' => new \ArrayObject));
+            @chmod($this->authConfigFile->getPath(), 0600);
         }
 
         if (!$this->configFile->exists()) {
@@ -132,7 +145,7 @@ EOT
     {
         // Open file in editor
         if ($input->getOption('editor')) {
-            $editor = getenv('EDITOR');
+            $editor = escapeshellcmd(getenv('EDITOR'));
             if (!$editor) {
                 if (defined('PHP_WINDOWS_VERSION_BUILD')) {
                     $editor = 'notepad';
@@ -146,18 +159,20 @@ EOT
                 }
             }
 
-            system($editor . ' ' . $this->configFile->getPath() . (defined('PHP_WINDOWS_VERSION_BUILD') ? '':  ' > `tty`'));
+            $file = $input->getOption('auth') ? $this->authConfigFile->getPath() : $this->configFile->getPath();
+            system($editor . ' ' . $file . (defined('PHP_WINDOWS_VERSION_BUILD') ? '':  ' > `tty`'));
 
             return 0;
         }
 
         if (!$input->getOption('global')) {
             $this->config->merge($this->configFile->read());
+            $this->config->merge(array('config' => $this->authConfigFile->exists() ? $this->authConfigFile->read() : array()));
         }
 
         // List the configuration of the file settings
         if ($input->getOption('list')) {
-            $this->listConfiguration($this->config->all(), $output);
+            $this->listConfiguration($this->config->all(), $this->config->raw(), $output);
 
             return 0;
         }
@@ -235,17 +250,79 @@ EOT
             ));
         }
 
+        // handle github-oauth
+        if (preg_match('/^(github-oauth|http-basic)\.(.+)/', $settingKey, $matches)) {
+            if ($input->getOption('unset')) {
+                $this->authConfigSource->removeConfigSetting($matches[1].'.'.$matches[2]);
+                $this->configSource->removeConfigSetting($matches[1].'.'.$matches[2]);
+
+                return;
+            }
+
+            if ($matches[1] === 'github-oauth') {
+                if (1 !== count($values)) {
+                    throw new \RuntimeException('Too many arguments, expected only one token');
+                }
+                $this->configSource->removeConfigSetting($matches[1].'.'.$matches[2]);
+                $this->authConfigSource->addConfigSetting($matches[1].'.'.$matches[2], $values[0]);
+            } elseif ($matches[1] === 'http-basic') {
+                if (2 !== count($values)) {
+                    throw new \RuntimeException('Expected two arguments (username, password), got '.count($values));
+                }
+                $this->configSource->removeConfigSetting($matches[1].'.'.$matches[2]);
+                $this->authConfigSource->addConfigSetting($matches[1].'.'.$matches[2], array('username' => $values[0], 'password' => $values[1]));
+            }
+
+            return;
+        }
+
+        $booleanValidator = function ($val) { return in_array($val, array('true', 'false', '1', '0'), true); };
+        $booleanNormalizer = function ($val) { return $val !== 'false' && (bool) $val; };
+
         // handle config values
         $uniqueConfigValues = array(
             'process-timeout' => array('is_numeric', 'intval'),
-            'cache-ttl' => array('is_numeric', 'intval'),
-            'cache-files-ttl' => array('is_numeric', 'intval'),
+            'use-include-path' => array($booleanValidator, $booleanNormalizer),
+            'preferred-install' => array(
+                function ($val) { return in_array($val, array('auto', 'source', 'dist'), true); },
+                function ($val) { return $val; }
+            ),
+            'store-auths' => array(
+                function ($val) { return in_array($val, array('true', 'false', 'prompt'), true); },
+                function ($val) {
+                    if ('prompt' === $val) {
+                        return 'prompt';
+                    }
+
+                    return $val !== 'false' && (bool) $val;
+                }
+            ),
+            'notify-on-install' => array($booleanValidator, $booleanNormalizer),
             'vendor-dir' => array('is_string', function ($val) { return $val; }),
             'bin-dir' => array('is_string', function ($val) { return $val; }),
-            'notify-on-install' => array(
-                function ($val) { return true; },
-                function ($val) { return $val !== 'false' && (bool) $val; }
+            'cache-dir' => array('is_string', function ($val) { return $val; }),
+            'cache-files-dir' => array('is_string', function ($val) { return $val; }),
+            'cache-repo-dir' => array('is_string', function ($val) { return $val; }),
+            'cache-vcs-dir' => array('is_string', function ($val) { return $val; }),
+            'cache-ttl' => array('is_numeric', 'intval'),
+            'cache-files-ttl' => array('is_numeric', 'intval'),
+            'cache-files-maxsize' => array(
+                function ($val) { return preg_match('/^\s*([0-9.]+)\s*(?:([kmg])(?:i?b)?)?\s*$/i', $val) > 0; },
+                function ($val) { return $val; }
             ),
+            'discard-changes' => array(
+                function ($val) { return in_array($val, array('stash', 'true', 'false', '1', '0'), true); },
+                function ($val) {
+                    if ('stash' === $val) {
+                        return 'stash';
+                    }
+
+                    return $val !== 'false' && (bool) $val;
+                }
+            ),
+            'autoloader-suffix' => array('is_string', function ($val) { return $val === 'null' ? null : $val; }),
+            'optimize-autoloader' => array($booleanValidator, $booleanNormalizer),
+            'prepend-autoloader' => array($booleanValidator, $booleanNormalizer),
         );
         $multiConfigValues = array(
             'github-protocols' => array(
@@ -255,9 +332,21 @@ EOT
                     }
 
                     foreach ($vals as $val) {
-                        if (!in_array($val, array('git', 'https', 'http'))) {
-                            return 'valid protocols include: git, https, http';
+                        if (!in_array($val, array('git', 'https', 'ssh'))) {
+                            return 'valid protocols include: git, https, ssh';
                         }
+                    }
+
+                    return true;
+                },
+                function ($vals) {
+                    return $vals;
+                }
+            ),
+            'github-domains' => array(
+                function ($vals) {
+                    if (!is_array($vals)) {
+                        return 'array expected';
                     }
 
                     return true;
@@ -315,10 +404,11 @@ EOT
      * Display the contents of the file in a pretty formatted way
      *
      * @param array           $contents
+     * @param array           $rawContents
      * @param OutputInterface $output
      * @param string|null     $k
      */
-    protected function listConfiguration(array $contents, OutputInterface $output, $k = null)
+    protected function listConfiguration(array $contents, array $rawContents, OutputInterface $output, $k = null)
     {
         $origK = $k;
         foreach ($contents as $key => $value) {
@@ -326,9 +416,11 @@ EOT
                 continue;
             }
 
+            $rawVal = isset($rawContents[$key]) ? $rawContents[$key] : null;
+
             if (is_array($value) && (!is_numeric(key($value)) || ($key === 'repositories' && null === $k))) {
                 $k .= preg_replace('{^config\.}', '', $key . '.');
-                $this->listConfiguration($value, $output, $k);
+                $this->listConfiguration($value, $rawVal, $output, $k);
 
                 if (substr_count($k, '.') > 1) {
                     $k = str_split($k, strrpos($k, '.', -2));
@@ -352,7 +444,11 @@ EOT
                 $value = var_export($value, true);
             }
 
-            $output->writeln('[<comment>' . $k . $key . '</comment>] <info>' . $value . '</info>');
+            if (is_string($rawVal) && $rawVal != $value) {
+                $output->writeln('[<comment>' . $k . $key . '</comment>] <info>' . $rawVal . ' (' . $value . ')</info>');
+            } else {
+                $output->writeln('[<comment>' . $k . $key . '</comment>] <info>' . $value . '</info>');
+            }
         }
     }
 }

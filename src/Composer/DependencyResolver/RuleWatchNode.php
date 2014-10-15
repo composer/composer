@@ -54,7 +54,7 @@ class RuleWatchNode
         $literals = $this->rule->getLiterals();
 
         // if there are only 2 elements, both are being watched anyway
-        if ($literals < 3) {
+        if (count($literals) < 3) {
             return;
         }
 
@@ -64,7 +64,7 @@ class RuleWatchNode
             $level = $decisions->decisionLevel($literal);
 
             if ($level > $watchLevel) {
-                $this->rule->watch2 = $literal;
+                $this->watch2 = $literal;
                 $watchLevel = $level;
             }
         }

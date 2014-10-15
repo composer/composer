@@ -13,6 +13,9 @@
 namespace Composer\Package\Loader;
 
 use Composer\Package;
+use Composer\Package\AliasPackage;
+use Composer\Package\RootAliasPackage;
+use Composer\Package\RootPackageInterface;
 use Composer\Package\Version\VersionParser;
 
 /**
@@ -22,13 +25,15 @@ use Composer\Package\Version\VersionParser;
 class ArrayLoader implements LoaderInterface
 {
     protected $versionParser;
+    protected $loadOptions;
 
-    public function __construct(VersionParser $parser = null)
+    public function __construct(VersionParser $parser = null, $loadOptions = false)
     {
         if (!$parser) {
             $parser = new VersionParser;
         }
         $this->versionParser = $parser;
+        $this->loadOptions = $loadOptions;
     }
 
     public function load(array $config, $class = 'Composer\Package\CompletePackage')
@@ -72,23 +77,28 @@ class ArrayLoader implements LoaderInterface
         }
 
         if (isset($config['source'])) {
-            if (!isset($config['source']['type']) || !isset($config['source']['url'])) {
+            if (!isset($config['source']['type']) || !isset($config['source']['url']) || !isset($config['source']['reference'])) {
                 throw new \UnexpectedValueException(sprintf(
-                    "package source should be specified as {\"type\": ..., \"url\": ...},\n%s given",
+                    "Package %s's source key should be specified as {\"type\": ..., \"url\": ..., \"reference\": ...},\n%s given.",
+                    $config['name'],
                     json_encode($config['source'])
                 ));
             }
             $package->setSourceType($config['source']['type']);
             $package->setSourceUrl($config['source']['url']);
             $package->setSourceReference($config['source']['reference']);
+            if (isset($config['source']['mirrors'])) {
+                $package->setSourceMirrors($config['source']['mirrors']);
+            }
         }
 
         if (isset($config['dist'])) {
             if (!isset($config['dist']['type'])
              || !isset($config['dist']['url'])) {
                 throw new \UnexpectedValueException(sprintf(
-                    "package dist should be specified as ".
-                    "{\"type\": ..., \"url\": ..., \"reference\": ..., \"shasum\": ...},\n%s given",
+                    "Package %s's dist key should be specified as ".
+                    "{\"type\": ..., \"url\": ..., \"reference\": ..., \"shasum\": ...},\n%s given.",
+                    $config['name'],
                     json_encode($config['dist'])
                 ));
             }
@@ -96,11 +106,9 @@ class ArrayLoader implements LoaderInterface
             $package->setDistUrl($config['dist']['url']);
             $package->setDistReference(isset($config['dist']['reference']) ? $config['dist']['reference'] : null);
             $package->setDistSha1Checksum(isset($config['dist']['shasum']) ? $config['dist']['shasum'] : null);
-        }
-
-        if ($aliasNormalized = $this->getBranchAlias($config)) {
-            $package->setAlias($aliasNormalized);
-            $package->setPrettyAlias(preg_replace('{(\.9{7})+}', '.x', $aliasNormalized));
+            if (isset($config['dist']['mirrors'])) {
+                $package->setDistMirrors($config['dist']['mirrors']);
+            }
         }
 
         foreach (Package\BasePackage::$supportedLinkTypes as $type => $opts) {
@@ -130,13 +138,19 @@ class ArrayLoader implements LoaderInterface
             $package->setAutoload($config['autoload']);
         }
 
+        if (isset($config['autoload-dev'])) {
+            $package->setDevAutoload($config['autoload-dev']);
+        }
+
         if (isset($config['include-path'])) {
             $package->setIncludePaths($config['include-path']);
         }
 
         if (!empty($config['time'])) {
+            $time = ctype_digit($config['time']) ? '@'.$config['time'] : $config['time'];
+
             try {
-                $date = new \DateTime($config['time'], new \DateTimeZone('UTC'));
+                $date = new \DateTime($time, new \DateTimeZone('UTC'));
                 $package->setReleaseDate($date);
             } catch (\Exception $e) {
             }
@@ -146,10 +160,14 @@ class ArrayLoader implements LoaderInterface
             $package->setNotificationUrl($config['notification-url']);
         }
 
+        if (!empty($config['archive']['exclude'])) {
+            $package->setArchiveExcludes($config['archive']['exclude']);
+        }
+
         if ($package instanceof Package\CompletePackageInterface) {
             if (isset($config['scripts']) && is_array($config['scripts'])) {
                 foreach ($config['scripts'] as $event => $listeners) {
-                    $config['scripts'][$event]= (array) $listeners;
+                    $config['scripts'][$event] = (array) $listeners;
                 }
                 $package->setScripts($config['scripts']);
             }
@@ -177,6 +195,18 @@ class ArrayLoader implements LoaderInterface
             if (isset($config['support'])) {
                 $package->setSupport($config['support']);
             }
+        }
+
+        if ($aliasNormalized = $this->getBranchAlias($config)) {
+            if ($package instanceof RootPackageInterface) {
+                $package = new RootAliasPackage($package, $aliasNormalized, preg_replace('{(\.9{7})+}', '.x', $aliasNormalized));
+            } else {
+                $package = new AliasPackage($package, $aliasNormalized, preg_replace('{(\.9{7})+}', '.x', $aliasNormalized));
+            }
+        }
+
+        if ($this->loadOptions && isset($config['transport-options'])) {
+            $package->setTransportOptions($config['transport-options']);
         }
 
         return $package;

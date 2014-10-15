@@ -16,11 +16,6 @@ use Composer\Config\JsonConfigSource;
 use Composer\Json\JsonFile;
 use Composer\Util\Filesystem;
 
-/**
- * JsonConfigSource Test
- *
- * @author Beau Simensen <beau@dflydev.com>
- */
 class JsonConfigSourceTest extends \PHPUnit_Framework_TestCase
 {
     private $workingDir;
@@ -68,7 +63,6 @@ class JsonConfigSourceTest extends \PHPUnit_Framework_TestCase
         $twoOfEverything = $this->fixturePath('composer-two-of-everything.json');
 
         return array(
-
             $this->addLinkDataArguments('require', 'my-vend/my-lib', '1.*', 'require-from-empty', $empty),
             $this->addLinkDataArguments('require', 'my-vend/my-lib', '1.*', 'require-from-oneOfEverything', $oneOfEverything),
             $this->addLinkDataArguments('require', 'my-vend/my-lib', '1.*', 'require-from-twoOfEverything', $twoOfEverything),
@@ -125,7 +119,6 @@ class JsonConfigSourceTest extends \PHPUnit_Framework_TestCase
             $name,
             $after ?: $this->fixturePath('removeLink/'.$fixtureBasename.'-after.json'),
         );
-
     }
 
     /**

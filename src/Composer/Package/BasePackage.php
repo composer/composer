@@ -49,6 +49,7 @@ abstract class BasePackage implements PackageInterface
 
     protected $repository;
     protected $id;
+    protected $transportOptions;
 
     /**
      * All descendants' constructors should call this parent constructor
@@ -60,6 +61,7 @@ abstract class BasePackage implements PackageInterface
         $this->prettyName = $name;
         $this->name = strtolower($name);
         $this->id = -1;
+        $this->transportOptions = array();
     }
 
     /**
@@ -114,17 +116,41 @@ abstract class BasePackage implements PackageInterface
         return $this->id;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public function setRepository(RepositoryInterface $repository)
+    {
+        if ($this->repository && $repository !== $this->repository) {
+            throw new \LogicException('A package can only be added to one repository');
+        }
+        $this->repository = $repository;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function getRepository()
     {
         return $this->repository;
     }
 
-    public function setRepository(RepositoryInterface $repository)
+    /**
+     * {@inheritDoc}
+     */
+    public function getTransportOptions()
     {
-        if ($this->repository) {
-            throw new \LogicException('A package can only be added to one repository');
-        }
-        $this->repository = $repository;
+        return $this->transportOptions;
+    }
+
+    /**
+     * Configures the list of options to download package dist files
+     *
+     * @param array $options
+     */
+    public function setTransportOptions(array $options)
+    {
+        $this->transportOptions = $options;
     }
 
     /**

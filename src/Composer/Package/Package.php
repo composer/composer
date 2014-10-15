@@ -13,6 +13,7 @@
 namespace Composer\Package;
 
 use Composer\Package\Version\VersionParser;
+use Composer\Util\ComposerMirror;
 
 /**
  * Core package definitions that are needed to resolve dependencies and install packages
@@ -27,18 +28,17 @@ class Package extends BasePackage
     protected $sourceType;
     protected $sourceUrl;
     protected $sourceReference;
+    protected $sourceMirrors;
     protected $distType;
     protected $distUrl;
     protected $distReference;
     protected $distSha1Checksum;
+    protected $distMirrors;
     protected $version;
     protected $prettyVersion;
     protected $releaseDate;
     protected $extra = array();
     protected $binaries = array();
-    protected $aliases = array();
-    protected $alias;
-    protected $prettyAlias;
     protected $dev;
     protected $stability;
     protected $notificationUrl;
@@ -50,7 +50,9 @@ class Package extends BasePackage
     protected $devRequires = array();
     protected $suggests = array();
     protected $autoload = array();
+    protected $devAutoload = array();
     protected $includePaths = array();
+    protected $archiveExcludes = array();
 
     /**
      * Creates a new in memory package.
@@ -155,54 +157,6 @@ class Package extends BasePackage
     }
 
     /**
-     * @param array $aliases
-     */
-    public function setAliases(array $aliases)
-    {
-        $this->aliases = $aliases;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getAliases()
-    {
-        return $this->aliases;
-    }
-
-    /**
-     * @param string $alias
-     */
-    public function setAlias($alias)
-    {
-        $this->alias = $alias;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getAlias()
-    {
-        return $this->alias;
-    }
-
-    /**
-     * @param string $prettyAlias
-     */
-    public function setPrettyAlias($prettyAlias)
-    {
-        $this->prettyAlias = $prettyAlias;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getPrettyAlias()
-    {
-        return $this->prettyAlias;
-    }
-
-    /**
      * {@inheritDoc}
      */
     public function setInstallationSource($type)
@@ -264,6 +218,30 @@ class Package extends BasePackage
     public function getSourceReference()
     {
         return $this->sourceReference;
+    }
+
+    /**
+     * @param array|null $mirrors
+     */
+    public function setSourceMirrors($mirrors)
+    {
+        $this->sourceMirrors = $mirrors;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getSourceMirrors()
+    {
+        return $this->sourceMirrors;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getSourceUrls()
+    {
+        return $this->getUrls($this->sourceUrl, $this->sourceMirrors, $this->sourceReference, $this->sourceType, 'source');
     }
 
     /**
@@ -331,6 +309,30 @@ class Package extends BasePackage
     }
 
     /**
+     * @param array|null $mirrors
+     */
+    public function setDistMirrors($mirrors)
+    {
+        $this->distMirrors = $mirrors;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getDistMirrors()
+    {
+        return $this->distMirrors;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getDistUrls()
+    {
+        return $this->getUrls($this->distUrl, $this->distMirrors, $this->distReference, $this->distType, 'dist');
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function getVersion()
@@ -349,7 +351,7 @@ class Package extends BasePackage
     /**
      * Set the releaseDate
      *
-     * @param DateTime $releaseDate
+     * @param \DateTime $releaseDate
      */
     public function setReleaseDate(\DateTime $releaseDate)
     {
@@ -491,6 +493,24 @@ class Package extends BasePackage
     }
 
     /**
+     * Set the dev autoload mapping
+     *
+     * @param array $devAutoload Mapping of dev autoloading rules
+     */
+    public function setDevAutoload(array $devAutoload)
+    {
+        $this->devAutoload = $devAutoload;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getDevAutoload()
+    {
+        return $this->devAutoload;
+    }
+
+    /**
      * Sets the list of paths added to PHP's include path.
      *
      * @param array $includePaths List of directories.
@@ -524,5 +544,64 @@ class Package extends BasePackage
     public function getNotificationUrl()
     {
         return $this->notificationUrl;
+    }
+
+    /**
+     * Sets a list of patterns to be excluded from archives
+     *
+     * @param array $excludes
+     */
+    public function setArchiveExcludes(array $excludes)
+    {
+        $this->archiveExcludes = $excludes;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getArchiveExcludes()
+    {
+        return $this->archiveExcludes;
+    }
+
+    /**
+     * Replaces current version and pretty version with passed values.
+     * It also sets stability.
+     *
+     * @param string $version       The package's normalized version
+     * @param string $prettyVersion The package's non-normalized version
+     */
+    public function replaceVersion($version, $prettyVersion)
+    {
+        $this->version = $version;
+        $this->prettyVersion = $prettyVersion;
+
+        $this->stability = VersionParser::parseStability($version);
+        $this->dev = $this->stability === 'dev';
+    }
+
+    protected function getUrls($url, $mirrors, $ref, $type, $urlType)
+    {
+        if (!$url) {
+            return array();
+        }
+        $urls = array($url);
+        if ($mirrors) {
+            foreach ($mirrors as $mirror) {
+                if ($urlType === 'dist') {
+                    $mirrorUrl = ComposerMirror::processUrl($mirror['url'], $this->name, $this->version, $ref, $type);
+                } elseif ($urlType === 'source' && $type === 'git') {
+                    $mirrorUrl = ComposerMirror::processGitUrl($mirror['url'], $this->name, $url, $type);
+                } elseif ($urlType === 'source' && $type === 'hg') {
+                    $mirrorUrl = ComposerMirror::processHgUrl($mirror['url'], $this->name, $url, $type);
+                }
+                if (!in_array($mirrorUrl, $urls)) {
+                    $func = $mirror['preferred'] ? 'array_unshift' : 'array_push';
+                    $func($urls, $mirrorUrl);
+                }
+            }
+        }
+
+        return $urls;
     }
 }

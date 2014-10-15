@@ -12,6 +12,7 @@
 
 namespace Composer\Repository\Vcs;
 
+use Composer\Config;
 use Composer\Json\JsonFile;
 use Composer\IO\IOInterface;
 
@@ -65,9 +66,7 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
      */
     public function getSource($identifier)
     {
-        $label = array_search($identifier, $this->getTags()) ?: $identifier;
-
-        return array('type' => 'git', 'url' => $this->getUrl(), 'reference' => $label);
+        return array('type' => 'git', 'url' => $this->getUrl(), 'reference' => $identifier);
     }
 
     /**
@@ -75,10 +74,9 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
      */
     public function getDist($identifier)
     {
-        $label = array_search($identifier, $this->getTags()) ?: $identifier;
-        $url = $this->getScheme() . '://bitbucket.org/'.$this->owner.'/'.$this->repository.'/get/'.$label.'.zip';
+        $url = $this->getScheme() . '://bitbucket.org/'.$this->owner.'/'.$this->repository.'/get/'.$identifier.'.zip';
 
-        return array('type' => 'zip', 'url' => $url, 'reference' => $label, 'shasum' => '');
+        return array('type' => 'zip', 'url' => $url, 'reference' => $identifier, 'shasum' => '');
     }
 
     /**
@@ -143,7 +141,7 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
     /**
      * {@inheritDoc}
      */
-    public static function supports(IOInterface $io, $url, $deep = false)
+    public static function supports(IOInterface $io, Config $config, $url, $deep = false)
     {
         if (!preg_match('#^https://bitbucket\.org/([^/]+)/(.+?)\.git$#', $url)) {
             return false;

@@ -23,9 +23,6 @@ class SvnDriverTest extends \PHPUnit_Framework_TestCase
     public function testWrongCredentialsInUrl()
     {
         $console = $this->getMock('Composer\IO\IOInterface');
-        $console->expects($this->once())
-            ->method('isInteractive')
-            ->will($this->returnValue(true));
 
         $output  = "svn: OPTIONS of 'http://corp.svn.local/repo':";
         $output .= " authorization failed: Could not authenticate to server:";
@@ -35,7 +32,7 @@ class SvnDriverTest extends \PHPUnit_Framework_TestCase
         $process->expects($this->at(1))
             ->method('execute')
             ->will($this->returnValue(1));
-        $process->expects($this->once())
+        $process->expects($this->exactly(7))
             ->method('getErrorOutput')
             ->will($this->returnValue($output));
         $process->expects($this->at(2))
@@ -80,10 +77,8 @@ class SvnDriverTest extends \PHPUnit_Framework_TestCase
      */
     public function testSupport($url, $assertion)
     {
-        if ($assertion === true) {
-            $this->assertTrue(SvnDriver::supports($this->getMock('Composer\IO\IOInterface'), $url));
-        } else {
-            $this->assertFalse(SvnDriver::supports($this->getMock('Composer\IO\IOInterface'), $url));
-        }
+        $config = new Config();
+        $result = SvnDriver::supports($this->getMock('Composer\IO\IOInterface'), $config, $url);
+        $this->assertEquals($assertion, $result);
     }
 }

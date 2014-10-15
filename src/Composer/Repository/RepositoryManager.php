@@ -14,6 +14,7 @@ namespace Composer\Repository;
 
 use Composer\IO\IOInterface;
 use Composer\Config;
+use Composer\EventDispatcher\EventDispatcher;
 
 /**
  * Repositories manager.
@@ -25,16 +26,17 @@ use Composer\Config;
 class RepositoryManager
 {
     private $localRepository;
-    private $localDevRepository;
     private $repositories = array();
     private $repositoryClasses = array();
     private $io;
     private $config;
+    private $eventDispatcher;
 
-    public function __construct(IOInterface $io, Config $config)
+    public function __construct(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null)
     {
         $this->io = $io;
         $this->config = $config;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**
@@ -86,10 +88,10 @@ class RepositoryManager
     /**
      * Returns a new repository for a specific installation type.
      *
-     * @param  string                   $type   repository type
-     * @param  string                   $config repository configuration
+     * @param  string                    $type   repository type
+     * @param  array                     $config repository configuration
      * @return RepositoryInterface
-     * @throws InvalidArgumentException if repository for provided type is not registered
+     * @throws \InvalidArgumentException if repository for provided type is not registered
      */
     public function createRepository($type, $config)
     {
@@ -99,7 +101,7 @@ class RepositoryManager
 
         $class = $this->repositoryClasses[$type];
 
-        return new $class($config, $this->io, $this->config);
+        return new $class($config, $this->io, $this->config, $this->eventDispatcher);
     }
 
     /**
@@ -126,9 +128,9 @@ class RepositoryManager
     /**
      * Sets local repository for the project.
      *
-     * @param RepositoryInterface $repository repository instance
+     * @param WritableRepositoryInterface $repository repository instance
      */
-    public function setLocalRepository(RepositoryInterface $repository)
+    public function setLocalRepository(WritableRepositoryInterface $repository)
     {
         $this->localRepository = $repository;
     }
@@ -136,7 +138,7 @@ class RepositoryManager
     /**
      * Returns local repository for the project.
      *
-     * @return RepositoryInterface
+     * @return WritableRepositoryInterface
      */
     public function getLocalRepository()
     {
@@ -144,32 +146,15 @@ class RepositoryManager
     }
 
     /**
-     * Sets localDev repository for the project.
-     *
-     * @param RepositoryInterface $repository repository instance
-     */
-    public function setLocalDevRepository(RepositoryInterface $repository)
-    {
-        $this->localDevRepository = $repository;
-    }
-
-    /**
-     * Returns localDev repository for the project.
-     *
-     * @return RepositoryInterface
-     */
-    public function getLocalDevRepository()
-    {
-        return $this->localDevRepository;
-    }
-
-    /**
      * Returns all local repositories for the project.
      *
+     * @deprecated getLocalDevRepository is gone, so this is useless now, just use getLocalRepository instead
      * @return array[WritableRepositoryInterface]
      */
     public function getLocalRepositories()
     {
-        return array($this->localRepository, $this->localDevRepository);
+        trigger_error('This method is deprecated, use getLocalRepository instead since the getLocalDevRepository is now gone', E_USER_DEPRECATED);
+
+        return array($this->localRepository);
     }
 }

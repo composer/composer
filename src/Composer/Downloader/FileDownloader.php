@@ -17,8 +17,10 @@ use Composer\Cache;
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
+use Composer\Plugin\PluginEvents;
+use Composer\Plugin\PreFileDownloadEvent;
+use Composer\EventDispatcher\EventDispatcher;
 use Composer\Util\Filesystem;
-use Composer\Util\GitHub;
 use Composer\Util\RemoteFilesystem;
 
 /**
@@ -27,10 +29,10 @@ use Composer\Util\RemoteFilesystem;
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author François Pluchino <francois.pluchino@opendisplay.com>
+ * @author Nils Adermann <naderman@naderman.de>
  */
 class FileDownloader implements DownloaderInterface
 {
-    private static $cacheCollected = false;
     protected $io;
     protected $config;
     protected $rfs;
@@ -41,24 +43,25 @@ class FileDownloader implements DownloaderInterface
     /**
      * Constructor.
      *
-     * @param IOInterface      $io         The IO instance
-     * @param Config           $config     The config
-     * @param Cache            $cache      Optional cache instance
-     * @param RemoteFilesystem $rfs        The remote filesystem
-     * @param Filesystem       $filesystem The filesystem
+     * @param IOInterface      $io              The IO instance
+     * @param Config           $config          The config
+     * @param EventDispatcher  $eventDispatcher The event dispatcher
+     * @param Cache            $cache           Optional cache instance
+     * @param RemoteFilesystem $rfs             The remote filesystem
+     * @param Filesystem       $filesystem      The filesystem
      */
-    public function __construct(IOInterface $io, Config $config, Cache $cache = null, RemoteFilesystem $rfs = null, Filesystem $filesystem = null)
+    public function __construct(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, Cache $cache = null, RemoteFilesystem $rfs = null, Filesystem $filesystem = null)
     {
         $this->io = $io;
         $this->config = $config;
-        $this->rfs = $rfs ?: new RemoteFilesystem($io);
+        $this->eventDispatcher = $eventDispatcher;
+        $this->rfs = $rfs ?: new RemoteFilesystem($io, $config);
         $this->filesystem = $filesystem ?: new Filesystem();
         $this->cache = $cache;
 
-        if ($this->cache && !self::$cacheCollected && !rand(0, 50)) {
-            $this->cache->gc($config->get('cache-ttl'));
+        if ($this->cache && $this->cache->gcIsNecessary()) {
+            $this->cache->gc($config->get('cache-files-ttl'), $config->get('cache-files-maxsize'));
         }
-        self::$cacheCollected = true;
     }
 
     /**
@@ -74,50 +77,82 @@ class FileDownloader implements DownloaderInterface
      */
     public function download(PackageInterface $package, $path)
     {
-        $url = $package->getDistUrl();
-        if (!$url) {
+        if (!$package->getDistUrl()) {
             throw new \InvalidArgumentException('The given package is missing url information');
         }
 
-        $this->filesystem->ensureDirectoryExists($path);
+        $this->io->write("  - Installing <info>" . $package->getName() . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
+
+        $urls = $package->getDistUrls();
+        while ($url = array_shift($urls)) {
+            try {
+                return $this->doDownload($package, $path, $url);
+            } catch (\Exception $e) {
+                if ($this->io->isDebug()) {
+                    $this->io->write('');
+                    $this->io->write('Failed: ['.get_class($e).'] '.$e->getMessage());
+                } elseif (count($urls)) {
+                    $this->io->write('');
+                    $this->io->write('    Failed, trying the next URL');
+                }
+
+                if (!count($urls)) {
+                    throw $e;
+                }
+            }
+        }
+        
+        $this->io->write('');
+    }
+
+    protected function doDownload(PackageInterface $package, $path, $url)
+    {
+        $this->filesystem->emptyDirectory($path);
 
         $fileName = $this->getFileName($package, $path);
-
-        $this->io->write("  - Installing <info>" . $package->getName() . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
 
         $processedUrl = $this->processUrl($package, $url);
         $hostname = parse_url($processedUrl, PHP_URL_HOST);
 
-        if (strpos($hostname, '.github.com') === (strlen($hostname) - 11)) {
-            $hostname = 'github.com';
+        $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->rfs, $processedUrl);
+        if ($this->eventDispatcher) {
+            $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
         }
+        $rfs = $preFileDownloadEvent->getRemoteFilesystem();
 
         try {
-            try {
-                if (!$this->cache || !$this->cache->copyTo($this->getCacheKey($package), $fileName)) {
-                    $this->rfs->copy($hostname, $processedUrl, $fileName, $this->outputProgress);
-                    if (!$this->outputProgress) {
-                        $this->io->write('    Downloading');
-                    }
-                    if ($this->cache) {
-                        $this->cache->copyFrom($this->getCacheKey($package), $fileName);
-                    }
-                } else {
-                    $this->io->write('    Loading from cache');
+            $checksum = $package->getDistSha1Checksum();
+            $cacheKey = $this->getCacheKey($package);
+
+            // download if we don't have it in cache or the cache is invalidated
+            if (!$this->cache || ($checksum && $checksum !== $this->cache->sha1($cacheKey)) || !$this->cache->copyTo($cacheKey, $fileName)) {
+                if (!$this->outputProgress) {
+                    $this->io->write('    Downloading');
                 }
-            } catch (TransportException $e) {
-                if (404 === $e->getCode() && 'github.com' === $hostname) {
-                    $message = "\n".'Could not fetch '.$processedUrl.', enter your GitHub credentials to access private repos';
-                    $gitHubUtil = new GitHub($this->io, $this->config, null, $this->rfs);
-                    if (!$gitHubUtil->authorizeOAuth($hostname)
-                        && (!$this->io->isInteractive() || !$gitHubUtil->authorizeOAuthInteractively($hostname, $message))
-                    ) {
-                        throw $e;
+
+                // try to download 3 times then fail hard
+                $retries = 3;
+                while ($retries--) {
+                    try {
+                        $rfs->copy($hostname, $processedUrl, $fileName, $this->outputProgress, $package->getTransportOptions());
+                        break;
+                    } catch (TransportException $e) {
+                        // if we got an http response with a proper code, then requesting again will probably not help, abort
+                        if ((0 !== $e->getCode() && !in_array($e->getCode(),array(500, 502, 503, 504))) || !$retries) {
+                            throw $e;
+                        }
+                        if ($this->io->isVerbose()) {
+                            $this->io->write('    Download failed, retrying...');
+                        }
+                        usleep(500000);
                     }
-                    $this->rfs->copy($hostname, $processedUrl, $fileName, $this->outputProgress);
-                } else {
-                    throw $e;
                 }
+
+                if ($this->cache) {
+                    $this->cache->copyFrom($cacheKey, $fileName);
+                }
+            } else {
+                $this->io->write('    Loading from cache');
             }
 
             if (!file_exists($fileName)) {
@@ -125,7 +160,6 @@ class FileDownloader implements DownloaderInterface
                     .' directory is writable and you have internet connectivity');
             }
 
-            $checksum = $package->getDistSha1Checksum();
             if ($checksum && hash_file('sha1', $fileName) !== $checksum) {
                 throw new \UnexpectedValueException('The checksum verification of the file failed (downloaded from '.$url.')');
             }
@@ -135,6 +169,8 @@ class FileDownloader implements DownloaderInterface
             $this->clearCache($package, $path);
             throw $e;
         }
+
+        return $fileName;
     }
 
     /**

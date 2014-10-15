@@ -12,7 +12,7 @@
 
 namespace Composer\Repository\Pear;
 
-use Composer\Test\TestCase;
+use Composer\TestCase;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Package\Link;

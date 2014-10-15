@@ -13,13 +13,14 @@
 namespace Composer\Test\Package;
 
 use Composer\Package\Locker;
+use Composer\IO\NullIO;
 
 class LockerTest extends \PHPUnit_Framework_TestCase
 {
     public function testIsLocked()
     {
         $json   = $this->createJsonFileMock();
-        $locker = new Locker($json, $this->createRepositoryManagerMock(), $this->createInstallationManagerMock(), 'md5');
+        $locker = new Locker(new NullIO, $json, $this->createRepositoryManagerMock(), $this->createInstallationManagerMock(), 'md5');
 
         $json
             ->expects($this->any())
@@ -39,7 +40,7 @@ class LockerTest extends \PHPUnit_Framework_TestCase
         $repo = $this->createRepositoryManagerMock();
         $inst = $this->createInstallationManagerMock();
 
-        $locker = new Locker($json, $repo, $inst, 'md5');
+        $locker = new Locker(new NullIO, $json, $repo, $inst, 'md5');
 
         $json
             ->expects($this->once())
@@ -57,7 +58,7 @@ class LockerTest extends \PHPUnit_Framework_TestCase
         $repo = $this->createRepositoryManagerMock();
         $inst = $this->createInstallationManagerMock();
 
-        $locker = new Locker($json, $repo, $inst, 'md5');
+        $locker = new Locker(new NullIO, $json, $repo, $inst, 'md5');
 
         $json
             ->expects($this->once())
@@ -68,57 +69,14 @@ class LockerTest extends \PHPUnit_Framework_TestCase
             ->method('read')
             ->will($this->returnValue(array(
                 'packages' => array(
-                    array('package' => 'pkg1', 'version' => '1.0.0-beta'),
-                    array('package' => 'pkg2', 'version' => '0.1.10')
+                    array('name' => 'pkg1', 'version' => '1.0.0-beta'),
+                    array('name' => 'pkg2', 'version' => '0.1.10')
                 )
             )));
 
-        $package1 = $this->createPackageMock();
-        $package2 = $this->createPackageMock();
-
-        $repo->getLocalRepository()
-            ->expects($this->exactly(2))
-            ->method('findPackage')
-            ->with($this->logicalOr('pkg1', 'pkg2'), $this->logicalOr('1.0.0-beta', '0.1.10'))
-            ->will($this->onConsecutiveCalls($package1, $package2));
-
-        $this->assertEquals(array($package1, $package2), $locker->getLockedRepository()->getPackages());
-    }
-
-    public function testGetPackagesWithoutRepo()
-    {
-        $json = $this->createJsonFileMock();
-        $repo = $this->createRepositoryManagerMock();
-        $inst = $this->createInstallationManagerMock();
-
-        $locker = new Locker($json, $repo, $inst, 'md5');
-
-        $json
-            ->expects($this->once())
-            ->method('exists')
-            ->will($this->returnValue(true));
-        $json
-            ->expects($this->once())
-            ->method('read')
-            ->will($this->returnValue(array(
-                'packages' => array(
-                    array('package' => 'pkg1', 'version' => '1.0.0-beta'),
-                    array('package' => 'pkg2', 'version' => '0.1.10')
-                )
-            )));
-
-        $package1 = $this->createPackageMock();
-        $package2 = $this->createPackageMock();
-
-        $repo->getLocalRepository()
-            ->expects($this->exactly(2))
-            ->method('findPackage')
-            ->with($this->logicalOr('pkg1', 'pkg2'), $this->logicalOr('1.0.0-beta', '0.1.10'))
-            ->will($this->onConsecutiveCalls($package1, null));
-
-        $this->setExpectedException('LogicException');
-
-        $locker->getLockedRepository();
+        $repo = $locker->getLockedRepository();
+        $this->assertNotNull($repo->findPackage('pkg1', '1.0.0-beta'));
+        $this->assertNotNull($repo->findPackage('pkg2', '0.1.10'));
     }
 
     public function testSetLockData()
@@ -127,7 +85,7 @@ class LockerTest extends \PHPUnit_Framework_TestCase
         $repo = $this->createRepositoryManagerMock();
         $inst = $this->createInstallationManagerMock();
 
-        $locker = new Locker($json, $repo, $inst, 'md5');
+        $locker = new Locker(new NullIO, $json, $repo, $inst, 'md5');
 
         $package1 = $this->createPackageMock();
         $package2 = $this->createPackageMock();
@@ -162,6 +120,9 @@ class LockerTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('write')
             ->with(array(
+                '_readme' => array('This file locks the dependencies of your project to a known state',
+                                   'Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file',
+                                   'This file is @gener'.'ated automatically'),
                 'hash' => 'md5',
                 'packages' => array(
                     array('name' => 'pkg1', 'version' => '1.0.0-beta'),
@@ -171,9 +132,12 @@ class LockerTest extends \PHPUnit_Framework_TestCase
                 'aliases' => array(),
                 'minimum-stability' => 'dev',
                 'stability-flags' => array(),
+                'platform' => array(),
+                'platform-dev' => array(),
+                'prefer-stable' => false,
             ));
 
-        $locker->setLockData(array($package1, $package2), array(), array(), 'dev', array());
+        $locker->setLockData(array($package1, $package2), array(), array(), array(), array(), 'dev', array(), false);
     }
 
     public function testLockBadPackages()
@@ -182,7 +146,7 @@ class LockerTest extends \PHPUnit_Framework_TestCase
         $repo = $this->createRepositoryManagerMock();
         $inst = $this->createInstallationManagerMock();
 
-        $locker = new Locker($json, $repo, $inst, 'md5');
+        $locker = new Locker(new NullIO, $json, $repo, $inst, 'md5');
 
         $package1 = $this->createPackageMock();
         $package1
@@ -192,7 +156,7 @@ class LockerTest extends \PHPUnit_Framework_TestCase
 
         $this->setExpectedException('LogicException');
 
-        $locker->setLockData(array($package1), array(), array(), 'dev', array());
+        $locker->setLockData(array($package1), array(), array(), array(), array(), 'dev', array(), false);
     }
 
     public function testIsFresh()
@@ -201,7 +165,7 @@ class LockerTest extends \PHPUnit_Framework_TestCase
         $repo = $this->createRepositoryManagerMock();
         $inst = $this->createInstallationManagerMock();
 
-        $locker = new Locker($json, $repo, $inst, 'md5');
+        $locker = new Locker(new NullIO, $json, $repo, $inst, 'md5');
 
         $json
             ->expects($this->once())
@@ -217,7 +181,7 @@ class LockerTest extends \PHPUnit_Framework_TestCase
         $repo = $this->createRepositoryManagerMock();
         $inst = $this->createInstallationManagerMock();
 
-        $locker = new Locker($json, $repo, $inst, 'md5');
+        $locker = new Locker(new NullIO, $json, $repo, $inst, 'md5');
 
         $json
             ->expects($this->once())

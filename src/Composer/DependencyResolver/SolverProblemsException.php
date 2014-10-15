@@ -25,7 +25,7 @@ class SolverProblemsException extends \RuntimeException
         $this->problems = $problems;
         $this->installedMap = $installedMap;
 
-        parent::__construct($this->createMessage());
+        parent::__construct($this->createMessage(), 2);
     }
 
     protected function createMessage()

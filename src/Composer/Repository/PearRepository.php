@@ -17,6 +17,7 @@ use Composer\Package\Version\VersionParser;
 use Composer\Repository\Pear\ChannelReader;
 use Composer\Package\CompletePackage;
 use Composer\Repository\Pear\ChannelInfo;
+use Composer\EventDispatcher\EventDispatcher;
 use Composer\Package\Link;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Util\RemoteFilesystem;
@@ -43,7 +44,7 @@ class PearRepository extends ArrayRepository
      */
     private $vendorAlias;
 
-    public function __construct(array $repoConfig, IOInterface $io, Config $config, RemoteFilesystem $rfs = null)
+    public function __construct(array $repoConfig, IOInterface $io, Config $config, EventDispatcher $dispatcher = null, RemoteFilesystem $rfs = null)
     {
         if (!preg_match('{^https?://}', $repoConfig['url'])) {
             $repoConfig['url'] = 'http://'.$repoConfig['url'];
@@ -56,7 +57,7 @@ class PearRepository extends ArrayRepository
 
         $this->url = rtrim($repoConfig['url'], '/');
         $this->io = $io;
-        $this->rfs = $rfs ?: new RemoteFilesystem($this->io);
+        $this->rfs = $rfs ?: new RemoteFilesystem($this->io, $config);
         $this->vendorAlias = isset($repoConfig['vendor-alias']) ? $repoConfig['vendor-alias'] : null;
         $this->versionParser = new VersionParser();
     }
@@ -84,8 +85,8 @@ class PearRepository extends ArrayRepository
     /**
      * Builds CompletePackages from PEAR package definition data.
      *
-     * @param ChannelInfo   $channelInfo
-     * @param VersionParser $versionParser
+     * @param  ChannelInfo     $channelInfo
+     * @param  VersionParser   $versionParser
      * @return CompletePackage
      */
     private function buildComposerPackages(ChannelInfo $channelInfo, VersionParser $versionParser)

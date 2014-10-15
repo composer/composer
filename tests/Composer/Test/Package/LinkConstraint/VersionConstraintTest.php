@@ -72,6 +72,8 @@ class VersionConstraintTest extends \PHPUnit_Framework_TestCase
             array('==', 'dev-foo-bist', '==', 'dev-foo-aist'),
             array('<=', 'dev-foo-bist', '>=', 'dev-foo-aist'),
             array('>=', 'dev-foo-bist', '<', 'dev-foo-aist'),
+            array('<',  '0.12', '==', 'dev-foo'), // branches are not comparable
+            array('>',  '0.12', '==', 'dev-foo'), // branches are not comparable
         );
     }
 
@@ -84,5 +86,20 @@ class VersionConstraintTest extends \PHPUnit_Framework_TestCase
         $versionProvide = new VersionConstraint($provideOperator, $provideVersion);
 
         $this->assertFalse($versionRequire->matches($versionProvide));
+    }
+
+    public function testComparableBranches()
+    {
+        $versionRequire = new VersionConstraint('>', '0.12');
+        $versionProvide = new VersionConstraint('==', 'dev-foo');
+
+        $this->assertFalse($versionRequire->matches($versionProvide));
+        $this->assertFalse($versionRequire->matchSpecific($versionProvide, true));
+
+        $versionRequire = new VersionConstraint('<', '0.12');
+        $versionProvide = new VersionConstraint('==', 'dev-foo');
+
+        $this->assertFalse($versionRequire->matches($versionProvide));
+        $this->assertTrue($versionRequire->matchSpecific($versionProvide, true));
     }
 }

@@ -1,0 +1,12 @@
+{
+    "name": "plugin-v1",
+    "version": "1.0.0",
+    "type": "composer-plugin",
+    "autoload": { "psr-0": { "Installer": "" } },
+    "extra": {
+        "class": "Installer\\Plugin"
+    },
+    "require": {
+        "composer-plugin-api": "1.0.0"
+    }
+}

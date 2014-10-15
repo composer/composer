@@ -47,7 +47,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     /**
      * Set the repositories
      *
-     * @param string $repositories
+     * @param array $repositories
      */
     public function setRepositories($repositories)
     {

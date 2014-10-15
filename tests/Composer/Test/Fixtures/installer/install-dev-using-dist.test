@@ -41,12 +41,15 @@ install --prefer-dist
             "type": "library"
         }
     ],
-    "packages-dev": null,
+    "packages-dev": [],
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
         "a/a": 20
-    }
+    },
+    "prefer-stable": false,
+    "platform": [],
+    "platform-dev": []
 }
 --EXPECT--
 Installing a/a (dev-master)

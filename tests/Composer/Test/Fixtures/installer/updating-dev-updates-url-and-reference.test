@@ -1,0 +1,66 @@
+--TEST--
+Updating a dev package for new reference updates the url and reference
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "a/a", "version": "dev-master",
+                    "source": { "reference": "newref", "url": "newurl", "type": "git" },
+                    "dist": { "reference": "newref", "url": "newurl", "type": "zip", "shasum": "" }
+                }
+            ]
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "a/a": "dev-master"
+    }
+}
+--LOCK--
+{
+    "packages": [
+        {
+            "name": "a/a", "version": "dev-master",
+            "source": { "reference": "oldref", "url": "oldurl", "type": "git" },
+            "dist": { "reference": "oldref", "url": "oldurl", "type": "zip", "shasum": "" }
+        }
+    ],
+    "packages-dev": null,
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": {"a/a":20},
+    "prefer-stable": false
+}
+--INSTALLED--
+[
+    {
+        "name": "a/a", "version": "dev-master",
+        "source": { "reference": "oldref", "url": "oldurl", "type": "git" },
+        "dist": { "reference": "oldref", "url": "oldurl", "type": "zip", "shasum": "" }
+    }
+]
+--RUN--
+update
+--EXPECT-LOCK--
+{
+    "packages": [
+        {
+            "name": "a/a", "version": "dev-master",
+            "type": "library",
+            "source": { "reference": "newref", "url": "newurl", "type": "git" },
+            "dist": { "reference": "newref", "url": "newurl", "type": "zip", "shasum": "" }
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": {"a/a":20},
+    "prefer-stable": false,
+    "platform": [],
+    "platform-dev": []
+}
+--EXPECT--
+Updating a/a (dev-master oldref) to a/a (dev-master newref)

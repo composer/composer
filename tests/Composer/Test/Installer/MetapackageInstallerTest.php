@@ -86,8 +86,7 @@ class MetapackageInstallerTest extends \PHPUnit_Framework_TestCase
 
         $this->installer->uninstall($this->repository, $package);
 
-        // TODO re-enable once #125 is fixed and we throw exceptions again
-//        $this->setExpectedException('InvalidArgumentException');
+        $this->setExpectedException('InvalidArgumentException');
 
         $this->installer->uninstall($this->repository, $package);
     }
@@ -95,7 +94,7 @@ class MetapackageInstallerTest extends \PHPUnit_Framework_TestCase
     private function createPackageMock()
     {
         return $this->getMockBuilder('Composer\Package\Package')
-            ->setConstructorArgs(array(md5(rand()), '1.0.0.0', '1.0.0'))
+            ->setConstructorArgs(array(md5(mt_rand()), '1.0.0.0', '1.0.0'))
             ->getMock();
     }
 }

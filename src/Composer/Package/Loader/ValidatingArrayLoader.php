@@ -14,25 +14,32 @@ namespace Composer\Package\Loader;
 
 use Composer\Package;
 use Composer\Package\BasePackage;
+use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Package\Version\VersionParser;
+use Composer\Repository\PlatformRepository;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 class ValidatingArrayLoader implements LoaderInterface
 {
+    const CHECK_ALL = 1;
+    const CHECK_UNBOUND_CONSTRAINTS = 1;
+
     private $loader;
     private $versionParser;
     private $errors;
     private $warnings;
     private $config;
     private $strictName;
+    private $flags;
 
-    public function __construct(LoaderInterface $loader, $strictName = true, VersionParser $parser = null)
+    public function __construct(LoaderInterface $loader, $strictName = true, VersionParser $parser = null, $flags = 0)
     {
         $this->loader = $loader;
         $this->versionParser = $parser ?: new VersionParser();
         $this->strictName = $strictName;
+        $this->flags = $flags;
     }
 
     public function load(array $config, $class = 'Composer\Package\CompletePackage')
@@ -51,8 +58,8 @@ class ValidatingArrayLoader implements LoaderInterface
             try {
                 $this->versionParser->normalize($this->config['version']);
             } catch (\Exception $e) {
-                unset($this->config['version']);
                 $this->errors[] = 'version : invalid value ('.$this->config['version'].'): '.$e->getMessage();
+                unset($this->config['version']);
             }
         }
 
@@ -142,6 +149,8 @@ class ValidatingArrayLoader implements LoaderInterface
             }
         }
 
+        $unboundConstraint = new VersionConstraint('=', $this->versionParser->normalize('dev-master'));
+
         foreach (array_keys(BasePackage::$supportedLinkTypes) as $linkType) {
             if ($this->validateArray($linkType) && isset($this->config[$linkType])) {
                 foreach ($this->config[$linkType] as $package => $constraint) {
@@ -153,10 +162,21 @@ class ValidatingArrayLoader implements LoaderInterface
                         unset($this->config[$linkType][$package]);
                     } elseif ('self.version' !== $constraint) {
                         try {
-                            $this->versionParser->parseConstraints($constraint);
+                            $linkConstraint = $this->versionParser->parseConstraints($constraint);
                         } catch (\Exception $e) {
                             $this->errors[] = $linkType.'.'.$package.' : invalid version constraint ('.$e->getMessage().')';
                             unset($this->config[$linkType][$package]);
+                            continue;
+                        }
+
+                        // check requires for unbound constraints on non-platform packages
+                        if (
+                            ($this->flags & self::CHECK_UNBOUND_CONSTRAINTS)
+                            && 'require' === $linkType
+                            && $linkConstraint->matches($unboundConstraint)
+                            && !preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $package)
+                        ) {
+                            $this->warnings[] = $linkType.'.'.$package.' : unbound version constraints ('.$constraint.') should be avoided';
                         }
                     }
                 }
@@ -179,7 +199,29 @@ class ValidatingArrayLoader implements LoaderInterface
             }
         }
 
-        // TODO validate autoload
+        if ($this->validateArray('autoload') && !empty($this->config['autoload'])) {
+            $types = array('psr-0', 'psr-4', 'classmap', 'files');
+            foreach ($this->config['autoload'] as $type => $typeConfig) {
+                if (!in_array($type, $types)) {
+                    $this->errors[] = 'autoload : invalid value ('.$type.'), must be one of '.implode(', ', $types);
+                    unset($this->config['autoload'][$type]);
+                }
+                if ($type === 'psr-4') {
+                    foreach ($typeConfig as $namespace => $dirs) {
+                        if ($namespace !== '' && '\\' !== substr($namespace, -1)) {
+                            $this->errors[] = 'autoload.psr-4 : invalid value ('.$namespace.'), namespaces must end with a namespace separator, should be '.$namespace.'\\';
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!empty($this->config['autoload']['psr-4']) && !empty($this->config['target-dir'])) {
+            $this->errors[] = 'target-dir : this can not be used together with the autoload.psr-4 setting, remove target-dir to upgrade to psr-4';
+            // Unset the psr-4 setting, since unsetting target-dir might
+            // interfere with other settings.
+            unset($this->config['autoload']['psr-4']);
+        }
 
         // TODO validate dist
         // TODO validate source
@@ -188,6 +230,7 @@ class ValidatingArrayLoader implements LoaderInterface
         // TODO validate package repositories' packages using this recursively
 
         $this->validateFlatArray('include-path');
+        $this->validateArray('transport-options');
 
         // branch alias validation
         if (isset($this->config['extra']['branch-alias'])) {

@@ -1,0 +1,38 @@
+--TEST--
+Update with a package whitelist only updates whitelisted packages if no dependency conflicts
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "fixed", "version": "1.1.0" },
+                { "name": "fixed", "version": "1.0.0" },
+                { "name": "whitelisted", "version": "1.1.0", "require": { "dependency": "1.1.0" } },
+                { "name": "whitelisted", "version": "1.0.0", "require": { "dependency": "1.0.0" } },
+                { "name": "dependency", "version": "1.1.0" },
+                { "name": "dependency", "version": "1.0.0" },
+                { "name": "unrelated", "version": "1.1.0", "require": { "unrelated-dependency": "1.*" }  },
+                { "name": "unrelated", "version": "1.0.0", "require": { "unrelated-dependency": "1.*" }  },
+                { "name": "unrelated-dependency", "version": "1.1.0" },
+                { "name": "unrelated-dependency", "version": "1.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "fixed": "1.*",
+        "whitelisted": "1.*",
+        "unrelated": "1.*"
+    }
+}
+--INSTALLED--
+[
+    { "name": "fixed", "version": "1.0.0" },
+    { "name": "whitelisted", "version": "1.0.0", "require": { "dependency": "1.0.0" } },
+    { "name": "dependency", "version": "1.0.0" },
+    { "name": "unrelated", "version": "1.0.0", "require": { "unrelated-dependency": "1.*" } },
+    { "name": "unrelated-dependency", "version": "1.0.0" }
+]
+--RUN--
+update whitelisted
+--EXPECT--

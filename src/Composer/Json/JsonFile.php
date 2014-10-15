@@ -12,7 +12,6 @@
 
 namespace Composer\Json;
 
-use Composer\Composer;
 use JsonSchema\Validator;
 use Seld\JsonLint\JsonParser;
 use Seld\JsonLint\ParsingException;
@@ -40,8 +39,9 @@ class JsonFile
     /**
      * Initializes json file reader/parser.
      *
-     * @param string           $path path to a lockfile
-     * @param RemoteFilesystem $rfs  required for loading http/https json files
+     * @param  string                    $path path to a lockfile
+     * @param  RemoteFilesystem          $rfs  required for loading http/https json files
+     * @throws \InvalidArgumentException
      */
     public function __construct($path, RemoteFilesystem $rfs = null)
     {
@@ -74,7 +74,8 @@ class JsonFile
     /**
      * Reads json file.
      *
-     * @return array
+     * @throws \RuntimeException
+     * @return mixed
      */
     public function read()
     {
@@ -96,8 +97,9 @@ class JsonFile
     /**
      * Writes json file.
      *
-     * @param array $hash    writes hash into json file
-     * @param int   $options json_encode options (defaults to JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+     * @param  array                     $hash    writes hash into json file
+     * @param  int                       $options json_encode options (defaults to JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+     * @throws \UnexpectedValueException
      */
     public function write(array $hash, $options = 448)
     {
@@ -108,21 +110,35 @@ class JsonFile
                     $dir.' exists and is not a directory.'
                 );
             }
-            if (!mkdir($dir, 0777, true)) {
+            if (!@mkdir($dir, 0777, true)) {
                 throw new \UnexpectedValueException(
                     $dir.' does not exist and could not be created.'
                 );
             }
         }
-        file_put_contents($this->path, static::encode($hash, $options). ($options & self::JSON_PRETTY_PRINT ? "\n" : ''));
+
+        $retries = 3;
+        while ($retries--) {
+            try {
+                file_put_contents($this->path, static::encode($hash, $options). ($options & self::JSON_PRETTY_PRINT ? "\n" : ''));
+                break;
+            } catch (\Exception $e) {
+                if ($retries) {
+                    usleep(500000);
+                    continue;
+                }
+
+                throw $e;
+            }
+        }
     }
 
     /**
      * Validates the schema of the current json file according to composer-schema.json rules
      *
-     * @param  int                       $schema a JsonFile::*_SCHEMA constant
-     * @return bool                      true on success
-     * @throws \UnexpectedValueException
+     * @param  int                     $schema a JsonFile::*_SCHEMA constant
+     * @return bool                    true on success
+     * @throws JsonValidationException
      */
     public function validateSchema($schema = self::STRICT_SCHEMA)
     {
@@ -161,11 +177,6 @@ class JsonFile
     /**
      * Encodes an array into (optionally pretty-printed) JSON
      *
-     * This code is based on the function found at:
-     *  http://recursive-design.com/blog/2008/03/11/format-json-with-php/
-     *
-     * Originally licensed under MIT by Dave Perrett <mail@recursive-design.com>
-     *
      * @param  mixed  $data    Data to encode into a formatted JSON string
      * @param  int    $options json_encode options (defaults to JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
      * @return string Encoded json
@@ -173,7 +184,15 @@ class JsonFile
     public static function encode($data, $options = 448)
     {
         if (version_compare(PHP_VERSION, '5.4', '>=')) {
-            return json_encode($data, $options);
+            $json = json_encode($data, $options);
+
+            //  compact brackets to follow recent php versions
+            if (PHP_VERSION_ID < 50428 || (PHP_VERSION_ID >= 50500 && PHP_VERSION_ID < 50512)) {
+               $json = preg_replace('/\[\s+\]/', '[]', $json);
+               $json = preg_replace('/\{\s+\}/', '{}', $json);
+            }
+
+            return $json;
         }
 
         $json = json_encode($data);
@@ -186,81 +205,7 @@ class JsonFile
             return $json;
         }
 
-        $result = '';
-        $pos = 0;
-        $strLen = strlen($json);
-        $indentStr = '    ';
-        $newLine = "\n";
-        $outOfQuotes = true;
-        $buffer = '';
-        $noescape = true;
-
-        for ($i = 0; $i <= $strLen; $i++) {
-            // Grab the next character in the string
-            $char = substr($json, $i, 1);
-
-            // Are we inside a quoted string?
-            if ('"' === $char && $noescape) {
-                $outOfQuotes = !$outOfQuotes;
-            }
-
-            if (!$outOfQuotes) {
-                $buffer .= $char;
-                $noescape = '\\' === $char ? !$noescape : true;
-                continue;
-            } elseif ('' !== $buffer) {
-                if ($unescapeSlashes) {
-                    $buffer = str_replace('\\/', '/', $buffer);
-                }
-
-                if ($unescapeUnicode && function_exists('mb_convert_encoding')) {
-                    // http://stackoverflow.com/questions/2934563/how-to-decode-unicode-escape-sequences-like-u00ed-to-proper-utf-8-encoded-cha
-                    $buffer = preg_replace_callback('/\\\\u([0-9a-f]{4})/i', function($match) {
-                        return mb_convert_encoding(pack('H*', $match[1]), 'UTF-8', 'UCS-2BE');
-                    }, $buffer);
-                }
-
-                $result .= $buffer.$char;
-                $buffer = '';
-                continue;
-            }
-
-            if (':' === $char) {
-                // Add a space after the : character
-                $char .= ' ';
-            } elseif (('}' === $char || ']' === $char)) {
-                $pos--;
-                $prevChar = substr($json, $i - 1, 1);
-
-                if ('{' !== $prevChar && '[' !== $prevChar) {
-                    // If this character is the end of an element,
-                    // output a new line and indent the next line
-                    $result .= $newLine;
-                    for ($j = 0; $j < $pos; $j++) {
-                        $result .= $indentStr;
-                    }
-                } else {
-                    // Collapse empty {} and []
-                    $result = rtrim($result)."\n\n".$indentStr;
-                }
-            }
-
-            $result .= $char;
-
-            // If the last character was the beginning of an element,
-            // output a new line and indent the next line
-            if (',' === $char || '{' === $char || '[' === $char) {
-                $result .= $newLine;
-
-                if ('{' === $char || '[' === $char) {
-                    $pos++;
-                }
-
-                for ($j = 0; $j < $pos; $j++) {
-                    $result .= $indentStr;
-                }
-            }
-        }
+        $result = JsonFormatter::format($json, $unescapeUnicode, $unescapeSlashes);
 
         return $result;
     }
@@ -291,6 +236,7 @@ class JsonFile
      * @return bool                      true on success
      * @throws \UnexpectedValueException
      * @throws JsonValidationException
+     * @throws ParsingException
      */
     protected static function validateSyntax($json, $file = null)
     {

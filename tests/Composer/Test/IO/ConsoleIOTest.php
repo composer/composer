@@ -13,7 +13,7 @@
 namespace Composer\Test\IO;
 
 use Composer\IO\ConsoleIO;
-use Composer\Test\TestCase;
+use Composer\TestCase;
 
 class ConsoleIOTest extends TestCase
 {

@@ -12,8 +12,6 @@
 
 namespace Composer\Script;
 
-use Composer\Composer;
-
 /**
  * The Command Event.
  *

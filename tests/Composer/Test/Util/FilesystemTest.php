@@ -13,7 +13,7 @@
 namespace Composer\Test\Util;
 
 use Composer\Util\Filesystem;
-use Composer\Test\TestCase;
+use Composer\TestCase;
 
 class FilesystemTest extends TestCase
 {
@@ -38,6 +38,7 @@ class FilesystemTest extends TestCase
             array('c:/bin/run', 'd:/vendor/acme/bin/run', false, "'d:/vendor/acme/bin/run'"),
             array('c:\\bin\\run', 'd:/vendor/acme/bin/run', false, "'d:/vendor/acme/bin/run'"),
             array('/foo/bar', '/foo/bar', true, "__DIR__"),
+            array('/foo/bar/', '/foo/bar', true, "__DIR__"),
             array('/foo/bar', '/foo/baz', true, "dirname(__DIR__).'/baz'"),
             array('/foo/bin/run', '/foo/vendor/acme/bin/run', true, "dirname(dirname(__DIR__)).'/vendor/acme/bin/run'"),
             array('/foo/bin/run', '/bar/bin/run', true, "'/bar/bin/run'"),
@@ -52,6 +53,15 @@ class FilesystemTest extends TestCase
             array('/tmp/test', '/tmp', true, "dirname(__DIR__)"),
             array('/tmp', '/tmp/test', true, "__DIR__ . '/test'"),
             array('C:/Temp', 'c:\Temp\test', true, "__DIR__ . '/test'"),
+            array('/tmp/test/./', '/tmp/test/', true, '__DIR__'),
+            array('/tmp/test/../vendor', '/tmp/test', true, "dirname(__DIR__).'/test'"),
+            array('/tmp/test/.././vendor', '/tmp/test', true, "dirname(__DIR__).'/test'"),
+            array('C:/Temp', 'c:\Temp\..\..\test', true, "dirname(__DIR__).'/test'"),
+            array('C:/Temp/../..', 'd:\Temp\..\..\test', true, "'d:/test'"),
+            array('/foo/bar', '/foo/bar_vendor', true, "dirname(__DIR__).'/bar_vendor'"),
+            array('/foo/bar_vendor', '/foo/bar', true, "dirname(__DIR__).'/bar'"),
+            array('/foo/bar_vendor', '/foo/bar/src', true, "dirname(__DIR__).'/bar/src'"),
+            array('/foo/bar_vendor/src2', '/foo/bar/src/lib', true, "dirname(dirname(__DIR__)).'/bar/src/lib'"),
         );
     }
 
@@ -91,6 +101,17 @@ class FilesystemTest extends TestCase
             array('/tmp', '/tmp/test', "test"),
             array('C:/Temp', 'C:\Temp\test', "test"),
             array('C:/Temp', 'c:\Temp\test', "test"),
+            array('/tmp/test/./', '/tmp/test', './', true),
+            array('/tmp/test/../vendor', '/tmp/test', '../test', true),
+            array('/tmp/test/.././vendor', '/tmp/test', '../test', true),
+            array('C:/Temp', 'c:\Temp\..\..\test', "../test", true),
+            array('C:/Temp/../..', 'c:\Temp\..\..\test', "./test", true),
+            array('C:/Temp/../..', 'D:\Temp\..\..\test', "d:/test", true),
+            array('/tmp', '/tmp/../../test', '/test', true),
+            array('/foo/bar', '/foo/bar_vendor', '../bar_vendor', true),
+            array('/foo/bar_vendor', '/foo/bar', '../bar', true),
+            array('/foo/bar_vendor', '/foo/bar/src', '../bar/src', true),
+            array('/foo/bar_vendor/src2', '/foo/bar/src/lib', '../../bar/src/lib', true),
         );
     }
 
@@ -107,5 +128,113 @@ class FilesystemTest extends TestCase
         $this->assertTrue($fs->removeDirectoryPhp($tmp . "/composer_testdir"));
         $this->assertFalse(file_exists($tmp . "/composer_testdir/level1/level2/hello.txt"));
     }
-}
 
+    public function testFileSize()
+    {
+        $tmp = sys_get_temp_dir();
+        file_put_contents("$tmp/composer_test_file", 'Hello');
+
+        $fs = new Filesystem;
+        $this->assertGreaterThanOrEqual(5, $fs->size("$tmp/composer_test_file"));
+    }
+
+    public function testDirectorySize()
+    {
+        $tmp = sys_get_temp_dir();
+        @mkdir("$tmp/composer_testdir", 0777, true);
+        file_put_contents("$tmp/composer_testdir/file1.txt", 'Hello');
+        file_put_contents("$tmp/composer_testdir/file2.txt", 'World');
+
+        $fs = new Filesystem;
+        $this->assertGreaterThanOrEqual(10, $fs->size("$tmp/composer_testdir"));
+    }
+
+    /**
+     * @dataProvider provideNormalizedPaths
+     */
+    public function testNormalizePath($expected, $actual)
+    {
+        $fs = new Filesystem;
+        $this->assertEquals($expected, $fs->normalizePath($actual));
+    }
+
+    public function provideNormalizedPaths()
+    {
+        return array(
+            array('../foo', '../foo'),
+            array('c:/foo/bar', 'c:/foo//bar'),
+            array('C:/foo/bar', 'C:/foo/./bar'),
+            array('C:/bar', 'C:/foo/../bar'),
+            array('/bar', '/foo/../bar/'),
+            array('phar://c:/Foo', 'phar://c:/Foo/Bar/..'),
+            array('phar://c:/', 'phar://c:/Foo/Bar/../../../..'),
+            array('/', '/Foo/Bar/../../../..'),
+            array('/', '/'),
+            array('c:/', 'c:\\'),
+            array('../src', 'Foo/Bar/../../../src'),
+            array('c:../b', 'c:.\\..\\a\\..\\b'),
+            array('phar://c:../Foo', 'phar://c:../Foo'),
+        );
+    }
+
+    /**
+     * @link https://github.com/composer/composer/issues/3157
+     */
+    public function testUnlinkSymlinkedDirectory()
+    {
+        $tmp       = sys_get_temp_dir();
+        $basepath  = $tmp . "/composer_testdir";
+        $symlinked = $basepath . "/linked";
+        @mkdir($basepath . "/real", 0777, true);
+        touch($basepath . "/real/FILE");
+
+        $result = @symlink($basepath . "/real", $symlinked);
+
+        if (!$result) {
+            $this->markTestSkipped('Symbolic links for directories not supported on this platform');
+        }
+
+        if (!is_dir($symlinked)) {
+            $this->fail('Precondition assertion failed (is_dir is false on symbolic link to directory).');
+        }
+
+        $fs     = new Filesystem();
+        $result = $fs->unlink($symlinked);
+        $this->assertTrue($result);
+        $this->assertFalse(file_exists($symlinked));
+    }
+
+    /**
+     * @link https://github.com/composer/composer/issues/3144
+     */
+    public function testRemoveSymlinkedDirectoryWithTrailingSlash()
+    {
+        $tmp = sys_get_temp_dir();
+        $basepath = $tmp . "/composer_testdir";
+        @mkdir($basepath . "/real", 0777, true);
+        touch($basepath . "/real/FILE");
+        $symlinked              = $basepath . "/linked";
+        $symlinkedTrailingSlash = $symlinked . "/";
+
+        $result = @symlink($basepath . "/real", $symlinked);
+
+        if (!$result) {
+            $this->markTestSkipped('Symbolic links for directories not supported on this platform');
+        }
+
+        if (!is_dir($symlinked)) {
+            $this->fail('Precondition assertion failed (is_dir is false on symbolic link to directory).');
+        }
+
+        if (!is_dir($symlinkedTrailingSlash)) {
+            $this->fail('Precondition assertion failed (is_dir false w trailing slash).');
+        }
+
+        $fs = new Filesystem();
+
+        $result = $fs->removeDirectory($symlinkedTrailingSlash);
+        $this->assertTrue($result);
+        $this->assertFalse(file_exists($symlinkedTrailingSlash));
+        $this->assertFalse(file_exists($symlinked));
+    }
+}

@@ -20,8 +20,10 @@ namespace Composer\Package;
 class RootPackage extends CompletePackage implements RootPackageInterface
 {
     protected $minimumStability = 'stable';
+    protected $preferStable = false;
     protected $stabilityFlags = array();
     protected $references = array();
+    protected $aliases = array();
 
     /**
      * Set the minimumStability
@@ -60,6 +62,24 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     }
 
     /**
+     * Set the preferStable
+     *
+     * @param bool $preferStable
+     */
+    public function setPreferStable($preferStable)
+    {
+        $this->preferStable = $preferStable;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getPreferStable()
+    {
+        return $this->preferStable;
+    }
+
+    /**
      * Set the references
      *
      * @param array $references
@@ -75,5 +95,23 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     public function getReferences()
     {
         return $this->references;
+    }
+
+    /**
+     * Set the aliases
+     *
+     * @param array $aliases
+     */
+    public function setAliases(array $aliases)
+    {
+        $this->aliases = $aliases;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getAliases()
+    {
+        return $this->aliases;
     }
 }

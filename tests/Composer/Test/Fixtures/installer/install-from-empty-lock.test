@@ -19,12 +19,13 @@ Requirements from the composer file are not installed if the lock file is presen
 --LOCK--
 {
     "packages": [
-        { "package": "required", "version": "1.0.0" }
+        { "name": "required", "version": "1.0.0" }
     ],
     "packages-dev": null,
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": []
+    "stability-flags": [],
+    "prefer-stable": false
 }
 --RUN--
 install

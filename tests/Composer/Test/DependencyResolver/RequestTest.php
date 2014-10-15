@@ -15,7 +15,7 @@ namespace Composer\Test\DependencyResolver;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Pool;
 use Composer\Repository\ArrayRepository;
-use Composer\Test\TestCase;
+use Composer\TestCase;
 
 class RequestTest extends TestCase
 {
@@ -39,9 +39,9 @@ class RequestTest extends TestCase
 
         $this->assertEquals(
             array(
-                array('packages' => array($foo), 'cmd' => 'install', 'packageName' => 'foo', 'constraint' => null),
-                array('packages' => array($bar), 'cmd' => 'install', 'packageName' => 'bar', 'constraint' => null),
-                array('packages' => array($foobar), 'cmd' => 'remove', 'packageName' => 'foobar', 'constraint' => null),
+                array('cmd' => 'install', 'packageName' => 'foo', 'constraint' => null),
+                array('cmd' => 'install', 'packageName' => 'bar', 'constraint' => null),
+                array('cmd' => 'remove', 'packageName' => 'foobar', 'constraint' => null),
             ),
             $request->getJobs());
     }
@@ -66,7 +66,7 @@ class RequestTest extends TestCase
 
         $this->assertEquals(
             array(
-                    array('packages' => array($foo1, $foo2), 'cmd' => 'install', 'packageName' => 'foo', 'constraint' => $constraint),
+                    array('cmd' => 'install', 'packageName' => 'foo', 'constraint' => $constraint),
             ),
             $request->getJobs()
         );
@@ -80,7 +80,7 @@ class RequestTest extends TestCase
         $request->updateAll();
 
         $this->assertEquals(
-            array(array('cmd' => 'update-all', 'packages' => array())),
+            array(array('cmd' => 'update-all')),
             $request->getJobs());
     }
 }

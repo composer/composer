@@ -37,11 +37,12 @@ class ConfigValidator
     /**
      * Validates the config, and returns the result.
      *
-     * @param string $file The path to the file
+     * @param string  $file                       The path to the file
+     * @param integer $arrayLoaderValidationFlags Flags for ArrayLoader validation
      *
      * @return array a triple containing the errors, publishable errors, and warnings
      */
-    public function validate($file)
+    public function validate($file, $arrayLoaderValidationFlags = ValidatingArrayLoader::CHECK_ALL)
     {
         $errors = array();
         $publishErrors = array();
@@ -49,7 +50,6 @@ class ConfigValidator
 
         // validate json schema
         $laxValid = false;
-        $valid = false;
         try {
             $json = new JsonFile($file, new RemoteFilesystem($this->io));
             $manifest = $json->read();
@@ -57,7 +57,6 @@ class ConfigValidator
             $json->validateSchema(JsonFile::LAX_SCHEMA);
             $laxValid = true;
             $json->validateSchema();
-            $valid = true;
         } catch (JsonValidationException $e) {
             foreach ($e->getErrors() as $message) {
                 if ($laxValid) {
@@ -74,15 +73,29 @@ class ConfigValidator
 
         // validate actual data
         if (!empty($manifest['license'])) {
+            // strip proprietary since it's not a valid SPDX identifier, but is accepted by composer
+            if (is_array($manifest['license'])) {
+                foreach ($manifest['license'] as $key => $license) {
+                    if ('proprietary' === $license) {
+                        unset($manifest['license'][$key]);
+                    }
+                }
+            }
+
             $licenseValidator = new SpdxLicenseIdentifier();
-            if (!$licenseValidator->validate($manifest['license'])) {
+            if ('proprietary' !== $manifest['license'] && array() !== $manifest['license'] && !$licenseValidator->validate($manifest['license'])) {
                 $warnings[] = sprintf(
-                    'License %s is not a valid SPDX license identifier, see http://www.spdx.org/licenses/ if you use an open license',
+                    'License %s is not a valid SPDX license identifier, see http://www.spdx.org/licenses/ if you use an open license.'
+                    ."\nIf the software is closed-source, you may use \"proprietary\" as license.",
                     json_encode($manifest['license'])
                 );
             }
         } else {
-            $warnings[] = 'No license specified, it is recommended to do so';
+            $warnings[] = 'No license specified, it is recommended to do so. For closed-source software you may use "proprietary" as license.';
+        }
+
+        if (isset($manifest['version'])) {
+            $warnings[] = 'The version field is present, it is recommended to leave it out if the package is published on Packagist.';
         }
 
         if (!empty($manifest['name']) && preg_match('{[A-Z]}', $manifest['name'])) {
@@ -96,8 +109,22 @@ class ConfigValidator
             );
         }
 
+        if (!empty($manifest['type']) && $manifest['type'] == 'composer-installer') {
+            $warnings[] = "The package type 'composer-installer' is deprecated. Please distribute your custom installers as plugins from now on. See http://getcomposer.org/doc/articles/plugins.md for plugin documentation.";
+        }
+
+        // check for require-dev overrides
+        if (isset($manifest['require']) && isset($manifest['require-dev'])) {
+            $requireOverrides = array_intersect_key($manifest['require'], $manifest['require-dev']);
+
+            if (!empty($requireOverrides)) {
+                $plural = (count($requireOverrides) > 1) ? 'are' : 'is';
+                $warnings[] = implode(', ', array_keys($requireOverrides)). " {$plural} required both in require and require-dev, this can lead to unexpected behavior";
+            }
+        }
+
         try {
-            $loader = new ValidatingArrayLoader(new ArrayLoader());
+            $loader = new ValidatingArrayLoader(new ArrayLoader(), true, null, $arrayLoaderValidationFlags);
             if (!isset($manifest['version'])) {
                 $manifest['version'] = '1.0.0';
             }

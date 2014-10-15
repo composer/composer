@@ -12,7 +12,7 @@
 
 namespace Composer\Repository;
 
-use Composer\Test\TestCase;
+use Composer\TestCase;
 
 /**
  * @group slow
@@ -32,6 +32,9 @@ class PearRepositoryTest extends TestCase
     public function testComposerShouldSetIncludePath()
     {
         $url = 'pear.phpmd.org';
+        if (!@file_get_contents('http://'.$url)) {
+            $this->markTestSkipped('Repository '.$url.' appears to be unreachable');
+        }
         $expectedPackages = array(
             array('name' => 'pear-pear.phpmd.org/PHP_PMD', 'version' => '1.3.3'),
         );
@@ -64,8 +67,11 @@ class PearRepositoryTest extends TestCase
             'url' => $url
         );
 
-        $this->createRepository($repoConfig);
+        if (!@file_get_contents('http://'.$url)) {
+            $this->markTestSkipped('Repository '.$url.' appears to be unreachable');
+        }
 
+        $this->createRepository($repoConfig);
         foreach ($expectedPackages as $expectedPackage) {
             $this->assertInstanceOf('Composer\Package\PackageInterface',
                 $this->repository->findPackage($expectedPackage['name'], $expectedPackage['version']),

@@ -48,7 +48,7 @@ class HtmlOutputFormatter extends OutputFormatter
     );
 
     /**
-     * @param array   $styles    Array of "name => FormatterStyle" instances
+     * @param array $styles Array of "name => FormatterStyle" instances
      */
     public function __construct(array $styles = array())
     {

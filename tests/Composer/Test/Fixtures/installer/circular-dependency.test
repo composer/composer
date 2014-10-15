@@ -1,0 +1,54 @@
+--TEST--
+Circular dependencies are possible between packages
+--COMPOSER--
+{
+    "name": "root/package",
+    "type": "library",
+    "minimum-stability": "dev",
+    "version": "dev-master",
+    "require": {
+        "required/package": "1.0"
+    },
+    "replace": {
+        "provided/dependency": "self.version"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "2.0-dev"
+        }
+    },
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "required/package",
+                    "version": "1.0",
+                    "type": "library",
+                    "source": { "reference": "some.branch", "type": "git", "url": "" },
+                    "require": {
+                        "provided/dependency": "2.*"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "root/package",
+                    "version": "2.0-dev",
+                    "type": "library",
+                    "source": { "reference": "other.branch", "type": "git", "url": "" },
+                    "replace": {
+                        "provided/dependency": "self.version"
+                    }
+                }
+            ]
+        }
+    ]
+}
+--RUN--
+update
+--EXPECT--
+Installing required/package (1.0)

@@ -1,0 +1,24 @@
+--TEST--
+Disjunctive multi constraints work
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "foo", "version": "1.1.0" },
+                { "name": "foo", "version": "1.0.0" },
+                { "name": "bar", "version": "1.1.0", "require": { "foo": "1.0.*" } }
+            ]
+        }
+    ],
+    "require": {
+        "bar": "1.*",
+        "foo": "1.0.*|1.1.*"
+    }
+}
+--RUN--
+install
+--EXPECT--
+Installing foo (1.0.0)
+Installing bar (1.1.0)

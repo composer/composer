@@ -19,19 +19,6 @@ namespace Composer\Repository;
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class InstalledArrayRepository extends ArrayRepository implements InstalledRepositoryInterface
+class InstalledArrayRepository extends WritableArrayRepository implements InstalledRepositoryInterface
 {
-    /**
-     * {@inheritDoc}
-     */
-    public function write()
-    {
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function reload()
-    {
-    }
 }

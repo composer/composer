@@ -1,6 +1,6 @@
 {
     "name": "composer/composer",
-    "description": "Dependency Manager",
+    "description": "Composer helps you declare, manage and install dependencies of PHP projects, ensuring you have the right stack everywhere.",
     "keywords": ["package", "dependency", "autoload"],
     "homepage": "http://getcomposer.org/",
     "type": "library",
@@ -23,11 +23,14 @@
     },
     "require": {
         "php": ">=5.3.2",
-        "justinrainbow/json-schema": "1.1.*",
+        "justinrainbow/json-schema": "~1.1",
         "seld/jsonlint": "1.*",
-        "symfony/console": "~2.1@dev",
-        "symfony/finder": "~2.1",
-        "symfony/process": "~2.1@dev"
+        "symfony/console": "~2.3",
+        "symfony/finder": "~2.2",
+        "symfony/process": "~2.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~3.7"
     },
     "suggest": {
         "ext-zip": "Enabling the zip extension allows you to unzip archives, and allows gzip compression of all internet traffic",
@@ -36,10 +39,16 @@
     "autoload": {
         "psr-0": { "Composer": "src/" }
     },
+    "autoload-dev": {
+        "psr-0": { "Composer\\Test": "tests/" }
+    },
     "bin": ["bin/composer"],
     "extra": {
         "branch-alias": {
             "dev-master": "1.0-dev"
         }
+    },
+    "scripts": {
+        "test": "phpunit"
     }
 }

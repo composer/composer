@@ -1,0 +1,36 @@
+--TEST--
+Installing double aliased package
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "a/a", "version": "dev-master",
+                    "dist": { "type": "file", "url": "" },
+                    "require": {
+                        "b/b": "dev-master"
+                    }
+                },
+                {
+                    "name": "b/b", "version": "dev-foo",
+                    "extra": { "branch-alias": { "dev-foo": "1.0.x-dev" } },
+                    "dist": { "type": "file", "url": "" }
+                }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "dev-master",
+        "b/b": "1.0.x-dev as dev-master"
+    },
+    "minimum-stability": "dev"
+}
+--RUN--
+install
+--EXPECT--
+Installing b/b (dev-foo)
+Marking b/b (dev-master) as installed, alias of b/b (dev-foo)
+Installing a/a (dev-master)
+Marking b/b (1.0.x-dev) as installed, alias of b/b (dev-foo)

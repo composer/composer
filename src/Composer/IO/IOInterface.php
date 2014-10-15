@@ -12,6 +12,8 @@
 
 namespace Composer\IO;
 
+use Composer\Config;
+
 /**
  * The Input/Output helper interface.
  *
@@ -27,11 +29,25 @@ interface IOInterface
     public function isInteractive();
 
     /**
-     * Is this input verbose?
+     * Is this output verbose?
      *
      * @return bool
      */
     public function isVerbose();
+
+    /**
+     * Is the output very verbose?
+     *
+     * @return bool
+     */
+    public function isVeryVerbose();
+
+    /**
+     * Is the output in debug verbosity?
+     *
+     * @return bool
+     */
+    public function isDebug();
 
     /**
      * Is this output decorated?
@@ -55,7 +71,7 @@ interface IOInterface
      * @param bool         $newline  Whether to add a newline or not
      * @param integer      $size     The size of line
      */
-    public function overwrite($messages, $newline = true, $size = 80);
+    public function overwrite($messages, $newline = true, $size = null);
 
     /**
      * Asks a question to the user.
@@ -90,7 +106,7 @@ interface IOInterface
      *
      * @param string|array $question  The question to ask
      * @param callback     $validator A PHP callback
-     * @param integer      $attempts  Max number of times to ask before giving up (false by default, which means infinite)
+     * @param bool|integer $attempts  Max number of times to ask before giving up (false by default, which means infinite)
      * @param string       $default   The default answer if none is given by the user
      *
      * @return mixed
@@ -141,4 +157,11 @@ interface IOInterface
      * @param string $password       The password
      */
     public function setAuthentication($repositoryName, $username, $password = null);
+
+    /**
+     * Loads authentications from a config instance
+     *
+     * @param Config $config
+     */
+    public function loadConfiguration(Config $config);
 }

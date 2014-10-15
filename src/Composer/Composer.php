@@ -16,15 +16,20 @@ use Composer\Package\RootPackageInterface;
 use Composer\Package\Locker;
 use Composer\Repository\RepositoryManager;
 use Composer\Installer\InstallationManager;
+use Composer\Plugin\PluginManager;
 use Composer\Downloader\DownloadManager;
+use Composer\EventDispatcher\EventDispatcher;
+use Composer\Autoload\AutoloadGenerator;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Konstantin Kudryashiv <ever.zet@gmail.com>
+ * @author Nils Adermann <naderman@naderman.de>
  */
 class Composer
 {
     const VERSION = '@package_version@';
+    const RELEASE_DATE = '@release_date@';
 
     /**
      * @var Package\RootPackageInterface
@@ -52,9 +57,24 @@ class Composer
     private $installationManager;
 
     /**
+     * @var Plugin\PluginManager
+     */
+    private $pluginManager;
+
+    /**
      * @var Config
      */
     private $config;
+
+    /**
+     * @var EventDispatcher
+     */
+    private $eventDispatcher;
+
+    /**
+     * @var Autoload\AutoloadGenerator
+     */
+    private $autoloadGenerator;
 
     /**
      * @param  Package\RootPackageInterface $package
@@ -151,5 +171,53 @@ class Composer
     public function getInstallationManager()
     {
         return $this->installationManager;
+    }
+
+    /**
+     * @param Plugin\PluginManager $manager
+     */
+    public function setPluginManager(PluginManager $manager)
+    {
+        $this->pluginManager = $manager;
+    }
+
+    /**
+     * @return Plugin\PluginManager
+     */
+    public function getPluginManager()
+    {
+        return $this->pluginManager;
+    }
+
+    /**
+     * @param EventDispatcher $eventDispatcher
+     */
+    public function setEventDispatcher(EventDispatcher $eventDispatcher)
+    {
+        $this->eventDispatcher = $eventDispatcher;
+    }
+
+    /**
+     * @return EventDispatcher
+     */
+    public function getEventDispatcher()
+    {
+        return $this->eventDispatcher;
+    }
+
+    /**
+     * @param Autoload\AutoloadGenerator $autoloadGenerator
+     */
+    public function setAutoloadGenerator(AutoloadGenerator $autoloadGenerator)
+    {
+        $this->autoloadGenerator = $autoloadGenerator;
+    }
+
+    /**
+     * @return Autoload\AutoloadGenerator
+     */
+    public function getAutoloadGenerator()
+    {
+        return $this->autoloadGenerator;
     }
 }

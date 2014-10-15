@@ -24,6 +24,8 @@ use Composer\Composer;
 use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\IO\ConsoleIO;
+use Composer\Json\JsonValidationException;
+use Composer\Json\JsonFile;
 use Composer\Util\ErrorHandler;
 
 /**
@@ -45,13 +47,21 @@ class Application extends BaseApplication
      */
     protected $io;
 
+    private static $logo = '   ______
+  / ____/___  ____ ___  ____  ____  ________  _____
+ / /   / __ \/ __ `__ \/ __ \/ __ \/ ___/ _ \/ ___/
+/ /___/ /_/ / / / / / / /_/ / /_/ (__  )  __/ /
+\____/\____/_/ /_/ /_/ .___/\____/____/\___/_/
+                    /_/
+';
+
     public function __construct()
     {
-        if (function_exists('ini_set')) {
+        if (function_exists('ini_set') && extension_loaded('xdebug')) {
             ini_set('xdebug.show_exception_trace', false);
             ini_set('xdebug.scream', false);
-
         }
+
         if (function_exists('date_default_timezone_set') && function_exists('date_default_timezone_get')) {
             date_default_timezone_set(@date_default_timezone_get());
         }
@@ -85,22 +95,51 @@ class Application extends BaseApplication
             $output->writeln('<warning>Composer only officially supports PHP 5.3.2 and above, you will most likely encounter problems with your PHP '.PHP_VERSION.', upgrading is strongly recommended.</warning>');
         }
 
-        if (defined('COMPOSER_DEV_WARNING_TIME') && $this->getCommandName($input) !== 'self-update') {
+        if (defined('COMPOSER_DEV_WARNING_TIME') && $this->getCommandName($input) !== 'self-update' && $this->getCommandName($input) !== 'selfupdate') {
             if (time() > COMPOSER_DEV_WARNING_TIME) {
                 $output->writeln(sprintf('<warning>Warning: This development build of composer is over 30 days old. It is recommended to update it by running "%s self-update" to get the latest version.</warning>', $_SERVER['PHP_SELF']));
             }
         }
 
-        if ($input->hasParameterOption('--profile')) {
-            $startTime = microtime(true);
+        if (getenv('COMPOSER_NO_INTERACTION')) {
+            $input->setInteractive(false);
         }
 
-        $oldWorkingDir = getcwd();
-        $this->switchWorkingDir($input);
+        // switch working dir
+        if ($newWorkDir = $this->getNewWorkingDir($input)) {
+            $oldWorkingDir = getcwd();
+            chdir($newWorkDir);
+            if ($output->getVerbosity() >= 4) {
+                $output->writeln('Changed CWD to ' . getcwd());
+            }
+        }
+
+        // add non-standard scripts as own commands
+        $file = Factory::getComposerFile();
+        if (is_file($file) && is_readable($file) && is_array($composer = json_decode(file_get_contents($file), true))) {
+            if (isset($composer['scripts']) && is_array($composer['scripts'])) {
+                foreach ($composer['scripts'] as $script => $dummy) {
+                    if (!defined('Composer\Script\ScriptEvents::'.str_replace('-', '_', strtoupper($script)))) {
+                        if ($this->has($script)) {
+                            $output->writeln('<warning>A script named '.$script.' would override a native Composer function and has been skipped</warning>');
+                        } else {
+                            $this->add(new Command\ScriptAliasCommand($script));
+                        }
+                    }
+                }
+            }
+        }
+
+        if ($input->hasParameterOption('--profile')) {
+            $startTime = microtime(true);
+            $this->io->enableDebugging($startTime);
+        }
 
         $result = parent::doRun($input, $output);
 
-        chdir($oldWorkingDir);
+        if (isset($oldWorkingDir)) {
+            chdir($oldWorkingDir);
+        }
 
         if (isset($startTime)) {
             $output->writeln('<info>Memory usage: '.round(memory_get_usage() / 1024 / 1024, 2).'MB (peak: '.round(memory_get_peak_usage() / 1024 / 1024, 2).'MB), time: '.round(microtime(true) - $startTime, 2).'s');
@@ -111,32 +150,63 @@ class Application extends BaseApplication
 
     /**
      * @param  InputInterface    $input
+     * @return string
      * @throws \RuntimeException
      */
-    private function switchWorkingDir(InputInterface $input)
+    private function getNewWorkingDir(InputInterface $input)
     {
-        $workingDir = $input->getParameterOption(array('--working-dir', '-d'), getcwd());
-        if (!is_dir($workingDir)) {
+        $workingDir = $input->getParameterOption(array('--working-dir', '-d'));
+        if (false !== $workingDir && !is_dir($workingDir)) {
             throw new \RuntimeException('Invalid working directory specified.');
         }
-        chdir($workingDir);
+
+        return $workingDir;
     }
 
     /**
-     * @param  bool               $required
+     * {@inheritDoc}
+     */
+    public function renderException($exception, $output)
+    {
+        try {
+            $composer = $this->getComposer(false);
+            if ($composer) {
+                $config = $composer->getConfig();
+
+                $minSpaceFree = 1024*1024;
+                if ((($df = @disk_free_space($dir = $config->get('home'))) !== false && $df < $minSpaceFree)
+                    || (($df = @disk_free_space($dir = $config->get('vendor-dir'))) !== false && $df < $minSpaceFree)
+                ) {
+                    $output->writeln('<error>The disk hosting '.$dir.' is full, this may be the cause of the following exception</error>');
+                }
+            }
+        } catch (\Exception $e) {}
+
+        return parent::renderException($exception, $output);
+    }
+
+    /**
+     * @param  bool                    $required
+     * @param  bool                    $disablePlugins
+     * @throws JsonValidationException
      * @return \Composer\Composer
      */
-    public function getComposer($required = true)
+    public function getComposer($required = true, $disablePlugins = false)
     {
         if (null === $this->composer) {
             try {
-                $this->composer = Factory::create($this->io);
+                $this->composer = Factory::create($this->io, null, $disablePlugins);
             } catch (\InvalidArgumentException $e) {
                 if ($required) {
                     $this->io->write($e->getMessage());
                     exit(1);
                 }
+            } catch (JsonValidationException $e) {
+                $errors = ' - ' . implode(PHP_EOL . ' - ', $e->getErrors());
+                $message = $e->getMessage() . ':' . PHP_EOL . $errors;
+                throw new JsonValidationException($message);
             }
+
         }
 
         return $this->composer;
@@ -148,6 +218,11 @@ class Application extends BaseApplication
     public function getIO()
     {
         return $this->io;
+    }
+
+    public function getHelp()
+    {
+        return self::$logo . parent::getHelp();
     }
 
     /**
@@ -169,12 +244,28 @@ class Application extends BaseApplication
         $commands[] = new Command\RequireCommand();
         $commands[] = new Command\DumpAutoloadCommand();
         $commands[] = new Command\StatusCommand();
+        $commands[] = new Command\ArchiveCommand();
+        $commands[] = new Command\DiagnoseCommand();
+        $commands[] = new Command\RunScriptCommand();
+        $commands[] = new Command\LicensesCommand();
+        $commands[] = new Command\GlobalCommand();
+        $commands[] = new Command\ClearCacheCommand();
+        $commands[] = new Command\RemoveCommand();
+        $commands[] = new Command\HomeCommand();
 
         if ('phar:' === substr(__FILE__, 0, 5)) {
             $commands[] = new Command\SelfUpdateCommand();
         }
 
         return $commands;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getLongVersion()
+    {
+        return parent::getLongVersion() . ' ' . Composer::RELEASE_DATE;
     }
 
     /**

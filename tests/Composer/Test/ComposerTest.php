@@ -1,4 +1,5 @@
 <?php
+
 /*
  * This file is part of Composer.
  *
@@ -12,6 +13,7 @@
 namespace Composer\Test;
 
 use Composer\Composer;
+use Composer\TestCase;
 
 class ComposerTest extends TestCase
 {
@@ -45,7 +47,8 @@ class ComposerTest extends TestCase
     public function testSetGetDownloadManager()
     {
         $composer = new Composer();
-        $manager = $this->getMock('Composer\Downloader\DownloadManager');
+        $io = $this->getMock('Composer\IO\IOInterface');
+        $manager = $this->getMock('Composer\Downloader\DownloadManager', array(), array($io));
         $composer->setDownloadManager($manager);
 
         $this->assertSame($manager, $composer->getDownloadManager());

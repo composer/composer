@@ -9,11 +9,11 @@
             "required": true
         },
         "type": {
-            "description": "Package type, either 'library' for common packages, 'composer-installer' for custom installers, 'metapackage' for empty packages, or a custom type ([a-z0-9-]+) defined by whatever project this package applies to.",
+            "description": "Package type, either 'library' for common packages, 'composer-plugin' for plugins, 'metapackage' for empty packages, or a custom type ([a-z0-9-]+) defined by whatever project this package applies to.",
             "type": "string"
         },
         "target-dir": {
-            "description": "Forces the package to be installed into the given subdirectory path. This is used for autoloading PSR-0 packages that do not contain their full path. Use forward slashes for cross-platform compatibility.",
+            "description": "DEPRECATED: Forces the package to be installed into the given subdirectory path. This is used for autoloading PSR-0 packages that do not contain their full path. Use forward slashes for cross-platform compatibility.",
             "type": "string"
         },
         "description": {
@@ -39,7 +39,7 @@
         },
         "time": {
             "type": "string",
-            "description": "Package release date, in 'YYYY-MM-DD' or 'YYYY-MM-DD HH:MM:SS' format."
+            "description": "Package release date, in 'YYYY-MM-DD', 'YYYY-MM-DD HH:MM:SS' or 'YYYY-MM-DDTHH:MM:SSZ' format."
         },
         "license": {
             "type": ["string", "array"],
@@ -105,20 +105,20 @@
             "additionalProperties": true
         },
         "config": {
-            "type": ["object"],
+            "type": "object",
             "description": "Composer options.",
             "properties": {
-                "vendor-dir": {
-                    "type": "string",
-                    "description": "The location where all packages are installed, defaults to \"vendor\"."
-                },
-                "bin-dir": {
-                    "type": "string",
-                    "description": "The location where all binaries are linked, defaults to \"vendor/bin\"."
-                },
                 "process-timeout": {
                     "type": "integer",
                     "description": "The timeout in seconds for process executions, defaults to 300 (5mins)."
+                },
+                "use-include-path": {
+                    "type": "boolean",
+                    "description": "If true, the Composer autoloader will also look for classes in the PHP include path."
+                },
+                "preferred-install": {
+                    "type": "string",
+                    "description": "The install method Composer will prefer to use, defaults to auto and can be any of source, dist or auto."
                 },
                 "notify-on-install": {
                     "type": "boolean",
@@ -130,12 +130,85 @@
                     "items": {
                         "type": "string"
                     }
+                },
+                "github-oauth": {
+                    "type": "object",
+                    "description": "A hash of domain name => github API oauth tokens, typically {\"github.com\":\"<token>\"}.",
+                    "additionalProperties": true
+                },
+                "http-basic": {
+                    "type": "object",
+                    "description": "A hash of domain name => {\"username\": \"...\", \"password\": \"...\"}.",
+                    "additionalProperties": true
+                },
+                "store-auths": {
+                    "type": ["string", "boolean"],
+                    "description": "What to do after prompting for authentication, one of: true (store), false (do not store) or \"prompt\" (ask every time), defaults to prompt."
+                },
+                "vendor-dir": {
+                    "type": "string",
+                    "description": "The location where all packages are installed, defaults to \"vendor\"."
+                },
+                "bin-dir": {
+                    "type": "string",
+                    "description": "The location where all binaries are linked, defaults to \"vendor/bin\"."
+                },
+                "cache-dir": {
+                    "type": "string",
+                    "description": "The location where all caches are located, defaults to \"~/.composer/cache\" on *nix and \"%LOCALAPPDATA%\\Composer\" on windows."
+                },
+                "cache-files-dir": {
+                    "type": "string",
+                    "description": "The location where files (zip downloads) are cached, defaults to \"{$cache-dir}/files\"."
+                },
+                "cache-repo-dir": {
+                    "type": "string",
+                    "description": "The location where repo (git/hg repo clones) are cached, defaults to \"{$cache-dir}/repo\"."
+                },
+                "cache-vcs-dir": {
+                    "type": "string",
+                    "description": "The location where vcs infos (git clones, github api calls, etc. when reading vcs repos) are cached, defaults to \"{$cache-dir}/vcs\"."
+                },
+                "cache-ttl": {
+                    "type": "integer",
+                    "description": "The default cache time-to-live, defaults to 15552000 (6 months)."
+                },
+                "cache-files-ttl": {
+                    "type": "integer",
+                    "description": "The cache time-to-live for files, defaults to the value of cache-ttl."
+                },
+                "cache-files-maxsize": {
+                    "type": ["string", "integer"],
+                    "description": "The cache max size for the files cache, defaults to \"300MiB\"."
+                },
+                "discard-changes": {
+                    "type": ["string", "boolean"],
+                    "description": "The default style of handling dirty updates, defaults to false and can be any of true, false or \"stash\"."
+                },
+                "autoloader-suffix": {
+                    "type": "string",
+                    "description": "Optional string to be used as a suffix for the generated Composer autoloader. When null a random one will be generated."
+                },
+                "optimize-autoloader": {
+                    "type": "boolean",
+                    "description": "Always optimize when dumping the autoloader."
+                },
+                "prepend-autoloader": {
+                    "type": "boolean",
+                    "description": "If false, the composer autoloader will not be prepended to existing autoloaders, defaults to true."
+                },
+                "github-domains": {
+                    "type": "array",
+                    "description": "A list of domains to use in github mode. This is used for GitHub Enterprise setups, defaults to [\"github.com\"].",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
         "extra": {
             "type": ["object", "array"],
-            "description": "Arbitrary extra data that can be used by custom installers, for example, package of type composer-installer must have a 'class' key defining the installer class name.",
+            "description": "Arbitrary extra data that can be used by plugins, for example, package of type composer-plugin may have a 'class' key defining an installer class name.",
             "additionalProperties": true
         },
         "autoload": {
@@ -145,6 +218,11 @@
                 "psr-0": {
                     "type": "object",
                     "description": "This is a hash of namespaces (keys) and the directories they can be found into (values, can be arrays of paths) by the autoloader.",
+                    "additionalProperties": true
+                },
+                "psr-4": {
+                    "type": "object",
+                    "description": "This is a hash of namespaces (keys) and the PSR-4 directories they can map to (values, can be arrays of paths) by the autoloader.",
                     "additionalProperties": true
                 },
                 "classmap": {
@@ -157,6 +235,40 @@
                 }
             }
         },
+        "autoload-dev": {
+            "type": "object",
+            "description": "Description of additional autoload rules for development purpose (eg. a test suite).",
+            "properties": {
+                "psr-0": {
+                    "type": "object",
+                    "description": "This is a hash of namespaces (keys) and the directories they can be found into (values, can be arrays of paths) by the autoloader.",
+                    "additionalProperties": true
+                },
+                "psr-4": {
+                    "type": "object",
+                    "description": "This is a hash of namespaces (keys) and the PSR-4 directories they can map to (values, can be arrays of paths) by the autoloader.",
+                    "additionalProperties": true
+                },
+                "classmap": {
+                    "type": "array",
+                    "description": "This is an array of directories that contain classes to be included in the class-map generation process."
+                },
+                "files": {
+                    "type": "array",
+                    "description": "This is an array of files that are always required on every request."
+                }
+            }
+        },
+        "archive": {
+            "type": ["object"],
+            "description": "Options for creating package archives for distribution.",
+            "properties": {
+                "exclude": {
+                    "type": "array",
+                    "description": "A list of patterns for paths to exclude or include if prefixed with an exclamation mark."
+                }
+            }
+        },
         "repositories": {
             "type": ["object", "array"],
             "description": "A set of additional repositories where packages can be found.",
@@ -165,6 +277,10 @@
         "minimum-stability": {
             "type": ["string"],
             "description": "The minimum stability the packages must have to be install-able. Possible values are: dev, alpha, beta, RC, stable."
+        },
+        "prefer-stable": {
+            "type": ["boolean"],
+            "description": "If set to true, stable packages will be prefered to dev packages when possible, even if the minimum-stability allows unstable packages."
         },
         "bin": {
             "type": ["array"],
@@ -186,43 +302,67 @@
             "properties": {
                 "pre-install-cmd": {
                     "type": ["array", "string"],
-                    "description": "Occurs before the install command is executed, contains one or more Class::method callables."
+                    "description": "Occurs before the install command is executed, contains one or more Class::method callables or shell commands."
                 },
                 "post-install-cmd": {
                     "type": ["array", "string"],
-                    "description": "Occurs after the install command is executed, contains one or more Class::method callables."
+                    "description": "Occurs after the install command is executed, contains one or more Class::method callables or shell commands."
                 },
                 "pre-update-cmd": {
                     "type": ["array", "string"],
-                    "description": "Occurs before the update command is executed, contains one or more Class::method callables."
+                    "description": "Occurs before the update command is executed, contains one or more Class::method callables or shell commands."
                 },
                 "post-update-cmd": {
                     "type": ["array", "string"],
-                    "description": "Occurs after the update command is executed, contains one or more Class::method callables."
+                    "description": "Occurs after the update command is executed, contains one or more Class::method callables or shell commands."
+                },
+                "pre-status-cmd": {
+                    "type": ["array", "string"],
+                    "description": "Occurs before the status command is executed, contains one or more Class::method callables or shell commands."
+                },
+                "post-status-cmd": {
+                    "type": ["array", "string"],
+                    "description": "Occurs after the status command is executed, contains one or more Class::method callables or shell commands."
                 },
                 "pre-package-install": {
                     "type": ["array", "string"],
-                    "description": "Occurs before a package is installed, contains one or more Class::method callables."
+                    "description": "Occurs before a package is installed, contains one or more Class::method callables or shell commands."
                 },
                 "post-package-install": {
                     "type": ["array", "string"],
-                    "description": "Occurs after a package is installed, contains one or more Class::method callables."
+                    "description": "Occurs after a package is installed, contains one or more Class::method callables or shell commands."
                 },
                 "pre-package-update": {
                     "type": ["array", "string"],
-                    "description": "Occurs before a package is updated, contains one or more Class::method callables."
+                    "description": "Occurs before a package is updated, contains one or more Class::method callables or shell commands."
                 },
                 "post-package-update": {
                     "type": ["array", "string"],
-                    "description": "Occurs after a package is updated, contains one or more Class::method callables."
+                    "description": "Occurs after a package is updated, contains one or more Class::method callables or shell commands."
                 },
                 "pre-package-uninstall": {
                     "type": ["array", "string"],
-                    "description": "Occurs before a package has been uninstalled, contains one or more Class::method callables."
+                    "description": "Occurs before a package has been uninstalled, contains one or more Class::method callables or shell commands."
                 },
                 "post-package-uninstall": {
                     "type": ["array", "string"],
-                    "description": "Occurs after a package has been uninstalled, contains one or more Class::method callables."
+                    "description": "Occurs after a package has been uninstalled, contains one or more Class::method callables or shell commands."
+                },
+                "pre-autoload-dump": {
+                    "type": ["array", "string"],
+                    "description": "Occurs before the autoloader is dumped, contains one or more Class::method callables or shell commands."
+                },
+                "post-autoload-dump": {
+                    "type": ["array", "string"],
+                    "description": "Occurs after the autoloader is dumped, contains one or more Class::method callables or shell commands."
+                },
+                "post-root-package-install": {
+                    "type": ["array", "string"],
+                    "description": "Occurs after the root-package is installed, contains one or more Class::method callables or shell commands."
+                },
+                "post-create-project-cmd": {
+                    "type": ["array", "string"],
+                    "description": "Occurs after the create-project command is executed, contains one or more Class::method callables or shell commands."
                 }
             }
         },

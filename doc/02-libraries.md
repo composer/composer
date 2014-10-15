@@ -1,6 +1,6 @@
 # Libraries
 
-This chapter will tell you how to make your library installable through composer.
+This chapter will tell you how to make your library installable through Composer.
 
 ## Every project is a package
 
@@ -12,12 +12,14 @@ libraries is that your project is a package without a name.
 In order to make that package installable you need to give it a name. You do
 this by adding a `name` to `composer.json`:
 
-    {
-        "name": "acme/hello-world",
-        "require": {
-            "monolog/monolog": "1.0.*"
-        }
+```json
+{
+    "name": "acme/hello-world",
+    "require": {
+        "monolog/monolog": "1.0.*"
     }
+}
+```
 
 In this case the project name is `acme/hello-world`, where `acme` is the
 vendor name. Supplying a vendor name is mandatory.
@@ -29,11 +31,15 @@ convention is all lowercase and dashes for word separation.
 ## Platform packages
 
 Composer has platform packages, which are virtual packages for things that are
-installed on the system but are not actually installable by composer. This
+installed on the system but are not actually installable by Composer. This
 includes PHP itself, PHP extensions and some system libraries.
 
 * `php` represents the PHP version of the user, allowing you to apply
-   constraints, e.g. `>=5.4.0`.
+  constraints, e.g. `>=5.4.0`. To require a 64bit version of php, you can
+  require the `php-64bit` package.
+
+* `hhvm` represents the version of the HHVM runtime (aka HipHop Virtual
+  Machine) and allows you to apply a constraint, e.g., '>=2.3.3'.
 
 * `ext-<name>` allows you to require PHP extensions (includes core
   extensions). Versioning can be quite inconsistent here, so it's often
@@ -41,8 +47,8 @@ includes PHP itself, PHP extensions and some system libraries.
   package name is `ext-gd`.
 
 * `lib-<name>` allows constraints to be made on versions of libraries used by
-  PHP. The following are available: `curl`, `iconv`, `libxml`, `openssl`,
-  `pcre`, `uuid`, `xsl`.
+  PHP. The following are available: `curl`, `iconv`, `icu`, `libxml`,
+  `openssl`, `pcre`, `uuid`, `xsl`.
 
 You can use `composer show --platform` to get a list of your locally available
 platform packages.
@@ -58,26 +64,34 @@ version numbers are extracted from these.
 If you are creating packages by hand and really have to specify it explicitly,
 you can just add a `version` field:
 
-    {
-        "version": "1.0.0"
-    }
+```json
+{
+    "version": "1.0.0"
+}
+```
+
+> **Note:** You should avoid specifying the version field explicitly, because
+> for tags the value must match the tag name.
 
 ### Tags
 
 For every tag that looks like a version, a package version of that tag will be
-created. It should match 'X.Y.Z' or 'vX.Y.Z', with an optional suffix for RC,
-beta, alpha or patch.
+created. It should match 'X.Y.Z' or 'vX.Y.Z', with an optional suffix
+of `-patch`, `-alpha`, `-beta` or `-RC`. The suffixes can also be followed by
+a number.
 
 Here are a few examples of valid tag names:
 
-    1.0.0
-    v1.0.0
-    1.10.5-RC1
-    v4.4.4beta2
-    v2.0.0-alpha
-    v2.0.4-p1
+- 1.0.0
+- v1.0.0
+- 1.10.5-RC1
+- v4.4.4-beta2
+- v2.0.0-alpha
+- v2.0.4-p1
 
-> **Note:** If you specify an explicit version in `composer.json`, the tag name must match the specified version.
+> **Note:** Even if your tag is prefixed with `v`, a [version constraint](01-basic-usage.md#package-versions)
+> in a `require` statement has to be specified without prefix
+> (e.g. tag `v1.0.0` will result in version `1.0.0`). 
 
 ### Branches
 
@@ -91,15 +105,17 @@ like a version, it will be `dev-{branchname}`. `master` results in a
 
 Here are some examples of version branch names:
 
-    1.x
-    1.0 (equals 1.0.x)
-    1.1.x
+- 1.x
+- 1.0 (equals 1.0.x)
+- 1.1.x
 
-> **Note:** When you install a dev version, it will install it from source.
+> **Note:** When you install a development version, it will be automatically
+> pulled from its `source`. See the [`install`](03-cli.md#install) command
+> for more details.
 
 ### Aliases
 
-It is possible alias branch names to versions. For example, you could alias
+It is possible to alias branch names to versions. For example, you could alias
 `dev-master` to `1.0.x-dev`, which would allow you to require `1.0.x-dev` in all
 the packages.
 
@@ -115,52 +131,27 @@ on it. It only has an effect on the main project.
 If you do not want to commit the lock file and you are using git, add it to
 the `.gitignore`.
 
-## Light-weight distribution packages
-
-Including the tests and other useless information like `.travis.yml` in
-distributed packages is not a good idea.
-
-The `.gitattributes` file is a git specific file like `.gitignore` also living
-at the root directory of your library. It overrides local and global
-configuration (`.git/config` and `~/.gitconfig` respectively) when present and
-tracked by git.
-
-Use `.gitattributes` to prevent unwanted files from bloating the zip
-distribution packages.
-
-    // .gitattributes
-    /Tests export-ignore
-    phpunit.xml.dist export-ignore
-    Resources/doc/ export-ignore
-    .travis.yml export-ignore
-
-Test it by inspecting the zip file generated manually:
-
-    git archive branchName --format zip -o file.zip
-
-> **Note:** Files would be still tracked by git just not included in the
-> distribution. This will only work for GitHub packages installed from
-> dist (i.e. tagged releases) for now.
-
 ## Publishing to a VCS
 
 Once you have a vcs repository (version control system, e.g. git) containing a
 `composer.json` file, your library is already composer-installable. In this
 example we will publish the `acme/hello-world` library on GitHub under
-`github.com/composer/hello-world`.
+`github.com/username/hello-world`.
 
-Now, To test installing the `acme/hello-world` package, we create a new
+Now, to test installing the `acme/hello-world` package, we create a new
 project locally. We will call it `acme/blog`. This blog will depend on
 `acme/hello-world`, which in turn depends on `monolog/monolog`. We can
 accomplish this by creating a new `blog` directory somewhere, containing a
 `composer.json`:
 
-    {
-        "name": "acme/blog",
-        "require": {
-            "acme/hello-world": "dev-master"
-        }
+```json
+{
+    "name": "acme/blog",
+    "require": {
+        "acme/hello-world": "dev-master"
     }
+}
+```
 
 The name is not needed in this case, since we don't want to publish the blog
 as a library. It is added here to clarify which `composer.json` is being
@@ -170,23 +161,25 @@ Now we need to tell the blog app where to find the `hello-world` dependency.
 We do this by adding a package repository specification to the blog's
 `composer.json`:
 
-    {
-        "name": "acme/blog",
-        "repositories": [
-            {
-                "type": "vcs",
-                "url": "https://github.com/composer/hello-world"
-            }
-        ],
-        "require": {
-            "acme/hello-world": "dev-master"
+```json
+{
+    "name": "acme/blog",
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/username/hello-world"
         }
+    ],
+    "require": {
+        "acme/hello-world": "dev-master"
     }
+}
+```
 
 For more details on how package repositories work and what other types are
 available, see [Repositories](05-repositories.md).
 
-That's all. You can now install the dependencies by running composer's
+That's all. You can now install the dependencies by running Composer's
 `install` command!
 
 **Recap:** Any git/svn/hg repository containing a `composer.json` can be added
@@ -202,8 +195,8 @@ The other thing that you may have noticed is that we did not specify a package
 repository for `monolog/monolog`. How did that work? The answer is packagist.
 
 [Packagist](https://packagist.org/) is the main package repository for
-composer, and it is enabled by default. Anything that is published on
-packagist is available automatically through composer. Since monolog
+Composer, and it is enabled by default. Anything that is published on
+packagist is available automatically through Composer. Since monolog
 [is on packagist](https://packagist.org/packages/monolog/monolog), we can depend
 on it without having to specify any additional repositories.
 

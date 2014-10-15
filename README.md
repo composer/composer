@@ -1,7 +1,7 @@
 Composer - Dependency Management for PHP
 ========================================
 
-Composer is a dependency manager tracking local dependencies of your projects and libraries.
+Composer helps you declare, manage and install dependencies of PHP projects, ensuring you have the right stack everywhere.
 
 See [https://getcomposer.org/](https://getcomposer.org/) for more information and documentation.
 
@@ -13,13 +13,13 @@ Installation / Usage
 1. Download the [`composer.phar`](https://getcomposer.org/composer.phar) executable or use the installer.
 
     ``` sh
-    $ curl -s https://getcomposer.org/installer | php
+    $ curl -sS https://getcomposer.org/installer | php
     ```
-
 
 2. Create a composer.json defining your dependencies. Note that this example is
 a short version for applications that are not meant to be published as packages
-themselves. To create libraries/packages please read the [guidelines](https://packagist.org/about).
+themselves. To create libraries/packages please read the
+[documentation](http://getcomposer.org/doc/02-libraries.md).
 
     ``` json
     {
@@ -47,24 +47,7 @@ You can now run Composer by executing the `bin/composer` script: `php /path/to/c
 Global installation of Composer (manual)
 ----------------------------------------
 
-Since Composer works with the current working directory it is possible to install it
-in a system wide way.
-
-1. Change into a directory in your path like `cd /usr/local/bin`
-2. Get Composer `curl -s https://getcomposer.org/installer | php`
-3. Make the phar executable `chmod a+x composer.phar`
-4. Change into a project directory `cd /path/to/my/project`
-5. Use Composer as you normally would `composer.phar install`
-6. Optionally you can rename the composer.phar to composer to make it easier
-
-Global installation of Composer (via homebrew)
-----------------------------------------------
-
-Composer is part of the homebrew-php project.
-
-1. Tap the homebrew-php repository into your brew installation if you haven't done yet: `brew tap josegonzalez/homebrew-php`
-2. Run `brew install josegonzalez/php/composer`.
-3. Use Composer with the `composer` command.
+Follow instructions [in the documentation](http://getcomposer.org/doc/00-intro.md#globally)
 
 Updating Composer
 -----------------
@@ -82,7 +65,7 @@ merged. This is to ensure proper review of all the code.
 Fork the project, create a feature branch, and send us a pull request.
 
 To ensure a consistent code base, you should make sure the code follows
-the [Coding Standards](http://symfony.com/doc/2.0/contributing/code/standards.html)
+the [Coding Standards](http://symfony.com/doc/current/contributing/code/standards.html)
 which we borrowed from Symfony.
 
 If you would like to help take a look at the [list of issues](http://github.com/composer/composer/issues).
