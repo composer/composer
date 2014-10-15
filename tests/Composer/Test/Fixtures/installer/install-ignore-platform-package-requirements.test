@@ -1,0 +1,20 @@
+--TEST--
+Install in ignore-platform-package-requirements mode
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.0", "require": { "ext-testdummy": "*" } }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.0.0"
+    }
+}
+--RUN--
+install --ignore-platform-package-requirements
+--EXPECT--
+Installing a/a (1.0.0)

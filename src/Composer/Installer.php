@@ -105,6 +105,7 @@ class Installer
     protected $verbose = false;
     protected $update = false;
     protected $runScripts = true;
+    protected $ignorePlatformPackage = false;
     /**
      * Array of package names/globs flagged for update
      *
@@ -263,7 +264,7 @@ class Installer
 
                     $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, $policy, $pool, $installedRepo, $request);
                     $solver = new Solver($policy, $pool, $installedRepo);
-                    $ops = $solver->solve($request);
+                    $ops = $solver->solve($request, $this->ignorePlatformPackage);
                     $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, $policy, $pool, $installedRepo, $request, $ops);
                     foreach ($ops as $op) {
                         if ($op->getJobType() === 'uninstall') {
@@ -470,7 +471,7 @@ class Installer
         $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, $policy, $pool, $installedRepo, $request);
         $solver = new Solver($policy, $pool, $installedRepo);
         try {
-            $operations = $solver->solve($request);
+            $operations = $solver->solve($request, $this->ignorePlatformPackage);
             $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, $policy, $pool, $installedRepo, $request, $operations);
         } catch (SolverProblemsException $e) {
             $this->io->write('<error>Your requirements could not be resolved to an installable set of packages.</error>');
@@ -1174,6 +1175,19 @@ class Installer
     public function isVerbose()
     {
         return $this->verbose;
+    }
+
+    /**
+     * set ignore Platform Package requirements
+     *
+     * @param  boolean   $ignorePlatformPackage
+     * @return Installer
+     */
+    public function setIgnorePlatformPackage($ignorePlatformPackage = false)
+    {
+        $this->ignorePlatformPackage = (boolean) $ignorePlatformPackage;
+
+        return $this;
     }
 
     /**
