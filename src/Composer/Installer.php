@@ -1053,6 +1053,16 @@ class Installer
     }
 
     /**
+     * Checks, if this is a dry run (simulation mode).
+     *
+     * @return bool
+     */
+    public function isDryRun()
+    {
+        return $this->dryRun;
+    }
+
+    /**
      * prefer source installation
      *
      * @param  boolean   $preferSource
@@ -1154,6 +1164,16 @@ class Installer
         $this->verbose = (boolean) $verbose;
 
         return $this;
+    }
+
+    /**
+     * Checks, if running in verbose mode.
+     *
+     * @return bool
+     */
+    public function isVerbose()
+    {
+        return $this->verbose;
     }
 
     /**
