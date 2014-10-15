@@ -228,10 +228,7 @@ EOT
             $output,
             $dialog->getQuestion('Author', $author),
             function ($value) use ($self, $author) {
-                if (null === $value) {
-                    return $author;
-                }
-
+                $value = $value ?: $author;
                 $author = $self->parseAuthorString($value);
 
                 return sprintf('%s <%s>', $author['name'], $author['email']);
