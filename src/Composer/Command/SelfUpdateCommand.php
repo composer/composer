@@ -61,7 +61,7 @@ EOT
         $config = Factory::createConfig();
         $remoteFilesystem = new RemoteFilesystem($this->getIO(), $config);
         $cacheDir = $config->get('cache-dir');
-        $rollbackDir = $config->get('home');
+        $rollbackDir = $config->get('data-dir');
         $localFilename = realpath($_SERVER['argv'][0]) ?: $_SERVER['argv'][0];
 
         // check if current dir is writable and if not try the cache dir from settings

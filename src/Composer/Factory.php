@@ -36,6 +36,7 @@ use Composer\Package\Version\VersionParser;
  */
 class Factory
 {
+
     /**
      * @return string
      * @throws \RuntimeException
@@ -43,29 +44,28 @@ class Factory
     protected static function getHomeDir()
     {
         $home = getenv('COMPOSER_HOME');
-        $cacheDir = getenv('COMPOSER_CACHE_DIR');
-        if (!getenv('HOME')) {
-            throw new \RuntimeException('The HOME or COMPOSER_HOME environment variable must be set for composer to run correctly');
-        }
-        $userDir = rtrim(getenv('HOME'), '/');
-        $followXDG = false;
-
         if (!$home) {
             if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
                 if (!getenv('APPDATA')) {
                     throw new \RuntimeException('The APPDATA or COMPOSER_HOME environment variable must be set for composer to run correctly');
                 }
-                $home = getenv('APPDATA') . '/Composer';
-            } elseif (getenv('XDG_CONFIG_DIRS')) {
-                // XDG Base Directory Specifications
-                $followXDG = true;
-                $xdgConfig = getenv('XDG_CONFIG_HOME');
-                if (!$xdgConfig) {
-                    $xdgConfig = $userDir . '/.config';
-                }
-                $home = $xdgConfig . '/composer';
+                $home = strtr(getenv('APPDATA'), '\\', '/') . '/Composer';
             } else {
-                $home = $userDir . '/.composer';
+                if (!getenv('HOME')) {
+                    throw new \RuntimeException('The HOME or COMPOSER_HOME environment variable must be set for composer to run correctly');
+                }
+                $userDir = rtrim(getenv('HOME'), '/');
+
+                if (getenv('XDG_CONFIG_DIRS')) {
+                    // XDG Base Directory Specifications
+                    $xdgConfig = getenv('XDG_CONFIG_HOME');
+                    if (!$xdgConfig) {
+                        $xdgConfig = $userDir . '/.config';
+                    }
+                    $home = $xdgConfig . '/composer';
+                } else {
+                    $home = $userDir . '/composer';
+                }
             }
         }
 
@@ -87,21 +87,45 @@ class Factory
                 } else {
                     $cacheDir = $home . '/cache';
                 }
-
                 $cacheDir = strtr($cacheDir, '\\', '/');
             } elseif (getenv('XDG_CONFIG_DIRS')) {
-                $followXDG = true;
                 $xdgCache = getenv('XDG_CACHE_HOME');
                 if (!$xdgCache) {
-                    $xdgCache = $userDir . '/.cache';
+                    $xdgCache = $home . '/.cache';
                 }
                 $cacheDir = $xdgCache . '/composer';
             } else {
-                $cacheDir = $home . '/.cache';
+                $cacheDir = $home . '/cache';
             }
         }
 
         return $cacheDir;
+    }
+
+    /**
+     * @param string $home
+     *
+     * @return string
+     */
+    protected static function getDataDir($home)
+    {
+        if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
+            $dataDir = strtr($home, '\\', '/');
+        } elseif (getenv('XDG_CONFIG_DIRS')) {
+            $xdgData = getenv('XDG_DATA_HOME');
+            if (!$xdgData) {
+                if (!getenv('HOME')) {
+                    throw new \RuntimeException('The HOME or COMPOSER_HOME environment variable must be set for composer to run correctly');
+                }
+                $userDir = rtrim(getenv('HOME'), '/');
+                $xdgData = $userDir . '/.local/share';
+            }
+            $dataDir = $xdgData . '/composer';
+        } else {
+            $dataDir = $home;
+        }
+
+        return $dataDir;
     }
 
     /**
@@ -113,11 +137,12 @@ class Factory
         // determine home and cache dirs
         $home     = self::getHomeDir();
         $cacheDir = self::getCacheDir($home);
+        $dataDir  = self::getDataDir($home);
 
         // Protect directory against web access. Since HOME could be
         // the www-data's user home and be web-accessible it is a
         // potential security risk
-        foreach (array($home, $cacheDir) as $dir) {
+        foreach (array($home, $cacheDir, $dataDir) as $dir) {
             if (!file_exists($dir . '/.htaccess')) {
                 if (!is_dir($dir)) {
                     @mkdir($dir, 0777, true);
@@ -127,22 +152,34 @@ class Factory
         }
 
         // Move content of old composer dir to XDG
-        if ($followXDG && file_exists($userDir . '/.composer')) {
-            // migrate to XDG
-            @rename($userDir . '/.composer/config.json', $home . '/config.json');
-            @unlink($userDir . '/.composer/.htaccess');
-            @unlink($userDir . '/.composer/cache/.htaccess');
-            foreach (glob($userDir . '/.composer/cache/*') as $oldCacheDir) {
-                @rename($oldCacheDir, $cacheDir . '/' . basename($oldCacheDir));
+        if (getenv('XDG_CONFIG_DIRS') !== false && getenv('COMPOSER_HOME') === false && getenv('COMPOSER_CACHE_DIR') === false) {
+            $userDir         = rtrim(getenv('HOME'), '/');
+            $oldComposerHome = $userDir . '/.composer';
+            if (file_exists($oldComposerHome)) {
+                // migrate to XDG
+                foreach (glob($oldComposerHome . '/*.json') as $file) {
+                    rename($file, $home . '/' . basename($file));
+                }
+
+                foreach (glob($oldComposerHome . '/*.phar') as $file) {
+                    rename($file, $dataDir . '/' . basename($file));
+                }
+
+                foreach (glob($oldComposerHome . '/cache/*') as $oldCacheDir) {
+                    rename($oldCacheDir, $cacheDir . '/' . basename($oldCacheDir));
+                }
+
+                unlink($oldComposerHome . '/.htaccess');
+                unlink($oldComposerHome . '/cache/.htaccess');
+                rmdir($oldComposerHome . '/cache');
+                rmdir($oldComposerHome);
             }
-            @rmdir($userDir . '/.composer/cache');
-            @rmdir($userDir . '/.composer');
         }
 
         $config = new Config();
 
         // add dirs to the config
-        $config->merge(array('config' => array('home' => $home, 'cache-dir' => $cacheDir)));
+        $config->merge(array('config' => array('home' => $home, 'cache-dir' => $cacheDir, 'data-dir' => $dataDir)));
 
         // load global config
         $file = new JsonFile($home.'/config.json');
@@ -169,14 +206,14 @@ class Factory
 
     public static function getComposerFile()
     {
-        return trim(getenv('COMPOSER')) ?: './composer.json';
+        return trim(getenv('COMPOSER')) ? : './composer.json';
     }
 
     public static function createAdditionalStyles()
     {
         return array(
             'highlight' => new OutputFormatterStyle('red'),
-            'warning' => new OutputFormatterStyle('black', 'yellow'),
+            'warning'   => new OutputFormatterStyle('black', 'yellow'),
         );
     }
 
@@ -192,15 +229,15 @@ class Factory
                 throw new \InvalidArgumentException('This function requires either an IOInterface or a RepositoryManager');
             }
             $factory = new static;
-            $rm = $factory->createRepositoryManager($io, $config);
+            $rm      = $factory->createRepositoryManager($io, $config);
         }
 
         foreach ($config->getRepositories() as $index => $repo) {
             if (!is_array($repo)) {
-                throw new \UnexpectedValueException('Repository '.$index.' ('.json_encode($repo).') should be an array, '.gettype($repo).' given');
+                throw new \UnexpectedValueException('Repository ' . $index . ' (' . json_encode($repo) . ') should be an array, ' . gettype($repo) . ' given');
             }
             if (!isset($repo['type'])) {
-                throw new \UnexpectedValueException('Repository '.$index.' ('.json_encode($repo).') must have a type defined');
+                throw new \UnexpectedValueException('Repository ' . $index . ' (' . json_encode($repo) . ') must have a type defined');
             }
             $name = is_int($index) && isset($repo['url']) ? preg_replace('{^https?://}i', '', $repo['url']) : $index;
             while (isset($repos[$name])) {
@@ -232,16 +269,16 @@ class Factory
 
         if (is_string($localConfig)) {
             $composerFile = $localConfig;
-            $file = new JsonFile($localConfig, new RemoteFilesystem($io));
+            $file         = new JsonFile($localConfig, new RemoteFilesystem($io));
 
             if (!$file->exists()) {
                 if ($localConfig === './composer.json' || $localConfig === 'composer.json') {
-                    $message = 'Composer could not find a composer.json file in '.getcwd();
+                    $message = 'Composer could not find a composer.json file in ' . getcwd();
                 } else {
-                    $message = 'Composer could not find the config file: '.$localConfig;
+                    $message = 'Composer could not find the config file: ' . $localConfig;
                 }
                 $instructions = 'To initialize a project, please create a composer.json file as described in the http://getcomposer.org/ "Getting Started" section';
-                throw new \InvalidArgumentException($message.PHP_EOL.$instructions);
+                throw new \InvalidArgumentException($message . PHP_EOL . $instructions);
             }
 
             $file->validateSchema(JsonFile::LAX_SCHEMA);
@@ -269,7 +306,7 @@ class Factory
         $io->loadConfiguration($config);
 
         $vendorDir = $config->get('vendor-dir');
-        $binDir = $config->get('bin-dir');
+        $binDir    = $config->get('bin-dir');
 
         // setup process timeout
         ProcessExecutor::setTimeout((int) $config->get('process-timeout'));
@@ -288,7 +325,7 @@ class Factory
         $this->addLocalRepository($rm, $vendorDir);
 
         // load package
-        $parser = new VersionParser;
+        $parser  = new VersionParser;
         $loader  = new Package\Loader\RootPackageLoader($rm, $config, $parser, new ProcessExecutor($io));
         $package = $loader->load($localConfig);
 
@@ -314,7 +351,7 @@ class Factory
         $this->createDefaultInstallers($im, $composer, $io);
 
         $globalRepository = $this->createGlobalRepository($config, $vendorDir);
-        $pm = $this->createPluginManager($composer, $io, $globalRepository);
+        $pm               = $this->createPluginManager($composer, $io, $globalRepository);
         $composer->setPluginManager($pm);
 
         if (!$disablePlugins) {
@@ -326,10 +363,8 @@ class Factory
 
         // init locker if possible
         if (isset($composerFile)) {
-            $lockFile = "json" === pathinfo($composerFile, PATHINFO_EXTENSION)
-                ? substr($composerFile, 0, -4).'lock'
-                : $composerFile . '.lock';
-            $locker = new Package\Locker($io, new JsonFile($lockFile, new RemoteFilesystem($io, $config)), $rm, $im, md5_file($composerFile));
+            $lockFile = "json" === pathinfo($composerFile, PATHINFO_EXTENSION) ? substr($composerFile, 0, -4) . 'lock' : $composerFile . '.lock';
+            $locker   = new Package\Locker($io, new JsonFile($lockFile, new RemoteFilesystem($io, $config)), $rm, $im, md5_file($composerFile));
             $composer->setLocker($locker);
         }
 
@@ -364,10 +399,10 @@ class Factory
      */
     protected function addLocalRepository(RepositoryManager $rm, $vendorDir)
     {
-        $rm->setLocalRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/composer/installed.json')));
+        $rm->setLocalRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir . '/composer/installed.json')));
     }
 
-     /**
+    /**
      * @param Config $config
      * @param string $vendorDir
      * @return Repository\InstalledFilesystemRepository|null
@@ -378,7 +413,7 @@ class Factory
             return null;
         }
 
-        $path = $config->get('home').'/vendor/composer/installed.json';
+        $path = $config->get('home') . '/vendor/composer/installed.json';
         if (!file_exists($path)) {
             return null;
         }
@@ -506,4 +541,5 @@ class Factory
 
         return $factory->createComposer($io, $config, $disablePlugins);
     }
+
 }
