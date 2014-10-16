@@ -28,6 +28,7 @@ class Config
         'vendor-dir' => 'vendor',
         'bin-dir' => '{$vendor-dir}/bin',
         'cache-dir' => '{$home}/cache',
+        'data-dir' => '{$home}',
         'cache-files-dir' => '{$cache-dir}/files',
         'cache-repo-dir' => '{$cache-dir}/repo',
         'cache-vcs-dir' => '{$cache-dir}/vcs',
@@ -157,6 +158,7 @@ class Config
             case 'vendor-dir':
             case 'bin-dir':
             case 'process-timeout':
+            case 'data-dir':
             case 'cache-dir':
             case 'cache-files-dir':
             case 'cache-repo-dir':
