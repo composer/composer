@@ -88,8 +88,14 @@ EOT
             return 1;
         }
 
-        if (Composer::VERSION === $updateVersion) {
-            $output->writeln('<info>You are already using composer version '.$updateVersion.'.</info>');
+        // Workaround for issue #3356
+        $composerVersion = Composer::VERSION;
+        if (preg_match('{^.*([0-9a-f]{40})\)?$}', $composerVersion, $matches) && isset($matches[1])) {
+            $composerVersion = $matches[1];
+        }
+
+        if ($composerVersion === $updateVersion) {
+            $output->writeln('<info>You are already using composer version '.Composer::VERSION.'.</info>');
 
             return 0;
         }
@@ -99,7 +105,7 @@ EOT
             '%s/%s-%s%s',
             $rollbackDir,
             strtr(Composer::RELEASE_DATE, ' :', '_-'),
-            preg_replace('{^([0-9a-f]{7})[0-9a-f]{33}$}', '$1', Composer::VERSION),
+            preg_replace('{^([0-9a-f]{7})[0-9a-f]{33}$}', '$1', $composerVersion),
             self::OLD_INSTALL_EXT
         );
 
