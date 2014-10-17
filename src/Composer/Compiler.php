@@ -12,7 +12,6 @@
 
 namespace Composer;
 
-use Composer\Json\JsonFile;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
 
@@ -44,14 +43,6 @@ class Compiler
             throw new \RuntimeException('Can\'t run git log. You must ensure to run compile from composer git repository clone and that git binary is available.');
         }
         $this->version = trim($process->getOutput());
-
-        $localConfig = __DIR__.'/../../composer.json';
-        $file = new JsonFile($localConfig);
-        $localConfig = $file->read();
-
-        if (isset($localConfig['extra']['branch-alias']['dev-master'])) {
-            $this->version = sprintf('%s (%s)', $localConfig['extra']['branch-alias']['dev-master'], $this->version);
-        }
 
         $process = new Process('git log -n1 --pretty=%ci HEAD', __DIR__);
         if ($process->run() != 0) {
