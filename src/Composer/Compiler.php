@@ -12,6 +12,7 @@
 
 namespace Composer;
 
+use Composer\Json\JsonFile;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
 
@@ -24,6 +25,7 @@ use Symfony\Component\Process\Process;
 class Compiler
 {
     private $version;
+    private $branchAliasVersion = '';
     private $versionDate;
 
     /**
@@ -48,6 +50,7 @@ class Compiler
         if ($process->run() != 0) {
             throw new \RuntimeException('Can\'t run git log. You must ensure to run compile from composer git repository clone and that git binary is available.');
         }
+
         $date = new \DateTime(trim($process->getOutput()));
         $date->setTimezone(new \DateTimeZone('UTC'));
         $this->versionDate = $date->format('Y-m-d H:i:s');
@@ -55,6 +58,14 @@ class Compiler
         $process = new Process('git describe --tags HEAD');
         if ($process->run() == 0) {
             $this->version = trim($process->getOutput());
+        } else {
+            // get branch-alias defined in composer.json for dev-master (if any)
+            $localConfig = __DIR__.'/../../composer.json';
+            $file = new JsonFile($localConfig);
+            $localConfig = $file->read();
+            if (isset($localConfig['extra']['branch-alias']['dev-master'])) {
+                $this->branchAliasVersion = $localConfig['extra']['branch-alias']['dev-master'];
+            }
         }
 
         $phar = new \Phar($pharFile, 0, 'composer.phar');
@@ -138,6 +149,7 @@ class Compiler
 
         if ($path === 'src/Composer/Composer.php') {
             $content = str_replace('@package_version@', $this->version, $content);
+            $content = str_replace('@package_branch_alias_version@', $this->branchAliasVersion, $content);
             $content = str_replace('@release_date@', $this->versionDate, $content);
         }
 

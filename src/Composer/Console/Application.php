@@ -264,6 +264,16 @@ class Application extends BaseApplication
      */
     public function getLongVersion()
     {
+        if (Composer::BRANCH_ALIAS_VERSION) {
+            return sprintf(
+                '<info>%s</info> version <comment>%s (%s)</comment> %s',
+                $this->getName(),
+                Composer::BRANCH_ALIAS_VERSION,
+                $this->getVersion(),
+                Composer::RELEASE_DATE
+            );
+        }
+
         return parent::getLongVersion() . ' ' . Composer::RELEASE_DATE;
     }
 
