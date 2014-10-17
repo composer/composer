@@ -48,7 +48,6 @@ class JsonConfigSourceTest extends \PHPUnit_Framework_TestCase
             $value,
             $this->fixturePath('addLink/'.$fixtureBasename.'.json'),
         );
-
     }
 
     /**

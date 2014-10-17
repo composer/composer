@@ -39,7 +39,7 @@ class PluginInstallerTest extends \PHPUnit_Framework_TestCase
         $this->directory = sys_get_temp_dir() . '/' . uniqid();
         for ($i = 1; $i <= 4; $i++) {
             $filename = '/Fixtures/plugin-v'.$i.'/composer.json';
-            mkdir(dirname($this->directory . $filename), 0777, TRUE);
+            mkdir(dirname($this->directory . $filename), 0777, true);
             $this->packages[] = $loader->load(__DIR__ . $filename);
         }
 

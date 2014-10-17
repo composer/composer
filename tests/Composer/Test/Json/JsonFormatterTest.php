@@ -46,5 +46,4 @@ class JsonFormatterTest extends \PHPUnit_Framework_TestCase
 
         return implode('+', $codes);
     }
-
 }

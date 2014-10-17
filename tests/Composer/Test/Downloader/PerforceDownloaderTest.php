@@ -22,7 +22,6 @@ use Composer\IO\IOInterface;
  */
 class PerforceDownloaderTest extends \PHPUnit_Framework_TestCase
 {
-
     protected $config;
     protected $downloader;
     protected $io;

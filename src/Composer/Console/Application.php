@@ -25,7 +25,6 @@ use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\IO\ConsoleIO;
 use Composer\Json\JsonValidationException;
-use Composer\Json\JsonFile;
 use Composer\Util\ErrorHandler;
 
 /**
@@ -180,7 +179,8 @@ class Application extends BaseApplication
                     $output->writeln('<error>The disk hosting '.$dir.' is full, this may be the cause of the following exception</error>');
                 }
             }
-        } catch (\Exception $e) {}
+        } catch (\Exception $e) {
+        }
 
         return parent::renderException($exception, $output);
     }
@@ -206,7 +206,6 @@ class Application extends BaseApplication
                 $message = $e->getMessage() . ':' . PHP_EOL . $errors;
                 throw new JsonValidationException($message);
             }
-
         }
 
         return $this->composer;

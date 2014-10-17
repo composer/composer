@@ -15,7 +15,6 @@ namespace Composer\Command;
 use Composer\DependencyResolver\Pool;
 use Composer\Factory;
 use Composer\Package\CompletePackageInterface;
-use Composer\Package\Loader\InvalidPackageException;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Util\ProcessExecutor;
@@ -23,7 +22,6 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Process\Exception\InvalidArgumentException;
 
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>
@@ -92,8 +90,8 @@ EOT
     /**
      * finds a package by name
      *
-     * @param  RepositoryInterface $repos
-     * @param  string              $name
+     * @param  RepositoryInterface      $repos
+     * @param  string                   $name
      * @return CompletePackageInterface
      */
     protected function getPackage(RepositoryInterface $repos, $name)
@@ -142,8 +140,8 @@ EOT
     /**
      * initializes the repo
      *
-     * @param InputInterface  $input
-     * @param OutputInterface $output
+     * @param  InputInterface      $input
+     * @param  OutputInterface     $output
      * @return CompositeRepository
      */
     private function initializeRepo(InputInterface $input, OutputInterface $output)
@@ -159,5 +157,4 @@ EOT
 
         return $repo;
     }
-
 }

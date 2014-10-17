@@ -15,7 +15,6 @@ namespace Composer\Command;
 use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\DependencyResolver\Pool;
-use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Repository\CompositeRepository;
 use Composer\Script\ScriptEvents;
 use Composer\Plugin\CommandEvent;

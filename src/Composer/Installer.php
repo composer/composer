@@ -380,7 +380,7 @@ class Installer
         }
 
         if ($this->update) {
-            $this->io->write('<info>Updating dependencies'.($withDevReqs?' (including require-dev)':'').'</info>');
+            $this->io->write('<info>Updating dependencies'.($withDevReqs ? ' (including require-dev)' : '').'</info>');
 
             $request->updateAll();
 
@@ -431,7 +431,7 @@ class Installer
                 }
             }
         } elseif ($installFromLock) {
-            $this->io->write('<info>Installing dependencies'.($withDevReqs?' (including require-dev)':'').' from lock file</info>');
+            $this->io->write('<info>Installing dependencies'.($withDevReqs ? ' (including require-dev)' : '').' from lock file</info>');
 
             if (!$this->locker->isFresh()) {
                 $this->io->write('<warning>Warning: The lock file is not up to date with the latest changes in composer.json. You may be getting outdated dependencies. Run update to update them.</warning>');
@@ -451,7 +451,7 @@ class Installer
                 $request->install($link->getTarget(), $link->getConstraint());
             }
         } else {
-            $this->io->write('<info>Installing dependencies'.($withDevReqs?' (including require-dev)':'').'</info>');
+            $this->io->write('<info>Installing dependencies'.($withDevReqs ? ' (including require-dev)' : '').'</info>');
 
             if ($withDevReqs) {
                 $links = array_merge($this->package->getRequires(), $this->package->getDevRequires());

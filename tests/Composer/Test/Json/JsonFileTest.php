@@ -226,5 +226,4 @@ class JsonFileTest extends \PHPUnit_Framework_TestCase
             $this->assertEquals($json, $file->encode($data, $options));
         }
     }
-
 }

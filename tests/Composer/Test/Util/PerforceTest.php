@@ -718,5 +718,4 @@ class PerforceTest extends \PHPUnit_Framework_TestCase
 
         $this->perforce->cleanupClientSpec();
     }
-
 }

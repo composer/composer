@@ -115,7 +115,7 @@ EOT
             ->setDevMode(!$input->getOption('no-dev'))
             ->setRunScripts(!$input->getOption('no-scripts'))
             ->setOptimizeAutoloader($optimize)
-            ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'));
+            ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'))
         ;
 
         if ($input->getOption('no-plugins')) {

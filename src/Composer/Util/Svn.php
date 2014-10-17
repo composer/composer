@@ -137,7 +137,6 @@ class Svn
 
         // try to authenticate if maximum quantity of tries not reached
         if ($this->qtyAuthTries++ < self::MAX_QTY_AUTH_TRIES) {
-
             // restart the process
             return $this->execute($command, $url, $cwd, $path, $verbose);
         }

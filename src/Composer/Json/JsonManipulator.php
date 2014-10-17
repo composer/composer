@@ -42,7 +42,7 @@ class JsonManipulator
         if (!$this->pregMatch('#^\{(.*)\}$#s', $contents)) {
             throw new \InvalidArgumentException('The json file must be an object ({})');
         }
-        $this->newline = false !== strpos($contents, "\r\n") ? "\r\n": "\n";
+        $this->newline = false !== strpos($contents, "\r\n") ? "\r\n" : "\n";
         $this->contents = $contents === '{}' ? '{' . $this->newline . '}' : $contents;
         $this->detectIndenting();
     }

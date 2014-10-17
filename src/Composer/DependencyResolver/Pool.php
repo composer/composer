@@ -232,7 +232,7 @@ class Pool
      *                                                packages must match or null to return all
      * @param  bool                    $mustMatchName Whether the name of returned packages
      *                                                must match the given name
-     * @return PackageInterface[]                    A set of packages
+     * @return PackageInterface[]      A set of packages
      */
     public function whatProvides($name, LinkConstraintInterface $constraint = null, $mustMatchName = false)
     {

@@ -85,7 +85,7 @@ class Factory
     }
 
     /**
-     * @param IOInterface|null $io
+     * @param  IOInterface|null $io
      * @return Config
      */
     public static function createConfig(IOInterface $io = null)
@@ -335,8 +335,8 @@ class Factory
     }
 
      /**
-     * @param Config $config
-     * @param string $vendorDir
+     * @param  Config                                        $config
+     * @param  string                                        $vendorDir
      * @return Repository\InstalledFilesystemRepository|null
      */
     protected function createGlobalRepository(Config $config, $vendorDir)
@@ -415,9 +415,9 @@ class Factory
     }
 
     /**
-     * @param Composer            $composer
-     * @param IOInterface         $io
-     * @param RepositoryInterface $globalRepository
+     * @param  Composer             $composer
+     * @param  IOInterface          $io
+     * @param  RepositoryInterface  $globalRepository
      * @return Plugin\PluginManager
      */
     protected function createPluginManager(Composer $composer, IOInterface $io, RepositoryInterface $globalRepository = null)

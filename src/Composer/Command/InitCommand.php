@@ -105,7 +105,7 @@ EOT
         }
 
         if (isset($options['require-dev'])) {
-            $options['require-dev'] = $this->formatRequirements($options['require-dev']) ;
+            $options['require-dev'] = $this->formatRequirements($options['require-dev']);
             if (array() === $options['require-dev']) {
                 $options['require-dev'] = new \stdClass;
             }
@@ -311,7 +311,6 @@ EOT
 
             foreach ($requires as $requirement) {
                 if (!isset($requirement['version'])) {
-
                     // determine the best version automatically
                     $version = $this->findBestVersionForPackage($input, $requirement['name']);
                     $requirement['version'] = $version;
@@ -553,8 +552,8 @@ EOT
      *
      * This returns a version with the ~ operator prefixed when possible.
      *
-     * @param  InputInterface $input
-     * @param  string         $name
+     * @param  InputInterface            $input
+     * @param  string                    $name
      * @return string
      * @throws \InvalidArgumentException
      */

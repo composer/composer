@@ -79,12 +79,12 @@ class EventDispatcher
     /**
      * Dispatch a script event.
      *
-     * @param  string       $eventName The constant in ScriptEvents
-     * @param  bool         $devMode
-     * @param  array        $additionalArgs Arguments passed by the user
-     * @param  array        $flags          Optional flags to pass data not as argument
-     * @return int          return code of the executed script if any, for php scripts a false return
-     *                                value is changed to 1, anything else to 0
+     * @param  string $eventName      The constant in ScriptEvents
+     * @param  bool   $devMode
+     * @param  array  $additionalArgs Arguments passed by the user
+     * @param  array  $flags          Optional flags to pass data not as argument
+     * @return int    return code of the executed script if any, for php scripts a false return
+     *                               value is changed to 1, anything else to 0
      */
     public function dispatchScript($eventName, $devMode = false, $additionalArgs = array(), $flags = array())
     {
@@ -108,18 +108,17 @@ class EventDispatcher
     /**
      * Dispatch a command event.
      *
-     * @param  string  $eventName The constant in ScriptEvents
-     * @param  boolean $devMode   Whether or not we are in dev mode
+     * @param  string  $eventName      The constant in ScriptEvents
+     * @param  boolean $devMode        Whether or not we are in dev mode
      * @param  array   $additionalArgs Arguments passed by the user
      * @param  array   $flags          Optional flags to pass data not as argument
      * @return int     return code of the executed script if any, for php scripts a false return
-     *                           value is changed to 1, anything else to 0
+     *                                value is changed to 1, anything else to 0
      */
     public function dispatchCommandEvent($eventName, $devMode, $additionalArgs = array(), $flags = array())
     {
         return $this->doDispatch(new CommandEvent($eventName, $this->composer, $this->io, $devMode, $additionalArgs, $flags));
     }
-
 
     /**
      * Dispatch a installer event.
@@ -132,7 +131,7 @@ class EventDispatcher
      * @param array               $operations    The list of operations
      *
      * @return int return code of the executed script if any, for php scripts a false return
-     *                            value is changed to 1, anything else to 0
+     *             value is changed to 1, anything else to 0
      */
     public function dispatchInstallerEvent($eventName, PolicyInterface $policy, Pool $pool, CompositeRepository $installedRepo, Request $request, array $operations = array())
     {
@@ -142,10 +141,10 @@ class EventDispatcher
     /**
      * Triggers the listeners of an event.
      *
-     * @param  Event             $event The event object to pass to the event handlers/listeners.
+     * @param  Event             $event          The event object to pass to the event handlers/listeners.
      * @param  string            $additionalArgs
      * @return int               return code of the executed script if any, for php scripts a false return
-     *                                 value is changed to 1, anything else to 0
+     *                                          value is changed to 1, anything else to 0
      * @throws \RuntimeException
      * @throws \Exception
      */

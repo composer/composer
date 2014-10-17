@@ -18,7 +18,7 @@ class ClassLoaderTest extends \PHPUnit_Framework_TestCase
      * @param bool   $prependSeparator Whether to call ->loadClass() with a class name with preceding
      *                                 namespace separator, as it happens in PHP 5.3.0 - 5.3.2. See https://bugs.php.net/50731
      */
-    public function testLoadClass($class, $prependSeparator = FALSE)
+    public function testLoadClass($class, $prependSeparator = false)
     {
         $loader = new ClassLoader();
         $loader->add('Namespaced\\', __DIR__ . '/Fixtures');

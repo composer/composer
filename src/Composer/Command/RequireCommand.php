@@ -130,7 +130,7 @@ EOT
             ->setDevMode($updateDevMode)
             ->setUpdate(true)
             ->setUpdateWhitelist(array_keys($requirements))
-            ->setWhitelistDependencies($input->getOption('update-with-dependencies'));
+            ->setWhitelistDependencies($input->getOption('update-with-dependencies'))
         ;
 
         $status = $install->run();

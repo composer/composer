@@ -55,7 +55,6 @@ class Transaction
 
             if ($literal > 0) {
                 if (isset($installMeansUpdateMap[abs($literal)]) && !$package instanceof AliasPackage) {
-
                     $source = $installMeansUpdateMap[abs($literal)];
 
                     $updateMap[$package->getId()] = array(
@@ -88,7 +87,6 @@ class Transaction
                     'package' => $package,
                     'reason' => $reason,
                 );
-
             }
         }
 

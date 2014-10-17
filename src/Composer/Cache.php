@@ -85,7 +85,7 @@ class Cache
 
             try {
                 return file_put_contents($this->root . $file, $contents);
-            } catch(\ErrorException $e) {
+            } catch (\ErrorException $e) {
                 if (preg_match('{^file_put_contents\(\): Only ([0-9]+) of ([0-9]+) bytes written}', $e->getMessage(), $m)) {
                     // Remove partial file.
                     unlink($this->root . $file);
@@ -150,7 +150,7 @@ class Cache
 
     public function gcIsNecessary()
     {
-       return (!self::$cacheCollected && !mt_rand(0, 50));
+        return (!self::$cacheCollected && !mt_rand(0, 50));
     }
 
     public function remove($file)

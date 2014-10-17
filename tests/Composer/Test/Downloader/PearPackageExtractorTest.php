@@ -25,19 +25,19 @@ class PearPackageExtractorTest extends \PHPUnit_Framework_TestCase
         $fileActions = $method->invoke($extractor, __DIR__ . '/Fixtures/Package_v1.0', array('php' => '/'), array());
 
         $expectedFileActions = array(
-            'Gtk.php' => Array(
+            'Gtk.php' => array(
                 'from' => 'PEAR_Frontend_Gtk-0.4.0/Gtk.php',
                 'to' => 'PEAR/Frontend/Gtk.php',
                 'role' => 'php',
                 'tasks' => array(),
             ),
-            'Gtk/Config.php' => Array(
+            'Gtk/Config.php' => array(
                 'from' => 'PEAR_Frontend_Gtk-0.4.0/Gtk/Config.php',
                 'to' => 'PEAR/Frontend/Gtk/Config.php',
                 'role' => 'php',
                 'tasks' => array(),
             ),
-            'Gtk/xpm/black_close_icon.xpm' => Array(
+            'Gtk/xpm/black_close_icon.xpm' => array(
                 'from' => 'PEAR_Frontend_Gtk-0.4.0/Gtk/xpm/black_close_icon.xpm',
                 'to' => 'PEAR/Frontend/Gtk/xpm/black_close_icon.xpm',
                 'role' => 'php',
@@ -56,7 +56,7 @@ class PearPackageExtractorTest extends \PHPUnit_Framework_TestCase
         $fileActions = $method->invoke($extractor, __DIR__ . '/Fixtures/Package_v2.0', array('php' => '/'), array());
 
         $expectedFileActions = array(
-            'URL.php' => Array(
+            'URL.php' => array(
                 'from' => 'Net_URL-1.0.15/URL.php',
                 'to' => 'Net/URL.php',
                 'role' => 'php',
@@ -75,13 +75,13 @@ class PearPackageExtractorTest extends \PHPUnit_Framework_TestCase
         $fileActions = $method->invoke($extractor, __DIR__ . '/Fixtures/Package_v2.1', array('php' => '/', 'script' => '/bin'), array());
 
         $expectedFileActions = array(
-            'php/Zend/Authentication/Storage/StorageInterface.php' => Array(
+            'php/Zend/Authentication/Storage/StorageInterface.php' => array(
                 'from' => 'Zend_Authentication-2.0.0beta4/php/Zend/Authentication/Storage/StorageInterface.php',
                 'to' => '/php/Zend/Authentication/Storage/StorageInterface.php',
                 'role' => 'php',
                 'tasks' => array(),
             ),
-            'php/Zend/Authentication/Result.php' => Array(
+            'php/Zend/Authentication/Result.php' => array(
                 'from' => 'Zend_Authentication-2.0.0beta4/php/Zend/Authentication/Result.php',
                 'to' => '/php/Zend/Authentication/Result.php',
                 'role' => 'php',
@@ -98,7 +98,7 @@ class PearPackageExtractorTest extends \PHPUnit_Framework_TestCase
                     )
                 )
             ),
-            'renamedFile.php' => Array(
+            'renamedFile.php' => array(
                 'from' => 'Zend_Authentication-2.0.0beta4/renamedFile.php',
                 'to' => 'correctFile.php',
                 'role' => 'php',

@@ -37,8 +37,8 @@ class VersionSelector
      * Given a package name and optional version, returns the latest PackageInterface
      * that matches.
      *
-     * @param string    $packageName
-     * @param string    $targetPackageVersion
+     * @param  string                $packageName
+     * @param  string                $targetPackageVersion
      * @return PackageInterface|bool
      */
     public function findBestCandidate($packageName, $targetPackageVersion = null)
@@ -73,7 +73,7 @@ class VersionSelector
      *  * dev-master    -> ~2.1@dev      (dev version with alias)
      *  * dev-master    -> dev-master    (dev versions are untouched)
      *
-     * @param PackageInterface $package
+     * @param  PackageInterface $package
      * @return string
      */
     public function findRecommendedRequireVersion(PackageInterface $package)
@@ -90,6 +90,7 @@ class VersionSelector
             $extra = preg_replace('{^(\d+\.\d+\.\d+)(\.9999999)-dev$}', '$1.0', $extra, -1, $count);
             if ($count) {
                 $extra = str_replace('.9999999', '.0', $extra);
+
                 return $this->transformVersion($extra, $extra, 'dev');
             }
         }

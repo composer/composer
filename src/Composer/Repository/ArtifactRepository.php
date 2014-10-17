@@ -96,7 +96,7 @@ class ArtifactRepository extends ArrayRepository
                     return $i;
                 }
 
-                if(strpos($directoryName, '\\') !== false ||
+                if (strpos($directoryName, '\\') !== false ||
                    strpos($directoryName, '/') !== false) {
                     //composer.json files below first directory are rejected
                     continue;

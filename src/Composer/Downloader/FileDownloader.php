@@ -101,7 +101,7 @@ class FileDownloader implements DownloaderInterface
                 }
             }
         }
-        
+
         $this->io->write('');
     }
 

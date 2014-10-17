@@ -152,7 +152,7 @@ class InstallerTest extends TestCase
         $io->expects($this->any())
             ->method('write')
             ->will($this->returnCallback(function ($text, $newline) use (&$output) {
-                $output .= $text . ($newline ? "\n":"");
+                $output .= $text . ($newline ? "\n" : "");
             }));
 
         $composer = FactoryMock::create($io, $composerConfig);

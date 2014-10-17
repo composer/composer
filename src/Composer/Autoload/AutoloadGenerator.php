@@ -54,7 +54,7 @@ class AutoloadGenerator
     public function dump(Config $config, InstalledRepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir, $scanPsr0Packages = false, $suffix = '')
     {
         $this->eventDispatcher->dispatchScript(ScriptEvents::PRE_AUTOLOAD_DUMP, $this->devMode, array(), array(
-            'optimize' => (bool) $scanPsr0Packages
+            'optimize' => (bool) $scanPsr0Packages,
         ));
 
         $filesystem = new Filesystem();
@@ -255,7 +255,7 @@ EOF;
 
             $packageMap[] = array(
                 $package,
-                $installationManager->getInstallPath($package)
+                $installationManager->getInstallPath($package),
             );
         }
 
@@ -533,7 +533,6 @@ INCLUDEPATH;
 
 
 REGISTER_AUTOLOAD;
-
         }
 
         $file .= <<<REGISTER_LOADER
@@ -551,7 +550,6 @@ REGISTER_LOADER;
 
 
 INCLUDE_FILES;
-
         }
 
         $file .= <<<METHOD_FOOTER
@@ -571,7 +569,6 @@ function composerRequire$suffix(\$file)
 }
 
 FOOTER;
-
     }
 
     protected function parseAutoloadsType(array $packageMap, $type, PackageInterface $mainPackage)

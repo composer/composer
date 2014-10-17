@@ -42,9 +42,9 @@ class Event
     /**
      * Constructor.
      *
-     * @param string $name   The event name
-     * @param array  $args   Arguments passed by the user
-     * @param array  $flags  Optional flags to pass data not as argument
+     * @param string $name  The event name
+     * @param array  $args  Arguments passed by the user
+     * @param array  $flags Optional flags to pass data not as argument
      */
     public function __construct($name, array $args = array(), array $flags = array())
     {

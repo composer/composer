@@ -570,5 +570,4 @@ class Perforce
     {
         $this->filesystem = $fs;
     }
-
 }

@@ -120,7 +120,7 @@ EOT
             ->setUpdate(true)
             ->setUpdateWhitelist($input->getOption('lock') ? array('lock') : $input->getArgument('packages'))
             ->setWhitelistDependencies($input->getOption('with-dependencies'))
-            ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'));
+            ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'))
         ;
 
         if ($input->getOption('no-plugins')) {

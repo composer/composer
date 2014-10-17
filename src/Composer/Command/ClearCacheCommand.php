@@ -52,11 +52,13 @@ EOT
             $cachePath = realpath($cachePath);
             if (!$cachePath) {
                 $io->write("<info>Cache directory does not exist ($key): $cachePath</info>");
+
                 return;
             }
             $cache = new Cache($io, $cachePath);
             if (!$cache->isEnabled()) {
                 $io->write("<info>Cache is not enabled ($key): $cachePath</info>");
+
                 return;
             }
 

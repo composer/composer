@@ -104,7 +104,7 @@ EOT
             ->setDevMode($updateDevMode)
             ->setUpdate(true)
             ->setUpdateWhitelist($packages)
-            ->setWhitelistDependencies($input->getOption('update-with-dependencies'));
+            ->setWhitelistDependencies($input->getOption('update-with-dependencies'))
         ;
 
         $status = $install->run();

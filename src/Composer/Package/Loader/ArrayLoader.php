@@ -67,7 +67,7 @@ class ArrayLoader implements LoaderInterface
                 throw new \UnexpectedValueException('Package '.$config['name'].'\'s bin key should be an array, '.gettype($config['bin']).' given.');
             }
             foreach ($config['bin'] as $key => $bin) {
-                $config['bin'][$key]= ltrim($bin, '/');
+                $config['bin'][$key] = ltrim($bin, '/');
             }
             $package->setBinaries($config['bin']);
         }

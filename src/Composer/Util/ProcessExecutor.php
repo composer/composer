@@ -105,7 +105,7 @@ class ProcessExecutor
     {
         static::$timeout = $timeout;
     }
-    
+
     /**
      * Escapes a string to be used as a shell argument.
      *
@@ -113,9 +113,9 @@ class ProcessExecutor
      *
      * @return string The escaped argument
      */
-    
-    public static function escape ($argument)
+
+    public static function escape($argument)
     {
-    	return ProcessUtils::escapeArgument($argument);
+        return ProcessUtils::escapeArgument($argument);
     }
 }

@@ -40,7 +40,6 @@ class PluginInstaller extends LibraryInstaller
     {
         parent::__construct($io, $composer, 'composer-plugin');
         $this->installationManager = $composer->getInstallationManager();
-
     }
 
     /**

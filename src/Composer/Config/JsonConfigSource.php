@@ -187,7 +187,7 @@ class JsonConfigSource implements ConfigSourceInterface
     private function arrayUnshiftRef(&$array, &$value)
     {
         $return = array_unshift($array, '');
-        $array[0] =& $value;
+        $array[0] = &$value;
 
         return $return;
     }

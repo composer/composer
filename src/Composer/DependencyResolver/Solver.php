@@ -83,7 +83,6 @@ class Solver
             $conflict = $this->decisions->decisionRule($literal);
 
             if ($conflict && RuleSet::TYPE_PACKAGE === $conflict->getType()) {
-
                 $problem = new Problem($this->pool);
 
                 $problem->addRule($rule);
@@ -609,7 +608,6 @@ class Solver
         $installedPos = 0;
 
         while (true) {
-
             if (1 === $level) {
                 $conflictRule = $this->propagate($level);
                 if (null !== $conflictRule) {
@@ -658,7 +656,6 @@ class Solver
                         }
 
                         if ($noneSatisfied && count($decisionQueue)) {
-
                             $oLevel = $level;
                             $level = $this->selectAndInstall($level, $decisionQueue, $disableRules, $rule);
 
@@ -742,7 +739,6 @@ class Solver
 
             // minimization step
             if (count($this->branches)) {
-
                 $lastLiteral = null;
                 $lastLevel = null;
                 $lastBranchIndex = 0;

@@ -126,7 +126,7 @@ class NoProxyPattern
 
         // Now do some bit shifting/switching to convert to ints
         $i    = ($a << 24) + ($b << 16) + ($c << 8) + $d;
-        $mask = $bits == 0 ? 0: (~0 << (32 - $bits));
+        $mask = $bits == 0 ? 0 : (~0 << (32 - $bits));
 
         // Here's our lowest int
         $low = $i & $mask;

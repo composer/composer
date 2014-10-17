@@ -73,7 +73,7 @@ class PerforceDriverTest extends \PHPUnit_Framework_TestCase
     protected function getTestConfig($testPath)
     {
         $config = new Config();
-        $config->merge(array('config'=>array('home'=>$testPath)));
+        $config->merge(array('config' => array('home' => $testPath)));
 
         return $config;
     }
@@ -173,5 +173,4 @@ class PerforceDriverTest extends \PHPUnit_Framework_TestCase
         $this->perforce->expects($this->once())->method('cleanupClientSpec');
         $this->driver->cleanup();
     }
-
 }

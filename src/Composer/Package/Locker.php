@@ -297,7 +297,7 @@ class Locker
                 $time = $this->getPackageTime($package) ?: $time;
             }
             if (null !== $time) {
-               $spec['time'] = $time;
+                $spec['time'] = $time;
             }
 
             unset($spec['installation-source']);

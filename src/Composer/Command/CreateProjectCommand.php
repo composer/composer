@@ -322,7 +322,6 @@ EOT
         return new InstallationManager();
     }
 
-
     /**
      * Updated preferSource or preferDist based on the preferredInstall config option
      * @param Config         $config

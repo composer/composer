@@ -188,8 +188,8 @@ class JsonFile
 
             //  compact brackets to follow recent php versions
             if (PHP_VERSION_ID < 50428 || (PHP_VERSION_ID >= 50500 && PHP_VERSION_ID < 50512)) {
-               $json = preg_replace('/\[\s+\]/', '[]', $json);
-               $json = preg_replace('/\{\s+\}/', '{}', $json);
+                $json = preg_replace('/\[\s+\]/', '[]', $json);
+                $json = preg_replace('/\{\s+\}/', '{}', $json);
             }
 
             return $json;

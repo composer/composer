@@ -16,7 +16,6 @@ use Composer\TestCase;
 use Composer\IO\NullIO;
 use Composer\Config;
 use Composer\Package\BasePackage;
-use Composer\Util\Filesystem;
 
 class ArtifactRepositoryTest extends TestCase
 {
@@ -67,7 +66,6 @@ class ArtifactRepositoryTest extends TestCase
             $this->assertTrue(strpos($package->getDistUrl(), $relativePath) === 0);
         }
     }
-
 }
 
 //Files jsonInFirstLevel.zip, jsonInRoot.zip and jsonInSecondLevel.zip were generated with:
