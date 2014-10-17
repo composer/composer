@@ -80,8 +80,9 @@ resolution.
   servers and other use cases where you typically do not run updates of the
   vendors. It is also a way to circumvent problems with git if you do not
   have a proper setup.
-* **--ignore-platform-reqs:** ignore `php`, `hhvm` and `ext-*` requirements
-  and force the installation even if the local machine does not fulfill these.
+* **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
+  requirements and force the installation even if the local machine does not
+  fulfill these.
 * **--dry-run:** If you want to run through an installation without actually
   installing a package, you can use `--dry-run`. This will simulate the
   installation and show you what would happen.
@@ -123,8 +124,9 @@ php composer.phar update vendor/*
 
 * **--prefer-source:** Install packages from `source` when available.
 * **--prefer-dist:** Install packages from `dist` when available.
-* **--ignore-platform-reqs:** ignore `php`, `hhvm` and `ext-*` requirements
-  and force the installation even if the local machine does not fulfill these.
+* **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
+  requirements and force the installation even if the local machine does not
+  fulfill these.
 * **--dry-run:** Simulate the command without actually doing anything.
 * **--dev:** Install packages listed in `require-dev` (this is the default behavior).
 * **--no-dev:** Skip installing packages listed in `require-dev`.
