@@ -103,6 +103,9 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
      */
     public function findPackage($name, $version)
     {
+        if (!$this->hasProviders()) {
+            return parent::findPackage($name, $version);
+        }
         // normalize version & name
         $versionParser = new VersionParser();
         $version = $versionParser->normalize($version);
@@ -125,6 +128,9 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
      */
     public function findPackages($name, $version = null)
     {
+        if (!$this->hasProviders()) {
+            return parent::findPackages($name, $version);
+        }
         // normalize name
         $name = strtolower($name);
 
