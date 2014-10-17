@@ -790,6 +790,9 @@ The following options are supported:
   the autoloader.
 * **github-domains:** Defaults to `["github.com"]`. A list of domains to use in
   github mode. This is used for GitHub Enterprise setups.
+* **github-expose-hostname:** Defaults to `true`. If set to false, the OAuth
+  tokens created to access the github API will have a date instead of the
+  machine hostname.
 * **notify-on-install:** Defaults to `true`. Composer allows repositories to
   define a notification URL, so that they get notified whenever a package from
   that repository is installed. This option allows you to disable that behaviour.

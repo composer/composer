@@ -203,6 +203,10 @@
                     "items": {
                         "type": "string"
                     }
+                },
+                "github-expose-hostname": {
+                    "type": "boolean",
+                    "description": "Defaults to true. If set to false, the OAuth tokens created to access the github API will have a date instead of the machine hostname."
                 }
             }
         },
