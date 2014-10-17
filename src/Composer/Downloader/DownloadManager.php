@@ -202,7 +202,7 @@ class DownloadManager
                 }
                 break;
             } catch (\RuntimeException $e) {
-                if ($i == count($sources) - 1) {
+                if ($i === count($sources) - 1) {
                     throw $e;
                 }
 
