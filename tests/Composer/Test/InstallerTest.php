@@ -205,7 +205,7 @@ class InstallerTest extends TestCase
             $installer
                 ->setDevMode(!$input->getOption('no-dev'))
                 ->setDryRun($input->getOption('dry-run'))
-                ->setIgnorePlatformPackage($input->getOption('ignore-platform-package-requirements'));
+                ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'));
 
             return $installer->run();
         });
@@ -217,7 +217,7 @@ class InstallerTest extends TestCase
                 ->setDryRun($input->getOption('dry-run'))
                 ->setUpdateWhitelist($input->getArgument('packages'))
                 ->setWhitelistDependencies($input->getOption('with-dependencies'))
-                ->setIgnorePlatformPackage($input->getOption('ignore-platform-package-requirements'));
+                ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'));
 
             return $installer->run();
         });

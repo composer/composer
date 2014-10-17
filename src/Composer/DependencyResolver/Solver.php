@@ -130,7 +130,7 @@ class Solver
         }
     }
 
-    protected function checkForRootRequireProblems($ignorePlatformPackageRequirements)
+    protected function checkForRootRequireProblems($ignorePlatformReqs)
     {
         foreach ($this->jobs as $job) {
             switch ($job['cmd']) {
@@ -150,7 +150,7 @@ class Solver
                     break;
 
                 case 'install':
-                    if ($ignorePlatformPackageRequirements && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $job['packageName'])) {
+                    if ($ignorePlatformReqs && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $job['packageName'])) {
                         break;
                     }
 
@@ -164,23 +164,15 @@ class Solver
         }
     }
 
-    public function solve(Request $request, $ignorePlatformPackage = false)
+    public function solve(Request $request, $ignorePlatformReqs = false)
     {
         $this->jobs = $request->getJobs();
 
         $this->setupInstalledMap();
-        $this->rules = $this->ruleSetGenerator->getRulesFor($this->jobs, $this->installedMap);
-        $this->checkForRootRequireProblems($ignorePlatformPackage);
+        $this->rules = $this->ruleSetGenerator->getRulesFor($this->jobs, $this->installedMap, $ignorePlatformReqs);
+        $this->checkForRootRequireProblems($ignorePlatformReqs);
         $this->decisions = new Decisions($this->pool);
         $this->watchGraph = new RuleWatchGraph;
-
-        if ($ignorePlatformPackage) {
-            foreach ($this->rules as $rule) {
-                if ($rule->getReason() === Rule::RULE_PACKAGE_REQUIRES && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $rule->getRequiredPackage())) {
-                    $rule->disable();
-                }
-            }
-        }
 
         foreach ($this->rules as $rule) {
             $this->watchGraph->insert(new RuleWatchNode($rule));

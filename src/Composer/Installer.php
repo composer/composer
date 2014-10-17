@@ -105,7 +105,7 @@ class Installer
     protected $verbose = false;
     protected $update = false;
     protected $runScripts = true;
-    protected $ignorePlatformPackage = false;
+    protected $ignorePlatformReqs = false;
     /**
      * Array of package names/globs flagged for update
      *
@@ -264,7 +264,7 @@ class Installer
 
                     $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, $policy, $pool, $installedRepo, $request);
                     $solver = new Solver($policy, $pool, $installedRepo);
-                    $ops = $solver->solve($request, $this->ignorePlatformPackage);
+                    $ops = $solver->solve($request, $this->ignorePlatformReqs);
                     $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, $policy, $pool, $installedRepo, $request, $ops);
                     foreach ($ops as $op) {
                         if ($op->getJobType() === 'uninstall') {
@@ -471,7 +471,7 @@ class Installer
         $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, $policy, $pool, $installedRepo, $request);
         $solver = new Solver($policy, $pool, $installedRepo);
         try {
-            $operations = $solver->solve($request, $this->ignorePlatformPackage);
+            $operations = $solver->solve($request, $this->ignorePlatformReqs);
             $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, $policy, $pool, $installedRepo, $request, $operations);
         } catch (SolverProblemsException $e) {
             $this->io->write('<error>Your requirements could not be resolved to an installable set of packages.</error>');
@@ -658,6 +658,10 @@ class Installer
         }
         $rootConstraints = array();
         foreach ($requires as $req => $constraint) {
+            // skip platform requirements from the root package to avoid filtering out existing platform packages
+            if ($this->ignorePlatformReqs && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $req)) {
+                continue;
+            }
             $rootConstraints[$req] = $constraint->getConstraint();
         }
 
@@ -705,7 +709,7 @@ class Installer
                 || !isset($provided[$package->getName()])
                 || !$provided[$package->getName()]->getConstraint()->matches($constraint)
             ) {
-                $request->install($package->getName(), $constraint);
+                $request->fix($package->getName(), $constraint);
             }
         }
 
@@ -1180,12 +1184,12 @@ class Installer
     /**
      * set ignore Platform Package requirements
      *
-     * @param  boolean   $ignorePlatformPackage
+     * @param  boolean   $ignorePlatformReqs
      * @return Installer
      */
-    public function setIgnorePlatformPackage($ignorePlatformPackage = false)
+    public function setIgnorePlatformRequirements($ignorePlatformReqs = false)
     {
-        $this->ignorePlatformPackage = (boolean) $ignorePlatformPackage;
+        $this->ignorePlatformReqs = (boolean) $ignorePlatformReqs;
 
         return $this;
     }

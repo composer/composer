@@ -14,6 +14,7 @@ namespace Composer\DependencyResolver;
 
 use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
+use Composer\Repository\PlatformRepository;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -178,7 +179,7 @@ class RuleSetGenerator
         }
     }
 
-    protected function addRulesForPackage(PackageInterface $package)
+    protected function addRulesForPackage(PackageInterface $package, $ignorePlatformReqs)
     {
         $workQueue = new \SplQueue;
         $workQueue->enqueue($package);
@@ -192,6 +193,10 @@ class RuleSetGenerator
             $this->addedMap[$package->getId()] = true;
 
             foreach ($package->getRequires() as $link) {
+                if ($ignorePlatformReqs && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $link->getTarget())) {
+                    continue;
+                }
+
                 $possibleRequires = $this->pool->whatProvides($link->getTarget(), $link->getConstraint());
 
                 $this->addRule(RuleSet::TYPE_PACKAGE, $rule = $this->createRequireRule($package, $possibleRequires, Rule::RULE_PACKAGE_REQUIRES, $link));
@@ -264,12 +269,12 @@ class RuleSetGenerator
      * @param PackageInterface $package Rules for this package's updates are to
      *                                  be added
      */
-    private function addRulesForUpdatePackages(PackageInterface $package)
+    private function addRulesForUpdatePackages(PackageInterface $package, $ignorePlatformReqs)
     {
         $updates = $this->policy->findUpdatePackages($this->pool, $this->installedMap, $package);
 
         foreach ($updates as $update) {
-            $this->addRulesForPackage($update);
+            $this->addRulesForPackage($update, $ignorePlatformReqs);
         }
     }
 
@@ -296,16 +301,20 @@ class RuleSetGenerator
         }
     }
 
-    protected function addRulesForJobs()
+    protected function addRulesForJobs($ignorePlatformReqs)
     {
         foreach ($this->jobs as $job) {
             switch ($job['cmd']) {
                 case 'install':
+                    if (!$job['fixed'] && $ignorePlatformReqs && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $job['packageName'])) {
+                        continue;
+                    }
+
                     $packages = $this->pool->whatProvides($job['packageName'], $job['constraint']);
                     if ($packages) {
                         foreach ($packages as $package) {
                             if (!isset($this->installedMap[$package->getId()])) {
-                                $this->addRulesForPackage($package);
+                                $this->addRulesForPackage($package, $ignorePlatformReqs);
                             }
                         }
 
@@ -326,7 +335,7 @@ class RuleSetGenerator
         }
     }
 
-    public function getRulesFor($jobs, $installedMap)
+    public function getRulesFor($jobs, $installedMap, $ignorePlatformReqs = false)
     {
         $this->jobs = $jobs;
         $this->rules = new RuleSet;
@@ -343,11 +352,11 @@ class RuleSetGenerator
 
         $this->addedMap = array();
         foreach ($this->installedMap as $package) {
-            $this->addRulesForPackage($package);
-            $this->addRulesForUpdatePackages($package);
+            $this->addRulesForPackage($package, $ignorePlatformReqs);
+            $this->addRulesForUpdatePackages($package, $ignorePlatformReqs);
         }
 
-        $this->addRulesForJobs();
+        $this->addRulesForJobs($ignorePlatformReqs);
 
         return $this->rules;
     }
