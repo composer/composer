@@ -256,42 +256,8 @@ class GitDownloader extends VcsDownloader
         }
 
         // reference was not found (prints "fatal: reference is not a tree: $ref")
-        if ($date && false !== strpos($this->process->getErrorOutput(), $reference)) {
-            $date = $date->format('U');
-
-            // guess which remote branch to look at first
-            $command = 'git branch -r';
-            if (0 !== $this->process->execute($command, $output, $path)) {
-                throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
-            }
-
-            $guessTemplate = 'git log --until=%s --date=raw -n1 --pretty=%%H %s';
-            foreach ($this->process->splitLines($output) as $line) {
-                if (preg_match('{^composer/'.preg_quote($branch).'(?:\.x)?$}i', trim($line))) {
-                    // find the previous commit by date in the given branch
-                    if (0 === $this->process->execute(sprintf($guessTemplate, $date, ProcessExecutor::escape(trim($line))), $output, $path)) {
-                        $newReference = trim($output);
-                    }
-
-                    break;
-                }
-            }
-
-            if (empty($newReference)) {
-                // no matching branch found, find the previous commit by date in all commits
-                if (0 !== $this->process->execute(sprintf($guessTemplate, $date, '--all'), $output, $path)) {
-                    throw new \RuntimeException('Failed to execute ' . GitUtil::sanitizeUrl($command) . "\n\n" . $this->process->getErrorOutput());
-                }
-                $newReference = trim($output);
-            }
-
-            // checkout the new recovered ref
-            $command = sprintf($template, ProcessExecutor::escape($newReference));
-            if (0 === $this->process->execute($command, $output, $path)) {
-                $this->io->write('    '.$reference.' is gone (history was rewritten?), recovered by checking out '.$newReference);
-
-                return $newReference;
-            }
+        if (false !== strpos($this->process->getErrorOutput(), $reference)) {
+            $this->io->write('    <warning>'.$reference.' is gone (history was rewritten?)</warning>');
         }
 
         throw new \RuntimeException('Failed to execute ' . GitUtil::sanitizeUrl($command) . "\n\n" . $this->process->getErrorOutput());

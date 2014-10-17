@@ -192,7 +192,7 @@ class DownloadManager
 
         foreach ($sources as $i => $source) {
             if (isset($e)) {
-                $this->io->write('<warning>Now trying to download from ' . $source . '</warning>');
+                $this->io->write('    <warning>Now trying to download from ' . $source . '</warning>');
             }
             $package->setInstallationSource($source);
             try {
@@ -207,7 +207,7 @@ class DownloadManager
                 }
 
                 $this->io->write(
-                    '<warning>Failed to download '.
+                    '    <warning>Failed to download '.
                     $package->getPrettyName().
                     ' from ' . $source . ': '.
                     $e->getMessage().'</warning>'
