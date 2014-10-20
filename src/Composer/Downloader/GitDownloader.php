@@ -60,6 +60,10 @@ class GitDownloader extends VcsDownloader
             }
             $package->setSourceReference($newRef);
         }
+
+        if ($url !== $package->getSourceUrl()) {
+            $this->process->execute(sprintf('git remote set-url origin %s', $package->getSourceUrl()), $output, $path);
+        }
     }
 
     /**
