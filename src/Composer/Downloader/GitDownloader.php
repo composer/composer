@@ -52,6 +52,10 @@ class GitDownloader extends VcsDownloader
         };
 
         $this->gitUtil->runCommand($commandCallable, $url, $path, true);
+        if ($url !== $package->getSourceUrl()) {
+            $url = $package->getSourceUrl();
+            $this->process->execute(sprintf('git remote set-url origin %s', ProcessExecutor::escape($url)), $output, $path);
+        }
         $this->setPushUrl($path, $url);
 
         if ($newRef = $this->updateToCommit($path, $ref, $package->getPrettyVersion(), $package->getReleaseDate())) {
@@ -59,10 +63,6 @@ class GitDownloader extends VcsDownloader
                 $package->setDistReference($newRef);
             }
             $package->setSourceReference($newRef);
-        }
-
-        if ($url !== $package->getSourceUrl()) {
-            $this->process->execute(sprintf('git remote set-url origin %s', $package->getSourceUrl()), $output, $path);
         }
     }
 
