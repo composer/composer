@@ -94,16 +94,25 @@ class GitLabDriver extends VcsDriver
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getRepositoryUrl()
     {
         return 'https://'.$this->originUrl.'/'.$this->owner.'/'.$this->repository;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getUrl()
     {
         return $this->getRepositoryUrl() . '.git';
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getDist($identifier)
     {
         $url = $this->getApiUrl().'/repository/archive?sha='.$identifier;
@@ -111,17 +120,15 @@ class GitLabDriver extends VcsDriver
         return array('type' => 'zip', 'url' => $url, 'reference' => $identifier, 'shasum' => '');
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getSource($identifier)
     {
-    }
-
-    public function cleanup()
-    {
+        return array('type' => 'git', 'url' => $this->getUrl(), 'reference' => $identifier);
     }
 
     /**
-     * Default branch
-     *
      * {@inheritDoc}
      */
     public function getRootIdentifier()
@@ -129,16 +136,28 @@ class GitLabDriver extends VcsDriver
         return $this->rootIdentifier;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getBranches()
     {
         return $this->getReferences('branches');
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getTags()
     {
         return $this->getReferences('tags');
     }
 
+    /**
+     * Fetches composer.json file from the repository through api
+     *
+     * @param string $identifier
+     * @return array
+     */
     protected function fetchComposerFile($identifier)
     {
         $resource = $this->getApiUrl() . '/repository/files?file_path=composer.json&ref='.$identifier;
@@ -157,9 +176,12 @@ class GitLabDriver extends VcsDriver
         return 'http://'.$this->originUrl.'/api/v3/projects/'.$this->owner.'%2F'.$this->repository;
     }
 
+    /**
+     * @param string $type
+     * @return string[] where keys are named references like tags or branches and the value a sha
+     */
     protected function getReferences($type)
     {
-        // we need to fetch the default branch from the api
         $resource = $this->getApiUrl().'/repository/'.$type;
 
         $data = JsonFile::parseJson($this->getContents($resource), $resource);
