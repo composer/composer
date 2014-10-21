@@ -43,6 +43,7 @@ class VcsRepository extends ArrayRepository
     {
         $this->drivers = $drivers ?: array(
             'github'        => 'Composer\Repository\Vcs\GitHubDriver',
+            'gitlab'        => 'Composer\Repository\Vcs\GitLabDriver',
             'git-bitbucket' => 'Composer\Repository\Vcs\GitBitbucketDriver',
             'git'           => 'Composer\Repository\Vcs\GitDriver',
             'hg-bitbucket'  => 'Composer\Repository\Vcs\HgBitbucketDriver',
