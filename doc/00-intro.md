@@ -66,6 +66,33 @@ To actually get Composer, we need to do two things. The first one is installing
 Composer (again, this means downloading it into your project):
 
 ```sh
+gpg --fingerprint YourFingerprintHere
+if [ $? -ne 0 ]; then
+   gpg --keyserver pgp.mit.edu --recv-keys YourFingerprintHere
+   gpg --fingerprint YourFingerprintHere
+   if [ $? -ne 0 ]; then exit ;fi
+    # Composer team GPG Key
+fi
+# First, let's download the PHAR
+curl -sS https://getcomposer.org/installer > composer_installer.php
+# Next, get the GPG signature
+wget https://getcomposer.org/installer.asc
+gpg --verify installer.asc composer_installer.php
+if [ $? -eq 0 ]; then
+    # Success!
+    php composer_installer.php
+else
+    rm -f composer_installer.php
+    echo -e "\033[31mSignature did not match!\033[0m"
+    exit 1
+fi
+```
+
+##### Alternatvely, if you don't care about package integrity
+
+Feel free to use this clever one-liner. However, if someone manages to hack getcomposer.org and replace our installer with a trojan, you're on your own.
+
+```sh
 curl -sS https://getcomposer.org/installer | php
 ```
 
