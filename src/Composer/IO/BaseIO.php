@@ -69,6 +69,12 @@ abstract class BaseIO implements IOInterface
             }
         }
 
+        if ($tokens = $config->get('gitlab-tokens')) {
+            foreach ($tokens as $domain => $token) {
+                $this->setAuthentication($domain, $token, 'gitlab-private-token');
+            }
+        }
+
         // reload http basic credentials from config if available
         if ($creds = $config->get('http-basic')) {
             foreach ($creds as $domain => $cred) {

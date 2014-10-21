@@ -149,10 +149,17 @@ class RemoteFilesystem
         if ($this->io->isDebug()) {
             $this->io->write((substr($fileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $fileUrl);
         }
+
         if (isset($options['github-token'])) {
             $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'access_token='.$options['github-token'];
             unset($options['github-token']);
         }
+
+        if (isset($options['gitlab-token'])) {
+            $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'private_token='.$options['gitlab-token'];
+            unset($options['gitlab-token']);
+        }
+
         if (isset($options['http'])) {
             $options['http']['ignore_errors'] = true;
         }
@@ -407,7 +414,9 @@ class RemoteFilesystem
             $auth = $this->io->getAuthentication($originUrl);
             if ('github.com' === $originUrl && 'x-oauth-basic' === $auth['password']) {
                 $options['github-token'] = $auth['username'];
-            } else {
+            } elseif ($auth['password'] === 'gitlab-private-token') {
+                $options['gitlab-token'] = $auth['username'];
+            }else {
                 $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
                 $headers[] = 'Authorization: Basic '.$authStr;
             }
