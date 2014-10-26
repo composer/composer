@@ -298,8 +298,14 @@ class Installer
                 $this->io->write('<info>Generating autoload files</info>');
             }
 
+            $this->io->progress()->section('Generating Autoload Files');
+            $this->io->progress()->indeterminate();
+
             $this->autoloadGenerator->setDevMode($this->devMode);
             $this->autoloadGenerator->dump($this->config, $localRepo, $this->package, $this->installationManager, 'composer', $this->optimizeAutoloader);
+
+            $this->io->progress()->section('Running Scripts');
+            $this->io->progress()->indeterminate();
 
             if ($this->runScripts) {
                 // dispatch post event
@@ -469,9 +475,9 @@ class Installer
 
         // solve dependencies
         $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, $policy, $pool, $installedRepo, $request);
-        $solver = new Solver($policy, $pool, $installedRepo);
+        $solver = new Solver($policy, $pool, $installedRepo, $this->io);
         try {
-            $operations = $solver->solve($request, $this->ignorePlatformReqs);
+            $operations = $solver->solve($request, $this->ignorePlatformReqs, $this->io);
             $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, $policy, $pool, $installedRepo, $request, $operations);
         } catch (SolverProblemsException $e) {
             $this->io->write('<error>Your requirements could not be resolved to an installable set of packages.</error>');
@@ -486,12 +492,20 @@ class Installer
         // execute operations
         if (!$operations) {
             $this->io->write('Nothing to install or update');
+            $this->io->progress()->notification('Nothing to install or update');
         }
 
         $operations = $this->movePluginsToFront($operations);
         $operations = $this->moveUninstallsToFront($operations);
 
+        if(!empty($operations)) {
+            $this->io->progress()->section('Installing');
+            $this->io->progress()->total(count($operations));
+        }
+
         foreach ($operations as $operation) {
+            $this->io->progress()->write($operation->__toString());
+
             // collect suggestions
             if ('install' === $operation->getJobType()) {
                 foreach ($operation->getPackage()->getSuggests() as $target => $reason) {
@@ -725,7 +739,15 @@ class Installer
             $operations = array();
         }
 
-        foreach ($localRepo->getCanonicalPackages() as $package) {
+        $packages = $localRepo->getCanonicalPackages();
+        $count = count($packages);
+
+        $this->io->progress()->section("Processing Dev Packages (Task: '" . $task . "')");
+        $this->io->progress()->total(count($packages));
+
+        foreach ($packages as $package) {
+            $this->io->progress()->write($package->getName());
+
             // skip non-dev packages
             if (!$package->isDev()) {
                 continue;

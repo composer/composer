@@ -12,6 +12,7 @@
 
 namespace Composer\IO;
 
+use Composer\Progress\ProgressInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Helper\HelperSet;
@@ -27,6 +28,7 @@ class ConsoleIO extends BaseIO
 {
     protected $input;
     protected $output;
+    protected $progress;
     protected $helperSet;
     protected $lastMessage;
     private $startTime;
@@ -34,14 +36,16 @@ class ConsoleIO extends BaseIO
     /**
      * Constructor.
      *
-     * @param InputInterface  $input     The input instance
-     * @param OutputInterface $output    The output instance
-     * @param HelperSet       $helperSet The helperSet instance
+     * @param InputInterface                       $input     The input instance
+     * @param OutputInterface                      $output    The output instance
+     * @param ProgressInterface                    $progress
+     * @param HelperSet                            $helperSet The helperSet instance
      */
-    public function __construct(InputInterface $input, OutputInterface $output, HelperSet $helperSet)
+    public function __construct(InputInterface $input, OutputInterface $output, ProgressInterface $progress, HelperSet $helperSet)
     {
         $this->input = $input;
         $this->output = $output;
+        $this->progress = $progress;
         $this->helperSet = $helperSet;
     }
 
@@ -217,7 +221,7 @@ class ConsoleIO extends BaseIO
         if (file_exists('/usr/bin/env')) {
             // handle other OSs with bash/zsh/ksh/csh if available to hide the answer
             $test = "/usr/bin/env %s -c 'echo OK' 2> /dev/null";
-            foreach (array('bash', 'zsh', 'ksh', 'csh') as $sh) {
+            foreach (['bash', 'zsh', 'ksh', 'csh'] as $sh) {
                 if ('OK' === rtrim(shell_exec(sprintf($test, $sh)))) {
                     $shell = $sh;
                     break;
@@ -237,4 +241,15 @@ class ConsoleIO extends BaseIO
         // not able to hide the answer, proceed with normal question handling
         return $this->ask($question);
     }
+
+    /**
+     * Returns the ProgressInterface.
+     *
+     * @return ProgressInterface
+     */
+
+    public function progress() {
+        return $this->progress;
+    }
+
 }

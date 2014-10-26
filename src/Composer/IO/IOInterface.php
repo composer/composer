@@ -13,6 +13,7 @@
 namespace Composer\IO;
 
 use Composer\Config;
+use Composer\Progress\ProgressInterface;
 
 /**
  * The Input/Output helper interface.
@@ -164,4 +165,13 @@ interface IOInterface
      * @param Config $config
      */
     public function loadConfiguration(Config $config);
+
+    /**
+     * Returns the ProgressInterface.
+     *
+     * @return ProgressInterface
+     */
+
+    public function progress();
+
 }

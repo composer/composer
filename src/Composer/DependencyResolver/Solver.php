@@ -12,6 +12,7 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\IO\IOInterface;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\PlatformRepository;
 
@@ -30,32 +31,46 @@ class Solver
     protected $ruleSetGenerator;
     protected $updateAll;
 
-    protected $addedMap = array();
-    protected $updateMap = array();
+    protected $addedMap = [];
+    protected $updateMap = [];
     protected $watchGraph;
     protected $decisions;
     protected $installedMap;
 
     protected $propagateIndex;
-    protected $branches = array();
-    protected $problems = array();
-    protected $learnedPool = array();
+    protected $branches = [];
+    protected $problems = [];
+    protected $learnedPool = [];
 
-    public function __construct(PolicyInterface $policy, Pool $pool, RepositoryInterface $installed)
+    protected $io;
+
+    public function __construct(PolicyInterface $policy, Pool $pool, RepositoryInterface $installed, IOInterface $io = null)
     {
         $this->policy = $policy;
         $this->pool = $pool;
         $this->installed = $installed;
-        $this->ruleSetGenerator = new RuleSetGenerator($policy, $pool);
+        $this->io = $io;
+        $this->ruleSetGenerator = new RuleSetGenerator($policy, $pool, $io);
     }
 
     // aka solver_makeruledecisions
-    private function makeAssertionRuleDecisions()
+    private function
+    makeAssertionRuleDecisions()
     {
         $decisionStart = count($this->decisions) - 1;
 
         $rulesCount = count($this->rules);
+
+        if($this->io) {
+            $this->io->progress()->section('Solving Dependencies - Making Decisions');
+            $this->io->progress()->total($rulesCount);
+        }
+
         for ($ruleIndex = 0; $ruleIndex < $rulesCount; $ruleIndex++) {
+            if($this->io && ($ruleIndex % 1763) === 0) {
+                $this->io->progress()->write('Rule ' . $ruleIndex, $ruleIndex);
+            }
+
             $rule = $this->rules->ruleById($ruleIndex);
 
             if (!$rule->isAssertion() || $rule->isDisabled()) {
@@ -123,7 +138,7 @@ class Solver
 
     protected function setupInstalledMap()
     {
-        $this->installedMap = array();
+        $this->installedMap = [];
         foreach ($this->installed->getPackages() as $package) {
             $this->installedMap[$package->getId()] = $package;
         }
@@ -155,7 +170,7 @@ class Solver
 
                     if (!$this->pool->whatProvides($job['packageName'], $job['constraint'])) {
                         $problem = new Problem($this->pool);
-                        $problem->addRule(new Rule($this->pool, array(), null, null, $job));
+                        $problem->addRule(new Rule($this->pool, [], null, null, $job));
                         $this->problems[] = $problem;
                     }
                     break;
@@ -166,14 +181,22 @@ class Solver
     public function solve(Request $request, $ignorePlatformReqs = false)
     {
         $this->jobs = $request->getJobs();
-
         $this->setupInstalledMap();
         $this->rules = $this->ruleSetGenerator->getRulesFor($this->jobs, $this->installedMap, $ignorePlatformReqs);
         $this->checkForRootRequireProblems($ignorePlatformReqs);
         $this->decisions = new Decisions($this->pool);
         $this->watchGraph = new RuleWatchGraph;
 
-        foreach ($this->rules as $rule) {
+        $count = count($this->rules);
+        if($this->io) {
+            $this->io->progress()->section('Solving Dependencies - Inserting Rules into Watch Graph');
+            $this->io->progress()->total(count($this->rules));
+        }
+        foreach ($this->rules as $i => $rule) {
+            if($this->io && ($rule->getId() % 783) === 0) {
+                $this->io->progress()->write('Rule ' . $rule->getId(), $rule->getId());
+            } else {
+            }
             $this->watchGraph->insert(new RuleWatchNode($rule));
         }
 
@@ -334,7 +357,7 @@ class Solver
 
         // if there are multiple candidates, then branch
         if (count($literals)) {
-            $this->branches[] = array($literals, $level);
+            $this->branches[] = [$literals, $level];
         }
 
         return $this->setPropagateLearn($level, $selectedLiteral, $disableRules, $rule);
@@ -346,12 +369,12 @@ class Solver
         $ruleLevel = 1;
         $num = 0;
         $l1num = 0;
-        $seen = array();
-        $learnedLiterals = array(null);
+        $seen = [];
+        $learnedLiterals = [null];
 
         $decisionId = count($this->decisions);
 
-        $this->learnedPool[] = array();
+        $this->learnedPool[] = [];
 
         while (true) {
             $this->learnedPool[count($this->learnedPool) - 1][] = $rule;
@@ -443,7 +466,7 @@ class Solver
 
         $newRule = new Rule($this->pool, $learnedLiterals, Rule::RULE_LEARNED, $why);
 
-        return array($learnedLiterals[0], $ruleLevel, $newRule, $why);
+        return [$learnedLiterals[0], $ruleLevel, $newRule, $why];
     }
 
     private function analyzeUnsolvableRule($problem, $conflictRule)
@@ -479,7 +502,7 @@ class Solver
 
         $this->problems[] = $problem;
 
-        $seen = array();
+        $seen = [];
         $literals = $conflictRule->getLiterals();
 
         foreach ($literals as $literal) {
@@ -550,7 +573,7 @@ class Solver
         $this->decisions->reset();
 
         $this->propagateIndex = 0;
-        $this->branches = array();
+        $this->branches = [];
 
         $this->enableDisableLearnedRules();
         $this->makeAssertionRuleDecisions();
@@ -599,13 +622,15 @@ class Solver
         //    * with step 1
         //    */
 
-        $decisionQueue = array();
-        $decisionSupplementQueue = array();
-        $disableRules = array();
+        $decisionQueue = [];
+        $decisionSupplementQueue = [];
+        $disableRules = [];
 
         $level = 1;
         $systemLevel = $level + 1;
         $installedPos = 0;
+
+        $i = 0;
 
         while (true) {
             if (1 === $level) {
@@ -622,9 +647,10 @@ class Solver
             // handle job rules
             if ($level < $systemLevel) {
                 $iterator = $this->rules->getIteratorFor(RuleSet::TYPE_JOB);
+
                 foreach ($iterator as $rule) {
                     if ($rule->isEnabled()) {
-                        $decisionQueue = array();
+                        $decisionQueue = [];
                         $noneSatisfied = true;
 
                         foreach ($rule->getLiterals() as $literal) {
@@ -641,7 +667,7 @@ class Solver
                             // prune all update packages until installed version
                             // except for requested updates
                             if (count($this->installed) != count($this->updateMap)) {
-                                $prunedQueue = array();
+                                $prunedQueue = [];
                                 foreach ($decisionQueue as $literal) {
                                     if (isset($this->installedMap[abs($literal)])) {
                                         $prunedQueue[] = $literal;
@@ -682,6 +708,11 @@ class Solver
                 $systemLevel = $level;
             }
 
+            if($this->io) {
+                $this->io->progress()->section('Running SAT - Looping Through Rules');
+                $this->io->progress()->total(count($this->rules));
+            }
+
             for ($i = 0, $n = 0; $n < count($this->rules); $i++, $n++) {
                 if ($i == count($this->rules)) {
                     $i = 0;
@@ -690,11 +721,15 @@ class Solver
                 $rule = $this->rules->ruleById($i);
                 $literals = $rule->getLiterals();
 
+                if($this->io && ($n % 831) === 0) {
+                    $this->io->progress()->write('Rule ' . $n);
+                }
+
                 if ($rule->isDisabled()) {
                     continue;
                 }
 
-                $decisionQueue = array();
+                $decisionQueue = [];
 
                 // make sure that
                 // * all negative literals are installed
@@ -745,8 +780,17 @@ class Solver
                 $lastBranchOffset  = 0;
                 $l = 0;
 
+                if($this->io) {
+                    $this->io->progress()->section('Running SAT - Minimization Step');
+                    $this->io->progress()->total(count($this->branches));
+                }
+
                 for ($i = count($this->branches) - 1; $i >= 0; $i--) {
                     list($literals, $l) = $this->branches[$i];
+
+                    if($this->io) {
+                        $this->io->progress()->write('Branch ' . $i);
+                    }
 
                     foreach ($literals as $offset => $literal) {
                         if ($literal && $literal > 0 && $this->decisions->decisionLevel($literal) > $l + 1) {

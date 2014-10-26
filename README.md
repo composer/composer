@@ -7,6 +7,11 @@ See [https://getcomposer.org/](https://getcomposer.org/) for more information an
 
 [![Build Status](https://secure.travis-ci.org/composer/composer.png?branch=master)](http://travis-ci.org/composer/composer)
 
+Fork by Oxygen
+-------------------
+
+Adds the ability to display better progress info.
+
 Installation / Usage
 --------------------
 

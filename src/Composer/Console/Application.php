@@ -12,6 +12,8 @@
 
 namespace Composer\Console;
 
+use Composer\Progress\ProgressInterface;
+use Composer\Progress\VoidProgress;
 use Symfony\Component\Console\Application as BaseApplication;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -46,6 +48,12 @@ class Application extends BaseApplication
      */
     protected $io;
 
+    /**
+     * @var ProgressInterface
+     */
+
+    protected $progress;
+
     private static $logo = '   ______
   / ____/___  ____ ___  ____  ____  ________  _____
  / /   / __ \/ __ `__ \/ __ \/ __ \/ ___/ _ \/ ___/
@@ -72,13 +80,19 @@ class Application extends BaseApplication
     /**
      * {@inheritDoc}
      */
-    public function run(InputInterface $input = null, OutputInterface $output = null)
+    public function run(InputInterface $input = null, OutputInterface $output = null, ProgressInterface $progress = null)
     {
         if (null === $output) {
             $styles = Factory::createAdditionalStyles();
             $formatter = new OutputFormatter(null, $styles);
             $output = new ConsoleOutput(ConsoleOutput::VERBOSITY_NORMAL, null, $formatter);
+
         }
+
+        if (null === $progress) {
+            $progress = new VoidProgress();
+        }
+        $this->progress = $progress;
 
         return parent::run($input, $output);
     }
@@ -88,7 +102,7 @@ class Application extends BaseApplication
      */
     public function doRun(InputInterface $input, OutputInterface $output)
     {
-        $this->io = new ConsoleIO($input, $output, $this->getHelperSet());
+        $this->io = new ConsoleIO($input, $output, $this->progress, $this->getHelperSet());
 
         if (version_compare(PHP_VERSION, '5.3.2', '<')) {
             $output->writeln('<warning>Composer only officially supports PHP 5.3.2 and above, you will most likely encounter problems with your PHP '.PHP_VERSION.', upgrading is strongly recommended.</warning>');
@@ -154,7 +168,7 @@ class Application extends BaseApplication
      */
     private function getNewWorkingDir(InputInterface $input)
     {
-        $workingDir = $input->getParameterOption(array('--working-dir', '-d'));
+        $workingDir = $input->getParameterOption(['--working-dir', '-d']);
         if (false !== $workingDir && !is_dir($workingDir)) {
             throw new \RuntimeException('Invalid working directory specified.');
         }
