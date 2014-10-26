@@ -62,13 +62,13 @@ class Solver
         $rulesCount = count($this->rules);
 
         if($this->io) {
-            $this->io->progress()->section('Solving Dependencies - Making Decisions');
-            $this->io->progress()->total($rulesCount);
+            $this->io->startSection('Solving Dependencies - Making Decisions');
+            $this->io->totalProgress($rulesCount);
         }
 
         for ($ruleIndex = 0; $ruleIndex < $rulesCount; $ruleIndex++) {
             if($this->io && ($ruleIndex % 1763) === 0) {
-                $this->io->progress()->write('Rule ' . $ruleIndex, $ruleIndex);
+                $this->io->writeProgress('Rule ' . $ruleIndex, $ruleIndex);
             }
 
             $rule = $this->rules->ruleById($ruleIndex);
@@ -189,12 +189,12 @@ class Solver
 
         $count = count($this->rules);
         if($this->io) {
-            $this->io->progress()->section('Solving Dependencies - Inserting Rules into Watch Graph');
-            $this->io->progress()->total(count($this->rules));
+            $this->io->startSection('Solving Dependencies - Inserting Rules into Watch Graph');
+            $this->io->totalProgress(count($this->rules));
         }
         foreach ($this->rules as $i => $rule) {
             if($this->io && ($rule->getId() % 783) === 0) {
-                $this->io->progress()->write('Rule ' . $rule->getId(), $rule->getId());
+                $this->io->writeProgress('Rule ' . $rule->getId(), $rule->getId());
             } else {
             }
             $this->watchGraph->insert(new RuleWatchNode($rule));
@@ -709,8 +709,8 @@ class Solver
             }
 
             if($this->io) {
-                $this->io->progress()->section('Running SAT - Looping Through Rules');
-                $this->io->progress()->total(count($this->rules));
+                $this->io->startSection('Running SAT - Looping Through Rules');
+                $this->io->totalProgress(count($this->rules));
             }
 
             for ($i = 0, $n = 0; $n < count($this->rules); $i++, $n++) {
@@ -722,7 +722,7 @@ class Solver
                 $literals = $rule->getLiterals();
 
                 if($this->io && ($n % 831) === 0) {
-                    $this->io->progress()->write('Rule ' . $n);
+                    $this->io->writeProgress('Rule ' . $n);
                 }
 
                 if ($rule->isDisabled()) {
@@ -781,15 +781,15 @@ class Solver
                 $l = 0;
 
                 if($this->io) {
-                    $this->io->progress()->section('Running SAT - Minimization Step');
-                    $this->io->progress()->total(count($this->branches));
+                    $this->io->startSection('Running SAT - Minimization Step');
+                    $this->io->totalProgress(count($this->branches));
                 }
 
                 for ($i = count($this->branches) - 1; $i >= 0; $i--) {
                     list($literals, $l) = $this->branches[$i];
 
                     if($this->io) {
-                        $this->io->progress()->write('Branch ' . $i);
+                        $this->io->writeProgress('Branch ' . $i);
                     }
 
                     foreach ($literals as $offset => $literal) {

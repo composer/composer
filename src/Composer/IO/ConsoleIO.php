@@ -28,7 +28,6 @@ class ConsoleIO extends BaseIO
 {
     protected $input;
     protected $output;
-    protected $progress;
     protected $helperSet;
     protected $lastMessage;
     private $startTime;
@@ -38,14 +37,14 @@ class ConsoleIO extends BaseIO
      *
      * @param InputInterface                       $input     The input instance
      * @param OutputInterface                      $output    The output instance
-     * @param ProgressInterface                    $progress
      * @param HelperSet                            $helperSet The helperSet instance
+     * @param ProgressInterface                    $progress  The ProgressInterface instance
      */
-    public function __construct(InputInterface $input, OutputInterface $output, ProgressInterface $progress, HelperSet $helperSet)
+    public function __construct(InputInterface $input, OutputInterface $output, HelperSet $helperSet, ProgressInterface $progress = null)
     {
+        parent::__construct($progress);
         $this->input = $input;
         $this->output = $output;
-        $this->progress = $progress;
         $this->helperSet = $helperSet;
     }
 
@@ -240,16 +239,6 @@ class ConsoleIO extends BaseIO
 
         // not able to hide the answer, proceed with normal question handling
         return $this->ask($question);
-    }
-
-    /**
-     * Returns the ProgressInterface.
-     *
-     * @return ProgressInterface
-     */
-
-    public function progress() {
-        return $this->progress;
     }
 
 }

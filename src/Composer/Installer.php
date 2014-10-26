@@ -298,14 +298,14 @@ class Installer
                 $this->io->write('<info>Generating autoload files</info>');
             }
 
-            $this->io->progress()->section('Generating Autoload Files');
-            $this->io->progress()->indeterminate();
+            $this->io->startSection('Generating Autoload Files');
+            $this->io->indeterminateProgress();
 
             $this->autoloadGenerator->setDevMode($this->devMode);
             $this->autoloadGenerator->dump($this->config, $localRepo, $this->package, $this->installationManager, 'composer', $this->optimizeAutoloader);
 
-            $this->io->progress()->section('Running Scripts');
-            $this->io->progress()->indeterminate();
+            $this->io->startSection('Running Scripts');
+            $this->io->indeterminateProgress();
 
             if ($this->runScripts) {
                 // dispatch post event
@@ -492,19 +492,19 @@ class Installer
         // execute operations
         if (!$operations) {
             $this->io->write('Nothing to install or update');
-            $this->io->progress()->notification('Nothing to install or update');
+            $this->io->notification('Nothing to install or update');
         }
 
         $operations = $this->movePluginsToFront($operations);
         $operations = $this->moveUninstallsToFront($operations);
 
         if(!empty($operations)) {
-            $this->io->progress()->section('Installing');
-            $this->io->progress()->total(count($operations));
+            $this->io->startSection('Installing');
+            $this->io->totalProgress(count($operations));
         }
 
         foreach ($operations as $operation) {
-            $this->io->progress()->write($operation->__toString());
+            $this->io->writeProgress($operation->__toString());
 
             // collect suggestions
             if ('install' === $operation->getJobType()) {
@@ -742,11 +742,11 @@ class Installer
         $packages = $localRepo->getCanonicalPackages();
         $count = count($packages);
 
-        $this->io->progress()->section("Processing Dev Packages (Task: '" . $task . "')");
-        $this->io->progress()->total(count($packages));
+        $this->io->startSection("Processing Dev Packages (Task: '" . $task . "')");
+        $this->io->totalProgress(count($packages));
 
         foreach ($packages as $package) {
-            $this->io->progress()->write($package->getName());
+            $this->io->writeProgress($package->getName());
 
             // skip non-dev packages
             if (!$package->isDev()) {

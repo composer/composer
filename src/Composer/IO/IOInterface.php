@@ -167,11 +167,68 @@ interface IOInterface
     public function loadConfiguration(Config $config);
 
     /**
-     * Returns the ProgressInterface.
+     * Starts a new progress 'section'.
      *
-     * @return ProgressInterface
+     * @param $message
+     *
+     * @return void
      */
 
-    public function progress();
+    public function startSection($message);
+
+    /**
+     * Sets the total steps.
+     *
+     * @param $total
+     * @param $type
+     *
+     * @return void
+     */
+
+    public function totalProgress($total, $type = 'item');
+
+    /**
+     * Stores progress information.
+     *
+     * @param $message
+     *
+     * @return void
+     */
+
+    public function writeProgress($message);
+
+    /**
+     * Makes the progress bar indeterminate
+     *
+     * @return void
+     */
+
+    public function indeterminateProgress();
+
+    /**
+     * Sends a notification to the client.
+     *
+     * @param string $message
+     * @param string $status
+     * @return void
+     */
+
+    public function notification($message, $status = 'success');
+
+    /**
+     * Asks that the client stops polling for new progress information.
+     *
+     * @return void
+     */
+
+    public function stopPolling();
+
+    /**
+     * Resets the progress information
+     *
+     * @return void
+     */
+
+    public function resetProgress();
 
 }

@@ -16,6 +16,7 @@ use Symfony\Component\Console\Output\StreamOutput;
 use Symfony\Component\Console\Formatter\OutputFormatterInterface;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Helper\HelperSet;
+use Composer\Progress\NullProgress;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -33,8 +34,9 @@ class BufferIO extends ConsoleIO
         $input->setInteractive(false);
 
         $output = new StreamOutput(fopen('php://memory', 'rw'), $verbosity === null ? StreamOutput::VERBOSITY_NORMAL : $verbosity, !empty($formatter), $formatter);
+        $progress = new NullProgress();
 
-        parent::__construct($input, $output, new HelperSet(array()));
+        parent::__construct($input, $output, $progress, new HelperSet(array()));
     }
 
     public function getOutput()

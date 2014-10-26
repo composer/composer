@@ -2,7 +2,7 @@
 
 namespace Composer\Progress;
 
-class VoidProgress implements ProgressInterface {
+class NullProgress implements ProgressInterface {
 
     /**
      * Starts a new progress 'section'.

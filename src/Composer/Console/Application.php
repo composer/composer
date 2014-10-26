@@ -12,8 +12,8 @@
 
 namespace Composer\Console;
 
+use Composer\Progress\NullProgress;
 use Composer\Progress\ProgressInterface;
-use Composer\Progress\VoidProgress;
 use Symfony\Component\Console\Application as BaseApplication;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -90,7 +90,7 @@ class Application extends BaseApplication
         }
 
         if (null === $progress) {
-            $progress = new VoidProgress();
+            $progress = new NullProgress();
         }
         $this->progress = $progress;
 
@@ -102,7 +102,7 @@ class Application extends BaseApplication
      */
     public function doRun(InputInterface $input, OutputInterface $output)
     {
-        $this->io = new ConsoleIO($input, $output, $this->progress, $this->getHelperSet());
+        $this->io = new ConsoleIO($input, $output, $this->getHelperSet(), $this->progress);
 
         if (version_compare(PHP_VERSION, '5.3.2', '<')) {
             $output->writeln('<warning>Composer only officially supports PHP 5.3.2 and above, you will most likely encounter problems with your PHP '.PHP_VERSION.', upgrading is strongly recommended.</warning>');
