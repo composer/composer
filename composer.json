@@ -1,5 +1,5 @@
 {
-    "name": "composer/composer",
+    "name": "oxygen/composer",
     "description": "Composer helps you declare, manage and install dependencies of PHP projects, ensuring you have the right stack everywhere.",
     "keywords": ["package", "dependency", "autoload"],
     "homepage": "http://getcomposer.org/",
