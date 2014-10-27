@@ -38,11 +38,9 @@ class ConsoleIO extends BaseIO
      * @param InputInterface                       $input     The input instance
      * @param OutputInterface                      $output    The output instance
      * @param HelperSet                            $helperSet The helperSet instance
-     * @param ProgressInterface                    $progress  The ProgressInterface instance
      */
-    public function __construct(InputInterface $input, OutputInterface $output, HelperSet $helperSet, ProgressInterface $progress = null)
+    public function __construct(InputInterface $input, OutputInterface $output, HelperSet $helperSet)
     {
-        parent::__construct($progress);
         $this->input = $input;
         $this->output = $output;
         $this->helperSet = $helperSet;

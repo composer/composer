@@ -42,15 +42,15 @@ class Solver
     protected $problems = [];
     protected $learnedPool = [];
 
-    protected $io;
+    protected $progress;
 
-    public function __construct(PolicyInterface $policy, Pool $pool, RepositoryInterface $installed, IOInterface $io = null)
+    public function __construct(PolicyInterface $policy, Pool $pool, RepositoryInterface $installed, ProgressInterface $progress = null)
     {
         $this->policy = $policy;
         $this->pool = $pool;
         $this->installed = $installed;
-        $this->io = $io;
-        $this->ruleSetGenerator = new RuleSetGenerator($policy, $pool, $io);
+        $this->progress = $progress;
+        $this->ruleSetGenerator = new RuleSetGenerator($policy, $pool, $progress);
     }
 
     // aka solver_makeruledecisions
@@ -61,14 +61,15 @@ class Solver
 
         $rulesCount = count($this->rules);
 
-        if($this->io) {
-            $this->io->startSection('Solving Dependencies - Making Decisions');
-            $this->io->totalProgress($rulesCount);
+        if($this->progress) {
+            $this->progress->section('Solving Dependencies - Making Decisions');
+            $this->progress->total($rulesCount);
         }
 
         for ($ruleIndex = 0; $ruleIndex < $rulesCount; $ruleIndex++) {
-            if($this->io && ($ruleIndex % 1763) === 0) {
-                $this->io->writeProgress('Rule ' . $ruleIndex, $ruleIndex);
+            // random remainder check is used to slow down progress updates
+            if($this->progress && ($ruleIndex % 1763) === 0) {
+                $this->progress->writeProgress('Rule ' . $ruleIndex, $ruleIndex);
             }
 
             $rule = $this->rules->ruleById($ruleIndex);
@@ -188,13 +189,14 @@ class Solver
         $this->watchGraph = new RuleWatchGraph;
 
         $count = count($this->rules);
-        if($this->io) {
-            $this->io->startSection('Solving Dependencies - Inserting Rules into Watch Graph');
-            $this->io->totalProgress(count($this->rules));
+        if($this->progress) {
+            $this->progress->section('Solving Dependencies - Inserting Rules into Watch Graph');
+            $this->progress->total(count($this->rules));
         }
         foreach ($this->rules as $i => $rule) {
-            if($this->io && ($rule->getId() % 783) === 0) {
-                $this->io->writeProgress('Rule ' . $rule->getId(), $rule->getId());
+            // random remainder is used to slow down progress updates
+            if($this->progress && ($rule->getId() % 783) === 0) {
+                $this->progress->write('Rule ' . $rule->getId(), $rule->getId());
             } else {
             }
             $this->watchGraph->insert(new RuleWatchNode($rule));
@@ -708,9 +710,9 @@ class Solver
                 $systemLevel = $level;
             }
 
-            if($this->io) {
-                $this->io->startSection('Running SAT - Looping Through Rules');
-                $this->io->totalProgress(count($this->rules));
+            if($this->progress) {
+                $this->progress->section('Running SAT - Looping Through Rules');
+                $this->progress->total(count($this->rules));
             }
 
             for ($i = 0, $n = 0; $n < count($this->rules); $i++, $n++) {
@@ -721,8 +723,8 @@ class Solver
                 $rule = $this->rules->ruleById($i);
                 $literals = $rule->getLiterals();
 
-                if($this->io && ($n % 831) === 0) {
-                    $this->io->writeProgress('Rule ' . $n);
+                if($this->progress && ($n % 831) === 0) {
+                    $this->progress->write('Rule ' . $n);
                 }
 
                 if ($rule->isDisabled()) {
@@ -780,16 +782,16 @@ class Solver
                 $lastBranchOffset  = 0;
                 $l = 0;
 
-                if($this->io) {
-                    $this->io->startSection('Running SAT - Minimization Step');
-                    $this->io->totalProgress(count($this->branches));
+                if($this->progress) {
+                    $this->progress->section('Running SAT - Minimization Step');
+                    $this->progress->total(count($this->branches));
                 }
 
                 for ($i = count($this->branches) - 1; $i >= 0; $i--) {
                     list($literals, $l) = $this->branches[$i];
 
-                    if($this->io) {
-                        $this->io->writeProgress('Branch ' . $i);
+                    if($this->progress) {
+                        $this->progress->write('Branch ' . $i);
                     }
 
                     foreach ($literals as $offset => $literal) {

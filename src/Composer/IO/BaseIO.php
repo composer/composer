@@ -19,16 +19,6 @@ use Composer\Progress\ProgressInterface;
 abstract class BaseIO implements IOInterface
 {
     protected $authentications = [];
-    protected $progress;
-
-    /**
-     * Constructor.
-     *
-     * @param ProgressInterface $progress
-     */
-    public function __construct(ProgressInterface $progress = null) {
-        $this->progress = $progress !== null ? $progress : new NullProgress();
-    }
 
     /**
      * {@inheritDoc}
@@ -89,82 +79,4 @@ abstract class BaseIO implements IOInterface
         }
     }
 
-    /**
-     * Starts a new progress 'section'.
-     *
-     * @param $message
-     *
-     * @return void
-     */
-
-    public function startSection($message) {
-        $this->progress->section($message);
-    }
-
-    /**
-     * Sets the total steps.
-     *
-     * @param $total
-     * @param $type
-     *
-     * @return void
-     */
-
-    public function totalProgress($total, $type = 'item') {
-        $this->progress->total($total, $type);
-    }
-
-    /**
-     * Stores progress information.
-     *
-     * @param $message
-     *
-     * @return void
-     */
-
-    public function writeProgress($message) {
-        $this->progress->write($message);
-    }
-
-    /**
-     * Makes the progress bar indeterminate
-     *
-     * @return void
-     */
-
-    public function indeterminateProgress() {
-        $this->progress->indeterminate();
-    }
-
-    /**
-     * Sends a notification to the client.
-     *
-     * @param string $message
-     * @param string $status
-     * @return void
-     */
-
-    public function notification($message, $status = 'success') {
-        $this->progress->notification($message, $status);
-    }
-
-    /**
-     * Asks that the client stops polling for new progress information.
-     *
-     * @return void
-     */
-
-    public function stopPolling() {
-        $this->progress->stopPolling();
-    }
-
-    /**
-     * Resets the progress information
-     *
-     * @return void
-     */
-
-    public function resetProgress() {
-        $this->progress->reset();
-    }
 }

@@ -168,7 +168,7 @@ class Application extends BaseApplication
      */
     private function getNewWorkingDir(InputInterface $input)
     {
-        $workingDir = $input->getParameterOption(['--working-dir', '-d']);
+        $workingDir = $input->getParameterOption(array('--working-dir', '-d'));
         if (false !== $workingDir && !is_dir($workingDir)) {
             throw new \RuntimeException('Invalid working directory specified.');
         }

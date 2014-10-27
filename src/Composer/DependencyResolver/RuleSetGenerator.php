@@ -12,9 +12,9 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
+use Composer\Progress\ProgressInterface;
 use Composer\Repository\PlatformRepository;
 
 /**
@@ -29,13 +29,13 @@ class RuleSetGenerator
     protected $installedMap;
     protected $whitelistedMap;
     protected $addedMap;
-    protected $io;
+    protected $progress;
 
-    public function __construct(PolicyInterface $policy, Pool $pool, IOInterface $io = null)
+    public function __construct(PolicyInterface $policy, Pool $pool, ProgressInterface $progress = null)
     {
         $this->policy = $policy;
         $this->pool = $pool;
-        $this->io = $io;
+        $this->progress = $progress;
     }
 
     /**
@@ -345,13 +345,13 @@ class RuleSetGenerator
         $this->installedMap = $installedMap;
 
         $this->whitelistedMap = [];
-        if($this->io) {
-            $this->io->startSection("Solving Dependencies - Whitelisting");
-            $this->io->totalProgress(count($this->installedMap));
+        if($this->progress) {
+            $this->progress->section("Solving Dependencies - Whitelisting");
+            $this->progress->total(count($this->installedMap));
         }
         foreach ($this->installedMap as $i => $package) {
-            if($this->io) {
-                $this->io->writeProgress($package->getName());
+            if($this->progress) {
+                $this->progress->progress($package->getName());
             }
             $this->whitelistFromPackage($package);
             $this->whitelistFromUpdatePackages($package);
@@ -362,13 +362,13 @@ class RuleSetGenerator
         $this->pool->setWhitelist($this->whitelistedMap);
 
         $this->addedMap = [];
-        if($this->io) {
-            $this->io->startSection('Solving Dependencies - Adding Rules');
-            $this->io->totalProgress(count($this->installedMap));
+        if($this->progress) {
+            $this->progress->section('Solving Dependencies - Adding Rules');
+            $this->progress->total(count($this->installedMap));
         }
         foreach ($this->installedMap as $i => $package) {
-            if($this->io) {
-                $this->io->writeProgress($package->getName());
+            if($this->progress) {
+                $this->progress->write($package->getName());
             }
             $this->addRulesForPackage($package, $ignorePlatformReqs);
             $this->addRulesForUpdatePackages($package, $ignorePlatformReqs);
