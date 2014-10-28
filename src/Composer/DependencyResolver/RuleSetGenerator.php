@@ -54,7 +54,7 @@ class RuleSetGenerator
      */
     protected function createRequireRule(PackageInterface $package, array $providers, $reason, $reasonData = null)
     {
-        $literals = [-$package->getId()];
+        $literals = array(-$package->getId());
 
         foreach ($providers as $provider) {
             // self fulfilling rule?
@@ -81,7 +81,7 @@ class RuleSetGenerator
      */
     protected function createInstallOneOfRule(array $packages, $reason, $job)
     {
-        $literals = [];
+        $literals = array();
         foreach ($packages as $package) {
             $literals[] = $package->getId();
         }
@@ -102,7 +102,7 @@ class RuleSetGenerator
      */
     protected function createRemoveRule(PackageInterface $package, $reason, $job)
     {
-        return new Rule($this->pool, [-$package->getId()], $reason, $job['packageName'], $job);
+        return new Rule($this->pool, array(-$package->getId()), $reason, $job['packageName'], $job);
     }
 
     /**
@@ -126,7 +126,7 @@ class RuleSetGenerator
             return null;
         }
 
-        return new Rule($this->pool, [-$issuer->getId(), -$provider->getId()], $reason, $reasonData);
+        return new Rule($this->pool, array(-$issuer->getId(), -$provider->getId()), $reason, $reasonData);
     }
 
     /**
@@ -243,7 +243,7 @@ class RuleSetGenerator
                 }
 
                 if (($package instanceof AliasPackage) && $package->getAliasOf() === $provider) {
-                    $this->addRule(RuleSet::TYPE_PACKAGE, $rule = $this->createRequireRule($package, [$provider], Rule::RULE_PACKAGE_ALIAS, $package));
+                    $this->addRule(RuleSet::TYPE_PACKAGE, $rule = $this->createRequireRule($package, array($provider), Rule::RULE_PACKAGE_ALIAS, $package));
                 } elseif (!$this->obsoleteImpossibleForAlias($package, $provider)) {
                     $reason = ($package->getName() == $provider->getName()) ? Rule::RULE_PACKAGE_SAME_NAME : Rule::RULE_PACKAGE_IMPLICIT_OBSOLETES;
                     $this->addRule(RuleSet::TYPE_PACKAGE, $rule = $this->createConflictRule($package, $provider, $reason, $package));
@@ -344,7 +344,7 @@ class RuleSetGenerator
         $this->rules = new RuleSet;
         $this->installedMap = $installedMap;
 
-        $this->whitelistedMap = [];
+        $this->whitelistedMap = array();
         if($this->progress) {
             $this->progress->section("Solving Dependencies - Whitelisting");
             $this->progress->total(count($this->installedMap));
@@ -361,7 +361,7 @@ class RuleSetGenerator
 
         $this->pool->setWhitelist($this->whitelistedMap);
 
-        $this->addedMap = [];
+        $this->addedMap = array();
         if($this->progress) {
             $this->progress->section('Solving Dependencies - Adding Rules');
             $this->progress->total(count($this->installedMap));

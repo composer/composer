@@ -13,12 +13,10 @@
 namespace Composer\IO;
 
 use Composer\Config;
-use Composer\Progress\NullProgress;
-use Composer\Progress\ProgressInterface;
 
 abstract class BaseIO implements IOInterface
 {
-    protected $authentications = [];
+    protected $authentications = array();
 
     /**
      * {@inheritDoc}
@@ -45,7 +43,7 @@ abstract class BaseIO implements IOInterface
             return $this->authentications[$repositoryName];
         }
 
-        return ['username' => null, 'password' => null];
+        return array('username' => null, 'password' => null);
     }
 
     /**
@@ -53,7 +51,7 @@ abstract class BaseIO implements IOInterface
      */
     public function setAuthentication($repositoryName, $username, $password = null)
     {
-        $this->authentications[$repositoryName] = ['username' => $username, 'password' => $password];
+        $this->authentications[$repositoryName] = array('username' => $username, 'password' => $password);
     }
 
     /**

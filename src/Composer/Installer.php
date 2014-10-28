@@ -133,16 +133,16 @@ class Installer
     /**
      * Constructor
      *
-     * @param IOInterface                          $io
-     * @param Config                               $config
-     * @param RootPackageInterface                 $package
-     * @param DownloadManager                      $downloadManager
-     * @param RepositoryManager                    $repositoryManager
-     * @param Locker                               $locker
-     * @param InstallationManager                  $installationManager
-     * @param EventDispatcher                      $eventDispatcher
-     * @param AutoloadGenerator                    $autoloadGenerator
-     * @param ProgressInterface                    $progress
+     * @param IOInterface            $io
+     * @param Config                 $config
+     * @param RootPackageInterface   $package
+     * @param DownloadManager        $downloadManager
+     * @param RepositoryManager      $repositoryManager
+     * @param Locker                 $locker
+     * @param InstallationManager    $installationManager
+     * @param EventDispatcher        $eventDispatcher
+     * @param AutoloadGenerator      $autoloadGenerator
+     * @param ProgressInterface      $progress
      */
     public function __construct(
         IOInterface $io,
@@ -212,17 +212,17 @@ class Installer
         // we don't want it to be uninstallable, but its requirements should not conflict
         // with the lock file for example
         $installedRootPackage = clone $this->package;
-        $installedRootPackage->setRequires([]);
-        $installedRootPackage->setDevRequires([]);
+        $installedRootPackage->setRequires(array());
+        $installedRootPackage->setDevRequires(array());
 
         // create installed repo, this contains all local packages + platform packages (php & extensions)
         $localRepo = $this->repositoryManager->getLocalRepository();
         $platformRepo = new PlatformRepository();
-        $repos = [
+        $repos = array(
             $localRepo,
-            new InstalledArrayRepository([$installedRootPackage]),
+            new InstalledArrayRepository(array($installedRootPackage)),
             $platformRepo,
-        ];
+        );
         $installedRepo = new CompositeRepository($repos);
         if ($this->additionalInstalledRepository) {
             $installedRepo->addRepository($this->additionalInstalledRepository);
@@ -232,7 +232,7 @@ class Installer
         $this->aliasPlatformPackages($platformRepo, $aliases);
 
         try {
-            $this->suggestedPackages = [];
+            $this->suggestedPackages = array();
             $res = $this->doInstall($localRepo, $installedRepo, $platformRepo, $aliases, $this->devMode);
             if ($res !== 0) {
                 return $res;
@@ -265,7 +265,7 @@ class Installer
 
                 // if this is not run in dev mode and the root has dev requires, the lock must
                 // contain null to prevent dev installs from a non-dev lock
-                $devPackages = ($this->devMode || !$this->package->getDevRequires()) ? [] : null;
+                $devPackages = ($this->devMode || !$this->package->getDevRequires()) ? array() : null;
 
                 // split dev and non-dev requirements by checking what would be removed if we update without the dev requirements
                 if ($this->devMode && $this->package->getDevRequires()) {
@@ -292,7 +292,7 @@ class Installer
                 }
 
                 $platformReqs = $this->extractPlatformRequirements($this->package->getRequires());
-                $platformDevReqs = $this->devMode ? $this->extractPlatformRequirements($this->package->getDevRequires()) : [];
+                $platformDevReqs = $this->devMode ? $this->extractPlatformRequirements($this->package->getDevRequires()) : array();
 
                 $updatedLock = $this->locker->setLockData(
                     array_diff($localRepo->getCanonicalPackages(), (array) $devPackages),
@@ -395,7 +395,7 @@ class Installer
 
         if (!$installFromLock) {
             // remove unstable packages from the localRepo if they don't match the current stability settings
-            $removedUnstablePackages = [];
+            $removedUnstablePackages = array();
             foreach ($localRepo->getPackages() as $package) {
                 if (
                     !$pool->isPackageAcceptable($package->getNames(), $package->getStability())
@@ -437,7 +437,7 @@ class Installer
                 }
 
                 // collect packages to fixate from root requirements as well as installed packages
-                $candidates = [];
+                $candidates = array();
                 foreach ($links as $link) {
                     $candidates[$link->getTarget()] = true;
                 }
@@ -535,11 +535,11 @@ class Installer
             // collect suggestions
             if ('install' === $operation->getJobType()) {
                 foreach ($operation->getPackage()->getSuggests() as $target => $reason) {
-                    $this->suggestedPackages[] = [
+                    $this->suggestedPackages[] = array(
                         'source' => $operation->getPackage()->getPrettyName(),
                         'target' => $target,
                         'reason' => $reason,
-                    ];
+                    );
                 }
             }
 
@@ -589,7 +589,7 @@ class Installer
             $this->installationManager->execute($localRepo, $operation);
 
             // output reasons why the operation was ran, only for install/update operations
-            if ($this->verbose && $this->io->isVeryVerbose() && in_array($operation->getJobType(), ['install', 'update'])) {
+            if ($this->verbose && $this->io->isVeryVerbose() && in_array($operation->getJobType(), array('install', 'update'))) {
                 $reason = $operation->getReason();
                 if ($reason instanceof Rule) {
                     switch ($reason->getReason()) {
@@ -633,7 +633,7 @@ class Installer
      */
     private function movePluginsToFront(array $operations)
     {
-        $installerOps = [];
+        $installerOps = array();
         foreach ($operations as $idx => $op) {
             if ($op instanceof InstallOperation) {
                 $package = $op->getPackage();
@@ -671,7 +671,7 @@ class Installer
      */
     private function moveUninstallsToFront(array $operations)
     {
-        $uninstOps = [];
+        $uninstOps = array();
         foreach ($operations as $idx => $op) {
             if ($op instanceof UninstallOperation) {
                 $uninstOps[] = $op;
@@ -696,7 +696,7 @@ class Installer
         if ($withDevReqs) {
             $requires = array_merge($requires, $this->package->getDevRequires());
         }
-        $rootConstraints = [];
+        $rootConstraints = array();
         foreach ($requires as $req => $constraint) {
             // skip platform requirements from the root package to avoid filtering out existing platform packages
             if ($this->ignorePlatformReqs && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $req)) {
@@ -762,7 +762,7 @@ class Installer
             throw new \InvalidArgumentException('Missing operations argument');
         }
         if ($task === 'force-links') {
-            $operations = [];
+            $operations = array();
         }
 
         $packages = $localRepo->getCanonicalPackages();
@@ -839,7 +839,7 @@ class Installer
                     }
 
                     // select prefered package according to policy rules
-                    if ($matches && $matches = $policy->selectPreferedPackages($pool, [], $matches)) {
+                    if ($matches && $matches = $policy->selectPreferedPackages($pool, array(), $matches)) {
                         $newPackage = $pool->literalToPackage($matches[0]);
 
                         if ($task === 'force-links' && $newPackage) {
@@ -882,13 +882,13 @@ class Installer
             $aliases = $this->package->getAliases();
         }
 
-        $normalizedAliases = [];
+        $normalizedAliases = array();
 
         foreach ($aliases as $alias) {
-            $normalizedAliases[$alias['package']][$alias['version']] = [
+            $normalizedAliases[$alias['package']][$alias['version']] = array(
                 'alias' => $alias['alias'],
                 'alias_normalized' => $alias['alias_normalized']
-            ];
+            );
         }
 
         return $normalizedAliases;
@@ -939,7 +939,7 @@ class Installer
 
     private function extractPlatformRequirements($links)
     {
-        $platformReqs = [];
+        $platformReqs = array();
         foreach ($links as $link) {
             if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $link->getTarget())) {
                 $platformReqs[$link->getTarget()] = $link->getPrettyConstraint();
@@ -967,7 +967,7 @@ class Installer
             return;
         }
 
-        $requiredPackageNames = [];
+        $requiredPackageNames = array();
         foreach (array_merge($rootRequires, $rootDevRequires) as $require) {
             $requiredPackageNames[] = $require->getTarget();
         }
@@ -976,7 +976,7 @@ class Installer
             $rootRequires = array_merge($rootRequires, $rootDevRequires);
         }
 
-        $skipPackages = [];
+        $skipPackages = array();
         foreach ($rootRequires as $require) {
             $skipPackages[$require->getTarget()] = true;
         }
@@ -984,7 +984,7 @@ class Installer
         $pool = new Pool;
         $pool->addRepository($localRepo);
 
-        $seen = [];
+        $seen = array();
 
         $rootRequiredPackageNames = array_keys($rootRequires);
 
@@ -1006,7 +1006,7 @@ class Installer
                 }
             }
 
-            if (count($depPackages) == 0 && !$nameMatchesRequiredPackage && !in_array($packageName, ['nothing', 'lock'])) {
+            if (count($depPackages) == 0 && !$nameMatchesRequiredPackage && !in_array($packageName, array('nothing', 'lock'))) {
                 $this->io->write('<warning>Package "' . $packageName . '" listed for update is not installed. Ignoring.</warning>');
             }
 
@@ -1052,7 +1052,7 @@ class Installer
      */
     private function mockLocalRepositories(RepositoryManager $rm)
     {
-        $packages = [];
+        $packages = array();
         foreach ($rm->getLocalRepository()->getPackages() as $package) {
             $packages[(string) $package] = clone $package;
         }

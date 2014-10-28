@@ -13,7 +13,6 @@
 namespace Composer\IO;
 
 use Composer\Config;
-use Composer\Progress\ProgressInterface;
 
 /**
  * The Input/Output helper interface.

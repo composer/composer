@@ -40,12 +40,12 @@ class FileProgress implements ProgressInterface {
     public function __construct($filename, OutputInterface $output)  {
         $this->sectionCounter = 1;
         $this->itemCounter = 1;
-        $this->progress = [
-            'progress' => [
-                'section' => ['message' => 'Unknown', 'count'=> 0, 'total' => 0],
-                'item' => ['message' => 'Unknown', 'count'=> 0, 'total' => 0]
-            ]
-        ];
+        $this->progress = array(
+            'progress' => array(
+                'section'   => array('message' => 'Unknown', 'count'=> 0, 'total' => 0),
+                'item'      => array('message' => 'Unknown', 'count'=> 0, 'total' => 0)
+            )
+        );
         $this->file = $filename;
         $this->output = $output;
         $this->persist();
@@ -121,11 +121,11 @@ class FileProgress implements ProgressInterface {
      */
 
     public function notification($message, $status = 'success') {
-        $this->progress['notification'] = [
+        $this->progress['notification'] = array(
             'content' => $message,
             'status'  => $status,
-            'unique'  => rand()
-        ];
+            'unique'  => rand() // used to only display notifications if they are new
+        );
         $this->persist();
     }
 
