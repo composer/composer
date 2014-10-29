@@ -31,6 +31,7 @@ class GitExcludeFilterTest extends \PHPUnit_Framework_TestCase
         return array(
             array('app/config/parameters.yml', array('#(?=[^\.])app/(?=[^\.])config/(?=[^\.])parameters\.yml(?=$|/)#', false, false)),
             array('!app/config/parameters.yml', array('#(?=[^\.])app/(?=[^\.])config/(?=[^\.])parameters\.yml(?=$|/)#', true, false)),
+            array('\\#*\\#', array('#/(?=[^\.])\#[^/]*\#(?=$|/)#', false, false)),
         );
     }
 }
