@@ -334,26 +334,6 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-
-    public function testParseConstraintsSimpleAggregatedUsingLexer()
-    {
-        $parser = new VersionParser;
-        $first  = new VersionConstraint('>', '2.0.0.0');
-        $second = new VersionConstraint('<=', '3.0.0.0');
-        $third  = new VersionConstraint('>', '4.0.0.0');
-        $fourth = new VersionConstraint('>', '5.0.0.0');
-
-        $this->assertSame(
-            (string) new MultiConstraint(
-                array(
-                    new MultiConstraint(array($first, $second)),
-                    new MultiConstraint(array($third, $fourth))
-                ),
-            false),
-            (string) $parser->createVersion('(>2.0,<=3.0) | (>4.0,>5.0)')
-        );
-    }
-
     public function testParseConstraintsComplexAggregatedUsingLexer()
     {
         $parser = new VersionParser;
@@ -373,6 +353,25 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
                 ),
                 false),
             (string) $parser->createVersion('(>2.0,<=3.0) | (>4.0, (>5.0, <=6.0)) | >7.0')
+        );
+    }
+
+    public function testParseConstraintsSimpleAggregatedUsingLexer()
+    {
+        $parser = new VersionParser;
+        $first  = new VersionConstraint('>', '2.0.0.0');
+        $second = new VersionConstraint('<=', '3.0.0.0');
+        $third  = new VersionConstraint('>', '4.0.0.0');
+        $fourth = new VersionConstraint('>', '5.0.0.0');
+
+        $this->assertSame(
+            (string) new MultiConstraint(
+                array(
+                    new MultiConstraint(array($first, $second)),
+                    new MultiConstraint(array($third, $fourth))
+                ),
+                false),
+            (string) $parser->createVersion('(>2.0,<=3.0) | (>4.0,>5.0)')
         );
     }
 
