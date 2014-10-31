@@ -16,6 +16,8 @@ use Composer\Json\JsonFile;
 use Composer\Package\Version\VersionParser;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
+use Composer\Package\PackageInterface;
+use Composer\Repository\RepositoryInterface;
 use Symfony\Component\Console\Helper\TableHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -26,6 +28,12 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class LicensesCommand extends Command
 {
+    /**
+     * @var list of packages to use
+     */
+
+    private $packageList = array();
+
     protected function configure()
     {
         $this
@@ -33,6 +41,7 @@ class LicensesCommand extends Command
             ->setDescription('Show information about licenses of dependencies')
             ->setDefinition(array(
                 new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text'),
+                new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables search in require-dev packages.'),
             ))
             ->setHelp(<<<EOT
 The license command displays detailed information about the licenses of
@@ -55,12 +64,13 @@ EOT
 
         $versionParser = new VersionParser;
 
-        $packages = array();
-        foreach ($repo->getPackages() as $package) {
-            $packages[$package->getName()] = $package;
+        if ($input->getOption('no-dev')) {
+            $this->findRequiresPackages($repo, $root);
+        } else {
+            $this->addToPackageList($repo->getPackages());
         }
 
-        ksort($packages);
+        ksort($this->packageList);
 
         switch ($format = $input->getOption('format')) {
             case 'text':
@@ -72,7 +82,7 @@ EOT
                 $table = $this->getHelperSet()->get('table');
                 $table->setLayout(TableHelper::LAYOUT_BORDERLESS);
                 $table->setHorizontalBorderChar('');
-                foreach ($packages as $package) {
+                foreach ($this->packageList as $package) {
                     $table->addRow(array(
                         $package->getPrettyName(),
                         $versionParser->formatVersion($package),
@@ -83,7 +93,7 @@ EOT
                 break;
 
             case 'json':
-                foreach ($packages as $package) {
+                foreach ($this->packageList as $package) {
                     $dependencies[$package->getPrettyName()] = array(
                         'version' => $versionParser->formatVersion($package),
                         'license' => $package->getLicense(),
@@ -100,6 +110,43 @@ EOT
 
             default:
                 throw new \RuntimeException(sprintf('Unsupported format "%s".  See help for supported formats.', $format));
+        }
+    }
+
+    /**
+     * Find package requires and child requires
+     *
+     * @param RepositoryInterface $repo
+     * @param PackageInterface    $package
+     */
+    private function findRequiresPackages(RepositoryInterface $repo, PackageInterface $package)
+    {
+        $requires = array_keys($package->getRequires());
+
+        $packageListNames = array_keys($this->packageList);
+        $packages = array_filter(
+            $repo->getPackages(),
+            function ($package) use ($requires, $packageListNames) {
+                return in_array($package->getName(), $requires) && !in_array($package->getName(), $packageListNames);
+            }
+        );
+
+        $this->addToPackageList($packages);
+
+        foreach ($packages as $package) {
+            $this->findRequiresPackages($repo, $package);
+        }
+    }
+
+    /**
+     * Adds packages to the package list
+     *
+     * @param array $packages the list of packages to add
+     */
+    public function addToPackageList($packages)
+    {
+        foreach ($packages as $package) {
+            $this->packageList[$package->getName()] = $package;
         }
     }
 }
