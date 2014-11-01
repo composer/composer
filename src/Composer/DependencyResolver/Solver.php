@@ -41,12 +41,15 @@ class Solver
     protected $problems = array();
     protected $learnedPool = array();
 
-    public function __construct(PolicyInterface $policy, Pool $pool, RepositoryInterface $installed)
+    protected $skipException;
+
+    public function __construct(PolicyInterface $policy, Pool $pool, RepositoryInterface $installed, $skipException = false)
     {
         $this->policy = $policy;
         $this->pool = $pool;
         $this->installed = $installed;
         $this->ruleSetGenerator = new RuleSetGenerator($policy, $pool);
+        $this->skipException = $skipException;
     }
 
     // aka solver_makeruledecisions
@@ -89,6 +92,13 @@ class Solver
                 $problem->addRule($conflict);
                 $this->disableProblem($rule);
                 $this->problems[] = $problem;
+
+                if ($this->skipException) {
+                    $cLiterals = $conflict->getLiterals();
+                    $cLiteral = abs($cLiterals[0]);
+                    $this->decisions->revertLast();
+                    $this->decisions->decide($cLiteral, 1, $rule);
+                }
                 continue;
             }
 
@@ -189,13 +199,35 @@ class Solver
             }
         }
 
-        if ($this->problems) {
-            throw new SolverProblemsException($this->problems, $this->installedMap);
+        if (!$this->skipException) {
+            $this->validate();
         }
 
         $transaction = new Transaction($this->policy, $this->pool, $this->installedMap, $this->decisions);
 
         return $transaction->getOperations();
+    }
+
+    /**
+     * Validate the solver, a thrown exception if an problem is present
+     *
+     * @throws SolverProblemsException
+     */
+    public function validate()
+    {
+        if ($this->problems) {
+            throw new SolverProblemsException($this->problems, $this->installedMap);
+        }
+    }
+
+    /**
+     * Check if an problem is present
+     *
+     * @return bool
+     */
+    public function hasProblems()
+    {
+        return (bool) $this->problems;
     }
 
     protected function literalFromId($id)
