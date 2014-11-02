@@ -186,7 +186,7 @@ class EventDispatcher
                 }
 
                 if (0 !== $exitCode) {
-                    $event->getIO()->write(sprintf('<error>Script %s handling the %s event returned with an error</error>', $callable, $event->getName()));
+                    $this->io->write(sprintf('<error>Script %s handling the %s event returned with an error</error>', $callable, $event->getName()));
 
                     throw new \RuntimeException('Error Output: '.$this->process->getErrorOutput(), $exitCode);
                 }
