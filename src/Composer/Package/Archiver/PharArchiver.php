@@ -24,6 +24,11 @@ class PharArchiver implements ArchiverInterface
         'tar' => \Phar::TAR,
     );
 
+    protected static $compressionFormats = array(
+        'tar.gz' => \Phar::GZ,
+        'tar.bz2' => \Phar::BZ2,
+    );
+
     /**
      * {@inheritdoc}
      */
@@ -36,10 +41,21 @@ class PharArchiver implements ArchiverInterface
             unlink($target);
         }
 
+        // Support compressed variants of tar files
+        $compressionFormat = false;
+        if (isset(static::$compressionFormats[$format]))
+        {
+            $compressionFormat = $format;
+            $format = 'tar';
+        }
+
         try {
             $phar = new \PharData($target, null, null, static::$formats[$format]);
             $files = new ArchivableFilesFinder($sources, $excludes);
             $phar->buildFromIterator($files, $sources);
+
+            if ($compressionFormat)
+                $phar->compress(static::$compressionFormats[$compressionFormat], $compressionFormat);
 
             return $target;
         } catch (\UnexpectedValueException $e) {
@@ -58,6 +74,6 @@ class PharArchiver implements ArchiverInterface
      */
     public function supports($format, $sourceType)
     {
-        return isset(static::$formats[$format]);
+        return isset(static::$formats[$format]) || isset(static::$compressionFormats[$format]);
     }
 }
