@@ -316,7 +316,7 @@ php composer.phar validate
 
 ### Options
 
-* **--no-check-all:** Wether or not composer do a complete validation.
+* **--no-check-all:** Whether or not composer do a complete validation.
 
 ## status
 
