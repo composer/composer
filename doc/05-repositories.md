@@ -554,7 +554,7 @@ lightweight, static file-based version of packagist.
 
 You give it a `composer.json` containing repositories, typically VCS and
 package repository definitions. It will fetch all the packages that are
-`require`d and dump a `packages.json` that is your `composer` repository.
+`required` and dump a `packages.json` that is your `composer` repository.
 
 Check [the satis GitHub repository](https://github.com/composer/satis) and
 the [Satis article](articles/handling-private-packages-with-satis.md) for more
