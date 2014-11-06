@@ -86,6 +86,11 @@ class LibraryInstallerTest extends TestCase
         $library = new LibraryInstaller($this->io, $this->composer);
         $package = $this->createPackageMock();
 
+        $package
+            ->expects($this->any(1))
+            ->method('getBinaries')
+            ->will($this->returnValue(array()));
+
         $this->repository
             ->expects($this->exactly(2))
             ->method('hasPackage')
