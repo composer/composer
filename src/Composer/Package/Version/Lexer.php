@@ -12,6 +12,7 @@
 
 namespace Composer\Package\Version;
 
+use Composer\Package\BasePackage;
 use Doctrine\Common\Lexer\AbstractLexer;
 
 /**
@@ -33,15 +34,18 @@ final class Lexer extends AbstractLexer
     const T_COMMA             = 105;
     const T_PIPE              = 106;
 
+    const T_BRANCH            = 107;
+
     /**
      * {@inheritDoc}
      */
     protected function getCatchablePatterns()
     {
         return array(
-            'v?(\*|\d+)(\.(?:\d+|[x*]))?(\.(?:\d+|[x*]))?(\.(?:\d+|[x*]))?', // version match (eg: v1.2.3.4.*)
+            'v?[0-9.x\*]+', // version match (eg: v1.2.3.4.*)
             '\~|<>|!=|>=|<=|==|<|>', // version comparison modifier
-            //'([^,\s]+?)@(' . implode('|', array_keys(BasePackage::$stabilities)) . ')', // match stabilities
+            '\@' . implode('|\@', array_keys(BasePackage::$stabilities)). '|-' . implode('|-', array_keys(BasePackage::$stabilities)), // match stabilities
+            '\#[\w\/\@\d]+'
         );
     }
 
@@ -62,26 +66,25 @@ final class Lexer extends AbstractLexer
             return self::T_COMPARISON;
         }
 
-        if (preg_match('/^v?(\*|\d+)(\.(?:\d+|[x*]))?(\.(?:\d+|[x*]))?(\.(?:\d+|[x*]))?$/', $value)) {
+        if (preg_match('/#[\w(\/\@\d)?]+/', $value)) {
+            return self::T_BRANCH;
+        }
+
+        if (preg_match('/[\dx]+/i', $value)) {
             return self::T_VERSION;
         }
 
-        if ('(' === $value) {
-            return self::T_OPEN_PARENTHESIS;
+        if (in_array(trim($value, '@-'), array_keys(BasePackage::$stabilities))) {
+            $value = trim($value, '@-');
+            return self::T_STABILITY;
         }
 
-        if (')' === $value) {
-            return self::T_CLOSE_PARENTHESIS;
+        switch ($value) {
+            case '(': return self::T_OPEN_PARENTHESIS;
+            case ')': return self::T_CLOSE_PARENTHESIS;
+            case ',': return self::T_COMMA;
+            case '|': return self::T_PIPE;
+            default: self::T_NONE;
         }
-
-        if (',' === $value) {
-            return self::T_COMMA;
-        }
-
-        if ('|' === $value) {
-            return self::T_COMMA;
-        }
-
-        return self::T_NONE;
     }
 }

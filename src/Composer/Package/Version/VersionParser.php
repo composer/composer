@@ -221,16 +221,50 @@ class VersionParser
     public function parseConstraints($constraints)
     {
         $prettyConstraint = $constraints;
+        $lexer = new Lexer();
+        $lexer->setInput($constraints);
 
-        if (preg_match('{^([^,\s]*?)@('.implode('|', array_keys(BasePackage::$stabilities)).')$}i', $constraints, $match)) {
-            $constraints = empty($match[1]) ? '*' : $match[1];
+        $version          = '';
+        $stability        = '';
+        $startComparison  = '';
+        $hasMoreToken     = true;
+        $isDev            = true;
+        $branch           = '';
+
+        $lexer->resetPosition(0);
+        while ($hasMoreToken) {
+            $token = $lexer->glimpse();
+
+            if (0 == $token['position']) {
+                if (! $lexer->isA(Lexer::T_COMPARISON, $token['type'])) {
+                    $startComparison = '== ';
+                }
+            }
+
+            if ($lexer->isA(Lexer::T_VERSION, $token['type'])) {
+                $version     .= str_replace('x', '9999999.9999999-dev', $token['value']);
+                $hasMoreToken = $lexer->moveNext();
+                continue;                
+            }
+
+            if ($lexer->isA(Lexer::T_STABILITY, $token['type'])) {
+                $stability   .= $token['value'];
+                if ('dev' == $token['value']){
+                    $isDev = true;
+                }
+            }
+
+            if ($lexer->isA(Lexer::T_BRANCH, $token['type'])) {
+                if (false === $isDev) {
+                    $branch      .= $token['value'];
+                }
+            }
+
+            $hasMoreToken = $lexer->moveNext();
         }
 
-        if (preg_match('{^(dev-[^,\s@]+?|[^,\s@]+?\.x-dev)#.+$}i', $constraints, $match)) {
-            $constraints = $match[1];
-        }
+        $orConstraints = preg_split('{\s*\|\s*}', trim($startComparison . $version));
 
-        $orConstraints = preg_split('{\s*\|\s*}', trim($constraints));
         $orGroups = array();
         foreach ($orConstraints as $constraints) {
             $andConstraints = preg_split('{\s*,\s*}', $constraints);
