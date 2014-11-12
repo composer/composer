@@ -18,6 +18,7 @@ use Composer\Package\Link;
 use Composer\Package\LinkConstraint\EmptyConstraint;
 use Composer\Package\LinkConstraint\MultiConstraint;
 use Composer\Package\LinkConstraint\VersionConstraint;
+use JsonSchema\Exception\InvalidArgumentException;
 
 /**
  * Version parser
@@ -221,59 +222,51 @@ class VersionParser
     public function parseConstraints($constraints)
     {
         $prettyConstraint = $constraints;
-        $lexer = new Lexer();
-        $lexer->setInput($constraints);
+        $openParenthesis  = 0;
+        $closeParenthesis = 0;
 
-        $version          = '';
-        $stability        = '';
-        $startComparison  = '';
-        $hasMoreToken     = true;
-        $isDev            = true;
-        $branch           = '';
-
-        $lexer->resetPosition(0);
-        while ($hasMoreToken) {
-            $token = $lexer->glimpse();
-
-            if (0 == $token['position']) {
-                if (! $lexer->isA(Lexer::T_COMPARISON, $token['type'])) {
-                    $startComparison = '== ';
-                }
-            }
-
-            if ($lexer->isA(Lexer::T_VERSION, $token['type'])) {
-                $version     .= str_replace('x', '9999999.9999999-dev', $token['value']);
-                $hasMoreToken = $lexer->moveNext();
-                continue;                
-            }
-
-            if ($lexer->isA(Lexer::T_STABILITY, $token['type'])) {
-                $stability   .= $token['value'];
-                if ('dev' == $token['value']){
-                    $isDev = true;
-                }
-            }
-
-            if ($lexer->isA(Lexer::T_BRANCH, $token['type'])) {
-                if (false === $isDev) {
-                    $branch      .= $token['value'];
-                }
-            }
-
-            $hasMoreToken = $lexer->moveNext();
+        if (preg_match('{^([^,\s]*?)@('.implode('|', array_keys(BasePackage::$stabilities)).')$}i', $constraints, $match)) {
+            $constraints = empty($match[1]) ? '*' : $match[1];
         }
 
-        $orConstraints = preg_split('{\s*\|\s*}', trim($startComparison . $version));
+        if (preg_match('{^(dev-[^,\s@]+?|[^,\s@]+?\.x-dev)#.+$}i', $constraints, $match)) {
+            $constraints = $match[1];
+        }
 
+        if (preg_match_all('/\(/', $constraints, $match)) {
+            $openParenthesis = count($match[0]);
+        }
+
+        if (preg_match_all('/\)/', $constraints, $match)) {
+            $closeParenthesis = count($match[0]);
+        }
+
+        if ($openParenthesis !== $closeParenthesis) {
+            throw new InvalidArgumentException('Parenthesis are not closed correctly.');
+        }
+
+        preg_match_all('/\(.+\)/', $constraints, $matches);
+
+        $versionObject = array();
+        foreach($matches[0] as $version) {
+            $validVersion = trim($version, '()');
+            $versionObject[$version] = $this->parseConstraints($validVersion);
+        }
+
+        $orConstraints = preg_split('{\s*\|\s*}', trim($constraints));
         $orGroups = array();
+
         foreach ($orConstraints as $constraints) {
             $andConstraints = preg_split('{\s*,\s*}', $constraints);
 
             if (count($andConstraints) > 1) {
                 $constraintObjects = array();
+
                 foreach ($andConstraints as $constraint) {
+                    $constraint = trim($constraint, '()');
                     $constraintObjects = array_merge($constraintObjects, $this->parseConstraint($constraint));
                 }
+
             } else {
                 $constraintObjects = $this->parseConstraint($andConstraints[0]);
             }
