@@ -22,7 +22,7 @@ before_script:
     - mkdir -p /tmp/coverage/tests/Composer/Test/
 script:
     - ls -d tests/Composer/Test/* | grep -Ev "(Fixtures|Mock)" | parallel --gnu --keep-order 'echo "Running {} tests"; ./vendor/bin/phpunit -c tests/complete.phpunit.xml {};' || exit 1
-    - phpcov merge --clover coverage.clover /tmp/coverage/tests/Composer/Test
+    - php phpcov.phar merge --clover coverage.clover /tmp/coverage/tests/Composer/Test
 
 after-script:
     - wget https://scrutinizer-ci.com/ocular.phar
