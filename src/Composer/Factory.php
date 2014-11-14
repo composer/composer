@@ -108,6 +108,11 @@ class Factory
 
         $config = new Config();
 
+        if($io->isDisabledPackagist())
+        {
+            $config->merge(array('repositories' => array('packagist'=>false)));
+        }
+
         // add dirs to the config
         $config->merge(array('config' => array('home' => $home, 'cache-dir' => $cacheDir)));
 
