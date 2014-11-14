@@ -312,6 +312,28 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    public function testParseConstraintsComplexeAggregated()
+    {
+        $parser = new VersionParser;
+        $first  = new VersionConstraint('>', '2.0.0.0');
+        $second = new VersionConstraint('<=', '3.0.0.0');
+        $third  = new VersionConstraint('>', '4.0.0.0');
+        $fourth = new VersionConstraint('>', '5.0.0.0');
+        $fifth  = new VersionConstraint('<=', '6.0.0.0');
+        $sixth  = new VersionConstraint('>', '7.0.0.0');
+
+        $this->assertSame(
+            (string) new MultiConstraint(
+                array(
+                    new MultiConstraint(array($first, $second)),
+                    new MultiConstraint(array($third, new MultiConstraint(array($fourth, $fifth)))),
+                    $sixth
+                ), 
+            false),
+            (string) $parser->parseConstraints('(>2.0,<=3.0) | (>4.0, (>5.0, <=6.0)) | >7.0')
+        );
+    }
+
     public function testParseConstraintsMultiDisjunctiveHasPrioOverConjuctive()
     {
         $parser = new VersionParser;
