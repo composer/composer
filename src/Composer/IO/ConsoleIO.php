@@ -237,4 +237,9 @@ class ConsoleIO extends BaseIO
         // not able to hide the answer, proceed with normal question handling
         return $this->ask($question);
     }
+
+    function getInput()
+    {
+        return $this->input;
+    }
 }

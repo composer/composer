@@ -47,6 +47,7 @@ class UpdateCommand extends Command
                 new InputOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Shows more details including new commits pulled in when updating packages.'),
                 new InputOption('optimize-autoloader', 'o', InputOption::VALUE_NONE, 'Optimize autoloader during autoloader dump.'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore platform requirements (php & ext- packages).'),
+                new InputOption('disable-packagist', null, InputOption::VALUE_NONE, 'Disabled packagist repositories.'),
             ))
             ->setHelp(<<<EOT
 The <info>update</info> command reads the composer.json file from the
