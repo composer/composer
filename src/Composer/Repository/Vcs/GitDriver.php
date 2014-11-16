@@ -227,7 +227,7 @@ class GitDriver extends VcsDriver
         if (Filesystem::isLocalPath($url)) {
             $url = Filesystem::getPlatformPath($url);
             if (!is_dir($url)) {
-                throw new \RuntimeException('Directory does not exist: '.$url);
+                return false;
             }
 
             $process = new ProcessExecutor($io);
