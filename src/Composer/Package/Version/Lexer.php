@@ -84,7 +84,8 @@ final class Lexer extends AbstractLexer
             case ')': return self::T_CLOSE_PARENTHESIS;
             case ',': return self::T_COMMA;
             case '|': return self::T_PIPE;
-            default: self::T_NONE;
         }
+
+        return self::T_NONE;
     }
 }
