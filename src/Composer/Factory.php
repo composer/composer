@@ -88,7 +88,7 @@ class Factory
      * @param  IOInterface|null $io
      * @return Config
      */
-    public static function createConfig(IOInterface $io = null)
+    public static function createConfig(IOInterface $io = null, $disablePackagist = false)
     {
         // determine home and cache dirs
         $home     = self::getHomeDir();
@@ -107,6 +107,11 @@ class Factory
         }
 
         $config = new Config();
+
+        if($disablePackagist)
+        {
+            $config->merge(array('repositories' => array('packagist'=>false)));
+        }
 
         // add dirs to the config
         $config->merge(array('config' => array('home' => $home, 'cache-dir' => $cacheDir)));
@@ -190,7 +195,7 @@ class Factory
      * @throws \UnexpectedValueException
      * @return Composer
      */
-    public function createComposer(IOInterface $io, $localConfig = null, $disablePlugins = false)
+    public function createComposer(IOInterface $io, $localConfig = null, $disablePlugins = false, $disablePackagist = false)
     {
         // load Composer configuration
         if (null === $localConfig) {
@@ -216,7 +221,7 @@ class Factory
         }
 
         // Load config and override with local config/auth config
-        $config = static::createConfig($io);
+        $config = static::createConfig($io, $disablePackagist);
         $config->merge($localConfig);
         if (isset($composerFile)) {
             if ($io && $io->isDebug()) {
@@ -467,10 +472,10 @@ class Factory
      * @param  bool        $disablePlugins Whether plugins should not be loaded
      * @return Composer
      */
-    public static function create(IOInterface $io, $config = null, $disablePlugins = false)
+    public static function create(IOInterface $io, $config = null, $disablePlugins = false, $disablePackagist = false)
     {
         $factory = new static();
 
-        return $factory->createComposer($io, $config, $disablePlugins);
+        return $factory->createComposer($io, $config, $disablePlugins, $disablePackagist);
     }
 }
