@@ -235,15 +235,15 @@ class VersionParser
             throw new InvalidArgumentException('Parenthesis are not closed correctly.');
         }
 
-        preg_match_all('/\(.+\)/', $constraints, $matches);
+        preg_match_all('/\(.+?\)+/', $constraints, $matches);
 
         $versionObject = array();
         foreach($matches[0] as $version) {
-            $versionTreated = substr($version, 1, strlen($version) - 2);
-            $versionObject[$version] = $this->parseConstraints($versionTreated);
+            $version = substr($version, 1, strrpos($version, ')') - 1);
+            $versionObject[$version] = $this->parseConstraints($version);
         }
 
-        $orConstraints = preg_split('{\s*\|\s*}', trim($constraints));
+        $orConstraints = preg_split('{\s*\|\s*}', $constraints);
         $orGroups = array();
 
         foreach ($orConstraints as $constraints) {
@@ -253,12 +253,12 @@ class VersionParser
                 $constraintObjects = array();
 
                 foreach ($andConstraints as $constraint) {
-                    $constraint = (0 === strpos($constraint, '('))
-                        ? substr($constraint, 1)
+                    $constraint = (strpos($constraint, ')'))
+                        ? substr($constraint, 0, strrpos($constraint, ')') - 1)
                         : $constraint;
 
-                    $constraint = (strpos($constraint, ')'))
-                        ? substr($constraint, 0, strpos($constraint, ')') - 1)
+                    $constraint = (0 === strpos($constraint, '('))
+                        ? substr($constraint, 1)
                         : $constraint;
 
                     $constraintObjects = array_merge($constraintObjects, $this->parseConstraint($constraint));
