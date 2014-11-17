@@ -18,8 +18,6 @@ abstract class BaseIO implements IOInterface
 {
     protected $authentications = array();
 
-    protected $disabledPackagist = false;
-
     /**
      * {@inheritDoc}
      */
@@ -77,15 +75,5 @@ abstract class BaseIO implements IOInterface
                 $this->setAuthentication($domain, $cred['username'], $cred['password']);
             }
         }
-    }
-
-    public function disablePackagist()
-    {
-        $this->disabledPackagist = true;
-    }
-
-    public function isDisabledPackagist()
-    {
-        return $this->disabledPackagist;
     }
 }

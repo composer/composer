@@ -77,15 +77,9 @@ EOT
             $input->setOption('no-plugins', true);
         }
 
-        $io = $this->getIO();
-
-        if($input->getOption('disable-packagist'))
-        {
-            $io->disablePackagist();
-        }
-
-        $composer = $this->getComposer(true, $input->getOption('no-plugins'));
+        $composer = $this->getComposer(true, $input->getOption('no-plugins'), $input->getOption('disable-packagist'));
         $composer->getDownloadManager()->setOutputProgress(!$input->getOption('no-progress'));
+        $io = $this->getIO();
 
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'update', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
