@@ -108,7 +108,7 @@ class Factory
 
         $config = new Config();
 
-        if($io->isDisabledPackagist())
+        if(!is_null($io) && $io->isDisabledPackagist())
         {
             $config->merge(array('repositories' => array('packagist'=>false)));
         }
