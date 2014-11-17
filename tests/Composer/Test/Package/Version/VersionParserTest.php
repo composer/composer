@@ -312,7 +312,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function testParseConstraintsComplexeAggregated()
+    public function testParseConstraintsComplexAggregated()
     {
         $parser = new VersionParser;
         $first  = new VersionConstraint('>', '2.0.0.0');
@@ -326,12 +326,23 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             (string) new MultiConstraint(
                 array(
                     new MultiConstraint(array($first, $second)),
-                    new MultiConstraint(array($third, new MultiConstraint(array($fourth, $fifth)))),
+                    new MultiConstraint(array($third, $fourth, $fifth)),
                     $sixth
                 ), 
             false),
             (string) $parser->parseConstraints('(>2.0,<=3.0) | (>4.0, (>5.0, <=6.0)) | >7.0')
         );
+    }
+
+    public function testParseWithWrongParenthesis()
+    {
+        $this->setExpectedException(
+            'InvalidArgumentException',
+            'Parenthesis are not closed correctly.'
+        );
+
+        $parser = new VersionParser;
+        $parser->parseConstraints('(>2.0,<=3.0');
     }
 
     public function testParseConstraintsMultiDisjunctiveHasPrioOverConjuctive()
