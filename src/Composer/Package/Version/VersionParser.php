@@ -222,8 +222,6 @@ class VersionParser
     public function parseConstraints($constraints)
     {
         $prettyConstraint = $constraints;
-        $openParenthesis  = 0;
-        $closeParenthesis = 0;
 
         if (preg_match('{^([^,\s]*?)@('.implode('|', array_keys(BasePackage::$stabilities)).')$}i', $constraints, $match)) {
             $constraints = empty($match[1]) ? '*' : $match[1];
@@ -233,15 +231,7 @@ class VersionParser
             $constraints = $match[1];
         }
 
-        if (preg_match_all('/\(/', $constraints, $match)) {
-            $openParenthesis = count($match[0]);
-        }
-
-        if (preg_match_all('/\)/', $constraints, $match)) {
-            $closeParenthesis = count($match[0]);
-        }
-
-        if ($openParenthesis !== $closeParenthesis) {
+        if (substr_count($constraints, ')') !== substr_count($constraints, '(')) {
             throw new InvalidArgumentException('Parenthesis are not closed correctly.');
         }
 
@@ -249,8 +239,8 @@ class VersionParser
 
         $versionObject = array();
         foreach($matches[0] as $version) {
-            $validVersion = trim($version, '()');
-            $versionObject[$version] = $this->parseConstraints($validVersion);
+            $versionTreated = substr($version, 1, strlen($version) - 2);
+            $versionObject[$version] = $this->parseConstraints($versionTreated);
         }
 
         $orConstraints = preg_split('{\s*\|\s*}', trim($constraints));
@@ -263,7 +253,14 @@ class VersionParser
                 $constraintObjects = array();
 
                 foreach ($andConstraints as $constraint) {
-                    $constraint = trim($constraint, '()');
+                    $constraint = (0 === strpos($constraint, '('))
+                        ? substr($constraint, 1)
+                        : $constraint;
+
+                    $constraint = (strpos($constraint, ')'))
+                        ? substr($constraint, 0, strpos($constraint, ')') - 1)
+                        : $constraint;
+
                     $constraintObjects = array_merge($constraintObjects, $this->parseConstraint($constraint));
                 }
 
