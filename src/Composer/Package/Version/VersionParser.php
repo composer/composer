@@ -288,6 +288,67 @@ class VersionParser
         return $constraint;
     }
 
+    public function createVersion($version)
+    {
+        $lexer = new Lexer();
+        $lexer->setInput($version);
+
+        $openParenthesis  = 0;
+        $closeParenthesis = 0;
+        $or               = 0;
+
+        $group    = array();
+        $versions = array();
+
+        do {
+            $token = $lexer->glimpse();
+
+            if (Lexer::T_OPEN_PARENTHESIS == $token['type']) {
+                $openParenthesis++;
+            }
+
+            if (Lexer::T_CLOSE_PARENTHESIS == $token['type']) {
+                $closeParenthesis++;
+                if ($openParenthesis === $closeParenthesis) {
+                    $versions[$openParenthesis] = $this->parseConstraints($group[$openParenthesis]);
+                }
+
+                continue;
+            }
+
+            // has a group opened
+            if (0 !== $openParenthesis && $openParenthesis !== $closeParenthesis) {
+                // Don't storage the parenthesis
+                if (Lexer::T_OPEN_PARENTHESIS !== $token['type']
+                    && Lexer::T_CLOSE_PARENTHESIS !== $token['type']
+                ) {
+                    $group[$openParenthesis] = isset($group[$openParenthesis])
+                        ? $group[$openParenthesis] .= $token['value']
+                        : $group[$openParenthesis] = $token['value'];
+                }
+            }
+
+            if ($openParenthesis === $closeParenthesis) {
+                if (Lexer::T_PIPE == $token['type']) {
+                    $or++;
+                    continue;
+                }
+
+                $normalGroup = $openParenthesis + 1;
+                if (isset($group[$normalGroup])) {
+                    $group[$normalGroup] .= $token['value'];
+                } else {
+                    $group[$normalGroup] = $token['value'];
+                }
+            }
+
+
+
+        } while ($lexer->moveNext());
+
+        return new MultiConstraint($versions, $or ? false : true);
+    }
+
     private function parseConstraint($constraint)
     {
         if (preg_match('{^([^,\s]+?)@('.implode('|', array_keys(BasePackage::$stabilities)).')$}i', $constraint, $match)) {
