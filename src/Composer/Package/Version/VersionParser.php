@@ -297,8 +297,9 @@ class VersionParser
         $closeParenthesis = 0;
         $or               = 0;
 
-        $group    = array();
-        $versions = array();
+        $groupLevel   = 0;
+        $group        = array();
+        $versions     = array();
 
         do {
             $token = $lexer->glimpse();
@@ -309,8 +310,35 @@ class VersionParser
 
             if (Lexer::T_CLOSE_PARENTHESIS == $token['type']) {
                 $closeParenthesis++;
+
+                if ($openParenthesis > $closeParenthesis) {
+                    $groupLevel++;
+                    continue;
+                }
+
                 if ($openParenthesis === $closeParenthesis) {
-                    $versions[$openParenthesis] = $this->parseConstraints($group[$openParenthesis]);
+
+                    if (! $groupLevel) {
+                        $versions[$openParenthesis] = $this->parseConstraints($group[$closeParenthesis - $groupLevel]);
+                        continue;
+                    }
+
+                    while ($groupLevel) {
+                        $opened = ($openParenthesis - $groupLevel);
+
+                        if (isset($versions[$opened]) && $versions[$opened] instanceof MultiConstraint) {
+                            echo 'Instance here';
+                            $groupWith = $versions[$opened];
+                        } else {
+                            $groupWith = $this->parseConstraints(trim($group[$opened], ','));
+                        }
+
+                        $versions[$openParenthesis] = new MultiConstraint(array(
+                                $groupWith,
+                                $this->parseConstraints($group[$openParenthesis]))
+                        );
+                        $groupLevel--;
+                    }
                 }
 
                 continue;
@@ -342,11 +370,13 @@ class VersionParser
                 }
             }
 
-
-
         } while ($lexer->moveNext());
 
-        return new MultiConstraint($versions, $or ? false : true);
+        if ($group[$normalGroup]) {
+            $versions[$normalGroup] = $this->parseConstraints($group[$normalGroup]);
+        }
+
+        return new MultiConstraint($versions, !$or);
     }
 
     private function parseConstraint($constraint)
