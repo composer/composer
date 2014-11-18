@@ -288,6 +288,11 @@ class VersionParser
         return $constraint;
     }
 
+    /**
+     * @param string $version
+     *
+     * @return MultiConstraint
+     */
     public function createVersion($version)
     {
         $lexer = new Lexer();
@@ -327,7 +332,6 @@ class VersionParser
                         $opened = ($openParenthesis - $groupLevel);
 
                         if (isset($versions[$opened]) && $versions[$opened] instanceof MultiConstraint) {
-                            echo 'Instance here';
                             $groupWith = $versions[$opened];
                         } else {
                             $groupWith = $this->parseConstraints(trim($group[$opened], ','));
@@ -337,6 +341,7 @@ class VersionParser
                                 $groupWith,
                                 $this->parseConstraints($group[$openParenthesis]))
                         );
+
                         $groupLevel--;
                     }
                 }
