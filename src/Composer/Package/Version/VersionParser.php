@@ -321,29 +321,30 @@ class VersionParser
                     continue;
                 }
 
-                if ($openParenthesis === $closeParenthesis) {
+                if ($openParenthesis !== $closeParenthesis) {
+                    continue;
+                }
 
-                    if (! $groupLevel) {
-                        $versions[$openParenthesis] = $this->parseConstraints($group[$closeParenthesis - $groupLevel]);
-                        continue;
+                if (! $groupLevel) {
+                    $versions[$openParenthesis] = $this->parseConstraints($group[$closeParenthesis - $groupLevel]);
+                    continue;
+                }
+
+                while ($groupLevel) {
+                    $opened = ($openParenthesis - $groupLevel);
+
+                    if (isset($versions[$opened]) && $versions[$opened] instanceof MultiConstraint) {
+                        $groupWith = $versions[$opened];
+                    } else {
+                        $groupWith = $this->parseConstraints(trim($group[$opened], ','));
                     }
 
-                    while ($groupLevel) {
-                        $opened = ($openParenthesis - $groupLevel);
+                    $versions[$openParenthesis] = new MultiConstraint(array(
+                            $groupWith,
+                            $this->parseConstraints($group[$openParenthesis]))
+                    );
 
-                        if (isset($versions[$opened]) && $versions[$opened] instanceof MultiConstraint) {
-                            $groupWith = $versions[$opened];
-                        } else {
-                            $groupWith = $this->parseConstraints(trim($group[$opened], ','));
-                        }
-
-                        $versions[$openParenthesis] = new MultiConstraint(array(
-                                $groupWith,
-                                $this->parseConstraints($group[$openParenthesis]))
-                        );
-
-                        $groupLevel--;
-                    }
+                    $groupLevel--;
                 }
 
                 continue;
