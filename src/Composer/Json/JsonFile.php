@@ -187,7 +187,7 @@ class JsonFile
             $json = json_encode($data, $options);
 
             //  compact brackets to follow recent php versions
-            if (PHP_VERSION_ID < 50428 || (PHP_VERSION_ID >= 50500 && PHP_VERSION_ID < 50512) || (defined('JSON_C_VERSION') && version_compare(php_version('json'), '1.3.6', '<'))) {
+            if (PHP_VERSION_ID < 50428 || (PHP_VERSION_ID >= 50500 && PHP_VERSION_ID < 50512) || (defined('JSON_C_VERSION') && version_compare(phpversion('json'), '1.3.6', '<'))) {
                 $json = preg_replace('/\[\s+\]/', '[]', $json);
                 $json = preg_replace('/\{\s+\}/', '{}', $json);
             }
