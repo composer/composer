@@ -165,6 +165,9 @@ php composer.phar require vendor/package:2.* vendor/package2:dev-master
 
 * **--prefer-source:** Install packages from `source` when available.
 * **--prefer-dist:** Install packages from `dist` when available.
+* **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
+  requirements and force the installation even if the local machine does not
+  fulfill these.
 * **--dev:** Add packages to `require-dev`.
 * **--no-update:** Disables the automatic update of the dependencies.
 * **--no-progress:** Removes the progress display that can mess with some
@@ -186,6 +189,9 @@ After removing the requirements, the modified requirements will be
 uninstalled.
 
 ### Options
+* **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
+  requirements and force the installation even if the local machine does not
+  fulfill these.
 * **--dev:** Remove packages from `require-dev`.
 * **--no-update:** Disables the automatic update of the dependencies.
 * **--no-progress:** Removes the progress display that can mess with some
