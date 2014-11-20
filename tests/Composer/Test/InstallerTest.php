@@ -283,6 +283,21 @@ class InstallerTest extends TestCase
                     $message = $match['test'];
                     $condition = !empty($match['condition']) ? $match['condition'] : null;
                     $composer = JsonFile::parseJson($match['composer']);
+
+                    if (isset($composer['repositories'])) {
+                        foreach ($composer['repositories'] as &$repo) {
+                            if ($repo['type'] !== 'composer') {
+                                continue;
+                            }
+
+                            if (preg_match('{^file://[^/]}', $repo['url'])) {
+                                $repo['url'] = "file://${fixturesDir}/" . substr($repo['url'], 7);
+                            }
+
+                            unset($repo);
+                        }
+                    }
+
                     if (!empty($match['lock'])) {
                         $lock = JsonFile::parseJson($match['lock']);
                         if (!isset($lock['hash'])) {
