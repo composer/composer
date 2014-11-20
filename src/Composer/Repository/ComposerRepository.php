@@ -381,25 +381,6 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
                         }
                     }
                 } else {
-                    if (isset($version['provide']) || isset($version['replace'])) {
-                        // collect names
-                        $names = array(
-                            strtolower($version['name']) => true,
-                        );
-                        if (isset($version['provide'])) {
-                            foreach ($version['provide'] as $target => $constraint) {
-                                $names[strtolower($target)] = true;
-                            }
-                        }
-                        if (isset($version['replace'])) {
-                            foreach ($version['replace'] as $target => $constraint) {
-                                $names[strtolower($target)] = true;
-                            }
-                        }
-                        $names = array_keys($names);
-                    } else {
-                        $names = array(strtolower($version['name']));
-                    }
                     if (!$pool->isPackageAcceptable(strtolower($version['name']), VersionParser::parseStability($version['version']))) {
                         continue;
                     }

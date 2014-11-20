@@ -45,6 +45,7 @@ class Pool
     protected $providerRepos = array();
     protected $packages = array();
     protected $packageByName = array();
+    protected $packageByExactName = array();
     protected $acceptableStabilities;
     protected $stabilityFlags;
     protected $versionParser;
@@ -122,6 +123,7 @@ class Pool
                         $package['id'] = $this->id++;
                         $package['stability'] = $stability;
                         $this->packages[] = $package;
+                        $this->packageByExactName[$package->getName()][$package['id']] = $this->packages[$this->id - 2];
 
                         foreach ($names as $provided) {
                             $this->packageByName[$provided][$package['id']] = $this->packages[$this->id - 2];
@@ -144,6 +146,7 @@ class Pool
                             $alias['id'] = $this->id++;
                             $alias['root_alias'] = true;
                             $this->packages[] = $alias;
+                            $this->packageByExactName[$package->getName()][$alias['id']] = $this->packages[$this->id - 2];
 
                             foreach ($names as $provided) {
                                 $this->packageByName[$provided][$alias['id']] = $this->packages[$this->id - 2];
@@ -159,6 +162,7 @@ class Pool
                             $alias['alias_of'] = $package['id'];
                             $alias['id'] = $this->id++;
                             $this->packages[] = $alias;
+                            $this->packageByExactName[$package->getName()][$alias['id']] = $this->packages[$this->id - 2];
 
                             foreach ($names as $provided) {
                                 $this->packageByName[$provided][$alias['id']] = $this->packages[$this->id - 2];
@@ -173,6 +177,7 @@ class Pool
                     if ($exempt || $this->isPackageAcceptable($names, $stability)) {
                         $package->setId($this->id++);
                         $this->packages[] = $package;
+                        $this->packageByExactName[$package->getName()][$package->getId()] = $package;
 
                         foreach ($names as $provided) {
                             $this->packageByName[$provided][] = $package;
@@ -191,6 +196,7 @@ class Pool
 
                             $package->getRepository()->addPackage($aliasPackage);
                             $this->packages[] = $aliasPackage;
+                            $this->packageByExactName[$aliasPackage->getName()][$aliasPackage->getId()] = $aliasPackage;
 
                             foreach ($aliasPackage->getNames() as $name) {
                                 $this->packageByName[$name][] = $aliasPackage;
@@ -261,7 +267,14 @@ class Pool
             }
         }
 
-        if (isset($this->packageByName[$name])) {
+        if ($mustMatchName) {
+            $candidates = array_filter($candidates, function ($candidate) use ($name) {
+                return $candidate->getName() == $name;
+            });
+            if (isset($this->packageByExactName[$name])) {
+                $candidates = array_merge($candidates, $this->packageByExactName[$name]);
+            }
+        } elseif (isset($this->packageByName[$name])) {
             $candidates = array_merge($candidates, $this->packageByName[$name]);
         }
 
@@ -311,12 +324,6 @@ class Pool
                 default:
                     throw new \UnexpectedValueException('Unexpected match type');
             }
-        }
-
-        if ($mustMatchName) {
-            return array_filter($matches, function ($match) use ($name) {
-                return $match->getName() == $name;
-            });
         }
 
         // if a package with the required name exists, we ignore providers
