@@ -173,9 +173,11 @@ class Locker
         return isset($lockData['stability-flags']) ? $lockData['stability-flags'] : array();
     }
 
-     /*
+     /**
      * Return null if not set to allow caller logic to choose the right behavior 
      * since old lock files have no prefer-stable
+     * 
+     *  @return string|null
      */
     public function getPreferStable()
     {
