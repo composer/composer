@@ -123,7 +123,7 @@ class Pool
                         $package['id'] = $this->id++;
                         $package['stability'] = $stability;
                         $this->packages[] = $package;
-                        $this->packageByExactName[$package->getName()][$package['id']] = $this->packages[$this->id - 2];
+                        $this->packageByExactName[$name][$package['id']] = $this->packages[$this->id - 2];
 
                         foreach ($names as $provided) {
                             $this->packageByName[$provided][$package['id']] = $this->packages[$this->id - 2];
@@ -146,7 +146,7 @@ class Pool
                             $alias['id'] = $this->id++;
                             $alias['root_alias'] = true;
                             $this->packages[] = $alias;
-                            $this->packageByExactName[$package->getName()][$alias['id']] = $this->packages[$this->id - 2];
+                            $this->packageByExactName[$name][$alias['id']] = $this->packages[$this->id - 2];
 
                             foreach ($names as $provided) {
                                 $this->packageByName[$provided][$alias['id']] = $this->packages[$this->id - 2];
@@ -162,7 +162,7 @@ class Pool
                             $alias['alias_of'] = $package['id'];
                             $alias['id'] = $this->id++;
                             $this->packages[] = $alias;
-                            $this->packageByExactName[$package->getName()][$alias['id']] = $this->packages[$this->id - 2];
+                            $this->packageByExactName[$name][$alias['id']] = $this->packages[$this->id - 2];
 
                             foreach ($names as $provided) {
                                 $this->packageByName[$provided][$alias['id']] = $this->packages[$this->id - 2];
