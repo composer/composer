@@ -30,7 +30,7 @@ use Composer\EventDispatcher\EventDispatcher;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class ComposerRepository extends ArrayRepository implements StreamableRepositoryInterface
+class ComposerRepository extends ArrayRepository
 {
     protected $config;
     protected $options;
@@ -168,49 +168,6 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
     /**
      * {@inheritDoc}
      */
-    public function getMinimalPackages()
-    {
-        if (isset($this->minimalPackages)) {
-            return $this->minimalPackages;
-        }
-
-        if (null === $this->rawData) {
-            $this->rawData = $this->loadDataFromServer();
-        }
-
-        $this->minimalPackages = array();
-        $versionParser = new VersionParser;
-
-        foreach ($this->rawData as $package) {
-            $version = !empty($package['version_normalized']) ? $package['version_normalized'] : $versionParser->normalize($package['version']);
-            $data = array(
-                'name' => strtolower($package['name']),
-                'repo' => $this,
-                'version' => $version,
-                'raw' => $package,
-            );
-            if (!empty($package['replace'])) {
-                $data['replace'] = $package['replace'];
-            }
-            if (!empty($package['provide'])) {
-                $data['provide'] = $package['provide'];
-            }
-
-            // add branch aliases
-            if ($aliasNormalized = $this->loader->getBranchAlias($package)) {
-                $data['alias'] = preg_replace('{(\.9{7})+}', '.x', $aliasNormalized);
-                $data['alias_normalized'] = $aliasNormalized;
-            }
-
-            $this->minimalPackages[] = $data;
-        }
-
-        return $this->minimalPackages;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public function search($query, $mode = 0)
     {
         $this->loadRootServerFile();
@@ -262,20 +219,6 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
         return $providers;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function loadPackage(array $data)
-    {
-        $package = $this->createPackage($data['raw'], 'Composer\Package\Package');
-        if ($package instanceof AliasPackage) {
-            $package = $package->getAliasOf();
-        }
-        $package->setRepository($this);
-
-        return $package;
-    }
-
     protected function configurePackageTransportOptions(PackageInterface $package)
     {
         foreach ($package->getDistUrls() as $url) {
@@ -285,17 +228,6 @@ class ComposerRepository extends ArrayRepository implements StreamableRepository
                 return;
             }
         }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function loadAliasPackage(array $data, PackageInterface $aliasOf)
-    {
-        $aliasPackage = $this->createAliasPackage($aliasOf, $data['version'], $data['alias']);
-        $aliasPackage->setRepository($this);
-
-        return $aliasPackage;
     }
 
     public function hasProviders()
