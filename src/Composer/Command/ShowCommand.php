@@ -294,6 +294,16 @@ EOT
         $output->writeln('<info>dist</info>     : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getDistType(), $package->getDistUrl(), $package->getDistReference()));
         $output->writeln('<info>names</info>    : ' . implode(', ', $package->getNames()));
 
+        if ($package->isAbandoned()) {
+            $replacement = ($package->getReplacementPackage() !== null)
+                ? ' The author suggests using the ' . $package->getReplacementPackage(). ' package instead.'
+                : null;
+
+            $output->writeln(
+                sprintf('<error>Attention: This package is abandoned and no longer maintained.%s</error>', $replacement)
+            );
+        }
+
         if ($package->getSupport()) {
             $output->writeln("\n<info>support</info>");
             foreach ($package->getSupport() as $type => $value) {
