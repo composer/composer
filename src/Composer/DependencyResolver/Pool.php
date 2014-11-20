@@ -217,9 +217,8 @@ class Pool
             }
 
             if ($this->whitelist !== null && (
-                (is_array($candidate) && isset($candidate['id']) && !isset($this->whitelist[$candidate['id']])) ||
-                (is_object($candidate) && !($candidate instanceof AliasPackage) && !isset($this->whitelist[$candidate->getId()])) ||
-                (is_object($candidate) && $candidate instanceof AliasPackage && !isset($this->whitelist[$aliasOfCandidate->getId()]))
+                (!($candidate instanceof AliasPackage) && !isset($this->whitelist[$candidate->getId()])) ||
+                ($candidate instanceof AliasPackage && !isset($this->whitelist[$aliasOfCandidate->getId()]))
             )) {
                 continue;
             }
@@ -313,19 +312,10 @@ class Pool
      */
     private function match($candidate, $name, LinkConstraintInterface $constraint = null)
     {
-        // handle array packages
-        if (is_array($candidate)) {
-            $candidateName = $candidate['name'];
-            $candidateVersion = $candidate['version'];
-            $isDev = $candidate['stability'] === 'dev';
-            $isAlias = isset($candidate['alias_of']);
-        } else {
-            // handle object packages
-            $candidateName = $candidate->getName();
-            $candidateVersion = $candidate->getVersion();
-            $isDev = $candidate->getStability() === 'dev';
-            $isAlias = $candidate instanceof AliasPackage;
-        }
+        $candidateName = $candidate->getName();
+        $candidateVersion = $candidate->getVersion();
+        $isDev = $candidate->getStability() === 'dev';
+        $isAlias = $candidate instanceof AliasPackage;
 
         if (!$isDev && !$isAlias && isset($this->filterRequires[$name])) {
             $requireFilter = $this->filterRequires[$name];
@@ -343,17 +333,8 @@ class Pool
             return self::MATCH_NAME;
         }
 
-        if (is_array($candidate)) {
-            $provides = isset($candidate['provide'])
-                ? $this->versionParser->parseLinks($candidateName, $candidateVersion, 'provides', $candidate['provide'])
-                : array();
-            $replaces = isset($candidate['replace'])
-                ? $this->versionParser->parseLinks($candidateName, $candidateVersion, 'replaces', $candidate['replace'])
-                : array();
-        } else {
-            $provides = $candidate->getProvides();
-            $replaces = $candidate->getReplaces();
-        }
+        $provides = $candidate->getProvides();
+        $replaces = $candidate->getReplaces();
 
         // aliases create multiple replaces/provides for one target so they can not use the shortcut below
         if (isset($replaces[0]) || isset($provides[0])) {
