@@ -47,6 +47,7 @@ class UpdateCommand extends Command
                 new InputOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Shows more details including new commits pulled in when updating packages.'),
                 new InputOption('optimize-autoloader', 'o', InputOption::VALUE_NONE, 'Optimize autoloader during autoloader dump.'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore platform requirements (php & ext- packages).'),
+                new InputOption('prefer-lowest-stable', null, InputOption::VALUE_NONE, 'Forces all packages to their lowest stable version.'),
             ))
             ->setHelp(<<<EOT
 The <info>update</info> command reads the composer.json file from the
@@ -121,6 +122,7 @@ EOT
             ->setUpdateWhitelist($input->getOption('lock') ? array('lock') : $input->getArgument('packages'))
             ->setWhitelistDependencies($input->getOption('with-dependencies'))
             ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'))
+            ->setPreferLowestStable($input->getOption('prefer-lowest-stable'))
         ;
 
         if ($input->getOption('no-plugins')) {
