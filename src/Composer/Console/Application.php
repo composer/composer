@@ -94,9 +94,17 @@ class Application extends BaseApplication
             $output->writeln('<warning>Composer only officially supports PHP 5.3.2 and above, you will most likely encounter problems with your PHP '.PHP_VERSION.', upgrading is strongly recommended.</warning>');
         }
 
-        if (defined('COMPOSER_DEV_WARNING_TIME') && $this->getCommandName($input) !== 'self-update' && $this->getCommandName($input) !== 'selfupdate') {
-            if (time() > COMPOSER_DEV_WARNING_TIME) {
-                $output->writeln(sprintf('<warning>Warning: This development build of composer is over 30 days old. It is recommended to update it by running "%s self-update" to get the latest version.</warning>', $_SERVER['PHP_SELF']));
+        if (defined('COMPOSER_DEV_WARNING_TIME')) {
+            $commandName = '';
+            if ($name = $this->getCommandName($input)) {
+                try {
+                    $commandName = $this->find($name)->getName();
+                } catch (\InvalidArgumentException $e) {}
+            }
+            if ($commandName !== 'self-update' && $commandName !== 'selfupdate') {
+                if (time() > COMPOSER_DEV_WARNING_TIME) {
+                    $output->writeln(sprintf('<warning>Warning: This development build of composer is over 30 days old. It is recommended to update it by running "%s self-update" to get the latest version.</warning>', $_SERVER['PHP_SELF']));
+                }
             }
         }
 
