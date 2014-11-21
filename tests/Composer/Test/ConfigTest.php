@@ -16,39 +16,6 @@ use Composer\Config;
 
 class ConfigTest extends \PHPUnit_Framework_TestCase
 {
-    private static $envVars = array(
-        'VENDOR_DIR',
-        'BIN_DIR',
-        'PROCESS_TIMEOUT',
-        'CACHE_DIR',
-        'CACHE_FILES_DIR',
-        'CACHE_REPO_DIR',
-        'CACHE_VCS_DIR',
-        'DISCARD_CHANGES',
-    );
-
-    private $envVarValues = array();
-
-    public function setUp()
-    {
-        foreach (self::$envVars as $var) {
-            $var = 'COMPOSER_' . $var;
-
-            if ($value = getenv($var)) {
-                $this->envVarValues[$var] = $value;
-
-                putenv($var . '=');
-            }
-        }
-    }
-
-    public function tearDown()
-    {
-        foreach ($this->envVarValues as $var => $value) {
-            putenv(sprintf('%s=%s', $var, $value));
-        }
-    }
-
     /**
      * @dataProvider dataAddPackagistRepository
      */
