@@ -88,6 +88,7 @@ resolution.
   installation and show you what would happen.
 * **--dev:** Install packages listed in `require-dev` (this is the default behavior).
 * **--no-dev:** Skip installing packages listed in `require-dev`.
+* **--no-autoloader:** Skips autoloader generation.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--no-plugins:** Disables plugins.
 * **--no-progress:** Removes the progress display that can mess with some
@@ -130,6 +131,7 @@ php composer.phar update vendor/*
 * **--dry-run:** Simulate the command without actually doing anything.
 * **--dev:** Install packages listed in `require-dev` (this is the default behavior).
 * **--no-dev:** Skip installing packages listed in `require-dev`.
+* **--no-autoloader:** Skips autoloader generation.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--no-plugins:** Disables plugins.
 * **--no-progress:** Removes the progress display that can mess with some
