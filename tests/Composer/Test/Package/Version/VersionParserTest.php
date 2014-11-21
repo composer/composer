@@ -375,6 +375,21 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    public function testMultiConstraintsSyntax()
+    {
+        $parser = new VersionParser;
+
+        $this->assertSame(
+            '((> 2.0.0.0, <= 3.0.0.0) | (> 4.0.0.0, > 5.0.0.0))',
+            (string) $parser->parseConstraints('(>2.0,<=3.0) | (>4.0,>5.0)')
+        );
+
+        $this->assertSame(
+            '((> 2.0.0.0, <= 3.0.0.0) | (> 4.0.0.0, > 5.0.0.0))',
+            (string) $parser->parseConstraints('((> 2.0.0.0, <= 3.0.0.0) | (> 4.0.0.0, > 5.0.0.0))')
+        );
+    }
+
     public function testParseWithWrongParenthesis()
     {
         $this->setExpectedException(
