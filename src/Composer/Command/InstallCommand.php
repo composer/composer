@@ -41,6 +41,7 @@ class InstallCommand extends Command
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables installation of require-dev packages.'),
                 new InputOption('no-plugins', null, InputOption::VALUE_NONE, 'Disables all plugins.'),
                 new InputOption('no-custom-installers', null, InputOption::VALUE_NONE, 'DEPRECATED: Use no-plugins instead.'),
+                new InputOption('no-autoloader', null, InputOption::VALUE_NONE, 'Skips autoloader generation'),
                 new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Skips the execution of all scripts defined in composer.json file.'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
                 new InputOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Shows more details including new commits pulled in when updating packages.'),
@@ -113,6 +114,7 @@ EOT
             ->setPreferSource($preferSource)
             ->setPreferDist($preferDist)
             ->setDevMode(!$input->getOption('no-dev'))
+            ->setRunAutoloader(!$input->getOption('no-autoloader'))
             ->setRunScripts(!$input->getOption('no-scripts'))
             ->setOptimizeAutoloader($optimize)
             ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'))
