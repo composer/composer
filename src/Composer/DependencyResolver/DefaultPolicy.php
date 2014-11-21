@@ -215,26 +215,6 @@ class DefaultPolicy implements PolicyInterface
         return $bestLiterals;
     }
 
-    protected function selectNewestPackages(array $installedMap, array $literals)
-    {
-        $maxLiterals = array($literals[0]);
-        $maxPackage = $literals[0]->getPackage();
-        foreach ($literals as $i => $literal) {
-            if (0 === $i) {
-                continue;
-            }
-
-            if ($this->versionCompare($literal->getPackage(), $maxPackage, '>')) {
-                $maxPackage = $literal->getPackage();
-                $maxLiterals = array($literal);
-            } elseif ($this->versionCompare($literal->getPackage(), $maxPackage, '==')) {
-                $maxLiterals[] = $literal;
-            }
-        }
-
-        return $maxLiterals;
-    }
-
     /**
      * Assumes that installed packages come first and then all highest priority packages
      */
