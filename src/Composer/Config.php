@@ -58,12 +58,17 @@ class Config
     private $repositories;
     private $configSource;
     private $authConfigSource;
+    private $useEnvironment;
 
-    public function __construct()
+    /**
+     * @param boolean $useEnvironment Use COMPOSER_ environment variables to replace config settings
+     */
+    public function __construct($useEnvironment = true)
     {
         // load defaults
         $this->config = static::$defaultConfig;
         $this->repositories = static::$defaultRepositories;
+        $this->useEnvironment = (bool) $useEnvironment;
     }
 
     public function setConfigSource(ConfigSourceInterface $source)
@@ -159,7 +164,7 @@ class Config
                 // convert foo-bar to COMPOSER_FOO_BAR and check if it exists since it overrides the local config
                 $env = 'COMPOSER_' . strtoupper(strtr($key, '-', '_'));
 
-                $val = rtrim($this->process(getenv($env) ?: $this->config[$key]), '/\\');
+                $val = rtrim($this->process($this->getComposerEnv($env) ?: $this->config[$key]), '/\\');
                 $val = preg_replace('#^(\$HOME|~)(/|$)#', rtrim(getenv('HOME') ?: getenv('USERPROFILE'), '/\\') . '/', $val);
 
                 return $val;
@@ -201,7 +206,7 @@ class Config
                 return rtrim($this->process($this->config[$key]), '/\\');
 
             case 'discard-changes':
-                if ($env = getenv('COMPOSER_DISCARD_CHANGES')) {
+                if ($env = $this->getComposerEnv('COMPOSER_DISCARD_CHANGES')) {
                     if (!in_array($env, array('stash', 'true', 'false', '1', '0'), true)) {
                         throw new \RuntimeException(
                             "Invalid value for COMPOSER_DISCARD_CHANGES: {$env}. Expected 1, 0, true, false or stash"
@@ -287,5 +292,23 @@ class Config
         return preg_replace_callback('#\{\$(.+)\}#', function ($match) use ($config) {
             return $config->get($match[1]);
         }, $value);
+    }
+
+    /**
+     * Reads the value of a Composer environment variable
+     *
+     * This should be used to read COMPOSER_ environment variables
+     * that overload config values.
+     *
+     * @param  string $var
+     * @return string|boolean
+     */
+    private function getComposerEnv($var)
+    {
+        if ($this->useEnvironment) {
+            return getenv($var);
+        }
+
+        return false;
     }
 }
