@@ -21,7 +21,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddPackagistRepository($expected, $localConfig, $systemConfig = null)
     {
-        $config = new Config();
+        $config = new Config(false);
         if ($systemConfig) {
             $config->merge(array('repositories' => $systemConfig));
         }
@@ -102,7 +102,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
     public function testMergeGithubOauth()
     {
-        $config = new Config();
+        $config = new Config(false);
         $config->merge(array('config' => array('github-oauth' => array('foo' => 'bar'))));
         $config->merge(array('config' => array('github-oauth' => array('bar' => 'baz'))));
 
@@ -111,7 +111,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
     public function testVarReplacement()
     {
-        $config = new Config();
+        $config = new Config(false);
         $config->merge(array('config' => array('a' => 'b', 'c' => '{$a}')));
         $config->merge(array('config' => array('bin-dir' => '$HOME', 'cache-dir' => '~/foo/')));
 
@@ -123,7 +123,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
     public function testOverrideGithubProtocols()
     {
-        $config = new Config();
+        $config = new Config(false);
         $config->merge(array('config' => array('github-protocols' => array('https', 'git'))));
         $config->merge(array('config' => array('github-protocols' => array('https'))));
 
