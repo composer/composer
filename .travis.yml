@@ -8,16 +8,23 @@ php:
   - 5.6
   - hhvm
 
+matrix:
+  include:
+    - php: 5.3.3
+      env: lowest=1
+
 before_script:
     - sudo apt-get install parallel
     - rm -f ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini
-    - composer install --prefer-source
-    - bin/composer install --prefer-source
     - git config --global user.name travis-ci
     - git config --global user.email travis@example.com
 
+install:
+    - composer install --prefer-source
+    - if [ "$lowest" = "1" ]; then bin/composer update --prefer-lowest --prefer-stable --prefer-source --no-dev; else bin/composer install --prefer-source --no-dev; fi;
+
 script:
-    - ls -d tests/Composer/Test/* | parallel --gnu --keep-order 'echo "Running {} tests"; ./vendor/bin/phpunit -c tests/complete.phpunit.xml {};'
+    - ls -d tests/Composer/Test/* | parallel --gnu --keep-order 'echo "Running {} tests"; phpunit -c tests/complete.phpunit.xml {};'
 
 git:
   depth: 5

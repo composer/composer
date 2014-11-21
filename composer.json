@@ -27,7 +27,7 @@
         "seld/jsonlint": "~1.0",
         "symfony/console": "~2.3",
         "symfony/finder": "~2.2",
-        "symfony/process": "~2.1"
+        "symfony/process": "~2.3"
     },
     "require-dev": {
         "phpunit/phpunit": "~4.0"
