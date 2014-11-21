@@ -330,7 +330,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
                     $sixth
                 ), 
             false),
-            (string) $parser->parseConstraints('(>2.0,<=3.0) | (>4.0, (>5.0, <=6.0)) | >7.0')
+            (string) $parser->parseConstraints('(>2.0,<=3.0) | (>4.0, >5.0, <=6.0) | >7.0')
         );
     }
 
@@ -345,15 +345,15 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
         $sixth  = new VersionConstraint('>', '7.0.0.0');
 
         $this->assertSame(
-            (string) new MultiConstraint(
-                array(
-                    new MultiConstraint(array($first, $second)),
-                    new MultiConstraint(array($third, new MultiConstraint(array($fourth, $fifth)))),
-                    $sixth
-                ),
-                false),
-            (string) $parser->createVersion('(>2.0,<=3.0) | (>4.0, (>5.0, <=6.0)) | >7.0')
-        );
+             (string) new MultiConstraint(
+                 array(
+                     new MultiConstraint(array($first, $second)),
+                     new MultiConstraint(array($third, new MultiConstraint(array($fourth, $fifth)))),
+                     $sixth
+                 ),
+                 false),
+             (string) $parser->parseConstraints('(>2.0,<=3.0) | (>4.0, (>5.0, <=6.0)) | >7.0')
+         );
     }
 
     public function testParseConstraintsSimpleAggregatedUsingLexer()
@@ -365,25 +365,25 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
         $fourth = new VersionConstraint('>', '5.0.0.0');
 
         $this->assertSame(
-            (string) new MultiConstraint(
-                array(
-                    new MultiConstraint(array($first, $second)),
-                    new MultiConstraint(array($third, $fourth))
-                ),
-                false),
-            (string) $parser->createVersion('(>2.0,<=3.0) | (>4.0,>5.0)')
+             (string) new MultiConstraint(
+                 array(
+                     new MultiConstraint(array($first, $second)),
+                     new MultiConstraint(array($third, $fourth))
+                 ),
+                 false),
+             (string) $parser->parseConstraints('(>2.0,<=3.0) | (>4.0,>5.0)')
         );
     }
 
     public function testParseWithWrongParenthesis()
     {
         $this->setExpectedException(
-            'InvalidArgumentException',
+            'UnexpectedValueException',
             'Parenthesis are not closed correctly.'
         );
 
         $parser = new VersionParser;
-        $parser->parseConstraints('(>2.0,<=3.0');
+        $parser->parseConstraints(')>2.0,<=3.0');
     }
 
     public function testParseConstraintsMultiDisjunctiveHasPrioOverConjuctive()

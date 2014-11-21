@@ -18,7 +18,7 @@ use Composer\Package\Link;
 use Composer\Package\LinkConstraint\EmptyConstraint;
 use Composer\Package\LinkConstraint\MultiConstraint;
 use Composer\Package\LinkConstraint\VersionConstraint;
-use JsonSchema\Exception\InvalidArgumentException;
+use UnexpectedValueException;
 
 /**
  * Version parser
@@ -223,24 +223,16 @@ class VersionParser
     {
         $prettyConstraint = $constraints;
 
+        if (substr_count($constraints, '(') || substr_count($constraints, ')')) {
+            return $this->parseGroups($constraints);
+        }
+
         if (preg_match('{^([^,\s]*?)@('.implode('|', array_keys(BasePackage::$stabilities)).')$}i', $constraints, $match)) {
             $constraints = empty($match[1]) ? '*' : $match[1];
         }
 
         if (preg_match('{^(dev-[^,\s@]+?|[^,\s@]+?\.x-dev)#.+$}i', $constraints, $match)) {
             $constraints = $match[1];
-        }
-
-        if (substr_count($constraints, ')') !== substr_count($constraints, '(')) {
-            throw new InvalidArgumentException('Parenthesis are not closed correctly.');
-        }
-
-        preg_match_all('/\(.+?\)+/', $constraints, $matches);
-
-        $versionObject = array();
-        foreach($matches[0] as $version) {
-            $version = substr($version, 1, strrpos($version, ')') - 1);
-            $versionObject[$version] = $this->parseConstraints($version);
         }
 
         $orConstraints = preg_split('{\s*\|\s*}', $constraints);
@@ -253,14 +245,6 @@ class VersionParser
                 $constraintObjects = array();
 
                 foreach ($andConstraints as $constraint) {
-                    $constraint = (strpos($constraint, ')'))
-                        ? substr($constraint, 0, strrpos($constraint, ')') - 1)
-                        : $constraint;
-
-                    $constraint = (0 === strpos($constraint, '('))
-                        ? substr($constraint, 1)
-                        : $constraint;
-
                     $constraintObjects = array_merge($constraintObjects, $this->parseConstraint($constraint));
                 }
 
@@ -293,7 +277,7 @@ class VersionParser
      *
      * @return MultiConstraint
      */
-    public function createVersion($version)
+    public function parseGroups($version)
     {
         $lexer = new Lexer();
         $lexer->setInput($version);
@@ -319,6 +303,10 @@ class VersionParser
                 if ($openParenthesis > $closeParenthesis) {
                     $groupLevel++;
                     continue;
+                }
+
+                if ($closeParenthesis > $openParenthesis) {
+                    throw new UnexpectedValueException('Parenthesis are not closed correctly.');
                 }
 
                 if ($openParenthesis !== $closeParenthesis) {
@@ -378,7 +366,7 @@ class VersionParser
 
         } while ($lexer->moveNext());
 
-        if ($group[$normalGroup]) {
+        if (isset($normalGroup) && $group[$normalGroup]) {
             $versions[$normalGroup] = $this->parseConstraints($group[$normalGroup]);
         }
 
