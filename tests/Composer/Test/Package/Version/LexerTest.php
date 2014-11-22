@@ -115,10 +115,29 @@ class LexerTest extends \PHPUnit_Framework_TestCase
 
     public function testMatchTokens()
     {
-        $versionConstraints = '(>2.0)';
-        $this->lexer->setInput($versionConstraints);
+        $this->lexer->setInput('(>2.0)');
 
-        $this->assertTrue($this->lexer->isOpenParenthesis());
+        $this->assertTrue($this->lexer->tokenIsOpenParenthesis());
+        $this->assertEquals(
+            $this->lexer->glimpse(), 
+            array(
+                'value' => '(',
+                'type' => Lexer::T_OPEN_PARENTHESIS,
+                'position' => 0,
+            )
+        );
+
+        $this->lexer->moveNext();
+        $this->assertFalse($this->lexer->tokenIsOpenParenthesis());
+        $this->assertTrue($this->lexer->tokenIsComparison());
+        $this->assertEquals(
+            $this->lexer->glimpse(), 
+            array(
+                'value' => '>',
+                'type' => Lexer::T_COMPARISON,
+                'position' => 1,
+            )
+        );
     }
 
     /**
