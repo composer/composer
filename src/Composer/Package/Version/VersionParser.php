@@ -237,17 +237,14 @@ class VersionParser
 
         $orConstraints = preg_split('{\s*\|\s*}', $constraints);
         $orGroups = array();
-
         foreach ($orConstraints as $constraints) {
             $andConstraints = preg_split('{\s*,\s*}', $constraints);
 
             if (count($andConstraints) > 1) {
                 $constraintObjects = array();
-
                 foreach ($andConstraints as $constraint) {
                     $constraintObjects = array_merge($constraintObjects, $this->parseConstraint($constraint));
                 }
-
             } else {
                 $constraintObjects = $this->parseConstraint($andConstraints[0]);
             }
