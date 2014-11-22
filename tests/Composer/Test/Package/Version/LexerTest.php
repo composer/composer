@@ -113,6 +113,14 @@ class LexerTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($token, $current['value']);
     }
 
+    public function testMatchTokens()
+    {
+        $versionConstraints = '(>2.0)';
+        $this->lexer->setInput($versionConstraints);
+
+        $this->assertTrue($this->lexer->isOpenParenthesis());
+    }
+
     /**
      * Data provider
      *

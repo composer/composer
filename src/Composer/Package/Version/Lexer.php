@@ -88,4 +88,10 @@ final class Lexer extends AbstractLexer
 
         return self::T_NONE;
     }
+
+    public function isOpenParenthesis()
+    {
+        $token = $this->glimpse();
+        return $token['type'] == self::T_OPEN_PARENTHESIS;
+    }
 }
