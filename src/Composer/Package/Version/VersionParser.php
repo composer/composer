@@ -311,23 +311,27 @@ class VersionParser
                 }
 
                 if (! $groupLevel) {
-                    $versions[$openParenthesis] = $this->parseConstraints($group[$closeParenthesis - $groupLevel]);
+                    $versions[$openParenthesis] = $this->parseConstraints(end($group));
                     continue;
                 }
 
                 while ($groupLevel) {
-                    $opened = ($openParenthesis - $groupLevel);
-
+                    $opened = ((count($group) - 1) - key($group) + $groupLevel);
+                    
                     if (isset($versions[$opened]) && $versions[$opened] instanceof MultiConstraint) {
                         $groupWith = $versions[$opened];
                     } else {
-                        $groupWith = $this->parseConstraints(trim($group[$opened], ','));
+                        if (count($group) == 2) {
+                            $groupWith = $this->parseConstraints(trim($group[$opened + 2], ','));
+                        } else {
+                            $groupWith = $this->parseConstraints(trim($group[$opened], ','));
+                        }
                     }
 
                     $versions[$openParenthesis] = new MultiConstraint(array(
                             $groupWith,
                             $this->parseConstraints($group[$openParenthesis]))
-                    );
+                    , $or);
 
                     $groupLevel--;
                 }
@@ -338,7 +342,7 @@ class VersionParser
             // has a group opened
             if (0 !== $openParenthesis && $openParenthesis !== $closeParenthesis) {
                 // Don't storage the parenthesis
-                if (! $lexer->tokenIsOpenParenthesis() && ! $lexer->tokenIsCloseParenthesis()) {
+                if (! $lexer->tokenIsOpenParenthesis() && ! $lexer->tokenIsCloseParenthesis() && !$lexer->tokenIsPipe()) {
                     $group[$openParenthesis] = isset($group[$openParenthesis])
                         ? $group[$openParenthesis] .= $token['value']
                         : $group[$openParenthesis] = $token['value'];
@@ -365,7 +369,11 @@ class VersionParser
             $versions[$normalGroup] = $this->parseConstraints($group[$normalGroup]);
         }
 
-        return new MultiConstraint($versions, !$or);
+        if (count($versions) == 1 && $versions[key($versions)] instanceof MultiConstraint) {
+            return $versions[key($versions)];
+        }
+
+        return new MultiConstraint(array_filter($versions), !$or);
     }
 
     private function parseConstraint($constraint)
