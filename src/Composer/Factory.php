@@ -250,22 +250,10 @@ class Factory
 
         // initialize repository manager
         $rm = $this->createRepositoryManager($io, $config, $dispatcher);
+        $composer->setRepositoryManager($rm);
 
         // load local repository
         $this->addLocalRepository($rm, $vendorDir);
-
-        // load package
-        $parser = new VersionParser;
-        $loader  = new Package\Loader\RootPackageLoader($rm, $config, $parser, new ProcessExecutor($io));
-        $package = $loader->load($localConfig);
-
-        // initialize installation manager
-        $im = $this->createInstallationManager();
-
-        // Composer composition
-        $composer->setPackage($package);
-        $composer->setRepositoryManager($rm);
-        $composer->setInstallationManager($im);
 
         // initialize download manager
         $dm = $this->createDownloadManager($io, $config, $dispatcher);
@@ -277,9 +265,6 @@ class Factory
         $generator = new AutoloadGenerator($dispatcher, $io);
         $composer->setAutoloadGenerator($generator);
 
-        // add installers to the manager
-        $this->createDefaultInstallers($im, $composer, $io);
-
         $globalRepository = $this->createGlobalRepository($config, $vendorDir);
         $pm = $this->createPluginManager($composer, $io, $globalRepository);
         $composer->setPluginManager($pm);
@@ -288,6 +273,21 @@ class Factory
             $pm->loadInstalledPlugins();
         }
 
+        // load package
+        $parser = new VersionParser;
+        $loader  = new Package\Loader\RootPackageLoader($rm, $config, $parser, new ProcessExecutor($io));
+        $package = $loader->load($localConfig);
+
+        // initialize installation manager
+        $im = $this->createInstallationManager();
+
+        // Composer composition
+        $composer->setPackage($package);
+        $composer->setInstallationManager($im);
+        
+        // add installers to the manager
+        $this->createDefaultInstallers($im, $composer, $io);
+        
         // purge packages if they have been deleted on the filesystem
         $this->purgePackages($rm, $im);
 
