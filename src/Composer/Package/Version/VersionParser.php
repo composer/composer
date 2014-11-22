@@ -290,11 +290,11 @@ class VersionParser
         do {
             $token = $lexer->glimpse();
 
-            if (Lexer::T_OPEN_PARENTHESIS == $token['type']) {
+            if ($lexer->tokenIsOpenParenthesis()) {
                 $openParenthesis++;
             }
 
-            if (Lexer::T_CLOSE_PARENTHESIS == $token['type']) {
+            if ($lexer->tokenIsCloseParenthesis()) {
                 $closeParenthesis++;
 
                 if ($openParenthesis > $closeParenthesis) {
@@ -338,9 +338,7 @@ class VersionParser
             // has a group opened
             if (0 !== $openParenthesis && $openParenthesis !== $closeParenthesis) {
                 // Don't storage the parenthesis
-                if (Lexer::T_OPEN_PARENTHESIS !== $token['type']
-                    && Lexer::T_CLOSE_PARENTHESIS !== $token['type']
-                ) {
+                if (! $lexer->tokenIsOpenParenthesis() && ! $lexer->tokenIsCloseParenthesis()) {
                     $group[$openParenthesis] = isset($group[$openParenthesis])
                         ? $group[$openParenthesis] .= $token['value']
                         : $group[$openParenthesis] = $token['value'];
@@ -348,7 +346,7 @@ class VersionParser
             }
 
             if ($openParenthesis === $closeParenthesis) {
-                if (Lexer::T_PIPE == $token['type']) {
+                if ($lexer->tokenIsPipe()) {
                     $or++;
                     continue;
                 }
