@@ -375,6 +375,38 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    public function testMultiConstraintsSyntax()
+    {
+        $parser = new VersionParser;
+
+        $this->assertSame(
+            '((> 2.0.0.0, <= 3.0.0.0) | (> 4.0.0.0, > 5.0.0.0))',
+            (string) $parser->parseConstraints('(>2.0,<=3.0) | (>4.0,>5.0)')
+        );
+
+        $this->assertSame(
+            '((> 2.0.0.0, <= 3.0.0.0) | (> 4.0.0.0, > 5.0.0.0))',
+            (string) $parser->parseConstraints('((> 2.0.0.0, <= 3.0.0.0) | (> 4.0.0.0, > 5.0.0.0))')
+        );
+    }
+
+    /**
+     * @param string $constraint
+     *
+     * @dataProvider parsableConstraints
+     */
+    public function testCanParseStringConstraintRepresentationAgain($constraint)
+    {
+        $parser = new VersionParser;
+
+        $stringRepresentation = (string) $parser->parseConstraints($constraint);
+
+        $this->assertSame(
+            $stringRepresentation,
+            (string) $parser->parseConstraints($stringRepresentation)
+        );
+    }
+
     public function testParseWithWrongParenthesis()
     {
         $this->setExpectedException(
@@ -453,6 +485,26 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             array('alpha',  '1.2.0a1'),
             array('alpha',  '1.2_a1'),
             array('RC',     '2.0.0rc1')
+        );
+    }
+
+    /**
+     * Data provider
+     *
+     * @return string[][]
+     */
+    public function parsableConstraints()
+    {
+        return array(
+            array('>2.0'),
+            array('<=3.0'),
+            array('>2.0,<=3.0'),
+            array('>2.0,<2.0.5 | >2.0.6'),
+            array('>2.0@stable,<=3.0@dev'),
+            array('(>2.0,<=3.0) | (>4.0,>5.0)'),
+            array('((> 2.0.0.0, <= 3.0.0.0) | (> 4.0.0.0, > 5.0.0.0))'),
+            array('(>2.0,<=3.0) | (>4.0, (>5.0, <=6.0)) | >7.0'),
+            array('(>2.0,<=3.0) | >4.0'),
         );
     }
 }
