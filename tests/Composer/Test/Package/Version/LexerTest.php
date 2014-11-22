@@ -113,7 +113,7 @@ class LexerTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($token, $current['value']);
     }
 
-    public function testMatchTokens()
+    public function testTokenIsOpenParenthesis()
     {
         $this->lexer->setInput('(>2.0)');
 
@@ -129,13 +129,21 @@ class LexerTest extends \PHPUnit_Framework_TestCase
 
         $this->lexer->moveNext();
         $this->assertFalse($this->lexer->tokenIsOpenParenthesis());
-        $this->assertTrue($this->lexer->tokenIsComparison());
+    }
+
+    /**
+     * @dataProvider individualToken
+     */
+    public function testTokenComparisons($token, $methodToComparison, $expectedType, $expectedValue)
+    {
+        $this->lexer->setInput($token);
+        $this->assertTrue($this->lexer->$methodToComparison());
         $this->assertEquals(
             $this->lexer->glimpse(), 
             array(
-                'value' => '>',
-                'type' => Lexer::T_COMPARISON,
-                'position' => 1,
+                'value' => $expectedValue,
+                'type' => $expectedType,
+                'position' => 0,
             )
         );
     }
@@ -162,6 +170,21 @@ class LexerTest extends \PHPUnit_Framework_TestCase
             array(Lexer::T_VERSION, '1.2.*'),
             array(Lexer::T_VERSION, '1.*'),
             array(Lexer::T_VERSION, '*'),
+        );
+    }
+
+    /**
+     * @return string[][]
+     */
+    public function individualToken()
+    {
+        return array(
+            array('(',    'tokenIsOpenParenthesis',  Lexer::T_OPEN_PARENTHESIS,  '('),
+            array(')',    'tokenIsCloseParenthesis', Lexer::T_CLOSE_PARENTHESIS, ')'),
+            array('>',    'tokenIsComparison',       Lexer::T_COMPARISON,        '>'),
+            array('2.0',  'tokenIsVersion',          Lexer::T_VERSION,           '2.0'),
+            array('#AB',  'tokenIsBranch',           Lexer::T_BRANCH,            '#AB'),
+            array('@dev', 'tokenIsStability',        Lexer::T_STABILITY,         'dev'),
         );
     }
 }
