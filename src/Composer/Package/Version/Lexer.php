@@ -70,7 +70,7 @@ final class Lexer extends AbstractLexer
             return self::T_BRANCH;
         }
 
-        if (preg_match('/[\dx]+/i', $value)) {
+        if (preg_match('/[\d.x\*]+/i', $value)) {
             return self::T_VERSION;
         }
 
