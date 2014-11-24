@@ -209,3 +209,5 @@ When searching for packages, satis will attempt to resolve all the required pack
 Therefore, if you are requiring a package from Packagist, you will need to define it in your `satis.json`.
 
 Dev dependencies are packaged only if the `require-dev-dependencies` parameter is set to true.
+
+[Best Proxy List](http://www.bestproxylist.com) provides you a free list of proxies to use if needed.
