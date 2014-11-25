@@ -345,14 +345,13 @@ class VersionParser
                 if ($closeParenthesis > $openParenthesis) {
                     throw new UnexpectedValueException('Parenthesis are not closed correctly.');
                 }
-                
+
                 // Deep inside
                 if ($openParenthesis > $closeParenthesis) {
                     $level++;
                 }
             }
-            
-            
+
             if (
                !$lexer->tokenIsOpenParenthesis() 
                && !$lexer->tokenIsCloseParenthesis()
@@ -388,11 +387,11 @@ class VersionParser
             
             $lexer->moveNext();
         }
-        
+
         if (count($versions) == 1) {
             return $versions[key($versions)];
         }
-        
+
         return new MultiConstraint($versions, !$or);
     }
 
