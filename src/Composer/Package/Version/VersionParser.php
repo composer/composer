@@ -278,102 +278,122 @@ class VersionParser
     {
         $lexer = new Lexer();
         $lexer->setInput($version);
-
+        $lexer->moveNext();
+        
         $openParenthesis  = 0;
         $closeParenthesis = 0;
+        $normal           = 1;
         $or               = 0;
-
-        $groupLevel   = 0;
+        $level            = 0;
+        
         $group        = array();
         $versions     = array();
-
-        do {
-            $token = $lexer->glimpse();
-
+        
+        while (true) {
+            
+            $token = $lexer->token;
+            
+            if ($lexer->tokenIsPipe()) {
+                $or++;
+            }
+            
             if ($lexer->tokenIsOpenParenthesis()) {
                 $openParenthesis++;
+                $normal++;
+                $group[$openParenthesis] = null;
             }
-
+            
+            
             if ($lexer->tokenIsCloseParenthesis()) {
                 $closeParenthesis++;
-
-                if ($openParenthesis > $closeParenthesis) {
-                    $groupLevel++;
-                    continue;
+                
+                if ($openParenthesis === $closeParenthesis) {
+                    
+                    if (! $level) {
+                        $versions[$closeParenthesis] = $this->parseConstraints($group[$closeParenthesis]);
+                    }
+                    
+                    while ($level)
+                    {
+                        $level--;
+                        $or--;
+                        
+                        $index = $openParenthesis - 1;
+                        if (isset($group[$index]) && !empty($group[$index])) {
+                            $prevGroup = trim($group[$openParenthesis - 1], ',');
+                            
+                            $versions[$closeParenthesis] = new MultiConstraint(array(
+                                $this->parseConstraints($prevGroup),
+                                $this->parseConstraints($group[$openParenthesis])
+                            ), !$or);
+                            continue;
+                        }
+                        
+                        if (isset($group[$normal]) && !empty($group[$index])) {
+                            $versions[$closeParenthesis] = new MultiConstraint(array(
+                                $this->parseConstraints($group[$openParenthesis]),
+                                $normal
+                            ), !$or);
+                            continue;
+                        }
+                        
+                        $versions[$closeParenthesis] = $this->parseConstraints($group[$openParenthesis]); 
+                    }
                 }
-
+                
+                // Mal formmed string versions group
                 if ($closeParenthesis > $openParenthesis) {
                     throw new UnexpectedValueException('Parenthesis are not closed correctly.');
                 }
-
-                if ($openParenthesis !== $closeParenthesis) {
-                    continue;
-                }
-
-                if (! $groupLevel) {
-                    $versions[$openParenthesis] = $this->parseConstraints(end($group));
-                    continue;
-                }
-
-                while ($groupLevel) {
-                    $opened = ((count($group) - 1) - key($group) + $groupLevel);
-                    
-                    if (isset($versions[$opened]) && $versions[$opened] instanceof MultiConstraint) {
-                        $groupWith = $versions[$opened];
-                    } else {
-                        if (count($group) == 2) {
-                            $groupWith = $this->parseConstraints(trim($group[$opened + 2], ','));
-                        } else {
-                            $groupWith = $this->parseConstraints(trim($group[$opened], ','));
-                        }
-                    }
-
-                    $versions[$openParenthesis] = new MultiConstraint(array(
-                            $groupWith,
-                            $this->parseConstraints($group[$openParenthesis]))
-                    , $or);
-
-                    $groupLevel--;
-                }
-
-                continue;
-            }
-
-            // has a group opened
-            if (0 !== $openParenthesis && $openParenthesis !== $closeParenthesis) {
-                // Don't storage the parenthesis
-                if (! $lexer->tokenIsOpenParenthesis() && ! $lexer->tokenIsCloseParenthesis() && !$lexer->tokenIsPipe()) {
-                    $group[$openParenthesis] = isset($group[$openParenthesis])
-                        ? $group[$openParenthesis] .= $token['value']
-                        : $group[$openParenthesis] = $token['value'];
+                
+                // Deep inside
+                if ($openParenthesis > $closeParenthesis) {
+                    $level++;
                 }
             }
-
-            if ($openParenthesis === $closeParenthesis) {
-                if ($lexer->tokenIsPipe()) {
-                    $or++;
-                    continue;
+            
+            
+            if (
+               !$lexer->tokenIsOpenParenthesis() 
+               && !$lexer->tokenIsCloseParenthesis()
+               && !$lexer->tokenIsPipe()
+            ) {
+                
+                if ($lexer->tokenIsComma() 
+                        && ! $lexer->isNextToken(Lexer::T_OPEN_PARENTHESIS)) {
+                        // TODO: Don't storage comma at final of a setence
                 }
+                
+                if ($openParenthesis === $closeParenthesis) {
 
-                $normalGroup = $openParenthesis + 1;
-                if (isset($group[$normalGroup])) {
-                    $group[$normalGroup] .= $token['value'];
+                     $group[$normal] = isset($group[$normal]) 
+                             ? $group[$normal] .= $token['value']
+                             : $group[$normal]  = $token['value'];
+
+                     // Parser the version if don't have more tokens
+                     if (!$lexer->lookahead) {
+                         $versions[] = $this->parseConstraints($group[$normal]);
+                     }
                 } else {
-                    $group[$normalGroup] = $token['value'];
+                     $group[$openParenthesis] = isset($group[$openParenthesis])
+                             ? $group[$openParenthesis] .= $token['value']
+                             : $group[$openParenthesis]  = $token['value'];
                 }
             }
-
-        } while ($lexer->moveNext());
-
-        if (isset($normalGroup) && $group[$normalGroup]) {
-            $versions[$normalGroup] = $this->parseConstraints($group[$normalGroup]);
+            
+            // Skip if no have more tokens
+            if (!$lexer->lookahead) {
+                break;
+            }
+            
+            $lexer->moveNext();
         }
-
-        if (count($versions) == 1 && $versions[key($versions)] instanceof MultiConstraint) {
+        
+        if (count($versions) == 1) {
             return $versions[key($versions)];
         }
-
-        return new MultiConstraint(array_filter($versions), !$or);
+        
+        return new MultiConstraint($versions, !$or);
     }
 
     private function parseConstraint($constraint)
