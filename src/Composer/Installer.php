@@ -1070,11 +1070,12 @@ class Installer
     /**
      * Create Installer
      *
-     * @param  IOInterface $io
-     * @param  Composer    $composer
+     * @param  IOInterface       $io
+     * @param  Composer          $composer
+     * @param  ProgressInterface $progress
      * @return Installer
      */
-    public static function create(IOInterface $io, Composer $composer)
+    public static function create(IOInterface $io, Composer $composer, ProgressInterface $progress = null)
     {
         return new static(
             $io,
@@ -1085,7 +1086,8 @@ class Installer
             $composer->getLocker(),
             $composer->getInstallationManager(),
             $composer->getEventDispatcher(),
-            $composer->getAutoloadGenerator()
+            $composer->getAutoloadGenerator(),
+            $progress
         );
     }
 

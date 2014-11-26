@@ -86,7 +86,6 @@ class Application extends BaseApplication
             $styles = Factory::createAdditionalStyles();
             $formatter = new OutputFormatter(null, $styles);
             $output = new ConsoleOutput(ConsoleOutput::VERBOSITY_NORMAL, null, $formatter);
-
         }
 
         if (null === $progress) {
@@ -102,7 +101,7 @@ class Application extends BaseApplication
      */
     public function doRun(InputInterface $input, OutputInterface $output)
     {
-        $this->io = new ConsoleIO($input, $output, $this->getHelperSet(), $this->progress);
+        $this->io = new ConsoleIO($input, $output, $this->getHelperSet());
 
         if (version_compare(PHP_VERSION, '5.3.2', '<')) {
             $output->writeln('<warning>Composer only officially supports PHP 5.3.2 and above, you will most likely encounter problems with your PHP '.PHP_VERSION.', upgrading is strongly recommended.</warning>');
@@ -168,7 +167,7 @@ class Application extends BaseApplication
      */
     private function getNewWorkingDir(InputInterface $input)
     {
-        $workingDir = $input->getParameterOption(array('--working-dir', '-d'));
+        $workingDir = $input->getParameterOption(['--working-dir', '-d']);
         if (false !== $workingDir && !is_dir($workingDir)) {
             throw new \RuntimeException('Invalid working directory specified.');
         }
@@ -313,5 +312,14 @@ class Application extends BaseApplication
         $helperSet->set(new DialogHelper());
 
         return $helperSet;
+    }
+
+    /**
+     * Returns the progress interface.
+     * @return \Composer\Progress\ProgressInterface
+     */
+
+    public function getProgress() {
+        return $this->progress;
     }
 }

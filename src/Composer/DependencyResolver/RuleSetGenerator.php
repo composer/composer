@@ -351,7 +351,7 @@ class RuleSetGenerator
         }
         foreach ($this->installedMap as $i => $package) {
             if($this->progress) {
-                $this->progress->progress($package->getName());
+                $this->progress->write($package->getName());
             }
             $this->whitelistFromPackage($package);
             $this->whitelistFromUpdatePackages($package);
