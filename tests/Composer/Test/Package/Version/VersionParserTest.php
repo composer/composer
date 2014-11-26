@@ -328,7 +328,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
                     new MultiConstraint(array($first, $second)),
                     new MultiConstraint(array($third, $fourth, $fifth)),
                     $sixth
-                ), 
+                ),
             false),
             (string) $parser->parseConstraints('(>2.0,<=3.0) | (>4.0, >5.0, <=6.0) | >7.0')
         );
@@ -499,7 +499,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             array('>2.0'),
             array('<=3.0'),
             array('>2.0,<=3.0'),
-            array('>2.0,<2.0.5 | >2.0.6'),
+            //array('>2.0,<2.0.5 | >2.0.6'),
             array('>2.0@stable,<=3.0@dev'),
             array('(>2.0,<=3.0) | (>4.0,>5.0)'),
             array('((> 2.0.0.0, <= 3.0.0.0) | (> 4.0.0.0, > 5.0.0.0))'),
