@@ -36,6 +36,13 @@ final class Lexer extends AbstractLexer
 
     const T_BRANCH            = 107;
 
+    public function setInput($input)
+    {
+        parent::setInput($input);
+        $clear = new ClearVersion($input, $this);
+        parent::setInput($clear->getString());
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -91,13 +98,41 @@ final class Lexer extends AbstractLexer
 
     public function tokenIsOpenParenthesis()
     {
-        $token = $this->glimpse();
-        return $token['type'] == self::T_OPEN_PARENTHESIS;
+        return $this->token['type'] == self::T_OPEN_PARENTHESIS;
+    }
+
+    public function tokenIsCloseParenthesis()
+    {
+        return $this->token['type'] == self::T_CLOSE_PARENTHESIS;
     }
 
     public function tokenIsComparison()
     {
-        $token = $this->glimpse();
-        return $token['type'] == self::T_COMPARISON;
+        return $this->token['type'] == self::T_COMPARISON;
+    }
+
+    public function tokenIsVersion()
+    {
+        return $this->token['type'] == self::T_VERSION;
+    }
+
+    public function tokenIsStability()
+    {
+        return $this->token['type'] == self::T_STABILITY;
+    }
+
+    public function tokenIsComma()
+    {
+        return $this->token['type'] == self::T_COMMA;
+    }
+
+    public function tokenIsPipe()
+    {
+        return $this->token['type'] == self::T_PIPE;
+    }
+
+    public function tokenIsBranch()
+    {
+        return $this->token['type'] == self::T_BRANCH;
     }
 }
