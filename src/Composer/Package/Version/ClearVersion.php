@@ -39,18 +39,15 @@ class ClearVersion
      */
     private $lenght;
 
-
     /**
      * @var integer
      */
     private $quantity;
 
-
     /**
      * @var boolean
      */
     private $first;
-
 
     /**
      * @var boolean
@@ -127,7 +124,7 @@ class ClearVersion
     protected function countDecrease()
     {
         $this->quantity--;
-        
+
         if (0 !== $this->quantity) {
             $this->version .= $this->lexer->token['value'];
             return;
