@@ -122,21 +122,23 @@ class ClearVersion
     /**
      * Count decrease on close parenthesis.
      *
-     * @return void
+     * @return void|null
      */
     protected function countDecrease()
     {
         $this->quantity--;
-
-        $lenghEqualToken = ($this->lenght == $this->lexer->token['position']);
-
-        if (0 === $this->quantity && $lenghEqualToken) {
-           $this->last = true;
-        } elseif ($this->quantity == 0 && !$lenghEqualToken) {
-           $this->version = $this->input;
-        } else {
-           $this->version .= $this->lexer->token['value'];
+        
+        if (0 !== $this->quantity) {
+            $this->version .= $this->lexer->token['value'];
+            return;
         }
+
+        if ($this->lenght === $this->lexer->token['position']) {
+           $this->last = true;
+           return;
+        }
+
+        $this->version = $this->input;
     }
 
     /**
