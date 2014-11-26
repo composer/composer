@@ -82,7 +82,6 @@ final class Lexer extends AbstractLexer
         }
 
         if (in_array(trim($value, '@-'), array_keys(BasePackage::$stabilities))) {
-            $value = trim($value, '@-');
             return self::T_STABILITY;
         }
 
