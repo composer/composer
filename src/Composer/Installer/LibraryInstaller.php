@@ -311,6 +311,6 @@ class LibraryInstaller implements InstallerInterface
             'cd '.ProcessExecutor::escape(dirname($binPath))."\n".
             'BIN_TARGET="`pwd`/'.basename($binPath)."\"\n".
             'cd "$SRC_DIR"'."\n".
-            '"$BIN_TARGET" "$@"'."\n";
+            '/usr/bin/env php "$BIN_TARGET" "$@"'."\n";
     }
 }
