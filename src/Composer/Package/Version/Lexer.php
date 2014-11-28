@@ -134,4 +134,9 @@ final class Lexer extends AbstractLexer
     {
         return $this->token['type'] == self::T_BRANCH;
     }
+
+    public function tokenIsInvalid()
+    {
+        return $this->token['type'] == self::T_NONE;
+    }
 }

@@ -397,13 +397,36 @@ class VersionParser
 
     private function parseConstraint($constraint)
     {
+        $lexer = new Lexer();
+        $lexer->setInput($constraint);
+        $lexer->moveNext();
+
+        $version       = '';
+
+        while (true)
+        {
+            if (! $lexer->tokenIsStability()) {
+                $version .= $lexer->token['value'];
+            }
+
+            // Get version stability
+            if ($lexer->tokenIsStability()) {
+                $stability = ltrim($lexer->token['value'], '@-');
+                if ('stable' !== $stability) {
+                    $stabilityModifier = $stability;
+                }
+            }
+            
+            if (! $lexer->lookahead) {
+                break;
+            }
+            $lexer->moveNext();
+        }
+        
         if (preg_match('{^([^,\s]+?)@('.implode('|', array_keys(BasePackage::$stabilities)).')$}i', $constraint, $match)) {
             $constraint = $match[1];
-            if ($match[2] !== 'stable') {
-                $stabilityModifier = $match[2];
-            }
         }
-
+        
         if (preg_match('{^[x*](\.[x*])*$}i', $constraint)) {
             return array(new EmptyConstraint);
         }
