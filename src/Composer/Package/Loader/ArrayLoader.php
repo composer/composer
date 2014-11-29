@@ -195,6 +195,10 @@ class ArrayLoader implements LoaderInterface
             if (isset($config['support'])) {
                 $package->setSupport($config['support']);
             }
+
+            if (isset($config['abandoned'])) {
+                $package->setAbandoned($config['abandoned']);
+            }
         }
 
         if ($aliasNormalized = $this->getBranchAlias($config)) {

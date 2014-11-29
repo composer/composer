@@ -333,6 +333,14 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     {
         return $this->aliasOf->getArchiveExcludes();
     }
+    public function isAbandoned()
+    {
+        return $this->aliasOf->isAbandoned();
+    }
+    public function getReplacementPackage()
+    {
+        return $this->aliasOf->getReplacementPackage();
+    }
     public function __toString()
     {
         return parent::__toString().' (alias of '.$this->aliasOf->getVersion().')';

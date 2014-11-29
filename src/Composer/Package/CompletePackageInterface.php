@@ -78,4 +78,18 @@ interface CompletePackageInterface extends PackageInterface
      * @return array
      */
     public function getSupport();
+
+    /**
+     * Returns if the package is abandoned or not
+     *
+     * @return boolean
+     */
+    public function isAbandoned();
+
+    /**
+     * If the package is abandoned and has a suggested replacement, this method returns it
+     *
+     * @return string
+     */
+    public function getReplacementPackage();
 }

@@ -55,4 +55,13 @@ class ClassLoaderTest extends \PHPUnit_Framework_TestCase
             array('ShinyVendor\\ShinyPackage\\SubNamespace\\Bar', true),
         );
     }
+
+    /**
+     * getPrefixes method should return empty array if ClassLoader does not have any psr-0 configuration
+     */
+    public function testGetPrefixesWithNoPSR0Configuration()
+    {
+        $loader = new ClassLoader();
+        $this->assertEmpty($loader->getPrefixes());
+    }
 }

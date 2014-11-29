@@ -31,6 +31,7 @@ use Composer\Installer\NoopInstaller;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Package\AliasPackage;
+use Composer\Package\CompletePackage;
 use Composer\Package\Link;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Package\Locker;
@@ -256,6 +257,25 @@ class Installer
 
                 $this->io->write($suggestion['source'].' suggests installing '.$suggestion['target'].' ('.$suggestion['reason'].')');
             }
+        }
+
+        # Find abandoned packages and warn user
+        foreach ($localRepo->getPackages() as $package) {
+            if (!$package instanceof CompletePackage || !$package->isAbandoned()) {
+                continue;
+            }
+
+            $replacement = (is_string($package->getReplacementPackage()))
+                ? 'Use ' . $package->getReplacementPackage() . ' instead'
+                : 'No replacement was suggested';
+
+            $this->io->write(
+                sprintf(
+                    "<error>Package %s is abandoned, you should avoid using it. %s.</error>",
+                    $package->getPrettyName(),
+                    $replacement
+                )
+            );
         }
 
         if (!$this->dryRun) {

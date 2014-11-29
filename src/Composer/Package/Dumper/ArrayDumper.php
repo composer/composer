@@ -105,6 +105,10 @@ class ArrayDumper
             if (isset($data['keywords']) && is_array($data['keywords'])) {
                 sort($data['keywords']);
             }
+
+            if ($package->isAbandoned()) {
+                $data['abandoned'] = $package->getReplacementPackage() ?: true;
+            }
         }
 
         if ($package instanceof RootPackageInterface) {

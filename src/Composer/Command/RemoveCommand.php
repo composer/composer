@@ -41,6 +41,7 @@ class RemoveCommand extends Command
                 new InputOption('no-update', null, InputOption::VALUE_NONE, 'Disables the automatic update of the dependencies.'),
                 new InputOption('update-no-dev', null, InputOption::VALUE_NONE, 'Run the dependency update with the --no-dev option.'),
                 new InputOption('update-with-dependencies', null, InputOption::VALUE_NONE, 'Allows inherited dependencies to be updated with explicit dependencies.'),
+                new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore platform requirements (php & ext- packages).'),
             ))
             ->setHelp(<<<EOT
 The <info>remove</info> command removes a package from the current
@@ -105,6 +106,7 @@ EOT
             ->setUpdate(true)
             ->setUpdateWhitelist($packages)
             ->setWhitelistDependencies($input->getOption('update-with-dependencies'))
+            ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'))
         ;
 
         $status = $install->run();
