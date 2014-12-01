@@ -82,6 +82,11 @@ class RuleSet implements \IteratorAggregate, \Countable
         return $this->nextRuleId;
     }
 
+    public function ruleById($id)
+    {
+        return $this->ruleById[$id];
+    }
+
     public function getRules()
     {
         return $this->rules;
