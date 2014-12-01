@@ -280,7 +280,9 @@ class LibraryInstaller implements InstallerInterface
             if (file_exists($link.'.bat')) {
                 $this->filesystem->unlink($link.'.bat');
             }
-            if ('.exe' === substr($link, -4)) {
+            if ('.exe' === substr($link, -4)
+                || '.php' === substr($link, -4)
+            ) {
                 $link = substr($link, 0, -4).".bat";
                 if (file_exists($link)) {
                     $this->filesystem->unlink($link);
