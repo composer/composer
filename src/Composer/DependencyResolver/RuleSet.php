@@ -22,6 +22,13 @@ class RuleSet implements \IteratorAggregate, \Countable
     const TYPE_JOB = 1;
     const TYPE_LEARNED = 4;
 
+    /**
+     * Lookup table for rule id to rule object
+     *
+     * @var array
+     */
+    public $ruleById;
+
     protected static $types = array(
         -1 => 'UNKNOWN',
         self::TYPE_PACKAGE => 'PACKAGE',
@@ -30,7 +37,6 @@ class RuleSet implements \IteratorAggregate, \Countable
     );
 
     protected $rules;
-    protected $ruleById;
     protected $nextRuleId;
 
     protected $rulesByHash;
@@ -74,11 +80,6 @@ class RuleSet implements \IteratorAggregate, \Countable
     public function count()
     {
         return $this->nextRuleId;
-    }
-
-    public function ruleById($id)
-    {
-        return $this->ruleById[$id];
     }
 
     public function getRules()

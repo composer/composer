@@ -56,7 +56,7 @@ class Solver
 
         $rulesCount = count($this->rules);
         for ($ruleIndex = 0; $ruleIndex < $rulesCount; $ruleIndex++) {
-            $rule = $this->rules->ruleById($ruleIndex);
+            $rule = $this->rules->ruleById[$ruleIndex];
 
             if (!$rule->isAssertion() || $rule->isDisabled()) {
                 continue;
@@ -687,7 +687,7 @@ class Solver
                     $i = 0;
                 }
 
-                $rule = $this->rules->ruleById($i);
+                $rule = $this->rules->ruleById[$i];
                 $literals = $rule->literals;
 
                 if ($rule->isDisabled()) {

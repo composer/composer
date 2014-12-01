@@ -76,7 +76,7 @@ class RuleSetTest extends TestCase
         $rule = new Rule($this->pool, array(), 'job1', null);
         $ruleSet->add($rule, RuleSet::TYPE_JOB);
 
-        $this->assertSame($rule, $ruleSet->ruleById(0));
+        $this->assertSame($rule, $ruleSet->ruleById[0]);
     }
 
     public function testGetIterator()
