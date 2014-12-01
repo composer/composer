@@ -103,7 +103,7 @@ class Pool
                     if ($exempt || $this->isPackageAcceptable($names, $stability)) {
                         $package->setId($this->id++);
                         $this->packages[] = $package;
-                        $this->packageByExactName[$package->getName()][$package->getId()] = $package;
+                        $this->packageByExactName[$package->getName()][$package->id] = $package;
 
                         foreach ($names as $provided) {
                             $this->packageByName[$provided][] = $package;
@@ -122,7 +122,7 @@ class Pool
 
                             $package->getRepository()->addPackage($aliasPackage);
                             $this->packages[] = $aliasPackage;
-                            $this->packageByExactName[$aliasPackage->getName()][$aliasPackage->getId()] = $aliasPackage;
+                            $this->packageByExactName[$aliasPackage->getName()][$aliasPackage->id] = $aliasPackage;
 
                             foreach ($aliasPackage->getNames() as $name) {
                                 $this->packageByName[$name][] = $aliasPackage;
@@ -186,7 +186,7 @@ class Pool
         foreach ($this->providerRepos as $repo) {
             foreach ($repo->whatProvides($this, $name) as $candidate) {
                 $candidates[] = $candidate;
-                if ($candidate->getId() < 1) {
+                if ($candidate->id < 1) {
                     $candidate->setId($this->id++);
                     $this->packages[$this->id - 2] = $candidate;
                 }
@@ -217,8 +217,8 @@ class Pool
             }
 
             if ($this->whitelist !== null && (
-                (!($candidate instanceof AliasPackage) && !isset($this->whitelist[$candidate->getId()])) ||
-                ($candidate instanceof AliasPackage && !isset($this->whitelist[$aliasOfCandidate->getId()]))
+                (!($candidate instanceof AliasPackage) && !isset($this->whitelist[$candidate->id])) ||
+                ($candidate instanceof AliasPackage && !isset($this->whitelist[$aliasOfCandidate->id]))
             )) {
                 continue;
             }
@@ -275,7 +275,7 @@ class Pool
     {
         $package = $this->literalToPackage($literal);
 
-        if (isset($installedMap[$package->getId()])) {
+        if (isset($installedMap[$package->id])) {
             $prefix = ($literal > 0 ? 'keep' : 'remove');
         } else {
             $prefix = ($literal > 0 ? 'install' : 'don\'t install');
