@@ -62,7 +62,7 @@ class Solver
                 continue;
             }
 
-            $literals = $rule->getLiterals();
+            $literals = $rule->literals;
             $literal = $literals[0];
 
             if (!$this->decisions->decided(abs($literal))) {
@@ -104,7 +104,7 @@ class Solver
                     continue;
                 }
 
-                $assertRuleLiterals = $assertRule->getLiterals();
+                $assertRuleLiterals = $assertRule->literals;
                 $assertRuleLiteral = $assertRuleLiterals[0];
 
                 if (abs($literal) !== abs($assertRuleLiteral)) {
@@ -356,7 +356,7 @@ class Solver
         while (true) {
             $this->learnedPool[count($this->learnedPool) - 1][] = $rule;
 
-            foreach ($rule->getLiterals() as $literal) {
+            foreach ($rule->literals as $literal) {
                 // skip the one true literal
                 if ($this->decisions->satisfy($literal)) {
                     continue;
@@ -480,7 +480,7 @@ class Solver
         $this->problems[] = $problem;
 
         $seen = array();
-        $literals = $conflictRule->getLiterals();
+        $literals = $conflictRule->literals;
 
         foreach ($literals as $literal) {
             // skip the one true literal
@@ -503,7 +503,7 @@ class Solver
             $problem->addRule($why);
             $this->analyzeUnsolvableRule($problem, $why);
 
-            $literals = $why->getLiterals();
+            $literals = $why->literals;
 
             foreach ($literals as $literal) {
                 // skip the one true literal
@@ -627,7 +627,7 @@ class Solver
                         $decisionQueue = array();
                         $noneSatisfied = true;
 
-                        foreach ($rule->getLiterals() as $literal) {
+                        foreach ($rule->literals as $literal) {
                             if ($this->decisions->satisfy($literal)) {
                                 $noneSatisfied = false;
                                 break;
@@ -688,7 +688,7 @@ class Solver
                 }
 
                 $rule = $this->rules->ruleById($i);
-                $literals = $rule->getLiterals();
+                $literals = $rule->literals;
 
                 if ($rule->isDisabled()) {
                     continue;

@@ -32,7 +32,6 @@ class Rule
     protected $pool;
 
     protected $disabled;
-    protected $literals;
     protected $type;
     protected $id;
     protected $reason;
@@ -41,6 +40,8 @@ class Rule
     protected $job;
 
     protected $ruleHash;
+
+    public $literals;
 
     public function __construct(Pool $pool, array $literals, $reason, $reasonData, $job = null)
     {
@@ -158,11 +159,6 @@ class Rule
     public function isEnabled()
     {
         return !$this->disabled;
-    }
-
-    public function getLiterals()
-    {
-        return $this->literals;
     }
 
     public function isAssertion()
