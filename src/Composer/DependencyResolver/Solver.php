@@ -125,7 +125,7 @@ class Solver
     {
         $this->installedMap = array();
         foreach ($this->installed->getPackages() as $package) {
-            $this->installedMap[$package->getId()] = $package;
+            $this->installedMap[$package->id] = $package;
         }
     }
 
@@ -136,15 +136,15 @@ class Solver
                 case 'update':
                     $packages = $this->pool->whatProvides($job['packageName'], $job['constraint']);
                     foreach ($packages as $package) {
-                        if (isset($this->installedMap[$package->getId()])) {
-                            $this->updateMap[$package->getId()] = true;
+                        if (isset($this->installedMap[$package->id])) {
+                            $this->updateMap[$package->id] = true;
                         }
                     }
                     break;
 
                 case 'update-all':
                     foreach ($this->installedMap as $package) {
-                        $this->updateMap[$package->getId()] = true;
+                        $this->updateMap[$package->id] = true;
                     }
                     break;
 

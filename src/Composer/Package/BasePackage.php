@@ -48,8 +48,9 @@ abstract class BasePackage implements PackageInterface
     protected $prettyName;
 
     protected $repository;
-    protected $id;
     protected $transportOptions;
+
+    public $id;
 
     /**
      * All descendants' constructors should call this parent constructor
