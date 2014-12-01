@@ -188,6 +188,15 @@ class LibraryInstaller implements InstallerInterface
         return $package->getBinaries();
     }
 
+    protected function isWindowsUnixyEnvironment()
+    {
+        // redirect stderr to stdout to supress warnings in windows command line
+        $lastLine = exec("uname -s 2>&1");
+        return stripos($lastLine, "mingw") === 0
+            || stripos($lastLine, "cygwin") === 0
+            || stripos($lastLine, "interix") === 0;
+    }
+
     protected function installBinaries(PackageInterface $package)
     {
         $binaries = $this->getBinaries($package);
@@ -220,9 +229,10 @@ class LibraryInstaller implements InstallerInterface
                 continue;
             }
             if (defined('PHP_WINDOWS_VERSION_BUILD')) {
-                // add unixy support for cygwin environment
+
                 if ('.bat' !== substr($binPath, -4)) {
-                    if (stripos(php_uname(), "cygwin") !== false) {
+                    if ($this->isWindowsUnixyEnvironment()) {
+                        // add unixy support for cygwin and similar environments
                         file_put_contents($link, $this->generateUnixyProxyCode($binPath, $link));
                         @chmod($link, 0777 & ~umask());
                     } else {
