@@ -29,6 +29,16 @@ class Rule
     const RULE_LEARNED = 12;
     const RULE_PACKAGE_ALIAS = 13;
 
+    /**
+     * The literals this rule consists of.
+     *
+     * Each element is a package id either positive for installation or
+     * negative meaning removal.
+     *
+     * @var array
+     */
+    public $literals;
+
     protected $pool;
 
     protected $disabled;
@@ -40,8 +50,6 @@ class Rule
     protected $job;
 
     protected $ruleHash;
-
-    public $literals;
 
     public function __construct(Pool $pool, array $literals, $reason, $reasonData, $job = null)
     {
