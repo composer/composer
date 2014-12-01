@@ -130,7 +130,7 @@ class Problem
                 $messages[] = $this->jobToText($job);
             } elseif ($rule) {
                 if ($rule instanceof Rule) {
-                    $messages[] = $rule->getPrettyString($installedMap);
+                    $messages[] = $rule->getPrettyString($this->pool, $installedMap);
                 }
             }
         }

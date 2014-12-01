@@ -31,15 +31,9 @@ class Rule
 
     /**
      * The literals this rule consists of.
-     *
-     * Each element is a package id either positive for installation or
-     * negative meaning removal.
-     *
      * @var array
      */
     public $literals;
-
-    protected $pool;
 
     protected $disabled;
     protected $type;
@@ -51,10 +45,8 @@ class Rule
 
     protected $ruleHash;
 
-    public function __construct(Pool $pool, array $literals, $reason, $reasonData, $job = null)
+    public function __construct(array $literals, $reason, $reasonData, $job = null)
     {
-        $this->pool = $pool;
-
         // sort all packages ascending by id
         sort($literals);
 
@@ -174,14 +166,14 @@ class Rule
         return 1 === count($this->literals);
     }
 
-    public function getPrettyString(array $installedMap = array())
+    public function getPrettyString(Pool $pool, array $installedMap = array())
     {
         $ruleText = '';
         foreach ($this->literals as $i => $literal) {
             if ($i != 0) {
                 $ruleText .= '|';
             }
-            $ruleText .= $this->pool->literalToPrettyString($literal, $installedMap);
+            $ruleText .= $pool->literalToPrettyString($literal, $installedMap);
         }
 
         switch ($this->reason) {
@@ -195,24 +187,24 @@ class Rule
                 return "Remove command rule ($ruleText)";
 
             case self::RULE_PACKAGE_CONFLICT:
-                $package1 = $this->pool->literalToPackage($this->literals[0]);
-                $package2 = $this->pool->literalToPackage($this->literals[1]);
+                $package1 = $pool->literalToPackage($this->literals[0]);
+                $package2 = $pool->literalToPackage($this->literals[1]);
 
-                return $package1->getPrettyString().' conflicts with '.$this->formatPackagesUnique(array($package2)).'.';
+                return $package1->getPrettyString().' conflicts with '.$this->formatPackagesUnique($pool, array($package2)).'.';
 
             case self::RULE_PACKAGE_REQUIRES:
                 $literals = $this->literals;
                 $sourceLiteral = array_shift($literals);
-                $sourcePackage = $this->pool->literalToPackage($sourceLiteral);
+                $sourcePackage = $pool->literalToPackage($sourceLiteral);
 
                 $requires = array();
                 foreach ($literals as $literal) {
-                    $requires[] = $this->pool->literalToPackage($literal);
+                    $requires[] = $pool->literalToPackage($literal);
                 }
 
                 $text = $this->reasonData->getPrettyString($sourcePackage);
                 if ($requires) {
-                    $text .= ' -> satisfiable by ' . $this->formatPackagesUnique($requires) . '.';
+                    $text .= ' -> satisfiable by ' . $this->formatPackagesUnique($pool, $requires) . '.';
                 } else {
                     $targetName = $this->reasonData->getTarget();
 
@@ -239,22 +231,24 @@ class Rule
             case self::RULE_INSTALLED_PACKAGE_OBSOLETES:
                 return $ruleText;
             case self::RULE_PACKAGE_SAME_NAME:
-                return 'Can only install one of: ' . $this->formatPackagesUnique($this->literals) . '.';
+                return 'Can only install one of: ' . $this->formatPackagesUnique($pool, $this->literals) . '.';
             case self::RULE_PACKAGE_IMPLICIT_OBSOLETES:
                 return $ruleText;
             case self::RULE_LEARNED:
                 return 'Conclusion: '.$ruleText;
             case self::RULE_PACKAGE_ALIAS:
                 return $ruleText;
+            default:
+                return '('.$ruleText.')';
         }
     }
 
-    protected function formatPackagesUnique(array $packages)
+    protected function formatPackagesUnique($pool, array $packages)
     {
         $prepared = array();
         foreach ($packages as $package) {
             if (!is_object($package)) {
-                $package = $this->pool->literalToPackage($package);
+                $package = $pool->literalToPackage($package);
             }
             $prepared[$package->getName()]['name'] = $package->getPrettyName();
             $prepared[$package->getName()]['versions'][$package->getVersion()] = $package->getPrettyVersion();
@@ -279,7 +273,7 @@ class Rule
             if ($i != 0) {
                 $result .= '|';
             }
-            $result .= $this->pool->literalToString($literal);
+            $result .= $literal;
         }
 
         $result .= ')';

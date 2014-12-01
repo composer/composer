@@ -61,7 +61,7 @@ class RuleSetGenerator
             $literals[] = $provider->id;
         }
 
-        return new Rule($this->pool, $literals, $reason, $reasonData);
+        return new Rule($literals, $reason, $reasonData);
     }
 
     /**
@@ -83,7 +83,7 @@ class RuleSetGenerator
             $literals[] = $package->id;
         }
 
-        return new Rule($this->pool, $literals, $reason, $job['packageName'], $job);
+        return new Rule($literals, $reason, $job['packageName'], $job);
     }
 
     /**
@@ -99,7 +99,7 @@ class RuleSetGenerator
      */
     protected function createRemoveRule(PackageInterface $package, $reason, $job)
     {
-        return new Rule($this->pool, array(-$package->id), $reason, $job['packageName'], $job);
+        return new Rule(array(-$package->id), $reason, $job['packageName'], $job);
     }
 
     /**
@@ -123,7 +123,7 @@ class RuleSetGenerator
             return null;
         }
 
-        return new Rule($this->pool, array(-$issuer->id, -$provider->id), $reason, $reasonData);
+        return new Rule(array(-$issuer->id, -$provider->id), $reason, $reasonData);
     }
 
     /**
