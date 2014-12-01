@@ -161,6 +161,14 @@ class Rule
         return !$this->disabled;
     }
 
+    /**
+     * @deprecated Use public literals member
+     */
+    public function getLiterals()
+    {
+        return $this->literals;
+    }
+
     public function isAssertion()
     {
         return 1 === count($this->literals);
