@@ -29,11 +29,12 @@ interface ProgressInterface {
      * Stores progress information.
      *
      * @param $message
+     * @param $count
      *
      * @return void
      */
 
-    public function write($message);
+    public function write($message, $count = null);
 
     /**
      * Makes the progress bar indeterminate
