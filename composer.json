@@ -31,7 +31,7 @@
     },
     "require-dev": {
         "phpunit/phpunit": "~3.7",
-        "qafoolabs/profiler": "~0.9"
+        "qafoolabs/profiler": "~1.3"
     },
     "suggest": {
         "ext-zip": "Enabling the zip extension allows you to unzip archives, and allows gzip compression of all internet traffic",

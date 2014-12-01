@@ -40,7 +40,7 @@ if (function_exists('ini_set')) {
 }
 
 \QafooLabs\Profiler::setBackend(new \QafooLabs\Profiler\CurlBackend());
-\QafooLabs\Profiler::start($_ENV['COMPOSER_QAFOO_KEY'], 100);
+\QafooLabs\Profiler::startDevelopment($_SERVER['COMPOSER_QAFOO_KEY']);
 \QafooLabs\Profiler::setTransactionName(implode(' ', array_slice($_SERVER['argv'], 1)));
 
 // run the command application
