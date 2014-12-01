@@ -45,8 +45,7 @@ abstract class BasePackage implements PackageInterface
     );
 
     /**
-     * The package id, public for fast access in dependency solver
-     * Use getId() unless called extremely frequently.
+     * READ-ONLY: The package id, public for fast access in dependency solver
      * @var int
      */
     public $id;

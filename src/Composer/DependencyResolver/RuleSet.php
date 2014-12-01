@@ -23,9 +23,9 @@ class RuleSet implements \IteratorAggregate, \Countable
     const TYPE_LEARNED = 4;
 
     /**
-     * Lookup table for rule id to rule object
+     * READ-ONLY: Lookup table for rule id to rule object
      *
-     * @var array
+     * @var Rule[]
      */
     public $ruleById;
 

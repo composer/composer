@@ -30,7 +30,7 @@ class Rule
     const RULE_PACKAGE_ALIAS = 13;
 
     /**
-     * The literals this rule consists of.
+     * READ-ONLY: The literals this rule consists of.
      * @var array
      */
     public $literals;
