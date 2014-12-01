@@ -229,7 +229,6 @@ class LibraryInstaller implements InstallerInterface
                 continue;
             }
             if (defined('PHP_WINDOWS_VERSION_BUILD')) {
-
                 if ('.bat' !== substr($binPath, -4)) {
                     if ($this->isWindowsUnixyEnvironment()) {
                         // add unixy support for cygwin and similar environments
