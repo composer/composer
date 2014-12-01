@@ -233,11 +233,15 @@ class LibraryInstaller implements InstallerInterface
                         } else {
                             file_put_contents($link, $this->generateWindowsProxyCode($binPath, $link));
                         }
-                        $link = substr($savedLink, 0, -4).'.bat';
-                        if (file_exists($link)) {
-                            $this->io->write('    Skipped installation of bin '.substr($bin, 0, -4).'.bat proxy for package '.$package->getName().': a .bat proxy was already installed');
-                        } else {
-                            file_put_contents($link, $this->generateWindowsProxyCode($binPath, $link));
+                        if ('.exe' === substr($savedLink, -4)
+                            || '.php' === substr($savedLink, -4)
+                        ) {
+                            $link = substr($savedLink, 0, -4).'.bat';
+                            if (file_exists($link)) {
+                                $this->io->write('    Skipped installation of bin '.substr($bin, 0, -4).'.bat proxy for package '.$package->getName().': a .bat proxy was already installed');
+                            } else {
+                                file_put_contents($link, $this->generateWindowsProxyCode($binPath, $link));
+                            }
                         }
                     }
                 } else {
