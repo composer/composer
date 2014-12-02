@@ -160,6 +160,7 @@ class Installer
      */
     public function run()
     {
+        gc_collect_cycles();
         gc_disable();
 
         if ($this->dryRun) {
