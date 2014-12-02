@@ -14,14 +14,19 @@ matrix:
 
 before_script:
     - sudo apt-get install parallel
-    - rm -f ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini
     - composer install --prefer-source
     - bin/composer install --prefer-source
     - git config --global user.name travis-ci
     - git config --global user.email travis@example.com
-
+    - wget https://phar.phpunit.de/phpcov.phar
+    - mkdir -p /tmp/coverage/tests/Composer/Test/
 script:
-    - ls -d tests/Composer/Test/* | parallel --gnu --keep-order 'echo "Running {} tests"; ./vendor/bin/phpunit -c tests/complete.phpunit.xml {};' || exit 1
+    - ls -d tests/Composer/Test/* | grep -Ev "(Fixtures|Mock)" | parallel --gnu --keep-order 'echo "Running {} tests"; ./vendor/bin/phpunit -c tests/complete.phpunit.xml {};' || exit 1
+
+after_script:
+    - php phpcov.phar merge --clover coverage.clover /tmp/coverage/tests/Composer/Test
+    - wget https://scrutinizer-ci.com/ocular.phar
+    - php ocular.phar code-coverage:upload --format=php-clover coverage.clover
 
 git:
   depth: 5
