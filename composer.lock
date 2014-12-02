@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "eeb4afc3be46412ec15842ce4af01f0b",
+    "hash": "7f61dd2fa9b67b88787513db6188f945",
     "packages": [
         {
             "name": "justinrainbow/json-schema",
@@ -634,6 +634,33 @@
                 "xunit"
             ],
             "time": "2013-01-13 10:24:48"
+        },
+        {
+            "name": "qafoolabs/profiler",
+            "version": "v1.3.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/QafooLabs/profiler.git",
+                "reference": "c296bb63e5547e8738bbffcd68e7f71bd300cf00"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/QafooLabs/profiler/zipball/c296bb63e5547e8738bbffcd68e7f71bd300cf00",
+                "reference": "c296bb63e5547e8738bbffcd68e7f71bd300cf00",
+                "shasum": ""
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "QafooLabs\\Profiler": "src/main"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Simple library that wraps Xhprof profile collection and sends to Qafoo Profiler",
+            "time": "2014-11-23 10:53:58"
         },
         {
             "name": "symfony/yaml",
