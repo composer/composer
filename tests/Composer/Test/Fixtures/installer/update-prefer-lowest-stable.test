@@ -34,7 +34,7 @@ Updates packages to their lowest stable version
     { "name": "a/b", "version": "1.0.1" }
 ]
 --RUN--
-update --prefer-lowest-stable
+update --prefer-lowest --prefer-stable
 --EXPECT--
 Updating a/a (1.0.0-rc1) to a/a (1.0.1)
 Updating a/b (1.0.1) to a/b (1.0.0)

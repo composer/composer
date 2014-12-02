@@ -107,7 +107,8 @@ class Installer
     protected $update = false;
     protected $runScripts = true;
     protected $ignorePlatformReqs = false;
-    protected $preferLowestStable = false;
+    protected $preferStable = false;
+    protected $preferLowest = false;
     /**
      * Array of package names/globs flagged for update
      *
@@ -702,11 +703,8 @@ class Installer
         // old lock file without prefer stable will return null
         // so in this case we use the composer.json info
         if (null === $preferStable) {
-            if ($this->preferLowestStable) {
-                $preferStable = $preferLowest = true;
-            } else {
-                $preferStable = $this->package->getPreferStable();
-            }
+            $preferStable = $this->preferStable || $this->package->getPreferStable();
+            $preferLowest = $this->preferLowest;
         }
 
         return new DefaultPolicy($preferStable, $preferLowest);
@@ -1251,14 +1249,27 @@ class Installer
     }
 
     /**
-     * Should packages be forced to their lowest stable version when updating?
+     * Should packages be prefered in a stable version when updating?
      *
-     * @param  boolean   $preferLowestStable
+     * @param  boolean   $preferStable
      * @return Installer
      */
-    public function setPreferLowestStable($preferLowestStable = true)
+    public function setPreferStable($preferStable = true)
     {
-        $this->preferLowestStable = (boolean) $preferLowestStable;
+        $this->preferStable = (boolean) $preferStable;
+
+        return $this;
+    }
+
+    /**
+     * Should packages be prefered in a lowest version when updating?
+     *
+     * @param  boolean   $preferLowest
+     * @return Installer
+     */
+    public function setPreferLowest($preferLowest = true)
+    {
+        $this->preferLowest = (boolean) $preferLowest;
 
         return $this;
     }
