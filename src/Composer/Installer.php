@@ -160,6 +160,8 @@ class Installer
      */
     public function run()
     {
+        gc_disable();
+
         if ($this->dryRun) {
             $this->verbose = true;
             $this->runScripts = false;
