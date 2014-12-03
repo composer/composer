@@ -156,7 +156,7 @@ class GitDriver extends VcsDriver
 
             $composer = JsonFile::parseJson($composer, $resource);
 
-            if (!isset($composer['time'])) {
+            if (empty($composer['time'])) {
                 $this->process->execute(sprintf('git log -1 --format=%%at %s', ProcessExecutor::escape($identifier)), $output, $this->repoDir);
                 $date = new \DateTime('@'.trim($output), new \DateTimeZone('UTC'));
                 $composer['time'] = $date->format('Y-m-d H:i:s');
