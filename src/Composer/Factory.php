@@ -94,8 +94,6 @@ class Factory
                     $xdgCache = $home . '/.cache';
                 }
                 $cacheDir = $xdgCache . '/composer';
-
-
             } else {
                 $cacheDir = $home . '/cache';
             }
