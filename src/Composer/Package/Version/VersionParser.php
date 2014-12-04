@@ -511,7 +511,7 @@ class VersionParser
         if (preg_match('{^(<>|!=|>=?|<=?|==?)?\s*(.*)}', $constraint, $matches)) {
             try {
                 $version = $this->normalize($matches[2]);
-                
+
                 if (!empty($stabilityModifier) && $this->parseStability($version) === 'stable') {
                     $version .= '-' . $stabilityModifier;
                 } elseif ('<' === $matches[1]) {
