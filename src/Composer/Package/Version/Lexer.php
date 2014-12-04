@@ -39,8 +39,7 @@ final class Lexer extends AbstractLexer
     public function setInput($input)
     {
         parent::setInput($input);
-        $clear = new ClearVersion($input, $this);
-        parent::setInput($clear->getString());
+        parent::setInput(CleanUnnecessaryParenthesis::removeOn($input, $this));
     }
 
     /**
@@ -81,7 +80,7 @@ final class Lexer extends AbstractLexer
             return self::T_VERSION;
         }
 
-        if (in_array(trim($value, '@-'), array_keys(BasePackage::$stabilities))) {
+        if (in_array(ltrim($value, '@-'), array_keys(BasePackage::$stabilities))) {
             return self::T_STABILITY;
         }
 

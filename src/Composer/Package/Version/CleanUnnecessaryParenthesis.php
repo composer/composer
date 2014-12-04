@@ -17,7 +17,7 @@ namespace Composer\Package\Version;
  *
  * @author Jefersson Nathan <malukenho@phpse.net>
  */
-class ClearVersion
+class CleanUnnecessaryParenthesis
 {
     /**
      * @var Lexer
@@ -57,7 +57,7 @@ class ClearVersion
     /**
      * Constructor.
      */
-    public function __construct($input, Lexer $lexer)
+    private function __construct($input, Lexer $lexer)
     {
         $this->last     = false;
         $this->lexer    = $lexer;
@@ -68,6 +68,12 @@ class ClearVersion
         $this->quantity = 0;
 
         $this->filterParenthesis();
+    }
+
+    public static function removeOn($version, Lexer $lexer)
+    {
+        $cleanParenthesis = new self($version, $lexer);
+        return $cleanParenthesis->getString();
     }
 
     /**
@@ -108,7 +114,9 @@ class ClearVersion
     {
         $this->quantity++;
 
-        if (!$this->first && 0 === $this->lexer->token['position']) {
+        if (!$this->first && 0 === $this->lexer->token['position']
+            && $this->lexer->tokenIsOpenParenthesis()
+        ) {
             $this->first = true;
             return true;
         }
@@ -130,7 +138,9 @@ class ClearVersion
             return;
         }
 
-        if ($this->lenght === $this->lexer->token['position']) {
+        if ($this->lenght === $this->lexer->token['position']
+            && $this->lexer->tokenIsCloseParenthesis()
+        ) {
            $this->last = true;
            return;
         }
