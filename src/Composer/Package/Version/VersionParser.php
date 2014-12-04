@@ -401,10 +401,11 @@ class VersionParser
         $lexer->setInput($constraint);
         $lexer->moveNext();
 
-        $version       = '';
+        $version = '';
 
         while (true)
         {
+            $lexer->moveNext();
             if (! $lexer->tokenIsStability()) {
                 $version .= $lexer->token['value'];
             }
@@ -420,13 +421,12 @@ class VersionParser
             if (! $lexer->lookahead) {
                 break;
             }
-            $lexer->moveNext();
         }
-        
+
         if (preg_match('{^([^,\s]+?)@('.implode('|', array_keys(BasePackage::$stabilities)).')$}i', $constraint, $match)) {
             $constraint = $match[1];
         }
-        
+
         if (preg_match('{^[x*](\.[x*])*$}i', $constraint)) {
             return array(new EmptyConstraint);
         }
@@ -437,6 +437,7 @@ class VersionParser
         // however, if a stability suffix is added to the constraint, then a >= match on the current version is
         // used instead
         if (preg_match('{^~>?(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:\.(\d+))?'.self::$modifierRegex.'?$}i', $constraint, $matches)) {
+            
             if (substr($constraint, 0, 2) === '~>') {
                 throw new \UnexpectedValueException(
                     'Could not parse version constraint '.$constraint.': '.
@@ -458,11 +459,11 @@ class VersionParser
             // Calculate the stability suffix
             $stabilitySuffix = '';
             if (!empty($matches[5])) {
-                $stabilitySuffix .= '-' . $this->expandStability($matches[5]) . (!empty($matches[6]) ? $matches[6] : '');
+                $stabilitySuffix = '-' . $this->expandStability($matches[5]) . (!empty($matches[6]) ? $matches[6] : '');
             }
 
             if (!empty($matches[7])) {
-                $stabilitySuffix .= '-dev';
+                $stabilitySuffix = '-dev';
             }
 
             if (!$stabilitySuffix) {
@@ -510,11 +511,11 @@ class VersionParser
         if (preg_match('{^(<>|!=|>=?|<=?|==?)?\s*(.*)}', $constraint, $matches)) {
             try {
                 $version = $this->normalize($matches[2]);
-
+                
                 if (!empty($stabilityModifier) && $this->parseStability($version) === 'stable') {
                     $version .= '-' . $stabilityModifier;
                 } elseif ('<' === $matches[1]) {
-                    if (!preg_match('/-stable$/', strtolower($matches[2]))) {
+                    if (!preg_match('/-stable|-dev$/', strtolower($matches[2]))) {
                         $version .= '-dev';
                     }
                 }
