@@ -16,14 +16,14 @@ use Composer\Package\Version\Lexer;
 
 class CleanUnnecessaryParenthesisTest extends \PHPUnit_Framework_TestCase
 {
-	public function testCanClearUnnecesasaryParenthesis()
-	{
-		$input = '((> 2.0.0.0, <= 3.0.0.0) | (> 4.0.0.0, > 5.0.0.0))';
+    public function testCanClearUnnecesasaryParenthesis()
+    {
+        $input = '((> 2.0.0.0, <= 3.0.0.0) | (> 4.0.0.0, > 5.0.0.0))';
 
-		$lexer = new Lexer();
-		$lexer->setInput($input);
-		
-		$clear = CleanUnnecessaryParenthesis::removeOn($input, $lexer);
-		$this->assertEquals($input, $clear);
-	}
+        $lexer = new Lexer();
+        $lexer->setInput($input);
+        
+        $clear = CleanUnnecessaryParenthesis::removeOn($input, $lexer);
+        $this->assertEquals($input, $clear);
+    }
 }
