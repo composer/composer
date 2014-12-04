@@ -113,36 +113,22 @@ class LexerTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($token, $current['value']);
     }
 
-    public function testTokenIsOpenParenthesis()
-    {
-        $this->lexer->setInput('(>2.0)');
-
-        $this->assertTrue($this->lexer->tokenIsOpenParenthesis());
-        $this->assertEquals(
-            $this->lexer->glimpse(), 
-            array(
-                'value' => '(',
-                'type' => Lexer::T_OPEN_PARENTHESIS,
-                'position' => 0,
-            )
-        );
-
-        $this->lexer->moveNext();
-        $this->assertFalse($this->lexer->tokenIsOpenParenthesis());
-    }
-
     /**
      * @dataProvider individualToken
      */
     public function testTokenComparisons($token, $methodToComparison, $expectedType, $expectedValue)
     {
         $this->lexer->setInput($token);
+        $this->lexer->moveNext();
+
+        $this->lexer->moveNext();
+        
         $this->assertTrue($this->lexer->$methodToComparison());
         $this->assertEquals(
-            $this->lexer->glimpse(), 
+            $this->lexer->token, 
             array(
-                'value' => $expectedValue,
-                'type' => $expectedType,
+                'value'    => $expectedValue,
+                'type'     => $expectedType,
                 'position' => 0,
             )
         );
@@ -156,16 +142,16 @@ class LexerTest extends \PHPUnit_Framework_TestCase
     public function matchableTokens()
     {
         return array(
-            //array('', Lexer::T_NONE),
-            //array('invalidstring', Lexer::T_NONE),
-            //array(Lexer::T_NONE, ' '),
+            // array('', Lexer::T_NONE),
+            // array('invalidstring', Lexer::T_NONE),
+            // array(Lexer::T_NONE, ' '),
             array(Lexer::T_NONE, 'b'),
             array(Lexer::T_VERSION, '1'),
             array(Lexer::T_VERSION, '1.2'),
             array(Lexer::T_VERSION, '1.2.3'),
             array(Lexer::T_VERSION, '1.2.3.4'),
-            //array(Lexer::T_VERSION, '1.2.3.4.5'),
-            //array(Lexer::T_VERSION, '1.2.3.4.*'),
+            array(Lexer::T_VERSION, '1.2.3.4.5'),
+            array(Lexer::T_VERSION, '1.2.3.4.*'),
             array(Lexer::T_VERSION, '1.2.3.*'),
             array(Lexer::T_VERSION, '1.2.*'),
             array(Lexer::T_VERSION, '1.*'),
@@ -184,7 +170,7 @@ class LexerTest extends \PHPUnit_Framework_TestCase
             array('>',    'tokenIsComparison',       Lexer::T_COMPARISON,        '>'),
             array('2.0',  'tokenIsVersion',          Lexer::T_VERSION,           '2.0'),
             array('#AB',  'tokenIsBranch',           Lexer::T_BRANCH,            '#AB'),
-            array('@dev', 'tokenIsStability',        Lexer::T_STABILITY,         'dev'),
+            array('@dev', 'tokenIsStability',        Lexer::T_STABILITY,         '@dev'),
         );
     }
 }
