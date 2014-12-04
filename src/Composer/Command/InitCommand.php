@@ -33,8 +33,9 @@ use Symfony\Component\Process\ExecutableFinder;
  */
 class InitCommand extends Command
 {
+    protected $repos;
+
     private $gitConfig;
-    private $repos;
     private $pool;
 
     public function parseAuthorString($author)
