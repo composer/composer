@@ -220,6 +220,14 @@ class Application extends BaseApplication
     }
 
     /**
+     * Removes the cached composer instance
+     */
+    public function resetComposer()
+    {
+        $this->composer = null;
+    }
+
+    /**
      * @return IOInterface
      */
     public function getIO()

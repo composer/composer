@@ -125,6 +125,8 @@ EOT
         $updateDevMode = !$input->getOption('update-no-dev');
 
         // Update packages
+        $this->resetComposer();
+        $composer = $this->getComposer();
         $composer->getDownloadManager()->setOutputProgress(!$input->getOption('no-progress'));
         $io = $this->getIO();
 
