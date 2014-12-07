@@ -360,7 +360,7 @@ class VersionParser
                 if (!empty($stabilityModifier) && $this->parseStability($version) === 'stable') {
                     $version .= '-' . $stabilityModifier;
                 } elseif ('<' === $matches[1]) {
-                    if (!preg_match('/-stable$/', strtolower($matches[2]))) {
+                    if (!preg_match('/-' . self::$modifierRegex . '$/', strtolower($matches[2]))) {
                         $version .= '-dev';
                     }
                 }
