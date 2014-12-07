@@ -56,7 +56,6 @@ abstract class BasePackage implements PackageInterface
     protected $repository;
     protected $transportOptions;
 
-
     /**
      * All descendants' constructors should call this parent constructor
      *

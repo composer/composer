@@ -63,7 +63,7 @@ class AllFunctionalTest extends \PHPUnit_Framework_TestCase
         if (defined('HHVM_VERSION')) {
             $this->markTestSkipped('Building the phar does not work on HHVM.');
         }
-        
+
         $fs = new Filesystem;
         $fs->removeDirectory(dirname(self::$pharPath));
         $fs->ensureDirectoryExists(dirname(self::$pharPath));
