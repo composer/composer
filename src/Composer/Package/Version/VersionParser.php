@@ -233,8 +233,7 @@ class VersionParser
         $orConstraints = preg_split('{\s*\|\|?\s*}', trim($constraints));
         $orGroups = array();
         foreach ($orConstraints as $constraints) {
-            $andConstraints = preg_split('{(?<!^|as|[=>< ,]) *[, ] *(?!,|as|$)}', $constraints);
-
+            $andConstraints = preg_split('{(?<!^|as|[=>< ,]) *(?<!-)[, ](?!-) *(?!,|as|$)}', $constraints);
             if (count($andConstraints) > 1) {
                 $constraintObjects = array();
                 foreach ($andConstraints as $constraint) {
@@ -277,12 +276,14 @@ class VersionParser
             return array(new EmptyConstraint);
         }
 
+        $versionRegex = '(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:\.(\d+))?'.self::$modifierRegex;
+
         // match tilde constraints
         // like wildcard constraints, unsuffixed tilde constraints say that they must be greater than the previous
         // version, to ensure that unstable instances of the current version are allowed.
         // however, if a stability suffix is added to the constraint, then a >= match on the current version is
         // used instead
-        if (preg_match('{^~>?(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:\.(\d+))?'.self::$modifierRegex.'?$}i', $constraint, $matches)) {
+        if (preg_match('{^~>?'.$versionRegex.'$}i', $constraint, $matches)) {
             if (substr($constraint, 0, 2) === '~>') {
                 throw new \UnexpectedValueException(
                     'Could not parse version constraint '.$constraint.': '.
@@ -349,6 +350,33 @@ class VersionParser
             return array(
                 new VersionConstraint('>=', $lowVersion),
                 new VersionConstraint('<', $highVersion),
+            );
+        }
+
+        // match hyphen constraints
+        if (preg_match('{^(?P<from>'.$versionRegex.') +- +(?P<to>'.$versionRegex.')($)}i', $constraint, $matches)) {
+            // Calculate the stability suffix
+            $lowStabilitySuffix = '';
+            if (empty($matches[6]) && empty($matches[8])) {
+                $lowStabilitySuffix = '-dev';
+            }
+
+            $lowVersion = $this->normalize($matches['from']);
+            $lowerBound = new VersionConstraint('>=', $lowVersion . $lowStabilitySuffix);
+
+            $highVersion = $matches[10];
+            if ((!empty($matches[11]) && !empty($matches[12])) || !empty($matches[14]) || !empty($matches[16])) {
+                $highVersion = $this->normalize($matches['to']);
+                $upperBound = new VersionConstraint('<=', $highVersion);
+            } else {
+                $highMatch = array('', $matches[10], $matches[11], $matches[12], $matches[13]);
+                $highVersion = $this->manipulateVersionString($highMatch, empty($matches[11]) ? 1 : 2, 1) . '-dev';
+                $upperBound = new VersionConstraint('<', $highVersion);
+            }
+
+            return array(
+                $lowerBound,
+                $upperBound
             );
         }
 
