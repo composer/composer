@@ -72,24 +72,31 @@ means any version in the `1.0` development branch. It would match `1.0.0`,
 
 Version constraints can be specified in a few different ways.
 
-Name           | Example                                                            | Description
--------------- | ------------------------------------------------------------------ | -----------
-Exact version  | `1.0.2`                                                            | You can specify the exact version of a package.
+Name           | Example                                                                  | Description
+-------------- | ------------------------------------------------------------------------ | -----------
+Exact version  | `1.0.2`                                                                  | You can specify the exact version of a package.
 Range          | `>=1.0` `>=1.0 <2.0` <code>&gt;=1.0 &lt;1.1 &#124;&#124; &gt;=1.2</code> | By using comparison operators you can specify ranges of valid versions. Valid operators are `>`, `>=`, `<`, `<=`, `!=`. <br />You can define multiple ranges. Ranges separated by a space (` `) or comma (`,`) will be treated as a **logical AND**. A double pipe (<code>&#124;&#124;</code>) will be treated as a **logical OR**. AND has higher precedence than OR.
-Hyphen Range   | `1.0 - 2.0` | Inclusive set of versions. Partial versions on the right include are completed with a wildcard. For example `1.0 - 2.0` is equivalent to `>=1.0.0 <2.1` as the `2.0` becomes `2.0.*`. On the other hand `1.0.0 - 2.1.0` is equivalent to `>=1.0.0 <=2.1.0`.
-Wildcard       | `1.0.*`                                                            | You can specify a pattern with a `*` wildcard. `1.0.*` is the equivalent of `>=1.0,<1.1`.
-Tilde Operator | `~1.2`                                                             | Very useful for projects that follow semantic versioning. `~1.2` is equivalent to `>=1.2,<2.0`. For more details, read the next section below.
+Hyphen Range   | `1.0 - 2.0`                                                              | Inclusive set of versions. Partial versions on the right include are completed with a wildcard. For example `1.0 - 2.0` is equivalent to `>=1.0.0 <2.1` as the `2.0` becomes `2.0.*`. On the other hand `1.0.0 - 2.1.0` is equivalent to `>=1.0.0 <=2.1.0`.
+Wildcard       | `1.0.*`                                                                  | You can specify a pattern with a `*` wildcard. `1.0.*` is the equivalent of `>=1.0 <1.1`.
+Tilde Operator | `~1.2`                                                                   | Very useful for projects that follow semantic versioning. `~1.2` is equivalent to `>=1.2 <2.0`. For more details, read the next section below.
+Caret Operator | `^1.2.3`                                                                 | Very useful for projects that follow semantic versioning. `^1.2.3` is equivalent to `>=1.2.3 <2.0`. For more details, read the next section below.
 
-### Next Significant Release (Tilde Operator)
+### Next Significant Release (Tilde and Caret Operators)
 
 The `~` operator is best explained by example: `~1.2` is equivalent to
-`>=1.2,<2.0`, while `~1.2.3` is equivalent to `>=1.2.3,<1.3`. As you can see
+`>=1.2 <2.0.0`, while `~1.2.3` is equivalent to `>=1.2.3 <1.3.0`. As you can see
 it is mostly useful for projects respecting [semantic
 versioning](http://semver.org/). A common usage would be to mark the minimum
 minor version you depend on, like `~1.2` (which allows anything up to, but not
 including, 2.0). Since in theory there should be no backwards compatibility
 breaks until 2.0, that works well. Another way of looking at it is that using
 `~` specifies a minimum version, but allows the last digit specified to go up.
+
+The `^` operator behaves very similarly but it sticks closer to semantic
+versioning, and will always allow non-breaking updates. For example `^1.2.3`
+is equivalent to `>=1.2.3 <2.0.0` as none of the releases until 2.0 should
+break backwards compatibility. For pre-1.0 versions it also acts with safety
+in mind and treats `^0.3` as `>=0.3.0 <0.4.0`
 
 > **Note:** Though `2.0-beta.1` is strictly before `2.0`, a version constraint
 > like `~1.2` would not install it. As said above `~1.2` only means the `.2`

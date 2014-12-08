@@ -295,6 +295,39 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @dataProvider caretConstraints
+     */
+    public function testParseCaretWildcard($input, $min, $max)
+    {
+        $parser = new VersionParser;
+        if ($min) {
+            $expected = new MultiConstraint(array($min, $max));
+        } else {
+            $expected = $max;
+        }
+
+        $this->assertSame((string) $expected, (string) $parser->parseConstraints($input));
+    }
+
+    public function caretConstraints()
+    {
+        return array(
+            array('^1',            new VersionConstraint('>=', '1.0.0.0-dev'), new VersionConstraint('<', '2.0.0.0-dev')),
+            array('^0',            new VersionConstraint('>=', '0.0.0.0-dev'), new VersionConstraint('<', '1.0.0.0-dev')),
+            array('^0.0',          new VersionConstraint('>=', '0.0.0.0-dev'), new VersionConstraint('<', '0.1.0.0-dev')),
+            array('^1.2',          new VersionConstraint('>=', '1.2.0.0-dev'), new VersionConstraint('<', '2.0.0.0-dev')),
+            array('^1.2.3-beta.2', new VersionConstraint('>=', '1.2.3.0-beta2'), new VersionConstraint('<', '2.0.0.0-dev')),
+            array('^1.2.3.4',      new VersionConstraint('>=', '1.2.3.4-dev'), new VersionConstraint('<', '2.0.0.0-dev')),
+            array('^1.2.3',        new VersionConstraint('>=', '1.2.3.0-dev'), new VersionConstraint('<', '2.0.0.0-dev')),
+            array('^0.2.3',        new VersionConstraint('>=', '0.2.3.0-dev'), new VersionConstraint('<', '0.3.0.0-dev')),
+            array('^0.2',          new VersionConstraint('>=', '0.2.0.0-dev'), new VersionConstraint('<', '0.3.0.0-dev')),
+            array('^0.0.3',        new VersionConstraint('>=', '0.0.3.0-dev'), new VersionConstraint('<', '0.0.4.0-dev')),
+            array('^0.0.3-alpha',  new VersionConstraint('>=', '0.0.3.0-alpha'), new VersionConstraint('<', '0.0.4.0-dev')),
+            array('^0.0.3-dev',    new VersionConstraint('>=', '0.0.3.0-dev'), new VersionConstraint('<', '0.0.4.0-dev')),
+        );
+    }
+
+    /**
      * @dataProvider hyphenConstraints
      */
     public function testParseHyphen($input, $min, $max)

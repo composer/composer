@@ -330,6 +330,37 @@ class VersionParser
             );
         }
 
+        // match caret constraints
+        if (preg_match('{^\^'.$versionRegex.'($)}i', $constraint, $matches)) {
+            // Work out which position in the version we are operating at
+            if ('0' !== $matches[1] || '' === $matches[2]) {
+                $position = 1;
+            } elseif ('0' !== $matches[2] || '' === $matches[3]) {
+                $position = 2;
+            } else {
+                $position = 3;
+            }
+
+            // Calculate the stability suffix
+            $stabilitySuffix = '';
+            if (empty($matches[5]) && empty($matches[7])) {
+                $stabilitySuffix .= '-dev';
+            }
+
+            $lowVersion = $this->normalize(substr($constraint . $stabilitySuffix, 1));
+            $lowerBound = new VersionConstraint('>=', $lowVersion);
+
+            // For upper bound, we increment the position of one more significance,
+            // but highPosition = 0 would be illegal
+            $highVersion = $this->manipulateVersionString($matches, $position, 1) . '-dev';
+            $upperBound = new VersionConstraint('<', $highVersion);
+
+            return array(
+                $lowerBound,
+                $upperBound
+            );
+        }
+
         // match wildcard constraints
         if (preg_match('{^(\d+)(?:\.(\d+))?(?:\.(\d+))?\.[xX*]$}', $constraint, $matches)) {
             if (isset($matches[3]) && '' !== $matches[3]) {
