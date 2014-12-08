@@ -99,7 +99,7 @@ class VersionSelectorTest extends \PHPUnit_Framework_TestCase
             array('3.1.2-pl2', false, 'stable', '~3.1'),
             array('3.1.2-patch', false, 'stable', '~3.1'),
             array('0.1.0', false, 'stable', '0.1.*'),
-            array('0.1.3', false, 'stable', '0.1.3.*'),
+            array('0.1.3', false, 'stable', '0.1.*'),
             array('0.0.3', false, 'stable', '0.0.3.*'),
             array('0.0.3-alpha', false, 'alpha', '0.0.3.*@alpha'),
             array('2.0-beta.1', false, 'beta', '~2.0@beta'),

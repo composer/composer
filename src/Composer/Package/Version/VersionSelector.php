@@ -109,11 +109,11 @@ class VersionSelector
         if (count($semanticVersionParts) == 4 && preg_match('{^0\D?}', $semanticVersionParts[3])) {
             // remove the last parts (i.e. the patch version number and any extra)
             if ($semanticVersionParts[0] === '0') {
-                if ($semanticVersionParts[2] === '0') {
+                if ($semanticVersionParts[1] === '0') {
+                    $semanticVersionParts[3] = '*';
+                } else {
                     $semanticVersionParts[2] = '*';
                     unset($semanticVersionParts[3]);
-                } else {
-                    $semanticVersionParts[3] = '*';
                 }
                 $op = '';
             } else {
