@@ -28,12 +28,6 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class LicensesCommand extends Command
 {
-    /**
-     * @var list of packages to use
-     */
-
-    private $packageList = array();
-
     protected function configure()
     {
         $this
@@ -65,12 +59,12 @@ EOT
         $versionParser = new VersionParser;
 
         if ($input->getOption('no-dev')) {
-            $this->findRequiresPackages($repo, $root);
+            $packages = $this->filterRequiredPackages($repo, $root);
         } else {
-            $this->addToPackageList($repo->getPackages());
+            $packages = $this->appendPackages($repo->getPackages(), array());
         }
 
-        ksort($this->packageList);
+        ksort($packages);
 
         switch ($format = $input->getOption('format')) {
             case 'text':
@@ -82,7 +76,7 @@ EOT
                 $table = $this->getHelperSet()->get('table');
                 $table->setLayout(TableHelper::LAYOUT_BORDERLESS);
                 $table->setHorizontalBorderChar('');
-                foreach ($this->packageList as $package) {
+                foreach ($packages as $package) {
                     $table->addRow(array(
                         $package->getPrettyName(),
                         $versionParser->formatVersion($package),
@@ -93,7 +87,7 @@ EOT
                 break;
 
             case 'json':
-                foreach ($this->packageList as $package) {
+                foreach ($packages as $package) {
                     $dependencies[$package->getPrettyName()] = array(
                         'version' => $versionParser->formatVersion($package),
                         'license' => $package->getLicense(),
@@ -119,11 +113,11 @@ EOT
      * @param RepositoryInterface $repo
      * @param PackageInterface    $package
      */
-    private function findRequiresPackages(RepositoryInterface $repo, PackageInterface $package)
+    private function filterRequiredPackages(RepositoryInterface $repo, PackageInterface $package, $bucket = array())
     {
         $requires = array_keys($package->getRequires());
 
-        $packageListNames = array_keys($this->packageList);
+        $packageListNames = array_keys($bucket);
         $packages = array_filter(
             $repo->getPackages(),
             function ($package) use ($requires, $packageListNames) {
@@ -131,22 +125,28 @@ EOT
             }
         );
 
-        $this->addToPackageList($packages);
+        $bucket = $this->appendPackages($packages, $bucket);
 
         foreach ($packages as $package) {
-            $this->findRequiresPackages($repo, $package);
+            $bucket = $this->filterRequiredPackages($repo, $package, $bucket);
         }
+
+        return $bucket;
     }
 
     /**
      * Adds packages to the package list
      *
-     * @param array $packages the list of packages to add
+     * @param  array $packages the list of packages to add
+     * @param  array $bucket   the list to add packages to
+     * @return array
      */
-    public function addToPackageList($packages)
+    public function appendPackages(array $packages, array $bucket)
     {
         foreach ($packages as $package) {
-            $this->packageList[$package->getName()] = $package;
+            $bucket[$package->getName()] = $package;
         }
+
+        return $bucket;
     }
 }
