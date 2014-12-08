@@ -487,6 +487,11 @@ performance.
 Lists the name, version and license of every package installed. Use
 `--format=json` to get machine readable output.
 
+### Options
+
+* **--no-dev:** Remove dev dependencies from the output
+* **--format:** Format of the output: text or json (default: "text")
+
 ## run-script
 
 To run [scripts](articles/scripts.md) manually you can use this command,
