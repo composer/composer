@@ -447,7 +447,8 @@ By default the command checks for the packages on packagist.org.
 
 * **--repository-url:** Provide a custom repository to search for the package,
   which will be used instead of packagist. Can be either an HTTP URL pointing
-  to a `composer` repository, or a path to a local `packages.json` file.
+  to a `composer` [repository](05-repositories.md#composer), or a path to a [local
+  `packages.json` file](#local-repository).
 * **--stability (-s):** Minimum stability of package. Defaults to `stable`.
 * **--prefer-source:** Install packages from `source` when available.
 * **--prefer-dist:** Install packages from `dist` when available.
@@ -461,6 +462,27 @@ By default the command checks for the packages on packagist.org.
 * **--keep-vcs:** Skip the deletion of the VCS metadata for the created
   project. This is mostly useful if you run the command in non-interactive
   mode.
+
+### Local repository
+
+A local, filesystem-based repository consists of a single `packages.json` file that
+contains all of the package metadata. The JSON structure is as follows:
+
+    {
+        "vendor/package-name": { @composer.json }
+    }
+
+The `composer.json` marker would be the contents of the `composer.json` from that
+package version including as a minimum:
+
+* name
+* version
+* dist or source
+
+Multiple versions are not supported in this format: if this feature is required
+switch to a composer [repository](05-repositories.md#composer) accessible via http
+(for development and testing purposes it can be served locally via PHP's
+[built-in web server](http://php.net/manual/en/features.commandline.webserver.php)).
 
 ## dump-autoload
 
