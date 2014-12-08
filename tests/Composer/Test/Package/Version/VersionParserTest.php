@@ -90,6 +90,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'forces w.x.y.z/2'   => array('0',                   '0.0.0.0'),
             'parses long'        => array('10.4.13-beta',        '10.4.13.0-beta'),
             'parses long/2'      => array('10.4.13beta2',        '10.4.13.0-beta2'),
+            'parses long/semver' => array('10.4.13beta.2',       '10.4.13.0-beta2'),
             'expand shorthand'   => array('10.4.13-b',           '10.4.13.0-beta'),
             'expand shorthand2'  => array('10.4.13-b5',          '10.4.13.0-beta5'),
             'strips leading v'   => array('v1.0.0',              '1.0.0.0'),
@@ -109,6 +110,10 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'parses arbitrary2'  => array('DEV-FOOBAR',          'dev-FOOBAR'),
             'parses arbitrary3'  => array('dev-feature/foo',     'dev-feature/foo'),
             'ignores aliases'    => array('dev-master as 1.0.0', '9999999-dev'),
+            'semver metadata'    => array('dev-master+foo.bar',  '9999999-dev'),
+            'semver metadata/2'  => array('1.0.0-beta.5+foo',    '1.0.0.0-beta5'),
+            'semver metadata/3'  => array('1.0.0+foo',           '1.0.0.0'),
+            'metadata w/ alias'  => array('1.0.0+foo as 2.0',    '1.0.0.0'),
         );
     }
 
@@ -130,6 +135,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'invalid type'      => array('1.0.0-meh'),
             'too many bits'     => array('1.0.0.0.0'),
             'non-dev arbitrary' => array('feature-foo'),
+            'metadata w/ space' => array('1.0.0+foo bar'),
         );
     }
 
@@ -208,7 +214,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'match any'         => array('*',           new EmptyConstraint()),
             'match any/2'       => array('*.*',         new EmptyConstraint()),
             'match any/3'       => array('*.x.*',       new EmptyConstraint()),
-            'match any/4'       => array('x.x.x.*',     new EmptyConstraint()),
+            'match any/4'       => array('x.X.x.*',     new EmptyConstraint()),
             'not equal'         => array('<>1.0.0',     new VersionConstraint('<>', '1.0.0.0')),
             'not equal/2'       => array('!=1.0.0',     new VersionConstraint('!=', '1.0.0.0')),
             'greater than'      => array('>1.0.0',      new VersionConstraint('>', '1.0.0.0')),
@@ -221,6 +227,8 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'completes version' => array('=1.0',        new VersionConstraint('=', '1.0.0.0')),
             'shorthand beta'    => array('1.2.3b5',     new VersionConstraint('=', '1.2.3.0-beta5')),
             'accepts spaces'    => array('>= 1.2.3',    new VersionConstraint('>=', '1.2.3.0')),
+            'accepts spaces/2'  => array('< 1.2.3',     new VersionConstraint('<', '1.2.3.0-dev')),
+            'accepts spaces/3'  => array('> 1.2.3',     new VersionConstraint('>', '1.2.3.0')),
             'accepts master'    => array('>=dev-master',    new VersionConstraint('>=', '9999999-dev')),
             'accepts master/2'  => array('dev-master',      new VersionConstraint('=', '9999999-dev')),
             'accepts arbitrary' => array('dev-feature-a',   new VersionConstraint('=', 'dev-feature-a')),
@@ -253,7 +261,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             array('20.*',    new VersionConstraint('>=', '20.0.0.0-dev'), new VersionConstraint('<', '21.0.0.0-dev')),
             array('2.0.*',   new VersionConstraint('>=', '2.0.0.0-dev'), new VersionConstraint('<', '2.1.0.0-dev')),
             array('2.2.x',   new VersionConstraint('>=', '2.2.0.0-dev'), new VersionConstraint('<', '2.3.0.0-dev')),
-            array('2.10.x',  new VersionConstraint('>=', '2.10.0.0-dev'), new VersionConstraint('<', '2.11.0.0-dev')),
+            array('2.10.X',  new VersionConstraint('>=', '2.10.0.0-dev'), new VersionConstraint('<', '2.11.0.0-dev')),
             array('2.1.3.*', new VersionConstraint('>=', '2.1.3.0-dev'), new VersionConstraint('<', '2.1.4.0-dev')),
             array('0.*',     null, new VersionConstraint('<', '1.0.0.0-dev')),
         );
@@ -291,13 +299,92 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function testParseConstraintsMulti()
+    /**
+     * @dataProvider caretConstraints
+     */
+    public function testParseCaretWildcard($input, $min, $max)
+    {
+        $parser = new VersionParser;
+        if ($min) {
+            $expected = new MultiConstraint(array($min, $max));
+        } else {
+            $expected = $max;
+        }
+
+        $this->assertSame((string) $expected, (string) $parser->parseConstraints($input));
+    }
+
+    public function caretConstraints()
+    {
+        return array(
+            array('^1',            new VersionConstraint('>=', '1.0.0.0-dev'), new VersionConstraint('<', '2.0.0.0-dev')),
+            array('^0',            new VersionConstraint('>=', '0.0.0.0-dev'), new VersionConstraint('<', '1.0.0.0-dev')),
+            array('^0.0',          new VersionConstraint('>=', '0.0.0.0-dev'), new VersionConstraint('<', '0.1.0.0-dev')),
+            array('^1.2',          new VersionConstraint('>=', '1.2.0.0-dev'), new VersionConstraint('<', '2.0.0.0-dev')),
+            array('^1.2.3-beta.2', new VersionConstraint('>=', '1.2.3.0-beta2'), new VersionConstraint('<', '2.0.0.0-dev')),
+            array('^1.2.3.4',      new VersionConstraint('>=', '1.2.3.4-dev'), new VersionConstraint('<', '2.0.0.0-dev')),
+            array('^1.2.3',        new VersionConstraint('>=', '1.2.3.0-dev'), new VersionConstraint('<', '2.0.0.0-dev')),
+            array('^0.2.3',        new VersionConstraint('>=', '0.2.3.0-dev'), new VersionConstraint('<', '0.3.0.0-dev')),
+            array('^0.2',          new VersionConstraint('>=', '0.2.0.0-dev'), new VersionConstraint('<', '0.3.0.0-dev')),
+            array('^0.0.3',        new VersionConstraint('>=', '0.0.3.0-dev'), new VersionConstraint('<', '0.0.4.0-dev')),
+            array('^0.0.3-alpha',  new VersionConstraint('>=', '0.0.3.0-alpha'), new VersionConstraint('<', '0.0.4.0-dev')),
+            array('^0.0.3-dev',    new VersionConstraint('>=', '0.0.3.0-dev'), new VersionConstraint('<', '0.0.4.0-dev')),
+        );
+    }
+
+    /**
+     * @dataProvider hyphenConstraints
+     */
+    public function testParseHyphen($input, $min, $max)
+    {
+        $parser = new VersionParser;
+        if ($min) {
+            $expected = new MultiConstraint(array($min, $max));
+        } else {
+            $expected = $max;
+        }
+
+        $this->assertSame((string) $expected, (string) $parser->parseConstraints($input));
+    }
+
+    public function hyphenConstraints()
+    {
+        return array(
+            array('1 - 2',                  new VersionConstraint('>=', '1.0.0.0-dev'),   new VersionConstraint('<',  '3.0.0.0-dev')),
+            array('1.2.3 - 2.3.4.5',        new VersionConstraint('>=', '1.2.3.0-dev'),   new VersionConstraint('<=', '2.3.4.5')),
+            array('1.2-beta - 2.3',         new VersionConstraint('>=', '1.2.0.0-beta'),  new VersionConstraint('<',  '2.4.0.0-dev')),
+            array('1.2-beta - 2.3-dev',     new VersionConstraint('>=', '1.2.0.0-beta'),  new VersionConstraint('<=', '2.3.0.0-dev')),
+            array('1.2-RC - 2.3.1',         new VersionConstraint('>=', '1.2.0.0-RC'),    new VersionConstraint('<=', '2.3.1.0')),
+            array('1.2.3-alpha - 2.3-RC',   new VersionConstraint('>=', '1.2.3.0-alpha'), new VersionConstraint('<=', '2.3.0.0-RC')),
+        );
+    }
+
+    /**
+     * @dataProvider multiConstraintProvider
+     */
+    public function testParseConstraintsMulti($constraint)
     {
         $parser = new VersionParser;
         $first = new VersionConstraint('>', '2.0.0.0');
         $second = new VersionConstraint('<=', '3.0.0.0');
         $multi = new MultiConstraint(array($first, $second));
-        $this->assertSame((string) $multi, (string) $parser->parseConstraints('>2.0,<=3.0'));
+        $this->assertSame((string) $multi, (string) $parser->parseConstraints($constraint));
+    }
+
+    public function multiConstraintProvider()
+    {
+        return array(
+            array('>2.0,<=3.0'),
+            array('>2.0 <=3.0'),
+            array('>2.0  <=3.0'),
+            array('>2.0, <=3.0'),
+            array('>2.0 ,<=3.0'),
+            array('>2.0 , <=3.0'),
+            array('>2.0   , <=3.0'),
+            array('> 2.0   <=  3.0'),
+            array('> 2.0  ,  <=  3.0'),
+            array('  > 2.0  ,  <=  3.0 '),
+        );
     }
 
     public function testParseConstraintsMultiWithStabilitySuffix()
@@ -314,7 +401,10 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
         $this->assertSame((string) $multi, (string) $parser->parseConstraints('>=1.1.0-alpha4,<1.2-beta2'));
     }
 
-    public function testParseConstraintsMultiDisjunctiveHasPrioOverConjuctive()
+    /**
+     * @dataProvider multiConstraintProvider2
+     */
+    public function testParseConstraintsMultiDisjunctiveHasPrioOverConjuctive($constraint)
     {
         $parser = new VersionParser;
         $first = new VersionConstraint('>', '2.0.0.0');
@@ -322,7 +412,16 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
         $third = new VersionConstraint('>', '2.0.6.0');
         $multi1 = new MultiConstraint(array($first, $second));
         $multi2 = new MultiConstraint(array($multi1, $third), false);
-        $this->assertSame((string) $multi2, (string) $parser->parseConstraints('>2.0,<2.0.5 | >2.0.6'));
+        $this->assertSame((string) $multi2, (string) $parser->parseConstraints($constraint));
+    }
+
+    public function multiConstraintProvider2()
+    {
+        return array(
+            array('>2.0,<2.0.5 | >2.0.6'),
+            array('>2.0,<2.0.5 || >2.0.6'),
+            array('> 2.0 , <2.0.5 | >  2.0.6'),
+        );
     }
 
     public function testParseConstraintsMultiWithStabilities()
@@ -349,6 +448,9 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
         return array(
             'empty '            => array(''),
             'invalid version'   => array('1.0.0-meh'),
+            'operator abuse'    => array('>2.0,,<=3.0'),
+            'operator abuse/2'  => array('>2.0 ,, <=3.0'),
+            'operator abuse/3'  => array('>2.0 ||| <=3.0'),
         );
     }
 
