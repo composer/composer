@@ -178,10 +178,10 @@ class VersionParser
             return $this->normalize($name);
         }
 
-        if (preg_match('#^v?(\d+)(\.(?:\d+|[x*]))?(\.(?:\d+|[x*]))?(\.(?:\d+|[x*]))?$#i', $name, $matches)) {
+        if (preg_match('#^v?(\d+)(\.(?:\d+|[xX*]))?(\.(?:\d+|[xX*]))?(\.(?:\d+|[xX*]))?$#i', $name, $matches)) {
             $version = '';
             for ($i = 1; $i < 5; $i++) {
-                $version .= isset($matches[$i]) ? str_replace('*', 'x', $matches[$i]) : '.x';
+                $version .= isset($matches[$i]) ? str_replace(array('*', 'X'), 'x', $matches[$i]) : '.x';
             }
 
             return str_replace('x', '9999999', $version).'-dev';
@@ -230,7 +230,7 @@ class VersionParser
             $constraints = $match[1];
         }
 
-        $orConstraints = preg_split('{\s*\|\s*}', trim($constraints));
+        $orConstraints = preg_split('{\s*\|\|?\s*}', trim($constraints));
         $orGroups = array();
         foreach ($orConstraints as $constraints) {
             $andConstraints = preg_split('{(?<!^|as|[=>< ,]) *[, ] *(?!,|as|$)}', $constraints);
@@ -273,7 +273,7 @@ class VersionParser
             }
         }
 
-        if (preg_match('{^[x*](\.[x*])*$}i', $constraint)) {
+        if (preg_match('{^[xX*](\.[xX*])*$}i', $constraint)) {
             return array(new EmptyConstraint);
         }
 
@@ -330,7 +330,7 @@ class VersionParser
         }
 
         // match wildcard constraints
-        if (preg_match('{^(\d+)(?:\.(\d+))?(?:\.(\d+))?\.[x*]$}', $constraint, $matches)) {
+        if (preg_match('{^(\d+)(?:\.(\d+))?(?:\.(\d+))?\.[xX*]$}', $constraint, $matches)) {
             if (isset($matches[3]) && '' !== $matches[3]) {
                 $position = 3;
             } elseif (isset($matches[2]) && '' !== $matches[2]) {
