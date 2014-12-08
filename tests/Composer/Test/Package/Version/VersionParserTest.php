@@ -110,6 +110,10 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'parses arbitrary2'  => array('DEV-FOOBAR',          'dev-FOOBAR'),
             'parses arbitrary3'  => array('dev-feature/foo',     'dev-feature/foo'),
             'ignores aliases'    => array('dev-master as 1.0.0', '9999999-dev'),
+            'semver metadata'    => array('dev-master+foo.bar',  '9999999-dev'),
+            'semver metadata/2'  => array('1.0.0-beta.5+foo',    '1.0.0.0-beta5'),
+            'semver metadata/3'  => array('1.0.0+foo',           '1.0.0.0'),
+            'metadata w/ alias'  => array('1.0.0+foo as 2.0',    '1.0.0.0'),
         );
     }
 
@@ -131,6 +135,7 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             'invalid type'      => array('1.0.0-meh'),
             'too many bits'     => array('1.0.0.0.0'),
             'non-dev arbitrary' => array('feature-foo'),
+            'metadata w/ space' => array('1.0.0+foo bar'),
         );
     }
 
