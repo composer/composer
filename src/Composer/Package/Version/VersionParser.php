@@ -341,7 +341,7 @@ class VersionParser
                     }
                 }
                 
-                // Mal formmed string versions group
+                // Bad formmed string versions group
                 if ($closeParenthesis > $openParenthesis) {
                     throw new UnexpectedValueException('Parenthesis are not closed correctly.');
                 }
@@ -365,18 +365,18 @@ class VersionParser
                 
                 if ($openParenthesis === $closeParenthesis) {
 
-                     $group[$normal] = isset($group[$normal]) 
+                    $group[$normal] = isset($group[$normal]) 
                              ? $group[$normal] .= $token['value']
                              : $group[$normal]  = $token['value'];
 
-                     // Parser the version if don't have more tokens
-                     if (!$lexer->lookahead) {
-                         $versions[] = $this->parseConstraints($group[$normal]);
-                     }
+                    // Parser the version if don't have more tokens
+                    if (!$lexer->lookahead) {
+                        $versions[] = $this->parseConstraints($group[$normal]);
+                    }
                 } else {
-                     $group[$openParenthesis] = isset($group[$openParenthesis])
-                             ? $group[$openParenthesis] .= $token['value']
-                             : $group[$openParenthesis]  = $token['value'];
+                    $group[$openParenthesis] = isset($group[$openParenthesis])
+                            ? $group[$openParenthesis] .= $token['value']
+                            : $group[$openParenthesis]  = $token['value'];
                 }
             }
             
@@ -436,6 +436,8 @@ class VersionParser
             return array(new EmptyConstraint);
         }
 
+        $versionParsed = explode('.', $constraint);
+
         // match tilde constraints
         // like wildcard constraints, unsuffixed tilde constraints say that they must be greater than the previous
         // version, to ensure that unstable instances of the current version are allowed.
@@ -449,9 +451,7 @@ class VersionParser
                     'Invalid operator "~>", you probably meant to use the "~" operator'
                 );
             }
-
-            $versionParsed = explode('.', $version);
-           
+        
             // Work out which position in the version we are operating at
             $position = count($versionParsed);
 
@@ -461,12 +461,8 @@ class VersionParser
                 $stabilitySuffix = '-' . $this->expandStability($matches[5]) . (!empty($matches[6]) ? $matches[6] : '');    
             }
 
-            if (!empty($matches[7])) {
-                $stabilitySuffix = '-dev';
-            }
-
             if (!$stabilitySuffix) {
-                $stabilitySuffix = "-dev";
+                $stabilitySuffix = '-dev';
             }
             
             $lowVersion = $this->manipulateVersionString($matches, $position, 0) . $stabilitySuffix;
@@ -485,13 +481,19 @@ class VersionParser
         }
 
         // match wildcard constraints
-        if (preg_match('{^(\d+)(?:\.(\d+))?(?:\.(\d+))?\.[x*]$}', $constraint, $matches)) {
-            $position = count(explode('.', $version)) - 1;
+        if ('*' ==  end($versionParsed) || 'x' == end($versionParsed)) {
+            $position      = count($versionParsed) - 1;
+            
+            $versionParsed = array_filter($versionParsed, function($value) {
+                return $value == '*' || $value == 'x' ? false : true;
+            });
 
-            $lowVersion = $this->manipulateVersionString($matches, $position) . "-dev";
-            $highVersion = $this->manipulateVersionString($matches, $position, 1) . "-dev";
+            array_unshift($versionParsed, $version);
 
-            if ($lowVersion === "0.0.0.0-dev") {
+            $lowVersion  = $this->manipulateVersionString($versionParsed, $position) . '-dev';
+            $highVersion = $this->manipulateVersionString($versionParsed, $position, 1) . '-dev';
+
+            if ($lowVersion === '0.0.0.0-dev') {
                 return array(new VersionConstraint('<', $highVersion));
             }
 
