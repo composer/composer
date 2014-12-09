@@ -55,12 +55,9 @@ class Compiler
         $date->setTimezone(new \DateTimeZone('UTC'));
         $this->versionDate = $date->format('Y-m-d H:i:s');
 
-        $process = new Process('git name-rev --tags --name-only $(git rev-parse HEAD)');
+        $process = new Process('git describe --tags --exact-match HEAD');
         if ($process->run() == 0) {
-            $output = trim($process->getOutput());
-            if ($output != 'undefined') {
-                $this->version = $output;
-            }
+            $this->version = trim($process->getOutput());
         } else {
             // get branch-alias defined in composer.json for dev-master (if any)
             $localConfig = __DIR__.'/../../composer.json';
