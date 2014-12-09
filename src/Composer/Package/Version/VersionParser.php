@@ -416,12 +416,18 @@ class VersionParser
                 if ('stable' !== $stability) {
                     $stabilityModifier = $stability;
                 }
+                continue;
             }
             
             if (! $lexer->lookahead) {
                 break;
             }
         }
+
+
+        // if (isset($stability) && !empty($stability)) {
+        //     $constraint = $version;
+        // }
 
         if (preg_match('{^([^,\s]+?)@('.implode('|', array_keys(BasePackage::$stabilities)).')$}i', $constraint, $match)) {
             $constraint = $match[1];
@@ -438,7 +444,7 @@ class VersionParser
         // used instead
         if (preg_match('{^~>?(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:\.(\d+))?'.self::$modifierRegex.'?$}i', $constraint, $matches)) {
             
-            if (substr($constraint, 0, 2) === '~>') {
+            if (substr($version, 0, 2) === '~>') {
                 throw new \UnexpectedValueException(
                     'Could not parse version constraint '.$constraint.': '.
                     'Invalid operator "~>", you probably meant to use the "~" operator'
@@ -446,15 +452,7 @@ class VersionParser
             }
 
             // Work out which position in the version we are operating at
-            if (isset($matches[4]) && '' !== $matches[4]) {
-                $position = 4;
-            } elseif (isset($matches[3]) && '' !== $matches[3]) {
-                $position = 3;
-            } elseif (isset($matches[2]) && '' !== $matches[2]) {
-                $position = 2;
-            } else {
-                $position = 1;
-            }
+            $position = count(explode('.', $version));
 
             // Calculate the stability suffix
             $stabilitySuffix = '';
