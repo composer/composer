@@ -401,7 +401,8 @@ class VersionParser
         $lexer->setInput($constraint);
         $lexer->moveNext();
 
-        $version = '';
+        $version     = '';
+        $stabilityAt = false;
 
         while (true)
         {
@@ -412,11 +413,14 @@ class VersionParser
 
             // Get version stability
             if ($lexer->tokenIsStability()) {
+                if (false !== strpos($lexer->token['value'], '@')) {
+                    $stabilityAt = true;
+                }
+
                 $stability = ltrim($lexer->token['value'], '@-');
                 if ('stable' !== $stability) {
                     $stabilityModifier = $stability;
                 }
-                continue;
             }
             
             if (! $lexer->lookahead) {
@@ -424,16 +428,11 @@ class VersionParser
             }
         }
 
-
-        // if (isset($stability) && !empty($stability)) {
-        //     $constraint = $version;
-        // }
-
-        if (preg_match('{^([^,\s]+?)@('.implode('|', array_keys(BasePackage::$stabilities)).')$}i', $constraint, $match)) {
-            $constraint = $match[1];
+        if ($stabilityAt) {
+            $constraint = $version;
         }
 
-        if (preg_match('{^[x*](\.[x*])*$}i', $constraint)) {
+        if (preg_match('{^[x*](\.[x*])*$}i', $version)) {
             return array(new EmptyConstraint);
         }
 
@@ -451,13 +450,15 @@ class VersionParser
                 );
             }
 
+            $versionParsed = explode('.', $version);
+           
             // Work out which position in the version we are operating at
-            $position = count(explode('.', $version));
+            $position = count($versionParsed);
 
             // Calculate the stability suffix
             $stabilitySuffix = '';
             if (!empty($matches[5])) {
-                $stabilitySuffix = '-' . $this->expandStability($matches[5]) . (!empty($matches[6]) ? $matches[6] : '');
+                $stabilitySuffix = '-' . $this->expandStability($matches[5]) . (!empty($matches[6]) ? $matches[6] : '');    
             }
 
             if (!empty($matches[7])) {
@@ -467,6 +468,7 @@ class VersionParser
             if (!$stabilitySuffix) {
                 $stabilitySuffix = "-dev";
             }
+            
             $lowVersion = $this->manipulateVersionString($matches, $position, 0) . $stabilitySuffix;
             $lowerBound = new VersionConstraint('>=', $lowVersion);
 
@@ -484,13 +486,7 @@ class VersionParser
 
         // match wildcard constraints
         if (preg_match('{^(\d+)(?:\.(\d+))?(?:\.(\d+))?\.[x*]$}', $constraint, $matches)) {
-            if (isset($matches[3]) && '' !== $matches[3]) {
-                $position = 3;
-            } elseif (isset($matches[2]) && '' !== $matches[2]) {
-                $position = 2;
-            } else {
-                $position = 1;
-            }
+            $position = count(explode('.', $version)) - 1;
 
             $lowVersion = $this->manipulateVersionString($matches, $position) . "-dev";
             $highVersion = $this->manipulateVersionString($matches, $position, 1) . "-dev";
