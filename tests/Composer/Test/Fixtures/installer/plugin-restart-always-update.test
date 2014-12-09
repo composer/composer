@@ -1,0 +1,39 @@
+--TEST--
+Updates a simple plugin package and restarts always the solver after installation of plugin
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "p/p", "version": "1.0.0", "type": "composer-plugin", "extra": { "installer-restart": true } }
+            ]
+        },
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.0", "require": { "p/p": "1.0.0" } }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.0.0"
+    }
+}
+--RUN--
+update --verbose
+--EXPECT-OUTPUT--
+<info>Loading composer repositories with package information</info>
+<info>Updating dependencies (including require-dev)</info>
+<info>A new analysis of dependencies is required by:</info>
+  - Plugin <info>p/p</info> (<comment>always</comment>)
+
+<info>Updating dependencies (including require-dev)</info>
+<info>Writing lock file</info>
+<info>Generating autoload files</info>
+
+--EXPECT-EXIT-CODE--
+0
+--EXPECT--
+Installing p/p (1.0.0)
+Installing a/a (1.0.0)

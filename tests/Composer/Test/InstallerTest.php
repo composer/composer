@@ -200,8 +200,12 @@ class InstallerTest extends TestCase
             $composer
         );
 
+        $self = $this;
         $application = new Application;
-        $application->get('install')->setCode(function ($input, $output) use ($installer) {
+        $application->get('install')->setCode(function ($input, $output) use ($installer, $io, $self) {
+            $io->expects($self->any())
+                ->method('isVerbose')
+                ->will($self->returnValue($input->getOption('verbose')));
             $installer
                 ->setDevMode(!$input->getOption('no-dev'))
                 ->setDryRun($input->getOption('dry-run'))
@@ -210,7 +214,10 @@ class InstallerTest extends TestCase
             return $installer->run();
         });
 
-        $application->get('update')->setCode(function ($input, $output) use ($installer) {
+        $application->get('update')->setCode(function ($input, $output) use ($installer, $io, $self) {
+            $io->expects($self->any())
+                ->method('isVerbose')
+                ->will($self->returnValue($input->getOption('verbose')));
             $installer
                 ->setDevMode(!$input->getOption('no-dev'))
                 ->setUpdate(true)

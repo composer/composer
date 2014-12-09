@@ -1,0 +1,35 @@
+--TEST--
+Installs a simple plugin package and restarts the solver after the exception (not restarted because no exception)
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "p/p", "version": "1.0.0", "type": "composer-plugin", "extra": { "installer-restart": "on-exception" } }
+            ]
+        },
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.0", "require": { "p/p": "1.0.0" } }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.0.0"
+    }
+}
+--RUN--
+install --verbose
+--EXPECT-OUTPUT--
+<info>Loading composer repositories with package information</info>
+<info>Installing dependencies (including require-dev)</info>
+<info>Writing lock file</info>
+<info>Generating autoload files</info>
+
+--EXPECT-EXIT-CODE--
+0
+--EXPECT--
+Installing p/p (1.0.0)
+Installing a/a (1.0.0)

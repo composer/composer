@@ -1,0 +1,48 @@
+--TEST--
+Installs a simple plugin package and restarts the solver after the exception
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "p/p", "version": "1.0.0", "type": "composer-plugin", "extra": { "installer-restart": "on-exception" } }
+            ]
+        },
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.0", "require": { "p/p": "1.0.0" } }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.0.0",
+        "b/b": "1.0.0"
+    }
+}
+--RUN--
+install --verbose
+--EXPECT-OUTPUT--
+<info>Loading composer repositories with package information</info>
+<info>Installing dependencies (including require-dev)</info>
+<info>A new analysis of dependencies is required by:</info>
+  - Plugin <info>p/p</info> (<comment>on-exception</comment>)
+
+<info>Installing dependencies (including require-dev)</info>
+<error>Your requirements could not be resolved to an installable set of packages.</error>
+
+  Problem 1
+    - The requested package b/b could not be found in any version, there may be a typo in the package name.
+
+Potential causes:
+ - A typo in the package name
+ - The package is not available in a stable-enough version according to your minimum-stability setting
+   see <https://groups.google.com/d/topic/composer-dev/_g3ASeIFlrc/discussion> for more details.
+
+Read <http://getcomposer.org/doc/articles/troubleshooting.md> for further common problems.
+
+--EXPECT-EXIT-CODE--
+2
+--EXPECT--
+Installing p/p (1.0.0)
