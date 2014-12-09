@@ -279,56 +279,56 @@ class VersionParser
         $lexer = new Lexer();
         $lexer->setInput($version);
         $lexer->moveNext();
-        
+
         $openParenthesis  = 0;
         $closeParenthesis = 0;
         $normal           = 1;
         $or               = 0;
         $level            = 0;
-        
-        $group        = array();
-        $versions     = array();
-        
+
+        $group    = array();
+        $versions = array();
+
         while (true) {
-            
+
             $token = $lexer->token;
-            
+
             if ($lexer->tokenIsPipe()) {
                 $or++;
             }
-            
+
             if ($lexer->tokenIsOpenParenthesis()) {
                 $openParenthesis++;
                 $normal++;
                 $group[$openParenthesis] = null;
             }
-            
-            
+
+
             if ($lexer->tokenIsCloseParenthesis()) {
                 $closeParenthesis++;
-                
+
                 if ($openParenthesis === $closeParenthesis) {
-                    
+
                     if (! $level) {
                         $versions[$closeParenthesis] = $this->parseConstraints($group[$closeParenthesis]);
                     }
-                    
+
                     while ($level)
                     {
                         $level--;
                         $or--;
-                        
+
                         $index = $openParenthesis - 1;
                         if (isset($group[$index]) && !empty($group[$index])) {
                             $prevGroup = trim($group[$openParenthesis - 1], ',');
-                            
+
                             $versions[$closeParenthesis] = new MultiConstraint(array(
                                 $this->parseConstraints($prevGroup),
                                 $this->parseConstraints($group[$openParenthesis])
                             ), !$or);
                             continue;
                         }
-                        
+
                         if (isset($group[$normal]) && !empty($group[$index])) {
                             $versions[$closeParenthesis] = new MultiConstraint(array(
                                 $this->parseConstraints($group[$openParenthesis]),
@@ -336,11 +336,11 @@ class VersionParser
                             ), !$or);
                             continue;
                         }
-                        
-                        $versions[$closeParenthesis] = $this->parseConstraints($group[$openParenthesis]); 
+
+                        $versions[$closeParenthesis] = $this->parseConstraints($group[$openParenthesis]);
                     }
                 }
-                
+
                 // Bad formmed string versions group
                 if ($closeParenthesis > $openParenthesis) {
                     throw new UnexpectedValueException('Parenthesis are not closed correctly.');
@@ -353,21 +353,21 @@ class VersionParser
             }
 
             if (
-               !$lexer->tokenIsOpenParenthesis() 
+               !$lexer->tokenIsOpenParenthesis()
                && !$lexer->tokenIsCloseParenthesis()
                && !$lexer->tokenIsPipe()
             ) {
-                
-                if ($lexer->tokenIsComma() 
+
+                if ($lexer->tokenIsComma()
                         && ! $lexer->isNextToken(Lexer::T_OPEN_PARENTHESIS)) {
                         // TODO: Don't storage comma at final of a setence
                 }
-                
+
                 if ($openParenthesis === $closeParenthesis) {
 
-                    $group[$normal] = isset($group[$normal]) 
-                             ? $group[$normal] .= $token['value']
-                             : $group[$normal]  = $token['value'];
+                    $group[$normal] = isset($group[$normal])
+                            ? $group[$normal] .= $token['value']
+                            : $group[$normal]  = $token['value'];
 
                     // Parser the version if don't have more tokens
                     if (!$lexer->lookahead) {
@@ -379,12 +379,12 @@ class VersionParser
                             : $group[$openParenthesis]  = $token['value'];
                 }
             }
-            
+
             // Skip if no have more tokens
             if (!$lexer->lookahead) {
                 break;
             }
-            
+
             $lexer->moveNext();
         }
 
@@ -401,14 +401,20 @@ class VersionParser
         $lexer->setInput($constraint);
         $lexer->moveNext();
 
-        $version     = '';
-        $stabilityAt = false;
+        $version       = '';
+        $stability     = '';
+        $stabilityAt   = false;
+        $versionNumber = '';
 
         while (true)
         {
             $lexer->moveNext();
             if (! $lexer->tokenIsStability()) {
                 $version .= $lexer->token['value'];
+            }
+
+            if ($lexer->tokenIsVersion()) {
+                $versionNumber .= $lexer->token['value'];
             }
 
             // Get version stability
@@ -422,7 +428,7 @@ class VersionParser
                     $stabilityModifier = $stability;
                 }
             }
-            
+
             if (! $lexer->lookahead) {
                 break;
             }
@@ -443,35 +449,42 @@ class VersionParser
         // version, to ensure that unstable instances of the current version are allowed.
         // however, if a stability suffix is added to the constraint, then a >= match on the current version is
         // used instead
-        if (preg_match('{^~>?(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:\.(\d+))?'.self::$modifierRegex.'?$}i', $constraint, $matches)) {
-            
+        if (0 === strpos($constraint, '~')) {
+
             if (substr($version, 0, 2) === '~>') {
                 throw new \UnexpectedValueException(
                     'Could not parse version constraint '.$constraint.': '.
                     'Invalid operator "~>", you probably meant to use the "~" operator'
                 );
             }
-        
+
             // Work out which position in the version we are operating at
             $position = count($versionParsed);
 
             // Calculate the stability suffix
             $stabilitySuffix = '';
-            if (!empty($matches[5])) {
-                $stabilitySuffix = '-' . $this->expandStability($matches[5]) . (!empty($matches[6]) ? $matches[6] : '');    
+            if (!empty($stability) && 'dev' !== $stability) {
+                preg_match('{[0-9]+}i',    $stability, $number);
+                preg_match('{[a-zA-Z]+}i', $stability, $alpha);
+
+                $stabilitySuffix = '-' . $this->expandStability($alpha[0])
+                    . (!empty($number[0]) ? $number[0] : '');
             }
 
             if (!$stabilitySuffix) {
                 $stabilitySuffix = '-dev';
             }
-            
-            $lowVersion = $this->manipulateVersionString($matches, $position, 0) . $stabilitySuffix;
+
+            $versionNumber = str_replace('~', '', $versionNumber);
+
+            $versionSplit = array_merge(array($versionNumber), explode('.', $versionNumber));
+            $lowVersion = $this->manipulateVersionString($versionSplit, $position, 0) . $stabilitySuffix;
             $lowerBound = new VersionConstraint('>=', $lowVersion);
 
             // For upper bound, we increment the position of one more significance,
             // but highPosition = 0 would be illegal
             $highPosition = max(1, $position - 1);
-            $highVersion = $this->manipulateVersionString($matches, $highPosition, 1) . '-dev';
+            $highVersion = $this->manipulateVersionString($versionSplit, $highPosition, 1) . '-dev';
             $upperBound = new VersionConstraint('<', $highVersion);
 
             return array(
@@ -483,7 +496,7 @@ class VersionParser
         // match wildcard constraints
         if ('*' ==  end($versionParsed) || 'x' == end($versionParsed)) {
             $position      = count($versionParsed) - 1;
-            
+
             $versionParsed = array_filter($versionParsed, function($value) {
                 return $value == '*' || $value == 'x' ? false : true;
             });

@@ -47,11 +47,21 @@ final class Lexer extends AbstractLexer
      */
     protected function getCatchablePatterns()
     {
+        $stabilities = $this->getStabilitiesPattern();
+
         return array(
             'v?[0-9.x\*]+', // version match (eg: v1.2.3.4.*)
             '\~|<>|!=|>=|<=|==|<|>', // version comparison modifier
-            '\@' . implode('|\@', array_keys(BasePackage::$stabilities)). '|-' . implode('|-', array_keys(BasePackage::$stabilities)), // match stabilities
+            '\@' . implode('|\@', $stabilities) . '|-' . implode('|-', $stabilities), // match stabilities
             '\#[\w\/\@\d]+'
+        );
+    }
+
+    private function getStabilitiesPattern()
+    {
+        return array_merge(
+            array('beta\d+?', 'b\d+?', 'r', 'p', 'pl'),
+            array_keys(BasePackage::$stabilities)
         );
     }
 
@@ -72,15 +82,15 @@ final class Lexer extends AbstractLexer
             return self::T_COMPARISON;
         }
 
-        if (preg_match('/#[\w(\/\@\d)?]+/', $value)) {
+        if (preg_match('/#[\w(\/\@\d)?]+/i', $value)) {
             return self::T_BRANCH;
         }
 
-        if (preg_match('/[\d.x\*]+/i', $value)) {
+        if (preg_match('/^[\d.x\*]+/i', $value)) {
             return self::T_VERSION;
         }
 
-        if (in_array(ltrim($value, '@-'), array_keys(BasePackage::$stabilities))) {
+        if (preg_match('/'.implode('|', $this->getStabilitiesPattern()).'/i', ltrim($value, '-@'))) {
             return self::T_STABILITY;
         }
 
