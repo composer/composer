@@ -76,7 +76,7 @@ class MultiConstraint implements LinkConstraintInterface
         $prefix = '(';
         $sufix  = ')';
 
-        if (1 == count($this->constraints)) {
+        if (1 >= count($this->constraints)) {
             $prefix = '';
             $sufix  = '';
         }
