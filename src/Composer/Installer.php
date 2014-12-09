@@ -106,7 +106,7 @@ class Installer
     protected $update = false;
     protected $runScripts = true;
     protected $ignorePlatformReqs = false;
-    protected $runNewAnalysis = false;
+    protected $pluginsForNewAnalysis = array();
     /**
      * Array of package names/globs flagged for update
      *
@@ -217,8 +217,14 @@ class Installer
         try {
             $this->suggestedPackages = array();
             $res = $this->doInstall($localRepo, $installedRepo, $platformRepo, $aliases, $this->devMode, true);
-            if ($res === 0 && $this->runNewAnalysis) {
-                $this->io->write('<info>A new analysis of dependencies is required</info>');
+            if ($res === 0 && !empty($this->pluginsForNewAnalysis)) {
+                if ($this->io->isVerbose()) {
+                    $this->io->write('<info>A new analysis of dependencies is required by:</info>');
+                    foreach ($this->pluginsForNewAnalysis as $pluginName => $status) {
+                        $this->io->write('  - Plugin <info>' . $pluginName . '</info> (<comment>' . (is_string($status) ? $status : 'always') . '</comment>)');
+                    }
+                    $this->io->write('');
+                }
                 $res = $this->doInstall($localRepo, $installedRepo, $platformRepo, $aliases, $this->devMode, false);
             }
             if ($res !== 0) {
@@ -387,7 +393,7 @@ class Installer
         }
 
         if ($this->update) {
-            if ($delayValidation) {
+            if ($delayValidation || (!$delayValidation && $this->io->isVerbose())) {
                 $this->io->write('<info>Updating dependencies'.($withDevReqs ? ' (including require-dev)' : '').'</info>');
             }
 
@@ -440,7 +446,7 @@ class Installer
                 }
             }
         } elseif ($installFromLock) {
-            if ($delayValidation) {
+            if ($delayValidation || (!$delayValidation && $this->io->isVerbose())) {
                 $this->io->write('<info>Installing dependencies'.($withDevReqs ? ' (including require-dev)' : '').' from lock file</info>');
             }
 
@@ -462,7 +468,7 @@ class Installer
                 $request->install($link->getTarget(), $link->getConstraint());
             }
         } else {
-            if ($delayValidation) {
+            if ($delayValidation || (!$delayValidation && $this->io->isVerbose())) {
                 $this->io->write('<info>Installing dependencies'.($withDevReqs ? ' (including require-dev)' : '').'</info>');
             }
 
@@ -485,7 +491,11 @@ class Installer
         $solver = new Solver($policy, $pool, $installedRepo, $delayValidation);
         try {
             $operations = $solver->solve($request, $this->ignorePlatformReqs);
-            $this->validateOperations($solver, $operations, $delayValidation);
+
+            if ($delayValidation) {
+                $this->validateOperations($solver, $operations);
+            }
+
             $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, $policy, $pool, $installedRepo, $request, $operations);
         } catch (SolverProblemsException $e) {
             $this->io->write('<error>Your requirements could not be resolved to an installable set of packages.</error>');
@@ -504,7 +514,10 @@ class Installer
 
         $operations = $this->movePluginsToFront($operations);
         $operations = $this->moveUninstallsToFront($operations);
-        $operations = $this->keepOnlyPluginsAndDependencies($operations, $delayValidation);
+
+        if ($delayValidation) {
+            $operations = $this->keepOnlyPluginsAndDependencies($operations);
+        }
 
         foreach ($operations as $operation) {
             // collect suggestions
@@ -664,42 +677,56 @@ class Installer
      *
      * @param Solver               $solver
      * @param OperationInterface[] $operations
-     * @param bool                 $delayValidation
      */
-    private function validateOperations(Solver $solver, array $operations, $delayValidation = false)
+    private function validateOperations(Solver $solver, array $operations)
     {
-        if (!$delayValidation) {
-            return;
-        }
-
-        $hasPlugin = false;
-
         foreach ($operations as $op) {
             $package = $this->getOperationPackage($op);
 
             if ($this->isValidOperation($op) && $this->isPlugin($package)) {
-                $hasPlugin = true;
-                $this->runNewAnalysis = $solver->hasProblems();
-                break;
+                if (false !== $status = $this->pluginHasNeedRestart($solver, $package)) {
+                    $this->pluginsForNewAnalysis[$package->getName()] = $status;
+                }
             }
         }
 
-        if (!$hasPlugin) {
+        if (empty($this->pluginsForNewAnalysis)) {
             $solver->validate();
         }
+    }
+
+    /**
+     * Check if the plugin need restart a new analysis.
+     *
+     * @param Solver           $solver
+     * @param PackageInterface $package
+     *
+     * @return bool|string
+     */
+    private function pluginHasNeedRestart(Solver $solver, PackageInterface $package)
+    {
+        $extra = $package->getExtra();
+        $restart = array_key_exists('installer-restart', $extra)
+            ? $extra['installer-restart']
+            : false;
+
+        if (true === $restart || ('on-exception' === $restart && $solver->hasProblems())) {
+            return $restart;
+        }
+
+        return false;
     }
 
     /**
      * Keeps only the plugins and their dependencies, only for the plugins installation process
      *
      * @param OperationInterface[] $operations
-     * @param bool                 $delayValidation
      *
      * @return OperationInterface[]
      */
-    private function keepOnlyPluginsAndDependencies(array $operations, $delayValidation = false)
+    private function keepOnlyPluginsAndDependencies(array $operations)
     {
-        if ($delayValidation && $this->runNewAnalysis) {
+        if (!empty($this->pluginsForNewAnalysis)) {
             for ($i = count($operations)-1; $i >= 0; $i--) {
                 $op = $operations[$i];
                 $package = $this->getOperationPackage($op);
