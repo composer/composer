@@ -354,6 +354,16 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    public function testUnnecessaryParenthesesAreStripped()
+    {
+        $parser = new VersionParser;
+
+        $this->assertSame(
+            '(> 2.0.0.0, <= 3.0.0.0)',
+            (string) $parser->parseConstraints('((((> 2.0.0.0, <= 3.0.0.0))))')
+        );
+    }
+
     /**
      * @param string $constraint
      *
