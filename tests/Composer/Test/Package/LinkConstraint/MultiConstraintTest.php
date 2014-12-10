@@ -51,4 +51,11 @@ class MultiConstraintTest extends \PHPUnit_Framework_TestCase
 
         $this->assertFalse($multiRequire->matches($versionProvide));
     }
+
+    public function testDoesNotWrapSingleConstraintInParentheses()
+    {
+        $singleConstraint = new MultiConstraint(array(new VersionConstraint('>', '1.0')));
+
+        $this->assertSame('> 1.0', (string) $singleConstraint);
+    }
 }
