@@ -36,12 +36,6 @@ final class Lexer extends AbstractLexer
 
     const T_BRANCH            = 107;
 
-    public function setInput($input)
-    {
-        parent::setInput($input);
-        parent::setInput(CleanUnnecessaryParenthesis::removeOn($input, $this));
-    }
-
     /**
      * {@inheritDoc}
      */
