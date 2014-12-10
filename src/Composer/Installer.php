@@ -18,6 +18,7 @@ use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\OperationInterface;
+use Composer\DependencyResolver\Operation\OperationCollection;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Rule;
@@ -291,7 +292,7 @@ class Installer
                     $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, false, $policy, $pool, $installedRepo, $request);
                     $solver = new Solver($policy, $pool, $installedRepo);
                     $ops = $solver->solve($request, $this->ignorePlatformReqs);
-                    $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, false, $policy, $pool, $installedRepo, $request, $ops);
+                    $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, false, $policy, $pool, $installedRepo, $request, $ops->toArray());
                     foreach ($ops as $op) {
                         if ($op->getJobType() === 'uninstall') {
                             $devPackages[] = $op->getPackage();
@@ -501,7 +502,7 @@ class Installer
         $solver = new Solver($policy, $pool, $installedRepo);
         try {
             $operations = $solver->solve($request, $this->ignorePlatformReqs);
-            $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, $this->devMode, $policy, $pool, $installedRepo, $request, $operations);
+            $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, $this->devMode, $policy, $pool, $installedRepo, $request, $operations->toArray());
         } catch (SolverProblemsException $e) {
             $this->io->writeError('<error>Your requirements could not be resolved to an installable set of packages.</error>');
             $this->io->writeError($e->getMessage());
@@ -516,9 +517,6 @@ class Installer
         if (!$operations) {
             $this->io->writeError('Nothing to install or update');
         }
-
-        $operations = $this->movePluginsToFront($operations);
-        $operations = $this->moveUninstallsToFront($operations);
 
         foreach ($operations as $operation) {
             // collect suggestions
@@ -605,70 +603,6 @@ class Installer
         }
 
         return 0;
-    }
-
-    /**
-     * Workaround: if your packages depend on plugins, we must be sure
-     * that those are installed / updated first; else it would lead to packages
-     * being installed multiple times in different folders, when running Composer
-     * twice.
-     *
-     * While this does not fix the root-causes of https://github.com/composer/composer/issues/1147,
-     * it at least fixes the symptoms and makes usage of composer possible (again)
-     * in such scenarios.
-     *
-     * @param  OperationInterface[] $operations
-     * @return OperationInterface[] reordered operation list
-     */
-    private function movePluginsToFront(array $operations)
-    {
-        $installerOps = array();
-        foreach ($operations as $idx => $op) {
-            if ($op instanceof InstallOperation) {
-                $package = $op->getPackage();
-            } elseif ($op instanceof UpdateOperation) {
-                $package = $op->getTargetPackage();
-            } else {
-                continue;
-            }
-
-            if ($package->getType() === 'composer-plugin' || $package->getType() === 'composer-installer') {
-                // ignore requirements to platform or composer-plugin-api
-                $requires = array_keys($package->getRequires());
-                foreach ($requires as $index => $req) {
-                    if ($req === 'composer-plugin-api' || preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $req)) {
-                        unset($requires[$index]);
-                    }
-                }
-                // if there are no other requirements, move the plugin to the top of the op list
-                if (!count($requires)) {
-                    $installerOps[] = $op;
-                    unset($operations[$idx]);
-                }
-            }
-        }
-
-        return array_merge($installerOps, $operations);
-    }
-
-    /**
-     * Removals of packages should be executed before installations in
-     * case two packages resolve to the same path (due to custom installers)
-     *
-     * @param  OperationInterface[] $operations
-     * @return OperationInterface[] reordered operation list
-     */
-    private function moveUninstallsToFront(array $operations)
-    {
-        $uninstOps = array();
-        foreach ($operations as $idx => $op) {
-            if ($op instanceof UninstallOperation) {
-                $uninstOps[] = $op;
-                unset($operations[$idx]);
-            }
-        }
-
-        return array_merge($uninstOps, $operations);
     }
 
     private function createPool($withDevReqs, RepositoryInterface $lockedRepository = null)
@@ -762,7 +696,7 @@ class Installer
         return $request;
     }
 
-    private function processDevPackages($localRepo, $pool, $policy, $repositories, $lockedRepository, $installFromLock, $task, array $operations = null)
+    private function processDevPackages($localRepo, $pool, $policy, $repositories, $lockedRepository, $installFromLock, $task, OperationCollection $operations = null)
     {
         if ($task === 'force-updates' && null === $operations) {
             throw new \InvalidArgumentException('Missing operations argument');
