@@ -12,6 +12,7 @@
 
 namespace Composer\Package\Version;
 
+use Composer\Package\BasePackage;
 use Doctrine\Common\Lexer\AbstractLexer;
 
 /**
@@ -33,15 +34,34 @@ final class Lexer extends AbstractLexer
     const T_COMMA             = 105;
     const T_PIPE              = 106;
 
+    const T_BRANCH            = 107;
+
+    public function setInput($input)
+    {
+        parent::setInput($input);
+        parent::setInput(CleanUnnecessaryParenthesis::removeOn($input, $this));
+    }
+
     /**
      * {@inheritDoc}
      */
     protected function getCatchablePatterns()
     {
+        $stabilities = $this->getStabilitiesPattern();
+
         return array(
-            'v?(\*|\d+)(\.(?:\d+|[x*]))?(\.(?:\d+|[x*]))?(\.(?:\d+|[x*]))?', // version match (eg: v1.2.3.4.*)
+            'v?[0-9.x\*]+', // version match (eg: v1.2.3.4.*)
             '\~|<>|!=|>=|<=|==|<|>', // version comparison modifier
-            //'([^,\s]+?)@(' . implode('|', array_keys(BasePackage::$stabilities)) . ')', // match stabilities
+            '\@' . implode('|\@', $stabilities) . '|-' . implode('|-', $stabilities), // match stabilities
+            '\#[\w\/\@\d]+'
+        );
+    }
+
+    private function getStabilitiesPattern()
+    {
+        return array_merge(
+            array('beta\d+?', 'b\d+?', 'r', 'p', 'pl'),
+            array_keys(BasePackage::$stabilities)
         );
     }
 
@@ -62,26 +82,70 @@ final class Lexer extends AbstractLexer
             return self::T_COMPARISON;
         }
 
-        if (preg_match('/^v?(\*|\d+)(\.(?:\d+|[x*]))?(\.(?:\d+|[x*]))?(\.(?:\d+|[x*]))?$/', $value)) {
+        if (preg_match('/#[\w(\/\@\d)?]+/i', $value)) {
+            return self::T_BRANCH;
+        }
+
+        if (preg_match('/^[\d.x\*]+/i', $value)) {
             return self::T_VERSION;
         }
 
-        if ('(' === $value) {
-            return self::T_OPEN_PARENTHESIS;
+        if (preg_match('/'.implode('|', $this->getStabilitiesPattern()).'/i', ltrim($value, '-@'))) {
+            return self::T_STABILITY;
         }
 
-        if (')' === $value) {
-            return self::T_CLOSE_PARENTHESIS;
-        }
-
-        if (',' === $value) {
-            return self::T_COMMA;
-        }
-
-        if ('|' === $value) {
-            return self::T_COMMA;
+        switch ($value) {
+            case '(': return self::T_OPEN_PARENTHESIS;
+            case ')': return self::T_CLOSE_PARENTHESIS;
+            case ',': return self::T_COMMA;
+            case '|': return self::T_PIPE;
         }
 
         return self::T_NONE;
+    }
+
+    public function tokenIsOpenParenthesis()
+    {
+        return $this->token['type'] == self::T_OPEN_PARENTHESIS;
+    }
+
+    public function tokenIsCloseParenthesis()
+    {
+        return $this->token['type'] == self::T_CLOSE_PARENTHESIS;
+    }
+
+    public function tokenIsComparison()
+    {
+        return $this->token['type'] == self::T_COMPARISON;
+    }
+
+    public function tokenIsVersion()
+    {
+        return $this->token['type'] == self::T_VERSION;
+    }
+
+    public function tokenIsStability()
+    {
+        return $this->token['type'] == self::T_STABILITY;
+    }
+
+    public function tokenIsComma()
+    {
+        return $this->token['type'] == self::T_COMMA;
+    }
+
+    public function tokenIsPipe()
+    {
+        return $this->token['type'] == self::T_PIPE;
+    }
+
+    public function tokenIsBranch()
+    {
+        return $this->token['type'] == self::T_BRANCH;
+    }
+
+    public function tokenIsInvalid()
+    {
+        return $this->token['type'] == self::T_NONE;
     }
 }

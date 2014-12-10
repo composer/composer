@@ -114,6 +114,27 @@ class LexerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @dataProvider individualToken
+     */
+    public function testTokenComparisons($token, $methodToComparison, $expectedType, $expectedValue)
+    {
+        $this->lexer->setInput($token);
+        $this->lexer->moveNext();
+
+        $this->lexer->moveNext();
+        
+        $this->assertTrue($this->lexer->$methodToComparison());
+        $this->assertEquals(
+            $this->lexer->token, 
+            array(
+                'value'    => $expectedValue,
+                'type'     => $expectedType,
+                'position' => 0,
+            )
+        );
+    }
+
+    /**
      * Data provider
      *
      * @return string[][]
@@ -121,20 +142,35 @@ class LexerTest extends \PHPUnit_Framework_TestCase
     public function matchableTokens()
     {
         return array(
-            //array('', Lexer::T_NONE),
-            //array('invalidstring', Lexer::T_NONE),
-            //array(Lexer::T_NONE, ' '),
+            // array('', Lexer::T_NONE),
+            // array('invalidstring', Lexer::T_NONE),
+            // array(Lexer::T_NONE, ' '),
             array(Lexer::T_NONE, 'b'),
             array(Lexer::T_VERSION, '1'),
             array(Lexer::T_VERSION, '1.2'),
             array(Lexer::T_VERSION, '1.2.3'),
             array(Lexer::T_VERSION, '1.2.3.4'),
-            //array(Lexer::T_VERSION, '1.2.3.4.5'),
-            //array(Lexer::T_VERSION, '1.2.3.4.*'),
+            array(Lexer::T_VERSION, '1.2.3.4.5'),
+            array(Lexer::T_VERSION, '1.2.3.4.*'),
             array(Lexer::T_VERSION, '1.2.3.*'),
             array(Lexer::T_VERSION, '1.2.*'),
             array(Lexer::T_VERSION, '1.*'),
             array(Lexer::T_VERSION, '*'),
+        );
+    }
+
+    /**
+     * @return string[][]
+     */
+    public function individualToken()
+    {
+        return array(
+            array('(',    'tokenIsOpenParenthesis',  Lexer::T_OPEN_PARENTHESIS,  '('),
+            array(')',    'tokenIsCloseParenthesis', Lexer::T_CLOSE_PARENTHESIS, ')'),
+            array('>',    'tokenIsComparison',       Lexer::T_COMPARISON,        '>'),
+            array('2.0',  'tokenIsVersion',          Lexer::T_VERSION,           '2.0'),
+            array('#AB',  'tokenIsBranch',           Lexer::T_BRANCH,            '#AB'),
+            array('@dev', 'tokenIsStability',        Lexer::T_STABILITY,         '@dev'),
         );
     }
 }

@@ -18,6 +18,7 @@ use Composer\Package\Link;
 use Composer\Package\LinkConstraint\EmptyConstraint;
 use Composer\Package\LinkConstraint\MultiConstraint;
 use Composer\Package\LinkConstraint\VersionConstraint;
+use UnexpectedValueException;
 
 /**
  * Version parser
@@ -222,6 +223,10 @@ class VersionParser
     {
         $prettyConstraint = $constraints;
 
+        if (substr_count($constraints, '(') || substr_count($constraints, ')')) {
+            return $this->parseGroups($constraints);
+        }
+
         if (preg_match('{^([^,\s]*?)@('.implode('|', array_keys(BasePackage::$stabilities)).')$}i', $constraints, $match)) {
             $constraints = empty($match[1]) ? '*' : $match[1];
         }
@@ -230,7 +235,7 @@ class VersionParser
             $constraints = $match[1];
         }
 
-        $orConstraints = preg_split('{\s*\|\s*}', trim($constraints));
+        $orConstraints = preg_split('{\s*\|\s*}', $constraints);
         $orGroups = array();
         foreach ($orConstraints as $constraints) {
             $andConstraints = preg_split('{\s*,\s*}', $constraints);
@@ -264,26 +269,189 @@ class VersionParser
         return $constraint;
     }
 
+    /**
+     * @param string $version
+     *
+     * @return MultiConstraint
+     */
+    public function parseGroups($version)
+    {
+        $lexer = new Lexer();
+        $lexer->setInput($version);
+        $lexer->moveNext();
+
+        $openParenthesis  = 0;
+        $closeParenthesis = 0;
+        $normal           = 1;
+        $or               = 0;
+        $level            = 0;
+
+        $group    = array();
+        $versions = array();
+
+        while (true) {
+
+            $token = $lexer->token;
+
+            if ($lexer->tokenIsPipe()) {
+                $or++;
+            }
+
+            if ($lexer->tokenIsOpenParenthesis()) {
+                $openParenthesis++;
+                $normal++;
+                $group[$openParenthesis] = null;
+            }
+
+
+            if ($lexer->tokenIsCloseParenthesis()) {
+                $closeParenthesis++;
+
+                if ($openParenthesis === $closeParenthesis) {
+
+                    if (! $level) {
+                        $versions[$closeParenthesis] = $this->parseConstraints($group[$closeParenthesis]);
+                    }
+
+                    while ($level)
+                    {
+                        $level--;
+                        $or--;
+
+                        $index = $openParenthesis - 1;
+                        if (isset($group[$index]) && !empty($group[$index])) {
+                            $prevGroup = trim($group[$openParenthesis - 1], ',');
+
+                            $versions[$closeParenthesis] = new MultiConstraint(array(
+                                $this->parseConstraints($prevGroup),
+                                $this->parseConstraints($group[$openParenthesis])
+                            ), !$or);
+                            continue;
+                        }
+
+                        if (isset($group[$normal]) && !empty($group[$index])) {
+                            $versions[$closeParenthesis] = new MultiConstraint(array(
+                                $this->parseConstraints($group[$openParenthesis]),
+                                $normal
+                            ), !$or);
+                            continue;
+                        }
+
+                        $versions[$closeParenthesis] = $this->parseConstraints($group[$openParenthesis]);
+                    }
+                }
+
+                // Bad formmed string versions group
+                if ($closeParenthesis > $openParenthesis) {
+                    throw new UnexpectedValueException('Parenthesis are not closed correctly.');
+                }
+
+                // Deep inside
+                if ($openParenthesis > $closeParenthesis) {
+                    $level++;
+                }
+            }
+
+            if (
+               !$lexer->tokenIsOpenParenthesis()
+               && !$lexer->tokenIsCloseParenthesis()
+               && !$lexer->tokenIsPipe()
+            ) {
+
+                if ($lexer->tokenIsComma()
+                        && ! $lexer->isNextToken(Lexer::T_OPEN_PARENTHESIS)) {
+                        // TODO: Don't storage comma at final of a setence
+                }
+
+                if ($openParenthesis === $closeParenthesis) {
+
+                    $group[$normal] = isset($group[$normal])
+                            ? $group[$normal] .= $token['value']
+                            : $group[$normal]  = $token['value'];
+
+                    // Parser the version if don't have more tokens
+                    if (!$lexer->lookahead) {
+                        $versions[] = $this->parseConstraints($group[$normal]);
+                    }
+                } else {
+                    $group[$openParenthesis] = isset($group[$openParenthesis])
+                            ? $group[$openParenthesis] .= $token['value']
+                            : $group[$openParenthesis]  = $token['value'];
+                }
+            }
+
+            // Skip if no have more tokens
+            if (!$lexer->lookahead) {
+                break;
+            }
+
+            $lexer->moveNext();
+        }
+
+        if (count($versions) == 1) {
+            return $versions[key($versions)];
+        }
+
+        return new MultiConstraint($versions, !$or);
+    }
+
     private function parseConstraint($constraint)
     {
-        if (preg_match('{^([^,\s]+?)@('.implode('|', array_keys(BasePackage::$stabilities)).')$}i', $constraint, $match)) {
-            $constraint = $match[1];
-            if ($match[2] !== 'stable') {
-                $stabilityModifier = $match[2];
+        $lexer = new Lexer();
+        $lexer->setInput($constraint);
+        $lexer->moveNext();
+
+        $version       = '';
+        $stability     = '';
+        $stabilityAt   = false;
+        $versionNumber = '';
+
+        while (true)
+        {
+            $lexer->moveNext();
+            if (! $lexer->tokenIsStability()) {
+                $version .= $lexer->token['value'];
+            }
+
+            if ($lexer->tokenIsVersion()) {
+                $versionNumber .= $lexer->token['value'];
+            }
+
+            // Get version stability
+            if ($lexer->tokenIsStability()) {
+                if (false !== strpos($lexer->token['value'], '@')) {
+                    $stabilityAt = true;
+                }
+
+                $stability = ltrim($lexer->token['value'], '@-');
+                if ('stable' !== $stability) {
+                    $stabilityModifier = $stability;
+                }
+            }
+
+            if (! $lexer->lookahead) {
+                break;
             }
         }
 
-        if (preg_match('{^[x*](\.[x*])*$}i', $constraint)) {
+        if ($stabilityAt) {
+            $constraint = $version;
+        }
+
+        if (preg_match('{^[x*](\.[x*])*$}i', $version)) {
             return array(new EmptyConstraint);
         }
+
+        $versionParsed = explode('.', $constraint);
 
         // match tilde constraints
         // like wildcard constraints, unsuffixed tilde constraints say that they must be greater than the previous
         // version, to ensure that unstable instances of the current version are allowed.
         // however, if a stability suffix is added to the constraint, then a >= match on the current version is
         // used instead
-        if (preg_match('{^~>?(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:\.(\d+))?'.self::$modifierRegex.'?$}i', $constraint, $matches)) {
-            if (substr($constraint, 0, 2) === '~>') {
+        if (0 === strpos($constraint, '~')) {
+
+            if (substr($version, 0, 2) === '~>') {
                 throw new \UnexpectedValueException(
                     'Could not parse version constraint '.$constraint.': '.
                     'Invalid operator "~>", you probably meant to use the "~" operator'
@@ -291,36 +459,32 @@ class VersionParser
             }
 
             // Work out which position in the version we are operating at
-            if (isset($matches[4]) && '' !== $matches[4]) {
-                $position = 4;
-            } elseif (isset($matches[3]) && '' !== $matches[3]) {
-                $position = 3;
-            } elseif (isset($matches[2]) && '' !== $matches[2]) {
-                $position = 2;
-            } else {
-                $position = 1;
-            }
+            $position = count($versionParsed);
 
             // Calculate the stability suffix
             $stabilitySuffix = '';
-            if (!empty($matches[5])) {
-                $stabilitySuffix .= '-' . $this->expandStability($matches[5]) . (!empty($matches[6]) ? $matches[6] : '');
-            }
+            if (!empty($stability) && 'dev' !== $stability) {
+                preg_match('{[0-9]+}i',    $stability, $number);
+                preg_match('{[a-zA-Z]+}i', $stability, $alpha);
 
-            if (!empty($matches[7])) {
-                $stabilitySuffix .= '-dev';
+                $stabilitySuffix = '-' . $this->expandStability($alpha[0])
+                    . (!empty($number[0]) ? $number[0] : '');
             }
 
             if (!$stabilitySuffix) {
-                $stabilitySuffix = "-dev";
+                $stabilitySuffix = '-dev';
             }
-            $lowVersion = $this->manipulateVersionString($matches, $position, 0) . $stabilitySuffix;
+
+            $versionNumber = str_replace('~', '', $versionNumber);
+
+            $versionSplit = array_merge(array($versionNumber), explode('.', $versionNumber));
+            $lowVersion = $this->manipulateVersionString($versionSplit, $position, 0) . $stabilitySuffix;
             $lowerBound = new VersionConstraint('>=', $lowVersion);
 
             // For upper bound, we increment the position of one more significance,
             // but highPosition = 0 would be illegal
             $highPosition = max(1, $position - 1);
-            $highVersion = $this->manipulateVersionString($matches, $highPosition, 1) . '-dev';
+            $highVersion = $this->manipulateVersionString($versionSplit, $highPosition, 1) . '-dev';
             $upperBound = new VersionConstraint('<', $highVersion);
 
             return array(
@@ -330,19 +494,19 @@ class VersionParser
         }
 
         // match wildcard constraints
-        if (preg_match('{^(\d+)(?:\.(\d+))?(?:\.(\d+))?\.[x*]$}', $constraint, $matches)) {
-            if (isset($matches[3]) && '' !== $matches[3]) {
-                $position = 3;
-            } elseif (isset($matches[2]) && '' !== $matches[2]) {
-                $position = 2;
-            } else {
-                $position = 1;
-            }
+        if ('*' ==  end($versionParsed) || 'x' == end($versionParsed)) {
+            $position      = count($versionParsed) - 1;
 
-            $lowVersion = $this->manipulateVersionString($matches, $position) . "-dev";
-            $highVersion = $this->manipulateVersionString($matches, $position, 1) . "-dev";
+            $versionParsed = array_filter($versionParsed, function($value) {
+                return $value == '*' || $value == 'x' ? false : true;
+            });
 
-            if ($lowVersion === "0.0.0.0-dev") {
+            array_unshift($versionParsed, $version);
+
+            $lowVersion  = $this->manipulateVersionString($versionParsed, $position) . '-dev';
+            $highVersion = $this->manipulateVersionString($versionParsed, $position, 1) . '-dev';
+
+            if ($lowVersion === '0.0.0.0-dev') {
                 return array(new VersionConstraint('<', $highVersion));
             }
 
@@ -360,7 +524,7 @@ class VersionParser
                 if (!empty($stabilityModifier) && $this->parseStability($version) === 'stable') {
                     $version .= '-' . $stabilityModifier;
                 } elseif ('<' === $matches[1]) {
-                    if (!preg_match('/-stable$/', strtolower($matches[2]))) {
+                    if (!preg_match('/-stable|-dev$/', strtolower($matches[2]))) {
                         $version .= '-dev';
                     }
                 }

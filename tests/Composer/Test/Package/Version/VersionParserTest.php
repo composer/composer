@@ -294,42 +294,110 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
     public function testParseConstraintsMulti()
     {
         $parser = new VersionParser;
-        $first = new VersionConstraint('>', '2.0.0.0');
-        $second = new VersionConstraint('<=', '3.0.0.0');
-        $multi = new MultiConstraint(array($first, $second));
-        $this->assertSame((string) $multi, (string) $parser->parseConstraints('>2.0,<=3.0'));
+        $this->assertSame(
+            '(> 2.0.0.0, <= 3.0.0.0)',
+            (string) $parser->parseConstraints('>2.0,<=3.0')
+        );
     }
 
     public function testParseConstraintsAggregated()
     {
         $parser = new VersionParser;
-        $first = new VersionConstraint('>', '2.0.0.0');
-        $second = new VersionConstraint('<=', '3.0.0.0');
-        $third = new VersionConstraint('>', '4.0.0.0');
         $this->assertSame(
-            (string) new MultiConstraint(array(new MultiConstraint(array($first, $second)), $third), false),
+            '((> 2.0.0.0, <= 3.0.0.0) | > 4.0.0.0)',
             (string) $parser->parseConstraints('(>2.0,<=3.0) | >4.0')
         );
+    }
+
+    public function testParseConstraintsComplexAggregated()
+    {
+        $parser = new VersionParser;
+        
+        $this->assertSame(
+            '((> 2.0.0.0, <= 3.0.0.0) | (> 4.0.0.0, > 5.0.0.0, <= 6.0.0.0) | > 7.0.0.0)',
+            (string) $parser->parseConstraints('(>2.0,<=3.0) | (>4.0, >5.0, <=6.0) | >7.0')
+        );
+    }
+
+    public function testParseConstraintsComplexAggregatedUsingLexer()
+    {
+        $parser = new VersionParser;
+
+        $this->assertSame(
+            '((> 2.0.0.0, <= 3.0.0.0) | (> 4.0.0.0, (> 5.0.0.0, <= 6.0.0.0)) | > 7.0.0.0)',
+            (string) $parser->parseConstraints('(>2.0,<=3.0) | (>4.0, (>5.0, <=6.0)) | >7.0')
+        );
+    }
+
+    public function testParseConstraintsSimpleAggregatedUsingLexer()
+    {
+        $parser = new VersionParser;
+        
+        $this->assertSame(
+            '((> 2.0.0.0, <= 3.0.0.0) | (> 4.0.0.0, > 5.0.0.0))',
+            (string) $parser->parseConstraints('(>2.0,<=3.0) | (>4.0,>5.0)')
+        );
+    }
+
+    public function testMultiConstraintsSyntax()
+    {
+        $parser = new VersionParser;
+
+        $this->assertSame(
+            '((> 2.0.0.0, <= 3.0.0.0) | (> 4.0.0.0, > 5.0.0.0))',
+            (string) $parser->parseConstraints('(>2.0,<=3.0) | (>4.0,>5.0)')
+        );
+
+        $this->assertSame(
+            '((> 2.0.0.0, <= 3.0.0.0) | (> 4.0.0.0, > 5.0.0.0))',
+            (string) $parser->parseConstraints('((> 2.0.0.0, <= 3.0.0.0) | (> 4.0.0.0, > 5.0.0.0))')
+        );
+    }
+
+    /**
+     * @param string $constraint
+     *
+     * @dataProvider parsableConstraints
+     */
+    public function testCanParseStringConstraintRepresentationAgain($constraint)
+    {
+        $parser = new VersionParser;
+
+        $stringRepresentation = (string) $parser->parseConstraints($constraint);
+
+        $this->assertSame(
+            $stringRepresentation,
+            (string) $parser->parseConstraints($stringRepresentation)
+        );
+    }
+
+    public function testParseWithWrongParenthesis()
+    {
+        $this->setExpectedException(
+            'UnexpectedValueException',
+            'Parenthesis are not closed correctly.'
+        );
+
+        $parser = new VersionParser;
+        $parser->parseConstraints(')>2.0,<=3.0');
     }
 
     public function testParseConstraintsMultiDisjunctiveHasPrioOverConjuctive()
     {
         $parser = new VersionParser;
-        $first = new VersionConstraint('>', '2.0.0.0');
-        $second = new VersionConstraint('<', '2.0.5.0-dev');
-        $third = new VersionConstraint('>', '2.0.6.0');
-        $multi1 = new MultiConstraint(array($first, $second));
-        $multi2 = new MultiConstraint(array($multi1, $third), false);
-        $this->assertSame((string) $multi2, (string) $parser->parseConstraints('>2.0,<2.0.5 | >2.0.6'));
+        $this->assertSame(
+            '((> 2.0.0.0, < 2.0.5.0-dev) | > 2.0.6.0)',
+            (string) $parser->parseConstraints('>2.0,<2.0.5 | >2.0.6')
+        );
     }
 
     public function testParseConstraintsMultiWithStabilities()
     {
         $parser = new VersionParser;
-        $first = new VersionConstraint('>', '2.0.0.0');
-        $second = new VersionConstraint('<=', '3.0.0.0-dev');
-        $multi = new MultiConstraint(array($first, $second));
-        $this->assertSame((string) $multi, (string) $parser->parseConstraints('>2.0@stable,<=3.0@dev'));
+        $this->assertSame(
+            '(> 2.0.0.0, <= 3.0.0.0-dev)',
+            (string) $parser->parseConstraints('>2.0@stable,<=3.0@dev')
+        );
     }
 
     /**
@@ -379,6 +447,26 @@ class VersionParserTest extends \PHPUnit_Framework_TestCase
             array('alpha',  '1.2.0a1'),
             array('alpha',  '1.2_a1'),
             array('RC',     '2.0.0rc1')
+        );
+    }
+
+    /**
+     * Data provider
+     *
+     * @return string[][]
+     */
+    public function parsableConstraints()
+    {
+        return array(
+            array('>2.0'),
+            array('<=3.0'),
+            array('>2.0,<=3.0'),
+            array('>2.0,<2.0.5 | >2.0.6'),
+            array('>2.0@stable,<=3.0@dev'),
+            array('(>2.0,<=3.0) | (>4.0,>5.0)'),
+            array('((> 2.0.0.0, <= 3.0.0.0) | (> 4.0.0.0, > 5.0.0.0))'),
+            array('(>2.0,<=3.0) | (>4.0, (>5.0, <=6.0)) | >7.0'),
+            array('(>2.0,<=3.0) | >4.0'),
         );
     }
 }
