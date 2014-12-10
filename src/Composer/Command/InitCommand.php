@@ -65,6 +65,7 @@ class InitCommand extends Command
                 new InputOption('description', null, InputOption::VALUE_REQUIRED, 'Description of package'),
                 new InputOption('author', null, InputOption::VALUE_REQUIRED, 'Author name of package'),
                 // new InputOption('version', null, InputOption::VALUE_NONE, 'Version of package'),
+                new InputOption('type', null, InputOption::VALUE_OPTIONAL, 'Type of package'),
                 new InputOption('homepage', null, InputOption::VALUE_REQUIRED, 'Homepage of package'),
                 new InputOption('require', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Package to require with a version constraint, e.g. foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"'),
                 new InputOption('require-dev', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Package to require for development with a version constraint, e.g. foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"'),
@@ -86,7 +87,7 @@ EOT
     {
         $dialog = $this->getHelperSet()->get('dialog');
 
-        $whitelist = array('name', 'description', 'author', 'homepage', 'require', 'require-dev', 'stability', 'license');
+        $whitelist = array('name', 'description', 'author', 'type', 'homepage', 'require', 'require-dev', 'stability', 'license');
 
         $options = array_filter(array_intersect_key($input->getOptions(), array_flip($whitelist)));
 
@@ -257,6 +258,14 @@ EOT
             }
         );
         $input->setOption('stability', $minimumStability);
+
+        $type = $input->getOption('type') ?: false;
+        $type = $dialog->ask(
+            $output,
+            $dialog->getQuestion('Type', $type),
+            $type
+        );
+        $input->setOption('type', $type);
 
         $license = $input->getOption('license') ?: false;
         $license = $dialog->ask(
