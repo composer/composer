@@ -277,7 +277,7 @@ class VersionParser
     public function parseGroups($version)
     {
         $lexer = new Lexer();
-        $lexer->setInput($version);
+        $lexer->setInput($this->trimmUnnecessaryParentheses($version));
         $lexer->moveNext();
 
         $openParenthesis  = 0;
@@ -398,7 +398,7 @@ class VersionParser
     private function parseConstraint($constraint)
     {
         $lexer = new Lexer();
-        $lexer->setInput($constraint);
+        $lexer->setInput($this->trimmUnnecessaryParentheses($constraint));
         $lexer->moveNext();
 
         $version       = '';
@@ -622,5 +622,69 @@ class VersionParser
         }
 
         return $result;
+    }
+
+    private function trimmUnnecessaryParentheses($constraint)
+    {
+        $quantity = 0;
+        $version  = '';
+        $lenght   = strlen($constraint) - 1;
+        $first    = false;
+        $last     = false;
+        $lexer    = new Lexer();
+
+        $lexer->setInput($constraint);
+
+        while (true) {
+            $lexer->moveNext();
+
+            if ($lexer->tokenIsOpenParenthesis()) {
+                $quantity += 1;
+
+                if (!$first && 0 === $lexer->token['position']
+                    && $lexer->tokenIsOpenParenthesis()
+                ) {
+                    $first = true;
+
+                    continue;
+                }
+
+                $version .= $lexer->token['value'];
+
+                continue;
+            }
+
+            if ($lexer->tokenIsCloseParenthesis()) {
+                $quantity -= 1;
+
+                if (0 !== $quantity) {
+                    $version .= $lexer->token['value'];
+
+                    continue;
+                }
+
+                if ($lenght === $lexer->token['position'] && $lexer->tokenIsCloseParenthesis()) {
+                    $last = true;
+
+                    continue;
+                }
+
+                $version = $constraint;
+
+                continue;
+            }
+
+            $version .= $lexer->token['value'];
+
+            if (! $lexer->lookahead) {
+                if (! $last || !$first) {
+                    $version = $constraint;
+                }
+
+                break;
+            }
+        }
+
+        return $version;
     }
 }
