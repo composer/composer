@@ -20,6 +20,8 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
     {
         unset($_SERVER['HTTP_PROXY']);
         unset($_SERVER['http_proxy']);
+        unset($_SERVER['HTTPS_PROXY']);
+        unset($_SERVER['https_proxy']);
         unset($_SERVER['no_proxy']);
     }
 
@@ -27,6 +29,8 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
     {
         unset($_SERVER['HTTP_PROXY']);
         unset($_SERVER['http_proxy']);
+        unset($_SERVER['HTTPS_PROXY']);
+        unset($_SERVER['https_proxy']);
         unset($_SERVER['no_proxy']);
     }
 
@@ -126,7 +130,7 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
     {
         $_SERVER['http_proxy'] = 'http://username:password@proxyserver.net';
 
-        $context = StreamContextFactory::getContext('http://example.org', array('http' => array('method' => 'GET')));
+        $context = StreamContextFactory::getContext('https://example.org', array('http' => array('method' => 'GET')));
         $options = stream_context_get_options($context);
 
         $this->assertEquals(array('http' => array(
@@ -134,6 +138,23 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
             'request_fulluri' => true,
             'method' => 'GET',
             'header' => array("Proxy-Authorization: Basic " . base64_encode('username:password')),
+            'max_redirects' => 20,
+            'follow_location' => 1,
+        )), $options);
+    }
+
+    public function testHttpsProxyOverride()
+    {
+        $_SERVER['http_proxy'] = 'http://username:password@proxyserver.net';
+        $_SERVER['http_proxy'] = 'https://woopproxy.net';
+
+        $context = StreamContextFactory::getContext('https://example.org', array('http' => array('method' => 'GET')));
+        $options = stream_context_get_options($context);
+
+        $this->assertEquals(array('http' => array(
+            'proxy' => 'ssl://woopproxy.net:443',
+            'request_fulluri' => true,
+            'method' => 'GET',
             'max_redirects' => 20,
             'follow_location' => 1,
         )), $options);
