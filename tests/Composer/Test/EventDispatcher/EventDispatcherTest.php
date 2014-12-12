@@ -29,7 +29,7 @@ class EventDispatcherTest extends TestCase
     {
         $io = $this->getMock('Composer\IO\IOInterface');
         $dispatcher = $this->getDispatcherStubForListenersTest(array(
-            "Composer\Test\EventDispatcher\EventDispatcherTest::call"
+            'Composer\Test\EventDispatcher\EventDispatcherTest::call'
         ), $io);
 
         $io->expects($this->once())
@@ -43,7 +43,17 @@ class EventDispatcherTest extends TestCase
     {
         $io = $this->getMock('Composer\IO\IOInterface');
         $dispatcher = $this->getDispatcherStubForListenersTest(array(
-            "Composer\Test\EventDispatcher\EventDispatcherTest::convertEvent"
+            'Composer\Test\EventDispatcher\EventDispatcherTest::expectsCommandEvent'
+        ), $io);
+
+        $this->assertEquals(1, $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false));
+    }
+    
+    public function testDispatcherDoesNotAttemptConversionForListenerWithoutTypehint()
+    {
+        $io = $this->getMock('Composer\IO\IOInterface');
+        $dispatcher = $this->getDispatcherStubForListenersTest(array(
+            'Composer\Test\EventDispatcher\EventDispatcherTest::expectsVariableEvent'
         ), $io);
 
         $this->assertEquals(1, $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false));
@@ -216,7 +226,12 @@ class EventDispatcherTest extends TestCase
         throw new \RuntimeException();
     }
 
-    public static function convertEvent(CommandEvent $event)
+    public static function expectsCommandEvent(CommandEvent $event)
+    {
+        return false;
+    }
+
+    public static function expectsVariableEvent($event)
     {
         return false;
     }
