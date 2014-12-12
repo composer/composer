@@ -47,6 +47,7 @@ class RequireCommand extends InitCommand
                 new InputOption('update-no-dev', null, InputOption::VALUE_NONE, 'Run the dependency update with the --no-dev option.'),
                 new InputOption('update-with-dependencies', null, InputOption::VALUE_NONE, 'Allows inherited dependencies to be updated with explicit dependencies.'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore platform requirements (php & ext- packages).'),
+                new InputOption('sort-packages', null, InputOption::VALUE_NONE, 'Sorts packages when adding/updating a new dependency'),
             ))
             ->setHelp(<<<EOT
 The require command adds required packages to your composer.json and installs them
@@ -104,7 +105,9 @@ EOT
             $versionParser->parseConstraints($constraint);
         }
 
-        if (!$this->updateFileCleanly($json, $baseRequirements, $requirements, $requireKey, $removeKey)) {
+        $sortPackages = $input->getOption('sort-packages');
+
+        if (!$this->updateFileCleanly($json, $baseRequirements, $requirements, $requireKey, $removeKey, $sortPackages)) {
             foreach ($requirements as $package => $version) {
                 $baseRequirements[$package] = $version;
 
@@ -160,14 +163,14 @@ EOT
         return $status;
     }
 
-    private function updateFileCleanly($json, array $base, array $new, $requireKey, $removeKey)
+    private function updateFileCleanly($json, array $base, array $new, $requireKey, $removeKey, $sortPackages)
     {
         $contents = file_get_contents($json->getPath());
 
         $manipulator = new JsonManipulator($contents);
 
         foreach ($new as $package => $constraint) {
-            if (!$manipulator->addLink($requireKey, $package, $constraint)) {
+            if (!$manipulator->addLink($requireKey, $package, $constraint, $sortPackages)) {
                 return false;
             }
             if (!$manipulator->removeSubNode($removeKey, $package)) {
