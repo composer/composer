@@ -46,6 +46,13 @@ class CacheTest extends TestCase
 
     public function testRemoveOutdatedFiles()
     {
+        if (defined('HHVM_VERSION')) {
+            $this->markTestSkipped('Test causes intermittent failures with HHVM on Travis');
+        }
+
+        // sleeping a bit to let the filesystem cool down on travis or it has intermittent failures
+        usleep(50000);
+
         $outdated = array_slice($this->files, 1);
         $this->finder
             ->expects($this->once())
@@ -66,6 +73,13 @@ class CacheTest extends TestCase
 
     public function testRemoveFilesWhenCacheIsTooLarge()
     {
+        if (defined('HHVM_VERSION')) {
+            $this->markTestSkipped('Test causes intermittent failures with HHVM on Travis');
+        }
+
+        // sleeping a bit to let the filesystem cool down on travis or it has intermittent failures
+        usleep(50000);
+
         $emptyFinder = $this->getMockBuilder('Symfony\Component\Finder\Finder')->disableOriginalConstructor()->getMock();
         $emptyFinder
             ->expects($this->once())
