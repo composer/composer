@@ -154,6 +154,10 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
 
     public function testHttpsProxyOverride()
     {
+        if (!extension_loaded('openssl')) {
+            $this->markTestSkipped('Requires openssl');
+        }
+
         $_SERVER['http_proxy'] = 'http://username:password@proxyserver.net';
         $_SERVER['https_proxy'] = 'https://woopproxy.net';
 
