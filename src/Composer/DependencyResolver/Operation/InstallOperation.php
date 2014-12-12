@@ -61,6 +61,14 @@ class InstallOperation extends SolverOperation
      */
     public function __toString()
     {
-        return 'Installing '.$this->package->getPrettyName().' ('.$this->formatVersion($this->package).')';
+        return 'Installing '.$this->getChangeAsString();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getChangeAsString()
+    {
+        return $this->package->getPrettyName().' ('.$this->formatVersion($this->package).')';
     }
 }

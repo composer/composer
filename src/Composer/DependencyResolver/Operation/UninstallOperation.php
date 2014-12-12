@@ -61,6 +61,14 @@ class UninstallOperation extends SolverOperation
      */
     public function __toString()
     {
-        return 'Uninstalling '.$this->package->getPrettyName().' ('.$this->formatVersion($this->package).')';
+        return 'Uninstalling '.$this->getChangeAsString();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getChangeAsString()
+    {
+        return $this->package->getPrettyName().' ('.$this->formatVersion($this->package).')';
     }
 }

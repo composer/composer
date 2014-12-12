@@ -39,4 +39,11 @@ interface OperationInterface
      * @return string
      */
     public function __toString();
+
+    /**
+     * Serializes the operation in a human readable format for confirmation prior to any changes
+     *
+     * @return string
+     */
+    public function getChangeAsString();
 }

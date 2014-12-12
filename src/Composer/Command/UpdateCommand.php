@@ -47,6 +47,7 @@ class UpdateCommand extends Command
                 new InputOption('with-dependencies', null, InputOption::VALUE_NONE, 'Add also all dependencies of whitelisted packages to the whitelist.'),
                 new InputOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Shows more details including new commits pulled in when updating packages.'),
                 new InputOption('optimize-autoloader', 'o', InputOption::VALUE_NONE, 'Optimize autoloader during autoloader dump.'),
+                new InputOption('confirm', 'c', InputOption::VALUE_NONE, 'Prompt to confirm changes.'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore platform requirements (php & ext- packages).'),
                 new InputOption('prefer-stable', null, InputOption::VALUE_NONE, 'Prefer stable versions of dependencies.'),
                 new InputOption('prefer-lowest', null, InputOption::VALUE_NONE, 'Prefer lowest versions of dependencies.'),
@@ -119,6 +120,7 @@ EOT
         $install
             ->setDryRun($input->getOption('dry-run'))
             ->setVerbose($input->getOption('verbose'))
+            ->setConfirm($input->getOption('confirm'))
             ->setPreferSource($preferSource)
             ->setPreferDist($preferDist)
             ->setDevMode(!$input->getOption('no-dev'))

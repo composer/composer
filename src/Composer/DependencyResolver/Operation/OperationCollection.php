@@ -34,7 +34,7 @@ class OperationCollection implements \IteratorAggregate
     );
 
     /**
-     * @return array
+     * @return SolverOperation[]
      */
     public function getIterator()
     {
@@ -42,12 +42,69 @@ class OperationCollection implements \IteratorAggregate
     }
 
     /**
-     * @return array
+     * @return bool
+     */
+    public function isEmpty()
+    {
+        return !array_filter($this->operations);
+    }
+
+    /**
+     * @return InstallOperation[] The install operations.
+     */
+    public function getInstalls()
+    {
+        return $this->operations['install'];
+    }
+
+    /**
+     * @return UpdateOperation[] The update operations.
+     */
+    public function getUpdates()
+    {
+        return $this->operations['update'];
+    }
+
+    /**
+     * @return UninstallOperation[] The uninstall operations.
+     */
+    public function getUninstalls()
+    {
+        return $this->operations['uninstall'];
+    }
+
+    /**
+     * @return SolverOperation[] The plugin operations.
+     */
+    public function getPlugins()
+    {
+        return $this->operations['plugin'];
+    }
+
+    /**
+     * @return MarkAliasInstalledOperation[] The markAliasInstalled operations.
+     */
+    public function getMarkAliasInstalled()
+    {
+        return $this->operations['markAliasInstalled'];
+    }
+
+    /**
+     * @return MarkAliasUninstalledOperation[] The markAliasUninstalled operations.
+     */
+    public function getMarkAliasUninstalled()
+    {
+        return $this->operations['markAliasUninstalled'];
+    }
+
+    /**
+     * @return SolverOperation[]
      */
     public function toArray()
     {
         return $this->sortOperationsToArray();
     }
+
     /**
      * Add an operation to the collection.
      *
@@ -60,24 +117,18 @@ class OperationCollection implements \IteratorAggregate
         if ($operation instanceof InstallOperation || $operation instanceof UpdateOperation) {
             if ($this->operationNeedsToMoveUp($operation)) {
                 $this->operations['plugin'][] = $operation;
-            }
-            elseif ($operation instanceof InstallOperation) {
+            } elseif ($operation instanceof InstallOperation) {
                 $this->operations['install'][] = $operation;
-            }
-            else {
+            } else {
                 $this->operations['update'][] = $operation;
             }
-        }
-        elseif ($operation instanceof UninstallOperation) {
+        } elseif ($operation instanceof UninstallOperation) {
             $this->operations['uninstall'][] = $operation;
-        }
-        elseif ($operation instanceof MarkAliasInstalledOperation) {
+        } elseif ($operation instanceof MarkAliasInstalledOperation) {
             $this->operations['markAliasInstalled'][] = $operation;
-        }
-        elseif ($operation instanceof MarkAliasUninstalledOperation) {
+        } elseif ($operation instanceof MarkAliasUninstalledOperation) {
             $this->operations['markAliasUninstalled'][] = $operation;
-        }
-        else {
+        } else {
             throw new \InvalidArgumentException('Unknown operation type.');
         }
     }
@@ -97,7 +148,11 @@ class OperationCollection implements \IteratorAggregate
      */
     private function operationNeedsToMoveUp(OperationInterface $operation)
     {
-        $package = $operation->getPackage();
+        if ($operation instanceof InstallOperation) {
+            $package = $operation->getPackage();
+        } elseif ($operation instanceof UpdateOperation) {
+            $package = $operation->getTargetPackage();
+        }
 
         if (!($package->getType() === 'composer-plugin' || $package->getType() === 'composer-installer')) {
             return false;
@@ -120,7 +175,7 @@ class OperationCollection implements \IteratorAggregate
      * installations in case two packages resolve to the same path (due to custom installers). Additionally,
      * plugin update/install operations should occur before other updates/installs.
      *
-     * @return array A sorted array of operation objects
+     * @return SolverOperation[] A sorted array of operation objects
      */
     private function sortOperationsToArray()
     {

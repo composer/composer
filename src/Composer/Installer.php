@@ -14,11 +14,9 @@ namespace Composer;
 
 use Composer\Autoload\AutoloadGenerator;
 use Composer\DependencyResolver\DefaultPolicy;
-use Composer\DependencyResolver\Operation\UpdateOperation;
-use Composer\DependencyResolver\Operation\InstallOperation;
-use Composer\DependencyResolver\Operation\UninstallOperation;
-use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\DependencyResolver\Operation\OperationCollection;
+use Composer\DependencyResolver\Operation\UpdateOperation;
+use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Rule;
@@ -111,6 +109,7 @@ class Installer
     protected $ignorePlatformReqs = false;
     protected $preferStable = false;
     protected $preferLowest = false;
+    protected $confirm = false;
     /**
      * Array of package names/globs flagged for update
      *
@@ -511,11 +510,16 @@ class Installer
         }
 
         // force dev packages to be updated if we update or install from a (potentially new) lock
-        $operations = $this->processDevPackages($localRepo, $pool, $policy, $repositories, $lockedRepository, $installFromLock, 'force-updates', $operations);
+        $this->processDevPackages($localRepo, $pool, $policy, $repositories, $lockedRepository, $installFromLock, 'force-updates', $operations);
 
         // execute operations
-        if (!$operations) {
-            $this->io->writeError('Nothing to install or update');
+        if ($operations->isEmpty()) {
+            $this->io->write('Nothing to install or update');
+        } elseif ($this->confirm) {
+            $this->showAllChanges($operations);
+            if (!$this->io->askConfirmation('<question>Proceed with these changes? </question>[<comment>Y/n</comment>]', true)) {
+                return 1;
+            }
         }
 
         foreach ($operations as $operation) {
@@ -561,7 +565,7 @@ class Installer
 
             $event = 'Composer\Installer\PackageEvents::PRE_PACKAGE_'.strtoupper($operation->getJobType());
             if (defined($event) && $this->runScripts) {
-                $this->eventDispatcher->dispatchPackageEvent(constant($event), $this->devMode, $policy, $pool, $installedRepo, $request, $operations, $operation);
+                $this->eventDispatcher->dispatchPackageEvent(constant($event), $this->devMode, $policy, $pool, $installedRepo, $request, $operations->toArray(), $operation);
             }
 
             // output non-alias ops in dry run, output alias ops in debug verbosity
@@ -594,7 +598,7 @@ class Installer
 
             $event = 'Composer\Installer\PackageEvents::POST_PACKAGE_'.strtoupper($operation->getJobType());
             if (defined($event) && $this->runScripts) {
-                $this->eventDispatcher->dispatchPackageEvent(constant($event), $this->devMode, $policy, $pool, $installedRepo, $request, $operations, $operation);
+                $this->eventDispatcher->dispatchPackageEvent(constant($event), $this->devMode, $policy, $pool, $installedRepo, $request, $operations->toArray(), $operation);
             }
 
             if (!$this->dryRun) {
@@ -603,6 +607,41 @@ class Installer
         }
 
         return 0;
+    }
+    /**
+     * @param OperationCollection $operations
+     */
+    private function showAllChanges(OperationCollection $operations)
+    {
+        $this->io->write('');
+        $this->showChanges('The following plugins will be installed/updated:', $operations->getPlugins());
+        $this->showChanges('The following packages will be uninstalled:', $operations->getUninstalls());
+        $this->showChanges('The following packages will be installed:', $operations->getInstalls());
+        $this->showChanges('The following packages will be updated:', $operations->getUpdates());
+        $this->showChanges(
+            'The following alias changes will occur:',
+            array_merge($operations->getMarkAliasUninstalled(), $operations->getMarkAliasInstalled())
+        );
+    }
+
+    /**
+     * Display the changes for a set of operations.
+     *
+     * @param string $operationStatement
+     * @param array $operations
+     */
+    private function showChanges($operationStatement, array $operations)
+    {
+        if ($operations) {
+            $changes = array();
+            foreach ($operations as $operation) {
+                $changes[] = $operation->getChangeAsString();
+            }
+            $this->io->write('<info>'.$operationStatement.'</info>');
+            $this->io->write('');
+            $this->io->write(implode(', ', $changes));
+            $this->io->write('');
+        }
     }
 
     private function createPool($withDevReqs, RepositoryInterface $lockedRepository = null)
@@ -702,7 +741,7 @@ class Installer
             throw new \InvalidArgumentException('Missing operations argument');
         }
         if ($task === 'force-links') {
-            $operations = array();
+            $operations = new OperationCollection();
         }
 
         foreach ($localRepo->getCanonicalPackages() as $package) {
@@ -733,7 +772,7 @@ class Installer
                             if (($lockedPackage->getSourceReference() && $lockedPackage->getSourceReference() !== $package->getSourceReference())
                                 || ($lockedPackage->getDistReference() && $lockedPackage->getDistReference() !== $package->getDistReference())
                             ) {
-                                $operations[] = new UpdateOperation($package, $lockedPackage);
+                                $operations->add(new UpdateOperation($package, $lockedPackage));
                             }
                         }
 
@@ -782,7 +821,7 @@ class Installer
                                 || ($newPackage->getDistReference() && $newPackage->getDistReference() !== $package->getDistReference())
                             )
                         )) {
-                            $operations[] = new UpdateOperation($package, $newPackage);
+                            $operations->add(new UpdateOperation($package, $newPackage));
                         }
                     }
                 }
@@ -793,13 +832,11 @@ class Installer
 
                     if (isset($references[$package->getName()]) && $references[$package->getName()] !== $package->getSourceReference()) {
                         // changing the source ref to update to will be handled in the operations loop below
-                        $operations[] = new UpdateOperation($package, clone $package);
+                        $operations->add(new UpdateOperation($package, clone $package));
                     }
                 }
             }
         }
-
-        return $operations;
     }
 
     private function getRootAliases()
@@ -1252,6 +1289,19 @@ class Installer
     public function disablePlugins()
     {
         $this->installationManager->disablePlugins();
+
+        return $this;
+    }
+
+    /**
+     * Confirm changes
+     *
+     * @param  boolean   $confirm
+     * @return Installer
+     */
+    public function setConfirm($confirm = false)
+    {
+        $this->confirm = (boolean) $confirm;
 
         return $this;
     }
