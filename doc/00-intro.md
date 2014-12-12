@@ -114,6 +114,7 @@ Composer is part of the homebrew-php project.
 brew update
 brew tap homebrew/dupes
 brew tap homebrew/php
+brew install php55
 brew install composer
 ```
 
