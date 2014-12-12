@@ -137,7 +137,7 @@ class ArchiveManager
             $sourcePath = realpath('.');
         } else {
             // Directory used to download the sources
-            $sourcePath = sys_get_temp_dir().'/composer_archiver/arch'.uniqid();
+            $sourcePath = sys_get_temp_dir().'/composer_archive'.uniqid();
             $filesystem->ensureDirectoryExists($sourcePath);
 
             // Download sources
@@ -154,7 +154,7 @@ class ArchiveManager
         }
 
         // Create the archive
-        $tempTarget = sys_get_temp_dir().'/composer_archiver/arch'.uniqid().'.'.$format;
+        $tempTarget = sys_get_temp_dir().'/composer_archive'.uniqid().'.'.$format;
         $filesystem->ensureDirectoryExists(dirname($tempTarget));
 
         $archivePath = $usableArchiver->archive($sourcePath, $tempTarget, $format, $package->getArchiveExcludes());
@@ -164,6 +164,7 @@ class ArchiveManager
         if (!$package instanceof RootPackageInterface) {
             $filesystem->removeDirectory($sourcePath);
         }
+        $filesystem->remove($tempTarget);
 
         return $target;
     }

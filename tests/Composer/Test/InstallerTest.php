@@ -292,7 +292,7 @@ class InstallerTest extends TestCase
 
                             // Change paths like file://foobar to file:///path/to/fixtures
                             if (preg_match('{^file://[^/]}', $repo['url'])) {
-                                $repo['url'] = "file://${fixturesDir}/" . substr($repo['url'], 7);
+                                $repo['url'] = 'file://' . strtr($fixturesDir, '\\', '/') . '/' . substr($repo['url'], 7);
                             }
 
                             unset($repo);

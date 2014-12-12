@@ -178,6 +178,9 @@ class Installer
      */
     public function run()
     {
+        gc_collect_cycles();
+        gc_disable();
+
         if ($this->dryRun) {
             $this->verbose = true;
             $this->runScripts = false;
@@ -614,11 +617,11 @@ class Installer
                 if ($reason instanceof Rule) {
                     switch ($reason->getReason()) {
                         case Rule::RULE_JOB_INSTALL:
-                            $this->io->write('    REASON: Required by root: '.$reason->getPrettyString());
+                            $this->io->write('    REASON: Required by root: '.$reason->getPrettyString($pool));
                             $this->io->write('');
                             break;
                         case Rule::RULE_PACKAGE_REQUIRES:
-                            $this->io->write('    REASON: '.$reason->getPrettyString());
+                            $this->io->write('    REASON: '.$reason->getPrettyString($pool));
                             $this->io->write('');
                             break;
                     }

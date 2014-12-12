@@ -35,7 +35,7 @@ class RuleWatchNode
     {
         $this->rule = $rule;
 
-        $literals = $rule->getLiterals();
+        $literals = $rule->literals;
 
         $this->watch1 = count($literals) > 0 ? $literals[0] : 0;
         $this->watch2 = count($literals) > 1 ? $literals[1] : 0;
@@ -51,7 +51,7 @@ class RuleWatchNode
      */
     public function watch2OnHighest(Decisions $decisions)
     {
-        $literals = $this->rule->getLiterals();
+        $literals = $this->rule->literals;
 
         // if there are only 2 elements, both are being watched anyway
         if (count($literals) < 3) {

@@ -112,7 +112,8 @@ class Application extends BaseApplication
             if ($name = $this->getCommandName($input)) {
                 try {
                     $commandName = $this->find($name)->getName();
-                } catch (\InvalidArgumentException $e) {}
+                } catch (\InvalidArgumentException $e) {
+                }
             }
             if ($commandName !== 'self-update' && $commandName !== 'selfupdate') {
                 if (time() > COMPOSER_DEV_WARNING_TIME) {
@@ -230,6 +231,14 @@ class Application extends BaseApplication
         }
 
         return $this->composer;
+    }
+
+    /**
+     * Removes the cached composer instance
+     */
+    public function resetComposer()
+    {
+        $this->composer = null;
     }
 
     /**

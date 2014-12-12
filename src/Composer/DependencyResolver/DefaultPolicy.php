@@ -151,18 +151,18 @@ class DefaultPolicy implements PolicyInterface
             }
 
             // priority equal, sort by package id to make reproducible
-            if ($a->getId() === $b->getId()) {
+            if ($a->id === $b->id) {
                 return 0;
             }
 
-            return ($a->getId() < $b->getId()) ? -1 : 1;
+            return ($a->id < $b->id) ? -1 : 1;
         }
 
-        if (isset($installedMap[$a->getId()])) {
+        if (isset($installedMap[$a->id])) {
             return -1;
         }
 
-        if (isset($installedMap[$b->getId()])) {
+        if (isset($installedMap[$b->id])) {
             return 1;
         }
 
@@ -227,7 +227,7 @@ class DefaultPolicy implements PolicyInterface
         foreach ($literals as $literal) {
             $package = $pool->literalToPackage($literal);
 
-            if (isset($installedMap[$package->getId()])) {
+            if (isset($installedMap[$package->id])) {
                 $selected[] = $literal;
                 continue;
             }

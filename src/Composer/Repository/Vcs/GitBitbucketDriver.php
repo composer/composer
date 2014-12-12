@@ -93,7 +93,7 @@ class GitBitbucketDriver extends VcsDriver implements VcsDriverInterface
 
             $composer = JsonFile::parseJson($composer, $resource);
 
-            if (!isset($composer['time'])) {
+            if (empty($composer['time'])) {
                 $resource = $this->getScheme() . '://api.bitbucket.org/1.0/repositories/'.$this->owner.'/'.$this->repository.'/changesets/'.$identifier;
                 $changeset = JsonFile::parseJson($this->getContents($resource), $resource);
                 $composer['time'] = $changeset['timestamp'];

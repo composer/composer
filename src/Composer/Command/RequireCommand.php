@@ -23,6 +23,8 @@ use Composer\Json\JsonManipulator;
 use Composer\Package\Version\VersionParser;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
+use Composer\Repository\CompositeRepository;
+use Composer\Repository\PlatformRepository;
 
 /**
  * @author Jérémy Romey <jeremy@free-agent.fr>
@@ -78,14 +80,22 @@ EOT
         }
 
         $json = new JsonFile($file);
-        $composer = $json->read();
+        $composerDefinition = $json->read();
         $composerBackup = file_get_contents($json->getPath());
+
+        $composer = $this->getComposer();
+        $repos = $composer->getRepositoryManager()->getRepositories();
+
+        $this->repos = new CompositeRepository(array_merge(
+            array(new PlatformRepository),
+            $repos
+        ));
 
         $requirements = $this->determineRequirements($input, $output, $input->getArgument('packages'));
 
         $requireKey = $input->getOption('dev') ? 'require-dev' : 'require';
         $removeKey = $input->getOption('dev') ? 'require' : 'require-dev';
-        $baseRequirements = array_key_exists($requireKey, $composer) ? $composer[$requireKey] : array();
+        $baseRequirements = array_key_exists($requireKey, $composerDefinition) ? $composerDefinition[$requireKey] : array();
         $requirements = $this->formatRequirements($requirements);
 
         // validate requirements format
@@ -98,13 +108,13 @@ EOT
             foreach ($requirements as $package => $version) {
                 $baseRequirements[$package] = $version;
 
-                if (isset($composer[$removeKey][$package])) {
-                    unset($composer[$removeKey][$package]);
+                if (isset($composerDefinition[$removeKey][$package])) {
+                    unset($composerDefinition[$removeKey][$package]);
                 }
             }
 
-            $composer[$requireKey] = $baseRequirements;
-            $json->write($composer);
+            $composerDefinition[$requireKey] = $baseRequirements;
+            $json->write($composerDefinition);
         }
 
         $output->writeln('<info>'.$file.' has been '.($newlyCreated ? 'created' : 'updated').'</info>');
@@ -115,6 +125,7 @@ EOT
         $updateDevMode = !$input->getOption('update-no-dev');
 
         // Update packages
+        $this->resetComposer();
         $composer = $this->getComposer();
         $composer->getDownloadManager()->setOutputProgress(!$input->getOption('no-progress'));
         $io = $this->getIO();

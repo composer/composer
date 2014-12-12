@@ -156,7 +156,7 @@ class GitDriver extends VcsDriver
 
             $composer = JsonFile::parseJson($composer, $resource);
 
-            if (!isset($composer['time'])) {
+            if (empty($composer['time'])) {
                 $this->process->execute(sprintf('git log -1 --format=%%at %s', ProcessExecutor::escape($identifier)), $output, $this->repoDir);
                 $date = new \DateTime('@'.trim($output), new \DateTimeZone('UTC'));
                 $composer['time'] = $date->format('Y-m-d H:i:s');
@@ -227,7 +227,7 @@ class GitDriver extends VcsDriver
         if (Filesystem::isLocalPath($url)) {
             $url = Filesystem::getPlatformPath($url);
             if (!is_dir($url)) {
-                throw new \RuntimeException('Directory does not exist: '.$url);
+                return false;
             }
 
             $process = new ProcessExecutor($io);

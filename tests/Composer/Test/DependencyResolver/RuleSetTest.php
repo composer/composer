@@ -32,11 +32,11 @@ class RuleSetTest extends TestCase
         $rules = array(
             RuleSet::TYPE_PACKAGE => array(),
             RuleSet::TYPE_JOB => array(
-                new Rule($this->pool, array(), 'job1', null),
-                new Rule($this->pool, array(), 'job2', null),
+                new Rule(array(), 'job1', null),
+                new Rule(array(), 'job2', null),
             ),
             RuleSet::TYPE_LEARNED => array(
-                new Rule($this->pool, array(), 'update1', null),
+                new Rule(array(), 'update1', null),
             ),
         );
 
@@ -56,15 +56,15 @@ class RuleSetTest extends TestCase
     {
         $ruleSet = new RuleSet;
 
-        $ruleSet->add(new Rule($this->pool, array(), 'job1', null), 7);
+        $ruleSet->add(new Rule(array(), 'job1', null), 7);
     }
 
     public function testCount()
     {
         $ruleSet = new RuleSet;
 
-        $ruleSet->add(new Rule($this->pool, array(), 'job1', null), RuleSet::TYPE_JOB);
-        $ruleSet->add(new Rule($this->pool, array(), 'job2', null), RuleSet::TYPE_JOB);
+        $ruleSet->add(new Rule(array(), 'job1', null), RuleSet::TYPE_JOB);
+        $ruleSet->add(new Rule(array(), 'job2', null), RuleSet::TYPE_JOB);
 
         $this->assertEquals(2, $ruleSet->count());
     }
@@ -73,18 +73,18 @@ class RuleSetTest extends TestCase
     {
         $ruleSet = new RuleSet;
 
-        $rule = new Rule($this->pool, array(), 'job1', null);
+        $rule = new Rule(array(), 'job1', null);
         $ruleSet->add($rule, RuleSet::TYPE_JOB);
 
-        $this->assertSame($rule, $ruleSet->ruleById(0));
+        $this->assertSame($rule, $ruleSet->ruleById[0]);
     }
 
     public function testGetIterator()
     {
         $ruleSet = new RuleSet;
 
-        $rule1 = new Rule($this->pool, array(), 'job1', null);
-        $rule2 = new Rule($this->pool, array(), 'job1', null);
+        $rule1 = new Rule(array(), 'job1', null);
+        $rule2 = new Rule(array(), 'job1', null);
         $ruleSet->add($rule1, RuleSet::TYPE_JOB);
         $ruleSet->add($rule2, RuleSet::TYPE_LEARNED);
 
@@ -98,8 +98,8 @@ class RuleSetTest extends TestCase
     public function testGetIteratorFor()
     {
         $ruleSet = new RuleSet;
-        $rule1 = new Rule($this->pool, array(), 'job1', null);
-        $rule2 = new Rule($this->pool, array(), 'job1', null);
+        $rule1 = new Rule(array(), 'job1', null);
+        $rule2 = new Rule(array(), 'job1', null);
 
         $ruleSet->add($rule1, RuleSet::TYPE_JOB);
         $ruleSet->add($rule2, RuleSet::TYPE_LEARNED);
@@ -112,8 +112,8 @@ class RuleSetTest extends TestCase
     public function testGetIteratorWithout()
     {
         $ruleSet = new RuleSet;
-        $rule1 = new Rule($this->pool, array(), 'job1', null);
-        $rule2 = new Rule($this->pool, array(), 'job1', null);
+        $rule1 = new Rule(array(), 'job1', null);
+        $rule2 = new Rule(array(), 'job1', null);
 
         $ruleSet->add($rule1, RuleSet::TYPE_JOB);
         $ruleSet->add($rule2, RuleSet::TYPE_LEARNED);
@@ -155,7 +155,7 @@ class RuleSetTest extends TestCase
         $this->assertFalse($ruleSet->containsEqual($rule3));
     }
 
-    public function testToString()
+    public function testPrettyString()
     {
         $repo = new ArrayRepository;
         $repo->addPackage($p = $this->getPackage('foo', '2.1'));
@@ -163,11 +163,11 @@ class RuleSetTest extends TestCase
 
         $ruleSet = new RuleSet;
         $literal = $p->getId();
-        $rule = new Rule($this->pool, array($literal), 'job1', null);
+        $rule = new Rule(array($literal), 'job1', null);
 
         $ruleSet->add($rule, RuleSet::TYPE_JOB);
 
-        $this->assertContains('JOB     : (+foo-2.1.0.0)', $ruleSet->__toString());
+        $this->assertContains('JOB     : (install foo 2.1)', $ruleSet->getPrettyString($this->pool));
     }
 
     private function getRuleMock()
