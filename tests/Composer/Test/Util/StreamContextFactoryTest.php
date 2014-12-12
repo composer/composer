@@ -146,7 +146,7 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
     public function testHttpsProxyOverride()
     {
         $_SERVER['http_proxy'] = 'http://username:password@proxyserver.net';
-        $_SERVER['http_proxy'] = 'https://woopproxy.net';
+        $_SERVER['https_proxy'] = 'https://woopproxy.net';
 
         $context = StreamContextFactory::getContext('https://example.org', array('http' => array('method' => 'GET')));
         $options = stream_context_get_options($context);
