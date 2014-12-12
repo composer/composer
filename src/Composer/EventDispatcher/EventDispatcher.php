@@ -223,7 +223,13 @@ class EventDispatcher
             return $event;
         }
 
-        $expected = $reflected->getClass()->name;
+        $typehint = $reflected->getClass();
+
+        if (!$typehint instanceof \ReflectionClass) {
+            return $event;
+        }
+
+        $expected = $typehint->getName();
 
         if (!$event instanceof $expected && $expected === 'Composer\Script\CommandEvent') {
             $event = new CommandEvent($event->getName(), $event->getComposer(), $event->getIO(), $event->isDevMode(), $event->getArguments());
