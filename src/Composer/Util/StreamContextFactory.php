@@ -93,6 +93,14 @@ final class StreamContextFactory
                     break;
             }
 
+            // add SNI opts for https URLs
+            if ('https' === parse_url($url, PHP_URL_SCHEME)) {
+                $options['ssl']['SNI_enabled'] = true;
+                if (version_compare(PHP_VERSION, '5.6.0', '<')) {
+                    $options['ssl']['SNI_server_name'] = parse_url($url, PHP_URL_HOST);
+                }
+            }
+
             // handle proxy auth if present
             if (isset($proxy['user'])) {
                 $auth = urldecode($proxy['user']);
