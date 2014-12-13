@@ -289,7 +289,9 @@ class Factory
         $composer->setPluginManager($pm);
 
         // purge packages if they have been deleted on the filesystem
-        $this->purgePackages($rm->getLocalRepository(), $im);
+        if ($rm->getLocalRepository()) {
+            $this->purgePackages($rm->getLocalRepository(), $im);
+        }
 
         if (!$disablePlugins) {
             $pm->loadInstalledPlugins();

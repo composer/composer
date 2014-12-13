@@ -16,6 +16,7 @@ use Composer\Config;
 use Composer\Factory;
 use Composer\Repository;
 use Composer\Repository\RepositoryManager;
+use Composer\Repository\WritableRepositoryInterface;
 use Composer\Installer;
 use Composer\IO\IOInterface;
 
@@ -46,7 +47,7 @@ class FactoryMock extends Factory
     {
     }
 
-    protected function purgePackages(Repository\RepositoryManager $rm, Installer\InstallationManager $im)
+    protected function purgePackages(WritableRepositoryInterface $repo, Installer\InstallationManager $im)
     {
     }
 }
