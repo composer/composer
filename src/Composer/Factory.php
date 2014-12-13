@@ -187,12 +187,12 @@ class Factory
      * @param  array|string|null         $localConfig    either a configuration array or a filename to read from, if null it will
      *                                                   read from the default filename
      * @param  bool                      $disablePlugins Whether plugins should not be loaded
-     * @param  bool                      $minimalLoad    Whether to initialize everything or only main project stuff (used when loading the global composer)
+     * @param  bool                      $fullLoad       Whether to initialize everything or only main project stuff (used when loading the global composer)
      * @throws \InvalidArgumentException
      * @throws \UnexpectedValueException
      * @return Composer
      */
-    public function createComposer(IOInterface $io, $localConfig = null, $disablePlugins = false, $minimalLoad = false)
+    public function createComposer(IOInterface $io, $localConfig = null, $disablePlugins = false, $fullLoad = true)
     {
         // load Composer configuration
         if (null === $localConfig) {
@@ -241,7 +241,7 @@ class Factory
         $composer = new Composer();
         $composer->setConfig($config);
 
-        if (!$minimalLoad) {
+        if ($fullLoad) {
             // load auth configs into the IO instance
             $io->loadConfiguration($config);
 
@@ -270,10 +270,7 @@ class Factory
         $im = $this->createInstallationManager();
         $composer->setInstallationManager($im);
 
-        // add installers to the manager
-        $this->createDefaultInstallers($im, $composer, $io);
-
-        if (!$minimalLoad) {
+        if ($fullLoad) {
             // initialize download manager
             $dm = $this->createDownloadManager($io, $config, $dispatcher);
             $composer->setDownloadManager($dm);
@@ -282,6 +279,9 @@ class Factory
             $generator = new AutoloadGenerator($dispatcher, $io);
             $composer->setAutoloadGenerator($generator);
         }
+
+        // add installers to the manager (must happen after download manager is created since they read it out of $composer)
+        $this->createDefaultInstallers($im, $composer, $io);
 
         $globalComposer = $this->createGlobalComposer($io, $config, $disablePlugins);
         $globalRepository = $globalComposer ? $globalComposer->getRepositoryManager()->getLocalRepository() : null;
@@ -296,7 +296,7 @@ class Factory
         }
 
         // init locker if possible
-        if (!$minimalLoad && isset($composerFile)) {
+        if ($fullLoad && isset($composerFile)) {
             $lockFile = "json" === pathinfo($composerFile, PATHINFO_EXTENSION)
                 ? substr($composerFile, 0, -4).'lock'
                 : $composerFile . '.lock';
@@ -338,7 +338,7 @@ class Factory
         $rm->setLocalRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/composer/installed.json')));
     }
 
-     /**
+    /**
      * @param  Config        $config
      * @return Composer|null
      */
@@ -352,7 +352,7 @@ class Factory
         $composer = null;
         chdir($config->get('home'));
         try {
-            $composer = self::createComposer($io, null, $disablePlugins, true);
+            $composer = self::createComposer($io, null, $disablePlugins, false);
         } catch (\Exception $e) {
         }
         chdir($oldCwd);
