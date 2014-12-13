@@ -309,7 +309,8 @@ class Installer
                     $aliases,
                     $this->package->getMinimumStability(),
                     $this->package->getStabilityFlags(),
-                    $this->package->getPreferStable()
+                    $this->preferStable || $this->package->getPreferStable(),
+                    $this->preferLowest
                 );
                 if ($updatedLock) {
                     $this->io->write('<info>Writing lock file</info>');
@@ -695,15 +696,18 @@ class Installer
 
     private function createPolicy()
     {
-        $preferLowest = false;
         $preferStable = null;
+        $preferLowest = null;
         if (!$this->update && $this->locker->isLocked()) {
             $preferStable = $this->locker->getPreferStable();
+            $preferLowest = $this->locker->getPreferLowest();
         }
-        // old lock file without prefer stable will return null
+        // old lock file without prefer stable/lowest will return null
         // so in this case we use the composer.json info
         if (null === $preferStable) {
             $preferStable = $this->preferStable || $this->package->getPreferStable();
+        }
+        if (null === $preferLowest) {
             $preferLowest = $this->preferLowest;
         }
 
