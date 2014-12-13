@@ -56,13 +56,11 @@ git, svn or hg depending on how the package is version-controlled.
 Composer is multi-platform and we strive to make it run equally well on Windows,
 Linux and OSX.
 
-## Installation - *nix
-
-These instructions should cover most Linux and Unix variants (including OSX).
+## Installation - Linux / Unix / OSX
 
 ### Downloading the Composer Executable
 
-There are in short, two ways to install Composer on *nix. Locally as part of your
+There are in short, two ways to install Composer. Locally as part of your
 project, or globally as a system wide executable.
 
 #### Locally
