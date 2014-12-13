@@ -239,10 +239,12 @@ class PluginManager
             if ($oldInstallerPlugin) {
                 $installer = new $class($this->io, $this->composer);
                 $this->composer->getInstallationManager()->addInstaller($installer);
-            } else {
+            } elseif (class_exists($class)) {
                 $plugin = new $class();
                 $this->addPlugin($plugin);
                 $this->registeredPlugins[] = $package->getName();
+            } else {
+                $this->io->write(sprintf('<warning>Plugin %s can not be initialized</warning>', $package->getName()));
             }
         }
     }
