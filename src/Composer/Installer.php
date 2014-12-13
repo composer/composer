@@ -107,6 +107,7 @@ class Installer
     protected $update = false;
     protected $runScripts = true;
     protected $ignorePlatformReqs = false;
+    protected $pluginsForNewAnalysis = array();
     /**
      * Array of package names/globs flagged for update
      *
@@ -219,7 +220,17 @@ class Installer
 
         try {
             $this->suggestedPackages = array();
-            $res = $this->doInstall($localRepo, $installedRepo, $platformRepo, $aliases, $this->devMode);
+            $res = $this->doInstall($localRepo, $installedRepo, $platformRepo, $aliases, $this->devMode, true);
+            if ($res === 0 && !empty($this->pluginsForNewAnalysis)) {
+                if ($this->io->isVerbose()) {
+                    $this->io->write('<info>A new analysis of dependencies is required by:</info>');
+                    foreach ($this->pluginsForNewAnalysis as $pluginName => $status) {
+                        $this->io->write('  - Plugin <info>' . $pluginName . '</info> (<comment>' . (is_string($status) ? $status : 'always') . '</comment>)');
+                    }
+                    $this->io->write('');
+                }
+                $res = $this->doInstall($localRepo, $installedRepo, $platformRepo, $aliases, $this->devMode, false);
+            }
             if ($res !== 0) {
                 return $res;
             }
@@ -339,7 +350,7 @@ class Installer
         return 0;
     }
 
-    protected function doInstall($localRepo, $installedRepo, $platformRepo, $aliases, $withDevReqs)
+    protected function doInstall($localRepo, $installedRepo, $platformRepo, $aliases, $withDevReqs, $delayValidation = false)
     {
         // init vars
         $lockedRepository = null;
@@ -368,7 +379,9 @@ class Installer
             $this->package->getDevRequires()
         );
 
-        $this->io->write('<info>Loading composer repositories with package information</info>');
+        if ($delayValidation) {
+            $this->io->write('<info>Loading composer repositories with package information</info>');
+        }
 
         // creating repository pool
         $policy = $this->createPolicy();
@@ -403,7 +416,9 @@ class Installer
         }
 
         if ($this->update) {
-            $this->io->write('<info>Updating dependencies'.($withDevReqs ? ' (including require-dev)' : '').'</info>');
+            if ($delayValidation || (!$delayValidation && $this->io->isVerbose())) {
+                $this->io->write('<info>Updating dependencies'.($withDevReqs ? ' (including require-dev)' : '').'</info>');
+            }
 
             $request->updateAll();
 
@@ -454,7 +469,9 @@ class Installer
                 }
             }
         } elseif ($installFromLock) {
-            $this->io->write('<info>Installing dependencies'.($withDevReqs ? ' (including require-dev)' : '').' from lock file</info>');
+            if ($delayValidation || (!$delayValidation && $this->io->isVerbose())) {
+                $this->io->write('<info>Installing dependencies'.($withDevReqs ? ' (including require-dev)' : '').' from lock file</info>');
+            }
 
             if (!$this->locker->isFresh()) {
                 $this->io->write('<warning>Warning: The lock file is not up to date with the latest changes in composer.json. You may be getting outdated dependencies. Run update to update them.</warning>');
@@ -474,7 +491,9 @@ class Installer
                 $request->install($link->getTarget(), $link->getConstraint());
             }
         } else {
-            $this->io->write('<info>Installing dependencies'.($withDevReqs ? ' (including require-dev)' : '').'</info>');
+            if ($delayValidation || (!$delayValidation && $this->io->isVerbose())) {
+                $this->io->write('<info>Installing dependencies'.($withDevReqs ? ' (including require-dev)' : '').'</info>');
+            }
 
             if ($withDevReqs) {
                 $links = array_merge($this->package->getRequires(), $this->package->getDevRequires());
@@ -492,9 +511,14 @@ class Installer
 
         // solve dependencies
         $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, $policy, $pool, $installedRepo, $request);
-        $solver = new Solver($policy, $pool, $installedRepo);
+        $solver = new Solver($policy, $pool, $installedRepo, $delayValidation);
         try {
             $operations = $solver->solve($request, $this->ignorePlatformReqs);
+
+            if ($delayValidation) {
+                $this->validateOperations($solver, $operations);
+            }
+
             $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, $policy, $pool, $installedRepo, $request, $operations);
         } catch (SolverProblemsException $e) {
             $this->io->write('<error>Your requirements could not be resolved to an installable set of packages.</error>');
@@ -513,6 +537,10 @@ class Installer
 
         $operations = $this->movePluginsToFront($operations);
         $operations = $this->moveUninstallsToFront($operations);
+
+        if ($delayValidation) {
+            $operations = $this->keepOnlyPluginsAndDependencies($operations);
+        }
 
         foreach ($operations as $operation) {
             // collect suggestions
@@ -616,17 +644,11 @@ class Installer
      */
     private function movePluginsToFront(array $operations)
     {
-        $installerOps = array();
-        foreach ($operations as $idx => $op) {
-            if ($op instanceof InstallOperation) {
-                $package = $op->getPackage();
-            } elseif ($op instanceof UpdateOperation) {
-                $package = $op->getTargetPackage();
-            } else {
-                continue;
-            }
+        $pluginDependencies = array();
+        foreach ($operations as $op) {
+            $package = $this->getOperationPackage($op);
 
-            if ($package->getType() === 'composer-plugin' || $package->getType() === 'composer-installer') {
+            if ($this->isPlugin($package)) {
                 // ignore requirements to platform or composer-plugin-api
                 $requires = array_keys($package->getRequires());
                 foreach ($requires as $index => $req) {
@@ -634,11 +656,19 @@ class Installer
                         unset($requires[$index]);
                     }
                 }
-                // if there are no other requirements, move the plugin to the top of the op list
-                if (!count($requires)) {
-                    $installerOps[] = $op;
-                    unset($operations[$idx]);
-                }
+                $pluginDependencies = array_merge($pluginDependencies, $requires);
+            }
+        }
+        $pluginDependencies = array_unique($pluginDependencies);
+
+        $installerOps = array();
+        foreach ($operations as $idx => $op) {
+            $package = $this->getOperationPackage($op);
+
+            if ($this->isPlugin($package)
+                || in_array($package->getName(), $pluginDependencies)) {
+                $installerOps[] = $op;
+                unset($operations[$idx]);
             }
         }
 
@@ -663,6 +693,111 @@ class Installer
         }
 
         return array_merge($uninstOps, $operations);
+    }
+
+    /**
+     * Validate the operations
+     *
+     * @param Solver               $solver
+     * @param OperationInterface[] $operations
+     */
+    private function validateOperations(Solver $solver, array $operations)
+    {
+        foreach ($operations as $op) {
+            $package = $this->getOperationPackage($op);
+
+            if ($this->isValidOperation($op) && $this->isPlugin($package)) {
+                if (false !== $status = $this->pluginHasNeedRestart($solver, $package)) {
+                    $this->pluginsForNewAnalysis[$package->getName()] = $status;
+                }
+            }
+        }
+
+        if (empty($this->pluginsForNewAnalysis)) {
+            $solver->validate();
+        }
+    }
+
+    /**
+     * Check if the plugin need restart a new analysis.
+     *
+     * @param Solver           $solver
+     * @param PackageInterface $package
+     *
+     * @return bool|string
+     */
+    private function pluginHasNeedRestart(Solver $solver, PackageInterface $package)
+    {
+        $extra = $package->getExtra();
+        $restart = array_key_exists('installer-restart', $extra)
+            ? $extra['installer-restart']
+            : false;
+
+        if (true === $restart || ('on-exception' === $restart && $solver->hasProblems())) {
+            return $restart;
+        }
+
+        return false;
+    }
+
+    /**
+     * Keeps only the plugins and their dependencies, only for the plugins installation process
+     *
+     * @param OperationInterface[] $operations
+     *
+     * @return OperationInterface[]
+     */
+    private function keepOnlyPluginsAndDependencies(array $operations)
+    {
+        if (!empty($this->pluginsForNewAnalysis)) {
+            for ($i = count($operations)-1; $i >= 0; $i--) {
+                $op = $operations[$i];
+                $package = $this->getOperationPackage($op);
+
+                if (!$this->isPlugin($package)) {
+                    unset($operations[$i]);
+                } else {
+                    break;
+                }
+            }
+        }
+
+        return $operations;
+    }
+
+    /**
+     * Get the package of operation
+     *
+     * @param OperationInterface $operation
+     * @return PackageInterface
+     */
+    private function getOperationPackage(OperationInterface $operation)
+    {
+        return $operation instanceof UpdateOperation
+            ? $operation->getTargetPackage()
+            : $operation->getPackage();
+    }
+
+    /**
+     * Check if the operation is valid for plugin action
+     *
+     * @param OperationInterface $operation
+     * @return bool
+     */
+    private function isValidOperation(OperationInterface $operation)
+    {
+        return $operation instanceof InstallOperation || $operation instanceof UpdateOperation;
+    }
+
+    /**
+     * Check if package is a plugin
+     *
+     * @param  PackageInterface $package
+     * @return bool
+     */
+    private function isPlugin(PackageInterface $package)
+    {
+        return $package->getType() === 'composer-plugin' || $package->getType() === 'composer-installer';
     }
 
     private function createPool($withDevReqs)

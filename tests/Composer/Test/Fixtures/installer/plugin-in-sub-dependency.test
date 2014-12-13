@@ -1,0 +1,27 @@
+--TEST--
+Installs a plugin package defined in another simple package
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "p/p", "version": "1.0.0", "type": "composer-plugin" }
+            ]
+        },
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.0", "require": { "p/p": "1.0.0" } }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.0.0"
+    }
+}
+--RUN--
+install
+--EXPECT--
+Installing p/p (1.0.0)
+Installing a/a (1.0.0)
