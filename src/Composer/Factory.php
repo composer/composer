@@ -284,12 +284,12 @@ class Factory
         $pm = $this->createPluginManager($composer, $io, $globalRepository);
         $composer->setPluginManager($pm);
 
+        // purge packages if they have been deleted on the filesystem
+        $this->purgePackages($rm, $im);
+
         if (!$disablePlugins) {
             $pm->loadInstalledPlugins();
         }
-
-        // purge packages if they have been deleted on the filesystem
-        $this->purgePackages($rm, $im);
 
         // init locker if possible
         if (isset($composerFile)) {
