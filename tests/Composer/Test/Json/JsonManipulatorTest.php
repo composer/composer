@@ -73,6 +73,7 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
             ),
             array(
                 '{
+    "empty": "",
     "require": {
         "foo": "bar"
     }
@@ -81,6 +82,7 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
                 'vendor/baz',
                 'qux',
                 '{
+    "empty": "",
     "require": {
         "foo": "bar",
         "vendor/baz": "qux"
