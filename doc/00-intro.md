@@ -127,6 +127,9 @@ Download and run [Composer-Setup.exe](https://getcomposer.org/Composer-Setup.exe
 it will install the latest Composer version and set up your PATH so that you can
 just call `composer` from any directory in your command line.
 
+> **Note:** Close your current terminal. Test usage with a new terminal:
+> Thats important because the PATH gets only loaded when the terminal gets started.
+
 ### Manual Installation
 
 Change to a directory on your `PATH` and run the install snippet to download
