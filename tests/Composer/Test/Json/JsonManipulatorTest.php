@@ -282,6 +282,58 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @dataProvider providerAddLinkAndSortPackages
+     */
+    public function testAddLinkAndSortPackages($json, $type, $package, $constraint, $sortPackages, $expected)
+    {
+        $manipulator = new JsonManipulator($json);
+        $this->assertTrue($manipulator->addLink($type, $package, $constraint, $sortPackages));
+        $this->assertEquals($expected, $manipulator->getContents());
+    }
+
+    public function providerAddLinkAndSortPackages()
+    {
+        return array(
+            array(
+                '{
+    "require": {
+        "vendor/baz": "qux"
+    }
+}',
+                'require',
+                'foo',
+                'bar',
+                true,
+                '{
+    "require": {
+        "foo": "bar",
+        "vendor/baz": "qux"
+    }
+}
+'
+            ),
+            array(
+                '{
+    "require": {
+        "vendor/baz": "qux"
+    }
+}',
+                'require',
+                'foo',
+                'bar',
+                false,
+                '{
+    "require": {
+        "vendor/baz": "qux",
+        "foo": "bar"
+    }
+}
+'
+            ),
+        );
+    }
+
+    /**
      * @dataProvider removeSubNodeProvider
      */
     public function testRemoveSubNode($json, $name, $expected, $expectedContent = null)
