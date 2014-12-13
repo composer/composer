@@ -354,7 +354,6 @@ class Factory
         try {
             $composer = self::createComposer($io, null, $disablePlugins, true);
         } catch (\Exception $e) {
-            throw $e;
         }
         chdir($oldCwd);
 
