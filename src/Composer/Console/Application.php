@@ -177,7 +177,7 @@ class Application extends BaseApplication
     public function renderException($exception, $output)
     {
         try {
-            $composer = $this->getComposer(false);
+            $composer = $this->getComposer(false, true);
             if ($composer) {
                 $config = $composer->getConfig();
 

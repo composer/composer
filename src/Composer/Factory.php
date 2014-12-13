@@ -283,18 +283,19 @@ class Factory
         // add installers to the manager (must happen after download manager is created since they read it out of $composer)
         $this->createDefaultInstallers($im, $composer, $io);
 
-        $globalComposer = $this->createGlobalComposer($io, $config, $disablePlugins);
-        $globalRepository = $globalComposer ? $globalComposer->getRepositoryManager()->getLocalRepository() : null;
-        $pm = $this->createPluginManager($composer, $io, $globalRepository);
-        $composer->setPluginManager($pm);
-
         // purge packages if they have been deleted on the filesystem
         if ($rm->getLocalRepository()) {
             $this->purgePackages($rm->getLocalRepository(), $im);
         }
 
-        if (!$disablePlugins) {
-            $pm->loadInstalledPlugins();
+        if ($fullLoad) {
+            $globalComposer = $this->createGlobalComposer($io, $config, $disablePlugins);
+            $pm = $this->createPluginManager($io, $composer, $globalComposer);
+            $composer->setPluginManager($pm);
+
+            if (!$disablePlugins) {
+                $pm->loadInstalledPlugins();
+            }
         }
 
         // init locker if possible
@@ -424,14 +425,14 @@ class Factory
     }
 
     /**
-     * @param  Composer             $composer
      * @param  IOInterface          $io
-     * @param  RepositoryInterface  $globalRepository
+     * @param  Composer             $composer
+     * @param  Composer             $globalComposer
      * @return Plugin\PluginManager
      */
-    protected function createPluginManager(Composer $composer, IOInterface $io, RepositoryInterface $globalRepository = null)
+    protected function createPluginManager(IOInterface $io, Composer $composer, Composer $globalComposer = null)
     {
-        return new Plugin\PluginManager($composer, $io, $globalRepository);
+        return new Plugin\PluginManager($io, $composer, $globalComposer);
     }
 
     /**
