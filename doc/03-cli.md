@@ -482,6 +482,10 @@ performance.
   a bit of time to run so it is currently not done by default.
 * **--no-dev:** Disables autoload-dev rules.
 
+## clear-cache
+
+Deletes all content from Composer's cache directories.
+
 ## licenses
 
 Lists the name, version and license of every package installed. Use
