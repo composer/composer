@@ -219,7 +219,7 @@ class EventDispatcher
 
         try {
             $reflected = new \ReflectionParameter($target, 0);
-        } catch (\ReflectionException $e) {
+        } catch (\Exception $e) {
             return $event;
         }
 
