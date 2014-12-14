@@ -440,6 +440,8 @@ class Installer
                     $candidates[$package->getName()] = true;
                 }
 
+                $localRepoOutdated = false;
+
                 // fix them to the version in lock (or currently installed) if they are not updateable
                 foreach ($candidates as $candidate => $dummy) {
                     foreach ($currentPackages as $curPackage) {
@@ -447,9 +449,22 @@ class Installer
                             if (!$this->isUpdateable($curPackage) && !isset($removedUnstablePackages[$curPackage->getName()])) {
                                 $constraint = new VersionConstraint('=', $curPackage->getVersion());
                                 $request->install($curPackage->getName(), $constraint);
+                                if ($curPackage->isDev()) {
+                                    $installed = $localRepo->findPackage($curPackage->getName(), $curPackage->getVersion());
+                                    if (is_null($installed) || $installed->getDistReference() != $curPackage->getDistReference()) {
+                                        $localRepoOutdated = true;
+                                    }
+                                }
                             }
                             break;
                         }
+                    }
+                }
+
+                if ($localRepoOutdated) {
+                    if (!$this->io->askConfirmation('<info>The installed packages is not in sync with composer.lock. It is recommended to run composer install before update to prevent issues. Do you want to continue?</info> [<comment>Y,n</comment>]?')) {
+                        $this->io->write('<error>Update aborted</error>');
+                        exit(1);
                     }
                 }
             }
