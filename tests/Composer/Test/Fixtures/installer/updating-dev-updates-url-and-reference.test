@@ -32,7 +32,8 @@ Updating a dev package for new reference updates the url and reference
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {"a/a":20},
-    "prefer-stable": false
+    "prefer-stable": false,
+    "prefer-lowest": false
 }
 --INSTALLED--
 [
@@ -59,6 +60,7 @@ update
     "minimum-stability": "dev",
     "stability-flags": {"a/a":20},
     "prefer-stable": false,
+    "prefer-lowest": false,
     "platform": [],
     "platform-dev": []
 }
