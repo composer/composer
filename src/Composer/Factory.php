@@ -353,12 +353,12 @@ class Factory
         }
 
         $composer = null;
-        chdir($config->get('home'));
         try {
+            chdir($config->get('home'));
             $composer = self::createComposer($io, null, $disablePlugins, false);
         } catch (\Exception $e) {
         }
-        chdir($oldCwd);
+        @chdir($oldCwd);
 
         return $composer;
     }
