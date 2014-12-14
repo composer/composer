@@ -183,6 +183,8 @@ following to your `satis.json`:
 
 Once enabled, all downloads (include those from GitHub and BitBucket) will be replaced with a _local_ version.
 
+Note: If you use SSH, the files will not be downloaded using that connection.  They will be downloaded using the `prefix-url` or the `satis.json` homepage in the format described above.  You can use http authentication (`https://username:password@example.com`).  The url and credentials from `satis.json` will be securely sent to the client.   
+
 #### prefix-url
 
 Prefixing the URL with another host is especially helpful if the downloads end up in a private Amazon S3
