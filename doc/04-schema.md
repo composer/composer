@@ -758,7 +758,8 @@ The following options are supported:
   on how to get an OAuth token for GitHub.
 * **http-basic:** A list of domain names and username/passwords to authenticate
   against them. For example using
-  `{"example.org": {"username": "alice", "password": "foo"}` as the value of this option will let composer authenticate against example.org.
+  `{"example.org": {"username": "alice", "password": "foo"}` as the value of this
+  option will let composer authenticate against example.org.
 * **vendor-dir:** Defaults to `vendor`. You can install dependencies into a
   different directory if you want to. `$HOME` and `~` will be replaced by your
   home directory's path in vendor-dir and all `*-dir` options below.
