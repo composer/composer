@@ -17,6 +17,7 @@ use Composer\EventDispatcher\EventDispatcher;
 use Composer\Installer\InstallerEvents;
 use Composer\TestCase;
 use Composer\Script\ScriptEvents;
+use Composer\Script\CommandEvent;
 use Composer\Util\ProcessExecutor;
 
 class EventDispatcherTest extends TestCase
@@ -28,7 +29,7 @@ class EventDispatcherTest extends TestCase
     {
         $io = $this->getMock('Composer\IO\IOInterface');
         $dispatcher = $this->getDispatcherStubForListenersTest(array(
-            "Composer\Test\EventDispatcher\EventDispatcherTest::call"
+            'Composer\Test\EventDispatcher\EventDispatcherTest::call'
         ), $io);
 
         $io->expects($this->once())
@@ -36,6 +37,26 @@ class EventDispatcherTest extends TestCase
             ->with('<error>Script Composer\Test\EventDispatcher\EventDispatcherTest::call handling the post-install-cmd event terminated with an exception</error>');
 
         $dispatcher->dispatchCommandEvent(ScriptEvents::POST_INSTALL_CMD, false);
+    }
+
+    public function testDispatcherCanConvertScriptEventToCommandEventForListener()
+    {
+        $io = $this->getMock('Composer\IO\IOInterface');
+        $dispatcher = $this->getDispatcherStubForListenersTest(array(
+            'Composer\Test\EventDispatcher\EventDispatcherTest::expectsCommandEvent'
+        ), $io);
+
+        $this->assertEquals(1, $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false));
+    }
+    
+    public function testDispatcherDoesNotAttemptConversionForListenerWithoutTypehint()
+    {
+        $io = $this->getMock('Composer\IO\IOInterface');
+        $dispatcher = $this->getDispatcherStubForListenersTest(array(
+            'Composer\Test\EventDispatcher\EventDispatcherTest::expectsVariableEvent'
+        ), $io);
+
+        $this->assertEquals(1, $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false));
     }
 
     /**
@@ -203,6 +224,16 @@ class EventDispatcherTest extends TestCase
     public static function call()
     {
         throw new \RuntimeException();
+    }
+
+    public static function expectsCommandEvent(CommandEvent $event)
+    {
+        return false;
+    }
+
+    public static function expectsVariableEvent($event)
+    {
+        return false;
     }
 
     public static function someMethod()

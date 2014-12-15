@@ -247,4 +247,20 @@ class DefaultPolicyTest extends TestCase
 
         return $map;
     }
+
+    public function testSelectLowest()
+    {
+        $policy = new DefaultPolicy(false, true);
+
+        $this->repo->addPackage($packageA1 = $this->getPackage('A', '1.0'));
+        $this->repo->addPackage($packageA2 = $this->getPackage('A', '2.0'));
+        $this->pool->addRepository($this->repo);
+
+        $literals = array($packageA1->getId(), $packageA2->getId());
+        $expected = array($packageA1->getId());
+
+        $selected = $policy->selectPreferedPackages($this->pool, array(), $literals);
+
+        $this->assertEquals($expected, $selected);
+    }
 }

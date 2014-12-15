@@ -102,7 +102,7 @@ class HgBitbucketDriver extends VcsDriver
 
             $composer = JsonFile::parseJson($repoData['data'], $resource);
 
-            if (!isset($composer['time'])) {
+            if (empty($composer['time'])) {
                 $resource = $this->getScheme() . '://bitbucket.org/api/1.0/repositories/'.$this->owner.'/'.$this->repository.'/changesets/'.$identifier;
                 $changeset = JsonFile::parseJson($this->getContents($resource), $resource);
                 $composer['time'] = $changeset['timestamp'];

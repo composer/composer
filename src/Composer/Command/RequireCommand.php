@@ -23,6 +23,8 @@ use Composer\Json\JsonManipulator;
 use Composer\Package\Version\VersionParser;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
+use Composer\Repository\CompositeRepository;
+use Composer\Repository\PlatformRepository;
 
 /**
  * @author Jérémy Romey <jeremy@free-agent.fr>
@@ -45,6 +47,7 @@ class RequireCommand extends InitCommand
                 new InputOption('update-no-dev', null, InputOption::VALUE_NONE, 'Run the dependency update with the --no-dev option.'),
                 new InputOption('update-with-dependencies', null, InputOption::VALUE_NONE, 'Allows inherited dependencies to be updated with explicit dependencies.'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore platform requirements (php & ext- packages).'),
+                new InputOption('sort-packages', null, InputOption::VALUE_NONE, 'Sorts packages when adding/updating a new dependency'),
             ))
             ->setHelp(<<<EOT
 The require command adds required packages to your composer.json and installs them
@@ -78,14 +81,22 @@ EOT
         }
 
         $json = new JsonFile($file);
-        $composer = $json->read();
+        $composerDefinition = $json->read();
         $composerBackup = file_get_contents($json->getPath());
+
+        $composer = $this->getComposer();
+        $repos = $composer->getRepositoryManager()->getRepositories();
+
+        $this->repos = new CompositeRepository(array_merge(
+            array(new PlatformRepository),
+            $repos
+        ));
 
         $requirements = $this->determineRequirements($input, $output, $input->getArgument('packages'));
 
         $requireKey = $input->getOption('dev') ? 'require-dev' : 'require';
         $removeKey = $input->getOption('dev') ? 'require' : 'require-dev';
-        $baseRequirements = array_key_exists($requireKey, $composer) ? $composer[$requireKey] : array();
+        $baseRequirements = array_key_exists($requireKey, $composerDefinition) ? $composerDefinition[$requireKey] : array();
         $requirements = $this->formatRequirements($requirements);
 
         // validate requirements format
@@ -94,17 +105,19 @@ EOT
             $versionParser->parseConstraints($constraint);
         }
 
-        if (!$this->updateFileCleanly($json, $baseRequirements, $requirements, $requireKey, $removeKey)) {
+        $sortPackages = $input->getOption('sort-packages');
+
+        if (!$this->updateFileCleanly($json, $baseRequirements, $requirements, $requireKey, $removeKey, $sortPackages)) {
             foreach ($requirements as $package => $version) {
                 $baseRequirements[$package] = $version;
 
-                if (isset($composer[$removeKey][$package])) {
-                    unset($composer[$removeKey][$package]);
+                if (isset($composerDefinition[$removeKey][$package])) {
+                    unset($composerDefinition[$removeKey][$package]);
                 }
             }
 
-            $composer[$requireKey] = $baseRequirements;
-            $json->write($composer);
+            $composerDefinition[$requireKey] = $baseRequirements;
+            $json->write($composerDefinition);
         }
 
         $output->writeln('<info>'.$file.' has been '.($newlyCreated ? 'created' : 'updated').'</info>');
@@ -115,6 +128,7 @@ EOT
         $updateDevMode = !$input->getOption('update-no-dev');
 
         // Update packages
+        $this->resetComposer();
         $composer = $this->getComposer();
         $composer->getDownloadManager()->setOutputProgress(!$input->getOption('no-progress'));
         $io = $this->getIO();
@@ -149,14 +163,14 @@ EOT
         return $status;
     }
 
-    private function updateFileCleanly($json, array $base, array $new, $requireKey, $removeKey)
+    private function updateFileCleanly($json, array $base, array $new, $requireKey, $removeKey, $sortPackages)
     {
         $contents = file_get_contents($json->getPath());
 
         $manipulator = new JsonManipulator($contents);
 
         foreach ($new as $package => $constraint) {
-            if (!$manipulator->addLink($requireKey, $package, $constraint)) {
+            if (!$manipulator->addLink($requireKey, $package, $constraint, $sortPackages)) {
                 return false;
             }
             if (!$manipulator->removeSubNode($removeKey, $package)) {

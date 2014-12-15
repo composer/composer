@@ -73,6 +73,7 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
             ),
             array(
                 '{
+    "empty": "",
     "require": {
         "foo": "bar"
     }
@@ -81,6 +82,7 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
                 'vendor/baz',
                 'qux',
                 '{
+    "empty": "",
     "require": {
         "foo": "bar",
         "vendor/baz": "qux"
@@ -274,6 +276,58 @@ class JsonManipulatorTest extends \PHPUnit_Framework_TestCase
     },
     "require-dev": {
         "foo": "qux"
+    }
+}
+'
+            ),
+        );
+    }
+
+    /**
+     * @dataProvider providerAddLinkAndSortPackages
+     */
+    public function testAddLinkAndSortPackages($json, $type, $package, $constraint, $sortPackages, $expected)
+    {
+        $manipulator = new JsonManipulator($json);
+        $this->assertTrue($manipulator->addLink($type, $package, $constraint, $sortPackages));
+        $this->assertEquals($expected, $manipulator->getContents());
+    }
+
+    public function providerAddLinkAndSortPackages()
+    {
+        return array(
+            array(
+                '{
+    "require": {
+        "vendor/baz": "qux"
+    }
+}',
+                'require',
+                'foo',
+                'bar',
+                true,
+                '{
+    "require": {
+        "foo": "bar",
+        "vendor/baz": "qux"
+    }
+}
+'
+            ),
+            array(
+                '{
+    "require": {
+        "vendor/baz": "qux"
+    }
+}',
+                'require',
+                'foo',
+                'bar',
+                false,
+                '{
+    "require": {
+        "vendor/baz": "qux",
+        "foo": "bar"
     }
 }
 '

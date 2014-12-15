@@ -1,3 +1,33 @@
+### 1.0.0-alpha9 (2014-12-07)
+
+  * Added `remove` command to do the reverse of `require`
+  * Added --ignore-platform-reqs to `install`/`update` commands to install even if you are missing a php extension or have an invalid php version
+  * Added a warning when abandoned packages are being installed
+  * Added auto-selection of the version constraint in the `require` command, which can now be used simply as `composer require foo/bar`
+  * Added ability to define custom composer commands using scripts
+  * Added `browse` command to open a browser to the given package's repo URL (or homepage with `-H`)
+  * Added an `autoload-dev` section to declare dev-only autoload rules + a --no-dev flag to dump-autoload
+  * Added an `auth.json` file, with `store-auths` config option
+  * Added a `http-basic` config option to store login/pwds to hosts
+  * Added failover to source/dist and vice-versa in case a download method fails
+  * Added --path (-P) flag to the show command to see the install path of packages
+  * Added --update-with-dependencies and --update-no-dev flags to the require command
+  * Added `optimize-autoloader` config option to force the `-o` flag from the config
+  * Added `clear-cache` command
+  * Added a GzipDownloader to download single gzipped files
+  * Added `ssh` support in the `github-protocols` config option
+  * Added `pre-dependencies-solving` and `post-dependencies-solving` events
+  * Added `pre-archive-cmd` and `post-archive-cmd` script events to the `archive` command
+  * Added a `no-api` flag to GitHub VCS repos to skip the API but still get zip downloads
+  * Added http-basic auth support for private git repos not on github
+  * Added support for autoloading `.hh` files when running HHVM
+  * Added support for PHP 5.6
+  * Added support for OTP auth when retrieving a GitHub API key
+  * Fixed isolation of `files` autoloaded scripts to ensure they can not affect anything
+  * Improved performance of solving dependencies
+  * Improved SVN and Perforce support
+  * A boatload of minor fixes, documentation additions and UX improvements
+
 ### 1.0.0-alpha8 (2014-01-06)
 
   * Break: The `install` command now has --dev enabled by default. --no-dev can be used to install without dev requirements

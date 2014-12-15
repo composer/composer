@@ -217,6 +217,8 @@ class InstallerTest extends TestCase
                 ->setDryRun($input->getOption('dry-run'))
                 ->setUpdateWhitelist($input->getArgument('packages'))
                 ->setWhitelistDependencies($input->getOption('with-dependencies'))
+                ->setPreferStable($input->getOption('prefer-stable'))
+                ->setPreferLowest($input->getOption('prefer-lowest'))
                 ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'));
 
             return $installer->run();
@@ -292,7 +294,7 @@ class InstallerTest extends TestCase
 
                             // Change paths like file://foobar to file:///path/to/fixtures
                             if (preg_match('{^file://[^/]}', $repo['url'])) {
-                                $repo['url'] = "file://${fixturesDir}/" . substr($repo['url'], 7);
+                                $repo['url'] = 'file://' . strtr($fixturesDir, '\\', '/') . '/' . substr($repo['url'], 7);
                             }
 
                             unset($repo);

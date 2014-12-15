@@ -103,10 +103,22 @@ class VersionSelector
         // attempt to transform 2.1.1 to 2.1
         // this allows you to upgrade through minor versions
         $semanticVersionParts = explode('.', $version);
+        $op = '~';
+
         // check to see if we have a semver-looking version
         if (count($semanticVersionParts) == 4 && preg_match('{^0\D?}', $semanticVersionParts[3])) {
             // remove the last parts (i.e. the patch version number and any extra)
-            unset($semanticVersionParts[2], $semanticVersionParts[3]);
+            if ($semanticVersionParts[0] === '0') {
+                if ($semanticVersionParts[1] === '0') {
+                    $semanticVersionParts[3] = '*';
+                } else {
+                    $semanticVersionParts[2] = '*';
+                    unset($semanticVersionParts[3]);
+                }
+                $op = '';
+            } else {
+                unset($semanticVersionParts[2], $semanticVersionParts[3]);
+            }
             $version = implode('.', $semanticVersionParts);
         } else {
             return $prettyVersion;
@@ -118,7 +130,7 @@ class VersionSelector
         }
 
         // 2.1 -> ~2.1
-        return '~'.$version;
+        return $op.$version;
     }
 
     private function getParser()

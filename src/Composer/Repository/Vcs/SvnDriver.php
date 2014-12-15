@@ -148,7 +148,7 @@ class SvnDriver extends VcsDriver
 
             $composer = JsonFile::parseJson($output, $this->baseUrl . $resource . $rev);
 
-            if (!isset($composer['time'])) {
+            if (empty($composer['time'])) {
                 $output = $this->execute('svn info', $this->baseUrl . $path . $rev);
                 foreach ($this->process->splitLines($output) as $line) {
                     if ($line && preg_match('{^Last Changed Date: ([^(]+)}', $line, $match)) {

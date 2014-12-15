@@ -107,6 +107,8 @@ class Installer
     protected $update = false;
     protected $runScripts = true;
     protected $ignorePlatformReqs = false;
+    protected $preferStable = false;
+    protected $preferLowest = false;
     /**
      * Array of package names/globs flagged for update
      *
@@ -307,7 +309,8 @@ class Installer
                     $aliases,
                     $this->package->getMinimumStability(),
                     $this->package->getStabilityFlags(),
-                    $this->package->getPreferStable()
+                    $this->preferStable || $this->package->getPreferStable(),
+                    $this->preferLowest
                 );
                 if ($updatedLock) {
                     $this->io->write('<info>Writing lock file</info>');
@@ -694,16 +697,21 @@ class Installer
     private function createPolicy()
     {
         $preferStable = null;
+        $preferLowest = null;
         if (!$this->update && $this->locker->isLocked()) {
             $preferStable = $this->locker->getPreferStable();
+            $preferLowest = $this->locker->getPreferLowest();
         }
-        // old lock file without prefer stable will return null
+        // old lock file without prefer stable/lowest will return null
         // so in this case we use the composer.json info
         if (null === $preferStable) {
-            $preferStable = $this->package->getPreferStable();
+            $preferStable = $this->preferStable || $this->package->getPreferStable();
+        }
+        if (null === $preferLowest) {
+            $preferLowest = $this->preferLowest;
         }
 
-        return new DefaultPolicy($preferStable);
+        return new DefaultPolicy($preferStable, $preferLowest);
     }
 
     private function createRequest(Pool $pool, RootPackageInterface $rootPackage, PlatformRepository $platformRepo)
@@ -1240,6 +1248,32 @@ class Installer
     public function setWhitelistDependencies($updateDependencies = true)
     {
         $this->whitelistDependencies = (boolean) $updateDependencies;
+
+        return $this;
+    }
+
+    /**
+     * Should packages be prefered in a stable version when updating?
+     *
+     * @param  boolean   $preferStable
+     * @return Installer
+     */
+    public function setPreferStable($preferStable = true)
+    {
+        $this->preferStable = (boolean) $preferStable;
+
+        return $this;
+    }
+
+    /**
+     * Should packages be prefered in a lowest version when updating?
+     *
+     * @param  boolean   $preferLowest
+     * @return Installer
+     */
+    public function setPreferLowest($preferLowest = true)
+    {
+        $this->preferLowest = (boolean) $preferLowest;
 
         return $this;
     }

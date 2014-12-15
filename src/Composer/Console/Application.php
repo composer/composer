@@ -99,7 +99,8 @@ class Application extends BaseApplication
             if ($name = $this->getCommandName($input)) {
                 try {
                     $commandName = $this->find($name)->getName();
-                } catch (\InvalidArgumentException $e) {}
+                } catch (\InvalidArgumentException $e) {
+                }
             }
             if ($commandName !== 'self-update' && $commandName !== 'selfupdate') {
                 if (time() > COMPOSER_DEV_WARNING_TIME) {
@@ -176,7 +177,7 @@ class Application extends BaseApplication
     public function renderException($exception, $output)
     {
         try {
-            $composer = $this->getComposer(false);
+            $composer = $this->getComposer(false, true);
             if ($composer) {
                 $config = $composer->getConfig();
 
@@ -188,6 +189,16 @@ class Application extends BaseApplication
                 }
             }
         } catch (\Exception $e) {
+        }
+
+        if (defined('PHP_WINDOWS_VERSION_BUILD') && false !== strpos($exception->getMessage(), 'The system cannot find the path specified')) {
+            $output->writeln('<error>The following exception may be caused by a stale entry in your cmd.exe AutoRun</error>');
+            $output->writeln('<error>Check https://getcomposer.org/doc/articles/troubleshooting.md#-the-system-cannot-find-the-path-specified-windows- for details</error>');
+        }
+
+        if (false !== strpos($exception->getMessage(), 'fork failed - Cannot allocate memory')) {
+            $output->writeln('<error>The following exception is caused by a lack of memory and not having swap configured</error>');
+            $output->writeln('<error>Check https://getcomposer.org/doc/articles/troubleshooting.md#proc-open-fork-failed-errors for details</error>');
         }
 
         return parent::renderException($exception, $output);
@@ -217,6 +228,14 @@ class Application extends BaseApplication
         }
 
         return $this->composer;
+    }
+
+    /**
+     * Removes the cached composer instance
+     */
+    public function resetComposer()
+    {
+        $this->composer = null;
     }
 
     /**

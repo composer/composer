@@ -302,7 +302,7 @@ class Config
      * This should be used to read COMPOSER_ environment variables
      * that overload config values.
      *
-     * @param  string $var
+     * @param  string         $var
      * @return string|boolean
      */
     private function getComposerEnv($var)

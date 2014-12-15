@@ -20,6 +20,8 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
     {
         unset($_SERVER['HTTP_PROXY']);
         unset($_SERVER['http_proxy']);
+        unset($_SERVER['HTTPS_PROXY']);
+        unset($_SERVER['https_proxy']);
         unset($_SERVER['no_proxy']);
     }
 
@@ -27,6 +29,8 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
     {
         unset($_SERVER['HTTP_PROXY']);
         unset($_SERVER['http_proxy']);
+        unset($_SERVER['HTTPS_PROXY']);
+        unset($_SERVER['https_proxy']);
         unset($_SERVER['no_proxy']);
     }
 
@@ -126,17 +130,56 @@ class StreamContextFactoryTest extends \PHPUnit_Framework_TestCase
     {
         $_SERVER['http_proxy'] = 'http://username:password@proxyserver.net';
 
-        $context = StreamContextFactory::getContext('http://example.org', array('http' => array('method' => 'GET')));
+        $context = StreamContextFactory::getContext('https://example.org', array('http' => array('method' => 'GET')));
         $options = stream_context_get_options($context);
 
-        $this->assertEquals(array('http' => array(
-            'proxy' => 'tcp://proxyserver.net:80',
-            'request_fulluri' => true,
-            'method' => 'GET',
-            'header' => array("Proxy-Authorization: Basic " . base64_encode('username:password')),
-            'max_redirects' => 20,
-            'follow_location' => 1,
-        )), $options);
+        $expected = array(
+            'http' => array(
+                'proxy' => 'tcp://proxyserver.net:80',
+                'request_fulluri' => true,
+                'method' => 'GET',
+                'header' => array("Proxy-Authorization: Basic " . base64_encode('username:password')),
+                'max_redirects' => 20,
+                'follow_location' => 1,
+            ), 'ssl' => array(
+                'SNI_enabled' => true,
+                'SNI_server_name' => 'example.org'
+            )
+        );
+        if (version_compare(PHP_VERSION, '5.6.0', '>=')) {
+            unset($expected['ssl']['SNI_server_name']);
+        }
+        $this->assertEquals($expected, $options);
+    }
+
+    public function testHttpsProxyOverride()
+    {
+        if (!extension_loaded('openssl')) {
+            $this->markTestSkipped('Requires openssl');
+        }
+
+        $_SERVER['http_proxy'] = 'http://username:password@proxyserver.net';
+        $_SERVER['https_proxy'] = 'https://woopproxy.net';
+
+        $context = StreamContextFactory::getContext('https://example.org', array('http' => array('method' => 'GET')));
+        $options = stream_context_get_options($context);
+
+        $expected = array(
+            'http' => array(
+                'proxy' => 'ssl://woopproxy.net:443',
+                'request_fulluri' => true,
+                'method' => 'GET',
+                'max_redirects' => 20,
+                'follow_location' => 1,
+            ), 'ssl' => array(
+                'SNI_enabled' => true,
+                'SNI_server_name' => 'example.org'
+            )
+        );
+        if (version_compare(PHP_VERSION, '5.6.0', '>=')) {
+            unset($expected['ssl']['SNI_server_name']);
+        }
+        $this->assertEquals($expected, $options);
     }
 
     /**

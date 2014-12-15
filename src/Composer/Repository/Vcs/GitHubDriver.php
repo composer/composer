@@ -171,7 +171,7 @@ class GitHubDriver extends VcsDriver
             if ($composer) {
                 $composer = JsonFile::parseJson($composer, $resource);
 
-                if (!isset($composer['time'])) {
+                if (empty($composer['time'])) {
                     $resource = $this->getApiUrl() . '/repos/'.$this->owner.'/'.$this->repository.'/commits/'.urlencode($identifier);
                     $commit = JsonFile::parseJson($this->getContents($resource), $resource);
                     $composer['time'] = $commit['commit']['committer']['date'];

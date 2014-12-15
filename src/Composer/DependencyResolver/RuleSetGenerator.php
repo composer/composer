@@ -241,7 +241,7 @@ class RuleSetGenerator
 
                 if (($package instanceof AliasPackage) && $package->getAliasOf() === $provider) {
                     $this->addRule(RuleSet::TYPE_PACKAGE, $rule = $this->createRequireRule($package, array($provider), Rule::RULE_PACKAGE_ALIAS, $package));
-                } elseif (!$this->obsoleteImpossibleForAlias($package, $provider) && $package->id <= $provider->id) {
+                } elseif (!$this->obsoleteImpossibleForAlias($package, $provider)) {
                     $reason = ($package->getName() == $provider->getName()) ? Rule::RULE_PACKAGE_SAME_NAME : Rule::RULE_PACKAGE_IMPLICIT_OBSOLETES;
                     $this->addRule(RuleSet::TYPE_PACKAGE, $rule = $this->createConflictRule($package, $provider, $reason, $package));
                 }

@@ -31,7 +31,7 @@ class JsonManipulator
         if (!self::$RECURSE_BLOCKS) {
             self::$RECURSE_BLOCKS = '(?:[^{}]*|\{(?:[^{}]*|\{(?:[^{}]*|\{(?:[^{}]*|\{[^{}]*\})*\})*\})*\})*';
             self::$RECURSE_ARRAYS = '(?:[^\]]*|\[(?:[^\]]*|\[(?:[^\]]*|\[(?:[^\]]*|\[[^\]]*\])*\])*\])*\]|'.self::$RECURSE_BLOCKS.')*';
-            self::$JSON_STRING = '"(?:\\\\["bfnrt/\\\\]|\\\\u[a-fA-F0-9]{4}|[^\0-\x09\x0a-\x1f\\\\"])+"';
+            self::$JSON_STRING = '"(?:\\\\["bfnrt/\\\\]|\\\\u[a-fA-F0-9]{4}|[^\0-\x09\x0a-\x1f\\\\"])*"';
             self::$JSON_VALUE = '(?:[0-9.]+|null|true|false|'.self::$JSON_STRING.'|\['.self::$RECURSE_ARRAYS.'\]|\{'.self::$RECURSE_BLOCKS.'\})';
         }
 
@@ -52,7 +52,7 @@ class JsonManipulator
         return $this->contents . $this->newline;
     }
 
-    public function addLink($type, $package, $constraint)
+    public function addLink($type, $package, $constraint, $sortPackages = false)
     {
         $decoded = JsonFile::parseJson($this->contents);
 
@@ -88,6 +88,13 @@ class JsonManipulator
                     $this->indent . $this->indent . JsonFile::encode($package).': '.JsonFile::encode($constraint) . $this->newline .
                     $this->indent . '}';
             }
+        }
+
+        if (true === $sortPackages) {
+            $requirements = json_decode($links, true);
+
+            ksort($requirements);
+            $links = $this->format($requirements);
         }
 
         $this->contents = $matches[1] . $matches[2] . $links . $matches[4];

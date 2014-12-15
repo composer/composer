@@ -69,6 +69,15 @@ abstract class Command extends BaseCommand
     }
 
     /**
+     * Removes the cached composer instance
+     */
+    public function resetComposer()
+    {
+        $this->composer = null;
+        $this->getApplication()->resetComposer();
+    }
+
+    /**
      * @return IOInterface
      */
     public function getIO()
