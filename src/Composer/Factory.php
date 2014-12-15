@@ -41,6 +41,20 @@ class Factory
      * @return string
      * @throws \RuntimeException
      */
+    private static function getUserDir()
+    {
+        if (!getenv('HOME')) {
+            throw new \RuntimeException('The HOME or COMPOSER_HOME environment variable must be set for composer to run correctly');
+        }
+        $userDir = rtrim(getenv('HOME'), '/');
+
+        return $userDir;
+    }
+
+    /**
+     * @return string
+     * @throws \RuntimeException
+     */
     protected static function getHomeDir()
     {
         $home = getenv('COMPOSER_HOME');
@@ -51,10 +65,7 @@ class Factory
                 }
                 $home = strtr(getenv('APPDATA'), '\\', '/') . '/Composer';
             } else {
-                if (!getenv('HOME')) {
-                    throw new \RuntimeException('The HOME or COMPOSER_HOME environment variable must be set for composer to run correctly');
-                }
-                $userDir = rtrim(getenv('HOME'), '/');
+                $userDir = self::getUserDir();
 
                 if (getenv('XDG_CONFIG_DIRS')) {
                     // XDG Base Directory Specifications
@@ -88,14 +99,18 @@ class Factory
                     $cacheDir = $home . '/cache';
                 }
                 $cacheDir = strtr($cacheDir, '\\', '/');
-            } elseif (getenv('XDG_CONFIG_DIRS')) {
-                $xdgCache = getenv('XDG_CACHE_HOME');
-                if (!$xdgCache) {
-                    $xdgCache = $home . '/.cache';
-                }
-                $cacheDir = $xdgCache . '/composer';
             } else {
-                $cacheDir = $home . '/cache';
+                $userDir = self::getUserDir();
+
+                if (getenv('XDG_CONFIG_DIRS')) {
+                    $xdgCache = getenv('XDG_CACHE_HOME');
+                    if (!$xdgCache) {
+                        $xdgCache = $userDir . '/.cache';
+                    }
+                    $cacheDir = $xdgCache . '/composer';
+                } else {
+                    $cacheDir = $home . '/cache';
+                }
             }
         }
 
@@ -114,10 +129,7 @@ class Factory
         } elseif (getenv('XDG_CONFIG_DIRS')) {
             $xdgData = getenv('XDG_DATA_HOME');
             if (!$xdgData) {
-                if (!getenv('HOME')) {
-                    throw new \RuntimeException('The HOME or COMPOSER_HOME environment variable must be set for composer to run correctly');
-                }
-                $userDir = rtrim(getenv('HOME'), '/');
+                $userDir = self::getUserDir();
                 $xdgData = $userDir . '/.local/share';
             }
             $dataDir = $xdgData . '/composer';
@@ -490,7 +502,7 @@ class Factory
      */
     protected function createPluginManager(Composer $composer, IOInterface $io, RepositoryInterface $globalRepository = null)
     {
-        return new Plugin\PluginManager($composer, $io, $globalRepository);
+        return new Plugin\PluginManager($io, $composer, $globalRepository);
     }
 
     /**
