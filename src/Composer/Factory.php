@@ -64,7 +64,7 @@ class Factory
                     }
                     $home = $xdgConfig . '/composer';
                 } else {
-                    $home = $userDir . '/composer';
+                    $home = $userDir . '/.composer';
                 }
             }
         }
