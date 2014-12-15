@@ -43,6 +43,7 @@ class SelfUpdateCommand extends Command
                 new InputOption('rollback', 'r', InputOption::VALUE_NONE, 'Revert to an older installation of composer'),
                 new InputOption('clean-backups', null, InputOption::VALUE_NONE, 'Delete old backups during an update. This makes the current version of composer the only backup available after the update'),
                 new InputArgument('version', InputArgument::OPTIONAL, 'The version to update to'),
+                new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
             ))
             ->setHelp(<<<EOT
 The <info>self-update</info> command checks getcomposer.org for newer
@@ -105,7 +106,7 @@ EOT
 
         $output->writeln(sprintf("Updating to version <info>%s</info>.", $updateVersion));
         $remoteFilename = $baseUrl . (preg_match('{^[0-9a-f]{40}$}', $updateVersion) ? '/composer.phar' : "/download/{$updateVersion}/composer.phar");
-        $remoteFilesystem->copy(self::HOMEPAGE, $remoteFilename, $tempFilename);
+        $remoteFilesystem->copy(self::HOMEPAGE, $remoteFilename, $tempFilename, !$input->getOption('no-progress'));
         if (!file_exists($tempFilename)) {
             $output->writeln('<error>The download of the new composer version failed for an unexpected reason</error>');
 
