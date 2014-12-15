@@ -283,11 +283,6 @@ class Factory
         // add installers to the manager (must happen after download manager is created since they read it out of $composer)
         $this->createDefaultInstallers($im, $composer, $io);
 
-        // purge packages if they have been deleted on the filesystem
-        if ($rm->getLocalRepository()) {
-            $this->purgePackages($rm->getLocalRepository(), $im);
-        }
-
         if ($fullLoad) {
             $globalComposer = $this->createGlobalComposer($io, $config, $disablePlugins);
             $pm = $this->createPluginManager($io, $composer, $globalComposer);
@@ -295,6 +290,12 @@ class Factory
 
             if (!$disablePlugins) {
                 $pm->loadInstalledPlugins();
+            }
+
+            // once we have plugins and custom installers we can
+            // purge packages from local repos if they have been deleted on the filesystem
+            if ($rm->getLocalRepository()) {
+                $this->purgePackages($rm->getLocalRepository(), $im);
             }
         }
 
