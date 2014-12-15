@@ -758,13 +758,14 @@ The following options are supported:
   on how to get an OAuth token for GitHub.
 * **http-basic:** A list of domain names and username/passwords to authenticate
   against them. For example using
-  `{"example.org": {"username": "alice", "password": "foo"}` as the value of this option will let composer authenticate against example.org.
+  `{"example.org": {"username": "alice", "password": "foo"}` as the value of this
+  option will let composer authenticate against example.org.
 * **vendor-dir:** Defaults to `vendor`. You can install dependencies into a
   different directory if you want to. `$HOME` and `~` will be replaced by your
   home directory's path in vendor-dir and all `*-dir` options below.
 * **bin-dir:** Defaults to `vendor/bin`. If a project includes binaries, they
   will be symlinked into this directory.
-* **cache-dir:** Defaults to `$home/cache` on unix systems and
+* **cache-dir:** Defaults to `$COMPOSER_HOME/cache` on unix systems and
   `C:\Users\<user>\AppData\Local\Composer` on Windows. Stores all the caches
   used by composer. See also [COMPOSER_HOME](03-cli.md#composer-home).
 * **cache-files-dir:** Defaults to `$cache-dir/files`. Stores the zip archives
