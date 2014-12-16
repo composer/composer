@@ -19,6 +19,8 @@ use Composer\Config\ConfigSourceInterface;
  */
 class Config
 {
+    const RELATIVE_PATHS = 1;
+
     public static $defaultConfig = array(
         'process-timeout' => 300,
         'use-include-path' => false,
@@ -153,7 +155,7 @@ class Config
      * @throws \RuntimeException
      * @return mixed
      */
-    public function get($key)
+    public function get($key, $flags = 0)
     {
         switch ($key) {
             case 'vendor-dir':
@@ -169,7 +171,7 @@ class Config
                 $val = rtrim($this->process($this->getComposerEnv($env) ?: $this->config[$key]), '/\\');
                 $val = preg_replace('#^(\$HOME|~)(/|$)#', rtrim(getenv('HOME') ?: getenv('USERPROFILE'), '/\\') . '/', $val);
 
-                return $this->realpath($val);
+                return ($flags & self::RELATIVE_PATHS == 1) ? $val : $this->realpath($val);
 
             case 'cache-ttl':
                 return (int) $this->config[$key];

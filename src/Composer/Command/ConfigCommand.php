@@ -57,6 +57,7 @@ class ConfigCommand extends Command
                 new InputOption('unset', null, InputOption::VALUE_NONE, 'Unset the given setting-key'),
                 new InputOption('list', 'l', InputOption::VALUE_NONE, 'List configuration settings'),
                 new InputOption('file', 'f', InputOption::VALUE_REQUIRED, 'If you want to choose a different composer.json or config.json', 'composer.json'),
+                new InputOption('absolute', null, InputOption::VALUE_NONE, 'Returns absolute paths when fetching *-dir config values instead of relative'),
                 new InputArgument('setting-key', null, 'Setting key'),
                 new InputArgument('setting-value', InputArgument::IS_ARRAY, 'Setting value'),
             ))
@@ -218,7 +219,7 @@ EOT
 
                 $value = $data;
             } elseif (isset($data['config'][$settingKey])) {
-                $value = $data['config'][$settingKey];
+                $value = $this->config->get($settingKey, $input->getOption('absolute') ? 0 : Config::RELATIVE_PATHS);
             } else {
                 throw new \RuntimeException($settingKey.' is not defined');
             }

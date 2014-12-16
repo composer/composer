@@ -397,16 +397,18 @@ options.
 ### Options
 
 * **--global (-g):** Operate on the global config file located at
-`$COMPOSER_HOME/config.json` by default.  Without this option, this command
-affects the local composer.json file or a file specified by `--file`.
+  `$COMPOSER_HOME/config.json` by default.  Without this option, this command
+  affects the local composer.json file or a file specified by `--file`.
 * **--editor (-e):** Open the local composer.json file using in a text editor as
-defined by the `EDITOR` env variable.  With the `--global` option, this opens
-the global config file.
+  defined by the `EDITOR` env variable.  With the `--global` option, this opens
+  the global config file.
 * **--unset:** Remove the configuration element named by `setting-key`.
 * **--list (-l):** Show the list of current config variables.  With the `--global`
- option this lists the global configuration only.
+  option this lists the global configuration only.
 * **--file="..." (-f):** Operate on a specific file instead of composer.json. Note
- that this cannot be used in conjunction with the `--global` option.
+  that this cannot be used in conjunction with the `--global` option.
+* **--absolute:** Returns absolute paths when fetching *-dir config values
+  instead of relative.
 
 ### Modifying Repositories
 
