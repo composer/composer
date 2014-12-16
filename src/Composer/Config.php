@@ -55,6 +55,7 @@ class Config
     );
 
     private $config;
+    private $baseDir;
     private $repositories;
     private $configSource;
     private $authConfigSource;
@@ -63,12 +64,13 @@ class Config
     /**
      * @param boolean $useEnvironment Use COMPOSER_ environment variables to replace config settings
      */
-    public function __construct($useEnvironment = true)
+    public function __construct($useEnvironment = true, $baseDir = null)
     {
         // load defaults
         $this->config = static::$defaultConfig;
         $this->repositories = static::$defaultRepositories;
         $this->useEnvironment = (bool) $useEnvironment;
+        $this->baseDir = $baseDir;
     }
 
     public function setConfigSource(ConfigSourceInterface $source)
@@ -167,7 +169,7 @@ class Config
                 $val = rtrim($this->process($this->getComposerEnv($env) ?: $this->config[$key]), '/\\');
                 $val = preg_replace('#^(\$HOME|~)(/|$)#', rtrim(getenv('HOME') ?: getenv('USERPROFILE'), '/\\') . '/', $val);
 
-                return $val;
+                return $this->realpath($val);
 
             case 'cache-ttl':
                 return (int) $this->config[$key];
@@ -292,6 +294,23 @@ class Config
         return preg_replace_callback('#\{\$(.+)\}#', function ($match) use ($config) {
             return $config->get($match[1]);
         }, $value);
+    }
+
+    /**
+     * Turns relative paths in absolute paths without realpath()
+     *
+     * Since the dirs might not exist yet we can not call realpath or it will fail.
+     *
+     * @param  string $path
+     * @return string
+     */
+    private function realpath($path)
+    {
+        if (substr($path, 0, 1) === '/' || substr($path, 1, 1) === ':') {
+            return $path;
+        }
+
+        return $this->baseDir . '/' . $path;
     }
 
     /**

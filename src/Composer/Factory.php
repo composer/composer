@@ -89,8 +89,10 @@ class Factory
      * @param  IOInterface|null $io
      * @return Config
      */
-    public static function createConfig(IOInterface $io = null)
+    public static function createConfig(IOInterface $io = null, $cwd = null)
     {
+        $cwd = $cwd ?: getcwd();
+
         // determine home and cache dirs
         $home     = self::getHomeDir();
         $cacheDir = self::getCacheDir($home);
@@ -107,7 +109,7 @@ class Factory
             }
         }
 
-        $config = new Config();
+        $config = new Config(true, $cwd);
 
         // add dirs to the config
         $config->merge(array('config' => array('home' => $home, 'cache-dir' => $cacheDir)));
@@ -192,8 +194,10 @@ class Factory
      * @throws \UnexpectedValueException
      * @return Composer
      */
-    public function createComposer(IOInterface $io, $localConfig = null, $disablePlugins = false, $fullLoad = true)
+    public function createComposer(IOInterface $io, $localConfig = null, $disablePlugins = false, $cwd = null, $fullLoad = true)
     {
+        $cwd = $cwd ?: getcwd();
+
         // load Composer configuration
         if (null === $localConfig) {
             $localConfig = static::getComposerFile();
@@ -205,7 +209,7 @@ class Factory
 
             if (!$file->exists()) {
                 if ($localConfig === './composer.json' || $localConfig === 'composer.json') {
-                    $message = 'Composer could not find a composer.json file in '.getcwd();
+                    $message = 'Composer could not find a composer.json file in '.$cwd;
                 } else {
                     $message = 'Composer could not find the config file: '.$localConfig;
                 }
@@ -218,7 +222,7 @@ class Factory
         }
 
         // Load config and override with local config/auth config
-        $config = static::createConfig($io);
+        $config = static::createConfig($io, $cwd);
         $config->merge($localConfig);
         if (isset($composerFile)) {
             if ($io && $io->isDebug()) {
@@ -348,18 +352,18 @@ class Factory
      */
     protected function createGlobalComposer(IOInterface $io, Config $config, $disablePlugins)
     {
-        $oldCwd = getcwd();
-        if (realpath($config->get('home')) === realpath($oldCwd)) {
+        if (realpath($config->get('home')) === getcwd()) {
             return;
         }
 
         $composer = null;
         try {
-            chdir($config->get('home'));
-            $composer = self::createComposer($io, null, $disablePlugins, false);
+            $composer = self::createComposer($io, $config->get('home') . '/composer.json', $disablePlugins, $config->get('home'), false);
         } catch (\Exception $e) {
+            if ($io->isDebug()) {
+                $io->write('Failed to initialize global composer: '.$e->getMessage());
+            }
         }
-        @chdir($oldCwd);
 
         return $composer;
     }

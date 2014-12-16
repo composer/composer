@@ -121,6 +121,21 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($home.'/foo', $config->get('cache-dir'));
     }
 
+    public function testRealpathReplacement()
+    {
+        $config = new Config(false, '/foo/bar');
+        $config->merge(array('config' => array(
+            'bin-dir' => '$HOME/foo',
+            'cache-dir' => '/baz/',
+            'vendor-dir' => 'vendor'
+        )));
+
+        $home = rtrim(getenv('HOME') ?: getenv('USERPROFILE'), '\\/');
+        $this->assertEquals('/foo/bar/vendor', $config->get('vendor-dir'));
+        $this->assertEquals($home.'/foo', $config->get('bin-dir'));
+        $this->assertEquals('/baz', $config->get('cache-dir'));
+    }
+
     public function testOverrideGithubProtocols()
     {
         $config = new Config(false);
