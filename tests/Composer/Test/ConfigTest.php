@@ -136,6 +136,20 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('/baz', $config->get('cache-dir'));
     }
 
+    public function testFetchingRelativePaths()
+    {
+        $config = new Config(false, '/foo/bar');
+        $config->merge(array('config' => array(
+            'bin-dir' => '{$vendor-dir}/foo',
+            'vendor-dir' => 'vendor'
+        )));
+
+        $this->assertEquals('/foo/bar/vendor', $config->get('vendor-dir'));
+        $this->assertEquals('/foo/bar/vendor/foo', $config->get('bin-dir'));
+        $this->assertEquals('vendor', $config->get('vendor-dir', Config::RELATIVE_PATHS));
+        $this->assertEquals('vendor/foo', $config->get('bin-dir', Config::RELATIVE_PATHS));
+    }
+
     public function testOverrideGithubProtocols()
     {
         $config = new Config(false);

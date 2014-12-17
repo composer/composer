@@ -152,6 +152,7 @@ class Config
      * Returns a setting
      *
      * @param  string            $key
+     * @param  int               $flags Options (see class constants)
      * @throws \RuntimeException
      * @return mixed
      */
@@ -168,8 +169,12 @@ class Config
                 // convert foo-bar to COMPOSER_FOO_BAR and check if it exists since it overrides the local config
                 $env = 'COMPOSER_' . strtoupper(strtr($key, '-', '_'));
 
-                $val = rtrim($this->process($this->getComposerEnv($env) ?: $this->config[$key]), '/\\');
+                $val = rtrim($this->process($this->getComposerEnv($env) ?: $this->config[$key], $flags), '/\\');
                 $val = preg_replace('#^(\$HOME|~)(/|$)#', rtrim(getenv('HOME') ?: getenv('USERPROFILE'), '/\\') . '/', $val);
+
+                if (substr($key, -4) !== '-dir') {
+                    return $val;
+                }
 
                 return ($flags & self::RELATIVE_PATHS == 1) ? $val : $this->realpath($val);
 
@@ -207,7 +212,7 @@ class Config
                 return (int) $this->config['cache-ttl'];
 
             case 'home':
-                return rtrim($this->process($this->config[$key]), '/\\');
+                return rtrim($this->process($this->config[$key], $flags), '/\\');
 
             case 'discard-changes':
                 if ($env = $this->getComposerEnv('COMPOSER_DISCARD_CHANGES')) {
@@ -244,17 +249,17 @@ class Config
                     return null;
                 }
 
-                return $this->process($this->config[$key]);
+                return $this->process($this->config[$key], $flags);
         }
     }
 
-    public function all()
+    public function all($flags = 0)
     {
         $all = array(
             'repositories' => $this->getRepositories(),
         );
         foreach (array_keys($this->config) as $key) {
-            $all['config'][$key] = $this->get($key);
+            $all['config'][$key] = $this->get($key, $flags);
         }
 
         return $all;
@@ -283,9 +288,10 @@ class Config
      * Replaces {$refs} inside a config string
      *
      * @param  string $value a config string that can contain {$refs-to-other-config}
+     * @param  int    $flags Options (see class constants)
      * @return string
      */
-    private function process($value)
+    private function process($value, $flags)
     {
         $config = $this;
 
@@ -293,8 +299,8 @@ class Config
             return $value;
         }
 
-        return preg_replace_callback('#\{\$(.+)\}#', function ($match) use ($config) {
-            return $config->get($match[1]);
+        return preg_replace_callback('#\{\$(.+)\}#', function ($match) use ($config, $flags) {
+            return $config->get($match[1], $flags);
         }, $value);
     }
 
