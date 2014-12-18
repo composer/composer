@@ -40,7 +40,7 @@ username/password pairs, for example:
 
 ```json
 {
-    "basic-auth": [
+    "basic-auth": {
         "repo.example1.org": {
             "username": "my-username1",
             "password": "my-secret-password1"
@@ -49,7 +49,7 @@ username/password pairs, for example:
             "username": "my-username2",
             "password": "my-secret-password2"
         }
-    ]
+    }
 }
 ```
 
