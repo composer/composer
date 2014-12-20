@@ -700,6 +700,7 @@ class SolverTest extends TestCase
             $problems = $e->getProblems();
             $this->assertEquals(1, count($problems));
             // TODO assert problem properties
+            // problem properties can now be unit tested due to a ProblemFormatter component
 
             $msg = "\n";
             $msg .= "  Problem 1\n";
