@@ -20,6 +20,7 @@ use Composer\DependencyResolver\SolverProblemsException;
 use Composer\Package\Link;
 use Composer\TestCase;
 use Composer\Package\LinkConstraint\MultiConstraint;
+use Composer\DependencyResolver\ProblemFormatter;
 
 class SolverTest extends TestCase
 {
@@ -705,11 +706,7 @@ class SolverTest extends TestCase
             $msg .= "  Problem 1\n";
             $msg .= "    - Installation request for a -> satisfiable by A[1.0].\n";
             $msg .= "    - A 1.0 requires b >= 2.0 -> no matching package found.\n\n";
-            $msg .= "Potential causes:\n";
-            $msg .= " - A typo in the package name\n";
-            $msg .= " - The package is not available in a stable-enough version according to your minimum-stability setting\n";
-            $msg .= "   see <https://groups.google.com/d/topic/composer-dev/_g3ASeIFlrc/discussion> for more details.\n\n";
-            $msg .= "Read <http://getcomposer.org/doc/articles/troubleshooting.md> for further common problems.";
+            $msg .= ProblemFormatter::TYPO_ADVICE_STRING;
             $this->assertEquals($msg, $e->getMessage());
         }
     }
