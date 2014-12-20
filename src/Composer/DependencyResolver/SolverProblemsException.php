@@ -19,11 +19,12 @@ class SolverProblemsException extends \RuntimeException
 {
     protected $problems;
     protected $installedMap;
+    protected $problemFormatter;
 
-    public function __construct(array $problems, array $installedMap)
+    public function __construct(array $problems, ProblemFormatter $problemFormatter)
     {
         $this->problems = $problems;
-        $this->installedMap = $installedMap;
+        $this->problemFormatter = $problemFormatter;
 
         parent::__construct($this->createMessage(), 2);
     }
@@ -31,12 +32,17 @@ class SolverProblemsException extends \RuntimeException
     protected function createMessage()
     {
         $text = "\n";
-        foreach ($this->problems as $i => $problem) {
-            $text .= "  Problem ".($i+1).$problem->getPrettyString($this->installedMap)."\n";
+        $advices = array();
+
+        foreach ($this->problems as $key => $problem) {
+            $formattedProblem = $this->problemFormatter->format($problem, $key, $this->installedMap);
+
+            $text .= $formattedProblem['text'];
+            $advices = array_merge($advices, $formattedProblem['advices']);
         }
 
-        if (strpos($text, 'could not be found') || strpos($text, 'no matching package found')) {
-            $text .= "\nPotential causes:\n - A typo in the package name\n - The package is not available in a stable-enough version according to your minimum-stability setting\n   see <https://groups.google.com/d/topic/composer-dev/_g3ASeIFlrc/discussion> for more details.\n\nRead <http://getcomposer.org/doc/articles/troubleshooting.md> for further common problems.";
+        foreach ($advices as $advice) {
+            $text .= "\n$advice";
         }
 
         return $text;
