@@ -131,7 +131,7 @@ class RootPackageLoader extends ArrayLoader
         $minimumStability = $stabilities[$minimumStability];
         foreach ($requires as $reqName => $reqVersion) {
             // parse explicit stability flags to the most unstable
-            if (preg_match('{^[^,\s]*?@('.implode('|', array_keys($stabilities)).')$}i', $reqVersion, $match)) {
+            if (preg_match('{^[^@]*?@('.implode('|', array_keys($stabilities)).')$}i', $reqVersion, $match)) {
                 $name = strtolower($reqName);
                 $stability = $stabilities[VersionParser::normalizeStability($match[1])];
 
