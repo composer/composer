@@ -40,12 +40,14 @@ class HomeCommand extends Command
             ->setDefinition(array(
                 new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'Package(s) to browse to.'),
                 new InputOption('homepage', 'H', InputOption::VALUE_NONE, 'Open the homepage instead of the repository URL.'),
+                new InputOption('show', 's', InputOption::VALUE_NONE, 'Only show the homepage or repository URL.'),
             ))
             ->setHelp(<<<EOT
-The home command opens a package's repository URL or
+The home command opens or shows a package's repository URL or
 homepage in your default browser.
 
 To open the homepage by default, use -H or --homepage.
+To show instead of open the repository or homepage URL, use -s or --show.
 EOT
             );
     }
@@ -81,7 +83,11 @@ EOT
                 continue;
             }
 
-            $this->openBrowser($url);
+            if ($input->getOption('show')) {
+                $output->writeln(sprintf('<comment>%s: </comment><info>%s</info>', $input->getOption('homepage') ? 'Homepage URL' : 'Repository URL', $url).' </info>');
+            } else {
+                $this->openBrowser($url);
+            }
         }
 
         return $return;
