@@ -90,7 +90,7 @@ EOT
                         implode(', ', $package->getLicense()) ?: 'none',
                     ));
                 }
-                $table->render($output);
+                $table->render();
                 break;
 
             case 'json':
