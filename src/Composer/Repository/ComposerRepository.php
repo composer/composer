@@ -53,8 +53,6 @@ class ComposerRepository extends ArrayRepository
     protected $eventDispatcher;
     protected $sourceMirrors;
     protected $distMirrors;
-    private $rawData;
-    private $minimalPackages;
     private $degradedMode = false;
     private $rootData;
 
