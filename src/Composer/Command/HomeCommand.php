@@ -55,7 +55,7 @@ EOT
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $repo = $this->initializeRepo($input, $output);
+        $repo = $this->initializeRepo();
         $return = 0;
 
         foreach ($input->getArgument('packages') as $packageName) {
@@ -138,13 +138,11 @@ EOT
     }
 
     /**
-     * initializes the repo
+     * Initializes the repo
      *
-     * @param  InputInterface      $input
-     * @param  OutputInterface     $output
      * @return CompositeRepository
      */
-    private function initializeRepo(InputInterface $input, OutputInterface $output)
+    private function initializeRepo()
     {
         $composer = $this->getComposer(false);
 
