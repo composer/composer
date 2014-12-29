@@ -454,6 +454,7 @@ By default the command checks for the packages on packagist.org.
 * **--repository-url:** Provide a custom repository to search for the package,
   which will be used instead of packagist. Can be either an HTTP URL pointing
   to a `composer` repository, or a path to a local `packages.json` file.
+* **--repository-options:** Provide options(JSON format is used) for custom repository. This option does not make sense without **--repository-url**.
 * **--stability (-s):** Minimum stability of package. Defaults to `stable`.
 * **--prefer-source:** Install packages from `source` when available.
 * **--prefer-dist:** Install packages from `dist` when available.

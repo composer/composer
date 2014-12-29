@@ -61,6 +61,7 @@ class CreateProjectCommand extends Command
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist even for dev versions.'),
                 new InputOption('repository-url', null, InputOption::VALUE_REQUIRED, 'Pick a different repository url to look for the package.'),
+                new InputOption('repository-options', null, InputOption::VALUE_REQUIRED, 'Pick a different repository options(JSON format is used) to look for the package. This option does not make sense without option <info>repository-url</info>.'),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Enables installation of require-dev packages (enabled by default, only present for BC).'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables installation of require-dev packages.'),
                 new InputOption('no-plugins', null, InputOption::VALUE_NONE, 'Whether to disable plugins.'),
@@ -83,13 +84,15 @@ version-controlled installation for developers of your project.
 You can also specify the version with the package name using = or : as separator.
 
 To install unstable packages, either specify the version you want, or use the
---stability=dev (where dev can be one of RC, beta, alpha or dev).
+<info>--stability=dev</info> (where dev can be one of RC, beta, alpha or dev).
 
 To setup a developer workable version you should create the project using the source
-controlled code by appending the <info>'--prefer-source'</info> flag.
+controlled code by appending the <info>--prefer-source</info> flag.
 
 To install a package from another repository than the default one you
-can pass the <info>'--repository-url=http://myrepository.org'</info> flag.
+can pass the <info>--repository-url=http://myrepository.org</info> flag.
+You can pass custom options with <info>--repository-options='{...}'</info> flag.
+See http://getcomposer.org/doc/05-repositories.md#stream-options.
 
 EOT
             )
@@ -109,6 +112,20 @@ EOT
             $input->setOption('no-plugins', true);
         }
 
+        $repositoryConfig = null;
+
+        if ($input->getOption('repository-url') !== null) {
+            $repositoryConfig = array('url' => $input->getOption('repository-url'));
+        }
+
+        if ($input->getOption('repository-options') !== null) {
+            if ($input->getOption('repository-url') === null) {
+                $output->writeln('<warning>You are using option "repository-options" without option "repository-url". This does not make sense.</warning>');
+            } else {
+                $repositoryConfig['options'] = JsonFile::parseJson($input->getOption('repository-options'));
+            }
+        }
+
         return $this->installProject(
             $this->getIO(),
             $config,
@@ -119,7 +136,7 @@ EOT
             $preferSource,
             $preferDist,
             !$input->getOption('no-dev'),
-            $input->getOption('repository-url'),
+            $repositoryConfig,
             $input->getOption('no-plugins'),
             $input->getOption('no-scripts'),
             $input->getOption('keep-vcs'),
@@ -129,15 +146,21 @@ EOT
         );
     }
 
-    public function installProject(IOInterface $io, Config $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositoryUrl = null, $disablePlugins = false, $noScripts = false, $keepVcs = false, $noProgress = false, $noInstall = false, InputInterface $input)
+    public function installProject(IOInterface $io, Config $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositoryConfig = null, $disablePlugins = false, $noScripts = false, $keepVcs = false, $noProgress = false, $noInstall = false, InputInterface $input)
     {
+
+        //BC
+        if (is_string($repositoryConfig)) {
+            $repositoryConfig = array('url' => $repositoryConfig);
+        }
+
         $oldCwd = getcwd();
 
         // we need to manually load the configuration to pass the auth credentials to the io interface!
         $io->loadConfiguration($config);
 
         if ($packageName !== null) {
-            $installedFromVcs = $this->installRootPackage($io, $config, $packageName, $directory, $packageVersion, $stability, $preferSource, $preferDist, $installDevPackages, $repositoryUrl, $disablePlugins, $noScripts, $keepVcs, $noProgress);
+            $installedFromVcs = $this->installRootPackage($io, $config, $packageName, $directory, $packageVersion, $stability, $preferSource, $preferDist, $installDevPackages, $repositoryConfig, $disablePlugins, $noScripts, $keepVcs, $noProgress);
         } else {
             $installedFromVcs = false;
         }
@@ -230,8 +253,21 @@ EOT
         return 0;
     }
 
-    protected function installRootPackage(IOInterface $io, Config $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositoryUrl = null, $disablePlugins = false, $noScripts = false, $keepVcs = false, $noProgress = false)
+    protected function installRootPackage(IOInterface $io, Config $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositoryConfig = null, $disablePlugins = false, $noScripts = false, $keepVcs = false, $noProgress = false)
     {
+
+        $repositoryUrl = null;
+
+        if (is_array($repositoryConfig) and isset($repositoryConfig['url'])) {
+            $repositoryUrl = $repositoryConfig['url'];
+        }
+
+        //BC
+        if (is_string($repositoryConfig)) {
+            $repositoryUrl = $repositoryConfig;
+            $repositoryConfig = array('url' => $repositoryUrl);
+        }
+
         if (null === $repositoryUrl) {
             $sourceRepo = new CompositeRepository(Factory::createDefaultRepositories($io, $config));
         } elseif ("json" === pathinfo($repositoryUrl, PATHINFO_EXTENSION) && file_exists($repositoryUrl)) {
@@ -243,7 +279,7 @@ EOT
                 $sourceRepo = new FilesystemRepository($json);
             }
         } elseif (0 === strpos($repositoryUrl, 'http')) {
-            $sourceRepo = new ComposerRepository(array('url' => $repositoryUrl), $io, $config);
+            $sourceRepo = new ComposerRepository($repositoryConfig, $io, $config);
         } else {
             throw new \InvalidArgumentException("Invalid repository url given. Has to be a .json file or an http url.");
         }
