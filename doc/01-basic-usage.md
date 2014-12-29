@@ -2,7 +2,7 @@
 
 ## Installing
 
-If you have not yet installed Composer, refer to to the [Intro](00-intro.md) chapter.
+If you have not yet installed Composer, refer to the [Intro](00-intro.md) chapter.
 
 ## `composer.json`: Project Setup
 
