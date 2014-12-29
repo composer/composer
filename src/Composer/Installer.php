@@ -105,6 +105,7 @@ class Installer
     protected $dryRun = false;
     protected $verbose = false;
     protected $update = false;
+    protected $runAutoloader = true;
     protected $runScripts = true;
     protected $ignorePlatformReqs = false;
     protected $preferStable = false;
@@ -317,15 +318,17 @@ class Installer
                 }
             }
 
-            // write autoloader
-            if ($this->optimizeAutoloader) {
-                $this->io->write('<info>Generating optimized autoload files</info>');
-            } else {
-                $this->io->write('<info>Generating autoload files</info>');
+            if ($this->runAutoloader) {
+                // write autoloader
+                if ($this->optimizeAutoloader) {
+                    $this->io->write('<info>Generating optimized autoload files</info>');
+                } else {
+                    $this->io->write('<info>Generating autoload files</info>');
+                }
+    
+                $this->autoloadGenerator->setDevMode($this->devMode);
+                $this->autoloadGenerator->dump($this->config, $localRepo, $this->package, $this->installationManager, 'composer', $this->optimizeAutoloader);
             }
-
-            $this->autoloadGenerator->setDevMode($this->devMode);
-            $this->autoloadGenerator->dump($this->config, $localRepo, $this->package, $this->installationManager, 'composer', $this->optimizeAutoloader);
 
             if ($this->runScripts) {
                 // dispatch post event
@@ -1162,6 +1165,21 @@ class Installer
 
         return $this;
     }
+
+
+    /**
+     * set whether to run autoloader or not
+     * 
+     * @param boolean $runAutoloader
+     * @return Installer
+     */
+    public function setRunAutoloader($runAutoloader = true)
+    {
+        $this->runAutoloader = (boolean) $runAutoloader;
+        
+        return $this;
+    }
+
 
     /**
      * set whether to run scripts or not
