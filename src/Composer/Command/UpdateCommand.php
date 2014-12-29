@@ -118,7 +118,7 @@ EOT
             ->setPreferSource($preferSource)
             ->setPreferDist($preferDist)
             ->setDevMode(!$input->getOption('no-dev'))
-            ->setRunAutoloader(!$input->getOption('no-autoloader'))
+            ->setDumpAutoloader(!$input->getOption('no-autoloader'))
             ->setRunScripts(!$input->getOption('no-scripts'))
             ->setOptimizeAutoloader($optimize)
             ->setUpdate(true)
