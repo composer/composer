@@ -1,12 +1,13 @@
 {
+    "$schema": "http://json-schema.org/draft-04/schema#",
     "name": "Package",
     "type": "object",
     "additionalProperties": false,
+    "required": [ "name", "description" ],
     "properties": {
         "name": {
             "type": "string",
-            "description": "Package name, including 'vendor-name/' prefix.",
-            "required": true
+            "description": "Package name, including 'vendor-name/' prefix."
         },
         "type": {
             "description": "Package type, either 'library' for common packages, 'composer-plugin' for plugins, 'metapackage' for empty packages, or a custom type ([a-z0-9-]+) defined by whatever project this package applies to.",
@@ -18,8 +19,7 @@
         },
         "description": {
             "type": "string",
-            "description": "Short package description.",
-            "required": true
+            "description": "Short package description."
         },
         "keywords": {
             "type": "array",
@@ -51,11 +51,11 @@
             "items": {
                 "type": "object",
                 "additionalProperties": false,
+                "required": [ "name"],
                 "properties": {
                     "name": {
                         "type": "string",
-                        "description": "Full name of the author.",
-                        "required": true
+                        "description": "Full name of the author."
                     },
                     "email": {
                         "type": "string",
