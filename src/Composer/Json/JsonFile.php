@@ -154,8 +154,7 @@ class JsonFile
 
         if ($schema === self::LAX_SCHEMA) {
             $schemaData->additionalProperties = true;
-            $schemaData->properties->name->required = false;
-            $schemaData->properties->description->required = false;
+            $schemaData->required = array();
         }
 
         $validator = new Validator();
