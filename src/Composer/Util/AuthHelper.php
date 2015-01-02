@@ -37,7 +37,7 @@ class AuthHelper
             $store = $configSource;
         } elseif ($storeAuth === 'prompt') {
             $answer = $this->io->askAndValidate(
-                'Do you want to store credentials for '.$originUrl.' in '.$configSource->getName().' ? [Yn] ',
+                'Do you want to store credentials unencrypted for '.$originUrl.' in '.$configSource->getName().' ? [Yn] ',
                 function ($value) {
                     $input = strtolower(substr(trim($value), 0, 1));
                     if (in_array($input, array('y','n'))) {

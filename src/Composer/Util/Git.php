@@ -44,14 +44,6 @@ class Git
             throw new \InvalidArgumentException('The source URL '.$url.' is invalid, ssh URLs should have a port number after ":".'."\n".'Use ssh://git@example.com:22/path or just git@example.com:path if you do not want to provide a password or custom port.');
         }
 
-        if (!$initialClone) {
-            // capture username/password from URL if there is one
-            $this->process->execute('git remote -v', $output, $cwd);
-            if (preg_match('{^(?:composer|origin)\s+https?://(.+):(.+)@([^/]+)}im', $output, $match)) {
-                $this->io->setAuthentication($match[3], urldecode($match[1]), urldecode($match[2]));
-            }
-        }
-
         // public github, autoswitch protocols
         if (preg_match('{^(?:https?|git)://'.self::getGitHubDomainsRegex($this->config).'/(.*)}', $url, $match)) {
             $protocols = $this->config->get('github-protocols');

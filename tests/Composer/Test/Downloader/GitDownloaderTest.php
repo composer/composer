@@ -61,23 +61,29 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue('dev-master'));
         $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
 
-        $expectedGitCommand = $this->winCompat("git clone --no-checkout 'https://example.com/composer/composer' 'composerPath' && cd 'composerPath' && git remote add composer 'https://example.com/composer/composer' && git fetch composer");
+        $expectedGitCommand = $this->winCompat("git init 'composerPath' && cd 'composerPath' && git fetch 'https://example.com/composer/composer' +refs/heads/*:refs/remotes/origin/* --tags");
         $processExecutor->expects($this->at(0))
             ->method('execute')
             ->with($this->equalTo($expectedGitCommand))
             ->will($this->returnValue(0));
 
+        $expectedGitCommand = $this->winCompat("git remote add origin 'https://example.com/composer/composer'");
         $processExecutor->expects($this->at(1))
             ->method('execute')
-            ->with($this->equalTo($this->winCompat("git branch -r")), $this->equalTo(null), $this->equalTo($this->winCompat('composerPath')))
+            ->with($this->equalTo($expectedGitCommand), $this->equalTo(null), $this->equalTo($this->winCompat('composerPath')))
             ->will($this->returnValue(0));
 
         $processExecutor->expects($this->at(2))
             ->method('execute')
-            ->with($this->equalTo($this->winCompat("git checkout 'master'")), $this->equalTo(null), $this->equalTo($this->winCompat('composerPath')))
+            ->with($this->equalTo($this->winCompat("git branch -r")), $this->equalTo(null), $this->equalTo($this->winCompat('composerPath')))
             ->will($this->returnValue(0));
 
         $processExecutor->expects($this->at(3))
+            ->method('execute')
+            ->with($this->equalTo($this->winCompat("git checkout 'master'")), $this->equalTo(null), $this->equalTo($this->winCompat('composerPath')))
+            ->will($this->returnValue(0));
+
+        $processExecutor->expects($this->at(4))
             ->method('execute')
             ->with($this->equalTo($this->winCompat("git reset --hard '1234567890123456789012345678901234567890'")), $this->equalTo(null), $this->equalTo($this->winCompat('composerPath')))
             ->will($this->returnValue(0));
@@ -103,19 +109,19 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue('1.0.0'));
         $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
 
-        $expectedGitCommand = $this->winCompat("git clone --no-checkout 'git://github.com/mirrors/composer' 'composerPath' && cd 'composerPath' && git remote add composer 'git://github.com/mirrors/composer' && git fetch composer");
+        $expectedGitCommand = $this->winCompat("git init 'composerPath' && cd 'composerPath' && git fetch 'git://github.com/mirrors/composer' +refs/heads/*:refs/remotes/origin/* --tags");
         $processExecutor->expects($this->at(0))
             ->method('execute')
             ->with($this->equalTo($expectedGitCommand))
             ->will($this->returnValue(1));
 
-        $expectedGitCommand = $this->winCompat("git clone --no-checkout 'https://github.com/mirrors/composer' 'composerPath' && cd 'composerPath' && git remote add composer 'https://github.com/mirrors/composer' && git fetch composer");
+        $expectedGitCommand = $this->winCompat("git init 'composerPath' && cd 'composerPath' && git fetch 'https://github.com/mirrors/composer' +refs/heads/*:refs/remotes/origin/* --tags");
         $processExecutor->expects($this->at(2))
             ->method('execute')
             ->with($this->equalTo($expectedGitCommand))
             ->will($this->returnValue(0));
 
-        $expectedGitCommand = $this->winCompat("git remote set-url origin 'https://github.com/composer/composer'");
+        $expectedGitCommand = $this->winCompat("git remote add origin 'https://github.com/composer/composer'");
         $processExecutor->expects($this->at(3))
             ->method('execute')
             ->with($this->equalTo($expectedGitCommand), $this->equalTo(null), $this->equalTo($this->winCompat('composerPath')))
@@ -169,19 +175,25 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue('1.0.0'));
         $processExecutor = $this->getMock('Composer\Util\ProcessExecutor');
 
-        $expectedGitCommand = $this->winCompat("git clone --no-checkout '{$protocol}://github.com/composer/composer' 'composerPath' && cd 'composerPath' && git remote add composer '{$protocol}://github.com/composer/composer' && git fetch composer");
+        $expectedGitCommand = $this->winCompat("git init 'composerPath' && cd 'composerPath' && git fetch '{$protocol}://github.com/composer/composer' +refs/heads/*:refs/remotes/origin/* --tags");
         $processExecutor->expects($this->at(0))
             ->method('execute')
             ->with($this->equalTo($expectedGitCommand))
             ->will($this->returnValue(0));
 
-        $expectedGitCommand = $this->winCompat("git remote set-url --push origin '{$pushUrl}'");
+        $expectedGitCommand = $this->winCompat("git remote add origin 'https://github.com/composer/composer'");
         $processExecutor->expects($this->at(1))
             ->method('execute')
             ->with($this->equalTo($expectedGitCommand), $this->equalTo(null), $this->equalTo($this->winCompat('composerPath')))
             ->will($this->returnValue(0));
 
-        $processExecutor->expects($this->exactly(4))
+        $expectedGitCommand = $this->winCompat("git remote set-url --push origin '{$pushUrl}'");
+        $processExecutor->expects($this->at(2))
+            ->method('execute')
+            ->with($this->equalTo($expectedGitCommand), $this->equalTo(null), $this->equalTo($this->winCompat('composerPath')))
+            ->will($this->returnValue(0));
+
+        $processExecutor->expects($this->exactly(5))
             ->method('execute')
             ->will($this->returnValue(0));
 
@@ -197,7 +209,7 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
      */
     public function testDownloadThrowsRuntimeExceptionIfGitCommandFails()
     {
-        $expectedGitCommand = $this->winCompat("git clone --no-checkout 'https://example.com/composer/composer' 'composerPath' && cd 'composerPath' && git remote add composer 'https://example.com/composer/composer' && git fetch composer");
+        $expectedGitCommand = $this->winCompat("git init 'composerPath' && cd 'composerPath' && git fetch 'https://example.com/composer/composer' +refs/heads/*:refs/remotes/origin/* --tags");
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $packageMock->expects($this->any())
             ->method('getSourceReference')
@@ -232,10 +244,10 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
 
     public function testUpdate()
     {
-        $expectedGitUpdateCommand = $this->winCompat("git remote set-url composer 'git://github.com/composer/composer' && git fetch composer && git fetch --tags composer");
+        $expectedGitUpdateCommand = $this->winCompat("git fetch 'git://github.com/composer/composer' +refs/heads/*:refs/remotes/origin/* --tags");
 
         $tmpDir = realpath(sys_get_temp_dir()).DIRECTORY_SEPARATOR.'cmptest-'.md5(uniqid('', true));
-        $fs = new Filesystem;
+        $fs = new Filesystem();
         $fs->ensureDirectoryExists($tmpDir.'/.git');
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $packageMock->expects($this->any())
@@ -254,17 +266,13 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(0));
         $processExecutor->expects($this->at(1))
             ->method('execute')
-            ->with($this->equalTo($this->winCompat("git remote -v")))
+            ->with($this->equalTo($expectedGitUpdateCommand))
             ->will($this->returnValue(0));
         $processExecutor->expects($this->at(2))
             ->method('execute')
-            ->with($this->equalTo($expectedGitUpdateCommand))
-            ->will($this->returnValue(0));
-        $processExecutor->expects($this->at(3))
-            ->method('execute')
             ->with($this->equalTo('git branch -r'))
             ->will($this->returnValue(0));
-        $processExecutor->expects($this->at(4))
+        $processExecutor->expects($this->at(3))
             ->method('execute')
             ->with($this->equalTo($this->winCompat("git checkout 'ref' && git reset --hard 'ref'")), $this->equalTo(null), $this->equalTo($this->winCompat($tmpDir)))
             ->will($this->returnValue(0));
@@ -278,10 +286,10 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
      */
     public function testUpdateThrowsRuntimeExceptionIfGitCommandFails()
     {
-        $expectedGitUpdateCommand = $this->winCompat("git remote set-url composer 'git://github.com/composer/composer' && git fetch composer && git fetch --tags composer");
+        $expectedGitUpdateCommand = $this->winCompat("git fetch 'git://github.com/composer/composer' +refs/heads/*:refs/remotes/origin/* --tags");
 
         $tmpDir = realpath(sys_get_temp_dir()).DIRECTORY_SEPARATOR.'cmptest-'.md5(uniqid('', true));
-        $fs = new Filesystem;
+        $fs = new Filesystem();
         $fs->ensureDirectoryExists($tmpDir.'/.git');
         $packageMock = $this->getMock('Composer\Package\PackageInterface');
         $packageMock->expects($this->any())
@@ -296,10 +304,6 @@ class GitDownloaderTest extends \PHPUnit_Framework_TestCase
             ->with($this->equalTo($this->winCompat("git status --porcelain --untracked-files=no")))
             ->will($this->returnValue(0));
         $processExecutor->expects($this->at(1))
-            ->method('execute')
-            ->with($this->equalTo($this->winCompat("git remote -v")))
-            ->will($this->returnValue(0));
-        $processExecutor->expects($this->at(2))
             ->method('execute')
             ->with($this->equalTo($expectedGitUpdateCommand))
             ->will($this->returnValue(1));

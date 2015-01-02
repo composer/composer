@@ -13,7 +13,6 @@
 namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
-use Composer\Util\GitHub;
 use Composer\Util\Git as GitUtil;
 use Composer\Util\ProcessExecutor;
 use Composer\IO\IOInterface;
@@ -44,18 +43,28 @@ class GitDownloader extends VcsDownloader
 
         $ref = $package->getSourceReference();
         $flag = defined('PHP_WINDOWS_VERSION_MAJOR') ? '/D ' : '';
-        $command = 'git clone --no-checkout %s %s && cd '.$flag.'%2$s && git remote add composer %1$s && git fetch composer';
+
+        $commands = array(
+            'git init %2$s',
+            'cd ' . $flag . '%2$s',
+            'git fetch %1$s +refs/heads/*:refs/remotes/origin/* --tags'
+        );
+        $command = implode(' && ', $commands);
+
         $this->io->write("    Cloning ".$ref);
 
         $commandCallable = function ($url) use ($ref, $path, $command) {
-            return sprintf($command, ProcessExecutor::escape($url), ProcessExecutor::escape($path), ProcessExecutor::escape($ref));
+            return sprintf(
+                $command,
+                ProcessExecutor::escape($url),
+                ProcessExecutor::escape($path)
+            );
         };
-
         $this->gitUtil->runCommand($commandCallable, $url, $path, true);
-        if ($url !== $package->getSourceUrl()) {
-            $url = $package->getSourceUrl();
-            $this->process->execute(sprintf('git remote set-url origin %s', ProcessExecutor::escape($url)), $output, $path);
-        }
+
+        $url = $package->getSourceUrl();
+        $this->process->execute(sprintf('git remote add origin %s', ProcessExecutor::escape($url)), $output, $path);
+
         $this->setPushUrl($path, $url);
 
         if ($newRef = $this->updateToCommit($path, $ref, $package->getPrettyVersion(), $package->getReleaseDate())) {
@@ -79,7 +88,7 @@ class GitDownloader extends VcsDownloader
 
         $ref = $target->getSourceReference();
         $this->io->write("    Checking out ".$ref);
-        $command = 'git remote set-url composer %s && git fetch composer && git fetch --tags composer';
+        $command = 'git fetch %s +refs/heads/*:refs/remotes/origin/* --tags';
 
         $commandCallable = function ($url) use ($command) {
             return sprintf($command, ProcessExecutor::escape ($url));
@@ -227,9 +236,9 @@ class GitDownloader extends VcsDownloader
         $gitRef = $reference;
         if (!preg_match('{^[a-f0-9]{40}$}', $reference)
             && $branches
-            && preg_match('{^\s+composer/'.preg_quote($reference).'$}m', $branches)
+            && preg_match('{^\s+origin/'.preg_quote($reference).'$}m', $branches)
         ) {
-            $command = sprintf('git checkout -B %s %s && git reset --hard %2$s', ProcessExecutor::escape($branch), ProcessExecutor::escape('composer/'.$reference));
+            $command = sprintf('git checkout -B %s %s && git reset --hard %2$s', ProcessExecutor::escape($branch), ProcessExecutor::escape('origin/'.$reference));
             if (0 === $this->process->execute($command, $output, $path)) {
                 return;
             }
@@ -238,12 +247,12 @@ class GitDownloader extends VcsDownloader
         // try to checkout branch by name and then reset it so it's on the proper branch name
         if (preg_match('{^[a-f0-9]{40}$}', $reference)) {
             // add 'v' in front of the branch if it was stripped when generating the pretty name
-            if (!preg_match('{^\s+composer/'.preg_quote($branch).'$}m', $branches) && preg_match('{^\s+composer/v'.preg_quote($branch).'$}m', $branches)) {
+            if (!preg_match('{^\s+origin/'.preg_quote($branch).'$}m', $branches) && preg_match('{^\s+origin/v'.preg_quote($branch).'$}m', $branches)) {
                 $branch = 'v' . $branch;
             }
 
             $command = sprintf('git checkout %s', ProcessExecutor::escape($branch));
-            $fallbackCommand = sprintf('git checkout -B %s %s', ProcessExecutor::escape($branch), ProcessExecutor::escape('composer/'.$branch));
+            $fallbackCommand = sprintf('git checkout -B %s %s', ProcessExecutor::escape($branch), ProcessExecutor::escape('origin/'.$branch));
             if (0 === $this->process->execute($command, $output, $path)
                 || 0 === $this->process->execute($fallbackCommand, $output, $path)
             ) {
