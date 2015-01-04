@@ -789,6 +789,9 @@ The following options are supported:
   the generated Composer autoloader. When null a random one will be generated.
 * **optimize-autoloader** Defaults to `false`. Always optimize when dumping
   the autoloader.
+* **classmap-authoritative:** Defaults to `false`. If true, the composer
+  autoloader will not scan the filesystem for classes that are not found in
+  the class map. Implies 'optimize-autoloader'.
 * **github-domains:** Defaults to `["github.com"]`. A list of domains to use in
   github mode. This is used for GitHub Enterprise setups.
 * **github-expose-hostname:** Defaults to `true`. If set to false, the OAuth

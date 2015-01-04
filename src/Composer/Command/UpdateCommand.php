@@ -110,7 +110,7 @@ EOT
             $preferDist = $input->getOption('prefer-dist');
         }
 
-        $optimize = $input->getOption('optimize-autoloader') || $config->get('optimize-autoloader');
+        $optimize = $input->getOption('optimize-autoloader') || $config->get('optimize-autoloader') || $config->get('classmap-authoritative');
 
         $install
             ->setDryRun($input->getOption('dry-run'))

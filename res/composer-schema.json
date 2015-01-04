@@ -197,6 +197,10 @@
                     "type": "boolean",
                     "description": "If false, the composer autoloader will not be prepended to existing autoloaders, defaults to true."
                 },
+                "classmap-authoritative": {
+                    "type": "boolean",
+                    "description": "If true, the composer autoloader will not scan the filesystem for classes that are not found in the class map, defaults to false."
+                },
                 "github-domains": {
                     "type": "array",
                     "description": "A list of domains to use in github mode. This is used for GitHub Enterprise setups, defaults to [\"github.com\"].",

@@ -54,6 +54,8 @@ class ClassLoader
     private $useIncludePath = false;
     private $classMap = array();
 
+    private $classMapAuthoratative = false;
+
     public function getPrefixes()
     {
         if (!empty($this->prefixesPsr0)) {
@@ -249,6 +251,27 @@ class ClassLoader
     }
 
     /**
+     * Turns off searching the prefix and fallback directories for classes
+     * that have not been registered with the class map.
+     *
+     * @param bool $classMapAuthoratative
+     */
+    public function setClassMapAuthoritative($classMapAuthoratative)
+    {
+        $this->classMapAuthoratative = $classMapAuthoratative;
+    }
+
+    /**
+     * Should class lookup fail if not found in the current class map?
+     *
+     * @return bool
+     */
+    public function getClassMapAuthoratative()
+    {
+        return $this->classMapAuthoratative;
+    }
+
+    /**
      * Registers this instance as an autoloader.
      *
      * @param bool $prepend Whether to prepend the autoloader or not
@@ -298,6 +321,8 @@ class ClassLoader
         // class map lookup
         if (isset($this->classMap[$class])) {
             return $this->classMap[$class];
+        } elseif ($this->classMapAuthoratative) {
+            return false;
         }
 
         $file = $this->findFileWithExtension($class, '.php');
