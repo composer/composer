@@ -113,6 +113,14 @@ class ConsoleIO extends BaseIO
      */
     public function overwrite($messages, $newline = true, $size = null)
     {
+        if (!$this->output->isDecorated()) {
+            if (!$messages) {
+                return;
+            }
+
+            return $this->write($messages, count($messages) === 1 || $newline);
+        }
+
         // messages can be an array, let's convert it to string anyway
         $messages = join($newline ? "\n" : '', (array) $messages);
 
