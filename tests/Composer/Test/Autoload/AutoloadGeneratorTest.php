@@ -499,7 +499,7 @@ class AutoloadGeneratorTest extends TestCase
             include $this->vendorDir.'/composer/autoload_classmap.php'
         );
         $this->assertAutoloadFiles('classmap5', $this->vendorDir.'/composer', 'classmap');
-        $this->assertNotRegExp('/\$loader->setClassMapAuthoritative\(true\);/', file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
+        $this->assertNotContains('$loader->setClassMapAuthoritative(true);', file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
     }
 
     public function testClassMapAutoloadingAuthoritative()
@@ -540,8 +540,7 @@ class AutoloadGeneratorTest extends TestCase
         );
         $this->assertAutoloadFiles('classmap5', $this->vendorDir.'/composer', 'classmap');
 
-        $this->assertRegExp('/\$loader->setClassMapAuthoritative\(true\);/', file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
-        // FIXME: how can we actually test the ClassLoader implementation?
+        $this->assertContains('$loader->setClassMapAuthoritative(true);', file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
     }
 
     public function testFilesAutoloadGeneration()
