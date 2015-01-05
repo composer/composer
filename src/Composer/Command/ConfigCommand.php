@@ -100,6 +100,8 @@ EOT
      */
     protected function initialize(InputInterface $input, OutputInterface $output)
     {
+        parent::initialize($input, $output);
+
         if ($input->getOption('global') && 'composer.json' !== $input->getOption('file')) {
             throw new \RuntimeException('--file and --global can not be combined');
         }
