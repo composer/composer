@@ -54,7 +54,7 @@ class ClassLoader
     private $useIncludePath = false;
     private $classMap = array();
 
-    private $classMapAuthoratative = false;
+    private $classMapAuthoritative = false;
 
     public function getPrefixes()
     {
@@ -254,11 +254,11 @@ class ClassLoader
      * Turns off searching the prefix and fallback directories for classes
      * that have not been registered with the class map.
      *
-     * @param bool $classMapAuthoratative
+     * @param bool $classMapAuthoritative
      */
-    public function setClassMapAuthoritative($classMapAuthoratative)
+    public function setClassMapAuthoritative($classMapAuthoritative)
     {
-        $this->classMapAuthoratative = $classMapAuthoratative;
+        $this->classMapAuthoritative = $classMapAuthoritative;
     }
 
     /**
@@ -266,9 +266,9 @@ class ClassLoader
      *
      * @return bool
      */
-    public function getClassMapAuthoratative()
+    public function isClassMapAuthoritative()
     {
-        return $this->classMapAuthoratative;
+        return $this->classMapAuthoritative;
     }
 
     /**
@@ -321,7 +321,8 @@ class ClassLoader
         // class map lookup
         if (isset($this->classMap[$class])) {
             return $this->classMap[$class];
-        } elseif ($this->classMapAuthoratative) {
+        }
+        if ($this->classMapAuthoritative) {
             return false;
         }
 
