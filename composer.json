@@ -30,6 +30,7 @@
         "symfony/process": "~2.1"
     },
     "require-dev": {
+        "ext-zip": "*",
         "phpunit/phpunit": "~4.0"
     },
     "suggest": {
