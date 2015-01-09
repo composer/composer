@@ -14,16 +14,31 @@ namespace Composer\Util;
 
 use Composer\Config;
 use Composer\IO\IOInterface;
+use Composer\Util\Transfer\CurlDriver;
+use Composer\Util\Transfer\StreamDriver;
 
 /**
  * @author François Pluchino <francois.pluchino@opendisplay.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Nils Adermann <naderman@naderman.de>
+ * @author Alexander Goryachev <mail@a-goryachev.ru>
  */
 class RemoteFilesystem {
 
+    /**
+     * Transfer driver for non http protocols
+     * @var \Composer\Util\Transfer\DriverInterface
+     */
     private $localDriver;
+    /**
+     * Transfer driver for http protocols
+     * @var \Composer\Util\Transfer\DriverInterface
+     */
     private $httpDriver;
+    /**
+     * Currently used driver
+     * @var \Composer\Util\Transfer\DriverInterface
+     */
     private $driver;
 
     /**
@@ -34,8 +49,10 @@ class RemoteFilesystem {
      * @param array       $options The options
      */
     public function __construct(IOInterface $io, Config $config = null, array $options = array()) {
-        $this->httpDriver = function_exists('curl_version') ? new CurlDriver($io, $config, $options) : new StreamDriver($io, $config, $options);
-        $this->localDriver = new StreamDriver($io, $config, $options);
+        /* Using cUrl, if exists, for http(s) connections */
+        $this->httpDriver = function_exists('curl_version') ? new CurlDriver($io, $config, $options,$this) : new StreamDriver($io, $config, $options,$this);
+        /* Using stream context wrapper for non http(s) connections */
+        $this->localDriver = new StreamDriver($io, $config, $options,$this);
     }
 
     /**

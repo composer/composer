@@ -10,47 +10,17 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Util;
+namespace Composer\Util\Transfer;
 
 use Composer\Composer;
 use Composer\Downloader\TransportException;
-use Composer\Config;
-use Composer\IO\IOInterface;
 
 /**
  * Driver for data transfer using cUrl library.
  *
  * @author Alexander Goryachev <mail@a-goryachev.ru>
  */
-class CurlDriver implements TransportInterface {
-
-    private $bytesMax;
-    private $originUrl;
-    private $fileUrl;
-    private $fileName;
-    private $retry;
-    private $progress;
-    private $lastProgress;
-    private $retryAuthFailure;
-    private $lastHeaders;
-    private $storeAuth;
-    private $io;
-    private $config;
-    private $options;
-
-    public function __construct(IOInterface $io, Config $config = null, array $options = array()) {
-        $this->io = $io;
-        $this->config = $config;
-        $this->options = $options;
-    }
-
-    public function getOptions() {
-        return $this->options;
-    }
-
-    public function getLastHeaders() {
-        return $this->lastHeaders;
-    }
+class CurlDriver extends BaseDriver {
 
     /**
      * Get file content or copy action.
@@ -115,9 +85,15 @@ class CurlDriver implements TransportInterface {
         curl_setopt($ch, CURLOPT_HEADER, 1);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        
+        if ($this->progress) {
+            curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, array($this,'progressIndicator'));
+            curl_setopt($ch, CURLOPT_NOPROGRESS, false);
+            curl_setopt($ch, CURLOPT_BUFFERSIZE, 128);
+        }
+        
         curl_setopt_array($ch, $options);
         $response = curl_exec($ch);
-        curl_close($ch);
         $error = curl_error($ch);
         $responseData = array(
             'header' => '',
@@ -126,7 +102,7 @@ class CurlDriver implements TransportInterface {
             'http_code' => '',
             'last_url' => ''
         );
-        $responseData['http_code'] = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $responseData['http_code'] = intval(curl_getinfo($ch, CURLINFO_HTTP_CODE));
         $responseData['last_url'] = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
 
         if ($error != "") {
@@ -141,24 +117,39 @@ class CurlDriver implements TransportInterface {
         $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
         $responseData['headers'] = explode("\r\n", substr($response, 0, $header_size));
         $result = $responseData['body'] = substr($response, $header_size);
+        curl_close($ch);
 
-        
-        // fail 4xx and 5xx responses and capture the response
-        if (intval($responseData['http_code']) >= 400) {
+        try {
+            if ($responseData['http_code'] == 401 && $this->retryAuthFailure) {
+                $this->promptAuthAndRetry($responseData['http_code']);
+            }
+            if ($responseData['http_code'] == 403 && $this->retryAuthFailure) {
+                $this->promptAuthAndRetry($responseData['http_code'], $responseData['headers'][0]);
+            }
+        } catch (\Exception $e) {
+            if ($e instanceof TransportException) {
+                $e->setHeaders($responseData['headers'][0]);
+                $e->setResponse($result);
+            }
             if (!$this->retry) {
-                $e = new TransportException('The "' . $this->fileUrl . '" file could not be downloaded (' . $responseData['headers'][0] . ')', $responseData['http_code']);
-                $e->setHeaders($responseData['headers']);
-                $e->setResponse($responseData['body']);
                 throw $e;
             }
-            $result = false;
         }
-        
+
+        /* 4xx and 5xx responses */
+        if ($responseData['http_code'] >= 400 && $responseData['http_code'] != 401 && $responseData['http_code'] != 403) {
+            $e = new TransportException('The "' . $this->fileUrl . '" file could not be downloaded (' . $responseData['headers'][0] . ')', $responseData['http_code']);
+            $e->setHeaders($responseData['headers']);
+            $e->setResponse($responseData['body']);
+            throw $e;
+        }
+
+        /* show progress */
         if ($this->progress && !$this->retry) {
             $this->io->overwrite("    Downloading: <comment>100%</comment>");
         }
 
-        // handle copy command if download was successful
+        /* copy downloaded file */
         if (false !== $result && null !== $fileName) {
             if ('' === $result) {
                 throw new TransportException('"' . $this->fileUrl . '" appears broken, and returned an empty 200 response');
@@ -205,47 +196,6 @@ class CurlDriver implements TransportInterface {
         return $result;
     }
 
-    protected function promptAuthAndRetry($httpStatus, $reason = null) {
-        if ($this->config && in_array($this->originUrl, $this->config->get('github-domains'), true)) {
-            $message = "\n" . 'Could not fetch ' . $this->fileUrl . ', enter your GitHub credentials ' . ($httpStatus === 404 ? 'to access private repos' : 'to go over the API rate limit');
-            $gitHubUtil = new GitHub($this->io, $this->config, null, $this);
-            if (!$gitHubUtil->authorizeOAuth($this->originUrl) && (!$this->io->isInteractive() || !$gitHubUtil->authorizeOAuthInteractively($this->originUrl, $message))
-            ) {
-                throw new TransportException('Could not authenticate against ' . $this->originUrl, 401);
-            }
-        } else {
-            // 404s are only handled for github
-            if ($httpStatus === 404) {
-                return;
-            }
-
-            // fail if the console is not interactive
-            if (!$this->io->isInteractive()) {
-                if ($httpStatus === 401) {
-                    $message = "The '" . $this->fileUrl . "' URL required authentication.\nYou must be using the interactive console to authenticate";
-                }
-                if ($httpStatus === 403) {
-                    $message = "The '" . $this->fileUrl . "' URL could not be accessed: " . $reason;
-                }
-
-                throw new TransportException($message, $httpStatus);
-            }
-            // fail if we already have auth
-            if ($this->io->hasAuthentication($this->originUrl)) {
-                throw new TransportException("Invalid credentials for '" . $this->fileUrl . "', aborting.", $httpStatus);
-            }
-
-            $this->io->overwrite('    Authentication required (<info>' . parse_url($this->fileUrl, PHP_URL_HOST) . '</info>):');
-            $username = $this->io->ask('      Username: ');
-            $password = $this->io->askAndHideAnswer('      Password: ');
-            $this->io->setAuthentication($this->originUrl, $username, $password);
-            $this->storeAuth = $this->config->get('store-auths');
-        }
-
-        $this->retry = true;
-        throw new TransportException('RETRY');
-    }
-
     protected function getOptionsForUrl($originUrl, $additionalOptions) {
 
         $curlOptions = array();
@@ -288,4 +238,22 @@ class CurlDriver implements TransportInterface {
         return $curlOptions;
     }
 
+    private function progressIndicator($resource, $downloadSize, $downloaded, $uploadSize, $uploaded) {
+        if ($this->bytesMax < $downloadSize) {
+            $this->bytesMax = $downloadSize;
+        }
+        if ($this->bytesMax > 0 && $this->progress) {
+            $progression = 0;
+
+            if ($this->bytesMax > 0) {
+                $progression = round($downloaded / $this->bytesMax * 100);
+            }
+
+            if ((0 === $progression % 5) && $progression !== $this->lastProgress) {
+                $this->lastProgress = $progression;
+                $this->io->overwrite("    Downloading: <comment>$progression%</comment>", false);
+            }
+        }
+        return '';
+    }
 }
