@@ -15,6 +15,7 @@ namespace Composer\Util\Transfer;
 use Composer\Composer;
 use Composer\Downloader\TransportException;
 use Composer\Util\StreamContextFactory;
+
 /**
  * Driver for data transfer using stream context wrapper.
  * @author François Pluchino <francois.pluchino@opendisplay.com>
@@ -22,7 +23,8 @@ use Composer\Util\StreamContextFactory;
  * @author Nils Adermann <naderman@naderman.de>
  * @author Alexander Goryachev <mail@a-goryachev.ru>
  */
-class StreamDriver extends BaseDriver{
+class StreamDriver extends BaseDriver
+{
 
     /**
      * Get file content or copy action.
@@ -38,7 +40,8 @@ class StreamDriver extends BaseDriver{
      *
      * @return bool|string
      */
-    public function get($originUrl, $fileUrl, $additionalOptions = array(), $fileName = null, $progress = true) {
+    public function get($originUrl, $fileUrl, $additionalOptions = array(), $fileName = null, $progress = true)
+    {
         if (strpos($originUrl, '.github.com') === (strlen($originUrl) - 11)) {
             $originUrl = 'github.com';
         }
@@ -210,7 +213,8 @@ class StreamDriver extends BaseDriver{
      * @param  integer            $bytesMax         The total size
      * @throws TransportException
      */
-    protected function callbackGet($notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax) {
+    protected function callbackGet($notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax)
+    {
         switch ($notificationCode) {
             case STREAM_NOTIFY_FAILURE:
             case STREAM_NOTIFY_AUTH_REQUIRED:
@@ -258,7 +262,8 @@ class StreamDriver extends BaseDriver{
         }
     }
 
-    protected function getOptionsForUrl($originUrl, $additionalOptions) {
+    protected function getOptionsForUrl($originUrl, $additionalOptions)
+    {
         if (defined('HHVM_VERSION')) {
             $phpVersion = 'HHVM ' . HHVM_VERSION;
         } else {

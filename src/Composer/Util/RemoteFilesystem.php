@@ -23,18 +23,21 @@ use Composer\Util\Transfer\StreamDriver;
  * @author Nils Adermann <naderman@naderman.de>
  * @author Alexander Goryachev <mail@a-goryachev.ru>
  */
-class RemoteFilesystem {
+class RemoteFilesystem
+{
 
     /**
      * Transfer driver for non http protocols
      * @var \Composer\Util\Transfer\DriverInterface
      */
     private $localDriver;
+
     /**
      * Transfer driver for http protocols
      * @var \Composer\Util\Transfer\DriverInterface
      */
     private $httpDriver;
+
     /**
      * Currently used driver
      * @var \Composer\Util\Transfer\DriverInterface
@@ -48,11 +51,12 @@ class RemoteFilesystem {
      * @param Config      $config  The config
      * @param array       $options The options
      */
-    public function __construct(IOInterface $io, Config $config = null, array $options = array()) {
+    public function __construct(IOInterface $io, Config $config = null, array $options = array())
+    {
         /* Using cUrl, if exists, for http(s) connections */
-        $this->httpDriver = extension_loaded('curl') ? new CurlDriver($io, $config, $options,$this) : new StreamDriver($io, $config, $options,$this);
+        $this->httpDriver = extension_loaded('curl') ? new CurlDriver($io, $config, $options, $this) : new StreamDriver($io, $config, $options, $this);
         /* Using stream context wrapper for non http(s) connections */
-        $this->localDriver = new StreamDriver($io, $config, $options,$this);
+        $this->localDriver = new StreamDriver($io, $config, $options, $this);
     }
 
     /**
@@ -66,7 +70,8 @@ class RemoteFilesystem {
      *
      * @return bool true
      */
-    public function copy($originUrl, $fileUrl, $fileName, $progress = true, $options = array()) {
+    public function copy($originUrl, $fileUrl, $fileName, $progress = true, $options = array())
+    {
         if (preg_match('#^https?#i', $fileUrl)) {
             $this->driver = $this->httpDriver;
         } else {
@@ -85,7 +90,8 @@ class RemoteFilesystem {
      *
      * @return bool|string The content
      */
-    public function getContents($originUrl, $fileUrl, $progress = true, $options = array()) {
+    public function getContents($originUrl, $fileUrl, $progress = true, $options = array())
+    {
         if (preg_match('#^https?#i', $fileUrl)) {
             $this->driver = $this->httpDriver;
         } else {
@@ -99,7 +105,8 @@ class RemoteFilesystem {
      *
      * @return array Options
      */
-    public function getOptions() {
+    public function getOptions()
+    {
         return $this->driver->getOptions();
     }
 
@@ -108,7 +115,8 @@ class RemoteFilesystem {
      *
      * @return array
      */
-    public function getLastHeaders() {
+    public function getLastHeaders()
+    {
         return $this->driver->getLastHeaders();
     }
 

@@ -16,8 +16,12 @@ namespace Composer\Util\Transfer;
  *
  * @author Alexander Goryachev <mail@a-goryachev.ru>
  */
-interface DriverInterface {
+interface DriverInterface
+{
+
     public function get($originUrl, $fileUrl, $additionalOptions = array(), $fileName = null, $progress = true);
+
     public function getOptions();
+
     public function getLastHeaders();
 }

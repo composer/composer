@@ -20,7 +20,8 @@ use Composer\Downloader\TransportException;
  *
  * @author Alexander Goryachev <mail@a-goryachev.ru>
  */
-class CurlDriver extends BaseDriver {
+class CurlDriver extends BaseDriver
+{
 
     /**
      * Get file content or copy action.
@@ -36,7 +37,8 @@ class CurlDriver extends BaseDriver {
      *
      * @return bool|string
      */
-    public function get($originUrl, $fileUrl, $additionalOptions = array(), $fileName = null, $progress = true) {
+    public function get($originUrl, $fileUrl, $additionalOptions = array(), $fileName = null, $progress = true)
+    {
         if (strpos($originUrl, '.github.com') === (strlen($originUrl) - 11)) {
             $originUrl = 'github.com';
         }
@@ -85,13 +87,13 @@ class CurlDriver extends BaseDriver {
         curl_setopt($ch, CURLOPT_HEADER, 1);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        
+
         if ($this->progress) {
-            curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, array($this,'progressIndicator'));
+            curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, array($this, 'progressIndicator'));
             curl_setopt($ch, CURLOPT_NOPROGRESS, false);
             curl_setopt($ch, CURLOPT_BUFFERSIZE, 128);
         }
-        
+
         curl_setopt_array($ch, $options);
         $response = curl_exec($ch);
         $error = curl_error($ch);
@@ -196,7 +198,8 @@ class CurlDriver extends BaseDriver {
         return $result;
     }
 
-    protected function getOptionsForUrl($originUrl, $additionalOptions) {
+    protected function getOptionsForUrl($originUrl, $additionalOptions)
+    {
 
         $curlOptions = array();
 
@@ -235,7 +238,7 @@ class CurlDriver extends BaseDriver {
                 $curlOptions[CURLOPT_HTTPHEADER][] = $header;
             }
         }
-        
+
         // Handle system proxy
         if (!empty($_SERVER['HTTP_PROXY']) || !empty($_SERVER['http_proxy'])) {
             // Some systems seem to rely on a lowercased version instead...
@@ -282,15 +285,16 @@ class CurlDriver extends BaseDriver {
                 if (isset($proxy['pass'])) {
                     $auth .= ':' . urldecode($proxy['pass']);
                 }
-                
-                $curlOptions[CURLOPT_PROXYUSERPWD]=$auth;
+
+                $curlOptions[CURLOPT_PROXYUSERPWD] = $auth;
             }
         }
 
         return $curlOptions;
     }
 
-    private function progressIndicator($resource, $downloadSize, $downloaded, $uploadSize, $uploaded) {
+    private function progressIndicator($resource, $downloadSize, $downloaded, $uploadSize, $uploaded)
+    {
         if ($this->bytesMax < $downloadSize) {
             $this->bytesMax = $downloadSize;
         }
@@ -308,4 +312,5 @@ class CurlDriver extends BaseDriver {
         }
         return '';
     }
+
 }

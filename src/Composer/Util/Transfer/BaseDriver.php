@@ -24,7 +24,8 @@ use Composer\Downloader\TransportException;
  * @author Nils Adermann <naderman@naderman.de>
  * @author Alexander Goryachev <mail@a-goryachev.ru>
  */
-abstract class BaseDriver implements DriverInterface{
+abstract class BaseDriver implements DriverInterface
+{
 
     protected $io;
     protected $config;
@@ -40,13 +41,13 @@ abstract class BaseDriver implements DriverInterface{
     protected $retryAuthFailure;
     protected $lastHeaders;
     protected $storeAuth;
-    
 
-    public function __construct(IOInterface $io, Config $config = null, array $options = array(),$rfs) {
+    public function __construct(IOInterface $io, Config $config = null, array $options = array(), $rfs)
+    {
         $this->io = $io;
         $this->config = $config;
         $this->options = $options;
-        $this->rfs=$rfs;
+        $this->rfs = $rfs;
     }
 
     /**
@@ -56,7 +57,8 @@ abstract class BaseDriver implements DriverInterface{
      * @return null
      * @throws TransportException when can't authenticate
      */
-    protected function promptAuthAndRetry($httpStatus, $reason = null) {
+    protected function promptAuthAndRetry($httpStatus, $reason = null)
+    {
         if ($this->config && in_array($this->originUrl, $this->config->get('github-domains'), true)) {
             $message = "\n" . 'Could not fetch ' . $this->fileUrl . ', enter your GitHub credentials ' . ($httpStatus === 404 ? 'to access private repos' : 'to go over the API rate limit');
             $gitHubUtil = new GitHub($this->io, $this->config, null, $this->rfs);
@@ -97,11 +99,13 @@ abstract class BaseDriver implements DriverInterface{
         throw new TransportException('RETRY');
     }
 
-    public function getOptions(){
+    public function getOptions()
+    {
         return $this->options;
     }
-    
-    public function getLastHeaders(){
+
+    public function getLastHeaders()
+    {
         return $this->lastHeaders;
     }
 
