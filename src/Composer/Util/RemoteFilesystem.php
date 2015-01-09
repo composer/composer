@@ -50,7 +50,7 @@ class RemoteFilesystem {
      */
     public function __construct(IOInterface $io, Config $config = null, array $options = array()) {
         /* Using cUrl, if exists, for http(s) connections */
-        $this->httpDriver = function_exists('curl_version') ? new CurlDriver($io, $config, $options,$this) : new StreamDriver($io, $config, $options,$this);
+        $this->httpDriver = extension_loaded('curl') ? new CurlDriver($io, $config, $options,$this) : new StreamDriver($io, $config, $options,$this);
         /* Using stream context wrapper for non http(s) connections */
         $this->localDriver = new StreamDriver($io, $config, $options,$this);
     }

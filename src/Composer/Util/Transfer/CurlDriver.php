@@ -235,6 +235,58 @@ class CurlDriver extends BaseDriver {
                 $curlOptions[CURLOPT_HTTPHEADER][] = $header;
             }
         }
+        
+        // Handle system proxy
+        if (!empty($_SERVER['HTTP_PROXY']) || !empty($_SERVER['http_proxy'])) {
+            // Some systems seem to rely on a lowercased version instead...
+            $proxy = parse_url(!empty($_SERVER['http_proxy']) ? $_SERVER['http_proxy'] : $_SERVER['HTTP_PROXY']);
+        }
+
+        // Override with HTTPS proxy if present and URL is https
+        if (preg_match('{^https://}i', $originUrl) && (!empty($_SERVER['HTTPS_PROXY']) || !empty($_SERVER['https_proxy']))) {
+            $proxy = parse_url(!empty($_SERVER['https_proxy']) ? $_SERVER['https_proxy'] : $_SERVER['HTTPS_PROXY']);
+        }
+
+        // Remove proxy if URL matches no_proxy directive
+        if (!empty($_SERVER['no_proxy']) && parse_url($originUrl, PHP_URL_HOST)) {
+            $pattern = new \Composer\Util\NoProxyPattern($_SERVER['no_proxy']);
+            if ($pattern->test($originUrl)) {
+                unset($proxy);
+            }
+        }
+
+        if (!empty($proxy)) {
+            $proxyURL = isset($proxy['scheme']) ? $proxy['scheme'] . '://' : '';
+            $proxyURL .= isset($proxy['host']) ? $proxy['host'] : '';
+
+            if (isset($proxy['port'])) {
+                $proxyURL .= ":" . $proxy['port'];
+            } elseif ('http://' == substr($proxyURL, 0, 7)) {
+                $proxyURL .= ":80";
+            } elseif ('https://' == substr($proxyURL, 0, 8)) {
+                $proxyURL .= ":443";
+            }
+
+            // http(s):// is not supported in proxy
+            $proxyURL = str_replace(array('http://', 'https://'), array('tcp://', 'ssl://'), $proxyURL);
+
+            if (0 === strpos($proxyURL, 'ssl:') && !extension_loaded('openssl')) {
+                throw new \RuntimeException('You must enable the openssl extension to use a proxy over https');
+            }
+
+            $curlOptions[CURLOPT_PROXY] = $proxyURL;
+
+            // handle proxy auth if present
+            if (isset($proxy['user'])) {
+                $auth = urldecode($proxy['user']);
+                if (isset($proxy['pass'])) {
+                    $auth .= ':' . urldecode($proxy['pass']);
+                }
+                
+                $curlOptions[CURLOPT_PROXYUSERPWD]=$auth;
+            }
+        }
+
         return $curlOptions;
     }
 
