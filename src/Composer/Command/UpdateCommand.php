@@ -12,6 +12,7 @@
 
 namespace Composer\Command;
 
+use Composer\Composer;
 use Composer\Installer;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
@@ -19,6 +20,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\ConfirmationQuestion;
+use Symfony\Component\Console\Question\Question;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -50,6 +53,7 @@ class UpdateCommand extends Command
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore platform requirements (php & ext- packages).'),
                 new InputOption('prefer-stable', null, InputOption::VALUE_NONE, 'Prefer stable versions of dependencies.'),
                 new InputOption('prefer-lowest', null, InputOption::VALUE_NONE, 'Prefer lowest versions of dependencies.'),
+                new InputOption('interactive', 'i', InputOption::VALUE_NONE, 'interactive interface with autocompletion that can help to select the packages to update.'),
             ))
             ->setHelp(<<<EOT
 The <info>update</info> command reads the composer.json file from the
@@ -74,13 +78,18 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $composer = $this->getComposer(true, $input->getOption('no-plugins'));
+        $packages = $input->getOption('interactive') ? $this->getPackagesInteractively(
+            $input,
+            $output,
+            $composer
+        ) : $input->getArgument('packages');
+
         if ($input->getOption('no-custom-installers')) {
             $output->writeln('<warning>You are using the deprecated option "no-custom-installers". Use "no-plugins" instead.</warning>');
             $input->setOption('no-plugins', true);
         }
 
-        $composer = $this->getComposer(true, $input->getOption('no-plugins'));
-        $composer->getDownloadManager()->setOutputProgress(!$input->getOption('no-progress'));
         $io = $this->getIO();
 
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'update', $input, $output);
@@ -122,7 +131,7 @@ EOT
             ->setRunScripts(!$input->getOption('no-scripts'))
             ->setOptimizeAutoloader($optimize)
             ->setUpdate(true)
-            ->setUpdateWhitelist($input->getOption('lock') ? array('lock') : $input->getArgument('packages'))
+            ->setUpdateWhitelist($input->getOption('lock') ? array('lock') : $packages)
             ->setWhitelistDependencies($input->getOption('with-dependencies'))
             ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'))
             ->setPreferStable($input->getOption('prefer-stable'))
@@ -134,5 +143,105 @@ EOT
         }
 
         return $install->run();
+    }
+
+    private function getPackagesInteractively(
+        InputInterface $input,
+        OutputInterface $output,
+        Composer $composer
+    ) {
+        if ($input->getArgument('packages')) {
+            throw new \InvalidArgumentException(
+                'The option --interactive does not require an argument'
+            );
+        }
+
+        $packagesMap = $composer->getRepositoryManager()
+            ->getLocalRepository()->getPackages();
+        $config      = $composer->getConfig();
+
+        $requiredPackageNames = array();
+        foreach (
+            array_merge(
+                $composer->getPackage()->getRequires(),
+                $composer->getPackage()->getDevRequires()
+            ) as $require) {
+            $requiredPackageNames[] = $require->getTarget();
+        }
+
+        $InstalledPackageNames = array();
+        foreach ($packagesMap as $package) {
+            $InstalledPackageNames[] = $package->getPrettyName();
+        }
+        $names = array_unique(
+            array_merge($InstalledPackageNames, $requiredPackageNames)
+        );
+
+        $vendorDir      = $config->get('vendor-dir', true);
+        $vendorWildcard = sprintf('%s/*', $vendorDir);
+
+        $autocompleterValues = array($vendorWildcard);
+        foreach ($names as $name) {
+            $autocompleterValues[] = $name;
+            $autocompleterValues[] = sprintf('%s/%s', $vendorDir, $name);
+        }
+
+        $helper       = $this->getHelper('question');
+        $question     = new Question(
+            '<comment>Add package that should be updated:</comment>',
+            null
+        );
+        $confirmation = new ConfirmationQuestion(
+            '<question>Add more packages[yes|no] ?</question><info> (no) </info> ',
+            false
+        );
+
+        $packages = array();
+        do {
+            $question->setAutocompleterValues($autocompleterValues);
+            $addedPackage = $helper->ask($input, $output, $question);
+
+            if (!is_string($addedPackage) || empty($addedPackage)) {
+                $output->writeln('<error>Invalid package.</error>');
+
+                continue;
+            }
+
+            if (!in_array($addedPackage, $packages)) {
+                $packages[] = $addedPackage;
+                if ($addedPackage === $vendorWildcard) {
+                    $autocompleterValues = array();
+                } else {
+                    $autocompleterValues = array_diff($autocompleterValues, array($addedPackage));
+                }
+            } else {
+                $output->writeln(sprintf('<error>The package "%s" was already added.</error>', $package));
+            }
+        } while ($helper->ask($input, $output, $confirmation));
+
+        $packages = array_filter($packages);
+        if (!$packages) {
+            throw new \InvalidArgumentException('You must enter minimum one package.');
+        }
+
+        $output->writeln(str_repeat('.', 40));
+        foreach ((array)$packages as $package) {
+            $output->writeln(sprintf('<info>- %s</info>', $package));
+        }
+        $output->writeln(str_repeat('.', 40));
+
+        $continue = new ConfirmationQuestion(
+            sprintf(
+                '<question>Would you like to continue and update the above package%s [yes|no] ?</question><info> (yes) </info>',
+                1 === count($packages) ? '' : 's'
+            ),
+            true
+        );
+
+        if ($helper->ask($input, $output, $continue)) {
+            return $packages;
+        }
+
+        throw new \RuntimeException('Installation aborted.');
     }
 }
