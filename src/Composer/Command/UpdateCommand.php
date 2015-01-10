@@ -16,6 +16,7 @@ use Composer\Composer;
 use Composer\Installer;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
+use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
@@ -188,47 +189,45 @@ EOT
 
         $helper       = $this->getHelper('question');
         $question     = new Question(
-            '<comment>Add package that should be updated:</comment>',
+            '<comment>Enter package name: </comment>',
             null
-        );
-        $confirmation = new ConfirmationQuestion(
-            '<question>Add more packages[yes|no] ?</question><info> (no) </info> ',
-            false
         );
 
         $packages = array();
+        $output->writeln('<info>NB: Empty package ends submission.</info>'); // I couldn't find any better for now!
+
+        $continue = true;
         do {
             $question->setAutocompleterValues($autocompleterValues);
             $addedPackage = $helper->ask($input, $output, $question);
 
-            if (!is_string($addedPackage) || empty($addedPackage)) {
-                $output->writeln('<error>Invalid package.</error>');
-
-                continue;
-            }
-
-            if (!in_array($addedPackage, $packages)) {
-                $packages[] = $addedPackage;
-                if ($addedPackage === $vendorWildcard) {
-                    $autocompleterValues = array();
+            if (is_string($addedPackage)) {
+                if (!in_array($addedPackage, $packages)) {
+                    $packages[] = $addedPackage;
+                    if ($addedPackage === $vendorWildcard) {
+                        $autocompleterValues = array();
+                    } else {
+                        $autocompleterValues = array_diff($autocompleterValues, array($addedPackage));
+                    }
                 } else {
-                    $autocompleterValues = array_diff($autocompleterValues, array($addedPackage));
+                    $output->writeln(sprintf('<error>The package "%s" was already added.</error>', $package));
                 }
             } else {
-                $output->writeln(sprintf('<error>The package "%s" was already added.</error>', $package));
+                $continue = false;
             }
-        } while ($helper->ask($input, $output, $confirmation));
+        } while ($continue);
 
         $packages = array_filter($packages);
         if (!$packages) {
             throw new \InvalidArgumentException('You must enter minimum one package.');
         }
 
-        $output->writeln(str_repeat('.', 40));
+        $table = new Table($output);
+        $table->setHeaders(array('Selected packages'));
         foreach ((array)$packages as $package) {
-            $output->writeln(sprintf('<info>- %s</info>', $package));
+            $table->addRow(array($package));
         }
-        $output->writeln(str_repeat('.', 40));
+        $table->render();
 
         $continue = new ConfirmationQuestion(
             sprintf(
