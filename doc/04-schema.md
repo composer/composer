@@ -375,7 +375,7 @@ useful for common interfaces. A package could depend on some virtual
 `logger` package, any library that implements this logger interface would
 simply list it in `provide`.
 
-### suggest
+#### suggest
 
 Suggested packages that can enhance or work well with this package. These are
 just informational and are displayed after the package is installed, to give
