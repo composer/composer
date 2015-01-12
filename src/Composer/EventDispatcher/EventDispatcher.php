@@ -44,6 +44,7 @@ class EventDispatcher
     protected $io;
     protected $loader;
     protected $process;
+    protected $listeners;
 
     /**
      * Constructor.
