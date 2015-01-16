@@ -122,7 +122,7 @@ JSON request body:
 ```json
 {
     "downloads": [
-        {"name": "monolog/monolog", "version": "1.2.1.0"},
+        {"name": "monolog/monolog", "version": "1.2.1.0"}
     ]
 }
 ```
