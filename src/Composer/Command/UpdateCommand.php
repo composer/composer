@@ -80,11 +80,10 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $composer = $this->getComposer(true, $input->getOption('no-plugins'));
-        $packages = $input->getOption('interactive') ? $this->getPackagesInteractively(
-            $input,
-            $output,
-            $composer
-        ) : $input->getArgument('packages');
+        $packages = $input->getArgument('packages');
+        if ($input->getOption('interactive')) {
+            $packages = $this->getPackagesInteractively($input, $output, $composer, $packages);
+        }
 
         if ($input->getOption('no-custom-installers')) {
             $output->writeln('<warning>You are using the deprecated option "no-custom-installers". Use "no-plugins" instead.</warning>');
@@ -146,20 +145,10 @@ EOT
         return $install->run();
     }
 
-    private function getPackagesInteractively(
-        InputInterface $input,
-        OutputInterface $output,
-        Composer $composer
-    ) {
-        if ($input->getArgument('packages')) {
-            throw new \InvalidArgumentException(
-                'The option --interactive does not require an argument'
-            );
-        }
-
+    private function getPackagesInteractively(InputInterface $input, OutputInterface $output, Composer $composer, $packages)
+    {
         $packagesMap = $composer->getRepositoryManager()
             ->getLocalRepository()->getPackages();
-        $config      = $composer->getConfig();
 
         $requiredPackageNames = array();
         foreach (
@@ -174,18 +163,10 @@ EOT
         foreach ($packagesMap as $package) {
             $InstalledPackageNames[] = $package->getPrettyName();
         }
-        $names = array_unique(
+
+        $autocompleterValues = array_unique(
             array_merge($InstalledPackageNames, $requiredPackageNames)
         );
-
-        $vendorDir      = $config->get('vendor-dir', true);
-        $vendorWildcard = sprintf('%s/*', $vendorDir);
-
-        $autocompleterValues = array($vendorWildcard);
-        foreach ($names as $name) {
-            $autocompleterValues[] = $name;
-            $autocompleterValues[] = sprintf('%s/%s', $vendorDir, $name);
-        }
 
         $helper       = $this->getHelper('question');
         $question     = new Question(
@@ -193,7 +174,7 @@ EOT
             null
         );
 
-        $packages = array();
+        $packages = is_array($packages) ? $packages : array();
         $output->writeln('<info>NB: Empty package ends submission.</info>'); // I couldn't find any better for now!
 
         $continue = true;
@@ -204,11 +185,7 @@ EOT
             if (is_string($addedPackage)) {
                 if (!in_array($addedPackage, $packages)) {
                     $packages[] = $addedPackage;
-                    if ($addedPackage === $vendorWildcard) {
-                        $autocompleterValues = array();
-                    } else {
-                        $autocompleterValues = array_diff($autocompleterValues, array($addedPackage));
-                    }
+                    $autocompleterValues = array_diff($autocompleterValues, array($addedPackage));
                 } else {
                     $output->writeln(sprintf('<error>The package "%s" was already added.</error>', $package));
                 }
